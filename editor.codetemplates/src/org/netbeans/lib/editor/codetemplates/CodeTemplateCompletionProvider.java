@@ -198,7 +198,7 @@ public final class CodeTemplateCompletionProvider implements CompletionProvider 
                 
                 queryResult = new ArrayList<CodeTemplateCompletionItem>(cts.size());
                 for (CodeTemplate ct : cts) {
-                    if (accept(ct, filters)) {
+                    if (ct.getContexts() != null && ct.getContexts().size() > 0 && accept(ct, filters)) {
                         queryResult.add(new CodeTemplateCompletionItem(ct));
                     }
                 }

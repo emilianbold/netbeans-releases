@@ -651,7 +651,6 @@ public final class JavaSource {
         final ModificationResult result = new ModificationResult(this);
         final ElementOverlay overlay = new ElementOverlay();
         long start = System.currentTimeMillis();
-        final JavacParser[] theParser = new JavacParser[1];
 
         Task<CompilationController> inner = new Task<CompilationController>() {
             @Override
@@ -666,7 +665,6 @@ public final class JavaSource {
                 task.run(copy);
                 final JavacTaskImpl jt = copy.impl.getJavacTask();
                 Log.instance(jt.getContext()).nerrors = 0;
-                theParser[0] = copy.impl.getParser();
                 final List<ModificationResult.Difference> diffs = copy.getChanges(result.tag2Span);
                 if (diffs != null && diffs.size() > 0) {
                     final FileObject file = copy.getFileObject();
@@ -677,9 +675,6 @@ public final class JavaSource {
         
         runUserActionTask(inner, true);
         
-        if (theParser[0] != null) {
-            theParser[0].invalidate();
-        }
         if (sources.size() == 1) {
             Logger.getLogger("TIMER").log(Level.FINE, "Modification Task",  //NOI18N
                 new Object[] {sources.iterator().next().getFileObject(), System.currentTimeMillis() - start});

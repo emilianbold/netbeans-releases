@@ -539,8 +539,6 @@ public class Annotations implements DocumentListener {
         LineAnnotations annos = getLineAnnotations(line);
         if (annos == null)
             return null;
-        if (annos.getCount() <= 1)
-            return null;
         return annos.getPasive();
     }
     
@@ -1024,6 +1022,8 @@ public class Annotations implements DocumentListener {
         /** Gets the array of all pasive and visible annotations */
         public AnnotationDesc[] getPasive() {
             synchronized (annos) {
+                if (getCount() <= 1)
+                    return null;
                 AnnotationDesc[] pasives = new AnnotationDesc[getCount()-1];
                 int startIndex = annosVisible.indexOf(getActive());
                 int index = startIndex;

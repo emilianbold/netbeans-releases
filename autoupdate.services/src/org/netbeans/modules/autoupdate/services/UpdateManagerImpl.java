@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -71,7 +71,7 @@ public class UpdateManagerImpl extends Object {
     private static final UpdateManager.TYPE [] DEFAULT_TYPES = new UpdateManager.TYPE [] {  UpdateManager.TYPE.KIT_MODULE };
     
     private Reference<Cache> cacheReference = null;            
-    private Logger logger = null;
+    private static final Logger logger = null;
     
     // package-private for tests only
     

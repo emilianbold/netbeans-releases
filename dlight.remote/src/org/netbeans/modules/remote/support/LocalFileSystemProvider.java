@@ -45,6 +45,9 @@ package org.netbeans.modules.remote.support;
 import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -72,6 +75,7 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service = org.netbeans.modules.remote.spi.FileSystemProviderImplementation.class, position=100)
 public final class LocalFileSystemProvider implements FileSystemProviderImplementation {
+    private static final String FILE_PROTOCOL_PREFIX = "file:"; // NOI18N
 
     private FileSystem rootFileSystem = null;
     private Map<String, LocalFileSystem> nonRootFileSystems = new HashMap<String, LocalFileSystem>();
@@ -222,6 +226,9 @@ public final class LocalFileSystemProvider implements FileSystemProviderImplemen
         if (absoluteURL.length() == 0) {
             return true;
         }
+        if (absoluteURL.startsWith(FILE_PROTOCOL_PREFIX)) {
+            return true;
+        }
         if (isWindows) {
             return (absoluteURL.length() > 1) && absoluteURL.charAt(1) == ':';
         } else {
@@ -241,8 +248,26 @@ public final class LocalFileSystemProvider implements FileSystemProviderImplemen
 
     @Override
     public FileObject urlToFileObject(String absoluteURL) {
-        File file = new File(absoluteURL);
-        return FileUtil.toFileObject(FileUtil.normalizeFile(file));
+        String path = absoluteURL;
+        File file;
+        if (path.startsWith(FILE_PROTOCOL_PREFIX)) {
+            try {
+                URL u = new URL(path);
+                file = FileUtil.normalizeFile(new File(u.toURI()));
+            } catch (IllegalArgumentException ex) {
+                RemoteLogger.getInstance().log(Level.WARNING, "LocalFileSystemProvider.urlToFileObject can not convert {0}:\n{1}", new Object[]{absoluteURL, ex.getLocalizedMessage()});
+                return null;
+            } catch (URISyntaxException ex) {
+                RemoteLogger.getInstance().log(Level.WARNING, "LocalFileSystemProvider.urlToFileObject can not convert {0}:\n{1}", new Object[] {absoluteURL, ex.getLocalizedMessage()});
+                return null;
+            } catch (MalformedURLException ex) {
+                RemoteLogger.getInstance().log(Level.WARNING, "LocalFileSystemProvider.urlToFileObject can not convert {0}:\n{1}", new Object[] {absoluteURL, ex.getLocalizedMessage()});
+                return null;
+            }        
+        } else {
+            file = new File(FileUtil.normalizePath(path));
+        }
+        return FileUtil.toFileObject(file);
     }
 
     @Override

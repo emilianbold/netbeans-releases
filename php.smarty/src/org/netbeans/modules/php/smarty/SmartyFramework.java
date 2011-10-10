@@ -55,6 +55,14 @@ public class SmartyFramework extends PhpProgram {
     public static final String BASE_CLASS_NAME = "Smarty"; // NOI18N
 
     /**
+     * Smarty framework defined open delimiter.
+     */
+    public static final String OPEN_DELIMITER = "{"; //NOI18N
+    /**
+     * Smarty framework defined close delimiter.
+     */
+    public static final String CLOSE_DELIMITER = "}"; //NOI18N
+    /**
      * Open delimiter in SMARTY templates.
      */
     private static String delimiterDefaultOpen = SmartyOptions.getInstance().getDefaultOpenDelimiter();
@@ -66,6 +74,10 @@ public class SmartyFramework extends PhpProgram {
      * Depth of scanning for TPL templates in PHP project.
      */
     private static int depthOfScanningForTpl = -1;
+    /**
+     * Version of SMARTY templates.
+     */
+    private static Version smartyVersion = Version.SMARTY3;
 
     public SmartyFramework() {
         super(null);
@@ -123,5 +135,14 @@ public class SmartyFramework extends PhpProgram {
 
     public static void setDepthOfScanningForTpl(int depthOfScanningForTpl) {
         SmartyFramework.depthOfScanningForTpl = depthOfScanningForTpl;
+    }
+
+    public static void setSmartyVersion(Version version) {
+        SmartyFramework.smartyVersion = version;
+    }
+
+    public enum Version {
+        SMARTY3,
+        SMARTY2;
     }
 }

@@ -75,7 +75,6 @@ import org.netbeans.modules.cnd.execution.ShellExecSupport;
 import org.netbeans.modules.cnd.execution.ExecutionSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
-import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
@@ -139,8 +138,7 @@ public class ReconfigureProject {
         compilerSet = set.getCompilerSet();
         assert compilerSet != null;
         isSunCompiler = compilerSet.getCompilerFlavor().isSunStudioCompiler();
-        Folder important = pdp.getConfigurationDescriptor().getExternalFileItems();
-        for(Item item : important.getAllItemsAsArray()){
+        for(Item item :  pdp.getConfigurationDescriptor().getExternalFileItemsAsArray()){
             DataObject dao = item.getDataObject();
             if (dao != null) {
                 String mime = dao.getPrimaryFile().getMIMEType();

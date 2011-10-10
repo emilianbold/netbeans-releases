@@ -191,8 +191,8 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
     }
 
     private void storeChangedSync(File file, long ts) {
+        File storeFile = getStoreFile(file, Long.toString(ts), true);
         try {
-            File storeFile = getStoreFile(file, Long.toString(ts), true);
             try {
                 FileUtils.copy(file, StoreEntry.createStoreFileOutputStream(storeFile));
                 LocalHistory.LOG.log(Level.FINE, "copied {0} into {1}", new Object[]{file, storeFile});
@@ -203,6 +203,8 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
                 // release lock
                 lockedFolders.remove(storeFile.getParentFile());
             }
+        } catch (FileNotFoundException ioe) {                                
+            LocalHistory.LOG.log(Level.INFO, "exception while copying file " + file + " to " + storeFile, ioe);                                    
         } catch (IOException ioe) {
             LocalHistory.LOG.log(Level.WARNING, null, ioe);
         }        
@@ -1199,7 +1201,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
                 return null;
             }
             
-            File target = new File(source.getParentFile(), source.getName() + "." + i++ + ".nblh~");
+            File target = new File(source.getParentFile(), source.getName() + "." + i++ + LocalHistory.LH_TMP_FILE_SUFFIX);
             if(!target.exists()) {
                 long ts = source.lastModified();
                 if(source.renameTo(target)) {                                

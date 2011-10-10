@@ -179,14 +179,14 @@ public class TestHighlightsView extends EditorView {
     }
 
     @Override
-    protected StringBuilder appendViewInfo(StringBuilder sb, int indent, int importantChildIndex) {
-        super.appendViewInfo(sb, indent, importantChildIndex);
+    protected StringBuilder appendViewInfo(StringBuilder sb, int indent, String xyInfo, int importantChildIndex) {
+        super.appendViewInfo(sb, indent, xyInfo, importantChildIndex);
         return sb;
     }
-    
+
     @Override
     public String toString() {
-        return appendViewInfo(new StringBuilder(200), 0, -1).toString();
+        return appendViewInfo(new StringBuilder(200), 0, "", -1).toString();
     }
 
 }

@@ -206,9 +206,7 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
     private void onClick(MouseEvent event, Difference diff) {
         Point p = new Point(event.getPoint());
         SwingUtilities.convertPointToScreen(p, this);
-        Point p2 = new Point(p);
-        SwingUtilities.convertPointFromScreen(p2, textComponent);
-        showTooltipWindow(new Point(p.x - p2.x, p.y), diff);
+        showTooltipWindow(p, diff);
     }
 
     private void showTooltipWindow(Point p, Difference diff) {
@@ -563,7 +561,7 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
 
     private void shutdown() {
         assert SwingUtilities.isEventDispatchThread();
-
+        refreshDiffTask.cancel();
         if (fileObject != null) {
             fileObject.removeFileChangeListener(this);
         }
@@ -842,7 +840,7 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
         }
 
         private void computeDiff() {
-            if (!sidebarVisible || sidebarTemporarilyDisabled) {
+            if (!sidebarVisible || sidebarTemporarilyDisabled || !sidebarInComponentHierarchy) {
                 currentDiff = null;
                 return;
             }

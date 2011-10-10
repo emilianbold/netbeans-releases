@@ -45,6 +45,7 @@
 package org.netbeans.modules.web.jsf.wizards;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -68,7 +69,7 @@ import org.openide.util.HelpCtx;
  *
  * @author petr, alexeybutenko
  */
-public class JSFConfigurationPanel extends WebModuleExtender {
+public class JSFConfigurationPanel extends WebModuleExtender implements WebModuleExtender.Savable {
 
     private final JSFFrameworkProvider framework;
     private final ExtenderController controller;
@@ -79,7 +80,6 @@ public class JSFConfigurationPanel extends WebModuleExtender {
     private Preferences preferences;
     private WebModule webModule;
 
-    public enum LibraryType {USED, NEW, SERVER};
     private LibraryType libraryType;
     private Library jsfCoreLibrary;
     private ServerLibrary serverLibrary;
@@ -91,13 +91,35 @@ public class JSFConfigurationPanel extends WebModuleExtender {
     private boolean debugFacelets;
     private boolean skipComments;
     private boolean createExamples;
+    
     //jsf configuration
     private String facesSuffix;
     private String facesMapping;
     private boolean validateXml;
     private boolean verifyObjects;
 
-    /** Creates a new instance of JSFConfigurationPanel */
+    // Enum declarations
+    public enum LibraryType {USED, NEW, SERVER};
+    public enum PreferredLanguage {
+        
+        JSP("JSP"), Facelets("Facelets"); //NOI18N
+        
+        private String name;
+
+        private PreferredLanguage(String name) {
+            this.name = name;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        @Override
+        public String toString() {
+            return name;
+        }
+    }
+    
     public JSFConfigurationPanel(JSFFrameworkProvider framework, ExtenderController controller, boolean customizer) {
         this.framework = framework;
         this.controller = controller;
@@ -111,25 +133,15 @@ public class JSFConfigurationPanel extends WebModuleExtender {
         validateXml = true;
         verifyObjects = false;
         facesMapping = "/faces/*"; //NOI18N
+        
         getComponent();
     }
 
     public JSFConfigurationPanel(JSFFrameworkProvider framework, ExtenderController controller, boolean customizer, Preferences preferences, WebModule webModule) {
-        this.framework = framework;
-        this.controller = controller;
-        this.customizer = customizer;
+        this(framework, controller, customizer);
         this.preferences = preferences;
         this.webModule = webModule;
         enableFacelets = preferences.get(PREFERRED_LANGUAGE, "JSP").equals(PreferredLanguage.Facelets.getName());
-
-        debugFacelets = true;
-        skipComments = true;
-        createExamples = true;
-        facesSuffix = ".xhtml"; //NOI18N
-        validateXml = true;
-        verifyObjects = false;
-        facesMapping = "/faces/*"; //NOI18N
-        getComponent();
     }
 
     private boolean customizer;
@@ -178,10 +190,10 @@ public class JSFConfigurationPanel extends WebModuleExtender {
     public Set extend(WebModule webModule) {
         Project project = FileOwnerQuery.getOwner(webModule.getDocumentBase());
         preferences = ProjectUtils.getPreferences(project, ProjectUtils.class, true);
-        String preferredLang = component.getPreferredLanguage();
-        if (preferredLang.equals(PreferredLanguage.JSP.getName()) ||
-                preferredLang.equals(PreferredLanguage.Facelets.getName())) {
-            preferences.put(PREFERRED_LANGUAGE, component.getPreferredLanguage());
+        
+        PreferredLanguage preferredLang = component.getPreferredLanguage();
+        if ((preferredLang == PreferredLanguage.JSP) || (preferredLang == PreferredLanguage.Facelets)) {
+            preferences.put(PREFERRED_LANGUAGE, preferredLang.getName());
         }
         return framework.extendImpl(webModule, component.getJsfComponentCustomizers());
     }
@@ -302,19 +314,26 @@ public class JSFConfigurationPanel extends WebModuleExtender {
         return enableFacelets;
     }
 
-    protected void setEnableFacelets(boolean enableFacelets) {
+    /**
+     * Almost setter for enableFacelets variable. If force set to {@code true} then
+     * the change has to be done, otherwise it's switched just in cases the enableFacelets
+     * param equals {@code true}.
+     */
+    protected void updateEnableFacelets(boolean enableFacelets, boolean force) {
+        // If there is a new change in the Preferred language check box
         if (this.enableFacelets != enableFacelets) {
-            this.enableFacelets = enableFacelets;
-            String oldValue = enableFacelets? PreferredLanguage.JSP.getName() : PreferredLanguage.Facelets.getName();
-            String newValue = enableFacelets? PreferredLanguage.Facelets.getName() : PreferredLanguage.JSP.getName();
-            updatePreferredLanguage(oldValue, newValue);   //NOI18N
+            if (enableFacelets != false || force) {
+                this.enableFacelets = enableFacelets;
+            }
+            PreferredLanguage preferredLanguage = component.getPreferredLanguage();
+            if (preferences != null && preferredLanguage != null) {
+                preferences.put(PREFERRED_LANGUAGE, preferredLanguage.getName());
+            }
         }
     }
 
-    private void updatePreferredLanguage(String oldLanguage, String newLanguage) {
-        if (preferences !=null && !oldLanguage.equals(newLanguage)) {
-            preferences.put(PREFERRED_LANGUAGE, component.getPreferredLanguage());
-        }
+    protected void setEnableFacelets(boolean enableFacelets) {
+        updateEnableFacelets(enableFacelets, false);
     }
 
     public LibraryType getLibraryType(){
@@ -351,18 +370,42 @@ public class JSFConfigurationPanel extends WebModuleExtender {
         return component.getActivedJsfDescriptors();
     }
 
-    protected static class PreferredLanguage {
-        private String name;
+    @Override
+    public void save(WebModule webModule) {
+        JSFConfigurationPanelVisual panel = getComponent();
 
-        private PreferredLanguage(String name) {
-            this.name = name;
+        // handle preferred page language
+        PreferredLanguage selectedLanguage = panel.getPreferredLanguage();
+        if (PreferredLanguage.Facelets == selectedLanguage) {
+            setEnableFacelets(true);
+        } else {
+            setEnableFacelets(false);
         }
 
-        public String getName() {
-            return name;
+        // handle JSF suites
+        List<? extends JsfComponentImplementation> activedImplementations = panel.getActivedJsfDescriptors();
+        List<JsfComponentImplementation> usedImplementations = new ArrayList<JsfComponentImplementation>();
+        for (JsfComponentImplementation jsfImplementation : panel.getAllJsfDescriptors()) {
+            if (jsfImplementation.isInWebModule(webModule)) {
+                usedImplementations.add(jsfImplementation);
+            }
         }
 
-        static final PreferredLanguage JSP = new PreferredLanguage("JSP"); //NOI18N
-        static final PreferredLanguage Facelets = new PreferredLanguage("Facelets"); //NOI18N
+        // get list of newly added JSF suite implementations
+        List<? extends JsfComponentImplementation> addedImplementations =
+                new ArrayList<JsfComponentImplementation>(activedImplementations);
+        addedImplementations.removeAll(usedImplementations);
+        for (JsfComponentImplementation jsfComponentImplementation : addedImplementations) {
+            jsfComponentImplementation.extend(webModule, jsfComponentImplementation.createJsfComponentCustomizer(null));
+        }
+
+        // get list of removed JSF suite implementations
+        List<? extends JsfComponentImplementation> removedImplementations =
+                new ArrayList<JsfComponentImplementation>(usedImplementations);
+        removedImplementations.removeAll(activedImplementations);
+        for (JsfComponentImplementation jsfComponentImplementation : removedImplementations) {
+            jsfComponentImplementation.remove(webModule);
+        }
     }
+
 }

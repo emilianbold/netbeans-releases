@@ -62,7 +62,7 @@ import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.css.editor.api.CssCslParserResult;
 import org.netbeans.modules.css.editor.csl.CssLanguage;
 import org.netbeans.modules.css.editor.module.CssModuleSupport;
-import org.netbeans.modules.css.editor.module.spi.CssModule;
+import org.netbeans.modules.css.editor.module.spi.CssEditorModule;
 import org.netbeans.modules.css.editor.properties.parser.PropertyModel;
 import org.netbeans.modules.css.editor.properties.parser.PropertyModelTest;
 import org.netbeans.modules.css.editor.properties.parser.PropertyValue;
@@ -99,8 +99,8 @@ public class CssModuleTestBase extends CslTestBase {
         return CssLanguage.CSS_MIME_TYPE;
     }
     
-    protected CssModule getCssModuleByClass(Class clazz) {
-        for(CssModule module : CssModuleSupport.getModules()) {
+    protected CssEditorModule getCssModuleByClass(Class clazz) {
+        for(CssEditorModule module : CssModuleSupport.getModules()) {
             if(module.getClass().equals(clazz)) {
                 return module;
             }

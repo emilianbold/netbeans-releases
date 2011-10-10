@@ -382,6 +382,12 @@ public abstract class Disassembly implements StateModel.Listener {
         this.disText = text;
     }
     
+    public void reset() {
+        DisText emptyText = new DisText();
+        emptyText.save();
+        setText(emptyText);
+    }
+    
     protected class DisText {
         private final List<DisLine> lines = new ArrayList<DisLine>();
         private final StringBuilder data = new StringBuilder();

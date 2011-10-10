@@ -48,6 +48,36 @@ import java.lang.reflect.Field;
  * @author Jaroslav Bachorik
  */
 public class RemoteFXService {
+//    final private static Logger LOGGER = Logger.getAnonymousLogger();
+    
+    static {
+        try {
+            Class.forName("javafx.scene.image.Image", true, RemoteFXService.class.getClassLoader());
+        } catch (ClassNotFoundException e) {
+            // throw away
+        }
+        try {
+            Class.forName("com.sun.media.jfxmedia.AudioClip", true, RemoteFXService.class.getClassLoader());
+        } catch (ClassNotFoundException e) {
+            // throw away
+        }
+        try {
+            Class.forName("com.sun.media.jfxmedia.MediaManager", true, RemoteFXService.class.getClassLoader());
+        } catch (ClassNotFoundException e) {
+            // throw away
+        }
+        try {
+            Class.forName("com.sun.media.jfxmedia.MediaPlayer", true, RemoteFXService.class.getClassLoader());
+        } catch (ClassNotFoundException e) {
+            // throw away
+        }
+        try {
+            Class.forName("com.sun.media.jfxmedia.events.PlayerStateEvent$PlayerState", true, RemoteFXService.class.getClassLoader());
+        } catch (ClassNotFoundException e) {
+            // throw away
+        }
+    }
+    
     final private static Thread accessThread = new Thread(new Runnable() {
         public void run() {
             while (!Thread.interrupted()) {
@@ -62,25 +92,9 @@ public class RemoteFXService {
     }, "FX Access Thread (Visual Debugger)"); // NOI18N
     
     public static void startAccessLoop() {
-        setDebugMode();
         accessThread.setDaemon(true);
         accessThread.setPriority(Thread.MIN_PRIORITY);
         accessThread.start();
-    }
-
-    /**
-     * JavaFX runtime is boobietrapped with various checks for {@linkplain com.sun.javafx.runtime.SystemProperties#isDebug() }
-     * which lead to spurious NPEs. Need to make it happy and force the runtime into debug mode
-     */
-    private static void setDebugMode() {
-        try {
-            Class spClz = Class.forName("com.sun.javafx.runtime.SystemProperties");
-            Field dbgFld = spClz.getDeclaredField("isDebug");
-            dbgFld.setAccessible(true);
-            dbgFld.set(null, Boolean.TRUE);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
     
     private static void access() {};

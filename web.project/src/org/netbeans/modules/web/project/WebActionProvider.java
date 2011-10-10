@@ -50,6 +50,7 @@ import java.io.IOException;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -80,21 +81,23 @@ import org.openide.NotifyDescriptor;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import java.util.HashSet;
+import java.util.LinkedList;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.TypeElement;
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
-import org.netbeans.api.j2ee.core.Profile;
 
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.runner.JavaRunner;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.modules.j2ee.common.project.WhiteListUpdater;
 import org.netbeans.modules.j2ee.common.project.ui.J2EEProjectProperties;
 import org.netbeans.modules.java.api.common.project.BaseActionProvider;
+import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.web.api.webmodule.RequestParametersQuery;
 import org.netbeans.modules.web.client.tools.api.WebClientToolsProjectUtils;
 import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionStarterService;
@@ -262,6 +265,19 @@ class WebActionProvider extends BaseActionProvider {
                     new String[]{"j2ee.platform.classpath", "j2ee.platform.embeddableejb.classpath"}));
             cp = ClassPathSupport.createProxyClassPath(cp, cp2);
             execProperties.put(JavaRunner.PROP_EXECUTE_CLASSPATH, cp);
+            Collection<String> coll = (Collection<String>)execProperties.get(JavaRunner.PROP_RUN_JVMARGS);
+            if (coll == null) {
+                coll = new LinkedList<String>();
+                execProperties.put(JavaRunner.PROP_RUN_JVMARGS, coll);
+            }
+            String s = getEvaluator().getProperty(WebProjectProperties.RUNMAIN_JVM_ARGS);
+            if (s != null && s.trim().length() > 0) {
+                coll.add(s);
+            }
+            s = getEvaluator().getProperty(ProjectProperties.ENDORSED_CLASSPATH);
+            if (s != null && s.trim().length() > 0) {
+                coll.add("-Xbootclasspath/p:"+s);
+            }
         }
     }
 
@@ -346,6 +362,9 @@ class WebActionProvider extends BaseActionProvider {
             }
         } else if (command.equals(COMMAND_RUN) || command.equals(WebProjectConstants.COMMAND_REDEPLOY)) {
             if (!isSelectedServer()) {
+                return null;
+            }
+            if (WhiteListUpdater.isWhitelistViolated(getProject())) {
                 return null;
             }
             return commands.get(command);

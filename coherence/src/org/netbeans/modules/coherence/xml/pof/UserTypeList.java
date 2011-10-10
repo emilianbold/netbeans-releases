@@ -41,60 +41,25 @@
  */
 package org.netbeans.modules.coherence.xml.pof;
 
-import java.util.ArrayList;
 import java.util.List;
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlElements;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlType;
-
 
 /**
- * 
+ *
+ * @author Andrew Hopkinson (Oracle A-Team)
  */
-@XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "", propOrder = {
-    "userTypeOrInclude"
-})
-@XmlRootElement(name = "user-type-list")
-public class UserTypeList {
+public interface UserTypeList extends PofConfigComponent {
 
-    @XmlElements({
-        @XmlElement(name = "user-type", type = UserType.class),
-        @XmlElement(name = "include", type = Include.class)
-    })
-    protected List<Object> userTypeOrInclude;
+    static String XML_TAG_NAME = "user-type-list";
 
-    /**
-     * Gets the value of the userTypeOrInclude property.
-     * 
-     * <p>
-     * This accessor method returns a reference to the live list,
-     * not a snapshot. Therefore any modification you make to the
-     * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the userTypeOrInclude property.
-     * 
-     * <p>
-     * For example, to add a new item, do as follows:
-     * <pre>
-     *    getUserTypeOrInclude().add(newItem);
-     * </pre>
-     * 
-     * 
-     * <p>
-     * Objects of the following type(s) are allowed in the list
-     * {@link UserType }
-     * {@link Include }
-     * 
-     * 
-     */
-    public List<Object> getUserTypeOrInclude() {
-        if (userTypeOrInclude == null) {
-            userTypeOrInclude = new ArrayList<Object>();
-        }
-        return this.userTypeOrInclude;
-    }
+    public List<Include> getIncludes();
 
+    public List<UserType> getUserTypes();
+
+    List<UserTypeListElement> getElements();
+
+    void addElement(UserTypeListElement element) throws ValueNotPermittedException;
+
+    void addElement(int index, UserTypeListElement element) throws ValueNotPermittedException;
+
+    void removeElement(UserTypeListElement element);
 }

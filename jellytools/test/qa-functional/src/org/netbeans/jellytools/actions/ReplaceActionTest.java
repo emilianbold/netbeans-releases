@@ -93,7 +93,7 @@ public class ReplaceActionTest extends JellyTestCase {
     @Override
     public void tearDown() {
         // waits for close button (it is second button with given tooltip ebcause first one for search row is hidden)
-        JButtonOperator closeButton = new JButtonOperator(eo, new JButtonOperator.JComponentByTipFinder("Close Incremental Search Sidebar"), 1);
+        JButtonOperator closeButton = new JButtonOperator(eo, new JButtonOperator.JComponentByTipFinder("Close Incremental Search Sidebar"));
         closeButton.push();
         // close editor after last test case
         if (getName().equals("testPerformShortcut")) {

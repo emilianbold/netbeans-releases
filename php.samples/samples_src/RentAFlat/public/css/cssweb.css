@@ -1,78 +1,78 @@
- 
+
 /* ========== GENERAL =========================================================================================================================== */
 
-html    { 
-    font-size:100%; 
+html    {
+    font-size:100%;
 }
-body    { 
-    margin:10px; 
-    border:0; 
+body    {
+    margin:10px;
+    border:0;
     padding:0;
-    font-family:"Lucida Grande", Verdana, "Tahoma", "Luxi Sans", Arial, Helvetica, sans-serif; 
-    font-size:72%; 
-    color:#696969; 
+    font-family:"Lucida Grande", Verdana, "Tahoma", "Luxi Sans", Arial, Helvetica, sans-serif;
+    font-size:72%;
+    color:#696969;
 }
-h1	{ 
-    margin:0px 0 10px 0; 
-    font-size:115%; 
-    font-weight:bold; 
-    color:#454545; 
-    background:transparent; 
+h1	{
+    margin:0px 0 10px 0;
+    font-size:115%;
+    font-weight:bold;
+    color:#454545;
+    background:transparent;
 }
-h2	{ 
-    margin:0px 0 10px 0; 
-    font-size:115%; 
-    font-weight:normal; 
-    color:black; 
-    background:transparent; 
+h2	{
+    margin:0px 0 10px 0;
+    font-size:115%;
+    font-weight:normal;
+    color:black;
+    background:transparent;
 }
-h2.none { 
-    display:none; 
+h2.none {
+    display:none;
     font-size:95%;
 }
-h3      { 
-    margin:0px 0 5px 0; 
-    font-size:100%; 
-    font-weight:normal; 
-    color:black; 
-    background:transparent;  
+h3      {
+    margin:0px 0 5px 0;
+    font-size:100%;
+    font-weight:normal;
+    color:black;
+    background:transparent;
 }
-h4      { 
-    margin:0px 0 5px 0; 
-    font-size:100%; 
-    font-weight:bold; 
-    color:black; 
-    background:transparent;  
+h4      {
+    margin:0px 0 5px 0;
+    font-size:100%;
+    font-weight:bold;
+    color:black;
+    background:transparent;
 }
-.none   { 
-    display:none; 
+.none   {
+    display:none;
 }
-strong	{ 
-    font-style:normal; 
-    font-weight:bold; 
+strong	{
+    font-style:normal;
+    font-weight:bold;
 }
-img 	  { 
-    margin:10px; 
-    border:0; 
-    padding:0; 
+img 	  {
+    margin:10px;
+    border:0;
+    padding:0;
 }
 
-a 	    { 
-    color:#e31700; 
-    font-weight:normal; 
-    text-decoration:underline; 
-    background:transparent; 
+a 	    {
+    color:#e31700;
+    font-weight:normal;
+    text-decoration:underline;
+    background:transparent;
 }
-a:hover { 
-    color:#696969; 
-    font-weight:normal; 
-    text-decoration:none; 
-    background:transparent; 
+a:hover {
+    color:#696969;
+    font-weight:normal;
+    text-decoration:none;
+    background:transparent;
 }
 
 form, fieldset, zend_form { margin:0; padding:0; border:0; }
 table, table td, table th  { font-size:100%; }
-textarea, input, select, option, td textarea, td input, td select, td option 
+textarea, input, select, option, td textarea, td input, td select, td option
 { font-family:"Lucida Grande", Verdana, "Tahoma", "Luxi Sans", Arial, Helvetica, sans-serif; font-size:100%; }
 
 /* ========== DESIGN - HOME ====================================================================================================================== */
@@ -83,7 +83,7 @@ textarea, input, select, option, td textarea, td input, td select, td option
 
 /* ---------- TOP */
 #top    { width:960px; height:132px; position:relative; }
-#top h2 span { 
+#top h2 span {
     float:right;
     font-size: 10px;
 }
@@ -94,43 +94,43 @@ textarea, input, select, option, td textarea, td input, td select, td option
 #lan ul li a:hover { display:block; height:25px; text-decoration:underline; color:#f0f0f0; background:transparent; margin:0; border:0; padding:0;  }
 
 /* ---------- MENU */
-#menu { 
-    width:960px; 
-    height:42px; 
-    font-size:95%; 
+#menu {
+    width:960px;
+    height:42px;
+    font-size:95%;
     /*    color:#0f1a51;*/
-    background:#0f1a51 url("../images/menubg.jpg") top left no-repeat; 
+    background:#0f1a51 url("../images/menubg.jpg") top left no-repeat;
 }
 #menu ul       { width:960px; margin:0; border:0; padding:0; list-style-type:none; }
 #menu ul li    { display:block; height:42px; margin:0; border:0; padding:0; float:left; text-align:center;  }
-#menu ul li a  { 
-    display:block; 
-    height:42px; 
-    margin:0; 
-    border:0; 
-    padding:0; 
-    text-decoration:none; 
-    text-transform:uppercase; 
-    color: #e2000d; 
+#menu ul li a  {
+    display:block;
+    height:42px;
+    margin:0;
+    border:0;
+    padding:0;
+    text-decoration:none;
+    text-transform:uppercase;
+    color: #e2000d;
     font-weight: bold;
-    background:transparent; 
-    position:relative; 
-    line-height:40px; 
+    background:transparent;
+    position:relative;
+    line-height:40px;
     padding-left:1px; }
-#menu ul li a:hover { 
-    display:block; 
-    height:42px; 
-    margin:0; 
-    border:0; 
-    padding:0; 
-    text-decoration:none; 
-    text-transform:uppercase; 
+#menu ul li a:hover {
+    display:block;
+    height:42px;
+    margin:0;
+    border:0;
+    padding:0;
+    text-decoration:none;
+    text-transform:uppercase;
     color:#e2000d;
     font-weight: bold;
-    background:transparent; 
-    position:relative; 
-    padding-left:1px; 
-    cursor:pointer; } 
+    background:transparent;
+    position:relative;
+    padding-left:1px;
+    cursor:pointer; }
 /* li a width */
 #menu ul li.m1, #menu ul li.m1 a, #menu ul li.m1 a:hover { width: 180px; }
 #menu ul li.m2, #menu ul li.m2 a, #menu ul li.m2 a:hover { width: 140px; }
@@ -143,18 +143,20 @@ textarea, input, select, option, td textarea, td input, td select, td option
 
 
 /* ---------- CONTENT */
-#conbox     { width:960px; color:#696969; background:white; }
+#conbox     { width:960px; color:#696969; background:white;min-height:600px; }
 #con        { padding:10px; position:relative; }
 
-#con h1      { margin:5px 0 5px 0; padding:0; font-size:185%; background:url("../images/h1line.gif") no-repeat; font-weight:normal; 
+#con h1      { margin:5px 0 5px 0; padding:0; font-size:185%; background:url("../images/h1line.gif") no-repeat; font-weight:normal;
                text-transform:uppercase; letter-spacing:-1px; line-height:40px; }
 #con h2      { font-weight:bold; color:#696969; }
 #con h3      { margin:10px 0 0px 0; padding:0; color:#6a9a06; background:transparent; font-size:95%; font-weight:bold; }
 #con p       { margin:5px 0 5px 0; line-height:1.5; font-size:95%; }
 #con a, #con a:hover { font-size:95%; }
 
-#con ul    { display:block; margin:0 0 0 20px; padding:10px 0 0 0; /* list-style:url("../images/lidot.png"); */ }
-#con li    { margin:0; padding:2px 0 2px 20px; }
+/* form */
+div.formrow div.field {margin-left:20px;}
+ul.errors {list-style:none;margin:0;padding:0;}
+ul.errors li {color:red;font-weight:bold;margin:0;padding:0;}
 
 
 
@@ -162,13 +164,13 @@ textarea, input, select, option, td textarea, td input, td select, td option
 #footbox       { width:960px; height:140px; color:#7d7d7d; background:#bfbfbf url("../images/footbg.jpg") top left repeat-x; }
 #foot          { padding:10px 10px 0 10px; }
 #footbox .fo   { display:block; float:left; padding-top:5px; }
-#footbox .f1   { width:400px; } 
-#footbox .f2   { 
-    padding-left: 100px; 
-    width:200px; 
-}                    
-#footbox .f3   { 
-    width:100px; 
+#footbox .f1   { width:400px; }
+#footbox .f2   {
+    padding-left: 100px;
+    width:200px;
+}
+#footbox .f3   {
+    width:100px;
     float:right;
 }
 
@@ -206,7 +208,7 @@ textarea, input, select, option, td textarea, td input, td select, td option
 #con .result .text p.price      { float:left; color:#e00000; background:transparent; font-size:120%; font-weight:bold; }
 #con .result .text p.price span { width:auto; color:#575757; background:transparent; font-size:95%; font-weight:normal; }
 #con .result .text p.detail     { width:65px; float:right; color:#575757; background:transparent; font-size:95%; font-weight:normal;  }
-.hr             { height:10px; margin:10px 0 10px 0; background:url("../images/dot.gif") left center repeat-x;  }                                                               
+.hr             { height:10px; margin:10px 0 10px 0; background:url("../images/dot.gif") left center repeat-x;  }
 
 /* ---------- PRODEJ NEMOVITOSTI - DETAIL */
 

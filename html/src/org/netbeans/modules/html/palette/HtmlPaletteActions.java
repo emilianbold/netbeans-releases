@@ -119,7 +119,7 @@ public class HtmlPaletteActions extends PaletteActions {
             try {
                 FileObject fo = DataLoadersBridge.getDefault().getFileObject(target);
                 if(fo != null) {
-                    PaletteController pc = HtmlPaletteFactory.getPalette(fo);
+                    PaletteController pc = HtmlPaletteFactory.getPalette(fo.getMIMEType());
                     pc.clearSelection();
                 }
             }

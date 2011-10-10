@@ -57,7 +57,6 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.ServerLibraryManager;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.TargetModuleIDResolver;
 import org.openide.WizardDescriptor.InstantiatingIterator;
-import org.openide.util.Parameters;
 
 /**
  * Provides a proxying implementation of {@link OptionalDeploymentManagerFactory}.
@@ -165,7 +164,7 @@ public final class ProxyOptionalFactory extends OptionalDeploymentManagerFactory
         }
 
         OptionalDeploymentManagerFactory factory = (OptionalDeploymentManagerFactory) attributes.get("delegate"); // NOI18N
-        Parameters.notNull("delegate", factory);  // NOI18N
+        assert factory != null : "Delegate is null";
         
         synchronized (this) {
             if (delegate == null) {

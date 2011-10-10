@@ -46,6 +46,7 @@ import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.Stack;
 import java.util.WeakHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
@@ -67,7 +68,9 @@ import org.netbeans.modules.editor.indent.spi.ReformatTask;
 import org.netbeans.spi.editor.mimelookup.MimeDataProvider;
 import org.netbeans.spi.editor.typinghooks.TypedTextInterceptor;
 import org.openide.util.Lookup;
+import org.openide.util.Lookup.Template;
 import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 
 /**
  *
@@ -84,20 +87,40 @@ public final class LegacyFormattersProvider implements MimeDataProvider {
     // MimeDataProvider implementation
     // ------------------------------------------------------------------------
 
-    public Lookup getLookup(MimePath mimePath) {
+    @Override
+    public Lookup getLookup(final MimePath mimePath) {
         if (mimePath.size() == 1) {
-            IndentReformatTaskFactoriesProvider provider = IndentReformatTaskFactoriesProvider.get(mimePath);
-            if (provider != null) {
-                IndentTask.Factory legacyIndenter = provider.getIndentTaskFactory();
-                ReformatTask.Factory legacyFormatter = provider.getReformatTaskFactory();
-                TypedTextInterceptor.Factory legacyAutoIndenter = provider.getTypedTextInterceptorFactory();
-
-                if (LOG.isLoggable(Level.FINE)) {
-                    LOG.log(Level.FINE, "'{0}' uses legacyIndenter={1}, legacyFormatter={2}, legacyAutoIndenter={3}", new Object[]{mimePath.getPath(), legacyIndenter, legacyFormatter, legacyAutoIndenter}); //NOI18N
+            return new ProxyLookup() {
+                private final AtomicBoolean initialized = new AtomicBoolean();
+                @Override
+                protected void beforeLookup(Template<?> template) {
+                    super.beforeLookup(template);
+                    final Class<?> clz = template.getType();
+                    if (IndentTask.Factory.class.isAssignableFrom(clz) ||
+                        ReformatTask.Factory.class.isAssignableFrom(clz) ||
+                        TypedTextInterceptor.Factory.class.isAssignableFrom(clz)) {
+                        if (!initialized.getAndSet(true)) {
+                            final IndentReformatTaskFactoriesProvider provider = IndentReformatTaskFactoriesProvider.get(mimePath);
+                            if (provider != null) {
+                                final IndentTask.Factory legacyIndenter = provider.getIndentTaskFactory();
+                                final ReformatTask.Factory legacyFormatter = provider.getReformatTaskFactory();
+                                final TypedTextInterceptor.Factory legacyAutoIndenter = provider.getTypedTextInterceptorFactory();
+                                if (LOG.isLoggable(Level.FINE)) {
+                                    LOG.log(
+                                        Level.FINE,
+                                        "'{0}' uses legacyIndenter={1}, legacyFormatter={2}, legacyAutoIndenter={3}",   //NOI18N
+                                        new Object[]{
+                                            mimePath.getPath(),
+                                            legacyIndenter,
+                                            legacyFormatter,
+                                            legacyAutoIndenter});
+                                }
+                                setLookups(Lookups.fixed(legacyIndenter, legacyFormatter, legacyAutoIndenter));
+                            }
+                        }
+                    }
                 }
-
-                return Lookups.fixed(legacyIndenter, legacyFormatter, legacyAutoIndenter);
-            }
+            };
         }
 
         return null;

@@ -804,6 +804,24 @@ public class JsFormatterTest extends JsTestBase {
                 );
     }
     
+    public void testIssue190613() throws Exception {
+        format(
+                "if (a1) {\n"
+                + "    if (a2) {\n"
+                + "        if (expr) {\n"
+                + "            \n"
+                + "}\n"
+                + "    }\n"
+                + "}", 
+                "if (a1) {\n"
+                + "    if (a2) {\n"
+                + "        if (expr) {\n"
+                + "            \n"
+                + "        }\n"
+                + "    }\n"
+                + "}", null);
+    }
+    
     public void testRegexp() throws Exception {
         format(
                 "dojo.isAlien = function(/*anything*/ it){\n" +

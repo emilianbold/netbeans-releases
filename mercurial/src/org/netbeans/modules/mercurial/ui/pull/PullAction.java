@@ -49,8 +49,12 @@ import org.netbeans.modules.versioning.spi.VCSContext;
 import javax.swing.*;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import org.netbeans.modules.mercurial.FileInformation;
 import org.netbeans.modules.mercurial.FileStatusCache;
@@ -60,6 +64,8 @@ import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.OutputLogger;
 import org.netbeans.modules.mercurial.ui.merge.MergeAction;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
+import org.netbeans.modules.mercurial.ui.branch.HgBranch;
+import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.mercurial.util.HgProjectUtils;
 import org.netbeans.modules.mercurial.util.HgRepositoryContextCache;
@@ -355,11 +361,11 @@ public class PullAction extends ContextAction {
                 // Handle Merge - both automatic and merge with conflicts
                 boolean bMergeNeededDueToPull = HgCommand.isMergeNeededMsg(list.get(list.size() - 1));
                 boolean bConfirmMerge = false;
-                boolean checkHeads = false;
+                boolean warnMoreHeads = true;
                 if(bMergeNeededDueToPull){
                     bConfirmMerge = HgUtils.confirmDialog(
                         PullAction.class, "MSG_PULL_MERGE_CONFIRM_TITLE", "MSG_PULL_MERGE_CONFIRM_QUERY"); // NOI18N
-                    checkHeads = !bConfirmMerge;
+                    warnMoreHeads = false;
                 } else {
                     boolean bOutStandingUncommittedMerges = HgCommand.isMergeAbortUncommittedMsg(list.get(list.size() - 1));
                     if(bOutStandingUncommittedMerges){
@@ -371,10 +377,11 @@ public class PullAction extends ContextAction {
                     logger.output(""); // NOI18N
                     logger.outputInRed(NbBundle.getMessage(PullAction.class, "MSG_PULL_MERGE_DO")); // NOI18N
                     MergeAction.doMergeAction(root, null, logger);
-                } else if (checkHeads) {
-                    List<String> headRevList = HgCommand.getHeadRevisions(root);
-                    if (headRevList != null && headRevList.size() > 1){
-                        MergeAction.printMergeWarning(headRevList, logger);
+                } else {
+                    HgLogMessage[] heads = HgCommand.getHeadRevisionsInfo(root, true, OutputLogger.getLogger(null));
+                    Map<String, Collection<HgLogMessage>> branchHeads = HgUtils.sortByBranch(heads);
+                    if (!branchHeads.isEmpty()) {
+                        MergeAction.displayMergeWarning(branchHeads, logger, warnMoreHeads);
                     }
                 }
             }

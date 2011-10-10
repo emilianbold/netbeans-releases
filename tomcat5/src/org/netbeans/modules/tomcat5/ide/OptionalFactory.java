@@ -58,7 +58,6 @@ import org.netbeans.modules.tomcat5.AntDeploymentProviderImpl;
 import org.netbeans.modules.tomcat5.TomcatInstanceDescriptor;
 import org.netbeans.modules.tomcat5.TomcatJDBCDriverDeployer;
 import org.netbeans.modules.tomcat5.TomcatManager;
-import org.netbeans.modules.tomcat5.TomcatManager.TomcatVersion;
 import org.netbeans.modules.tomcat5.config.TomcatDatasourceManager;
 import org.netbeans.modules.tomcat5.jsps.FindJSPServletImpl;
 import org.openide.WizardDescriptor;
@@ -70,7 +69,11 @@ import org.netbeans.modules.tomcat5.wizard.AddInstanceIterator;
  * @author  Pavel Buzek
  */
 public class OptionalFactory extends OptionalDeploymentManagerFactory {
-    
+
+    public static OptionalFactory create50() {
+        return new OptionalFactory();
+    }
+
     public FindJSPServlet getFindJSPServlet (javax.enterprise.deploy.spi.DeploymentManager dm) {
         return new FindJSPServletImpl (dm);
     }

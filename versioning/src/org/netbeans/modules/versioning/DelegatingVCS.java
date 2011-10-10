@@ -102,6 +102,26 @@ public class DelegatingVCS extends VersioningSystem {
         }
     }
     
+    void registerVersioningManager() {
+        synchronized(DELEGATE_LOCK) {
+            if(isAlive()) {
+                delegate.addPropertyChangeListener(VersioningManager.getInstance());
+            } else {
+                addPropertyChangeListener(VersioningManager.getInstance());
+            }
+        }
+    }
+    
+    void unregisterVersioningManager() {
+        synchronized(DELEGATE_LOCK) {
+            if(isAlive()) {
+                delegate.removePropertyChangeListener(VersioningManager.getInstance());
+            } else {
+                removePropertyChangeListener(VersioningManager.getInstance());
+            }
+        } 
+    }
+    
     @Override
     public VCSVisibilityQuery getVisibilityQuery() {
         return getDelegate().getVisibilityQuery();
@@ -231,7 +251,9 @@ public class DelegatingVCS extends VersioningSystem {
     }
 
     private boolean isAlive() {
-        return delegate != null;
+        synchronized(DELEGATE_LOCK) {
+            return delegate != null;
+        }
     }
     
     private boolean hasMetadata(File file) {
@@ -265,7 +287,9 @@ public class DelegatingVCS extends VersioningSystem {
      * Testing purposes only!
      */
     void reset() {
-        delegate = null;
+        synchronized(DELEGATE_LOCK) {
+            delegate = null;
+        }
     }
 
     private String parseName(String name) {

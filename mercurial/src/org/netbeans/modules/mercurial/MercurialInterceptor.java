@@ -401,8 +401,8 @@ public class MercurialInterceptor extends VCSInterceptor {
             return callable.call();
         } finally {
             if (repository != null) {
-                hgFolderEventsHandler.enableEvents(repository, true);
                 hgFolderEventsHandler.refreshRepositoryTimestamps(repository);
+                hgFolderEventsHandler.enableEvents(repository, true);
             }
         }
     }
@@ -505,11 +505,13 @@ public class MercurialInterceptor extends VCSInterceptor {
     private static class HgFolderTimestamps {
         private final File hgFolder;
         private final Map<String, Long> interestingTimestamps;
+        // dirstate might change its ts even after a simple hg status call, so listen only on its size
+        private final long dirstateSize;
+        private final File dirstateFile;
         private static final String DIRSTATE = "dirstate"; //NOI18N
         private static final String[] INTERESTING_FILENAMES = { 
             "branch", //NOI18N
             "branchheads.cache", //NOI18N
-            DIRSTATE,
             "localtags", //NOI18N
             "tags.cache", //NOI18N
             "undo.branch", //NOI18N
@@ -522,13 +524,15 @@ public class MercurialInterceptor extends VCSInterceptor {
             for (String fn : INTERESTING_FILENAMES) {
                 ts.put(fn, new File(hgFolder, fn).lastModified());
             }
+            dirstateFile = new File(hgFolder, DIRSTATE);
+            dirstateSize = dirstateFile.length();
             interestingTimestamps = Collections.unmodifiableMap(ts);
         }
 
         private boolean isNewer (HgFolderTimestamps other) {
             boolean newer = true;
             if (other != null) {
-                newer = false;
+                newer = dirstateSize != other.dirstateSize;
                 for (Map.Entry<String, Long> e : interestingTimestamps.entrySet()) {
                     // has a newer (higher) ts or the file is deleted
                     if (e.getValue() > other.interestingTimestamps.get(e.getKey())
@@ -546,18 +550,20 @@ public class MercurialInterceptor extends VCSInterceptor {
         }
 
         private boolean repositoryExists () {
-            return interestingTimestamps.get(DIRSTATE) > 0 || hgFolder.exists();
+            return dirstateSize > 0 || hgFolder.exists();
         }
 
         private boolean isOutdated () {
-            boolean upToDate = true;
-            for (Map.Entry<String, Long> e : interestingTimestamps.entrySet()) {
-                File f = new File(hgFolder, e.getKey());
-                long ts = f.lastModified();
-                // file is now either modified (higher ts) or deleted
-                if (e.getValue() < ts || e.getValue() > ts && ts == -1) {
-                    upToDate = false;
-                    break;
+            boolean upToDate = dirstateSize == dirstateFile.length();
+            if (upToDate) {
+                for (Map.Entry<String, Long> e : interestingTimestamps.entrySet()) {
+                    File f = new File(hgFolder, e.getKey());
+                    long ts = f.lastModified();
+                    // file is now either modified (higher ts) or deleted
+                    if (e.getValue() < ts || e.getValue() > ts && ts == -1) {
+                        upToDate = false;
+                        break;
+                    }
                 }
             }
             return !upToDate;
@@ -616,12 +622,26 @@ public class MercurialInterceptor extends VCSInterceptor {
                 if (exists) {
                     hgFolders.put(hgFolder, newTimestamps);
                     if (list == null) {
-                        FileUtil.addRecursiveListener(list = new FileChangeAdapter(), hgFolder);
+                        final FileChangeListener fList = list = new FileChangeAdapter();
+                        // has to run in a different thread, otherwise we may get a deadlock
+                        rp.post(new Runnable () {
+                            @Override
+                            public void run() {
+                                FileUtil.addRecursiveListener(fList, hgFolder);
+                            }
+                        });
                     }
                     hgFolderRLs.put(hgFolder, list);
                 } else {
                     if (list != null) {
-                        FileUtil.removeRecursiveListener(list, hgFolder);
+                        final FileChangeListener fList = list;
+                        // has to run in a different thread, otherwise we may get a deadlock
+                        rp.post(new Runnable () {
+                            @Override
+                            public void run() {
+                                FileUtil.removeRecursiveListener(fList, hgFolder);
+                            }
+                        });
                     }
                     Mercurial.STATUS_LOG.log(Level.FINE, "refreshHgFolderTimestamp: {0} no longer exists", hgFolder.getAbsolutePath()); //NOI18N
                 }

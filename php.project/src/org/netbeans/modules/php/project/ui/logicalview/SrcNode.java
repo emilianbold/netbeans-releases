@@ -102,9 +102,8 @@ public class SrcNode extends FilterNode {
     }
 
     private SrcNode(PhpProject project, DataFolder folder, FilterNode node, String name, boolean isTest) {
-        super(node, new FolderChildren(project, node, isTest), new ProxyLookup(
-                folder.getNodeDelegate().getLookup(),
-                createLookupWithSearchInfo(project, folder.getPrimaryFile())));
+        super(node, new FolderChildren(project, node, isTest), extendLookupWithSearchInfo(
+                folder.getNodeDelegate().getLookup(), project, folder.getPrimaryFile()));
 
         this.project = project;
         this.isTest = isTest;
@@ -185,8 +184,10 @@ public class SrcNode extends FilterNode {
         return COMMON_ACTIONS[2];
     }
 
-    public static Lookup createLookupWithSearchInfo(PhpProject project, FileObject folder) {
-        return Lookups.singleton(SearchInfoFactory.createSearchInfo(folder, true, new FileObjectFilter[] {project.getFileObjectFilter()}));
+    public static Lookup extendLookupWithSearchInfo(Lookup originalLookup, PhpProject project, FileObject folder) {
+        return new ProxyLookup(
+                originalLookup,
+                Lookups.singleton(SearchInfoFactory.createSearchInfo(folder, true, new FileObjectFilter[] {project.getFileObjectFilter()})));
     }
 
     /**
@@ -244,7 +245,7 @@ public class SrcNode extends FilterNode {
 
         public PackageNode(PhpProject project, final Node originalNode, boolean isTest) {
             super(originalNode, new FolderChildren(project, originalNode, isTest),
-                    SrcNode.createLookupWithSearchInfo(project, originalNode.getLookup().lookup(FileObject.class)));
+                    SrcNode.extendLookupWithSearchInfo(originalNode.getLookup(), project, originalNode.getLookup().lookup(FileObject.class)));
             this.project = project;
             this.isTest = isTest;
 

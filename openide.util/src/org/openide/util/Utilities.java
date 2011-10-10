@@ -2773,15 +2773,21 @@ widthcheck:  {
         boolean nonempty = false; // has anything been added yet?
         boolean pendingSep = false; // should there be a separator before any following item?
         for (Component c : components) {
-            if (c == null) {
-                pendingSep = nonempty;
-            } else {
-                nonempty = true;
-                if (pendingSep) {
-                    pendingSep = false;
-                    menu.addSeparator();
+            try {
+                if (c == null) {
+                    pendingSep = nonempty;
+                } else {
+                    nonempty = true;
+                    if (pendingSep) {
+                        pendingSep = false;
+                        menu.addSeparator();
+                    }
+                    menu.add(c);
                 }
-                menu.add(c);
+            } catch (RuntimeException ex) {
+                Exceptions.attachMessage(ex, "Current component: " + c); // NOI18N
+                Exceptions.attachMessage(ex, "List of components: " + Arrays.asList(components)); // NOI18N
+                Exceptions.attachMessage(ex, "List of actions: " + Arrays.asList(actions)); // NOI18N
             }
         }
         return menu;

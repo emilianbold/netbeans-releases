@@ -124,6 +124,7 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.MacroSupport;
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.Disassembly;
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.FormatOption;
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.MemoryWindow;
+import org.netbeans.modules.cnd.debugger.common2.debugger.remote.CndRemote;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Platform;
 import org.netbeans.modules.cnd.debugger.common2.utils.FileMapper;
 import org.netbeans.modules.cnd.debugger.common2.utils.InfoPanel;
@@ -395,7 +396,11 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             });
 
         } else {
-            start2(executor, additionalArgv, this, connectExisting);
+            CndRemote.validate(gdi.getHostName(), new Runnable() {
+                public void run() {
+                    start2(executor, additionalArgv, GdbDebuggerImpl.this, connectExisting);
+                }
+            });
         }
     }
 
@@ -2074,50 +2079,59 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             return;
         }
         
-        if (Disassembly.isInDisasm()) {
+        final boolean dis = Disassembly.isInDisasm();
+        if (dis) {
             // probably a register - append $ at the beginning
             if (Character.isLetter(expr.charAt(0))) {
                 expr = '$' + expr;
             }
         }
 
-        dataMIEval(expr);
+        dataMIEval(expr, dis);
     }
 
+    @Override
     public void postExprQualify(String expr, QualifiedExprListener qeListener) {
     }
 
-    private void dataMIEval(final String expr) {
+    private void dataMIEval(final String expr, final boolean dis) {
         String expandedExpr = MacroSupport.expandMacro(this, expr);
         String cmdString = "-data-evaluate-expression " + "\"" + expandedExpr + "\""; // NOI18N
         MICommand cmd =
             new MiCommandImpl(cmdString) {
-
-            @Override
-                    protected void onDone(MIRecord record) {
-                        interpEvalResult(expr, record);
-                        finish();
+                @Override
+                protected void onDone(MIRecord record) {
+                    MITList value = record.results();
+                    if (Log.Variable.mi_vars) {
+                        System.out.println("value " + value.toString()); // NOI18N
                     }
+                    String value_string = value.valueOf("value").asConst().value(); // NOI18N
+                    if (dis) {
+                        // see #199557 we need to convert dis annotations to hex
+                        if (!value_string.startsWith("0x")) { //NOI18N
+                            try {
+                                value_string = Address.toHexString0x(Address.parseAddr(value_string), true);
+                            } catch (Exception e) {
+                                // do nothing
+                            }
+                        }
+                    } else {
+                        value_string = ValuePresenter.getValue(value_string);
+                    }
+                    EvalAnnotation.postResult(0, 0, 0, expr, value_string, null, null);
+                    finish();
+                }
 
-            @Override
-		    protected void onError(MIRecord record) {
-			// Be silent on balloon eval failures
-			// genericFailure(record);
-			finish();
-		    }
-                };
+                @Override
+                protected void onError(MIRecord record) {
+                    // Be silent on balloon eval failures
+                    // genericFailure(record);
+                    finish();
+                }
+            };
         gdb.sendCommand(cmd);
     }
 
-    private void interpEvalResult(String expr, MIRecord record) {
-        MITList value = record.results();
-        if (Log.Variable.mi_vars) {
-            System.out.println("value " + value.toString()); // NOI18N
-        }
-        String value_string = value.valueOf("value").asConst().value(); // NOI18N
-        value_string = ValuePresenter.getValue(value_string);
-        EvalAnnotation.postResult(0, 0, 0, expr, value_string, null, null);
-    }
     /* 
      * watch stuff 
      */
@@ -2162,10 +2176,12 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         watchUpdater().treeChanged();     // causes a pull
     }
 
+    @Override
     public void postDeleteAllWatches() {
         // no-op
     }
 
+    @Override
     public void postDeleteWatch(final WatchVariable variable,
 				final boolean spreading) {
 
@@ -2190,7 +2206,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 		    deleteWatch(variable, spreading);
 		}
 	    };
-	    gdb.sendCommand(cmd);
+	    sendCommandInt(cmd);
 	}
     }
 
@@ -2235,10 +2251,12 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
 	for (WatchVariable wv : watches) {
 	    GdbWatch w = (GdbWatch) wv;
-/* ambiguous in scope, might as well create new one everytime
-	    if (w.getMIName() != null)
+            
+            // due to the fix of #197053 it looks safe not to create new vars
+	    if (w.getMIName() != null) {
 		continue;		// we already have a var for this one
-*/
+            }
+            
 	    createMIVar(w, true);
 	}
     }
@@ -3404,11 +3422,13 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     }
 
     // interface BreakpointProvider
+    @Override
     public HandlerExpert handlerExpert() {
         return handlerExpert;
     }
 
     // interface BreakpointProvider
+    @Override
     public void postRestoreHandler(final int rt, HandlerCommand hc) {
 
         final MICommand cmd = new MIRestoreBreakCommand(rt, hc.toString());
@@ -3431,17 +3451,10 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	// trickiness of ensuring that the following commands are also
 	// chained that makes me favor the pre-injection solution ... for now.
 
-	if (Log.Bpt.fix6810534) {
-	    javax.swing.SwingUtilities.invokeLater(new Runnable() {
-		public void run() {
-		    gdb.sendCommand(cmd);
-		    gdb.tap().inject("1\n");	// TMP // NOI18N
-		}
-	    });
-	} else {
-	    gdb.sendCommand(cmd);
-	    gdb.tap().inject("1\n");	// TMP // NOI18N
-	}
+        sendCommandInt(cmd);
+        
+        // modern gdb does not ask user when in MI mode
+        //gdb.tap().inject("1\n");	// TMP // NOI18N
     }
 
     private final class DisModel extends DisModelSupport {
@@ -4198,6 +4211,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         }
     }
 
+    @Override
     public void postEnableAllHandlersImpl(final boolean enable) {
         final Handler[] handlers = bm().getHandlers();
         
@@ -4219,7 +4233,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         }
 
         MICommand cmd = new MIBreakCommand(0, command.toString()) {
-
+            @Override
             protected void onDone(MIRecord record) {
 		for (Handler h : handlers) {
                     h.setEnabled(enable);
@@ -4227,9 +4241,10 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                 finish();
             }
         };
-        gdb.sendCommand(cmd);
+        sendCommandInt(cmd);
     }
 
+    @Override
     public void postDeleteAllHandlersImpl() {
         final Handler[] handlers = bm().getHandlers();
         
@@ -4256,7 +4271,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         }
 
         MICommand cmd = new MIBreakCommand(0, command.toString()) {
-
+            @Override
             protected void onDone(MIRecord record) {
 		for (Handler h : handlers) {
                     bm().deleteHandlerById(0, h.getId());
@@ -4264,44 +4279,44 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                 finish();
             }
         };
-        gdb.sendCommand(cmd);
+        sendCommandInt(cmd);
     }
 
+    @Override
     public void postDeleteHandlerImpl(final int rt, final int hid) {
-        pause(true);
 	MICommand cmd = new MIBreakCommand(rt, "-break-delete " + hid) { // NOI18N
-
+            @Override
 	    protected void onDone(MIRecord record) {
 		bm().deleteHandlerById(rt, hid);
 		finish();
 	    }
 	};
-	gdb.sendCommand(cmd);
+	sendCommandInt(cmd);
     }
 
+    @Override
     public void postCreateHandlerImpl(int routingToken, HandlerCommand hc) {
 	final MICommand cmd = new MIBreakLineCommand(routingToken, hc.toString());
-        pause(true);
-	gdb.sendCommand(cmd);
-	// We'll continue in newHandler() or ?error?
+        sendCommandInt(cmd);
     }
 
+    @Override
     public void postChangeHandlerImpl(int rt, HandlerCommand hc) {
         final MICommand cmd = new MIReplaceBreakLineCommand(rt, hc.toString());
-        pause(true);
-        gdb.sendCommand(cmd);
+        sendCommandInt(cmd);
     }
 
+    @Override
     public void postRepairHandlerImpl(int rt, HandlerCommand hc) {
         final MICommand cmd = new MIRepairBreakLineCommand(rt, hc.toString());
-        pause(true);
-        gdb.sendCommand(cmd);
+        sendCommandInt(cmd);
     }
-
+    
     public void setHandlerCountLimit(int hid, long countLimit) {
         notImplemented("setHandlerCountLimit()");	// NOI18N
     }
 
+    @Override
     public void postEnableHandler(int rt, final int hid, final boolean enable) {
         String cmdString;
         if (enable) {
@@ -4311,7 +4326,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         }
 
         MICommand cmd = new MIBreakCommand(rt, cmdString + hid) {
-
+            @Override
             protected void onDone(MIRecord record) {
                 // SHOULD factor with code in Dbx.java
                 Handler handler = bm().findHandler(hid);
@@ -4321,7 +4336,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                 finish();
             }
         };
-        gdb.sendCommand(cmd);
+        sendCommandInt(cmd);
     }
 
     // interface NativeDebugger
@@ -4549,6 +4564,11 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     
     private void sendResumptive(String commandStr) {
         MICommand cmd = new MIResumptiveCommand(commandStr);
+        gdb.sendCommand(cmd);
+    }
+    
+    private void sendCommandInt(MICommand cmd) {
+        pause(true);
         gdb.sendCommand(cmd);
     }
 

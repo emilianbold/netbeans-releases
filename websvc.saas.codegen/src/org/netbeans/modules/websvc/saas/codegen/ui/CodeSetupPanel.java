@@ -297,7 +297,8 @@ public class CodeSetupPanel extends javax.swing.JPanel {
                 .addContainerGap())
         );
 
-        paramLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CodeSetupPanel.class, "MSG_SetConstantValues")); // NOI18N
+        paramLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CodeSetupPanel.class, "ACSN_Parameters")); // NOI18N
+        paramLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CodeSetupPanel.class, "ACSD_Parameters")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

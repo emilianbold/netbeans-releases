@@ -54,6 +54,7 @@ import org.netbeans.modules.refactoring.php.findusages.WhereUsedSupport.Results;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.php.findusages.PhpWhereUsedQueryPlugin;
+import org.netbeans.modules.refactoring.php.findusages.WarningFileElement;
 import org.netbeans.modules.refactoring.php.findusages.WhereUsedElement;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.openide.filesystems.FileObject;
@@ -106,7 +107,11 @@ public class PhpRenameRefactoringPlugin extends PhpWhereUsedQueryPlugin {
                 refactoringElements.add(refactoring, DiffElement.create(diff, fo, modificationResult));
             }
         }
-
+        
+        Collection<WarningFileElement> warningElements = results.getWarningElements();
+        for (WarningFileElement warningElement : warningElements) {
+            refactoringElements.add(refactoring, warningElement);
+        }
     }
 
     private void refactorElement(ModificationResult modificationResult, WhereUsedElement whereUsedElement) {

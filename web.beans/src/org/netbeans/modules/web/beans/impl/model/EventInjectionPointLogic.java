@@ -107,6 +107,9 @@ abstract class EventInjectionPointLogic extends ParameterInjectionPointLogic {
         }
         
         TypeMirror type = getParameterType(element, parent, EVENT_INTERFACE);
+        if ( type == null ){
+            return Collections.emptyList();
+        }
         
         List<AnnotationMirror> qualifierAnnotations = new LinkedList<AnnotationMirror>();
         try {

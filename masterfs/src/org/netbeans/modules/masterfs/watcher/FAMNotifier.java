@@ -55,6 +55,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -126,6 +127,7 @@ public class FAMNotifier extends Notifier<Integer> {
         startRequest();
         FAMLibrary.FAMRequest request = new FAMLibrary.FAMRequest();
         lib.FAMMonitorDirectory(conn, path, request, null);
+        LOG.log(Level.FINEST, "addWatch {0}({1}), queue length: {2}", new Object[]{path, request.reqnum, activeRequests.size()});
         activeRequests.add(request.reqnum);
         map.put(request.reqnum, path);
         return request.reqnum;
@@ -151,6 +153,7 @@ public class FAMNotifier extends Notifier<Integer> {
 
     @Override
     public void removeWatch(Integer key) throws IOException {
+        LOG.log(Level.FINEST, "removeWatch {0}({1}), queue length: {2}", new Object[]{map.get(key), key, activeRequests.size()});
         startRequest();
         activeRequests.add(key);
         lib.FAMCancelMonitor(conn, new FAMLibrary.FAMRequest(key));

@@ -51,6 +51,7 @@ import java.util.*;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 import java.nio.charset.Charset;
+import org.netbeans.api.progress.ProgressHandle;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -92,11 +93,12 @@ public final class ContextualPatch {
     /**
      * 
      * @param dryRun true if the method should not make any modifications to files, false otherwise
+     * @param ph progress handle to notify about current progress
      * @return
      * @throws PatchException
      * @throws IOException
      */
-    public List<PatchReport> patch(boolean dryRun) throws PatchException, IOException {
+    public List<PatchReport> patch(boolean dryRun, ProgressHandle ph) throws PatchException, IOException {
         List<PatchReport> report = new ArrayList<PatchReport>();
         init();
         try {
@@ -108,9 +110,17 @@ public final class ContextualPatch {
                 patches.add(patch);
             }
             computeContext(patches);
-            for (SinglePatch patch : patches) {
+            
+            if(ph != null && patches.size() > 0) {
+                ph.switchToDeterminate(patches.size());
+            }
+            for (int i = 0; i < patches.size(); i++) {
+                SinglePatch patch = patches.get(i);
                 try {
                     applyPatch(patch, dryRun);
+                    if(ph != null) {
+                        ph.progress(patch.targetPath, i + 1);
+                    }
                     report.add(new PatchReport(patch.targetFile, computeBackup(patch.targetFile), patch.binary, PatchStatus.Patched, null));
                 } catch (Exception e) {
                     report.add(new PatchReport(patch.targetFile, null, patch.binary, PatchStatus.Failure, e));

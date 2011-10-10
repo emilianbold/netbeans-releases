@@ -2237,7 +2237,7 @@ public class HgCommand {
         basicCommand.add(HG_OPT_REPOSITORY);
         basicCommand.add(repository.getAbsolutePath());
 
-        List<List<String>> attributeGroups = splitAttributes(basicCommand, addFiles, false);
+        List<List<String>> attributeGroups = splitAttributes(repository, basicCommand, addFiles, false);
         for (List<String> attributes : attributeGroups) {
             List<String> command = new LinkedList<String>(basicCommand);
             command.addAll(attributes);
@@ -2744,7 +2744,7 @@ public class HgCommand {
         basicCommand.add(repository.getAbsolutePath());
         basicCommand.add(HG_REMOVE_FLAG_FORCE_CMD);
 
-        List<List<String>> attributeGroups = splitAttributes(basicCommand, removeFiles, false);
+        List<List<String>> attributeGroups = splitAttributes(repository, basicCommand, removeFiles, false);
         for (List<String> attributes : attributeGroups) {
             List<String> command = new LinkedList<String>(basicCommand);
             command.addAll(attributes);
@@ -3099,7 +3099,7 @@ public class HgCommand {
         command.add(repository.getAbsolutePath());
         command.add(HG_OPT_CWD_CMD);
         command.add(repository.getAbsolutePath());
-        List<List<String>> attributeGroups = splitAttributes(command, dirs, true);
+        List<List<String>> attributeGroups = splitAttributes(repository, command, dirs, true);
         List<String> commandOutput = new LinkedList<String>();
         for (List<String> attributes : attributeGroups) {
             List<String> finalCommand = new LinkedList<String>(command);
@@ -3283,7 +3283,9 @@ public class HgCommand {
                     try {
                         String line;
                         while ((line = errorReader.readLine()) != null) {
-                            errorOutput.add(line);
+                            if (!line.startsWith("warning:")) { //NOI18N
+                                errorOutput.add(line);
+                            }
                         }
                     } catch (IOException ex) {
                         // not interested
@@ -4238,11 +4240,21 @@ public class HgCommand {
      * @param includeFolders if set to false, folders will not be added to attributes
      * @return
      */
-    private static List<List<String>> splitAttributes (List<String> basicCommand, List<File> files, boolean includeFolders) {
+    private static List<List<String>> splitAttributes (File repository, List<String> basicCommand, List<File> files, boolean includeFolders) {
         List<List<String>> attributes = new LinkedList<List<String>>();
         int basicCommandSize = 0, commandSize;
+        boolean cwdParamIncluded = false;
         for (String s : basicCommand) {
+            if (HG_OPT_CWD_CMD.equals(s)) {
+                cwdParamIncluded = true;
+            }
             basicCommandSize += s.length() + 1;
+        }
+        if (!cwdParamIncluded) {
+            // we're adding files as relative paths, we have to set CWD manually!
+            basicCommand.add(HG_OPT_CWD_CMD);
+            basicCommand.add(repository.getAbsolutePath());
+            basicCommandSize += HG_OPT_CWD_CMD.length() + repository.getAbsolutePath().length() + 2;
         }
         // iterating through all files, cannot add all files immediately, too many files can cause troubles
         // adding files to the command one by one and testing if the command's size doesn't exceed OS limits
@@ -4258,7 +4270,8 @@ public class HgCommand {
                     continue;
                 }
                 // test if limits aren't exceeded
-                commandSize += f.getAbsolutePath().length() + 1;
+                String filePath = getPathParameter(repository, f);
+                commandSize += filePath.length() + 1;
                 if (fileAdded // at least one file must be added
                         && isTooLongCommand(commandSize)) {
                     Mercurial.LOG.fine("splitAttributes: files in loop");  //NOI18N
@@ -4267,11 +4280,38 @@ public class HgCommand {
                 }
                 // We do not look for files to ignore as we should not here
                 // with a file to be ignored.
-                commandAttributes.add(f.getAbsolutePath());
+                commandAttributes.add(filePath);
                 fileAdded = true;
             }
             attributes.add(commandAttributes);
         }
         return attributes;
+    }
+
+    /**
+     * Returns file's path as a mercurial command parameter. It is either:
+     * <ul>
+     * <li>relative path to given root if the file lies under the root, or:</li>
+     * <li>canonical path if the file does not exist - fix for #198353 -, or:</li>
+     * <li>absolute path</li>
+     * </ul>
+     */
+    private static String getPathParameter (File root, File file) {
+        String rootPath = root.getAbsolutePath();
+        if (!rootPath.endsWith(File.separator)) {
+            rootPath = rootPath + File.separator;
+        }
+        String filePath = file.getAbsolutePath();
+        if (filePath.startsWith(rootPath)) {
+            filePath = filePath.substring(rootPath.length());
+        } else if (!file.exists()) {
+            try {
+                filePath = file.getCanonicalPath();
+                if (filePath.startsWith(rootPath)) {
+                    filePath = filePath.substring(rootPath.length());
+                }
+            } catch (IOException ex) { }
+        }
+        return filePath;
     }
 }

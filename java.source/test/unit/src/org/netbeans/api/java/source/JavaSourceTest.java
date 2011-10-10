@@ -91,6 +91,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Handler;
+import javax.lang.model.util.Elements;
 import javax.swing.text.BadLocationException;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.FieldSelector;
@@ -224,6 +225,7 @@ public class JavaSourceTest extends NbTestCase {
         suite.addTest(new JavaSourceTest("testRegisterSameTask"));
         suite.addTest(new JavaSourceTest("testIncrementalReparse"));
         suite.addTest(new JavaSourceTest("testCreateTaggedController"));
+        suite.addTest(new JavaSourceTest("testInvalidate"));
         return suite;
     }
 
@@ -1815,6 +1817,39 @@ public class JavaSourceTest extends NbTestCase {
         final long res6 = js1.createTaggedController(-1, result);
         assertTrue (result[0] instanceof CompilationController);
         assertEquals(res5, res6);
+    }
+
+    public void testInvalidate() throws Exception {
+        final FileObject testFile1 = createTestFile("Test1");
+        final ClassPath bootPath = createBootPath();
+        final ClassPath compilePath = createCompilePath();
+        final ClasspathInfo cpInfo = ClasspathInfo.create(bootPath,compilePath,null);
+        final JavaSource js = JavaSource.create(cpInfo,testFile1);
+        final Elements[] elements = new Elements[1];
+        ModificationResult mr = js.runModificationTask(new Task<WorkingCopy>() {
+            public void run (WorkingCopy copy) throws IOException {
+                copy.toPhase(Phase.PARSED);
+                elements[0] = copy.getElements();
+                TreeMaker make = copy.getTreeMaker();
+                copy.rewrite(copy.getCompilationUnit(), make.addCompUnitImport(copy.getCompilationUnit(), make.Import(make.Identifier("foo.bar"), false)));
+            }
+        });
+
+        js.runUserActionTask(new Task<CompilationController>() {
+            public void run (CompilationController control) throws IOException {
+                control.toPhase(Phase.PARSED);
+                assertTrue(elements[0] == control.getElements());
+            }
+        }, true);
+
+        mr.commit();
+
+        js.runUserActionTask(new Task<CompilationController>() {
+            public void run (CompilationController control) throws IOException {
+                control.toPhase(Phase.PARSED);
+                assertTrue(elements[0] != control.getElements());
+            }
+        }, true);
     }
 
     private static class FindMethodRegionsVisitor extends SimpleTreeVisitor<Void,Void> {

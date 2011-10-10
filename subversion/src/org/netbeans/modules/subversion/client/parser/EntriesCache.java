@@ -59,6 +59,7 @@ import java.util.WeakHashMap;
 import java.util.logging.Level;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.parser.ConflictDescriptionParser.ParserConflictDescriptor;
+import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.xml.XMLUtil;
 import org.tigris.subversion.svnclientadapter.SVNConflictDescriptor;
 import org.xml.sax.Attributes;
@@ -77,6 +78,7 @@ public class EntriesCache {
     private static final String SVN_THIS_DIR = "svn:this_dir"; // NOI18N
     private static final String DELIMITER = "\f";
     static final String ATTR_TREE_CONFLICTS = "tree-conflicts"; //NOI18N
+    public static final String WC17FORMAT = "WC1_7Format";
 
     /**
      * The order as it is defined should be the same as how the Subvesion entries handler
@@ -319,7 +321,7 @@ public class EntriesCache {
             if (isXml) {
                 return loadAttributesFromXml(entriesFile);
             } else {
-                return loadAttributesFromPlainText(fileReader, entriesFile.getAbsolutePath());
+                return loadAttributesFromPlainText(fileReader, entriesFile);
             }
         } finally {
             fileReader.close();
@@ -345,7 +347,8 @@ public class EntriesCache {
     }
 
     //New entries file format, as of SVN 1.4.0
-    private EntryAttributes loadAttributesFromPlainText(BufferedReader entriesReader, String entryFilePath) throws IOException {
+    private EntryAttributes loadAttributesFromPlainText(BufferedReader entriesReader, File entryFile) throws IOException {
+        String entryFilePath = entryFile.getAbsolutePath();
         EntryAttributes returnValue = new EntryAttributes();
 
         int attrIndex = 0;
@@ -354,6 +357,9 @@ public class EntriesCache {
         Map<String, String> attributes = new HashMap<String, String>();
 
         String nextLine = attributePool.get(entriesReader.readLine());
+        if (nextLine == null && new File(entryFile.getParentFile().getParentFile(), SvnUtils.SVN_WC_DB).exists()) {
+            throw new IOException(WC17FORMAT);
+        }
         while (nextLine != null) {
             if (attrIndex == 0) {
                 entryName = nextLine;

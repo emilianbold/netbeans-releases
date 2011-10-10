@@ -54,6 +54,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractListModel;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -70,12 +71,10 @@ import org.netbeans.modules.j2ee.core.api.support.SourceGroups;
 import org.netbeans.modules.j2ee.core.api.support.java.JavaIdentifiers;
 import org.netbeans.modules.j2ee.persistence.api.EntityClassScope;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
-import org.netbeans.modules.j2ee.persistence.wizard.unit.PersistenceUnitWizardPanel.TableGeneration;
 import org.netbeans.modules.j2ee.persistence.dd.PersistenceMetadata;
 import org.netbeans.modules.j2ee.persistence.dd.PersistenceUtils;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
 import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
-import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
@@ -157,116 +156,60 @@ public class PersistenceClientEntitySelectionVisual extends JPanel {
     }
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
+        java.awt.GridBagConstraints gridBagConstraints;
 
+        labelAvailableEntities = new javax.swing.JLabel();
+        jPanel1 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         listAvailable = new javax.swing.JList();
+        createPUCheckbox = new javax.swing.JCheckBox();
+        workAround1 = new javax.swing.JPanel();
+        panelButtons = new javax.swing.JPanel();
+        buttonAdd = new javax.swing.JButton();
+        buttonRemove = new javax.swing.JButton();
+        buttonAddAll = new javax.swing.JButton();
+        buttonRemoveAll = new javax.swing.JButton();
+        workAround2 = new javax.swing.JPanel();
+        labelSelectedEntities = new javax.swing.JLabel();
+        jPanel2 = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
         listSelected = new javax.swing.JList();
         cbAddRelated = new javax.swing.JCheckBox();
-        labelAvailableEntities = new javax.swing.JLabel();
-        panelButtons = new javax.swing.JPanel();
-        buttonRemove = new javax.swing.JButton();
-        buttonAdd = new javax.swing.JButton();
-        buttonAddAll = new javax.swing.JButton();
-        buttonRemoveAll = new javax.swing.JButton();
-        labelSelectedEntities = new javax.swing.JLabel();
-        createPUCheckbox = new javax.swing.JCheckBox();
+
+        setPreferredSize(new java.awt.Dimension(500, 100));
+        setLayout(new java.awt.GridBagLayout());
+
+        labelAvailableEntities.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "MNE_AvailableEntityClasses").charAt(0));
+        labelAvailableEntities.setLabelFor(listAvailable);
+        labelAvailableEntities.setText(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "LBL_AvailableEntities")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.ipadx = 1;
+        gridBagConstraints.ipady = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        add(labelAvailableEntities, gridBagConstraints);
+
+        jPanel1.setLayout(new java.awt.BorderLayout());
 
         listAvailable.setCellRenderer(ENTITY_LIST_RENDERER_AV);
         jScrollPane1.setViewportView(listAvailable);
         listAvailable.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "LBL_AvailableEntitiesList")); // NOI18N
         listAvailable.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "ACSD_AvailableEntitiesList")); // NOI18N
 
-        listSelected.setCellRenderer(ENTITY_LIST_RENDERER_SEL);
-        jScrollPane2.setViewportView(listSelected);
-        listSelected.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "LBL_SelectedEntitiesList")); // NOI18N
-        listSelected.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "ACSD_SelectedEntitiesList")); // NOI18N
+        jPanel1.add(jScrollPane1, java.awt.BorderLayout.CENTER);
 
-        cbAddRelated.setMnemonic(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "MNE_InludeRelated").charAt(0));
-        cbAddRelated.setSelected(true);
-        cbAddRelated.setText(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "LBL_IncludeReferenced")); // NOI18N
-        cbAddRelated.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        cbAddRelated.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cbAddRelatedActionPerformed(evt);
-            }
-        });
-
-        labelAvailableEntities.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "MNE_AvailableEntityClasses").charAt(0));
-        labelAvailableEntities.setLabelFor(listAvailable);
-        labelAvailableEntities.setText(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "LBL_AvailableEntities")); // NOI18N
-
-        buttonRemove.setMnemonic(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "MNE_Remove").charAt(0));
-        buttonRemove.setText(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "LBL_Remove")); // NOI18N
-        buttonRemove.setActionCommand("< &Remove");
-        buttonRemove.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                buttonRemoveActionPerformed(evt);
-            }
-        });
-
-        buttonAdd.setMnemonic(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "MNE_Add").charAt(0));
-        buttonAdd.setText(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "LBL_Add")); // NOI18N
-        buttonAdd.setActionCommand("&Add >");
-        buttonAdd.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                buttonAddActionPerformed(evt);
-            }
-        });
-
-        buttonAddAll.setMnemonic(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "MNE_AddAll").charAt(0));
-        buttonAddAll.setText(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "LBL_AddAll")); // NOI18N
-        buttonAddAll.setActionCommand("Add A&ll >>");
-        buttonAddAll.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                buttonAddAllActionPerformed(evt);
-            }
-        });
-
-        buttonRemoveAll.setMnemonic(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "MNE_RemoveAll").charAt(0));
-        buttonRemoveAll.setText(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "LBL_RemoveAll")); // NOI18N
-        buttonRemoveAll.setActionCommand("<< Re&moveAll");
-        buttonRemoveAll.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                buttonRemoveAllActionPerformed(evt);
-            }
-        });
-
-        javax.swing.GroupLayout panelButtonsLayout = new javax.swing.GroupLayout(panelButtons);
-        panelButtons.setLayout(panelButtonsLayout);
-        panelButtonsLayout.setHorizontalGroup(
-            panelButtonsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(panelButtonsLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(panelButtonsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(buttonAdd, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 124, Short.MAX_VALUE)
-                    .addComponent(buttonRemove, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 124, Short.MAX_VALUE)
-                    .addComponent(buttonRemoveAll, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 124, Short.MAX_VALUE)
-                    .addComponent(buttonAddAll, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 124, Short.MAX_VALUE))
-                .addContainerGap())
-        );
-        panelButtonsLayout.setVerticalGroup(
-            panelButtonsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(panelButtonsLayout.createSequentialGroup()
-                .addGap(67, 67, 67)
-                .addComponent(buttonAdd)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(buttonRemove)
-                .addGap(20, 20, 20)
-                .addComponent(buttonAddAll)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(buttonRemoveAll)
-                .addContainerGap(127, Short.MAX_VALUE))
-        );
-
-        buttonRemove.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "ACSD_Remove")); // NOI18N
-        buttonAdd.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "ACSD_Add")); // NOI18N
-        buttonAddAll.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "ACSD_AddAll")); // NOI18N
-        buttonRemoveAll.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "ACSD_RemoveAll")); // NOI18N
-
-        labelSelectedEntities.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "MNE_SelectedEntityClasses").charAt(0));
-        labelSelectedEntities.setLabelFor(listSelected);
-        labelSelectedEntities.setText(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "LBL_SelectedEntities")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.ipadx = 1;
+        gridBagConstraints.ipady = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        add(jPanel1, gridBagConstraints);
 
         createPUCheckbox.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(createPUCheckbox, org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "LBL_CreatePersistenceUnit")); // NOI18N
@@ -277,48 +220,182 @@ public class PersistenceClientEntitySelectionVisual extends JPanel {
                 createPUCheckboxItemStateChanged(evt);
             }
         });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        add(createPUCheckbox, gridBagConstraints);
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(labelAvailableEntities)
-                            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 306, Short.MAX_VALUE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(panelButtons, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 0, 0))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(createPUCheckbox)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)))
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(cbAddRelated)
-                    .addComponent(labelSelectedEntities)
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 217, Short.MAX_VALUE))
-                .addContainerGap())
+        javax.swing.GroupLayout workAround1Layout = new javax.swing.GroupLayout(workAround1);
+        workAround1.setLayout(workAround1Layout);
+        workAround1Layout.setHorizontalGroup(
+            workAround1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 1, Short.MAX_VALUE)
         );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(labelSelectedEntities)
-                    .addComponent(labelAvailableEntities))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 326, Short.MAX_VALUE)
-                    .addComponent(panelButtons, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 326, Short.MAX_VALUE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(cbAddRelated)
-                    .addComponent(createPUCheckbox))
-                .addGap(31, 31, 31))
+        workAround1Layout.setVerticalGroup(
+            workAround1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 444, Short.MAX_VALUE)
         );
 
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 32;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridheight = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.ipadx = 1;
+        gridBagConstraints.ipady = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        add(workAround1, gridBagConstraints);
+
+        panelButtons.setLayout(new java.awt.GridBagLayout());
+
+        buttonAdd.setMnemonic(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "MNE_Add").charAt(0));
+        buttonAdd.setText(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "LBL_Add")); // NOI18N
+        buttonAdd.setActionCommand("&Add >");
+        buttonAdd.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                buttonAddActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.ipadx = 74;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        panelButtons.add(buttonAdd, gridBagConstraints);
+        buttonAdd.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "ACSD_Add")); // NOI18N
+
+        buttonRemove.setMnemonic(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "MNE_Remove").charAt(0));
+        buttonRemove.setText(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "LBL_Remove")); // NOI18N
+        buttonRemove.setActionCommand("< &Remove");
+        buttonRemove.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                buttonRemoveActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.ipadx = 54;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
+        panelButtons.add(buttonRemove, gridBagConstraints);
+        buttonRemove.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "ACSD_Remove")); // NOI18N
+
+        buttonAddAll.setMnemonic(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "MNE_AddAll").charAt(0));
+        buttonAddAll.setText(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "LBL_AddAll")); // NOI18N
+        buttonAddAll.setActionCommand("Add A&ll >>");
+        buttonAddAll.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                buttonAddAllActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.ipadx = 52;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(20, 0, 0, 0);
+        panelButtons.add(buttonAddAll, gridBagConstraints);
+        buttonAddAll.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "ACSD_AddAll")); // NOI18N
+
+        buttonRemoveAll.setMnemonic(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "MNE_RemoveAll").charAt(0));
+        buttonRemoveAll.setText(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "LBL_RemoveAll")); // NOI18N
+        buttonRemoveAll.setActionCommand("<< Re&moveAll");
+        buttonRemoveAll.setMaximumSize(new java.awt.Dimension(137, 23));
+        buttonRemoveAll.setMinimumSize(new java.awt.Dimension(137, 23));
+        buttonRemoveAll.setPreferredSize(new java.awt.Dimension(137, 23));
+        buttonRemoveAll.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                buttonRemoveAllActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
+        panelButtons.add(buttonRemoveAll, gridBagConstraints);
+        buttonRemoveAll.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "ACSD_RemoveAll")); // NOI18N
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 33;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.ipadx = 1;
+        gridBagConstraints.ipady = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 5);
+        add(panelButtons, gridBagConstraints);
+
+        javax.swing.GroupLayout workAround2Layout = new javax.swing.GroupLayout(workAround2);
+        workAround2.setLayout(workAround2Layout);
+        workAround2Layout.setHorizontalGroup(
+            workAround2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 1, Short.MAX_VALUE)
+        );
+        workAround2Layout.setVerticalGroup(
+            workAround2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 444, Short.MAX_VALUE)
+        );
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 34;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridheight = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.ipadx = 1;
+        gridBagConstraints.ipady = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        add(workAround2, gridBagConstraints);
+
+        labelSelectedEntities.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "MNE_SelectedEntityClasses").charAt(0));
+        labelSelectedEntities.setLabelFor(listSelected);
+        labelSelectedEntities.setText(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "LBL_SelectedEntities")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 222;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.ipadx = 1;
+        gridBagConstraints.ipady = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        add(labelSelectedEntities, gridBagConstraints);
+
+        jPanel2.setLayout(new java.awt.BorderLayout());
+
+        listSelected.setCellRenderer(ENTITY_LIST_RENDERER_SEL);
+        listSelected.addComponentListener(new java.awt.event.ComponentAdapter() {
+            public void componentResized(java.awt.event.ComponentEvent evt) {
+                listSelectedComponentResized(evt);
+            }
+        });
+        jScrollPane2.setViewportView(listSelected);
+        listSelected.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "LBL_SelectedEntitiesList")); // NOI18N
+        listSelected.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "ACSD_SelectedEntitiesList")); // NOI18N
+
+        jPanel2.add(jScrollPane2, java.awt.BorderLayout.CENTER);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 222;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        add(jPanel2, gridBagConstraints);
+
+        cbAddRelated.setMnemonic(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "MNE_InludeRelated").charAt(0));
+        cbAddRelated.setSelected(true);
+        cbAddRelated.setText(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "LBL_IncludeReferenced")); // NOI18N
+        cbAddRelated.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        cbAddRelated.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cbAddRelatedActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 222;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        add(cbAddRelated, gridBagConstraints);
         cbAddRelated.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "LBL_IncludeReferencedCheckbox")); // NOI18N
         cbAddRelated.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "ACSD_IncludeReferencedCheckbox")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
@@ -331,40 +408,31 @@ public class PersistenceClientEntitySelectionVisual extends JPanel {
         changeSupport.fireChange();
     }//GEN-LAST:event_cbAddRelatedActionPerformed
 
-    private void buttonRemoveAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonRemoveAllActionPerformed
-        entityClosure.removeAllEntities();
-        listSelected.clearSelection();
-        updateButtons();
-        changeSupport.fireChange();
-    }//GEN-LAST:event_buttonRemoveAllActionPerformed
-
-    private void buttonAddAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonAddAllActionPerformed
-        entityClosure.addEntities(getEnabledEntities(listAvailable));
-        listAvailable.clearSelection();
-        updateButtons();
-        changeSupport.fireChange();
-    }//GEN-LAST:event_buttonAddAllActionPerformed
-
-    private void buttonRemoveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonRemoveActionPerformed
-        entityClosure.removeEntities(getSelectedEntities(listSelected));
-        listSelected.clearSelection();
-        updateButtons();
-
-        changeSupport.fireChange();
-    }//GEN-LAST:event_buttonRemoveActionPerformed
-
-    private void buttonAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonAddActionPerformed
-        entityClosure.addEntities(getSelectedEntities(listAvailable));
-        listAvailable.clearSelection();
-        updateButtons();
-
-        changeSupport.fireChange();
-    }//GEN-LAST:event_buttonAddActionPerformed
-
     private void createPUCheckboxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_createPUCheckboxItemStateChanged
         createPU = createPUCheckbox.isVisible() && createPUCheckbox.isSelected();
 
     }//GEN-LAST:event_createPUCheckboxItemStateChanged
+
+    private void listSelectedComponentResized(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_listSelectedComponentResized
+// TODO add your handling code here:
+        System.out.println("RES");
+    }//GEN-LAST:event_listSelectedComponentResized
+
+    private void buttonRemoveAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonRemoveAllActionPerformed
+
+        entityClosure.removeAllEntities();         listSelected.clearSelection();         updateButtons();         changeSupport.fireChange();     }//GEN-LAST:event_buttonRemoveAllActionPerformed
+
+    private void buttonAddAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonAddAllActionPerformed
+
+        listAvailable.clearSelection();         entityClosure.addEntities(getEnabledEntities(listAvailable));         updateButtons();         changeSupport.fireChange();     }//GEN-LAST:event_buttonAddAllActionPerformed
+
+    private void buttonRemoveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonRemoveActionPerformed
+
+        entityClosure.removeEntities(getSelectedEntities(listSelected));         listSelected.clearSelection();         updateButtons();          changeSupport.fireChange();     }//GEN-LAST:event_buttonRemoveActionPerformed
+
+    private void buttonAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonAddActionPerformed
+
+        entityClosure.addEntities(getSelectedEntities(listAvailable));         listAvailable.clearSelection();         updateButtons();          changeSupport.fireChange();     }//GEN-LAST:event_buttonAddActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -374,6 +442,8 @@ public class PersistenceClientEntitySelectionVisual extends JPanel {
     private javax.swing.JButton buttonRemoveAll;
     private javax.swing.JCheckBox cbAddRelated;
     private javax.swing.JCheckBox createPUCheckbox;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JLabel labelAvailableEntities;
@@ -381,6 +451,8 @@ public class PersistenceClientEntitySelectionVisual extends JPanel {
     private javax.swing.JList listAvailable;
     private javax.swing.JList listSelected;
     private javax.swing.JPanel panelButtons;
+    private javax.swing.JPanel workAround1;
+    private javax.swing.JPanel workAround2;
     // End of variables declaration//GEN-END:variables
     public void addChangeListener(ChangeListener listener) {
         changeSupport.addChangeListener(listener);
@@ -544,7 +616,7 @@ public class PersistenceClientEntitySelectionVisual extends JPanel {
         }
     }
 
-    private final class EntityListCellRenderer extends JLabel implements ListCellRenderer {
+    private final class EntityListCellRenderer extends DefaultListCellRenderer {
 
         private boolean available;
 
@@ -555,6 +627,9 @@ public class PersistenceClientEntitySelectionVisual extends JPanel {
 
         @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+
+            Component component = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            JLabel label = (JLabel)component;
             String text = null;
             boolean disable = false;
             if (value instanceof Entity) {
@@ -586,10 +661,11 @@ public class PersistenceClientEntitySelectionVisual extends JPanel {
                 setBackground(list.getBackground());
                 setForeground(list.getForeground());
             }
-            setEnabled((entityClosure.getAvailableEntities().contains(value) || entityClosure.getWantedEntities().contains(value)) && !disable);
-            setFont(list.getFont());
-            setText(text);
-            return this;
+            if(text.length() == 0)text = " ";
+            label.setEnabled((entityClosure.getAvailableEntities().contains(value) || entityClosure.getWantedEntities().contains(value)) && !disable);
+            //setFont(list.getFont());
+            label.setText(text);
+            return label;
         }
     }
 }

@@ -55,6 +55,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collections;
 import java.util.HashSet;
@@ -69,6 +70,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
+import javax.swing.border.EtchedBorder;
 import org.netbeans.modules.form.FormLoaderSettings;
 import org.netbeans.modules.form.layoutsupport.griddesigner.actions.AbstractGridAction;
 import org.netbeans.modules.form.layoutsupport.griddesigner.actions.DeleteComponentAction;
@@ -123,6 +125,13 @@ public class GlassPane extends JPanel implements GridActionPerformer {
     private int headerHeight;
     /** The width of the row header. */
     private int headerWidth;
+
+    // HEADER emphaisizing
+
+    /** Index of header under the cursor. */
+    private int emphColumnHeader = -1;
+    /** Index of header under the cursor. */
+    private int emphRowHeader = -1;
 
     // RESIZING and MOVING
 
@@ -273,6 +282,8 @@ public class GlassPane extends JPanel implements GridActionPerformer {
             animLayer.paint(g);
             g.translate(-shift.x, -shift.y);
             animPhase = animLayer.getPhase();
+            emphColumnHeader = -1;
+            emphRowHeader = -1;
         }
         paintGrid(g);
         if (resizing) {
@@ -337,9 +348,9 @@ public class GlassPane extends JPanel implements GridActionPerformer {
         } else {
             rowBounds = gridInfo.getRowBounds();
         }
+        int rows = rowBounds.length-1;
 
         // Check if there are any newly created columns/rows
-        int rows = rowBounds.length-1;
         if (moving || resizing) {
             int deltaX = newGridX - gridInfo.getGridX(focusedComponent);
             int deltaWidth = newGridWidth - gridInfo.getGridWidth(focusedComponent);
@@ -375,7 +386,11 @@ public class GlassPane extends JPanel implements GridActionPerformer {
         for (int i=0; i<columns; i++) {
             if (!gridInfo.isGapColumn(i)) {
                 header.setText(Integer.toString(i));
-                header.setBorder(selectedColumns.get(i) ? BorderFactory.createLoweredBevelBorder() : BorderFactory.createRaisedBevelBorder());
+                if(i == emphColumnHeader) {
+                    header.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
+                } else {
+                    header.setBorder(selectedColumns.get(i) ? BorderFactory.createLoweredBevelBorder() : BorderFactory.createRaisedBevelBorder());
+                }
                 headerHeight = header.getPreferredSize().height;
                 int start = extendedColumnBound(columnBounds, i);
                 int end = extendedColumnBound(columnBounds, i+1);
@@ -391,7 +406,12 @@ public class GlassPane extends JPanel implements GridActionPerformer {
         for (int i=0; i<rows; i++) {
             if (!gridInfo.isGapRow(i)) {
                 header.setText(Integer.toString(i));
-                Border border = selectedRows.get(i) ? BorderFactory.createLoweredBevelBorder() : BorderFactory.createRaisedBevelBorder();
+                Border border;
+                if(i == emphRowHeader) {
+                    border = BorderFactory.createEtchedBorder(EtchedBorder.LOWERED);
+                } else {
+                    border = selectedRows.get(i) ? BorderFactory.createLoweredBevelBorder() : BorderFactory.createRaisedBevelBorder();
+                }
                 header.setBorder(BorderFactory.createCompoundBorder(border, BorderFactory.createEmptyBorder(0,HEADER_GAP/2,0,HEADER_GAP/2)));
                 int start = extendedRowBound(rowBounds, i);
                 int end = extendedRowBound(rowBounds, i+1);
@@ -404,6 +424,29 @@ public class GlassPane extends JPanel implements GridActionPerformer {
         }
     }
 
+    /**
+     * Identifies whether a header is under mouse pointer.
+     * Such header is then emphasized to point out
+     * that it can be actively used (right-click opens menu).
+     * See #200671 for reasoning.
+     *
+     * @param cursorLocation current mouse cursor location.
+     */
+    void updateActiveHeaders(Point cursorLocation) {
+        if (cursorLocation == null) {
+            emphColumnHeader = -1;
+            emphRowHeader = -1;
+        } else {
+            int oldColumnHeader = emphColumnHeader;
+            int oldRowHeader = emphRowHeader;
+            emphColumnHeader = findColumnHeader(cursorLocation);
+            emphRowHeader = findRowHeader(cursorLocation);
+            if(oldColumnHeader != emphColumnHeader || oldRowHeader != emphRowHeader) {
+                repaint();
+            }
+        }
+    }
+    
     /**
      * Paints additional information about component constraints.
      * 
@@ -1322,6 +1365,7 @@ public class GlassPane extends JPanel implements GridActionPerformer {
             if (!selection.isEmpty()) {
                 updateCursor(e.getPoint());
             }
+            updateActiveHeaders(e.getPoint());
         }
 
         @Override
@@ -1414,6 +1458,14 @@ public class GlassPane extends JPanel implements GridActionPerformer {
             if (change == null) {
                 animNewColumnBounds = gridInfo.getColumnBounds();
                 animNewRowBounds = gridInfo.getRowBounds();
+                if(gridInfo.hasGaps()) {
+                    if( animNewColumnBounds.length > gridInfo.getLastGapColumn() + 3 ) {
+                        animNewColumnBounds = resizeArray(animNewColumnBounds, gridInfo.getLastGapColumn() + 3);
+                    }
+                    if( animNewRowBounds.length > gridInfo.getLastGapRow() + 3 ) {
+                        animNewRowBounds = resizeArray(animNewRowBounds, gridInfo.getLastGapRow() + 3);
+                    }
+                }
             } else {
                 animOldColumnBounds = change.getOldColumnBounds();
                 animOldRowBounds = change.getOldRowBounds();
@@ -1422,16 +1474,16 @@ public class GlassPane extends JPanel implements GridActionPerformer {
             }
             if (animNewColumnBounds.length != animOldColumnBounds.length) {
                 if (animNewColumnBounds.length > animOldColumnBounds.length) {
-                    animOldColumnBounds = extendArray(animOldColumnBounds, animNewColumnBounds.length);
+                    animOldColumnBounds = resizeArray(animOldColumnBounds, animNewColumnBounds.length);
                 } else {
-                    animNewColumnBounds = extendArray(animNewColumnBounds, animOldColumnBounds.length);
+                    animNewColumnBounds = resizeArray(animNewColumnBounds, animOldColumnBounds.length);
                 }
             }
             if (animNewRowBounds.length != animOldRowBounds.length) {
                 if (animNewRowBounds.length > animOldRowBounds.length) {
-                    animOldRowBounds = extendArray(animOldRowBounds, animNewRowBounds.length);
+                    animOldRowBounds = resizeArray(animOldRowBounds, animNewRowBounds.length);
                 } else {
-                    animNewRowBounds = extendArray(animNewRowBounds, animOldRowBounds.length);
+                    animNewRowBounds = resizeArray(animNewRowBounds, animOldRowBounds.length);
                 }
             }
             change = new GridBoundsChange(animOldColumnBounds, animOldRowBounds, animNewColumnBounds, animNewRowBounds);
@@ -1441,24 +1493,49 @@ public class GlassPane extends JPanel implements GridActionPerformer {
                 DesignerContext context = currentContext();
                 customizer.setContext(context);                
             }
-            animChange = change;
-            animLayer.animate();
+            // Animate, if there is something to animate
+            if(!noChange(change)) {
+                animChange = change;
+                animLayer.animate();
+            }
         }
 
         /**
-         * Returns larger copy of the passed array. The additional slots
-         * of this array are filled by the last value of the original array.
+         * Checks whether column/row bounds have changed and need to be animated
+         *
+         * @param change between old and new column/row bounds.
+         */
+        public boolean noChange(GridBoundsChange change) {
+            if(!Arrays.equals(change.getNewColumnBounds(), change.getOldColumnBounds()) ||
+                    !Arrays.equals(change.getNewRowBounds(), change.getOldRowBounds())) {
+                return false;
+            }
+            return true;
+        }
+
+        /**
+         * Returns larger/equal/shorter copy of the passed array. The additional slots
+         * of this array are filled by the last value of the original array,
+         * or the superfluous slots are trimmed.
          * 
          * @param original original array.
          * @param newLength length of the new array.
-         * @return extended array.
+         * @return resized array.
          */
-        private int[] extendArray(int[] original, int newLength) {
-            int[] result = new int[newLength];
-            System.arraycopy(original, 0, result, 0, original.length);
-            int last = original[original.length-1];
-            for (int i=original.length; i<newLength; i++) {
-                result[i] = last;
+        private int[] resizeArray(int[] original, int newLength) {
+            int[] result = original;
+            if(newLength > original.length) {
+                result = new int[newLength];
+                System.arraycopy(original, 0, result, 0, original.length);
+                int last = original[original.length-1];
+                for (int i=original.length; i<newLength; i++) {
+                    result[i] = last;
+                }
+            }
+            if(newLength < original.length) {
+                assert newLength > 0;
+                result = new int[newLength];
+                System.arraycopy(original, 0, result, 0, newLength);
             }
             return result;
         }
@@ -1531,7 +1608,7 @@ public class GlassPane extends JPanel implements GridActionPerformer {
                 }
                 originalRowBounds = oldBounds;
             }
-
+            
             return new GridBoundsChange(originalColumnBounds, originalRowBounds, newColumnBounds, newRowBounds);
         }
 

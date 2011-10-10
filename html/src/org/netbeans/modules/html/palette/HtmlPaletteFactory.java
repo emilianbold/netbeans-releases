@@ -62,32 +62,27 @@ import org.openide.util.datatransfer.ExTransferable;
  */
 public final class HtmlPaletteFactory {
 
-    static final String DEFAULT_HTML_PALETTE_FOLDER = "HTMLPalette"; //NOI18N
-
     //palette folder to palettecontroller map
     private static Map<String, PaletteController> PALETTES = new HashMap<String, PaletteController>();
 
-    //get default html palette
-    public static PaletteController getPalette() throws IOException {
-        return getOrCreatePalette(DEFAULT_HTML_PALETTE_FOLDER);
+    public static PaletteController getHtmlPalette() throws IOException {
+        return getOrCreatePalette("HTMLPalette");
     }
-
-    public static PaletteController getPalette(FileObject fileObject) throws IOException {
-        Lookup lookup = MimeLookup.getLookup(MimePath.get(fileObject.getMIMEType()));
-        HtmlPaletteFolderProvider provider = lookup.lookup(HtmlPaletteFolderProvider.class);
-        if (provider == null) {
-            provider = new PaletteNameProvider(); //fallback impl.
-        }
-        String paletteFolder = provider.getPaletteFolderName(fileObject);
-
-        if (paletteFolder == null) {
-            paletteFolder = DEFAULT_HTML_PALETTE_FOLDER; //fallback if the provider is not interested in this file
-        }
-
-        return getOrCreatePalette(paletteFolder);
-        
+    
+    public static PaletteController getXhtmlPalette() throws IOException {
+        return getOrCreatePalette("XHTMLPalette");
     }
-
+    
+    public static PaletteController getPalette(String mimeType) throws IOException {
+        if("text/html".equals(mimeType)) {
+            return getHtmlPalette();
+        } else if("text/xhtml".equals(mimeType)) {
+            return getXhtmlPalette();
+        } else {
+            return null;
+        }
+    }
+    
     private static PaletteController getOrCreatePalette(String paletteFolder) throws IOException {
         PaletteController palette = PALETTES.get(paletteFolder);
         if(palette == null) {
@@ -110,11 +105,4 @@ public final class HtmlPaletteFactory {
         }
     }
 
-    public static class PaletteNameProvider implements HtmlPaletteFolderProvider {
-
-        public String getPaletteFolderName(FileObject fileObject) {
-            return DEFAULT_HTML_PALETTE_FOLDER;
-        }
-        
-    }
 }

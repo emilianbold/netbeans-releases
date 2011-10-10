@@ -77,9 +77,11 @@ import org.w3c.dom.Element;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+@Messages("CTL_SourceTabCaption=&Source")
 public class POMDataObject extends MultiDataObject {
 
     public static final String MIME_TYPE = "text/x-maven-pom+xml";
+    public static final String SETTINGS_MIME_TYPE = "text/x-maven-settings+xml";
 
     private static final Logger LOG = Logger.getLogger(POMDataObject.class.getName());
 
@@ -98,11 +100,22 @@ public class POMDataObject extends MultiDataObject {
         mimeType=MIME_TYPE,
         position=1
     )
-    @Messages("CTL_SourceTabCaption=&Source")
     public static MultiViewEditorElement createMultiViewEditorElement(Lookup context) {
         return new MultiViewEditorElement(context);
     }
-        
+
+    @MultiViewElement.Registration(
+        displayName="#CTL_SourceTabCaption",
+        iconBase="org/netbeans/modules/xml/resources/xmlObject.gif",
+        persistenceType=TopComponent.PERSISTENCE_ONLY_OPENED,
+        preferredID="maven.settings",
+        mimeType=SETTINGS_MIME_TYPE,
+        position=1
+    )
+    public static MultiViewEditorElement createSettingsMultiViewEditorElement(Lookup context) { // #202900 workaround
+        return new MultiViewEditorElement(context);
+    }
+
     @Override protected int associateLookup() {
         return 1;
     }

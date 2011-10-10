@@ -54,6 +54,8 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.net.MalformedURLException;
 import java.net.URL;
+import javax.swing.ComboBoxModel;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JComboBox;
@@ -87,22 +89,20 @@ public class SmartyOptionsPanel extends JPanel {
 
     public SmartyOptionsPanel() {
         initComponents();
+        initSmartyVersionsComboBox();
 
         errorLabel.setText(" "); // NOI18N
         setDepthOfScanningComboBox(); //NOI18N
 
+        setSmartyVersion(SmartyOptions.getInstance().getSmartyVersion());
         setOpenDelimiter(SmartyOptions.getInstance().getDefaultOpenDelimiter());
         setCloseDelimiter(SmartyOptions.getInstance().getDefaultCloseDelimiter());
         setDepthOfScanning(SmartyFramework.getDepthOfScanningForTpl());
 
+        smartyVersionComboBox.addActionListener(new SmartyActionListener());
         openDelimiterTextField.getDocument().addDocumentListener(new SmartyDocumentListener());
         closeDelimiterTextField.getDocument().addDocumentListener(new SmartyDocumentListener());
-        depthOfScanningComboBox.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                fireChange();
-            }
-        });
+        depthOfScanningComboBox.addActionListener(new SmartyActionListener());
     }
 
     private void setDepthOfScanningComboBox() {
@@ -115,7 +115,7 @@ public class SmartyOptionsPanel extends JPanel {
         return closeDelimiterTextField.getText();
     }
 
-    public void setCloseDelimiter(String closeDelimiter) {
+    public final void setCloseDelimiter(String closeDelimiter) {
         this.closeDelimiterTextField.setText(closeDelimiter);
     }
 
@@ -123,7 +123,7 @@ public class SmartyOptionsPanel extends JPanel {
         return openDelimiterTextField.getText();
     }
 
-    public void setOpenDelimiter(String openDelimiter) {
+    public final void setOpenDelimiter(String openDelimiter) {
         this.openDelimiterTextField.setText(openDelimiter);
     }
 
@@ -131,7 +131,7 @@ public class SmartyOptionsPanel extends JPanel {
         return depthOfScanningComboBox.getSelectedIndex();
     }
 
-    public void setDepthOfScanning(int depth) {
+    public final void setDepthOfScanning(int depth) {
         // can happen after lowering possible maximum scanning depth or by
         //  manually updated preferences
         if (depth > MAX_SCANNING_DEPTH) {
@@ -140,6 +140,14 @@ public class SmartyOptionsPanel extends JPanel {
             depth = 0;
         }
         this.depthOfScanningComboBox.setSelectedIndex(depth);
+    }
+
+    public final void setSmartyVersion(SmartyFramework.Version version) {
+        smartyVersionComboBox.setSelectedItem(version);
+    }
+
+    public SmartyFramework.Version getSmartyVersion() {
+        return (SmartyFramework.Version) smartyVersionComboBox.getSelectedItem();
     }
 
     public void setError(String message) {
@@ -175,14 +183,6 @@ public class SmartyOptionsPanel extends JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-
-
-
-
-
-
-
-
         openDelimiterLabel = new JLabel();
         closeDelimiterLabel = new JLabel();
         closeDelimiterTextField = new JTextField();
@@ -194,8 +194,11 @@ public class SmartyOptionsPanel extends JPanel {
         depthOfScanningNoteLabel = new JLabel();
         depthOfScanningComboBox = new JComboBox();
         openDelimiterTextField = new JTextField();
+        smartyVersionLabel = new JLabel();
+        smartyVersionComboBox = new JComboBox();
         Mnemonics.setLocalizedText(openDelimiterLabel, NbBundle.getMessage(SmartyOptionsPanel.class, "SmartyOptionsPanel.openDelimiterLabel.text"));
         Mnemonics.setLocalizedText(closeDelimiterLabel, NbBundle.getMessage(SmartyOptionsPanel.class, "SmartyOptionsPanel.closeDelimiterLabel.text"));
+
         closeDelimiterTextField.setText(NbBundle.getMessage(SmartyOptionsPanel.class, "SmartyOptionsPanel.closeDelimiterTextField.text")); // NOI18N
         Mnemonics.setLocalizedText(errorLabel, NbBundle.getMessage(SmartyOptionsPanel.class, "SmartyOptionsPanel.errorLabel.text"));
         Mnemonics.setLocalizedText(learnMoreLabel, NbBundle.getMessage(SmartyOptionsPanel.class, "SmartyOptionsPanel.learnMoreLabel.text"));
@@ -210,7 +213,10 @@ public class SmartyOptionsPanel extends JPanel {
         Mnemonics.setLocalizedText(installationInfoLabel, NbBundle.getMessage(SmartyOptionsPanel.class, "SmartyOptionsPanel.installationInfoLabel.text"));
         Mnemonics.setLocalizedText(depthOfScanningLabel, NbBundle.getMessage(SmartyOptionsPanel.class, "SmartyOptionsPanel.depthOfScanningLabel.text"));
         Mnemonics.setLocalizedText(depthOfScanningNoteLabel, NbBundle.getMessage(SmartyOptionsPanel.class, "SmartyOptionsPanel.depthOfScanningNoteLabel.text"));
+
         openDelimiterTextField.setText(NbBundle.getMessage(SmartyOptionsPanel.class, "SmartyOptionsPanel.openDelimiterTextField.text")); // NOI18N
+        Mnemonics.setLocalizedText(smartyVersionLabel, NbBundle.getMessage(SmartyOptionsPanel.class, "SmartyOptionsPanel.smartyVersionLabel.text"));
+
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -218,10 +224,14 @@ public class SmartyOptionsPanel extends JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(Alignment.LEADING)
-                    .addComponent(jSeparator1, GroupLayout.DEFAULT_SIZE, 586, Short.MAX_VALUE)
                     .addComponent(errorLabel)
                     .addComponent(learnMoreLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .addComponent(installationInfoLabel)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(smartyVersionLabel)
+                        .addGap(19, 19, 19)
+                        .addComponent(smartyVersionComboBox, GroupLayout.PREFERRED_SIZE, 126, GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jSeparator1, GroupLayout.DEFAULT_SIZE, 586, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(depthOfScanningLabel)
                         .addPreferredGap(ComponentPlacement.RELATED)
@@ -233,19 +243,24 @@ public class SmartyOptionsPanel extends JPanel {
                             .addComponent(closeDelimiterLabel)
                             .addComponent(openDelimiterLabel))
                         .addGap(18, 18, 18)
-                        .addGroup(layout.createParallelGroup(Alignment.LEADING, false)
-                            .addComponent(openDelimiterTextField)
-                            .addComponent(closeDelimiterTextField, GroupLayout.DEFAULT_SIZE, 100, Short.MAX_VALUE))
-                        .addGap(13, 13, 13)))
-                .addContainerGap())
+                        .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(closeDelimiterTextField, GroupLayout.PREFERRED_SIZE, 100, GroupLayout.PREFERRED_SIZE)
+                                .addGap(363, 363, 363))
+                            .addComponent(openDelimiterTextField, GroupLayout.DEFAULT_SIZE, 100, Short.MAX_VALUE))))
+                .addGap(215, 215, 215))
         );
 
         layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {closeDelimiterTextField, openDelimiterTextField});
 
         layout.setVerticalGroup(
             layout.createParallelGroup(Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
+            .addGroup(Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
+                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
+                    .addComponent(smartyVersionLabel)
+                    .addComponent(smartyVersionComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(Alignment.BASELINE)
                     .addComponent(openDelimiterLabel)
                     .addComponent(openDelimiterTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
@@ -260,7 +275,7 @@ public class SmartyOptionsPanel extends JPanel {
                     .addComponent(depthOfScanningLabel)
                     .addComponent(depthOfScanningNoteLabel)
                     .addComponent(depthOfScanningComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(ComponentPlacement.RELATED, 161, Short.MAX_VALUE)
+                .addPreferredGap(ComponentPlacement.RELATED, 127, Short.MAX_VALUE)
                 .addComponent(installationInfoLabel)
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addComponent(learnMoreLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
@@ -298,7 +313,15 @@ public class SmartyOptionsPanel extends JPanel {
     private JLabel learnMoreLabel;
     private JLabel openDelimiterLabel;
     private JTextField openDelimiterTextField;
+    private JComboBox smartyVersionComboBox;
+    private JLabel smartyVersionLabel;
     // End of variables declaration//GEN-END:variables
+
+    private void initSmartyVersionsComboBox() {
+        for (SmartyFramework.Version version : SmartyFramework.Version.values()) {
+            smartyVersionComboBox.addItem(version);
+        }
+    }
 
     private final class SmartyDocumentListener implements DocumentListener {
 
@@ -312,6 +335,14 @@ public class SmartyOptionsPanel extends JPanel {
             processUpdate();
         }
         private void processUpdate() {
+            fireChange();
+        }
+    }
+
+    private final class SmartyActionListener implements ActionListener {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
             fireChange();
         }
     }

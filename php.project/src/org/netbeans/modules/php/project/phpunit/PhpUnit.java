@@ -62,6 +62,7 @@ import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.modules.php.api.util.Pair;
 import org.netbeans.modules.php.api.phpmodule.PhpProgram;
+import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
@@ -157,7 +158,7 @@ public abstract class PhpUnit extends PhpProgram {
         if (userLogDirName != null) {
             LOGGER.log(Level.INFO, "Custom directory for PhpUnit logs provided: {0}", userLogDirName);
             File userLogDir = new File(userLogDirName);
-            if (userLogDir.isDirectory() && userLogDir.canWrite()) {
+            if (userLogDir.isDirectory() && FileUtils.isDirectoryWritable(userLogDir)) {
                 logDirName = userLogDirName;
             } else {
                 LOGGER.log(Level.WARNING, "Directory for PhpUnit logs {0} is not writable directory", userLogDirName);

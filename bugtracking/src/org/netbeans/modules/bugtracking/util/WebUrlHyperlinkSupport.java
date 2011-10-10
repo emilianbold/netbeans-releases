@@ -68,46 +68,51 @@ import static org.netbeans.modules.bugtracking.util.WebUrlHyperlinkSupport.Searc
 class WebUrlHyperlinkSupport {
 
     static void register(final JTextPane pane) {
-        StyledDocument doc = pane.getStyledDocument();
+        final StyledDocument doc = pane.getStyledDocument();
         String text = pane.getText();
         final int[] boundaries = findBoundaries(text);
         if ((boundaries != null) && (boundaries.length != 0)) {
-            Style defStyle = StyleContext.getDefaultStyleContext()
-                             .getStyle(StyleContext.DEFAULT_STYLE);
-            Style hlStyle = doc.addStyle("regularBlue-url", defStyle);      //NOI18N
-            hlStyle.addAttribute(HyperlinkSupport.URL_ATTRIBUTE, new UrlAction());
-            StyleConstants.setForeground(hlStyle, Color.BLUE);
-            StyleConstants.setUnderline(hlStyle, true);
 
-            for (int i = 0; i < boundaries.length; i+=2) {
-                doc.setCharacterAttributes(boundaries[i], boundaries[i + 1] - boundaries[i], hlStyle, true);
-            }
-        }
-        pane.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                try {
-                    if (SwingUtilities.isLeftMouseButton(e)) {
-                        JTextPane pane = (JTextPane)e.getSource();
-                        StyledDocument doc = pane.getStyledDocument();
-                        Element elem = doc.getCharacterElement(pane.viewToModel(e.getPoint()));
-                        AttributeSet as = elem.getAttributes();
-
-                        UrlAction urlAction = (UrlAction) as.getAttribute(HyperlinkSupport.URL_ATTRIBUTE);
-                        if (urlAction != null) {
-                            int startOffset = elem.getStartOffset();
-                            int endOffset = elem.getEndOffset();
-                            int length = endOffset - startOffset;
-                            String hyperlinkText = doc.getText(startOffset, length);
-                            urlAction.openUrlHyperlink(hyperlinkText);
-                            return;
-                        }
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    Style defStyle = StyleContext.getDefaultStyleContext()
+                                     .getStyle(StyleContext.DEFAULT_STYLE);
+                    final Style hlStyle = doc.addStyle("regularBlue-url", defStyle);      //NOI18N
+                    hlStyle.addAttribute(HyperlinkSupport.URL_ATTRIBUTE, new UrlAction());
+                    StyleConstants.setForeground(hlStyle, Color.BLUE);
+                    StyleConstants.setUnderline(hlStyle, true);
+                    for (int i = 0; i < boundaries.length; i+=2) {
+                        doc.setCharacterAttributes(boundaries[i], boundaries[i + 1] - boundaries[i], hlStyle, true);
                     }
-                } catch(Exception ex) {
-                    BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
+                    pane.addMouseListener(new MouseAdapter() {
+                        @Override
+                        public void mouseClicked(MouseEvent e) {
+                            try {
+                                if (SwingUtilities.isLeftMouseButton(e)) {
+                                    JTextPane pane = (JTextPane)e.getSource();
+                                    StyledDocument doc = pane.getStyledDocument();
+                                    Element elem = doc.getCharacterElement(pane.viewToModel(e.getPoint()));
+                                    AttributeSet as = elem.getAttributes();
+
+                                    UrlAction urlAction = (UrlAction) as.getAttribute(HyperlinkSupport.URL_ATTRIBUTE);
+                                    if (urlAction != null) {
+                                        int startOffset = elem.getStartOffset();
+                                        int endOffset = elem.getEndOffset();
+                                        int length = endOffset - startOffset;
+                                        String hyperlinkText = doc.getText(startOffset, length);
+                                        urlAction.openUrlHyperlink(hyperlinkText);
+                                        return;
+                                    }
+                                }
+                            } catch(Exception ex) {
+                                BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
+                            }
+                        }
+                    });
                 }
-            }
-        });
+            });
+        }
     }
     
     private static class UrlAction {

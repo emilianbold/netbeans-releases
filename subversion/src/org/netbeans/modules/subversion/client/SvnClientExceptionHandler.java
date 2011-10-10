@@ -856,16 +856,14 @@ public class SvnClientExceptionHandler {
     
     public static boolean isPartOf17OrGreater (String message) {
         message = message.toLowerCase();
-        return message.contains("the path") && (
-                message.contains("appears to be part of a subversion 1.7 or greater") //NOI18N
-                || message.contains("appears to be part of subversion 1.7")); //NOI18N
+        return message.contains("the path") && message.contains("appears to be part of subversion 1.7") //NOI18N
+                || message.contains("please upgrade your SVN client to 1.7.0 or higher"); //NOI18N
     }
 
     public static boolean isTooOldWorkingCopy (String message) {
         message = message.toLowerCase();
-        return message.contains("working copy format") //NOI18N
-                && message.contains("is too old") //NOI18N
-                && message.contains("please run \'svn upgrade\'"); //NOI18N
+        return message.contains("working copy") //NOI18N
+                && message.contains("is too old"); //NOI18N
     }
 
     public static void notifyException(Exception ex, boolean annotate, boolean isUI) {
@@ -913,12 +911,15 @@ public class SvnClientExceptionHandler {
     
     private static String getCustomizedMessage(Exception exception) {
         String msg = null;
-        if (isHTTP405(exception.getMessage())) {
-            msg = exception.getMessage() + "\n\n" + NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error405");                                // NOI18N
-        } else if(isOutOfDate(exception.getMessage()) || isMissingOrLocked(exception.getMessage())) {
-            msg = exception.getMessage() + "\n\n" + org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_OutOfDate") + "\n"; // NOI18N
-        } else if(isWrongUUID(exception.getMessage())) {
-            msg = exception.getMessage() + "\n\n" + org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_RelocateWrongUUID") + "\n"; // NOI18N
+        String exMsg = exception.getMessage();
+        if (isHTTP405(exMsg)) {
+            msg = exMsg + "\n\n" + NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error405");                                // NOI18N
+        } else if(isOutOfDate(exMsg) || isMissingOrLocked(exMsg)) {
+            msg = exMsg + "\n\n" + org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_OutOfDate") + "\n"; // NOI18N
+        } else if(isWrongUUID(exMsg)) {
+            msg = exMsg + "\n\n" + org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_RelocateWrongUUID") + "\n"; // NOI18N
+        } else if (isTooOldWorkingCopy(exMsg) && exMsg.contains("svn upgrade")) { //NOI18N
+            msg = NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_TooOldWC") + "\n\n" + exMsg + "\n"; //NOI18N
         }
         return msg;
     }

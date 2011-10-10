@@ -78,6 +78,7 @@ made subject to such option by the copyright holder.
                     <file name="org-netbeans-modules-mobility-editor-PPCompletionProvider.instance"/>
                 </folder>
                 <file name="org-netbeans-modules-mobility-editor-ConfigurationHighlightsLayer.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.spi.editor.highlighting.HighlightsLayerFactory"/>
                     <attr name="instanceCreate" newvalue="org.netbeans.modules.mobility.editor.ConfigurationHighlightsLayerFactory"/>
                 </file>                
             </folder>

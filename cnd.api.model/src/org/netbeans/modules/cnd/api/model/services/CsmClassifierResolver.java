@@ -54,7 +54,7 @@ import org.openide.util.Lookup;
  * @author Alexander Simon
  */
 public abstract class CsmClassifierResolver {
-    private static CsmClassifierResolver DEFAULT = new Default();
+    private static final CsmClassifierResolver DEFAULT = new Default();
 
     public abstract CsmClassifier getOriginalClassifier(CsmClassifier orig, CsmFile contextFile);
     public abstract CsmClassifier getTypeClassifier(CsmType type, CsmFile contextFile, int contextOffset, boolean resolveTypeChain);
@@ -85,7 +85,7 @@ public abstract class CsmClassifierResolver {
      * Static method to obtain the CsmClassifierResolver implementation.
      * @return the selector
      */
-    public static synchronized CsmClassifierResolver getDefault() {
+    public static CsmClassifierResolver getDefault() {
         return DEFAULT;
     }
 
@@ -124,6 +124,7 @@ public abstract class CsmClassifierResolver {
             return orig;
         }
 
+        @Override
         public CsmClassifier getTypeClassifier(CsmType type, CsmFile contextFile, int contextOffset, boolean resolveTypeChain) {
             CsmClassifierResolver service = getService();
             if (service != null) {

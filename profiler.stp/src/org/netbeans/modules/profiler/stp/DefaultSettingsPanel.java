@@ -48,7 +48,10 @@ import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Collection;
 import java.util.Vector;
+import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.CopyOnWriteArraySet;
 import javax.swing.JPanel;
 import javax.swing.JViewport;
 import javax.swing.Scrollable;
@@ -82,7 +85,7 @@ public class DefaultSettingsPanel extends JPanel implements Scrollable {
     //~ Instance fields ----------------------------------------------------------------------------------------------------------
 
     private SettingsChangeListener settingsChangeListener;
-    private Vector<ChangeListener> changeListeners;
+    private Collection<ChangeListener> changeListeners = new CopyOnWriteArraySet<ChangeListener>();
 
     //~ Constructors -------------------------------------------------------------------------------------------------------------
 
@@ -90,7 +93,6 @@ public class DefaultSettingsPanel extends JPanel implements Scrollable {
         setOpaque(true);
         setBackground(SelectProfilingTask.BACKGROUND_COLOR);
 
-        changeListeners = new Vector();
         settingsChangeListener = new SettingsChangeListener();
     }
 
@@ -131,9 +133,7 @@ public class DefaultSettingsPanel extends JPanel implements Scrollable {
     }
 
     public void addChangeListener(ChangeListener listener) {
-        if (!changeListeners.contains(listener)) {
-            changeListeners.add(listener);
-        }
+        changeListeners.add(listener);
     }
 
     public void removeChangeListener(ChangeListener listener) {

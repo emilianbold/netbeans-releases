@@ -117,10 +117,30 @@
                     </run-dependency>
                 </dependency>
             </module-dependencies>
+            <test-dependencies>
+                <test-type>
+                    <name>unit</name>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.libs.junit4</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.nbjunit</code-name-base>
+                        <recursive/>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.parsing.api</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                </test-type>
+            </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.j2ee.weblogic9</friend>
                 <friend>org.netbeans.modules.java.editor</friend>
                 <friend>org.netbeans.modules.web.project</friend>
+                <friend>org.netbeans.modules.j2ee.common</friend>
+                <friend>org.netbeans.modules.j2ee.ejbjarproject</friend>
                 <package>org.netbeans.api.whitelist</package>
                 <package>org.netbeans.api.whitelist.index</package>
                 <package>org.netbeans.api.whitelist.support</package>

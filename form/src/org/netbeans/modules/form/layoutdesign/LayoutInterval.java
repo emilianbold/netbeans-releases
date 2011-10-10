@@ -1211,6 +1211,15 @@ public final class LayoutInterval implements LayoutConstants {
         return -1;
     }
 
+    static int getDepthInParent(LayoutInterval interval, LayoutInterval parent) {
+        int depth = 0;
+        while (interval != null && interval != parent) {
+            depth++;
+            interval = interval.getParent();
+        }
+        return interval != null ? depth : -1;
+    }
+
     /**
      * Creates clone of the given interval. Doesn't clone content of groups, nor
      * it sets LayoutComponent. Just the type, alignments and sizes are copied.

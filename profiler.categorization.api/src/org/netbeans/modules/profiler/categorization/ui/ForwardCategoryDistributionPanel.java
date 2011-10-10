@@ -44,8 +44,6 @@
 package org.netbeans.modules.profiler.categorization.ui;
 
 import org.netbeans.lib.profiler.results.cpu.TimingAdjusterOld;
-import org.netbeans.lib.profiler.results.cpu.cct.CPUCCTVisitorAdapter;
-import org.netbeans.lib.profiler.results.cpu.cct.CompositeCPUCCTWalker;
 import org.netbeans.lib.profiler.results.cpu.cct.nodes.MarkedCPUCCTNode;
 import org.netbeans.lib.profiler.results.cpu.cct.nodes.MethodCPUCCTNode;
 import org.netbeans.lib.profiler.results.cpu.cct.nodes.RuntimeCPUCCTNode;
@@ -69,6 +67,7 @@ import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
+import org.netbeans.lib.profiler.results.RuntimeCCTNodeProcessor;
 import org.netbeans.modules.profiler.categorization.api.Categorization;
 import org.netbeans.modules.profiler.categorization.api.Category;
 import org.netbeans.modules.profiler.categorization.api.ProjectAwareStatisticalModule;
@@ -122,7 +121,7 @@ public class ForwardCategoryDistributionPanel extends ProjectAwareStatisticalMod
         }
     }
 
-    private class Model extends CPUCCTVisitorAdapter {
+    private class Model extends RuntimeCCTNodeProcessor.PluginAdapter {
         //~ Instance fields ------------------------------------------------------------------------------------------------------
 
         private Map<Mark, Long> markMap = new HashMap<Mark, Long>();
@@ -141,22 +140,34 @@ public class ForwardCategoryDistributionPanel extends ProjectAwareStatisticalMod
         }
 
         @Override
-        public void afterWalk() {
-            //      markStack.pop();
-            //      updateTimeForMark(Mark.DEFAULT);
-            refreshData();
+        public void onBackout(MarkedCPUCCTNode node) {
+            if (time0 > 0L) {
+                // fill the timing data structures
+                Long markTime = markMap.get(usedMark);
+
+                if (markTime == null) {
+                    markTime = Long.valueOf(0L);
+                }
+
+                long cleansedTime = (long) TimingAdjusterOld.getDefault().adjustTime(time0, inCalls, outCalls - lastCalls, false);
+
+                if (cleansedTime > 0L) {
+                    markMap.put(usedMark, markTime + cleansedTime);
+                }
+            }
+
+            // clean up the timing helpers
+            outCalls = 0;
+            inCalls = 0;
+            lastCalls = 0;
+            time0 = 0;
+            time1 = 0;
+
+            usedMark = markStack.pop();
         }
 
         @Override
-        public void beforeWalk() {
-            markStack.clear();
-            markMap.clear();
-
-            usedMark = Mark.DEFAULT;
-        }
-
-        @Override
-        public void visit(MarkedCPUCCTNode node) {
+        protected void onNode(MarkedCPUCCTNode node) {
             if (time0 > 0L) {
                 // fill the timing data structures
                 Long markTime = markMap.get(usedMark);
@@ -182,9 +193,11 @@ public class ForwardCategoryDistributionPanel extends ProjectAwareStatisticalMod
             markStack.push(usedMark);
             usedMark = node.getMark();
         }
+        
+        
 
         @Override
-        public void visit(MethodCPUCCTNode node) {
+        public void onNode(MethodCPUCCTNode node) {
             if (node.getMethodId() != getSelectedMethodId()) {
                 return;
             }
@@ -197,30 +210,16 @@ public class ForwardCategoryDistributionPanel extends ProjectAwareStatisticalMod
         }
 
         @Override
-        public void visitPost(MarkedCPUCCTNode node) {
-            if (time0 > 0L) {
-                // fill the timing data structures
-                Long markTime = markMap.get(usedMark);
+        public void onStart() {
+            markStack.clear();
+            markMap.clear();
 
-                if (markTime == null) {
-                    markTime = Long.valueOf(0L);
-                }
+            usedMark = Mark.DEFAULT;
+        }
 
-                long cleansedTime = (long) TimingAdjusterOld.getDefault().adjustTime(time0, inCalls, outCalls - lastCalls, false);
-
-                if (cleansedTime > 0L) {
-                    markMap.put(usedMark, markTime + cleansedTime);
-                }
-            }
-
-            // clean up the timing helpers
-            outCalls = 0;
-            inCalls = 0;
-            lastCalls = 0;
-            time0 = 0;
-            time1 = 0;
-
-            usedMark = markStack.pop();
+        @Override
+        public void onStop() {
+            refreshData();
         }
     }
 
@@ -239,8 +238,6 @@ public class ForwardCategoryDistributionPanel extends ProjectAwareStatisticalMod
                                                                                                                     // -----
 
     //~ Instance fields ----------------------------------------------------------------------------------------------------------
-
-    private CompositeCPUCCTWalker walker;
     private JLabel noData = new JLabel(NO_DATA_LABEL_TEXT);
     private JLabel noMethods = new JLabel(NO_METHOD_LABEL_TEXT);
     private Model model;
@@ -252,8 +249,6 @@ public class ForwardCategoryDistributionPanel extends ProjectAwareStatisticalMod
     public ForwardCategoryDistributionPanel() {
         initComponents();
         model = new Model();
-        walker = new CompositeCPUCCTWalker();
-        walker.add(0, model);
     }
 
     @Override
@@ -276,9 +271,7 @@ public class ForwardCategoryDistributionPanel extends ProjectAwareStatisticalMod
 
     synchronized public void refresh(RuntimeCPUCCTNode appNode) {
         if (appNode != null) {
-            if (walker != null) {
-                appNode.accept(walker);
-            }
+            RuntimeCCTNodeProcessor.process(appNode, model);
 
             lastAppNode = appNode;
         }

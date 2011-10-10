@@ -157,8 +157,8 @@ public class MultiSplitPane extends JPanel
 
         dirty = true;
         
-        //active TC has changed or some TC opened/closed - abort keyboard resizing (if any)
-        ModeResizer.abort();
+        //active TC has changed or some TC opened/closed - stop keyboard resizing (if any)
+        ModeResizer.stop();
     }
     
     int getCellCount() {

@@ -47,15 +47,20 @@ package org.netbeans.modules.web.core.jsploader;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.Serializable;
 import java.lang.ref.WeakReference;
-import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.Date;
 import java.util.EventListener;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.core.spi.multiview.MultiViewElement;
+import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
+import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.nodes.Node;
@@ -78,10 +83,8 @@ import org.openide.nodes.Node.Cookie;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
-import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
+import org.openide.windows.TopComponent;
 
 /** Object that provides main functionality for internet data loader.
  *
@@ -114,29 +117,101 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
     transient private BaseJspEditorSupport editorSupport;
     transient final private static boolean debug = false;
     
-    transient volatile private Lookup currentLookup;
-    
     transient private String encoding = null;
 
+     @MultiViewElement.Registration(
+            displayName="#LBL_JSPEditorTab",
+            iconBase="org/netbeans/modules/web/core/resources/jsp16.gif",
+            persistenceType=TopComponent.PERSISTENCE_ONLY_OPENED,
+            preferredID="jsp.source",
+            mimeType={JspLoader.JSP_MIME_TYPE, JspLoader.TAG_MIME_TYPE},
+            position=1
+        )
+    public static MultiViewEditorElement createMultiViewEditorElement(Lookup context) {
+        return new JspMultiViewEditorElement(context);
+    }
+
+    public static class JspMultiViewEditorElement extends MultiViewEditorElement {
+        
+        private static final long serialVersionUID = 5287628924558107957L;
+        
+        public JspMultiViewEditorElement(Lookup lookup) {
+            super(lookup);
+        }
+        
+        private BaseJspEditorSupport getEditorSupport() {
+            return getLookup().lookup(BaseJspEditorSupport.class);
+        }
+
+        private TagLibParseSupport getTaglibParseSupport() {
+            JspDataObject jspDo = getLookup().lookup(JspDataObject.class);
+            return jspDo.getCookie(TagLibParseSupport.class);
+        }
+        
+        @Override
+        public void componentActivated() {
+            super.componentActivated();
+            getEditorSupport().restartParserTask();
+            getTaglibParseSupport().setEditorOpened(true);
+        }
+
+        @Override
+        public void componentDeactivated() {
+            super.componentDeactivated();
+            getTaglibParseSupport().setEditorOpened(false);            
+        }
+        
+     }
+    
     public JspDataObject(FileObject pf, final UniFileLoader l) throws DataObjectExistsException {
         super(pf, l);
-        getCookieSet().add(BaseJspEditorSupport.class, new CookieSet.Factory() {
+        CookieSet set = getCookieSet();
+        set.add(BaseJspEditorSupport.class, new CookieSet.Factory() {
             public <T extends Cookie> T createCookie(Class<T> klass) {
                 return klass.cast(getJspEditorSupport());
             }
         });
-        getCookieSet().assign( SaveAsCapable.class, new SaveAsCapable() {
+        set.assign( SaveAsCapable.class, new SaveAsCapable() {
             public void saveAs( FileObject folder, String fileName ) throws IOException {
                 getJspEditorSupport().saveAs( folder, fileName );
             }
         });
+        
+        set.assign(FileEncodingQueryImplementation.class, new org.netbeans.spi.queries.FileEncodingQueryImplementation() {
 
-        initialize();
+            public Charset getEncoding(FileObject file) {
+                assert file != null;
+                assert file.equals(getPrimaryFile());
+
+                String charsetName = getFileEncoding();
+                try {
+                    return Charset.forName(charsetName);
+                } catch (IllegalCharsetNameException ichse) {
+                    //the jsp templates contains the ${encoding} property 
+                    //so the ICHNE is always thrown for them, just ignore
+                    Boolean template = (Boolean)file.getAttribute("template");//NOI18N
+                    if(template == null || !template.booleanValue()) {
+                        Logger.getLogger("global").log(Level.INFO, "Detected illegal charset name in file " + file.getNameExt() + " (" + ichse.getMessage() + ")");  //NOI18N
+                    }
+                } catch (UnsupportedCharsetException uchse) {
+                    Logger.getLogger("global").log(Level.INFO, "Detected unsupported charset name in file " + file.getNameExt() + " (" + uchse.getMessage() + ")");  //NOI18N
+                }
+
+                return null;
+            }
+            
+        });
+
+        firstStart = true;
+        listener = new Listener();
+        listener.register(getPrimaryFile());
+        refreshPlugin(false);
+        
     }
-    
+
     @Override
-    public Lookup getLookup() {
-        return currentLookup;
+    protected int associateLookup() {
+        return 1;
     }
     
     // Public accessibility for e.g. JakartaServerPlugin.
@@ -229,15 +304,6 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
                     + " to " + encoding);  //NOI18N
         }
 
-    }
-    
-    private void initialize() {
-        firstStart = true;
-        listener = new Listener();
-        listener.register(getPrimaryFile());
-        refreshPlugin(false);
-        createLookup();
-        assert currentLookup != null;
     }
     
     /** Updates classFileData, servletDataObject, servletEdit
@@ -419,37 +485,6 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
         }
         return retValue;
     }
-    
-    private void createLookup() {
-        Lookup noEncodingLookup = getCookieSet().getLookup();
-
-        org.netbeans.spi.queries.FileEncodingQueryImplementation feq = new org.netbeans.spi.queries.FileEncodingQueryImplementation() {
-
-            public Charset getEncoding(FileObject file) {
-                assert file != null;
-                assert file.equals(getPrimaryFile());
-
-                String charsetName = getFileEncoding();
-                try {
-                    return Charset.forName(charsetName);
-                } catch (IllegalCharsetNameException ichse) {
-                    //the jsp templates contains the ${encoding} property 
-                    //so the ICHNE is always thrown for them, just ignore
-                    Boolean template = (Boolean)file.getAttribute("template");//NOI18N
-                    if(template == null || !template.booleanValue()) {
-                        Logger.getLogger("global").log(Level.INFO, "Detected illegal charset name in file " + file.getNameExt() + " (" + ichse.getMessage() + ")");  //NOI18N
-                    }
-                } catch (UnsupportedCharsetException uchse) {
-                    Logger.getLogger("global").log(Level.INFO, "Detected unsupported charset name in file " + file.getNameExt() + " (" + uchse.getMessage() + ")");  //NOI18N
-                }
-
-                return null;
-            }
-        };
-
-        currentLookup = new ProxyLookup(noEncodingLookup, Lookups.singleton(feq));
-    }
-    
     
     ////// -------- INNER CLASSES ---------
     

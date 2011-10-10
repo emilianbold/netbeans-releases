@@ -56,6 +56,8 @@ import com.sun.source.tree.VariableTree;
 import com.sun.source.util.SourcePositions;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.List;
+
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
@@ -64,6 +66,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreeUtilities;
@@ -76,10 +79,13 @@ import org.openide.util.Parameters;
  *
  * @author Tomasz.Slota@Sun.COM
  * @author Ajit.Bhate@Sun.COM
+ * @author modified by ads
  */
 public class Utilities {
 
-    public static AnnotationMirror findAnnotation(Element element, String annotationClass) {
+    public static AnnotationMirror findAnnotation(Element element, 
+            String annotationClass) 
+    {
         for (AnnotationMirror ann : element.getAnnotationMirrors()) {
             if (annotationClass.equals(ann.getAnnotationType().toString())) {
                 return ann;
@@ -101,7 +107,9 @@ public class Utilities {
      * @return the value of annotation attribute, null if the attribute
      * was not found or when ann was null
      */
-    public static AnnotationValue getAnnotationAttrValue(AnnotationMirror ann, String attrName) {
+    public static AnnotationValue getAnnotationAttrValue(AnnotationMirror ann, 
+            String attrName) 
+    {
         if (ann != null) {
             for (ExecutableElement attr : ann.getElementValues().keySet()) {
                 if (attrName.equals(attr.getSimpleName().toString())) {
@@ -113,7 +121,9 @@ public class Utilities {
         return null;
     }
 
-    public static ExpressionTree getAnnotationArgumentTree(AnnotationTree annotationTree, String attrName) {
+    public static ExpressionTree getAnnotationArgumentTree(AnnotationTree annotationTree, 
+            String attrName) 
+    {
         for (ExpressionTree exTree : annotationTree.getArguments()) {
             if (exTree instanceof AssignmentTree) {
                 ExpressionTree annVar = ((AssignmentTree) exTree).getVariable();
@@ -127,90 +137,169 @@ public class Utilities {
         return null;
     }
 
-    public static void addAnnotation(WorkingCopy workingCopy, Element element, String annotationName) throws IOException {
+    public static void addAnnotation(WorkingCopy workingCopy, 
+            ElementHandle<Element> handle, String annotationName) 
+            throws IOException 
+     {
         workingCopy.toPhase(JavaSource.Phase.RESOLVED);
+        Element element = handle.resolve(workingCopy);
+        if ( element == null ){
+            return;
+        }
         ModifiersTree oldTree = null;
         if (element instanceof TypeElement) {
-            oldTree = workingCopy.getTrees().getTree((TypeElement) element).getModifiers();
+            oldTree = workingCopy.getTrees().getTree((TypeElement) element).
+                getModifiers();
         } else if (element instanceof ExecutableElement) {
-            oldTree = workingCopy.getTrees().getTree((ExecutableElement) element).getModifiers();
+            oldTree = workingCopy.getTrees().getTree((ExecutableElement) element).
+                getModifiers();
         } else if (element instanceof VariableElement) {
-            oldTree = ((VariableTree) workingCopy.getTrees().getTree(element)).getModifiers();
+            oldTree = ((VariableTree) workingCopy.getTrees().getTree(element)).
+                getModifiers();
         }
         if (oldTree == null) {
             return;
         }
-        TypeElement annotationElement = workingCopy.getElements().getTypeElement(annotationName);
+        TypeElement annotationElement = workingCopy.getElements().getTypeElement(
+                annotationName);
         TreeMaker make = workingCopy.getTreeMaker();
-        AnnotationTree annotationTree = make.Annotation(make.QualIdent(annotationElement), Collections.<ExpressionTree>emptyList());
+        AnnotationTree annotationTree = make.Annotation(make.QualIdent(annotationElement), 
+                Collections.<ExpressionTree>emptyList());
         ModifiersTree newTree = make.addModifiersAnnotation(oldTree, annotationTree);
         workingCopy.rewrite(oldTree, newTree);
     }
 
-    public static void removeAnnotation(WorkingCopy workingCopy, Element element, AnnotationMirror annMirror) throws IOException {
+    public static void removeAnnotation(WorkingCopy workingCopy, 
+            ElementHandle<Element> handle, AnnotationMirror annMirror) 
+            throws IOException 
+    {
         workingCopy.toPhase(JavaSource.Phase.RESOLVED);
+        Element element = handle.resolve(workingCopy);
+        if ( element == null ){
+            return;
+        }
         ModifiersTree oldTree = null;
         if (element instanceof TypeElement) {
-            oldTree = workingCopy.getTrees().getTree((TypeElement) element).getModifiers();
+            oldTree = workingCopy.getTrees().getTree((TypeElement) element).
+                getModifiers();
         } else if (element instanceof ExecutableElement) {
-            oldTree = workingCopy.getTrees().getTree((ExecutableElement) element).getModifiers();
+            oldTree = workingCopy.getTrees().getTree((ExecutableElement) element).
+                getModifiers();
         } else if (element instanceof VariableElement) {
-            oldTree = ((VariableTree) workingCopy.getTrees().getTree(element)).getModifiers();
+            oldTree = ((VariableTree) workingCopy.getTrees().getTree(element)).
+                getModifiers();
         }
         if (oldTree == null) {
             return;
         }
-        AnnotationTree annotation = (AnnotationTree) workingCopy.getTrees().getTree(element, annMirror);
+        AnnotationTree annotation = (AnnotationTree) workingCopy.getTrees().
+            getTree(element, annMirror);
         TreeMaker make = workingCopy.getTreeMaker();
         ModifiersTree newTree = make.removeModifiersAnnotation(oldTree, annotation);
         workingCopy.rewrite(oldTree, newTree);
     }
 
-    public static void removeAnnotationArgument(WorkingCopy workingCopy, Element element, AnnotationMirror annMirror, String argumentName) throws IOException {
+    public static void removeAnnotationArgument(WorkingCopy workingCopy, 
+            ElementHandle<Element> handle, ElementHandle<Element> annotationHandle, 
+            String argumentName) throws IOException 
+    {
         workingCopy.toPhase(JavaSource.Phase.RESOLVED);
+        Element element = handle.resolve(workingCopy);
+        if ( element == null ){
+            return;
+        }
         Parameters.javaIdentifierOrNull("argumentName", argumentName); // NOI18N
         ModifiersTree oldTree = null;
         if (element instanceof TypeElement) {
-            oldTree = workingCopy.getTrees().getTree((TypeElement) element).getModifiers();
+            oldTree = workingCopy.getTrees().getTree((TypeElement) element).
+                getModifiers();
         } else if (element instanceof ExecutableElement) {
-            oldTree = workingCopy.getTrees().getTree((ExecutableElement) element).getModifiers();
+            oldTree = workingCopy.getTrees().getTree((ExecutableElement) element).
+                getModifiers();
         } else if (element instanceof VariableElement) {
-            oldTree = ((VariableTree) workingCopy.getTrees().getTree(element)).getModifiers();
+            oldTree = ((VariableTree) workingCopy.getTrees().getTree(element)).
+                getModifiers();
         }
         if (oldTree == null) {
             return;
         }
-        AnnotationTree annotation = (AnnotationTree) workingCopy.getTrees().getTree(element, annMirror);
+        
+        Element annotationElement = annotationHandle.resolve( workingCopy);
+        if ( annotationElement == null ){
+            return;
+        }
+        AnnotationMirror annMirror = null;
+        for( AnnotationMirror annotationMirror : element.getAnnotationMirrors() ){
+            if ( annotationElement.equals(annotationMirror.getAnnotationType().
+                    asElement()))
+            {
+                annMirror = annotationMirror;
+            }
+        }
+        if ( annMirror == null ){
+            return;
+        }
+        
+        AnnotationTree annotation = (AnnotationTree) workingCopy.getTrees().
+            getTree(element, annMirror);
         TreeMaker make = workingCopy.getTreeMaker();
         ExpressionTree e = getAnnotationArgumentTree(annotation, argumentName);
         AnnotationTree modifiedAnnotation = make.removeAnnotationAttrValue(annotation, e);
         workingCopy.rewrite(annotation, modifiedAnnotation);
     }
 
-    public static void addAnnotationArgument(WorkingCopy workingCopy, Element element, 
-            AnnotationMirror annMirror, String argumentName, Object argumentValue) throws IOException {
+    public static void addAnnotationArgument(WorkingCopy workingCopy, 
+            ElementHandle<Element> handle, ElementHandle<Element> annotationHandle, 
+            String argumentName, Object argumentValue) throws IOException 
+    {
         workingCopy.toPhase(JavaSource.Phase.RESOLVED);
+        Element element = handle.resolve(workingCopy);
+        if ( element == null ){
+            return;
+        }
         Parameters.javaIdentifierOrNull("argumentName", argumentName); // NOI18N
         Parameters.notNull("argumentValue", argumentValue); // NOI18N
         ModifiersTree oldTree = null;
         if (element instanceof TypeElement) {
-            oldTree = workingCopy.getTrees().getTree((TypeElement) element).getModifiers();
+            oldTree = workingCopy.getTrees().getTree((TypeElement) element).
+                getModifiers();
         } else if (element instanceof ExecutableElement) {
-            oldTree = workingCopy.getTrees().getTree((ExecutableElement) element).getModifiers();
+            oldTree = workingCopy.getTrees().getTree((ExecutableElement) element).
+                getModifiers();
         } else if (element instanceof VariableElement) {
-            oldTree = ((VariableTree) workingCopy.getTrees().getTree(element)).getModifiers();
+            oldTree = ((VariableTree) workingCopy.getTrees().getTree(element)).
+                getModifiers();
         }
         if (oldTree == null) {
             return;
         }
-        AnnotationTree annotation = (AnnotationTree) workingCopy.getTrees().getTree(element, annMirror);
+        
+        Element annotationElement = annotationHandle.resolve( workingCopy);
+        if ( annotationElement == null ){
+            return;
+        }
+        AnnotationMirror annMirror = null;
+        for( AnnotationMirror annotationMirror : element.getAnnotationMirrors() ){
+            if ( annotationElement.equals(annotationMirror.getAnnotationType().
+                    asElement()))
+            {
+                annMirror = annotationMirror;
+            }
+        }
+        if ( annMirror == null ){
+            return;
+        }
+        
+        AnnotationTree annotation = (AnnotationTree) workingCopy.getTrees().
+            getTree(element, annMirror);
         TreeMaker make = workingCopy.getTreeMaker();
         ExpressionTree oldArgTree = getAnnotationArgumentTree(annotation, argumentName);
         if(oldArgTree!=null)
             annotation = make.removeAnnotationAttrValue(annotation, oldArgTree);
         ExpressionTree argumentValueTree = null;
         if(argumentValue instanceof Enum) {
-            TypeElement enumClassElement = workingCopy.getElements().getTypeElement(argumentValue.getClass().getCanonicalName());
+            TypeElement enumClassElement = workingCopy.getElements().getTypeElement(
+                    argumentValue.getClass().getCanonicalName());
             argumentValueTree =  make.MemberSelect(make.QualIdent(enumClassElement),
                     ((Enum)argumentValue).name());
         } else {
@@ -222,9 +311,11 @@ public class Utilities {
             }
         }
         if (argumentName != null) {
-            argumentValueTree =  make.Assignment(make.Identifier(argumentName), argumentValueTree);
+            argumentValueTree =  make.Assignment(make.Identifier(argumentName), 
+                    argumentValueTree);
         }
-        AnnotationTree modifiedAnnotation = make.addAnnotationAttrValue(annotation, argumentValueTree);
+        AnnotationTree modifiedAnnotation = make.addAnnotationAttrValue(annotation, 
+                argumentValueTree);
         workingCopy.rewrite(annotation, modifiedAnnotation);
     }
 

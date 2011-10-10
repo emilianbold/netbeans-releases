@@ -1,3 +1,4 @@
+<%@page import="org.apache.taglibs.standard.examples.util.DataSourceProvider"%>
 <%@ taglib prefix="sql" uri="http://java.sun.com/jsp/jstl/sql" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
@@ -12,19 +13,11 @@
 <h1>SQL Query Execution using parameters</h1>
 <p>Using parameter marker's to insert values in the SQL statements</p>
 
+<%
+    DataSourceProvider dataSource = new DataSourceProvider(session);
+%>
 
-
-<!-- NOTE: the sql:setDataSource tag is for prototyping and simple applications. You should really use a DataSource object instead -->
-
-<sql:setDataSource
-  var="example"
-  driver="${sessionScope.myDbDriver}"
-  url="${sessionScope.myDbUrl}"
-  user="${sessionScope.myDbUserName}"
-  password="${sessionScope.myDbPassword}"
-/>
-
-<sql:transaction dataSource="${example}">
+<sql:transaction dataSource="<%=dataSource%>">
 
   <sql:update var="newTable">
     create table mytable (
@@ -63,7 +56,7 @@
     </c:forEach>
 </table>
 
-<sql:update var="newTable" dataSource="${example}">
+<sql:update var="newTable" dataSource="<%=dataSource%>">
   drop table mytable
 </sql:update>
 

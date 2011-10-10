@@ -41,14 +41,9 @@
  */
 package org.openide.util;
 
-import java.net.InetSocketAddress;
-import java.net.Proxy;
-import java.net.ProxySelector;
 import java.net.URI;
-import java.util.List;
-import java.util.logging.Level;
+import java.util.concurrent.Callable;
 import java.util.logging.Logger;
-import java.util.prefs.Preferences;
 
 /** Useful static methods for getting Network Proxy required for make network
  * connection for specified resource.
@@ -58,24 +53,23 @@ import java.util.prefs.Preferences;
  */
 public final class NetworkSettings {
 
-    private static final String PROXY_AUTHENTICATION_USERNAME = "proxyAuthenticationUsername";
     private static final String PROXY_AUTHENTICATION_PASSWORD = "proxyAuthenticationPassword";
-    private static final String USE_PROXY_AUTHENTICATION = "useProxyAuthentication";
     private static final Logger LOGGER = Logger.getLogger(NetworkSettings.class.getName());
+    private static ThreadLocal<Boolean> authenticationDialogSuppressed = new ThreadLocal<Boolean>();
 
     /** Returns the <code>hostname</code> part of network proxy address 
      * based on given URI to access the resource at.
      * Returns <code>null</code> for direct connection.
      * 
      * @param u The URI that a connection is required to
-     * @return the hostname part of the Proxy address
+     * @return the hostname part of the Proxy address or <code>null</code>
      */
     public static String getProxyHost(URI u) {
-        if (getPreferences() == null) {
-            return null;
+        ProxyCredentialsProvider provider = Lookup.getDefault().lookup(ProxyCredentialsProvider.class);
+        if (provider == null) {
+            LOGGER.warning("No ProxyCredentialsProvider found in lookup " + Lookup.getDefault() + " thus no proxy information will provide!");
         }
-        InetSocketAddress sa = analyzeProxy(u);
-        return sa == null ? null : sa.getHostName();
+        return provider == null ? null : provider.getProxyHost(u);
     }
 
     /** Returns the <code>port</code> part of network proxy address 
@@ -83,71 +77,131 @@ public final class NetworkSettings {
      * Returns <code>null</code> for direct connection.
      * 
      * @param u The URI that a connection is required to
-     * @return the port part of the Proxy address
+     * @return the port part of the Proxy address or <code>null</code>
      */
     public static String getProxyPort(URI u) {
-        if (getPreferences() == null) {
-            return null;
+        ProxyCredentialsProvider provider = Lookup.getDefault().lookup(ProxyCredentialsProvider.class);
+        if (provider == null) {
+            LOGGER.warning("No ProxyCredentialsProvider found in lookup " + Lookup.getDefault() + " thus no proxy information will provide!");
         }
-        InetSocketAddress sa = analyzeProxy(u);
-        return sa == null ? null : Integer.toString(sa.getPort());
+        return provider == null ? null : provider.getProxyPort(u);
     }
 
     /** Returns the <code>username</code> for Proxy Authentication.
      * Returns <code>null</code> if no authentication required.
      * 
      * @param u The URI that a connection is required to
-     * @return username for Proxy Authentication
+     * @return username for Proxy Authentication or <code>null</code>
      */
     public static String getAuthenticationUsername(URI u) {
-        if (getPreferences() == null) {
-            return null;
+        ProxyCredentialsProvider provider = Lookup.getDefault().lookup(ProxyCredentialsProvider.class);
+        if (provider == null) {
+            LOGGER.warning("No ProxyCredentialsProvider found in lookup " + Lookup.getDefault() + " thus no proxy information will provide!");
         }
-        if (getPreferences().getBoolean(USE_PROXY_AUTHENTICATION, false)) {
-            return getPreferences().get(PROXY_AUTHENTICATION_USERNAME, "");
+        if (provider != null && provider.isProxyAuthentication(u)) {
+            return provider.getProxyUserName(u);
         }
         return null;
     }
-    
+
     /** Returns the <code>key</code> for reading password for Proxy Authentication.
-     * Use {@link Keyring} for reading the password from the ring.
+     * Use {@link org.netbeans.api.Keyring} for reading the password from the ring.
      * Returns <code>null</code> if no authentication required.
      * 
      * @param u The URI that a connection is required to
-     * @return the key for reading password for Proxy Authentication from the ring
+     * @return the key for reading password for Proxy Authentication from the ring or <code>null</code>
      */
     public static String getKeyForAuthenticationPassword(URI u) {
-        if (getPreferences() == null) {
-            return null;
+        ProxyCredentialsProvider provider = Lookup.getDefault().lookup(ProxyCredentialsProvider.class);
+        if (provider == null) {
+            LOGGER.warning("No ProxyCredentialsProvider found in lookup " + Lookup.getDefault() + " thus no proxy information will provide!");
         }
-        if (getPreferences().getBoolean(USE_PROXY_AUTHENTICATION, false)) {
+        if (provider != null && provider.isProxyAuthentication(u)) {
             return PROXY_AUTHENTICATION_PASSWORD;
         }
         return null;
     }
 
-    private static Preferences getPreferences() {
-        return NbPreferences.root().node("org/netbeans/core"); // NOI18N
-    }
-    
-    private static InetSocketAddress analyzeProxy(URI uri) {
-        Parameters.notNull("uri", uri);
-        List<Proxy> proxies = ProxySelector.getDefault().select(uri);
-        assert proxies != null : "ProxySelector cannot return null for " + uri;
-        assert ! proxies.isEmpty() : "ProxySelector cannot return empty list for " + uri;
-        Proxy p = proxies.get(0);
-        if (Proxy.Type.DIRECT == p.type()) {
-            // return null for DIRECT proxy
-            return null;
-        } else {
-            if (p.address() instanceof InetSocketAddress) {
-                // check is
-                //assert ! ((InetSocketAddress) p.address()).isUnresolved() : p.address() + " must be resolved address.";
-                return (InetSocketAddress) p.address();
-            } else {
-                LOGGER.log(Level.INFO, p.address() + " is not instanceof InetSocketAddress but " + p.address().getClass());
-                return null;
-            }
+    /** Suppress asking user a question about the authentication credentials while
+     * running <code>blockOfCode</code>. It's a contract with NetBeans implementation
+     * of <a href="http://download.oracle.com/javase/6/docs/api/java/net/Authenticator.html">Authenticator</a>.
+     * In case a system is using other Authenticator implementation, it must call {@link #isAuthenticationDialogSuppressed} method. 
+     * 
+     * @param blockOfCode {@link Callable} containing code which will be executed while authentication is suppressed
+     * @return a result of calling of <code>blockOfCode</code> and may throw an exception.
+     * @throws Exception 
+     * @see #isAuthenticationDialogSuppressed
+     * @since 8.17
+     */
+    public static <R> R suppressAuthenticationDialog(Callable<R> blockOfCode) throws Exception {
+        try {
+            authenticationDialogSuppressed.set(Boolean.TRUE);
+            return blockOfCode.call();
+        } finally {
+            authenticationDialogSuppressed.remove();
         }
+    }
+
+    /** A utility method for implementations of <a href="http://download.oracle.com/javase/6/docs/api/java/net/Authenticator.html">Authenticator</a>
+     * to suppress asking users a authentication question while running code posted
+     * in {@link #authenticationDialogSuppressed}.
+     * 
+     * @return true while running code posted in {@link #authenticationDialogSuppressed} method.
+     * @since 8.17
+     * @see #authenticationDialogSuppressed
+     */
+    public static boolean isAuthenticationDialogSuppressed() {
+        return Boolean.TRUE.equals(authenticationDialogSuppressed.get());
+    }
+
+    /** A SPI abstract class {@link NetworkSettings.ProxyCredentialsProvider} allows
+     * NetBeans Platform users to provide own proxy and network credentials separately.
+     * 
+     * @see <a href="http://wiki.netbeans.org/Authenticator">http://wiki.netbeans.org/Authenticator</a>
+     * @author Jiri Rechtacek, Ondrej Vrabec
+     * @since 8.17
+     */
+    public static abstract class ProxyCredentialsProvider {
+
+        /** Returns the <code>username</code> for Proxy Authentication.
+         * Returns <code>null</code> if no authentication required.
+         * 
+         * @param u The URI that a connection is required to
+         * @return username for Proxy Authentication
+         */
+        protected abstract String getProxyUserName(URI u);
+
+        /** Returns the <code>password</code> for Proxy Authentication.
+         * Returns <code>null</code> if no authentication required.
+         * 
+         * @param u The URI that a connection is required to
+         * @return password for Proxy Authentication
+         */
+        protected abstract char[] getProxyPassword(URI u);
+
+        /** Returns <code>true</code> if Proxy Authentication is required.
+         * 
+         * @param u The URI that a connection is required to
+         * @return <code>true</code> if authentication required.
+         */
+        protected abstract boolean isProxyAuthentication(URI u);
+
+        /** Returns the <code>hostname</code> part of network proxy address 
+         * based on given URI to access the resource at.
+         * Returns <code>null</code> for direct connection.
+         * 
+         * @param u The URI that a connection is required to
+         * @return the hostname part of the Proxy address or <code>null</code>
+         */
+        protected abstract String getProxyHost(URI u);
+
+        /** Returns the <code>port</code> part of network proxy address 
+         * based on given URI to access the resource at.
+         * Returns <code>null</code> for direct connection.
+         * 
+         * @param u The URI that a connection is required to
+         * @return the port part of the Proxy address or <code>null</code>
+         */
+        protected abstract String getProxyPort(URI u);
     }
 }

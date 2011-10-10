@@ -65,6 +65,7 @@ import org.netbeans.test.web.WebProjectValidationEE5;
  */
 public class JsfFunctionalTest extends WebProjectValidationEE5 {
 
+    @SuppressWarnings("hiding")
     public static final String[] TESTS = {
         "testNewJSFWebProject",
         "testManagedBeanWizard",
@@ -160,13 +161,15 @@ public class JsfFunctionalTest extends WebProjectValidationEE5 {
         frameworkStep.rbRegisteredLibraries().push();
         frameworkStep.rbServerLibrary().push();
         frameworkStep.finish();
-        EditorOperator.closeDiscardAll();
         verifyWebPagesNode("index.xhtml");
         waitScanFinished();
+        EditorOperator.closeDiscardAll();
     }
 
     /** Test JSF Managed Bean Wizard. */
     public void testManagedBeanWizard() {
+        // if scanning starts later we have to wait here
+        waitScanFinished();
         NewFileWizardOperator newFileWizard = NewFileWizardOperator.invoke();
         // "Java Server Faces"
         String category = Bundle.getStringTrimmed(
@@ -189,6 +192,8 @@ public class JsfFunctionalTest extends WebProjectValidationEE5 {
 
     /** Test that delete safely bean removes record from faces-config.xml. */
     public void testManagedBeanDelete() {
+        // if scanning starts later we have to wait here
+        waitScanFinished();
         Node node = new Node(new SourcePackagesNode(PROJECT_NAME), "mypackage|MyManagedBean.java");
         new ActionNoBlock(null, "Refactor|Safely Delete...").perform(node);
         NbDialogOperator safeDeleteDialog = new NbDialogOperator("Safely Delete");

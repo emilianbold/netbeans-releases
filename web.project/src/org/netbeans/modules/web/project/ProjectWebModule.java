@@ -134,7 +134,7 @@ public final class ProjectWebModule extends J2eeModuleProvider
         this.cpProvider = cpProvider;
         myContent = new InstanceContent();
         myLookup = new AbstractLookup( myContent );
-        project.evaluator ().addPropertyChangeListener (this);
+        //project.evaluator().addPropertyChangeListener(this);
     }
     
     public Lookup getLookup(){

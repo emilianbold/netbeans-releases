@@ -41,26 +41,19 @@
  */
 package org.netbeans.modules.css.editor.module.main;
 
-import org.netbeans.modules.css.editor.module.spi.Browser;
-import org.netbeans.modules.css.editor.module.spi.CssModule;
-import org.netbeans.modules.css.editor.module.spi.PropertySupportResolver.Factory;
+import org.netbeans.modules.css.editor.module.spi.CssEditorModule;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author mfukala@netbeans.org
  */
-@ServiceProvider(service = CssModule.class)
+@ServiceProvider(service = CssEditorModule.class)
 public class InternetExplorerModule extends BrowserSupportModule {
 
     public InternetExplorerModule() {
-        super(new DefaultBrowser("Internet Explorer", "Microsoft", "trident", "ms", "ie20"), "internet_explorer");
+        super(new DefaultBrowser("Internet Explorer", "Microsoft", "trident", 
+                "ms", "ie20"), "internet_explorer"); //NOI18N
     }
-
-    @Override
-    public Factory getPropertySupportResolverFactory() {
-        return new SupportAllFactory();
-    }
-
       
 }

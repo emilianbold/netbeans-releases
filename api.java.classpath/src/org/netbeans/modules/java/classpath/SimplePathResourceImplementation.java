@@ -44,6 +44,8 @@
 package org.netbeans.modules.java.classpath;
 
 
+import java.io.File;
+import java.net.URISyntaxException;
 import org.netbeans.spi.java.classpath.support.PathResourceBase;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 
@@ -85,13 +87,21 @@ public final class SimplePathResourceImplementation  extends PathResourceBase {
             }
             throw iae;
         }
-        String rootS = root.toString();
+        final String rootS = root.toString();
         if (rootS.matches("file:.+[.]jar/?")) {
-            final IllegalArgumentException iae = new IllegalArgumentException(rootS + " is not a valid classpath entry; use a jar-protocol URL." + context);
-            if (initiatedIn != null) {
-                iae.initCause(initiatedIn);
+            boolean dir = false;
+            try {
+                dir = new File (root.toURI()).isDirectory();
+            } catch (URISyntaxException use) {
+                //pass - handle as non dir
             }
-            throw iae;
+            if (!dir) {
+                final IllegalArgumentException iae = new IllegalArgumentException(rootS + " is not a valid classpath entry; use a jar-protocol URL." + context);
+                if (initiatedIn != null) {
+                    iae.initCause(initiatedIn);
+                }
+                throw iae;
+            }
         }
         if (!rootS.endsWith("/")) {
             final IllegalArgumentException iae = new IllegalArgumentException(rootS + " is not a valid classpath entry; it must end with a slash." + context);

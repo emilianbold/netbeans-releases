@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ * Copyright (c) 2008, 2011 Oracle and/or its affiliates.
+ * All rights reserved. Use is subject to license terms.
+ *
+ * This file is available and licensed under the following license:
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ *  - Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *  - Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in
+ *    the documentation and/or other materials provided with the distribution.
+ *  - Neither the name of Oracle Corporation nor the names of its
+ *    contributors may be used to endorse or promote products derived
+ *    from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+-->
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.collections.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.paint.*?>
+<?import javafx.scene.text.*?>
+
+<StackPane fx:controller="demo.LoginController" id="Login" xmlns:fx="http://javafx.com/fxml">
+    <children>
+        <AnchorPane>
+            <!-- Prevent AnchorPane so that it's max = pref. This causes it to center in StackPane -->
+            <maxWidth><Double fx:value="-Infinity"/></maxWidth>
+            <maxHeight><Double fx:value="-Infinity"/></maxHeight>
+            <children>
+                <TextField layoutX="68.0" layoutY="58.0" prefWidth="126.0" fx:id="userId" onAction="#processLogin"/>
+                <PasswordField layoutX="327.0" layoutY="58.0" prefWidth="126.0" fx:id="password" onAction="#processLogin"/>
+                <Label layoutX="229.0" layoutY="61.0" text="Password:" />
+                <Label layoutX="16.0" layoutY="61.0" text="User:" />
+                <Button layoutX="200.0" layoutY="125.0" text="login" defaultButton="true" fx:id="login" onAction="#processLogin"/>
+                <Label layoutX="80.0" layoutY="200.0" textFill="RED" fx:id="errorMessage" />
+            </children>
+            <properties>
+                <backgroundColor>
+                    <Color blue="1.0" green="1.0" red="1.0" />
+                </backgroundColor>
+                <elementLockSel>
+                    <Boolean fx:value="true" />
+                </elementLockSel>
+            </properties>
+        </AnchorPane>
+    </children>
+    <styleClass>
+        <String fx:value="login" />
+    </styleClass>
+</StackPane>

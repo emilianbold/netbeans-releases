@@ -50,31 +50,15 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-
-import javax.swing.AbstractAction;
-import javax.swing.ImageIcon;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JMenuItem;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
 import javax.accessibility.AccessibleContext;
-import javax.swing.DefaultComboBoxModel;
+import javax.swing.*;
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.FormatOption;
-
 import org.netbeans.spi.viewmodel.Models;
+import org.openide.util.HelpCtx;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
-import org.openide.util.HelpCtx;
 
-
-
-public final class EvaluationWindow extends TopComponent
-    implements ActionListener
-{
+public final class EvaluationWindow extends TopComponent {
 
     /** generated Serialized Version UID */
     private static final String preferredID = "EvaluationWindow"; // NOI18N
@@ -122,6 +106,12 @@ public final class EvaluationWindow extends TopComponent
     @Override
     protected String preferredID() {
         return this.getClass().getName();
+    }
+    
+    @Override
+    public void requestActive() {
+        super.requestActive();
+        exprList.requestFocusInWindow();
     }
 
     @Override
@@ -197,19 +187,8 @@ public final class EvaluationWindow extends TopComponent
         return (view_name);
     }
     
-    public void actionPerformed(java.awt.event.ActionEvent actionEvent) {
-        String ac = actionEvent.getActionCommand();
-        if ((ac != null) && ac.equals("comboBoxChanged")) { // NOI18N
-            JComboBox cb = (JComboBox)actionEvent.getSource();
-	    if (cb != null) {
-                expr = (String)cb.getSelectedItem();
-	        if (expr != null && !expr.equals(""))
-                    exprEval();
-            }
-        }
-    }
-    
     private void exprEval() {
+        expr = exprList.getEditor().getItem().toString();
         format = (FormatOption)format_jcb.getSelectedItem();
 	if (expr != null && !expr.equals("") && format != null) {
             debugger.exprEval(format, expr);
@@ -293,7 +272,20 @@ public final class EvaluationWindow extends TopComponent
 	    exprList.setMaximumSize(cp.getPreferredSize());
             exprList.addItem(expr);
             exprList.setEditable(true);
-            exprList.addActionListener(this);
+            exprList.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    if ("comboBoxChanged".equals(e.getActionCommand()) && exprList.isPopupVisible()) { //NOI18N
+                        exprEval();
+                    }
+                }
+            });
+            exprList.getEditor().addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    exprEval();
+                }
+            });
 
             JLabel cp_text3 = new JLabel(Catalog.get("LBL_Format")); // NOI18N
             cp_text3.setToolTipText(Catalog.get("HINT_Output_format")); // NOI18N
@@ -375,6 +367,7 @@ public final class EvaluationWindow extends TopComponent
     private class FormatListener implements ActionListener {
 
         // implement ActionListener
+        @Override
         public void actionPerformed(java.awt.event.ActionEvent ev) {
 
             String ac = ev.getActionCommand();
@@ -402,10 +395,12 @@ public final class EvaluationWindow extends TopComponent
             popup = popupMenu;
         }
 
+        @Override
         public void mousePressed(MouseEvent e) {
             maybeShowPopup(e);
         }
 
+        @Override
         public void mouseReleased(MouseEvent e) {
             maybeShowPopup(e);
         }
@@ -433,6 +428,7 @@ public final class EvaluationWindow extends TopComponent
                 new ImageIcon("org/netbeans/modules/cnd/debugger/common2/icons/Pointers.gif")); // NOI18N
         }
 
+        @Override
         public void actionPerformed(ActionEvent ev) {
             ta.setText(null);
             ta.setCaretPosition(0);
@@ -445,6 +441,7 @@ public final class EvaluationWindow extends TopComponent
             super("Follow Selected Pointer", // NOI18N
                 new ImageIcon("paste.gif")); // NOI18N
         }
+        @Override
         public void actionPerformed(ActionEvent ev) {
             FollowSelectedPointer(selected_text);
         }
@@ -505,6 +502,7 @@ public final class EvaluationWindow extends TopComponent
         exprEval();
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
 	return new HelpCtx("EvaluationWindow");
     }

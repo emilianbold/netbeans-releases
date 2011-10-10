@@ -772,8 +772,7 @@ public class CompletionContextImpl extends CompletionContext {
         }
         
         //last resort: try special completion
-        if(nsModelMap.size() == 0 && noNSModels.size() == 0)
-            specialCompletion();
+        specialCompletion();
         
         return !(nsModelMap.size() == 0 && noNSModels.size() == 0);
     }
@@ -812,11 +811,13 @@ public class CompletionContextImpl extends CompletionContext {
         for(String temp : specialNamespaceMap.keySet()) {
             try {
                 DefaultModelProvider provider = new DefaultModelProvider(this);
-                CompletionModel cm = provider.getCompletionModel(new java.net.URI(temp), false);
-                populateModelMap(cm);
+                CompletionModel cm = provider.getCompletionModel(new java.net.URI(temp), true);
+                if (cm != null) {
+                    populateModelMap(cm);
+                    continue;
+                }
             } catch (Exception ex) {
                 _logger.log(Level.INFO, null, ex);
-                continue; //continue with the next one
             }
         }
     }

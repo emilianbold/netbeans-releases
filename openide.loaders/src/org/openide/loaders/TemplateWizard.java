@@ -174,7 +174,9 @@ public class TemplateWizard extends WizardDescriptor {
         if (template != obj) {
             template = obj;
         }
-        setTitle (getTitleFormat().format(new Object[] { obj.getNodeDelegate().getDisplayName() }));
+        String title = getTitleFormat().format(new Object[] { obj.getNodeDelegate().getDisplayName() });
+        putProperty( "NewFileWizard_Title", title ); //NOI18N
+        
         if (old != template) {
             Iterator it;
             if (
@@ -203,6 +205,7 @@ public class TemplateWizard extends WizardDescriptor {
             }
             this.iterator.setIterator (it, notify);
         }
+        putProperty( "NewFileWizard_Title", title ); //NOI18N
     }
 
     /** Getter for template to create object from.

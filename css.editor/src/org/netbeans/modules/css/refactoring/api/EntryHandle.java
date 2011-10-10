@@ -44,7 +44,7 @@ package org.netbeans.modules.css.refactoring.api;
 
 /**
  *
- * @author marekfukala
+ * @author mfukala@netbeans.org
  */
 public final class EntryHandle {
 

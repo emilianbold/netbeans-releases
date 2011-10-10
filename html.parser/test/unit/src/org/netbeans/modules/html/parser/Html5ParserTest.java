@@ -46,7 +46,9 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.editor.ext.html.parser.api.AstNode.Attribute;
@@ -815,7 +817,6 @@ public class Html5ParserTest extends NbTestCase {
         assertFalse(attr.isValueQuoted());
 
     }
-
     //fails
 //     //Bug 194037 - AssertionError at nu.validator.htmlparser.impl.TreeBuilder.endTag
 //    public void testIssue194037() throws ParseException {

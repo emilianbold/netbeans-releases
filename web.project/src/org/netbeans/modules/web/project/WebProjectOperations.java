@@ -267,9 +267,9 @@ public class WebProjectOperations implements DeleteOperationImplementation, Copy
 		String warEarName = (String) projectProps.get(WebProjectProperties.WAR_EAR_NAME);
 		String oldName = warName.substring(0, warName.length() - 4);
 		if (warName.endsWith(".war") && oldName.equals(oldProjectName)) //NOI18N
-		    projectProps.put(WebProjectProperties.WAR_NAME, newName + ".war"); //NOI18N
+		    projectProps.put(WebProjectProperties.WAR_NAME, PropertyUtils.getUsablePropertyName(newName) + ".war"); //NOI18N
 		if (warEarName.endsWith(".war") && oldName.equals(oldProjectName)) //NOI18N
-		    projectProps.put(WebProjectProperties.WAR_EAR_NAME, newName + ".war"); //NOI18N
+		    projectProps.put(WebProjectProperties.WAR_EAR_NAME, PropertyUtils.getUsablePropertyName(newName) + ".war"); //NOI18N
 
 		ProjectWebModule wm = (ProjectWebModule) project.getLookup().lookup(ProjectWebModule.class);
 		String serverId = privateProps.getProperty(WebProjectProperties.J2EE_SERVER_INSTANCE);

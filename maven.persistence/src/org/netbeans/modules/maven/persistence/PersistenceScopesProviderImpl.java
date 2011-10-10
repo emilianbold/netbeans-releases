@@ -44,14 +44,12 @@ package org.netbeans.modules.maven.persistence;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScopes;
 import org.netbeans.modules.j2ee.persistence.spi.PersistenceScopeProvider;
 import org.netbeans.modules.j2ee.persistence.spi.PersistenceScopesProvider;
 import org.netbeans.modules.j2ee.persistence.spi.support.PersistenceScopesHelper;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.RequestProcessor;
 
 /**
  * Maven2 Implementation of 
@@ -59,56 +57,49 @@ import org.openide.util.RequestProcessor;
  * also implements PropertyChangeListener to watch for changes on the persistence.xml file
  * @author Daniel Mohni
  */
-public class PersistenceScopesProviderImpl implements PersistenceScopesProvider, PropertyChangeListener {
-
-    private static final RequestProcessor RP = new RequestProcessor(PersistenceScopesProviderImpl.class.getName(), 1, false, false);
+public class PersistenceScopesProviderImpl implements PersistenceScopesProvider, PropertyChangeListener
+{
     private PersistenceScopesHelper scopesHelper = null;
     private PersistenceScopeProvider scopeProvider = null;
-    private Project project = null;
-    //need to be uncommented when maven will support ap aprameters better
-//    private final PropertyChangeListener scopeListener = new PropertyChangeListener() {
-//        @Override
-//        public void propertyChange(PropertyChangeEvent evt) {
-//            Object newV = evt.getNewValue();
-//            if (Boolean.TRUE.equals(newV)) {
-//                puChanged();
-//            }
-//        }
-//    };
-
+    
     /**
      * Creates a new instance of PersistenceScopesProviderImpl
      * @param provider the PersistenceScopeProvider instance to use for lookups
      */
-    public PersistenceScopesProviderImpl(PersistenceScopeProvider provider, Project project) {
+    public PersistenceScopesProviderImpl(PersistenceScopeProvider provider)
+    {
         scopesHelper = new PersistenceScopesHelper();
         scopeProvider = provider;
-        this.project = project;
         checkScope();
     }
-
+    
     /**
      * property access to the persistence scopes
      * @return the PersistenceScopes instance of the current project
      */
-    public PersistenceScopes getPersistenceScopes() {
+    public PersistenceScopes getPersistenceScopes()
+    {
         return scopesHelper.getPersistenceScopes();
     }
-
+    
+    
     /**
      * checks and initialise, updates the PersistenceScopeHelper of the 
      * current project 
      */
-    private void checkScope() {
+    private void checkScope()
+    {
         File persistenceXml = null;
         PersistenceScope scope = scopeProvider.findPersistenceScope(null);
-
-        if (scope != null) {
+        
+        if (scope != null)
+        {
             persistenceXml = FileUtil.toFile(scope.getPersistenceXml());
             scopesHelper.changePersistenceScope(scope, persistenceXml);
-//            scopesHelper.getPersistenceScopes().addPropertyChangeListener(scopeListener);
-        } else {
-            scopesHelper.changePersistenceScope(null, null);
+        }
+        else
+        {
+           scopesHelper.changePersistenceScope(null, null);
         }
     }
 
@@ -116,47 +107,12 @@ public class PersistenceScopesProviderImpl implements PersistenceScopesProvider,
      * watches for creation and deletion of the persistence.xml file
      * @param evt the change event to process
      */
-    public void propertyChange(PropertyChangeEvent evt) {
-        if (MavenPersistenceProvider.PROP_PERSISTENCE.equals(evt.getPropertyName())) {
+    public void propertyChange(PropertyChangeEvent evt)
+    {
+        if (MavenPersistenceProvider.PROP_PERSISTENCE.equals(evt.getPropertyName()))
+        {
             checkScope();
-//            puChanged();
         }
     }
-
-    //need to be uncommented when maven will support ap aprameters better
-    //it one of possible o future realization of ap arameters support in maven
-//    private void puChanged() {
-//        ModelHandle handle = null;
-//            try {
-//                handle = ModelHandleUtils.createModelHandle(project);
-//            } catch (IOException ex) {
-//                return;
-//            } catch (XmlPullParserException ex) {
-//                return;
-//            }
-//        if (handle != null) {
-//            POMModel mdl = handle.getPOMModel();
-//            Plugin plugin = null;
-//            Build bld = mdl.getProject().getBuild();
-//            if (bld != null) {
-//                plugin = bld.findPluginById(Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_COMPILER);
-//            }
-//            if (plugin != null) {
-//                Configuration conf = plugin.getConfiguration();
-//                if (conf == null) {
-//                    conf = mdl.getFactory().createConfiguration();
-//                    plugin.setConfiguration(conf);
-//                }
-//                POMExtensibilityElement args = ModelUtils.getOrCreateChild(conf, "annotationProcessorArguments", mdl);//NOI18N
-//                POMExtensibilityElement staticFactArg = ModelUtils.getOrCreateChild(args, "Aeclipselink.canonicalmodel.use_static_factory", mdl);
-//                if(staticFactArg.getElementText() == null || staticFactArg.getElementText().length()==0)staticFactArg.setElementText("false");
-//                handle.markAsModified(handle.getPOMModel());
-//            }
-//            try {
-//                ModelHandleUtils.writeModelHandle(handle, project);
-//            } catch (IOException ex) {
-//                Exceptions.printStackTrace(ex);
-//            }
-//        }
-//    }
+    
 }
