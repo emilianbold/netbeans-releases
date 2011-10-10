@@ -366,19 +366,44 @@ public abstract class DialogDisplayer {
                     switch (nd.getOptionType()) {
                     case NotifyDescriptor.DEFAULT_OPTION:
                     case NotifyDescriptor.OK_CANCEL_OPTION:
-                        options = new Object[] { NotifyDescriptor.OK_OPTION, NotifyDescriptor.CANCEL_OPTION, };
-
+                        if (!Utilities.isMac()) {
+                            // Windows UI Guidelines
+                            options = new Object[] { NotifyDescriptor.OK_OPTION, NotifyDescriptor.CANCEL_OPTION, };
+                        } else {
+                            // see http://netbeans.org/bugzilla/show_bug.cgi?id=202784 - according to
+                            // Apple HIG guidelines 'Cancel' should be on the left
+                            // http://developer.apple.com/library/mac/#documentation/UserExperience/Conceptual/AppleHIGuidelines/Windows/Windows.html#//apple_ref/doc/uid/20000961-TP9
+                            options = new Object[] { NotifyDescriptor.CANCEL_OPTION, NotifyDescriptor.OK_OPTION, };
+                        }
                         break;
 
                     case NotifyDescriptor.YES_NO_OPTION:
-                        options = new Object[] { NotifyDescriptor.YES_OPTION, NotifyDescriptor.NO_OPTION, };
+                        if (!Utilities.isMac()) {
+                            // Windows UI Guidelines
+                            options = new Object[] { NotifyDescriptor.YES_OPTION, NotifyDescriptor.NO_OPTION, };
+                        } else {
+                            // see http://netbeans.org/bugzilla/show_bug.cgi?id=202784 - according to
+                            // Apple HIG guidelines 'Cancel' should be on the left
+                            // http://developer.apple.com/library/mac/#documentation/UserExperience/Conceptual/AppleHIGuidelines/Windows/Windows.html#//apple_ref/doc/uid/20000961-TP9
+                            options = new Object[] { NotifyDescriptor.NO_OPTION, NotifyDescriptor.YES_OPTION, };
+                        }
 
                         break;
 
                     case NotifyDescriptor.YES_NO_CANCEL_OPTION:
-                        options = new Object[] {
+                        if (!Utilities.isMac()) {
+                            // Windows UI Guidelines
+                            options = new Object[] {
                                 NotifyDescriptor.YES_OPTION, NotifyDescriptor.NO_OPTION, NotifyDescriptor.CANCEL_OPTION,
                             };
+                        } else {
+                            // see http://netbeans.org/bugzilla/show_bug.cgi?id=202784 - according to
+                            // Apple HIG guidelines 'Cancel' should be on the left
+                            // http://developer.apple.com/library/mac/#documentation/UserExperience/Conceptual/AppleHIGuidelines/Windows/Windows.html#//apple_ref/doc/uid/20000961-TP9
+                            options = new Object[] {
+                                NotifyDescriptor.NO_OPTION, NotifyDescriptor.CANCEL_OPTION, NotifyDescriptor.YES_OPTION,
+                            };
+                        }
 
                         break;
 
