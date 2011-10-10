@@ -210,10 +210,12 @@ class LayoutOperations implements LayoutConstants {
                     layoutModel.setIntervalSize(
                             li, NOT_EXPLICITLY_DEFINED, li.getPreferredSize(), Short.MAX_VALUE);
                 }
-                if (i == 1 && li.isEmptySpace()) // first gap
+                if (li.isEmptySpace()
+                        && ((i == 1 && position == LEADING) || (i == n-1 && position == TRAILING))) {
                     insertGapIntoSequence(li, seq, index, dimension);
-                else
+                } else {
                     layoutModel.addInterval(li, seq, index);
+                }
             }
             return null;
         }
@@ -1019,7 +1021,8 @@ class LayoutOperations implements LayoutConstants {
         if (parent.getSubIntervalCount() == 1) {
             addContent(layoutModel.removeInterval(parent, 0),
                        parent.getParent(),
-                       layoutModel.removeInterval(parent));
+                       layoutModel.removeInterval(parent),
+                       dimension);
         }
         else if (parent.getSubIntervalCount() == 0) {
             layoutModel.removeInterval(parent);
@@ -1904,7 +1907,7 @@ class LayoutOperations implements LayoutConstants {
         }
     }
 
-    private void eliminateEndingGaps(LayoutInterval group, LayoutInterval[] outGaps, int dimension) {
+    void eliminateEndingGaps(LayoutInterval group, LayoutInterval[] outGaps, int dimension) {
         IntervalSet[] alignedGap = new IntervalSet[2];
         IntervalSet[] alignedNoGap = new IntervalSet[2];
         IntervalSet[] unalignedGap = new IntervalSet[2];

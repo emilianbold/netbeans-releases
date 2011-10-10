@@ -4276,7 +4276,15 @@ public final class LayoutDesigner implements LayoutModel.RemoveHandler, LayoutMo
                     gap.setAttribute(LayoutInterval.ATTR_FLEX_SIZEDEF);
                     layoutModel.addInterval(gap, parent, index);
 
-                    if (leadingNeighbor == null || trailingNeighbor == null) {
+                    if (trailingNeighbor != null && trailingNeighbor.isParallel() && trailingGap == null) {
+                        operations.eliminateEndingGaps(trailingNeighbor, new LayoutInterval[] {gap,null}, dimension);
+                    }
+                    if (gap.getParent() == parent // i.e. not optimized for trailing neighbor already
+                            && leadingNeighbor != null && leadingNeighbor.isParallel() && leadingGap == null) {
+                        operations.eliminateEndingGaps(leadingNeighbor, new LayoutInterval[] {null,gap}, dimension);
+                    }
+                    if ((leadingNeighbor == null && leadingGap == null)
+                            || (trailingNeighbor == null && trailingGap == null)) {
                         operations.optimizeGaps2(superParent, dimension);
                     }
                 } else { // this is an "open" end - compensate the size in the parent
@@ -4324,12 +4332,17 @@ public final class LayoutDesigner implements LayoutModel.RemoveHandler, LayoutMo
                             // which may also need to propagate whole way up (e.g. bug 203129)
                             LayoutInterval p = superParent;
                             while (p.getParent() != null) {
-                                if (operations.optimizeGaps(p, dimension) < 0) {
+                                int idx = operations.optimizeGaps(p, dimension);
+                                if (idx < 0) {
                                     break;
-                                } else {
-                                    operations.optimizeGaps2(p, dimension);
-                                    p = LayoutInterval.getFirstParent(p, PARALLEL);
                                 }
+                                LayoutInterval seq = p.getParent();
+                                if (seq.isSequential()
+                                        && (idx < 1 || !seq.getSubInterval(0).isEmptySpace())
+                                        && (idx+1 >= seq.getSubIntervalCount() || !seq.getSubInterval(idx+1).isEmptySpace())) {
+                                    break;
+                                }
+                                p = LayoutInterval.getFirstParent(p, PARALLEL);
                             }
                         }
                     }
@@ -4544,7 +4557,7 @@ public final class LayoutDesigner implements LayoutModel.RemoveHandler, LayoutMo
                     parent = parent.getParent();
                 }
                 if (border) {
-                    optimizeGaps(parent, dimension, false);
+                    operations.optimizeGaps(parent, dimension);
                     operations.optimizeGaps2(parent, dimension);
                 }
             }
@@ -4589,7 +4602,7 @@ public final class LayoutDesigner implements LayoutModel.RemoveHandler, LayoutMo
                         (alignment == LEADING) ? groupPos[LEADING] + maxSubSize : groupPos[TRAILING] - maxSubSize,
                         dimension, alignment^1);
             }
-            optimizeGaps(group, dimension, false);
+            operations.optimizeGaps(group, dimension);
         }
 
         return group;
