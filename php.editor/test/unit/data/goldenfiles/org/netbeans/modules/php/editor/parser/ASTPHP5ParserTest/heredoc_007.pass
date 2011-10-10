@@ -213,13 +213,13 @@
                                     <Identifier start='164' end='165' name='a'/>
                                 </Variable>
                                 <Scalar start='165' end='167' type='STRING' value=', '/>
-                                <Variable start='167' end='171' isDollared='false'>
+                                <ReflectionVariable start='167' end='171'>
                                     <Variable start='168' end='170' isDollared='true'>
                                         <Identifier start='169' end='170' name='b'/>
                                     </Variable>
-                                </Variable>
+                                </ReflectionVariable>
                                 <Scalar start='171' end='173' type='STRING' value=', '/>
-                                <Variable start='173' end='182' isDollared='false'>
+                                <ReflectionVariable start='173' end='182'>
                                     <ArrayAccess start='174' end='181' type='VARIABLE_ARRAY' isDollared='false'>
                                         <Index>
                                             <Scalar start='177' end='180' type='STRING' value='&apos;c&apos;'/>
@@ -230,9 +230,9 @@
                                             </Variable>
                                         </Name>
                                     </ArrayAccess>
-                                </Variable>
+                                </ReflectionVariable>
                                 <Scalar start='182' end='188' type='STRING' value=', and '/>
-                                <Variable start='188' end='195' isDollared='false'>
+                                <ReflectionVariable start='188' end='195'>
                                     <FieldAccess start='189' end='194'>
                                         <Variable start='189' end='191' isDollared='true'>
                                             <Identifier start='190' end='191' name='d'/>
@@ -241,7 +241,7 @@
                                             <Identifier start='193' end='194' name='d'/>
                                         </Variable>
                                     </FieldAccess>
-                                </Variable>
+                                </ReflectionVariable>
                                 <Scalar start='195' end='209' type='STRING' value='.\n\n'/>
                             </Expressions>
                         </Quote>
@@ -260,13 +260,13 @@
                                 <Identifier start='259' end='260' name='a'/>
                             </Variable>
                             <Scalar start='260' end='262' type='STRING' value=', '/>
-                            <Variable start='262' end='266' isDollared='false'>
+                            <ReflectionVariable start='262' end='266'>
                                 <Variable start='263' end='265' isDollared='true'>
                                     <Identifier start='264' end='265' name='b'/>
                                 </Variable>
-                            </Variable>
+                            </ReflectionVariable>
                             <Scalar start='266' end='268' type='STRING' value=', '/>
-                            <Variable start='268' end='277' isDollared='false'>
+                            <ReflectionVariable start='268' end='277'>
                                 <ArrayAccess start='269' end='276' type='VARIABLE_ARRAY' isDollared='false'>
                                     <Index>
                                         <Scalar start='272' end='275' type='STRING' value='&apos;c&apos;'/>
@@ -277,9 +277,9 @@
                                         </Variable>
                                     </Name>
                                 </ArrayAccess>
-                            </Variable>
+                            </ReflectionVariable>
                             <Scalar start='277' end='283' type='STRING' value=', and '/>
-                            <Variable start='283' end='290' isDollared='false'>
+                            <ReflectionVariable start='283' end='290'>
                                 <FieldAccess start='284' end='289'>
                                     <Variable start='284' end='286' isDollared='true'>
                                         <Identifier start='285' end='286' name='d'/>
@@ -288,7 +288,7 @@
                                         <Identifier start='288' end='289' name='d'/>
                                     </Variable>
                                 </FieldAccess>
-                            </Variable>
+                            </ReflectionVariable>
                             <Scalar start='290' end='304' type='STRING' value='.\n\n'/>
                         </Expressions>
                     </Quote>
@@ -302,11 +302,11 @@
                     <Parameters>
                         <Quote start='314' end='320' type='QUOTE'>
                             <Expressions>
-                                <Variable start='315' end='319' isDollared='false'>
+                                <ReflectionVariable start='315' end='319'>
                                     <Variable start='316' end='318' isDollared='true'>
                                         <Identifier start='317' end='318' name='x'/>
                                     </Variable>
-                                </Variable>
+                                </ReflectionVariable>
                             </Expressions>
                         </Quote>
                     </Parameters>

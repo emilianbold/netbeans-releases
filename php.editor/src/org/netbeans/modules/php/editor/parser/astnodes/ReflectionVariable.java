@@ -53,4 +53,9 @@ public class ReflectionVariable extends Variable {
 		super(start, end, variable);
 	}
 
+    @Override
+    public void accept(Visitor visitor) {
+        visitor.visit(this);
+    }
+
 }
