@@ -48,24 +48,24 @@ import java.util.List;
  * @author Petr Pisl
  */
 public class PHPDocMethodTag extends PHPDocTypeTag {
-    
+
     private final List<PHPDocVarTypeTag> params;
     private final PHPDocNode name;
-    
+
     public PHPDocMethodTag(int start, int end, PHPDocTag.Type kind,
-            List<PHPDocTypeNode> returnTypes, PHPDocNode methodName, 
+            List<PHPDocTypeNode> returnTypes, PHPDocNode methodName,
             List<PHPDocVarTypeTag> parameters, String documentation) {
         super(start, end, kind, documentation, returnTypes);
         this.params = parameters;
         this.name = methodName;
     }
-    
+
     public PHPDocNode getMethodName() {
         return name;
     }
-    
+
     /**
-     * 
+     *
      * @return parameters of the method
      */
     public List<PHPDocVarTypeTag> getParameters() {
@@ -85,7 +85,7 @@ public class PHPDocMethodTag extends PHPDocTypeTag {
         }
         return documentation;
     }
-    
+
     @Override
     public void accept(Visitor visitor) {
         visitor.visit(this);

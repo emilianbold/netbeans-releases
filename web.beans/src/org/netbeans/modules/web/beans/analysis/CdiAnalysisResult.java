@@ -84,11 +84,13 @@ public class CdiAnalysisResult {
     
     
     static final String BEANS = "beans";                 // NOI18N
-    private static final String BEANS_XML = BEANS+".xml";                 // NOI18N
+    static final String BEANS_XML = BEANS+".xml";                 // NOI18N
     private static final String META_INF = "META-INF";           // NOI18N
     private static final String WEB_INF = "WEB-INF";             // NOI18N
 
-    public CdiAnalysisResult( CompilationInfo info ){
+    public CdiAnalysisResult( CompilationInfo info, 
+            CdiEditorAwareJavaSourceTaskFactory factory )
+    {
         myInfo = info;
         myProblems = new LinkedList<ErrorDescription>();
         myCollectedAnnotations = new LinkedList<CDIAnnotation>();
@@ -141,10 +143,14 @@ public class CdiAnalysisResult {
             return;
         }
         if ( !isCdiEnabled( project ) ) {
-            Fix fix = new BeansXmlFix( project );
+            Fix fix = new BeansXmlFix( project , fileObject , myFactory );
             addError(element, NbBundle.getMessage(CdiAnalysisResult.class, 
                 "ERR_RequireWebBeans"), fix );        // NOI18N
         }
+    }
+    
+    public boolean requireBeansXml(){
+        return isCdiRequired;
     }
     
     public void addAnnotation( CDIAnnotation annotation ) {
@@ -214,5 +220,6 @@ public class CdiAnalysisResult {
     private List<ErrorDescription> myProblems;
     private boolean isCdiRequired;
     private List<CDIAnnotation> myCollectedAnnotations;
+    private CdiEditorAnalysisFactory myFactory;
 
 }

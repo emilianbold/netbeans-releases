@@ -49,6 +49,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -812,6 +813,16 @@ public class BundleStructure {
     private void notifyEntriesNotInitialized() {
         throw new IllegalStateException(
                 "Resource Bundles: Entries not initialized");           //NOI18N
+    }
+
+    PropertiesFileEntry[] getEntries () {
+        synchronized (this) {
+            if (entries == null) {
+                return new PropertiesFileEntry[0];
+            } else {
+                return Arrays.copyOf(entries, entries.length);
+            }
+        }
     }
     
     /**

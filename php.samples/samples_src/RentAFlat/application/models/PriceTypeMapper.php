@@ -75,7 +75,7 @@ class Application_Model_PriceTypeMapper {
     public function save(Application_Model_PriceType $price) {
 
         $data = array(
-            'text_en' => $price->getText_en(),
+            'text' => $price->getText(),
             'priority' => $price->getPriority()
         );
 
@@ -104,26 +104,26 @@ class Application_Model_PriceTypeMapper {
         $row = $result->current();
 
         $price->setId($row->id);
-        $price->setText_en($row->text_en);
+        $price->setText($row->text);
         $price->setPriority($row->priority);
     }
 
     public function fetchAll() {
 
-        $table = $this->getDbTable(); 
-        $select = $table->select(); 
+        $table = $this->getDbTable();
+        $select = $table->select();
         $select->from($table)
-                ->order("priority asc"); 
-        $resultSet = $table->fetchAll($select); 
+                ->order("priority asc");
+        $resultSet = $table->fetchAll($select);
 
         foreach ($resultSet as $row) {
 
             $entry = new Application_Model_PriceType($options);
 
             $entry->setId($row->id);
-            $entry->setText_en($row->text_en);
+            $entry->setText($row->text);
             $entry->setPriority($row->priority);
-            
+
 
             $entries[] = $entry;
         }

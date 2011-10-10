@@ -44,7 +44,7 @@
 class Application_Model_PriceType {
 
     private $id;
-    private $text_en;
+    private $text;
     private $priority;
 
     public function __construct(array $options = null) {
@@ -97,12 +97,12 @@ class Application_Model_PriceType {
         $this->id = $id;
     }
 
-    public function getText_en() {
-        return $this->text_en;
+    public function getText() {
+        return $this->text;
     }
 
-    public function setText_en($text_en) {
-        $this->text_en = $text_en;
+    public function setText($text) {
+        $this->text = $text;
     }
 
     public function getPriority() {

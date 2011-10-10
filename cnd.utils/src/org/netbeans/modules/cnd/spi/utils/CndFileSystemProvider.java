@@ -45,8 +45,10 @@ package org.netbeans.modules.cnd.spi.utils;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Collection;
+import java.util.logging.Level;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -307,14 +309,24 @@ public abstract class CndFileSystemProvider {
                 }
             }
             String path = url.toString();
+            File file;
             if (path.startsWith(FILE_PROTOCOL_PREFIX)) {
                 try {
                     URL u = new URL(path);
-                    path = u.getFile();
+                    file = FileUtil.normalizeFile(new File(u.toURI()));
+                } catch (IllegalArgumentException ex) {
+                    CndUtils.getLogger().log(Level.WARNING, "CndFileSystemProvider.urlToFileObjectImpl can not convert {0}:\n{1}", new Object[]{path, ex.getLocalizedMessage()});
+                    return null;
+                } catch (URISyntaxException ex) {
+                    CndUtils.getLogger().log(Level.WARNING, "CndFileSystemProvider.urlToFileObjectImpl can not convert {0}:\n{1}", new Object[]{path, ex.getLocalizedMessage()});
+                    return null;
                 } catch (MalformedURLException ex) {
-                }        
+                    CndUtils.getLogger().log(Level.WARNING, "CndFileSystemProvider.urlToFileObjectImpl can not convert {0}:\n{1}", new Object[]{path, ex.getLocalizedMessage()});
+                    return null;
+                }       
+            } else {
+                file = new File(FileUtil.normalizePath(path));
             }
-            File file = new File(FileUtil.normalizePath(path));
             return FileUtil.toFileObject(file);
         }
 

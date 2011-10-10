@@ -48,7 +48,7 @@ class Application_Form_PropertyForm extends Zend_Form {
 
     public function init() {
         $this->setMethod("post");
-        
+
         $element = new Zend_Form_Element_Text("reference_no", array(
                     "label" => "Ref. No",
                 ));
@@ -60,10 +60,10 @@ class Application_Form_PropertyForm extends Zend_Form {
                     'viewScript' => 'formElements/property/_textInput.phtml'
                 )
             )
-        ));        
+        ));
         $this->addElement($element);
 
-       
+
         $element = new Zend_Form_Element_Text("price", array(
                     "label" => "Price",
                 ));
@@ -74,11 +74,11 @@ class Application_Form_PropertyForm extends Zend_Form {
                 )
             )
         ));
-        $element->setRequired(true); 
-        $element->addValidator(new Zend_Validate_IsNumber(), true); 
+        $element->setRequired(true);
+        $element->addValidator(new Zend_Validate_IsNumber(), true);
         $this->addElement($element);
 
-        $element = new Zend_Form_Element_Text("title_en", array(
+        $element = new Zend_Form_Element_Text("title", array(
                     "label" => "Title",
                 ));
         $element->setDecorators(array(
@@ -88,7 +88,7 @@ class Application_Form_PropertyForm extends Zend_Form {
                 )
             )
         ));
-        $element->setRequired(true); 
+        $element->setRequired(true);
         $this->addElement($element);
 
 
@@ -101,7 +101,7 @@ class Application_Form_PropertyForm extends Zend_Form {
         $type = new Application_Model_PropertyBuildTypeMapper();
         $options[''] = '';
         foreach ($type->fetchAll() as $value) {
-            $options[$value->getId()] = $value->getText_en();
+            $options[$value->getId()] = $value->getText();
         }
         $element = new Zend_Form_Element_Select("property_build_id", array(
                     'label' => 'Building type',
@@ -113,13 +113,13 @@ class Application_Form_PropertyForm extends Zend_Form {
                 )
             )
         ));
-        
+
         $element->setRequired(true);
         $element->addValidator(new Zend_Validate_NotEmpty());
         $this->addElement($element);
 
         $options = array();
-        
+
         for ($i = 0; $i < 25; $i++) {
             $options[$i] = $i;
         }
@@ -133,7 +133,7 @@ class Application_Form_PropertyForm extends Zend_Form {
                 )
             )
         ));
-        
+
         $element->setRequired(true);
         $element->addValidator(new Zend_Validate_NotEmpty());
         $this->addElement($element);
@@ -142,7 +142,7 @@ class Application_Form_PropertyForm extends Zend_Form {
         $dis = new Application_Model_DispositionMapper();
         $options[''] = '';
         foreach ($dis->fetchAll() as $value) {
-            $options[$value->getId()] = $value->getText_en();
+            $options[$value->getId()] = $value->getText();
         }
         $element = new Zend_Form_Element_Select("disposition_id", array(
                     'label' => 'Disposition',
@@ -168,7 +168,7 @@ class Application_Form_PropertyForm extends Zend_Form {
                 )
             )
         ));
-        $element->addValidator(new Zend_Validate_IsNumber(), true); 
+        $element->addValidator(new Zend_Validate_IsNumber(), true);
         $this->addElement($element);
 
 
@@ -182,7 +182,7 @@ class Application_Form_PropertyForm extends Zend_Form {
                 )
             )
         ));
-        $element->addValidator(new Zend_Validate_IsNumber(), true); 
+        $element->addValidator(new Zend_Validate_IsNumber(), true);
         $this->addElement($element);
 
         $element = new Zend_Form_Element_Text("balcony", array(
@@ -195,7 +195,7 @@ class Application_Form_PropertyForm extends Zend_Form {
                 )
             )
         ));
-        $element->addValidator(new Zend_Validate_IsNumber(), true); 
+        $element->addValidator(new Zend_Validate_IsNumber(), true);
         $this->addElement($element);
 
         $element = new Zend_Form_Element_Text("terace", array(
@@ -208,7 +208,7 @@ class Application_Form_PropertyForm extends Zend_Form {
                 )
             )
         ));
-        $element->addValidator(new Zend_Validate_IsNumber(), true); 
+        $element->addValidator(new Zend_Validate_IsNumber(), true);
         $this->addElement($element);
 
         $element = new Zend_Form_Element_Text("loggia", array(
@@ -221,7 +221,7 @@ class Application_Form_PropertyForm extends Zend_Form {
                 )
             )
         ));
-        $element->addValidator(new Zend_Validate_IsNumber(), true); 
+        $element->addValidator(new Zend_Validate_IsNumber(), true);
         $this->addElement($element);
 
         $element = new Zend_Form_Element_Text("garage", array(
@@ -234,7 +234,7 @@ class Application_Form_PropertyForm extends Zend_Form {
                 )
             )
         ));
-        $element->addValidator(new Zend_Validate_IsNumber(), true); 
+        $element->addValidator(new Zend_Validate_IsNumber(), true);
         $this->addElement($element);
 
         $element = new Zend_Form_Element_Text("garden", array(
@@ -247,7 +247,7 @@ class Application_Form_PropertyForm extends Zend_Form {
                 )
             )
         ));
-        $element->addValidator(new Zend_Validate_IsNumber(), true); 
+        $element->addValidator(new Zend_Validate_IsNumber(), true);
         $this->addElement($element);
 
         $element = new Zend_Form_Element_Checkbox("lift", array(
@@ -277,7 +277,7 @@ class Application_Form_PropertyForm extends Zend_Form {
                 )
             )
         ));
-        
+
         $element->setRequired(true);
         $element->addValidator(new Zend_Validate_NotEmpty());
         $this->addElement($element);
@@ -299,7 +299,7 @@ class Application_Form_PropertyForm extends Zend_Form {
         $this->addElement($element);
 
 
-        $element = new Zend_Form_Element_Textarea("text_en", array(
+        $element = new Zend_Form_Element_Textarea("text", array(
                     "label" => "Description",
                 ));
         $element->setDecorators(array(
@@ -309,7 +309,7 @@ class Application_Form_PropertyForm extends Zend_Form {
                 )
             )
         ));
-        $element->setRequired(true); 
+        $element->setRequired(true);
         $this->addElement($element);
 
 

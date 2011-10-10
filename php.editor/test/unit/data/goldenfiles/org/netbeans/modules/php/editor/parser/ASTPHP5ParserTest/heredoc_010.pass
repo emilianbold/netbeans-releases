@@ -204,29 +204,29 @@
                     <Parameters>
                         <Quote start='143' end='259' type='HEREDOC'>
                             <Expressions>
-                                <Variable start='159' end='171' isDollared='false'>
+                                <ReflectionVariable start='159' end='171'>
                                     <Variable start='160' end='170' isDollared='true'>
                                         <Identifier start='161' end='170' name='fooledYou'/>
                                     </Variable>
-                                </Variable>
+                                </ReflectionVariable>
                                 <Scalar start='171' end='183' type='STRING' value='ENDOFHEREDOC'/>
-                                <Variable start='183' end='195' isDollared='false'>
+                                <ReflectionVariable start='183' end='195'>
                                     <Variable start='184' end='194' isDollared='true'>
                                         <Identifier start='185' end='194' name='fooledYou'/>
                                     </Variable>
-                                </Variable>
+                                </ReflectionVariable>
                                 <Scalar start='195' end='208' type='STRING' value='\nENDOFHEREDOC'/>
-                                <Variable start='208' end='220' isDollared='false'>
+                                <ReflectionVariable start='208' end='220'>
                                     <Variable start='209' end='219' isDollared='true'>
                                         <Identifier start='210' end='219' name='fooledYou'/>
                                     </Variable>
-                                </Variable>
+                                </ReflectionVariable>
                                 <Scalar start='220' end='221' type='STRING' value='\n'/>
-                                <Variable start='221' end='233' isDollared='false'>
+                                <ReflectionVariable start='221' end='233'>
                                     <Variable start='222' end='232' isDollared='true'>
                                         <Identifier start='223' end='232' name='fooledYou'/>
                                     </Variable>
-                                </Variable>
+                                </ReflectionVariable>
                                 <Scalar start='233' end='258' type='STRING' value='ENDOFHEREDOC\n\n'/>
                             </Expressions>
                         </Quote>
@@ -240,29 +240,29 @@
                     </Variable>
                     <Quote start='267' end='383' type='HEREDOC'>
                         <Expressions>
-                            <Variable start='283' end='295' isDollared='false'>
+                            <ReflectionVariable start='283' end='295'>
                                 <Variable start='284' end='294' isDollared='true'>
                                     <Identifier start='285' end='294' name='fooledYou'/>
                                 </Variable>
-                            </Variable>
+                            </ReflectionVariable>
                             <Scalar start='295' end='307' type='STRING' value='ENDOFHEREDOC'/>
-                            <Variable start='307' end='319' isDollared='false'>
+                            <ReflectionVariable start='307' end='319'>
                                 <Variable start='308' end='318' isDollared='true'>
                                     <Identifier start='309' end='318' name='fooledYou'/>
                                 </Variable>
-                            </Variable>
+                            </ReflectionVariable>
                             <Scalar start='319' end='332' type='STRING' value='\nENDOFHEREDOC'/>
-                            <Variable start='332' end='344' isDollared='false'>
+                            <ReflectionVariable start='332' end='344'>
                                 <Variable start='333' end='343' isDollared='true'>
                                     <Identifier start='334' end='343' name='fooledYou'/>
                                 </Variable>
-                            </Variable>
+                            </ReflectionVariable>
                             <Scalar start='344' end='345' type='STRING' value='\n'/>
-                            <Variable start='345' end='357' isDollared='false'>
+                            <ReflectionVariable start='345' end='357'>
                                 <Variable start='346' end='356' isDollared='true'>
                                     <Identifier start='347' end='356' name='fooledYou'/>
                                 </Variable>
-                            </Variable>
+                            </ReflectionVariable>
                             <Scalar start='357' end='382' type='STRING' value='ENDOFHEREDOC\n\n'/>
                         </Expressions>
                     </Quote>
@@ -276,11 +276,11 @@
                     <Parameters>
                         <Quote start='392' end='398' type='QUOTE'>
                             <Expressions>
-                                <Variable start='393' end='397' isDollared='false'>
+                                <ReflectionVariable start='393' end='397'>
                                     <Variable start='394' end='396' isDollared='true'>
                                         <Identifier start='395' end='396' name='x'/>
                                     </Variable>
-                                </Variable>
+                                </ReflectionVariable>
                             </Expressions>
                         </Quote>
                     </Parameters>

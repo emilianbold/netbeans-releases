@@ -62,7 +62,7 @@ public class CdiAnalysisTestResult extends CdiAnalysisResult
 {
     
     public CdiAnalysisTestResult( CompilationInfo info ) {
-        super(info);
+        super(info, null);
     }
 
     /* (non-Javadoc)

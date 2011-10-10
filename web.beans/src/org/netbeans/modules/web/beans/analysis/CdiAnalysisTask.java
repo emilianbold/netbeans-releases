@@ -70,9 +70,13 @@ import org.netbeans.spi.editor.hints.ErrorDescription;
  */
 public class CdiAnalysisTask extends AbstractAnalysisTask {
     
+    public CdiAnalysisTask( CdiEditorAwareJavaSourceTaskFactory factory ){
+        myFactory =factory;
+    }
+    
     
     protected CdiAnalysisResult createResult( CompilationInfo info ){
-        return new CdiAnalysisResult(info);
+        return new CdiAnalysisResult(info, myFactory );
     }
     
     /* (non-Javadoc)
@@ -134,7 +138,8 @@ public class CdiAnalysisTask extends AbstractAnalysisTask {
         }
         analyzer.analyze(element, typeElement, getCancel(), getResult() );
     }
-    
+
+    private CdiEditorAwareJavaSourceTaskFactory myFactory;
     private static final Map<ElementKind,ElementAnalyzer> ANALIZERS = 
         new HashMap<ElementKind, ElementAnalyzer>();
 
