@@ -39,63 +39,54 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.debugger.jpda.visual.remote;
+package org.netbeans.modules.debugger.jpda.visual.models;
 
-import java.lang.reflect.Field;
+import org.netbeans.api.debugger.Properties;
+import org.netbeans.spi.debugger.ui.ColumnModelRegistration;
+import org.netbeans.spi.viewmodel.ColumnModel;
+import org.openide.util.NbBundle;
 
 /**
- *
- * @author Jaroslav Bachorik
+ * Column model representing event types.
+ * 
+ * @author Martin Entlicher
  */
-public class RemoteFXService {
-//    final private static Logger LOGGER = Logger.getAnonymousLogger();
+@ColumnModelRegistration(path="netbeans-JPDASession/EventsView")
+public class EventTypesColumnModel extends ColumnModel {
     
-    static {
-        try {
-            Class.forName("javafx.scene.image.Image", true, RemoteFXService.class.getClassLoader());
-        } catch (ClassNotFoundException e) {
-            // throw away
-        }
-        try {
-            Class.forName("com.sun.media.jfxmedia.AudioClip", true, RemoteFXService.class.getClassLoader());
-        } catch (ClassNotFoundException e) {
-            // throw away
-        }
-        try {
-            Class.forName("com.sun.media.jfxmedia.MediaManager", true, RemoteFXService.class.getClassLoader());
-        } catch (ClassNotFoundException e) {
-            // throw away
-        }
-        try {
-            Class.forName("com.sun.media.jfxmedia.MediaPlayer", true, RemoteFXService.class.getClassLoader());
-        } catch (ClassNotFoundException e) {
-            // throw away
-        }
-        try {
-            Class.forName("com.sun.media.jfxmedia.events.PlayerStateEvent$PlayerState", true, RemoteFXService.class.getClassLoader());
-        } catch (ClassNotFoundException e) {
-            // throw away
-        }
+    static final String ID = "EventsViewTypeColumn";    // NOI18N
+
+    private Properties properties = Properties.getDefault ().
+            getProperties ("debugger").getProperties ("views"); // NOI18N
+    
+    @Override
+    public String getID() {
+        return ID;
+    }
+
+    @Override
+    public String getDisplayName() {
+        return NbBundle.getMessage(EventTypesColumnModel.class, "LBL_EventTypesColumnName");
+    }
+
+    @Override
+    public String getShortDescription() {
+        return NbBundle.getMessage(EventTypesColumnModel.class, "LBL_EventTypesColumnDescr");
     }
     
-    final private static Thread accessThread = new Thread(new Runnable() {
-        public void run() {
-            while (!Thread.interrupted()) {
-                access();
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                }
-            }
-        }
-    }, "FX Access Thread (Visual Debugger)"); // NOI18N
-    
-    public static void startAccessLoop() {
-        accessThread.setDaemon(true);
-        accessThread.setPriority(Thread.MIN_PRIORITY);
-        accessThread.start();
+    @Override
+    public Class getType() {
+        return String.class;
+    }
+
+    @Override
+    public boolean isVisible() {
+        return properties.getBoolean (getID () + ".visible", false);    // NOI18N
     }
     
-    private static void access() {};
+    @Override
+    public void setVisible (boolean visible) {
+        properties.setBoolean (getID () + ".visible", visible);         // NOI18N
+    }
+
 }

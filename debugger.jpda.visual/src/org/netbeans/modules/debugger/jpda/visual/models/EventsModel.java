@@ -99,8 +99,8 @@ import org.openide.util.Utilities;
  *
  * @author Martin Entlicher
  */
-@DebuggerServiceRegistration(path="netbeans-JPDASession/EventsView", types={ TreeModel.class, NodeModel.class, NodeActionsProvider.class, TreeExpansionModelFilter.class })
-public class EventsModel implements TreeModel, NodeModel, NodeActionsProvider, TreeExpansionModelFilter {
+@DebuggerServiceRegistration(path="netbeans-JPDASession/EventsView", types={ TreeModel.class, NodeModel.class, TableModel.class, NodeActionsProvider.class, TreeExpansionModelFilter.class })
+public class EventsModel implements TreeModel, NodeModel, TableModel, NodeActionsProvider, TreeExpansionModelFilter {
     
     private static final String customListeners = "customListeners"; // NOI18N
     private static final String swingListeners = "swingListeners"; // NOI18N
@@ -110,8 +110,8 @@ public class EventsModel implements TreeModel, NodeModel, NodeActionsProvider, T
     
     private JavaComponentInfo selectedCI = null;
     private final List<RemoteEvent> events = new ArrayList<RemoteEvent>();
-    private List<RemoteListener> customListenersList;
-    private List<RemoteListener> swingListenersList;
+    private volatile List<RemoteListener> customListenersList;
+    private volatile List<RemoteListener> swingListenersList;
     private JPDADebugger debugger;
     private final Map<ObjectReference, Set<LoggingEventListener>> loggingListeners =
             new HashMap<ObjectReference, Set<LoggingEventListener>>();
@@ -165,7 +165,8 @@ public class EventsModel implements TreeModel, NodeModel, NodeActionsProvider, T
                 String componentName = ci.getDisplayName();
                 List<RemoteListener> componentListeners;
                 try {
-                    componentListeners = RemoteServices.getAttachedListeners(ci);
+                    componentListeners = RemoteServices.getAttachedListeners(ci, true);
+                    //System.err.println("ALL Component Listeners = "+componentListeners);
                 } catch (PropertyVetoException pvex) {
                     Exceptions.printStackTrace(pvex);
                     return new Object[] {};
@@ -204,8 +205,6 @@ public class EventsModel implements TreeModel, NodeModel, NodeActionsProvider, T
                         sll.add(rl);
                         //listenerCategories = swingListenersMap;
                     }
-                    customListenersList = cll;
-                    swingListenersList = sll;
                     /*
                     ListenerCategory lc = listenerCategories.get(type);
                     if (lc == null) {
@@ -214,6 +213,8 @@ public class EventsModel implements TreeModel, NodeModel, NodeActionsProvider, T
                     }
                     lc.addListener(rl); */
                 }
+                customListenersList = cll;
+                swingListenersList = sll;
                 
                 return new Object[] { componentName, customListeners, swingListeners, eventsLog };
             } else {
@@ -460,6 +461,39 @@ public class EventsModel implements TreeModel, NodeModel, NodeActionsProvider, T
         } else if (node == eventsLog) {
             eventsExpanded = false;
         }
+    }
+
+    @Override
+    public Object getValueAt(Object node, String columnID) throws UnknownTypeException {
+        if (EventTypesColumnModel.ID.equals(columnID)) {
+            if (node instanceof RemoteListener) {
+                String[] types = ((RemoteListener) node).getTypes();
+                if (types.length == 1) {
+                    return types[0];
+                } else {
+                    StringBuilder sb = new StringBuilder(types[0]);
+                    for (int i = 1; i < types.length; i++) {
+                        sb.append(", ");
+                        sb.append(types[i]);
+                    }
+                    return sb.toString();
+                }
+            } else {
+                return "";
+            }
+        } else {
+            throw new UnknownTypeException("Unknown column: "+columnID);
+        }
+    }
+
+    @Override
+    public boolean isReadOnly(Object node, String columnID) throws UnknownTypeException {
+        return true;
+    }
+
+    @Override
+    public void setValueAt(Object node, String columnID, Object value) throws UnknownTypeException {
+        throw new IllegalStateException("Is read only.");
     }
     
     private static class ListenerCategory {

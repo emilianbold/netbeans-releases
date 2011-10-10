@@ -49,6 +49,7 @@ Other names may be trademarks of their respective owners.
 
 
 
+
 <!-- begin XML Online Help IDs :-->
 <mapID target="xml_about" url="xml/xml_about.html" />
 <mapID target="xml_overview" url="xml/xml_overview.html" />
@@ -175,6 +176,7 @@ Other names may be trademarks of their respective owners.
 
 <!--Task List window -->
 <mapID target="org.netbeans.modules.tasklist.docscan.SourceTasksView" url="files/tasklist-csh.html" />
+<mapID target="org.netbeans.modules.tasklist.ui.TaskListTopComponent" url="files/tasklist-csh.html" />
 
 <!--Java and PHP shared Project Properties: Formatting panel -->
 <mapID target="org.netbeans.modules.editor.indent.project.FormattingCustomizerPanel" url="editing/csh/project_props_editor_format.html" />

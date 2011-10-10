@@ -183,10 +183,16 @@ public final class APTDefineNode extends APTMacroBaseNode
             switch (stateAndHashCode) {
                 case BEFORE_MACRO_NAME:
                 {
+                    if (APTUtils.isCommentToken(ttype)) {
+                        return true;
+                    }
                     // allow base class to remember macro nam
                     boolean accepted = super.accept(curFile, token);
-                    assert(accepted);
-                    stateAndHashCode = AFTER_MACRO_NAME;
+                    if (!accepted) {
+                        stateAndHashCode = ERROR;
+                    } else {
+                        stateAndHashCode = AFTER_MACRO_NAME;
+                    }
                     break;
                 }
                 case AFTER_MACRO_NAME:
