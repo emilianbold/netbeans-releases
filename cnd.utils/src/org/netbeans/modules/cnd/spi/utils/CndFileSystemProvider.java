@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collection;
+import java.util.logging.Level;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -312,6 +313,7 @@ public abstract class CndFileSystemProvider {
                     URL u = new URL(path);
                     path = u.getFile();
                 } catch (MalformedURLException ex) {
+                    CndUtils.getLogger().log(Level.WARNING, "CndFileSystemProvider.urlToFileObjectImpl {0}->{1}", new Object[] {url, ex.getLocalizedMessage()});
                 }        
             }
             File file = new File(FileUtil.normalizePath(path));
