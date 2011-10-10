@@ -146,11 +146,11 @@ public class ParsingProblemDetectorImpl implements ParsingProblemDetector {
         if (CndUtils.isStandalone() || CndUtils.isUnitTestMode()) {
             return;
         }
-        //if (remainingTime < timeThreshold) {
-        //    return;
-        //}
-        //int usedMemory = (int) ((runtime.totalMemory() - runtime.freeMemory()) / Mb);
-        //if (maxMemory - usedMemory < memoryThreshold) {
+        if (remainingTime < timeThreshold) {
+            return;
+        }
+        int usedMemory = (int) ((runtime.totalMemory() - runtime.freeMemory()) / Mb);
+        if (maxMemory - usedMemory < memoryThreshold) {
             isDialogShown = true;
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
@@ -158,7 +158,7 @@ public class ParsingProblemDetectorImpl implements ParsingProblemDetector {
                     ParsingProblemResolver.showParsingProblemResolver(ParsingProblemDetectorImpl.this);
                 }
             });
-        //}
+        }
     }
     
     /**
