@@ -80,7 +80,7 @@ class Application_Model_DispositionMapper {
     public function save(Application_Model_Disposition $disposition) {
 
         $data = array(
-            'text_en' => $disposition->getText_en()
+            'text' => $disposition->getText()
         );
 
 
@@ -108,7 +108,7 @@ class Application_Model_DispositionMapper {
         $row = $result->current();
 
         $content->setId($row->id)
-                ->setText_en($row->text_en);
+                ->setText($row->text);
     }
 
     public function fetchAllUsed($city, $cp, $pType, $offer_id, $cityMatch) {
@@ -173,7 +173,7 @@ class Application_Model_DispositionMapper {
         $table = $this->getDbTable();
         $select = $table->select();
         $select->from($table)
-                ->order("text_en asc");
+                ->order("text asc");
         if (!($query == null)) {
             $select->where($query);
         }
@@ -191,7 +191,7 @@ class Application_Model_DispositionMapper {
             $entry = new Application_Model_Disposition();
 
             $entry->setId($row->id);
-            $entry->setText_en($row->text_en);
+            $entry->setText($row->text);
 
             $entries[] = $entry;
         }
@@ -227,4 +227,3 @@ class Application_Model_DispositionMapper {
 
 }
 
-?>

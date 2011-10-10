@@ -73,6 +73,7 @@ import javax.swing.event.ChangeListener;
 import org.openide.util.Utilities;
 import org.openide.awt.MouseUtils;
 import org.openide.awt.TabbedPaneFactory;
+import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.windows.IOContainer;
@@ -609,6 +610,11 @@ public final class IOWindow implements IOContainer.Provider {
             for (JComponent tab : getTabs()) {
                 removeTab(tab);
             }
+        }
+
+        @Override
+        public HelpCtx getHelpCtx() {
+            return new HelpCtx("org.netbeans.core.io.ui.IOWindow");
         }
 
         private class Close extends AbstractAction {

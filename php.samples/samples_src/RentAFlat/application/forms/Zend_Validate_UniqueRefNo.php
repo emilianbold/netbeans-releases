@@ -67,4 +67,3 @@ class Zend_Validate_UniqueRefNo extends Zend_Validate_Abstract {
 
 }
 
-?>

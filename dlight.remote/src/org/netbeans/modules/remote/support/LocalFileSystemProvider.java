@@ -46,6 +46,7 @@ import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Collection;
 import java.util.HashMap;
@@ -248,14 +249,24 @@ public final class LocalFileSystemProvider implements FileSystemProviderImplemen
     @Override
     public FileObject urlToFileObject(String absoluteURL) {
         String path = absoluteURL;
+        File file;
         if (path.startsWith(FILE_PROTOCOL_PREFIX)) {
             try {
                 URL u = new URL(path);
-                path = u.getFile();
+                file = FileUtil.normalizeFile(new File(u.toURI()));
+            } catch (IllegalArgumentException ex) {
+                RemoteLogger.getInstance().log(Level.WARNING, "LocalFileSystemProvider.urlToFileObject can not convert {0}:\n{1}", new Object[]{absoluteURL, ex.getLocalizedMessage()});
+                return null;
+            } catch (URISyntaxException ex) {
+                RemoteLogger.getInstance().log(Level.WARNING, "LocalFileSystemProvider.urlToFileObject can not convert {0}:\n{1}", new Object[] {absoluteURL, ex.getLocalizedMessage()});
+                return null;
             } catch (MalformedURLException ex) {
+                RemoteLogger.getInstance().log(Level.WARNING, "LocalFileSystemProvider.urlToFileObject can not convert {0}:\n{1}", new Object[] {absoluteURL, ex.getLocalizedMessage()});
+                return null;
             }        
+        } else {
+            file = new File(FileUtil.normalizePath(path));
         }
-        File file = new File(FileUtil.normalizePath(path));
         return FileUtil.toFileObject(file);
     }
 

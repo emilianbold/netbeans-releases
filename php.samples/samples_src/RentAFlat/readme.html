@@ -1,7 +1,43 @@
 <!--
-    Document   : readme.html
-    Created on : 19.02.2010
-    Author     : Filip Zamboj
+DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
+
+The contents of this file are subject to the terms of either the GNU
+General Public License Version 2 only ("GPL") or the Common
+Development and Distribution License("CDDL") (collectively, the
+"License"). You may not use this file except in compliance with the
+License. You can obtain a copy of the License at
+http://www.netbeans.org/cddl-gplv2.html
+or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+specific language governing permissions and limitations under the
+License.  When distributing the software, include this License Header
+Notice in each file and include the License file at
+nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
+particular file as subject to the "Classpath" exception as provided
+by Oracle in the GPL Version 2 section of the License file that
+accompanied this code. If applicable, add the following below the
+License Header, with the fields enclosed by brackets [] replaced by
+your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+If you wish your version of this file to be governed by only the CDDL
+or only the GPL Version 2, indicate your decision by adding
+"[Contributor] elects to include this software in this distribution
+under the [CDDL or GPL Version 2] license." If you do not indicate a
+single choice of license, a recipient has the option to distribute
+your version of this file under either the CDDL, the GPL Version 2 or
+to extend the choice of license to its licensees as provided above.
+However, if you add GPL Version 2 code and therefore, elected the GPL
+Version 2 license, then the option applies only if the new code is
+made subject to such option by the copyright holder.
+
+Contributor(s):
+
+Portions Copyrighted 2011 Sun Microsystems, Inc.
 -->
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" dir="ltr" lang="en-US">
@@ -15,7 +51,7 @@
         <meta name="description" content="Sample Zend framework project for NetBeans" />
 
         <meta name="author" content="Oracle corp." />
-        <meta name="copyright" content="(c) 2010 Oracle" />
+        <meta name="copyright" content="(c) 2011 Oracle" />
         <meta name="robots" content="all,index,follow" />
         <meta name="revisit-after" content="14 day" />
         <meta name="expires" content="never" />
@@ -28,12 +64,12 @@
         <div id="bodyimg">
             <div id="pagebox">
                 <div id="top">
-                    <h2><a href="/" 
+                    <h2><a href="/"
                            title="Go to Homepage">
                             <img src="public/images/netbeans-logo.gif" height="93" alt="Logo - Rent A Flat" /></a>
 
                         <span>
-                            Brought to you by <br /> 
+                            Brought to you by <br />
                             <b>PHP NetBeans Dev Team!</b>
                         </span>
                     </h2>
@@ -46,37 +82,36 @@
 
         <h1>About the Project</h1>
 
-        Welcome to Rent-a-Flat. 
-        <br><br>
-        This is sample project created to demonstrate 
-        Zend Framework support in NetBeans IDE. Don't worry to dig into code to 
+        Welcome to Rent-a-Flat.
+        <br/><br/>
+        This is sample project created to demonstrate
+        Zend Framework support in NetBeans IDE. Don't worry to dig into code to
         see how it works and how you can make your development easier with Zend and NetBeans!
-        <br><br>
-        Let us know what you think on our mailing list <a href="mailto:users@php.netbeans.org">users@php.netbeans.org</a> 
-        <br>
-        Let us know if you find any mistake or place for improvement. <br>
+        <br/><br/>
+        Let us know what you think on our mailing list <a href="mailto:users@php.netbeans.org">users@php.netbeans.org</a>
+        <br/>
+        Let us know if you find any mistake or place for improvement. <br/>
 
-        <br><br>
+        <br/><br/>
 
         <h1>How To Make This Work</h1>
         <ol>
-            <li>Import database. You can find SQL dump in /database folder in project sources.</li>
-            <li>Set database name and access in /application/config/application.ini. You need to change following 
-                directives: 
+            <li>Import database. You can find SQL dump in <i>/database</i> folder in project sources.</li>
+            <li>Set database name and access in <i>/application/config/application.ini</i>. You need to change following
+                directives:
                 <code>
-                    <br><br>
-                    resources.db.params.username = "root"<br>
-
-                    resources.db.params.password = "root"<br>
+                    <br/><br/>
+                    resources.db.params.username = "rentaflat"<br/>
+                    resources.db.params.password = "rentaflat"<br/>
                     resources.db.params.dbname = "rentaflat"
-                    <br><br>
+                    <br/><br/>
                 </code>
             </li>
-            <li>Get Zend Framework. You need to download Zend Framework from 
-                <a href="http://zendframework.com/download/latest" target="_blank">zend download page</a>. Version 
-                1.10.8 was used to develop this sample. 
+            <li>Get Zend Framework. You need to download Zend Framework from
+                <a href="http://zendframework.com/download/latest" target="_blank">Zend download page</a>.
+                Version 1.10.8 was used to develop this sample.
             </li>
-            <li>Copy Zend Framework files to /library/Zend folder in project sources. So the folder will look like this:
+            <li>Copy Zend Framework files to <i>/library/Zend</i> folder in project sources. So the folder will look like this:
                 <code><br /><br />
 
                     /library<br />
@@ -208,63 +243,61 @@
                 </code>
 
             </li>
-            <li>Configure your apache path as following: 
-                <code><br><br>
-                    DocumentRoot "/path/to/project/public"
-                    <br>
-                    &lt;Directory /&gt;<br>
-                    &nbsp;&nbsp;&nbsp;Options FollowSymLinks<br>
+            <li>Add new <a href="http://httpd.apache.org/docs/2.2/vhosts/" target="_blank">VirtualHost</a> to your Apache web server
+                (<i>rentaflat</i> must added to your <i>hosts</i> file):
+                <code><br/><br/>
+                    &lt;VirtualHost *:80&gt;<br/>
+                        &nbsp;&nbsp;&nbsp;&nbsp;ServerName rentaflat<br/>
+                        &nbsp;&nbsp;&nbsp;&nbsp;DocumentRoot "/path/to/RentAFlat/public"
+                        <br/>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&lt;Directory "/"&gt;<br/>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Options FollowSymLinks<br/>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AllowOverride All<br/>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Order deny,allow<br/>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Allow from all<br/>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&lt;/Directory&gt;<br/><br/>
 
-                    &nbsp;&nbsp;&nbsp;AllowOverride All<br>
-                    &nbsp;&nbsp;&nbsp;Order deny,allow<br>
-                    &nbsp;&nbsp;&nbsp;Allow from all<br>
-                    &lt;/Directory&gt;<br><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&lt;Directory "/path/to/RentAFlat/public"&gt;<br/>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Options Indexes FollowSymLinks MultiViews<br/>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AllowOverride All<br/>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&lt;/Directory&gt;<br/><br/>
 
-                    &lt;Directory "/path/to/project/public/"&gt;<br>
-                    &nbsp;&nbsp;&nbsp;Options Indexes FollowSymLinks MultiViews<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;SetEnv APPLICATION_ENV "development"<br/><br/>
 
-                    &nbsp;&nbsp;&nbsp;AllowOverride All<br>
-                    &lt;/Directory&gt;<br>
-                    <br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;ErrorLog ${APACHE_LOG_DIR}/rentaflat-error.log<br/>
+                        &nbsp;&nbsp;&nbsp;&nbsp;CustomLog ${APACHE_LOG_DIR}/rentaflat-access.log combined<br/>
+                    &lt;/VirtualHost&gt;<br/>
+                    <br/>
                 </code>
             </li>
-            <li>Now you should be able to access sample page on your localhost</li>
-            <li>Have fun! Don't forget to try all 
-                <a href="http://blogs.sun.com/netbeansphp/entry/using_zend_framework_with_netbeans" target="_blank">
 
-                    NetBeans features for Zend Framework</a> 
-                and 
-                <a href="http://blogs.sun.com/netbeansphp/" target="_blank">
-                    many other great things</a> NetBeans can do!. 
+            <li>Now you should be able to access sample page on your localhost <a href="http://rentaflat/" target="_blank">http://rentaflat/</a></li>
+            <li>Have fun! Don't forget to try all
+                <a href="http://blogs.oracle.com/netbeansphp/entry/using_zend_framework_with_netbeans" target="_blank">
+
+                    NetBeans features for Zend Framework</a>
+                and
+                <a href="http://blogs.oracle.com/netbeansphp/" target="_blank">
+                    many other great things</a> NetBeans can do!.
             </li>
-            <li>Finally, I'd like to ask you 
-                to <a href="http://netbeans.org/community/" target="_blank">help us</a> 
+            <li>Finally, I'd like to ask you
+                to <a href="http://netbeans.org/community/" target="_blank">help us</a>
                 make NetBeans better because <strong>better NetBeans makes your life easier! :)</strong>
 
             </li>
         </ol>
-        <br><br>
+        <br/><br/>
 
         <h1>Zend Framework support in NetBeans IDE</h1>
 
-        If you want to use implemented Zend support than you need to download 
-        zend framework, provide NetBeans with a path to it and you need to 
-        provide path to PHP interpreter if necessary. 
-        <br><br>
-        Check out information on this 
-        <a href="http://blogs.sun.com/netbeansphp/entry/using_zend_framework_with_netbeans" target="_blank">
-
-            blog
-        </a>.
-        <br><br>
-        <br>
-
-        Wish you best luck! <br>
-        Regards, <br>
-        <br><br>
-        Filip Zamboj (fzamboj [at] netbeans [dot] org) 
-        <br><br><br>
-
+        If you want to use implemented Zend support than you need to download
+        zend framework, provide NetBeans with a path to it and you need to
+        provide path to PHP interpreter if necessary.
+        <br/><br/>
+        Check out information on our
+        <a href="http://blogs.oracle.com/netbeansphp/entry/using_zend_framework_with_netbeans" target="_blank">blog</a>.
+        <br/><br/>
+        Wish you best luck! <br/>
 
     </div>
 </div>
@@ -293,12 +326,12 @@
 </div>
 <div class="fo f2">
     <a href="http://netbeans.org" target="_blank" title="Go to NetBeans homepage">
-        <img src="public/images/netbeans-logo-2.png" width="100px" alt="NetBeans" />
+        <img src="public/images/netbeans-logo-2.png" width="100" alt="NetBeans" />
     </a>
 </div>
 <div class="fo f3">
     <h2>Copyright</h2>
-    <p>2010 &copy; Copyright<br />
+    <p>2011 &copy; Copyright<br />
 
         Oracle corp.<br />
         All rights reserved<br /><br />
@@ -306,7 +339,7 @@
 </div>
 
 </div>
- </div>            
+ </div>
             </div>
         </div>
     </body>
