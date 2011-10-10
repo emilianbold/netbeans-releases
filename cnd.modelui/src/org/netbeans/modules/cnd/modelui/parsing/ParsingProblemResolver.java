@@ -131,15 +131,16 @@ public class ParsingProblemResolver extends javax.swing.JPanel {
         jScrollPane1 = new javax.swing.JScrollPane();
         explanation = new javax.swing.JTextPane();
 
+        setBorder(javax.swing.BorderFactory.createEmptyBorder(6, 6, 1, 6));
         setLayout(new java.awt.BorderLayout());
 
-        chartPanel.setPreferredSize(new java.awt.Dimension(450, 200));
+        chartPanel.setPreferredSize(new java.awt.Dimension(500, 200));
 
         javax.swing.GroupLayout chartPanelLayout = new javax.swing.GroupLayout(chartPanel);
         chartPanel.setLayout(chartPanelLayout);
         chartPanelLayout.setHorizontalGroup(
             chartPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 460, Short.MAX_VALUE)
+            .addGap(0, 448, Short.MAX_VALUE)
         );
         chartPanelLayout.setVerticalGroup(
             chartPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -148,7 +149,7 @@ public class ParsingProblemResolver extends javax.swing.JPanel {
 
         add(chartPanel, java.awt.BorderLayout.NORTH);
 
-        jScrollPane1.setPreferredSize(new java.awt.Dimension(450, 200));
+        jScrollPane1.setPreferredSize(new java.awt.Dimension(500, 200));
 
         explanation.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 6, 1, 6));
         explanation.setEditable(false);

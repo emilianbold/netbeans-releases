@@ -45,8 +45,8 @@ class Application_Model_Property {
 
     protected $id;
     protected $reference_no;
-    protected $title_en;
-    protected $text_en;
+    protected $title;
+    protected $text;
     protected $disposition_id;
     protected $area;
     protected $floor;
@@ -59,10 +59,10 @@ class Application_Model_Property {
     protected $street;
     protected $property_build_id;
     protected $terace;
-    protected $loggia; 
-    protected $garden; 
+    protected $loggia;
+    protected $garden;
     protected $garage;
-    protected $parking_place; 
+    protected $parking_place;
 
     public function getCoverObject() {
         $pictures = new Application_Model_PropertyPicturesMapper();
@@ -130,25 +130,25 @@ class Application_Model_Property {
         $this->reference_no = $reference_no;
     }
 
-    
-    public function getTitle_en() {
-        return $this->title_en;
+
+    public function getTitle() {
+        return $this->title;
     }
 
-    public function setTitle_en($title_en) {
-        $this->title_en = $title_en;
+    public function setTitle($title) {
+        $this->title = $title;
     }
 
-    
-    public function getText_en() {
-        return $this->text_en;
+
+    public function getText() {
+        return $this->text;
     }
 
-    public function setText_en($text_en) {
-        $this->text_en = $text_en;
+    public function setText($text) {
+        $this->text = $text;
     }
 
-    
+
     public function getDisposition_id() {
         return $this->disposition_id;
     }
@@ -157,11 +157,11 @@ class Application_Model_Property {
         $this->disposition_id = $disposition_id;
     }
 
-    public function getArea() 
+    public function getArea()
     {
         return str_replace(".0", "", $this->area);
     }
-	
+
 	public function getAreaFormatted() {
 		return number_format($this->area, 0, ".", " ");
     }
@@ -218,13 +218,13 @@ class Application_Model_Property {
         $this->price = $price;
     }
 
-    
-    
+
+
     public function getCreated_on() {
         return $this->created_on;
     }
 
-    
+
     public function setCreated_on($created_on) {
         $this->created_on = $created_on;
     }
@@ -234,14 +234,14 @@ class Application_Model_Property {
         return $location->fetchAll('id = ' . $this->getLocation_id());
     }
 
-    
+
     public function getDisposition() {
         $disposition = new Application_Model_DispositionMapper();
         foreach ($disposition->fetchAll('id = ' . $this->getDisposition_id()) as $disposition_type) {
-            return $disposition_type->getText_en();
+            return $disposition_type->getText();
         }
     }
- 
+
     public function getTextLocation() {
         foreach ($this->getLocation() as $location) {
             return $location;
@@ -260,8 +260,8 @@ class Application_Model_Property {
         return number_format($this->getPrice(), 0, ".", " ");
     }
 
-    
-    
+
+
     public function getProperty_build_id() {
         return $this->property_build_id;
     }
@@ -269,14 +269,14 @@ class Application_Model_Property {
     public function setProperty_build_id($property_build_id) {
         $this->property_build_id = $property_build_id;
     }
-    
+
     public function getProperty_build_type() {
-        $m = new Application_Model_PropertyBuildTypeMapper(); 
+        $m = new Application_Model_PropertyBuildTypeMapper();
         $res = $m->fetch($this->property_build_id);
         return $res;
-        
+
     }
-    
+
     public function getTerace() {
         return str_replace('.0', '', $this->terace);
     }
@@ -317,7 +317,7 @@ class Application_Model_Property {
         $this->parking_place = $parking_place;
     }
 
- 
+
 
 }
 

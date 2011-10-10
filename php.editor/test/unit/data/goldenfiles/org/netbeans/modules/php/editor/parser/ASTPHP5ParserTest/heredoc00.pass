@@ -202,11 +202,11 @@
                     <Parameters>
                         <Quote start='346' end='352' type='QUOTE'>
                             <Expressions>
-                                <Variable start='347' end='351' isDollared='false'>
+                                <ReflectionVariable start='347' end='351'>
                                     <Variable start='348' end='350' isDollared='true'>
                                         <Identifier start='349' end='350' name='x'/>
                                     </Variable>
-                                </Variable>
+                                </ReflectionVariable>
                             </Expressions>
                         </Quote>
                     </Parameters>
