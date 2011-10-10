@@ -253,6 +253,8 @@ public final class LocalFileSystemProvider implements FileSystemProviderImplemen
                 URL u = new URL(path);
                 path = u.getFile();
             } catch (MalformedURLException ex) {
+                RemoteLogger.getInstance().log(Level.WARNING, "LocalFileSystemProvider.urlToFileObject {0}->{1}", new Object[] {absoluteURL, ex.getLocalizedMessage()});
+                return null;
             }        
         }
         File file = new File(FileUtil.normalizePath(path));
