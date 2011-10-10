@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.j2ee.persistence.wizard.fromdb;
 
-import java.awt.Component;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
@@ -78,7 +77,6 @@ import org.openide.loaders.TemplateWizard;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.windows.WindowManager;
 
 /**
  *
@@ -272,8 +270,6 @@ public class RelatedCMPWizard implements TemplateWizard.Iterator {
     }
     
     public Set<DataObject> instantiate(final TemplateWizard wiz) throws IOException {
-        Component c = WindowManager.getDefault().getMainWindow();
-
         // create the pu first if needed
         if(helper.isCreatePU()) {
             Util.addPersistenceUnitToProject(project, Util.buildPersistenceUnitUsingData(project, null, helper.getTableSource().getName(), null, null));
