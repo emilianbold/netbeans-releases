@@ -52,8 +52,10 @@ import org.openide.filesystems.FileObject;
 class WebBeansEditorAnalysisTask extends CancellableAnalysysTask {
     
     
-    WebBeansEditorAnalysisTask(FileObject javaFile) {
-        super( javaFile );
+    WebBeansEditorAnalysisTask(FileObject javaFile, 
+            CdiEditorAwareJavaSourceTaskFactory factory ) 
+    {
+        super( javaFile , factory );
     }
 
     /* (non-Javadoc)
@@ -69,7 +71,7 @@ class WebBeansEditorAnalysisTask extends CancellableAnalysysTask {
      */
     @Override
     protected AbstractAnalysisTask createTask() {
-        return new WebBeansAnalysisTask();
+        return new WebBeansAnalysisTask( getFactory() );
     }
 
 
