@@ -160,7 +160,7 @@ public class TakeScreenshotActionProvider extends ActionsProviderSupport {
     }
 
     private ProgressHandle createProgress() {
-        ProgressHandle ph = ProgressHandleFactory.createHandle(java.util.ResourceBundle.getBundle("org/netbeans/modules/debugger/jpda/visual/actions/Bundle").getString("MSG_TakingApplicationScreenshot"));
+        ProgressHandle ph = ProgressHandleFactory.createHandle(NbBundle.getMessage(TakeScreenshotActionProvider.class, "MSG_TakingApplicationScreenshot"));
         ph.setInitialDelay(500);
         ph.start();
         return ph;

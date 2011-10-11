@@ -49,8 +49,6 @@ import org.netbeans.modules.debugger.jpda.visual.JavaComponentInfo;
 import org.netbeans.modules.debugger.jpda.visual.JavaComponentInfo.FieldInfo;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.awt.Notification;
-import org.openide.awt.NotificationDisplayer;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -82,7 +80,7 @@ public class GoToFieldDeclarationAction extends NodeAction {
                         }
                     });
                 } else {
-                    NotifyDescriptor d = new NotifyDescriptor.Message(java.util.ResourceBundle.getBundle("org/netbeans/modules/debugger/jpda/visual/actions/Bundle").getString("MSG_NoFieldInfo"), NotifyDescriptor.WARNING_MESSAGE);
+                    NotifyDescriptor d = new NotifyDescriptor.Message(NbBundle.getMessage(GoToFieldDeclarationAction.class, "MSG_NoFieldInfo"), NotifyDescriptor.WARNING_MESSAGE);
                     DialogDisplayer.getDefault().notifyLater(d);
                 }
             }
