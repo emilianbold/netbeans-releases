@@ -10,7 +10,7 @@
 <%--CC
 <h:inputText value="#{|}"/>
 cookie[]
-<h:inputText value="#{cookie[]}"/>
+<h:inputText value="#{cookie}"/>
 --%>
 
 

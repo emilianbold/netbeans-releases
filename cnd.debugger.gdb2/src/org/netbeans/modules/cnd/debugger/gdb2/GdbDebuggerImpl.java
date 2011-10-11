@@ -666,6 +666,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         return postedKillEngine;
     }
 
+    @Override
     public void postKill() {
         // was: finishDebugger()
         // We get here when ...
@@ -842,11 +843,12 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         return peculiarity;
     }
 
+    @Override
     public void pause() {
         pause(false);
     }
 
-    public boolean pause(boolean silentStop) {
+    private boolean pause(boolean silentStop) {
         /* LATER
 
         On unix, and probably in all non-embedded gdb scenarios,
@@ -869,16 +871,19 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         return false;
     }
 
+    @Override
     public void interrupt() {
         gdb.interrupt();
     }
 
     // interface NativeDebugger
+    @Override
     public void terminate() {
         notImplemented("terminate");	// NOI18N
     }
 
     // interface NativeDebugger
+    @Override
     public void detach() {
         notImplemented("detach");	// NOI18N
     }
@@ -3185,25 +3190,24 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
      * The program has hit a signal; produce a popup to ask the user
      * how to handle it.
      */
-    private void showSignalPopup(String description, String sigName) {
+    private void showSignalPopup(MITList results, String sigName) {
 	SignalDialog sd = new SignalDialog();
 
 	// LATER SHOULD factor this info into a class
-	String signame = "?"; // NOI18N
+        
 	String signum = "?"; // NOI18N
-	String usercodename = "?"; // NOI18N
-	String usercodenum = "?"; // NOI18N
-	String senderpid = "?"; // NOI18N
+        
+        final MIValue meaningStr = results.valueOf("signal-meaning");
+        if (meaningStr != null) {
+            signum = meaningStr.asConst().value();
+        }
 
-	signame = sigName;
 	// gdb doesn't furnish any of the other info
 
 	String signalInfo;
 	signalInfo = Catalog.format("FMT_SignalInfo", // NOI18N
-	    signame, signum, usercodename, usercodenum);
+	    sigName, signum);
 	sd.setSignalInfo(signalInfo);
-
-	sd.setSenderInfo(senderpid);
 
 	if (session != null) {
 	    sd.setReceiverInfo(session.getShortName(), session.getPid());
@@ -3228,6 +3232,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	} else {
 	    sd.setIgnore(true, false); // default
 	}
+        sd.hideIgnore();
 
 	sd.show();
 
@@ -3248,6 +3253,12 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	} else {
 	    deliverSignal = signo;
 	}
+        
+        if (sd.discardSignal()) {
+            send("handle " + sigName + " nopass"); //NOI18N
+        } else {
+            send("handle " + sigName + " pass"); //NOI18N
+        }
 
 	if (sd.shouldContinue()) {
 	    go();
@@ -3282,7 +3293,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	    setStatusText(stateMsg);
 
         if (reason.equals("signal-received") && !gdb.isSignalled()) { //NOI18N
-	    showSignalPopup(stateMsg, signalName);
+	    showSignalPopup(results, signalName);
 	}
     }
 
