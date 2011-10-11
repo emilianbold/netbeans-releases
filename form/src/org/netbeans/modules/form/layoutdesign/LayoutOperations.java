@@ -2555,7 +2555,7 @@ class LayoutOperations implements LayoutConstants {
     }
 
     boolean eliminateUnwantedZeroGap(LayoutInterval gap) {
-        if (gap.isEmptySpace() && gap.getPreferredSize() == 0
+        if (gap != null && gap.isEmptySpace() && gap.getPreferredSize() == 0
                 && !LayoutInterval.canResize(gap) && gap.getParent() != null) {
             boolean eliminate = false;
             if (gap.getParent().isParallel()) {
