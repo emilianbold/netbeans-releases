@@ -89,7 +89,18 @@ public class GoToFieldDeclarationAction extends NodeAction {
     
     @Override
     protected boolean enable(Node[] activatedNodes) {
-        return true;
+        boolean enabled = false;
+        for (Node n : activatedNodes) {
+            JavaComponentInfo ci = n.getLookup().lookup(JavaComponentInfo.class);
+            if (ci != null) {
+                final FieldInfo fieldInfo = ci.getField();
+                if (fieldInfo != null) {
+                    enabled = true;
+                    break;
+                }
+            }
+        }
+        return enabled;
     }
 
     @Override
