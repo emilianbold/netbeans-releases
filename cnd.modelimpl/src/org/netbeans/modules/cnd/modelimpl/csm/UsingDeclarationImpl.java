@@ -233,7 +233,6 @@ public final class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsi
         if (referencedDeclaration == null) {
             int newParseCount = FileImpl.getParseCount();
             if (lastParseCount != newParseCount) {
-                _setReferencedDeclaration(null);
                 referencedDeclaration = renderReferencedDeclaration();
                 synchronized (this) {
                     lastParseCount = newParseCount;
@@ -271,16 +270,11 @@ public final class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsi
     }    
 
     private void _setReferencedDeclaration(CsmDeclaration referencedDeclaration) {
-        if (referencedDeclaration != null) {
-            refDeclaration = new WeakReference<CsmDeclaration>(referencedDeclaration);
-        } else {
-            refDeclaration = null;
-            FileImpl file = (FileImpl) getContainingFile();
-            file.removeResolvedReference(new CsmUsingReferenceImpl(this));
-        }
+        FileImpl file = (FileImpl) getContainingFile();
+        file.removeResolvedReference(new CsmUsingReferenceImpl(this));
+        refDeclaration = referencedDeclaration == null ? null : new WeakReference<CsmDeclaration>(referencedDeclaration);
         this.referencedDeclarationUID = UIDCsmConverter.declarationToUID(referencedDeclaration);
         if (referencedDeclarationUID != null && referencedDeclaration != null && CsmBaseUtilities.isValid(referencedDeclaration)) {
-            FileImpl file = (FileImpl) getContainingFile();
             file.addResolvedReference(new CsmUsingReferenceImpl(this), referencedDeclaration);
         }
         assert this.referencedDeclarationUID != null || referencedDeclaration == null;
