@@ -61,7 +61,7 @@
                   <Group type="102" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="rbNewLibrary" alignment="1" pref="480" max="32767" attributes="0"/>
+                          <Component id="rbNewLibrary" alignment="1" pref="471" max="32767" attributes="0"/>
                           <Group type="102" alignment="0" attributes="0">
                               <EmptySpace min="22" pref="22" max="22" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
@@ -69,7 +69,7 @@
                                   <Component id="lVersion" alignment="0" min="-2" max="-2" attributes="1"/>
                                   <Component id="lDirectory" alignment="0" min="-2" max="-2" attributes="1"/>
                               </Group>
-                              <EmptySpace pref="281" max="32767" attributes="0"/>
+                              <EmptySpace pref="211" max="32767" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
                               <Group type="103" groupAlignment="1" max="-2" attributes="0">
@@ -78,16 +78,16 @@
                               </Group>
                               <EmptySpace type="unrelated" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="cbLibraries" pref="349" max="32767" attributes="0"/>
+                                  <Component id="cbLibraries" pref="297" max="32767" attributes="0"/>
                                   <Group type="102" alignment="1" attributes="0">
                                       <Group type="103" groupAlignment="1" attributes="0">
-                                          <Component id="jtNewLibraryName" alignment="1" pref="274" max="32767" attributes="1"/>
-                                          <Component id="jtFolder" alignment="1" pref="274" max="32767" attributes="1"/>
+                                          <Component id="jtNewLibraryName" alignment="1" pref="234" max="32767" attributes="1"/>
+                                          <Component id="jtFolder" alignment="1" pref="234" max="32767" attributes="1"/>
                                       </Group>
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Component id="jbBrowse" min="-2" max="-2" attributes="0"/>
                                   </Group>
-                                  <Component id="serverLibraries" alignment="0" pref="349" max="32767" attributes="0"/>
+                                  <Component id="serverLibraries" alignment="0" pref="297" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                       </Group>
@@ -121,7 +121,7 @@
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="cbPackageJars" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="37" max="32767" attributes="0"/>
+                      <EmptySpace max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -299,7 +299,7 @@
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="lURLPattern" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="tURLPattern" pref="343" max="32767" attributes="0"/>
+                              <Component id="tURLPattern" pref="282" max="32767" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
@@ -399,7 +399,7 @@
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="jsfComponentsScrollPane" alignment="0" pref="466" max="32767" attributes="0"/>
+                          <Component id="jsfComponentsScrollPane" alignment="0" pref="459" max="32767" attributes="0"/>
                           <Component id="jsfComponentsLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
@@ -412,7 +412,7 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="jsfComponentsLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="jsfComponentsScrollPane" pref="145" max="32767" attributes="0"/>
+                      <Component id="jsfComponentsScrollPane" pref="129" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
               </Group>
