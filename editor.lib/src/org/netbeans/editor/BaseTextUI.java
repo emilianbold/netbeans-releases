@@ -75,6 +75,7 @@ import org.netbeans.modules.editor.lib2.EditorPreferencesKeys;
 import org.netbeans.modules.editor.lib.SettingsConversions;
 import org.netbeans.modules.editor.lib.drawing.DrawEngineDocView;
 import org.netbeans.modules.editor.lib.drawing.DrawEngineLineView;
+import org.netbeans.spi.lexer.MutableTextInput;
 import org.openide.util.WeakListeners;
 
 /**
@@ -449,7 +450,7 @@ public class BaseTextUI extends BasicTextUI implements
 
     /** Insert to document notification. */
     public void insertUpdate(DocumentEvent evt) {
-        checkLengthyAtomicEdit();
+        checkLengthyAtomicEdit(evt);
         // No longer trigger syntax update related repaint
 //        try {
 //            BaseDocumentEvent bevt = (BaseDocumentEvent)evt;
@@ -471,7 +472,7 @@ public class BaseTextUI extends BasicTextUI implements
     
     /** Remove from document notification. */
     public void removeUpdate(DocumentEvent evt) {
-        checkLengthyAtomicEdit();
+        checkLengthyAtomicEdit(evt);
         // No longer trigger syntax update related repaint
 //        try {
 //            BaseDocumentEvent bevt = (BaseDocumentEvent)evt;
@@ -509,15 +510,22 @@ public class BaseTextUI extends BasicTextUI implements
         }
     }
 
-    private void checkLengthyAtomicEdit() {
+    private void checkLengthyAtomicEdit(DocumentEvent evt) {
         if (atomicModCount != -1) {
             if (++atomicModCount == LENGTHY_ATOMIC_EDIT_THRESHOLD) {
+                Document doc = evt.getDocument();
+                // Deactivate view hierarchy
                 View rootView = getRootView(getComponent());
                 View view;
                 if (rootView != null && rootView.getViewCount() > 0 &&
                         (view = rootView.getView(0)) instanceof org.netbeans.modules.editor.lib2.view.DocumentView)
                 {
                     ((org.netbeans.modules.editor.lib2.view.DocumentView)view).updateLengthyAtomicEdit(+1);
+                }
+                // Inactivate lexer's token hierarchy
+                MutableTextInput input = (MutableTextInput) doc.getProperty(MutableTextInput.class);
+                if (input != null) {
+                    input.tokenHierarchyControl().setActive(false);
                 }
             }
         }
@@ -533,12 +541,19 @@ public class BaseTextUI extends BasicTextUI implements
     public void atomicUnlock(AtomicLockEvent evt) {
         if (atomicModCount != -1) {
             if (atomicModCount >= LENGTHY_ATOMIC_EDIT_THRESHOLD) {
+                // Activate view hierarchy
                 View rootView = getRootView(getComponent());
                 View view;
                 if (rootView != null && rootView.getViewCount() > 0 &&
                         (view = rootView.getView(0)) instanceof org.netbeans.modules.editor.lib2.view.DocumentView)
                 {
                     ((org.netbeans.modules.editor.lib2.view.DocumentView)view).updateLengthyAtomicEdit(-1);
+                }
+                // Activate lexer's token hierarchy
+                Document doc = getComponent().getDocument();
+                MutableTextInput input = (MutableTextInput) doc.getProperty(MutableTextInput.class);
+                if (input != null) {
+                    input.tokenHierarchyControl().setActive(true);
                 }
             }
             atomicModCount = -1;
