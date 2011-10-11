@@ -570,6 +570,8 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
     }
     
     private static TopComponentDroppable findSlideDroppable(Component comp) {
+        if( !Switches.isDragAndDropSlidingEnabled() )
+            return null;
         TopComponentDroppable droppable = null;
         if(comp instanceof TopComponentDroppable) {
             droppable = (TopComponentDroppable)comp;
