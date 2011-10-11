@@ -49,7 +49,7 @@ made subject to such option by the copyright holder.
     <target name="netbeans-extra" depends="init">
         <!-- unziping signature files -->
         <unzip dest="${cluster}" src="external/phpsigfiles.zip"/>
-        <unzip dest="${cluster}" src="external/preindexed-php.zip"/>
+        <!--unzip dest="${cluster}" src="external/preindexed-php.zip"/-->
     </target>
     
 </project>
