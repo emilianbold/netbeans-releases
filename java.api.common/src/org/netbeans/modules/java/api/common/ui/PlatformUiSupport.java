@@ -53,11 +53,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Logger;
-import javax.swing.AbstractListModel;
-import javax.swing.ComboBoxModel;
-import javax.swing.JButton;
-import javax.swing.JList;
-import javax.swing.ListCellRenderer;
+import javax.swing.*;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import org.netbeans.api.java.platform.JavaPlatform;
@@ -460,6 +456,7 @@ public final class PlatformUiSupport {
         private PlatformKey[] platformNamesCache;
         private String initialPlatform;
         private PlatformKey selectedPlatform;
+        private boolean inUpdate;
 
         public PlatformComboBoxModel(String initialPlatform) {
             this.pm = JavaPlatformManager.getDefault();
@@ -496,7 +493,17 @@ public final class PlatformUiSupport {
                 synchronized (this) {
                     platformNamesCache = null;
                 }
-                fireContentsChanged(this, -1, -1);
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        inUpdate = true;
+                        try {
+                            fireContentsChanged(this, -1, -1);
+                        } finally {
+                            inUpdate = false;
+                        }
+                    }
+                });
             }
         }
 
@@ -646,11 +653,13 @@ public final class PlatformUiSupport {
         public void contentsChanged(ListDataEvent e) {
             PlatformKey selectedPlatform = (PlatformKey) platformComboBoxModel.getSelectedItem();
             JavaPlatform platform = getPlatform(selectedPlatform);
-            if (platform != null) {
+            if (platform != null &&
+                !((platformComboBoxModel instanceof PlatformComboBoxModel) && ((PlatformComboBoxModel)platformComboBoxModel).inUpdate)) {
                 SpecificationVersion version = platform.getSpecification().getVersion();
                 if (selectedSourceLevel != null
                         && selectedSourceLevel.compareTo(version) > 0
-                        && !shouldChangePlatform(selectedSourceLevel, version)) {
+                        && !shouldChangePlatform(selectedSourceLevel, version)
+                        && !selectedPlatform.equals(activePlatform)) {
                     // restore original
                     platformComboBoxModel.setSelectedItem(activePlatform);
                     return;

@@ -1,4 +1,3 @@
-<?php
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
@@ -40,20 +39,30 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.web.jsf.editor.facelets;
 
-?>
-<h1>Welcome!</h1>
+import org.netbeans.modules.web.jsf.editor.TestBaseForTestProject;
+import java.io.IOException;
+import org.openide.filesystems.FileObject;
+import org.xml.sax.SAXException;
 
-<p class="p">Welcome to the NetBeans PHP IDE sample - <b>TODO List application</b>.</p>
-<ul class="p">
-    This sample does not use any PHP framework, it will show you possibilities how to:
-    <li>prevent public access to your scripts</li>
-    <li>config your application</li>
-    <li>access your database data</li>
-    <li>change your database data (with redirect-after-post pattern)</li>
-    <li>validate your data</li>
-    <li>split scripts and templates</li>
-    <li>handle expected and unexpected exceptions</li>
-</ul>
-<p class="p">Detailed information can be found in the <i>readme.html</i> file.</p>
-<p class="p"><b>This sample is not intented to be used on a production server without any changes.</b></p>
+/**
+ *
+ * @author marekfukala
+ */
+public class FaceletsLibraryDescriptorTest extends TestBaseForTestProject {
+
+    public FaceletsLibraryDescriptorTest(String name) {
+        super(name);
+    }
+
+    public void testParseFaceletLibraryDescriptor() throws SAXException, IOException, LibraryDescriptorException {
+        FileObject libfile = getTestFile("testWebProject/src/java/META-INF/ezcomp.taglib.xml");
+        
+        FaceletsLibraryDescriptor fld = FaceletsLibraryDescriptor.create(libfile);
+        
+        assertNotNull(fld);
+
+        assertEquals("http://ezcomp.com/jsflib", fld.getNamespace());
+    }
+}

@@ -44,16 +44,13 @@
 
 package org.netbeans.modules.cnd.debugger.common2.debugger;
 
-import java.awt.*;
-import java.awt.event.*;
-
+import java.awt.Dialog;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import javax.swing.*;
-import javax.swing.border.*;
-
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.awt.Actions;
 
 public class SignalDialog {
     private Dialog dialog;
@@ -66,11 +63,10 @@ public class SignalDialog {
     private JButton BForwardAndContinue;
 
     private String explanation = null;
-    private String senderpid = "?";		// NOI18N
+    private String senderpid = null;
     private String session = null;
     private long receiverPid = -1;
-
-
+    
     public SignalDialog() {
 	panel = new JPanel();
 	panel.setLayout(new GridBagLayout());
@@ -145,7 +141,7 @@ public class SignalDialog {
 	BForwardAndContinue.setMnemonic(Catalog.
 	    getMnemonic("MNEM_Signal_ForwardAndContinue"));	// NOI18N
     }
-
+    
     public void setSignalInfo(String explanation) {
 	this.explanation = explanation;
     }
@@ -163,23 +159,26 @@ public class SignalDialog {
 	jc.setEnabled(signalKnow);
 	jc.setSelected(ignore);
     }
+    
+    public void hideIgnore() {
+        jc.setVisible(false);
+    }
 
     private void fillText() {
-	String text = explanation + "\n";	// NOI18N
+        StringBuilder sb = new StringBuilder();
+        sb.append(explanation).append('\n');
 
-	String origin = Catalog.format("SignalSrc", senderpid); // NOI18N
+        if (senderpid != null) {
+            sb.append(Catalog.format("SignalSrc", senderpid)).append('\n'); // NOI18N
+        }
 
-	text += origin + "\n";		// NOI18N
+        sb.append(Catalog.format("SignalDst", session, receiverPid)).append("\n\n"); // NOI18N
+        sb.append(Catalog.get("SignalHelp")).append('\n'); // NOI18N
+        
+        // currently we do not support signals handling setup fof gdb
+        //sb.append(Catalog.get("SignalConfigHint")); // NOI18N
 
-	String dest = Catalog.format("SignalDst", session, receiverPid); // NOI18N
-
-	text += dest + "\n\n";		// NOI18N
-
-	text += Catalog.get("SignalHelp") + "\n";	// NOI18N
-
-	text += Catalog.get("SignalConfigHint");	// NOI18N
-
-	textArea.setText(text);
+	textArea.setText(sb.toString());
     }
 
     public void show() {

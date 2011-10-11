@@ -93,15 +93,15 @@ ltr
 rtl
 End cursor position = 373
 [&q|, &quot;, &quot;, 417]
-? &qfr;
-? &qint;
-? &qopf;
-? &qprime;
-? &qscr;
-? &quaternions;
-? &quatint;
+픮 &qfr;
+⨌ &qint;
+핢 &qopf;
+⁗ &qprime;
+퓆 &qscr;
+ℍ &quaternions;
+⨖ &quatint;
 ? &quest;
-? &questeq;
+≟ &questeq;
 " &quot;
 End cursor position = 424
 [<jsp:body><html></|, /html,     <jsp:body><html></html>, 522]

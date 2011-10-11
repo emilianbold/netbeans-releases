@@ -1,4 +1,3 @@
-<?php
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
@@ -40,20 +39,39 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.php.editor;
 
-?>
-<h1>Welcome!</h1>
+import java.io.File;
+import java.util.Collections;
+import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
-<p class="p">Welcome to the NetBeans PHP IDE sample - <b>TODO List application</b>.</p>
-<ul class="p">
-    This sample does not use any PHP framework, it will show you possibilities how to:
-    <li>prevent public access to your scripts</li>
-    <li>config your application</li>
-    <li>access your database data</li>
-    <li>change your database data (with redirect-after-post pattern)</li>
-    <li>validate your data</li>
-    <li>split scripts and templates</li>
-    <li>handle expected and unexpected exceptions</li>
-</ul>
-<p class="p">Detailed information can be found in the <i>readme.html</i> file.</p>
-<p class="p"><b>This sample is not intented to be used on a production server without any changes.</b></p>
+/**
+ *
+ * @author Ondrej Brejla <obrejla@netbeans.org>
+ */
+public class PHPCodeCompletion203294Test extends PHPTestBase {
+
+    public PHPCodeCompletion203294Test(String testName) {
+        super(testName);
+    }
+
+    public void testUseCase1() throws Exception {
+        checkCompletion("testfiles/completion/lib/test203294/test203294.php", "$f->^", false);
+    }
+
+    @Override
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        return Collections.singletonMap(
+            PhpSourcePath.SOURCE_CP,
+            ClassPathSupport.createClassPath(new FileObject[] {
+                FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/lib/test203294/"))
+            })
+        );
+    }
+
+}
