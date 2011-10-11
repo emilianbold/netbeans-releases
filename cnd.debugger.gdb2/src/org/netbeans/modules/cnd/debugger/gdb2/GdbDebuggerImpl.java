@@ -2446,6 +2446,21 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 		    GdbWatch w = (GdbWatch) wv;
 		    w.setInScope(Boolean.parseBoolean(in_scope));
 		}
+                
+                // update type
+                MIValue newType = updatevar.asTuple().valueOf("new_type"); //NOI18N
+                if (newType != null) {
+                    wv.setType(newType.asConst().value());
+                }
+                
+                // update children
+                MIValue newChildren = updatevar.asTuple().valueOf("new_num_children"); //NOI18N
+                if (newType != null) {
+                    wv.setNumChild(newChildren.asConst().value());
+                    wv.setChildren(null, false);
+                }
+                
+                // update value
                 if (updatevar.asTuple().valueOf("value") != null) { //NOI18N
                     updateValue(wv, updatevar.asTuple().valueOf("value"), true); //NOI18N
                 } else if (in_scope == null || in_scope.equalsIgnoreCase("true")){  //NOI18N
@@ -2823,27 +2838,17 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         // iterate through frame arguments list
         for (int vx = 0; vx < params_count; vx++) {
             GdbLocal loc = param_list.get(vx);
-            GdbVariable gv = null;
 	    String var_name = loc.getName();
 	    String var_value = loc.getValue();
-            if (var_name.equals("this")) {// NOI18N
-		int index = var_value.indexOf("0x"); // NOI18N
-		if (var_value != null) {
-		    String value_only = var_value.substring(index);
-		    gv = variableBag.byAddr(var_name, value_only, VariableBag.FROM_LOCALS);
-		}
-	    }  else {
-                gv = variableBag.get(var_name, false, 
-                  VariableBag.FROM_LOCALS);
-                if (gv != null)
-                    gv.setValue(var_value); // update value
-            }
-            if (gv == null) {
+            
+            GdbVariable gv = variableBag.get(var_name, false, VariableBag.FROM_LOCALS);
+            if (gv != null) {
+                gv.setValue(var_value); // update value
+                new_local_vars[size + vx] = gv;
+            } else {
                 new_local_vars[size + vx] = new GdbVariable(this, localUpdater, 
                         null, var_name, loc.getType(), loc.getValue(), false);
                 createMIVar(new_local_vars[size + vx], false);
-            } else {
-                new_local_vars[size + vx] = gv;
             }
         }
         // need to update local_vars with fully filled array

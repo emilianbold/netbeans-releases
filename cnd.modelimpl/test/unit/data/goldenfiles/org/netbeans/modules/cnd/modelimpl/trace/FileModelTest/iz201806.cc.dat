@@ -10,7 +10,7 @@ MACROS (sorted 0):
 Includes:
     <no includes>
 Macros:
-    <no macros>
+#define '' [8:1/36-8:1/36]
 
 ========== Dumping model of PROJECT DummyProject
 

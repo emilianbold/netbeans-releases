@@ -1061,11 +1061,11 @@ class LayoutFeeder implements LayoutConstants {
     }
 
     /**
-     * Recognize situation when the new position in given dimension looks same
-     * as the original one and so would be better not to change it. In such case
-     * the original state in this dimension is restored.
-     * @param ndesc1 description of new position
-     * @param ndesc2 description of original position
+     * Recognize situation when the new positions in given dimension look same
+     * as the original ones and so would be better not to change anything.
+     * In such case the original state in this dimension is restored.
+     * @param ndesc1 description of the first new position
+     * @param ndesc2 description of the second new position (for opposite edge), or null
      * @return true if the actual dimension should stay in original state that is
      *         also successfully restored
      */
@@ -3077,7 +3077,8 @@ class LayoutFeeder implements LayoutConstants {
                                 layoutModel.addInterval(lower, toPar, 0);
                             }
                             layoutModel.addInterval(endGap, toPar, alignment==LEADING ? 0 : -1);
-                        } else if (toPar.isSequential() && endGap.getPreferredSize() == 0 && pos != outPos) {
+                        } else if (toPar.isSequential() && pos != outPos
+                                   && endGap != null && endGap.getPreferredSize() == 0) {
                             layoutModel.setIntervalSize(endGap, NOT_EXPLICITLY_DEFINED, NOT_EXPLICITLY_DEFINED, endGap.getMaximumSize());
                         }
                         expanded = true;
@@ -3913,12 +3914,17 @@ class LayoutFeeder implements LayoutConstants {
             LayoutRegion subSpace = sub.getCurrentSpace();
 
             // first analyze the interval as a possible sub-group
-            if (sub.isParallel() && shouldEnterGroup(sub)) {
-                // group space contains significant edge
-                int count = inclusions.size();
+            if (sub.isParallel() && shouldEnterGroup(sub)) { // group space contains significant edge
+                IncludeDesc[] before = inclusions.isEmpty() ? null : inclusions.toArray(new IncludeDesc[inclusions.size()]);
+
                 analyzeParallel(sub, inclusions);
-                if (inclusions.size() > count)
-                    return;
+
+                if ((before == null && !inclusions.isEmpty())
+                    || (before != null
+                        && (before.length < inclusions.size()
+                            || !Arrays.asList(before).containsAll(inclusions)))) {
+                    return; // found something
+                }
             }
 
             // second analyze the interval as a single element for "next to" placement
@@ -4426,8 +4432,10 @@ class LayoutFeeder implements LayoutConstants {
             if (iDesc != best) {
                 if (!compatibleInclusions(iDesc, best, dimension)) {
                     it.remove();
-                }
-                else {
+                } else if (iDesc.parent == best.parent && iDesc.neighbor == best.neighbor
+                           && (iDesc.neighbor != null || iDesc.index == iDesc.index)) {
+                    it.remove(); // same inclusion twice (detect for better robustness)
+                } else {
                     LayoutInterval group = iDesc.parent.isSequential() ?
                                            iDesc.parent.getParent() : iDesc.parent;
                     if (group.isParentOf(commonGroup)) {

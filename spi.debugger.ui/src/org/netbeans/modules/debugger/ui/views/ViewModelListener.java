@@ -215,6 +215,7 @@ public class ViewModelListener extends DebuggerManagerAdapter {
             });
             return ;
         }
+        List<ViewModelListener> sls;
         synchronized(this) {
             if (!isUp) {
                 try {
@@ -280,12 +281,13 @@ public class ViewModelListener extends DebuggerManagerAdapter {
                         }
                     }
                 });
-                for (ViewModelListener l : subListeners) {
-                    l.destroy();
-                }
+                sls = new ArrayList<ViewModelListener>(subListeners);
                 subListeners.clear();
                 isUp = false;
             }
+        }
+        for (ViewModelListener l : sls) {
+            l.destroy();
         }
     }
 

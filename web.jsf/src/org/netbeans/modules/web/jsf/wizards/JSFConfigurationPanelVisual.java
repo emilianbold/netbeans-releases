@@ -104,6 +104,7 @@ import org.netbeans.modules.web.jsf.wizards.JSFConfigurationPanel.PreferredLangu
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
+import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -147,6 +148,8 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
     private static final Lookup.Result<? extends JsfComponentProvider> jsfComponentProviders =
             Lookups.forPath(JsfComponentProvider.COMPONENTS_PATH).lookupResult(JsfComponentProvider.class);
 
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
+
     /** Creates new form JSFConfigurationPanelVisual */
     public JSFConfigurationPanelVisual(JSFConfigurationPanel panel, boolean customizer) {
         this.panel = panel;
@@ -168,6 +171,15 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
         jsfComponentsTable.setDefaultRenderer(JButton.class, renderer);
         jsfComponentsTable.addMouseListener(new JTableButtonMouseListener(jsfComponentsTable));
         initJsfComponentTableVisualProperties(jsfComponentsTable);
+
+        
+        panel.addChangeListener(new ChangeListener() {
+
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                changeSupport.fireChange();
+            }
+        });
     }
 
     @Override
@@ -181,6 +193,14 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
         } else {
             updateLibrary();
         }
+    }
+
+    public void addChangeListener(ChangeListener listener) {
+        changeSupport.addChangeListener(listener);
+    }
+
+    public void removeChangeListener(ChangeListener listener) {
+        changeSupport.removeChangeListener(listener);
     }
 
     void initLibraries() {
@@ -966,9 +986,8 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
      */
     private void setErrorMessage(String message) {
         ExtenderController controller = panel.getController();
-        if (customizer) {
-            controller.setErrorMessage(message);
-        } else {
+        controller.setErrorMessage(message);
+        if (!customizer) {
             controller.getProperties().setProperty(WizardDescriptor.PROP_INFO_MESSAGE, message);
         }
     }
@@ -1525,7 +1544,7 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
         }
 
         public void mouseClicked(MouseEvent e) {
-            int column = table.getColumnModel().getColumnIndexAtX(e.getX());
+                int column = table.getColumnModel().getColumnIndexAtX(e.getX());
             int row = e.getY()/table.getRowHeight();
 
             if (row < table.getRowCount() && row >= 0 && column < table.getColumnCount() && column >= 0) {
@@ -1648,6 +1667,7 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
                         addJsfComponentCustomizer(jsfDescriptor.getName(), jsfCustomizer);
                         jsfCustomizer.saveConfiguration();
                     }
+                    panel.fireChangeEvent();
                 }
             };
             dialogDescriptor.setButtonListener(buttonsListener);

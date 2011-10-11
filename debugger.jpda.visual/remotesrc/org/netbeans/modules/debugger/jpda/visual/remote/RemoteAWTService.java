@@ -42,11 +42,22 @@
 package org.netbeans.modules.debugger.jpda.visual.remote;
 
 import java.awt.Component;
+import java.awt.Container;
+import java.awt.Dialog;
+import java.awt.Dimension;
+import java.awt.Frame;
+import java.awt.Graphics;
+import java.awt.Rectangle;
+import java.awt.Window;
+import java.awt.image.BufferedImage;
+import java.awt.image.Raster;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 
 /**
@@ -110,6 +121,43 @@ public class RemoteAWTService {
         // When breakpoint is hit, data can be retrieved
     }
     
+    static Snapshot[] getGUISnapshots() {
+        List snapshots = new ArrayList();
+        Window[] windows = Window.getWindows();
+        for (int wi = 0; wi < windows.length; wi++) {
+            Window w = windows[wi];
+            if (!w.isVisible()) {
+                continue;
+            }
+            Dimension d = w.getSize();
+            BufferedImage bi = new BufferedImage(d.width, d.height, BufferedImage.TYPE_INT_ARGB);
+            Graphics g = bi.createGraphics();
+            w.paint(g);
+            Raster raster = bi.getData();
+            Object data = raster.getDataElements(0, 0, d.width, d.height, null);
+            int[] dataArr;
+            if (data instanceof int[]) {
+                dataArr = (int[]) data;
+            } else {
+                continue;
+            }
+            String title = null;
+            if (w instanceof Frame) {
+                title = ((Frame) w).getTitle();
+            } else if (w instanceof Dialog) {
+                title = ((Dialog) w).getTitle();
+            }
+            snapshots.add(new Snapshot(w, title, d.width, d.height, dataArr));
+        }
+        Snapshot[] snapshotArr = (Snapshot[]) snapshots.toArray(new Snapshot[] {});
+        lastGUISnapshots = snapshotArr;
+        return snapshotArr;
+    }
+    
+    // This static field is used to prevent the result from GC until it's read by debugger.
+    // Debugger should clear this field explicitly after it reads the result.
+    private static Snapshot[] lastGUISnapshots;
+    
     private static class AWTAccessLoop implements Runnable {
         
         public AWTAccessLoop() {}
@@ -156,6 +204,187 @@ public class RemoteAWTService {
                         }
                         calledWithEventsData(c, allData);
                     }
+                }
+            }
+        }
+    }
+    
+    private static class Snapshot {
+        
+        private Window w;
+        private String title;
+        private int width;
+        private int height;
+        private int[] dataArr;
+        private String allIntDataString;
+        private String allNamesString;
+        private Component[] allComponentsArray;
+        private ComponentInfo component;
+        private final Rectangle rectangle = new Rectangle();
+        private static final char STRING_DELIMITER = (char) 3;   // ETX (end of text)
+        
+        Snapshot(Window w, String title, int width, int height, int[] dataArr) {
+            this.w = w;
+            this.title = title;
+            this.width = width;
+            this.height = height;
+            this.dataArr = dataArr;
+            component = retrieveComponentInfo(w, Integer.MIN_VALUE, Integer.MIN_VALUE);
+            int componentCount = component.getComponentsCount();
+            int[] allIntDataArray = createAllIntDataArray(componentCount);
+            allIntDataString = intArraytoString(allIntDataArray);
+            allNamesString = createAllNamesString();
+            allComponentsArray = createAllComponentsArray(componentCount);
+        }
+        
+        private ComponentInfo retrieveComponentInfo(Component c, int shiftx, int shifty) {
+            String name = c.getName();
+            c.getBounds(rectangle);
+            int x = rectangle.x;
+            int y = rectangle.y;
+            if (shiftx == Integer.MIN_VALUE && shifty == Integer.MIN_VALUE) {
+                shiftx = shifty = 0; // Do not shift the window as such
+                x = y = 0;
+            } else {
+                shiftx += x;
+                shifty += y;
+            }
+            ComponentInfo ci = new ComponentInfo(c, name, x, y, rectangle.width, rectangle.height, shiftx, shifty);
+            if (c instanceof Container) {
+                Component[] subComponents = ((Container) c).getComponents();
+                int n = subComponents.length;
+                if (n > 0) {
+                    ComponentInfo[] cis = new ComponentInfo[n];
+                    for (int i = 0; i < cis.length; i++) {
+                        cis[i] = retrieveComponentInfo(subComponents[i], shiftx, shifty);
+                    }
+                    ci.setSubcomponents(cis);
+                }
+            }
+            return ci;
+        }
+        
+        private int[] createAllIntDataArray(int componentCount) {
+            int n1 = dataArr.length;
+            int n = 3 + n1 + componentCount * ComponentInfo.INT_DATA_LENGTH;
+            int[] array = new int[n];
+            array[0] = width;
+            array[1] = height;
+            array[2] = n1;
+            System.arraycopy(dataArr, 0, array, 3, n1);
+            component.putIntData(array, n1 + 3);
+            return array;
+        }
+        
+        private static String intArraytoString(int[] a) {
+            int n = a.length;
+            if (n == 0)
+                return "0[]";
+
+            StringBuffer b = new StringBuffer();
+            b.append(n);
+            b.append('[');
+            b.append(a[0]);
+            for (int i = 1; i < n; i++) {
+                b.append(",");
+                b.append(a[i]);
+            }
+            b.append(']');
+            return b.toString();
+        }
+
+        /** Delimit the strings with char 3 */
+        private String createAllNamesString() {
+            StringBuffer sb = new StringBuffer();
+            if (title == null) {
+                sb.append((char) 0);
+            } else {
+                sb.append(title);
+            }
+            sb.append(STRING_DELIMITER);
+            component.putNamesTo(sb);
+            return sb.toString();
+        }
+        
+        private Component[] createAllComponentsArray(int componentCount) {
+            Component[] components = new Component[componentCount];
+            component.putComponentsTo(components, 0);
+            return components;
+        }
+        
+        private static class ComponentInfo {
+            
+            private final static int INT_DATA_LENGTH = 7;
+            private final static ComponentInfo[] NO_SUBCOMPONENTS = new ComponentInfo[] {};
+            
+            private Component c;
+            private String name;
+            private int x;
+            private int y;
+            private int width;
+            private int height;
+            private int shiftx;
+            private int shifty;
+            private ComponentInfo[] subComponents = NO_SUBCOMPONENTS;
+            
+            ComponentInfo(Component c, String name, int x, int y, int width, int height, int shiftx, int shifty) {
+                this.c = c;
+                this.name = name;
+                this.x = x;
+                this.y = y;
+                this.width = width;
+                this.height = height;
+                this.shiftx = shiftx;
+                this.shifty = shifty;
+            }
+            
+            void setSubcomponents(ComponentInfo[] subComponents) {
+                this.subComponents = subComponents;
+            }
+            
+            int countComponentIntData() {
+                return getComponentsCount() * INT_DATA_LENGTH;
+            }
+            
+            int getComponentsCount() {
+                int n = 1;
+                for (int i = 0; i < subComponents.length; i++) {
+                    n += subComponents[i].getComponentsCount();
+                }
+                return n;
+            }
+            
+            int putIntData(int[] array, int pos) {
+                array[pos++] = x;
+                array[pos++] = y;
+                array[pos++] = width;
+                array[pos++] = height;
+                array[pos++] = shiftx;
+                array[pos++] = shifty;
+                array[pos++] = subComponents.length;
+                for (int i = 0; i < subComponents.length; i++) {
+                    pos = subComponents[i].putIntData(array, pos);
+                }
+                return pos;
+            }
+            
+            int putComponentsTo(Component[] array, int pos) {
+                array[pos++] = c;
+                for (int i = 0; i < subComponents.length; i++) {
+                    pos = subComponents[i].putComponentsTo(array, pos);
+                }
+                return pos;
+            }
+            
+            void putNamesTo(StringBuffer sb) {
+                if (name == null) {
+                    sb.append((char) 0);
+                } else {
+                    sb.append(name);
+                }
+                sb.append(STRING_DELIMITER);
+                for (int i = 0; i < subComponents.length; i++) {
+                    subComponents[i].putNamesTo(sb);
                 }
             }
         }
