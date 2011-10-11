@@ -1061,11 +1061,11 @@ class LayoutFeeder implements LayoutConstants {
     }
 
     /**
-     * Recognize situation when the new position in given dimension looks same
-     * as the original one and so would be better not to change it. In such case
-     * the original state in this dimension is restored.
-     * @param ndesc1 description of new position
-     * @param ndesc2 description of original position
+     * Recognize situation when the new positions in given dimension look same
+     * as the original ones and so would be better not to change anything.
+     * In such case the original state in this dimension is restored.
+     * @param ndesc1 description of the first new position
+     * @param ndesc2 description of the second new position (for opposite edge), or null
      * @return true if the actual dimension should stay in original state that is
      *         also successfully restored
      */
@@ -3077,7 +3077,8 @@ class LayoutFeeder implements LayoutConstants {
                                 layoutModel.addInterval(lower, toPar, 0);
                             }
                             layoutModel.addInterval(endGap, toPar, alignment==LEADING ? 0 : -1);
-                        } else if (toPar.isSequential() && endGap.getPreferredSize() == 0 && pos != outPos) {
+                        } else if (toPar.isSequential() && pos != outPos
+                                   && endGap != null && endGap.getPreferredSize() == 0) {
                             layoutModel.setIntervalSize(endGap, NOT_EXPLICITLY_DEFINED, NOT_EXPLICITLY_DEFINED, endGap.getMaximumSize());
                         }
                         expanded = true;
