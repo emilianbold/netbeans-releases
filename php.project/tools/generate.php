@@ -8,11 +8,13 @@
  */
 
 define("DOC_URL", "./html/");      // PHP documentation, separate HTML files
+if (!is_dir(DOC_URL)) {
+    die('Incorrect directory for separated HTML files ("./html/" expected)!');
+}
 
 if (version_compare(phpversion(), "5.0.0") < 0) {
 	die ("This script requires PHP 5.0.0 or higher!\n");
 }
-
 
 $splitFiles = true;
 $phpdocDir = null;
@@ -235,17 +237,27 @@ function parse_phpdoc_functions ($phpdocDir, $extensions) {
 					$description = $match[1].$match[6];
 					$has_object_style = true;
 				}
-				if (preg_match ('@<methodsynopsis>.*?<type>(.*?)</type>.*?<methodname>(.*?)</methodname>(.*?)</methodsynopsis>@s', $description, $match)) {
+                                $methodsynopsis;
+                                if ($refname == 'number_format') {
+                                    $methodsynopsis = preg_match_all ('@<methodsynopsis>.*?<type>(.*?)</type>.*?<methodname>(.*?)</methodname>(.*?)</methodsynopsis>@s', $description, $tmp);
+                                    $match = array();
+                                    foreach ($tmp as $key => $val) {
+                                        $match[$key] = $val[count($val) - 1];
+                                    }
+                                } else {
+                                    $methodsynopsis = preg_match ('@<methodsynopsis>.*?<type>(.*?)</type>.*?<methodname>(.*?)</methodname>(.*?)</methodsynopsis>@s', $description, $match);
+                                }
+				if ($methodsynopsis) {
 					if ($has_object_style) {
 						$function_alias = trim($match[2]);
 					} else {
 						$functionsDoc[$refname]['returntype'] = trim($match[1]);
 						$functionsDoc[$refname]['methodname'] = trim($match[2]);
-						$parameters = $match[3];
+                                                $parameters = $match[3];
 					}
 				}
 				if ($parameters) {
-					if (preg_match_all ('@<methodparam\s*(.*?)>.*?<type>(.*?)</type>.*?<parameter\s*(.*?)>(.*?)</parameter>.*?</methodparam>@s', $parameters, $match)) {
+					if (preg_match_all ('@<methodparam\s*(.*?)>.*?<type>(.*?)</type>.*?<parameter\s*(.*?)>(.*?)</parameter>(?:<initializer>(.+?)</initializer>)?.*?</methodparam>@s', $parameters, $match)) {
 						for ($i = 0; $i < count($match[0]); ++$i) {
 							$parameter = array (
 								'type' => trim($match[2][$i]),
@@ -256,6 +268,10 @@ function parse_phpdoc_functions ($phpdocDir, $extensions) {
 							}
 							if (preg_match ('@role=[\'"]reference[\'"]@', $match[3][$i])) {
 								$parameter['isreference'] = true;
+							}
+							if (@strlen(trim($match[5][$i]))) {
+								$parameter['defaultvalue'] = trim($match[5][$i]);
+                                                                $parameter['isoptional'] = true;
 							}
 							$functionsDoc[$refname]['parameters'][] = $parameter;
 						}
@@ -579,26 +595,44 @@ function print_parameters ($parameters) {
 			if ($i++ > 0) {
 				print ", ";
 			}
+			$type = $parameter['type'];
+			if ($type && !in_array($type, array(
+                            'mixed',
+                            'string',
+                            'int',
+                            'bool',
+                            'object',
+                            'callback',
+                            'resource',
+                            'string|array',
+                            'bitmask',
+                            'name',
+                            'number',
+                            'float',
+                            'string|int',
+                        ))) {
+				print "{$type} ";
+			}
 			if (@$parameter['isreference']) {
 				print "&";
 			}
                         print "\${$parameter['name']}";
 
 			if (@$parameter['isoptional']) {
-				if (@$parameter['defaultvalue']) {
+				if (@strlen($parameter['defaultvalue'])) {
 					$value = $parameter['defaultvalue'];
-					if (!is_numeric ($value)) {
-						$value = "'{$value}'";
-					}
+                                        if (is_numeric ($value)
+                                                || in_array(strtolower($value), array('true', 'false', '&null'))
+                                                || (substr($value, 0, 1) == '\'' && substr($value, -1) == '\'')
+                                                || (substr($value, 0, 1) == '"' && substr($value, -1) == '"')) {
+                                            // no apostrophes
+                                        } else {
+                                            $value = "'{$value}'";
+                                        }
                                         print " = {$value}";
 				} else {
 					print " = null";
 				}
-			}
-
-			$type = $parameter['type'];
-			if ($type && (class_exists ($type) || $type == "array")) {
-				print "{$type} ";
 			}
 		}
 	}
@@ -868,6 +902,7 @@ function xml_to_phpdoc ($str) {
 	$str = str_replace ("&return.success;", "Returns true on success or false on failure.", $str);
 	$str = str_replace ("&return.void;", "", $str);
 	$str = str_replace ("&true;", "true", $str);
+	$str = str_replace ("&null;", "null", $str);
 	$str = str_replace ("&false;", "false", $str);
 	$str = str_replace ("&resource;", "resource", $str);
 	$str = str_replace ("&style.oop;", "Oriented object style", $str);
