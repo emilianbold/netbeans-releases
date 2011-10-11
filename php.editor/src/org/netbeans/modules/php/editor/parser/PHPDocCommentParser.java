@@ -276,23 +276,12 @@ public class PHPDocCommentParser {
 
     private List<PHPDocVarTypeTag> findMethodParams(String description, int startOfDescription) {
         List<PHPDocVarTypeTag> result = new ArrayList();
-        int index;
         int position = startOfDescription;
-        String parameters = "";
-        String[] tokens = description.split("[)]+"); //NOI18N
-        if (tokens.length > 1) {
-            for(String token : tokens) {
-                index = token.indexOf('(');
-                if (index > -1 && token.indexOf('$') > -1) {
-                    parameters = token.substring(index + 1);
-                    position += index + 1;
-                    break;
-                }
-                position += token.length() + 1;
-            }
-        }
+        ParametersExtractor parametersExtractor = ParametersExtractorImpl.create();
+        String parameters = parametersExtractor.extract(description);
+        position += parametersExtractor.getPosition();
         if (parameters.length() > 0) {
-            tokens = parameters.split("[,]+"); //NOI18N
+            String[] tokens = parameters.split("[,]+"); //NOI18N
             String paramName;
             for(String token : tokens) {
                 paramName = getVaribleName(token.trim());
@@ -356,4 +345,112 @@ public class PHPDocCommentParser {
         }
         return type;
     }
+
+    private static class ParametersExtractorImpl implements ParametersExtractor {
+
+        private int position = 0;
+        private String parameters = "";
+        private String subDescription = "";
+        private boolean hasParameters = false;
+        private int bracketBalance = 0;
+        private int paramsStart = 0;
+        private int paramsEnd = 0;
+
+        public static ParametersExtractor create() {
+            return new ParametersExtractorImpl();
+        }
+
+        private ParametersExtractorImpl() {
+        }
+
+        @Override
+        public String extract(String description) {
+            int index = description.indexOf('(');
+            int possibleParamIndex = description.indexOf('$');
+            if (index > -1 && possibleParamIndex > -1) {
+                position += index;
+                subDescription = description.substring(index);
+                processSubDescription();
+            }
+            return parameters;
+        }
+
+        private void processSubDescription() {
+            for (int i = 0; i < subDescription.length(); i++) {
+                findMatchingBraces(i);
+                if (!parameters.isEmpty()) {
+                    break;
+                }
+            }
+        }
+
+        private void findMatchingBraces(int i) {
+            char ch = subDescription.charAt(i);
+            if (ch == '(') {
+                processLeftBrace(i);
+            } else if (ch == ')') {
+                processRightBrace(i);
+            } else if (Character.isWhitespace(ch)) {
+                return;
+            } else {
+                processNonWhiteCharacter();
+            }
+            checkParameters();
+        }
+
+        private void processLeftBrace(int i) {
+            bracketBalance++;
+            if (bracketBalance == 1) {
+                paramsStart = i + 1;
+            }
+        }
+
+        private void processRightBrace(int i) {
+            bracketBalance--;
+            if (bracketBalance == 0) {
+                paramsEnd = i;
+            }
+        }
+
+        private void processNonWhiteCharacter() {
+            if (bracketBalance == 0) {
+                hasParameters = false;
+            } else {
+                hasParameters = true;
+            }
+        }
+
+        private void checkParameters() {
+            if (hasParameters && bracketBalance == 0) {
+                parameters = subDescription.substring(paramsStart, paramsEnd);
+                position += paramsStart;
+            }
+        }
+
+        @Override
+        public int getPosition() {
+            return position;
+        }
+
+    }
+
+    private interface ParametersExtractor {
+
+        /**
+         * Extracts part of parameters from magic method tag description.
+         *
+         * @param description Line of magic method tag description.
+         * @return Extracted parameters part.
+         */
+        public String extract(String description);
+
+        /**
+         * Returns start position of parameters part from magic method tag description line.
+         *
+         * @return Start position of parameters part.
+         */
+        public int getPosition();
+
+    }
+
 }
