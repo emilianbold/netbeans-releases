@@ -101,6 +101,9 @@ public abstract class APTMacroBaseNode extends APTTokenBasedNode
         if (APTUtils.isEndDirectiveToken(token.getType())) {
             return false;
         }
+        if (APTUtils.isCommentToken(token)) {
+            return true;
+        }
         if (APTUtils.isID(token)) {
             if (macroName != EMPTY_NAME) {
                 // init macro name only once
@@ -115,7 +118,7 @@ public abstract class APTMacroBaseNode extends APTTokenBasedNode
             } else {
                 this.macroName = token;
             }
-        } else if (!APTUtils.isCommentToken(token)) {
+        } else {
             // everything else is not expected here
             if (DebugUtils.STANDALONE) {
                 System.err.printf("%s, line %d: warning: unexpected token %s\n", // NOI18N
