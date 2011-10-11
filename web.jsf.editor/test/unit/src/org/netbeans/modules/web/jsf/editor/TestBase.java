@@ -81,6 +81,7 @@ import org.openide.loaders.DataObject;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
+import java.io.StringReader;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -517,8 +518,10 @@ public class TestBase extends CslTestBase {
         public EntityResolver getEntityResolver() {
             return new EntityResolver() {
 
+                @Override
                 public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
-                    return null;
+                    //avoid the content to be loaded from network by resolving each resource to empty string
+                    return new InputSource(new StringReader(""));
                 }
             };
         }

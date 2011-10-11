@@ -48,7 +48,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ConfigurationFilesListener;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.impl.Server;
@@ -59,9 +59,12 @@ import org.openide.filesystems.FileObject;
  * @author nn136682
  */
 public class ConfigFilesListener extends AbstractFilesListener {
-    List consumers; //ConfigurationFileListener's
     
-    public ConfigFilesListener(J2eeModuleProvider provider, List consumers) {
+    private final CopyOnWriteArrayList<? extends ConfigurationFilesListener> consumers;
+
+    // FIXME unfortunately the list crosses the object scope - we should evaluate that
+    // and improve that - to risky for now
+    public ConfigFilesListener(J2eeModuleProvider provider, CopyOnWriteArrayList<? extends ConfigurationFilesListener> consumers) {
         super(provider);
         this.consumers = consumers;
     }
@@ -97,8 +100,7 @@ public class ConfigFilesListener extends AbstractFilesListener {
     }
     
     private void fireConfigurationFilesChanged(boolean added, FileObject fo) {
-        for (Iterator i=consumers.iterator(); i.hasNext();) {
-            ConfigurationFilesListener cfl = (ConfigurationFilesListener) i.next();
+        for (ConfigurationFilesListener cfl : consumers) {
             if (added) {
                 cfl.fileCreated(fo);
             } else {

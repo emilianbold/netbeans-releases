@@ -305,7 +305,8 @@ public class J2eeModule {
     
     /**
      * Returns source deployment configuration file path for the given deployment 
-     * configuration file name.
+     * configuration file path name, for example (but not only) WEB-INF/sun-web.xml
+     * or META-INF/context.xml.
      *
      * @param name file name of the deployment configuration file, WEB-INF/sun-web.xml
      *        for example.
