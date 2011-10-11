@@ -47,8 +47,6 @@ package org.netbeans.modules.apisupport.project.ui.wizard.loader;
 import java.io.CharConversionException;
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -353,12 +351,7 @@ public final class NewLoaderIterator extends BasicWizardIterator {
             attrs.put("dataObjectClass", packageName + "." + namePrefix + "DataObject"); //NOI18N
             attrs.put("mimeType", mime); //NOI18N
             if (relativeIconPath != null) {
-                try {
-                    URL url = new URL("nbresloc:/" + relativeIconPath); //NOI18N
-                    attrs.put("SystemFileSystem.icon", url); //NOI18N
-                } catch (MalformedURLException ex) {
-                    throw new IllegalStateException(ex);
-                }
+                attrs.put("iconBase", relativeIconPath); //NOI18N
             }
             fileChanges.add(
                 fileChanges.createLayerEntry(path, null, null, null, attrs)
@@ -495,11 +488,11 @@ public final class NewLoaderIterator extends BasicWizardIterator {
     
     private static String formatImageSnippet(String path) {
         if (path == null) {
-            return "return super.getIcon(type); // TODO add a custom icon here: Utilities.loadImage(..., true)\n"; //NOI18N
+            return "return super.getIcon(type); // TODO add a custom icon here: ImageUtilities.loadImage(..., true)\n"; //NOI18N
         }
         StringBuffer buff = new StringBuffer();
         buff.append("        if (type == BeanInfo.ICON_COLOR_16x16 || type == BeanInfo.ICON_MONO_16x16) {\n"); //NOI18N
-        buff.append("            return Utilities.loadImage(\""); //NOI18N
+        buff.append("            return ImageUtilities.loadImage(\""); //NOI18N
         buff.append(path).append("\");\n"); //NOI18N
         buff.append("        } else {\n"); //NOI18N
         buff.append("            return null;\n        }\n"); //NOI18N
