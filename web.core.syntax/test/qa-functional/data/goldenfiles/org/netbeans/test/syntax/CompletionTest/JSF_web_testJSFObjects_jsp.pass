@@ -1,42 +1,71 @@
-[<h:inputText value="#{|}"/>, cookie[], <h:inputText value="#{cookie[]}"/>, 269]
+[<h:inputText value="#{|}"/>, cookie[], <h:inputText value="#{cookie}"/>, 269]
 MyBean MyBean
-ConversationImpl javax.enterpr
-Model model
 applicationScope[]
-cc
 cookie[]
-facesContext
-headerValues[]
+javax.faces.context.FacesConte
 header[]
+headerValues[]
 initParam[]
-pageContext
+javax.servlet.jsp.PageContext 
 pageScope[]
-paramValues[]
 param[]
+paramValues[]
 requestScope[]
 sessionScope[]
-End cursor position = 299
+javax.faces.component.UIViewRo
+and
+div
+empty
+eq
+false
+ge
+gt
+instanceof
+le
+lt
+mod
+ne
+not
+null
+or
+true
+End cursor position = 297
 [<h:outputText value="#{|}" title="Hi" />, MyBean MyBean, <h:outputText value="#{MyBean}" title="Hi" />, 384]
 MyBean MyBean
-ConversationImpl javax.enterpr
-Model model
 applicationScope[]
-cc
 cookie[]
-facesContext
-headerValues[]
+javax.faces.context.FacesConte
 header[]
+headerValues[]
 initParam[]
-pageContext
+javax.servlet.jsp.PageContext 
 pageScope[]
-paramValues[]
 param[]
+paramValues[]
 requestScope[]
 sessionScope[]
+javax.faces.component.UIViewRo
+and
+div
+empty
+eq
+false
+ge
+gt
+instanceof
+le
+lt
+mod
+ne
+not
+null
+or
+true
 End cursor position = 414
 [<h:outputText value="#{MyBean.n|}" title="Hi" />, name, <h:outputText value="#{MyBean.name}" title="Hi" />, 502]
+String name
+void name(String name)
+boolean noErrors
 name
 noErrors
-void notify
-void notifyAll
 End cursor position = 537
