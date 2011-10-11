@@ -153,6 +153,9 @@ public class RemoteFXScreenshot {
         final BufferedImage bi = new BufferedImage(width.value(), height.value(), BufferedImage.TYPE_INT_ARGB);
         WritableRaster raster = bi.getRaster();
         raster.setDataElements(0, 0, width.intValue(), height.intValue(), dataArray);
+        if (RemoteAWTScreenshot.FAST_FIELDS_SEARCH) {
+            ComponentsFieldFinder.findFieldsForComponents(componentInfo);
+        }
         return new RemoteScreenshot(engine, title, width.intValue(), height.intValue(), bi, componentInfo);
     }
     

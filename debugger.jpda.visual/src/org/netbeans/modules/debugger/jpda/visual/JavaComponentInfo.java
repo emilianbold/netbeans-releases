@@ -105,18 +105,22 @@ abstract public class JavaComponentInfo implements ComponentInfo {
     private FieldInfo fieldInfo;
     private String componentText;
     private RemoteServices.ServiceType sType;
+    long uid;
 
     public JavaComponentInfo(JPDAThreadImpl t, ObjectReference component, RemoteServices.ServiceType sType) throws RetrievalException {
         this.thread = t;
         this.component = component;
         this.type = component.referenceType().name();
         this.sType = sType;
+        this.uid = component.uniqueID();
     }
     
     final protected void init() throws RetrievalException {
         retrieve();
         addProperties();
-        findComponentFields();
+        if (!RemoteAWTScreenshot.FAST_FIELDS_SEARCH) {
+            findComponentFields();
+        }
     }
     
     abstract protected void retrieve() throws RetrievalException;

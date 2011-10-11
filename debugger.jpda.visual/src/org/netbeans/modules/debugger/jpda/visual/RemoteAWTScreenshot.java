@@ -44,6 +44,7 @@ package org.netbeans.modules.debugger.jpda.visual;
 import com.sun.jdi.ArrayReference;
 import com.sun.jdi.BooleanValue;
 import com.sun.jdi.ClassNotLoadedException;
+import com.sun.jdi.ClassObjectReference;
 import com.sun.jdi.ClassType;
 import com.sun.jdi.Field;
 import com.sun.jdi.IncompatibleThreadStateException;
@@ -52,6 +53,7 @@ import com.sun.jdi.InvalidTypeException;
 import com.sun.jdi.InvocationException;
 import com.sun.jdi.Method;
 import com.sun.jdi.ObjectReference;
+import com.sun.jdi.ReferenceType;
 import com.sun.jdi.StringReference;
 import com.sun.jdi.ThreadReference;
 import com.sun.jdi.Value;
@@ -109,6 +111,20 @@ public class RemoteAWTScreenshot {
     private static final String AWTThreadName = "AWT-EventQueue-";  // NOI18N
     
     private static final RemoteScreenshot[] NO_SCREENSHOTS = new RemoteScreenshot[] {};
+    
+    private static final boolean FAST_SNAPSHOT_RETRIEVAL = getBooleanProperty("visualDebugger.fastSnapshot", true);   // NOI18N
+    static final boolean FAST_FIELDS_SEARCH = getBooleanProperty("visualDebugger.fastFieldsSearch", true);   // NOI18N
+    private static final char STRING_DELIMITER = (char) 3;   // ETX (end of text)
+    
+    public static boolean getBooleanProperty(String name, boolean defaultValue) {
+        boolean result = defaultValue;
+        String val = System.getProperty(name);
+        if (val != null) {
+            result = Boolean.parseBoolean(val);
+        }
+        return result;
+    }
+    
 
     private RemoteAWTScreenshot() {}
     
@@ -116,6 +132,9 @@ public class RemoteAWTScreenshot {
         final BufferedImage bi = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         WritableRaster raster = bi.getRaster();
         raster.setDataElements(0, 0, width, height, dataArray);
+        if (FAST_FIELDS_SEARCH) {
+            ComponentsFieldFinder.findFieldsForComponents(componentInfo);
+        }
         return new RemoteScreenshot(engine, title, width, height, bi, componentInfo);
     }
     
@@ -143,7 +162,8 @@ public class RemoteAWTScreenshot {
         }
         for (JPDAThread t : allThreads) {
             if (t.getName().startsWith(AWTThreadName)) {
-                //try {
+                long t1 = System.nanoTime();
+                try {
                     return take(t, engine);
                     /*
                 } catch (InvocationException iex) {
@@ -167,6 +187,12 @@ public class RemoteAWTScreenshot {
                 }
                      */
                 //break;
+                } finally {
+                    long t2 = System.nanoTime();
+                    long ns = t2 - t1;
+                    long ms = ns/1000000;
+                    logger.info("GUI Snaphot taken in "+((ms > 0) ? (ms + " ms "+(ns - ms*1000000)+" ns.") : (ns+" ns.")));
+                }
             }
         }
         return NO_SCREENSHOTS;
@@ -180,14 +206,6 @@ public class RemoteAWTScreenshot {
         if (windowClass == null) {
             logger.fine("No Window");
             return NO_SCREENSHOTS;
-        }
-
-        //Method getWindows = null;//windowClass.concreteMethodByName("getOwnerlessWindows", "()[Ljava/awt/Window;");
-        final Method getWindows = windowClass.concreteMethodByName("getWindows", "()[Ljava/awt/Window;");
-        if (getWindows == null) {
-            logger.fine("No getWindows() method!");
-            String msg = NbBundle.getMessage(RemoteAWTScreenshot.class, "MSG_ScreenshotNotTaken_MissingMethod", "java.awt.Window.getWindows()");
-            throw new RetrievalException(msg);
         }
 
         final List<RemoteScreenshot> screenshots = new ArrayList<RemoteScreenshot>();
@@ -213,6 +231,49 @@ public class RemoteAWTScreenshot {
                        }
                      */
                     try {
+                        if (FAST_SNAPSHOT_RETRIEVAL) {
+                            ClassObjectReference serviceClassObject = RemoteServices.getServiceClass(((JPDAThreadImpl) t).getDebugger());
+                            ClassType serviceClass = (ClassType) serviceClassObject.reflectedType();
+                            final Method getGUISnapshots = serviceClass.concreteMethodByName("getGUISnapshots", "()[Lorg/netbeans/modules/debugger/jpda/visual/remote/RemoteAWTService$Snapshot;");
+                            ArrayReference snapshotsArray = (ArrayReference) serviceClass.invokeMethod(tawt, getGUISnapshots, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
+                            List<Value> snapshots = snapshotsArray.getValues();
+                            for (Value snapshot : snapshots) {
+                                ObjectReference snapshotObj = (ObjectReference) snapshot;
+                                ReferenceType rt = snapshotObj.referenceType();
+                                StringReference allIntDataString = (StringReference) snapshotObj.getValue(rt.fieldByName("allIntDataString"));
+                                int[] allIntData = createIntArrayFromString(allIntDataString.value());
+                                StringReference allNamesString = (StringReference) snapshotObj.getValue(rt.fieldByName("allNamesString"));
+                                ArrayReference allComponentsArray = (ArrayReference) snapshotObj.getValue(rt.fieldByName("allComponentsArray"));
+                                String allNames = allNamesString.value();
+                                int ititle = allNames.indexOf(STRING_DELIMITER);
+                                String title = allNames.substring(0, ititle);
+                                if (title.length() == 1 && title.charAt(0) == 0) {
+                                    title = null;
+                                }
+                                int ndata = allIntData[2];
+                                int[] dataArray = new int[ndata];
+                                System.arraycopy(allIntData, 3, dataArray, 0, ndata);
+                                AWTComponentInfo componentInfo = new AWTComponentInfo((JPDAThreadImpl) t,
+                                                                                      allIntData, new int[] { ndata + 3 },
+                                                                                      allNames, new int[] { ititle + 1 },
+                                                                                      allComponentsArray.getValues(), new int[] { 0 });
+                                screenshots.add(createRemoteAWTScreenshot(engine,
+                                                                          title,
+                                                                          allIntData[0], allIntData[1],
+                                                                          dataArray, componentInfo));
+                            }
+                            // Clear the snapshots reference to enable GC.
+                            serviceClass.setValue(serviceClass.fieldByName("lastGUISnapshots"), null);
+                            return;
+                        }
+                        
+                        //Method getWindows = null;//windowClass.concreteMethodByName("getOwnerlessWindows", "()[Ljava/awt/Window;");
+                        final Method getWindows = windowClass.concreteMethodByName("getWindows", "()[Ljava/awt/Window;");
+                        if (getWindows == null) {
+                            logger.fine("No getWindows() method!");
+                            String msg = NbBundle.getMessage(RemoteAWTScreenshot.class, "MSG_ScreenshotNotTaken_MissingMethod", "java.awt.Window.getWindows()");
+                            throw new RetrievalException(msg);
+                        }
                         ArrayReference windowsArray = (ArrayReference) ((ClassType) windowClass).invokeMethod(tawt, getWindows, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
                         List<Value> windows = windowsArray.getValues();
                         logger.fine("Have "+windows.size()+" window(s).");
@@ -346,7 +407,7 @@ public class RemoteAWTScreenshot {
                         retrievalExceptionPtr[0] = rex;
                     } catch (InvocationException iex) {
                         //Exceptions.printStackTrace(iex);
-
+                        ((JPDAThreadImpl) t).notifyMethodInvokeDone();
                         final InvocationExceptionTranslated iextr = new InvocationExceptionTranslated(iex, ((JPDAThreadImpl) t).getDebugger());
                         // Initialize the translated exception:
                         iextr.setPreferredThread((JPDAThreadImpl) t);
@@ -504,6 +565,22 @@ public class RemoteAWTScreenshot {
     }
     */
     
+    private static int[] createIntArrayFromString(String s) {
+        int i1 = 0;
+        int i2 = s.indexOf('[');
+        int n = Integer.parseInt(s.substring(i1, i2));
+        int[] array = new int[n];
+        for (int i = 0; i < n; i++) {
+            i1 = i2 + 1;
+            i2 = s.indexOf(',', i1);
+            if (i2 < 0) {
+                i2 = s.indexOf(']', i1);
+            }
+            array[i] = Integer.parseInt(s.substring(i1, i2));
+        }
+        return array;
+    }
+    
     private static boolean isInstanceOfClass(ClassType c1, ClassType c2) {
         if (c1.equals(c2)) {
             return true;
@@ -544,6 +621,56 @@ public class RemoteAWTScreenshot {
             
             this.shiftX = shiftX;
             this.shiftY = shiftY;
+            init();
+        }
+        
+        public AWTComponentInfo(JPDAThreadImpl t, int[] allDataArray, int[] dposPtr,
+                                String allNames, int[] inamePtr,
+                                List<Value> allComponentsArray, int[] cposPtr) throws RetrievalException {
+//            this(t, allDataArray, dpos, allNames, allComponentsArray, 0, Integer.MIN_VALUE, Integer.MIN_VALUE);
+//        }
+//        
+//        public AWTComponentInfo(JPDAThreadImpl t, int[] allDataArray, int dpos,
+//                                String allNames, List<Value> allComponentsArray, int cpos,
+//                                int shiftX, int shiftY) throws RetrievalException {
+            super(t, (ObjectReference) allComponentsArray.get(cposPtr[0]++), ServiceType.AWT);
+            //this.shiftX = shiftX;
+            //this.shiftY = shiftY;
+            Rectangle bounds = new Rectangle();
+            int dpos = dposPtr[0];
+            //if (shiftX == Integer.MIN_VALUE && shiftY == Integer.MIN_VALUE) {
+            //    bounds.x = 0; // Move to the origin, we do not care where it's on the screen.
+            //    bounds.y = 0;
+            //    dpos += 2;
+            //} else {
+                bounds.x = allDataArray[dpos++];
+                bounds.y = allDataArray[dpos++];
+                bounds.width = allDataArray[dpos++];
+                bounds.height = allDataArray[dpos++];
+            //}
+            setBounds(bounds);
+            this.shiftX = allDataArray[dpos++];
+            this.shiftY = allDataArray[dpos++];
+            setWindowBounds(new Rectangle(shiftX, shiftY, bounds.width, bounds.height));
+            int iname = allNames.indexOf(STRING_DELIMITER, inamePtr[0]);
+            String name = allNames.substring(0, iname);
+            if (name.length() == 1 && name.charAt(0) == 0) {
+                name = null;
+            }
+            setName(name);
+            inamePtr[0] = iname + 1;
+            
+            int nsc = allDataArray[dpos++];
+            dposPtr[0] = dpos;
+            if (nsc > 0) {
+                AWTComponentInfo[] cis = new AWTComponentInfo[nsc];
+                for (int i = 0; i < nsc; i++) {
+                    cis[i] = new AWTComponentInfo(getThread(), allDataArray, dposPtr,
+                                                  allNames, inamePtr,
+                                                  allComponentsArray, cposPtr);
+                }
+                setSubComponents(cis);
+            }
             init();
         }
         
@@ -595,6 +722,7 @@ public class RemoteAWTScreenshot {
 
         @Override
         protected void retrieve() throws RetrievalException {
+            if (componentClass == null) return ;
             try {
                 retrieveComponents(this, getThread(), vm, componentClass, containerClass, getComponent(), getComponents, getBounds,
                         shiftX, shiftY);
