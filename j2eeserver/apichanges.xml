@@ -116,6 +116,31 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="noInitializationFinishWhenNoInstances">
+	    <api name="support"/>
+	    <summary>
+                Added noInitializationFinishWhenNoInstances attribute of
+                ProxyOptionalFactory.
+	    </summary>
+	    <version major="1" minor="86"/>
+	    <date day="10" month="10" year="2011"/>
+	    <author login="phejl"/>
+	    <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes"/>
+	    <description>
+                <p>
+                In ProxyOptionalFactory you can use the new attribute
+                noInitializationFinishWhenNoInstances to suppress invocation
+                of finishServerInitialization() when there are no instances
+                in the server registry.
+                </p>
+                <p>
+                Designed to be used from XML Layer.
+                </p>
+	    </description>
+            <class package="org.netbeans.modules.j2ee.deployment.plugins.spi.support" name="ProxyOptionalFactory"/>
+            <issue number="200049"/>
+	 </change>
+         
        <change id="nonPersistentServer">
     	    <api name="j2eeserver"/>
             <summary>
