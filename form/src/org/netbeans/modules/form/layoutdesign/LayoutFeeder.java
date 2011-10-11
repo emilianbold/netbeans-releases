@@ -3914,12 +3914,17 @@ class LayoutFeeder implements LayoutConstants {
             LayoutRegion subSpace = sub.getCurrentSpace();
 
             // first analyze the interval as a possible sub-group
-            if (sub.isParallel() && shouldEnterGroup(sub)) {
-                // group space contains significant edge
-                int count = inclusions.size();
+            if (sub.isParallel() && shouldEnterGroup(sub)) { // group space contains significant edge
+                IncludeDesc[] before = inclusions.isEmpty() ? null : inclusions.toArray(new IncludeDesc[inclusions.size()]);
+
                 analyzeParallel(sub, inclusions);
-                if (inclusions.size() > count)
-                    return;
+
+                if ((before == null && !inclusions.isEmpty())
+                    || (before != null
+                        && (before.length < inclusions.size()
+                            || !Arrays.asList(before).containsAll(inclusions)))) {
+                    return; // found something
+                }
             }
 
             // second analyze the interval as a single element for "next to" placement
@@ -4427,8 +4432,10 @@ class LayoutFeeder implements LayoutConstants {
             if (iDesc != best) {
                 if (!compatibleInclusions(iDesc, best, dimension)) {
                     it.remove();
-                }
-                else {
+                } else if (iDesc.parent == best.parent && iDesc.neighbor == best.neighbor
+                           && (iDesc.neighbor != null || iDesc.index == iDesc.index)) {
+                    it.remove(); // same inclusion twice (detect for better robustness)
+                } else {
                     LayoutInterval group = iDesc.parent.isSequential() ?
                                            iDesc.parent.getParent() : iDesc.parent;
                     if (group.isParentOf(commonGroup)) {

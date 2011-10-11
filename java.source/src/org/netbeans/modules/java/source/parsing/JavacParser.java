@@ -1138,6 +1138,9 @@ public class JavacParser extends Parser {
                         JavacParser.this.changedMethod.set(changedMethod);
                     }
                 }
+            } else if (evt.type() == TokenHierarchyEventType.ACTIVITY) {
+                positions.clear();
+                JavacParser.this.changedMethod.set(null);
             }
         }
     }
