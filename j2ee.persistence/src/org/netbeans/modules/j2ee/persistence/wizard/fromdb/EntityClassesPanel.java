@@ -640,20 +640,28 @@ public class EntityClassesPanel extends javax.swing.JPanel {
         private boolean cmp;
         private boolean puRequired;
         private boolean JAXBRequired;
+        private boolean isFinishable;
 
         private List<Provider> providers;
 
         public WizardPanel(){
             this(false);
         }
-
-        public WizardPanel(boolean persistenceUnitRequired, boolean JAXBRequired){
+        
+        public WizardPanel(boolean persistenceUnitRequired, boolean JAXBRequired,
+                boolean isFinishable )
+        {
             puRequired = persistenceUnitRequired;
             this.JAXBRequired = JAXBRequired;
+            isFinishable = isFinishable;
+        }
+
+        public WizardPanel(boolean persistenceUnitRequired, boolean JAXBRequired){
+            this( persistenceUnitRequired , JAXBRequired , true );
         }
 
         public WizardPanel(boolean persistenceUnitRequired){
-            puRequired = persistenceUnitRequired;
+            this( persistenceUnitRequired , false , true );
         }
         
         @Override
@@ -810,7 +818,7 @@ public class EntityClassesPanel extends javax.swing.JPanel {
 
         @Override
         public boolean isFinishPanel() {
-            return true;
+            return isFinishable;
         }
     }
 
