@@ -1531,6 +1531,10 @@ outer:  do {
                         p.interruptTask(this, RequestProcessor.this);
                         item = null;
                     }
+                    
+                    if (success) {
+                        item = null;
+                    }
                 }
 
                 if (success) {
@@ -1643,7 +1647,7 @@ outer:  do {
                 synchronized (processorLock) {
                     // correct line:    toRun = (item == null) ? !isFinished (): (item.clear() && !isFinished ());
                     // the same:        toRun = !isFinished () && (item == null ? true : item.clear ());
-                    runAtAll = !isFinished();
+                    runAtAll = cancel();
                     toRun = runAtAll && ((item == null) || item.clear(null));
                     if (loggable) {
                         em.log(Level.FINE, "    ## finished: {0}", isFinished()); // NOI18N
