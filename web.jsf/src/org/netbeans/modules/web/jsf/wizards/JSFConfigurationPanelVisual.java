@@ -1667,6 +1667,7 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
                         addJsfComponentCustomizer(jsfDescriptor.getName(), jsfCustomizer);
                         jsfCustomizer.saveConfiguration();
                     }
+                    panel.fireChangeEvent();
                 }
             };
             dialogDescriptor.setButtonListener(buttonsListener);
