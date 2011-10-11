@@ -17,6 +17,7 @@
             <tocitem text="Working with Projects" target="proj_process"/>
             <tocitem text="Project Tasks: Quick Reference" target="proj_quickref"/>
             <tocitem text="Creating a Java Project" target="proj_creating"/>
+            <tocitem text="Creating a JavaFX Project" target="jfx_apps" />
             <tocitem text="Java Project Templates" target="proj_templates" />
             <tocitem text="Importing an Eclipse or JBuilder Project" target="proj_import" />
             <tocitem text="Setting the Main Project" target="proj_main" />
