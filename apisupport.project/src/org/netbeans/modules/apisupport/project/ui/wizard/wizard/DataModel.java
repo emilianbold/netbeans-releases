@@ -165,12 +165,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
                 // Copy wizard icon
                 if (origIconPath != null && origIconPath.length() > 0) {
                     String relToSrcDir = addCreateIconOperation(cmf, origIconPath);
-                    try {
-                        URL url = new URL("nbresloc:/" + relToSrcDir); // NOI18N
-                        cmf.add(cmf.createLayerAttribute(instanceFullPath, "SystemFileSystem.icon", url)); // NOI18N
-                    } catch (MalformedURLException ex) {
-                        Util.err.notify(ex);
-                    }
+                    cmf.add(cmf.createLayerAttribute(instanceFullPath, "iconBase", relToSrcDir)); // NOI18N
                 }
             }
         } else {
