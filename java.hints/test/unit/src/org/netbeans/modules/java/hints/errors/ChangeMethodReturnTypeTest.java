@@ -80,6 +80,13 @@ public class ChangeMethodReturnTypeTest extends ErrorHintsTestBase {
                             "package test; public class Test { Test() { return 1|; } }");
     }
 
+    public void test203360() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test; import java.util.Collections; public class Test { private int t() { return Collections.emptyList(|); } }",
+                       "FIX_ChangeMethodReturnType List<Object>",
+                       "package test; import java.util.Collections;import java.util.List; public class Test { private List<Object> t() { return Collections.emptyList(); } }");
+    }
+
     @Override
     protected List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) throws Exception {
         return new ChangeMethodReturnType().run(info, null, pos, path, null);
