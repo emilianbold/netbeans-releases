@@ -1524,7 +1524,20 @@ public class TreeModelNode extends AbstractNode {
                     TreeModelNode tmn = (TreeModelNode) n;
                     treeModelRoot.unregisterNode (tmn.object, tmn);
                     if (tmn.areChildrenInitialized()) {
-                        destroyNodes(tmn.getChildren().getNodes());
+                        Node[] childrenNodes;
+                        try {
+                            // Use Children.testNodes() that does not re-create nodes.
+                            // https://netbeans.org/bugzilla/show_bug.cgi?id=199202
+                            java.lang.reflect.Method testNodes = Children.class.getDeclaredMethod("testNodes"); // NOI18N
+                            testNodes.setAccessible(true);
+                            childrenNodes = (Node[]) testNodes.invoke(tmn.getChildren());
+                        } catch (Exception ex) {
+                            Logger.getLogger(TreeModelNode.class.getName()).log(Level.INFO, "Children.testNodes() method access problem:", ex); // NOI18N
+                            childrenNodes = tmn.getChildren().getNodes();
+                        }
+                        if (childrenNodes != null) {
+                            destroyNodes(childrenNodes);
+                        }
                     }
                 }
             }
