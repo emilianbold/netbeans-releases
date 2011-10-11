@@ -191,7 +191,7 @@ public final class PHPIndexer extends EmbeddingIndexer {
             String processedFileURL = null;
             try {
                 final FileObject fileObject = r.getSnapshot().getSource().getFileObject();
-                assert r.getDiagnostics().isEmpty() || !PhpSourcePath.FileType.INTERNAL.equals(PhpSourcePath.getFileType(fileObject)) : fileObject.getPath();
+                assert r.getDiagnostics().isEmpty() : fileObject.getPath();
                 processedFileURL = fileObject.getURL().toExternalForm();
             } catch (FileStateInvalidException ex) {
                 Exceptions.printStackTrace(ex);
