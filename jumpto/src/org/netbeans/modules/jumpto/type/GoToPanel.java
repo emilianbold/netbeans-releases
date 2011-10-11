@@ -49,6 +49,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseListener;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -98,6 +99,12 @@ public class GoToPanel extends javax.swing.JPanel {
     long time = -1;
 
     private final SearchHistory searchHistory;
+
+    // handling http://netbeans.org/bugzilla/show_bug.cgi?id=203512
+    // if the whole search argument (in the name JTextField) is selected and something is pasted in it's place,
+    // notify the DocumentListener because it will first call removeUpdate() and then inserteUpdate().
+    // When removeUpdate() is called we should not call update() because it messes the messageLabel's text.
+    private boolean pastedFromClipboard = false;
     
     /** Creates new form GoToPanel */
     public GoToPanel( ContentProvider contentProvider, boolean multiSelection ) throws IOException {
@@ -197,10 +204,17 @@ public class GoToPanel extends javax.swing.JPanel {
             jLabelWarning.setIcon(WARN_ICON);
             jLabelWarning.setBorder(BorderFactory.createEmptyBorder(3, 1, 1, 1));
         } else {
-            jLabelWarning.setIcon(null);
-            jLabelWarning.setBorder(null);
+                jLabelWarning.setIcon(null);
+                jLabelWarning.setBorder(null);
         }
         jLabelWarning.setText(warningMessage);
+    }
+    
+    //handling http://netbeans.org/bugzilla/show_bug.cgi?id=178555
+    public void setMouseListener(MouseListener warningMouseListener) {
+        if (messageLabel.getMouseListeners().length == 0) {
+            messageLabel.addMouseListener(warningMouseListener);
+        }
     }
             
     /** This method is called from within the constructor to
@@ -349,6 +363,21 @@ public class GoToPanel extends javax.swing.JPanel {
     private void nameFieldKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_nameFieldKeyPressed
         if (boundScrollingKey(evt)) {
             delegateScrollingKey(evt);
+        } else {
+            //handling http://netbeans.org/bugzilla/show_bug.cgi?id=203512
+            Object o = nameField.getInputMap().get(KeyStroke.getKeyStrokeForEvent(evt));
+            if (o instanceof String) {
+                String action = (String) o;
+                if ("paste-from-clipboard".equals(action)) {
+                    String selectedTxt = nameField.getSelectedText();
+                    String txt = nameField.getText();
+                    if (selectedTxt != null && txt != null) {
+                        if (selectedTxt.length() == txt.length()) {
+                            pastedFromClipboard = true;
+                        }
+                    }
+                }
+            }
         }
     }//GEN-LAST:event_nameFieldKeyPressed
 
@@ -403,7 +432,10 @@ public class GoToPanel extends javax.swing.JPanel {
         }        
         else if ( message != null ) { 
            jTextFieldLocation.setText(""); 
-           messageLabel.setText(message);
+           //handling http://netbeans.org/bugzilla/show_bug.cgi?id=178555
+            messageLabel.setText(waitIcon
+                    ? "<html>" + message + "&nbsp;&nbsp;&nbsp;&nbsp;<a href=\"http://www.netbeans.org\">"+NbBundle.getMessage(GoToPanel.class, "TXT_CancelSearch")+"</a></html>" //NOI18N
+                    : message);
            messageLabel.setIcon( waitIcon ? WAIT_ICON : null);
            if ( containsScrollPane ) {
                listPanel.remove( matchesScrollPane1 );
@@ -481,7 +513,12 @@ public class GoToPanel extends javax.swing.JPanel {
         }
 
         public void removeUpdate( DocumentEvent e ) {
-            update();
+            // handling http://netbeans.org/bugzilla/show_bug.cgi?id=203512
+            if (dialog.pastedFromClipboard) {
+                dialog.pastedFromClipboard = false;
+            } else {
+                update();
+            }
         }
 
         public void insertUpdate( DocumentEvent e ) {
@@ -524,14 +561,14 @@ public class GoToPanel extends javax.swing.JPanel {
             String text = dialog.getText();
             if ( dialog.oldText == null || dialog.oldText.trim().length() == 0 || !text.startsWith(dialog.oldText) ) {
                 dialog.setListPanelContent(NbBundle.getMessage(GoToPanel.class, "TXT_Searching"),true); // NOI18N
-            }
+                }
             dialog.oldText = text;
             dialog.contentProvider.setListModel(dialog,text);            
         }
                                          
     }
              
-    
+        
     public static interface ContentProvider {
         
         public ListCellRenderer getListCellRenderer( JList list );

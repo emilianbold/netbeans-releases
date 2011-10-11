@@ -479,7 +479,8 @@ public class LayoutUtils implements LayoutConstants {
                     candidates.add(sub);
                     if (!mustBeLast && sub.isSingle()) {
                         index -= d;
-                        if (index >= 0 && index < candidate.getSubIntervalCount()) {
+                        if (index >= 0 && index < candidate.getSubIntervalCount()
+                                && (!aligned || !LayoutInterval.canResize(sub))) {
                             candidates.add(candidate.getSubInterval(index));
                         }
                     }

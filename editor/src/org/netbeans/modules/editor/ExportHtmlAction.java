@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.editor;
 
+import java.awt.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.util.Exceptions;
@@ -64,12 +65,13 @@ import javax.swing.text.StyledDocument;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.*;
-import java.io.*;
-import java.awt.*;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.io.*;
 import java.net.MalformedURLException;
+import java.text.AttributedCharacterIterator;
+import java.util.List;
 import java.util.prefs.Preferences;
 import javax.swing.text.AttributeSet;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
@@ -78,6 +80,7 @@ import org.netbeans.api.editor.settings.FontColorNames;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.modules.editor.lib2.EditorPreferencesDefaults;
+import org.netbeans.modules.editor.lib2.view.PrintUtils;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.util.NbPreferences;
@@ -240,7 +243,9 @@ public class ExportHtmlAction extends CookieAction {
         return false;
     }
 
-    private void export (final BaseDocument bdoc,  String fileName, boolean lineNumbers, int selectionStart, int selectionEnd, boolean toClipboard) throws IOException {
+    private void export (final BaseDocument bdoc, final String fileName, final boolean lineNumbers,
+            final int selectionStart, final int selectionEnd, final boolean toClipboard) throws IOException
+    {
         MimePath mimePath = MimePath.parse((String)bdoc.getProperty(BaseDocument.MIME_TYPE_PROP));
         FontColorSettings fcs = MimeLookup.getLookup(mimePath).lookup(FontColorSettings.class);
         
@@ -256,22 +261,37 @@ public class ExportHtmlAction extends CookieAction {
         Color lnfgColor = lineNumberColoring.getForeColor();
         
         FileObject fo = ((DataObject)bdoc.getProperty (Document.StreamDescriptionProperty)).getPrimaryFile();
-        HtmlPrintContainer htmlPrintContainer = new HtmlPrintContainer();
+        final HtmlPrintContainer htmlPrintContainer = new HtmlPrintContainer();
         htmlPrintContainer.begin (fo, font, fgColor, bgColor,lnfgColor,lnbgColor, mimePath, CHARSET);
-        bdoc.print (htmlPrintContainer,false, Boolean.valueOf(lineNumbers), selectionStart, selectionEnd);
-        String result = htmlPrintContainer.end();
-        if (toClipboard) {
-            Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(result), null);
-        } else {
-            PrintWriter out = null;
-            try {
-                out = new PrintWriter (new OutputStreamWriter (new FileOutputStream (fileName), CHARSET));
-                out.print (result);
-            } finally {
-                if (out != null)
-                    out.close();
+        final IOException[] ioExc = new IOException[1];
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                List<AttributedCharacterIterator> lines = PrintUtils.printDocument(
+                        bdoc, lineNumbers, selectionStart, selectionEnd);
+                htmlPrintContainer.addLines(lines);
+                String result = htmlPrintContainer.end();
+                if (toClipboard) {
+                    Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(result), null);
+                } else {
+                    PrintWriter out = null;
+                    try {
+                        out = new PrintWriter(new OutputStreamWriter(new FileOutputStream(fileName), CHARSET));
+                        out.print(result);
+                    } catch (IOException ex) {
+                        NotifyDescriptor nd = new NotifyDescriptor.Message(
+                                NbBundle.getMessage(ExportHtmlAction.class, "ERR_IOError", new Object[]{fileName}), //NOI18N
+                                NotifyDescriptor.ERROR_MESSAGE);
+                        DialogDisplayer.getDefault().notify(nd);
+                        return;
+                    } finally {
+                        if (out != null) {
+                            out.close();
+                        }
+                    }
+                }
             }
-        }
+        });
     }
 
     private static final class Presenter extends JPanel implements ActionListener {

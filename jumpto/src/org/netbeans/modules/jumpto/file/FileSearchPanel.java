@@ -96,6 +96,12 @@ public class FileSearchPanel extends javax.swing.JPanel implements ActionListene
 
     private final SearchHistory searchHistory;
 
+    // handling http://netbeans.org/bugzilla/show_bug.cgi?id=203119
+    // if the whole search argument (in the fileName JTextField) is selected and something is pasted in it's place,
+    // notify the DocumentListener because it will first call removeUpdate() and then inserteUpdate().
+    // When removeUpdate() is called we should not call update() because it messes the messageLabel's text.
+    private boolean pastedFromClipboard = false;
+
     public FileSearchPanel(ContentProvider contentProvider, Project currentProject) {
         this.contentProvider = contentProvider;
         this.currentProject = currentProject;
@@ -146,7 +152,12 @@ public class FileSearchPanel extends javax.swing.JPanel implements ActionListene
             }
             
             public void removeUpdate(DocumentEvent e) {
-                update();
+                // handling http://netbeans.org/bugzilla/show_bug.cgi?id=203119
+                if (pastedFromClipboard) {
+                    pastedFromClipboard = false;
+                } else {
+                    update();
+                }
             }
         });
 
@@ -476,6 +487,21 @@ private void resultListValueChanged(javax.swing.event.ListSelectionEvent evt) {/
             Action a = resultList.getActionMap().get(actionKey);
             a.actionPerformed(new ActionEvent(resultList, 0, (String)actionKey));
             evt.consume();
+        } else {
+            //handling http://netbeans.org/bugzilla/show_bug.cgi?id=203119
+            Object o = fileNameTextField.getInputMap().get(KeyStroke.getKeyStrokeForEvent(evt));
+            if (o instanceof String) {
+                String action = (String) o;
+                if ("paste-from-clipboard".equals(action)) {
+                    String selectedTxt = fileNameTextField.getSelectedText();
+                    String txt = fileNameTextField.getText();
+                    if (selectedTxt != null && txt != null) {
+                        if (selectedTxt.length() == txt.length()) {
+                            pastedFromClipboard = true;
+                        }
+                    }
+                }
+            }
         }
     }//GEN-LAST:event_fileNameTextFieldKeyPressed
     
