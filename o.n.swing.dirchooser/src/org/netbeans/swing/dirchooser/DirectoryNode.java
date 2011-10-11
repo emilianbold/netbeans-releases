@@ -51,12 +51,14 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.Icon;
 import javax.swing.JFileChooser;
 import javax.swing.tree.DefaultMutableTreeNode;
 import org.netbeans.api.project.ProjectManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Utilities;
+import sun.awt.shell.ShellFolder;
 
 /**
  * A directory tree node.
@@ -79,6 +81,7 @@ public class DirectoryNode extends DefaultMutableTreeNode {
     private boolean loaded;
     
     private boolean isSelected;
+    private final boolean exists;
     
     public DirectoryNode(File file) {
         this(file, true, false, false, false);
@@ -92,7 +95,13 @@ public class DirectoryNode extends DefaultMutableTreeNode {
             boolean isChecked, boolean isEditable) {
         super(file, allowsChildren);
         this.directory = file;
-        this.isDir = directory.isDirectory();
+        if (file instanceof ShellFolder) {
+            exists = file.exists();
+            isDir = exists && directory.isDirectory();
+        } else {
+            exists = true;
+            isDir = true;
+        }
         this.isSelected = isSelected;
     }
     
@@ -249,6 +258,22 @@ public class DirectoryNode extends DefaultMutableTreeNode {
             return fo;
         } else {
             return null;
+        }
+    }
+
+    Icon getIcon (JFileChooser fileChooser) {
+        if (exists) {
+            return fileChooser.getIcon(getFile());
+        } else {
+            return null;
+        }
+    }
+
+    String getText (JFileChooser fileChooser) {
+        if (exists) {
+            return "<html>" + fileChooser.getName(getFile()) + "</html>"; //NOI18N
+        } else {
+            return "<html> </html>"; //NOI18N
         }
     }
     
