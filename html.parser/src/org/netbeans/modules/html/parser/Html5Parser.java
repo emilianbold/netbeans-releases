@@ -47,7 +47,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -87,6 +89,7 @@ public class Html5Parser implements HtmlParser {
     private static final Pattern TEMPLATING_MARKS_PATTERN = Pattern.compile("@@@"); //NOI18N
     private static final String TEMPLATING_MARKS_MASK = "   "; //NOI18N
 
+    @Override
     public HtmlParseResult parse(HtmlSource source, HtmlVersion preferedVersion, Lookup lookup) throws ParseException {
         String code = maskTemplatingMarks(source.getSourceCode().toString());
         try {
@@ -125,6 +128,7 @@ public class Html5Parser implements HtmlParser {
         }
     }
 
+    @Override
     public boolean canParse(HtmlVersion version) {
         return version == HtmlVersion.HTML5
                 || version == HtmlVersion.XHTML5
@@ -141,11 +145,13 @@ public class Html5Parser implements HtmlParser {
                 || version == HtmlVersion.XHTML11;
     }
 
+    @Override
     public HtmlModel getModel(HtmlVersion version) {
         assert version == HtmlVersion.HTML5 || version == HtmlVersion.XHTML5;
         return HTML5MODEL;
     }
 
+    @Override
     public String getName() {
         return PARSER_NAME;
     }
@@ -160,36 +166,9 @@ public class Html5Parser implements HtmlParser {
             super(source, root, problems, version);
         }
 
+        @Override
         public HtmlModel model() {
             return HTML5MODEL;
-        }
-
-        public Collection<HtmlTag> getPossibleTagsInContext(AstNode afterNode, boolean openTags) {
-            HtmlTag tag = model().getTag(afterNode.getNameWithoutPrefix());
-            if(tag == null) {
-                return Collections.emptyList();
-            }
-            if (openTags) {
-                //skip empty tags - this is mailny a workaround for bad logical context of empty nodes
-                //however not easily fixable since the HtmlCompletionQuery uses the XmlSyntaxTreeBuilder
-                //when the parse tree is broken and the builder has no notion of such metadata.
-                while (tag != null && tag.isEmpty()) {
-                    afterNode = afterNode.parent();
-                    if (afterNode == null) {
-                        return Collections.emptyList();
-                    }
-                    tag = model().getTag(afterNode.getNameWithoutPrefix());
-                }
-                if (tag == null) {
-                    return Collections.emptyList();
-                }
-
-                Collection<HtmlTag> possibleChildren = new LinkedHashSet<HtmlTag>();
-                addPossibleTags(tag, possibleChildren);
-                return possibleChildren;
-            } else {
-                return completeEndTags(afterNode);
-            }
         }
 
         public void addPossibleTags(HtmlTag tag, Collection<HtmlTag> possible) {
@@ -206,14 +185,46 @@ public class Html5Parser implements HtmlParser {
             }
         }
 
-        private Collection<HtmlTag> completeEndTags(AstNode node) {
-            Collection<HtmlTag> possible = new LinkedHashSet<HtmlTag>();
+        @Override
+        public Collection<HtmlTag> getPossibleOpenTags(AstNode afterNode) {
+            HtmlTag tag = model().getTag(afterNode.getNameWithoutPrefix());
+            if (tag == null) {
+                return Collections.emptyList();
+            }
+
+            //skip empty tags - this is mailny a workaround for bad logical context of empty nodes
+            //however not easily fixable since the HtmlCompletionQuery uses the XmlSyntaxTreeBuilder
+            //when the parse tree is broken and the builder has no notion of such metadata.
+            while (tag != null && tag.isEmpty()) {
+                afterNode = afterNode.parent();
+                if (afterNode == null) {
+                    return Collections.emptyList();
+                }
+                tag = model().getTag(afterNode.getNameWithoutPrefix());
+            }
+            if (tag == null) {
+                return Collections.emptyList();
+            }
+
+            Collection<HtmlTag> possibleChildren = new LinkedHashSet<HtmlTag>();
+            addPossibleTags(tag, possibleChildren);
+            return possibleChildren;
+        }
+
+        @Override
+        public Map<HtmlTag, AstNode> getPossibleEndTags(AstNode node) {
+            HtmlTag tag = model().getTag(node.getNameWithoutPrefix());
+            if (tag == null) {
+                return Collections.emptyMap();
+            }
+
+           Map<HtmlTag, AstNode> possible = new LinkedHashMap<HtmlTag, AstNode> ();
             //end tags
             do {
                 if(!node.isVirtual()) {
-                    HtmlTag tag = HtmlTagProvider.getTagForElement(node.name());
+                    tag = HtmlTagProvider.getTagForElement(node.name());
                     if (!tag.isEmpty()) {
-                        possible.add(tag);
+                        possible.put(tag, node);
                     }
                     if(!tag.hasOptionalEndTag()) {
                         //since the end tag is required, the parent elements cannot be closed here
@@ -223,6 +234,8 @@ public class Html5Parser implements HtmlParser {
             } while ((node = node.parent()) != null && !node.isRootNode());
 
             return possible;
+
+
         }
     }
 
@@ -230,6 +243,7 @@ public class Html5Parser implements HtmlParser {
 
         private static Collection<HtmlTag> ALL_TAGS;
 
+        @Override
         public synchronized Collection<HtmlTag> getAllTags() {
             if (ALL_TAGS == null) {
                 ALL_TAGS = new ArrayList<HtmlTag>();
@@ -240,10 +254,12 @@ public class Html5Parser implements HtmlParser {
             return Collections.unmodifiableCollection(ALL_TAGS);
         }
 
+        @Override
         public HtmlTag getTag(String tagName) {
             return HtmlTagProvider.getTagForElement(tagName);
         }
 
+        @Override
         public Collection<? extends NamedCharRef> getNamedCharacterReferences() {
             return EnumSet.allOf(NamedCharacterReference.class);
         }
@@ -252,6 +268,7 @@ public class Html5Parser implements HtmlParser {
             return HtmlDocumentation.getDefault();
         }
 
+        @Override
         public String getModelId() {
             return "html5model";//NOI18N
         }

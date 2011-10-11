@@ -46,9 +46,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.editor.ext.html.parser.api.AstNode.Attribute;
@@ -57,7 +55,6 @@ import org.netbeans.editor.ext.html.parser.api.AstNode;
 import org.netbeans.editor.ext.html.parser.api.AstNodeUtils;
 import org.netbeans.editor.ext.html.parser.api.HtmlSource;
 import org.netbeans.editor.ext.html.parser.api.ParseException;
-import org.netbeans.editor.ext.html.parser.spi.AstNodeVisitor;
 import org.netbeans.editor.ext.html.parser.spi.HelpItem;
 import org.netbeans.editor.ext.html.parser.spi.HtmlModel;
 import org.netbeans.editor.ext.html.parser.spi.HtmlParseResult;
@@ -331,7 +328,7 @@ public class Html5ParserTest extends NbTestCase {
         assertNotNull(result.root());
 
         AstNode body = AstNodeUtils.query(result.root(), "html/body");
-        Collection<HtmlTag> possible = result.getPossibleTagsInContext(body, true);
+        Collection<HtmlTag> possible = result.getPossibleOpenTags(body);
 
         assertTrue(!possible.isEmpty());
 
@@ -342,7 +339,7 @@ public class Html5ParserTest extends NbTestCase {
         assertFalse(possible.contains(headTag));
 
         AstNode head = AstNodeUtils.query(result.root(), "html/head");
-        possible = result.getPossibleTagsInContext(head, true);
+        possible = result.getPossibleOpenTags(head);
 
         assertTrue(!possible.isEmpty());
 
@@ -351,7 +348,7 @@ public class Html5ParserTest extends NbTestCase {
         assertFalse(possible.contains(headTag));
 
         AstNode html = AstNodeUtils.query(result.root(), "html");
-        possible = result.getPossibleTagsInContext(html, true);
+        possible = result.getPossibleOpenTags(html);
         assertTrue(!possible.isEmpty());
         assertTrue(possible.contains(divTag));
 
@@ -363,7 +360,7 @@ public class Html5ParserTest extends NbTestCase {
         assertNotNull(result.root());
 
         AstNode body = AstNodeUtils.query(result.root(), "html/body");
-        Collection<HtmlTag> possible = result.getPossibleTagsInContext(body, false);
+        Collection<HtmlTag> possible = result.getPossibleEndTags(body).keySet();
 
         assertTrue(!possible.isEmpty());
 
@@ -379,7 +376,7 @@ public class Html5ParserTest extends NbTestCase {
         assertFalse(possible.contains(divTag));
 
         AstNode head = AstNodeUtils.query(result.root(), "html/head");
-        possible = result.getPossibleTagsInContext(head, true);
+        possible = result.getPossibleOpenTags(head);
 
         assertTrue(!possible.isEmpty());
 
@@ -402,7 +399,7 @@ public class Html5ParserTest extends NbTestCase {
         assertNotNull(result.root());
 
         AstNode div = AstNodeUtils.query(result.root(), "html/body/div");
-        Collection<HtmlTag> possible = result.getPossibleTagsInContext(div, true);
+        Collection<HtmlTag> possible = result.getPossibleOpenTags(div);
 
         assertTrue(!possible.isEmpty());
 
@@ -904,6 +901,7 @@ public class Html5ParserTest extends NbTestCase {
             this.name = name;
         }
 
+        @Override
         public String getName() {
             return name;
         }
@@ -935,34 +933,42 @@ public class Html5ParserTest extends NbTestCase {
             return "HtmlTagImpl{" + "name=" + name + '}';
         }
 
+        @Override
         public Collection<HtmlTagAttribute> getAttributes() {
             return Collections.emptyList();
         }
 
+        @Override
         public boolean isEmpty() {
             return false;
         }
 
+        @Override
         public boolean hasOptionalOpenTag() {
             return false;
         }
 
+        @Override
         public boolean hasOptionalEndTag() {
             return false;
         }
 
+        @Override
         public HtmlTagAttribute getAttribute(String name) {
             return null;
         }
 
+        @Override
         public HtmlTagType getTagClass() {
             return HtmlTagType.HTML;
         }
 
+        @Override
         public Collection<HtmlTag> getChildren() {
             return Collections.emptyList();
         }
 
+        @Override
         public HelpItem getHelp() {
             return null;
         }

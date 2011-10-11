@@ -43,6 +43,7 @@
 package org.netbeans.editor.ext.html.parser.spi;
 
 import java.util.Collection;
+import java.util.Map;
 import org.netbeans.editor.ext.html.parser.api.AstNode;
 import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
 
@@ -56,11 +57,15 @@ public interface HtmlParseResult extends ParseResult {
 
     public HtmlModel model();
 
-    /** experimental - may be refactored out of this class 
-     * @param openTags the method is supposed to return possible open tags in the given contextt if true
-     * otherwise it returns possible end tags.
+    /**
+     * @return collection of possible open tags in the context
      */
-    public Collection<HtmlTag> getPossibleTagsInContext(AstNode afterNode, boolean openTags);
-
+    public Collection<HtmlTag> getPossibleOpenTags(AstNode context);
+    
+    /**
+     * @return map of possible html tag to existing matching open tag node 
+     * or null if the end tag doesn't have to have an open tag
+     */
+    public Map<HtmlTag, AstNode> getPossibleEndTags(AstNode context);
 
 }
