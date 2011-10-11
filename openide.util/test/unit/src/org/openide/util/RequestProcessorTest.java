@@ -81,6 +81,24 @@ public class RequestProcessorTest extends NbTestCase {
         return Level.FINE;
     }
     
+    public void testStartCreatedJob() throws Exception {
+        final RequestProcessor rp = new RequestProcessor("testStartCreatedJob");
+        final boolean[] executed = new boolean[1];
+        rp.post (new Runnable() {
+            @Override
+            public void run() {
+                RequestProcessor.Task t = rp.create(new Runnable() {
+                    @Override
+                    public void run() {
+                        executed[0] = true;
+                    }
+                });
+                t.waitFinished();
+            }
+        }).waitFinished();
+        assertTrue("Inner created task finished", executed[0]);
+    }
+    
     public void testNonParallelReSchedule() throws Exception {
         final AtomicInteger counter = new AtomicInteger();
         final AtomicInteger peek = new AtomicInteger();
