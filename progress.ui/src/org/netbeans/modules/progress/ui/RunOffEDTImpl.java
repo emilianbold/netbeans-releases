@@ -41,13 +41,7 @@
  */
 package org.netbeans.modules.progress.ui;
 
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Cursor;
-import java.awt.Dialog;
-import java.awt.EventQueue;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.HashMap;
@@ -63,10 +57,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JComponent;
-import javax.swing.JFrame;
-import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
+import javax.swing.*;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.progress.ProgressRunnable;
@@ -173,16 +164,27 @@ public class RunOffEDTImpl implements RunOffEDTProvider, Progress {
 		}
             }
         });
-
-        Component glassPane = ((JFrame) WindowManager.getDefault().getMainWindow()).getGlassPane();
-
-        if (waitMomentarily(glassPane, null, waitCursorTime, latch)) {
+        Window window = null;
+        Component glassPane = null;
+        Component focusOwner = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
+        if (focusOwner != null) {
+            window = SwingUtilities.getWindowAncestor(focusOwner);
+            if (window != null) {
+                RootPaneContainer root = (RootPaneContainer) SwingUtilities.getAncestorOfClass(RootPaneContainer.class, focusOwner);
+                glassPane = root.getGlassPane();   
+            }
+        } 
+        if (window == null || glassPane == null) {
+            window = WindowManager.getDefault().getMainWindow();
+            glassPane = ((JFrame) window).getGlassPane();
+        }
+        if (waitMomentarily(glassPane, null, waitCursorTime, latch, window)) {
             return;
         }
 
         Cursor wait = Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR);
 
-        if (waitMomentarily(glassPane, wait, dlgTime, latch)) {
+        if (waitMomentarily(glassPane, wait, dlgTime, latch, window)) {
             return;
         }
 
@@ -213,11 +215,13 @@ public class RunOffEDTImpl implements RunOffEDTProvider, Progress {
         }
     }
 
-    private static boolean waitMomentarily(Component glassPane, Cursor wait, int timeout, final CountDownLatch l) {
-        Cursor original = glassPane.getCursor();
+    private static boolean waitMomentarily(Component glassPane, Cursor wait, int timeout, final CountDownLatch l, Window window) {
+        Cursor originalWindow = window.getCursor();
+        Cursor originalGlass = glassPane.getCursor();
 
         try {
             if (wait != null) {
+                window.setCursor(wait);
                 glassPane.setCursor(wait);
             }
 
@@ -230,7 +234,8 @@ public class RunOffEDTImpl implements RunOffEDTProvider, Progress {
             }
         } finally {
             glassPane.setVisible(false);
-            glassPane.setCursor(original);
+            window.setCursor(originalWindow);
+            glassPane.setCursor(originalGlass);
         }
     }
 

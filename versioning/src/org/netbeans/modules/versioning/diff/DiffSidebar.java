@@ -698,7 +698,7 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
                 }
             }
         } catch (BadLocationException ble){
-            ErrorManager.getDefault().notify(ble);
+            LOG.log(Level.INFO, null, ble);
         }
     }
 

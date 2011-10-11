@@ -2584,7 +2584,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
                 tree.setShowsRootHandles(true);
                 DirectoryNode node = (DirectoryNode)value;
                 ((JLabel)stringDisplayer).setIcon(getNodeIcon(node));
-                ((JLabel)stringDisplayer).setText(getNodeText(node.getFile()));
+                ((JLabel)stringDisplayer).setText(getNodeText(node));
             }
                 Font f = stringDisplayer.getFont();
                 stringDisplayer.setPreferredSize(new Dimension(stringDisplayer.getPreferredSize().width, 30));
@@ -2597,20 +2597,11 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         }
         
         private Icon getNodeIcon(DirectoryNode node) {
-            File file = node.getFile();
-            if(file.exists()) {
-                return fileChooser.getIcon(file);
-            } else {
-                return null;
-            }
+            return node.getIcon(fileChooser);
         }
         
-        private String getNodeText(File file) {
-            if(file.exists()) {
-                return "<html>" + fileChooser.getName(file) + "</html>";
-            } else {
-                return "<html></html>";
-            }
+        private String getNodeText (DirectoryNode node) {
+            return node.getText(fileChooser);
         }
     }
     
