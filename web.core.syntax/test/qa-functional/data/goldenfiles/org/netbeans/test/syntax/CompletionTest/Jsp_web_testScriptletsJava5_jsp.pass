@@ -1,5 +1,6 @@
 [<% LinkedList<B|, Boolean, <% LinkedList<Boolean, 990]
 Boolean
+BootstrapMethodError
 Byte
 End cursor position = 1012
 [<% list.|, Boolean element (), <% list.element(), 1050]
@@ -98,7 +99,7 @@ End cursor position = 1340
 RequestForEnhancement
 Second
 End cursor position = 1467
-[<% @Card.RequestForEnhancement(|)%>, String date = "[unimplemented]", <% @Card.RequestForEnhancement(date=)%>, 1556]
+[<% @Card.RequestForEnhancement(|)%>, String date = "[unimplemented]", <% @Card.RequestForEnhancement(date=)%>, 1557]
 String date = "[unimplemented]
 String engineer = "[unassigned
 int id

@@ -10,6 +10,7 @@ AssertionError
 AsyncContext
 AsyncEvent
 AsyncListener
+AutoCloseable
 End cursor position = 381
 [<% c|, ServletConfig config, <% config, 460]
 ServletConfig config
@@ -24,6 +25,7 @@ ClassCircularityError
 ClassFormatError
 ClassLoader
 ClassNotFoundException
+ClassValue <T>
 CloneNotSupportedException
 Cloneable
 Comparable <T>
@@ -55,6 +57,7 @@ HttpServletRequest request
 HttpServletResponse response
 return
 Readable
+ReflectiveOperationException
 Registration
 RequestDispatcher
 Runnable
@@ -67,6 +70,7 @@ HttpServletRequest request
 HttpServletResponse response
 return
 Readable
+ReflectiveOperationException
 Registration
 RequestDispatcher
 Runnable

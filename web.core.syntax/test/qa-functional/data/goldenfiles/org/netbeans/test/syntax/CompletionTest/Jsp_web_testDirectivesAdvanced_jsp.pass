@@ -5,6 +5,7 @@ ClassCircularityError
 ClassFormatError
 ClassLoader
 ClassNotFoundException
+ClassValue <T>
 CloneNotSupportedException
 Cloneable
 End cursor position = 235

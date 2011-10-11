@@ -259,7 +259,7 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
     }
 
     /** Helper method. Removes save cookie from the data object. */
-    private void removeSaveCookie() {
+    void removeSaveCookie() {
         HtmlDataObject obj = (HtmlDataObject) getDataObject();
 
         // Remove save cookie from the data object.
