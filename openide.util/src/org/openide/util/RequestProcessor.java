@@ -482,6 +482,7 @@ public final class RequestProcessor implements ScheduledExecutorService {
     */
     public Task create(Runnable run, boolean initiallyFinished) {
         Task t = new Task(run);
+        t.markCreated();
         if (initiallyFinished) {
             t.notifyFinished();
         }
@@ -1511,6 +1512,11 @@ outer:  do {
             }
         }
 
+        private void markCreated() {
+            assert item == null;
+            item = new CreatedItem(this, null);
+        }
+
         /** Removes the task from the queue.
         *
         * @return true if the task has been removed from the queue,
@@ -1518,6 +1524,10 @@ outer:  do {
         */
         @Override
         public boolean cancel() {
+            return cancelOrNew(false);
+        }
+        
+        private boolean cancelOrNew(boolean canBeNew) {
             synchronized (processorLock) {
                 boolean success;
 
@@ -1525,10 +1535,14 @@ outer:  do {
                     success = false;
                 } else {
                     Processor p = item.getProcessor();
-                    success = item.clear(null);
+                    success = item.clearOrNew(canBeNew);
 
                     if (p != null) {
                         p.interruptTask(this, RequestProcessor.this);
+                        item = null;
+                    }
+                    
+                    if (success) {
                         item = null;
                     }
                 }
@@ -1643,7 +1657,7 @@ outer:  do {
                 synchronized (processorLock) {
                     // correct line:    toRun = (item == null) ? !isFinished (): (item.clear() && !isFinished ());
                     // the same:        toRun = !isFinished () && (item == null ? true : item.clear ());
-                    runAtAll = !isFinished();
+                    runAtAll = cancelOrNew(true);
                     toRun = runAtAll && ((item == null) || item.clear(null));
                     if (loggable) {
                         em.log(Level.FINE, "    ## finished: {0}", isFinished()); // NOI18N
@@ -1701,7 +1715,7 @@ outer:  do {
                 boolean toRun;
 
                 synchronized (processorLock) {
-                    toRun = !isFinished() && ((item == null) || item.clear(null));
+                    toRun = cancelOrNew(true);
                 }
 
                 if (toRun) {
@@ -1739,10 +1753,14 @@ outer:  do {
             owner = rp;
         }
 
-        Task getTask() {
+        final Task getTask() {
             Object a = action;
 
             return (a instanceof Task) ? (Task) a : null;
+        }
+        
+        boolean clearOrNew(boolean canBeNew) {
+            return clear(null);
         }
 
         /** Annulate this request iff still possible.
@@ -1756,21 +1774,36 @@ outer:  do {
             }
         }
 
-        Processor getProcessor() {
+        final Processor getProcessor() {
             Object a = action;
 
             return (a instanceof Processor) ? (Processor) a : null;
         }
 
-        int getPriority() {
+        final int getPriority() {
             return getTask().getPriority();
         }
 
-        public @Override String getMessage() {
+        public final @Override String getMessage() {
             return message;
         }
-
     }
+    
+    private static class CreatedItem extends Item {
+        public CreatedItem(Task task, RequestProcessor rp) {
+            super(task, rp);
+        }
+
+        @Override
+        boolean clearOrNew(boolean canBeNew) {
+            return canBeNew;
+        }
+        
+        @Override
+        boolean clear(Processor processor) {
+            return false;
+        }
+    } // end of CreatedItem
 
     private static class FastItem extends Item {
         FastItem(Task task, RequestProcessor rp) {
