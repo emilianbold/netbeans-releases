@@ -131,7 +131,8 @@ public class DirectoryReaderTestCase extends RemoteFileTestBase {
         }
         referenceEntries = new RefEntry[] {
             new RefEntry('d', "rwxr-xr-x", user, group, 0, "dir_1", null),
-            new RefEntry('p', "rw-r--r--", user, group, 0, "fifo", null),
+            // fifo is not regular file. Ignored. See IZ#201990
+            //new RefEntry('p', "rw-r--r--", user, group, 0, "fifo", null),
             new RefEntry('d', "rwxr-xr-x", user, group, 4, "dir with a space", null),
             new RefEntry('-', "rw-r--r--", user, group, 4, "file with a space", null),
             new RefEntry('-', "rw-r--r--", user, group, 4, "just_a_file", null),
