@@ -63,6 +63,7 @@ import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.JSFFrameworkProvider;
 import org.netbeans.modules.web.jsf.spi.components.JsfComponentImplementation;
 import org.netbeans.modules.web.spi.webmodule.WebModuleExtender;
+import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 
 /**
@@ -97,6 +98,8 @@ public class JSFConfigurationPanel extends WebModuleExtender implements WebModul
     private String facesMapping;
     private boolean validateXml;
     private boolean verifyObjects;
+
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
 
     // Enum declarations
     public enum LibraryType {USED, NEW, SERVER};
@@ -148,7 +151,7 @@ public class JSFConfigurationPanel extends WebModuleExtender implements WebModul
 
     @Override
     public JSFConfigurationPanelVisual getComponent() {
-        if (component == null)
+        if (component == null) 
             component = new JSFConfigurationPanelVisual(this, customizer);
 
         return component;
@@ -202,29 +205,16 @@ public class JSFConfigurationPanel extends WebModuleExtender implements WebModul
         return controller;
     }
 
-    private final Set/*<ChangeListener>*/ listeners = new HashSet(1);
-
     public final void addChangeListener(ChangeListener l) {
-        synchronized (listeners) {
-            listeners.add(l);
-        }
+        changeSupport.addChangeListener(l);
     }
 
     public final void removeChangeListener(ChangeListener l) {
-        synchronized (listeners) {
-            listeners.remove(l);
-        }
+        changeSupport.removeChangeListener(l);
     }
 
     protected final void fireChangeEvent() {
-        Iterator it;
-        synchronized (listeners) {
-            it = new HashSet(listeners).iterator();
-        }
-        ChangeEvent ev = new ChangeEvent(this);
-        while (it.hasNext()) {
-            ((ChangeListener)it.next()).stateChanged(ev);
-        }
+        changeSupport.fireChange();
     }
 
     public String getServletName(){
