@@ -102,5 +102,10 @@ public class FortranFileModelTest extends TraceModelTestBase {
         // Bug 185624 - *Fortran* navigator: "Go To Source" points a cursor to the end of module rather than at begin 
         performTest("bug185624.f"); // NOI18N
     }
+
+    public void testBug186251() throws Exception {
+        // Bug 186251 - *Fortran* Navigator has to recognize long strings
+        performTest("bug186251.f"); // NOI18N
+    }
     
 }
