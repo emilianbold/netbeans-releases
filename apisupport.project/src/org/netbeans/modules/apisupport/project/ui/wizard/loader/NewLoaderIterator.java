@@ -47,8 +47,6 @@ package org.netbeans.modules.apisupport.project.ui.wizard.loader;
 import java.io.CharConversionException;
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -353,12 +351,7 @@ public final class NewLoaderIterator extends BasicWizardIterator {
             attrs.put("dataObjectClass", packageName + "." + namePrefix + "DataObject"); //NOI18N
             attrs.put("mimeType", mime); //NOI18N
             if (relativeIconPath != null) {
-                try {
-                    URL url = new URL("nbresloc:/" + relativeIconPath); //NOI18N
-                    attrs.put("SystemFileSystem.icon", url); //NOI18N
-                } catch (MalformedURLException ex) {
-                    throw new IllegalStateException(ex);
-                }
+                attrs.put("iconBase", relativeIconPath); //NOI18N
             }
             fileChanges.add(
                 fileChanges.createLayerEntry(path, null, null, null, attrs)
