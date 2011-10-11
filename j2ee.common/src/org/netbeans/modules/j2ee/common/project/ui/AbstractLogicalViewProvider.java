@@ -62,6 +62,8 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.db.explorer.ConnectionListener;
+import org.netbeans.api.db.explorer.ConnectionManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -132,6 +134,7 @@ public abstract class AbstractLogicalViewProvider implements LogicalViewProvider
     private final ReferenceHelper resolver;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private PropertyChangeListener pcl;
+    private ConnectionListener cl;
     private InstanceListener il;
     private ConfigurationFilesListener cfl;
     private Map<URL,Object[]> activeLibManLocs;
@@ -223,6 +226,13 @@ public abstract class AbstractLogicalViewProvider implements LogicalViewProvider
                 testBroken();
             }
         };
+        cl = new ConnectionListener() {
+
+            @Override
+            public void connectionsChanged() {
+                testBroken();
+            }
+        };
         evaluator.addPropertyChangeListener(pcl);
         // When evaluator fires changes that platform properties were
         // removed the platform still exists in JavaPlatformManager.
@@ -235,6 +245,8 @@ public abstract class AbstractLogicalViewProvider implements LogicalViewProvider
                     InstanceListener.class, il, j2eeModuleProvider));
 //        j2eeModuleProvider.addConfigurationFilesListener((ConfigurationFilesListener)WeakListeners.create(
 //                    ConfigurationFilesListener.class, cfl, j2eeModuleProvider));
+        ConnectionManager.getDefault().addConnectionListener((ConnectionListener)WeakListeners.create(
+                ConnectionListener.class, cl, ConnectionManager.getDefault()));
     }
 
     /**
@@ -835,7 +847,6 @@ public abstract class AbstractLogicalViewProvider implements LogicalViewProvider
             try {
                 helper.requestUpdate();
                 BrokenDatasourceSupport.fixDatasources(project);
-                BrokenDatasourceSupport.showAlert();
             } catch (IOException ioe) {
                 ErrorManager.getDefault().notify(ioe);
             }
