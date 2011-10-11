@@ -232,11 +232,15 @@ final class APTFortranFilter extends APTBaseLanguageFilter {
         filter(APTTokenTypes.SCOPE, APTTokenTypes.T_COLON_COLON);
         filter(APTTokenTypes.LESSTHAN, APTTokenTypes.T_LESSTHAN);
         filter(APTTokenTypes.PLUS, APTTokenTypes.T_PLUS);
+        filter(APTTokenTypes.MINUS, APTTokenTypes.T_MINUS);
+        filter(APTTokenTypes.DIVIDE, APTTokenTypes.T_SLASH);
 
         filter(APTTokenTypes.OCTALINT, APTTokenTypes.T_DIGIT_STRING);
         filter(APTTokenTypes.DECIMALINT, APTTokenTypes.T_DIGIT_STRING);
         filter(APTTokenTypes.NUMBER, APTTokenTypes.T_DIGIT_STRING);
-
+        filter(APTTokenTypes.FLOATONE, APTTokenTypes.T_REAL_CONSTANT);
+        filter(APTTokenTypes.FLOATTWO, APTTokenTypes.T_REAL_CONSTANT);
+        
         filter(APTTokenTypes.LPAREN, APTTokenTypes.T_LPAREN);
         filter(APTTokenTypes.RPAREN, APTTokenTypes.T_RPAREN);
     }

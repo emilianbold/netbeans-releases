@@ -290,7 +290,9 @@ public class FortranParserEx {
 
             public void dummy_arg_list__begin() {
                 if(subroutineData != null) {
-                    subroutineData.args = new ArrayList<String>();
+                    if(subroutineData.args == null) {
+                        subroutineData.args = new ArrayList<String>();
+                    }
                 }
                 if(functionData != null) {
                     if(functionData.args == null) {
@@ -315,7 +317,9 @@ public class FortranParserEx {
 
             public void generic_name_list__begin() {
                 if(subroutineData != null) {
-                    subroutineData.args = new ArrayList<String>();
+                    if(subroutineData.args == null) {
+                        subroutineData.args = new ArrayList<String>();
+                    }
                 }
                 if(functionData != null) {
                     if(functionData.args == null) {
