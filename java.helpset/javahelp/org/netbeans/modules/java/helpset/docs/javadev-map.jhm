@@ -21,8 +21,7 @@
 <mapID target="output.window" url="compile/comp_output.html" />
 <mapID target="jar.deploy" url="compile/comp_jar_deploy.html" />
 
-<!-- CSH topic for Output window -->
-<mapID target="org.netbeans.core.io.ui.IOWindow" url="compile/comp_output.html" />
+
 
 <mapID target="run_about" url="run/run_about.html" />
 <mapID target="run_app" url="run/run_app.html" />
@@ -69,8 +68,8 @@
 <!-- Topic for Debugger Events view -->
 <mapID target="NetbeansDebuggerEventNode" url="debug/CSH/events_view.html" />
 
-<!-- CSH help id for Attach Debugger window mapped to remote debugging topic -->
-<mapID target="debug.jpda.attach" url="debug/debug_remote.html" />
+<!-- Java FX topics -->
+<mapID target="jfx_apps" url="javafx/jfx-applications.html" />
 
 <!--Start of Projects section -->
 <mapID target="proj_about" url="project/proj_about.html" />
@@ -193,8 +192,7 @@
 <mapID target="spring.framework.organize" url="spring/organize-files.html" />
 <mapID target="spring.framework.locate.beans" url="spring/locate-beans.html" />
 
-<!--Spring CSH IDs:-->
-<mapID target="org.netbeans.modules.spring.beans.ui.customizer.SpringCustomizerPanel" url="spring/organize-files.html" />
+
 
 
 <!--below entry is also ID for Palette Manager and Add to Palette actions in actions pool, as well as Palette Manager dialog and sub-dialogs:-->
@@ -261,19 +259,6 @@
 <mapID target="propfiles.addlocale" url="propfiles/addinglocale.html" />
 <mapID target="propfiles.editlocale" url="propfiles/editinglocale.html" />
 
-
-
-<!--CSH for properties text editor-->
-<mapID target="text.x-properties" url="propfiles/editinglocale.html" />
-
-<!--CSH for java source editor-->
-<mapID target="text.x-java" url="editing/csh/about_source_editor.html" />
-
-<!--CSH for manifest source editor-->
-<mapID target="text.x-manifest" url="pending.html" />
-
-
-
 <!--Java Persistence API topics - some more are in the j2ee/platform help set-->
     <mapID target="persist_about" url="persistence/general/persistence_about.html" />
     <mapID target="persist_unit" url="persistence/general/persistence_unit.html" />
@@ -288,7 +273,26 @@
 
 
 
-    <!-- Start of "CSH" section -->
+<!-- Start of "CSH" section -->
+
+<!--CSH for properties text editor-->
+<mapID target="text.x-properties" url="propfiles/editinglocale.html" />
+
+<!--CSH for java source editor-->
+<mapID target="text.x-java" url="editing/csh/about_source_editor.html" />
+
+<!--CSH for manifest source editor-->
+<mapID target="text.x-manifest" url="pending.html" />
+
+<!-- CSH topic for Output window -->
+<mapID target="org.netbeans.core.io.ui.IOWindow" url="compile/comp_output.html" />
+
+<!-- CSH help id for Attach Debugger window mapped to remote debugging topic -->
+<mapID target="debug.jpda.attach" url="debug/debug_remote.html" />
+
+<!--Spring CSH IDs:-->
+<mapID target="org.netbeans.modules.spring.beans.ui.customizer.SpringCustomizerPanel" url="spring/organize-files.html" />
+
 <!-- New J2SE app Project wizard:-->
 <mapID target="org.netbeans.modules.java.j2seproject.ui.wizards.PanelConfigureProject_APP" url="project/csh/proj_j2se-standapp_wiz.html" />
 
