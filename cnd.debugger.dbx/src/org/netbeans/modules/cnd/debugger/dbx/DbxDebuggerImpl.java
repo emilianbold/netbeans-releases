@@ -2924,6 +2924,18 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
             return;
         }
 
+        // balloonEvaluate() requests come from the editor completely
+        // independently of debugger startup and shutdown.
+
+        if (!isConnected()) {
+            return;
+        }
+	// 7098557 IDE may hang due to balloon evaluation if debuggee is running.
+        if (!state().isLoaded || state().isLoading || 
+		!state().isProcess || state().isRunning) {
+	    return;
+	}
+
         if (!SwingUtilities.isEventDispatchThread()) {
             // Transfer flow from from RP to eventQ
             SwingUtilities.invokeLater(new Runnable() {
@@ -2935,12 +2947,6 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
             return;
         }
 
-        // balloonEvaluate() requests come from the editor completely
-        // independently of debugger startup and shutdown.
-
-        if (!isConnected()) {
-            return;
-        }
         
         if (Disassembly.isInDisasm()) {
             String text = expr;
