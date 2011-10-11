@@ -275,7 +275,8 @@ public class PHPBracketCompleter implements KeystrokeHandler {
                 token = ts.token();
                 if (token.id() == PHPTokenId.PHP_CURLY_CLOSE) {
                     curlyBalance --;
-                } else if (token.id() == PHPTokenId.PHP_CURLY_OPEN) {
+                } else if (token.id() == PHPTokenId.PHP_CURLY_OPEN
+                        || (token.id() == PHPTokenId.PHP_TOKEN && "${".equals(token.text().toString()))) { //NOI18N
                     curlyBalance ++;
                 } else if (token.id() == PHPTokenId.PHP_COMMENT_START || token.id() == PHPTokenId.PHPDOC_COMMENT_START) {
                     unfinishedComment = true;
