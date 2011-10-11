@@ -60,7 +60,7 @@ public class JSFConfigurationWizardPanelVisual extends JPanel implements HelpCtx
     private WebModuleExtender wme;
     private ExtenderController controller;
     private JSFConfigurationWizardPanel panel;
-    
+
     /** Creates new form PanelInitProject
      * @param project the web project; if it is null, all available web extensions will be shown
      * @param filter one of the options <code>ALL_FRAMEWORKS</code>, <code>USED_FRAMEWORKS</code>, <code>UNUSED_FRAMEWORKS</code>
@@ -179,6 +179,9 @@ public class JSFConfigurationWizardPanelVisual extends JPanel implements HelpCtx
             gridBagConstraints.weighty = 1.0;
 
             JComponent panelComponent = wme.getComponent();
+            // be notified about jsfPanel changes - #203296
+            JSFConfigurationPanelVisual jsfPanel = (JSFConfigurationPanelVisual) panelComponent;
+            jsfPanel.addChangeListener(this);
             jPanelConfig.add(panelComponent, gridBagConstraints);
             
 //            jLabelConfig.setEnabled(item.isSelected().booleanValue());
