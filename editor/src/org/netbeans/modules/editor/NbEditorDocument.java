@@ -62,6 +62,7 @@ import org.openide.text.Annotation;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.util.Dictionary;
+import java.util.List;
 import java.util.Map;
 import javax.swing.JToolBar;
 import org.netbeans.editor.BaseDocument;
@@ -76,6 +77,7 @@ import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.editor.indent.spi.CodeStylePreferences;
 import org.netbeans.modules.editor.lib.BaseDocument_PropertyHandler;
 import org.netbeans.modules.editor.lib2.EditorPreferencesDefaults;
+import org.netbeans.modules.editor.lib2.view.PrintUtils;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
@@ -178,10 +180,12 @@ NbDocument.Printable, NbDocument.CustomEditor, NbDocument.CustomToolbar, NbDocum
         }
     }
 
+    @Override
     public java.text.AttributedCharacterIterator[] createPrintIterators() {
-        NbPrintContainer npc = new NbPrintContainer();
-        print(npc);
-        return npc.getIterators();
+        List<AttributedCharacterIterator> lineList = PrintUtils.printDocument(this, true, 0, getLength() + 1);
+        AttributedCharacterIterator[] lines = new AttributedCharacterIterator[lineList.size()];
+        lineList.toArray(lines);
+        return lines;
     }
 
     public Component createEditor(JEditorPane j) {
