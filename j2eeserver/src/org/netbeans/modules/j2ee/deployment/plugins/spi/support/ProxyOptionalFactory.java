@@ -44,6 +44,7 @@ package org.netbeans.modules.j2ee.deployment.plugins.spi.support;
 
 import java.util.Map;
 import javax.enterprise.deploy.spi.DeploymentManager;
+import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.AntDeploymentProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.DatasourceManager;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.FindJSPServlet;
@@ -74,6 +75,8 @@ public final class ProxyOptionalFactory extends OptionalDeploymentManagerFactory
     private final Map attributes;
 
     private final boolean noInitializationFinish;
+    
+    private final boolean noInitializationFinishWhenNoInstances;
 
     /* GuardedBy("this") */
     private OptionalDeploymentManagerFactory delegate;
@@ -83,6 +86,8 @@ public final class ProxyOptionalFactory extends OptionalDeploymentManagerFactory
 
         this.noInitializationFinish = Boolean.TRUE.equals(
                 attributes.get("noInitializationFinish")); // NOI18N
+        this.noInitializationFinishWhenNoInstances = Boolean.TRUE.equals(
+                attributes.get("noInitializationFinishWhenNoInstances")); // NOI18N
     }
 
     public static ProxyOptionalFactory create(Map map) {
@@ -147,7 +152,10 @@ public final class ProxyOptionalFactory extends OptionalDeploymentManagerFactory
     @Override
     public void finishServerInitialization() throws ServerInitializationException {
         if (!noInitializationFinish) {
-            getDelegate().finishServerInitialization();
+            if (!noInitializationFinishWhenNoInstances
+                    || !ServerRegistry.getInstance().getInstances().isEmpty()) {
+                getDelegate().finishServerInitialization();
+            }
         }
     }
 

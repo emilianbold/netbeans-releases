@@ -164,7 +164,16 @@ public class HtmlDataObject extends MultiDataObject implements CookieSet.Factory
         n.setIconBaseWithExtension("org/netbeans/modules/html/htmlObject.png"); // NOI18N
         return n;
     }
-    
+
+    @Override
+    public void setModified(boolean modif) {
+        super.setModified(modif);
+        if(!modif) {
+            HtmlEditorSupport support = getLookup().lookup(HtmlEditorSupport.class);
+            support.removeSaveCookie();
+        }
+    }
+        
     /** Creates new Cookie */
     public Node.Cookie createCookie(Class klass) {
         if (klass.isAssignableFrom(HtmlEditorSupport.class)) {
