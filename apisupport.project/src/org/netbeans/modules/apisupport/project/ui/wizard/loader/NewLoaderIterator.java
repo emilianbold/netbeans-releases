@@ -495,11 +495,11 @@ public final class NewLoaderIterator extends BasicWizardIterator {
     
     private static String formatImageSnippet(String path) {
         if (path == null) {
-            return "return super.getIcon(type); // TODO add a custom icon here: Utilities.loadImage(..., true)\n"; //NOI18N
+            return "return super.getIcon(type); // TODO add a custom icon here: ImageUtilities.loadImage(..., true)\n"; //NOI18N
         }
         StringBuffer buff = new StringBuffer();
         buff.append("        if (type == BeanInfo.ICON_COLOR_16x16 || type == BeanInfo.ICON_MONO_16x16) {\n"); //NOI18N
-        buff.append("            return Utilities.loadImage(\""); //NOI18N
+        buff.append("            return ImageUtilities.loadImage(\""); //NOI18N
         buff.append(path).append("\");\n"); //NOI18N
         buff.append("        } else {\n"); //NOI18N
         buff.append("            return null;\n        }\n"); //NOI18N
