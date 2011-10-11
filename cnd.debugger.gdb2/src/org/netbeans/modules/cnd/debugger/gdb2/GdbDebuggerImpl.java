@@ -666,6 +666,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         return postedKillEngine;
     }
 
+    @Override
     public void postKill() {
         // was: finishDebugger()
         // We get here when ...
@@ -842,11 +843,12 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         return peculiarity;
     }
 
+    @Override
     public void pause() {
         pause(false);
     }
 
-    public boolean pause(boolean silentStop) {
+    private boolean pause(boolean silentStop) {
         /* LATER
 
         On unix, and probably in all non-embedded gdb scenarios,
@@ -869,16 +871,19 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         return false;
     }
 
+    @Override
     public void interrupt() {
         gdb.interrupt();
     }
 
     // interface NativeDebugger
+    @Override
     public void terminate() {
         notImplemented("terminate");	// NOI18N
     }
 
     // interface NativeDebugger
+    @Override
     public void detach() {
         notImplemented("detach");	// NOI18N
     }
