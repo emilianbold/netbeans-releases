@@ -674,6 +674,31 @@ Yes. Component can control its persistence and way how they are displayed in con
          which is also the default value.
          The property value can be adjusted by branding of <code>org.netbeans.core.windows</code> module.
     </api>
+    
+    <api type="export" group="branding" name="WinSys.Show.Hide.MainWindow.While.Switching.Role" category="stable">
+         Name of resource bundle property which controls whether the main IDE
+         window may hide temporarily (<code>true</code>) when switching window
+         layout role or whether the main window should stay visible when switching
+         roles (<code>false</code>). The default value is <code>false</code>.
+         The property value can be adjusted by branding of <code>org.netbeans.core.windows</code> module.
+    </api>
+    
+    <api type="export" group="branding" name="WinSys.Open.New.Editors.Docked" category="stable">
+         Name of resource bundle property which when set to <code>true</code> will
+         force opening of new editor windows docked into the main IDE window.
+         When set to <code>false</code> new editor windows will open tabbed
+         with the last active editor window (which may be floating).
+         The default value is <code>false</code>.
+         The property value can be adjusted by branding of <code>org.netbeans.core.windows</code> module.
+    </api>
+    
+    <api type="export" group="branding" name="WinSys.DragAndDrop.Sliding.Enabled" category="stable">
+         Name of resource bundle property which enables/disables drag and drop
+         of TopComponents into sliding Modes. When set to <code>true</code> then user can 
+         drag a TopComponent and drop it into a sliding bar to minimize it.
+         The default value is <code>false</code>.
+         The property value can be adjusted by branding of <code>org.netbeans.core.windows</code> module.
+    </api>
 </answer>
 
 

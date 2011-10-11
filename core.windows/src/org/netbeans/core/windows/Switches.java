@@ -242,11 +242,19 @@ public final class Switches {
      * @return True to open new editor windows docked in the main IDE window.
      * When false then new editor window may open floating if the last active
      * editor is also floating.
-     * @see WindowManager#setRole(java.lang.String) 
      * @since 2.39
      */
     public static boolean isOpenNewEditorsDocked() {
         return getSwitchValue( "WinSys.Open.New.Editors.Docked", false ); //NOI18N
+    }
+    
+    /**
+     * @return True if user can drag a TopComponent and drop it into a sliding
+     * bar to minimize it. The default value is false.
+     * @since 2.41
+     */
+    public static boolean isDragAndDropSlidingEnabled() {
+        return getSwitchValue( "WinSys.DragAndDrop.Sliding.Enabled", false ); //NOI18N
     }
     
     private static boolean getSwitchValue( String switchName, boolean defaultValue ) {
