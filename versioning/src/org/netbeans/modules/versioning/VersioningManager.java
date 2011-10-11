@@ -476,9 +476,15 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
      * @return VersioningSystem local history versioning system or null if there is no local history for the file
      */
     VersioningSystem getLocalHistory(File file, Boolean isFile) {
+                
         VersioningSystem lh = localHistory;
         if (lh == null) return null;
 
+        String nbUserdir = System.getProperty("netbeans.user", ""); //NOI18N
+        if (!nbUserdir.isEmpty() && !Utils.isVersionUserdir() && Utils.isAncestorOrEqual(new File(nbUserdir), file)) { 
+            return null;
+        }
+        
         synchronized(localHistoryFiles) {
             Boolean isManagedByLocalHistory = localHistoryFiles.get(file);
             if (isManagedByLocalHistory != null && isManagedByLocalHistory) {

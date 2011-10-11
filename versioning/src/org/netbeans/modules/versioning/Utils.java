@@ -325,7 +325,7 @@ public class Utils {
                 String ufProp = System.getProperty("versioning.unversionedFolders", ""); //NOI18N
                 StringBuilder sb = new StringBuilder(uf);
                 String nbUserdir = System.getProperty("netbeans.user", ""); //NOI18N
-                if (!nbUserdir.isEmpty() && !"true".equals(System.getProperty("versioning.netbeans.user.versioned", "false"))) { //NOI18N
+                if (!nbUserdir.isEmpty() && !isVersionUserdir()) { 
                     if (sb.length() > 0) {
                         sb.append(';');
                     }
@@ -354,6 +354,10 @@ public class Utils {
             unversionedFolders = files;
         }
         return unversionedFolders;
+    }
+
+    static boolean isVersionUserdir() {
+        return "true".equals(System.getProperty("versioning.netbeans.user.versioned", "false")); // NOI18N
     }
 
     static FileSystem getRootFilesystem() {
