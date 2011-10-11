@@ -351,8 +351,12 @@ public final class EditorBridge {
      * Based on Utils.showInEditor(Line l), but modified so that
      * we don't always do unconditional fronting of the window.
      */
-
+    
     public static void showInEditor(Line line) {
+        showInEditor(line, false);
+    }
+
+    public static void showInEditor(Line line, boolean focus) {
 	if (line == null) 
 	    return;
 	try {
@@ -367,7 +371,7 @@ public final class EditorBridge {
 
 	    // OLD line.show(line.SHOW_SHOW);
 	    // line.show(Line.ShowOpenType.REUSE, Line.ShowVisibilityType.FRONT);
-	    line.show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FRONT);
+	    line.show(Line.ShowOpenType.OPEN, focus ? Line.ShowVisibilityType.FOCUS : Line.ShowVisibilityType.FRONT);
 	    if (DebuggerOption.FRONT_IDE.isEnabled(DebuggerManager.get().globalOptions()))
 		WindowManager.getDefault().getMainWindow().toFront();
 

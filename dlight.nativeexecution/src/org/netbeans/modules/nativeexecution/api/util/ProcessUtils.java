@@ -366,9 +366,10 @@ public final class ProcessUtils {
      *   - usage of external terminal will be switched off
      * 
      * @param processBuilder
+     * @since 1.13.0
      * @return
      */
-    private static ExitStatus execute(final NativeProcessBuilder processBuilder) {
+    public static ExitStatus execute(final NativeProcessBuilder processBuilder) {
         ExitStatus result;
         Future<String> error;
         Future<String> output;
@@ -410,6 +411,61 @@ public final class ProcessUtils {
         return result;
     }
 
+    /**
+     * This method can be used to start a process without additional handling
+     * of exceptions/streams reading, etc.
+     *
+     * Usage pattern:
+     *        ExitStatus status = ProcessUtils.execute(
+     *            new ProcessBuilder("/bin/ls"));
+     * 
+     *        if (status.isOK()) {
+     *            do something...
+     *        } else {
+     *            System.out.println("Error! " + status.error);
+     *        }
+     *
+     * @param processBuilder
+     * @since 1.13.0
+     * @return ExitStatus
+     */
+    public static ExitStatus execute(final ProcessBuilder processBuilder) {
+        ExitStatus result;
+        Future<String> error;
+        Future<String> output;
+
+        if (processBuilder == null) {
+            throw new NullPointerException("NULL process builder!"); // NOI18N
+        }
+
+        try {
+            final Process process = processBuilder.start();
+            error = NativeTaskExecutorService.submit(new Callable<String>() {
+
+                @Override
+                public String call() throws Exception {
+                    return readProcessErrorLine(process);
+                }
+            }, "e"); // NOI18N
+            output = NativeTaskExecutorService.submit(new Callable<String>() {
+
+                @Override
+                public String call() throws Exception {
+                    return readProcessOutputLine(process);
+                }
+            }, "o"); // NOI18N
+
+            result = new ExitStatus(process.waitFor(), output.get(), error.get());
+        } catch (InterruptedException ex) {
+            result = new ExitStatus(-100, "", ex.getMessage());
+        } catch (Throwable th) {
+            org.netbeans.modules.nativeexecution.support.Logger.getInstance().log(Level.INFO, th.getMessage(), th);
+            result = new ExitStatus(-200, "", th.getMessage());
+        }
+
+        return result;
+    }
+    
     public static final class ExitStatus {
 
         public final int exitCode;

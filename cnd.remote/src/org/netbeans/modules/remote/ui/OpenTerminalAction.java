@@ -43,6 +43,7 @@
 package org.netbeans.modules.remote.ui;
 
 import java.awt.Frame;
+import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -66,6 +67,7 @@ import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -290,7 +292,7 @@ public class OpenTerminalAction extends SingleHostAction {
         if (homeDir == null) {
             homeDir = getHomeDir(env);
         }
-        JFileChooserEx fileChooser = (JFileChooserEx) RemoteFileUtil.createFileChooser(
+        JFileChooser fileChooser =  RemoteFileUtil.createFileChooser(
                 env,
                 title,
                 btn,
@@ -299,11 +301,20 @@ public class OpenTerminalAction extends SingleHostAction {
         if (ret == JFileChooser.CANCEL_OPTION) {
             return null;
         }
-        FileObject remoteProjectFO = fileChooser.getSelectedFileObject();
-        lastUsedDirs.put(env, remoteProjectFO.getParent().getPath());
-        if (remoteProjectFO == null || !remoteProjectFO.isFolder()) {
-            return null;
+        if (fileChooser instanceof JFileChooserEx) {
+            FileObject remoteProjectFO = ((JFileChooserEx)fileChooser).getSelectedFileObject();
+            lastUsedDirs.put(env, remoteProjectFO.getParent().getPath());
+            if (remoteProjectFO == null || !remoteProjectFO.isFolder()) {
+                return null;
+            }
+            return remoteProjectFO;
+        } else {
+            File selectedFile = fileChooser.getSelectedFile();
+            FileObject fo = FileUtil.toFileObject(selectedFile);
+            if (fo == null || !fo.isFolder()) {
+                return null;
+            }
+            return fo;
         }
-        return remoteProjectFO;
     }    
 }

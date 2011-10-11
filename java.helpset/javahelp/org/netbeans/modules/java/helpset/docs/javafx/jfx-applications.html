@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<!--
+* Copyright © 1997, 2011, Oracle and/or its affiliates. All rights reserved.
+* Use is subject to license terms.
+-->
+<html>
+    <head>
+        <title>Creating a JavaFX Project</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head>
+    <body>
+        <h2>Creating a JavaFX Project</h2>
+        <p>You can create the following JavaFX application <a href="../project/proj_about.html">projects</a> in NetBeans IDE:</p>
+        <ul>
+            <li>JavaFX Application</li>
+            <li>JavaFX Preloader</li>
+            <li>JavaFX FXML Application</li>
+        </ul>
+        <p>All 3 projects are created in the New Java Project wizard (Ctrl-Shift-N) from the JavaFX category.</p>
+        <h3>Requirements</h3>
+        <p>To work with JavaFX in NetBeans IDE, you need the following:</p>
+        <ul>
+            <li>Installed JavaFX 2.0 SDK and Runtime</li>
+            <li>A JavaFX-enabled <a href="../project/proj_jdk.html">Java Platform</a> within the IDE</li>
+        </ul>
+        <p>For details, see <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                <param name="content" value="http://netbeans.org/kb/docs/java/javafx-setup.html">
+                <param name="text" value="<html>Setting Up NetBeans IDE With JavaFX 2.0</html>">
+                <param name="textFontSize" value="medium">
+                <param name="textColor" value="blue">
+            </object>.</p>
+        <h3>JavaFX Applications and JavaFX FXML Applications</h3>
+        <p>In a JavaFX Application without FXML, graphic layout and actions are both defined in Java classes. By default, both
+            are defined in the main Application class. </p>
+        <p>In a JavaFX FXML application, graphic layout is defined in an FXML file 
+            and actions are defined in a controller Java 
+            class. The controller class implements the interface 
+            <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                <param name="content" value="http://download.oracle.com/javafx/2.0/api/javafx/fxml/Initializable.html">
+                <param name="text" value="<html>javafx.fxml.Initializable</html>">
+                <param name="textFontSize" value="medium">
+                <param name="textColor" value="blue">
+            </object>.</p>
+        <h3>JavaFX Preloaders</h3>
+        <p>A preloader is a small application that is started before the main application 
+            to customize the startup experience. You can create JavaFX preloaders either
+            by running the New JavaFX Preloader wizard or by selecting Create Custom Preloader
+            in the New JavaFX Application wizard.</p>
+        <h3>Editing JavaFX Applications</h3>
+        <p>Edit JavaFX Java source code as you edit any other Java source code in the IDE. See 
+            <a href="../editing/editing_about.html">About Editing Java Source Files</a>.</p>
+        <p>Edit FXML files as you edit any XML document in the IDE. See 
+            <a href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/xml/xml_about.html">
+                About Editing XML Documents</a>.</p>
+        <h3>Building and Running JavaFX Applications</h3>
+        <p>Build and run a JavaFX application as you build and run a standard Java application, 
+            with the difference that you can configure a JavaFX project to run in the following ways:</p>
+        <ul>
+            <li><b>Standalone application.</b> Project builds and runs as a standard Java desktop application.
+            </li>
+            <li><b>Java Web Start.</b> Application uses JNLP. The IDE generates the JNLP page when it builds the application.</li>
+            <li><b>In Browser.</b> The IDE embeds the application in a browser, using an HTML page that calls a JNLP page. The IDE
+                can generate the HTML page or you can use your own web page. If you run the application from the IDE, the IDE opens a 
+                browser page that points to the HTML page on your local file system.</li>
+        </ul>
+        <p>To set how a JavaFX application will be run, open the Project Properties and go to the Run category. To open 
+            Project Properties, right-click the project's node in the Projects window and select Properties from the context menu.</p>
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                    <param name="content" value="http://netbeans.org/kb/docs/java/javafx-setup.html">
+                    <param name="text" value="<html>Setting Up NetBeans IDE With JavaFX 2.0</html>">
+                    <param name="textFontSize" value="medium">
+                    <param name="textColor" value="blue">
+                </object></dd>
+            <dd><a href="../project/proj_jdk.html">Setting the Target JDK in a Project</a></dd>
+            <dd><a href="../project/proj_about.html">About Java Projects</a></dd>
+            <dd><a href="../compile/comp_about.html">About Building Java Projects</a></dd>
+            <dd><a href="../run/run_about.html">About Running Java Projects</a></dd>
+            <dd><a href="../debug/debug_about.html">About Debugging Java Projects</a></dd>
+            <dd><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                    <param name="content" value="http://download.oracle.com/javafx/index.html">
+                    <param name="text" value="<html>JavaFX 2.0 Documentation</html>">
+                    <param name="textFontSize" value="medium">
+                    <param name="textColor" value="blue">
+                </object></dd>
+        </dl>
+        <hr><small><a href="../credits.html">Legal Notices</a></small>
+
+        <table border="0" cellpadding="20">
+            <tr><td>&nbsp;</td></tr>
+
+        </table>
+    </body>
+</html>

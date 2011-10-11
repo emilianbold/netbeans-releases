@@ -62,7 +62,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.jsp.JspException;
 import javax.servlet.jsp.PageContext;
+import javax.servlet.jsp.tagext.TagAttributeInfo;
 import javax.servlet.jsp.tagext.TagFileInfo;
+import javax.servlet.jsp.tagext.TagInfo;
 import javax.servlet.jsp.tagext.TagLibraryInfo;
 import org.apache.jasper.JasperException;
 import org.apache.jasper.JspCompilationContext;
@@ -206,8 +208,11 @@ public class GetParseData {
                 int lastIndex = tagDir.lastIndexOf('/');
                 int lastDotIndex = tagDir.lastIndexOf('.');
                 String tagName;
+                String tagExt = "";
+
                 if (lastDotIndex > 0) {
                     tagName = tagDir.substring(lastIndex + 1, lastDotIndex);   
+                    tagExt = tagDir.substring(lastDotIndex + 1);
                 }
                 else {
                     tagName = tagDir.substring(lastIndex + 1);
@@ -216,7 +221,19 @@ public class GetParseData {
                 
                 // we need to compile the tag file to a virtual tag library to obtain its tag info
                 ImplicitTagLibraryInfo tagLibrary = new ImplicitTagLibraryInfo(ctxt, parserCtl, "virtual", tagDir, errDispatcher);  //NOI18N
-                ctxt.setTagInfo(tagLibrary.getTagFile(tagName).getTagInfo());
+                if (tagLibrary.getTagFile(tagName) == null) {
+                    // ImplicitTagLibraryInfo is not designed to work for another than .tag, .tagx files. (issue #195745)
+                    // In that case there is an artifical creation of TagInfo which is set to JspCompilationContext.
+                    String className = "org.apache.jsp.tag.web." + tagName + "_" + tagExt; //NOI18N
+                    TagAttributeInfo tai = new TagAttributeInfo("message", false, "java.lang.String", true); //NOI18N
+                    TagInfo ti = new TagInfo(
+                            tagName, className, "scriptless", //NOI18N
+                            "", tagLibrary, null, new TagAttributeInfo[]{tai}); //NOI18N
+                    LOGGER.log(Level.FINE, "Manually created TagInfo: name={0}, tagClassName={1}", new Object[]{tagName, className});
+                    ctxt.setTagInfo(ti);
+                } else {
+                    ctxt.setTagInfo(tagLibrary.getTagFile(tagName).getTagInfo());
+                }
             }
             //        long t3=System.currentTimeMillis();
 

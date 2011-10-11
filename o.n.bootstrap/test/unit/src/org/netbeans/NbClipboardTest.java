@@ -75,10 +75,9 @@ public class NbClipboardTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         System.getProperties().remove("netbeans.slow.system.clipboard.hack");
-    }
-
-    @Override
-    protected void tearDown() throws Exception {
+        Field f = Class.forName(Utilities.class.getName()).getDeclaredField("operatingSystem");
+        f.setAccessible(true);
+        f.set(null, -1);
     }
 
     public void testDefaultOnJDK15AndLater() throws Exception {
@@ -86,7 +85,7 @@ public class NbClipboardTest extends NbTestCase {
             macCheck();
         } else {
             NbClipboard ec = new NbClipboard();
-            assertFalse("By default we do not use slow hacks", ec.slowSystemClipboard);
+            assertTrue("By default we use slow hacks", ec.slowSystemClipboard);
         }
     }
     public void testPropOnJDK15AndLater() {
@@ -107,9 +106,6 @@ public class NbClipboardTest extends NbTestCase {
     }
 
     private void macCheck() throws NoSuchFieldException, SecurityException, ClassNotFoundException, IllegalAccessException, IllegalArgumentException {
-        Field f = Class.forName(Utilities.class.getName()).getDeclaredField("operatingSystem");
-        f.setAccessible(true);
-        f.set(null, -1);
         assertTrue("Is mac", Utilities.isMac());
 
         NbClipboard ec = new NbClipboard();

@@ -56,7 +56,7 @@ import org.netbeans.modules.css.editor.Css3Utils;
 import org.netbeans.modules.css.editor.csl.CssElement;
 import org.netbeans.modules.css.editor.module.spi.CompletionContext;
 import org.netbeans.modules.css.editor.module.spi.CssCompletionItem;
-import org.netbeans.modules.css.editor.module.spi.CssModule;
+import org.netbeans.modules.css.editor.module.spi.CssEditorModule;
 import org.netbeans.modules.css.editor.module.spi.EditorFeatureContext;
 import org.netbeans.modules.css.editor.module.spi.FeatureContext;
 import org.netbeans.modules.css.editor.module.spi.Utilities;
@@ -74,8 +74,8 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author mfukala@netbeans.org
  */
-@ServiceProvider(service = CssModule.class)
-public class NamespacesModule extends CssModule {
+@ServiceProvider(service = CssEditorModule.class)
+public class NamespacesModule extends CssEditorModule {
 
     private static final String NAMESPACE_KEYWORD = "@namespace";//NOI18N
     static ElementKind NAMESPACE_ELEMENT_KIND = ElementKind.GLOBAL; //XXX fix CSL

@@ -119,10 +119,10 @@ final class ViewReplace<V extends EditorView, CV extends EditorView> {
     public String toString() {
         StringBuilder sb = new StringBuilder(200);
         sb.append(view.getDumpId());
-        sb.append(": index=").append(index);
-        sb.append(", remove=").append(removeCount);
+        sb.append(": index=").append(index); // NOI18N
+        sb.append(", remove=").append(removeCount); // NOI18N
         EditorView[] addedViews = addedViews();
-        sb.append(", added=");
+        sb.append(", added="); // NOI18N
         if (addedViews != null && addedViews.length > 0) {
             sb.append(addedViews.length);
 //            sb.append(", Added Views:\n");
@@ -135,6 +135,9 @@ final class ViewReplace<V extends EditorView, CV extends EditorView> {
 //            }
         } else {
             sb.append("0");
+        }
+        if (!isChanged()) {
+            sb.append(", NonChanged"); // NOI18N
         }
         sb.append('\n');
         return sb.toString();

@@ -59,7 +59,7 @@ public final class HtmlPaletteCustomizerAction implements ActionListener {
 
     public void actionPerformed(ActionEvent e) {
         try {
-            HtmlPaletteFactory.getPalette().showCustomizer();
+            HtmlPaletteFactory.getHtmlPalette().showCustomizer();
         }
         catch (IOException ioe) {
             Logger.getLogger("global").log(Level.WARNING, null, ioe);

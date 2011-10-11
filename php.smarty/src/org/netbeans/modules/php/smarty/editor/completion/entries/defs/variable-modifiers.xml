@@ -116,6 +116,19 @@
         <url>http://www.smarty.net/manual/en/language.modifier.escape.php</url>
     </entry>
 
+    <entry name="from_charset">
+        <description>from_charset is used to transcode a string from a given charset to the internal charset. This is the exact opposite of the to_charset modifier.</description>
+        <attributes>
+            <attribute position="1">
+                <type>string</type>
+                <required>no</required>
+                <default>ISO-8859-1</default>
+                <description>The charset encoding the value is supposed to be decoded from.</description>
+            </attribute>
+        </attributes>
+        <url>http://www.smarty.net/docs/en/language.modifier.from_charset.tpl</url>
+    </entry>
+
     <entry name="indent">
         <description>This indents a string on each line, default is 4. As an optional parameter, you can specify the number of characters to indent. As an optional second parameter, you can specify the character to use to indent with eg use "\t"  for a tab. </description>
         <attributes>
@@ -230,6 +243,19 @@
         <url>http://www.smarty.net/manual/en/language.modifier.strip.tags.php</url>
     </entry>
 
+    <entry name="to_charset">
+        <description>to_charset is used to transcode a string from the internal charset to a given charset. This is the exact opposite of the from_charset modifier. </description>
+        <attributes>
+            <attribute position="1">
+                <type>string</type>
+                <required>no</required>
+                <default>ISO-8859-1</default>
+                <description>The charset encoding the value is supposed to be encoded to.</description>
+            </attribute>
+        </attributes>
+        <url>http://www.smarty.net/docs/en/language.modifier.to_charset.tpl</url>
+    </entry>
+
     <entry name="truncate">
         <description>  This truncates a variable to a character length, the default is 80. As an optional second parameter, you can specify a string of text to display at the end if the variable was truncated. The characters in the string are included with the original truncation length. By default, truncate will attempt to cut off at a word boundary. If you want to cut off at the exact character length, pass the optional third parameter of TRUE. </description>
         <attributes>
@@ -262,6 +288,26 @@
             </attribute>
         </attributes>
         <url>http://www.smarty.net/manual/en/language.modifier.truncate.php</url>
+    </entry>
+
+    <entry name="unescape">
+        <description>unescape is used to decode entity, html and htmlall. It counters the effects of the escape modifier for the given types.</description>
+        <attributes>
+            <attribute position="1">
+                <type>string</type>
+                <required>no</required>
+                <default>html</default>
+                <description>	This is the escape format to use.</description>
+            </attribute>
+
+            <attribute position="2">
+                <type>string</type>
+                <required>no</required>
+                <default>UTF-8</default>
+                <description>The character set encoding passed to html_entity_decode() or htmlspecialchars_decode() or mb_convert_encoding() et. al.</description>
+            </attribute>
+        </attributes>
+        <url>http://www.smarty.net/docs/en/language.modifier.unescape.tpl</url>
     </entry>
 
     <entry name="upper">

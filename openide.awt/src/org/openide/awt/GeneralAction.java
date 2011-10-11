@@ -239,10 +239,12 @@ final class GeneralAction {
         }
 
         public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
-            support.removePropertyChangeListener(listener);
-            if (!support.hasListeners(null)) {
-                global.unregisterListener(key, this);
-                support = null;
+            if( support != null ) {
+                support.removePropertyChangeListener(listener);
+                if (!support.hasListeners(null)) {
+                    global.unregisterListener(key, this);
+                    support = null;
+                }
             }
         }
 

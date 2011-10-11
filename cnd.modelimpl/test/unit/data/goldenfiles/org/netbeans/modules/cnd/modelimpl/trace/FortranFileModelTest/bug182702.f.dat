@@ -11,7 +11,7 @@ Includes:
     <no includes>
 Macros:
     <no macros>
-NAMESPACE DEFINITOIN constants [4:11/145-15:10/293] SCOPE: bug182702.f
+NAMESPACE DEFINITOIN constants [1:7/6-4:10/144] SCOPE: bug182702.f
 FUNCTION DEFINITION fall  [6:7/169-15:10/293] ProgramImpl SCOPE: $Global$ 
     SIGNATURE 
     UNIQUE NAME f:fall
@@ -21,7 +21,7 @@ FUNCTION DEFINITION fall  [6:7/169-15:10/293] ProgramImpl SCOPE: $Global$
     STATEMENT is null
 
 ========== Dumping model of PROJECT DummyProject
-NAMESPACE DEFINITOIN constants [4:11/145-15:10/293] SCOPE: bug182702.f
+NAMESPACE DEFINITOIN constants [1:7/6-4:10/144] SCOPE: bug182702.f
 FUNCTION DEFINITION fall  [6:7/169-15:10/293] ProgramImpl SCOPE: $Global$ 
     SIGNATURE 
     UNIQUE NAME f:fall

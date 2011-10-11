@@ -50,23 +50,27 @@ import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.TypeElement;
 import javax.swing.border.EtchedBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.source.ClassIndex.NameKind;
+import org.netbeans.api.java.source.ClassIndex.SearchScope;
 import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.Task;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ant.AntArtifactQuery;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbReference;
 import org.netbeans.modules.j2ee.common.J2eeProjectCapabilities;
@@ -81,7 +85,6 @@ import org.netbeans.modules.j2ee.dd.api.ejb.EntityAndSession;
 import org.netbeans.modules.j2ee.dd.api.ejb.Session;
 import org.netbeans.modules.j2ee.ejbcore.Utils;
 import org.netbeans.modules.j2ee.ejbcore._RetoucheUtil;
-import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.shared.EjbViewController;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
@@ -92,6 +95,7 @@ import org.openide.nodes.Node;
 import org.openide.nodes.NodeAcceptor;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -100,7 +104,9 @@ import org.openide.util.NbBundle;
  * @Petr Slechta
  */
 public class CallEjbPanel extends javax.swing.JPanel {
-    
+
+    private static final Logger LOGGER = Logger.getLogger(CallEjbPanel.class.getName());
+
     public static final String IS_VALID = "CallEjbPanel_isValid"; //NOI18N
 
     private Set<String> refNameSet;
@@ -110,22 +116,33 @@ public class CallEjbPanel extends javax.swing.JPanel {
     private final Project project;
     private final String className;
     private final FileObject srcFile;
+    private final FutureTask<Boolean> taskIsTargetJavaSE;
+    private Boolean targetIsJavaSE = null;
     private NotificationLineSupport statusLine;
-    
+
     /** Creates new form CallEjbPanel */
-    public CallEjbPanel(FileObject fileObject, Node rootNode, String lastLocator, String className) throws IOException {
+    public CallEjbPanel(FileObject fileObject, Node rootNode, String lastLocator, final String className) throws IOException {
         initComponents();
         this.srcFile= fileObject;
         this.project = FileOwnerQuery.getOwner(srcFile);
         this.className = className;
         this.nodeAcceptor = new NodeAcceptorImpl();
-        
+
+        // initialization of targetIsJavaSE outside EDT
+        taskIsTargetJavaSE = new FutureTask<Boolean>(new Callable<Boolean>() {
+            @Override
+            public Boolean call() throws Exception {
+                return Utils.isTargetJavaSE(srcFile, className);
+            }
+        });
+        RequestProcessor.getDefault().post(taskIsTargetJavaSE);
+
         nodeDisplayPanel = new NodeDisplayPanel(rootNode);
         nodeDisplayPanel.setBorder(new EtchedBorder());
         displayPanel.add(nodeDisplayPanel);
         nodeDisplayPanel.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent pce) {
-                
+
                 if (ExplorerManager.PROP_NODE_CHANGE.equals(pce.getPropertyName())) {
                     Node[] nodes = nodeDisplayPanel.getSelectedNodes();
 
@@ -151,7 +168,7 @@ public class CallEjbPanel extends javax.swing.JPanel {
                 validateReferences();
             }
         });
-        
+
         slPanel = new ServiceLocatorStrategyPanel(lastLocator, ClasspathInfo.create(fileObject));
         slPanel.getUnreferencedServiceLocator().addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
@@ -180,6 +197,19 @@ public class CallEjbPanel extends javax.swing.JPanel {
         serviceLocatorPanel.setVisible(false);
     }
 
+    private boolean isTargetJavaSE() {
+        if (targetIsJavaSE == null) {
+            try {
+                targetIsJavaSE = taskIsTargetJavaSE.get();
+            } catch (InterruptedException ex) {
+                LOGGER.log(Level.WARNING, null, ex);
+            } catch (ExecutionException ex) {
+                LOGGER.log(Level.WARNING, null, ex);
+            }
+        }
+        return targetIsJavaSE;
+    }
+
     // lazy initialization
     private Set<String> getRefNameSet() throws IOException {
         if (refNameSet == null) {
@@ -194,27 +224,30 @@ public class CallEjbPanel extends javax.swing.JPanel {
                         EjbJar ejbJar = metadata.getRoot();
                         if (ejbJar != null) {
                             final EnterpriseBeans enterpriseBeans = ejbJar.getEnterpriseBeans();
-                            JavaSource javaSource = JavaSource.forFileObject(srcFile);
-                            if (enterpriseBeans != null && javaSource != null) {
-                                javaSource.runUserActionTask(new Task<CompilationController>() {
-                                    public void run(CompilationController controller) throws IOException {
-                                        controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                                        TypeElement beanClass = controller.getElements().getTypeElement(CallEjbPanel.this.className);
-                                        for (Ejb ejb : enterpriseBeans.getEjbs()) {
-                                            if (beanClass.getQualifiedName().contentEquals(ejb.getEjbClass())) {
-                                                EjbRef[] ejbRefs = ejb.getEjbRef();
-                                                EjbLocalRef[] ejbLocalRefs = ejb.getEjbLocalRef();
-                                                for (int j = 0; j < ejbRefs.length; j++) {
-                                                    refNameSet.add(ejbRefs[j].getEjbRefName());
-                                                }
-                                                for (int j = 0; j < ejbLocalRefs.length; j++) {
-                                                    refNameSet.add(ejbLocalRefs[j].getEjbRefName());
-                                                }
-                                                return;
+                            if (enterpriseBeans != null) {
+                                ClasspathInfo cpi = ClasspathInfo.create(srcFile);
+                                int beginIndex = className.lastIndexOf('.') + 1; //NOI18N
+                                String simpleName = className.substring(beginIndex);
+                                Set<ElementHandle<TypeElement>> handles = cpi.getClassIndex().getDeclaredTypes(
+                                        simpleName,
+                                        NameKind.SIMPLE_NAME,
+                                        Collections.singleton(SearchScope.SOURCE));
+
+                                for (ElementHandle<TypeElement> elementHandle : handles) {
+                                    for (Ejb ejb : enterpriseBeans.getEjbs()) {
+                                        if (elementHandle.getQualifiedName().contentEquals(ejb.getEjbClass())) {
+                                            EjbRef[] ejbRefs = ejb.getEjbRef();
+                                            EjbLocalRef[] ejbLocalRefs = ejb.getEjbLocalRef();
+                                            for (int j = 0; j < ejbRefs.length; j++) {
+                                                refNameSet.add(ejbRefs[j].getEjbRefName());
                                             }
+                                            for (int j = 0; j < ejbLocalRefs.length; j++) {
+                                                refNameSet.add(ejbLocalRefs[j].getEjbRefName());
+                                            }
+                                            break;
                                         }
                                     }
-                                }, true);
+                                }
                             }
                         }
                         return null;
@@ -225,7 +258,7 @@ public class CallEjbPanel extends javax.swing.JPanel {
         }
         return refNameSet;
     }
-    
+
     public void validateReferences() {
         boolean nodeAccepted = nodeAcceptor.acceptNodes(nodeDisplayPanel.getSelectedNodes());
         if ((slPanel.getUnreferencedServiceLocator().isSelected() &&
@@ -236,7 +269,7 @@ public class CallEjbPanel extends javax.swing.JPanel {
             firePropertyChange(IS_VALID, false, true);
         }
     }
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -380,11 +413,11 @@ public class CallEjbPanel extends javax.swing.JPanel {
         getAccessibleContext().setAccessibleName(bundle.getString("ACS_CallEJBPanel")); // NOI18N
         getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_CallEJBPanel")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
-    
+
     private void remoteRadioButtonItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_remoteRadioButtonItemStateChanged
         validateReferences();
     }//GEN-LAST:event_remoteRadioButtonItemStateChanged
-    
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox convertToRuntime;
     private javax.swing.JPanel displayPanel;
@@ -397,7 +430,7 @@ public class CallEjbPanel extends javax.swing.JPanel {
     private javax.swing.JRadioButton remoteRadioButton;
     private javax.swing.JPanel serviceLocatorPanel;
     // End of variables declaration//GEN-END:variables
-    
+
     public boolean convertToRuntime() {
         return convertToRuntime.isSelected();
     }
@@ -405,15 +438,15 @@ public class CallEjbPanel extends javax.swing.JPanel {
         Node[] selectedNodes = nodeDisplayPanel.getSelectedNodes();
         return selectedNodes.length > 0 ? selectedNodes[0] : null;
     }
-    
+
     public String getServiceLocator() {
         return slPanel.classSelected();
     }
-    
+
     public String getReferenceName() {
         return referenceNameTextField.getText();
     }
-    
+
     public boolean isDefaultRefName() {
         Node[] nodes = nodeDisplayPanel.getSelectedNodes();
         if (nodes.length > 0) {
@@ -428,7 +461,7 @@ public class CallEjbPanel extends javax.swing.JPanel {
         }
         return false;
     }
-    
+
     public EjbReference.EjbRefIType getSelectedInterface() {
         if (noInterfaceRadioButton.isSelected()){
             return EjbReference.EjbRefIType.NO_INTERFACE;
@@ -440,7 +473,7 @@ public class CallEjbPanel extends javax.swing.JPanel {
             return null;
         }
     }
-    
+
     private String generateName(EjbReference ejbReference, boolean remote, Node selectedNode) throws IOException {
 // maven projects never have ant artifacts, if you want to uncomment this, talk to me please, mkleint.
 //        if (Utils.getAntArtifact(ejbReference) == null) {
@@ -465,10 +498,9 @@ public class CallEjbPanel extends javax.swing.JPanel {
                 }
             });
             if (remote) {
-                boolean targetIsJavaSE = Utils.isTargetJavaSE(srcFile, className);
-                if (targetIsJavaSE && Util.isJavaEE5orHigher(project)){
+                if (isTargetJavaSE() && Util.isJavaEE5orHigher(project)){
                     name = elementHandle.getQualifiedName();
-                } else if (targetIsJavaSE){
+                } else if (isTargetJavaSE()){
                     name = names.get(EntityAndSession.HOME);
                 } else {
                     name = names.get(EntityAndSession.EJB_NAME);
@@ -477,7 +509,7 @@ public class CallEjbPanel extends javax.swing.JPanel {
                 name = names.get(EntityAndSession.EJB_NAME);
             }
         }
-        
+
         int uniquifier = 1;
         String newName = name;
         while (getRefNameSet().contains(newName)) {
@@ -485,18 +517,18 @@ public class CallEjbPanel extends javax.swing.JPanel {
         }
         return name;
     }
-    
+
     private void setGeneratedName(EjbReference ejbReference, boolean remote, Node selectedNode) throws IOException {
         referenceNameTextField.setText(generateName(ejbReference, remote, selectedNode));
     }
-    
+
     private class NodeAcceptorImpl implements  NodeAcceptor {
-        
+
         public NodeAcceptorImpl() {}
-        
+
         public boolean acceptNodes(Node[] nodes) {
             statusLine.clearMessages();
-            
+
             // no node selected
             if (nodes.length == 0) {
                 statusLine.setErrorMessage(NbBundle.getMessage(CallEjbPanel.class, "LBL_SelectOneEJB")); //NOI18N
@@ -518,7 +550,7 @@ public class CallEjbPanel extends javax.swing.JPanel {
                 statusLine.setErrorMessage(NbBundle.getMessage(CallEjbPanel.class, "LBL_NodeIsNotEJB")); //NOI18N
                 return false;
             }
-            
+
             if (elementHandle.getQualifiedName().equals(className)) {
                 statusLine.setErrorMessage(NbBundle.getMessage(CallEjbPanel.class, "LBL_CannotCallItself", className)); //NOI18N
                 return false;
@@ -544,7 +576,7 @@ public class CallEjbPanel extends javax.swing.JPanel {
             if (!validateRefName()) {
                 return false;
             }
-            
+
             // if local ref is used, modules must be in same module or J2EE application
             FileObject fileObject = nodes[0].getLookup().lookup(FileObject.class);
             if (fileObject == null) {
@@ -576,13 +608,8 @@ public class CallEjbPanel extends javax.swing.JPanel {
                 }
 
                 //Unit tests or classes in a JSE project cannot contain references to local beans
-                try {
-                    if (Utils.isTargetJavaSE(srcFile, className)) {
-                        statusLine.setErrorMessage(NbBundle.getMessage(CallEjbPanel.class, "LBL_CannotCallLocalInJSE")); //NOI18N
-                        return false;
-                    }
-                } catch (IOException ioe) {
-                    Exceptions.printStackTrace(ioe);
+                if (isTargetJavaSE()) {
+                    statusLine.setErrorMessage(NbBundle.getMessage(CallEjbPanel.class, "LBL_CannotCallLocalInJSE")); //NOI18N
                     return false;
                 }
             }
@@ -590,16 +617,16 @@ public class CallEjbPanel extends javax.swing.JPanel {
             if (!Util.isJavaEE5orHigher(project) && Util.isJavaEE5orHigher(nodeProject)){
                 statusLine.setWarningMessage(NbBundle.getMessage(CallEjbPanel.class, "LBL_JEESpecificationLevelsDiffer")); //NOI18N
             }
-            
+
             return true;
         }
-        
+
         private boolean acceptInterfaces(Node[] nodes) {
             EjbReference ejbReference = nodes[0].getLookup().lookup(EjbReference.class);
             if (ejbReference == null) {
                 return false;
             }
-            
+
             boolean shouldEnableNoInterface = J2eeProjectCapabilities.forProject(project).isEjb31LiteSupported() &&
                                               isNoInterfaceViewExposed(ejbReference);
             boolean shouldEnableLocal = (ejbReference.getLocal() != null);
@@ -646,7 +673,7 @@ public class CallEjbPanel extends javax.swing.JPanel {
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
-            
+
             return result.booleanValue();
         }
 
@@ -658,7 +685,7 @@ public class CallEjbPanel extends javax.swing.JPanel {
             }
             return AntArtifactQuery.findArtifactsByType(nodeProject, JavaProjectConstants.ARTIFACT_TYPE_JAR).length > 0;
         }
-        
+
         private boolean validateRefName() {
             String refName = referenceNameTextField.getText();
             if (refName.trim().length() < 1) {
@@ -671,5 +698,5 @@ public class CallEjbPanel extends javax.swing.JPanel {
             return true;
         }
     }
-    
+
 }

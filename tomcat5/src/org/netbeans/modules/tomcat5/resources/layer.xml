@@ -74,7 +74,7 @@ made subject to such option by the copyright holder.
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformFactory"/>
                 </file>
                 <file name="TomcatModuleConfigurationFactory.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.tomcat5.config.TomcatModuleConfigurationFactory.create70"/>
+                    <attr name="instanceCreate" newvalue="org.netbeans.modules.tomcat5.config.TomcatModuleConfigurationFactory"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.tomcat5.config.TomcatModuleConfigurationFactory"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfigurationFactory"/>
                 </file>

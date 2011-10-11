@@ -85,15 +85,15 @@
                 <DimensionLayout dim="0">
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" attributes="0">
-                          <Component id="back" min="-2" pref="96" max="-2" attributes="0"/>
+                          <Component id="back" linkSize="1" min="-2" pref="96" max="-2" attributes="0"/>
                           <EmptySpace min="4" pref="4" max="4" attributes="0"/>
-                          <Component id="previewButton" min="-2" pref="96" max="-2" attributes="0"/>
+                          <Component id="previewButton" linkSize="1" min="-2" pref="96" max="-2" attributes="0"/>
                           <EmptySpace min="4" pref="4" max="4" attributes="0"/>
-                          <Component id="next" min="-2" max="-2" attributes="0"/>
+                          <Component id="next" linkSize="1" min="-2" max="-2" attributes="0"/>
                           <EmptySpace min="4" pref="4" max="4" attributes="0"/>
-                          <Component id="cancel" min="-2" pref="96" max="-2" attributes="0"/>
+                          <Component id="cancel" linkSize="1" min="-2" pref="96" max="-2" attributes="0"/>
                           <EmptySpace min="4" pref="4" max="4" attributes="0"/>
-                          <Component id="help" min="-2" pref="96" max="-2" attributes="0"/>
+                          <Component id="help" linkSize="1" min="-2" pref="96" max="-2" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>

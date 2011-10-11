@@ -193,7 +193,7 @@ public class DoubleCheckTest extends TreeRuleTestBase {
     }
 
     public void testVolatileJDK4IZ153334() throws Exception {
-        sourceLevel = "1.4";
+        setSourceLevel("1.4");
         
         String code = "package test; public class Test {\n" +
             "private static volatile Test INST;\n" +
@@ -214,12 +214,9 @@ public class DoubleCheckTest extends TreeRuleTestBase {
     }
 
     protected List<ErrorDescription> computeErrors(CompilationInfo info, TreePath path) {
-        SourceUtilsTestUtil.setSourceLevel(info.getFileObject(), sourceLevel);
         return new DoubleCheck().run(info, path);
     }
     
-    private String sourceLevel = "1.5";
-
     @Override
     protected String toDebugString(CompilationInfo info, Fix f) {
         return f.getText();

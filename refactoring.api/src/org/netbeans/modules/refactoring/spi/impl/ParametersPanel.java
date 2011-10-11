@@ -280,6 +280,9 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
                 .addGap(4, 4, 4)
                 .addComponent(help, javax.swing.GroupLayout.PREFERRED_SIZE, 96, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
+
+        buttonsPanelLayout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {back, cancel, help, next, previewButton});
+
         buttonsPanelLayout.setVerticalGroup(
             buttonsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(back)
@@ -419,6 +422,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
                         }});
                 } finally {
                     if (inputState == currentState) {
+                        result = null;
                         setVisibleLater(false);
                     }
                     return;
@@ -613,11 +617,19 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
                         });
                     if (!rui.hasParameters()) {
                         RefactoringSession session = putResult(RefactoringSession.create(rui.getName()));
-                        try {
-                            rui.getRefactoring().prepare(session);
-                        } finally {
-                            setVisibleLater(false);
-                        }
+                            Problem problem = null;
+                            try {
+                                problem = rui.getRefactoring().prepare(session);
+                            } catch (Throwable t) {
+                                setVisibleLater(false);
+                            }
+                            if (problem!=null) {
+                                placeErrorPanel(problem);
+                                validate();
+                                back.setEnabled(false);
+                            } else {
+                                setVisibleLater(false);
+                            }
                     } 
                     
                 }
@@ -759,6 +771,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         if (customPanel.isEnabled()) 
             customPanel.requestFocus();
         setOKorRefactor();
+        dialog.pack();
         validate();
         repaint();  
     }

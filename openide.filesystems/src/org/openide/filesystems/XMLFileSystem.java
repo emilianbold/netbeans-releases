@@ -1145,12 +1145,7 @@ public final class XMLFileSystem extends AbstractFileSystem {
 
             try {
                 urlConn = url.openConnection();
-
-                try {
-                    return new Date(urlConn.getLastModified());
-                } finally {
-                    urlConn.getInputStream().close();
-                }
+                return new Date(urlConn.getLastModified());
             } catch (IOException ie) {
                 return new java.util.Date(0);
             }

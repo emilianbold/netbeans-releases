@@ -405,7 +405,6 @@ tokens {
 	protected static final DeclSpecifier dsEXPLICIT = new DeclSpecifier("dsEXPLICIT");
 	protected static final DeclSpecifier dsFRIEND = new DeclSpecifier("dsFRIEND");
 
-        protected static final String LITERAL___global_ext = "__global";
         protected static final String LITERAL_EXEC = "EXEC";
         protected static final String LITERAL_SQL = "SQL";
 
@@ -904,7 +903,7 @@ typedef_enum
                 (init_declarator_list[declOther])? SEMICOLON //{end_of_stmt();}
         ;
 
-external_declaration {String s; K_and_R = false; boolean definition;StorageClass sc;TypeQualifier tq;}
+external_declaration {String s; K_and_R = false; boolean definition;StorageClass sc;TypeQualifier tq; int ts = 0;}
 	:  
 	(
                 {isCPlusPlus()}?
@@ -959,7 +958,7 @@ external_declaration {String s; K_and_R = false; boolean definition;StorageClass
             |   cv_qualifier
             |   LITERAL_typedef
             )*
-            LITERAL_enum (ID)? (LCURLY)
+            LITERAL_enum (LITERAL_class | LITERAL_struct)? (ID)? (COLON ts = builtin_cv_type_specifier[ts])? (LCURLY)
         ) =>
         (LITERAL___extension__!)?
             (   sc = storage_class_specifier
@@ -1274,7 +1273,7 @@ member_declaration_template
 	;
 
 member_declaration
-	{String q; boolean definition;boolean ctrName=false;StorageClass sc = scInvalid;}
+	{String q; boolean definition;boolean ctrName=false;StorageClass sc = scInvalid;int ts = 0;}
 	:
 	(
 		// Class definition
@@ -1297,7 +1296,7 @@ member_declaration
 		{ #member_declaration = #(#[CSM_CLASS_DECLARATION, "CSM_CLASS_DECLARATION"], #member_declaration); }
 	|  
 		// Enum definition (don't want to backtrack over this in other alts)
-		((storage_class_specifier)? LITERAL_enum (ID)? LCURLY)=>
+		((storage_class_specifier)? LITERAL_enum (LITERAL_class | LITERAL_struct)? (ID)? (COLON ts = builtin_cv_type_specifier[ts])? LCURLY)=>
                 (sc = storage_class_specifier)?
 		{if (statementTrace>=1) 
 			printf("member_declaration_2[%d]: Enum definition\n",
@@ -1628,66 +1627,60 @@ linkage_specification
 	;
 
 declaration_specifiers [boolean allowTypedef, boolean noTypeId]
-	{
-	    // Global flags to allow for nested declarations
-	    _td = false;	// For typedef
-	    _fd = false;	// For friend
-	    _sc = scInvalid;	// For StorageClass
-	    _tq = tqInvalid;	// For TypeQualifier
-	    _ts = tsInvalid;	// For TypeSpecifier
-	    _ds = dsInvalid;	// For DeclSpecifier
+{
+    // Global flags to allow for nested declarations
+    _td = false;        // For typedef
+    _fd = false;        // For friend
+    _sc = scInvalid;    // For StorageClass
+    _tq = tqInvalid;    // For TypeQualifier
+    _ts = tsInvalid;    // For TypeSpecifier
+    _ds = dsInvalid;    // For DeclSpecifier
 
 
-	     // Locals
-	    boolean td = false;	// For typedef
-	    boolean fd = false;	// For friend
-	    StorageClass sc = scInvalid;	// auto,register,static,extern,mutable
-	    TypeQualifier tq = tqInvalid;	// const,const_cast,volatile,cdecl
-	    /*TypeSpecifier*/int ts = tsInvalid;	// char,int,double, etc., class,struct,union
-	    DeclSpecifier ds = dsInvalid;	// inline,virtual,explicit
-	}
-	:
-	(	
-                (options {warnWhenFollowAmbig = false;}
-		:	sc = storage_class_specifier
-		|	tq = cv_qualifier 
-		|	literal_inline                  {ds = dsINLINE;}
-		|	LITERAL_virtual			{ds = dsVIRTUAL;}
-		|	LITERAL_explicit			{ds = dsEXPLICIT;}
-                |       LITERAL_enum
-		|	
-                        {if (statementTrace>=1) 
-                                printf("declaration_specifiers_1[%d]: Typedef\n", LT(1).getLine());
-                        }                        
+    // Locals
+    boolean td = false; // For typedef
+    boolean fd = false; // For friend
+    StorageClass sc = scInvalid;        // auto,register,static,extern,mutable
+    TypeQualifier tq = tqInvalid;       // const,const_cast,volatile,cdecl
+    /*TypeSpecifier*/int ts = tsInvalid;// char,int,double, etc., class,struct,union
+    DeclSpecifier ds = dsInvalid;       // inline,virtual,explicit
+}
+:
+(
+    (   (LITERAL_auto declarator[declOther, 0]) => 
+    |
+        (   options {warnWhenFollowAmbig = false;} : sc = storage_class_specifier
+        |   tq = cv_qualifier 
+        |   literal_inline {ds = dsINLINE;}
+        |   LITERAL_virtual {ds = dsVIRTUAL;}
+        |   LITERAL_explicit {ds = dsEXPLICIT;}
+        |   LITERAL_enum
+        |   {if (statementTrace>=1) printf("declaration_specifiers_1[%d]: Typedef\n", LT(1).getLine());}                        
             {allowTypedef}? LITERAL_typedef (options {greedy=true;} : LITERAL_typename)? {td=true;} 
-		|	LITERAL_typename
-		|	LITERAL_friend	{fd=true;}
-		|	literal_stdcall
-        |   { LT(1).getText().equals(LITERAL___global_ext) == true}? ID
-        |   (options {greedy=true;} : attribute_specification!)
-		)*
-		(
-                        (options {greedy=true;} :type_attribute_specification)?
-                        ts = type_specifier[ds, noTypeId]
-                        // support for "A const*";
-                        // need to catch postfix_cv_qualifier
-                        (postfix_cv_qualifier)? 
-
-                        (
-                            (literal_inline   {ds = dsINLINE;})
-                        |
-                            (sc = storage_class_specifier)
-                        )*
-
-
-                        (options {greedy=true;} :type_attribute_specification)?
-//		|	LITERAL_typename	{td=true;}	direct_declarator 
-                |       literal_typeof LPAREN typeof_param RPAREN
-                                 
-		)                
-	)
-	{declarationSpecifier(td, fd, sc, tq, ts, ds);}
-	;
+        |   LITERAL_typename
+        |   LITERAL_friend {fd=true;}
+        |   literal_stdcall
+        |       (options {greedy=true;} : attribute_specification!)
+        )*
+    ) 
+    (
+        (options {greedy=true;} :type_attribute_specification)?
+        ts = type_specifier[ds, noTypeId]
+        // support for "A const*";
+        // need to catch postfix_cv_qualifier
+        (postfix_cv_qualifier)? 
+        (
+            (literal_inline {ds = dsINLINE;})
+        |
+            (sc = storage_class_specifier)
+        )*
+        (options {greedy=true;} :type_attribute_specification)?
+//  |   LITERAL_typename	{td=true;}	direct_declarator 
+    |   literal_typeof LPAREN typeof_param RPAREN
+    )                
+)
+{declarationSpecifier(td, fd, sc, tq, ts, ds);}
+;
 
 protected
 typeof_param :
@@ -1717,10 +1710,12 @@ cv_qualifier returns [CPPParser.TypeQualifier tq = tqInvalid] // aka cv_qualifie
 	;
 
 type_specifier[DeclSpecifier ds, boolean noTypeId] returns [/*TypeSpecifier*/int ts = tsInvalid]
-	:	ts = simple_type_specifier[noTypeId]
-	|	ts = class_specifier[ds]
-	|	enum_specifier	{ts=tsENUM;}
-	;
+:   ts = simple_type_specifier[noTypeId]
+|   ts = class_specifier[ds]
+|   enum_specifier {ts=tsENUM;}
+|   LITERAL_auto
+    { #type_specifier = #([CSM_TYPE_BUILTIN, "CSM_TYPE_BUILTIN"], #type_specifier); }
+;
 
 simple_type_specifier[boolean noTypeId] returns [/*TypeSpecifier*/int ts = tsInvalid]
 	:	(	{!noTypeId && qualifiedItemIsOneOf(qiType|qiCtor)}? 
@@ -1787,13 +1782,13 @@ qualified_type
 	;
 
 class_specifier[DeclSpecifier ds] returns [/*TypeSpecifier*/int ts = tsInvalid]
-    {String saveClass = ""; String id = "";}
+    {String saveClass = ""; String id = ""; StorageClass sc = scInvalid;}
     :   (   LITERAL_class  {ts = tsCLASS;}
         |   LITERAL_struct {ts = tsSTRUCT;}
         |   LITERAL_union  {ts = tsUNION;}
         )
         (options {greedy=true;} : type_attribute_specification)?
-        (LITERAL___symbolic!)?
+        (sc = storage_class_specifier!)?
         (   id = qualified_id
             (options{generateAmbigWarnings = false;}:
                 {
@@ -1845,20 +1840,24 @@ fix_fake_class_members
     ;
 
 enum_specifier
-	:	LITERAL_enum
-		(	LCURLY enumerator_list 
-                        ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
-                        | RCURLY )
-		|	id:ID     // DW 22/04/03 Suggest qualified_id here to satisfy
-				  // elaborated_type_specifier
-			{beginEnumDefinition(id.getText());}
-			(LCURLY enumerator_list 
-                            ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
-                            | RCURLY )
-                        )
-			{endEnumDefinition();}
-		)
-	;
+{int ts = 0;}
+:   LITERAL_enum
+    (LITERAL_class! | LITERAL_struct!)?    
+    (   (COLON ts = builtin_cv_type_specifier[ts])?
+        LCURLY enumerator_list 
+        ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
+        | RCURLY )
+    |   id:ID     // DW 22/04/03 Suggest qualified_id here to satisfy
+                  // elaborated_type_specifier        
+        {beginEnumDefinition(id.getText());}
+        (   (COLON ts = builtin_cv_type_specifier[ts])?
+            LCURLY enumerator_list 
+            ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
+            | RCURLY )
+        )
+        {endEnumDefinition();}
+    )
+;
 
 enumerator_list
     :           
@@ -1974,7 +1973,7 @@ cast_array_initializer_head
 
 // so far this one is used in predicates only
 class_head     
-        { String s; }
+        { String s; StorageClass sc = scInvalid; }
 	:	// Used only by predicates	
 	(
 		LITERAL_struct  
@@ -1982,8 +1981,8 @@ class_head
 	|	LITERAL_class 
 	)
         (options {greedy=true;} : type_attribute_specification)?
+        (sc = storage_class_specifier)?
 	(
-     
             s = scope_override  
 
             ID	
@@ -2879,7 +2878,7 @@ single_statement
     ;
 
 statement
-	{StorageClass sc = scInvalid;}
+	{StorageClass sc = scInvalid; int ts = 0;}
 	:
 	(	
                 // Issue 83496   C++ parser does not allow class definition inside function
@@ -2907,7 +2906,7 @@ statement
 	|
                 // Issue 83996   Code completion list doesn't appear if enum defined within function (without messages)
 		// Enum definition (don't want to backtrack over this in other alts)
-		((storage_class_specifier)? LITERAL_enum (ID)? LCURLY)=>
+		((storage_class_specifier)? LITERAL_enum (LITERAL_class | LITERAL_struct)? (ID)? (COLON ts = builtin_cv_type_specifier[ts])? LCURLY)=>
                 (sc = storage_class_specifier)?
 		{if (statementTrace>=1) 
 			printf("statement_2[%d]: Enum definition\n",
@@ -3137,31 +3136,44 @@ do_while_statement
 
 protected
 for_statement
-	:
-		LITERAL_for LPAREN!
-		for_init_statement
-		(
-		(condition)? 
-        ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
-        | SEMICOLON ) //{end_of_stmt();}
-		(expression)?
-		)?
-		RPAREN! single_statement
-		{#for_statement = #(#[CSM_FOR_STATEMENT, "CSM_FOR_STATEMENT"], #for_statement);}
-	;
+:
+    LITERAL_for LPAREN!
+    (
+        (for_range_init_statement COLON) =>
+        for_range_init_statement COLON expression
+    |
+        for_init_statement
+        (
+            (condition)? 
+            ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
+            | SEMICOLON )
+            (expression)?
+        )?
+    )
+    RPAREN! single_statement
+
+    {#for_statement = #(#[CSM_FOR_STATEMENT, "CSM_FOR_STATEMENT"], #for_statement);}
+;
 
 protected
 for_init_statement
-	:
-		(	(declaration[declStatement])=> declaration[declStatement]
-		|	expression 
-            ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
-            | SEMICOLON ) //{end_of_stmt();}
-		|	( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
-            | SEMICOLON) //{end_of_stmt();}
-		)
-		{#for_init_statement = #(#[CSM_FOR_INIT_STATEMENT, "CSM_FOR_INIT_STATEMENT"], #for_init_statement);}
-	;
+:
+    (   (declaration[declStatement])=> declaration[declStatement]
+    |   expression 
+        ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
+        | SEMICOLON ) //{end_of_stmt();}
+    |   ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
+        | SEMICOLON) //{end_of_stmt();}
+    )
+    {#for_init_statement = #(#[CSM_FOR_INIT_STATEMENT, "CSM_FOR_INIT_STATEMENT"], #for_init_statement);}
+;
+
+protected
+for_range_init_statement
+:
+    declaration_specifiers[true, false] init_declarator[declStatement]
+    {#for_range_init_statement = #(#[CSM_FOR_INIT_STATEMENT, "CSM_FOR_INIT_STATEMENT"], #for_range_init_statement);}
+;
 
 jump_statement
 	:	

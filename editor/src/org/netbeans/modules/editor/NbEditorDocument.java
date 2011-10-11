@@ -63,7 +63,6 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.util.Dictionary;
 import java.util.Map;
-import java.util.WeakHashMap;
 import javax.swing.JToolBar;
 import org.netbeans.editor.BaseDocument;
 import javax.swing.text.BadLocationException;
@@ -197,7 +196,8 @@ NbDocument.Printable, NbDocument.CustomEditor, NbDocument.CustomToolbar, NbDocum
     }
 
     public JToolBar createToolbar(JEditorPane j) {
-        return Utilities.getEditorUI(j).getToolBarComponent();
+        final EditorUI ui = Utilities.getEditorUI(j);
+        return ui != null ? ui.getToolBarComponent() : null;
     }
     
     /** Add annotation to the document. For annotation of whole line
@@ -249,7 +249,7 @@ NbDocument.Printable, NbDocument.CustomEditor, NbDocument.CustomToolbar, NbDocum
             if (annotation.getAnnotationType() != null) {
                 AnnotationDescDelegate a = (AnnotationDescDelegate)annoMap.get(annotation);
                 if (a == null) { // not added yet
-                    throw new IllegalStateException("Annotation not added: " + a);
+                    throw new IllegalStateException("Annotation not added: " + annotation.getAnnotationType() + annotation.getShortDescription());
                 }
                 a.detachListeners();
                 getAnnotations().removeAnnotation(a);

@@ -42,6 +42,7 @@ import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
+import org.netbeans.modules.php.smarty.SmartyFramework;
 import org.netbeans.modules.php.smarty.editor.TplMetaData;
 import org.netbeans.modules.php.smarty.editor.utlis.LexerUtils;
 import org.netbeans.modules.php.smarty.editor.utlis.TplUtils;
@@ -148,7 +149,7 @@ public class TplTopLexer implements Lexer<TplTopTokenId> {
     private enum State {
         INIT,
         OUTER,
-        AFTER_DELIMITER,
+        AFTER_DELIMITER, // after any custom or default Smarty delimiter
         OPEN_DELIMITER,
         CLOSE_DELIMITER,
         IN_COMMENT,
@@ -215,7 +216,26 @@ public class TplTopLexer implements Lexer<TplTopTokenId> {
                     }
                     state = State.AFTER_DELIMITER;
                     if (subState == subState.NO_SUB_STATE) {
-                        return TplTopTokenId.T_SMARTY_OPEN_DELIMITER;
+                        if (isSmartyOpenDelimiter(SmartyFramework.OPEN_DELIMITER)) {
+                            c = input.read();
+                            if (c == LexerInput.EOF) {
+                                input.backup(1);
+                                return TplTopTokenId.T_SMARTY_OPEN_DELIMITER;
+                            } else {
+                                if (LexerUtils.isWS(c)
+                                        && c != LexerInput.EOF
+                                        && getSmartyVersion() == SmartyFramework.Version.SMARTY3) {
+                                    state = State.OUTER;
+                                    input.backup(1);
+                                    return TplTopTokenId.T_HTML;
+                                } else {
+                                    input.backup(1);
+                                    return TplTopTokenId.T_SMARTY_OPEN_DELIMITER;
+                                }
+                            }
+                        } else {
+                            return TplTopTokenId.T_SMARTY_OPEN_DELIMITER;
+                        }
                     } else {
                         if (input.readLength() > openDelimiterLength) {
                             input.backup(input.readLength() - openDelimiterLength);
@@ -408,13 +428,17 @@ public class TplTopLexer implements Lexer<TplTopTokenId> {
         private boolean isSmartyCloseDelimiter(CharSequence text) {
             return CharSequenceUtilities.endsWith(text, metadata.getCloseDelimiter());
         }
-        
+
         private int getOpenDelimiterLength() {
             return metadata.getOpenDelimiter().length();
         }
 
         private int getCloseDelimiterLength() {
             return metadata.getCloseDelimiter().length();
+        }
+
+        private SmartyFramework.Version getSmartyVersion() {
+            return metadata.getSmartyVersion();
         }
 
         private String readNextWord(int lastChar) {

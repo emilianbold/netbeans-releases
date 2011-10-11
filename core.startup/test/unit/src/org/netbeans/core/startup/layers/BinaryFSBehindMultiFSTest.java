@@ -97,9 +97,9 @@ implements XMLFileSystemTestHid.Factory {
 
     public FileSystem createLayerSystem(String testName, URL[] layers) throws IOException {
         LayerCacheManager bm = LayerCacheManager.manager(true);
-        return new MultiFileSystem(new FileSystem[] {
+        return new MultiFileSystem(
             BinaryCacheManagerTest.store(bm, Arrays.asList(layers))
-        });
+        );
     }
 
     public boolean setXmlUrl(FileSystem fs, URL[] layers) throws IOException {

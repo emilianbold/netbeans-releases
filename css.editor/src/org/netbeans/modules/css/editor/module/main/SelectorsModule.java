@@ -54,7 +54,7 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.css.editor.Css3Utils;
 import org.netbeans.modules.css.editor.module.CssModuleSupport;
 import org.netbeans.modules.css.editor.module.spi.CompletionContext;
-import org.netbeans.modules.css.editor.module.spi.CssModule;
+import org.netbeans.modules.css.editor.module.spi.CssEditorModule;
 import org.netbeans.modules.css.editor.module.spi.EditorFeatureContext;
 import org.netbeans.modules.css.editor.module.spi.FeatureContext;
 import org.netbeans.modules.css.editor.module.spi.Utilities;
@@ -73,8 +73,8 @@ import org.openide.util.lookup.ServiceProvider;
  * 
  * @author mfukala@netbeans.org
  */
-@ServiceProvider(service = CssModule.class)
-public class SelectorsModule extends CssModule {
+@ServiceProvider(service = CssEditorModule.class)
+public class SelectorsModule extends CssEditorModule {
 
     //NOI18N>>>
     private static final Collection<String> PSEUDO_CLASSES = Arrays.asList(new String[]{
@@ -86,12 +86,17 @@ public class SelectorsModule extends CssModule {
 
         "root", "nth-child", "nth-last-child", "nth-of-type", "nth-last-of-type",
         "first-child", "last-child", "first-of-type", "last-of-type", "only-child",
-        "only-of-type", "empty" //structural
-    });
+        "only-of-type", "empty", //structural
+        
+        //following pseudo elements needs to be supported also in the pseudo class form (:: prefix)
+        //to be compatible with CSS2. See http://www.w3.org/TR/selectors/#pseudo-elements
+        "first-line", "first-letter", "before", "after"
+        
+    }); //NOI18N
     
     private static final Collection<String> PSEUDO_ELEMENTS = Arrays.asList(new String[]{
         "first-line", "first-letter", "before", "after"
-    });
+    }); //NOI18N
     
     //<<< NOI18N
     //XXX fix CSL
@@ -120,7 +125,18 @@ public class SelectorsModule extends CssModule {
         switch (activeNode.type()) {
             case simpleSelectorSequence:
                 //test if the previous node is typeSelector:  html:|
-                Node siblingBefore = NodeUtil.getSibling(context.getActiveNode(), true);
+                Node siblingBefore = context.getActiveNode();
+                //possibly skip all elementSubsequent nodes 
+                for(;;) {
+                    siblingBefore = NodeUtil.getSibling(siblingBefore, true);
+                    if(siblingBefore == null) {
+                        break;
+                    }
+                    if(siblingBefore.type() != NodeType.elementSubsequent) {
+                        break;
+                    }
+                }
+                
                 if (siblingBefore != null && siblingBefore.type() == NodeType.typeSelector) {
                     switch (context.getTokenSequence().token().id()) {
                         case COLON:

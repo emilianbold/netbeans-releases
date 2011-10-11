@@ -54,6 +54,7 @@ import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -290,21 +291,24 @@ public class JpaControllerGenerator {
                             }
                         }
                     } else if (TypeKind.BOOLEAN == idType.getKind()) {
-                        idPropertyType[0] = "boolean";
+                        idPropertyType[0] = "boolean";//NOI18N
                     } else if (TypeKind.BYTE == idType.getKind()) {
-                        idPropertyType[0] = "byte";
+                        idPropertyType[0] = "byte";//NOI18N
                     } else if (TypeKind.CHAR == idType.getKind()) {
-                        idPropertyType[0] = "char";
+                        idPropertyType[0] = "char";//NOI18N
                     } else if (TypeKind.DOUBLE == idType.getKind()) {
-                        idPropertyType[0] = "double";
+                        idPropertyType[0] = "double";//NOI18N
                     } else if (TypeKind.FLOAT == idType.getKind()) {
-                        idPropertyType[0] = "float";
+                        idPropertyType[0] = "float";//NOI18N
                     } else if (TypeKind.INT == idType.getKind()) {
-                        idPropertyType[0] = "int";
+                        idPropertyType[0] = "int";//NOI18N
                     } else if (TypeKind.LONG == idType.getKind()) {
-                        idPropertyType[0] = "long";
+                        idPropertyType[0] = "long";//NOI18N
                     } else if (TypeKind.SHORT == idType.getKind()) {
-                        idPropertyType[0] = "short";
+                        idPropertyType[0] = "short";//NOI18N
+                    } else {
+                        //instead of throwing exceptions later, just use Object
+                        idPropertyType[0] = "java.lang.Object";//NOI18N
                     }
                     
                     String simpleIdPropertyType = JpaControllerUtil.simpleClassName(idPropertyType[0]);

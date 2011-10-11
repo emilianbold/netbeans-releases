@@ -78,6 +78,7 @@ public class ViewHierarchyTest extends NbTestCase {
 //        includes.add("testCustomBounds");
 //        includes.add("testRemoveNewline");
 //        includes.add("testRandom");
+//        includes.add("testLock");
 //        filterTests(includes);
     }
 
@@ -262,6 +263,63 @@ public class ViewHierarchyTest extends NbTestCase {
         container.runOps(356);
         container.runOps(0);
         container.run(0L); // truly pseudo-random
+    }
+
+    public void testLock() throws Exception {
+        loggingOn();
+        TestRootView rootView = new TestRootView();
+        final Document doc = rootView.getDocument();
+        doc.insertString(0, "hello\nworld\ngood\nmorning", null);
+        final JEditorPane pane = rootView.pane();
+        doc.render(new Runnable() {
+            @Override
+            public void run() {
+                ViewHierarchy vh = ViewHierarchy.get(pane);
+                LockedViewHierarchy lvh = vh.lock();
+                try {
+                    float defaultRowHeight = lvh.getDefaultRowHeight();
+                } finally {
+                    lvh.unlock();
+                }
+                boolean ok = false;
+                try {
+                    lvh.unlock();
+                } catch (IllegalStateException ex) {
+                    // Expected
+                    ok = true;
+                }
+                if (!ok) {
+                    fail("Extra unlock() did not fail.");
+                }
+
+                // Nested locking
+                lvh = vh.lock();
+                try {
+                    float defaultRowHeight = lvh.getDefaultRowHeight();
+                    LockedViewHierarchy lvh2 = vh.lock();
+                    try {
+                        float defaultRowHeight2 = lvh2.getDefaultRowHeight();
+                        assertEquals(defaultRowHeight, defaultRowHeight2);
+                    } finally {
+                        lvh2.unlock();
+                    }
+                    
+                } finally {
+                    lvh.unlock();
+                }
+                ok = false;
+                try {
+                    lvh.unlock();
+                } catch (IllegalStateException ex) {
+                    // Expected
+                    ok = true;
+                }
+                if (!ok) {
+                    fail("Extra unlock() did not fail.");
+                }
+
+            }
+        });
     }
     
 }

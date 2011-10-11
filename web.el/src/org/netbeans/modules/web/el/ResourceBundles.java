@@ -45,6 +45,7 @@ import com.sun.el.parser.AstBracketSuffix;
 import com.sun.el.parser.AstIdentifier;
 import com.sun.el.parser.AstString;
 import com.sun.el.parser.Node;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -64,8 +65,13 @@ import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.el.spi.ELPlugin;
 import org.netbeans.modules.web.el.spi.ResourceBundle;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.Parameters;
+import org.openide.util.WeakListeners;
 
 /**
  * Helper class for dealing with (JSF) resource bundles.
@@ -74,7 +80,7 @@ import org.openide.util.Parameters;
  * Not urgent ATM as there would be just one impl anyway.
  *
  *
- * @author Erno Mononen
+ * @author Erno Mononen, mfukala@netbeans.org
  */
 public final class ResourceBundles {
 
@@ -87,12 +93,22 @@ public final class ResourceBundles {
 
     private final WebModule webModule;
     private final Project project;
-    private List<ResourceBundle> bundles;
-    /* bundle variable name to ResourceBundle map */
-    private Map<String, ResourceBundle> bundleVar2BundleMap = new HashMap<String, ResourceBundle>();
-    /* bundle base name to java.util.ResourceBundle map */
-    private Map<String, java.util.ResourceBundle> bundlesMap;
+    
+    /* bundle base name to ResourceBundleInfo map */
+    private Map<String, ResourceBundleInfo> bundlesMap;
+    private long currentBundlesHashCode;
 
+    private final FileChangeListener FILE_CHANGE_LISTENER = new FileChangeAdapter() {
+
+        @Override
+        public void fileChanged(FileEvent fe) {
+            super.fileChanged(fe);
+            LOGGER.finer(String.format("File %s has changed.", fe.getFile())); //NOI18N
+            resetResourceBundleMap();
+        }
+        
+    };
+    
     private ResourceBundles(WebModule webModule, Project project) {
         this.webModule = webModule;
         this.project = project;
@@ -139,12 +155,12 @@ public final class ResourceBundles {
      * {@code key}; {@code false} otherwise.
      */
     public boolean isValidKey(String bundle, String key) {
-        java.util.ResourceBundle bundleFile = getBundlesMap().get(bundle);
-        if (bundleFile == null) {
+        ResourceBundleInfo rbInfo = getBundlesMap().get(bundle);
+        if (rbInfo == null) {
             // no matching bundle file
             return true;
         }
-        return bundleFile.containsKey(key);
+        return rbInfo.getResourceBundle().containsKey(key);
     }
 
     /**
@@ -199,13 +215,13 @@ public final class ResourceBundles {
      * @return the value or {@code null}.
      */
     public String getValue(String bundle, String key) {
-        java.util.ResourceBundle bundleFile = getBundlesMap().get(bundle);
-        if (bundleFile == null || !bundleFile.containsKey(key)) {
+        ResourceBundleInfo rbInfo = getBundlesMap().get(bundle);
+        if (rbInfo == null || !rbInfo.getResourceBundle().containsKey(key)) {
             // no matching bundle file
             return null;
         }
         try {
-            return bundleFile.getString(key);
+            return rbInfo.getResourceBundle().getString(key);
         } catch (MissingResourceException e) {
             return null;
         }
@@ -217,55 +233,89 @@ public final class ResourceBundles {
      * @return
      */
     public Map<String,String> getEntries(String bundleVar) {
-        ResourceBundle bundle = bundleVar2BundleMap.get(bundleVar);
-        java.util.ResourceBundle resourceBundle = getBundlesMap().get(bundle.getBaseName());
-        if (resourceBundle == null) {
+        ResourceBundle bundle = findResourceBundleForVar(bundleVar);
+        ResourceBundleInfo rbInfo = getBundlesMap().get(bundle.getBaseName());
+        if (rbInfo == null) {
             return Collections.emptyMap();
         }
         Map<String, String> result = new HashMap<String, String>();
-        for (String key : resourceBundle.keySet()) {
-            String value = resourceBundle.getString(key);
+        for (String key : rbInfo.getResourceBundle().keySet()) {
+            String value = rbInfo.getResourceBundle().getString(key);
             result.put(key, value);
         }
         return result;
     }
     
-    /**
-     * Gets the base names of the defined bundles (such as {@code i18n}.
-     * @return a list of the base names; never {@code null}.
-     */
-    public List<ResourceBundle> getBundles() {
-        if (bundles == null) {
-            bundles = initJSFResourceBundles();
-        }
-        return bundles;
-    }
-
-    /**
-     * Finds list of all ResourceBundles, which are registered in all
-     * JSF configuration files in a web module.
-     * @param webModule
-     * @return
-     */
-    private List<ResourceBundle> initJSFResourceBundles() {
+    
+    private ResourceBundle findResourceBundleForVar(String variableName) {
         List<ResourceBundle> foundBundles = webModule != null ? ELPlugin.Query.getResourceBundles(webModule.getDocumentBase()) : Collections.<ResourceBundle>emptyList();
         //make the bundle var to bundle 
         for(ResourceBundle b : foundBundles) {
-            bundleVar2BundleMap.put(b.getVar(), b);
+            if(variableName.equals(b.getVar())) {
+                return b;
+            }
         }
-        return foundBundles;
+        return null;
     }
-     
-    private Map<String, java.util.ResourceBundle> getBundlesMap() {
+    /**
+     * Finds list of all ResourceBundles, which are registered in all
+     * JSF configuration files in a web module.
+     */
+     public synchronized List<ResourceBundle> getBundles() {
+        List<ResourceBundle> bundles =  webModule != null ? ELPlugin.Query.getResourceBundles(webModule.getDocumentBase()) : Collections.<ResourceBundle>emptyList();
+        return bundles;
+    }
+
+     /*
+      * returns a map of bundle fully qualified name to java.util.ResourceBundle
+      */
+    private synchronized Map<String, ResourceBundleInfo> getBundlesMap() {
+        long bundlesHash = getBundlesHashCode();
         if (bundlesMap == null) {
-            bundlesMap = initResourceBundleMap();
+            currentBundlesHashCode = bundlesHash;
+            bundlesMap = createResourceBundleMapAndFileChangeListeners();
+            LOGGER.fine("New resource bundle map created."); //NOI18N
+        } else {
+            if(bundlesHash != currentBundlesHashCode) {
+                //refresh the resource bundle map
+                bundlesMap = createResourceBundleMapAndFileChangeListeners();
+                currentBundlesHashCode = bundlesHash;
+                LOGGER.fine("Resource bundle map recreated based on configuration changes."); //NOI18N
+                
+            }
         }
+        
         return bundlesMap;
     }
     
-    private Map<String, java.util.ResourceBundle> initResourceBundleMap() {
-
-        Map<String, java.util.ResourceBundle> result = new HashMap<String, java.util.ResourceBundle>();
+    private synchronized void resetResourceBundleMap() {
+        if(bundlesMap == null) {
+            return ;
+        }
+        for(ResourceBundleInfo info : bundlesMap.values()) {
+            FileObject fo = info.getFile();
+            if(fo != null) {
+                fo.removeFileChangeListener(FILE_CHANGE_LISTENER);
+                LOGGER.finer(String.format("Removed FileChangeListener from file %s", fo)); //NOI18N
+            }
+        }
+        bundlesMap = null;
+        LOGGER.fine("Resource bundle map released."); //NOI18N
+    }
+    
+    private synchronized long getBundlesHashCode() {
+        //compute hashcode so we can compare if there are changes since the last time and possibly
+        //reset the bundle map cache
+        long hash = 3;
+        for(ResourceBundle rb : getBundles()) {
+            hash = 11 * hash + rb.getBaseName().hashCode();
+            hash = 11 * hash + (rb.getVar() != null ? rb.getVar().hashCode() : 0);
+        }
+        return hash;
+    }
+    
+    private Map<String, ResourceBundleInfo> createResourceBundleMapAndFileChangeListeners() {
+        Map<String, ResourceBundleInfo> result = new HashMap<String, ResourceBundleInfo>();
         ClassPathProvider provider = project.getLookup().lookup(ClassPathProvider.class);
         if (provider == null) {
             return null;
@@ -289,8 +339,29 @@ public final class ResourceBundles {
                     }
                     ClassLoader classLoader = classPath.getClassLoader(false);
                     try {
+                        FileObject fileObject = null;
+                        String resourceFileName = new StringBuilder()
+                                .append(bundleFile.replace(".", "/"))
+                                .append(".properties")
+                                .toString(); //NOI18N
+                        
+                        URL url = classLoader.getResource(resourceFileName);
+                        if(url != null) {
+                            LOGGER.finer(String.format("Found %s URL for resource bundle %s", url, resourceFileName ));
+                            fileObject = URLMapper.findFileObject(url);
+                            if(fileObject != null) {
+                                if (fileObject.canWrite()) {
+                                    fileObject.addFileChangeListener(
+                                            WeakListeners.create(FileChangeListener.class, FILE_CHANGE_LISTENER, fileObject));
+                                    LOGGER.finer(String.format("Added FileChangeListener to file %s", fileObject ));
+                                }
+                            } else {
+                                LOGGER.fine(String.format("Cannot map %s URL to FileObject!", url));
+                            }
+                        }
+                        
                         java.util.ResourceBundle found = java.util.ResourceBundle.getBundle(bundleFile, Locale.getDefault(), classLoader);
-                        result.put(bundleFile, found);
+                        result.put(bundleFile, new ResourceBundleInfo(fileObject, found));
                         break; // found the bundle in source cp, skip searching compile cp
                     } catch (MissingResourceException exception) {
                         continue;
@@ -300,5 +371,24 @@ public final class ResourceBundles {
             }
         }
         return result;
+    }
+    
+    private static final class ResourceBundleInfo {
+        private FileObject file;
+        private java.util.ResourceBundle resourceBundle;
+
+        public ResourceBundleInfo(FileObject file, java.util.ResourceBundle resourceBundle) {
+            this.file = file;
+            this.resourceBundle = resourceBundle;
+        }
+
+        public FileObject getFile() {
+            return file;
+        }
+
+        public java.util.ResourceBundle getResourceBundle() {
+            return resourceBundle;
+        }
+        
     }
 }

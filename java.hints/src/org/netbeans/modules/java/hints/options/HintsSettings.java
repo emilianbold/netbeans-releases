@@ -93,12 +93,12 @@ public class HintsSettings {
     
       
     public static boolean isEnabled( HintMetadata metadata, Preferences preferences ) {
-        boolean useDefault = preferences.parent()!=null && DEFAULT_PROFILE.equals(preferences.parent().name());
+        boolean useDefault = preferences.parent()==null || DEFAULT_PROFILE.equals(preferences.parent().name());
         return preferences.getBoolean(ENABLED_KEY, useDefault && metadata.enabled);
     }
     
     public static boolean isEnabled( AbstractHint hint, Preferences preferences ) {
-        boolean useDefault = preferences.parent()!=null && DEFAULT_PROFILE.equals(preferences.parent().name());
+        boolean useDefault = preferences.parent()==null || DEFAULT_PROFILE.equals(preferences.parent().name());
         return preferences.getBoolean(ENABLED_KEY, useDefault && HintsSettings.HINTS_ACCESSOR.isEnabledDefault(hint));
     }
 

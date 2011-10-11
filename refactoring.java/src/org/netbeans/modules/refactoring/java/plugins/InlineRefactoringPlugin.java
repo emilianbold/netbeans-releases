@@ -133,8 +133,12 @@ public class InlineRefactoringPlugin extends JavaRefactoringPlugin {
             case METHOD:
                 visitor = new InlineMethodTransformer();
                 break;
-            default:
+            case CONSTANT:
+            case TEMP:
                 visitor = new InlineVariableTransformer();
+                break;
+            default:
+                return null;
         }
 
         Set<FileObject> a = getRelevantFiles();

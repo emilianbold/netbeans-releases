@@ -48,6 +48,7 @@ import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.spi.actions.RunCommandAction;
 import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
 import org.netbeans.modules.php.spi.phpmodule.PhpModuleActionsExtender;
+import org.openide.LifecycleManager;
 import org.openide.util.NbBundle;
 
 /**
@@ -74,6 +75,8 @@ public final class RunFrameworkCommandAction extends RunCommandAction {
                 if (actionsExtender != null) {
                     RunCommandAction runCommandAction = actionsExtender.getRunCommandAction();
                     if (runCommandAction != null) {
+                        // #202549
+                        LifecycleManager.getDefault().saveAll();
                         runCommandAction.actionPerformed(phpModule);
                         return;
                     }

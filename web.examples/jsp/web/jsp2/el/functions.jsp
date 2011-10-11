@@ -14,6 +14,7 @@
   limitations under the License.
 -->
 <%@ taglib prefix="my" uri="http://jakarta.apache.org/tomcat/jsp2-example-taglib"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
 <html>
   <head>
@@ -30,7 +31,7 @@
     <blockquote>
       <u><b>Change Parameter</b></u>
       <form action="functions.jsp" method="GET">
-	  foo = <input type="text" name="foo" value="${param['foo']}">
+          foo = <input type="text" name="foo" value="<c:out value="${param['foo']}" />" />
           <input type="submit">
       </form>
       <br>
@@ -42,7 +43,7 @@
 	  </thead>
 	  <tr>
 	    <td>\${param["foo"]}</td>
-	    <td>${param["foo"]}&nbsp;</td>
+	    <td><c:out value="${param['foo']}" />&nbsp;</td>
 	  </tr>
 	  <tr>
 	    <td>\${my:reverse(param["foo"])}</td>
@@ -61,4 +62,3 @@
     </blockquote>
   </body>
 </html>
-

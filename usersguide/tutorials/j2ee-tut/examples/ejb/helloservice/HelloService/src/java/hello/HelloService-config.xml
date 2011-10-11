@@ -1,7 +1,0 @@
-<?xml version='1.0' encoding='UTF-8' ?>
-<configuration xmlns='http://java.sun.com/xml/ns/jax-rpc/ri/config'>
-	<service name='HelloService' targetNamespace='urn:HelloService/wsdl' typeNamespace='urn:HelloService/types' packageName='hello'>
-		<interface name='hello.HelloServiceSEI' servantName='hello.HelloServiceBean'>
-		</interface>
-	</service>
-</configuration>

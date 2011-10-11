@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.editor.filecreation;
 
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -83,8 +84,7 @@ public class CndClassWizardIterator extends CCFSrcFileIterator {
         String sourceFileName = wiz.getTargetName();
         FileObject sourceTemplate = template.files().iterator().next();
 
-        Set<DataObject> res = new HashSet<DataObject>();
-        res.add(template.createFromTemplate(targetFolder, sourceFileName ));
+        Set<DataObject> res = new LinkedHashSet<DataObject>();
 
         FileObject bro = FileUtil.findBrother(sourceTemplate, "h"); // NOI18N
         if (bro != null) {
@@ -98,6 +98,7 @@ public class CndClassWizardIterator extends CCFSrcFileIterator {
                 Message(errmsg, NotifyDescriptor.INFORMATION_MESSAGE);
             DialogDisplayer.getDefault().notify(msg);
         }
+        res.add(template.createFromTemplate(targetFolder, sourceFileName ));
 
         return res;
     }

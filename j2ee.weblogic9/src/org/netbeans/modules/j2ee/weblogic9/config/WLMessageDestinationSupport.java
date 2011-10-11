@@ -208,12 +208,14 @@ public class WLMessageDestinationSupport {
                     continue;
                 }
 
-                for (MessageModel.MessageDestination dest : messageModel.getMessageDestinations(Type.QUEUE)) {
+                // TODO should we offer local only MD ?
+                // Does it makes sense?
+                for (MessageModel.MessageDestination dest : messageModel.getMessageDestinations(Type.QUEUE, false)) {
                     messageDestinations.add(new WLMessageDestination(
                             dest.getResourceName(), dest.getJndiName(),
                             Type.QUEUE, jmsFile, entry.getValue()));
                 }
-                for (MessageModel.MessageDestination dest : messageModel.getMessageDestinations(Type.TOPIC)) {
+                for (MessageModel.MessageDestination dest : messageModel.getMessageDestinations(Type.TOPIC, false)) {
                     messageDestinations.add(new WLMessageDestination(
                             dest.getResourceName(), dest.getJndiName(),
                             Type.TOPIC, jmsFile, entry.getValue()));
@@ -332,11 +334,11 @@ public class WLMessageDestinationSupport {
                             return null;
                         }
                         File origin = FileUtil.toFile(dsFileObject);
-                        for (MessageModel.MessageDestination dest : source.getMessageDestinations(Type.QUEUE)) {
+                        for (MessageModel.MessageDestination dest : source.getMessageDestinations(Type.QUEUE, false)) {
                             destinations.put(new WLMessageDestination(
                                     dest.getResourceName(), dest.getJndiName(), Type.QUEUE, origin, false), datasourceDO);
                         }
-                        for (MessageModel.MessageDestination dest : source.getMessageDestinations(Type.TOPIC)) {
+                        for (MessageModel.MessageDestination dest : source.getMessageDestinations(Type.TOPIC, false)) {
                             destinations.put(new WLMessageDestination(
                                     dest.getResourceName(), dest.getJndiName(), Type.TOPIC, origin, false), datasourceDO);
                         }

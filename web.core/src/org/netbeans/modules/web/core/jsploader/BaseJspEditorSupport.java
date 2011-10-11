@@ -48,7 +48,6 @@ import java.beans.PropertyChangeListener;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.ObjectInput;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
@@ -66,26 +65,21 @@ import javax.swing.text.StyledDocument;
 import javax.swing.text.EditorKit;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.queries.FileEncodingQuery;
-import org.netbeans.modules.web.core.palette.JspPaletteFactory;
+import org.netbeans.core.api.multiview.MultiViews;
 import org.openide.filesystems.FileUtil;
 import org.openide.text.DataEditorSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileLock;
 import org.openide.loaders.MultiDataObject;
 import org.openide.text.CloneableEditor;
-import org.openide.util.Lookup;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.RequestProcessor.Task;
-import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
-import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.CloneableOpenSupport;
-import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.loaders.DataObject;
 import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.spi.palette.PaletteController;
 import org.openide.cookies.CloseCookie;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.EditorCookie;
@@ -93,6 +87,7 @@ import org.openide.cookies.LineCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.cookies.PrintCookie;
 import org.openide.cookies.SaveCookie;
+import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 import org.openide.util.UserCancelException;
@@ -114,7 +109,7 @@ class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, Edit
     private final DocumentListener DOCUMENT_LISTENER;
 
     public BaseJspEditorSupport(JspDataObject obj) {
-        super(obj, new BaseJspEnv(obj));
+        super(obj, null, new BaseJspEnv(obj));
         DataObject data = getDataObject();
         if ((data != null) && (data instanceof JspDataObject)) {
             setMIMEType(JspLoader.getMimeType((JspDataObject) data));
@@ -200,6 +195,11 @@ class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, Edit
     }
 
     @Override
+    protected Pane createPane() {
+        return (CloneableEditorSupport.Pane) MultiViews.createCloneableMultiView(getDataObject().getPrimaryFile().getMIMEType(), getDataObject());
+    }
+    
+    @Override
     protected StyledDocument createStyledDocument(EditorKit kit) {
         StyledDocument doc = super.createStyledDocument(kit);
 
@@ -233,7 +233,7 @@ class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, Edit
 
     /** Restart the timer which starts the parser after the specified delay.
      */
-    private void restartParserTask() {
+    void restartParserTask() {
         PARSER_RESTART_TASK.schedule(AUTO_PARSING_DELAY);
     }
 
@@ -389,14 +389,6 @@ class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, Edit
         }
     }
 
-    /** A method to create a new component. Overridden in subclasses.
-     * @return the {@link BaseJspEditor} for this support
-     */
-    @Override
-    protected CloneableEditor createCloneableEditor() {
-        return new BaseJspEditor(this);
-    }
-
     @Override
     protected void saveFromKitToStream(StyledDocument doc, EditorKit kit, OutputStream stream) throws IOException, BadLocationException {
         Parameters.notNull("doc", doc);
@@ -526,77 +518,5 @@ class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, Edit
 
             return taglibParseSupport.getCachedOpenInfo(false, false).isXmlSyntax();
         }
-
-        void associatePalette(BaseJspEditorSupport s) {
-
-            DataObject dataObject = s.getDataObject();
-            String mimeType = dataObject.getPrimaryFile().getMIMEType();
-            instanceContent.add(getActionMap());
-
-            if (dataObject instanceof JspDataObject &&
-                    (mimeType.equals(JSP_MIME_TYPE) || mimeType.equals(TAG_MIME_TYPE))) {
-                //do not call palette creation in AWT, it can be quite slow
-                RP.post(new Runnable() {
-                    public void run() {
-                        try {
-                            PaletteController pc = JspPaletteFactory.getPalette();
-                            instanceContent.add(pc);
-                        } catch (IOException ioe) {
-                            //TODO exception handling
-                            ioe.printStackTrace();
-                        }
-                    }
-                });
-            }
-        }
-
-        /** Creates new editor */
-        public BaseJspEditor(BaseJspEditorSupport s) {
-            super(s);
-            initialize();
-        }
-
-        private void initialize() {
-            Node nodes[] = {((DataEditorSupport) cloneableEditorSupport()).getDataObject().getNodeDelegate()};
-
-            //init lookup
-            instanceContent = new InstanceContent();
-            associateLookup(new ProxyLookup(new Lookup[]{new AbstractLookup(instanceContent), nodes[0].getLookup()}));
-
-            setActivatedNodes(nodes);
-            taglibParseSupport = (TagLibParseSupport) ((BaseJspEditorSupport) cloneableEditorSupport()).getDataObject().getCookie(TagLibParseSupport.class);
-        }
-
-        /* This method is called when parent window of this component has focus,
-         * and this component is preferred one in it.
-         */
-        @Override
-        protected void componentActivated() {
-            super.componentActivated();
-            ((BaseJspEditorSupport) cloneableEditorSupport()).restartParserTask();
-            //allow resumed parser to perform parsing of the webproject
-            taglibParseSupport.setEditorOpened(true);
-            //show up the component palette
-            associatePalette((BaseJspEditorSupport) cloneableEditorSupport());
-        }
-
-        /*
-         * This method is called when parent window of this component losts focus,
-         * or when this component losts preferrence in the parent window.
-         */
-        @Override
-        protected void componentDeactivated() {
-            taglibParseSupport.setEditorOpened(false);
-        }
-
-        /** Deserialize this top component.
-         * @param in the stream to deserialize from
-         */
-        @Override
-        public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-            super.readExternal(in);
-            initialize();
-            associatePalette((BaseJspEditorSupport) cloneableEditorSupport());
-        }
-    } // end of JavaEditorComponent inner class
+    }
 }

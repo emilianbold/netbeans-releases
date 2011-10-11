@@ -85,12 +85,14 @@ public class RADProperty extends FormProperty {
 
         if (desc.getWriteMethod() == null) {
             setAccessType(NO_WRITE);
-        } else if (desc.getReadMethod() == null) {
+        } else if (desc.getReadMethod() == null
+                || ("visible".equals(propdesc.getName()) // NOI18N
+                    && javax.swing.JInternalFrame.class.isAssignableFrom(metacomp.getBeanClass()))) {
             setAccessType(DETACHED_READ);
         } // assuming a bean property is at least readable or writeable
     }
 
-    private void ensureDefaultValueInitialization() {
+    void ensureDefaultValueInitialization() {
         if (defaultValue == NOT_INITIALIZED) {
             defaultValue = BeanSupport.NO_VALUE;
             if (canReadFromTarget()) {

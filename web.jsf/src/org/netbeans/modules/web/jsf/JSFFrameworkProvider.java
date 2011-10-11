@@ -764,7 +764,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                     return true;
                 }
             } catch (InstanceRemovedException ex) {
-                LOGGER.log(Level.WARNING, "Server Instance was removed", ex); //NOI18N
+                LOGGER.log(Level.INFO, "Server Instance was removed", ex); //NOI18N
             }
             return false;
         }

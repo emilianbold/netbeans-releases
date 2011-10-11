@@ -24,8 +24,8 @@
     <property name="servicetag.source" value="NetBeans IDE ${nb.display.version.short} Installer"/>
     
     <!-- Tomcat properties   -->    
-    <property name="tomcat.version" value="7.0.14"/>
-    <property name="tomcat.id" value="7.0.14"/>
+    <property name="tomcat.version" value="7.0.21"/>
+    <property name="tomcat.id" value="7.0.21"/>
     <property name="tomcat.install.dir" value="${install.dir}/apache-tomcat-${tomcat.version}"/>
     <property name="tomcat_location" value="${binary_cache_host}/tomcat/apache-tomcat-${tomcat.version}.zip"/> 
             
@@ -98,10 +98,10 @@
           </filterchain>
     </loadresource>
     
-    <property name="glassfish.v3.display.version" value="3.1.1 b${glassfish.v3.build.number}"/>
+    <property name="glassfish.v3.display.version" value="3.1.1"/>
     <property name="glassfish.v3.version"      value="b${glassfish.v3.build.number}"/>
     <property name="glassfish.v3.id"           value="b${glassfish.v3.build.number}"/>
-    <property name="glassfish.v3.install.dir"  value="${install.dir}/glassfish-3.1.1-b${glassfish.v3.build.number}"/>
+    <property name="glassfish.v3.install.dir"  value="${install.dir}/glassfish-3.1.1"/>
     <property name="glassfish_v3_location"     value="${glassfish.v3.location.prefix}/${glassfish.v3.build.type}/${glassfish.v3.version}/archive/bundles/glassfish-3.1.1-${glassfish.v3.version}.zip"/>
     <property name="glassfish_v3_location_ml"  value="${glassfish.v3.location.prefix}/${glassfish.v3.build.type}/${glassfish.v3.version}/archive/bundles/glassfish-3.1.1-${glassfish.v3.version}-ml.zip"/>
     <!--

@@ -44,7 +44,7 @@
 
 package org.netbeans.modules.cnd.discovery.wizard.api.support;
 
-import java.io.File;
+//import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -95,7 +95,6 @@ public class ProjectBridge {
     
     public ProjectBridge(Project project) {
         this.project = project;
-        baseFolder = File.separator+project.getProjectDirectory().getPath();
         resultSet.add(project);
         ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
         if (pdp != null) {
@@ -103,8 +102,9 @@ public class ProjectBridge {
             baseFolderFileSystem = makeConfigurationDescriptor.getBaseDirFileSystem();
         } else {
             makeConfigurationDescriptor = null;
-            baseFolderFileSystem = null;
+            baseFolderFileSystem = CndFileUtils.getLocalFileSystem();
         }
+        baseFolder = CndFileUtils.normalizePath(project.getProjectDirectory());
     }
 
     public boolean isValid(){
@@ -247,10 +247,9 @@ public class ProjectBridge {
                 if (path.equals(".")) { // NOI18N
                     path = compilePath;
                 } else {
-                    path = compilePath+File.separator+path;
+                    path = compilePath + CndFileUtils.getFileSeparatorChar(baseFolderFileSystem) + path;
                 }
-                File f = new File(path);
-                path = CndFileUtils.normalizeFile(f).getAbsolutePath();
+                path = CndFileUtils.normalizeAbsolutePath(baseFolderFileSystem, path);
             }
             set.add(getRelativepath(path));
         }
@@ -280,19 +279,19 @@ public class ProjectBridge {
      * /./ => /
      */
     public String getRelativepath(String path){
+        path = CndPathUtilitities.toRelativePath(makeConfigurationDescriptor.getBaseDirFileObject(), path);
         if (Utilities.isWindows()) {
-            path = path.replace('/', File.separatorChar);
+            path = path.replace('\\', '/');
         }
-        path = CndPathUtilitities.toRelativePath(makeConfigurationDescriptor.getBaseDir(), path);
         path = cutLocalRelative(path);
         path = CndPathUtilitities.normalizeSlashes(path);
         return path;
     }
     
-    private static final String PATTERN_1 = File.separator+"."+File.separator; // NOI18N
-    private static final String PATTERN_2 = File.separator+"."; // NOI18N
-    private static final String PATTERN_3 = File.separator+".."+File.separator; // NOI18N
-    private static final String PATTERN_4 = File.separator+".."; // NOI18N
+    private static final String PATTERN_1 = "/./"; // NOI18N
+    private static final String PATTERN_2 = "/."; // NOI18N
+    private static final String PATTERN_3 = "/../"; // NOI18N
+    private static final String PATTERN_4 = "/.."; // NOI18N
     private String cutLocalRelative(String path){
         String pattern = PATTERN_1;
         while(true) {
@@ -314,7 +313,7 @@ public class ProjectBridge {
             }
             int k = -1;
             for (int j = i-1; j >= 0; j-- ){
-                if ( path.charAt(j)==File.separatorChar){
+                if (path.charAt(j)=='/'){
                     k = j;
                     break;
                 }
@@ -328,7 +327,7 @@ public class ProjectBridge {
         if (path.endsWith(pattern)){
             int k = -1;
             for (int j = path.length()-pattern.length()-1; j >= 0; j-- ){
-                if ( path.charAt(j)==File.separatorChar){
+                if (path.charAt(j)=='/'){
                     k = j;
                     break;
                 }
@@ -365,7 +364,7 @@ public class ProjectBridge {
                 path = path.replace('\\', '/');
             }
             if (path.indexOf("/../")>=0 || path.indexOf("/./")>=0) { // NOI18N
-                path = CndFileUtils.normalizeFile(new File(path)).getAbsolutePath();
+                path = CndFileUtils.normalizeAbsolutePath(baseFolderFileSystem, path);
                 if (Utilities.isWindows()) {
                     path = path.replace('\\', '/');
                 }

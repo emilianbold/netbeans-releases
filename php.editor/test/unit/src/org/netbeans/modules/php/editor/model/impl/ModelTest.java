@@ -42,6 +42,7 @@
 package org.netbeans.modules.php.editor.model.impl;
 
 import java.util.Collection;
+import java.util.Iterator;
 import org.netbeans.modules.php.editor.model.*;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.php.editor.model.FileScope;
@@ -281,6 +282,24 @@ public class ModelTest extends ModelTestBase {
         assertNotNull(ModelUtils.getFirst(ModelUtils.filter(ModelUtils.getDeclaredFunctions(program),"myfnc4")));
     }
 
+    public void testIssue202460 () throws Exception {
+        Model model = getModel(prepareTestFile("testfiles/model/issue202460.php"));
+        FileScope topScope = model.getFileScope();
+        Collection<? extends NamespaceScope> declaredNamespaces = topScope.getDeclaredNamespaces();
+        Collection<? extends ConstantElement> declaredConstants = declaredNamespaces.iterator().next().getDeclaredConstants();
+        
+        assertEquals(2, declaredConstants.size());
+        for (ConstantElement constantElement : declaredConstants) {
+            if(constantElement.getName().equals("NEGATIVE")) {
+                assertEquals("-1", constantElement.getValue());
+            } else if(constantElement.getName().equals("POSITIVE")) {
+                assertEquals("1", constantElement.getValue());
+            } else {
+                assertTrue(false);
+            }
+        }
+    }
+    
     private void varContainerTestForGlobal2(VariableScope topScope) {
         VariableName my = ModelUtils.getFirst(ModelUtils.filter(topScope.getDeclaredVariables(),"$my"));
         assertNotNull(my);

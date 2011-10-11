@@ -81,7 +81,7 @@ public class ContinueActionProvider extends NativeActionsProvider {
 	NativeDebugger debugger = getDebugger();
 	EngineDescriptor descriptor = debugger.getNDI().getEngineDescriptor();
 	if (descriptor.hasCapability(EngineCapability.RUN_AUTOSTART)) {
-	    enable = state.isListening() && !state.isCore;
+	    enable = state.isListening() && !state.isCore && state.isLoaded;
 	} else {
 	    enable = state.isListening() && !state.isCore && state.isLoaded && state.isProcess ;
 	}

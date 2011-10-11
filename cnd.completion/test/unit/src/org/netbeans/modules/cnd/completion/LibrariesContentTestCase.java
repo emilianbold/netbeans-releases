@@ -93,6 +93,30 @@ public class LibrariesContentTestCase extends CompletionBaseTestCase {
     public void testStdSizeT() throws Exception {
         super.performTest("src/main.cc", 13, 5, "ns_sttdd::s");
     }
+    
+    public void test202486_NS1() throws Exception {
+        super.performTest("src/iz202486.cc", 11, 5, "NS1::");
+    }
+
+    public void test202486_NS2() throws Exception {
+        super.performTest("src/iz202486.cc", 11, 5, "NS1::NS2::");
+    }
+
+    public void test202486_NS3() throws Exception {
+        super.performTest("src/iz202486.cc", 11, 5, "NS1::NS3::");
+    }
+
+    public void test202486_NS4() throws Exception {
+        super.performTest("src/iz202486.cc", 11, 5, "NS1::NS4::");
+    }
+
+    public void test202486_NS5() throws Exception {
+        super.performTest("src/iz202486.cc", 11, 5, "NS5::");
+    }
+
+    public void test202486_NS51() throws Exception {
+        super.performTest("src/iz202486.cc", 11, 5, "NS5::NS51::");
+    }
 
 //    public void testStdSizeTGlob() throws Exception {
 //        super.performTest("sys_include/sys1_incl_sys2.h", 5, 14);

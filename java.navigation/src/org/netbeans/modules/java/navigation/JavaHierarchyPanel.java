@@ -72,6 +72,7 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
+import org.netbeans.api.java.source.ElementHandle;
 
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
@@ -94,11 +95,10 @@ public class JavaHierarchyPanel extends javax.swing.JPanel {
     private JavaHierarchyModel javaHierarchyModel;
 
     /**
-     * Threading: Called under Parser lock
      * @param fileObject
      * @param elements
      */
-    public JavaHierarchyPanel (final FileObject fileObject, final Element[] elements) {
+    public JavaHierarchyPanel (final FileObject fileObject, final ElementHandle[] elements) {
         initComponents ();
 
         docPane = new DocumentationScrollPane (true);

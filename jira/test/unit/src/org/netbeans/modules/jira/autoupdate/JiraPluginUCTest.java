@@ -106,7 +106,7 @@ public class JiraPluginUCTest extends JiraPluginUCTestCase {
                           "OpenIDE-Module=\"{0}\" " +
                           "OpenIDE-Module-Implementation-Version=\"090527\" " +
                           "OpenIDE-Module-Java-Dependencies=\"Java > 1.5\" " +
-                          "OpenIDE-Module-Long-Description=\"JIRA Support (Early Access) up to version 4.1.1\" " +
+                          "OpenIDE-Module-Long-Description=\"JIRA Support up to version {1}\" " +
                           "OpenIDE-Module-Module-Dependencies=\"org.jdesktop.layout/1 > 1.6, " +
                                                                "org.netbeans.api.progress/1 > 1.13, " +
                                                                "org.netbeans.libs.bugtracking > 1.0, " +

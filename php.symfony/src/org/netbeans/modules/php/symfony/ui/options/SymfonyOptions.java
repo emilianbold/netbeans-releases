@@ -66,6 +66,8 @@ public final class SymfonyOptions {
 
     // symfony script
     private static final String SYMFONY = "symfony"; // NOI18N
+    // ignore cache
+    private static final String IGNORE_CACHE = "ignore.cache"; // NOI18N
     // default params
     private static final String PARAMS_FOR_PROJECT = "default.params.project"; // NOI18N
     private static final String PARAMS_FOR_APPS = "default.params.apps"; // NOI18N
@@ -111,6 +113,14 @@ public final class SymfonyOptions {
 
     public void setSymfony(String symfony) {
         getPreferences().put(SYMFONY, symfony);
+    }
+
+    public boolean getIgnoreCache() {
+        return getPreferences().getBoolean(IGNORE_CACHE, true);
+    }
+
+    public void setIgnoreCache(boolean ignoreCache) {
+        getPreferences().putBoolean(IGNORE_CACHE, ignoreCache);
     }
 
     public String getDefaultParamsForProject() {

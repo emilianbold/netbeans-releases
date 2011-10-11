@@ -24,6 +24,8 @@ PACKAGE    Test                            [PUBLIC]   App
 CLASS      ChildInterface                  [PUBLIC]   interfaces.php
 CLASS      If1                             [PUBLIC]   tests166339.php
 CLASS      If2                             [PUBLIC]   tests166339.php
+CLASS      MyIface                         [PUBLIC]   insideInterface.php
+CLASS      MySecondIface                   [PUBLIC]   insideInterface.php
 CLASS      ParentInterface                 [PUBLIC]   interfaces.php
 CLASS      XUserInterface                  [PUBLIC]   XUser
 CLASS      a                               [PUBLIC]   issue137033.php

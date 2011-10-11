@@ -285,7 +285,7 @@ public final class ParameterElementImpl implements ParameterElement {
     public String asString(boolean forDeclaration) {
         StringBuilder sb = new StringBuilder();
         Set<TypeResolver> typesResolvers = getTypes();
-        if (hasDeclaredType()) {
+        if (forDeclaration && hasDeclaredType()) {
             if (typesResolvers.size() > 1) {
                 sb.append("mixed").append(' '); //NOI18N
             } else {

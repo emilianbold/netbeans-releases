@@ -65,32 +65,34 @@ public final class TerminalIOProvider extends IOProvider {
 			      Action[] actions,
 			      IOContainer ioContainer) {
 
-	Set<TerminalInputOutput> candidates = new HashSet<TerminalInputOutput>();
+	synchronized (list) {
+	    Set<TerminalInputOutput> candidates = new HashSet<TerminalInputOutput>();
 
-	if (!newIO && name != null) {
-	    // find candidates for reuse
-	    for (TerminalInputOutput tio : list) {
-		if (name.equals(tio.name()) && !tio.terminal().isConnected())
-		    candidates.add(tio);
+	    if (!newIO && name != null) {
+		// find candidates for reuse
+		for (TerminalInputOutput tio : list) {
+		    if (name.equals(tio.name()) && !tio.terminal().isConnected())
+			candidates.add(tio);
+		}
 	    }
-	}
 
-	TerminalInputOutput tio = null;
-	if (candidates.isEmpty()) {
-	    // newIO == true || nothing found to reuse
-	    if (ioContainer == null)
-		ioContainer = IOContainer.getDefault();
-	    tio = new TerminalInputOutput(name, actions, ioContainer);
-	    list.add(tio);
-	} else {
-	    for (TerminalInputOutput candidate : candidates) {
-		if (tio == null)
-		    tio = candidate;
-		else
-		    candidate.closeInputOutput();
+	    TerminalInputOutput tio = null;
+	    if (candidates.isEmpty()) {
+		// newIO == true || nothing found to reuse
+		if (ioContainer == null)
+		    ioContainer = IOContainer.getDefault();
+		tio = new TerminalInputOutput(name, actions, ioContainer);
+		list.add(tio);
+	    } else {
+		for (TerminalInputOutput candidate : candidates) {
+		    if (tio == null)
+			tio = candidate;
+		    else
+			candidate.closeInputOutput();
+		}
 	    }
+	    return tio;
 	}
-	return tio;
     }
 
     /**
@@ -104,8 +106,10 @@ public final class TerminalIOProvider extends IOProvider {
         throw new UnsupportedOperationException("Not supported yet.");	// NOI18N
     }
 
-    static void dispose(TerminalInputOutput io) {
-	list.remove(io);
+    static void remove(TerminalInputOutput io) {
+	synchronized (list) {
+	    list.remove(io);
+	}
     }
 
 }

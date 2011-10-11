@@ -47,7 +47,7 @@ import org.netbeans.modules.parsing.spi.ParseException;
 
 /**
  *
- * @author marekfukala
+ * @author mfukala@netbeans.org
  */
 public class CssCompletionTest extends CssModuleTestBase {
 

@@ -451,7 +451,12 @@ final class CustomFoldManager implements FoldManager, Runnable {
         }
     }
 
-    private static Pattern pattern = Pattern.compile("(<\\s*editor-fold(?:(?:\\s+id=\"(\\S*)\")?(?:\\s+defaultstate=\"(\\S*)\")?(?:\\s+desc=\"([\\S \\t]*)\")?)(?:(?:\\s+defaultstate=\"(\\S*)\")?(?:\\s+desc=\"([\\S \\t]*)\")?)(?:\\s+defaultstate=\"(\\S*)\")?\\s*>)|(?:</\\s*editor-fold\\s*>)"); // NOI18N
+    private static Pattern pattern = Pattern.compile(
+            "(<\\s*editor-fold" +
+            // id="x"[opt] defaultstate="y"[opt] desc="z"[opt] defaultstate="a"[opt]
+            // id must be first, the rest of attributes in random order
+            "(?:(?:\\s+id=\"(\\S*)\")?(?:\\s+defaultstate=\"(\\S*?)\")?(?:\\s+desc=\"([\\S \\t]*?)\")?(?:\\s+defaultstate=\"(\\S*?)\")?)" +
+            "\\s*>)|(?:</\\s*editor-fold\\s*>)"); // NOI18N
 
     private FoldMarkInfo scanToken(Token token) throws BadLocationException {
         // ignore any token that is not comment
@@ -459,7 +464,13 @@ final class CustomFoldManager implements FoldManager, Runnable {
             Matcher matcher = pattern.matcher(token.text());
             if (matcher.find()) {
                 if (matcher.group(1) != null) { // fold's start mark found
-                    boolean state = "collapsed".equals(matcher.group(3)); // remember the defaultstate // NOI18N
+                    boolean state;
+                    if (matcher.group(3) != null) {
+                        state = "collapsed".equals(matcher.group(3)); // remember the defaultstate // NOI18N
+                    } else {
+                        state = "collapsed".equals(matcher.group(5));
+                    }
+                    
                     if (matcher.group(2) != null) { // fold's id exists
                         Boolean collapsed = (Boolean)customFoldId.get(matcher.group(2));
                         if (collapsed != null)

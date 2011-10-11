@@ -246,6 +246,9 @@ public final class EditorAnnotationsHelper implements PropertyChangeListener {
             return;
         }
         Tree var = result.getInfo().getTrees().getTree( element );
+        if ( var == null ){
+            return;
+        }
         List<Integer> position = CdiEditorAnalysisFactory.getElementPosition( 
                 result.getInfo(),  var );
         Document document;
@@ -259,7 +262,7 @@ public final class EditorAnnotationsHelper implements PropertyChangeListener {
             return;
         }
         int start = position.get(0);
-        Line line = NbEditorUtilities.getLine( document , start, true);
+        Line line = NbEditorUtilities.getLine( document , start, false);
         Part part = line.createPart( NbDocument.findLineColumn((StyledDocument) document,
                 start),  position.get( 1 ) -start);
         result.addAnnotation( new CDIAnnotation( type, part));

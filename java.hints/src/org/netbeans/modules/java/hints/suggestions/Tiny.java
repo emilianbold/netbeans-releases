@@ -177,30 +177,38 @@ public class Tiny {
         protected void performRewrite(WorkingCopy wc, TreePath tp, boolean canShowUI) {
             LiteralTree leaf = (LiteralTree) tp.getLeaf();
             String suffix;
-            
+            String target;
+
             if (leaf.getKind() == Tree.Kind.INT_LITERAL) {
                 suffix = "";
+                int value = ((Number) leaf.getValue()).intValue();
+
+                switch (radix) {
+                    case  2: target = Integer.toBinaryString(value); break;
+                    case  8: target = Integer.toOctalString(value); break;
+                    case 10: target = Integer.toString(value); break;
+                    case 16: target = Integer.toHexString(value); break;
+                    default:
+                        throw new IllegalStateException();
+                }
             } else if (leaf.getKind() == Tree.Kind.LONG_LITERAL) {
                 int  end = (int) wc.getTrees().getSourcePositions().getEndPosition(wc.getCompilationUnit(), leaf);
                 
                 suffix = wc.getText().substring(end - 1, end);
+                long value = ((Number) leaf.getValue()).longValue();
+
+                switch (radix) {
+                    case  2: target = Long.toBinaryString(value); break;
+                    case  8: target = Long.toOctalString(value); break;
+                    case 10: target = Long.toString(value); break;
+                    case 16: target = Long.toHexString(value); break;
+                    default:
+                        throw new IllegalStateException();
+                }
             } else {
                 throw new IllegalStateException();
             }
             
-            long value = ((Number) leaf.getValue()).longValue();
-
-            String target;
-
-            switch (radix) {
-                case  2: target = Long.toBinaryString(value); break;
-                case  8: target = Long.toOctalString(value); break;
-                case 10: target = Long.toString(value); break;
-                case 16: target = Long.toHexString(value); break;
-                default:
-                    throw new IllegalStateException();
-            }
-
             target = prefix + target + suffix;
 
             wc.rewrite(leaf, wc.getTreeMaker().Identifier(target));

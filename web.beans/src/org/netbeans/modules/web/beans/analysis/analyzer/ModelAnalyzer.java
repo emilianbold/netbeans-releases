@@ -53,6 +53,7 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.web.beans.analysis.CdiAnalysisResult;
 import org.netbeans.modules.web.beans.analysis.CdiEditorAnalysisFactory;
+import org.netbeans.modules.web.beans.analysis.CdiEditorAwareJavaSourceTaskFactory;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Severity;
@@ -69,8 +70,10 @@ public interface ModelAnalyzer {
     
     public class Result extends CdiAnalysisResult {
         
-        public Result( CompilationInfo info ){
-            super(info);
+        public Result( CompilationInfo info , 
+                CdiEditorAwareJavaSourceTaskFactory factory )
+        {
+            super(info, factory);
         }
         
         public void addNotification( Severity severity, Element element,

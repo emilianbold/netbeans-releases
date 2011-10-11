@@ -49,7 +49,7 @@ import org.netbeans.modules.css.editor.module.spi.Property;
 
 /**
  *
- * @author marekfukala
+ * @author mfukala@netbeans.org
  */
 public class PropertyCompatibilityHelpResolver extends HelpResolver {
 
@@ -57,26 +57,21 @@ public class PropertyCompatibilityHelpResolver extends HelpResolver {
     public String getHelp(Property property) {
         StringBuilder sb = new StringBuilder();
         //XXX using legacy html code instead of css styling due to the jdk swingbrowser
-        sb.append("<table width=\"100%\" border=\"0\"><tr><td><div style=\"font-size: large; font-weight: bold\">");
+        sb.append("<table width=\"100%\" border=\"0\"><tr><td><div style=\"font-size: large; font-weight: bold\">"); //NOI18N
         sb.append(property.getName());
-        sb.append("</div></td>");
-        sb.append("<td width=\"125\">");
+        sb.append("</div></td>"); //NOI18N
+        sb.append("<td width=\"125\">"); //NOI18N
         for (Browser browser : CssModuleSupport.getBrowsers()) {
             URL browserIcon = CssModuleSupport.isPropertySupported(property.getName(), browser)
                     ? browser.getActiveIcon()
                     : browser.getInactiveIcon();
-            sb.append("<img src=\"");
+            sb.append("<img src=\""); //NOI18N
             sb.append(browserIcon.toExternalForm());
             sb.append("\">"); // NOI18N
         }
-        sb.append("</td></tr></table>");
+        sb.append("</td></tr></table>"); //NOI18N
         
         return sb.toString();
-    }
-
-    @Override
-    public String getHelp(URL url) {
-        return null;
     }
 
     @Override

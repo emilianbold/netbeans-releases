@@ -685,6 +685,10 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
 
     @Override
     public void closeInputOutput() {
+	// Need to remove it from IOProvider first, doing that from EDT is loo late
+	// because we may issue another getIO from the same thread (IZ 199441)
+	TerminalIOProvider.remove(this);
+	
 	if (outputWriter != null)
 	    outputWriter.close();
 	Task task = new Task.StrongClose(ioContainer, terminal);

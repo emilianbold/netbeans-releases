@@ -81,7 +81,7 @@ final class APTFortranEOSFilter implements APTLanguageFilter {
                 return currentToken;
             }
             Token newToken = orig.nextToken();
-            if (currentToken != null && newToken.getType() != APTTokenTypes.EOF && newToken.getLine() != currentToken.getLine()) {
+            if (currentToken != null && (newToken.getLine() != currentToken.getLine() || newToken.getType() == APTTokenTypes.EOF)) {
                 Token eos = new EOSToken((APTToken) currentToken);
                 currentToken = newToken;
                 newLine = true;
@@ -107,11 +107,11 @@ final class APTFortranEOSFilter implements APTLanguageFilter {
         String fileName;
 
         EOSToken(APTToken token) {
-            offset = token.getOffset();
+            offset = token.getEndOffset();
             endOffset = token.getEndOffset();
-            column = token.getColumn();
+            column = token.getEndColumn();
             endColumn = token.getEndColumn();
-            line = token.getLine();
+            line = token.getEndLine();
             endLine = token.getEndLine();
             fileName = token.getFilename();
         }

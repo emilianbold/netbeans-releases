@@ -1,0 +1,72 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!--
+Copyright © 1997, 2011, Oracle and/or its affiliates. All rights reserved.
+-->
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+ <meta content="text/html; charset=UTF-8" http-equiv="Content-Type"/>
+        <link rel="stylesheet" href=
+              "nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type=
+              "text/css"/>
+        <meta content="Helen" name="generator"/>
+        <style type="text/css">
+            <!--
+            .comment {
+                color: blue;
+            }
+            .change-bar {
+                border-color: black;
+                border-left-style: solid;
+                border-left: thin;
+                padding-left: 6px;
+            }
+            .deleted {
+                text-decoration: line-through;
+            }
+            -->
+        </style>
+<title>Git: Checkout Selected Paths Dialog Box</title>
+</head>
+<body>
+<h2>Git: Checkout Selected Paths Dialog Box</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<p>The Checkout Selected Paths dialog box enables you to check out some files   (not a branch) that are currently selected in the IDE from the Index.</p>
+<p>You access this dialog box by selecting a versioned project, file or folder and either:</p>
+<ul>
+<li>choose Team &gt; Git &gt; Checkout &gt; Checkout Files from the main menu.</li>
+<li>right-click the selected item and choose Git &gt; Checkout &gt; Checkout Files.</li>
+</ul>
+
+<h4>To checkout a file:</h4>
+
+<ol>
+<li>Choose the Update Index with Entries from the Selected Revision option.
+  <p class="notes"><b>Note:</b> </p>
+		  <ul>
+		  <li>If the option is selected, the Index is updated with the state in the selected revision prior to the checkout itself.</li>
+		  </ul>
+</li>
+<li>Specify the required revision  by entering a commit ID, existing branch, or tag name in the Revision field or click Select to view the list of revisions maintained in the repository and choose the required one.</li>
+<li>Review information specific to the revision being checked out in the following fields:
+<ul>
+<li><b>Commit ID:</b> A unique identifier of the branched revision.</li>
+<li><b>Author:</b> Name of a person who committed the revision.</li>
+<li><b>Message:</b> A message specified during the commit of the revision.</li>
+</ul></li>
+<li>Press Checkout to complete the checkout
+<br/>
+Files in the Working Tree and in the Index are updated to match the version in the specified revision.</li>
+</ol>
+
+<dl>
+	    <dt><a name="seealso">See Also</a></dt>
+	    <dd><a href="../git-about.html">About Git Support</a></dd>
+	    <dd><a href="../git-quickref.html">Git Tasks: Quick Reference</a></dd>
+		<dd><a href="../git-branch.html">Working with Branches</a></dd>
+</dl>  
+<hr/>
+        <p>
+            <small><a href="../credits.html">Legal Notices</a></small>
+        </p>
+</body>
+</html>

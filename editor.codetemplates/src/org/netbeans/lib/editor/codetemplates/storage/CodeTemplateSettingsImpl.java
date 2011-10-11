@@ -145,7 +145,7 @@ public final class CodeTemplateSettingsImpl {
         if (action != null) {
             return OnExpandAction.valueOf(action);
         }
-        return DEFAULT_ON_EXPAND_ACTION;
+        return OnExpandAction.FORMAT;
     }
 
     public void setOnExpandAction(OnExpandAction action) {
@@ -193,7 +193,6 @@ public final class CodeTemplateSettingsImpl {
     private static final String CODE_TEMPLATE_EXPAND_KEY = "code-template-expand-key"; // NOI18N
     private static final KeyStroke DEFAULT_EXPANSION_KEY = KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0);
     private static final String CODE_TEMPLATE_ON_EXPAND_ACTION = "code-template-on-expand-action"; // NOI18N
-    private static final OnExpandAction DEFAULT_ON_EXPAND_ACTION = OnExpandAction.FORMAT;
 
     private static final Map<MimePath, WeakReference<CodeTemplateSettingsImpl>> INSTANCES =
         new WeakHashMap<MimePath, WeakReference<CodeTemplateSettingsImpl>>();

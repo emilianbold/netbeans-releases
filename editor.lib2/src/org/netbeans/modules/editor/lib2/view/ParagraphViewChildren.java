@@ -283,8 +283,8 @@ final class ParagraphViewChildren extends ViewChildren<EditorView> {
         CharSequence docText = null;
         int mEndOffset = 0;
         TabExpander tabExpander = null;
-        float origWidth = width();
-        float origHeight = height();
+        float origWidth = pView.getWidth();
+        float origHeight = pView.getHeight();
         // Ensure that a repeated fixing of spans will not be called many times
         // since there is certain overhead - repaints and possible width preference change.
         int mEndIndex = measuredEndIndex;
@@ -365,11 +365,14 @@ final class ParagraphViewChildren extends ViewChildren<EditorView> {
         }
         boolean repaintHeightChange = false;
         double deltaY = newHeight - origHeight;
-        if ((fullyMeasured && deltaY != 0d) || (!fullyMeasured && deltaY > 0d)) {
+        boolean nonZeroDeltaY = (deltaY != 0d);
+        if ((fullyMeasured && nonZeroDeltaY) || (!fullyMeasured && deltaY > 0d)) {
             repaintHeightChange = true;
-            pView.setHeight(newHeight);
-            pView.notifyChildHeightChange();
-            docView.addChange(pViewRect.getY(), pViewRect.getMaxY(), deltaY);
+            if (nonZeroDeltaY) {
+                pView.setHeight(newHeight);
+                pView.notifyChildHeightChange();
+                docView.validChange().addChangeY(pViewRect.getY(), pViewRect.getMaxY(), deltaY);
+            }
         }
         // Repaint full pView [TODO] can be improved
         Rectangle visibleRect = docView.op.getVisibleRect();
@@ -803,9 +806,8 @@ final class ParagraphViewChildren extends ViewChildren<EditorView> {
     }
 
     @Override
-    protected StringBuilder appendChildInfo(StringBuilder sb, int index) {
-        sb.append("x=").append(startVisualOffset(index)).append(": ");
-        return sb;
+    protected String getXYInfo(int index) {
+        return new StringBuilder(10).append(" x=").append(startVisualOffset(index)).toString();
     }
 
     private static final class IndexAndAlloc {

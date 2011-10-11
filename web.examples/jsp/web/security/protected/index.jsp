@@ -1,3 +1,4 @@
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <!--
   Copyright 2004 The Apache Software Foundation
 
@@ -26,8 +27,8 @@
 </head>
 <body bgcolor="white">
 
-You are logged in as remote user <b><%= request.getRemoteUser() %></b>
-in session <b><%= session.getId() %></b><br><br>
+You are logged in as remote user <b><c:out value="${pageContext.request.remoteUser}" /></b>
+in session <b>${pageContext.session.id}</b><br><br>
 
 <%
   if (request.getUserPrincipal() != null) {
@@ -42,27 +43,32 @@ in session <b><%= session.getId() %></b><br><br>
   }
 %>
 
-<%
-  String role = request.getParameter("role");
-  if (role == null)
-    role = "";
-  if (role.length() > 0) {
-    if (request.isUserInRole(role)) {
-%>
-      You have been granted role <b><%= role %></b><br><br>
-<%
-    } else {
-%>
-      You have <i>not</i> been granted role <b><%= role %></b><br><br>
-<%
-    }
-  }
-%>
+<c:set var="role" value="${pageContext.request.getParameter('role')}" />
+<c:choose>
+<c:when test="${role == null}">
+    <c:set var="role" value="" />
+</c:when>
+</c:choose>
+
+<c:choose>
+<c:when test="${LENGTH[role] > 0}">
+    <c:choose>
+        <c:when test="${pageContext.request.isUserInRole(role) == true}">
+            <c:out value="You have been granted role" />
+            <b><c:out value="${role}" /></b><br><br>">
+        </c:when>
+        <c:otherwise>
+            You have <i>not</i> been granted role
+            <b><c:out value="${role}" /></b><br><br>">
+        </c:otherwise>
+    </c:choose>
+</c:when>
+</c:choose>
 
 To check whether your username has been granted a particular role,
 enter it here:
 <form method="GET" action='<%= response.encodeURL("index.jsp") %>'>
-<input type="text" name="role" value="<%= role %>">
+<input type="text" name="role" value="${role}" />">
 </form>
 <br><br>
 

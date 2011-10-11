@@ -119,6 +119,7 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
     private final FileStatusCache cache;
     private MessageFormat format;
     private String emptyFormat;
+    public static final String ACTIONS_PATH_PREFIX = "Actions/Git/";                        // NOI18N
 
     public Annotator() {
         cache = Git.getInstance().getFileStatusCache();
@@ -175,6 +176,7 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
                 actions.add(SystemAction.get(SearchHistoryAction.class));
                 actions.add(SystemAction.get(AnnotateAction.class));
             }
+            Utils.setAcceleratorBindings(ACTIONS_PATH_PREFIX, actions.toArray(new Action[actions.size()]));
         } else {
             Lookup lkp = context.getElements();
             if (noneVersioned) {                    
@@ -222,7 +224,7 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
     }
 
     private void addAction(String name, VCSContext context, List<Action> actions) {
-        Action action = (Action) FileUtil.getConfigObject("Actions/Git/" + name + ".instance", Action.class);
+        Action action = (Action) FileUtil.getConfigObject(ACTIONS_PATH_PREFIX + name + ".instance", Action.class);
             if(action instanceof ContextAwareAction) {
                 action = ((ContextAwareAction)action).createContextAwareInstance(Lookups.singleton(context));
             }            

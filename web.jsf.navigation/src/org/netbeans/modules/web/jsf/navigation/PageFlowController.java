@@ -49,6 +49,7 @@ import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.lang.String;
 import java.lang.ref.WeakReference;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
@@ -137,9 +138,9 @@ public class PageFlowController {
             ifNecessaryShowNoWebFolderDialog();
         } else {
             // loading all the relevant files may take quite a while - see #177459
-            // they're also loaded again every time the page flow editor is opened; 
+            // they're also loaded again every time the page flow editor is opened;
             // would be better to hold onto them and listen for changes in the web dir(s).
-            // for now fixing it this way as it is safer (i'm not familiar 
+            // for now fixing it this way as it is safer (i'm not familiar
             // with the page flow editor, and this is probably not the best place for this code.
             // but in any case this should be a pretty safe fix).
             AtomicBoolean canceled = new AtomicBoolean();
@@ -246,7 +247,7 @@ public class PageFlowController {
             }
         }
     }
-    
+
     FileChangeListener getFCL() {
         return fcl;
     }
@@ -295,7 +296,7 @@ public class PageFlowController {
         isGraphDirty = true;
         this.isWellFormed = isWellFormed;
     }
-    
+
     protected void setGraphDirty() {
         isGraphDirty = true;
     }
@@ -310,7 +311,7 @@ public class PageFlowController {
     }
 
     /**
-     * Creates a Link in the FacesConfiguration 
+     * Creates a Link in the FacesConfiguration
      * @param source from page, if null an NPE will be thrown.
      * @param target to page, if null an NPE will be thrown.
      * @param pinNode if null then it was not conntect to a pin.
@@ -422,15 +423,17 @@ public class PageFlowController {
         return projectKnownFiles;
     }
 
-    /** 
+    /**
      * Check if the file type in known.
      * @param file the fileobject type to check. If null, throws NPE.
      * @return if it is of type jsp, jspf, or html it will return true.
      */
     public final boolean isKnownFile(FileObject file) {
-        if (file.getMIMEType().equals("text/x-jsp") && !file.getExt().equals("jspf")) { //NOI18N
+        String[] knownMimeTypes = {"text/x-jsp", "text/html", "text/xhtml"}; //NOI18N
+        String mimeType = file.getMIMEType(knownMimeTypes);
+        if (mimeType.equals("text/x-jsp") && !file.getExt().equals("jspf")) { //NOI18N
             return true;
-        } else if (file.getMIMEType().equals("text/html")||file.getMIMEType().equals("text/xhtml")) { //NOI18N
+        } else if (mimeType.equals("text/html") || mimeType.equals("text/xhtml")) { //NOI18N
             return true;
         }
         return false;
@@ -607,7 +610,7 @@ public class PageFlowController {
 
     /**
      * Creates and edge in the scene, this method does not add an reference in
-     * the faces configuration.  In general it is best to call createLink 
+     * the faces configuration.  In general it is best to call createLink
      * as that will call createEdge indirectly through the faces model listener.
      * @param caseNode a NavigationCaseEdge.  If null, will throw NPE.
      */
@@ -644,8 +647,8 @@ public class PageFlowController {
     public java.util.Stack<String> PageFlowCreationStack = new java.util.Stack<String>();
     private int PageFlowCreationCount = 0;
 
-    /** 
-     * Create a Page from a node 
+    /**
+     * Create a Page from a node
      *  This method
      * does not actually add the pages to the scene.  It just creates the
      * component.  You will need to call scene.createNode(page) if you want.
@@ -665,7 +668,7 @@ public class PageFlowController {
     /*
      * Create PageFlow from a string with no backing page. This method
      * does not actually add the pages to the scene.  It just creates the
-     * component.  You will need to call scene.createNode(page) if you want 
+     * component.  You will need to call scene.createNode(page) if you want
      * to add it to the scene.
      * @param name the string of the name of the page to create
      *             If null is passed, NPE thrown.
@@ -688,7 +691,7 @@ public class PageFlowController {
 
     /**
      * Destroys the page in the scene (removing the page content model and
-     * the page content listeners).  This odes not actual destroy the dataobject 
+     * the page content listeners).  This odes not actual destroy the dataobject
      * or the backing file object.
      * @param page Page to be deleted.
      */
@@ -717,7 +720,7 @@ public class PageFlowController {
                 //Do not remove the webFile page until it has been created with a data Node.  If the dataNode throws and exception, then it can be created with an Abstract node.
                 pages.remove(webFileName);
             } catch (DataObjectNotFoundException ex) {
-                webFiles.remove(webFile); //Remove this file because it may have been deleted. 
+                webFiles.remove(webFile); //Remove this file because it may have been deleted.
             }
         }
 
@@ -773,14 +776,14 @@ public class PageFlowController {
     private static final Logger LOGGER = Logger.getLogger(PageFlowController.class.getName());
 
     /**
-     * Remove the page from the hashtable of string (or pages names ) to actual 
-     * pages.  Use permDestroy value to destroy the page in the scene completely. 
+     * Remove the page from the hashtable of string (or pages names ) to actual
+     * pages.  Use permDestroy value to destroy the page in the scene completely.
      * @param page that you want to remove.
-     * @param permDestroy true - destroys the page in the scene (removing the 
-     *                    page content model and the page content listeners).  
-     *                    This does not actual destroy the dataobject 
+     * @param permDestroy true - destroys the page in the scene (removing the
+     *                    page content model and the page content listeners).
+     *                    This does not actual destroy the dataobject
      *                    or the backing file object.
-     *                    false - if you just want to remove it from the list 
+     *                    false - if you just want to remove it from the list
      *                    with the associated name.
      * @return page that was removed.
      */
@@ -812,9 +815,9 @@ public class PageFlowController {
 
     /**
      * Replace page name in PageName2Node HasMap. This is general used in a
-     * page rename.  In general this removes the old Page and add the new one with 
+     * page rename.  In general this removes the old Page and add the new one with
      * the given name.
-     * @param page Page that should be added into the map.  If null, NPE thrown 
+     * @param page Page that should be added into the map.  If null, NPE thrown
      *             and nothing removed from the map.
      * @param String newName String that you want to assign to the page.
      * @param String oldName String that was assigned to the page.
@@ -847,8 +850,8 @@ public class PageFlowController {
     }
 
     /**
-     * Clears the pageName 2 Page mapping.  Generally you want do this when you 
-     * are about to throw everything in the scene away.  This keeps references 
+     * Clears the pageName 2 Page mapping.  Generally you want do this when you
+     * are about to throw everything in the scene away.  This keeps references
      * from being kept.
      */
     protected void clearPageName2Page() {
@@ -864,7 +867,7 @@ public class PageFlowController {
 
     /**
      * Associate a page with a given string name for future reference.  In general
-     * this method is called by a Page object to add itself.  Really no other classes 
+     * this method is called by a Page object to add itself.  Really no other classes
      * should use this method.
      * @param displayName name of the page you would like to reference it with (key)
      *                    displayName can not be an empty string.
@@ -942,7 +945,7 @@ public class PageFlowController {
 
     /**
      * Remove page from the scene.
-     * @param pageNode 
+     * @param pageNode
      */
     public void removeSceneNodeEdges(Page pageNode) {
 

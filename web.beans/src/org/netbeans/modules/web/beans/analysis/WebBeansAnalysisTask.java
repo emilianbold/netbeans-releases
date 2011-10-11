@@ -86,8 +86,13 @@ public class WebBeansAnalysisTask extends AbstractAnalysisTask {
     private final static Logger LOG = Logger.getLogger( 
             WebBeansAnalysisTask.class.getName());
     
-    protected Result createResult( CompilationInfo compInfo  ){
-        return new Result( compInfo );
+    public WebBeansAnalysisTask( CdiEditorAwareJavaSourceTaskFactory factory ){
+        myFactory = factory;
+    }
+    
+    protected Result createResult( CompilationInfo compInfo )
+    {
+        return new Result( compInfo , myFactory );
     }
     
     /* (non-Javadoc)
@@ -157,6 +162,9 @@ public class WebBeansAnalysisTask extends AbstractAnalysisTask {
         }
         finally {
             EditorAnnotationsHelper helper = EditorAnnotationsHelper.getInstance(getResult());
+            if ( helper == null ){
+                return;
+            }
             helper.publish( getResult() );
         }
     }
@@ -203,6 +211,8 @@ public class WebBeansAnalysisTask extends AbstractAnalysisTask {
         }
         analyzer.analyze(element, typeElement, model, getCancel(), getResult());
     }
+    
+    private CdiEditorAwareJavaSourceTaskFactory myFactory;
     
     private static final Map<ElementKind,ModelAnalyzer> ANALIZERS = 
         new HashMap<ElementKind, ModelAnalyzer>();

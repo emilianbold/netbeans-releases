@@ -132,6 +132,6 @@ class TypesFilter {
         enabledProviders.add("org.netbeans.modules.csl.core.GsfTaskProvider"); //NOI18N
         enabledProviders.add("org.netbeans.modules.bugtracking.tasklist.TaskListProvider"); //NOI18N
         enabledProviders.add("org.netbeans.modules.javafx.source.tasklist.JavaFXErrorTaskListProvider"); //NOI18N
-
+        enabledProviders.add("org.netbeans.modules.java.editor.whitelist.WhiteListTaskProvider"); //NOI18N
     } 
 } 

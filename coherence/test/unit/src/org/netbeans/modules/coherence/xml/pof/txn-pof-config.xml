@@ -1,0 +1,255 @@
+<?xml version="1.0"?>
+
+<!--
+Configuration file for Coherence Transaction Framework POF types.
+
+-->
+
+<pof-config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xmlns="http://xmlns.oracle.com/coherence/coherence-pof-config"
+              xsi:schemaLocation="http://xmlns.oracle.com/coherence/coherence-pof-config coherence-pof-config.xsd">     
+			  
+  <user-type-list>
+      <include>coherence-pof-config.xml</include>
+
+      <!-- Coherence Transaction Framework POF Types 700-800 -->
+
+      <user-type>
+        <type-id>700</type-id>
+        <class-name>com.tangosol.coherence.transaction.internal.storage.SyntheticKey</class-name>
+      </user-type>
+
+      <user-type>
+        <type-id>701</type-id>
+        <class-name>com.tangosol.coherence.transaction.internal.storage.XidSyntheticKey</class-name>
+      </user-type>
+
+      <user-type>
+        <type-id>702</type-id>
+        <class-name>com.tangosol.coherence.transaction.internal.Results</class-name>
+      </user-type>
+
+      <user-type>
+        <type-id>703</type-id>
+        <class-name>com.tangosol.coherence.transaction.internal.router.CoherenceParallelAggregateProcessor</class-name>
+      </user-type>
+
+      <user-type>
+        <type-id>704</type-id>
+        <class-name>com.tangosol.coherence.transaction.internal.Message</class-name>
+      </user-type>
+
+      <user-type>
+        <type-id>705</type-id>
+        <class-name>com.tangosol.coherence.transaction.internal.FilterWrapper</class-name>
+      </user-type>
+
+      <user-type>
+        <type-id>706</type-id>
+        <class-name>com.tangosol.coherence.transaction.internal.SimpleXid</class-name>
+      </user-type>
+
+      <user-type>
+        <type-id>707</type-id>
+        <class-name>com.tangosol.coherence.transaction.internal.storage.Storage$NullValue</class-name>
+      </user-type>
+
+      <user-type>
+        <type-id>708</type-id>
+        <class-name>com.tangosol.coherence.transaction.internal.ExtractorWrapper</class-name>
+      </user-type>
+
+      <user-type>
+        <type-id>709</type-id>
+        <class-name>com.tangosol.coherence.transaction.internal.storage.TableInfoImpl</class-name>
+      </user-type>
+
+      <user-type>
+        <type-id>710</type-id>
+        <class-name>com.tangosol.coherence.transaction.internal.MapEventTransformerImpl</class-name>
+      </user-type>
+
+      <user-type>
+        <type-id>711</type-id>
+        <class-name>com.tangosol.coherence.transaction.internal.MapEventValue</class-name>
+      </user-type>
+
+      <user-type>
+        <type-id>712</type-id>
+        <class-name>com.tangosol.coherence.transaction.internal.storage.FixedPartitionKey</class-name>
+      </user-type>
+
+      <user-type>
+        <type-id>713</type-id>
+        <class-name>com.tangosol.coherence.transaction.internal.ComparatorWrapper</class-name>
+      </user-type>
+
+      <user-type>
+        <type-id>714</type-id>
+        <class-name>com.tangosol.coherence.transaction.internal.XidManager$TakeBlockProcessor</class-name>
+      </user-type>
+
+      <user-type>
+        <type-id>715</type-id>
+        <class-name>com.tangosol.coherence.transaction.internal.XidManager$RegisterBlockProcessor</class-name>
+      </user-type>
+
+      <user-type>
+        <type-id>716</type-id>
+        <class-name>com.tangosol.coherence.transaction.internal.XidManager$LockedXids</class-name>
+      </user-type>
+
+      <user-type>
+        <type-id>717</type-id>
+        <class-name>com.tangosol.coherence.transaction.internal.xa.XidWrapper</class-name>
+      </user-type>
+
+      <user-type>
+        <type-id>718</type-id>
+        <class-name>com.tangosol.coherence.transaction.internal.RecoveryManager$RecoveryFilter</class-name>
+      </user-type>
+
+      <user-type>
+        <type-id>719</type-id>
+        <class-name>com.tangosol.coherence.transaction.internal.RecoveryManager$XidExtractor</class-name>
+      </user-type>
+
+      <user-type>
+        <type-id>720</type-id>
+        <class-name>com.tangosol.coherence.transaction.internal.VersionManager$VersionAggregator</class-name>
+      </user-type>
+
+      <user-type>
+        <type-id>721</type-id>
+        <class-name>com.tangosol.coherence.transaction.internal.router.CoherenceAggregateProcessor</class-name>
+      </user-type>
+
+      <user-type>
+        <type-id>722</type-id>
+        <class-name>com.tangosol.coherence.transaction.internal.ServiceContext</class-name>
+      </user-type>
+
+      <user-type>
+        <type-id>723</type-id>
+        <class-name>com.tangosol.coherence.transaction.internal.util.PartitionedEntrySetWrapper$EntryExtractor</class-name>
+      </user-type>
+
+      <user-type>
+        <type-id>724</type-id>
+        <class-name>com.tangosol.coherence.transaction.internal.ValuesKeyExtractor</class-name>
+      </user-type>
+
+      <user-type>
+        <type-id>725</type-id>
+        <class-name>com.tangosol.coherence.transaction.internal.storage.ValuesEvictionPolicy$StorageReaperProcessor</class-name>
+      </user-type>
+
+      <user-type>
+        <type-id>726</type-id>
+        <class-name>com.tangosol.coherence.transaction.internal.router.CoherenceProcessor</class-name>
+      </user-type>
+
+      <!-- Operation types -->
+
+      <user-type>
+        <type-id>750</type-id>
+        <class-name>com.tangosol.coherence.transaction.internal.operation.AddIndexOperation</class-name>
+      </user-type>
+
+      <user-type>
+        <type-id>751</type-id>
+        <class-name>com.tangosol.coherence.transaction.internal.operation.AggregateOperation</class-name>
+      </user-type>
+
+      <user-type>
+        <type-id>752</type-id>
+        <class-name>com.tangosol.coherence.transaction.internal.operation.CommitOperation</class-name>
+      </user-type>
+
+      <user-type>
+        <type-id>753</type-id>
+        <class-name>com.tangosol.coherence.transaction.internal.operation.DeleteOperation</class-name>
+      </user-type>
+
+      <user-type>
+        <type-id>754</type-id>
+        <class-name>com.tangosol.coherence.transaction.internal.operation.EntrySetOperation</class-name>
+      </user-type>
+
+      <user-type>
+        <type-id>755</type-id>
+        <class-name>com.tangosol.coherence.transaction.internal.operation.FetchOperation</class-name>
+      </user-type>
+
+      <user-type>
+        <type-id>756</type-id>
+        <class-name>com.tangosol.coherence.transaction.internal.operation.InsertOperation</class-name>
+      </user-type>
+
+      <user-type>
+        <type-id>757</type-id>
+        <class-name>com.tangosol.coherence.transaction.internal.operation.InvokeKeyOperation</class-name>
+      </user-type>
+
+      <user-type>
+        <type-id>758</type-id>
+        <class-name>com.tangosol.coherence.transaction.internal.operation.InvokeFilterOperation</class-name>
+      </user-type>
+
+      <user-type>
+        <type-id>759</type-id>
+        <class-name>com.tangosol.coherence.transaction.internal.operation.KeySetOperation</class-name>
+      </user-type>
+
+      <user-type>
+        <type-id>760</type-id>
+        <class-name>com.tangosol.coherence.transaction.internal.operation.PutAllOperation</class-name>
+      </user-type>
+
+      <user-type>
+        <type-id>761</type-id>
+        <class-name>com.tangosol.coherence.transaction.internal.operation.PutOperation</class-name>
+      </user-type>
+
+      <user-type>
+        <type-id>763</type-id>
+        <class-name>com.tangosol.coherence.transaction.internal.operation.RemoveIndexOperation</class-name>
+      </user-type>
+
+      <user-type>
+        <type-id>764</type-id>
+        <class-name>com.tangosol.coherence.transaction.internal.operation.RemoveOperation</class-name>
+      </user-type>
+
+      <user-type>
+        <type-id>766</type-id>
+        <class-name>com.tangosol.coherence.transaction.internal.operation.RollbackOperation</class-name>
+      </user-type>
+
+      <user-type>
+        <type-id>767</type-id>
+        <class-name>com.tangosol.coherence.transaction.internal.operation.UpdateOperation</class-name>
+      </user-type>
+
+      <user-type>
+        <type-id>769</type-id>
+        <class-name>com.tangosol.coherence.transaction.internal.operation.EntrySetOperation</class-name>
+      </user-type>
+
+      <user-type>
+        <type-id>770</type-id>
+        <class-name>com.tangosol.coherence.transaction.internal.operation.UpdateCommitVersionOperation</class-name>
+      </user-type>
+
+      <user-type>
+        <type-id>771</type-id>
+        <class-name>com.tangosol.coherence.transaction.internal.operation.NullOperation</class-name>
+      </user-type>
+
+      <user-type>
+        <type-id>772</type-id>
+        <class-name>com.tangosol.coherence.transaction.internal.operation.SizeOperation</class-name>
+      </user-type>
+    
+  </user-type-list>
+</pof-config>

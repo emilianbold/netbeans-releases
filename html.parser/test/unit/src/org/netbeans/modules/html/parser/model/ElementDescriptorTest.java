@@ -44,6 +44,8 @@ package org.netbeans.modules.html.parser.model;
 
 import java.net.URL;
 import java.util.Collection;
+import java.util.Comparator;
+import java.util.TreeSet;
 import org.netbeans.editor.ext.html.parser.spi.HelpItem;
 import org.netbeans.editor.ext.html.parser.spi.HelpResolver;
 import org.netbeans.editor.ext.html.parser.spi.HtmlTag;
@@ -232,6 +234,31 @@ public class ElementDescriptorTest extends NbTestCase {
 
         assertTrue(ElementDescriptor.COLGROUP.hasOptionalEndTag());
         assertTrue(ElementDescriptor.COL.hasOptionalEndTag());
+    }
+    
+    //not real unit tests - just for generation of the html tag names for org.netbeans.modules.css.editor.HtmlTags
+    public void test_GenerateAllElementNamesArray() {
+        Collection<String> elementNames = new TreeSet<String>(new Comparator<String>() {
+            @Override
+            public int compare(String t, String t1) {
+                return t.compareTo(t1);
+            }
+        });
+        for(ElementDescriptor ed : ElementDescriptor.values()) {
+            elementNames.add(ed.getName());
+        }
+        StringBuilder list = new StringBuilder();
+        StringBuilder line = new StringBuilder();
+        for(String eName : elementNames) {
+            if(line.length() > 60) {
+                list.append(line);
+                list.append('\n');
+                line = new StringBuilder();
+            }
+            line.append(String.format("\"%s\", ", eName));
+        }
+        list.append(line);
+//        System.out.println(list);
     }
 
 }

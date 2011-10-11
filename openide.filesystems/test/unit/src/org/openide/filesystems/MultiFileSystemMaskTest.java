@@ -94,7 +94,7 @@ public class MultiFileSystemMaskTest extends NbTestCase {
      * Check that you can use one mask for more than one instance of a masked file.
      */
     public void testRepeatedMasks() throws Exception {
-        MultiFileSystem fs = new MultiFileSystem(new FileSystem[] {
+        MultiFileSystem fs = new MultiFileSystem(
             TestUtilHid.createXMLFileSystem(getName() + "1", new String[] {
                 "folder/file1_hidden",
                 "folder/file2_hidden",
@@ -106,8 +106,8 @@ public class MultiFileSystemMaskTest extends NbTestCase {
             TestUtilHid.createXMLFileSystem(getName() + "3", new String[] {
                 "folder/file1",
                 "folder/file3",
-            }),
-        });
+            })
+        );
         fs.setPropagateMasks(false);
         try {
             assertEquals("folder/file1_hidden masked two occurrences of folder/file1 and folder/file2_hidden masked one occurrence of folder/file2",
@@ -120,7 +120,7 @@ public class MultiFileSystemMaskTest extends NbTestCase {
         }
     }
     public void testRepeatedMasksPropagate() throws Exception {
-        MultiFileSystem fs = new MultiFileSystem(new FileSystem[] {
+        MultiFileSystem fs = new MultiFileSystem(
             TestUtilHid.createXMLFileSystem(getName() + "1", new String[] {
                 "folder/file1_hidden",
                 "folder/file2_hidden",
@@ -132,8 +132,8 @@ public class MultiFileSystemMaskTest extends NbTestCase {
             TestUtilHid.createXMLFileSystem(getName() + "3", new String[] {
                 "folder/file1",
                 "folder/file3",
-            }),
-        });
+            })
+        );
         fs.setPropagateMasks(true);
         try {
             assertEquals("folder/file1_hidden masked two occurrences of folder/file1 and folder/file2_hidden masked one occurrence of folder/file2",
@@ -150,7 +150,7 @@ public class MultiFileSystemMaskTest extends NbTestCase {
      * Check that a mask must precede the masked file in the delegates list.
      */
     public void testOutOfOrderMasks() throws Exception {
-        MultiFileSystem fs = new MultiFileSystem(new FileSystem[] {
+        MultiFileSystem fs = new MultiFileSystem(
             TestUtilHid.createXMLFileSystem(getName() + "1", new String[] {
                 "folder/file1",
                 "folder/file2",
@@ -161,8 +161,8 @@ public class MultiFileSystemMaskTest extends NbTestCase {
             }),
             TestUtilHid.createXMLFileSystem(getName() + "3", new String[] {
                 "folder/file3",
-            }),
-        });
+            })
+        );
         fs.setPropagateMasks(false);
         try {
             assertEquals("folder/file2_hidden did not mask an earlier file but folder/file3_hidden masked a later one",
@@ -207,7 +207,7 @@ public class MultiFileSystemMaskTest extends NbTestCase {
      * Check that a mask cannot be parallel to the masked file in the delegates list.
      */
     public void testParallelMasks() throws Exception {
-        MultiFileSystem fs = new MultiFileSystem(new FileSystem[] {
+        MultiFileSystem fs = new MultiFileSystem(
             TestUtilHid.createXMLFileSystem(getName() + "1", new String[] {
                 "folder/file1",
             }),
@@ -215,8 +215,8 @@ public class MultiFileSystemMaskTest extends NbTestCase {
                 "folder/file2",
                 "folder/file2_hidden",
                 "folder/file3",
-            }),
-        });
+            })
+        );
         fs.setPropagateMasks(false);
         try {
             assertEquals("folder/file2_hidden does not mask a file from the same layer",
@@ -270,58 +270,58 @@ public class MultiFileSystemMaskTest extends NbTestCase {
         f = TestFileUtils.writeFile(fs2.getRoot(), "d/f", "2");
         f.setAttribute("a", 2);
         // Test behavior with no weights: first layer wins.
-        FileSystem mfs = new MultiFileSystem(new FileSystem[] {wr, fs1, fs2});
+        FileSystem mfs = new MultiFileSystem(wr, fs1, fs2);
         f = mfs.findResource("d/f");
         assertEquals(1, f.getAttribute("a"));
         assertEquals("1", f.asText());
-        mfs = new MultiFileSystem(new FileSystem[] {wr, fs2, fs1});
+        mfs = new MultiFileSystem(wr, fs2, fs1);
         f = mfs.findResource("d/f");
         assertEquals(2, f.getAttribute("a"));
         assertEquals("2", f.asText());
         // Now test that weighted layer wins over unweighted regardless of order.
         fs2.findResource("d/f").setAttribute("weight", 100);
-        mfs = new MultiFileSystem(new FileSystem[] {wr, fs1, fs2});
+        mfs = new MultiFileSystem(wr, fs1, fs2);
         f = mfs.findResource("d/f");
         assertEquals(2, f.getAttribute("a"));
         assertEquals("2", f.asText());
-        mfs = new MultiFileSystem(new FileSystem[] {wr, fs2, fs1});
+        mfs = new MultiFileSystem(wr, fs2, fs1);
         f = mfs.findResource("d/f");
         assertEquals(2, f.getAttribute("a"));
         assertEquals("2", f.asText());
         // And that a higher weight beats a lower weight.
         fs1.findResource("d/f").setAttribute("weight", 200);
-        mfs = new MultiFileSystem(new FileSystem[] {wr, fs1, fs2});
+        mfs = new MultiFileSystem(wr, fs1, fs2);
         f = mfs.findResource("d/f");
         assertEquals(1, f.getAttribute("a"));
         assertEquals("1", f.asText());
-        mfs = new MultiFileSystem(new FileSystem[] {wr, fs2, fs1});
+        mfs = new MultiFileSystem(wr, fs2, fs1);
         f = mfs.findResource("d/f");
         assertEquals(1, f.getAttribute("a"));
         assertEquals("1", f.asText());
         // Now test writable layer which should always win regardless of weights.
-        mfs = new MultiFileSystem(new FileSystem[] {wr, fs1, fs2});
+        mfs = new MultiFileSystem(wr, fs1, fs2);
         f = mfs.findResource("d/f");
         f.setAttribute("a", 0);
         TestFileUtils.writeFile(mfs.getRoot(), "d/f", "0");
         f = wr.findResource("d/f");
         // Oddly, it is null: assertEquals(0, f.getAttribute("a"));
         assertEquals("0", f.asText());
-        mfs = new MultiFileSystem(new FileSystem[] {wr, fs1, fs2});
+        mfs = new MultiFileSystem(wr, fs1, fs2);
         f = mfs.findResource("d/f");
         assertEquals(0, f.getAttribute("a"));
         assertEquals("0", f.asText());
     }
 
     public void testMultipleMaskLayers() throws Exception {
-        MultiFileSystem fs = new MultiFileSystem(new FileSystem[] {
+        MultiFileSystem fs = new MultiFileSystem(
             TestUtilHid.createXMLFileSystem(getName() + "3", new String[] {
                 "folder/file1_hidden",
                 "folder/file1",
             }),
             TestUtilHid.createXMLFileSystem(getName() + "1", new String[] {
                 "folder2/file2_hidden",
-            }),
-        });
+            })
+        );
         fs.setPropagateMasks(false);
         try {
             // this is surprising, but it seems to be the behaviour:
@@ -335,12 +335,12 @@ public class MultiFileSystemMaskTest extends NbTestCase {
         }
     }
     public void testPropagateMultipleMaskLayersSimple() throws Exception {
-        MultiFileSystem fs = new MultiFileSystem(new FileSystem[] {
+        MultiFileSystem fs = new MultiFileSystem(
             TestUtilHid.createXMLFileSystem(getName() + "3", new String[] {
                 "folder/file1_hidden",
                 "folder/file1",
-            }),
-        });
+            })
+        );
         fs.setPropagateMasks(true);
         assertEquals("folder/file1 is hidden",
             "file1_hidden",
@@ -348,15 +348,15 @@ public class MultiFileSystemMaskTest extends NbTestCase {
         );
     }
     public void testPropagateMultipleMaskLayersComplex() throws Exception {
-        MultiFileSystem fs = new MultiFileSystem(new FileSystem[] {
+        MultiFileSystem fs = new MultiFileSystem(
             TestUtilHid.createXMLFileSystem(getName() + "3", new String[] {
                 "folder/file1_hidden",
                 "folder/file1",
             }),
             TestUtilHid.createXMLFileSystem(getName() + "1", new String[] {
                 "folder/file2_hidden",
-            }),
-        });
+            })
+        );
         fs.setPropagateMasks(true);
         assertEquals("folder/file1 is hidden",
             "file1_hidden/file2_hidden",

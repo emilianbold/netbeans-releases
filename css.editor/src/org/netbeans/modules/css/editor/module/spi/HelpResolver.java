@@ -55,12 +55,6 @@ public abstract class HelpResolver {
     public abstract String getHelp(Property property);
     
     /**
-     * Returns the help content in the html code form for the given URL.
-     * @return null if the url is not from the help resolver's context
-     */
-    public abstract String getHelp(URL url);
-    
-    /**
      * Resolves a link (relative or absolute) from within the property help content
      */
     public abstract URL resolveLink(Property property, String link);

@@ -62,14 +62,16 @@ import org.openide.util.NbBundle;
 public final class NbRepository extends Repository {
     /** name of system folder to be located in the USER_DIR and HOME_DIR */
     static final String CONFIG_FOLDER = "config"; // NOI18N
+    static {
+        // make sure the factory for nbfs and other protocols is on
+        Main.initializeURLFactory ();
+    }
 
     /**
      * Create a repository based on the normal system file system.
      */
     public NbRepository () {
         super (createDefaultFileSystem());
-        // make sure the factory for nbfs and other protocols is on
-        Main.initializeURLFactory ();
     }
 
     /** Creates defalt file system.

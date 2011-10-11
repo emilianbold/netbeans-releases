@@ -62,8 +62,8 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.LazyStatementImpl;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.fsm.core.DataRenderer;
+import org.netbeans.modules.cnd.modelimpl.parser.generated.FortranParser;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
-import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -206,7 +206,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
         private final FileImpl file;
         private FortranParserEx parser;
         private CsmObject parserContainer;
-        private FortranParserEx.program_return ret;
+        private FortranParser.program_return ret;
         private ConstructionKind kind;
 
         Antrl3FortranParser(FileImpl file) {

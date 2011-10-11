@@ -160,6 +160,10 @@ public class KenaiException extends IOException {
                 } else {
                     status = (String) toCollections.get("status");
                     errors = (HashMap<String, String>) toCollections.get("errors");
+                    if(errors == null && status.contains("422 Unprocessable Entity")) {
+                        errors = new HashMap<String, String>(1);
+                        errors.put("message", (String) toCollections.get("project"));
+                    }
                 }
             }
         } catch (IOException ex) {

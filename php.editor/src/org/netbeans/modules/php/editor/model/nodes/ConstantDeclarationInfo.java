@@ -49,6 +49,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.ConstantDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
+import org.netbeans.modules.php.editor.parser.astnodes.UnaryOperation;
 
 /**
  * @author Radek Matous
@@ -67,6 +68,14 @@ public class ConstantDeclarationInfo extends ClassConstantDeclarationInfo {
                 if (expression instanceof Scalar) {
                     value = ((Scalar)expression).getStringValue();
                     break;
+                }
+                if (expression instanceof UnaryOperation) {
+                    UnaryOperation up = (UnaryOperation) expression;
+                    if (up.getOperator() == UnaryOperation.Operator.MINUS
+                            && up.getExpression() instanceof Scalar) {
+                        value = "-" + ((Scalar)up.getExpression()).getStringValue();
+                        break;
+                    }
                 }
             }
             retval.add(new ConstantDeclarationInfo(identifier, value));

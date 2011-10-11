@@ -58,11 +58,13 @@ public class Installer extends ModuleInstall {
         SearchScopeRegistry.getDefault().registerSearchScope(
                 new SearchScopeNodeSelection());
         FindActionManager.getInstance().init();
+        ReplaceActionManager.getInstance().init();
     }
 
     @Override
     public void uninstalled () {
         FindActionManager.getInstance().cleanup();
+        ReplaceActionManager.getInstance().cleanup();
         Manager.getInstance().doCleanup();
     }
 }

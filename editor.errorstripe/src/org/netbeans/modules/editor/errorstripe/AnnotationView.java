@@ -157,7 +157,7 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
         
         setOpaque(true);
         
-        setToolTipText(org.openide.util.NbBundle.getBundle(AnnotationView.class).getString("TP_ErrorStripe"));
+        setToolTipText(NbBundle.getMessage(AnnotationView.class,"TP_ErrorStripe"));
     }
     
     /*package private for tests*/AnnotationViewData getData() {

@@ -129,6 +129,12 @@ public final class ViewHierarchyImpl {
     static final Logger SETTINGS_LOG = Logger.getLogger("org.netbeans.editor.view.settings"); // -J-Dorg.netbeans.editor.view.settings.level=FINE
     
     /**
+     * Logger related to view hierarchy events generation.
+     * <br/>
+     */
+    static final Logger EVENT_LOG = Logger.getLogger("org.netbeans.editor.view.event"); // -J-Dorg.netbeans.editor.view.event.level=FINE
+    
+    /**
      * Logger for tracking view hierarchy locking.
      * <br/>
      * FINER stores the stack of the lock thread of view hierarchy in lockStack variable
@@ -145,9 +151,21 @@ public final class ViewHierarchyImpl {
     
     private final ListenerList<ViewHierarchyListener> listenerList;
     
+    /**
+     * Lockable document view.
+     */
     private DocumentView docView;
     
+    /**
+     * Document view to be assigned to docView in case it's lockable.
+     */
+    private DocumentView docViewToAssign;
+    
     private LockedViewHierarchy lock;
+    
+    private Thread lockThread;
+    
+    private int extraLockDepth;
     
     private Exception lockStack;
     
@@ -176,15 +194,26 @@ public final class ViewHierarchyImpl {
     }
 
     public void setDocumentView(DocumentView docView) {
-        this.docView = docView;
+        this.docViewToAssign = docView;
     }
     
     public synchronized LockedViewHierarchy lock() {
         try {
+            Thread curThread = Thread.currentThread();
             while (lock != null) {
+                if (lockThread == curThread) {
+                    extraLockDepth++; // Allow nested locking
+                    return lock;
+                }
                 wait();
             }
             lock = ViewApiPackageAccessor.get().createLockedViewHierarchy(this);
+            lockThread = curThread;
+            DocumentView dv = docViewToAssign;
+            assert (this.docView == null);
+            if (dv != null && dv.lock()) {
+                this.docView = dv;
+            }
             if (LOG.isLoggable(Level.FINER)) {
                 lockStack = new Exception("ViewHierarchy.lock() caller stack"); // NOI18Ns
                 if (LOG.isLoggable(Level.FINEST)) {
@@ -201,7 +230,16 @@ public final class ViewHierarchyImpl {
         if (lock != this.lock) {
             throw new IllegalStateException("Invalid LockedViewHierarchy.unlock(): Not a locker"); // NOI18N
         }
+        if (extraLockDepth > 0) {
+            extraLockDepth--;
+            return;
+        }
         this.lock = null;
+        this.lockThread = null;
+        if (docView != null) {
+            docView.unlock();
+            docView = null;
+        }
         notifyAll();
     }
 
@@ -243,7 +281,7 @@ public final class ViewHierarchyImpl {
         }
     }
 
-    public Shape modelToView(int offset, Position.Bias bias) {
+    public Shape modelToView(LockedViewHierarchy lock, int offset, Position.Bias bias) {
         ensureLocker(lock);
         if (docView != null) {
             return docView.modelToViewUnlocked(offset, docView.getAllocation(), bias);
@@ -257,7 +295,19 @@ public final class ViewHierarchyImpl {
         }
     }
 
-    public int viewToModel(double x, double y, Position.Bias[] biasReturn) {
+    public Shape modelToParagraphView(LockedViewHierarchy lock, int offset) {
+        ensureLocker(lock);
+        Shape ret = null;
+        if (docView != null && docView.op.isActive()) {
+            int index = docView.getViewIndex(offset);
+            if (index >= 0) {
+                ret = docView.getChildAllocation(index, docView.getAllocation());
+            }
+        } // else: Do not know how to emulate
+        return ret;
+    }
+
+    public int viewToModel(LockedViewHierarchy lock, double x, double y, Position.Bias[] biasReturn) {
         ensureLocker(lock);
         if (docView != null) {
             return docView.viewToModelUnlocked(x, y, docView.getAllocation(), biasReturn);
@@ -287,15 +337,24 @@ public final class ViewHierarchyImpl {
 
     void fireChange(ViewHierarchyChange change) {
         ViewHierarchyEvent evt = ViewApiPackageAccessor.get().createEvent(viewHierarchy, change);
+        if (ViewHierarchyImpl.EVENT_LOG.isLoggable(Level.FINE)) {
+            ViewHierarchyImpl.EVENT_LOG.fine("Firing event: " + evt + "\n"); // NOI18N
+        }
         for (ViewHierarchyListener l : listenerList.getListeners()) {
             l.viewHierarchyChanged(evt);
         }
     }
-    
+
     private void ensureLocker(LockedViewHierarchy lock) {
         if (lock != this.lock) {
             throw new IllegalStateException("Not locker of view hierarchy for component:\n" + textComponent); // NOI18N
         }
+    }
+
+    @Override
+    public String toString() {
+        // Use toStringUnlocked() otherwise stack overflow
+        return (docView != null) ? docView.getDumpId() : "<NULL-docView>"; // NOI18N
     }
 
 }

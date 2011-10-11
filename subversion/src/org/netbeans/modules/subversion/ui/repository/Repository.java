@@ -196,6 +196,8 @@ public class Repository implements ActionListener, DocumentListener, ItemListene
 
         svnSSH.showHints(isSet(FLAG_SHOW_HINTS));
 
+        // fill url field with a default value
+        ((JTextComponent) repositoryPanel.urlComboBox.getEditor().getEditorComponent()).setText("file://"); //NOI18N
         updateVisibility(FILE_PANEL);
         
         repositoryPanel.urlComboBox.addActionListener(this);

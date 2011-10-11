@@ -381,8 +381,8 @@ class ViewChildren<V extends EditorView> extends GapList<V> {
             ArrayUtilities.appendSpaces(sb, indent);
             ArrayUtilities.appendBracketedIndex(sb, i, digitCount);
             V view = get(i);
-            appendChildInfo(sb, i);
-            view.appendViewInfo(sb, indent, childImportantIndex);
+            String xyInfo = getXYInfo(i);
+            view.appendViewInfo(sb, indent, xyInfo, childImportantIndex);
             boolean appendDots = false;
             if (i == 4) { // After showing first 5 items => possibly skip to important index
                 if (importantIndex == -1) { // Display initial five
@@ -413,8 +413,8 @@ class ViewChildren<V extends EditorView> extends GapList<V> {
         return sb;
     }
     
-    protected StringBuilder appendChildInfo(StringBuilder sb, int index) {
-        return sb;
+    protected String getXYInfo(int index) {
+        return "";
     }
 
 }

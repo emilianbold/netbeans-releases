@@ -163,6 +163,8 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
             if (osFamily == OSFamily.WINDOWS) {
                 shellScriptPath = WindowsSupport.getInstance().convertToShellPath(shellScriptPath);
             }
+            
+            terminal = terminal.setWorkdir(workingDirectory.toString());
 
             terminalArgs.addAll(Arrays.asList(
                     shellScriptPath,
@@ -179,7 +181,7 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
             if (!workingDirectory.exists()) {
                 throw new FileNotFoundException(loc("NativeProcess.noSuchDirectoryError.text", workingDirectory.getAbsolutePath())); // NOI18N
             }
-
+            
             pb.directory(workingDirectory);
             pb.redirectErrorStream(true);
 

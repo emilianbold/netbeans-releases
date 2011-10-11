@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ * Copyright (c) 2008, 2011 Oracle and/or its affiliates.
+ * All rights reserved. Use is subject to license terms.
+ *
+ * This file is available and licensed under the following license:
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ *  - Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *  - Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in
+ *    the documentation and/or other materials provided with the distribution.
+ *  - Neither the name of Oracle Corporation nor the names of its
+ *    contributors may be used to endorse or promote products derived
+ *    from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+-->
+<?import java.lang.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.shape.*?>
+<?import javafx.scene.text.*?>
+
+<AnchorPane fx:controller="demo.ProfileController" id="Profile" xmlns:fx="http://javafx.com/fxml">
+  <children>
+    <Button maxHeight="2.0" text="Update" AnchorPane.bottomAnchor="15.0" AnchorPane.rightAnchor="168.0" fx:id="update" onAction="#processUpdate"/>
+    <Label layoutX="56.0" layoutY="77.0" text="Please review your profile data." fx:id="message" />
+    <Label layoutX="56.0" layoutY="123.0" text="User:" />
+    <Label layoutX="56.0" layoutY="224.0" text="Phone:" />
+    <Label layoutX="56.0" layoutY="173.0" text="Email:" />
+    <TextField editable="false" layoutX="149.0" layoutY="120.0" maxWidth="2.0" minHeight="30.0" minWidth="215.0" prefHeight="30.0" prefWidth="215.0" fx:id="user" />
+    <TextField editable="true" layoutX="149.0" layoutY="171" maxWidth="2.0" minHeight="30.0" minWidth="215.0" prefHeight="30.0" prefWidth="215.0" fx:id="email" />
+    <TextField layoutX="149.0" layoutY="224" maxWidth="2.0" minHeight="30.0" minWidth="215.0" prefHeight="30.0" prefWidth="215.0" fx:id="phone" />
+    <CheckBox layoutX="402" layoutY="120.0" text="Subscribed to NewsLetter" fx:id="subscribed" />
+    <Separator layoutX="380" layoutY="110" prefHeight="155" orientation="vertical"/>
+    <Hyperlink layoutY="24.0" text="logout" AnchorPane.rightAnchor="52.0" fx:id="logout" onAction="#processLogout"/>
+    <Button disable="true" maxHeight="2" maxWidth="2.0" text="Continue" defaultButton="true" AnchorPane.bottomAnchor="15.0" AnchorPane.rightAnchor="52.0" fx:id="Button" onAction="#processLogout"/>
+    <Label layoutX="150.0" layoutY="401.0" opacity="0.0" text="Profile  successfully updated!" fx:id="success" />
+    <Label layoutX="56.0" layoutY="284.0" text="Address:" />
+    <TextArea maxHeight="2.0" maxWidth="2.0" minHeight="85.0" minWidth="448.0" prefHeight="85.0" prefWidth="448.0" AnchorPane.bottomAnchor="69.0" AnchorPane.leftAnchor="149.0" AnchorPane.rightAnchor="52.0" AnchorPane.topAnchor="289.0" fx:id="address" />
+  </children>
+  <styleClass>
+    <String fx:value="profile" />
+  </styleClass>
+  <properties>
+    <elementLockSel>
+      <Boolean fx:value="true" />
+    </elementLockSel>
+  </properties>
+</AnchorPane>

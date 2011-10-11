@@ -46,7 +46,7 @@ import java.util.regex.Pattern;
 
 /**
  *
- * @author marekfukala
+ * @author mfukala@netbeans.org
  */
 public class Uri implements CssPropertyValueAcceptor {
 
