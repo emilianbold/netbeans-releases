@@ -54,6 +54,7 @@ import org.netbeans.jemmy.operators.JLabelOperator;
 import org.netbeans.jemmy.operators.JTextAreaOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jellytools.modules.java.editor.GenerateCodeOperator;
+import org.netbeans.jemmy.EventTool;
 
 /**
  *  Called from EJBValidation test suite.
@@ -121,6 +122,9 @@ public class AddSelectMethodTest extends AddMethodTest {
             editor.txtEditorPane().waitText(toSearchInEditor);
         }
         if (saveFile) {
+            editor.waitModified(true);
+            // need to wait because sometimes is save() called sooner than it can take effect
+            new EventTool().waitNoEvent(300);
             editor.save();
         }
         compareFiles();
