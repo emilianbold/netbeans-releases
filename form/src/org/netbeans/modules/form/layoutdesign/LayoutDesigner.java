@@ -1065,10 +1065,13 @@ public final class LayoutDesigner implements LayoutModel.RemoveHandler, LayoutMo
                             // (special case - moving multiple components from another layout)
                             LayoutRegion movingSpace = dragger.getMovingSpace();
                             int dx = movingSpace.positions[HORIZONTAL][LEADING];
-                            int dy = movingSpace.positions[HORIZONTAL][LEADING];
+                            int dy = movingSpace.positions[VERTICAL][LEADING];
                             LayoutRegion[] movingBounds = dragger.getMovingBounds();
                             Map<LayoutComponent, Rectangle> compToRect = new HashMap<LayoutComponent, Rectangle>();
                             for (int i=0; i < components.length; i++) {
+                                for (int dim=0; dim < DIM_COUNT; dim++) {
+                                    components[i].getLayoutInterval(dim).getCurrentSpace().set(dim, movingBounds[i]);
+                                }
                                 Rectangle r = movingBounds[i].toRectangle(new Rectangle());
                                 r.x -= dx;
                                 r.y -= dy;
