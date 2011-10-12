@@ -2418,7 +2418,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                 LOGGER.fine ("Invalidating source: " + source + " due to RootsWork");   //NOI18N
                 final EventSupport support = SourceAccessor.getINSTANCE().getEventSupport(source);
                 assert support != null;
-                support.resetState(true, -1, -1);
+                support.resetState(true, -1, -1, false);
             }
         }
 
