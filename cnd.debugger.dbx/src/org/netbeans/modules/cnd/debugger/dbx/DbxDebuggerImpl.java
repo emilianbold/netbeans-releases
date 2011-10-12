@@ -348,10 +348,6 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
         this.ddi = d;
     }
 
-    DbxDebuggerInfo getDDI() {
-        return ddi;
-    }
-
     public NativeDebuggerInfo getNDI() {
         return ddi;
     }
@@ -721,8 +717,8 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
         profileBridge().noteProgUnloaded();
         // need to do this when unload, because configuration may be changed
         // while debugging, debugtarget list needs to be updated as well
-        if (getDDI().loadSucceed()) {
-            manager().addRecentDebugTarget(getDDI().getTarget(), true);
+        if (getNDI().loadSucceed()) {
+            manager().addRecentDebugTarget(getNDI().getTarget(), true);
         }
     }
 

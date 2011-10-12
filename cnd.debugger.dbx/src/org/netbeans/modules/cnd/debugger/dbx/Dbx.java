@@ -224,7 +224,7 @@ public final class Dbx extends CommonDbx {
 
     public final void setDebugger(DbxDebuggerImpl debugger) {
 	this.debugger = debugger;
-	debugger.getDDI().setLoadSuccess(false);
+	debugger.getNDI().setLoadSuccess(false);
     }
 
 
@@ -525,7 +525,7 @@ public final class Dbx extends CommonDbx {
 	}
 
 	if (debugger.noteProgLoaded(progname) ) {
-	    debugger.getDDI().setLoadSuccess(true);
+	    debugger.getNDI().setLoadSuccess(true);
 	    startProgressManager().finishProgress();
 
 	    // record loadobjs
