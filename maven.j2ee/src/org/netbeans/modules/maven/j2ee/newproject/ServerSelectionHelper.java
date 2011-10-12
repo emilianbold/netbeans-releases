@@ -44,14 +44,14 @@ package org.netbeans.modules.maven.j2ee.newproject;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JComboBox;
-import javax.swing.JLabel;
 import javax.swing.JList;
-import javax.swing.ListCellRenderer;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
@@ -99,27 +99,37 @@ public class ServerSelectionHelper {
             
             
         });
-        initServerModel();
+        initServerModel(null);
         updatePlatformVersionModel();
     }
     
     /**
      * Initiate servers in comboBox (adds all valid servers plus <No Server> option)
      */
-    private void initServerModel() {
-        serverModel.removeAllItems();
+    private void initServerModel(String serverToSelectInstanceID) {
+        Wrapper serverToSelect = null;
+        List<Wrapper> servers = new ArrayList<Wrapper>();
         
         // Iterate trought all registered servers
         for (String instanceID : deployment.getServerInstanceIDs()) {
             // We want to add only servers with support for defined projectType
             if (isServerInstanceValid(instanceID)) {
-                serverModel.addItem(new Wrapper(instanceID));
+                Wrapper server = new Wrapper(instanceID);
+                servers.add(server);
+                
+                if (serverToSelectInstanceID != null && instanceID.equals(serverToSelectInstanceID)) {
+                    serverToSelect = server;
+                }
             }
         }
         
         // We want to provide Maven project without server
-        serverModel.addItem(new Wrapper(ExecutionChecker.DEV_NULL));
+        servers.add(new Wrapper(ExecutionChecker.DEV_NULL));
         
+        serverModel.setModel(new DefaultComboBoxModel(servers.toArray()));
+        if (serverToSelect != null) {
+            serverModel.setSelectedItem(serverToSelect);
+        }
         // And we need to change J2eeVersion comboBox when changing Server selection
         serverModel.addActionListener(new ActionListener() {
 
@@ -154,7 +164,7 @@ public class ServerSelectionHelper {
                 profiles.addAll(deployment.getServerInstance(serverInstance).getJ2eePlatform().getSupportedProfiles(projectType));
             } catch (InstanceRemovedException ex) {
                 // If selected instance was removed during the process we can easily refresh Server model list and update versions again
-                initServerModel();
+                initServerModel(null);
             }
             
             // We don't support J2EE 1.3 anymore
@@ -180,29 +190,24 @@ public class ServerSelectionHelper {
      */
     public void addServerButtonPressed() {                                          
         Wrapper selectedServer = getSelectedServer();
-        Profile j2eeProfile = getSelectedProfile();
         
-        String selectedServerInstanceID = null;
+        String serverToSelectInstanceID = null;
         if (selectedServer != null) {
-            selectedServerInstanceID = selectedServer.getServerInstanceID();
+            serverToSelectInstanceID = selectedServer.getServerInstanceID();
         }
         
         // If new server were added then we want to set it as selected
         String addedServerInstanceID = ServerManager.showAddServerInstanceWizard();
         if (addedServerInstanceID != null) {
-            selectedServerInstanceID = addedServerInstanceID;
-            j2eeProfile = null;
+            serverToSelectInstanceID = addedServerInstanceID;
             j2eeVersion.setSelectedItem(null);
         } else {
             return;
         }
 
         // We need to refresh the list of servers because we've just added one
-        initServerModel();
-        selectAddedServerInModel(selectedServerInstanceID);
-        if (j2eeProfile != null) {
-            j2eeVersion.setSelectedItem(j2eeProfile);
-        }
+        initServerModel(serverToSelectInstanceID);
+        updatePlatformVersionModel();
     }
     
     public Profile getSelectedProfile() {
