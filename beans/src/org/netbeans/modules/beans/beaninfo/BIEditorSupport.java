@@ -395,6 +395,7 @@ public final class BIEditorSupport extends DataEditorSupport
         public JavaElement(Lookup context) {
             super(context.lookup(DataEditorSupport.class));
             this.dataObject = context.lookup(DataObject.class);
+            setActivatedNodes(new Node[]{dataObject.getNodeDelegate()});
         }
 
         /**
