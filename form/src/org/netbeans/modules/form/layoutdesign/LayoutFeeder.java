@@ -445,7 +445,6 @@ class LayoutFeeder implements LayoutConstants {
                     } else if (inclusion1.parent.isSequential()) {
                         // compute inclusion for the other than snapped edge,
                         // it might want to go into a neighbor parallel group
-                        assert !dragger.isResizing();
                         aEdge = newPos.alignment ^ 1;
                         aSnappedParallel = null;
                         aSnappedNextTo = null;
