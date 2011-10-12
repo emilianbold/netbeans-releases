@@ -1065,10 +1065,13 @@ public final class LayoutDesigner implements LayoutModel.RemoveHandler, LayoutMo
                             // (special case - moving multiple components from another layout)
                             LayoutRegion movingSpace = dragger.getMovingSpace();
                             int dx = movingSpace.positions[HORIZONTAL][LEADING];
-                            int dy = movingSpace.positions[HORIZONTAL][LEADING];
+                            int dy = movingSpace.positions[VERTICAL][LEADING];
                             LayoutRegion[] movingBounds = dragger.getMovingBounds();
                             Map<LayoutComponent, Rectangle> compToRect = new HashMap<LayoutComponent, Rectangle>();
                             for (int i=0; i < components.length; i++) {
+                                for (int dim=0; dim < DIM_COUNT; dim++) {
+                                    components[i].getLayoutInterval(dim).getCurrentSpace().set(dim, movingBounds[i]);
+                                }
                                 Rectangle r = movingBounds[i].toRectangle(new Rectangle());
                                 r.x -= dx;
                                 r.y -= dy;
@@ -4748,7 +4751,7 @@ public final class LayoutDesigner implements LayoutModel.RemoveHandler, LayoutMo
             LayoutInterval seqIntL = createIntervalFromList(seqListL, LEADING);
             if (seqIntL != null) {
                 LayoutInterval gap = new LayoutInterval(SINGLE);
-                gap.setSizes(minDistL, minDistL, minDistL);
+                gap.setSize(minDistL);
                 layoutModel.addInterval(gap, seq, 0);
                 layoutModel.setIntervalAlignment(seqIntL, DEFAULT);
                 operations.addContent(seqIntL, seq, 0);
@@ -4756,7 +4759,7 @@ public final class LayoutDesigner implements LayoutModel.RemoveHandler, LayoutMo
             LayoutInterval seqIntT = createIntervalFromList(seqListT, TRAILING);
             if (seqIntT != null) {
                 LayoutInterval gap = new LayoutInterval(SINGLE);
-                gap.setSizes(minDistT, minDistT, minDistT);
+                gap.setSize(minDistT);
                 layoutModel.addInterval(gap, seq, -1);
                 layoutModel.setIntervalAlignment(seqIntT, DEFAULT);
                 operations.addContent(seqIntT, seq, -1);

@@ -193,7 +193,7 @@ public final class LayoutInterval implements LayoutConstants {
     void setSize(int size) {
         setMinimumSize(size);
         setPreferredSize(size);
-        setMaximumSize(size);
+        setMaximumSize(USE_PREFERRED_SIZE);
     }
 
     void setSizes(int min, int pref, int max) {
