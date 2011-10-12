@@ -210,7 +210,7 @@ public class PersistenceUnitWizardPanelJdbc extends PersistenceUnitWizardPanel{
                 if(Util.isJPAVersionSupported(project, Persistence.VERSION_2_0)){
                     String sourceLevel = SourceLevelChecker.getSourceLevel(project);
                     if(sourceLevel !=null ){
-                        if(!("1.6".equals(sourceLevel) || Double.parseDouble(sourceLevel)>=1.6))
+                        if(sourceLevel.matches("1\\.[0-5]([^0-9].*)?"))//1.0-1.5
                         warning  = NbBundle.getMessage(PersistenceUnitWizard.class, "ERR_WrongSourceLevel", sourceLevel);
                     }
                 } else {
