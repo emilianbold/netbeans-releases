@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.maven.j2ee.newproject;
 
+import java.util.Collections;
 import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
@@ -52,155 +53,64 @@ import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.templates.TemplateRegistration;
 import org.netbeans.api.validation.adapters.WizardDescriptorAdapter;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.archetype.Archetype;
 import org.netbeans.modules.maven.api.archetype.ArchetypeWizards;
 import org.netbeans.modules.maven.api.archetype.ProjectInfo;
+import org.netbeans.modules.maven.j2ee.MavenJavaEEConstants;
+import org.netbeans.modules.maven.j2ee.newproject.archetype.J2eeArchetypeFactory;
 import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import static org.netbeans.modules.maven.j2ee.newproject.Bundle.*;
+import org.netbeans.modules.maven.model.pom.Properties;
+import org.netbeans.spi.project.AuxiliaryProperties;
 import org.netbeans.validation.api.ui.ValidationGroup;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle.Messages;
 
 /**
- *
- *@author Dafe Simonek
+ * This class is responsible for creating new EAR projects
+ * 
+ *@author Dafe Simonek, Martin Janicek
  */
 @TemplateRegistration(folder=ArchetypeWizards.TEMPLATE_FOLDER, position=270, displayName="#template.EA", iconBase="org/netbeans/modules/maven/j2ee/ear/maven_enterprise_application_16.png", description="EADescription.html")
 @Messages("template.EA=Enterprise Application")
 public class EAWizardIterator implements WizardDescriptor.BackgroundInstantiatingIterator {
     
-    static final Archetype[] WEB_APP_ARCHS;
-    static final Archetype[] EJB_ARCHS;
-    static final Archetype[] EAR_ARCHS;
-    static final Archetype[] APPCLIENT_ARCHS;
-    static final Archetype EA_ARCH;
-
-    static {
-        WEB_APP_ARCHS = new Archetype[3];
-
-        Archetype arch = new Archetype();
-        arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        arch.setVersion("1.5"); //NOI18N
-        arch.setArtifactId("webapp-javaee6"); //NOI18N
-        WEB_APP_ARCHS[0] = arch;
-
-        arch = new Archetype();
-        arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        arch.setVersion("1.3"); //NOI18N
-        arch.setArtifactId("webapp-jee5"); //NOI18N
-        WEB_APP_ARCHS[1] = arch;
-
-        arch = new Archetype();
-        arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        arch.setVersion("1.3"); //NOI18N
-        arch.setArtifactId("webapp-j2ee14"); //NOI18N
-        WEB_APP_ARCHS[2] = arch;
-
-        EJB_ARCHS = new Archetype[3];
-        arch = new Archetype();
-        arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        arch.setVersion("1.5"); //NOI18N
-        arch.setArtifactId("ejb-javaee6"); //NOI18N
-        EJB_ARCHS[0] = arch;
-
-        arch = new Archetype();
-        arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        arch.setVersion("1.3"); //NOI18N
-        arch.setArtifactId("ejb-jee5"); //NOI18N
-        EJB_ARCHS[1] = arch;
-
-        arch = new Archetype();
-        arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        arch.setVersion("1.3"); //NOI18N
-        arch.setArtifactId("ejb-j2ee14"); //NOI18N
-        EJB_ARCHS[2] = arch;
-
-        APPCLIENT_ARCHS = new Archetype[3];
-        arch = new Archetype();
-        arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        arch.setVersion("1.0"); //NOI18N
-        arch.setArtifactId("appclient-javaee6"); //NOI18N
-        APPCLIENT_ARCHS[0] = arch;
-
-        arch = new Archetype();
-        arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        arch.setVersion("1.0"); //NOI18N
-        arch.setArtifactId("appclient-jee5"); //NOI18N
-        APPCLIENT_ARCHS[1] = arch;
-
-//        arch = new Archetype();
-//        arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-//        arch.setVersion("1.0"); //NOI18N
-//        arch.setArtifactId("appclient-javaee14"); //NOI18N
-        APPCLIENT_ARCHS[2] = arch;
-
-        EAR_ARCHS = new Archetype[3];
-        arch = new Archetype();
-        arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        arch.setVersion("1.5"); //NOI18N
-        arch.setArtifactId("ear-javaee6"); //NOI18N
-        EAR_ARCHS[0] = arch;
-
-        arch = new Archetype();
-        arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        arch.setVersion("1.4"); //NOI18N
-        arch.setArtifactId("ear-jee5"); //NOI18N
-        EAR_ARCHS[1] = arch;
-
-        arch = new Archetype();
-        arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        arch.setVersion("1.4"); //NOI18N
-        arch.setArtifactId("ear-j2ee14"); //NOI18N
-        EAR_ARCHS[2] = arch;
-
-        EA_ARCH = new Archetype();
-        EA_ARCH.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        EA_ARCH.setVersion("1.1"); //NOI18N
-        EA_ARCH.setArtifactId("pom-root"); //NOI18N
-    }
-
     private static final long serialVersionUID = 1L;
-    
-    static final String PROPERTY_CUSTOM_CREATOR = "customCreator"; //NOI18N
     private transient int index;
     private transient WizardDescriptor.Panel[] panels;
     private transient WizardDescriptor wiz;
     private final List<ChangeListener> listeners;
     
+
     public EAWizardIterator() {
         listeners = new ArrayList<ChangeListener>();
     }
     
-    private WizardDescriptor.Panel[] createPanels(ValidationGroup vg) {
-        return new WizardDescriptor.Panel[] {
-            ArchetypeWizards.basicWizardPanel(vg, false, null),
-            new EAWizardPanel(vg)
-        };
-    }
-    
-    private String[] createSteps() {
-        return new String[] {
-            LBL_CreateProjectStep2ee(),
-            LBL_EESettings()
-        };
-    }
-    
-    public Set/*<FileObject>*/ instantiate() throws IOException {
+    @Override
+    public Set<FileObject> instantiate() throws IOException {
         ProjectInfo ear_vi = (ProjectInfo) wiz.getProperty("ear_versionInfo"); //NOI18N
         assert ear_vi != null;
+        
         // enterprise application wizard, multiple archetypes to run
         ProjectInfo web_vi = (ProjectInfo) wiz.getProperty("web_versionInfo"); //NOI18N
         ProjectInfo ejb_vi = (ProjectInfo) wiz.getProperty("ejb_versionInfo"); //NOI18N
-        File rootFile = FileUtil.normalizeFile((File) wiz.getProperty("projdir")); // NOI18N
         ProjectInfo vi = new ProjectInfo((String) wiz.getProperty("groupId"), (String) wiz.getProperty("artifactId"), (String) wiz.getProperty("version"), (String) wiz.getProperty("package")); //NOI18N
-        ArchetypeWizards.createFromArchetype(rootFile, vi, EA_ARCH, null, true);
+        File rootFile = FileUtil.normalizeFile((File) wiz.getProperty("projdir")); // NOI18N
         File earFile = FileUtil.normalizeFile((File) wiz.getProperty("ear_projdir")); // NOI18N
+        
+        ArchetypeWizards.createFromArchetype(rootFile, vi, J2eeArchetypeFactory.getInstance().getAnyArchetypeFor(J2eeModule.Type.RAR), null, true);
         ArchetypeWizards.createFromArchetype(earFile, ear_vi, (Archetype) wiz.getProperty("ear_archetype"), null, false); //NOI18N
         if (web_vi != null) {
             ArchetypeWizards.createFromArchetype(FileUtil.normalizeFile((File) wiz.getProperty("web_projdir")), web_vi, //NOI18N
@@ -210,28 +120,87 @@ public class EAWizardIterator implements WizardDescriptor.BackgroundInstantiatin
             ArchetypeWizards.createFromArchetype(FileUtil.normalizeFile((File) wiz.getProperty("ejb_projdir")), ejb_vi, //NOI18N
                     (Archetype) wiz.getProperty("ejb_archetype"), null, false); //NOI18N
         }
-        addEARDeps((File) wiz.getProperty("ear_projdir"), ejb_vi, web_vi);
-        return ArchetypeWizards.openProjects(rootFile, earFile);
+        addEARDependencies((File) wiz.getProperty("ear_projdir"), ejb_vi, web_vi); // NOI18N
+        
+        // For every single created project we need to setup server correctly
+        Set<FileObject> projects = ArchetypeWizards.openProjects(rootFile, earFile);
+        for (FileObject projectFile : projects) {
+            saveServerSettings(projectFile);
+        }
+        
+        return projects;
     }
     
-    private static void addEARDeps (File earDir, ProjectInfo ejbVi, ProjectInfo webVi) {
+    /**
+     * Creates dependencies between EAR ---> Ejb module and EAR ---> Web module
+     * 
+     * @param earDir ear module directory
+     * @param ejbInfo ejb project informations
+     * @param webInfo web project informations
+     */
+    private void addEARDependencies (File earDir, ProjectInfo ejbInfo, ProjectInfo webInfo) {
         FileObject earDirFO = FileUtil.toFileObject(FileUtil.normalizeFile(earDir));
         if (earDirFO == null) {
             return;
         }
         List<ModelOperation<POMModel>> operations = new ArrayList<ModelOperation<POMModel>>();
-        if (ejbVi != null) {
-            // EAR ---> ejb
-            operations.add(ArchetypeWizards.addDependencyOperation(ejbVi, "ejb"));
+        if (ejbInfo != null) {
+            operations.add(ArchetypeWizards.addDependencyOperation(ejbInfo, "ejb")); // NOI18N
         }
-        if (webVi != null) {
-            // EAR ---> war
-            operations.add(ArchetypeWizards.addDependencyOperation(webVi, "war"));
+        if (webInfo != null) {
+            operations.add(ArchetypeWizards.addDependencyOperation(webInfo, "war")); // NOI18N
         }
 
-        Utilities.performPOMModelOperations(earDirFO.getFileObject("pom.xml"), operations);
+        Utilities.performPOMModelOperations(earDirFO.getFileObject("pom.xml"), operations); // NOI18N
+    }
+    
+    private void saveServerSettings(FileObject projectFile) throws IOException {
+        Project project = ProjectManager.getDefault().findProject(projectFile);
+        
+        // Getting properties saved in ServerSelectionHelper.storeServerSettings
+        String instanceID = (String) wiz.getProperty(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID);
+        String serverID = (String) wiz.getProperty(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER);
+        String j2eeVersion = (String) wiz.getProperty(MavenJavaEEConstants.HINT_J2EE_VERSION);
+
+        // Saving server information for project
+        AuxiliaryProperties props = project.getLookup().lookup(AuxiliaryProperties.class);
+        props.put(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID, instanceID, false);
+        props.put(MavenJavaEEConstants.HINT_J2EE_VERSION, j2eeVersion, false);
+        props.put(Constants.HINT_COMPILE_ON_SAVE, "all", true); //NOI18N
+        
+        String projectDirName = project.getProjectDirectory().getName();
+        if (projectDirName.endsWith("-ejb") || projectDirName.endsWith("-ear") || projectDirName.endsWith("-web")) { // NOI18N
+            storeSettingsToPom(projectFile, MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER, serverID);
+        }
+    }
+    
+    private void storeSettingsToPom(FileObject projectFile, final String propertyName, final String serverID) {
+        final ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
+
+            @Override
+            public void performOperation(POMModel model) {
+                Properties props = model.getProject().getProperties();
+                if (props == null) {
+                    props = model.getFactory().createProperties();
+                    model.getProject().setProperties(props);
+                }
+                props.setProperty(propertyName, serverID);
+            }
+        };
+        final FileObject pom = projectFile.getFileObject("pom.xml"); //NOI18N
+        try {
+            pom.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
+                @Override
+                public void run() throws IOException {
+                    Utilities.performPOMModelOperations(pom, Collections.singletonList(operation));
+                }
+            });
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 
+    @Override
     public void initialize(WizardDescriptor wiz) {
         this.wiz = wiz;
         index = 0;
@@ -240,6 +209,14 @@ public class EAWizardIterator implements WizardDescriptor.BackgroundInstantiatin
         updateSteps();
     }
     
+    private WizardDescriptor.Panel[] createPanels(ValidationGroup vg) {
+        return new WizardDescriptor.Panel[] {
+            ArchetypeWizards.basicWizardPanel(vg, false, null),
+            new EAWizardPanel(vg)
+        };
+    }
+    
+    @Override
     public void uninitialize(WizardDescriptor wiz) {
         this.wiz.putProperty("projdir",null); //NOI18N
         this.wiz.putProperty("name",null); //NOI18N
@@ -248,18 +225,22 @@ public class EAWizardIterator implements WizardDescriptor.BackgroundInstantiatin
         listeners.clear();
     }
     
+    @Override
     public String name() {
         return NameFormat(index + 1, panels.length);
     }
     
+    @Override
     public boolean hasNext() {
         return index < panels.length - 1;
     }
     
+    @Override
     public boolean hasPrevious() {
         return index > 0;
     }
     
+    @Override
     public void nextPanel() {
         if (!hasNext()) {
             throw new NoSuchElementException();
@@ -267,6 +248,7 @@ public class EAWizardIterator implements WizardDescriptor.BackgroundInstantiatin
         index++;
     }
     
+    @Override
     public void previousPanel() {
         if (!hasPrevious()) {
             throw new NoSuchElementException();
@@ -274,17 +256,20 @@ public class EAWizardIterator implements WizardDescriptor.BackgroundInstantiatin
         index--;
     }
     
+    @Override
     public WizardDescriptor.Panel current() {
         return panels[index];
     }
     
     // If nothing unusual changes in the middle of the wizard, simply:
+    @Override
     public final void addChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.add(l);
         }
     }
     
+    @Override
     public final void removeChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.remove(l);
@@ -322,5 +307,12 @@ public class EAWizardIterator implements WizardDescriptor.BackgroundInstantiatin
             }
         }
     }
-    
+        
+    @Messages("LBL_CreateProjectStep2ee=Name and Location")
+    private String[] createSteps() {
+        return new String[] { 
+            LBL_CreateProjectStep2ee(), 
+            LBL_EESettings() 
+        };
+    }
 }
