@@ -6,6 +6,7 @@ METHOD     foo()                           [PUBLIC]   issue200178.php
 ------------------------------------
 CLASS      Foo                             [PUBLIC]   issue159970.php
 CLASS      Foo                             [PUBLIC]   issue191666.php
+CLASS      Foo                             [PUBLIC]   test203294.php
 CLASS      foo                             [PUBLIC]   tests178955.php
 CLASS      foo2                            [PUBLIC]   tests178955.php
 METHOD     foo($func_arg)                  [PUBLIC]   var_scope.php

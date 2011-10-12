@@ -46,7 +46,7 @@ import org.netbeans.modules.css.indexing.CssIndexer;
 
 /**
  *
- * @author marekfukala
+ * @author mfukala@netbeans.org
  */
 public enum RefactoringElementType {
     

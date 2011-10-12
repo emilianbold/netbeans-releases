@@ -107,20 +107,14 @@ public final class JavaHierarchyModel extends DefaultTreeModel {
 
     /**
      */
-    public JavaHierarchyModel (FileObject fileObject, Element[] elements) {
+    public JavaHierarchyModel (FileObject fileObject, ElementHandle[] elements) {
         super (null);
         this.fileObject = fileObject;
 
-        if ((elements == null) || (elements.length == 0)) {
+        if ((elements == null)) {
             elementHandles = EMPTY_ELEMENTHANDLES_ARRAY;
         } else {
-            List<ElementHandle> elementHandlesList = new ArrayList<ElementHandle> (elements.length);
-
-            for (Element element : elements) {
-                elementHandlesList.add (ElementHandle.create (element));
-            }
-
-            elementHandles = elementHandlesList.toArray (EMPTY_ELEMENTHANDLES_ARRAY);
+            elementHandles = elements;
         }
     }
 

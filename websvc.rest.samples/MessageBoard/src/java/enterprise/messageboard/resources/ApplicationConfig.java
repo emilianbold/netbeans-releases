@@ -44,13 +44,12 @@ import com.sun.jersey.api.core.PackagesResourceConfig;
 
 /**
  *
- * @author mkuchtiak
+ * @author __USER__
  */
 @javax.ws.rs.ApplicationPath("app")
 public class ApplicationConfig extends PackagesResourceConfig {
 
    public ApplicationConfig() {
        super ("enterprise.messageboard");
-       System.out.println("cccccc");
    }
 }

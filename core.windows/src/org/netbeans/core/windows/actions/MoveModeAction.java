@@ -115,7 +115,8 @@ implements PropertyChangeListener {
         if( null == contextMode 
                 || contextMode.getKind() == Constants.MODE_KIND_EDITOR 
                 || contextMode.getState() == Constants.MODE_STATE_SEPARATED
-                || null == contextMode.getSelectedTopComponent() ) {
+                || null == contextMode.getSelectedTopComponent()
+                || WindowManagerImpl.getInstance().getCurrentMaximizedMode() != null ) {
             setEnabled( false );
             return;
         }

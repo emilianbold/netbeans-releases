@@ -94,6 +94,8 @@ public class SwitcherTable extends JTable {
      */
     private boolean needCalcRowHeight = true;
     
+    private final boolean showIcons;
+    
     /**
      * Creates a new instance of SwitcherTable. Created table will be as high
      * as possible. Height will be used during the number of row computing.
@@ -118,6 +120,14 @@ public class SwitcherTable extends JTable {
         getSelectionModel().setAnchorSelectionIndex(-1);
         getSelectionModel().setLeadSelectionIndex(-1);
         setAutoscrolls( false );
+        boolean hasIcons = false;
+        for( SwitcherTableItem i : items ) {
+            if( i.getIcon() != null && i.getIcon().getIconWidth() > 0 ) {
+                hasIcons = true;
+                break;
+            }
+        }
+        showIcons = hasIcons;
     }
     
     private void init() {
@@ -174,15 +184,17 @@ public class SwitcherTable extends JTable {
         }
         
         Icon icon = item.getIcon();
-        if (icon == null ) {
+        if (icon == null || icon.getIconWidth() == 0 ) {
             icon = nullIcon;
         }
         boolean active = item.isActive();
         if( null != lbl ) {
             lbl.setText((selected || (active && !TABNAMES_HTML)) ? stripHtml( item.getHtmlName() ) : item.getHtmlName());
-            lbl.setIcon(icon);
             lbl.setBorder(rendererBorder);
-            lbl.setIconTextGap(26 - icon.getIconWidth());
+            if( showIcons ) {
+                lbl.setIcon(icon);
+                lbl.setIconTextGap(26 - icon.getIconWidth());
+            }
         }
         
         if (active) {
@@ -214,8 +226,8 @@ public class SwitcherTable extends JTable {
     }
 
     private static class NullIcon implements Icon {
-        public int getIconWidth() { return 0; }
-        public int getIconHeight() { return 0; }
+        public int getIconWidth() { return 16; }
+        public int getIconHeight() { return 16; }
         public void paintIcon(Component c, Graphics g, int x, int y) {}
     }
     

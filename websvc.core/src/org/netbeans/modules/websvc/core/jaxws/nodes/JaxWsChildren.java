@@ -581,15 +581,19 @@ public class JaxWsChildren extends Children.Keys<Object>/* implements MDRChangeL
                             WsdlService wsdlService = model.getServiceByName(serviceName);
                             boolean jaxWsModelChanged=false;
                             if (wsdlService==null) {
-                                wsdlService = (WsdlService)model.getServices().get(0);
-                                service.setServiceName(wsdlService.getName());                                   
-                                jaxWsModelChanged=true;
+                                if ( !model.getServices().isEmpty() ) {
+                                    wsdlService = (WsdlService)model.getServices().get(0);
+                                    service.setServiceName(wsdlService.getName());                                   
+                                    jaxWsModelChanged=true;
+                                }
                             }
                             WsdlPort wsdlPort = wsdlService.getPortByName(portName);
                             if (wsdlPort==null) {
-                                wsdlPort = (WsdlPort)wsdlService.getPorts().get(0);
-                                service.setPortName(wsdlPort.getName());
-                                jaxWsModelChanged=true;
+                                if ( !wsdlService.getPorts().isEmpty()){
+                                    wsdlPort = (WsdlPort)wsdlService.getPorts().get(0);
+                                    service.setPortName(wsdlPort.getName());
+                                    jaxWsModelChanged=true;
+                                }
                             }
                             
                             // test if package name for java artifacts hasn't changed

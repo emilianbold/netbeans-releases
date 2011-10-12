@@ -145,6 +145,7 @@ public class TplLexer implements Lexer<TplTokenId> {
         VARIABLE_MODIFIERS.add("date_format"); // NOI18N
         VARIABLE_MODIFIERS.add("default"); // NOI18N
         VARIABLE_MODIFIERS.add("escape"); // NOI18N
+        VARIABLE_MODIFIERS.add("from_charset"); // NOI18N
         VARIABLE_MODIFIERS.add("indent"); // NOI18N
         VARIABLE_MODIFIERS.add("lower"); // NOI18N
         VARIABLE_MODIFIERS.add("nl2br"); // NOI18N
@@ -154,7 +155,9 @@ public class TplLexer implements Lexer<TplTokenId> {
         VARIABLE_MODIFIERS.add("string_format"); // NOI18N
         VARIABLE_MODIFIERS.add("strip"); // NOI18N
         VARIABLE_MODIFIERS.add("strip_tags"); // NOI18N
+        VARIABLE_MODIFIERS.add("to_charset"); // NOI18N
         VARIABLE_MODIFIERS.add("truncate"); // NOI18N
+        VARIABLE_MODIFIERS.add("unescape"); // NOI18N
         VARIABLE_MODIFIERS.add("upper"); // NOI18N
         VARIABLE_MODIFIERS.add("wordwrap"); // NOI18N
     }
@@ -162,6 +165,7 @@ public class TplLexer implements Lexer<TplTokenId> {
     static final Set<String> OPERATORS = new HashSet<String>();
     static {
         // See http://www.smarty.net/manual/en/language.function.if.php
+        OPERATORS.add("as"); // NOI18N
         OPERATORS.add("div"); // NOI18N
         OPERATORS.add("by"); // NOI18N
         OPERATORS.add("even"); // NOI18N
@@ -187,28 +191,24 @@ public class TplLexer implements Lexer<TplTokenId> {
     static {
         // See http://www.smarty.net/manual/en/language.builtin.functions.php,
         //     http://www.smarty.net/manual/en/language.custom.functions.php
+        FUNCTIONS.add("append"); // NOI18N
+        FUNCTIONS.add("assign"); // NOI18N
+        FUNCTIONS.add("block"); // NOI18N
+        FUNCTIONS.add("call"); // NOI18N
         FUNCTIONS.add("capture"); // NOI18N
         FUNCTIONS.add("config_load"); // NOI18N
-        FUNCTIONS.add("foreach"); // NOI18N,
-        FUNCTIONS.add("foreachelse"); // NOI18N
-        FUNCTIONS.add("if"); // NOI18N,
-        FUNCTIONS.add("elseif"); // NOI18N,
-        FUNCTIONS.add("else"); // NOI18N
-        FUNCTIONS.add("include"); // NOI18N
-        FUNCTIONS.add("include_php"); // NOI18N
-        FUNCTIONS.add("insert"); // NOI18N
-        FUNCTIONS.add("ldelim"); // NOI18N,
-        FUNCTIONS.add("rdelim"); // NOI18N
-        FUNCTIONS.add("literal"); // NOI18N
-        FUNCTIONS.add("section"); // NOI18N,
-        FUNCTIONS.add("sectionelse"); // NOI18N
-        FUNCTIONS.add("strip"); // NOI18N
-        FUNCTIONS.add("assign"); // NOI18N
         FUNCTIONS.add("counter"); // NOI18N
         FUNCTIONS.add("cycle"); // NOI18N
         FUNCTIONS.add("debug"); // NOI18N
+        FUNCTIONS.add("else"); // NOI18N
+        FUNCTIONS.add("elseif"); // NOI18N,
         FUNCTIONS.add("eval"); // NOI18N
+        FUNCTIONS.add("extends"); // NOI18N
         FUNCTIONS.add("fetch"); // NOI18N
+        FUNCTIONS.add("for"); // NOI18N
+        FUNCTIONS.add("foreach"); // NOI18N,
+        FUNCTIONS.add("foreachelse"); // NOI18N
+        FUNCTIONS.add("function"); // NOI18N
         FUNCTIONS.add("html_checkboxes"); // NOI18N
         FUNCTIONS.add("html_image"); // NOI18N
         FUNCTIONS.add("html_options"); // NOI18N
@@ -216,12 +216,25 @@ public class TplLexer implements Lexer<TplTokenId> {
         FUNCTIONS.add("html_select_date"); // NOI18N
         FUNCTIONS.add("html_select_time"); // NOI18N
         FUNCTIONS.add("html_table"); // NOI18N
+        FUNCTIONS.add("if"); // NOI18N,
+        FUNCTIONS.add("include"); // NOI18N
+        FUNCTIONS.add("include_php"); // NOI18N
+        FUNCTIONS.add("insert"); // NOI18N
+        FUNCTIONS.add("ldelim"); // NOI18N,
+        FUNCTIONS.add("literal"); // NOI18N
         FUNCTIONS.add("mailto"); // NOI18N
         FUNCTIONS.add("math"); // NOI18N
+        FUNCTIONS.add("nocache"); // NOI18N
         FUNCTIONS.add("php"); // NOI18N
         FUNCTIONS.add("popup"); // NOI18N
         FUNCTIONS.add("popup_init"); // NOI18N
+        FUNCTIONS.add("rdelim"); // NOI18N
+        FUNCTIONS.add("section"); // NOI18N,
+        FUNCTIONS.add("sectionelse"); // NOI18N
+        FUNCTIONS.add("setfilter"); // NOI18N
+        FUNCTIONS.add("strip"); // NOI18N
         FUNCTIONS.add("textformat"); // NOI18N
+        FUNCTIONS.add("while"); // NOI18N
     }
 
     /**

@@ -558,6 +558,8 @@ class SftpSupport {
 
     private class LsLoader implements Callable<StatInfo[]> {
 
+        private static final int S_IFMT   =  0xF000; //bitmask for the file type bitfields
+        private static final int S_IFREG  =  0x8000; //regular file
         private final String path;
 
         public LsLoader(String path) {
@@ -580,6 +582,12 @@ class SftpSupport {
                     String name = entry.getFilename();
                     if (! ".".equals(name) && ! "..".equals(name)) { //NOI18N
                         SftpATTRS attrs = entry.getAttrs();
+                        if (!(attrs.isDir() || attrs.isLink())) {
+                            if ( (attrs.getPermissions() & S_IFMT) != S_IFREG) {
+                                // skip not regular files
+                                continue;
+                            }
+                        }
                         result.add(createStatInfo(path, name, attrs, cftp));
                     }
                 }            

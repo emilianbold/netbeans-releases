@@ -595,13 +595,13 @@ public class XMLWizardIterator implements TemplateWizard.Iterator {
         File pobj = FileUtil.toFile(folder.getPrimaryFile());
         String root = model.getRoot();
         if (root == null) {
-            root = "root";
+            root = "root"; // NOI18N
         }
         String prefix = model.getPrefix();
 
         if (model.getType() == model.DTD) {
             if (model.getPublicID() == null) {
-                writer.append("<!DOCTYPE " + root + " SYSTEM '" + model.getSystemID() + "'>\n");                                 // NOI18N
+                writer.append("<!DOCTYPE " + root + " SYSTEM '" + model.getSystemID() + "'>\n");      // NOI18N                            // NOI18N
 
             } else {
                 writer.append("<!DOCTYPE " + root + " PUBLIC '" + model.getPublicID() + "' '" + model.getSystemID() + "'>\n");   // NOI18N
@@ -614,9 +614,9 @@ public class XMLWizardIterator implements TemplateWizard.Iterator {
             List nodes = model.getSchemaNodes();
 
             if (prefix == null || "".equals(prefix)) {
-                writer.append("<" + root + "  xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'\n");
+                writer.append("<" + root + "  xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'"); // NOI18N
             } else {
-                writer.append("<" + prefix + ":" + root + "  xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'\n");
+                writer.append("<" + prefix + ":" + root + "  xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'"); // NOI18N
             }
 
 
@@ -627,32 +627,34 @@ public class XMLWizardIterator implements TemplateWizard.Iterator {
                     nsToPre.put(erdn.getNamespace(), erdn.getPrefix());
 
                     if (erdn.getPrefix() == null || "".equals(erdn.getPrefix())) {
-                        writer.append("   xmlns='" + erdn.getNamespace() + "'\n");
+                        writer.append("\n   xmlns='" + erdn.getNamespace() + "'"); // NOI18N
                     } else {
-                        writer.append("   xmlns:" + erdn.getPrefix() + "='" + erdn.getNamespace() + "'\n");
+                        writer.append("\n   xmlns:" + erdn.getPrefix() + "='" + erdn.getNamespace() + "'"); // NOI18N
                     }
                 }
+                int written = 0;
                 for (int i = 0; i < nodes.size(); i++) {
                     SchemaObject erdn = (SchemaObject) nodes.get(i);
+                    if (erdn.isFromCatalog()) {
+                        continue;
+                    }
                     String relativePath = null;
-                    if (erdn.toString().startsWith("http")) {
+                    if (erdn.toString().startsWith("http")) { // NOI18N
                         relativePath = erdn.toString();
                     } else {
                         relativePath = Util.getRelativePath((new File(erdn.getSchemaFileName())), pobj);
                     }
-                    if (i == 0) {
-                        if (nodes.size() == 1) {
-                            writer.append("   xsi:schemaLocation='" + erdn.getNamespace() + " " + relativePath + "'>\n");
-                        } else {
-                            writer.append("   xsi:schemaLocation='" + erdn.getNamespace() + " " + relativePath + "\n");
-                        }
-                    } else if (i == nodes.size() - 1) {
-                        writer.append("   " + erdn.getNamespace() + " " + relativePath + "'>\n");
+                    if (written == 0) {
+                        writer.append("\n   xsi:schemaLocation='" + erdn.getNamespace() + " " + relativePath); // NOI18N
                     } else {
-                        writer.append("   " + erdn.getNamespace() + " " + relativePath + "\n");
+                        writer.append("\n   " + erdn.getNamespace() + " " + relativePath); // NOI18N
                     }
+                    written++;
                 }
-
+                if (written > 0) {
+                    writer.append("'"); // NOI18N
+                }
+                writer.append(">\n"); // NOI18N
             }
             model.getXMLContentAttributes().setNamespaceToPrefixMap(nsToPre);
             generateXMLBody(model, root, writer);

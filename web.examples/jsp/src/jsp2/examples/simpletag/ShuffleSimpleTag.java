@@ -17,11 +17,14 @@
 
 package jsp2.examples.simpletag;
 
+import java.security.NoSuchAlgorithmException;
 import javax.servlet.jsp.JspException;
 import javax.servlet.jsp.tagext.JspFragment;
 import javax.servlet.jsp.tagext.SimpleTagSupport;
-import java.util.HashMap;
 import java.io.IOException;
+import java.security.SecureRandom;
+import java.util.Random;
+import java.util.logging.Logger;
 
 /**
  * SimpleTag handler that accepts takes three attributes of type
@@ -32,38 +35,44 @@ public class ShuffleSimpleTag extends SimpleTagSupport {
     private JspFragment fragment2;
     private JspFragment fragment3;
 
+    @Override
     public void doTag() throws JspException, IOException {
-        switch( (int)(Math.random() * 6) ) {
-            case 0:
-                fragment1.invoke( null );
-                fragment2.invoke( null );
-                fragment3.invoke( null );
-                break;
-            case 1:
-                fragment1.invoke( null );
-                fragment3.invoke( null );
-                fragment2.invoke( null );
-                break;
-            case 2:
-                fragment2.invoke( null );
-                fragment1.invoke( null );
-                fragment3.invoke( null );
-                break;
-            case 3:
-                fragment2.invoke( null );
-                fragment3.invoke( null );
-                fragment1.invoke( null );
-                break;
-            case 4:
-                fragment3.invoke( null );
-                fragment1.invoke( null );
-                fragment2.invoke( null );
-                break;
-            case 5:
-                fragment3.invoke( null );
-                fragment2.invoke( null );
-                fragment1.invoke( null );
-                break;
+        try {
+            SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
+            switch(random.nextInt(6)) {
+                case 0:
+                    fragment1.invoke( null );
+                    fragment2.invoke( null );
+                    fragment3.invoke( null );
+                    break;
+                case 1:
+                    fragment1.invoke( null );
+                    fragment3.invoke( null );
+                    fragment2.invoke( null );
+                    break;
+                case 2:
+                    fragment2.invoke( null );
+                    fragment1.invoke( null );
+                    fragment3.invoke( null );
+                    break;
+                case 3:
+                    fragment2.invoke( null );
+                    fragment3.invoke( null );
+                    fragment1.invoke( null );
+                    break;
+                case 4:
+                    fragment3.invoke( null );
+                    fragment1.invoke( null );
+                    fragment2.invoke( null );
+                    break;
+                case 5:
+                    fragment3.invoke( null );
+                    fragment2.invoke( null );
+                    fragment1.invoke( null );
+                    break;
+            }
+        } catch (NoSuchAlgorithmException ex) {
+            Logger.getLogger(Logger.GLOBAL_LOGGER_NAME, "Algorithm SHA1PRNG wasn't found !");
         }
     }
 

@@ -56,6 +56,9 @@ import org.openide.windows.TopComponent;
     @ActionReference(path = "Menu/Refactoring", position = 1850),
     @ActionReference(path = "Projects/org-netbeans-modules-java-j2seproject/Actions", position = 2350),
     @ActionReference(path = "Projects/org-netbeans-modules-ant-freeform/Actions", position = 1650),
+    @ActionReference(path = "Projects/org-netbeans-modules-j2ee-clientproject/Actions", position = 2350),
+    @ActionReference(path = "Projects/org-netbeans-modules-j2ee-ejbjarproject/Actions", position = 2350),
+    @ActionReference(path = "Projects/org-netbeans-modules-web-project/Actions", position = 2350),
     @ActionReference(path = "Projects/org-netbeans-modules-maven/Actions", position = 2850)
 })
 @Messages("CTL_ApplyPatternAction=Inspect and Transform...")

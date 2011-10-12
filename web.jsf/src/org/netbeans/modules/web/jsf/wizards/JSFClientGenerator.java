@@ -1253,6 +1253,9 @@ public class JSFClientGenerator {
                         idPropertyType[0] = "long";
                     } else if (TypeKind.SHORT == idType.getKind()) {
                         idPropertyType[0] = "short";
+                    } else {
+                        //instead of throwing exceptions later, just use Object
+                        idPropertyType[0] = "java.lang.Object";//NOI18N
                     }
                     
                     String simpleIdPropertyType = JpaControllerUtil.simpleClassName(idPropertyType[0]);

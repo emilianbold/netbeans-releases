@@ -56,7 +56,7 @@ import org.netbeans.modules.parsing.spi.Parser.Result;
 
 /**
  *
- * @author marekfukala
+ * @author mfukala@netbeans.org
  */
 public class TestIssue166592 extends TestBase {
 

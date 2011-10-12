@@ -1,11 +1,52 @@
 <?php
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Oracle in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ */
 
 class Application_Model_Property {
 
     protected $id;
     protected $reference_no;
-    protected $title_en;
-    protected $text_en;
+    protected $title;
+    protected $text;
     protected $disposition_id;
     protected $area;
     protected $floor;
@@ -18,10 +59,10 @@ class Application_Model_Property {
     protected $street;
     protected $property_build_id;
     protected $terace;
-    protected $loggia; 
-    protected $garden; 
+    protected $loggia;
+    protected $garden;
     protected $garage;
-    protected $parking_place; 
+    protected $parking_place;
 
     public function getCoverObject() {
         $pictures = new Application_Model_PropertyPicturesMapper();
@@ -89,25 +130,25 @@ class Application_Model_Property {
         $this->reference_no = $reference_no;
     }
 
-    
-    public function getTitle_en() {
-        return $this->title_en;
+
+    public function getTitle() {
+        return $this->title;
     }
 
-    public function setTitle_en($title_en) {
-        $this->title_en = $title_en;
+    public function setTitle($title) {
+        $this->title = $title;
     }
 
-    
-    public function getText_en() {
-        return $this->text_en;
+
+    public function getText() {
+        return $this->text;
     }
 
-    public function setText_en($text_en) {
-        $this->text_en = $text_en;
+    public function setText($text) {
+        $this->text = $text;
     }
 
-    
+
     public function getDisposition_id() {
         return $this->disposition_id;
     }
@@ -116,11 +157,11 @@ class Application_Model_Property {
         $this->disposition_id = $disposition_id;
     }
 
-    public function getArea() 
+    public function getArea()
     {
         return str_replace(".0", "", $this->area);
     }
-	
+
 	public function getAreaFormatted() {
 		return number_format($this->area, 0, ".", " ");
     }
@@ -177,13 +218,13 @@ class Application_Model_Property {
         $this->price = $price;
     }
 
-    
-    
+
+
     public function getCreated_on() {
         return $this->created_on;
     }
 
-    
+
     public function setCreated_on($created_on) {
         $this->created_on = $created_on;
     }
@@ -193,14 +234,14 @@ class Application_Model_Property {
         return $location->fetchAll('id = ' . $this->getLocation_id());
     }
 
-    
+
     public function getDisposition() {
         $disposition = new Application_Model_DispositionMapper();
         foreach ($disposition->fetchAll('id = ' . $this->getDisposition_id()) as $disposition_type) {
-            return $disposition_type->getText_en();
+            return $disposition_type->getText();
         }
     }
- 
+
     public function getTextLocation() {
         foreach ($this->getLocation() as $location) {
             return $location;
@@ -219,8 +260,8 @@ class Application_Model_Property {
         return number_format($this->getPrice(), 0, ".", " ");
     }
 
-    
-    
+
+
     public function getProperty_build_id() {
         return $this->property_build_id;
     }
@@ -228,14 +269,14 @@ class Application_Model_Property {
     public function setProperty_build_id($property_build_id) {
         $this->property_build_id = $property_build_id;
     }
-    
+
     public function getProperty_build_type() {
-        $m = new Application_Model_PropertyBuildTypeMapper(); 
+        $m = new Application_Model_PropertyBuildTypeMapper();
         $res = $m->fetch($this->property_build_id);
         return $res;
-        
+
     }
-    
+
     public function getTerace() {
         return str_replace('.0', '', $this->terace);
     }
@@ -276,7 +317,7 @@ class Application_Model_Property {
         $this->parking_place = $parking_place;
     }
 
- 
+
 
 }
 

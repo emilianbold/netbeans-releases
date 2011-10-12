@@ -52,6 +52,7 @@ made subject to such option by the copyright holder.
             <public-packages>
                 <package>org.apache.commons.net</package>
                 <package>org.apache.commons.net.ftp</package>
+                <package>org.apache.commons.net.util</package>
             </public-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/commons-net-3.0.1.jar</runtime-relative-path>

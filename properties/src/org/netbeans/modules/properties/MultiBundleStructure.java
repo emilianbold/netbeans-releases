@@ -366,4 +366,34 @@ class MultiBundleStructure extends BundleStructure implements Serializable {
             return 0;
         }
     }
+
+    @Override
+    PropertiesFileEntry[] getEntries() {
+       
+        synchronized (this) {
+            if (files == null) {
+                return new PropertiesFileEntry[0];
+            } else {
+                ArrayList<PropertiesFileEntry> entries = new ArrayList<PropertiesFileEntry>(files.length);
+                try {
+                    for (FileObject fileObject : files) {
+
+                        DataObject dataObject = DataObject.find(fileObject);
+                        if (dataObject instanceof PropertiesDataObject) {
+                           entries.add((PropertiesFileEntry) ((PropertiesDataObject) dataObject).getPrimaryEntry());
+                        }
+                    }
+                } catch (DataObjectNotFoundException ex) {
+//                ex.printStackTrace();
+                }
+                if(entries.isEmpty()){
+                    return new PropertiesFileEntry[0];
+                } else {
+                    return entries.toArray(new PropertiesFileEntry[entries.size()]);
+                }
+            }
+        }
+    }
+    
+    
 }

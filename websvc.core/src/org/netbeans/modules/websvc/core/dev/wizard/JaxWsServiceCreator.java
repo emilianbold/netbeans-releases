@@ -258,7 +258,7 @@ public class JaxWsServiceCreator implements ServiceCreator {
         DataObject dTemplate = DataObject.find(template);
         DataObject dobj = dTemplate.createFromTemplate(df, wsName);
         FileObject createdFile = dobj.getPrimaryFile();
-        createdFile.setAttribute("jax-ws-service", java.lang.Boolean.TRUE);
+        createdFile.setAttribute("jax-ws-service", java.lang.Boolean.TRUE); // NOI18N
         dobj.setValid(false);
         dobj = DataObject.find(createdFile);
         final JaxWsModel jaxWsModel = projectInfo.getProject().getLookup().lookup(JaxWsModel.class);
@@ -425,7 +425,7 @@ public class JaxWsServiceCreator implements ServiceCreator {
                 DataObject dTemplate = DataObject.find(template);
                 DataObject dobj = dTemplate.createFromTemplate(df, wsName);
                 FileObject createdFile = dobj.getPrimaryFile();
-                createdFile.setAttribute("jax-ws-service", java.lang.Boolean.TRUE);
+                createdFile.setAttribute("jax-ws-service", java.lang.Boolean.TRUE);     // NOI18N
                 dobj.setValid(false);
                 dobj = DataObject.find(createdFile);
 

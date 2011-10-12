@@ -96,7 +96,7 @@ public class LocalFileSystemEx133616Test extends NbTestCase {
         LocalFileSystemEx exfs = new LocalFileSystemEx();
         exfs.setRootDirectory(FileUtil.toFile(lfs.getRoot()));
         FileSystem xfs = TestUtilHid.createXMLFileSystem(getName(), new String[]{});
-        FileSystem mfs = new MultiFileSystem(new FileSystem[]{exfs, xfs});
+        FileSystem mfs = new MultiFileSystem(exfs, xfs);
         testedFS = mfs;
         System.setProperty("org.openide.util.Lookup", LocalFileSystemEx133616Test.class.getName() + "$Lkp");
         Lookup l = Lookup.getDefault();

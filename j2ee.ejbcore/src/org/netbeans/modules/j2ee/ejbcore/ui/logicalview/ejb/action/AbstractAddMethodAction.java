@@ -46,6 +46,8 @@ package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action;
 
 import java.awt.event.ActionEvent;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.TypeElement;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -57,16 +59,17 @@ import org.openide.nodes.Node;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
 import org.openide.util.actions.Presenter;
 
 /**
  * Action that can always be invoked and work procedurally.
- * 
+ *
  * @author Chris Webster
  * @author Martin Adamek
  */
 public abstract class AbstractAddMethodAction extends AbstractAction implements Presenter.Popup, ContextAwareAction {
-    
+
     /** Action context. */
     private Lookup context;
     private final AbstractAddMethodStrategy strategy;
@@ -81,11 +84,11 @@ public abstract class AbstractAddMethodAction extends AbstractAction implements 
         boolean enable = enable(actionContext.lookup(new Lookup.Template<Node>(Node.class)).allInstances().toArray(new Node[0]));
         return enable ? this : null;
     }
-    
+
     public String getName(){
         return strategy.getTitle();
     }
-    
+
     protected boolean enable(org.openide.nodes.Node[] activatedNodes) {
         if (activatedNodes.length != 1) {
             return false;
@@ -105,28 +108,35 @@ public abstract class AbstractAddMethodAction extends AbstractAction implements 
         }
         return false;
     }
-    
+
     public void actionPerformed(ActionEvent actionEvent) {
         performAction(context.lookup(new Lookup.Template<Node>(Node.class)).allInstances().toArray(new Node[0]));
     }
-    
-    protected void performAction(org.openide.nodes.Node[] activatedNodes) {
+
+    protected void performAction(final org.openide.nodes.Node[] activatedNodes) {
         if (activatedNodes.length != 1) {
             return;
         }
-        FileObject fileObject = activatedNodes[0].getLookup().lookup(FileObject.class);
-        try {
+        final FileObject fileObject = activatedNodes[0].getLookup().lookup(FileObject.class);
+
             if (fileObject != null) {
-                ElementHandle<TypeElement> elementHandle = _RetoucheUtil.getJavaClassFromNode(activatedNodes[0]);
-                if (elementHandle != null) {
-                    if (strategy.supportsEjb(fileObject, elementHandle.getQualifiedName())) {
-                        strategy.addMethod(fileObject, elementHandle.getQualifiedName());
+                RequestProcessor.getDefault().post(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        try {
+                            ElementHandle<TypeElement> elementHandle = _RetoucheUtil.getJavaClassFromNode(activatedNodes[0]);
+                            if (elementHandle != null) {
+                                if (strategy.supportsEjb(fileObject, elementHandle.getQualifiedName())) {
+                                    strategy.addMethod(fileObject, elementHandle.getQualifiedName());
+                                }
+                            }
+                        } catch (IOException ex) {
+                            Logger.getLogger(AbstractAddMethodAction.class.getName()).log(Level.WARNING, null, ex);
+                        }
                     }
-                }
+                });
             }
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
     }
 
     public Object getValue(String key) {

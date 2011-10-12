@@ -66,7 +66,7 @@ import org.openide.util.NbBundle;
 public final class TLDLoader extends UniFileLoader {
     
     public static final String tldExt = "tld"; //NOI18N
-    private static final String REQUIRED_MIME_1 = "text/x-tld"; //NOI18N
+    public static final String TLD_MIMETYPE = "text/x-tld"; //NOI18N
     
     private static final long serialVersionUID = -7367746798495347598L;
     
@@ -83,7 +83,7 @@ public final class TLDLoader extends UniFileLoader {
 	ExtensionList ext = new ExtensionList();
 	ext.addExtension(tldExt);
 	setExtensions(ext);
-        getExtensions().addMimeType(REQUIRED_MIME_1);
+        getExtensions().addMimeType(TLD_MIMETYPE);
     }
 
     protected MultiDataObject createMultiObject(final FileObject fo)

@@ -1,4 +1,6 @@
 <html><body><pre>
+
+&lt;%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 &lt;html>
 &lt;!--
   Copyright 2004 The Apache Software Foundation
@@ -18,48 +20,51 @@
 
 &lt;body bgcolor="white">
 &lt;font size=5 color="red">
-&lt;%! String[] fruits; %>
 &lt;jsp:useBean id="foo" scope="page" class="checkbox.CheckTest" />
-
 &lt;jsp:setProperty name="foo" property="fruit" param="fruit" />
-&lt;hr>
-The checked fruits (got using request) are: &lt;br>
-&lt;% 
-	fruits = request.getParameterValues("fruit");
-%>
-&lt;ul>
-&lt;%
-    if (fruits != null) {
-	  for (int i = 0; i &lt; fruits.length; i++) {
-%>
-&lt;li>
-&lt;%
-	      out.println (util.HTMLFilter.filter(fruits[i]));
-	  }
-	} else out.println ("none selected");
-%>
-&lt;/ul>
-&lt;br>
-&lt;hr>
 
-The checked fruits (got using beans) are &lt;br>
+&lt;hr/>
+The checked fruits (got using request) are:
+&lt;br/>
 
-&lt;% 
-		fruits = foo.getFruit();
-%>
 &lt;ul>
-&lt;%
-    if (!fruits[0].equals("1")) {
-	  for (int i = 0; i &lt; fruits.length; i++) {
-%>
-&lt;li>
-&lt;%
-		  out.println (util.HTMLFilter.filter(fruits[i]));
-	  }
-	} else out.println ("none selected");
-%>
+&lt;c:set var="requestFruits" value="${pageContext.request.getParameterValues('fruit')}" />
+&lt;c:choose>
+    &lt;c:when test="${requestFruits != null}">
+        &lt;c:forEach var="fruit" items="${requestFruits}">
+            &lt;li>
+                &lt;c:out value="${fruit}" />
+            &lt;/li>
+        &lt;/c:forEach>
+    &lt;/c:when>
+    &lt;c:otherwise>
+        &lt;c:out value="None selected" />
+    &lt;/c:otherwise>
+&lt;/c:choose>
 &lt;/ul>
+            
+&lt;hr/>
+The checked fruits (got using beans) are:
+&lt;br/>
+
+&lt;ul>
+&lt;c:set var="beanFruits" value="${foo.fruit}" />
+&lt;c:choose>
+    &lt;c:when test="${beanFruits[0].equals('1') == false}">
+        &lt;c:forEach var="fruit" items="${beanFruits}">
+            &lt;li>
+                &lt;c:out value="${fruit}" />
+            &lt;/li>
+        &lt;/c:forEach>
+    &lt;/c:when>
+    &lt;c:otherwise>
+        &lt;c:out value="None selected" />
+    &lt;/c:otherwise>
+&lt;/c:choose>
+&lt;/ul>
+
 &lt;/font>
 &lt;/body>
 &lt;/html>
+
 </pre></body></html>

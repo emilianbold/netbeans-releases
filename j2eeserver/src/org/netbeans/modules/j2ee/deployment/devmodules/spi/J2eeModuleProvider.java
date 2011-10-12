@@ -72,8 +72,7 @@ import org.netbeans.modules.j2ee.deployment.common.api.SourceFileMap;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.VerifierSupport;
 import org.openide.filesystems.FileObject;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
@@ -106,7 +105,7 @@ public abstract class J2eeModuleProvider {
 
     /* GuardedBy(configSupportImplLock) */
     private ConfigSupportImpl configSupportImpl;
-    private final List listeners = new ArrayList();
+    private final CopyOnWriteArrayList<ConfigurationFilesListener> listeners = new CopyOnWriteArrayList<ConfigurationFilesListener>();
     private ConfigFilesListener configFilesListener = null;
     
     public J2eeModuleProvider () {

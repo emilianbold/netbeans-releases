@@ -781,7 +781,8 @@ public final class CodeStyle {
      * to convert the single class imports to a 'star' import of the entire package.
      */
     public int countForUsingStarImport() {
-        return preferences.getInt(countForUsingStarImport, getDefaultAsInt(countForUsingStarImport));
+        boolean allow = preferences.getBoolean(allowConvertToStarImport, getDefaultAsBoolean(allowConvertToStarImport));
+        return allow ? preferences.getInt(countForUsingStarImport, getDefaultAsInt(countForUsingStarImport)) : Integer.MAX_VALUE;
     }
 
     /**
@@ -789,7 +790,8 @@ public final class CodeStyle {
      * to convert the single member static imports to a 'star' import of the entire class.
      */
     public int countForUsingStaticStarImport() {
-        return preferences.getInt(countForUsingStaticStarImport, getDefaultAsInt(countForUsingStaticStarImport));
+        boolean allow = preferences.getBoolean(allowConvertToStaticStarImport, getDefaultAsBoolean(allowConvertToStaticStarImport));
+        return allow ? preferences.getInt(countForUsingStaticStarImport, getDefaultAsInt(countForUsingStaticStarImport)) : Integer.MAX_VALUE;
     }
 
     /**

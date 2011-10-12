@@ -44,6 +44,7 @@
 package org.netbeans.core;
 
 import java.net.PasswordAuthentication;
+import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
@@ -51,6 +52,7 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
+import org.openide.util.NetworkSettings;
 
 /** Global password protected sites Authenticator for IDE
  *
@@ -61,7 +63,6 @@ final class NbAuthenticator extends java.net.Authenticator {
     private static final long TIMEOUT = 3000;
     private static long lastTry = 0;
 
-
     private NbAuthenticator() {
         Preferences proxySettingsNode = NbPreferences.root().node("/org/netbeans/core"); //NOI18N
         assert proxySettingsNode != null;
@@ -71,6 +72,10 @@ final class NbAuthenticator extends java.net.Authenticator {
         if (Boolean.valueOf(NbBundle.getMessage(GuiRunLevel.class, "USE_Authentication"))) {
             setDefault(new NbAuthenticator());
         }
+    }
+
+    static void install4test() {
+        setDefault(new NbAuthenticator());
     }
 
     @Override
@@ -84,6 +89,13 @@ final class NbAuthenticator extends java.net.Authenticator {
             if (System.currentTimeMillis() - lastTry > TIMEOUT) {
                 if (getRequestingProtocol().startsWith("SOCKS")&&(ProxySettings.getAuthenticationUsername().length()>0)) { //NOI18N
                     return new java.net.PasswordAuthentication(ProxySettings.getAuthenticationUsername(), ProxySettings.getAuthenticationPassword());
+                }
+                if (NetworkSettings.isAuthenticationDialogSuppressed()) {
+                    return null;
+                }
+                PasswordAuthentication auth = getAuthenticationFromURL();
+                if (auth != null) {
+                    return auth;
                 }
                 NbAuthenticatorPanel ui = new NbAuthenticatorPanel(getRequestingPrompt());
                 Object result = DialogDisplayer.getDefault().notify(
@@ -101,4 +113,17 @@ final class NbAuthenticator extends java.net.Authenticator {
         return null;
     }
 
+    private PasswordAuthentication getAuthenticationFromURL() {
+        URL u = this.getRequestingURL();
+        if (u != null) {
+            String auth = u.getUserInfo();
+            if (auth != null) {
+                int i = auth.indexOf(':');
+                String user = (i == -1) ? auth : auth.substring(0, i);
+                String pwd = (i == -1) ? "" : auth.substring(i + 1);
+                return new PasswordAuthentication(user, pwd.toCharArray());
+            }
+        }
+        return null;
+    }
 }

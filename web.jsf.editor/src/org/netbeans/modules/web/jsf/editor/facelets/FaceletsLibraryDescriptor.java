@@ -112,7 +112,7 @@ public final class FaceletsLibraryDescriptor implements LibraryDescriptor {
             Exceptions.printStackTrace(ex);
         }
     }
-
+    
     protected void parseLibrary(InputStream content) throws LibraryDescriptorException {
         try {
             DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();

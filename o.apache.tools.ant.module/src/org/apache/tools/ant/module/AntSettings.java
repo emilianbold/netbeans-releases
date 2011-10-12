@@ -54,6 +54,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import java.util.regex.Pattern;
@@ -69,6 +70,8 @@ import org.openide.util.LookupListener;
 import org.openide.util.NbPreferences;
 
 public class AntSettings {
+
+    private static final Logger LOG = Logger.getLogger(AntSettings.class.getName());
 
     private static final String PROP_VERBOSITY = "verbosity"; // NOI18N
     private static final String PROP_PROPERTIES = "properties"; // NOI18N
@@ -100,7 +103,7 @@ public class AntSettings {
         for (String pair : prefs().get(PROP_PROPERTIES, "build.compiler.emacs=true").split("\n")) { // NOI18N
             String[] nameval = pair.split("=", 2); // NOI18N
             if (nameval.length != 2) {
-                Logger.getLogger(AntSettings.class.getName()).warning("Unexpected name=value pair: '" + pair + "'");
+                LOG.log(Level.WARNING, "Unexpected name=value pair: ''{0}''", pair);
                 continue;
             }
             p.put(nameval[0], nameval[1]);
@@ -255,6 +258,7 @@ public class AntSettings {
                 assert provider != null;
                 defAECP.addAll(Arrays.asList(provider.getClasspathItems()));
             }
+            LOG.log(Level.FINE, "getAutomaticExtraClasspath: {0}", defAECP);
         }
         return defAECP;
     }

@@ -1,6 +1,6 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * To change this template, choose Tools | Templates and open the template in
+ * the editor.
  */
 package stateful.ejbs;
 
@@ -48,8 +48,8 @@ public class LRSS implements SessionBean {
 
     // </editor-fold>;
     /**
-     * See section 7.10.3 of the EJB 2.0 specification
-     * See section 7.11.3 of the EJB 2.1 specification
+     * See section 7.10.3 of the EJB 2.0 specification See section 7.11.3 of the
+     * EJB 2.1 specification
      */
     public void ejbCreate() {
         // TODO implement ejbCreate if necessary, acquire resources

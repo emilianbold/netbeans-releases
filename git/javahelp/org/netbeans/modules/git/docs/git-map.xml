@@ -8,6 +8,9 @@
 	<mapID target="org.netbeans.modules.git.remote" url="git-remote.html" />
 	<mapID target="org.netbeans.modules.git.commit" url="git-com.html" />
 	<mapID target="org.netbeans.modules.git.branch" url="git-branch.html" />
+	<mapID target="org.netbeans.modules.git.options" url="git-options.html" />
+	<mapID target="org.netbeans.modules.git.compare" url="git-diffviewer.html" />
+	<mapID target="org.netbeans.modules.git.initialize" url="git-initialize.html" />
 	
 
 
@@ -25,5 +28,14 @@
 	<mapID target="org.netbeans.modules.git.ui.push.UpdateBranchReferencesStep" url="csh/git-push-p3.html"/>
 	<mapID target="org.netbeans.modules.git.ui.checkout.CheckoutRevisionAction" url="csh/git-chkout-rev.html"/>
 	<mapID target="org.netbeans.modules.git.ui.branch.CreateBranch" url="csh/git-create-branch.html"/>
-	<mapID target="org.netbeans.modules.git.ui.push.UpdateBranchReferencesStep" url="csh/git-commit.html"/>
+	<mapID target="org.netbeans.modules.git.ui.commit.CommitAction" url="csh/git-commit.html"/>
+	<mapID target="org.netbeans.modules.git.ui.repository.RevisionPickerDialog" url="csh/git-select-rev.html"/>
+	<mapID target="org.netbeans.modules.git.ui.checkout.CheckoutPaths" url="csh/git-chkout-paths.html"/>
+	<mapID target="org.netbeans.modules.git.ui.checkout.SwitchBranchAction" url="csh/git-switch-branch.html"/>
+	<mapID target="org.netbeans.modules.git.ui.checkout.RevertChanges" url="csh/git-revert-mod.html"/>
+	<mapID target="org.netbeans.modules.git.ui.revert.RevertCommit" url="csh/git-revert-com.html"/>
+	<mapID target="org.netbeans.modules.git.ui.tag.CreateTag" url="csh/git-create-tag.html"/>
+	<mapID target="org.netbeans.modules.git.ui.tag.ManageTags" url="csh/git-manage-tags.html"/>
+	<mapID target="org.netbeans.modules.git.ui.merge.MergeRevision" url="csh/git-merge-rev.html"/>
+	<mapID target="org.netbeans.modules.git.ui.status.GitVersioningTopComponent" url="csh/git-versioning-view.html"/>
 </map>

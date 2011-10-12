@@ -50,6 +50,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import javax.swing.text.Position;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -70,7 +71,7 @@ public final class TypedTextInterceptorsManager {
         return instance;
     }
 
-    public Transaction openTransaction(JTextComponent c, int offset, String typedText) {
+    public Transaction openTransaction(JTextComponent c, Position offset, String typedText) {
         synchronized (this) {
             if (transaction == null) {
                 transaction = new Transaction(c, offset, typedText);
@@ -160,7 +161,7 @@ public final class TypedTextInterceptorsManager {
         private final Collection<? extends TypedTextInterceptor> interceptors;
         private int phase = 0;
 
-        private Transaction(JTextComponent c, int offset, String typedText) {
+        private Transaction(JTextComponent c, Position offset, String typedText) {
             this.context = TypingHooksSpiAccessor.get().createTtiContext(c, offset, typedText);
             this.interceptors = getInterceptors(c.getDocument(), offset);
         }
@@ -182,8 +183,8 @@ public final class TypedTextInterceptorsManager {
     }
 
     // XXX: listne on changes in MimeLookup
-    private Collection<? extends TypedTextInterceptor> getInterceptors(Document doc, int offset) {
-        List<TokenSequence<?>> seqs = TokenHierarchy.get(doc).embeddedTokenSequences(offset, true);
+    private Collection<? extends TypedTextInterceptor> getInterceptors(Document doc, Position offset) {
+        List<TokenSequence<?>> seqs = TokenHierarchy.get(doc).embeddedTokenSequences(offset.getOffset(), true);
         TokenSequence<?> seq = seqs.isEmpty() ? null : seqs.get(seqs.size() - 1);
         MimePath mimePath = seq == null ? MimePath.parse(DocumentUtilities.getMimeType(doc)) : MimePath.parse(seq.languagePath().mimePath());
         

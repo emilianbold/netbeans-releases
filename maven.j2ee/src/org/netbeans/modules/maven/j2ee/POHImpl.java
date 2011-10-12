@@ -160,7 +160,7 @@ public class POHImpl {
         String[] ids = obtainServerIds(project);
         String instanceFound = ids[0];
         String server = ids[1];
-
+        
         ProblemReporter report = project.getLookup().lookup(ProblemReporter.class);
 
         if (instanceFound != null) {
@@ -233,37 +233,29 @@ public class POHImpl {
         }
     }
 
+    /**
+     * Return server instance ID if set (that is concrete server instance) and if not available
+     * try to return at least server ID
+     * @return always array of two String values - first one is server instance ID and 
+     *    second one server ID; both can be null
+     */
     private static String[] obtainServerIds (Project project) {
-        String[] ids = new String[2];
         SessionContent sc = project.getLookup().lookup(SessionContent.class);
         if (sc.getServerInstanceId() != null) {
-            ids[0] = sc.getServerInstanceId();
+            return new String[]{sc.getServerInstanceId(), null};
         }
-        if (ids[0] == null) {
-            AuxiliaryProperties props = project.getLookup().lookup(AuxiliaryProperties.class);
-            // XXX should this first look up HINT_DEPLOY_J2EE_SERVER_ID in project (profile, ...) properties? Cf. Wrapper.createComboBoxUpdater.getDefaultValue
-            String val = props.get(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID, false);
-            ids[1] = props.get(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER, true);
-            if (ids[1] == null) {
-                //try checking for old values..
-                ids[1] = props.get(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_OLD, true);
-            }
-            if (ids[1] != null) {
-                String[] instances = Deployment.getDefault().getInstancesOfServer(ids[1]);
-                String inst = null;
-                if (instances != null && instances.length > 0) {
-                    inst = instances[0];
-                    for (int i = 0; i < instances.length; i++) {
-                        if (val != null && val.equals(instances[i])) {
-                            inst = instances[i];
-                            break;
-                        }
-                    }
-                    ids[0] = inst;
-                }
-            }
+        AuxiliaryProperties props = project.getLookup().lookup(AuxiliaryProperties.class);
+        // XXX should this first look up HINT_DEPLOY_J2EE_SERVER_ID in project (profile, ...) properties? Cf. Wrapper.createComboBoxUpdater.getDefaultValue
+        String val = props.get(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID, false);
+        if (val != null) {
+            return new String[]{val, null};
         }
-        return ids;
+        String server = props.get(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER, true);
+        if (server == null) {
+            //try checking for old values..
+            server = props.get(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_OLD, true);
+        }
+        return new String[]{null, server};
     }
 
     public static String obtainServerName (Project project) {

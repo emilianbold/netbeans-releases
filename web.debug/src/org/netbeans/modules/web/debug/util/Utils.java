@@ -139,11 +139,14 @@ public class Utils {
     
     public static String getJspPath(String url) {       
         FileObject fo = getFileObjectFromUrl(url);
+        if (fo == null) {
+            return null;
+        }
+        
         String jspRelativePath = url;
-        if (fo != null) {
-            WebModule wm = WebModule.getWebModule (fo);
-            if (wm != null)
-                jspRelativePath = FileUtil.getRelativePath(wm.getDocumentBase(), fo);
+        WebModule wm = WebModule.getWebModule (fo);
+        if (wm != null) {
+            jspRelativePath = FileUtil.getRelativePath(wm.getDocumentBase(), fo);
         }
         JSPServletFinder finder = JSPServletFinder.findJSPServletFinder (fo);
         String translated = finder.getServletSourcePath(jspRelativePath);

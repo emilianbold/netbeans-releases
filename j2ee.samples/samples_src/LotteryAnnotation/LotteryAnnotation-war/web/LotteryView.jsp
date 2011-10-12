@@ -1,3 +1,4 @@
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <!--
   Copyright (c) 2010, Oracle. All rights reserved.
 
@@ -47,14 +48,15 @@
 
       <fmt:message key="quick_pick_results">
         <fmt:param>
-          <%= lotteryName%>
+            <c:out value="<%= lotteryName%>" />
         </fmt:param> 
         <fmt:param>
-          <%= lotteryDate%>
+            <c:out value="<%= lotteryDate%>" />
         </fmt:param> 
       </fmt:message>
-      <br><br>
-      <b><%= lotteryNumber%></b><br><br>
+      <br/><br/>
+      <b><c:out value="<%= lotteryNumber%>" /></b>
+      <br/><br/>
 
       <fmt:message key="play_again"/> &nbsp<a href="index.html"><fmt:message key="here"/></a>.
 

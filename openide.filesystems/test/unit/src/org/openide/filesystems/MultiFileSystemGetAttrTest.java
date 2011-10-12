@@ -87,7 +87,7 @@ public class MultiFileSystemGetAttrTest extends NbTestCase {
         fs3.setReadOnly(true);
 
 
-        mfs = new MultiFileSystem(new FileSystem[]{fs1, fs2, fs3});
+        mfs = new MultiFileSystem(fs1, fs2, fs3);
     }
 
 
@@ -112,7 +112,7 @@ public class MultiFileSystemGetAttrTest extends NbTestCase {
         FileObject physFolder = FileUtil.createFolder(layers.getRoot(), "sub/dir");
         FileSystem writable = FileUtil.createMemoryFileSystem();
         writable.getRoot().createFolder("sub");
-        FileSystem sfs = new MultiFileSystem(new FileSystem[] {writable, layers});
+        FileSystem sfs = new MultiFileSystem(writable, layers);
         FileObject virtFolder = sfs.findResource("sub/dir");
         virtFolder.setAttribute("a", true);
         assertNull(physFolder.getAttribute("a"));
@@ -123,6 +123,17 @@ public class MultiFileSystemGetAttrTest extends NbTestCase {
         assertEquals(Collections.singletonList("a"), Collections.list(virtFolder.getAttributes()));
         assertNull(sfs.getRoot().getAttribute("sub\\dir\\a"));
         assertEquals(Collections.emptyList(), Collections.list(sfs.getRoot().getAttributes()));
+    }
+
+    public void testCanSetAttributeOnSFS() throws Exception { // #202316
+        FileSystem layers = FileUtil.createMemoryFileSystem();
+        FileObject physFolder = FileUtil.createFolder(layers.getRoot(), "sub/dir");
+        FileSystem writable = FileUtil.createMemoryFileSystem();
+        writable.getRoot().createFolder("sub");
+        FileSystem sfs = new MultiFileSystem(new MultiFileSystem(writable), layers);
+        FileObject virtFolder = sfs.findResource("sub/dir");
+        virtFolder.setAttribute("a", true);
+        assertEquals(true, virtFolder.getAttribute("a"));
     }
 
     public static class MyLFS extends LocalFileSystem implements AbstractFileSystem.Attr {

@@ -76,7 +76,6 @@ import javax.enterprise.deploy.spi.exceptions.TargetException;
 import javax.enterprise.deploy.spi.status.ProgressObject;
 import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsException;
 import org.netbeans.modules.j2ee.deployment.config.J2eeModuleAccessor;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment.DeploymentException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment.Mode;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeApplication;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
@@ -809,11 +808,6 @@ public class TargetServer {
         if (!instance.isRunning()) {
             return DeployOnSaveManager.DeploymentState.MODULE_NOT_DEPLOYED;
         }
-
-        if (provider.isOnlyCompileOnSaveEnabled()) {
-            // XXXX is this right response? it should not result in any error
-            return DeployOnSaveManager.DeploymentState.MODULE_NOT_DEPLOYED;
-        }
             
         if (!DeployOnSaveManager.isServerStateSupported(instance)) {
             return DeployOnSaveManager.DeploymentState.SERVER_STATE_UNSUPPORTED;
@@ -850,7 +844,8 @@ public class TargetServer {
         }
 
         ProgressUI ui = new ProgressUI(NbBundle.getMessage(TargetServer.class,
-                "MSG_DeployOnSave", provider.getDeploymentName()), false);
+                provider.isOnlyCompileOnSaveEnabled() ? "MSG_CompileOnSave" : "MSG_DeployOnSave",
+                provider.getDeploymentName()), false);
         ui.start(Integer.valueOf(0));
         try {
             boolean serverResources = false;
@@ -864,13 +859,13 @@ public class TargetServer {
             try {
                 // FIXME libraries stored in server specific descriptor
                 // do not match server resources
-                if (serverResources) {
+                if (serverResources && !provider.isOnlyCompileOnSaveEnabled()) {
                     DeploymentHelper.deployServerLibraries(provider);
                     DeploymentHelper.deployDatasources(provider);
                     DeploymentHelper.deployMessageDestinations(provider);
                 }
             } catch (DatasourceAlreadyExistsException ex) {
-                Exceptions.printStackTrace(ex);
+                LOGGER.log(Level.INFO, null, ex);
                 return DeployOnSaveManager.DeploymentState.DEPLOYMENT_FAILED;
             }
 
@@ -881,6 +876,10 @@ public class TargetServer {
 
             if (LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.log(Level.FINE, changes.toString());
+            }
+            if (provider.isOnlyCompileOnSaveEnabled()) {
+                // XXXX is this right response? it should not result in any error
+                return DeployOnSaveManager.DeploymentState.MODULE_NOT_DEPLOYED;
             }
 
             boolean completed = reloadArtifacts(ui, modules, changes);

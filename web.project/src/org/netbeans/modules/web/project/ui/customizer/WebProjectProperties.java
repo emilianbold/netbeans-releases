@@ -215,6 +215,9 @@ final public class WebProjectProperties {
     //list of frameworks to add to the application
     private List newExtenders;
     
+    //list of changed frameworks
+    private List<WebModuleExtender> existingExtenders;
+
     // MODELS FOR VISUAL CONTROLS
     
     // CustomizerSources
@@ -536,7 +539,24 @@ final public class WebProjectProperties {
                     }
                 });
             }
-            
+
+             // try to save already included extenders
+            if (existingExtenders != null) {
+                SwingUtilities.invokeLater(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        for (WebModuleExtender webModuleExtender : existingExtenders) {
+                            if (webModuleExtender instanceof WebModuleExtender.Savable) {
+                                ((WebModuleExtender.Savable) webModuleExtender).save(project.getAPIWebModule());
+                            }
+                        }
+                        existingExtenders.clear();
+                        project.resetTemplates();
+                    }
+                });
+            }
+
             // ui logging of the added frameworks
             if ((addedFrameworkNames != null) && (addedFrameworkNames.size() > 0)) {
                 Utils.logUI(NbBundle.getBundle(WebProjectProperties.class),"UI_WEB_PROJECT_FRAMEWORK_ADDED", // NOI18N
@@ -962,6 +982,10 @@ final public class WebProjectProperties {
     
     public void setNewExtenders(List extenders) {
         newExtenders = extenders;
+    }
+
+    public void setExistingExtenders(List<WebModuleExtender> extenders) {
+        existingExtenders = extenders;
     }
     
     public void setNewFrameworksNames(List<String> names) {

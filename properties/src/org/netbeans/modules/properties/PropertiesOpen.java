@@ -209,8 +209,8 @@ public class PropertiesOpen extends CloneableOpenSupport
         PropertiesDataObject dataObject;
         SaveCookie saveCookie = null;
         HashMap<SaveCookie,PropertiesDataObject> map = new HashMap<SaveCookie,PropertiesDataObject>();
-        for (int i=0;i<bundleStructure.getEntryCount();i++) {
-            dataObject = (PropertiesDataObject) bundleStructure.getNthEntry(i).getDataObject();
+        for (PropertiesFileEntry e : bundleStructure.getEntries()) {
+            dataObject = (PropertiesDataObject) e.getDataObject();
             saveCookie = dataObject.getCookie(SaveCookie.class);
             //Need to find all saveCookie
             if (saveCookie != null) map.put(saveCookie, dataObject);

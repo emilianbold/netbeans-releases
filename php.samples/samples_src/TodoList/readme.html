@@ -1,0 +1,190 @@
+<!--
+DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
+
+The contents of this file are subject to the terms of either the GNU
+General Public License Version 2 only ("GPL") or the Common
+Development and Distribution License("CDDL") (collectively, the
+"License"). You may not use this file except in compliance with the
+License. You can obtain a copy of the License at
+http://www.netbeans.org/cddl-gplv2.html
+or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+specific language governing permissions and limitations under the
+License.  When distributing the software, include this License Header
+Notice in each file and include the License file at
+nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
+particular file as subject to the "Classpath" exception as provided
+by Oracle in the GPL Version 2 section of the License file that
+accompanied this code. If applicable, add the following below the
+License Header, with the fields enclosed by brackets [] replaced by
+your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+If you wish your version of this file to be governed by only the CDDL
+or only the GPL Version 2, indicate your decision by adding
+"[Contributor] elects to include this software in this distribution
+under the [CDDL or GPL Version 2] license." If you do not indicate a
+single choice of license, a recipient has the option to distribute
+your version of this file under either the CDDL, the GPL Version 2 or
+to extend the choice of license to its licensees as provided above.
+However, if you add GPL Version 2 code and therefore, elected the GPL
+Version 2 license, then the option applies only if the new code is
+made subject to such option by the copyright holder.
+
+Contributor(s):
+
+Portions Copyrighted 2011 Sun Microsystems, Inc.
+-->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>TODO List - sample application for NetBeans IDE</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <link href="web/css/style.css" rel="stylesheet" type="text/css" />
+    <link href="web/css/layout.css" rel="stylesheet" type="text/css" />
+</head>
+<body id="page">
+    <div class="tail-top-right"></div>
+    <div id="main">
+        <!-- header -->
+        <div id="header"></div>
+        <!-- content -->
+        <div id="content">
+            <div class="wrapper">
+                <div class="col-2">
+                    <div class="indent">
+
+                        <h1>TODO List</h1>
+                        <h2>NetBeans PHP Sample Application</h2>
+
+                        <h3>What is TODO List?</h3>
+                        <p class="p">TODO List is a personal list of things that are to be done.
+                            This PHP application is created to highlight PHP features supported by NetBeans IDE.
+                        </p>
+                        <p class="p">
+                            <b>This sample is not intented to be used on a production server without any changes.</b>
+                        </p>
+
+                        <h3>This sample demonstrates the following features:</h3>
+                        <ul class="p">
+                            <li>OOP concepts</li>
+                            <li>preventing public access to your scripts</li>
+                            <li>configuration your application</li>
+                            <li>accessing your database data</li>
+                            <li>changing your database data (with redirect-after-post pattern)</li>
+                            <li>validating your data</li>
+                            <li>splitting scripts and templates</li>
+                            <li>handling expected and unexpected exceptions</li>
+                        </ul>
+
+                        <h3>Requirements</h3>
+                        Follow these before you run the sample:
+                        <ul class="p">
+                            <li>Install NetBeans IDE with PHP support</li>
+                            <li>Install and configure PHP Runtime</li>
+                            <li>Install and configure MySQL database</li>
+                        </ul>
+
+                        <h3>What is included?</h3>
+                        <ul class="p">
+                            <li>NetBeans <i>PHP Application</i> Project</li>
+                            <li>Database SQL Script - Use this script to populate tables and sample records</li>
+                            <li>Additional Stylesheet, JavaScript</li>
+                        </ul>
+
+                        <h3>Before the start</h3>
+                        <ul class="p">
+                            <li>If you want to try the sample out, follow <a href="#getting_started">Getting Started</a> guidelines.</li>
+                            <li>In case of you want to try debugging features of the NetBeans IDE,
+                                follow the <a href="#debugging">Debugging</a> guidelines.</li>
+                        </ul>
+
+                        <h3 id="getting_started">Getting Started</h3>
+                        <ol class="p">
+                            <li>
+                                Firstly, we set database authentication in <i>config/config.ini</i>,
+                                which is stored in TODO List Project directory.<br>
+                                Just update login and password
+                                fields in the configuration file, so they are the same as MySQL ones.
+                            </li>
+                            <li>
+                                Secondly, we create the database and populate it with data:
+                                <ol type="a">
+                                    <li>Create new MySQL database named <i>todolist</i> in phpMyAdmin (or any other MySQL administration tool).</li>
+                                    <li>Run <i>db/mysql.sql</i> script stored in TODO List Project directory.
+                                        The script creates table and fills it with sample data.</li>
+                                </ol>
+                            </li>
+                            <li>The strongly preferred way is to create all your PHP applications underneath the documents directory (<i>htdocs</i>)
+                                of your web server (so the web server can access them directly, e.g. <i>http://localhost/TodoList/web/</i>). If it is not
+                                your case, then set project properties to deploy project sucessfully to it:
+                                <ol type="a">
+                                    <li>Right-click on the <i>TodoList</i> project node and select <i>Properties</i>.</li>
+                                    <li>Check the option <i>Copy files from Sources Folder to another location</i>.</li>
+                                    <li>In <i>Copy to Folder</i> field specify the path of the documents directory (<i>htdocs</i>)
+                                        of your web server.</li>
+                                    <li>Specify the <i>Project URL</i> to be appropriate with your settings from previous field and
+                                        also with Web Server setup.</li>
+                                    <li>Confirm the settings.</li>
+                                </ol>
+                            </li>
+                            <li>
+                                Finally, we can run the project. Right-click the project node again and select <i>Run Project</i>
+                                or use the <i>Run Project</i> icon in the main menu toolbar.
+                                The sample PHP application should open in the Web browser.
+                            </li>
+                            <li>Play futher with the sample :)</li>
+                        </ol>
+
+                        <h3 id="debugging">Debugging</h3>
+                        <p class="p">
+                            These steps should enable you the debugging option at the sample project,
+                            <a href="http://wiki.netbeans.org/HowToConfigureXDebug" target="_blank">if you already have PHP debugger
+                            installed and configured</a>.<br>
+                            For demonstrating the PHP debugger in NetBeans we have to put the project to the web server documents directory (<i>htdocs</i>):
+                        </p>
+                        <ol class="p">
+                            <li>Create new <i>TODO ListSample Application</i> with following settings:</li>
+                            <li>Set the <i>Project Folder</i> to your web server documents (<i>htdocs</i>) directory, for example:
+                                <i>C:\Program Files\Apache2.2\htdocs\TodoList</i></li>
+                            <li>In project properies (right-click the project node and select <i>Properties</i>.) set the <i>Project URL</i>
+                                to be appropriate with previous setting, for example: <i>http://localhost/TodoList/web/</i></li>
+                            <li>To debug, right-click the project node and select <i>Debug Project</i>
+                                or use the <i>Debug Project</i> icon in the main menu toolbar.</li>
+                        </ol>
+
+                        <h3>Project folder's structure</h3>
+                        <ul class="p">
+                            <li><i>config</i> - Contains configuration file <i>config.ini</i> where you can edit the DB connection settings.</li>
+                            <li><i>dao</i> - Contains DAO (Data Access Object) classes.</li>
+                            <li><i>db</i> - Contains SQL dump for creating the database.</li>
+                            <li><i>exception</i> - Contains custom exceptions.</li>
+                            <li><i>layout</i> - Contains layout common for all web pages.</li>
+                            <li><i>mapping</i> - Contains classes used for mapping from database to model classes.</li>
+                            <li><i>model</i> - Contains model classes.</li>
+                            <li><i>page</i> - Contains pages of the TodoList application.</li>
+                            <li><i>util</i> - Contains utility classes.</li>
+                            <li><i>validation</i> - Contains validation classes.</li>
+                            <li><i>web</i> - Contains publicly accessible files (PHP scripts, CSS, JS, images).</li>
+                        </ul>
+
+                        <h3>Credits</h3>
+                        <p class="p">This sample application uses great <a href="http://www.famfamfam.com/lab/icons/silk/">SILK icons</a> created by Mark James.</p>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- footer -->
+        <div id="footer">
+            <div class="indent">
+                <div class="fleft"><a href="http://blogs.sun.com/netbeansphp/">NetBeans PHP team</a>, 2011 &copy; Copyright Oracle corp., All rights reserved</div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -81,6 +81,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
@@ -98,9 +99,12 @@ import org.netbeans.modules.web.jsf.api.facesmodel.JSFVersion;
 import org.netbeans.modules.web.jsf.spi.components.JsfComponentImplementation;
 import org.netbeans.modules.web.jsf.spi.components.JsfComponentCustomizer;
 import org.netbeans.modules.web.jsf.spi.components.JsfComponentProvider;
+import org.netbeans.modules.web.jsf.wizards.JSFConfigurationPanel.LibraryType;
+import org.netbeans.modules.web.jsf.wizards.JSFConfigurationPanel.PreferredLanguage;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
+import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -132,7 +136,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
     private volatile boolean libsInitialized;
     private volatile boolean jsfComponentsInitialized;
     private String serverInstanceID;
-    private final List<String> preferredLanguages = new ArrayList<String>();
+    private final List<PreferredLanguage> preferredLanguages = new ArrayList<PreferredLanguage>();
     private String currentServerInstanceID;
     private final List<String> excludeLibs = Arrays.asList("javaee-web-api-6.0", "javaee-api-6.0", "jsp-compilation"); //NOI18N
     private boolean isWebLogicServer = false;
@@ -143,6 +147,8 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
 
     private static final Lookup.Result<? extends JsfComponentProvider> jsfComponentProviders =
             Lookups.forPath(JsfComponentProvider.COMPONENTS_PATH).lookupResult(JsfComponentProvider.class);
+
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
 
     /** Creates new form JSFConfigurationPanelVisual */
     public JSFConfigurationPanelVisual(JSFConfigurationPanel panel, boolean customizer) {
@@ -165,6 +171,15 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
         jsfComponentsTable.setDefaultRenderer(JButton.class, renderer);
         jsfComponentsTable.addMouseListener(new JTableButtonMouseListener(jsfComponentsTable));
         initJsfComponentTableVisualProperties(jsfComponentsTable);
+
+        
+        panel.addChangeListener(new ChangeListener() {
+
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                changeSupport.fireChange();
+            }
+        });
     }
 
     @Override
@@ -178,6 +193,14 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
         } else {
             updateLibrary();
         }
+    }
+
+    public void addChangeListener(ChangeListener listener) {
+        changeSupport.addChangeListener(listener);
+    }
+
+    public void removeChangeListener(ChangeListener listener) {
+        changeSupport.removeChangeListener(listener);
     }
 
     void initLibraries() {
@@ -364,7 +387,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
 
             setServerLibraryModel(serverJsfLibraries);
             if (updateUI) {
-                updatePreferredLanguages();
+                //updatePreferredLanguages();
             }
         }
     }
@@ -384,7 +407,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
             cbLibraries.setEnabled(false);
             rbNewLibrary.setSelected(true);
             panel.setLibrary((Library) null);
-        } else if (items.size() != 0 &&  panel.getLibraryType() == JSFConfigurationPanel.LibraryType.USED){
+        } else if (items.size() != 0 &&  panel.getLibraryType() == LibraryType.USED){
             if (!customizer) {
                 rbRegisteredLibrary.setEnabled(true);
                 cbLibraries.setEnabled(true);
@@ -408,7 +431,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
             serverLibraries.setEnabled(false);
             rbRegisteredLibrary.setSelected(true);
             panel.setServerLibrary((ServerLibrary) null);
-        } else if (!items.isEmpty() && panel.getLibraryType() == JSFConfigurationPanel.LibraryType.SERVER){
+        } else if (!items.isEmpty() && panel.getLibraryType() == LibraryType.SERVER){
             if (!customizer) {
                 rbServerLibrary.setEnabled(true);
                 serverLibraries.setEnabled(true);
@@ -433,17 +456,21 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
     private void updatePreferredLanguages() {
         boolean faceletsPresent = false;
         Library jsfLibrary = null;
-        if (panel.getLibraryType()==null)
+        LibraryType libraryType = panel.getLibraryType();
+        
+        if (libraryType == null) {
             return;
-        if (panel.getLibraryType() == JSFConfigurationPanel.LibraryType.USED) {
-            if (!libsInitialized)
+        }
+        if (libraryType == LibraryType.USED) {
+            if (!libsInitialized) {
                 initLibraries();
+            }
             jsfLibrary = panel.getLibrary();
-        } else if (panel.getLibraryType() == JSFConfigurationPanel.LibraryType.NEW) {
-            if (panel.getNewLibraryName()!=null) {
+        } else if (libraryType == LibraryType.NEW) {
+            if (panel.getNewLibraryName() != null) {
                 jsfLibrary = LibraryManager.getDefault().getLibrary(panel.getNewLibraryName());
             }
-        } else if (panel.getLibraryType() == JSFConfigurationPanel.LibraryType.SERVER) {
+        } else if (libraryType == LibraryType.SERVER) {
             //XXX: need to find lib version
             ServerLibraryItem item = (ServerLibraryItem) serverLibraries.getSelectedItem();
             if (item != null && item.getVersion() == JSFVersion.JSF_2_0) {
@@ -465,15 +492,17 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
         }
 
         preferredLanguages.clear();
-        preferredLanguages.add(JSFConfigurationPanel.PreferredLanguage.JSP.getName());
+        preferredLanguages.add(PreferredLanguage.JSP);
         if (faceletsPresent) {
-            if (!customizer)
+            if (!customizer) {
                 panel.setEnableFacelets(true);
-
-            if (panel.isEnableFacelets())
-                preferredLanguages.add(0,JSFConfigurationPanel.PreferredLanguage.Facelets.getName());
-            else
-                preferredLanguages.add(JSFConfigurationPanel.PreferredLanguage.Facelets.getName());
+            }
+            
+            if (panel.isEnableFacelets()) {
+                preferredLanguages.add(0, PreferredLanguage.Facelets);
+            } else {
+                preferredLanguages.add(PreferredLanguage.Facelets);
+            }
         } else {
             panel.setEnableFacelets(false);
         }
@@ -802,10 +831,14 @@ private void jtFolderKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_
 }//GEN-LAST:event_jtFolderKeyPressed
 
 private void cbPreferredLangActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbPreferredLangActionPerformed
-    if (preferredLanguages.get(cbPreferredLang.getSelectedIndex()).equals("Facelets")) { //NOI18N
-        panel.setEnableFacelets(true);
-    } else
-        panel.setEnableFacelets(false);
+    if (!customizer) {
+        PreferredLanguage selectedLanguage = getPreferredLanguage();
+        if (PreferredLanguage.Facelets == selectedLanguage) {
+            panel.updateEnableFacelets(true, true);
+        } else {
+            panel.updateEnableFacelets(false, true);
+        }
+    }
 }//GEN-LAST:event_cbPreferredLangActionPerformed
 
 private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_serverLibrariesActionPerformed
@@ -874,10 +907,6 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
             return false;
         }
 
-        if (customizer) {
-             return true;
-        }
-
         if (controller.getProperties().getProperty("NoDocBase") != null) {  //NOI18N
             controller.setErrorMessage(NbBundle.getMessage(JSFConfigurationPanelVisual.class, "MSG_MissingDocBase"));
             return false;
@@ -936,16 +965,31 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
 
         // check all enabled JSF component libraries
         for (JsfComponentImplementation jsfComponentDescriptor : getActivedJsfDescriptors()) {
-            if (jsfComponentDescriptor.createJsfComponentCustomizer(null) != null &&
-                    !jsfComponentDescriptor.createJsfComponentCustomizer(null).isValid()) {
-                controller.getProperties().setProperty(WizardDescriptor.PROP_INFO_MESSAGE,
-                        NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_JsfComponentNotValid", jsfComponentDescriptor.getName())); // NOI18N
+            if (jsfComponentDescriptor.createJsfComponentCustomizer(null) != null
+                    && !jsfComponentDescriptor.createJsfComponentCustomizer(null).isValid()) {
+                String error = NbBundle.getMessage(JSFConfigurationPanelVisual.class,
+                        "LBL_JsfComponentNotValid", jsfComponentDescriptor.getName()); //NOI18N
+                setErrorMessage(error);
                 return false;
             }
         }
 
         controller.setErrorMessage(null);
         return true;
+    }
+
+    /**
+     * Sets the error message independently if it's called for the new project
+     * wizard or the project properties.
+     *
+     * @param message error message which should be shown
+     */
+    private void setErrorMessage(String message) {
+        ExtenderController controller = panel.getController();
+        controller.setErrorMessage(message);
+        if (!customizer) {
+            controller.getProperties().setProperty(WizardDescriptor.PROP_INFO_MESSAGE, message);
+        }
     }
 
     private static final char[] INVALID_PATTERN_CHARS = {'%', '+'}; // NOI18N
@@ -1040,7 +1084,7 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
                 }
                 rbServerLibrary.setSelected(true);
                 if (panel !=null)
-                    panel.setLibraryType(JSFConfigurationPanel.LibraryType.SERVER);
+                    panel.setLibraryType(LibraryType.SERVER);
                 enableNewLibraryComponent(false);
                 enableDefinedLibraryComponent(false);
                 isWebLogicServer = isWebLogic(serverInstanceID);
@@ -1147,12 +1191,26 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
         return activatedDescriptors;
     }
 
+    public List<? extends JsfComponentImplementation> getAllJsfDescriptors() {
+        List<JsfComponentImplementation> allDescriptors =  new ArrayList<JsfComponentImplementation>();
+        for (int i = 0; i < jsfComponentsTableModel.getRowCount(); i++) {
+            allDescriptors.add(jsfComponentsTableModel.getItem(i).getJsfComponent());
+        }
+        return allDescriptors;
+    }
+
     public boolean packageJars(){
         return cbPackageJars.isSelected();
     }
 
-    protected String getPreferredLanguage() {
-        return (String) cbPreferredLang.getSelectedItem();
+    @CheckForNull
+    protected PreferredLanguage getPreferredLanguage() {
+        Object selectedItem = cbPreferredLang.getSelectedItem();
+
+        if (selectedItem instanceof PreferredLanguage) {
+            return (PreferredLanguage) selectedItem;
+        }
+        return null;
     }
 
 
@@ -1164,7 +1222,7 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
             enableNewLibraryComponent(false);
             enableDefinedLibraryComponent(false);
             enableServerLibraryComponent(true);
-            panel.setLibraryType(JSFConfigurationPanel.LibraryType.SERVER);
+            panel.setLibraryType(LibraryType.SERVER);
             if (!serverJsfLibraries.isEmpty()) {
                 ServerLibraryItem item = (ServerLibraryItem) serverLibraries.getSelectedItem();
                 if (item != null) {
@@ -1177,7 +1235,7 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
             enableNewLibraryComponent(false);
             enableDefinedLibraryComponent(true);
             enableServerLibraryComponent(false);
-            panel.setLibraryType(JSFConfigurationPanel.LibraryType.USED);
+            panel.setLibraryType(LibraryType.USED);
             if (jsfLibraries.size() > 0){
                 panel.setLibrary(jsfLibraries.get(cbLibraries.getSelectedIndex()).getLibrary());
                 panel.setServerLibrary(null);
@@ -1188,7 +1246,7 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
             enableNewLibraryComponent(true);
             enableDefinedLibraryComponent(false);
             enableServerLibraryComponent(false);
-            panel.setLibraryType(JSFConfigurationPanel.LibraryType.NEW);
+            panel.setLibraryType(LibraryType.NEW);
             panel.setServerLibrary(null);
             setNewLibraryFolder();
         }
@@ -1409,9 +1467,6 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
         table.getColumnModel().getColumn(0).setMaxWidth(30);
         table.getColumnModel().getColumn(2).setMaxWidth(100);
 
-        if (customizer) {
-            table.setEnabled(false);
-        }
     }
 
     private void addFrameworkToModel(JsfComponentImplementation component) {
@@ -1489,7 +1544,7 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
         }
 
         public void mouseClicked(MouseEvent e) {
-            int column = table.getColumnModel().getColumnIndexAtX(e.getX());
+                int column = table.getColumnModel().getColumnIndexAtX(e.getX());
             int row = e.getY()/table.getRowHeight();
 
             if (row < table.getRowCount() && row >= 0 && column < table.getColumnCount() && column >= 0) {
@@ -1542,9 +1597,7 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
                     if (item.isClickable()) {
                         JButton button = new JButton(
                                 NbBundle.getMessage(JSFConfigurationWizardPanelVisual.class, "LBL_MoreButton")); //NOI18N
-                        if (!inCustomizer) {
-                            button.addActionListener(new JSFComponentModelActionListener(item.getJsfComponent()));
-                        }
+                        button.addActionListener(new JSFComponentModelActionListener(item.getJsfComponent()));
                         return button;
                     } else {
                         return null;
@@ -1614,6 +1667,7 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
                         addJsfComponentCustomizer(jsfDescriptor.getName(), jsfCustomizer);
                         jsfCustomizer.saveConfiguration();
                     }
+                    panel.fireChangeEvent();
                 }
             };
             dialogDescriptor.setButtonListener(buttonsListener);

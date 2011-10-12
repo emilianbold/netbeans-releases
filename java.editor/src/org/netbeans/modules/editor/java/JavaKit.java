@@ -656,7 +656,7 @@ public class JavaKit extends NbEditorKit {
                 int jdoffset = dotPosition - 3;
                 if (jdoffset >= 0) {
                     CharSequence content = org.netbeans.lib.editor.util.swing.DocumentUtilities.getText(doc);
-                    if (isOpenJavadoc(content, dotPosition - 1) && !isClosedJavadoc(content, dotPosition)) {
+                    if (isOpenJavadoc(content, dotPosition - 1) && !isClosedJavadoc(content, dotPosition) && isAtRowEnd(content, dotPosition)) {
                         // complete open javadoc
                         // note that the formater will add one line of javadoc
                         doc.insertString(dotPosition, "*/", null); // NOI18N
@@ -729,6 +729,17 @@ public class JavaKit extends NbEditorKit {
             return false;
         }
 
+        private static boolean isAtRowEnd(CharSequence txt, int pos) {
+            int length = txt.length();
+            for (int i = pos; i < length; i++) {
+                char c = txt.charAt(i);
+                if (c == '\n')
+                    return true;
+                if (!Character.isWhitespace(c))
+                    return false;                
+            }
+            return true;
+        }
   }
 
 

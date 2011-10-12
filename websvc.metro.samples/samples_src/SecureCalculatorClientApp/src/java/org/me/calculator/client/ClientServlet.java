@@ -78,9 +78,6 @@ public class ClientServlet extends HttpServlet {
         } catch (SOAPFaultException se) {
             out.println("Authentication failed!");
             out.println("");
-            out.println(se);            
-        } catch (Exception e) {
-            out.println(e);            
         } finally { 
             out.close();
         }

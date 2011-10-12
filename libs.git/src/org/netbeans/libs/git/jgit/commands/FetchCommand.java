@@ -59,6 +59,7 @@ import org.eclipse.jgit.transport.RefSpec;
 import org.eclipse.jgit.transport.TagOpt;
 import org.eclipse.jgit.transport.TrackingRefUpdate;
 import org.eclipse.jgit.transport.Transport;
+import org.eclipse.jgit.transport.URIish;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 
@@ -116,7 +117,13 @@ public class FetchCommand extends TransportCommand {
         } catch (URISyntaxException e) {
             throw new GitException(e.getMessage(), e);
         } catch (TransportException e) {
-            handleException(e);
+            URIish uriish = null;
+            try {
+                uriish = getUriWithUsername(false);
+            } catch (URISyntaxException ex) {
+                throw new GitException(e.getMessage(), e);
+            }
+            handleException(e, uriish);
         } finally {
             if (transport != null) {
                 transport.close();

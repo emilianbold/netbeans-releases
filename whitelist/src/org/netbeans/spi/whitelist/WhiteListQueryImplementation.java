@@ -42,6 +42,7 @@
 package org.netbeans.spi.whitelist;
 
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.whitelist.WhiteListQuery;
@@ -59,8 +60,10 @@ public interface WhiteListQueryImplementation {
     /**
      * Returns a white list for given file.
      * @param file to return white list for.
-     * @return the {@link WhiteListImplementation} for given file.
+     * @return the {@link WhiteListImplementation} for given file or null if no white list
+     * is associated with given file.
      */
+    @CheckForNull
     WhiteListImplementation getWhiteList(
           @NonNull FileObject file);
 
@@ -86,6 +89,7 @@ public interface WhiteListQueryImplementation {
          * @param operation the operation which should be tested
          * @return a {@link Result} holding the details.
          */
+        @NonNull
         WhiteListQuery.Result check(@NonNull ElementHandle<?> element, @NonNull WhiteListQuery.Operation operation);
 
         /**

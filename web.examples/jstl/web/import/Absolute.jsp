@@ -11,7 +11,7 @@
 <h4>CNN's RSS XML feed:</h4>
 <blockquote>
 <ex:escapeHtml>
-  <c:import url="http://www.cnn.com/cnn.rss"/>
+  <c:import url="http://rss.cnn.com/rss/edition_europe.rss"/>
 </ex:escapeHtml>
 </blockquote>
 

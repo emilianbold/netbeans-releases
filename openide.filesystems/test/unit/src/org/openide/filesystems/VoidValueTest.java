@@ -66,7 +66,7 @@ public class VoidValueTest extends NbTestCase {
         clearWorkDir();
         FileSystem lfs = TestUtilHid.createLocalFileSystem("mfs1" + getName(), new String[]{"/fold/file1"});
         FileSystem xfs = TestUtilHid.createXMLFileSystem(getName(), new String[]{"/xmlFold/xmlFile1"});
-        FileSystem mfs = new MultiFileSystem(new FileSystem[]{lfs, xfs});
+        FileSystem mfs = new MultiFileSystem(lfs, xfs);
 
         FileObject file1FO = mfs.findResource("/fold/file1");
         String stringValue = "abc";
@@ -84,7 +84,7 @@ public class VoidValueTest extends NbTestCase {
         LocalFileSystem local = new LocalFileSystem();
         local.setRootDirectory(getWorkDir());
         FileObject baseFile = local.getRoot().createData("file");
-        MultiFileSystem mfs = new MultiFileSystem(new FileSystem[] {local});
+        MultiFileSystem mfs = new MultiFileSystem(local);
         FileObject derivedFile = mfs.findResource("file");
         assertNull(baseFile.getAttribute("nonexistent"));
         assertNull(derivedFile.getAttribute("nonexistent"));
@@ -105,7 +105,7 @@ public class VoidValueTest extends NbTestCase {
         LocalFileSystem local = new LocalFileSystem();
         local.setRootDirectory(getWorkDir());
         FileObject baseFile = local.getRoot().createData("file");
-        MultiFileSystem mfs = new MultiFileSystem(new FileSystem[] {local});
+        MultiFileSystem mfs = new MultiFileSystem(local);
         FileObject derivedFile = mfs.findResource("file");
         baseFile.setAttribute("real", "whatever");
         derivedFile.setAttribute("real", null);

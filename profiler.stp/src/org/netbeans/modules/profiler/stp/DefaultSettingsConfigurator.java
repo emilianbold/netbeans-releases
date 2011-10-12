@@ -43,13 +43,15 @@
 
 package org.netbeans.modules.profiler.stp;
 
+import java.util.Collection;
 import org.netbeans.lib.profiler.client.ClientUtils;
 import org.netbeans.lib.profiler.common.ProfilingSettings;
 import org.netbeans.lib.profiler.common.ProfilingSettingsPresets;
 import org.netbeans.modules.profiler.ppoints.ui.ProfilingPointsDisplayer;
 import org.openide.filesystems.FileObject;
 import java.util.Properties;
-import java.util.Vector;
+import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.CopyOnWriteArraySet;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -80,7 +82,7 @@ final class DefaultSettingsConfigurator implements SelectProfilingTask.SettingsC
         private ProfilingSettings settings;
         private Lookup.Provider project;
         private ProfilingSettingsSupport pss;
-        private Vector<ChangeListener> changeListeners = new Vector();
+        private Collection<ChangeListener> changeListeners = new CopyOnWriteArraySet<ChangeListener>();
         private boolean enableOverride;
         private boolean internalChange = false;
         private boolean isAttach;
@@ -184,9 +186,7 @@ final class DefaultSettingsConfigurator implements SelectProfilingTask.SettingsC
         }
 
         public void addChangeListener(ChangeListener listener) {
-            if (!changeListeners.contains(listener)) {
-                changeListeners.add(listener);
-            }
+            changeListeners.add(listener);
         }
 
         public ProfilingSettings createFinalSettings() {
@@ -334,7 +334,7 @@ final class DefaultSettingsConfigurator implements SelectProfilingTask.SettingsC
         private ProfilingSettings settings;
         private Lookup.Provider project;
         private ProfilingSettingsSupport pss;
-        private Vector<ChangeListener> changeListeners = new Vector();
+        private Collection<ChangeListener> changeListeners = new CopyOnWriteArraySet<ChangeListener>();
         private boolean enableOverride;
         private boolean internalChange = false;
         private boolean isAttach;
@@ -427,9 +427,7 @@ final class DefaultSettingsConfigurator implements SelectProfilingTask.SettingsC
         }
 
         public void addChangeListener(ChangeListener listener) {
-            if (!changeListeners.contains(listener)) {
-                changeListeners.add(listener);
-            }
+            changeListeners.add(listener);
         }
 
         public ProfilingSettings createFinalSettings() {
@@ -524,7 +522,7 @@ final class DefaultSettingsConfigurator implements SelectProfilingTask.SettingsC
         private ProfilingSettings settings;
         private Lookup.Provider project;
         private ProfilingSettingsSupport pss;
-        private Vector<ChangeListener> changeListeners = new Vector();
+        private Collection<ChangeListener> changeListeners = new CopyOnWriteArraySet<ChangeListener>();
         private boolean enableOverride;
         private boolean internalChange = false;
         private boolean isAttach;
@@ -603,9 +601,7 @@ final class DefaultSettingsConfigurator implements SelectProfilingTask.SettingsC
         }
 
         public void addChangeListener(ChangeListener listener) {
-            if (!changeListeners.contains(listener)) {
-                changeListeners.add(listener);
-            }
+            changeListeners.add(listener);
         }
 
         public ProfilingSettings createFinalSettings() {

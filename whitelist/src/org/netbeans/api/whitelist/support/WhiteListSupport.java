@@ -55,6 +55,8 @@ import java.util.ArrayDeque;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import org.netbeans.api.annotations.common.CheckForNull;
@@ -73,6 +75,8 @@ import org.openide.util.Parameters;
  * @since 1.2
  */
 public final class WhiteListSupport {
+
+    private static final Logger LOG = Logger.getLogger(WhiteListSupport.class.getName());
 
     private WhiteListSupport() {}
 
@@ -125,12 +129,14 @@ public final class WhiteListSupport {
 
         @Override
         public Void visitMethod(MethodTree node, Map<Tree,WhiteListQuery.Result> p) {
+            LOG.log(Level.FINEST, "Visiting {0}", node);    //NOI18N
             checkCancel();
             return super.visitMethod(node, p);
         }
 
         @Override
         public Void visitClass(ClassTree node, Map<Tree,WhiteListQuery.Result> p) {
+            LOG.log(Level.FINEST, "Visiting {0}", node);    //NOI18N
             checkCancel();
             return super.visitClass(node, p);
         }
@@ -191,12 +197,16 @@ public final class WhiteListSupport {
         }
 
         private void checkCancel() {
-            try {
-                if (cancel != null && cancel.call() == Boolean.TRUE) {
+            if (cancel != null) {
+                Boolean vote = null;
+                try {
+                    vote = cancel.call();
+                } catch (Exception e) {
+                    Exceptions.printStackTrace(e);
+                }
+                if (vote  == Boolean.TRUE) {
                     throw new Cancel();
                 }
-            } catch (Exception ex) {
-                Exceptions.printStackTrace(ex);
             }
         }
 

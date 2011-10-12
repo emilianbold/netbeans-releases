@@ -90,11 +90,11 @@
                     <Parameters>
                         <Quote start='218' end='226' type='QUOTE'>
                             <Expressions>
-                                <Variable start='219' end='223' isDollared='false'>
+                                <ReflectionVariable start='219' end='223'>
                                     <Variable start='220' end='222' isDollared='true'>
                                         <Identifier start='221' end='222' name='x'/>
                                     </Variable>
-                                </Variable>
+                                </ReflectionVariable>
                                 <Scalar start='223' end='225' type='STRING' value='\n'/>
                             </Expressions>
                         </Quote>

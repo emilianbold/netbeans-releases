@@ -142,6 +142,7 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
     private static final String CSS_FOLDER = "resources/css/";  //NOI18N
 
     private transient WebModuleExtender wme;
+    private transient ExtenderController ec;
 
     public Set instantiate(TemplateWizard wizard) throws IOException
     {
@@ -761,7 +762,7 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
 
         if (!fp.isInWebModule(wm)) {
             updateWebModuleExtender(project, wm, fp);
-            JSFConfigurationWizardPanel jsfWizPanel = new JSFConfigurationWizardPanel(wme);
+            JSFConfigurationWizardPanel jsfWizPanel = new JSFConfigurationWizardPanel(wme, ec);
             thirdPanel.setFinishPanel(false);
             panelsList.add(jsfWizPanel);
             namesList.add(NbBundle.getMessage(PersistenceClientIterator.class, "LBL_JSF_Config_CRUD"));
@@ -789,7 +790,7 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
 
     private void updateWebModuleExtender(Project project, WebModule wm, JSFFrameworkProvider fp) {
         if (wme == null) {
-            ExtenderController ec = ExtenderController.create();
+            ec = ExtenderController.create();
             String j2eeLevel = wm.getJ2eePlatformVersion();
             ec.getProperties().setProperty("j2eeLevel", j2eeLevel);
             J2eeModuleProvider moduleProvider = (J2eeModuleProvider)project.getLookup().lookup(J2eeModuleProvider.class);

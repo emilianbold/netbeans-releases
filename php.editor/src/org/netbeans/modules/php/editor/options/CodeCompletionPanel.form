@@ -37,34 +37,15 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" alignment="0" attributes="0">
-              <EmptySpace min="-2" max="-2" attributes="0"/>
+          <Group type="102" attributes="0">
+              <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="autoCompletionCustomizeRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="autoCompletionFullRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="currentFileVariablesRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="allVariablesRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="methodCodeCompletionLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="codeCompletionNonStaticMethodsCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="codeCompletionStaticMethodsCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="codeCompletionTypeLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Group type="102" attributes="0">
-                      <EmptySpace min="21" pref="21" max="21" attributes="0"/>
-                      <Component id="smartInfoLabel" min="-2" max="-2" attributes="0"/>
-                  </Group>
-                  <Component id="smartRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="fullyQualifiedRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Group type="102" attributes="0">
-                      <EmptySpace min="21" pref="21" max="21" attributes="0"/>
-                      <Component id="fullyQualifiedInfoLabel" min="-2" max="-2" attributes="0"/>
-                  </Group>
-                  <Component id="unqualifiedRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Group type="102" attributes="0">
-                      <EmptySpace min="21" pref="21" max="21" attributes="0"/>
-                      <Component id="unqualifiedInfoLabel" min="-2" max="-2" attributes="0"/>
-                  </Group>
                   <Component id="enableAutocompletionLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="codeCompletionVariablesScopeLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace min="21" pref="21" max="21" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
@@ -73,6 +54,26 @@
                           <Component id="autoCompletionNamespacesCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
                   </Group>
+                  <Component id="currentFileVariablesRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="allVariablesRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="codeCompletionTypeLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Group type="102" alignment="0" attributes="0">
+                      <EmptySpace min="21" pref="21" max="21" attributes="0"/>
+                      <Component id="smartInfoLabel" min="-2" max="-2" attributes="0"/>
+                  </Group>
+                  <Component id="smartRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="fullyQualifiedRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Group type="102" alignment="0" attributes="0">
+                      <EmptySpace min="21" pref="21" max="21" attributes="0"/>
+                      <Component id="fullyQualifiedInfoLabel" min="-2" max="-2" attributes="0"/>
+                  </Group>
+                  <Component id="unqualifiedRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Group type="102" alignment="0" attributes="0">
+                      <EmptySpace min="21" pref="21" max="21" attributes="0"/>
+                      <Component id="unqualifiedInfoLabel" min="-2" max="-2" attributes="0"/>
+                  </Group>
+                  <Component id="codeCompletionVariablesScopeLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="codeCompletionSmartParametersPreFillingCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace pref="109" max="32767" attributes="0"/>
           </Group>
@@ -99,7 +100,9 @@
               <Component id="codeCompletionStaticMethodsCheckBox" min="-2" max="-2" attributes="0"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Component id="codeCompletionNonStaticMethodsCheckBox" min="-2" max="-2" attributes="0"/>
-              <EmptySpace type="separate" max="-2" attributes="0"/>
+              <EmptySpace max="32767" attributes="0"/>
+              <Component id="codeCompletionSmartParametersPreFillingCheckBox" min="-2" max="-2" attributes="0"/>
+              <EmptySpace type="unrelated" max="-2" attributes="0"/>
               <Component id="codeCompletionVariablesScopeLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="allVariablesRadioButton" min="-2" max="-2" attributes="0"/>
@@ -119,7 +122,7 @@
               <Component id="unqualifiedRadioButton" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="unqualifiedInfoLabel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="64" max="32767" attributes="0"/>
+              <EmptySpace min="-2" pref="42" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -446,6 +449,14 @@
           <ResourceString bundle="org/netbeans/modules/php/editor/options/Bundle.properties" key="CodeCompletionPanel.unqualifiedInfoLabel.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </AccessibilityProperties>
+    </Component>
+    <Component class="javax.swing.JCheckBox" name="codeCompletionSmartParametersPreFillingCheckBox">
+      <Properties>
+        <Property name="selected" type="boolean" value="true"/>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/php/editor/options/Bundle.properties" key="CodeCompletionPanel.codeCompletionSmartParametersPreFillingCheckBox.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
     </Component>
   </SubComponents>
 </Form>

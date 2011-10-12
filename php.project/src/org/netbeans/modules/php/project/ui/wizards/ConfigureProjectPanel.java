@@ -510,6 +510,10 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
             if (!sources.isDirectory()) {
                 return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_IllegalSourcesName");
             }
+            // #196811
+            if (sources.listFiles() == null) {
+                return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_SourcesCannotBeRead");
+            }
         }
 
         if (!configureProjectPanelVisual.isProjectFolderUsed()) {
@@ -566,6 +570,10 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         assert projectDirectory != null;
         if (Arrays.asList(fsRoots).contains(projectDirectory)) {
             return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_ProjectFolderIsRoot");
+        }
+        // #196811
+        if (projectDirectory.isDirectory() && projectDirectory.listFiles() == null) {
+            return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_ProjectFolderCannotBeRead");
         }
         return null;
     }

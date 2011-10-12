@@ -37,8 +37,11 @@
  */
 package org.netbeans.modules.java.hints.errors;
 
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.Scope;
 import com.sun.source.tree.Tree.Kind;
+import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import java.util.Arrays;
 import java.util.Collections;
@@ -97,17 +100,31 @@ public class ChangeMethodReturnType implements ErrorRule<Void> {
 
         if (mt.getReturnType() == null) return null;
 
-        TypeMirror targetType = info.getTrees().getTypeMirror(treePath);
+        TypeMirror targetType = purify(info, info.getTrees().getTypeMirror(treePath));
 
+        if (targetType == null) return null;
+
+        if (targetType.getKind() == TypeKind.EXECUTABLE) {
+            String expression = info.getText().substring((int) info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), treePath.getLeaf()), (int) info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), treePath.getLeaf()));
+            Scope s = info.getTrees().getScope(treePath);
+            ExpressionTree expr = info.getTreeUtilities().parseExpression(expression, new SourcePositions[1]);
+
+            targetType = purify(info, info.getTreeUtilities().attributeTree(expr, s));
+        }
+
+        if (targetType == null) return null;
+
+        return Collections.singletonList(JavaFix.toEditorFix(new FixImpl(info, method, TypeMirrorHandle.create(targetType), info.getTypeUtilities().getTypeName(targetType).toString())));
+    }
+
+    private TypeMirror purify(CompilationInfo info, TypeMirror targetType) {
         if (targetType != null && targetType.getKind() == TypeKind.ERROR) {
             targetType = info.getTrees().getOriginalType((ErrorType) targetType);
         }
 
         if (targetType == null || targetType.getKind() == /*XXX:*/TypeKind.ERROR) return null;
 
-        targetType = Utilities.resolveCapturedType(info, targetType);
-
-        return Collections.singletonList(JavaFix.toEditorFix(new FixImpl(info, method, TypeMirrorHandle.create(targetType), info.getTypeUtilities().getTypeName(targetType).toString())));
+        return Utilities.resolveCapturedType(info, targetType);
     }
 
     @Override

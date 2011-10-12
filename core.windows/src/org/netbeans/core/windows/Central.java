@@ -2421,6 +2421,7 @@ final class Central implements ControllerHandler {
      */
     void userMinimizedMode( ModeImpl mode ) {
         List<TopComponent> opened = mode.getOpenedTopComponents();
+        TopComponent selTc = mode.getSelectedTopComponent();
         String side = getSlideSideForMode( mode );
         for( TopComponent tc : opened ) {
             slide( tc, mode, side );
@@ -2435,6 +2436,9 @@ final class Central implements ControllerHandler {
             model.setModeTopComponentPreviousMode(newMode, tcId, mode, index++);
         }
         setModeMinimized( mode, true );
+        if( null != selTc ) {
+            mode.setPreviousSelectedTopComponentID( wm.findTopComponentID(selTc) );
+        }
     }
 
     /**
@@ -2444,6 +2448,7 @@ final class Central implements ControllerHandler {
      * @since 2.35
      */
     void userRestoredMode( ModeImpl slidingMode, ModeImpl modeToRestore ) {
+        TopComponent tcToSelect = modeToRestore.getPreviousSelectedTopComponent();
         setModeMinimized( modeToRestore, false );
         WindowManagerImpl wm = WindowManagerImpl.getInstance();
         for( TopComponent tc : slidingMode.getOpenedTopComponents() ) {
@@ -2455,6 +2460,8 @@ final class Central implements ControllerHandler {
 
             }
         }
+        if( null != tcToSelect )
+            modeToRestore.setSelectedTopComponent( tcToSelect );
         if(isVisible()) {
             viewRequestor.scheduleRequest(
                 new ViewRequest(null, View.CHANGE_TOPCOMPONENT_AUTO_HIDE_DISABLED, null, null));

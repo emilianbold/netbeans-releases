@@ -150,8 +150,8 @@ public class ErrorDescriptionFactory {
         Parameters.notNull("severity", severity);
         Parameters.notNull("description", description);
         Parameters.notNull("file", file);
-        Parameters.notNull("start", start);
-        Parameters.notNull("end", end);
+        if (start < 0) throw new IndexOutOfBoundsException("start < 0 (" + start + " < 0)");
+        if (end < start) throw new IndexOutOfBoundsException("end < start (" + end + " < " + start + ")");
         
         return createErrorDescription(severity, description, new StaticFixList(), file, start, end);
     }
@@ -164,8 +164,8 @@ public class ErrorDescriptionFactory {
         Parameters.notNull("description", description);
         Parameters.notNull("fixes", fixes);
         Parameters.notNull("file", file);
-        Parameters.notNull("start", start);
-        Parameters.notNull("end", end);
+        if (start < 0) throw new IndexOutOfBoundsException("start < 0 (" + start + " < 0)");
+        if (end < start) throw new IndexOutOfBoundsException("end < start (" + end + " < " + start + ")");
         
         return createErrorDescription(severity, description, new StaticFixList(fixes), file, start, end);
     }
@@ -178,8 +178,8 @@ public class ErrorDescriptionFactory {
         Parameters.notNull("description", description);
         Parameters.notNull("fixes", fixes);
         Parameters.notNull("file", file);
-        Parameters.notNull("start", start);
-        Parameters.notNull("end", end);
+        if (start < 0) throw new IndexOutOfBoundsException("start < 0 (" + start + " < 0)");
+        if (end < start) throw new IndexOutOfBoundsException("end < start (" + end + " < " + start + ")");
         
         return new ErrorDescription(file, description, severity, fixes, HintsControllerImpl.linePart(file, start, end));
     }

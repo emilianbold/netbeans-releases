@@ -1,3 +1,4 @@
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <HTML>
 <!--
   Copyright 2004 The Apache Software Foundation
@@ -29,13 +30,12 @@
 	if (table.getProcessError() == false) {
 %>
 
-<!-- html table goes here -->
 <CENTER>
 <TABLE WIDTH=60% BGCOLOR=yellow CELLPADDING=15>
 <TR>
-<TD ALIGN=CENTER> <A HREF=cal1.jsp?date=prev> prev </A>
-<TD ALIGN=CENTER> Calendar:<%= table.getDate() %></TD>
-<TD ALIGN=CENTER> <A HREF=cal1.jsp?date=next> next </A>
+<TD ALIGN=CENTER> <A HREF=cal1.jsp?date=prev> Prev </A>
+<TD ALIGN=CENTER> <c:out value="Calendar: ${table.date}" /></TD>
+<TD ALIGN=CENTER> <A HREF=cal1.jsp?date=next> Next </A>
 </TR>
 </TABLE>
 
@@ -45,32 +45,29 @@
 <TH> Time </TH>
 <TH> Appointment </TH>
 </TR>
-<FORM METHOD=POST ACTION=cal1.jsp>
-<%
-	for(int i=0; i<table.getEntries().getRows(); i++) {
-	   cal.Entry entr = table.getEntries().getEntry(i);	
-%>
-	<TR>
+<FORM METHOD="POST" ACTION="cal1.jsp">
+    <c:forEach begin="0" end="${table.entries.rows - 1}" var="index">
+        <c:set var="entry" value="${table.entries.getEntry(index)}" />
+        <TR>
 	<TD> 
-	<A HREF=cal2.jsp?time=<%= entr.getHour() %>>
-		<%= entr.getHour() %> </A>
+	<A HREF="cal2.jsp?time=${entry.hour}">
+            <c:out value="${entry.hour}" />
+        </A>
 	</TD>
-	<TD BGCOLOR=<%= entr.getColor() %>>
-	<% out.print(util.HTMLFilter.filter(entr.getDescription())); %>
+	<TD BGCOLOR="${entry.color}">
+            <c:out value="${entry.description}" />
 	</TD> 
 	</TR>
-<%
-	}
-%>
+    </c:forEach>
 </FORM>
 </TABLE>
 <BR>
 
-<!-- footer -->
 <TABLE WIDTH=60% BGCOLOR=yellow CELLPADDING=15>
 <TR>
-<TD ALIGN=CENTER>  <% out.print(util.HTMLFilter.filter(table.getName())); %> : 
-		     <% out.print(util.HTMLFilter.filter(table.getEmail())); %> </TD>
+<TD ALIGN=CENTER>
+    <c:out value="${table.name} : ${table.email}" />
+</TD>
 </TR>
 </TABLE>
 </CENTER>
@@ -79,16 +76,11 @@
 	} else {
 %>
 <font size=5>
-	You must enter your name and email address correctly.
+    You must enter your name and email address correctly.
 </font>
 <%
 	}
 %>
 
-
 </BODY>
 </HTML>
-
-
-
-

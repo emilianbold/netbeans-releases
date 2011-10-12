@@ -12,3 +12,13 @@ __hidden struct employee199899 {
 __global void createemployee199899(int id, char *name) { }
 __symbolic void deleteemployee199899(int id) { }
 __hidden void modifyemployee199899(int id) { }
+
+struct __global A199899__global {
+    A199899__global();
+    A199899__global(const A199899__global& orig);
+};
+
+struct __hidden A199899__hidden {
+    A199899__hidden();
+    A199899__hidden(const A199899__hidden& orig);
+};

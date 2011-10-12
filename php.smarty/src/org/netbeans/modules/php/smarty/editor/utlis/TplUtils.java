@@ -49,11 +49,15 @@ import org.openide.filesystems.FileObject;
  *
  * @author Martin Fousek
  */
-public class TplUtils {
+public final class TplUtils {
+
+    private TplUtils() {
+    }
 
     public static TplMetaData getProjectPropertiesForFileObject(FileObject fo) {
         String oDelim = SmartyOptions.getInstance().getDefaultOpenDelimiter();
         String cDelim = SmartyOptions.getInstance().getDefaultCloseDelimiter();
+        SmartyFramework.Version version = SmartyOptions.getInstance().getSmartyVersion();
 
         if (fo != null) {
             PhpModule phpModule = PhpModule.forFileObject(fo);
@@ -68,6 +72,6 @@ public class TplUtils {
                 }
             }
         }
-        return new TplMetaData(oDelim, cDelim);
+        return new TplMetaData(oDelim, cDelim, version);
     }
 }

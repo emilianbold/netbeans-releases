@@ -306,16 +306,30 @@ public final class ELTypeUtilities {
         return false;
     }
 
-    public static boolean isRawObject(CompilationContext info, Node target) {
-        if (!(target instanceof AstIdentifier)) {
-            return false;
-        }
-        for (ImplicitObject each : getImplicitObjects(info)) {
-            if (each.getType() == ImplicitObjectType.RAW
-                    && each.getName().equals(target.getImage())) {
-                return true;
-            }
-        }
+    public static boolean isRawObjectReference(CompilationContext info, Node target) {
+//        Parse tree for #{cc.attrs.muj} expression
+//
+//        CompositeExpression
+//            DeferredExpression
+//                Value
+//                    Identifier[cc]
+//                    PropertySuffix[attrs]
+//                    PropertySuffix[muj]
+
+        do {
+            if (target instanceof AstIdentifier) {
+                for (ImplicitObject each : getImplicitObjects(info)) {
+                    if (each.getType() == ImplicitObjectType.RAW
+                            && each.getName().equals(target.getImage())) {
+                        return true;
+                    }
+                }
+            } 
+            
+            target = NodeUtil.getSiblingBefore(target);
+            
+        } while (target != null);
+        
         return false;
     }
     

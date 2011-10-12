@@ -56,22 +56,17 @@ import javax.swing.JComponent;
  * @author Tor Norbye
  */
 abstract class FilterCondition {
-//    transient private String name = null;
 
     /**
-     * Creates a condition with the given name.
-     *
-     * @param name user visible name of the filter condition
+     * Creates a condition.     
      */
     public FilterCondition() {
-//      this.name = null;
     }
 
     /**
      * Copy constructor. Use from subclassed clone.
      */
     protected FilterCondition(final FilterCondition rhs) {
-//        this.name = rhs.name;
     }
 
     /** 
@@ -79,15 +74,6 @@ abstract class FilterCondition {
      */
     public abstract Object clone() ;
     
-//    /**
-//     * Returns the user visible name of this condition
-//     *
-//     * @return name of this condition
-//     */
-//    public String getName() {
-//      if (this.name == null) this.name = getDisplayName();
-//      return this.name;
-//    }
     
     /**
      * Compares two objects.
@@ -144,8 +130,6 @@ abstract class FilterCondition {
     public String toString() {
         return getClass().getName() + 
             "[name=" + getDisplayName() + "]"; // NOI18N
-//        return getClass().getName() + 
-//            "[name=" + name + "]"; // NOI18N
     }
 
     /** Use this client property on value/contant components to indicate valid user data.*/

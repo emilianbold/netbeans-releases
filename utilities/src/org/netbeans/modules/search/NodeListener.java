@@ -355,19 +355,55 @@ final class NodeListener implements MouseListener, KeyListener,
                                               MouseEvent e) {
         if (e != null) {
             return new Point(e.getX(), e.getY());
-        } else if (path != null) {
-            return tree.getPathBounds(path).getLocation();
         } else {
-            Point pos = tree.getMousePosition();
-            if (pos == null) {
-                java.awt.Rectangle r = tree.getVisibleRect();
-                pos = new Point(r.x + r.width / 2,
-                                r.y + r.height / 2);
+            Point preferredPos = null;
+            if (path != null) {
+                preferredPos = tree.getPathBounds(path).getLocation();
+            } else if (tree.getLeadSelectionPath() != null) {
+                TreePath lead = tree.getLeadSelectionPath();
+                if (tree.isPathSelected(lead)) {
+                    preferredPos = tree.getPathBounds(lead).getLocation();
+                }
             }
-            return pos;
+            Rectangle r = tree.getVisibleRect();
+            if (preferredPos == null || !r.contains(preferredPos)) {
+                Point highest = getHighestVisibleSelectedNodeLocation(tree);
+                if (highest != null) {
+                    return highest;
+                } else {
+                    return new Point(r.x, r.y);
+                }
+            } else {
+                return preferredPos;
+            }
         }
     }
     
+    /**
+     * Get location of the highest selected visible node in the tree.
+     *
+     * The highest node is the node with the smallest value of Y coordinate
+     * value. A node is visible if its upper left corner is inside the visible
+     * rectangle of the tree.
+     *
+     * @return Location of the highest selected visible node, or null if no such
+     * node exists.
+     */
+    private static Point getHighestVisibleSelectedNodeLocation(JTree tree) {
+
+        Rectangle visibleRect = tree.getVisibleRect();
+        Point highest = null;
+        TreePath[] paths = tree.getSelectionPaths();
+        for (TreePath path : paths) {
+            Point p = tree.getPathBounds(path).getLocation();
+            if ((highest == null || p.getY() < highest.getY())
+                    && visibleRect.contains(p)) {
+                highest = p;
+            }
+        }
+        return highest;
+    }
+
     /**
      * Auto-collapses a given file node if appropriate after
      * the select or unselect operation. The behaviour is given by constants

@@ -1,4 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<configuration xmlns="http://java.sun.com/xml/ns/jax-rpc/ri/config">
-	<wsdl location="@CONFIG_ABSOLUTE_PATH@/HelloService.wsdl" packageName="helloweb"/>
-</configuration>

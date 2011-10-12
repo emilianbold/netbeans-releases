@@ -61,7 +61,7 @@ import org.openide.util.lookup.ServiceProvider;
  */
 public class FormLogin extends JPanel {
 
-    private static Preferences loginPrefs() {
+    static Preferences loginPrefs() {
         return NbPreferences.forModule(FormLogin.class).node("authentication"); // NOI18N
     }
 

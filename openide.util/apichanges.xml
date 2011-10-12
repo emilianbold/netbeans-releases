@@ -51,6 +51,48 @@ made subject to such option by the copyright holder.
     <apidef name="actions">Actions API</apidef>
 </apidefs>
 <changes>
+    <change id="ProxyCredentialsProvider">
+        <api name="util"/>
+        <summary>SPI <code>NetworkSettings.ProxyCredentialsProvider</code> added</summary>
+        <version major="8" minor="17"/>
+        <date day="20" month="9" year="2011"/>
+        <author login="jrechtacek"/>
+        <compatibility addition="yes"/>
+        <description>
+            <p>
+                Most of the proxy and network credentials are currently read
+                from a default NetBeans storage. This may not be ideal
+                for other Platform aplications storing the settings in a different
+                way or computing them dynamically. 
+                A SPI <a href="@TOP@/org/openide/util/NetworkSettings.ProxyCredentialsProvider.html">
+                NetworkSettings.ProxyCredentialsProvider</a> allows NetBeans Platform
+                users to provide proxy and network credentials separately.
+                See <a href="http://wiki.netbeans.org/Authenticator">http://wiki.netbeans.org/Authenticator</a>
+            </p>
+        </description>
+        <class package="org.openide.util" name="NetworkSettings"/>
+        <issue number="201662"/>
+    </change>
+    <change id="SuppressAuthentication">
+        <api name="util"/>
+        <summary><code>NetworkSettings.suppressAuthenticationDialog</code> added</summary>
+        <version major="8" minor="17"/>
+        <date day="20" month="9" year="2011"/>
+        <author login="jrechtacek"/>
+        <compatibility addition="yes"/>
+        <description>
+            <p>
+                Some plugins needs a way to suppress <a href="http://download.oracle.com/javase/6/docs/api/java/net/Authenticator.html">
+                    Authenticator</a> without asking
+                user a question about the credentials. 
+                Invoke <a href="@TOP@/org/openide/util/NetworkSettings.html#suppressAuthenticationDialog(java.util.concurrent.Callable)">
+                suppressAuthenticationDialog</a> with a block of code where authentication dialog will be suppressed.                
+                See <a href="http://wiki.netbeans.org/Authenticator">http://wiki.netbeans.org/Authenticator</a>
+            </p>
+        </description>
+        <class package="org.openide.util" name="NetworkSettings"/>
+        <issue number="201662"/>
+    </change>
     <change id="NetworkSettings">
         <api name="util"/>
         <summary><code>NetworkSettings</code> added</summary>

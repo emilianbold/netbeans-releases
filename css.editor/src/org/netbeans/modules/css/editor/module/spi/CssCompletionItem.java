@@ -47,7 +47,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.util.Collections;
-import java.util.Locale;
 import java.util.Set;
 import javax.swing.ImageIcon;
 import javax.swing.JColorChooser;
@@ -64,7 +63,6 @@ import org.netbeans.modules.css.editor.csl.CssColor;
 import org.netbeans.modules.css.editor.csl.CssCompletion;
 import org.netbeans.modules.css.editor.csl.CssElement;
 import org.netbeans.modules.css.editor.csl.CssValueElement;
-import org.netbeans.modules.css.editor.module.CssModuleSupport;
 import org.netbeans.modules.css.editor.properties.parser.GrammarElement;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.util.NbBundle;
@@ -387,7 +385,7 @@ public abstract class CssCompletionItem implements CompletionProposal {
         @Override
         public String getLhsHtml(HtmlFormatter formatter) {
             return new StringBuilder().append(usedInCurrentFile ? "" : "<font color=999999>").
-                    append(getName()).append(usedInCurrentFile ? "" : "</font>").toString();
+                    append(getName()).append(usedInCurrentFile ? "" : "</font>").toString(); //NOI18N
         }
 
         @Override
@@ -516,9 +514,9 @@ public abstract class CssCompletionItem implements CompletionProposal {
         @Override
         public String getLhsHtml(HtmlFormatter formatter) {
             if (Css3Utils.isVendorSpecificProperty(getName())) {
-                formatter.appendHtml("<i>");
+                formatter.appendHtml("<i>"); //NOI18N
                 formatter.appendText(getName());
-                formatter.appendHtml("</i>");
+                formatter.appendHtml("</i>"); //NOI18N
 
                 return formatter.getText();
             } else {
@@ -550,17 +548,17 @@ public abstract class CssCompletionItem implements CompletionProposal {
         public String getLhsHtml(HtmlFormatter formatter) {
             StringBuilder buf = new StringBuilder();
             if (related) {
-                buf.append("<b><font color=#");
+                buf.append("<b><font color=#"); //NOI18N
                 buf.append(RELATED_SELECTOR_COLOR);
             } else {
-                buf.append("<font color=#");
+                buf.append("<font color=#"); //NOI18N
                 buf.append(GRAY_COLOR_CODE);
             }
             buf.append(">");
             buf.append(getName());
-            buf.append("</font>");
+            buf.append("</font>"); //NOI18N
             if (related) {
-                buf.append("</b>");
+                buf.append("</b>"); //NOI18N
             }
 
             formatter.appendHtml(buf.toString());

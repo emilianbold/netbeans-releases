@@ -42,16 +42,15 @@
 package org.netbeans.modules.cnd.loaders;
 
 import java.io.IOException;
+import org.netbeans.core.spi.multiview.MultiViewElement;
+import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.MultiFileLoader;
-import org.openide.nodes.CookieSet;
-import org.openide.nodes.Node;
-import org.openide.nodes.Children;
 import org.openide.util.Lookup;
-import org.openide.text.DataEditorSupport;
+import org.openide.windows.TopComponent;
 
 /**
  * @author Alexey Vladykin
@@ -60,18 +59,24 @@ public class QtResourceDataObject extends MultiDataObject {
 
     public QtResourceDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
         super(pf, loader);
-        CookieSet cookies = getCookieSet();
-        cookies.add((Node.Cookie) DataEditorSupport.create(this, getPrimaryEntry(), cookies));
+        registerEditor(MIMENames.QT_RESOURCE_MIME_TYPE, true);
+    }
+
+    @MultiViewElement.Registration(
+        displayName="#Source", // NOI18N
+        iconBase="org/netbeans/modules/cnd/loaders/QtResourceIcon.png", // NOI18N
+        persistenceType=TopComponent.PERSISTENCE_ONLY_OPENED,
+        mimeType=MIMENames.QT_RESOURCE_MIME_TYPE,
+        preferredID="qtresource.source", // NOI18N
+        position=1
+    )
+    public static MultiViewEditorElement createMultiViewEditorElement(Lookup context) {
+        return new MultiViewEditorElement(context);
     }
 
     @Override
-    protected Node createNodeDelegate() {
-        return new DataNode(this, Children.LEAF, getLookup());
-    }
-
-    @Override
-    public Lookup getLookup() {
-        return getCookieSet().getLookup();
+    protected int associateLookup() {
+        return 1;
     }
 
 }

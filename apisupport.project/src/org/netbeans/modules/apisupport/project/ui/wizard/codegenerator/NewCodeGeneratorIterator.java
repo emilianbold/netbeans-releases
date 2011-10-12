@@ -71,10 +71,12 @@ public class NewCodeGeneratorIterator extends BasicWizardIterator {
         "javax.swing.text.JTextComponent", // NOI18N
         "java.util.List", // NOI18N
         "org.openide.util.Lookup", // NOI18N
+        "org.netbeans.api.editor.mimelookup.MimeRegistration",
         "org.netbeans.spi.editor.codegen.CodeGenerator" // NOI18N
     };
     
     private static final String[] PROVIDER_HARDCODED_IMPORTS = new String[] {
+        "org.netbeans.api.editor.mimelookup.MimeRegistration",
         "org.netbeans.spi.editor.codegen.CodeGeneratorContextProvider", // NOI18N
         "org.openide.util.Lookup", // NOI18N
         "org.openide.util.lookup.Lookups", // NOI18N
@@ -102,14 +104,8 @@ public class NewCodeGeneratorIterator extends BasicWizardIterator {
         String cpActionPath = model.getDefaultPackagePath(providerFileName + ".java", false); // NOI18N
         FileObject cpTemplate = CreatedModifiedFiles.getTemplate("contextProvider.java"); // NOI18N
         cpReplaceTokens.put("IMPORTS", cpImportsBuffer.toString()); // NOI18N
+        cpReplaceTokens.put("MIME_TYPE", model.getMimeType());
         cmf.add(cmf.createFileWithSubstitutions(cpActionPath, cpTemplate, cpReplaceTokens));
-
-        // add layer entry about the action
-        String cpCategory = "Editors/text/" + model.getMimeType() + "/CodeGeneratorContextProviders"; // NOI18N
-        String cpDashedPkgName = model.getPackageName().replace('.', '-');
-        String cpDashedFqClassName = cpDashedPkgName + '-' + cpFileName;
-        String cpInstanceFullPath = cpCategory + "/" + cpDashedFqClassName + ".instance"; // NOI18N
-        cmf.add(cmf.createLayerEntry(cpInstanceFullPath, null, null, null, null));
     }
     
     /** datamodel passed through individual panels */
@@ -120,7 +116,8 @@ public class NewCodeGeneratorIterator extends BasicWizardIterator {
         
         //add module dependency
         cmf.add(cmf.addModuleDependency("org.netbeans.modules.editor.lib2")); // NOI18N
-        cmf.add(cmf.addModuleDependency("org.openide.util")); // NOI18N
+        cmf.add(cmf.addModuleDependency("org.netbeans.modules.editor.mimelookup"));
+        cmf.add(cmf.addModuleDependency("org.openide.util.lookup")); // NOI18N
         
         //create the java class implementing CodeGenerator
         final String fileName = model.getFileName();
@@ -139,20 +136,8 @@ public class NewCodeGeneratorIterator extends BasicWizardIterator {
             importsBuffer.append("import " + imprt + ';' + lineSep); // NOI18N
         }
         replaceTokens.put("IMPORTS", importsBuffer.toString()); // NOI18N
+        replaceTokens.put("MIME_TYPE", model.getMimeType());
         cmf.add(cmf.createFileWithSubstitutions(actionPath, template, replaceTokens));
-
-        // add layer entry about the action
-        String category;
-        if (model.getMimeType().contains("/")) {
-            category = "Editors/" + model.getMimeType() + "/CodeGenerators";
-        } else {
-            category = "Editors/text/" + model.getMimeType() + "/CodeGenerators";
-        } // NOI18N
-        String dashedPkgName = model.getPackageName().replace('.', '-');
-        String dashedFqClassName = dashedPkgName + '-' + fileName;
-        String instanceFullPath = category + "/" // NOI18N
-                + dashedFqClassName + "$Factory.instance"; // NOI18N
-        cmf.add(cmf.createLayerEntry(instanceFullPath, null, null, null, null));
         
         //if checked, create also CodeGeneratorContextProvider instance
         if (model.isContextProviderRequired()) {

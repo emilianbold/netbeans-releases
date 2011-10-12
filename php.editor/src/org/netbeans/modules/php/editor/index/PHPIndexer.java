@@ -191,7 +191,7 @@ public final class PHPIndexer extends EmbeddingIndexer {
             String processedFileURL = null;
             try {
                 final FileObject fileObject = r.getSnapshot().getSource().getFileObject();
-                assert r.getDiagnostics().isEmpty() || !PhpSourcePath.FileType.INTERNAL.equals(PhpSourcePath.getFileType(fileObject)) : fileObject.getPath();
+                assert r.getDiagnostics().isEmpty() : fileObject.getPath();
                 processedFileURL = fileObject.getURL().toExternalForm();
             } catch (FileStateInvalidException ex) {
                 Exceptions.printStackTrace(ex);
@@ -200,7 +200,7 @@ public final class PHPIndexer extends EmbeddingIndexer {
             if (processedFileURL == null) {
                 return;
             }
-            
+
             boolean isFileEdited = false;
             if (!context.isAllFilesIndexing() && context.checkForEditorModifications()) {
                 final JTextComponent jtc = EditorRegistry.lastFocusedComponent();
@@ -228,7 +228,7 @@ public final class PHPIndexer extends EmbeddingIndexer {
                 QualifiedName superClassName = classScope.getSuperClassName();
                 if (superClassName != null) {
                     final String name = superClassName.getName();
-                    //final String namespaceName = superClassName.toNamespaceName().toString();                    
+                    //final String namespaceName = superClassName.toNamespaceName().toString();
                     Collection<QualifiedName> namespaceNames = VariousUtils.getPossibleFQN(superClassName, classScope.getOffset(), (NamespaceScope)classScope.getInScope());
                     final String namespaceName = ModelUtils.getFirst(namespaceNames).getNamespaceName();
                     classDocument.addPair(FIELD_SUPER_CLASS, String.format("%s;%s;%s", name.toLowerCase(), name, namespaceName), true, true);//NOI18N
@@ -306,7 +306,7 @@ public final class PHPIndexer extends EmbeddingIndexer {
                 if (nsElement.isDefaultNamespace()){
                     continue; // do not index default ns
                 }
-                
+
                 defaultDocument.addPair(FIELD_NAMESPACE, nsElement.getIndexSignature(), true, true);
                 defaultDocument.addPair(FIELD_TOP_LEVEL, nsElement.getName().toLowerCase(), true, true);
             }
@@ -324,7 +324,7 @@ public final class PHPIndexer extends EmbeddingIndexer {
             program.accept(identifierVisitor);
             for (IndexDocument d : documents) {
                 support.addDocument(d);
-            }            
+            }
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }

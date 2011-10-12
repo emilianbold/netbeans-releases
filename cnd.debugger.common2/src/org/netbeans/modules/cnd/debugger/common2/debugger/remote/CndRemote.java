@@ -396,7 +396,7 @@ public class CndRemote {
 	    makeConfiguration.getDevelopmentHost();
 
         ExecutionEnvironment exEnv = host.executionEnvironment();
-        String userHostName = ExecutionEnvironmentFactory.toUniqueID(exEnv);
+        hostConfig.setHost(exEnv);
 	CompilerSetManager csm = CompilerSetManager.get(exEnv);
 
 	CompilerSet2Configuration csconf = makeConfiguration.getCompilerSet();
@@ -414,10 +414,6 @@ public class CndRemote {
                 }
             }
         };
-
-	String base = host.getRemoteStudioLocation();
-	base += "/bin"; // NOI18N
-	hostConfig.setValue(userHostName);
 
 	// point of no return
 

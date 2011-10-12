@@ -48,6 +48,8 @@ import java.awt.Component;
 import java.util.LinkedList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.core.spi.multiview.MultiViewElement;
+import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
 import org.netbeans.modules.tomcat5.TomcatManager;
 import org.netbeans.modules.tomcat5.nodes.actions.AdminConsoleAction;
 import org.netbeans.modules.tomcat5.nodes.actions.ServerLogAction;
@@ -69,6 +71,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.windows.TopComponent;
 
 
 /**
@@ -177,4 +180,23 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
     public boolean hasServerLog() {
         return tm.logManager().hasServerLog();
     }
+    
+    /**
+     * Overrides the compatible XML DO behaviour for files without data objects
+     * @param context
+     * @return 
+     */
+    @MultiViewElement.Registration(
+        displayName="org.netbeans.modules.tomcat5.nodes.Bundle#CTL_SourceTabCaption",
+        iconBase="org/netbeans/modules/tomcat5/resources/tomcat5.gif",
+        persistenceType=TopComponent.PERSISTENCE_ONLY_OPENED,
+        preferredID="xml.text",
+        mimeType="text/tomcat5+xml",
+        position=1
+    )
+    public static MultiViewEditorElement createMultiViewEditorElement(Lookup context) {
+        return new MultiViewEditorElement(context);
+    }
+        
+
 }

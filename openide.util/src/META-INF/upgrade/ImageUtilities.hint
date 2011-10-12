@@ -1,0 +1,19 @@
+org.openide.util.Utilities.loadImage($r)
+=>
+org.openide.util.ImageUtilities.loadImage($r)
+;;
+
+org.openide.util.Utilities.loadImage($r, $loc)
+=>
+org.openide.util.ImageUtilities.loadImage($r, $loc)
+;;
+
+org.openide.util.Utilities.icon2Image($i)
+=>
+org.openide.util.ImageUtilities.icon2Image($i)
+;;
+
+org.openide.util.Utilities.mergeImages($i1, $i2, $x, $y)
+=>
+org.openide.util.ImageUtilities.mergeImages($i1, $i2, $x, $y)
+;;

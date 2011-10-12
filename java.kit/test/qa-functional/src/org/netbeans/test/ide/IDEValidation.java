@@ -1095,7 +1095,7 @@ public class IDEValidation extends JellyTestCase {
         String proxyHostLabel = Bundle.getStringTrimmed(
                 "org.netbeans.core.ui.options.general.Bundle", "CTL_Proxy_Host");
         JLabelOperator jloHost = new JLabelOperator(optionsOper, proxyHostLabel);
-        new JTextFieldOperator((JTextField) jloHost.getLabelFor()).typeText("emea-proxy.uk.oracle.com"); // NOI18N
+        new JTextFieldOperator((JTextField) jloHost.getLabelFor()).setText("emea-proxy.uk.oracle.com"); // NOI18N
         // "Port:"
         String proxyPortLabel = Bundle.getStringTrimmed(
                 "org.netbeans.core.ui.options.general.Bundle", "CTL_Proxy_Port");

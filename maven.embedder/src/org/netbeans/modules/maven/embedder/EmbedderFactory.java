@@ -43,9 +43,9 @@
 package org.netbeans.modules.maven.embedder;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
@@ -61,6 +61,7 @@ import org.apache.maven.model.building.ModelBuilder;
 import org.apache.maven.model.building.ModelBuildingException;
 import org.apache.maven.model.building.ModelBuildingRequest;
 import org.apache.maven.model.building.ModelBuildingResult;
+import org.apache.maven.properties.internal.EnvironmentUtils;
 import org.codehaus.plexus.ContainerConfiguration;
 import org.codehaus.plexus.DefaultContainerConfiguration;
 import org.codehaus.plexus.DefaultPlexusContainer;
@@ -69,12 +70,11 @@ import org.codehaus.plexus.classworlds.ClassWorld;
 import org.codehaus.plexus.component.repository.ComponentDescriptor;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.codehaus.plexus.logging.BaseLoggerManager;
-import org.codehaus.plexus.util.cli.CommandLineUtils;
 import org.netbeans.api.annotations.common.NonNull;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
-import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
+import org.openide.util.Utilities;
 import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.repository.RemoteRepository;
 import org.sonatype.aether.spi.connector.RepositoryConnector;
@@ -409,21 +409,15 @@ public final class EmbedderFactory {
 
     /**
      * Maven assumes the env vars are included in execution properties with the "env." prefix.
-     * 
-     * @param properties
-     * @return 
+     * @see EnvironmentUtils#addEnvVars
      */
     public static Properties fillEnvVars(Properties properties) {
-        try
-        {
-            Properties envVars = CommandLineUtils.getSystemEnvVars(); // XXX what is wrong with System.getenv()?
-            for (Map.Entry<Object,Object> e : envVars.entrySet()) {
-                properties.setProperty( "env." + e.getKey().toString(), e.getValue().toString() );
+        for (Map.Entry<String,String> entry : System.getenv().entrySet()) {
+            String key = entry.getKey();
+            if (Utilities.isWindows()) {
+                key = key.toUpperCase(Locale.ENGLISH);
             }
-        }
-        catch ( IOException e )
-        {
-            Exceptions.printStackTrace(e);
+            properties.setProperty("env." + key, entry.getValue());
         }
         return properties;
     }

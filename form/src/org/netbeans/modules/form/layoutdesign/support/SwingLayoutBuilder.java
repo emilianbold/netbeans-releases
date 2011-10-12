@@ -137,19 +137,16 @@ public class SwingLayoutBuilder {
     public void clearContainer() {
         // Issue 121068 - componentResized event lost, but needed by JSlider
         // forces new componentResized event when the container is laid out
-        issue121068Hack(container);
+        issue121068Hack();
         container.removeAll();
         componentIDMap.clear();
     }
 
-    private void issue121068Hack(Component component) {
-        if (component instanceof JSlider) {
-            component.setBounds(0,0,0,0);
-        }
-        if (component instanceof Container) {
-            Container cont = (Container)component;
-            for (int i=0; i<cont.getComponentCount(); i++) {
-                issue121068Hack(cont.getComponent(i));
+    private void issue121068Hack() {
+        for (int i=0; i < container.getComponentCount(); i++) {
+            Component comp = container.getComponent(i);
+            if (comp instanceof JSlider) {
+                comp.setBounds(0,0,0,0);
             }
         }
     }

@@ -40,6 +40,8 @@
  */
 package org.netbeans.modules.php.smarty.editor;
 
+import org.netbeans.modules.php.smarty.SmartyFramework;
+
 /** Holds data relevant to the TPL coloring for one TPL page.
  *
  * @author Martin Fousek
@@ -47,11 +49,13 @@ package org.netbeans.modules.php.smarty.editor;
 public final class TplMetaData {
 
     private String openDelimiter, closeDelimiter;
+    private SmartyFramework.Version version;
     private boolean initialized;
 
-    public TplMetaData(String openDelimiter, String closeDelimiter) {
+    public TplMetaData(String openDelimiter, String closeDelimiter, SmartyFramework.Version version) {
         this.openDelimiter = openDelimiter;
         this.closeDelimiter = closeDelimiter;
+        this.version = version;
     }
 
     public boolean isInitialized() {
@@ -78,9 +82,13 @@ public final class TplMetaData {
         return closeDelimiter;
     }
 
+    public SmartyFramework.Version getSmartyVersion() {
+        return version;
+    }
+
     @Override
     public String toString() {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         buf.append("TplMetaData:");
         buf.append(" openDelim=");
         buf.append(getOpenDelimiter());

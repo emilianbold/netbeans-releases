@@ -44,6 +44,7 @@
 package org.netbeans.modules.maven.jaxws.nodes;
 
 import java.awt.Image;
+import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -100,7 +101,6 @@ import org.netbeans.modules.websvc.wsstack.api.WSStack;
 import org.netbeans.modules.websvc.wsstack.jaxws.JaxWs;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.actions.DeleteAction;
 import org.openide.actions.OpenAction;
@@ -130,6 +130,8 @@ public class JaxWsNode extends AbstractNode implements ConfigureHandlerCookie {
     private FileObject implBeanClass;
     InstanceContent content;
     Project project;
+    
+    private static final Logger LOG = Logger.getLogger(JaxWsNode.class.getCanonicalName());
 
     public JaxWsNode(JaxWsService service, FileObject srcRoot, FileObject implBeanClass) {
         this(service, srcRoot, implBeanClass, new InstanceContent());
@@ -142,6 +144,32 @@ public class JaxWsNode extends AbstractNode implements ConfigureHandlerCookie {
         this.content = content;
         this.implBeanClass = implBeanClass;
         project = FileOwnerQuery.getOwner(srcRoot);
+        
+        /*if (implBeanClass.getAttribute("jax-ws-service") == null ||
+                service.isServiceProvider() && 
+                implBeanClass.getAttribute("jax-ws-service-provider") == null)  // NOI18N
+        {
+            try {
+                if (implBeanClass.getAttribute("jax-ws-service") == null) {     // NOI18N
+                    implBeanClass.setAttribute("jax-ws-service", Boolean.TRUE); // NOI18N
+                }
+                if (service.isServiceProvider() && 
+                        implBeanClass.getAttribute("jax-ws-service-provider") == null) // NOI18N
+                {
+                    implBeanClass.setAttribute("jax-ws-service-provider",       // NOI18N
+                            Boolean.TRUE);
+                }
+                getDataObject().setValid(false);
+                getDataObject();
+            } 
+            catch (PropertyVetoException ex) {
+                LOG.log( Level.WARNING, null , ex);
+            } 
+            catch (IOException ex) {
+                LOG.log( Level.WARNING, null , ex);
+            }
+        }*/
+        
         String serviceName = service.getServiceName();
         setName(serviceName);
         content.add(this);
@@ -232,7 +260,7 @@ public class JaxWsNode extends AbstractNode implements ConfigureHandlerCookie {
             try {
                 return DataObject.find(f);
             } catch (DataObjectNotFoundException de) {
-                ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, de.toString());
+                LOG.log( Level.INFO, null , de);
             }
         }
         return null;
@@ -246,7 +274,7 @@ public class JaxWsNode extends AbstractNode implements ConfigureHandlerCookie {
                 DataObject d = DataObject.find(f);
                 oc = d.getCookie(OpenCookie.class);
             } catch (DataObjectNotFoundException de) {
-                ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, de.toString());
+                LOG.log( Level.INFO, null , de);
             }
         }
         return oc;
@@ -508,7 +536,7 @@ public class JaxWsNode extends AbstractNode implements ConfigureHandlerCookie {
                             try {
                                 javaSource.runUserActionTask(task, true);
                             } catch (IOException ex) {
-                                ErrorManager.getDefault().notify(ex);
+                                LOG.log( Level.WARNING, null , ex);
                             }
 
                             if (newServiceName[0] == null) {
@@ -609,7 +637,7 @@ public class JaxWsNode extends AbstractNode implements ConfigureHandlerCookie {
         try {
             implBeanJavaSrc.runUserActionTask(task, true);
         } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ex);
+            LOG.log( Level.WARNING, null , ex);
         }
 
         if (!isNew[0] && handlerFileName[0] != null) {
@@ -627,7 +655,7 @@ public class JaxWsNode extends AbstractNode implements ConfigureHandlerCookie {
                     try {
                         handlerChains = HandlerChainsProvider.getDefault().getHandlerChains(handlerFO);
                     } catch (Exception e) {
-                        ErrorManager.getDefault().notify(e);
+                        LOG.log( Level.WARNING, null , e);
                         return; //TODO handle this
                     }
                     HandlerChain[] handlerChainArray = handlerChains.getHandlerChains();
@@ -643,7 +671,7 @@ public class JaxWsNode extends AbstractNode implements ConfigureHandlerCookie {
                     DialogDisplayer.getDefault().notify(dialogDesc);
                 }
             } catch (IOException ex) {
-                ErrorManager.getDefault().notify(ex);
+                LOG.log( Level.WARNING, null , ex);
             }
         }
         final MessageHandlerPanel panel = new MessageHandlerPanel(project, handlerClasses, true, service.getServiceName());
@@ -815,7 +843,7 @@ public class JaxWsNode extends AbstractNode implements ConfigureHandlerCookie {
             try {
                 javaSource.runUserActionTask(task, true);
             } catch (IOException ex) {
-                ErrorManager.getDefault().notify(ex);
+                LOG.log( Level.WARNING, null , ex);
             }
         }
 

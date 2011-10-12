@@ -48,24 +48,24 @@ import java.util.List;
  * @author Petr Pisl
  */
 public class PHPDocMethodTag extends PHPDocTypeTag {
-    
+
     private final List<PHPDocVarTypeTag> params;
     private final PHPDocNode name;
-    
+
     public PHPDocMethodTag(int start, int end, PHPDocTag.Type kind,
-            List<PHPDocTypeNode> returnTypes, PHPDocNode methodName, 
+            List<PHPDocTypeNode> returnTypes, PHPDocNode methodName,
             List<PHPDocVarTypeTag> parameters, String documentation) {
         super(start, end, kind, documentation, returnTypes);
         this.params = parameters;
         this.name = methodName;
     }
-    
+
     public PHPDocNode getMethodName() {
         return name;
     }
-    
+
     /**
-     * 
+     *
      * @return parameters of the method
      */
     public List<PHPDocVarTypeTag> getParameters() {
@@ -74,20 +74,105 @@ public class PHPDocMethodTag extends PHPDocTypeTag {
 
     @Override
     public String getDocumentation() {
-        if (documentation == null) {
-            int index = getValue().indexOf(name.getValue());
-            if (index > -1) {
-                index = getValue().indexOf(')', index);
-                if (index  > -1) {
-                    documentation = getValue().substring(index + 1).trim();
-                }
-            }
+        String retval = documentation;
+        if (retval == null) {
+            CommentExtractor commentExtractor = CommentExtractorImpl.create(name.getValue());
+            retval = commentExtractor.extract(getValue());
         }
-        return documentation;
+        return retval;
     }
-    
+
     @Override
     public void accept(Visitor visitor) {
         visitor.visit(this);
+    }
+
+    private static class CommentExtractorImpl implements CommentExtractor {
+
+        private final String methodName;
+        private String originalDescription;
+        private String currentDescription;
+        private String comment = "";
+        private int bracketBalance = 0;
+        private boolean unexpectedCharacter = false;
+
+        public static CommentExtractor create(String methodName) {
+            return new CommentExtractorImpl(methodName);
+        }
+
+        private CommentExtractorImpl(String methodName) {
+            this.methodName = methodName;
+        }
+
+        @Override
+        public String extract(String description) {
+            originalDescription = description;
+            currentDescription = description;
+            int index = 0;
+            while ((index = currentDescription.lastIndexOf('(')) > -1) {
+                findComment(index);
+                if (!comment.isEmpty()) {
+                    break;
+                }
+            }
+            return comment;
+        }
+
+        private void findComment(int index) {
+            String preDesc = currentDescription.substring(0, index);
+            String postDesc = originalDescription.substring(index);
+            int matchingBraceIndex = getMatchingBraceIndex(postDesc);
+            if (preDesc.trim().endsWith(methodName) && (matchingBraceIndex != 0)) {
+                comment = postDesc.substring(matchingBraceIndex + 1).trim();
+            } else {
+                currentDescription = preDesc;
+            }
+        }
+
+        private int getMatchingBraceIndex(String subDescription) {
+            int retval = 0;
+            for (int i = 0; i < subDescription.length(); i++) {
+                countBracketBalance(subDescription.charAt(i));
+                if (bracketBalance == 0 && !unexpectedCharacter) {
+                    retval = i;
+                    break;
+                }
+                if (unexpectedCharacter) {
+                    break;
+                }
+            }
+            return retval;
+        }
+
+        private void countBracketBalance(char ch) {
+            if (Character.isWhitespace(ch)) {
+                return;
+            } else if (ch == '(') {
+                bracketBalance++;
+            } else if (ch == ')') {
+                bracketBalance--;
+            } else {
+                checkUnexpectedCharacter();
+            }
+        }
+
+        private void checkUnexpectedCharacter() {
+            if (bracketBalance == 0) {
+                unexpectedCharacter = true;
+            }
+        }
+
+    }
+
+    private interface CommentExtractor {
+
+        /**
+         * Extracts comment part from magic method tag description.
+         *
+         * @param description Line of magic method tag description.
+         * @return Extracted comment part.
+         */
+        public String extract(String description);
+
     }
 }

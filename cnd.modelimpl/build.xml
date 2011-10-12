@@ -76,7 +76,7 @@ made subject to such option by the copyright holder.
                 <include name="libs.antlr3.devel/external/binaries-list"/>
             </manifest>
         </downloadbinaries>
-        <property name="antlr3.jar" location="${nb_all}/libs.antlr3.devel/external/antlr-3.1.3.jar"/>
+        <property name="antlr3.jar" location="${nb_all}/libs.antlr3.devel/external/antlr-3.3.jar"/>
         <property name="antlr3.evaluator.grammar.dir" location="src/org/netbeans/modules/cnd/modelimpl/impl/services/evaluator/parser"/>
 
          <!-- Open Fortran Parser -->
@@ -157,7 +157,7 @@ made subject to such option by the copyright holder.
         <unzip src="${open.fortran.parser.src.dir}/open-fortran-parser-0.7.1.2.zip"
             dest="${antlr.grammar.dir}"/>
 
-        <echo message="ANTLR Parser Generator   Version Sun-3.1.3" />
+        <echo message="ANTLR Parser Generator   Version 3.3" />
         <java classname="org.antlr.Tool" fork="true" failonerror="true">
             <arg value="-o"/>
             <arg value="${antlr.output.dir}"/>
@@ -180,7 +180,7 @@ made subject to such option by the copyright holder.
                     tofile="${antlr3.evaluator.output.dir}/APTTokenTypes.tokens"
                     overwrite="true"/>
 
-        <echo message="ANTLR Parser Generator   Version Sun-3.1.3" />
+        <echo message="ANTLR Parser Generator   Version 3.3" />
         <java classname="org.antlr.Tool" fork="true" failonerror="true">
             <arg value="-o"/>
             <arg value="${antlr3.evaluator.output.dir}"/>

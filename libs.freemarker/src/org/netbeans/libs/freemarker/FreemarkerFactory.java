@@ -42,28 +42,34 @@ import java.util.*;
 
 @org.openide.util.lookup.ServiceProvider(service=javax.script.ScriptEngineFactory.class)
 public class FreemarkerFactory implements ScriptEngineFactory {
+    @Override
     public String getEngineName() { 
         return "freemarker";
     }
 
+    @Override
     public String getEngineVersion() {
         return "2.3.8";
     }
 
+    @Override
     public List<String> getExtensions() {
         return extensions;
     }
 
+    @Override
     public String getLanguageName() {
         return "freemarker";
     }
 
+    @Override
     public String getLanguageVersion() {
         return "2.3.8";
     }
 
+    @Override
     public String getMethodCallSyntax(String obj, String m, String... args) {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         buf.append("${");
         buf.append(obj);
         buf.append(".");
@@ -72,25 +78,28 @@ public class FreemarkerFactory implements ScriptEngineFactory {
         if (args.length != 0) {
             int i = 0;
             for (; i < args.length - 1; i++) {
-                buf.append("$" + args[i]);
+                buf.append("$").append(args[i]);
                 buf.append(", ");
             }
-            buf.append("$" + args[i]);
+            buf.append("$").append(args[i]);
         }        
         buf.append(")}");
         return buf.toString();
     }
 
+    @Override
     public List<String> getMimeTypes() {
         return mimeTypes;
     }
 
+    @Override
     public List<String> getNames() {
         return names;
     }
 
+    @Override
     public String getOutputStatement(String toDisplay) {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         int len = toDisplay.length();
         buf.append("${context.getWriter().write(\"");
         for (int i = 0; i < len; i++) {
@@ -111,6 +120,7 @@ public class FreemarkerFactory implements ScriptEngineFactory {
         return buf.toString();
     }
 
+    @Override
     public String getParameter(String key) {
         if (key.equals(ScriptEngine.NAME)) {
             return getLanguageName();
@@ -129,8 +139,9 @@ public class FreemarkerFactory implements ScriptEngineFactory {
         }
     } 
 
+    @Override
     public String getProgram(String... statements) {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         for (int i = 0; i < statements.length; i++) {
             buf.append(statements[i]);
             buf.append("\n");
@@ -138,22 +149,23 @@ public class FreemarkerFactory implements ScriptEngineFactory {
         return buf.toString();
     }
 
+    @Override
     public ScriptEngine getScriptEngine() {
         return new FreemarkerEngine(this);
     }
 
-    private static List<String> names;
-    private static List<String> extensions;
-    private static List<String> mimeTypes;
+    private static final List<String> names;
+    private static final List<String> extensions;
+    private static final List<String> mimeTypes;
     static {
-        names = new ArrayList<String>(2);
-        names.add("FreeMarker");
-        names.add("freemarker");
-        names = Collections.unmodifiableList(names);
-        extensions = new ArrayList<String>(1);
-        extensions.add("fm");
-        extensions = Collections.unmodifiableList(extensions);
-        mimeTypes = new ArrayList<String>(0);
-        mimeTypes = Collections.unmodifiableList(mimeTypes);
+        ArrayList<String> n = new ArrayList<String>(2);
+        n.add("FreeMarker");
+        n.add("freemarker");
+        names = Collections.unmodifiableList(n);
+        ArrayList<String> e = new ArrayList<String>(1);
+        e.add("fm");
+        extensions = Collections.unmodifiableList(e);
+        ArrayList<String> m = new ArrayList<String>(0);
+        mimeTypes = Collections.unmodifiableList(m);
     }
 }

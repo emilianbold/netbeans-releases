@@ -96,7 +96,8 @@ public class AddRemoveV3InstanceMethods extends NbTestCase {
                 }, "glassfishv3");
                 r.run();
             }
-            ServerWizardIterator inst = new ServerWizardIterator(new ServerDetails[] { ServerDetails.GLASSFISH_SERVER_3 });
+            ServerWizardIterator inst = new ServerWizardIterator(new ServerDetails[] { ServerDetails.GLASSFISH_SERVER_3 }, 
+                    new ServerDetails[0]);
             WizardDescriptor wizard = new WizardDescriptor(new Panel[] {});
 
             inst.setInstallRoot(Util._V3_LOCATION);

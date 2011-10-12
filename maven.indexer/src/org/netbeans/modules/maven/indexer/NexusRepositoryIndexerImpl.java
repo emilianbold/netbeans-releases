@@ -115,9 +115,6 @@ import org.apache.maven.index.context.IndexCreator;
 import org.apache.maven.index.context.IndexUtils;
 import org.apache.maven.index.context.IndexingContext;
 import org.apache.maven.index.creator.AbstractIndexCreator;
-import org.apache.maven.index.creator.JarFileContentsIndexCreator;
-import org.apache.maven.index.creator.MavenArchetypeArtifactInfoIndexCreator;
-import org.apache.maven.index.creator.MavenPluginArtifactInfoIndexCreator;
 import org.apache.maven.index.creator.MinimalArtifactInfoIndexCreator;
 import org.apache.maven.index.expr.StringSearchExpression;
 import org.apache.maven.index.search.grouping.GGrouping;
@@ -344,10 +341,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
 
                 List<IndexCreator> creators = new ArrayList<IndexCreator>();
                 try {
-                    // XXX MINDEXER-34: maven-plugin must follow min, so using embedder.lookupList(IndexCreator.class) does not work
-                    for (String id : new String[] {MinimalArtifactInfoIndexCreator.ID, MavenPluginArtifactInfoIndexCreator.ID, MavenArchetypeArtifactInfoIndexCreator.ID, JarFileContentsIndexCreator.ID}) {
-                        creators.add(embedder.lookup(IndexCreator.class, id));
-                    }
+                    creators.addAll(embedder.lookupList(IndexCreator.class));
                 } catch (ComponentLookupException x) {
                     throw new IOException(x);
                 }
@@ -605,9 +599,11 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         }
     }
     /** Just tracks what is being unpacked after a remote index has been downloaded. */
-    private static final class NotifyingIndexCreator implements IndexCreator {
+    private static final class NotifyingIndexCreator extends AbstractIndexCreator {
         private RemoteIndexTransferListener listener;
-        NotifyingIndexCreator() {}
+        NotifyingIndexCreator() {
+            super(NotifyingIndexCreator.class.getName(), Arrays.asList(MinimalArtifactInfoIndexCreator.ID));
+        }
         private void start(RemoteIndexTransferListener listener) {
             this.listener = listener;
         }
@@ -1372,7 +1368,9 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
      */
     private static class NbClassDependenciesIndexCreator extends AbstractIndexCreator {
 
-        NbClassDependenciesIndexCreator() {}
+        NbClassDependenciesIndexCreator() {
+            super(NbClassDependenciesIndexCreator.class.getName(), Arrays.asList(MinimalArtifactInfoIndexCreator.ID));
+        }
 
         // XXX should rather be Map<ArtifactInfo,...> so we do not rely on interleaving of populateArtifactInfo vs. updateDocument
         /** class/in/this/Jar -> [foreign/Class, other/foreign/Nested$Class] */
@@ -1616,6 +1614,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
 
         private final List<ArtifactRepository> remoteRepos;
         NbIndexCreator() {
+            super(NbIndexCreator.class.getName(), Arrays.asList(MinimalArtifactInfoIndexCreator.ID));
             remoteRepos = new ArrayList<ArtifactRepository>();
             for (RepositoryInfo info : RepositoryPreferences.getInstance().getRepositoryInfos()) {
                 if (!info.isLocal()) {
