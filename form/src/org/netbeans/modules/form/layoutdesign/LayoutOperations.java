@@ -683,7 +683,7 @@ class LayoutOperations implements LayoutConstants {
         return false;
     }
 
-    /**
+    /** NOT USED
      * This method goes through a sequential group and moves each interval next
      * to an open edge of a parallel group into the group.
      * @param parent sequential group to process
@@ -1488,7 +1488,7 @@ class LayoutOperations implements LayoutConstants {
                 }
             } else {
                 leadingGap = new LayoutInterval(SINGLE);
-                leadingGap.setSizes(commonGapLeadingSize, commonGapLeadingSize, USE_PREFERRED_SIZE);
+                leadingGap.setSize(commonGapLeadingSize);
                 if (commonGapLeadingSize == DEFAULT) {
                     leadingGap.setPaddingType(effectiveLeadingPadding);
                 }
@@ -1531,7 +1531,7 @@ class LayoutOperations implements LayoutConstants {
                 }
             } else {
                 trailingGap = new LayoutInterval(SINGLE);
-                trailingGap.setSizes(commonGapTrailingSize, commonGapTrailingSize, USE_PREFERRED_SIZE);
+                trailingGap.setSize(commonGapTrailingSize);
                 if (commonGapTrailingSize == DEFAULT) {
                     trailingGap.setPaddingType(effectiveTrailingPadding);
                 }
@@ -2474,7 +2474,7 @@ class LayoutOperations implements LayoutConstants {
                 } else if (prev != null && prev.isComponent() && interval.isComponent()) {
                     // no gap between two components
                     LayoutInterval dummyGap = new LayoutInterval(SINGLE);
-                    dummyGap.setSizes(0, 0, 0);
+                    dummyGap.setSize(0);
                     layoutModel.addInterval(dummyGap, group, i);
                     i++; // one interval more
                     updated = true;

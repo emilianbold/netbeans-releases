@@ -4751,7 +4751,7 @@ public final class LayoutDesigner implements LayoutModel.RemoveHandler, LayoutMo
             LayoutInterval seqIntL = createIntervalFromList(seqListL, LEADING);
             if (seqIntL != null) {
                 LayoutInterval gap = new LayoutInterval(SINGLE);
-                gap.setSizes(minDistL, minDistL, minDistL);
+                gap.setSize(minDistL);
                 layoutModel.addInterval(gap, seq, 0);
                 layoutModel.setIntervalAlignment(seqIntL, DEFAULT);
                 operations.addContent(seqIntL, seq, 0);
@@ -4759,7 +4759,7 @@ public final class LayoutDesigner implements LayoutModel.RemoveHandler, LayoutMo
             LayoutInterval seqIntT = createIntervalFromList(seqListT, TRAILING);
             if (seqIntT != null) {
                 LayoutInterval gap = new LayoutInterval(SINGLE);
-                gap.setSizes(minDistT, minDistT, minDistT);
+                gap.setSize(minDistT);
                 layoutModel.addInterval(gap, seq, -1);
                 layoutModel.setIntervalAlignment(seqIntT, DEFAULT);
                 operations.addContent(seqIntT, seq, -1);
