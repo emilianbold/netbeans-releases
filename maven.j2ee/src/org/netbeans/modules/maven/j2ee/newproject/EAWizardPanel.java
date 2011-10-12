@@ -53,17 +53,16 @@ import org.openide.util.HelpCtx;
 public class EAWizardPanel implements WizardDescriptor.Panel,
                                         WizardDescriptor.FinishablePanel {
 
-    /**
-     * The visual component that displays this panel.
-     */
     private EAVisualPanel component;
     private WizardDescriptor wizardDescriptor;
     private final ValidationGroup validationGroup;
+    private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1); // or can use ChangeSupport in NB 6.0
 
-    EAWizardPanel(ValidationGroup vg) {
-        validationGroup = vg;
+    EAWizardPanel(ValidationGroup validationGroup) {
+        this.validationGroup = validationGroup;
     }
 
+    @Override
     public EAVisualPanel getComponent() {
         if (component == null) {
             component = new EAVisualPanel(this);
@@ -71,6 +70,7 @@ public class EAWizardPanel implements WizardDescriptor.Panel,
         return component;
     }
 
+    @Override
     public HelpCtx getHelp() {
         // Show no Help button for this panel:
         return HelpCtx.DEFAULT_HELP;
@@ -82,17 +82,19 @@ public class EAWizardPanel implements WizardDescriptor.Panel,
         return validationGroup;
     }
 
+    @Override
     public boolean isValid() {
         return wizardDescriptor.isValid();
     }
 
-    private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1); // or can use ChangeSupport in NB 6.0
+    @Override
     public final void addChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.add(l);
         }
     }
 
+    @Override
     public final void removeChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.remove(l);
@@ -110,17 +112,20 @@ public class EAWizardPanel implements WizardDescriptor.Panel,
         }
     }
 
+    @Override
     public void readSettings(Object settings) {
         wizardDescriptor = (WizardDescriptor) settings;
         getComponent().readSettings(wizardDescriptor);
     }
 
+    @Override
     public void storeSettings(Object settings) {
         WizardDescriptor d = (WizardDescriptor) settings;
         getComponent().storeSettings(d);
     }
 
 
+    @Override
     public boolean isFinishPanel() {
         return true;
     }
