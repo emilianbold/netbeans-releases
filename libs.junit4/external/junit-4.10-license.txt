@@ -1,9 +1,9 @@
-Name: JUnit 4.8.2
-Version: 4.8.2
+Name: JUnit
+Version: 4.10
 OSR: 6529
 License: CPL-1.0
 Description: JUnit harness runtime
-Origin: http://www.junit.org/
+Origin: http://search.maven.org/#artifactdetails|junit|junit|4.10|jar
 
 THE ACCOMPANYING PROGRAM IS PROVIDED UNDER THE TERMS OF THIS COMMON PUBLIC
 LICENSE ("AGREEMENT"). ANY USE, REPRODUCTION OR DISTRIBUTION OF THE PROGRAM
