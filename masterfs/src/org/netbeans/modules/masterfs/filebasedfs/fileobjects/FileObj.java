@@ -266,11 +266,12 @@ public class FileObj extends BaseFileObj {
         return null;
     }
 
+    @Override
     public boolean isValid() {
         //0 - because java.io.File.lastModififed returns 0 for not existing files        
         boolean retval = getLastModified() != 0;
         //assert checkCacheState(retval, getFileName().getFile());
-        return retval;
+        return retval && super.isValid();
     }
 
     protected void setValid(boolean valid) {

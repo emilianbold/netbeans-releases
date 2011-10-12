@@ -299,6 +299,20 @@ public final class NamingFactory {
     public static String dumpId(Integer id) {
         return dump(id, null);
     }
+    
+    public static synchronized boolean isValid(FileNaming fn) {
+        int index = Math.abs(fn.getId()) % names.length;
+        NameRef value = names[index];
+        while (value != null) {
+            if (value.get() == fn) {
+                return true;
+            }
+            value = value.next();
+        }
+        return false;
+    }
+
+    
     synchronized static String dump(Integer id, File file) {
         StringBuilder sb = new StringBuilder();
         final String hex = Integer.toHexString(id);
