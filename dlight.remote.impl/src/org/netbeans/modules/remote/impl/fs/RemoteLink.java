@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.util.HashSet;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.StatInfo.FileType;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -79,7 +80,7 @@ public final class RemoteLink extends RemoteLinkBase {
 
     @Override
     public FileType getType() {
-        return FileType.Symlink;
+        return FileType.SymbolicLink;
     }
 
     @Override

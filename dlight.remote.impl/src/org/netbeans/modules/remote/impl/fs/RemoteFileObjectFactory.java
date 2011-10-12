@@ -51,6 +51,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.StatInfo.FileType;
 import org.netbeans.modules.remote.impl.RemoteLogger;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.util.RequestProcessor;
@@ -83,6 +84,7 @@ public class RemoteFileObjectFactory {
         this.fileSystem = fileSystem;
         this.env = fileSystem.getExecutionEnvironment();
         cleaningTask = RP.create(new Runnable() {
+            @Override
             public void run() {
                 cleanDeadEntries();
             }
@@ -176,6 +178,33 @@ public class RemoteFileObjectFactory {
             }
         }
         return (RemotePlainFile) fo;
+    }
+
+    UnsupportedRemoteFileObject createUnsupportedFile(RemoteDirectory parent, String remotePath, File cacheFile, FileType fileType) {
+        cacheRequests++;
+        if (fileObjectsCache.size() == 0) {
+            scheduleCleanDeadEntries(); // schedule on 1-st request
+        }
+        RemoteFileObjectBase fo = fileObjectsCache.get(remotePath);
+        if (fo instanceof UnsupportedRemoteFileObject && fo.isValid()) {
+            if (fo.getParent() == parent) {
+                cacheHits++;
+                return (UnsupportedRemoteFileObject) fo;
+            }
+            fo = null;
+        }
+        if (fo != null && parent.isValid()) {
+            fo.invalidate();
+            fileObjectsCache.remove(remotePath, fo);
+        }
+        fo = UnsupportedRemoteFileObject.createNew(fileSystem, env, parent, remotePath, fileType);
+        if (fo.isValid()) {
+            RemoteFileObjectBase result = putIfAbsent(remotePath, fo);
+            if (result instanceof UnsupportedRemoteFileObject && result.getParent() == parent) {
+                return (UnsupportedRemoteFileObject)result;
+            }
+        }
+        return (UnsupportedRemoteFileObject) fo;
     }
 
 
