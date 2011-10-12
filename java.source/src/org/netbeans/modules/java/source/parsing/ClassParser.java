@@ -47,6 +47,7 @@ import java.net.URL;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
@@ -66,46 +67,70 @@ import org.openide.util.Parameters;
 import org.openide.util.WeakListeners;
 
 /**
- *
+ * Class file parser.
+ * Threading: Not thread safe, concurrency handled by caller (TaskProcessor).
  * @author Tomas Zezula
  */
 //@NotThreadSafe
 public class ClassParser extends Parser {
     
     public static final String MIME_TYPE = "application/x-class-file";  //NOI18N
-    
+    private static final ClassPath EMPTY_PATH = ClassPathSupport.createClassPath(new URL[0]);
     private static final Logger LOGGER = Logger.getLogger(Parser.class.getName());
     
-    private final ClasspathInfo info;
-    private CompilationInfoImpl ciImpl;
     private final ChangeSupport changeSupport;
     private final ClasspathInfoListener cpInfoListener;
+    private CompilationInfoImpl ciImpl;
+    private Snapshot lastSnapshot;
+    private ClasspathInfo info;
+    private ChangeListener wl;
 
-    ClassParser(ClasspathInfo info) {
-        assert info != null;
-        this.info = info;
+    ClassParser() {
         this.changeSupport = new ChangeSupport(this);
         this.cpInfoListener = new ClasspathInfoListener(this.changeSupport);
-        info.addChangeListener(WeakListeners.change(this.cpInfoListener, info));
     }
 
     @Override
     public void parse(final Snapshot snapshot, Task task, final SourceModificationEvent event) throws ParseException {
         assert snapshot != null;
+        lastSnapshot = snapshot;
         final Source source = snapshot.getSource();
         assert source != null;
         final FileObject file = source.getFileObject();
         assert file != null;
+        if (info == null) {
+            if ((task instanceof ClasspathInfoProvider)) {
+                info =((ClasspathInfoProvider)task).getClasspathInfo();
+            }
+            if (info == null) {
+                ClassPath bootPath = ClassPath.getClassPath(file, ClassPath.BOOT);
+                if (bootPath == null) {
+                    //javac requires at least java.lang
+                    bootPath = JavaPlatformManager.getDefault().getDefaultPlatform().getBootstrapLibraries();
+                }
+                ClassPath compilePath = ClassPath.getClassPath(file, ClassPath.COMPILE);
+                if (compilePath == null) {
+                    compilePath = EMPTY_PATH;
+                }
+                ClassPath executePath = ClassPath.getClassPath(file, ClassPath.EXECUTE);
+                if (executePath == null) {
+                    executePath = EMPTY_PATH;
+                }
+                ClassPath srcPath = ClassPath.getClassPath(file, ClassPath.SOURCE);
+                if (srcPath == null) {
+                    srcPath = EMPTY_PATH;
+                }
+                info = ClasspathInfo.create(
+                    bootPath,
+                    ClassPathSupport.createProxyClassPath(compilePath,executePath),
+                    srcPath);
+            }
+            assert info != null;
+            info.addChangeListener(wl=WeakListeners.change(this.cpInfoListener, info));
+        }
         final ClassPath bootPath = info.getClassPath(ClasspathInfo.PathKind.BOOT);
-        assert bootPath != null;
         ClassPath compilePath = info.getClassPath(ClasspathInfo.PathKind.COMPILE);
-        if (compilePath == null) {
-            compilePath = ClassPathSupport.createClassPath(new URL[0]);
-        }
         ClassPath srcPath = info.getClassPath(ClasspathInfo.PathKind.SOURCE);
-        if (srcPath == null) {
-            srcPath = ClassPathSupport.createClassPath(new URL[0]);
-        }
         final FileObject root = ClassPathSupport.createProxyClassPath(bootPath,compilePath,srcPath).findOwnerRoot(file);
         try {
             this.ciImpl = new CompilationInfoImpl(info,file,root);
@@ -126,9 +151,18 @@ public class ClassParser extends Parser {
             JavaSource.Phase requiredPhase;
             if (isJavaParserResultTask) {
                 requiredPhase = ((JavaParserResultTask)task).getPhase();
-            }
-            else {
+            } else {
                 requiredPhase = JavaSource.Phase.RESOLVED;
+            }
+            if (task instanceof ClasspathInfoProvider) {
+                final ClasspathInfo taskProvidedCpInfo = ((ClasspathInfoProvider)task).getClasspathInfo();
+                if (taskProvidedCpInfo != null && !taskProvidedCpInfo.equals(info)) {
+                    assert info != null;
+                    assert wl != null;
+                    info.removeChangeListener(wl);
+                    info = null;
+                    parse(lastSnapshot, task, null);
+                }
             }
             if (currentPhase.compareTo(requiredPhase)<0) {
                 ciImpl.setPhase(requiredPhase);
