@@ -6,19 +6,19 @@
     <localizing-bundle>org.netbeans.modules.junitlib.Bundle</localizing-bundle>
     <volume>
         <type>classpath</type>
-        <resource>jar:nbinst://org.netbeans.libs.junit4/modules/ext/junit-4.8.2.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.libs.junit4/modules/ext/junit-4.10.jar!/</resource>
     </volume>
     <volume>
         <type>javadoc</type>
-        <resource>jar:nbinst://org.netbeans.modules.junitlib/docs/junit-4.8.2-api.zip!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.junitlib/docs/junit-4.10-javadoc.jar!/</resource>
     </volume>
     <volume>
         <type>src</type>
-        <resource>jar:nbinst://org.netbeans.modules.junitlib/docs/junit-4.8.2-src.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.junitlib/docs/junit-4.10-sources.jar!/</resource>
     </volume>
     <volume>
         <!-- please check with mkleint@netbeans.org before/after updating this or "classpath" section -->
         <type>maven-pom</type>
-        <resource>http://repo1.maven.org/maven2/junit/junit/4.8.2/junit-4.8.2.pom</resource>
+        <resource>http://repo1.maven.org/maven2/junit/junit/4.10/junit-4.10.pom</resource>
     </volume>
 </library>
