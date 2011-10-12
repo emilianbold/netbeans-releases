@@ -49,15 +49,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.PriorityQueue;
 import java.util.Set;
 import java.util.Stack;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.WeakHashMap;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
@@ -196,7 +196,10 @@ public final class RequestProcessor implements ScheduledExecutorService {
 
 
     /** A shared timer used to pass timed-out tasks to pending queue */
-    private static Timer starterThread = new Timer(true);
+    private static final TickTac TICK = new TickTac();
+    static {
+        TICK.start();
+    }
 
     /** logger */
     private static final Logger logger = Logger.getLogger("org.openide.util.RequestProcessor"); // NOI18N
@@ -1358,23 +1361,6 @@ outer:  do {
         }
     }
 
-    private class EnqueueTask extends TimerTask {
-        Item itm;
-        
-        EnqueueTask(Item itm) {
-            this.itm = itm;
-        }
-        
-        @Override
-        public void run() {
-            try {
-                enqueue(itm);
-            } catch (RuntimeException e) {
-                Exceptions.printStackTrace(e);
-            }
-        }
-    }
-    
     /**
      * The task describing the request sent to the processor.
      * Cancellable since 4.1.
@@ -1494,21 +1480,7 @@ outer:  do {
             if (delay == 0) { // Place it to pending queue immediatelly
                 enqueue(localItem);
             } else { // Post the starter
-                while (true) {
-                    Timer timer = starterThread;
-                    try {
-                        timer.schedule(new EnqueueTask(localItem), delay);
-                        break;
-                    } catch (IllegalStateException e) {
-                        logger().info(e.toString());
-                        // starterThread cancelled, create new one and try to schedule again
-                        synchronized (UNLIMITED) {
-                            if (timer == starterThread) {
-                                starterThread = new Timer(true);
-                            }
-                        }
-                    }
-                }
+                TICK.schedule(localItem, delay);
             }
         }
 
@@ -1747,6 +1719,8 @@ outer:  do {
         Object action;
         boolean enqueued;
         String message;
+        /** @GuardedBy(TICK) */
+        long when;
 
         Item(Task task, RequestProcessor rp) {
             action = task;
@@ -1767,11 +1741,13 @@ outer:  do {
          * @returns true if it was possible to skip this item, false
          * if the item was/is already processed */
         boolean clear(Processor processor) {
+            boolean ret;
             synchronized (owner.processorLock) {
                 action = processor;
-
-                return enqueued ? owner.queue.remove(this) : true;
+                ret = enqueued ? owner.queue.remove(this) : true;
             }
+            TICK.cancel(this);
+            return ret;
         }
 
         final Processor getProcessor() {
@@ -2172,6 +2148,66 @@ outer:  do {
                 Class<? extends Runnable> c = todo.run.getClass();
                 rp.inParallel.get(c).decrementAndGet();
             }
+        }
+    }
+    
+    private static final class TickTac extends Thread implements Comparator<Item> {
+        private final PriorityQueue<Item> queue;
+        
+        public TickTac() {
+            super("RequestProcessor queue manager"); // NOI18N
+            setDaemon(true);
+            queue = new PriorityQueue<Item>(128, this);
+        }
+
+        @Override
+        public int compare(Item o1, Item o2) {
+            if (o1.when < o2.when) {
+                return -1;
+            }
+            if (o2.when > o2.when) {
+                return 1;
+            }
+            return 0;
+        }
+
+        synchronized final void schedule(Item localItem, long delay) {
+            localItem.when = System.currentTimeMillis() + delay;
+            queue.add(localItem);
+            notify();
+        }
+        
+        synchronized final void cancel(Item localItem) {
+            queue.remove(localItem);
+        }
+
+        @Override
+        public void run() {
+            for (;;) {
+                try {
+                    Item first = obtainFirst();
+                    if (first != null) {
+                        first.owner.enqueue(first);
+                    }
+                } catch (InterruptedException ex) {
+                    continue;
+                }
+            }
+        }
+        
+        private synchronized Item obtainFirst() throws InterruptedException {
+            Item first = queue.poll();
+            if (first == null) {
+                wait();
+                return null;
+            }
+            long delay = first.when - System.currentTimeMillis();
+            if (delay > 0) {
+                queue.add(first);
+                wait(delay);
+                return null;
+            }
+            return first;
         }
     }
 }
