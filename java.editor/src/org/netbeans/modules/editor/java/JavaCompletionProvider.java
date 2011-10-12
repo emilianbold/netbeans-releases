@@ -945,7 +945,9 @@ public class JavaCompletionProvider implements CompletionProvider {
                             if (ex.getKind() == TypeKind.DECLARED && startsWith(env, ((DeclaredType)ex).asElement().getSimpleName().toString(), prefix) && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(((DeclaredType)ex).asElement())))
                                 results.add(JavaCompletionItem.createTypeItem(env.getController(), (TypeElement)((DeclaredType)ex).asElement(), (DeclaredType)ex, anchorOffset, true, elements.isDeprecated(((DeclaredType)ex).asElement()), false, false, false, true, false, env.getWhiteList()));
                     }
-                    addTypes(env, EnumSet.of(CLASS, INTERFACE, TYPE_PARAMETER), controller.getTypes().getDeclaredType(controller.getElements().getTypeElement("java.lang.Throwable"))); //NOI18N
+                    TypeElement te = controller.getElements().getTypeElement("java.lang.Throwable"); //NOI18N
+                    if (te != null)
+                        addTypes(env, EnumSet.of(CLASS, INTERFACE, TYPE_PARAMETER), controller.getTypes().getDeclaredType(te));
                 } else {
                     boolean isLocal = !TreeUtilities.CLASS_TREE_KINDS.contains(path.getParentPath().getLeaf().getKind());
                     addMemberModifiers(env, var.getModifiers().getFlags(), isLocal);
@@ -1040,7 +1042,9 @@ public class JavaCompletionProvider implements CompletionProvider {
                             if (ex.getKind() == TypeKind.DECLARED && startsWith(env, ((DeclaredType)ex).asElement().getSimpleName().toString(), prefix) && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(((DeclaredType)ex).asElement())))
                                 results.add(JavaCompletionItem.createTypeItem(env.getController(), (TypeElement)((DeclaredType)ex).asElement(), (DeclaredType)ex, anchorOffset, true, elements.isDeprecated(((DeclaredType)ex).asElement()), false, false, false, true, false, env.getWhiteList()));
                     }
-                    addTypes(env, EnumSet.of(CLASS, INTERFACE, TYPE_PARAMETER), controller.getTypes().getDeclaredType(controller.getElements().getTypeElement("java.lang.Throwable"))); //NOI18N
+                    TypeElement te = controller.getElements().getTypeElement("java.lang.Throwable"); //NOI18N
+                    if (te != null)
+                        addTypes(env, EnumSet.of(CLASS, INTERFACE, TYPE_PARAMETER), controller.getTypes().getDeclaredType(te));
                 }
                 return;
             }
@@ -1068,7 +1072,9 @@ public class JavaCompletionProvider implements CompletionProvider {
                                 if (ex.getKind() == TypeKind.DECLARED && startsWith(env, ((DeclaredType)ex).asElement().getSimpleName().toString(), prefix) && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(((DeclaredType)ex).asElement())))
                                     results.add(JavaCompletionItem.createTypeItem(env.getController(), (TypeElement)((DeclaredType)ex).asElement(), (DeclaredType)ex, anchorOffset, true, elements.isDeprecated(((DeclaredType)ex).asElement()), false, false, false, true, false, env.getWhiteList()));
                         }
-                        addTypes(env, EnumSet.of(CLASS, INTERFACE, TYPE_PARAMETER), controller.getTypes().getDeclaredType(controller.getElements().getTypeElement("java.lang.Throwable"))); //NOI18N
+                        TypeElement te = controller.getElements().getTypeElement("java.lang.Throwable"); //NOI18N
+                        if (te != null)
+                            addTypes(env, EnumSet.of(CLASS, INTERFACE, TYPE_PARAMETER), controller.getTypes().getDeclaredType(te));
                     } else if (DEFAULT_KEYWORD.equals(headerText)) {
                         addLocalConstantsAndTypes(env);
                     } else {
@@ -1547,8 +1553,11 @@ public class JavaCompletionProvider implements CompletionProvider {
                     } else if (parent.getKind() == Tree.Kind.NEW_CLASS && ((NewClassTree)parent).getIdentifier() == fa) {
                         insideNew = true;
                         kinds = EnumSet.of(CLASS, INTERFACE, ANNOTATION_TYPE);
-                        if (grandParent.getKind() == Tree.Kind.THROW)
-                            baseType = controller.getTypes().getDeclaredType(controller.getElements().getTypeElement("java.lang.Throwable")); //NOI18N
+                        if (grandParent.getKind() == Tree.Kind.THROW) {
+                            TypeElement te = controller.getElements().getTypeElement("java.lang.Throwable"); //NOI18N
+                            if (te != null)
+                                baseType = controller.getTypes().getDeclaredType(te);
+                        }
                     } else if (parent.getKind() == Tree.Kind.PARAMETERIZED_TYPE && ((ParameterizedTypeTree)parent).getTypeArguments().contains(fa)) {
                         kinds = EnumSet.of(CLASS, ENUM, ANNOTATION_TYPE, INTERFACE);
                     } else if (parent.getKind() == Tree.Kind.ANNOTATION) {
@@ -1587,7 +1596,9 @@ public class JavaCompletionProvider implements CompletionProvider {
                             kinds = EnumSet.of(CLASS, INTERFACE);
                             if (queryType == COMPLETION_QUERY_TYPE)
                                 exs = controller.getTreeUtilities().getUncaughtExceptions(grandParentPath.getParentPath());
-                            baseType = controller.getTypes().getDeclaredType(controller.getElements().getTypeElement("java.lang.Throwable")); //NOI18N
+                            TypeElement te = controller.getElements().getTypeElement("java.lang.Throwable"); //NOI18N
+                            if (te != null)
+                                baseType = controller.getTypes().getDeclaredType(te);
                         } else {
                             kinds = EnumSet.of(CLASS, ENUM, ANNOTATION_TYPE, INTERFACE);
                         }
@@ -1607,7 +1618,9 @@ public class JavaCompletionProvider implements CompletionProvider {
                             }
                         }
                         kinds = EnumSet.of(CLASS, INTERFACE);
-                        baseType = controller.getTypes().getDeclaredType(controller.getElements().getTypeElement("java.lang.Throwable")); //NOI18N
+                        TypeElement te = controller.getElements().getTypeElement("java.lang.Throwable"); //NOI18N
+                        if (te != null)
+                            baseType = controller.getTypes().getDeclaredType(te);
                     } else if (parent.getKind() == Tree.Kind.METHOD && ((MethodTree)parent).getDefaultValue() == fa) {
                         Element el = controller.getTrees().getElement(expPath);
                         if (type.getKind() == TypeKind.ERROR && el.getKind().isClass()) {
@@ -1764,8 +1777,9 @@ public class JavaCompletionProvider implements CompletionProvider {
                         String prefix = env.getPrefix();
                         CompilationController controller = env.getController();
                         controller.toPhase(Phase.RESOLVED);
-                        DeclaredType base = path.getParentPath().getLeaf().getKind() == Tree.Kind.THROW ?
-                            controller.getTypes().getDeclaredType(controller.getElements().getTypeElement("java.lang.Throwable")) : null; //NOI18N
+                        TypeElement tel = controller.getElements().getTypeElement("java.lang.Throwable"); //NOI18N
+                        DeclaredType base = path.getParentPath().getLeaf().getKind() == Tree.Kind.THROW && tel != null ?
+                            controller.getTypes().getDeclaredType(tel) : null;
                         TypeElement toExclude = null;
                         if (nc.getIdentifier().getKind() == Tree.Kind.IDENTIFIER && prefix != null) {
                             TypeMirror tm = controller.getTreeUtilities().parseType(prefix, env.getScope().getEnclosingClass());
@@ -1918,7 +1932,9 @@ public class JavaCompletionProvider implements CompletionProvider {
                         if (ex.getKind() == TypeKind.DECLARED && startsWith(env, ((DeclaredType)ex).asElement().getSimpleName().toString(), prefix) && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(((DeclaredType)ex).asElement())))
                             results.add(JavaCompletionItem.createTypeItem(env.getController(), (TypeElement)((DeclaredType)ex).asElement(), (DeclaredType)ex, anchorOffset, true, elements.isDeprecated(((DeclaredType)ex).asElement()), false, false, false, true, false, env.getWhiteList()));
                 }
-                addTypes(env, EnumSet.of(CLASS, INTERFACE, TYPE_PARAMETER), controller.getTypes().getDeclaredType(controller.getElements().getTypeElement("java.lang.Throwable"))); //NOI18N
+                TypeElement te = controller.getElements().getTypeElement("java.lang.Throwable"); //NOI18N
+                if (te != null)
+                    addTypes(env, EnumSet.of(CLASS, INTERFACE, TYPE_PARAMETER), controller.getTypes().getDeclaredType(te));
             }
         }
 
@@ -1937,7 +1953,9 @@ public class JavaCompletionProvider implements CompletionProvider {
                         if (ex.getKind() == TypeKind.DECLARED && startsWith(env, ((DeclaredType)ex).asElement().getSimpleName().toString(), prefix) && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(((DeclaredType)ex).asElement())))
                             results.add(JavaCompletionItem.createTypeItem(env.getController(), (TypeElement)((DeclaredType)ex).asElement(), (DeclaredType)ex, anchorOffset, true, elements.isDeprecated(((DeclaredType)ex).asElement()), false, false, false, true, false, env.getWhiteList()));
                 }
-                addTypes(env, EnumSet.of(CLASS, INTERFACE, TYPE_PARAMETER), controller.getTypes().getDeclaredType(controller.getElements().getTypeElement("java.lang.Throwable"))); //NOI18N
+                TypeElement te = controller.getElements().getTypeElement("java.lang.Throwable"); //NOI18N
+                if (te != null)
+                    addTypes(env, EnumSet.of(CLASS, INTERFACE, TYPE_PARAMETER), controller.getTypes().getDeclaredType(te));
             }
         }
         
