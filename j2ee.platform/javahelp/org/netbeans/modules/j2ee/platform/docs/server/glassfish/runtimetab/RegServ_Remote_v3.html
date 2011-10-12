@@ -11,7 +11,7 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 
-        <title>Add Server Instance Wizard: GlassFish 3 Domain Name/Location</title>
+        <title>Add Server Instance Wizard: GlassFish Domain Name/Location</title>
 
 
         <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
@@ -20,9 +20,9 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
     <body>
 
-        <h2>Add Server Instance Wizard: GlassFish 3 Domain Name/Location</h2>
+        <h2>Add Server Instance Wizard: GlassFish Domain Name/Location</h2>
         <p><small><a href="#seealso">See Also</a></small></p>
-        <p>You see this page of the Add Server Instance wizard when you specify details to register an instance of GlassFish 3 with the IDE.
+        <p>You see this page of the Add Server Instance wizard when you specify details to register an instance of GlassFish 3.x with the IDE.
         To register a server instance, you specify the properties of a local or remote domain.</p>
         
         <p>Use this page to specify the details of the local or remote domain by selecting one of the following options.</p>
@@ -39,15 +39,24 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
                 The default port is 4848.</li>
             </ul>
             </li>
+            <li><strong>Target.</strong> (Optional) Enter a value that is used to identify a cluster and/or stand-alone instance. 
+                This value will be used as the value for the <tt>target</tt> option when running server administration tasks from the IDE.
+                For example, if you have a cluster identified as <tt>cluster1</tt> and enter <tt>cluster1</tt> as the Target value,
+                when you deploy an application from the IDE to the server the application will be deployed to every instance in the cluster
+                (<tt>asadmin deploy --target cluster1 --name myapp myapp.war</tt>).
+            
+                <p>When no Target value is specified (default) all commands will be applied to the domain administration server instance.</p>
+                </li>
         </ul>
 
-        <p>Click Finish to add the server instance to the list of servers in the Services window.</p>
-        <!--<p>Click Next if you want to supply a username and password for the remote domain.
-        Click Finish if you do not want to supply a username and password at this time.
-        If you do not supply a username and password, you are prompted to supply a username and password when needed.</p> -->
+        <p>Click Finish to add the instance to the list of servers in the Services window.</p>
 
+        
+        
+        
         <ul class="note"><li>When you register an existing domain, the IDE uses the port numbers and other properties specified in the domain configuration.</li></ul>
 
+        
         <dl>
             <dt><a name="seealso">See Also</a></dt>
             <dd>    <a href="../general/register_appserver.html">Registering a GlassFish Application Server Instance</a></dd>
