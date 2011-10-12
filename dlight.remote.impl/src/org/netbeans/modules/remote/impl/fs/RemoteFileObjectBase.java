@@ -61,6 +61,7 @@ import java.util.concurrent.ExecutionException;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.dlight.libs.common.InvalidFileObjectSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.StatInfo.FileType;
 import org.netbeans.modules.remote.api.ui.FileObjectBasedFile;
 import org.netbeans.modules.remote.impl.RemoteLogger;
 import org.openide.filesystems.FileAttributeEvent;
@@ -472,6 +473,7 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
     }
 
     public abstract FileType getType();
+    
     protected abstract void renameChild(FileLock lock, RemoteFileObjectBase toRename, String newNameExt) 
             throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException;
 
