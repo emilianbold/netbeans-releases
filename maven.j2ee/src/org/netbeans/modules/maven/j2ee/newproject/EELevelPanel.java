@@ -40,20 +40,27 @@ package org.netbeans.modules.maven.j2ee.newproject;
 
 import java.awt.Component;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 
 class EELevelPanel implements WizardDescriptor.FinishablePanel<WizardDescriptor> {
 
+    private final J2eeModule.Type projectType;
     private EELevelPanelVisual panel;
 
-    @Override public Component getComponent() {
+    public EELevelPanel(J2eeModule.Type projectType) {
+        this.projectType = projectType;
+    }
+    
+    @Override 
+    public Component getComponent() {
         return panel();
     }
 
     private EELevelPanelVisual panel() {
         if (panel == null) {
-            panel = new EELevelPanelVisual();
+            panel = new EELevelPanelVisual(projectType);
         }
         return panel;
     }

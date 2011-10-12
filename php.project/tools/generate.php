@@ -347,7 +347,7 @@ function parse_phpdoc_fields ($phpdocDir, $extensions) {
                     $fieldsDoc[$reference]['type'] = $match[2];
                     //$fieldsDoc[$refname]['quickref'] = trim($match[3]);
                 }
-            } 
+            }
 
         }
         if (isset($fieldsDoc)) {
@@ -380,7 +380,7 @@ function parse_phpdoc_classes ($phpdocDir, $extensions) {
     $classesDoc = array();
 	foreach ($xml_files as $xml_file) {
 		$xml = file_get_contents ($xml_file);
-		if (preg_match ('@xml:id=["\'](.*?)["\']@', $xml, $match)) {			
+		if (preg_match ('@xml:id=["\'](.*?)["\']@', $xml, $match)) {
 			$id = $match[1];
 			$prefixId = substr($id, 0, strlen("class."));
 			$clsNamePattern = ($prefixId === "class.") ?
@@ -535,6 +535,10 @@ function print_class ($classRef, $tabs = 0) {
 	$methodsRef = $classRef->getMethods();
 	if (count ($methodsRef) > 0) {
 		foreach ($methodsRef as $methodRef) {
+            /* @var $methodRef ReflectionMethod */
+            if ($methodRef->getName() == 'clone') {
+                continue;
+            }
 			print_function ($methodRef, $tabs + 1);
 		}
 		print "\n";
@@ -548,7 +552,7 @@ function print_class ($classRef, $tabs = 0) {
  * @param ReflectionProperty $propertyRef  object
  * @param integer[optional] tabs  number of tabs for indentation
  */
-function print_property ($propertyRef, $tabs = 0) {        
+function print_property ($propertyRef, $tabs = 0) {
 	print_doccomment ($propertyRef, $tabs);
 	print_tabs ($tabs);
 	print_modifiers ($propertyRef);
@@ -849,7 +853,9 @@ function print_doccomment ($ref, $tabs = 0) {
                                     print " [optional]";
                                 }
                                 $paramdoc = newline_to_phpdoc(@$parameter['paramdoc'], $tabs);
-                                print " {$paramdoc}";
+                                if ($paramdoc) {
+                                    print " {$paramdoc}";
+                                }
                                 print "\n";
                             }
                         } else {
@@ -873,7 +879,7 @@ function print_doccomment ($ref, $tabs = 0) {
                         }
 			if ($returntype) {
 				print_tabs ($tabs);
-				print " * @return {$returntype} {$returndoc}\n";
+				print " * @return " . trim("{$returntype} {$returndoc}") . "\n";
 			}
 			print_tabs ($tabs);
 			print " */\n";
@@ -881,7 +887,7 @@ function print_doccomment ($ref, $tabs = 0) {
 	}else if ($ref instanceof ReflectionProperty) {
             $property_from_ref = make_property_from_ref($ref);
             $fieldName = @$fieldsDoc[$property_from_ref]['field'];
-            $fieldType = @$fieldsDoc[$property_from_ref]['type'];            
+            $fieldType = @$fieldsDoc[$property_from_ref]['type'];
             if (isset ($fieldName) && isset ($fieldType)) {
                 print_tabs ($tabs);
                 print "/**\n";
@@ -921,7 +927,7 @@ function xml_to_phpdoc ($str) {
  * @return string PHPDOC string
  */
 function newline_to_phpdoc ($str, $tabs = 0) {
-	$str = preg_replace ("@[\r\n]+@", "\n".str_repeat("\t", $tabs)." * ", $str);
+	$str = preg_replace ("@\s*[\r\n]+@", "\n".str_repeat("\t", $tabs)." * ", $str);
 	return $str;
 }
 

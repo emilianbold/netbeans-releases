@@ -85,7 +85,13 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
     private static final Logger LOG = Logger.getLogger(DocumentView.class.getName());
 
     // True to log real source chars
-    static final boolean LOG_SOURCE_TEXT = Boolean.getBoolean("org.netbeans.editor.log.source.text");
+    // -J-Dorg.netbeans.editor.log.source.text=true
+    static final boolean LOG_SOURCE_TEXT = Boolean.getBoolean("org.netbeans.editor.log.source.text"); // NOI18N
+
+    // True to disable extra virtual space of 1/3 of height of the visible viewport
+    // -J-Dorg.netbeans.editor.disable.end.virtual.space=true
+    static final boolean DISABLE_END_VIRTUAL_SPACE =
+            Boolean.getBoolean("org.netbeans.editor.disable.end.virtual.space"); // NOI18N
 
     /**
      * Text component's client property for the mutex doing synchronization
@@ -237,12 +243,14 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
                     span = allocation.width;
                 } else { // Y_AXIS
                     span = allocation.height;
-                    // Add extra span when component in viewport
-                    Component parent;
-                    if (textComponent != null && ((parent = textComponent.getParent()) instanceof JViewport)) {
-                        JViewport viewport = (JViewport) parent;
-                        int viewportHeight = viewport.getExtentSize().height;
-                        span += viewportHeight / 3;
+                    if (!DISABLE_END_VIRTUAL_SPACE) {
+                        // Add extra span when component in viewport
+                        Component parent;
+                        if (textComponent != null && ((parent = textComponent.getParent()) instanceof JViewport)) {
+                            JViewport viewport = (JViewport) parent;
+                            int viewportHeight = viewport.getExtentSize().height;
+                            span += viewportHeight / 3;
+                        }
                     }
                 }
                 return span;
