@@ -229,8 +229,7 @@ public class WebModuleImpl implements WebModuleImplementation2, J2eeModuleImplem
                 // TODO #95280: inform the user that the context root cannot be retrieved
             }        
         }
-        String toRet =  "/" + mavenproject.getMavenProject().getBuild().getFinalName(); //NOI18N
-//        System.out.println("get context path=" + toRet);
+        String toRet =  "/" + mavenproject.getMavenProject().getArtifactId(); //NOI18N
         return toRet;
     }
     
