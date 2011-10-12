@@ -815,6 +815,9 @@ public final class SearchBar extends JPanel {
             MultiKeymap multiKeymap = (MultiKeymap) keymap;
 
             KeyStroke[] keyStrokesForReplaceAction = multiKeymap.getKeyStrokesForAction(lastFocusedComponent.getActionMap().get(SearchAndReplaceBarHandler.INCREMENTAL_SEARCH_FORWARD));
+            if (keyStrokesForReplaceAction == null) {
+                return;
+            }
             for (KeyStroke ks : keyStrokesForReplaceAction) {
                 component.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(ks.getKeyCode(), ks.getModifiers(), true), "find-from-component"); // NOI18N
             }
