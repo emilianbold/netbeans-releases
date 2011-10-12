@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,19 +37,15 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.remote.impl.fs;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.lang.ref.SoftReference;
 import java.net.ConnectException;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
@@ -57,26 +53,24 @@ import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.StatInfo.FileType;
 import org.netbeans.modules.remote.impl.RemoteLogger;
-import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author Vladimir Kvashin
+ * @author Alexander Simon
  */
-public final class RemotePlainFile extends RemoteFileObjectFile {
+public class UnsupportedRemoteFileObject extends RemoteFileObjectFile {
 
     private final char fileTypeChar;
-    private SoftReference<CachedRemoteInputStream> fileContentCache = new SoftReference<CachedRemoteInputStream>(null);
-    public static RemotePlainFile createNew(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv, 
-            RemoteDirectory parent, String remotePath, File cache, FileType fileType) {
-        return new RemotePlainFile(fileSystem, execEnv, parent, remotePath, cache, fileType);
+    public static UnsupportedRemoteFileObject createNew(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv, 
+            RemoteDirectory parent, String remotePath, FileType fileType) {
+        return new UnsupportedRemoteFileObject(fileSystem, execEnv, parent, remotePath, fileType);
     }
             
-    private RemotePlainFile(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv, 
-            RemoteDirectory parent, String remotePath, File cache, FileType fileType) {
-        super(fileSystem, execEnv, parent, remotePath, cache);
+    private UnsupportedRemoteFileObject(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv, 
+            RemoteDirectory parent, String remotePath, FileType fileType) {
+        super(fileSystem, execEnv, parent, remotePath, null);
         fileTypeChar = fileType.toChar(); // TODO: pass when created
     }
 
@@ -112,67 +106,17 @@ public final class RemotePlainFile extends RemoteFileObjectFile {
 
     @Override
     public InputStream getInputStream() throws FileNotFoundException {
-        if (!getCache().exists()) {
-            if (isMimeResolving()) {
-                byte[] b = getMagic();
-                if (b != null) {
-                    return new ByteArrayInputStream(b);
-                }
-            }
-        }
-        // TODO: check error processing
-        try {
-            CachedRemoteInputStream stream = fileContentCache.get();
-            if (stream != null) {
-                CachedRemoteInputStream reuse = stream.reuse();
-                if (reuse != null) {
-                    return reuse;
-                }
-                fileContentCache.clear();
-            }
-            RemoteDirectory parent = RemoteFileSystemUtils.getCanonicalParent(this);
-            if (parent == null) {
-                return RemoteFileSystemUtils.createDummyInputStream();
-            }
-            InputStream newStream = parent._getInputStream(this);
-            if (newStream instanceof CachedRemoteInputStream) {
-                fileContentCache = new SoftReference<CachedRemoteInputStream>((CachedRemoteInputStream) newStream);
-            } else {
-                if (stream != null) {
-                    fileContentCache.clear();
-                }
-
-            }
-            return newStream;
-            //getParent().ensureChildSync(this);
-        } catch (ConnectException ex) {
-            return new ByteArrayInputStream(new byte[] {});
-        } catch (IOException ex) {             
-            throw newFileNotFoundException(ex);
-        } catch (InterruptedException ex) {
-            throw newFileNotFoundException(ex);
-        } catch (ExecutionException ex) {
-            throw newFileNotFoundException(ex);
-        } catch (CancellationException ex) {
-            // TODO: do we need this? unfortunately CancellationException is RuntimeException, so I'm not sure
-            return new ByteArrayInputStream(new byte[] {});
-        }
-    }
-
-    private FileNotFoundException newFileNotFoundException(Exception cause) {
-        FileNotFoundException ex = new FileNotFoundException("" + getExecutionEnvironment() + ':' + getPath()); //NOI18N
-        ex.initCause(cause);
-        return ex;
+        return new ByteArrayInputStream(new byte[] {});
     }
 
     @Override
     public FileObject createData(String name, String ext) throws IOException {
-        throw new IOException("Plain file can not have children"); // NOI18N
+        throw new IOException("Unsupported file can not have children"); // NOI18N
     }
 
     @Override
     public FileObject createFolder(String name) throws IOException {
-        throw new IOException("Plain file can not have children"); // NOI18N
+        throw new IOException("Unsupported file can not have children"); // NOI18N
     }
 
     @Override
@@ -208,34 +152,24 @@ public final class RemotePlainFile extends RemoteFileObjectFile {
 
     private class DelegateOutputStream extends OutputStream {
 
-        FileOutputStream delegate;
-
         public DelegateOutputStream() throws IOException {
-            delegate = new FileOutputStream(getCache());
         }
 
         @Override
         public void write(byte[] b, int off, int len) throws IOException {
-            delegate.write(b, off, len);
         }
 
         @Override
         public void write(int b) throws IOException {
-            delegate.write(b);
         }
 
         @Override
         public void close() throws IOException {
-            delegate.close();
-            FileEvent ev = new FileEvent(RemotePlainFile.this, RemotePlainFile.this, true);
-            fireFileChangedEvent(getListenersWithParent(), ev);
-            RemotePlainFile.this.setPendingRemoteDelivery(true);
-            WritingQueue.getInstance(getExecutionEnvironment()).add(RemotePlainFile.this);
         }
 
         @Override
         public void flush() throws IOException {
-            delegate.flush();
         }
     }
 }
+

@@ -1790,7 +1790,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                                                 for (DeclaredType subtype : getSubtypesOf(env, (DeclaredType)smart)) {
                                                     TypeElement elem = (TypeElement)subtype.asElement();
                                                     if (toExclude != elem && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(elem)))
-                                                        results.add(JavaCompletionItem.createTypeItem(env.getController(), elem, subtype, anchorOffset, true, elements.isDeprecated(elem), true, true, false, true, false, env.getWhiteList()));
+                                                        results.add(JavaCompletionItem.createTypeItem(env.getController(), elem, (DeclaredType)Utilities.resolveCapturedType(controller, subtype), anchorOffset, true, elements.isDeprecated(elem), true, true, false, true, false, env.getWhiteList()));
                                                     env.addToExcludes(elem);
                                                 }
                                             }

@@ -188,7 +188,7 @@ public class OperatorPrecedence {
             ExpressionTree rightOperand = ((BinaryTree) parent).getRightOperand();
             Element rightElement = trees.getElement(trees.getPath(cut, rightOperand));
             
-            if(rightElement.equals(elementToFind)) {
+            if(elementToFind.equals(rightElement)) {
                 return true;
             }
         }

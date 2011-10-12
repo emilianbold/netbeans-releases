@@ -640,6 +640,28 @@ public class OutputDocumentTest extends NbTestCase {
         
     }
     
+    /**
+     * Bug 142721 - Input messed up by output.
+     */
+    public void testInputMessedWithOutput() throws BadLocationException {
+
+        OutWriter ow = new OutWriter();
+        OutputDocument doc = new OutputDocument(ow);
+        ow.write("Test");
+        doc.insertString(doc.getLength(), "a", SimpleAttributeSet.EMPTY);
+        ow.write("xx");
+        assertEquals(7, doc.getLength());
+        // cursor is not moved after new string is written
+        doc.insertString(doc.getLength() - 2, "b", SimpleAttributeSet.EMPTY);
+        ow.write("yy");
+        assertEquals(10, doc.getLength());
+        doc.insertString(doc.getLength() - 2, "c", SimpleAttributeSet.EMPTY);
+        ow.write("zz");
+        assertEquals(13, doc.getLength());
+        String input = doc.sendLine();
+        assertEquals("abc", input);
+    }
+
     private void assertEventsIdentical (Document styled, OutputDocument doc, DocumentEvent styEvent, DocumentEvent docEvent) throws Exception {
         int docOffset = docEvent.getOffset();
         int styOffset = styEvent.getOffset();

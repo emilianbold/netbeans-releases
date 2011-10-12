@@ -47,8 +47,8 @@ import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.Date;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.StatInfo;
+import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.StatInfo.FileType;
 import org.openide.util.Exceptions;
 
 /**
@@ -57,7 +57,7 @@ import org.openide.util.Exceptions;
  */
 public class DirEntrySftp implements DirEntry {
 
-    public final FileInfoProvider.StatInfo statInfo;
+    private final StatInfo statInfo;
     private String cache;
 
     public DirEntrySftp(StatInfo statInfo, String cache) {
@@ -65,64 +65,80 @@ public class DirEntrySftp implements DirEntry {
         this.cache = cache;
     }
     
+    @Override
     public boolean canExecute(ExecutionEnvironment execEnv) {
         return statInfo.canExecute(execEnv);
     }
 
+    @Override
     public boolean canRead(ExecutionEnvironment execEnv) {
         return statInfo.canRead(execEnv);
     }
 
+    @Override
     public boolean canWrite(ExecutionEnvironment execEnv) {
         return statInfo.canWrite(execEnv);
     }
 
+    @Override
     public String getAccessAsString() {
         return statInfo.getAccessAsString();
     }
 
+    @Override
     public String getCache() {
         return cache;
     }
 
+    @Override
     public FileType getFileType() {
         if (statInfo.isDirectory()) {
             return FileType.Directory;
         } else if (statInfo.isLink()) {
-            return FileType.Symlink;
+            return FileType.SymbolicLink;
+        } else if (statInfo.isPlainFile()) {
+            return FileType.Regular;
         } else {
-            return FileType.File;
+            return statInfo.getFileType();
         }
     }
 
+    @Override
     public String getLinkTarget() {
         return statInfo.getLinkTarget();
     }
 
+    @Override
     public String getName() {
         return statInfo.getName();
     }
 
+    @Override
     public long getSize() {
         return statInfo.getSize();
     }
 
+    @Override
     public boolean isDirectory() {
         return statInfo.isDirectory();
     }
 
+    @Override
     public boolean isLink() {
         return statInfo.isLink();
     }
 
+    @Override
     public boolean isPlainFile() {
-        return ! statInfo.isLink() && ! statInfo.isDirectory();
+        return statInfo.isPlainFile();
     }
 
+    @Override
     public boolean isSameType(DirEntry other) {
-        return isLink() == other.isLink() && isDirectory() == other.isDirectory();
+        return isLink() == other.isLink() && isDirectory() == other.isDirectory() && isPlainFile() == other.isPlainFile();
     }
 
+    @Override
     public boolean isSameUser(DirEntry other) {
         if (other instanceof DirEntrySftp) {
             return statInfo.getUserId() == ((DirEntrySftp) other).statInfo.getUserId();
@@ -130,6 +146,7 @@ public class DirEntrySftp implements DirEntry {
         return false;
     }
 
+    @Override
     public boolean isSameLastModified(DirEntry other) {
         if (other instanceof DirEntrySftp) {
             return statInfo.getLastModified().equals(((DirEntrySftp)other).statInfo.getLastModified());
@@ -137,10 +154,12 @@ public class DirEntrySftp implements DirEntry {
         return false;
     }
 
+    @Override
     public Date getLastModified() {
         return statInfo.getLastModified();
     }
 
+    @Override
     public boolean isSameGroup(DirEntry other) {
         if (other instanceof DirEntrySftp) {
             return statInfo.getGropupId() == ((DirEntrySftp) other).statInfo.getGropupId();
@@ -148,10 +167,12 @@ public class DirEntrySftp implements DirEntry {
         return false;
     }
 
+    @Override
     public void setCache(String cache) {
         this.cache = cache;
     }
 
+    @Override
     public String toExternalForm() {
         return escape(cache) + ' ' + statInfo.toExternalForm();
     }
@@ -168,7 +189,7 @@ public class DirEntrySftp implements DirEntry {
                 throw new FormatException("Wrong directory entry format: " + externalForm, false); //NOI18N
             }
             String cache = unescape(externalForm.substring(0, pos));
-            StatInfo statInfo = FileInfoProvider.StatInfo.fromExternalForm(externalForm.substring(pos + 1));
+            StatInfo statInfo = StatInfo.fromExternalForm(externalForm.substring(pos + 1));
             return new DirEntrySftp(statInfo, cache);
         } catch (Exception ex) {
             throw new FormatException("Wrong directory entry format: " + externalForm, ex); // NOI18N

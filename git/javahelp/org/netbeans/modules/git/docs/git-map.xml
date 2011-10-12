@@ -38,4 +38,5 @@
 	<mapID target="org.netbeans.modules.git.ui.tag.ManageTags" url="csh/git-manage-tags.html"/>
 	<mapID target="org.netbeans.modules.git.ui.merge.MergeRevision" url="csh/git-merge-rev.html"/>
 	<mapID target="org.netbeans.modules.git.ui.status.GitVersioningTopComponent" url="csh/git-versioning-view.html"/>
+	<mapID target="org.netbeans.modules.git.ui.reset.Reset" url="csh/git-reset.html"/>
 </map>
