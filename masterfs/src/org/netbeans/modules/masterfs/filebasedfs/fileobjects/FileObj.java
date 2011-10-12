@@ -52,7 +52,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -66,6 +65,7 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Enumerations;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.Utilities;
 
 /**
@@ -97,9 +97,14 @@ public class FileObj extends BaseFileObj {
         return getOutputStream(lock, extensions, this);
     }
     
+    @Messages(
+        "EXC_INVALID_FILE=File {0} is not valid"
+    )
     public OutputStream getOutputStream(final FileLock lock, ProvidedExtensions extensions, FileObject mfo) throws IOException {
         if (!isValid()) {
-            throw new FileNotFoundException("FileObject " + this + " is not valid."); //NOI18N
+            FileNotFoundException fnf = new FileNotFoundException("FileObject " + this + " is not valid."); //NOI18N
+            Exceptions.attachLocalizedMessage(fnf, Bundle.EXC_INVALID_FILE(this));
+            throw fnf;
         }
 
         final File f = getFileName().getFile();
@@ -261,11 +266,12 @@ public class FileObj extends BaseFileObj {
         return null;
     }
 
+    @Override
     public boolean isValid() {
         //0 - because java.io.File.lastModififed returns 0 for not existing files        
         boolean retval = getLastModified() != 0;
         //assert checkCacheState(retval, getFileName().getFile());
-        return retval;
+        return retval && super.isValid();
     }
 
     protected void setValid(boolean valid) {

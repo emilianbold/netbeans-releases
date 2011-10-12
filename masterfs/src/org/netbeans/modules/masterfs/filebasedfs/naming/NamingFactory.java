@@ -189,11 +189,15 @@ public final class NamingFactory {
         NameRef ref = getReference(names[index], file);
 
         FileNaming cachedElement = (ref != null) ? (FileNaming) ref.get() : null;
+        Boolean cachedIsDirectory = null;
+        Boolean fileIsDirectory = null;
         if (ignoreCache) {
-            if (cachedElement != null && (
-                cachedElement.isDirectory() != file.isDirectory()
-            )) {
-                cachedElement = null;
+            if (cachedElement != null) {
+                cachedIsDirectory = cachedElement.isDirectory();
+                fileIsDirectory = file.isDirectory();
+                if (cachedIsDirectory != fileIsDirectory) {
+                    cachedElement = null;
+                }
             }
             if (cachedElement != null) {
                 try {
@@ -230,8 +234,11 @@ public final class NamingFactory {
                         if (orig instanceof FileName) {
                             ((FileName)orig).recordCleanup(
                                 "cachedElement: " + cachedElement + // NOI18N 
+                                " ref: " + orig + // NOI18N
                                 " file: " + file + // NOI18N
-                                " filesEqual: " + filesEqual // NOI18N
+                                " filesEqual: " + filesEqual + // NOI18N
+                                " cachedIsDirectory: " + cachedIsDirectory + // NOI18N
+                                " fileIsDirectory: " + fileIsDirectory // NOI18N
                             );
                         }
                         ref.clear();
@@ -292,6 +299,20 @@ public final class NamingFactory {
     public static String dumpId(Integer id) {
         return dump(id, null);
     }
+    
+    public static synchronized boolean isValid(FileNaming fn) {
+        int index = Math.abs(fn.getId()) % names.length;
+        NameRef value = names[index];
+        while (value != null) {
+            if (value.get() == fn) {
+                return true;
+            }
+            value = value.next();
+        }
+        return false;
+    }
+
+    
     synchronized static String dump(Integer id, File file) {
         StringBuilder sb = new StringBuilder();
         final String hex = Integer.toHexString(id);
