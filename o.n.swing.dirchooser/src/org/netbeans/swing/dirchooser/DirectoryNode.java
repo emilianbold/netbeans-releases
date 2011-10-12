@@ -94,13 +94,8 @@ public class DirectoryNode extends DefaultMutableTreeNode {
             boolean isChecked, boolean isEditable) {
         super(file, allowsChildren);
         this.directory = file;
-        if (isShellFolder(file)) {
-            exists = file.exists();
-            isDir = exists && directory.isDirectory();
-        } else {
-            exists = true;
-            isDir = true;
-        }
+        isDir = file.isDirectory();
+        exists = isDir || file.exists();
         this.isSelected = isSelected;
     }
     
@@ -273,18 +268,6 @@ public class DirectoryNode extends DefaultMutableTreeNode {
             return "<html>" + fileChooser.getName(getFile()) + "</html>"; //NOI18N
         } else {
             return "<html> </html>"; //NOI18N
-        }
-    }
-
-    private static boolean isShellFolder (File file) {
-        try {
-            Class<?> clazz = Class.forName("sun.awt.shell.ShellFolder"); //NOI18N
-            return clazz.isAssignableFrom(file.getClass());
-        } catch (Exception exc) {
-            // reflection not succesfull, just log the exception and return null
-            Logger.getLogger(DirectoryChooserUI.class.getName()).log(
-                    Level.FINE, "ShellFolder can't be used.", exc); //NOI18N
-            return false;
         }
     }
     

@@ -52,6 +52,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import org.netbeans.modules.mercurial.FileInformation;
+import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.OutputLogger;
@@ -130,7 +131,7 @@ public class ShelveChangesAction extends ContextAction {
                 Set<File> roots = e.getValue();
                 if (!roots.isEmpty()) {
                     support.setDisplayName(NbBundle.getMessage(ShelveChangesAction.class, "MSG_ShelveChanges.progress.reverting", root.getName())); //NOI18N
-                    RevertModificationsAction.performRevert(root, null, roots.toArray(new File[roots.size()]), true, logger);
+                    RevertModificationsAction.performRevert(root, null, roots.toArray(new File[roots.size()]), HgModuleConfig.getDefault().getBackupOnRevertModifications(), logger);
                 }
             }
         }

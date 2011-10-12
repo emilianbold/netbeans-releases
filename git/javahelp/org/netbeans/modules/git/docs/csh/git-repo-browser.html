@@ -1,0 +1,113 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+*     Copyright © 1997, 2011, Oracle and/or its affiliates. All rights reserved.
+*     Use is subject to license terms.
+-->
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+	<title>Git Repository Browser</title>
+        <link href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css"
+            rel="StyleSheet" type="text/css">
+    </head>
+    
+    <body>
+    <h2>Git Repository Browser</h2>
+        
+	<p>The Git Repository Browser  displays your local repositories open in the IDE. It opens by default in the bottom panel of the IDE.</p>
+            
+	<p>To open the Git Repository Browser, select a versioned file or folder (e.g. from the Projects, Files, or Favorites window) and  choose Team &gt; Git &gt; Show Changes from the main menu. </p>
+	<h4>The following table lists the Git commands available in the right-click menu of the Git Repository Browser:</h4>
+		<table border="1" cellpadding="5">
+                    <tr>
+                        
+                        <th>Name</th>
+                        <th>Function</th>
+						<th>Applies to</th>
+                    </tr>
+					 <tr>
+                       
+                        <td class="align-center"><strong>Fetch  </strong></td>
+                        <td>Gets the changes from the original remote repository that you do not have yet. Displays the <a href="git-fetch-p1.html">Fetch From Remote Repository</a> dialog box. </td>
+						<td>Both local and remote repositories</td>
+                    </tr>
+					<tr>
+                       
+                        <td class="align-center"><strong>Remove</strong></td>
+                        <td>Deletes configuration created for a remote repository after you confirm it in the Remove remote configuration dialog box.</td>
+						<td>A remote repository only</td>
+                    </tr>
+					
+					 <tr>
+                        
+                        <td class="align-center"><strong>Refresh Branches</strong></td>
+                        <td>Refreshes the status of all the branches to reflect any changes that may have been made externally.</td> 
+						  <td>Branches only</td>
+                    </tr>
+					
+					 <tr>
+                       
+                        <td class="align-center"><strong>Refresh Tags</strong></td>
+                        <td>Refreshes the status of all the tags.</td>
+						<td>Tags only</td>
+                    </tr>	
+					
+                    <tr>
+                       
+                        <td class="align-center"><strong>Checkout Revision</strong></td>
+                        <td>Updates files in  Working Tree and in  Index to match the version in the specified revision. Displays the <a href="git-chkout-rev.html">Checkout Selected Revision</a> dialog box. </td>
+						<td>Selected branch </td>
+                    </tr>
+					 <tr>
+                       
+                        <td class="align-center"><strong>Create Branch</strong></td>
+                        <td>Adds a branch to the Branches/Local folder of the Git repository. Displays the <a href="git-create-branch.html">Create Branch</a> dialog box.</td>
+						<td>Selected branch</td>
+                    </tr>
+                   
+                    <tr>
+                       
+                        <td class="align-center"><strong>Create Tag</strong></td>
+                        <td>Adds a tag to the specified revision. </td>
+						<td>Selected branch</td>
+                    </tr>
+                    <tr>
+                       
+                        <td class="align-center"><strong>Merge Revision</strong></td>
+                        <td>Performs a three-way merge between the current branch, your Working Tree contents, and the specified branch. Displays the <a href="git-merge-rev.html">Merge Revision</a> dialog box</td>
+						<td>Selected branch</td>
+                    </tr>
+					<tr>
+                       
+                        <td class="align-center"><strong>Delete Branch</strong></td>
+                        <td>Removes the specified branch from the local repository after you confirm it in the Delete Branch dialog box.</td>
+						<td>Selected branch</td>
+                    </tr>
+					<tr>
+                       
+                        <td class="align-center"><strong>Show Details</strong></td>
+                        <td>Displays the <a href="git-manage-tags.html">Manage Tags</a> dialog box.</td>
+						<td>Selected tag</td>
+                    </tr>
+					
+					
+    </table>
+	
+        
+       
+	<h4>Note:</h4>
+        <ul class="note">
+             <li>You can access  Git commands in the Repository Browser by selecting a repository, branch, or tag and choosing a command from the right-click menu.</li>
+			 
+        </ul>
+
+
+        
+       
+        
+	<hr>
+	<small><a href="credits.html">Legal Notices</a></small>
+       
+    </body>
+</html>

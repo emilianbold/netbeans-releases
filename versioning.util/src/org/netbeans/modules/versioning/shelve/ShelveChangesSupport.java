@@ -49,6 +49,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.JButton;
 import javax.swing.JTextField;
@@ -67,6 +68,7 @@ import org.openide.util.NbBundle;
 public abstract class ShelveChangesSupport {
 
     private String patchName;
+    private final static Pattern PATCH_NAME_PATTERN = Pattern.compile("^(.*)-(\\d+)$"); //NOI18N
 
     protected abstract void exportPatch (File toFile, File commonParent) throws IOException;
     
@@ -144,6 +146,15 @@ public abstract class ShelveChangesSupport {
                 String offeredPatchName = patchNames.isEmpty() ? "unfinishedChanges" : patchNames.get(0); //NOI18N
                 String originalPatchName = offeredPatchName;
                 int i = 0;
+                Matcher m = PATCH_NAME_PATTERN.matcher(offeredPatchName);
+                if (m.matches()) {
+                    try {
+                        i = Integer.parseInt(m.group(2));
+                    } catch (NumberFormatException ex) {
+                    }
+                    originalPatchName = m.group(1);
+                    offeredPatchName = originalPatchName + "-" + ++i; //NOI18N
+                }
                 while (patchNames.contains(offeredPatchName)) {
                     offeredPatchName = originalPatchName + "-" + ++i; //NOI18N
                 }

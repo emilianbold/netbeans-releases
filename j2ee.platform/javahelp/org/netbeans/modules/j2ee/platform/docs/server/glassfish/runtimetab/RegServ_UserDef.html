@@ -22,20 +22,24 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
         <h2>Add Server Instance Wizard: Domain Folder Location</h2>
         <p><small><a href="#seealso">See Also</a></small></p>
-        <p>You see this page of the Add Server Instance wizard when you are creating a new domain or specifying an existing local domain that is not the local default domain.
+        <p>You see this page of the Add Server Instance wizard when you are creating a new domain or specifying an existing local domain 
+        of the GlassFish Server v1, GlassFish Server v2.x or Sun Java System Application Server that is not the local default domain.
         Use this page of the wizard to specify the location of the domain you are registering.</p>
 
+        <p class="note">To register an instance of GlassFish Server v1 or v2.x you need to install the
+        GlassFish Server v1, v2.x plugin from the Update Center.</p>
+        
         <p>If you are specifying the location of an existing domain, type the path to the domain folder in the Domain Folder text field, or
         click Browse to use the file chooser to navigate to the domain on your system.</p>
         <p>If you are creating a new domain, in the Domain Folder text field, type the path to the folder you want to contain the new domain folder,
         then type the name of the domain. 
         Alternatively, click Browse and use the file chooser to locate the containing folder and then type the name of the new domain.</p> 
-        <p>For example, type <tt><i>path-to-location</i>/SunDomains/MyDomain</tt> to create a domain called MyDomain in the folder SunDomains, where the folder MyDomain does not yet exist.
-        The IDE creates the folder MyDomain.</p>
+        <p>For example, type <tt><i>path-to-location</i>/GlassFishDomains/MyDomain</tt> to create a domain called MyDomain in the folder <tt>GlassFishDomains</tt>,
+        where the folder <tt>MyDomain</tt> does not yet exist. The IDE creates the folder <tt>MyDomain</tt> for you.</p>
         <dl>
             <dt><a name="seealso">See Also</a></dt>
-            <dd>    <a href="../general/register_appserver.html">Registering a GlassFish Application Server Instance</a></dd>
-            <dd>    <a href="../general/working_withSJS.html">Working With the GlassFish Application Server</a></dd>
+            <dd>    <a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/server/glassfish/general/register_appserver.html">Registering a GlassFish Application Server Instance</a></dd>
+            <dd>    <a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/server/glassfish/general/working_withSJS.html">Working With the GlassFish Application Server</a></dd>
         </dl>
         <hr>
 
