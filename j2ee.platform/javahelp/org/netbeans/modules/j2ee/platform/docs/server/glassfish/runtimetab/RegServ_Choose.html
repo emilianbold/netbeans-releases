@@ -20,8 +20,12 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
         <h2>Add Server Instance Wizard: Server Location</h2>
         <p><small><a href="#seealso">See Also</a></small></p>
-        <p>You see this page of the Add Server Instance wizard when you specify domain details to register an instance of the GlassFish Server with the IDE.
+        <p>You see this page of the Add Server Instance wizard when you specify domain details to register an instance of the GlassFish Server v1 or 
+            GlassFish Server v2.x with the IDE.
         To register a server instance, you specify the properties of a local or remote domain.</p>
+        
+        <p class="note">To register an instance of GlassFish Server v1 or v2.x you need to install the
+        GlassFish Server v1, v2.x plugin from the Update Center.</p>
         <p>Use this page to specify the following information about the location of the GlassFish Server and the type of domain you are registering.</p>
         <ul>
             <li><b>Server Location.</b> Supply the path to the local installation of the GlassFish Server.
@@ -63,52 +67,10 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
         </ul>
         <ul class="note"><li>When you register an existing domain, the IDE uses the port numbers and other properties specified in the domain configuration.</li></ul>
         
-        <!--
-        <p>When registering an instance of the Sun Java System Application Server, you need to supply the following information:</p>
-        <ul>
-            <li><b>Location (host:port).</b> (required) This is the host name or IP and the admin port. 
-            You can register your local instance by selecting the instance from the combo box (default host and port is localhost:4848),
-            or a remote instance by entering the
-            IP address and port number. When registering an instance,
-            the port must not be in use by another service or application. </li>
-            <li><b>Domains Folder.</b> This is the location of the local domains directory. 
-                Specify an existing domains directory location or the location for creating a new domain. This field is dimmed if the 
-                IDE has already determined the domains directory of the local domain instance.
-                <ul class="note"><li>If you are registering a remote instance, the domains folder location is not required.</li></ul>
-            </li>            
-            <li><b>Instance Name.</b> (optional) This is the name of the local domain instance. Enter the domain name if you are
-            creating a new domain instance. This field is dimmed if the 
-            IDE has already determined the name of the local domain instance.</li>            
-            <li><b>Username.</b> (optional) This is the admin user name for the server.</li>
-            <li><b>Password.</b> (optional) This is the admin password.
-            <ul class="note">
-                <li>If you do not enter a username and password, you will be prompted for the admin username and password when the server is started.</li>
-            </ul></li>
-        </ul>
-        
-        <p><b>Notes:</b></p>
-        <ul class="note">
-            <li>When creating a new local instance, the IDE automatically assigns a port number to the instance. </li>
-            <li>When registering a local instance of the server, the IDE attempts to determine the domains folder. 
-            When determining the location of the domains directory, one of the following occurs:
-            <ul>
-                <li>The IDE is able to locate accessible server instances in the default Domains folder, 
-                and these instances appear in the Location combo box. In this case the Domains Folder location 
-                and Instance Name are dimmed.</li>
-                <li>The IDE is unable to locate accessible server instances in the default Domains folder. In this case you must 
-                specify an existing, accessible Domains Folder location and Instance Name (if no server instances are available at that location), 
-                or create a new server instance by specifying an accessible Domains Folder and an Instance Name for the new server instance. </li>
-            </ul></li>
-        </ul>
-        
-        -->
-        
-        
-
         <dl>
             <dt><a name="seealso">See Also</a></dt>
-            <dd>    <a href="../general/register_appserver.html">Registering a GlassFish Application Server Instance</a></dd>
-            <dd>    <a href="../general/working_withSJS.html">Working With the GlassFish Application Server</a></dd>
+            <dd>    <a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/server/glassfish/general/register_appserver.html">Registering a GlassFish Application Server Instance</a></dd>
+            <dd>    <a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/server/glassfish/general/working_withSJS.html">Working With the GlassFish Application Server</a></dd>
         </dl>
         <hr>
 
