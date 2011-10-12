@@ -1542,6 +1542,14 @@ is divided into following sections:
                 <xsl:attribute name="depends">init</xsl:attribute>
                 <xsl:attribute name="if">have.sources</xsl:attribute>
                 <mkdir dir="${{dist.javadoc.dir}}"/>
+                <condition property="javadoc.endorsed.classpath.cmd.line.arg" value="-J${{endorsed.classpath.cmd.line.arg}}" else="">
+                    <and>
+                        <isset property="endorsed.classpath.cmd.line.arg"/>
+                        <not>
+                            <equals arg1="${{endorsed.classpath.cmd.line.arg}}" arg2=""/>
+                        </not>
+                    </and>
+                </condition>
                 <!-- XXX do an up-to-date check first -->
                 <javadoc>
                     <xsl:attribute name="destdir">${dist.javadoc.dir}</xsl:attribute>
@@ -1590,6 +1598,7 @@ is divided into following sections:
                         <include name="**/*.java"/>
                         <exclude name="*.java"/>
                     </fileset>
+                    <arg line="${{javadoc.endorsed.classpath.cmd.line.arg}}"/>
                 </javadoc>
                 <copy todir="${{dist.javadoc.dir}}">
                     <xsl:call-template name="createFilesets">
