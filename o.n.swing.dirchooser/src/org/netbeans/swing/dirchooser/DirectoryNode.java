@@ -58,7 +58,6 @@ import org.netbeans.api.project.ProjectManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Utilities;
-import sun.awt.shell.ShellFolder;
 
 /**
  * A directory tree node.
@@ -95,7 +94,7 @@ public class DirectoryNode extends DefaultMutableTreeNode {
             boolean isChecked, boolean isEditable) {
         super(file, allowsChildren);
         this.directory = file;
-        if (file instanceof ShellFolder) {
+        if (isShellFolder(file)) {
             exists = file.exists();
             isDir = exists && directory.isDirectory();
         } else {
@@ -274,6 +273,18 @@ public class DirectoryNode extends DefaultMutableTreeNode {
             return "<html>" + fileChooser.getName(getFile()) + "</html>"; //NOI18N
         } else {
             return "<html> </html>"; //NOI18N
+        }
+    }
+
+    private static boolean isShellFolder (File file) {
+        try {
+            Class<?> clazz = Class.forName("sun.awt.shell.ShellFolder"); //NOI18N
+            return clazz.isAssignableFrom(file.getClass());
+        } catch (Exception exc) {
+            // reflection not succesfull, just log the exception and return null
+            Logger.getLogger(DirectoryChooserUI.class.getName()).log(
+                    Level.FINE, "ShellFolder can't be used.", exc); //NOI18N
+            return false;
         }
     }
     
