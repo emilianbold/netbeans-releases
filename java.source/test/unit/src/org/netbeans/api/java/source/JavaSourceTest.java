@@ -226,6 +226,7 @@ public class JavaSourceTest extends NbTestCase {
         suite.addTest(new JavaSourceTest("testIncrementalReparse"));
         suite.addTest(new JavaSourceTest("testCreateTaggedController"));
         suite.addTest(new JavaSourceTest("testInvalidate"));
+        suite.addTest(new JavaSourceTest("testWrongClassPathWhileParsingClassFile"));
         return suite;
     }
 
@@ -1850,6 +1851,26 @@ public class JavaSourceTest extends NbTestCase {
                 assertTrue(elements[0] != control.getElements());
             }
         }, true);
+    }
+
+    public void testWrongClassPathWhileParsingClassFile() throws Exception {
+        final FileObject wd = FileUtil.toFileObject(getWorkDir());
+        final ClassPath boot = createBootPath();
+        final ClassPath compile = ClassPathSupport.createClassPath(FileUtil.createFolder(wd, "libka"));
+        final ClasspathInfo cpInfo = ClasspathInfo.create(boot, compile, null);
+        final FileObject jlObject = boot.findResource("java/lang/Object.class");
+        assertNotNull(jlObject);
+        final JavaSource js = JavaSource.create(cpInfo, jlObject);
+        assertNotNull(js);
+        js.runUserActionTask(
+            new Task<CompilationController>(){
+                @Override
+                public void run(CompilationController control) throws Exception {
+                    final ClasspathInfo cpInfoInTask = control.getClasspathInfo();
+                    assertNotNull(cpInfoInTask);
+                    assertEquals(compile.entries(), cpInfoInTask.getClassPath(ClasspathInfo.PathKind.COMPILE).entries());
+                }
+            },true);
     }
 
     private static class FindMethodRegionsVisitor extends SimpleTreeVisitor<Void,Void> {
