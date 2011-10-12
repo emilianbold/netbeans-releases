@@ -3202,7 +3202,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         
 	String signum = "?"; // NOI18N
         
-        final MIValue meaningStr = results.valueOf("signal-meaning");
+        final MIValue meaningStr = results.valueOf("signal-meaning"); // NOI18N
         if (meaningStr != null) {
             signum = meaningStr.asConst().value();
         }
