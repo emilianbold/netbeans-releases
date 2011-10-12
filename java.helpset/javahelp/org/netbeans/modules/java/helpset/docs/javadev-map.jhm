@@ -318,6 +318,7 @@
 
 <!-- JavaFX Project Properties dialogs -->
 <mapID target="org.netbeans.modules.javafx2.project.ui.JFXRunPanel" url="javafx/csh/proj_props_run.html" />
+<mapID target="org.netbeans.modules.javafx2.project.ui.JFXDeploymentPanel" url="javafx/csh/proj_props_deployment.html" />
 
 <!-- Standard J2SE Project Properties dialog:-->
 <mapID target="org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerSources" url="project/csh/proj_j2sestand_props_sources.html" />
