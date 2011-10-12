@@ -79,27 +79,7 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.options.DbgProfile;
 import org.netbeans.modules.cnd.debugger.common2.debugger.options.DebuggerOption;
 import org.netbeans.modules.cnd.debugger.common2.debugger.options.Signals;
 
-import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
-import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerImpl;
-import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerInfo;
 
-import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebugger;
-import org.netbeans.modules.cnd.debugger.common2.debugger.Location;
-import org.netbeans.modules.cnd.debugger.common2.debugger.Thread;
-import org.netbeans.modules.cnd.debugger.common2.debugger.Frame;
-import org.netbeans.modules.cnd.debugger.common2.debugger.Variable;
-import org.netbeans.modules.cnd.debugger.common2.debugger.NativeWatch;
-import org.netbeans.modules.cnd.debugger.common2.debugger.WatchVariable;
-import org.netbeans.modules.cnd.debugger.common2.debugger.WatchModel;
-import org.netbeans.modules.cnd.debugger.common2.debugger.LocalModel;
-import org.netbeans.modules.cnd.debugger.common2.debugger.StackModel;
-import org.netbeans.modules.cnd.debugger.common2.debugger.ThreadModel;
-import org.netbeans.modules.cnd.debugger.common2.debugger.VarContinuation;
-import org.netbeans.modules.cnd.debugger.common2.debugger.EvaluationWindow;
-import org.netbeans.modules.cnd.debugger.common2.debugger.Error;
-import org.netbeans.modules.cnd.debugger.common2.debugger.EvalAnnotation;
-import org.netbeans.modules.cnd.debugger.common2.debugger.RoutingToken;
-import org.netbeans.modules.cnd.debugger.common2.debugger.SignalDialog;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.BreakpointManager.BreakpointMsg;
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.BreakpointManager.BreakpointOp;
@@ -119,8 +99,10 @@ import org.netbeans.modules.cnd.debugger.gdb2.mi.MIValue;
 
 import org.netbeans.modules.cnd.debugger.common2.capture.ExternalStartManager;
 import org.netbeans.modules.cnd.debugger.common2.capture.ExternalStart;
-import org.netbeans.modules.cnd.debugger.common2.debugger.Address;
+import org.netbeans.modules.cnd.debugger.common2.debugger.*;
+import org.netbeans.modules.cnd.debugger.common2.debugger.Error;
 import org.netbeans.modules.cnd.debugger.common2.debugger.MacroSupport;
+import org.netbeans.modules.cnd.debugger.common2.debugger.Thread;
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.Disassembly;
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.FormatOption;
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.MemoryWindow;
@@ -315,6 +297,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     }
 
     // interface NativeDebugger
+    @Override
     public NativeDebuggerInfo getNDI() {
         return gdi;
     }
@@ -762,7 +745,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     public final void go() {
         sendResumptive("-exec-continue"); // NOI18N
     }
-
+    
     private void doMIAttach(GdbDebuggerInfo gdi) {
         String cmdString;
         long pid = -1;
@@ -788,6 +771,8 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                         if (newPid != -1) {
                             session().setPid(newPid);
                         }
+                        //see IZ 197786, we set breakpoints here not on prog load
+                        ((GdbDebuggerSettingsBridge)profileBridge).noteAttached();
                         requestStack(null);
                         finish();
                     }
@@ -1227,7 +1212,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         return fmap;
     }
     
-    public void initializeGdb(FileMapper fmap) {
+    void initializeGdb(FileMapper fmap) {
 	if (org.netbeans.modules.cnd.debugger.common2.debugger.Log.Start.debug) {
 	    System.out.printf("GdbDebuggerImpl.initializeGdb()\n"); // NOI18N
 	}

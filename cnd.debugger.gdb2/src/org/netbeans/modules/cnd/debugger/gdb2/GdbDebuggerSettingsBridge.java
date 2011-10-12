@@ -48,18 +48,14 @@ import java.io.IOException;
 import java.util.Map;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerSettings;
-import org.netbeans.modules.cnd.debugger.common2.debugger.options.Signals;
-import org.netbeans.modules.cnd.debugger.common2.debugger.options.Pathmap;
-
-import org.netbeans.modules.cnd.debugger.common2.utils.IpeUtils;
-
-
-import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebugger;
 import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerSettingsBridge;
+import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebugger;
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerInfo;
-
 import org.netbeans.modules.cnd.debugger.common2.debugger.debugtarget.DebugTarget;
 import org.netbeans.modules.cnd.debugger.common2.debugger.options.DbgProfile;
+import org.netbeans.modules.cnd.debugger.common2.debugger.options.Pathmap;
+import org.netbeans.modules.cnd.debugger.common2.debugger.options.Signals;
+import org.netbeans.modules.cnd.debugger.common2.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
@@ -98,6 +94,7 @@ public final class GdbDebuggerSettingsBridge extends DebuggerSettingsBridge {
         assignTentativeSettings(GdbDebuggerSettings.create(newRunProfile, newDbgProfile), exename);
     }
 
+    @Override
     protected void applyPathmap(Pathmap o, Pathmap n) {
 	if (o == null) {
 	    shadowPathmap = new Pathmap.Item[0];
@@ -156,6 +153,21 @@ public final class GdbDebuggerSettingsBridge extends DebuggerSettingsBridge {
         }
     }
 
+    @Override
+    protected int getProgLoadedDirty() {
+        // on attach we should set breakpoints and watches later, see IZ 197786
+        if (debugger.getNDI().getPid() != -1) {
+            return 0xffffffff & ~DIRTY_BREAKPOINTS & ~DIRTY_WATCHES;
+        } else {
+            return super.getProgLoadedDirty();
+        }
+    }
+    
+    void noteAttached() {
+        initialApply(DIRTY_BREAKPOINTS | DIRTY_WATCHES);
+    }
+
+    @Override
     protected void applyRunargs() {
 	String runargs = getArgsFlatEx();
 	if (runargs == null)
@@ -163,6 +175,7 @@ public final class GdbDebuggerSettingsBridge extends DebuggerSettingsBridge {
 	gdbDebugger.runArgs(runargs + ioRedirect());
     }
 
+    @Override
     protected void applyRunDirectory() {
         RunProfile mainRunProfile = getMainSettings().runProfile();
         if (mainRunProfile.getRunDirectory() != null) {
@@ -170,10 +183,12 @@ public final class GdbDebuggerSettingsBridge extends DebuggerSettingsBridge {
         }
     }
 
+    @Override
     protected void applyClasspath() {
 	// System.out.println("GdbDebuggerSettingsBridge.applyClasspath(): NOT IMPLEMENTED");
     }
 
+    @Override
     protected void applyEnvvars() {
         MacroMap macroMap = MacroMap.createEmpty(gdbDebugger.getExecutionEnvironment());
         RunProfile mainRunProfile = getMainSettings().runProfile();
@@ -224,10 +239,12 @@ public final class GdbDebuggerSettingsBridge extends DebuggerSettingsBridge {
         applyEnvvars(setEnvs, unSetEnvs);
     }    
 
+    @Override
     protected void applySignals(Signals o, Signals n) {
 	// System.out.println("GdbDebuggerSettingsBridge.applySignals(): NOT IMPLEMENTED");
     }
 
+    @Override
     protected void applyInterceptList() {
 	// System.out.println("GdbDebuggerSettingsBridge.applyRunargs(): NOT IMPLEMENTED");
     }
