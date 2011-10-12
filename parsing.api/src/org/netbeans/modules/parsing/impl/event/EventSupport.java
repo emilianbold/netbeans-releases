@@ -277,7 +277,7 @@ public final class EventSupport {
                 if (doc != null) {
                     TokenHierarchy th = TokenHierarchy.get(doc);
                     th.addTokenHierarchyListener(lexListener = WeakListeners.create(TokenHierarchyListener.class, this,th));
-                    resetState(true, -1, -1, true);
+                    resetState(true, -1, -1, false);
                 }                
             }
         }
