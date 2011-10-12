@@ -53,8 +53,9 @@ import org.netbeans.modules.debugger.jpda.EditorContextBridge;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.visual.JavaComponentInfo;
 import org.netbeans.modules.debugger.jpda.visual.RemoteServices.RemoteListener;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
@@ -99,16 +100,21 @@ public class GoToSourceAction extends NodeAction {
         }
     }
     
-    private void showSource(String type) {
+    private void showSource(final String type) {
         DebuggerEngine engine = DebuggerManager.getDebuggerManager().getCurrentEngine();
         if (engine != null) {
             JPDADebugger debugger = engine.lookupFirst(null, JPDADebugger.class);
-            String typePath = EditorContextBridge.getRelativePath (type);
+            final String typePath = EditorContextBridge.getRelativePath (type);
             final String url = ((JPDADebuggerImpl) debugger).getEngineContext().getURL(typePath, true);
             final int lineNumber = findClassLine(url, type);
             SwingUtilities.invokeLater (new Runnable () {
+                @Override
                 public void run () {
-                    EditorContextBridge.getContext().showSource(url, lineNumber, null);
+                    boolean success = EditorContextBridge.getContext().showSource(url, lineNumber, null);
+                    if (!success) {
+                        NotifyDescriptor d = new NotifyDescriptor.Message(NbBundle.getMessage(GoToSourceAction.class, "MSG_NoSourceFile", typePath, type), NotifyDescriptor.WARNING_MESSAGE);
+                        DialogDisplayer.getDefault().notifyLater(d);
+                    }
                 }
             });
         }
@@ -160,7 +166,20 @@ public class GoToSourceAction extends NodeAction {
 
     @Override
     protected boolean enable(Node[] activatedNodes) {
-        return true;
+        boolean enabled = false;
+        for (Node n : activatedNodes) {
+            JavaComponentInfo ci = n.getLookup().lookup(JavaComponentInfo.class);
+            if (ci != null) {
+                enabled = true;
+                break;
+            }
+            RemoteListener rl = n.getLookup().lookup(RemoteListener.class);
+            if (rl != null) {
+                enabled = true;
+                break;
+            }
+        }
+        return enabled;
     }
 
     @Override

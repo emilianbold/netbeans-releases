@@ -415,6 +415,7 @@ public class RemoteAWTScreenshot {
                         iextr.getLocalizedMessage();
                         iextr.getCause();
                         iextr.getStackTrace();
+                        logger.log(Level.INFO, iex.getMessage(), iextr);
                         retrievalExceptionPtr[0] =  new RetrievalException(iex.getMessage(), iextr);
                     } catch (InvalidTypeException itex) {
                         retrievalExceptionPtr[0] = new RetrievalException(itex.getMessage(), itex);
