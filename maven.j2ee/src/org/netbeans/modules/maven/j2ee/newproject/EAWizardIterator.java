@@ -58,6 +58,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.templates.TemplateRegistration;
 import org.netbeans.api.validation.adapters.WizardDescriptorAdapter;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.archetype.Archetype;
 import org.netbeans.modules.maven.api.archetype.ArchetypeWizards;
 import org.netbeans.modules.maven.api.archetype.ProjectInfo;
@@ -119,7 +120,7 @@ public class EAWizardIterator implements WizardDescriptor.BackgroundInstantiatin
             ArchetypeWizards.createFromArchetype(FileUtil.normalizeFile((File) wiz.getProperty("ejb_projdir")), ejb_vi, //NOI18N
                     (Archetype) wiz.getProperty("ejb_archetype"), null, false); //NOI18N
         }
-        addEARDependencies((File) wiz.getProperty("ear_projdir"), ejb_vi, web_vi);
+        addEARDependencies((File) wiz.getProperty("ear_projdir"), ejb_vi, web_vi); // NOI18N
         
         // For every single created project we need to setup server correctly
         Set<FileObject> projects = ArchetypeWizards.openProjects(rootFile, earFile);
@@ -144,13 +145,13 @@ public class EAWizardIterator implements WizardDescriptor.BackgroundInstantiatin
         }
         List<ModelOperation<POMModel>> operations = new ArrayList<ModelOperation<POMModel>>();
         if (ejbInfo != null) {
-            operations.add(ArchetypeWizards.addDependencyOperation(ejbInfo, "ejb"));
+            operations.add(ArchetypeWizards.addDependencyOperation(ejbInfo, "ejb")); // NOI18N
         }
         if (webInfo != null) {
-            operations.add(ArchetypeWizards.addDependencyOperation(webInfo, "war"));
+            operations.add(ArchetypeWizards.addDependencyOperation(webInfo, "war")); // NOI18N
         }
 
-        Utilities.performPOMModelOperations(earDirFO.getFileObject("pom.xml"), operations);
+        Utilities.performPOMModelOperations(earDirFO.getFileObject("pom.xml"), operations); // NOI18N
     }
     
     private void saveServerSettings(FileObject projectFile) throws IOException {
@@ -165,9 +166,10 @@ public class EAWizardIterator implements WizardDescriptor.BackgroundInstantiatin
         AuxiliaryProperties props = project.getLookup().lookup(AuxiliaryProperties.class);
         props.put(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID, instanceID, false);
         props.put(MavenJavaEEConstants.HINT_J2EE_VERSION, j2eeVersion, false);
+        props.put(Constants.HINT_COMPILE_ON_SAVE, "all", true); //NOI18N
         
         String projectDirName = project.getProjectDirectory().getName();
-        if (projectDirName.endsWith("-ejb") || projectDirName.endsWith("-ear") || projectDirName.endsWith("-web")) {
+        if (projectDirName.endsWith("-ejb") || projectDirName.endsWith("-ear") || projectDirName.endsWith("-web")) { // NOI18N
             storeSettingsToPom(projectFile, MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER, serverID);
         }
     }

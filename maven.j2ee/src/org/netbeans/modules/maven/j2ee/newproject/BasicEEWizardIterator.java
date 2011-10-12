@@ -61,7 +61,6 @@ import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.archetype.Archetype;
 import org.netbeans.modules.maven.api.archetype.ArchetypeWizards;
 import org.netbeans.modules.maven.api.archetype.ProjectInfo;
-import org.netbeans.modules.maven.api.customizer.ModelHandle;
 import org.netbeans.modules.maven.j2ee.newproject.archetype.J2eeArchetypeFactory;
 import static org.netbeans.modules.maven.j2ee.newproject.Bundle.*;
 import org.netbeans.modules.maven.model.ModelOperation;
@@ -91,7 +90,7 @@ public class BasicEEWizardIterator implements WizardDescriptor.BackgroundInstant
     private J2eeModule.Type projectType;
 
     /** value is one of ProfileItem {@see #getPossibleJ2eeProfiles where all possible values are listed} */
-    public static final String PROP_EE_LEVEL = "eeLevel";
+    public static final String PROP_EE_LEVEL = "eeLevel"; // NOI18N
     
     
     private BasicEEWizardIterator(J2eeModule.Type projectType) {
@@ -154,6 +153,7 @@ public class BasicEEWizardIterator implements WizardDescriptor.BackgroundInstant
         AuxiliaryProperties props = project.getLookup().lookup(AuxiliaryProperties.class);
         props.put(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID, instanceID, false);
         props.put(MavenJavaEEConstants.HINT_J2EE_VERSION, j2eeVersion, false);
+        props.put(Constants.HINT_COMPILE_ON_SAVE, "all", true); //NOI18N
         
         storeSettingsToPom(projectFile, MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER, serverID);
     }

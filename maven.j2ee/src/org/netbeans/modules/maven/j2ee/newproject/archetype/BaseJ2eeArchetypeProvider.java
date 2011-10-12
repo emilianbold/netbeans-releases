@@ -46,6 +46,7 @@ import java.util.TreeMap;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.maven.api.archetype.Archetype;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -108,7 +109,7 @@ abstract class BaseJ2eeArchetypeProvider {
         if (archetype != null) {
             return archetype;
         } else {
-            throw new IllegalStateException("There isn't defined any Archetype for profile: " + profile + ", See #link");
+            throw new IllegalStateException(NbBundle.getMessage(BaseJ2eeArchetypeProvider.class, "NO_DEFINED_ARCHETYPE_EXCEPTION") + profile); //NOI18N
         }
     }
     
