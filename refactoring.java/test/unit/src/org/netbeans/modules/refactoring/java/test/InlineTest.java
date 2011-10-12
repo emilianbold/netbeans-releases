@@ -71,6 +71,28 @@ public class InlineTest extends RefactoringTestBase {
         super(name);
     }
 
+    public void test203520() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    int a = 10 - 20;\n"
+                + "    public void testMethod() {\n"
+                + "        System.out.println(a-);\n"
+                + "    }\n"
+                + "}"));
+
+        final InlineRefactoring[] r = new InlineRefactoring[1];
+        createInlineConstantRefactoring(src.getFileObject("t/A.java"), 1, r);
+        performRefactoring(r);
+        verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    public void testMethod() {\n"
+                + "        System.out.println(10 - 20-);\n"
+                + "    }\n"
+                + "}"));
+    }
+
     public void test203371() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("t/IndexBean.java", "package t;\n"
