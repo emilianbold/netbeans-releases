@@ -56,6 +56,8 @@ import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.annotations.common.NonNull;
@@ -242,10 +244,10 @@ public final class EventSupport {
         }
     }    
     
-    private class DocListener implements PropertyChangeListener, TokenHierarchyListener {
+    private class DocListener implements PropertyChangeListener, DocumentListener {
         
         private EditorCookie.Observable ec;
-        private TokenHierarchyListener lexListener;
+        private DocumentListener docListener;
         
         @SuppressWarnings("LeakingThisInConstructor")
         public DocListener (final EditorCookie.Observable ec) {
@@ -254,43 +256,49 @@ public final class EventSupport {
             this.ec.addPropertyChangeListener(WeakListeners.propertyChange(this, this.ec));
             final Document doc = source.getDocument(false);
             if (doc != null) {
-                assignTokenHierarchyListener(doc);
+                assignDocumentListener(doc);
             }
         }
         
         public DocListener(final Document doc) {
             assert doc != null;
             this.ec = null;
-            assignTokenHierarchyListener(doc);
+            assignDocumentListener(doc);
         }                
 
         @Override
         public void propertyChange(final PropertyChangeEvent evt) {
             if (EditorCookie.Observable.PROP_DOCUMENT.equals(evt.getPropertyName())) {
                 Object old = evt.getOldValue();                
-                if (old instanceof Document && lexListener != null) {
-                    TokenHierarchy th = TokenHierarchy.get((Document) old);
-                    th.removeTokenHierarchyListener(lexListener);
-                    lexListener = null;
+                if (old instanceof Document && docListener != null) {
+                    Document doc = (Document) old;
+                    doc.removeDocumentListener(docListener);
+                    docListener = null;
                 }                
                 Document doc = source.getDocument(false);
                 if (doc != null) {
-                    TokenHierarchy th = TokenHierarchy.get(doc);
-                    th.addTokenHierarchyListener(lexListener = WeakListeners.create(TokenHierarchyListener.class, this,th));
+                    doc.addDocumentListener(docListener = WeakListeners.create(DocumentListener.class, this, doc));
                     resetState(true, -1, -1, false);
                 }                
             }
         }
         
+        private void assignDocumentListener(final Document doc) {
+            doc.addDocumentListener(docListener = WeakListeners.create(DocumentListener.class, this, doc));
+        }
+
         @Override
-        public void tokenHierarchyChanged(final TokenHierarchyEvent evt) {
-            resetState (true, evt.affectedStartOffset (), evt.affectedEndOffset (), false);
+        public void insertUpdate(DocumentEvent e) {
+            resetState (true, e.getOffset(), e.getOffset() + e.getLength(), false);
         }
-        
-        private void assignTokenHierarchyListener(final Document doc) {            
-            final TokenHierarchy th = TokenHierarchy.get(doc);
-            th.addTokenHierarchyListener(lexListener = WeakListeners.create(TokenHierarchyListener.class, this,th));
+
+        @Override
+        public void removeUpdate(DocumentEvent e) {
+            resetState (true, e.getOffset(), e.getOffset(), false);
         }
+
+        @Override
+        public void changedUpdate(DocumentEvent e) {}
     }
     
     private class ParserListener implements ChangeListener {
