@@ -131,8 +131,8 @@ public class ToolTipAnnotation extends Annotation
                 Property value = (Property) event.getNewValue();
                 firePropertyChange(PROP_SHORT_DESCRIPTION, null,
                         getFormattedValue(value));
-            } 
-        } 
+            }
+        }
     }
 
     private String getFormattedValue( Property value ) {
@@ -229,11 +229,11 @@ public class ToolTipAnnotation extends Annotation
         return isDollarMark(ch) || Character.isJavaIdentifierPart(ch);
     }
 
-    static boolean isPHPIdentifier(String text) {        
+    static boolean isPHPIdentifier(String text) {
         for (int i = 0; i < text.length(); i++) {
             if (!isPHPIdentifier(text.charAt(i))) {
                 return false;
-            }            
+            }
         }
         return text.length() > 0;
     }
