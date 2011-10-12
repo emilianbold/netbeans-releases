@@ -43,7 +43,7 @@
 package org.netbeans.modules.parsing.api;
 
 import org.netbeans.modules.parsing.impl.SourceAccessor;
-import org.netbeans.modules.parsing.impl.TaskProcessor;
+import org.netbeans.modules.parsing.impl.event.EventSupport;
 
 /**
  *
@@ -52,13 +52,15 @@ import org.netbeans.modules.parsing.impl.TaskProcessor;
 public class TestUtil {
 
     public static int getReparseDelay () {
-        return TaskProcessor.reparseDelay;
+        return EventSupport.getReparseDelay(false);
     }
 
     public static void setReparseDelay (final Source src, final int reparseDelay, final boolean reset) {
-        TaskProcessor.reparseDelay = reparseDelay;
+        EventSupport.setReparseDelays(
+            reparseDelay,
+            Math.min(EventSupport.getReparseDelay(true), reparseDelay));
         if (reset) {
-            SourceAccessor.getINSTANCE().getEventSupport(src).resetState(true, -1, -1);
+            SourceAccessor.getINSTANCE().getEventSupport(src).resetState(true, -1, -1, false);
         }
     }
 

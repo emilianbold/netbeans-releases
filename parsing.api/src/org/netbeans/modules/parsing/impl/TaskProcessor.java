@@ -110,13 +110,7 @@ public class TaskProcessor {
     
     /**Limit for task to be marked as a slow one, in ms*/
     private static final int SLOW_CANCEL_LIMIT = 50;
-    
-    /** Default reparse delay*/
-    private static final int DEFAULT_REPARSE_DELAY = 500;
-    
-    /**May be changed by unit test*/
-    public static int reparseDelay = DEFAULT_REPARSE_DELAY;
-    
+
     //Scheduled requests waiting for execution
     private final static PriorityBlockingQueue<Request> requests = new PriorityBlockingQueue<Request> (10, new RequestPriorityComparator());
     //Finished requests waiting on reschedule by some scheduler or parser
