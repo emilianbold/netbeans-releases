@@ -45,9 +45,13 @@ package org.netbeans.modules.maven.j2ee.newproject;
 import java.io.File;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.maven.api.MavenValidators;
 import org.netbeans.modules.maven.api.archetype.ProjectInfo;
+import org.netbeans.modules.maven.j2ee.newproject.archetype.J2eeArchetypeFactory;
 import static org.netbeans.modules.maven.j2ee.newproject.Bundle.*;
 import org.netbeans.validation.api.builtin.Validators;
 import org.netbeans.validation.api.ui.ValidationGroup;
@@ -59,33 +63,35 @@ public final class EAVisualPanel extends JPanel  {
 
     private EAWizardPanel panel;
     private final ValidationGroup vg;
+    private final ServerSelectionHelper helper;
 
 
-    /** Creates new form EAVisualPanel */
     @SuppressWarnings("unchecked")
     public EAVisualPanel(EAWizardPanel panel) {
         this.panel = panel;
         initComponents();
+        
+        helper = new ServerSelectionHelper(serverModel, j2eeVersion, J2eeModule.Type.EAR);
         vg = ValidationGroup.create();
-        vg.add(tfWeb, Validators.merge(true,
-                MavenValidators.createArtifactIdValidators(),
-                Validators.REQUIRE_VALID_FILENAME
-                ));
-        vg.add(tfEar, Validators.merge(true,
-                MavenValidators.createArtifactIdValidators(),
-                Validators.REQUIRE_VALID_FILENAME
-                ));
-        vg.add(tfEjb, Validators.merge(true,
-                MavenValidators.createArtifactIdValidators(),
-                Validators.REQUIRE_VALID_FILENAME
-                ));
+        
+        addArtifactIdValidatorFor(tfWeb);
+        addArtifactIdValidatorFor(tfEar);
+        addArtifactIdValidatorFor(tfEjb);
+        
         tfWeb.putClientProperty(ValidationListener.CLIENT_PROP_NAME, "Web ArtifactId");
         tfEar.putClientProperty(ValidationListener.CLIENT_PROP_NAME, "Ear ArtifactId");
         tfEjb.putClientProperty(ValidationListener.CLIENT_PROP_NAME, "Ejb ArtifactId");
 
         getAccessibleContext().setAccessibleDescription(LBL_EESettings());
     }
-
+    
+    private void addArtifactIdValidatorFor(JTextField textField) {
+        vg.add(textField, 
+            Validators.merge(true, MavenValidators.createArtifactIdValidators(), 
+            Validators.REQUIRE_VALID_FILENAME
+        ));
+    }
+    
     @Messages("LBL_EESettings=Settings")
     @Override
     public String getName() {
@@ -103,33 +109,55 @@ public final class EAVisualPanel extends JPanel  {
     }
 
     void storeSettings(WizardDescriptor d) {
-        int eeLevelIdx = Math.max(cmbEEVersion.getSelectedIndex(), 0);
-
         File parent = (File) d.getProperty("projdir");
-        String earText = tfEar.getText().trim();
-        d.putProperty("ear_projdir", new File(parent, earText));
-        ProjectInfo pi = new ProjectInfo((String) d.getProperty("groupId"), earText, (String) d.getProperty("version"), null);
-        d.putProperty("ear_versionInfo", pi);
-        d.putProperty("ear_archetype", EAWizardIterator.EAR_ARCHS[eeLevelIdx]);
+        Profile profile = helper.getSelectedProfile();
+        
+        if (profile == null) {
+            profile = Profile.JAVA_EE_6_FULL;
+        }
 
+        helper.storeServerSettings(d);
+        storeEarSettings(d, profile, parent);
+        storeEjbSettings(d, profile, parent);
+        storeWebSettings(d, profile, parent);
+
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                panel.getValidationGroup().removeValidationGroup(vg);
+            }
+        });
+    }
+    
+    private void storeEarSettings(WizardDescriptor d, Profile profile, File parent) {
+        String earText = tfEar.getText().trim();
+        
+        d.putProperty("ear_projdir", new File(parent, earText));
+        d.putProperty("ear_versionInfo", createProjectInfo(d, earText));
+        d.putProperty("ear_archetype", J2eeArchetypeFactory.getInstance().findArchetypeFor(J2eeModule.Type.EAR, profile));
+    }
+
+    private void storeEjbSettings(WizardDescriptor d, Profile profile, File parent) {
         if (chkEjb.isSelected()) {
             String ejbText = tfEjb.getText().trim();
+
             d.putProperty("ejb_projdir", new File(parent, ejbText));
-            pi = new ProjectInfo((String) d.getProperty("groupId"), ejbText, (String) d.getProperty("version"), null);
-            d.putProperty("ejb_versionInfo", pi);
-            d.putProperty("ejb_archetype", EAWizardIterator.EJB_ARCHS[eeLevelIdx]);
+            d.putProperty("ejb_versionInfo", createProjectInfo(d, ejbText));
+            d.putProperty("ejb_archetype", J2eeArchetypeFactory.getInstance().findArchetypeFor(J2eeModule.Type.EJB, profile));
         } else {
             d.putProperty("ejb_projdir", null);
             d.putProperty("ejb_versionInfo", null);
             d.putProperty("ejb_archetype", null);
         }
+    }
 
+    private void storeWebSettings(WizardDescriptor d, Profile profile, File parent) {
         if (chkWeb.isSelected()) {
             String webText = tfWeb.getText().trim();
+            
             d.putProperty("web_projdir", new File(parent, webText));
-            pi = new ProjectInfo((String) d.getProperty("groupId"), webText, (String) d.getProperty("version"), null);
-            d.putProperty("web_versionInfo", pi);
-            d.putProperty("web_archetype", EAWizardIterator.WEB_APP_ARCHS[eeLevelIdx]);
+            d.putProperty("web_versionInfo", createProjectInfo(d, webText));
+            d.putProperty("web_archetype", J2eeArchetypeFactory.getInstance().findArchetypeFor(J2eeModule.Type.WAR, profile));
 
         } else {
             d.putProperty("web_projdir", null);
@@ -137,17 +165,22 @@ public final class EAVisualPanel extends JPanel  {
             d.putProperty("web_archetype", null);
         }
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 panel.getValidationGroup().removeValidationGroup(vg);
             }
         });
     }
+    
+    private ProjectInfo createProjectInfo(WizardDescriptor d, String artifactId) {
+        return new ProjectInfo((String) d.getProperty("groupId"), artifactId, (String) d.getProperty("version"), null);
+    }
 
     private void fillTextFields(WizardDescriptor wiz) {
-        String artifId = (String)wiz.getProperty("artifactId");
-        tfEar.setText(artifId + "-ear");
-        tfWeb.setText(artifId + "-web");
-        tfEjb.setText(artifId + "-ejb");
+        String artifactId = (String)wiz.getProperty("artifactId");
+        tfEar.setText(artifactId + "-ear");
+        tfWeb.setText(artifactId + "-web");
+        tfEjb.setText(artifactId + "-ejb");
     }
 
     /** This method is called from within the constructor to
@@ -158,7 +191,7 @@ public final class EAVisualPanel extends JPanel  {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        cmbEEVersion = new javax.swing.JComboBox();
+        j2eeVersion = new javax.swing.JComboBox();
         lblEEVersion = new javax.swing.JLabel();
         chkEjb = new javax.swing.JCheckBox();
         chkWeb = new javax.swing.JCheckBox();
@@ -166,10 +199,11 @@ public final class EAVisualPanel extends JPanel  {
         tfWeb = new javax.swing.JTextField();
         tfEjb = new javax.swing.JTextField();
         tfEar = new javax.swing.JTextField();
+        jLabel1 = new javax.swing.JLabel();
+        serverModel = new javax.swing.JComboBox();
+        addButton = new javax.swing.JButton();
 
-        cmbEEVersion.setModel(new DefaultComboBoxModel(BasicEEWizardIterator.eeLevels()));
-
-        lblEEVersion.setLabelFor(cmbEEVersion);
+        lblEEVersion.setLabelFor(j2eeVersion);
         org.openide.awt.Mnemonics.setLocalizedText(lblEEVersion, org.openide.util.NbBundle.getMessage(EAVisualPanel.class, "EAVisualPanel.lblEEVersion.text")); // NOI18N
 
         chkEjb.setSelected(true);
@@ -197,6 +231,15 @@ public final class EAVisualPanel extends JPanel  {
 
         tfEar.setText(org.openide.util.NbBundle.getMessage(EAVisualPanel.class, "EAVisualPanel.tfEar.text")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(EAVisualPanel.class, "EAVisualPanel.jLabel1.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(addButton, org.openide.util.NbBundle.getMessage(EAVisualPanel.class, "EAVisualPanel.addButton.text")); // NOI18N
+        addButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addButtonActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -204,43 +247,58 @@ public final class EAVisualPanel extends JPanel  {
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(lblEEVersion)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(cmbEEVersion, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(lblEEVersion)
+                            .addComponent(jLabel1))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(j2eeVersion, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                .addComponent(serverModel, 0, 279, Short.MAX_VALUE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(addButton))))
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(chkWeb)
                             .addComponent(chkEjb)
                             .addComponent(lblEar))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(tfEjb, javax.swing.GroupLayout.DEFAULT_SIZE, 201, Short.MAX_VALUE)
-                            .addComponent(tfWeb, javax.swing.GroupLayout.DEFAULT_SIZE, 201, Short.MAX_VALUE)
-                            .addComponent(tfEar, javax.swing.GroupLayout.DEFAULT_SIZE, 201, Short.MAX_VALUE))))
+                            .addComponent(tfEar, javax.swing.GroupLayout.DEFAULT_SIZE, 216, Short.MAX_VALUE)
+                            .addComponent(tfWeb, javax.swing.GroupLayout.DEFAULT_SIZE, 216, Short.MAX_VALUE)
+                            .addComponent(tfEjb, javax.swing.GroupLayout.DEFAULT_SIZE, 216, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 69, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel1)
+                    .addComponent(serverModel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(addButton))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lblEEVersion)
-                    .addComponent(cmbEEVersion, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(j2eeVersion, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(tfEjb, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(chkEjb))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(chkEjb)
+                    .addComponent(tfEjb, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(chkWeb)
-                    .addComponent(tfWeb, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(tfEar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(lblEar))
-                .addContainerGap(174, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(chkWeb)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(lblEar))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(tfWeb, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(tfEar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(145, Short.MAX_VALUE))
         );
 
-        cmbEEVersion.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EAVisualPanel.class, "EAVisualPanel.cmbEEVersion.AccessibleContext.accessibleDescription")); // NOI18N
+        j2eeVersion.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EAVisualPanel.class, "EAVisualPanel.cmbEEVersion.AccessibleContext.accessibleDescription")); // NOI18N
         chkEjb.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EAVisualPanel.class, "EAVisualPanel.chkEjb.AccessibleContext.accessibleDescription")); // NOI18N
         chkWeb.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EAVisualPanel.class, "EAVisualPanel.chkWeb.AccessibleContext.accessibleDescription")); // NOI18N
         tfWeb.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(EAVisualPanel.class, "EAVisualPanel.tfWeb.AccessibleContext.accessibleName")); // NOI18N
@@ -262,12 +320,19 @@ public final class EAVisualPanel extends JPanel  {
         vg.validateAll();
     }//GEN-LAST:event_chkWebActionPerformed
 
+    private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
+        helper.addServerButtonPressed();
+    }//GEN-LAST:event_addButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton addButton;
     private javax.swing.JCheckBox chkEjb;
     private javax.swing.JCheckBox chkWeb;
-    private javax.swing.JComboBox cmbEEVersion;
+    private javax.swing.JComboBox j2eeVersion;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel lblEEVersion;
     private javax.swing.JLabel lblEar;
+    private javax.swing.JComboBox serverModel;
     private javax.swing.JTextField tfEar;
     private javax.swing.JTextField tfEjb;
     private javax.swing.JTextField tfWeb;
