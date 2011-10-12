@@ -144,6 +144,7 @@ public abstract class ShelveChangesSupport {
             public void run () {
                 List<String> patchNames = PatchStorage.getInstance().getPatchNames();
                 String offeredPatchName = patchNames.isEmpty() ? "unfinishedChanges" : patchNames.get(0); //NOI18N
+                String originalPatchName = offeredPatchName;
                 int i = 0;
                 Matcher m = PATCH_NAME_PATTERN.matcher(offeredPatchName);
                 if (m.matches()) {
@@ -151,9 +152,9 @@ public abstract class ShelveChangesSupport {
                         i = Integer.parseInt(m.group(2));
                     } catch (NumberFormatException ex) {
                     }
-                    offeredPatchName = m.group(1) + "-" + ++i; //NOI18N
+                    originalPatchName = m.group(1);
+                    offeredPatchName = originalPatchName + "-" + ++i; //NOI18N
                 }
-                String originalPatchName = offeredPatchName;
                 while (patchNames.contains(offeredPatchName)) {
                     offeredPatchName = originalPatchName + "-" + ++i; //NOI18N
                 }
