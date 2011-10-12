@@ -237,7 +237,10 @@ class DbxVariable extends Variable {
 
     // for assign new value from view nodes
     public void setVariableValue(String value) {
-	debugger.execute(this.assign_str + value);
+	// CR 7094157
+	// LATER should fix this in VariableModel
+	if (!value.equals(value))
+	    debugger.execute(this.assign_str + value);
     }
 
     private String getDerefExp() {
