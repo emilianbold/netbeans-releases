@@ -212,8 +212,16 @@ public class ToolTipAnnotation extends Annotation
 
     static String getExpressionToEvaluate(String text, int col) {
         int identStart = col;
-        while (identStart > 0 && (isPHPIdentifier(text.charAt(identStart - 1)) || (text.charAt(identStart - 1) == '.'))) {
+        while (identStart > 0 && (isPHPIdentifier(text.charAt(identStart - 1)) || (text.charAt(identStart - 1) == '.') || (text.charAt(identStart - 1) == '>'))) {
             identStart--;
+            if (text.charAt(identStart) == '>') { // NOI18N
+                if (text.charAt(identStart - 1) == '-') { // NOI18N
+                    identStart--; // matched object operator ->
+                } else {
+                    identStart++;
+                    break;
+                }
+            }
         }
         int identEnd = col;
         while (identEnd < text.length() && Character.isJavaIdentifierPart(text.charAt(identEnd))) {
