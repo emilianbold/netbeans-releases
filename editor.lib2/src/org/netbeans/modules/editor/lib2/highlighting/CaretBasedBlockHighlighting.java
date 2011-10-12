@@ -154,19 +154,25 @@ public abstract class CaretBasedBlockHighlighting extends AbstractHighlightsCont
             init();
         }
 
-        if (currentBlockStart != null && currentBlockEnd != null &&
-            endOffset >= currentBlockStart.getOffset() && startOffset <= currentBlockEnd.getOffset())
+        Position blockStart;
+        Position blockEnd;
+        synchronized (this) {
+            blockStart = currentBlockStart;
+            blockEnd = currentBlockEnd;
+        }
+        if (blockStart != null && blockEnd != null &&
+            endOffset >= blockStart.getOffset() && startOffset <= blockEnd.getOffset())
         {
             if (LOG.isLoggable(Level.FINE)) {
                 LOG.fine("Queried for highlights in [" //NOI18N
                     + startOffset + ", " + endOffset + "], returning [" //NOI18N
-                    + positionToString(currentBlockStart) + ", " + positionToString(currentBlockEnd) + "]" //NOI18N
+                    + positionToString(blockStart) + ", " + positionToString(blockEnd) + "]" //NOI18N
                     + ", layer=" + s2s(this)); //NOI18N
             }
 
             return new SimpleHighlightsSequence(
-                Math.max(currentBlockStart.getOffset(), startOffset), 
-                Math.min(currentBlockEnd.getOffset(), endOffset), 
+                Math.max(blockStart.getOffset(), startOffset), 
+                Math.min(blockEnd.getOffset(), endOffset), 
                 getAttribs()
             );
         } else {
@@ -220,59 +226,61 @@ public abstract class CaretBasedBlockHighlighting extends AbstractHighlightsCont
             Position changeStart;
             Position changeEnd;
             Position[] newBlock = getCurrentBlockPositions(component.getDocument());
-            if (newBlock != null) {
-                newStart = newBlock[0];
-                newEnd = newBlock[1];
-                if (currentBlockStart == null) { // not valid yet
+            synchronized (this) {
+                if (newBlock != null) {
+                    newStart = newBlock[0];
+                    newEnd = newBlock[1];
+                    if (currentBlockStart == null) { // not valid yet
+                        changeStart = newStart;
+                        changeEnd = newEnd;
+                    } else { // Valid current start and end blocks
+                        // Compare new block to old one
+                        BlockCompare compare = BlockCompare.get(
+                                newStart.getOffset(), newEnd.getOffset(),
+                                currentBlockStart.getOffset(), currentBlockEnd.getOffset());
+                        if (compare.equal()) { // Same blocks
+                            changeStart = null; // No firing
+                            changeEnd = null;
+                        } else if (compare.equalStart()) {
+                            if (compare.containsStrict()) {
+                                changeStart = currentBlockEnd;
+                                changeEnd = newEnd;
+                            } else {
+                                assert (compare.insideStrict());
+                                changeStart = newEnd;
+                                changeEnd = currentBlockEnd;
+                            }
+                        } else if (compare.equalEnd()) {
+                            if (compare.containsStrict()) {
+                                changeStart = newStart;
+                                changeEnd = currentBlockStart;
+                            } else {
+                                assert (compare.insideStrict());
+                                changeStart = currentBlockStart;
+                                changeEnd = newStart;
+                            }
+                        } else {
+                            changeStart = (compare.lowerStart()) ? newStart : currentBlockStart;
+                            changeEnd = (compare.lowerEnd()) ? currentBlockEnd : newEnd;
+                        }
+                    }
+
+                } else { // newBlock is null => selection removed
+                    newStart = null;
+                    newEnd = null;
                     changeStart = currentBlockStart;
                     changeEnd = currentBlockEnd;
-                } else { // Valid current start and end blocks
-                    // Compare new block to old one
-                    BlockCompare compare = BlockCompare.get(
-                            newStart.getOffset(), newEnd.getOffset(),
-                            currentBlockStart.getOffset(), currentBlockEnd.getOffset());
-                    if (compare.equal()) { // Same blocks
-                        changeStart = null; // No firing
-                        changeEnd = null;
-                    } else if (compare.equalStart()) {
-                        if (compare.containsStrict()) {
-                            changeStart = currentBlockEnd;
-                            changeEnd = newEnd;
-                        } else {
-                            assert (compare.insideStrict());
-                            changeStart = newEnd;
-                            changeEnd = currentBlockEnd;
-                        }
-                    } else if (compare.equalEnd()) {
-                        if (compare.containsStrict()) {
-                            changeStart = newStart;
-                            changeEnd = currentBlockStart;
-                        } else {
-                            assert (compare.insideStrict());
-                            changeStart = currentBlockStart;
-                            changeEnd = newStart;
-                        }
-                    } else {
-                        changeStart = (compare.lowerStart()) ? newStart : currentBlockStart;
-                        changeEnd = (compare.lowerEnd()) ? currentBlockEnd : newEnd;
-                    }
                 }
 
-            } else { // newBlock is null => selection removed
-                newStart = null;
-                newEnd = null;
-                changeStart = currentBlockStart;
-                changeEnd = currentBlockEnd;
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.fine("Current block changed from [" //NOI18N
+                            + positionToString(currentBlockStart) + ", " + positionToString(currentBlockEnd) + "] to [" //NOI18N
+                            + positionToString(newStart) + ", " + positionToString(newEnd) + "]" //NOI18N
+                            + ", layer=" + s2s(this)); //NOI18N
+                }
+                currentBlockStart = newStart;
+                currentBlockEnd = newEnd;
             }
-
-            if (LOG.isLoggable(Level.FINE)) {
-                LOG.fine("Current block changed from [" //NOI18N
-                        + positionToString(currentBlockStart) + ", " + positionToString(currentBlockEnd) + "] to [" //NOI18N
-                        + positionToString(newStart) + ", " + positionToString(newEnd) + "]" //NOI18N
-                        + ", layer=" + s2s(this)); //NOI18N
-            }
-            currentBlockStart = newStart;
-            currentBlockEnd = newEnd;
 
             if (changeStart != null) {
                 if (fire) {
