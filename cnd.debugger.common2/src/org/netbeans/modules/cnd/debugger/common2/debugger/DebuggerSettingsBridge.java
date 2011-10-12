@@ -132,16 +132,16 @@ public abstract class DebuggerSettingsBridge implements PropertyChangeListener {
      * since the last application (via initialApply())
      */
 
-    private static final int DIRTY_ARGS		= 1;
-    private static final int DIRTY_DIR		= 1<<1;
-    private static final int DIRTY_ENVVARS	= 1<<2;
-    private static final int DIRTY_PRELOAD	= 1<<3;
-    private static final int DIRTY_PATHMAP	= 1<<4;
-    private static final int DIRTY_BREAKPOINTS	= 1<<5;
-    private static final int DIRTY_SIGNALS	= 1<<6;
-    private static final int DIRTY_EXCEPTIONS	= 1<<7;
-    private static final int DIRTY_CLASSPATH	= 1<<8;
-    private static final int DIRTY_WATCHES	= 1<<9;
+    protected static final int DIRTY_ARGS		= 1;
+    protected static final int DIRTY_DIR		= 1<<1;
+    protected static final int DIRTY_ENVVARS	= 1<<2;
+    protected static final int DIRTY_PRELOAD	= 1<<3;
+    protected static final int DIRTY_PATHMAP	= 1<<4;
+    protected static final int DIRTY_BREAKPOINTS	= 1<<5;
+    protected static final int DIRTY_SIGNALS	= 1<<6;
+    protected static final int DIRTY_EXCEPTIONS	= 1<<7;
+    protected static final int DIRTY_CLASSPATH	= 1<<8;
+    protected static final int DIRTY_WATCHES	= 1<<9;
 
     // Flags to apply when we've loaded a regular program
     private static final int DIRTY_PROG_APPLY = 0xffffffff;
@@ -383,6 +383,16 @@ public abstract class DebuggerSettingsBridge implements PropertyChangeListener {
 
     protected abstract DebuggerSettings createSettingsFromTarget(DebugTarget dt);
     
+    protected int getProgLoadedDirty() {
+        if (debugger.session().getCorefile() != null) {
+            return DIRTY_COREFILE_APPLY;
+        } else if (debugger.session().getPid() != -1) {
+            return DIRTY_ATTACH_APPLY;
+        } else {
+            return DIRTY_PROG_APPLY;
+        }
+    }
+    
     /**
      * Note that engine has switched to a new program.
      *
@@ -440,16 +450,7 @@ public abstract class DebuggerSettingsBridge implements PropertyChangeListener {
 	// notify engine of the commited-to settings
 
 	if (mainSettings != lastAppliedSettings) {
-	    int dirty = 0;
-	    if (debugger.session().getCorefile() != null) {
-		dirty = DIRTY_COREFILE_APPLY;
-	    } else if (debugger.session().getPid() != -1) {
-		dirty = DIRTY_ATTACH_APPLY;
-	    } else {
-		dirty = DIRTY_PROG_APPLY;
-	    }
-
-	    initialApply(dirty);
+	    initialApply(getProgLoadedDirty());
 
 	    applyConfigurationOptions(true, lastAppliedSettings);
             lastAppliedSettings = mainSettings;
@@ -635,7 +636,7 @@ public abstract class DebuggerSettingsBridge implements PropertyChangeListener {
         }
     }
 
-    private void initialApply(int dirty) {
+    protected final void initialApply(int dirty) {
 	debugger.postRestoring(true);
 	try {
 	    initialApplyWork(dirty);

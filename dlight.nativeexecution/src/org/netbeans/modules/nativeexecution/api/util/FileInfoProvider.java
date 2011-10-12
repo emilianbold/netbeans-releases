@@ -61,12 +61,96 @@ import org.openide.util.Exceptions;
  * @author Vladimir Kvashin
  */
 public class FileInfoProvider {
-   
     public static final class StatInfo {
 
+        public enum FileType {
+
+            NamedPipe(S_IFIFO_C, StatInfo.S_IFIFO & StatInfo.S_IFMT),
+            CharacterSpecial(S_IFCHR_C, StatInfo.S_IFCHR & StatInfo.S_IFMT),
+            MultiplexedCharacterSpecial(S_IFMPC_C, StatInfo.S_IFMPC & StatInfo.S_IFMT),
+            Directory(S_IFDIR_C, StatInfo.S_IFDIR & StatInfo.S_IFMT),
+            SpecialNamed(S_IFNAM_C, StatInfo.S_IFNAM & StatInfo.S_IFMT),
+            BlockSpecial(S_IFBLK_C, StatInfo.S_IFBLK & StatInfo.S_IFMT),
+            MultiplexedBlockSpecial(S_IFMPB_C, StatInfo.S_IFMPB & StatInfo.S_IFMT),
+            Regular(S_IFREG_C, StatInfo.S_IFREG & StatInfo.S_IFMT),
+            NetworkSpecial(S_IFCMP_C, StatInfo.S_IFCMP & StatInfo.S_IFMT),
+            SymbolicLink(S_IFLNK_C, StatInfo.S_IFLNK & StatInfo.S_IFMT),
+            Shadow(S_IFSHAD_C, StatInfo.S_IFSHAD & StatInfo.S_IFMT),
+            Socket(S_IFSOCK_C, StatInfo.S_IFSOCK & StatInfo.S_IFMT),
+            Door(S_IFDOOR_C, StatInfo.S_IFDOOR & StatInfo.S_IFMT),
+            EventPort(S_IFPORT_C, StatInfo.S_IFPORT & StatInfo.S_IFMT),
+            Undefined(S_UNDEF_C, 0);
+            
+            private final char letter;
+            private final int fileType;
+
+            private FileType(char letter, int fileType) {
+                this.letter = letter;
+                this.fileType = fileType;
+            }
+
+            public char toChar() {
+                return letter;
+            }
+
+            public int toInt() {
+                return letter;
+            }
+
+            public static FileType fromChar(char letter) {
+                for (FileType type : values()) {
+                    if (type.letter == letter) {
+                        return type;
+                    }
+                }
+                return Undefined;
+            }
+
+            public static FileType fromInt(int fileType) {
+                for (FileType type : values()) {
+                    if (type.fileType == fileType) {
+                        return type;
+                    }
+                }
+                return Undefined;
+            }
+        }
+        
+        private static final int  S_IFMT     =  0xF000; //bitmask for the file type bitfields
+        private static final int  S_IFIFO    =  0x1000; // named pipe (fifo)
+        private static final char S_IFIFO_C  =  'p';    // p|
+        private static final int  S_IFCHR    =  0x2000; // character device (Solaris character special)
+        private static final char S_IFCHR_C  =  'c';    // c
+        private static final int  S_IFMPC    =  0x3000; // multiplexed character special (V7)
+        private static final char S_IFMPC_C  =  'm';    // undefined char, just to have code
+        private static final int  S_IFDIR    =  0x4000; // directory
+        private static final char S_IFDIR_C  =  'd';    // d/
+        private static final int  S_IFNAM    =  0x5000; // XENIX special named file
+        private static final char S_IFNAM_C  =  'N';    // undefined char, just to have code
+        private static final int  S_IFBLK    =  0x6000; // block device (Solaris block special)
+        private static final char S_IFBLK_C  =  'b';    // b
+        private static final int  S_IFMPB    =  0x7000; // multiplexed block special
+        private static final char S_IFMPB_C  =  'M';    // undefined char, just to have code
+        private static final int  S_IFREG    =  0x8000; // regular file
+        private static final char S_IFREG_C  =  '-';    // -
+        private static final int  S_IFCMP    =  0x9000; // network special (HP-UX) 
+        private static final char S_IFCMP_C  =  'n';    // n
+        private static final int  S_IFLNK    =  0xA000; // symbolic link
+        private static final char S_IFLNK_C  =  'l';    // l
+        private static final int  S_IFSHAD   =  0xB000; // Solaris shadow inode for ACL (not seen by userspace)
+        private static final char S_IFSHAD_C =  'S';    // undefined char, just to have code
+        private static final int  S_IFSOCK   =  0xC000; // socket
+        private static final char S_IFSOCK_C =  's';    // s=
+        private static final int  S_IFDOOR   =  0xD000; // D> Solaris door
+        private static final char S_IFDOOR_C =  'D';    // D>
+        private static final int  S_IFPORT   =  0xE000; // Solaris event port (BSD whiteot)
+        private static final char S_IFPORT_C =  'P';    // P (w%)
+        private static final char S_UNDEF_C  =  'u';    // for other stat info (0x0 and 0xF) to have a default in swithces
+        
         private final String name;
         private final boolean directory;
         private final boolean link;
+        private final boolean regularFile;
         
         private final int gid;
         private final int uid;
@@ -82,19 +166,21 @@ public class FileInfoProvider {
             this.gid = gid;
             this.uid = uid;
             this.size = size;
-            this.access = access & ACCESS_MASK;
+            this.access = access;
+            
             this.directory = directory;
             this.link = link;
+            this.regularFile = (access & S_IFMT) == S_IFREG;
             this.linkTarget = linkTarget;
             this.lastModified = lastModified;
         }
         
         public int getAccess() {
-            return access;
+            return access & ACCESS_MASK;
         }
 
         public String getAccessAsString() {
-            return accessToString(access);
+            return accessToString(getAccess());
         }
 
         public long getSize() {
@@ -128,19 +214,29 @@ public class FileInfoProvider {
         public boolean isLink() {
             return link;
         }
-        
+
+        public boolean isPlainFile() {
+            return regularFile;
+        }
+
+        public FileType getFileType() {
+            return FileType.fromInt(access & S_IFMT);
+        }
+
         public String toExternalForm() {
             StringBuilder sb = new StringBuilder();
             sb.append(escape(name)).append(' '); // 0
-            sb.append(accessToString(access)).append(' '); // 1
-            sb.append(directory).append(' '); // 2
-            sb.append(link).append(' '); // 3
-            sb.append(gid).append(' '); // 4
-            sb.append(uid).append(' '); // 5
-            sb.append(lastModified.getTime()).append(' '); // 6
-            sb.append(size).append(' '); // 7
+            sb.append(accessToString(getAccess())).append(' '); // 1
+            sb.append(getFileType().toChar()).append(' '); // 2
+            // old style
+            //sb.append(directory).append(' '); // 2
+            //sb.append(link).append(' '); // 3
+            sb.append(gid).append(' '); // +0
+            sb.append(uid).append(' '); // +1
+            sb.append(lastModified.getTime()).append(' '); // +2
+            sb.append(size).append(' '); // +3
             if (linkTarget != null) {
-                sb.append(escape(linkTarget)).append(' '); // 8
+                sb.append(escape(linkTarget)).append(' '); // +4
             }
             return sb.toString();
         }
@@ -149,13 +245,40 @@ public class FileInfoProvider {
             String[] parts = externalForm.split(" +"); // NOI18N
             String name = unescape(parts[0]);
             int acc = stringToAcces(parts[1]);
-            boolean dir = Boolean.parseBoolean(parts[2]);
-            boolean link = Boolean.parseBoolean(parts[3]);
-            int gid = Integer.parseInt(parts[4]);
-            int uid = Integer.parseInt(parts[5]);
-            long time = Long.parseLong(parts[6]);
-            long size = Long.parseLong(parts[7]);            
-            String linkTarget = (parts.length < 9) ? null : unescape(parts[8]);
+            int next;
+            boolean dir = false;
+            boolean link = false;
+            if (parts[2].length() > 1) {
+                // This should work for smoothly migration from old storage format to new
+                dir = Boolean.parseBoolean(parts[2]);
+                link = Boolean.parseBoolean(parts[3]);
+                if (dir) {
+                    acc += S_IFDIR;
+                } else if (link) {
+                    acc += S_IFLNK;
+                } else {
+                    acc += S_IFREG;
+                }
+                next = 4;
+            } else {
+                FileType fromChar = FileType.fromChar(parts[2].charAt(0));
+                acc += fromChar.fileType;
+                switch(fromChar) {
+                    case Directory:
+                        dir = true;
+                        break;
+                    case SymbolicLink:
+                        link = true;
+                        break;
+                }
+                assert fromChar != FileType.Undefined;
+                next = 3;
+            }
+            int gid = Integer.parseInt(parts[next]);
+            int uid = Integer.parseInt(parts[next+1]);
+            long time = Long.parseLong(parts[next+2]);
+            long size = Long.parseLong(parts[next+3]);            
+            String linkTarget = (parts.length < next+5) ? null : unescape(parts[next+4]);
             return new StatInfo(name, uid, gid, size, dir, link, linkTarget, acc, new Date(time));
         }
         
@@ -164,7 +287,7 @@ public class FileInfoProvider {
                 try {
                     HostInfo hostInfo = HostInfoUtils.getHostInfo(env);
                     if (this.uid == hostInfo.getUserId()) {
-                        return (access & usr_mask) > 0;
+                        return (getAccess() & usr_mask) > 0;
                     }
                     boolean isGroupClass = false;
                     for (int currGid : hostInfo.getAllGroupIDs()) {
@@ -174,9 +297,9 @@ public class FileInfoProvider {
                         }
                     }
                     if (isGroupClass) {
-                        return (access & grp_mask) > 0;
+                        return (getAccess() & grp_mask) > 0;
                     }
-                    return (access & all_mask) > 0;
+                    return (getAccess() & all_mask) > 0;
                 } catch (IOException ex) {
                     // should be never thrown, since we checked isHostInfoAvailable() first
                     Exceptions.printStackTrace(ex);
@@ -203,10 +326,8 @@ public class FileInfoProvider {
 
         @Override
         public String toString() {
-            return name + ' ' + uid + ' ' + gid + ' '+ accessToString(access) + ' ' + directory + ' ' + lastModified + ' ' + (link ? " -> " + linkTarget : ""); // NOI18N
+            return name + ' ' + uid + ' ' + gid + ' '+ accessToString(getAccess()) + ' ' + directory + ' ' + lastModified + ' ' + (link ? " -> " + linkTarget : ""); // NOI18N
         }
-        
-        
     }
     
     public static Future<StatInfo> stat(ExecutionEnvironment env, String absPath) {

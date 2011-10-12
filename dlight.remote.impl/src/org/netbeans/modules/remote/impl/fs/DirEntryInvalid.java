@@ -44,6 +44,7 @@ package org.netbeans.modules.remote.impl.fs;
 
 import java.util.Date;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.StatInfo.FileType;
 import org.netbeans.modules.remote.impl.RemoteLogger;
 
 /**
@@ -58,94 +59,113 @@ public final class DirEntryInvalid implements DirEntry {
         this.name = name;
     }
     
+    @Override
     public String getName() {
         return name;
     }
 
+    @Override
     public long getSize() {
         RemoteLogger.assertTrueInConsole(false, "unsupported operation for " + name); //NOI18N
         return 0;
     }
 
+    @Override
     public boolean canExecute(ExecutionEnvironment execEnv) {
         RemoteLogger.assertTrueInConsole(false, "unsupported operation for " + name); //NOI18N
         return false;
     }
 
+    @Override
     public boolean canRead(ExecutionEnvironment execEnv) {
         RemoteLogger.assertTrueInConsole(false, "unsupported operation for " + name); //NOI18N
         return false;
     }
 
+    @Override
     public boolean canWrite(ExecutionEnvironment execEnv) {
         RemoteLogger.assertTrueInConsole(false, "unsupported operation for " + name); //NOI18N
         return false;
     }
 
+    @Override
     public String getAccessAsString() {
         RemoteLogger.assertTrueInConsole(false, "unsupported operation for " + name); //NOI18N
         return "---------"; //NOI18N
     }
 
+    @Override
     public Date getLastModified() {
         RemoteLogger.assertTrueInConsole(false, "unsupported operation for " + name); //NOI18N
         return new Date();
     }
 
+    @Override
     public boolean isLink() {
         RemoteLogger.assertTrueInConsole(false, "unsupported operation for " + name); //NOI18N
         return false;
     }
 
+    @Override
     public boolean isDirectory() {
         RemoteLogger.assertTrueInConsole(false, "unsupported operation for " + name); //NOI18N
         return false;
     }
 
+    @Override
     public boolean isPlainFile() {
         RemoteLogger.assertTrueInConsole(false, "unsupported operation for " + name); //NOI18N
         return true;
     }
 
+    @Override
     public boolean isSameLastModified(DirEntry other) {
         RemoteLogger.assertTrueInConsole(false, "unsupported operation for " + name); //NOI18N
         return false;
     }
 
+    @Override
     public boolean isSameType(DirEntry other) {
         RemoteLogger.assertTrueInConsole(false, "unsupported operation for " + name); //NOI18N
         return false;
     }
 
+    @Override
     public FileType getFileType() {
         RemoteLogger.assertTrueInConsole(false, "unsupported operation for " + name); //NOI18N
-        return FileType.File;
+        return FileType.Regular;
     }
 
+    @Override
     public boolean isSameUser(DirEntry other) {
         RemoteLogger.assertTrueInConsole(false, "unsupported operation for " + name); //NOI18N
         return false;
     }
 
+    @Override
     public boolean isSameGroup(DirEntry other) {
         RemoteLogger.assertTrueInConsole(false, "unsupported operation for " + name); //NOI18N
         return false;
     }
 
+    @Override
     public String getLinkTarget() {
         RemoteLogger.assertTrueInConsole(false, "unsupported operation for " + name); //NOI18N
         return null;
     }
 
+    @Override
     public String getCache() {
         RemoteLogger.assertTrueInConsole(false, "unsupported operation for " + name); //NOI18N
         return "";
     }
 
+    @Override
     public void setCache(String cache) {
         RemoteLogger.assertTrueInConsole(false, "unsupported operation for " + name); //NOI18N
     }
 
+    @Override
     public String toExternalForm() {
         return name; //TODO: escape '\n'
     }
@@ -154,6 +174,7 @@ public final class DirEntryInvalid implements DirEntry {
         return new DirEntryInvalid(line); //TODO: unescape '\n'
     }
     
+    @Override
     public boolean isValid() {
         return false;
     }

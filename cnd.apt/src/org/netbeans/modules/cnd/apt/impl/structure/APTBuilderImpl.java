@@ -171,7 +171,7 @@ public final class APTBuilderImpl {
             }
         }
         for (Pair pair : nodeStack) {
-            APTToken token = pair.active.getToken();
+            APTToken token = pair.lastChild == null ? pair.active.getToken() : pair.lastChild.getToken();
             APTUtils.LOG.log(Level.SEVERE, "{0}, line {1}: {2} without closing #endif\n", new Object[]{APTTraceUtils.toFileString(aptFile), token == null ? -1 : token.getLine(), token == null ? -1 : token.getText()}); // NOI18N
         }
         return nextToken;

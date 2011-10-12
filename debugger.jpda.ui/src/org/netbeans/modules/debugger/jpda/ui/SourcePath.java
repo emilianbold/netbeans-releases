@@ -63,7 +63,9 @@ import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.spi.debugger.jpda.EditorContext;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
 import org.netbeans.spi.debugger.jpda.SourcePathProvider;
+import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -385,11 +387,14 @@ public class SourcePath {
     }
 
     public void showSource (Field v) {
+        showSource(v, true);
+    }
+    
+    public void showSource (Field v, final boolean reportUnknownSource) {
         String fieldName = ((Field) v).getName ();
-        String className = className = ((Field) v).getClassName ();
-        String url = getURL (
-            EditorContextBridge.getRelativePath (className), true
-        );
+        final String className = ((Field) v).getClassName ();
+        final String sourcePath = EditorContextBridge.getRelativePath (className);
+        String url = getURL(sourcePath, true);
         if (url == null) return ;
         int lineNumber = lineNumber = EditorContextBridge.getContext().getFieldLineNumber (
             url,
@@ -402,11 +407,16 @@ public class SourcePath {
         final String u = url;
         SwingUtilities.invokeLater (new Runnable () {
             public void run () {
-                EditorContextBridge.getContext().showSource (
+                boolean success = EditorContextBridge.getContext().showSource (
                     u,
                     ln,
                     debugger
                 );
+                if (reportUnknownSource && !success) {
+                    String message = NbBundle.getMessage(SourcePath.class, "No_URL_Warning", sourcePath);
+                    NotifyDescriptor d = new NotifyDescriptor.Message(message, NotifyDescriptor.WARNING_MESSAGE);
+                    DialogDisplayer.getDefault().notifyLater(d);
+                }
             }
         });
     }

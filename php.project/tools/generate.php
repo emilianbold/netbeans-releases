@@ -260,7 +260,7 @@ function parse_phpdoc_functions ($phpdocDir, $extensions) {
 					if (preg_match_all ('@<methodparam\s*(.*?)>.*?<type>(.*?)</type>.*?<parameter\s*(.*?)>(.*?)</parameter>(?:<initializer>(.+?)</initializer>)?.*?</methodparam>@s', $parameters, $match)) {
 						for ($i = 0; $i < count($match[0]); ++$i) {
 							$parameter = array (
-								'type' => trim($match[2][$i]),
+								'type' => trim(str_replace('-', '_', $match[2][$i])), // e.g. OCI-Collection -> OCI_Collection
 								'name' => clean_php_identifier(trim($match[4][$i])),
 							);
 							if (preg_match ('@choice=[\'"]opt[\'"]@', $match[1][$i])) {
@@ -283,7 +283,7 @@ function parse_phpdoc_functions ($phpdocDir, $extensions) {
                 if (preg_match_all('@<varlistentry\s*.*?>.*?<parameter>(.*?)</parameter>.*?<listitem\s*.*?>(.*?)</listitem>.*?</varlistentry>@s', $parameters, $match)) {
                     for ($i = 0; $i < count($match[0]); $i++) {
                         for ($j = 0; $j < count(@$functionsDoc[$refname]['parameters']); $j++) {
-                            if ($match[1][$i] == $functionsDoc[$refname]['parameters'][$j]['name']) {
+                            if (clean_php_identifier(trim($match[1][$i])) == $functionsDoc[$refname]['parameters'][$j]['name']) {
                                 $functionsDoc[$refname]['parameters'][$j]['paramdoc'] = xml_to_phpdoc ($match[2][$i]);
                                 break;
                             }
@@ -852,8 +852,9 @@ function print_doccomment ($ref, $tabs = 0) {
                                 if (@$parameter['isoptional']) {
                                     print " [optional]";
                                 }
-                                $paramdoc = newline_to_phpdoc(@$parameter['paramdoc'], $tabs);
-                                if ($paramdoc) {
+                                $paramdoc = @$parameter['paramdoc'];
+                                if ($paramdoc && $paramdoc != "<p>\n</p>") {
+                                    $paramdoc = newline_to_phpdoc(@$parameter['paramdoc'], $tabs);
                                     print " {$paramdoc}";
                                 }
                                 print "\n";
