@@ -65,6 +65,7 @@ import org.netbeans.jellytools.modules.j2ee.nodes.J2eeServerNode;
 import org.netbeans.jellytools.modules.web.nodes.WebPagesNode;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
@@ -405,6 +406,8 @@ public class JSPDebuggingOverallTest extends J2eeTestCase {
             }
         }).waitAction(eoPage);
         ContainerOperator debugToolbarOper = Utils.getDebugToolbar();
+        // need to wait because sometimes popup to finish all session is not opened
+        new EventTool().waitNoEvent(500);
         so.finishAll();
         // wait until Debug toolbar dismiss
         debugToolbarOper.waitComponentShowing(false);
