@@ -46,6 +46,8 @@ package org.netbeans.modules.php.dbgp.breakpoints;
 import java.beans.PropertyChangeEvent;
 import java.util.Collection;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
@@ -166,15 +168,23 @@ public class BreakpointRuntimeSetter extends DebuggerManagerAdapter  {
 
     private static class UpdateBreakpointCommand implements Command {
 
+        private static final Logger LOGGER = Logger.getLogger(UpdateBreakpointCommand.class.getName());
+
         @Override
         public void perform( AbstractBreakpoint breakpoint, SessionId id,
                 DebugSession session )
         {
-            BrkpntUpdateCommand command = new BrkpntUpdateCommand(
-                    session.getTransactionId() , breakpoint.getBreakpointId() );
-            State state = breakpoint.isEnabled() ? State.ENABLED :State.DISABLED;
-            command.setState( state );
-            session.sendCommandLater(command);
+            assert session != null : "Session can't be null!"; //NOI18N
+            assert breakpoint != null : "Breakpoint can't be null!"; //NOI18N
+            if (session != null && breakpoint != null) {
+                BrkpntUpdateCommand command = new BrkpntUpdateCommand(
+                        session.getTransactionId() , breakpoint.getBreakpointId() );
+                State state = breakpoint.isEnabled() ? State.ENABLED :State.DISABLED;
+                command.setState( state );
+                session.sendCommandLater(command);
+            } else {
+                LOGGER.log(Level.WARNING, "Session and Breakpoint can't be null! Session: {0} || Breakpoint: {1}", new Object[]{session, breakpoint});
+            }
         }
     }
 
