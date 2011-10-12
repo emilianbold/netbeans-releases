@@ -899,16 +899,16 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
         ExtenderController controller = panel.getController();
         String urlPattern = tURLPattern.getText();
         if (urlPattern == null || urlPattern.trim().equals("")) { // NOI18N
-            controller.setErrorMessage(NbBundle.getMessage(JSFConfigurationPanelVisual.class, "MSG_URLPatternIsEmpty"));
+            setErrorMessage(NbBundle.getMessage(JSFConfigurationPanelVisual.class, "MSG_URLPatternIsEmpty"));
             return false;
         }
         if (!isPatternValid(urlPattern)) {
-            controller.setErrorMessage(NbBundle.getMessage(JSFConfigurationPanelVisual.class, "MSG_URLPatternIsNotValid"));
+            setErrorMessage(NbBundle.getMessage(JSFConfigurationPanelVisual.class, "MSG_URLPatternIsNotValid"));
             return false;
         }
 
         if (controller.getProperties().getProperty("NoDocBase") != null) {  //NOI18N
-            controller.setErrorMessage(NbBundle.getMessage(JSFConfigurationPanelVisual.class, "MSG_MissingDocBase"));
+            setErrorMessage(NbBundle.getMessage(JSFConfigurationPanelVisual.class, "MSG_MissingDocBase"));
             return false;
         }
 
@@ -916,7 +916,7 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
 
         if (rbRegisteredLibrary.isSelected()) {
             if (jsfLibraries == null || jsfLibraries.size() == 0) {
-                controller.setErrorMessage(NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_MissingJSF")); //NOI18N
+                setErrorMessage(NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_MissingJSF")); //NOI18N
                 return false;
             }
         }
@@ -929,38 +929,34 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
             // TODO: perhaps remove the version check at all:
             message = JSFUtils.isJSFInstallFolder(new File(folder), JSFVersion.JSF_2_0);
             if ("".equals(folder)) {
-                Properties properties = controller.getProperties();
-                controller.setErrorMessage(null);
-                properties.setProperty(WizardDescriptor.PROP_INFO_MESSAGE, message);
+                setInfoMessage(message);
                 return false;
             }
 
             if (message != null) {
-                controller.setErrorMessage(message);
+                setErrorMessage(message);
                 return false;
             }
             // checking new library name
             String newLibraryName = jtNewLibraryName.getText().trim();
             if (newLibraryName.length() <= 0) {
-                controller.setErrorMessage(null);
-                controller.getProperties().setProperty(WizardDescriptor.PROP_INFO_MESSAGE, NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_EmptyNewLibraryName"));
+                setInfoMessage(NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_EmptyNewLibraryName"));
                 return false;
             }
 
             message = checkLibraryName(newLibraryName);
             if (message != null) {
-                controller.setErrorMessage(message);
+                setErrorMessage(message);
                 return false;
             }
             Library lib = LibraryManager.getDefault().getLibrary(newLibraryName);
             if (lib != null) {
-                controller.setErrorMessage(NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_AlreadyExists")); //NOI18N
+                setErrorMessage(NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_AlreadyExists")); //NOI18N
                 return false;
             }
         }
         if (!isServerRegistered(serverInstanceID)) {   //NOI18N
-            controller.getProperties().setProperty(WizardDescriptor.PROP_INFO_MESSAGE,
-                    NbBundle.getMessage(JSFConfigurationPanelVisual.class, "ERR_MissingTargetServer")); //NOI18N
+            setInfoMessage(NbBundle.getMessage(JSFConfigurationPanelVisual.class, "ERR_MissingTargetServer")); //NOI18N
         }
 
         // check all enabled JSF component libraries
@@ -990,6 +986,18 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
         if (!customizer) {
             controller.getProperties().setProperty(WizardDescriptor.PROP_INFO_MESSAGE, message);
         }
+    }
+
+    /**
+     * Sets the info message.
+     *
+     * @param message info message which should be shown
+     */
+    private void setInfoMessage(String message) {
+        ExtenderController controller = panel.getController();
+        Properties properties = controller.getProperties();
+        controller.setErrorMessage(null);
+        properties.setProperty(WizardDescriptor.PROP_INFO_MESSAGE, message);
     }
 
     private static final char[] INVALID_PATTERN_CHARS = {'%', '+'}; // NOI18N
