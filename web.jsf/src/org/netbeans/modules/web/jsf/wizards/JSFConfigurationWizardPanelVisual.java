@@ -130,20 +130,32 @@ public class JSFConfigurationWizardPanelVisual extends JPanel implements HelpCtx
     boolean valid(WizardDescriptor wizardDescriptor) {
         setErrorMessage(wizardDescriptor, null);
         if (wme != null && !wme.isValid()) {
-            setErrorMessage(wizardDescriptor, controller.getErrorMessage());
+            if (controller.getErrorMessage() != null) {
+                setErrorMessage(wizardDescriptor, controller.getErrorMessage());
+            } else {
+                String message = (String) controller.getProperties().getProperty(WizardDescriptor.PROP_INFO_MESSAGE);
+                setInfoMessage(wizardDescriptor, message);
+            }
             return false;
         }
 
         return true;
     }
-    
+
     private void setErrorMessage(WizardDescriptor wizardDescriptor, String errorMessage) {
         if (errorMessage == null || errorMessage.length() == 0) {
             errorMessage = " "; // NOI18N
         }
         wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, errorMessage); // NOI18N
     }
-    
+
+    private void setInfoMessage(WizardDescriptor wizardDescriptor, String infoMessage) {
+        if (infoMessage == null || infoMessage.length() == 0) {
+            infoMessage = " "; // NOI18N
+        }
+        wizardDescriptor.putProperty(WizardDescriptor.PROP_INFO_MESSAGE, infoMessage); // NOI18N
+    }
+
     void read(WizardDescriptor settings) {
         if (wme != null) {
             wme.update();
@@ -153,7 +165,7 @@ public class JSFConfigurationWizardPanelVisual extends JPanel implements HelpCtx
     void store(WizardDescriptor settings) {
     }
 
-    
+
     /** Help context where to find more about the paste type action.
      * @return the help context for this action
      */
@@ -165,8 +177,8 @@ public class JSFConfigurationWizardPanelVisual extends JPanel implements HelpCtx
         }
         return null;
     }
-    
-    
+
+
     private void setConfigPanel() {
         if (wme != null) {
             jPanelConfig.removeAll();
