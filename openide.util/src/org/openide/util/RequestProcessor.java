@@ -2165,7 +2165,7 @@ outer:  do {
             if (o1.when < o2.when) {
                 return -1;
             }
-            if (o2.when > o2.when) {
+            if (o1.when > o2.when) {
                 return 1;
             }
             return 0;
@@ -2174,7 +2174,7 @@ outer:  do {
         synchronized final void schedule(Item localItem, long delay) {
             localItem.when = System.currentTimeMillis() + delay;
             queue.add(localItem);
-            notify();
+            notifyAll();
         }
         
         synchronized final void cancel(Item localItem) {
