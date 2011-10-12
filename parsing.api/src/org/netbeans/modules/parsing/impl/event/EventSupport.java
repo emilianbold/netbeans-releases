@@ -244,10 +244,11 @@ public final class EventSupport {
         }
     }    
     
-    private class DocListener implements PropertyChangeListener, DocumentListener {
+    private class DocListener implements PropertyChangeListener, DocumentListener, TokenHierarchyListener {
         
-        private EditorCookie.Observable ec;
+        private final EditorCookie.Observable ec;
         private DocumentListener docListener;
+        private TokenHierarchyListener thListener;
         
         @SuppressWarnings("LeakingThisInConstructor")
         public DocListener (final EditorCookie.Observable ec) {
@@ -272,33 +273,47 @@ public final class EventSupport {
                 Object old = evt.getOldValue();                
                 if (old instanceof Document && docListener != null) {
                     Document doc = (Document) old;
+                    TokenHierarchy th = TokenHierarchy.get(doc);
+                    th.removeTokenHierarchyListener(thListener);
                     doc.removeDocumentListener(docListener);
+                    thListener = null;
                     docListener = null;
                 }                
                 Document doc = source.getDocument(false);
                 if (doc != null) {
-                    doc.addDocumentListener(docListener = WeakListeners.create(DocumentListener.class, this, doc));
+                    assignDocumentListener(doc);
                     resetState(true, -1, -1, false);
                 }                
             }
         }
         
         private void assignDocumentListener(final Document doc) {
+            TokenHierarchy th = TokenHierarchy.get(doc);
+            th.addTokenHierarchyListener(thListener = WeakListeners.create(TokenHierarchyListener.class, this,th));
             doc.addDocumentListener(docListener = WeakListeners.create(DocumentListener.class, this, doc));
         }
 
         @Override
         public void insertUpdate(DocumentEvent e) {
+            TokenHierarchy th = TokenHierarchy.get(e.getDocument());
+            if (th.isActive()) return ;//handled by the lexer based listener
             resetState (true, e.getOffset(), e.getOffset() + e.getLength(), false);
         }
 
         @Override
         public void removeUpdate(DocumentEvent e) {
+            TokenHierarchy th = TokenHierarchy.get(e.getDocument());
+            if (th.isActive()) return;//handled by the lexer based listener
             resetState (true, e.getOffset(), e.getOffset(), false);
         }
 
         @Override
         public void changedUpdate(DocumentEvent e) {}
+
+        @Override
+        public void tokenHierarchyChanged(TokenHierarchyEvent evt) {
+            resetState (true, evt.affectedStartOffset(), evt.affectedEndOffset(), false);
+        }
     }
     
     private class ParserListener implements ChangeListener {
