@@ -390,7 +390,10 @@ public class CsmUtilities {
                 if (platformProject instanceof NativeProject) {
                     NativeProject nativeProject = (NativeProject)platformProject;
                     if (nativeProject.getFileSystem().equals(fileSystem)) {
-                        for (String src : nativeProject.getSourceRoots()) {
+                        final List<String> sourceRoots = new ArrayList<String>();
+                        sourceRoots.add(nativeProject.getProjectRoot());
+                        sourceRoots.addAll(nativeProject.getSourceRoots());
+                        for (String src : sourceRoots) {
                             if (path.startsWith(src)) {
                                 final int length = src.length();
                                 if (path.length() == length || path.charAt(length) == '\\' || path.charAt(length) == '/') {
