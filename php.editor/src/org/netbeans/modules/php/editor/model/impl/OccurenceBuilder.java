@@ -52,6 +52,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.php.editor.api.AliasedName;
 import org.netbeans.modules.php.editor.api.ElementQuery;
 import org.netbeans.modules.php.editor.api.ElementQuery.Index;
 import org.netbeans.modules.php.editor.api.NameKind;
@@ -73,6 +74,8 @@ import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.Occurence;
 import org.netbeans.modules.php.editor.api.QualifiedName;
+import org.netbeans.modules.php.editor.api.QualifiedNameKind;
+import org.netbeans.modules.php.editor.api.elements.AliasedClass;
 import org.netbeans.modules.php.editor.api.elements.ElementFilter;
 import org.netbeans.modules.php.editor.api.elements.FunctionElement;
 import org.netbeans.modules.php.editor.api.elements.PhpElement;
@@ -83,6 +86,7 @@ import org.netbeans.modules.php.editor.model.NamespaceScope;
 import org.netbeans.modules.php.editor.model.Occurence.Accuracy;
 import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.TypeScope;
+import org.netbeans.modules.php.editor.model.UseElement;
 import org.netbeans.modules.php.editor.model.VariableName;
 import org.netbeans.modules.php.editor.model.VariableScope;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
@@ -586,7 +590,9 @@ class OccurenceBuilder {
                 case IFACE:
                 case CLASS_INSTANCE_CREATION:
                 case CLASS:
-                    final QualifiedName qualifiedName = elementInfo.getQualifiedName();
+                    final QualifiedName qualifiedName = elementInfo.getNodeInfo() != null 
+                            ? getFullyQualifiedName(elementInfo.getNodeInfo(), elementInfo.getScope())
+                            : elementInfo.getQualifiedName();
                     final Set<TypeElement> types = index.getTypes(NameKind.exact(qualifiedName));
                     if (elementInfo.setDeclarations(types)) {
                         buildClassInstanceCreation(elementInfo, fileScope, cachedOccurences);
@@ -1322,7 +1328,7 @@ class OccurenceBuilder {
         for (PhpElement phpElement : elements) {
             for (Entry<ASTNodeInfo<ClassInstanceCreation>, Scope> entry : clasInstanceCreations.entrySet()) {
                 ASTNodeInfo<ClassInstanceCreation> nodeInfo = entry.getKey();
-                final QualifiedName qualifiedName = nodeInfo.getQualifiedName();
+                final QualifiedName qualifiedName = getFullyQualifiedName(nodeInfo, entry.getValue());
                 Set<? extends PhpElement> contextTypes = elements;
                 if (NameKind.exact(qualifiedName).matchesName(phpElement)) {
                     if (qualifiedName.getKind().isUnqualified()) {
@@ -1773,6 +1779,56 @@ class OccurenceBuilder {
         return false;
     }
 
+    private static QualifiedName getFullyQualifiedName(ASTNodeInfo nodeInfo, Scope inScope) {
+        
+        QualifiedName qualifiedName = null;
+        if (nodeInfo != null) {
+            System.out.println("nodeInfo: " + nodeInfo.getKind());
+            qualifiedName = nodeInfo.getQualifiedName();
+            System.out.println("Jmeno: " + qualifiedName.getKind());
+            if(qualifiedName.getKind() != QualifiedNameKind.FULLYQUALIFIED) {
+                
+                while (inScope != null && !(inScope instanceof NamespaceScope)) {
+                    inScope = inScope.getInScope();
+                }
+                if (inScope != null && !((NamespaceScope)inScope).isDefaultNamespace()) { 
+                    NamespaceScope namespace = (NamespaceScope)inScope;
+                    if (qualifiedName.getKind() == QualifiedNameKind.UNQUALIFIED) {            
+                        qualifiedName = inScope.getNamespaceName().append(qualifiedName);
+                    } else {
+                        // needs to count 
+                        String firstSegmentName = qualifiedName.getSegments().getFirst();
+                        UseElement matchedUseElement = null;
+                        for(UseElement useElement : namespace.getDeclaredUses()) {
+                            AliasedName aliasName = useElement.getAliasedName();
+                            if (aliasName != null) {
+                                if (firstSegmentName.equals(aliasName.getAliasName())){
+                                    matchedUseElement = useElement;
+                                    continue;
+                                }
+                            } else {
+                                if (firstSegmentName.equals(useElement.getNamespaceName().getSegments().getLast())) {
+                                    matchedUseElement = useElement;
+                                    continue;
+                                }
+                            }
+                        }
+                        if (matchedUseElement != null) {
+                            ArrayList<String> segments = new ArrayList(matchedUseElement.getNamespaceName().getSegments());
+                            List<String> origName = qualifiedName.getSegments();
+                            for (int i = 1; i < origName.size(); i++) {
+                                segments.add(origName.get(i));
+                            }
+                            qualifiedName = QualifiedName.create(true, segments);
+                        }
+                    } 
+                }
+            }
+        }
+        System.out.println("resutl: "+ qualifiedName);
+        return qualifiedName;
+    }
+
     private class OccurenceImpl implements Occurence {
 
         private final OffsetRange occurenceRange;
@@ -1914,7 +1970,7 @@ class OccurenceBuilder {
             QualifiedName qualifiedName = null;
             if (nodeInfo != null) {
                 qualifiedName = nodeInfo.getQualifiedName();
-            } else {
+                        } else {
                 ModelElement modelElemnt = getModelElemnt();
                 if (modelElemnt instanceof ClassMemberElement) {
                     qualifiedName = QualifiedName.createUnqualifiedName(modelElemnt.getName());
