@@ -54,7 +54,6 @@ import org.netbeans.modules.maven.api.execute.ExecutionContext;
 import org.netbeans.modules.maven.api.execute.LateBoundPrerequisitesChecker;
 import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.spi.project.ProjectServiceProvider;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -63,10 +62,11 @@ import org.openide.util.RequestProcessor;
  * @author Jiri Sedlacek
  */
 @ProjectServiceProvider(service=LateBoundPrerequisitesChecker.class, projectType="org-netbeans-modules-maven")
-public class RunCheckerImpl implements LateBoundPrerequisitesChecker {    
+public class RunCheckerImpl implements LateBoundPrerequisitesChecker {
+    
     private static final String ACTION_PROFILE = "profile"; // NOI18N
     private static final String ACTION_PROFILE_SINGLE = "profile-single"; // NOI18N
-    private static final String ACTION_PROFILE_TESTS = "profile-tests"; // NOI18N
+        private static final String ACTION_PROFILE_TESTS = "profile-tests"; // NOI18N
     
 //    private static final String EXEC_ARGS = "exec.args"; // NOI18N
     private static final String PROFILER_ARGS = "${profiler.args}"; // NOI18N
@@ -74,7 +74,6 @@ public class RunCheckerImpl implements LateBoundPrerequisitesChecker {
 //    private static final String EXEC_EXECUTABLE = "exec.executable"; // NOI18N
     private static final String PROFILER_JAVA = "${profiler.java}"; // NOI18N
     private static final String PROFILER_JDKHOME_OPT = "${profiler.jdkhome.opt}"; // NOI18N
-    private static final String NETBEANS_INSTALL = "${netbeans.installation}"; //NOI18N
     
     private final Project project;
     private static final Map<Project, Properties> properties = new WeakHashMap();
@@ -95,7 +94,7 @@ public class RunCheckerImpl implements LateBoundPrerequisitesChecker {
     public boolean checkRunConfig(RunConfig config, ExecutionContext context) {
         Map<? extends String,? extends String> configProperties = config.getProperties();
 
-        if (ACTION_PROFILE.equals(config.getActionName()) ||
+        if (   ACTION_PROFILE.equals(config.getActionName()) ||
                ACTION_PROFILE_TESTS.equals(config.getActionName()) ||
               (config.getActionName() != null && config.getActionName().startsWith(ACTION_PROFILE_SINGLE))) { // action "profile"
             // Resolve profiling configuration
@@ -104,12 +103,8 @@ public class RunCheckerImpl implements LateBoundPrerequisitesChecker {
             // Resolve profiling session properties
             for (Object k : configProperties.keySet()) {
                 String key = (String)k;
-                                
+                
                 String value = configProperties.get(key);
-                // NbmActionGoalProvider ignores "profile" action; we need to set the "netbeans.installation" property manually
-                if (value.contains(NETBEANS_INSTALL)) {
-                    config.setProperty(key, guessNetbeansInstallation());
-                }
                 if (value.contains(PROFILER_ARGS)) {
                     String agentArg = fixAgentArg(sessionProperties.getProperty("profiler.info.jvmargs.agent"));
                     value = value.replace(PROFILER_ARGS, sessionProperties.getProperty("profiler.info.jvmargs") // NOI18N
@@ -170,12 +165,5 @@ public class RunCheckerImpl implements LateBoundPrerequisitesChecker {
             return "\"" + agentArg + "\""; // NOI18N
         }
         return agentArg;
-    }
-    
-    private String guessNetbeansInstallation() {
-        //TODO netbeans.home is obsolete.. what to replace it with though?
-        File fil = new File(System.getProperty("netbeans.home")); //NOI18N
-        fil = FileUtil.normalizeFile(fil);
-        return fil.getParentFile().getAbsolutePath(); //NOI18N
     }
 }
