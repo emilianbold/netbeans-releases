@@ -132,7 +132,8 @@ public final class JavaFXPlatformUtils {
     
     /**
      * Constructs classpath for JavaFX project
-     * 
+     * xxx: Is this really an "API"?
+     * xxx:Is hard coding of jars really what you want?
      * @return classpath entries
      */
     @NonNull

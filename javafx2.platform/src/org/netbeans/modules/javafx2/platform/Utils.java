@@ -41,7 +41,12 @@
  */
 package org.netbeans.modules.javafx2.platform;
 
+import java.io.File;
+import java.io.FileFilter;
+import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -53,6 +58,7 @@ import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.modules.java.j2seplatform.api.J2SEPlatformCreator;
 import org.netbeans.modules.javafx2.platform.api.JavaFXPlatformUtils;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Parameters;
 
 /**
@@ -229,6 +235,28 @@ public final class Utils {
 //            return false;
 //        }
         return true;
+    }
+
+    @NonNull
+    public static List<? extends URL> getRuntimeClassPath(@NonNull final File javafxRuntime) {
+        Parameters.notNull("javafxRuntime", javafxRuntime); //NOI18N
+        final List<URL> result = new ArrayList<URL>();
+        final File lib = new File (javafxRuntime,"lib");    //NOI18N
+        final File[] children = lib.listFiles(new FileFilter() {
+            @Override
+            public boolean accept(@NonNull final File pathname) {
+                return pathname.getName().toLowerCase().endsWith(".jar");  //NOI18N
+            }
+        });
+        if (children != null) {
+            for (File f : children) {
+                final URL root = FileUtil.urlForArchiveOrDir(f);
+                if (root != null) {
+                    result.add(root);
+                }
+            }
+        }
+        return result;
     }
 
 }
