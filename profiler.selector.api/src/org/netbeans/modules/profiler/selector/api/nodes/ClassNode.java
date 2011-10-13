@@ -49,6 +49,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.swing.Icon;
+import org.netbeans.lib.profiler.client.ClientUtils;
+import org.netbeans.lib.profiler.client.ClientUtils.SourceCodeSelection;
 import org.netbeans.modules.profiler.api.icons.Icons;
 import org.netbeans.modules.profiler.api.icons.LanguageIcons;
 import org.netbeans.modules.profiler.api.java.SourceClassInfo;
@@ -61,6 +63,7 @@ import org.netbeans.modules.profiler.api.java.SourceMethodInfo;
  */
 public class ClassNode extends ContainerNode {
     private SourceClassInfo cInfo;
+    private ClientUtils.SourceCodeSelection signature;
     
     /**
      * A {@linkplain Comparator} able to compare {@linkplain ClassNode} instances
@@ -123,14 +126,21 @@ public class ClassNode extends ContainerNode {
                 updateDisplayName(displayName + " [" + implementing + "]");
             }
         }
+        this.signature = new ClientUtils.SourceCodeSelection(cInfo.getQualifiedName() + ".**", null, null); // NOI18N
     }
 
     public ClassNode(SourceClassInfo cInfo, final ContainerNode parent) {
         this(cInfo, cInfo.getSimpleName(), Icons.getIcon(LanguageIcons.CLASS), parent);
     }
 
+    @Override
     final protected SelectorChildren getChildren() {
         return new ClassChildren();
+    }
+
+    @Override
+    public SourceCodeSelection getSignature() {
+        return signature;
     }
 
     /**
