@@ -1256,16 +1256,32 @@ public final class LayoutDesigner implements LayoutModel.RemoveHandler, LayoutMo
 //                destroyGroupIfRedundant(addingInts[dim], addingInts[dim].getParent());
 //            }
 
-        for (LayoutComponent comp : components) {
-            if ((/*freshComponents ||*/ dragger.isResizing()) && comp.isLayoutContainer()) {
-                // container size needs to be defined from inside before the layout is built [really??]
-                updateContainerAfterChange(components[0], dragger.getSizes());
-//                    imposeCurrentContainerSize(components[0], dragger.getSizes(), true);
-            } else if (dragger.isResizing()) {
-                // component might be resized to default size
-                for (int i=0; i < DIM_COUNT; i++) {
-                    if (dragger.snappedToDefaultSize(i))
-                       operations.resizeInterval(comp.getLayoutInterval(i), NOT_EXPLICITLY_DEFINED);
+        if (dragger.isResizing()) {
+            for (LayoutComponent comp : components) {
+                if (comp.isLayoutContainer()) {
+                    // container size needs to be defined from inside before the layout is built
+                    updateContainerAfterChange(components[0], dragger.getSizes());
+                } else { // component might have been resized to default size
+                    for (int dim=0; dim < DIM_COUNT; dim++) {
+                        LayoutInterval compInt = comp.getLayoutInterval(dim);
+                        int size = compInt.getPreferredSize();
+                        if (dragger.isResizing(dim) && size != NOT_EXPLICITLY_DEFINED) {
+                            boolean setToDefault = false;
+                            if (dragger.snappedToDefaultSize(dim)) {
+                                setToDefault = true;
+                            } else if (compInt.getAlignment() == CENTER || compInt.getAlignment() == BASELINE) {
+                                // center or baseline resizing needs extra check for default size
+                                java.awt.Dimension prefSize = visualMapper.getComponentPreferredSize(comp.getId());
+                                int defaultSize = (dim == HORIZONTAL) ? prefSize.width : prefSize.height;
+                                if (defaultSize == size) {
+                                    setToDefault = true;
+                                }
+                            }
+                            if (setToDefault) {
+                                operations.resizeInterval(comp.getLayoutInterval(dim), NOT_EXPLICITLY_DEFINED);
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -4576,36 +4592,38 @@ public final class LayoutDesigner implements LayoutModel.RemoveHandler, LayoutMo
                 pref = groupSize - maxSubSize;
             }
             alignment = ext.getAlignment();
-            if (wasResizing) {
-                LayoutInterval outGap = LayoutInterval.getNeighbor(ext, alignment^1, false, true, false);
-                min = (outGap != null && outGap.isEmptySpace()) ? 0 : NOT_EXPLICITLY_DEFINED;
-                max = Short.MAX_VALUE;
-            } else {
-                min = max = USE_PREFERRED_SIZE;
-            }
-
-            LayoutInterval extGap = null;
-            if (ext.isSequential()) {
-                extGap = ext.getSubInterval(alignment == LEADING ? ext.getSubIntervalCount()-1 : 0);
-                if (extGap.isEmptySpace()) {
-                    if (min == 0 && extGap.getMinimumSize() != 0) {
-                        min = NOT_EXPLICITLY_DEFINED;
-                    } else if (min == NOT_EXPLICITLY_DEFINED && extGap.getMinimumSize() == 0 && max == Short.MAX_VALUE) {
-                        min = 0;
-                    }
-                    layoutModel.setIntervalSize(extGap, min, pref, max);
+            if (alignment == LEADING || alignment == TRAILING) {
+                if (wasResizing) {
+                    LayoutInterval outGap = LayoutInterval.getNeighbor(ext, alignment^1, false, true, false);
+                    min = (outGap != null && outGap.isEmptySpace()) ? 0 : NOT_EXPLICITLY_DEFINED;
+                    max = Short.MAX_VALUE;
                 } else {
-                    extGap = null;
+                    min = max = USE_PREFERRED_SIZE;
                 }
+
+                LayoutInterval extGap = null;
+                if (ext.isSequential()) {
+                    extGap = ext.getSubInterval(alignment == LEADING ? ext.getSubIntervalCount()-1 : 0);
+                    if (extGap.isEmptySpace()) {
+                        if (min == 0 && extGap.getMinimumSize() != 0) {
+                            min = NOT_EXPLICITLY_DEFINED;
+                        } else if (min == NOT_EXPLICITLY_DEFINED && extGap.getMinimumSize() == 0 && max == Short.MAX_VALUE) {
+                            min = 0;
+                        }
+                        layoutModel.setIntervalSize(extGap, min, pref, max);
+                    } else {
+                        extGap = null;
+                    }
+                }
+                if (extGap == null) {
+                    extGap = new LayoutInterval(SINGLE);
+                    extGap.setSizes(min, pref, max);
+                    operations.insertGap(extGap, ext,
+                            (alignment == LEADING) ? groupPos[LEADING] + maxSubSize : groupPos[TRAILING] - maxSubSize,
+                            dimension, alignment^1);
+                }
+                operations.optimizeGaps(group, dimension);
             }
-            if (extGap == null) {
-                extGap = new LayoutInterval(SINGLE);
-                extGap.setSizes(min, pref, max);
-                operations.insertGap(extGap, ext,
-                        (alignment == LEADING) ? groupPos[LEADING] + maxSubSize : groupPos[TRAILING] - maxSubSize,
-                        dimension, alignment^1);
-            }
-            operations.optimizeGaps(group, dimension);
         }
 
         return group;

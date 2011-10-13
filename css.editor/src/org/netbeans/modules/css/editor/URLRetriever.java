@@ -76,7 +76,7 @@ public class URLRetriever {
                 } while (count > 0);
 
                 is.close();
-                file_content = baos.toString();
+                file_content = baos.toString("UTF-8"); //NOI18N
                 baos.close();
             } catch (java.io.IOException e) {
                 Logger.getAnonymousLogger().log(Level.WARNING, "Cannot read css help file.", e); //NOI18N

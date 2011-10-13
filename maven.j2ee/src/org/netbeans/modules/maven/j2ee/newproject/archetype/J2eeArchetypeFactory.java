@@ -107,49 +107,49 @@ public class J2eeArchetypeFactory {
     private class AppClientArchetypes extends BaseJ2eeArchetypeProvider {
         @Override
         protected void setUpProjectArchetypes() {
-            addMojeArchetype(Profile.JAVA_EE_6_FULL, "1.0", "appclient-javaee6"); //NOI18N
-            addMojeArchetype(Profile.JAVA_EE_5, "1.0", "appclient-jee5"); //NOI18N
-            addMojeArchetype(Profile.J2EE_14, "1.0", "appclient-jee5"); //NOI18N
+            addMojoArchetype(Profile.JAVA_EE_6_FULL, "1.0", "appclient-javaee6"); //NOI18N
+            addMojoArchetype(Profile.JAVA_EE_5, "1.0", "appclient-jee5"); //NOI18N
+            addMojoArchetype(Profile.J2EE_14, "1.0", "appclient-jee5"); //NOI18N
         }
     }
     
     private class EaArchetypes extends BaseJ2eeArchetypeProvider {
         @Override
         protected void setUpProjectArchetypes() {
-            addMojeArchetype(Profile.JAVA_EE_6_FULL, "1.1", "pom-root"); //NOI18N
+            addMojoArchetype(Profile.JAVA_EE_6_FULL, "1.1", "pom-root"); //NOI18N
         }
     }
     
     private class EarArchetypes extends BaseJ2eeArchetypeProvider {
         @Override
         protected void setUpProjectArchetypes() {
-            addMojeArchetype(Profile.JAVA_EE_6_FULL, "1.5", "ear-javaee6"); //NOI18N
-            addMojeArchetype(Profile.JAVA_EE_5, "1.4", "ear-jee5"); //NOI18N
-            addMojeArchetype(Profile.J2EE_14, "1.4", "ear-j2ee14"); //NOI18N
+            addMojoArchetype(Profile.JAVA_EE_6_FULL, "1.5", "ear-javaee6"); //NOI18N
+            addMojoArchetype(Profile.JAVA_EE_5, "1.4", "ear-jee5"); //NOI18N
+            addMojoArchetype(Profile.J2EE_14, "1.4", "ear-j2ee14"); //NOI18N
         }
     }
     
     private class EjbArchetypes extends BaseJ2eeArchetypeProvider {
         @Override
         protected void setUpProjectArchetypes() {
-            addMojeArchetype(Profile.JAVA_EE_6_FULL, "1.5", "ejb-javaee6"); //NOI18N
-            addMojeArchetype(Profile.JAVA_EE_5, "1.3", "ejb-jee5"); //NOI18N
-            addMojeArchetype(Profile.J2EE_14, "1.3", "ejb-j2ee14"); //NOI18N
+            addMojoArchetype(Profile.JAVA_EE_6_FULL, "1.5", "ejb-javaee6"); //NOI18N
+            addMojoArchetype(Profile.JAVA_EE_5, "1.3", "ejb-jee5"); //NOI18N
+            addMojoArchetype(Profile.J2EE_14, "1.3", "ejb-j2ee14"); //NOI18N
         }
     }
     
     private class WebArchetypes extends BaseJ2eeArchetypeProvider {
         @Override
         protected void setUpProjectArchetypes() {
-            addMojeArchetype(Profile.JAVA_EE_6_WEB, "1.5", "webapp-javaee6"); //NOI18N
-            addMojeArchetype(Profile.JAVA_EE_5, "1.3", "webapp-jee5"); //NOI18N
-            addMojeArchetype(Profile.J2EE_14, "1.3", "webapp-j2ee14"); //NOI18N
+            addMojoArchetype(Profile.JAVA_EE_6_WEB, "1.5", "webapp-javaee6"); //NOI18N
+            addMojoArchetype(Profile.JAVA_EE_5, "1.3", "webapp-jee5"); //NOI18N
+            addMojoArchetype(Profile.J2EE_14, "1.3", "webapp-j2ee14"); //NOI18N
 
             // This need to be here! It isn't one of an options when creating Web projects, but when creating Java EE projects
             // using Java EE 6 Full profile, then the same profile applies to Ejb, Web and Parent project creation - In that case
             // application is looking for Java EE 6 Full archetype to create the Web project with it, so we need to have it here
             // or otherwise Java EE project would not be created properly
-            addMojeArchetype(Profile.JAVA_EE_6_FULL, "1.5", "webapp-javaee6"); //NOI18N
+            addMojoArchetype(Profile.JAVA_EE_6_FULL, "1.5", "webapp-javaee6"); //NOI18N
         }
     }
 }
