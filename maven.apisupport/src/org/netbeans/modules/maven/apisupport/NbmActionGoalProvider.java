@@ -89,11 +89,6 @@ public class NbmActionGoalProvider implements MavenActionsProvider {
             assert in != null : "no instream for " + path; //NOI18N
             return in;
         }
-
-        @Override
-        public boolean isActionEnable(String action, Project project, Lookup lookup) {
-            return isActionEnable(action, project, lookup);
-        }
     };
     private AbstractMavenActionsProvider ideDelegate = new AbstractMavenActionsProvider() {
 
@@ -102,11 +97,6 @@ public class NbmActionGoalProvider implements MavenActionsProvider {
             InputStream in = getClass().getResourceAsStream(path);
             assert in != null : "no instream for " + path; //NOI18N
             return in;
-        }
-
-        @Override
-        public boolean isActionEnable(String action, Project project, Lookup lookup) {
-            return isActionEnable(action, project, lookup);
         }
     };
 
