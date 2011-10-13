@@ -44,6 +44,7 @@ package org.netbeans.modules.maven.j2ee.newproject.archetype;
 import java.util.Map;
 import java.util.TreeMap;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.maven.api.archetype.Archetype;
 
@@ -95,23 +96,20 @@ abstract class BaseJ2eeArchetypeProvider {
     }
     
     /**
-     * Returns archetype for a given profile or throws an exception if there isn't defined any Archetype for the given Profile
-     * If such an exception is thrown, it means we have some kind of an inconsistency between UI and ConcreteArchetype class
+     * Returns archetype for a given profile.
+     * If an exception is thrown, it means we have some kind of an inconsistency between UI and ConcreteArchetype class
      * 
      * @param profile for which we want to get proper archetype
-     * @return archetype or null if there is no archetype found for the given Profile
+     * @return archetype found for the given Profile
      * @throws IllegalStateException if there isn't defined any Archetype for the given profile
      */
-    public Archetype getArchetypeFor(Profile profile) {
+    public @NonNull Archetype getArchetypeFor(Profile profile) {
         Archetype archetype = map.get(profile);
         
         if (archetype != null) {
             return archetype;
         } else {
-            // This should never happened if archetype classes are defined properly !
-            // If this exception is thrown, see concrete implementations of BaseJ2eeArchetypeProvider and check whether
-            // there are added all possible <Profile, Archetype> pairs
-            throw new IllegalStateException("There isn't defined any Archetype for profile: " + profile); //NOI18N
+            throw new IllegalStateException("No archetype defined for profile " + profile + " in " + getClass() + "; check whether all possible <Profile, Archetype> pairs have been added"); //NOI18N
         }
     }
     
