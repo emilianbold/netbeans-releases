@@ -714,7 +714,11 @@ public class ProjectActionSupport {
                     runDir = runDir.trim();
                     if (runDir.startsWith("~/") || runDir.startsWith("~\\") || runDir.equals("~")) { // NOI18N
                         try {
-                            runDir = HostInfoUtils.getHostInfo(pae.getConfiguration().getDevelopmentHost().getExecutionEnvironment()).getUserDir() + runDir.substring(1);
+                            if (pae.getConfiguration().getDevelopmentHost().getExecutionEnvironment().isLocal()) {
+                                runDir = HostInfoUtils.getHostInfo(pae.getConfiguration().getDevelopmentHost().getExecutionEnvironment()).getUserDirFile().getAbsolutePath() + runDir.substring(1);
+                            } else {
+                                runDir = HostInfoUtils.getHostInfo(pae.getConfiguration().getDevelopmentHost().getExecutionEnvironment()).getUserDir() + runDir.substring(1);
+                            }
                         } catch (IOException ex) {
                             Logger.getLogger(ProjectActionSupport.class.getName()).log(Level.INFO, "", ex);  // NOI18N
                         } catch (CancellationException ex) {

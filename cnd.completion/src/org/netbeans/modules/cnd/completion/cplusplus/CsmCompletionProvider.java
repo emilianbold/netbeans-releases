@@ -116,7 +116,7 @@ public class CsmCompletionProvider implements CompletionProvider {
             System.err.println("createTask called on " + dot); // NOI18N
         }
         // do not work together with include completion
-        if (CsmCompletionQuery.checkCondition(component.getDocument(), dot, false)) {
+        if (CsmCompletionQuery.checkCondition(component.getDocument(), dot, false, queryType)) {
             if ((queryType & COMPLETION_QUERY_TYPE) == COMPLETION_QUERY_TYPE) {
                 return new AsyncCompletionTask(new Query(dot, queryType), component);
             } else if (queryType == DOCUMENTATION_QUERY_TYPE) {
@@ -417,7 +417,7 @@ public class CsmCompletionProvider implements CompletionProvider {
             BaseDocument bdoc = (BaseDocument) doc;
             //NbCsmCompletionQuery.CsmCompletionResult res = null;// (NbCsmCompletionQuery.CsmCompletionResult)query.tipQuery(component, caretOffset, bdoc.getSyntaxSupport(), false);
 //            NbCsmCompletionQuery query = new NbCsmCompletionQuery();
-            NbCsmCompletionQuery.CsmCompletionResult res = query.query(component, caretOffset, true, false, true);
+            NbCsmCompletionQuery.CsmCompletionResult res = query.query(component, caretOffset, true, false, true, true);
             if (res != null) {
                 queryCaretOffset = caretOffset;
                 List<List<String>> list = new ArrayList<List<String>>();

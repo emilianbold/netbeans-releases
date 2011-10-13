@@ -201,6 +201,13 @@ abstract public class CsmCompletionQuery {
         return query(component, doc, offset, openingSource, sort, instantiateTypes);
     }
 
+    public CsmCompletionResult query(JTextComponent component, int offset,
+            boolean openingSource, boolean sort, boolean instantiateTypes, boolean tooltip) {
+        BaseDocument doc = (BaseDocument) component.getDocument();
+//        CompletionDocumentationProviderImpl.doc = doc; // Fixup....
+        return query(component, doc, offset, openingSource, sort, instantiateTypes, tooltip);
+    }
+    
     public static boolean checkCondition(final Document doc, final int dot, boolean takeLock) {
         if (!takeLock) {
             return _checkCondition(doc, dot);
@@ -219,10 +226,32 @@ abstract public class CsmCompletionQuery {
         return res.get();
     }
 
+    public static boolean checkCondition(final Document doc, final int dot, boolean takeLock, final int queryType) {
+        if (!takeLock) {
+            return _checkCondition(doc, dot, queryType);
+        }
+        final AtomicBoolean res = new AtomicBoolean(false);
+        if (doc instanceof BaseDocument) {
+            ((BaseDocument)doc).render(new Runnable() {
+                @Override
+                public void run() {
+                    res.set(_checkCondition(doc, dot, queryType));
+                }
+            });
+        } else {
+            res.set(_checkCondition(doc, dot, queryType));
+        }
+        return res.get();
+    }
+    
     private static boolean _checkCondition(Document doc, int dot) {
         return !CompletionSupport.isPreprocCompletionEnabled(doc, dot) && CompletionSupport.isCompletionEnabled(doc, dot);
     }
 
+    private static boolean _checkCondition(Document doc, int dot, int queryType) {
+        return !CompletionSupport.isPreprocCompletionEnabled(doc, dot) && CompletionSupport.isCompletionEnabled(doc, dot, queryType);
+    }
+    
 //    private boolean parseExpression(CsmCompletionTokenProcessor tp, TokenSequence<?> cppTokenSequence, int startOffset, int lastOffset) {
 //        boolean processedToken = false;
 //        while (cppTokenSequence.moveNext()) {
@@ -255,9 +284,14 @@ abstract public class CsmCompletionQuery {
             this.tp = tp;
         }        
     }
-        
+
     public CsmCompletionResult query(JTextComponent component, final BaseDocument doc, final int offset,
             boolean openingSource, boolean sort, boolean instantiateTypes) {
+        return query(component, doc, offset, openingSource, sort, instantiateTypes, false);
+    }
+    
+    public CsmCompletionResult query(JTextComponent component, final BaseDocument doc, final int offset,
+            boolean openingSource, boolean sort, boolean instantiateTypes, boolean tooltip) {
         // remember baseDocument here. it is accessible by getBaseDocument() {
 
         // method for subclasses of JavaCompletionQuery, ie. NbJavaCompletionQuery
@@ -266,7 +300,7 @@ abstract public class CsmCompletionQuery {
         CsmCompletionResult ret = null;
 
         CompletionSupport sup = CompletionSupport.get(doc);
-        if (sup == null || !checkCondition(doc, offset, true)) {
+        if (sup == null || (!checkCondition(doc, offset, true) && !tooltip)) {
             return null;
         }
 
@@ -282,7 +316,7 @@ abstract public class CsmCompletionQuery {
             if (tp == null) {
                 // find last separator position
                 final int lastSepOffset = sup.getLastCommandSeparator(offset);
-                tp = new CsmCompletionTokenProcessor(offset, lastSepOffset);
+                tp = new CsmCompletionTokenProcessor(offset, lastSepOffset, tooltip);
                 final CndTokenProcessor<Token<TokenId>> etp = CsmExpandedTokenProcessor.create(getCsmFile(), doc, tp, offset);
                 if(etp instanceof CsmExpandedTokenProcessor) {
                     tp.setMacroCallback((CsmExpandedTokenProcessor)etp);
@@ -901,7 +935,7 @@ abstract public class CsmCompletionQuery {
                     }
                 }
                 if(cppts != null) {
-                    CsmCompletionTokenProcessor tp = new CsmCompletionTokenProcessor(initialValue.getEndOffset(), initialValue.getStartOffset());
+                    CsmCompletionTokenProcessor tp = new CsmCompletionTokenProcessor(initialValue.getEndOffset(), initialValue.getStartOffset(), false);
                     tp.enableTemplateSupport(true);
                     CndTokenUtilities.processTokens(tp, getBaseDocument(), initialValue.getStartOffset(), initialValue.getEndOffset());
                     CsmCompletionExpression exp = tp.getResultExp();

@@ -142,6 +142,16 @@ public class FortranParserEx {
             prepass.setSourceForm(FIXED_FORM);
             prepass.performPrepass();
             tokens.finalizeTokenStream();
+            
+//            int i = 0;
+//            Token token = tokens.get(i);
+//            while (token.getType() != -1) {
+//                System.out.println(token.getType() + "" + token.getText() + " " + token.getLine() + " " + (token.getCharPositionInLine()));
+//                i++;
+//                token = tokens.get(i);
+//            }
+//            System.out.println(token.getType() + "" + token.getText() + " " + token.getLine() + " " + (token.getCharPositionInLine()));
+            
         } catch (Throwable t) {
             System.out.println(t);
             t.printStackTrace(System.out);
