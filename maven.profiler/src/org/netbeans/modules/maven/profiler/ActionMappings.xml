@@ -89,10 +89,7 @@ made subject to such option by the copyright holder.
         </goals>
         <properties>
             <netbeans.run.params.ide>${profiler.args.prefixed} ${profiler.jdkhome.opt}</netbeans.run.params.ide>
-            <!--
-                NbmActionGoalProvider ignores "profile" action; we need to set the "netbeans.installation" property manually
-            -->
-            <netbeans.installation>${netbeans.installation}</netbeans.installation>
+            <profiler.action>profile</profiler.action>
         </properties>
     </action>
     <action>
@@ -106,10 +103,7 @@ made subject to such option by the copyright holder.
         </goals>
         <properties>
             <netbeans.run.params.ide>${profiler.args.prefixed} ${profiler.jdkhome.opt}</netbeans.run.params.ide>
-            <!--
-                NbmActionGoalProvider ignores "profile" action; we need to set the "netbeans.installation" property manually
-            -->
-            <netbeans.installation>${netbeans.installation}</netbeans.installation>
+            <profiler.action>profile</profiler.action>
         </properties>
     </action>
 
