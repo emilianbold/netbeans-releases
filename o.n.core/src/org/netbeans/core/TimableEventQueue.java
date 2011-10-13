@@ -94,6 +94,7 @@ implements Runnable {
     private static final int PAUSE = Integer.getInteger("org.netbeans.core.TimeableEventQueue.pause", 15000); // NOI18N
 
     private final RequestProcessor.Task TIMEOUT;
+    private final RequestProcessor.Task WAIT_CURSOR_CHECKER;
     private volatile long ignoreTill;
     private volatile long start;
     private volatile ActionListener stoppable;
@@ -105,6 +106,14 @@ implements Runnable {
         this.mainWindow = f;
         TIMEOUT = RP.create(this);
         TIMEOUT.setPriority(Thread.MIN_PRIORITY);
+        WAIT_CURSOR_CHECKER = RP.create(new Runnable() {
+
+            @Override
+            public void run() {
+                isWaitCursor |= isWaitCursor();
+            }
+        });
+        WAIT_CURSOR_CHECKER.setPriority(Thread.MIN_PRIORITY);
     }
 
     static void initialize() {
@@ -161,6 +170,8 @@ implements Runnable {
     private void done() {
         TIMEOUT.cancel();
         TIMEOUT.waitFinished();
+        WAIT_CURSOR_CHECKER.cancel();
+        WAIT_CURSOR_CHECKER.waitFinished();
 
         LOG.log(Level.FINE, "isWait cursor {0}", isWaitCursor); // NOI18N
         long r;
@@ -219,6 +230,9 @@ implements Runnable {
             stoppable = (ActionListener)selfSampler;
         }
         isWaitCursor |= isWaitCursor();
+        if (!isWaitCursor) {
+            WAIT_CURSOR_CHECKER.schedule(Math.max(REPORT - QUANTUM, 0));
+        }
     }
 
     private static void report(final ActionListener ss, final long time) {

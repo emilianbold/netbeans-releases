@@ -688,6 +688,7 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
             fileChooser.setDialogTitle(NbBundle.getMessage(RemoteRepositoryPanel.class, "RepositoryPanel.IdentityFile.FileChooser.Title")); //NOI18N
             fileChooser.setMultiSelectionEnabled(false);
             fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+            fileChooser.setFileHidingEnabled(false);
             fileChooser.showDialog(panel, null);
             File f = fileChooser.getSelectedFile();
             if (f != null) {
