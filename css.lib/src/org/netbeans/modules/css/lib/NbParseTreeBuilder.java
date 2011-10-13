@@ -55,6 +55,7 @@ import org.antlr.runtime.NoViableAltException;
 import org.netbeans.modules.css.lib.api.CssTokenId;
 import org.netbeans.modules.css.lib.api.NodeType;
 import org.netbeans.modules.css.lib.api.ProblemDescription;
+import org.openide.util.NbBundle;
 
 /**
  * A patched version of ANLR's ParseTreeBuilder 
@@ -263,14 +264,9 @@ public class NbParseTreeBuilder extends BlankDebugEventListener {
         } 
 
         if (unexpectedTokenId == CssTokenId.EOF) {
-            message = String.format("Premature end of file");
+            message = NbBundle.getMessage(NbParseTreeBuilder.class, "MSG_Error_Premature_EOF");
         } else {
-            message = String.format("Unexpected token '%s' found at %s:%s (offset range %s-%s).",
-                    unexpectedTokenId.name(),
-                    e.line,
-                    e.charPositionInLine,
-                    from,
-                    to);
+            message = NbBundle.getMessage(NbParseTreeBuilder.class, "MSG_Error_Unexpected_Token", unexpectedTokenId.name());
         }
         //create a ParsingProblem
         ProblemDescription problemDescription = new ProblemDescription(
