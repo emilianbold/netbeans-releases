@@ -49,9 +49,9 @@ import org.antlr.runtime.NoViableAltException;
 import org.antlr.runtime.RecognitionException;
 import org.antlr.runtime.RecognizerSharedState;
 import org.antlr.runtime.Token;
-import org.netbeans.modules.css.lib.api.NodeType;
 import org.netbeans.modules.css.lib.api.ProblemDescription;
 import org.netbeans.modules.css.lib.api.ProblemDescription.Type;
+import org.openide.util.NbBundle;
 
 /**
  * Note: Funny aspect of the ANTLR lexer is that it doesn't create any kind
@@ -131,7 +131,7 @@ public class ExtCss3Lexer extends Css3Lexer {
         if (e instanceof NoViableAltException) {
             //lexing error - unexpected character in the char stream
             char unexpectedChar = (char) input.LA(1);
-            b.append(String.format("Unexpected character '%s' found.", unexpectedChar));
+            b.append(NbBundle.getMessage(ExtCss3Lexer.class, "MSG_Error_Unexpected_Char", unexpectedChar));
             ProblemDescription pp = new ProblemDescription(e.input.index(), e.input.index() + 1, b.toString(), ProblemDescription.Keys.LEXING.name(), Type.ERROR);
             problems.add(pp);
         } else {
