@@ -742,13 +742,19 @@ public class ModelSupport implements PropertyChangeListener {
                 }
                 if (fo != null) {
                     if (TraceFlags.TRACE_EXTERNAL_CHANGES) {
-                        System.err.printf("Updating for %s\n", fo);
+                        System.err.printf("External updates: Updating for %s%s\n", created ? "created " : "", fo);
                     }
                     if (created) {
                         ProjectBase project = (ProjectBase)CsmUtilities.getCsmProject(fo);
                         if (project != null) {
+                            if (TraceFlags.TRACE_EXTERNAL_CHANGES) {
+                                System.err.printf("External updates: project %s found for %s\n", project, fo);
+                            }
                             project.onFileExternalCreate(fo);
                         } else {
+                            if (TraceFlags.TRACE_EXTERNAL_CHANGES) {
+                                System.err.printf("External updates: No CsmProject found for %s\n", fo);
+                            }
                             CndFileUtils.clearFileExistenceCache();
                         }
                    } else {
@@ -756,6 +762,7 @@ public class ModelSupport implements PropertyChangeListener {
                         try {
                             files = CsmUtilities.getCsmFiles(DataObject.find(fo), false, false);
                         } catch (DataObjectNotFoundException ex) {
+                            System.err.printf("External updates: No CsmFiles for %s\n", fo);
                             files = new CsmFile[0];
                         }                        
                         for (int i = 0; i < files.length; ++i) {
@@ -776,7 +783,7 @@ public class ModelSupport implements PropertyChangeListener {
             if (mime == null) {
                 mime = FileUtil.getMIMEType(fo);
                 if (TraceFlags.TRACE_EXTERNAL_CHANGES) {
-                    System.err.printf("MIME resolved: %s\n", mime);
+                    System.err.printf("External updates: MIME resolved: %s\n", mime);
                 }
             }
             return MIMENames.isFortranOrHeaderOrCppOrC(mime);

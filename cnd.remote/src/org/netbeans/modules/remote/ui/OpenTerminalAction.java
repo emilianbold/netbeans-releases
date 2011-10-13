@@ -233,7 +233,12 @@ public class OpenTerminalAction extends SingleHostAction {
         try {
             HostInfo hostInfo = HostInfoUtils.getHostInfo(env);
             if (hostInfo != null) {
-                String userDir = hostInfo.getUserDir();
+                String userDir;
+                if (env.isLocal()) {
+                    userDir = hostInfo.getUserDirFile().getAbsolutePath();
+                } else {
+                    userDir = hostInfo.getUserDir();
+                }
                 return userDir;
             }
         } catch (IOException ex) {
