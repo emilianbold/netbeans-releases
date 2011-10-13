@@ -248,13 +248,19 @@ public class NbParseTreeBuilder extends BlankDebugEventListener {
 
         to = CommonTokenUtil.getCommonTokenOffsetRange(unexpectedToken)[0]; //beginning of the unexpected token
 
-        if (unexpectedTokenId == CssTokenId.ERROR) {
+        
+        boolean tokenMayNotBeMatchedLater = 
+                unexpectedTokenId != CssTokenId.EOF 
+                &&
+                (unexpectedTokenId == CssTokenId.ERROR || (!(e instanceof NoViableAltException)));
+        
+        if (tokenMayNotBeMatchedLater) {
             //for error tokens always include them to the error node range,
             //they won't be matched by any other rule. Otherwise 
             //limit the error node to the beginning of the unexpected token
             //since the token may be matched later
-            to++;
-        }
+            to = CommonTokenUtil.getCommonTokenOffsetRange(unexpectedToken)[1]; //end of the unexpected token
+        } 
 
         if (unexpectedTokenId == CssTokenId.EOF) {
             message = String.format("Premature end of file");
@@ -278,7 +284,7 @@ public class NbParseTreeBuilder extends BlankDebugEventListener {
         ErrorNode errorNode = new ErrorNode(from, to, problemDescription, source);
         addNodeChild(ruleNode, errorNode);
 
-        if (unexpectedTokenId == CssTokenId.ERROR) {
+        if (tokenMayNotBeMatchedLater) {
             //if the unexpected token is error token, add the token as a child of the error node
             TokenNode tokenNode = new TokenNode(unexpectedToken);
             addNodeChild(errorNode, tokenNode);
