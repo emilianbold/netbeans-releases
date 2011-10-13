@@ -209,8 +209,10 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
             assert range[1] < size : "Size: " + size + " range: " + range[0] + " " + range[1];
             ControllerOutputEvent oe = new ControllerOutputEvent(io, out, line);
             l.outputLineAction(oe);
-            //Select the text on click
-            getOutputPane().sendCaretToPos(range[0], range[1], true);
+            //Select the text on click if it is still visible
+            if (getOutputPane().getLength() >= range[1]) { // #179768
+                getOutputPane().sendCaretToPos(range[0], range[1], true);
+            }
         }
     }
 
