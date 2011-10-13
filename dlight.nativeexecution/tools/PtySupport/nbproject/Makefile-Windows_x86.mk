@@ -42,7 +42,7 @@ OBJECTFILES= \
 
 
 # C Compiler Flags
-CFLAGS=-m32 --std=c99
+CFLAGS=-m32
 
 # CC Compiler Flags
 CCFLAGS=
@@ -55,7 +55,7 @@ FFLAGS=
 ASFLAGS=
 
 # Link Libraries and Options
-LDLIBSOPTIONS=
+LDLIBSOPTIONS=--static-libgcc
 
 # Build Targets
 .build-conf: ${BUILD_SUBPROJECTS}

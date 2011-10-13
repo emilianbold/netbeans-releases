@@ -60,15 +60,15 @@ import org.openide.filesystems.FileObject;
  *
  * @author Alexander Simon
  */
-public class UnsupportedRemoteFileObject extends RemoteFileObjectFile {
+public class SpecialRemotePlainFileObject extends RemoteFileObjectFile {
 
     private final char fileTypeChar;
-    public static UnsupportedRemoteFileObject createNew(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv, 
+    public static SpecialRemotePlainFileObject createNew(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv, 
             RemoteDirectory parent, String remotePath, FileType fileType) {
-        return new UnsupportedRemoteFileObject(fileSystem, execEnv, parent, remotePath, fileType);
+        return new SpecialRemotePlainFileObject(fileSystem, execEnv, parent, remotePath, fileType);
     }
             
-    private UnsupportedRemoteFileObject(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv, 
+    private SpecialRemotePlainFileObject(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv, 
             RemoteDirectory parent, String remotePath, FileType fileType) {
         super(fileSystem, execEnv, parent, remotePath, null);
         fileTypeChar = fileType.toChar(); // TODO: pass when created
