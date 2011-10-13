@@ -169,6 +169,13 @@ public class MenuBar extends JMenuBar implements Externalizable {
     }
 
     @Override
+    public boolean isOpaque() {
+        if( null != UIManager.get("NbMainWindow.showCustomBackground") ) //NOI18N
+            return !UIManager.getBoolean("NbMainWindow.showCustomBackground"); //NOI18N
+        return super.isOpaque();
+    }
+    
+    @Override
     public void updateUI() {
         if (EventQueue.isDispatchThread()) {
             super.updateUI();

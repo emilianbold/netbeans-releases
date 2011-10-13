@@ -117,9 +117,14 @@ public final class ToolbarConfiguration implements ToolbarPool.Configuration {
         configDisplayName = displayName;
         // asociate name and configuration instance
         name2config.put(name, this);
-        toolbarPanel = new JPanel( new GridLayout(0,1) );
-        if( UIManager.getBoolean( "NbMainWindow.showCustomBackground" ) ) //NOI18N
-            toolbarPanel.setOpaque(false);
+        toolbarPanel = new JPanel( new GridLayout(0,1) ) {
+            @Override
+            public boolean isOpaque() {
+                if( null != UIManager.get("NbMainWindow.showCustomBackground") ) //NOI18N
+                    return !UIManager.getBoolean("NbMainWindow.showCustomBackground"); //NOI18N
+                return super.isOpaque();
+            }
+        };
 
         this.rows = new ArrayList<ToolbarRow>(rows);
     }
