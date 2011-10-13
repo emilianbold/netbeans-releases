@@ -46,7 +46,6 @@ import java.util.TreeMap;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.maven.api.archetype.Archetype;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -65,11 +64,11 @@ abstract class BaseJ2eeArchetypeProvider {
     /**
      * Implementor of this method should create proper archetypes and add them into the archetype map.
      * 
-     * It's possible to use addMojeArchetype(Profile p, String version, String artifactId) method for creating new
-     * archetypes with groupId set to org.codehaus.mojo.archetypes or we can add archetypes directly to the map
+     * It's possible to use <code>addMojeArchetype(Profile p, String version, String artifactId)</code> method for creating 
+     * new archetypes with groupId set to org.codehaus.mojo.archetypes or we can add archetypes directly to the map
      * 
      * If we want to create the same archetype for all possible profiles, we can use 
-     * addSameMojoArchetypeForAllProfiles(String version, String artifactId) method
+     * <code>addSameMojoArchetypeForAllProfiles(String version, String artifactId)</code> method
      */
     protected abstract void setUpProjectArchetypes();
     
@@ -109,7 +108,10 @@ abstract class BaseJ2eeArchetypeProvider {
         if (archetype != null) {
             return archetype;
         } else {
-            throw new IllegalStateException(NbBundle.getMessage(BaseJ2eeArchetypeProvider.class, "NO_DEFINED_ARCHETYPE_EXCEPTION") + profile); //NOI18N
+            // This should never happened if archetype classes are defined properly !
+            // If this exception is thrown, see concrete implementations of BaseJ2eeArchetypeProvider and check whether
+            // there are added all possible <Profile, Archetype> pairs
+            throw new IllegalStateException("There isn't defined any Archetype for profile: " + profile); //NOI18N
         }
     }
     
