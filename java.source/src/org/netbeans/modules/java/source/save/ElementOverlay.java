@@ -708,7 +708,7 @@ public class ElementOverlay {
 
         @Override
         public Element getEnclosingElement() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            return null;
         }
 
         @Override
