@@ -232,16 +232,6 @@ public class IDEValidation extends JellyTestCase {
         npnlso.btFinish().pushNoBlock();
         npnlso.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 120000);
         npnlso.waitClosed();
-        // Opening Projects
-        String openingProjectsTitle = Bundle.getString("org.netbeans.modules.project.ui.Bundle", "CAP_Opening_Projects");
-        try {
-            // wait at most 120 second until progress dialog dismiss
-            NbDialogOperator openingOper = new NbDialogOperator(openingProjectsTitle);
-            openingOper.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 120000);
-            openingOper.waitClosed();
-        } catch (TimeoutExpiredException e) {
-            // ignore when progress dialog was closed before we started to wait for it
-        }
         // wait project appear in projects view
         new ProjectsTabOperator().getProjectRootNode(SAMPLE_PROJECT_NAME);
 
