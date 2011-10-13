@@ -43,6 +43,8 @@ package org.netbeans.modules.masterfs.filebasedfs.naming;
 
 import java.io.File;
 import org.netbeans.junit.NbTestCase;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -75,5 +77,42 @@ public class NamingFactoryTest extends NbTestCase {
             + "we need to return the same object", 
             ch1, ch2
         );
+    }
+    
+    
+    public void testInvalidatePrevFolder() throws Exception {
+        FileNaming parent = NamingFactory.fromFile(getWorkDir());
+        
+        File f = new File(getWorkDir(), "child");
+        f.mkdir();
+        
+        FileObject dir = FileUtil.toFileObject(f);
+        assertTrue("It is a directory", dir.isFolder());
+
+        f.delete();
+        f.createNewFile();
+        
+        FileNaming middleName = NamingFactory.fromFile(parent, f, true);
+        assertFalse("No longer a folder", middleName instanceof FolderName);
+        
+        FileObject file = FileUtil.toFileObject(f);
+        assertTrue("It is a file: " + file + " valid: " + file.isValid(), file.isData());
+        
+        assertFalse("Old file object is no longer valid", dir.isValid());
+        assertTrue("New file object is valid", file.isValid());
+        
+        f.delete();
+        f.mkdir();
+
+        FileNaming newNaming = NamingFactory.fromFile(parent, f, true);
+        assertFalse("No longer a file", newNaming.isFile());
+        
+        FileObject newDir = FileUtil.toFileObject(f);
+        assertTrue("It is a dir: " + newDir + " valid: " + newDir.isValid(), newDir.isFolder());
+        
+        assertFalse("Oldest file object is no longer valid", dir.isValid());
+        assertFalse("Middle file object is no longer valid", file.isValid());
+        assertTrue("Newest is valid", newDir.isValid());
+        
     }
 }
