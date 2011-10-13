@@ -196,7 +196,7 @@ public final class UILookupMergerSupport {
                 ProjectOpenedTrampoline.DEFAULT.projectOpened(defaultInstance);
             }
             for (ProjectOpenedHook poh : lkp.lookupAll(ProjectOpenedHook.class)) {
-                if (poh != defaultInstance && /* XXX #200500: should be: poh != this */!(poh instanceof OpenHookImpl)) {
+                if (poh != defaultInstance && poh != this) {
                     ProjectOpenedTrampoline.DEFAULT.projectOpened(poh);
                 }
             }
@@ -207,7 +207,7 @@ public final class UILookupMergerSupport {
                 ProjectOpenedTrampoline.DEFAULT.projectClosed(defaultInstance);
             }
             for (ProjectOpenedHook poh : lkp.lookupAll(ProjectOpenedHook.class)) {
-                if (poh != defaultInstance && !(poh instanceof OpenHookImpl)) {
+                if (poh != defaultInstance && poh != this) {
                     ProjectOpenedTrampoline.DEFAULT.projectClosed(poh);
                 }
             }
