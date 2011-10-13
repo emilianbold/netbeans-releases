@@ -64,7 +64,7 @@ abstract class BaseJ2eeArchetypeProvider {
     /**
      * Implementor of this method should create proper archetypes and add them into the archetype map.
      * 
-     * It's possible to use {@link #addMojeArchetype} method for creating
+     * It's possible to use {@link #addMojoArchetype} method for creating
      * new archetypes with groupId set to org.codehaus.mojo.archetypes or we can add archetypes directly to the map
      * 
      * If we want to create the same archetype for all possible profiles, we can use 
@@ -72,7 +72,7 @@ abstract class BaseJ2eeArchetypeProvider {
      */
     protected abstract void setUpProjectArchetypes();
     
-    protected void addMojeArchetype(Profile j2eeProfile, String version, String artifactId) {
+    protected void addMojoArchetype(Profile j2eeProfile, String version, String artifactId) {
         map.put(j2eeProfile, createMojoArchetype(version, artifactId));
     }
     
