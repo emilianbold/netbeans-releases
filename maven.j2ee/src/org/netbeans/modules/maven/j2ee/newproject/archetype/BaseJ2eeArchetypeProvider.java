@@ -64,11 +64,11 @@ abstract class BaseJ2eeArchetypeProvider {
     /**
      * Implementor of this method should create proper archetypes and add them into the archetype map.
      * 
-     * It's possible to use <code>addMojeArchetype(Profile p, String version, String artifactId)</code> method for creating 
+     * It's possible to use {@link #addMojeArchetype} method for creating
      * new archetypes with groupId set to org.codehaus.mojo.archetypes or we can add archetypes directly to the map
      * 
      * If we want to create the same archetype for all possible profiles, we can use 
-     * <code>addSameMojoArchetypeForAllProfiles(String version, String artifactId)</code> method
+     * {@link #addSameMojoArchetypeForAllProfiles} method
      */
     protected abstract void setUpProjectArchetypes();
     
