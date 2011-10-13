@@ -333,6 +333,9 @@ public class FileUtils {
             return filename;
         }
         File[] children = parent.listFiles();
+        if (children == null) {
+            return filename;
+        }
         for (File child : children) {
             if (file.getName().equalsIgnoreCase(child.getName())) {
                 filename = child.getName();

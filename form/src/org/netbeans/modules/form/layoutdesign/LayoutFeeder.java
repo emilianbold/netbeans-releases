@@ -173,20 +173,35 @@ class LayoutFeeder implements LayoutConstants {
             } else {
                 originalPos = null;
             }
-//            if (dragger.isResizing()) {
-//                LayoutInterval resInt = compIntervals[0]; // only one component can be resized
+
             if (dragger.isResizing(dim)) {
+                LayoutInterval resizingComp = compIntervals[0];
+                LayoutInterval parent = resizingComp.getParent();
+                int resizingEdge = dragger.getResizingEdge(dim);
+                int origAlignment = resizingComp.getRawAlignment();
                 IncludeDesc pos = findOutCurrentPosition(selCompList, inCommonParent,
-                        originalPos != null && originalPos.closedSpace != null,
-                        dim, dragger.getResizingEdge(dim)^1);
+                                    originalPos != null && originalPos.closedSpace != null,
+                                    dim, resizingEdge^1);
                 LayoutDragger.PositionDef newPos = dragger.getPositions()[dim];
-                if ((newPos == null || !newPos.snapped) && !pos.snapped()) {
-                    pos.alignment = LayoutInterval.getEffectiveAlignment(compIntervals[0]);
+                if (newPos == null || !newPos.snapped) {
+                    if (!pos.snapped()) {
+                        pos.alignment = LayoutInterval.getEffectiveAlignment(resizingComp);
+                    }
+                } else if ((pos.alignment == CENTER || pos.alignment == BASELINE)
+                        && (newPos.alignment == LEADING || newPos.alignment == TRAILING)
+                        && newPos.interval != parent && newPos.interval.getParent() != parent) {
+                    // special case: resizing a baseline component and snapping
+                    // outside its group - it should not stay on baseline
+                    pos.alignment = newPos.alignment^1;
+                    if (resizingComp.getParent().getSubIntervalCount() > 2) {
+                        pos.snappedParallel = resizingComp.getParent();
+                    }
+                    resizingComp.setAlignment(pos.alignment); // to influence checkResizing, will be restored to origAlignment
                 }
-//                originalPositions1[dim] = pos;
                 originalPos.desc1 = pos;
                 newPositions[dim] = newPos;
-                becomeResizing[dim] = checkResizing(compIntervals[0], dragger, dim); // make the interval resizing?
+                becomeResizing[dim] = checkResizing(resizingComp, resizingEdge, newPos, dim);
+                resizingComp.setAlignment(origAlignment);
                 if (layoutModel.isChangeRecording()) {
                     undoMarks[dim] = new ArrayList();
                 }
@@ -304,26 +319,29 @@ class LayoutFeeder implements LayoutConstants {
             }
             undoCheckMark = layoutModel.getChangeMark();
             closedSpace = null;
-//            boolean closed = originalPos1 != null && originalPos1.closedPosition;
+            boolean onBaseline = originalPos1 != null && (originalPos1.alignment == BASELINE || originalPos1.alignment == CENTER);
+            LayoutDragger.PositionDef newPos = newPositions[dim];
 
             if (dragger.isResizing()) {
-//                originalLPosFixed = originalLPositionsFixed[dim];
-//                originalTPosFixed = originalTPositionsFixed[dim];
                 if (dragger.isResizing(dim)) {
                     boolean res = Boolean.TRUE.equals(becomeResizing[dim]);
-                    layoutModel.setIntervalSize(addingInterval,
-//                        becomeResizing[dim] ? NOT_EXPLICITLY_DEFINED : USE_PREFERRED_SIZE,
-                        res ? NOT_EXPLICITLY_DEFINED : USE_PREFERRED_SIZE,
-                        addingSpace.size(dim),
-                        res ? Short.MAX_VALUE : USE_PREFERRED_SIZE);
-//                        becomeResizing[dim] ? Short.MAX_VALUE : USE_PREFERRED_SIZE);
+                    int min = res ? NOT_EXPLICITLY_DEFINED : USE_PREFERRED_SIZE;
+                    int max = res ? Short.MAX_VALUE : USE_PREFERRED_SIZE;
+                    int pref;
+                    if (onBaseline && newPos != null && newPos.snapped && !newPos.nextTo
+                            && (newPos.alignment == LEADING || newPos.alignment == TRAILING)
+                            && originalPos1.snappedParallel != null) {
+                        // resized to same size of another baseline component - we can't
+                        // create an accommodating reizing component, just set same size
+                        pref = originalPos1.snappedParallel.getCurrentSpace().size(dim);
+                    } else {
+                        pref = addingSpace.size(dim);
+                    }
+                    layoutModel.setIntervalSize(addingInterval, min, pref, max);
                     layoutModel.changeIntervalAttribute(addingInterval, LayoutInterval.ATTR_FLEX_SIZEDEF, true);
                 }
-//            } else if (originalPosition != null) {
-//                suppressMovingResizing();
             }
 
-            LayoutDragger.PositionDef newPos = newPositions[dim];
             if (!dragger.isResizing(dim) && newPos != null
                     && (newPos.alignment == CENTER || newPos.alignment == BASELINE)) {
                 // simplified adding/moving to closed group
@@ -336,10 +354,9 @@ class LayoutFeeder implements LayoutConstants {
                 }
                 continue;
             }
-            if (dragger.isResizing() && originalPos1 != null
-                    && (originalPos1.alignment == CENTER || originalPos1.alignment == BASELINE)) {
+            if (dragger.isResizing() && onBaseline) {
                 // simplified resizing in closed group
-                if (/*dragger.isResizing(dim) || */!restoreDimension()) { // if not staying the same...
+                if (!restoreDimension()) { // if not staying the same...
                     aEdge = originalPos1.alignment;
                     aSnappedParallel = originalPos1.snappedParallel;
                     addSimplyAligned();
@@ -964,10 +981,9 @@ class LayoutFeeder implements LayoutConstants {
      * There's also checkResizing2 called later for situations this method can't detect.
      * @return true if the interval should be made resizing
      */
-    private static Boolean checkResizing(LayoutInterval interval, LayoutDragger dragger, int dim) {
-        int resizingEdge = dragger.getResizingEdge(dim);
+    private static Boolean checkResizing(LayoutInterval interval, int resizingEdge,
+                                         LayoutDragger.PositionDef newPos, int dim) {
         int fixedEdge = resizingEdge^1;
-        LayoutDragger.PositionDef newPos = dragger.getPositions()[dim]; //newPositions[dimension];
         Boolean resizing = null;
 
         if (newPos != null && newPos.snapped && newPos.interval != null) {

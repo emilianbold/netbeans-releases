@@ -363,6 +363,8 @@ public class CasualDiff {
         int localPointer = bounds[0];
         final Name origOuterClassName = origClassName;
         int insertHint = localPointer;
+        List<JCTree> filteredOldTDefs = filterHidden(oldT.defs);
+        List<JCTree> filteredNewTDefs = filterHidden(newT.defs);
         // skip the section when printing anonymous class
         if (anonClass == false) {
         tokenSequence.move(oldT.pos);
@@ -472,12 +474,12 @@ public class CasualDiff {
         localPointer = diffList2(oldT.implementing, newT.implementing, insertHint, estimator);
         insertHint = endPos(oldT) - 1;
 
-        if (filterHidden(oldT.defs).isEmpty()) {
+        if (filteredOldTDefs.isEmpty()) {
             // if there is nothing in class declaration, use position
             // before the closing curly.
             insertHint = endPos(oldT) - 1;
         } else {
-            insertHint = filterHidden(oldT.defs).get(0).getStartPosition()-1;
+            insertHint = filteredOldTDefs.get(0).getStartPosition()-1;
         }
         tokenSequence.move(insertHint);
         tokenSequence.moveNext();
@@ -490,10 +492,16 @@ public class CasualDiff {
         int old = printer.indent();
         Name origName = printer.enclClassName;
         printer.enclClassName = newT.getSimpleName();
-        PositionEstimator est = EstimatorFactory.members(filterHidden(oldT.defs), filterHidden(newT.defs), diffContext);
+        PositionEstimator est = EstimatorFactory.members(filteredOldTDefs, filteredNewTDefs, diffContext);
         if (localPointer < insertHint)
             copyTo(localPointer, insertHint);
-        localPointer = diffList(filterHidden(oldT.defs), filterHidden(newT.defs), insertHint, est, Measure.REAL_MEMBER, printer);
+        if ((newT.mods.flags & Flags.ENUM) != 0 && filteredOldTDefs.isEmpty() && !filteredNewTDefs.isEmpty() && !isEnum(filteredNewTDefs.get(0))) {
+            printer.blankline();
+            printer.toLeftMargin();
+            printer.print(";"); //NOI18N
+            printer.newline();
+        }
+        localPointer = diffList(filteredOldTDefs, filteredNewTDefs, insertHint, est, Measure.REAL_MEMBER, printer);
         printer.enclClassName = origName;
         origClassName = origOuterClassName;
         printer.undent(old);
@@ -505,6 +513,13 @@ public class CasualDiff {
             copyTo(localPointer, bounds[1]);
         }
         return bounds[1];
+    }
+        
+    private boolean isEnum(Tree tree) {
+        if (tree instanceof FieldGroupTree) return ((FieldGroupTree) tree).isEnum();
+        if (tree instanceof VariableTree) return (((JCVariableDecl) tree).getModifiers().flags & Flags.ENUM) != 0;
+        if (tree instanceof ClassTree) return (((JCClassDecl) tree).getModifiers().flags & Flags.ENUM) != 0;
+        return false;
     }
 
     private boolean hasModifiers(JCModifiers mods) {

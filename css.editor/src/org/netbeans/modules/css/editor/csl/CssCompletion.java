@@ -336,6 +336,13 @@ public class CssCompletion implements CodeCompletionHandler {
             Collection<Property> possibleProps = filterProperties(CssModuleSupport.getProperties(), prefix);
             completionProposals.addAll(Utilities.wrapProperties(possibleProps, snapshot.getOriginalOffset(node.from())));
 
+        } else if (node.type() == NodeType.recovery || node.type() == NodeType.error) {
+            Node parent = node.parent();
+            if(parent != null && parent.type() == NodeType.ruleSet) {
+                //in a garbage (may be for example a dash prefix in a ruleset
+                Collection<Property> possibleProps = filterProperties(CssModuleSupport.getProperties(), prefix);
+                completionProposals.addAll(Utilities.wrapProperties(possibleProps, caretOffset));
+            }
         } else if (node.type() == NodeType.ruleSet || node.type() == NodeType.declarations) {
             //1. in empty rule (NodeType.ruleSet)
             //h1 { | }
