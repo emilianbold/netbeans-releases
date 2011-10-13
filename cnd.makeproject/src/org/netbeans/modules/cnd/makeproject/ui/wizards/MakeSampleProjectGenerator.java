@@ -45,11 +45,13 @@ package org.netbeans.modules.cnd.makeproject.ui.wizards;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -80,6 +82,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
 import org.openide.xml.XMLUtil;
@@ -117,7 +120,9 @@ public class MakeSampleProjectGenerator {
             prjParams.setPostCreationClassName(postCreationClassName);
         }
         if (mainProject != null) {
-            FileObject parentFolderLocation = FileUtil.createFolder(prjParams.getSourceFileSystem().getRoot(), prjParams.getProjectFolderPath());
+            final String projectFolderPath = prjParams.getProjectFolderPath();
+            workAroundBug203507(projectFolderPath);
+            FileObject parentFolderLocation = FileUtil.createFolder(prjParams.getSourceFileSystem().getRoot(), projectFolderPath);
             FileObject mainProjectLocation;
             if (mainProject.equals(".")) { // NOI18N
                 mainProjectLocation = parentFolderLocation;
@@ -343,8 +348,23 @@ public class MakeSampleProjectGenerator {
                 "APPLICATION", flavor, family, host, platform, "SAMPLE_PROJECT"); //NOI18N
     }
 
+    public static void workAroundBug203507(String projectFolderPath) {
+        if (projectFolderPath.length()>1 && projectFolderPath.charAt(1) == ':') {
+            // This is ugly work around Bug #203507
+            try {
+                File driver = new File(projectFolderPath.substring(0,2));
+                URL url = driver.toURI().toURL();
+                /*FileObject driverFO =*/ URLMapper.findFileObject(url);
+            } catch (Throwable e) {
+            }
+        }
+        
+    }
+    
     public static Set<DataObject> createProjectFromTemplate(InputStream inputStream, ProjectGenerator.ProjectParameters prjParams) throws IOException {
-        FileObject prjLoc = FileUtil.createFolder(prjParams.getSourceFileSystem().getRoot(), prjParams.getProjectFolderPath());
+        String projectFolderPath = prjParams.getProjectFolderPath();
+        workAroundBug203507(projectFolderPath);
+        FileObject prjLoc = FileUtil.createFolder(prjParams.getSourceFileSystem().getRoot(), projectFolderPath);
         unzip(inputStream, prjLoc);
         postProcessProject(prjLoc, prjParams.getProjectName(), prjParams);
         customPostProcessProject(prjLoc, prjParams.getProjectName(), prjParams);

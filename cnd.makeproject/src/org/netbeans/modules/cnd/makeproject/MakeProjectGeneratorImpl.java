@@ -78,6 +78,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator.ProjectParameters;
 import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
+import org.netbeans.modules.cnd.makeproject.ui.wizards.MakeSampleProjectGenerator;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.CndUtils;
@@ -336,7 +337,9 @@ public class MakeProjectGeneratorImpl {
     }
 
     private static FileObject createProjectDir(ProjectParameters prjParams) throws IOException {
-        FileObject dirFO = FileUtil.createFolder(prjParams.getSourceFileSystem().getRoot(), prjParams.getProjectFolderPath());
+        String projectFolderPath = prjParams.getProjectFolderPath();
+        MakeSampleProjectGenerator.workAroundBug203507(projectFolderPath);
+        FileObject dirFO = FileUtil.createFolder(prjParams.getSourceFileSystem().getRoot(), projectFolderPath);
         //File dir = prjParams.getProjectFolder();
         //if (!dir.exists()) {
         //    //Refresh before mkdir not to depend on window focus
