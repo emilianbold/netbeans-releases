@@ -163,4 +163,26 @@ public class CssCompletionTest extends CssModuleTestBase {
 //        checkCC("@media page {  html > bo|   } ", arr("body"), Match.CONTAINS);
     }
 
+    public void testVendorSpecificPropertyCompletion() throws ParseException {
+        //just the completed line in ruleset
+        checkCC("h1 { | }", arr("-moz-animation"), Match.CONTAINS);
+        checkCC("h1 { -| }", arr("-moz-animation"), Match.CONTAINS);
+        checkCC("h1 { -moz-an| }", arr("-moz-animation"), Match.CONTAINS);
+        checkCC("h1 { -moz-an| }", arr("-moz-appearabce"), Match.DOES_NOT_CONTAIN);
+//        
+        checkCC("h1 { %| }", arr("-moz-animation"), Match.EMPTY);
+        checkCC("h1 { %moz| }", arr("-moz-animation"), Match.EMPTY);
+        
+        //after a declaration
+        checkCC("h1 { color:red;  | }", arr("-moz-animation"), Match.CONTAINS);
+        checkCC("h1 { color:red; -| }", arr("-moz-animation"), Match.CONTAINS);
+        checkCC("h1 { color:red; -moz-an| }", arr("-moz-animation"), Match.CONTAINS);
+        checkCC("h1 { color:red; -moz-an| }", arr("-moz-appearabce"), Match.DOES_NOT_CONTAIN);
+//        
+        checkCC("h1 { color:red; %| }", arr("-moz-animation"), Match.EMPTY);
+        checkCC("h1 { color:red; %moz| }", arr("-moz-animation"), Match.EMPTY);
+        
+        
+    }
+    
 }
