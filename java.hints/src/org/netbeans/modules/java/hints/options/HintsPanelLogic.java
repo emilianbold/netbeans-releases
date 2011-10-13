@@ -446,6 +446,11 @@ public class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectio
 
         if( treePath == null )
             return false;
+        
+        if (! (errorTree.getCellRenderer() instanceof HintsPanel.CheckBoxRenderer)) {
+            //no checkboxes, no toggle
+            return false;
+        }
 
         Object o = getUserObject(treePath);
 
