@@ -653,7 +653,7 @@ public class EntityClassesPanel extends javax.swing.JPanel {
         {
             puRequired = persistenceUnitRequired;
             this.JAXBRequired = JAXBRequired;
-            isFinishable = isFinishable;
+            this.isFinishable = isFinishable;
         }
 
         public WizardPanel(boolean persistenceUnitRequired, boolean JAXBRequired){

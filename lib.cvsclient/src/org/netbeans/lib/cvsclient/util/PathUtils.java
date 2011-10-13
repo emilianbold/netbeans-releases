@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,39 +37,23 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.profiler.selector.api.nodes;
-
-import java.util.Arrays;
-import java.util.Collection;
-import org.netbeans.lib.profiler.client.ClientUtils.SourceCodeSelection;
-import org.netbeans.modules.profiler.api.icons.Icons;
-import org.netbeans.modules.profiler.api.icons.LanguageIcons;
-import org.netbeans.modules.profiler.api.java.SourcePackageInfo;
-import org.netbeans.modules.profiler.api.project.ProjectContentsSupport;
-import org.openide.util.NbBundle;
+package org.netbeans.lib.cvsclient.util;
 
 /**
  *
- * @author Jaroslav Bachorik
+ * @author Vladimir Sitnikov <w.sitnikov@gmail.com>
  */
-class ProjectSourcesNode extends ContainerNode {
-    private static final String SOURCES_STRING = NbBundle.getMessage(ProjectSourcesNode.class,
-            "SourcesString"); // NOI18N
-    private final boolean includeSubprojects;
+public class PathUtils {
 
-    public ProjectSourcesNode(final boolean includeSubprojects, final ProjectNode parent) {
-        super(SOURCES_STRING, Icons.getIcon(LanguageIcons.PACKAGE), parent);
-        this.includeSubprojects = includeSubprojects;
-    }
+    public static String normalizePath(String path) {
+        // toss out unix or windows separator repetitions as well as trailing separator 
 
-    protected SelectorChildren getChildren() {
-        return new ProjectPackages(SourcePackageInfo.Scope.SOURCE, includeSubprojects);
-    }
-
-    @Override
-    public Collection<SourceCodeSelection> getRootMethods(boolean all) {
-        return Arrays.asList(ProjectContentsSupport.get((ProjectNode)getParent()).getProfilingRoots(null, false));
+        if (path.endsWith("/") || path.endsWith("\\")) {
+            return normalizePath(path.substring(0, path.length() - 1));
+        } else {
+            return path.replaceAll("/+", "/").replaceAll("\\\\+", "\\\\");
+        }
     }
 }

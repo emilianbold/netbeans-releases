@@ -242,12 +242,18 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
     }
 
     public void setCPUProfilingType(int type) { // CommonConstants.INSTR_RECURSIVE_FULL or SAMPLED
+        if (profilingType == ProfilingSettings.PROFILE_CPU_SAMPLING) {
+            return;
+        }
         exactTimingRadio.setSelected(type == CommonConstants.CPU_INSTR_FULL);
         sampledTimingRadio.setSelected(type == CommonConstants.CPU_INSTR_SAMPLED);
         sampledTimingSpinner.setEnabled(sampledTimingRadio.isSelected());
     }
 
     public int getCPUProfilingType() {
+        if (profilingType == ProfilingSettings.PROFILE_CPU_SAMPLING) {
+            return CommonConstants.CPU_SAMPLED;
+        }
         if (exactTimingRadio.isSelected()) {
             return CommonConstants.CPU_INSTR_FULL;
         } else {
@@ -282,6 +288,10 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
         
         if (isPreset) {
             useCPUTimerCheckbox.setSelected(false);
+        }
+        
+        if (isPreset) {
+            exactTimingRadio.setSelected(true);
         }
     }
 

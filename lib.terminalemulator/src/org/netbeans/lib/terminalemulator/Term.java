@@ -833,7 +833,7 @@ public class Term extends JComponent implements Accessible {
      */
     private boolean maybeConsume(KeyEvent e) {
 
-        if (e.isConsumed()) {
+        if (read_only || e.isConsumed()) {
             return false;
         }
 

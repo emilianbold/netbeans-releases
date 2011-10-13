@@ -49,6 +49,7 @@ package org.netbeans.lib.cvsclient.command;
 import java.io.File;
 import java.util.*;
 
+import org.netbeans.lib.cvsclient.CVSRoot;
 import org.netbeans.lib.cvsclient.request.*;
 
 /**
@@ -462,7 +463,7 @@ public class GlobalOptions implements Cloneable {
      * @param cvsRoot CVS root to use
      */
     public void setCVSRoot(String cvsRoot) {
-        this.cvsRoot = cvsRoot;
+        this.cvsRoot = CVSRoot.parse(cvsRoot).toString();
     }
 
     /**

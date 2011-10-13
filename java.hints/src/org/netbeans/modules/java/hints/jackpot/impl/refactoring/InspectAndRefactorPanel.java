@@ -535,16 +535,21 @@ public class InspectAndRefactorPanel extends javax.swing.JPanel implements Popup
         dialog.validate();
         dialog.pack();
         dialog.setVisible(true);
-        Configuration selectedConfiguration = panel.getSelectedConfiguration();
-        if (selectedConfiguration != null) {
-            configurationCombo.setSelectedItem(selectedConfiguration);
-        }
-        HintMetadata selectedHint = panel.getSelectedHint();
-        if (selectedHint!=null) {
-            if (panel.hasNewHints()) {
-                singleRefactoringCombo.setModel(new InspectionComboModel(Utilities.getBatchSupportedHints()));
+        if (panel.isConfirmed()) {
+            if (this.configurationRadio.isSelected()) {
+                Configuration selectedConfiguration = panel.getSelectedConfiguration();
+                if (selectedConfiguration != null) {
+                    configurationCombo.setSelectedItem(selectedConfiguration);
+                }
+            } else {
+                HintMetadata selectedHint = panel.getSelectedHint();
+                if (selectedHint != null) {
+                    if (panel.hasNewHints()) {
+                        singleRefactoringCombo.setModel(new InspectionComboModel(Utilities.getBatchSupportedHints()));
+                    }
+                    singleRefactoringCombo.setSelectedItem(selectedHint);
+                }
             }
-            singleRefactoringCombo.setSelectedItem(selectedHint);
         }
     }
 
