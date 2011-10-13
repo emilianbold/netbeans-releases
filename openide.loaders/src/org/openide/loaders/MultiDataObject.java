@@ -487,6 +487,10 @@ public class MultiDataObject extends DataObject {
      * @throws IOException if there was a problem copying
      * @throws UserCancelException if the user cancelled the copy
     */
+    @NbBundle.Messages(
+        "EXC_NO_LONGER_VALID=Copied file {0} is no longer valid!"
+    )
+    @Override
     protected DataObject handleCopy (DataFolder df) throws IOException {
         FileObject fo;
 
@@ -509,6 +513,9 @@ public class MultiDataObject extends DataObject {
         }
         //#33244 - copy primary file after the secondary ones
         fo = getPrimaryEntry ().copy (df.getPrimaryFile (), suffix);
+        if (fo == null || !fo.isValid()) {
+            throw new IOException("copied file is not valid " + fo); // NOI18N
+        }
 
         if (template) {
             FileObject source = getPrimaryEntry().getFile();
@@ -524,6 +531,11 @@ public class MultiDataObject extends DataObject {
             return fullRescan ? DataObject.find(fo) : createMultiObject (fo);
         } catch (DataObjectExistsException ex) {
             return ex.getDataObject ();
+        } catch (DataObjectNotFoundException ex) {
+            if (!fo.isValid()) {
+                Exceptions.attachLocalizedMessage(ex, Bundle.EXC_NO_LONGER_VALID(fo));
+            }
+            throw ex;
         }
     }
 
