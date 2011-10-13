@@ -31,22 +31,31 @@
                 to add and rearrange the order of parameters.
                 <p>Use the Remove button to remove any parameters that you have added 
                 in the dialog box but that you do not want to keep. 
-                You can not remove parameters that were in the method 
+                You cannot remove parameters that were in the method 
                 before you opened the dialog box.</p>
-                <p>The Parameters table has columns for the method name, 
-                type, and default value. Double-click in a cell to edit a value. 
-                </p>
+                <p>The Parameters table has columns for the method 
+                type,  name, and default value. Double-click in a cell to edit a value.</p>
+				<ul class="note">
+            <li>Press Ctrl-Space to use code completion to choose a parameter type and name.</li>
+			<li>Click the ellipsis button on the left of the Type and Return type fields to display the Find Type dialog box.</li>
+				</ul>
             </li>
-            <li><b>Access Modifier.</b>  Drop-down list containing the four 
+            <li><b>Access.</b>  Drop-down list containing the four 
                 possible accessibility modifiers (<tt>public</tt>, <tt>protected</tt>, 
                 <tt>&lt;default&gt;</tt>, and <tt>private</tt>). Select the accessibility 
-                modifier that you want the method to have.
-            </li>
+                modifier that you want the method to have.            </li>
+			<li><b>Return type.</b> Field intended for specifying a method's return type. Press Ctrl-Space to use the IDE's code completion feature. </li>
+			<li><b>Name.</b> Field  intended for specifying a method's name. </li>
+			<li><b>Update existing Javadoc of this method.</b> Select to renew the Javadoc generated for the method in order to reflect most recent changes in the method's parameters. </li>
+			<li><b>Code Generation.</b>
+			Choose either of the following options:
+			  <ul>
+			<li><b>Update Existing Method.</b> Select to regenerate the method and incorporate the most recent changes into the method's code. </li>
+			<li><b>Create new Method and Delegate from Existing Method.</b> Select to generate a new delegate method. </li>
+			  </ul></li>
             <li><b>Method Signature Preview.</b> Read-only field that displays 
                 what the method signature will look like if you apply the changes 
-                that you have specified in the dialog box.
-            </li>
-          
+                that you have specified in the dialog box.            </li>
         </ul>
 
         <p>If you want to preview the changes, you need to follow these steps 
