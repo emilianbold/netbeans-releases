@@ -25,10 +25,10 @@
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="projectTextField" alignment="0" pref="570" max="32767" attributes="2"/>
-                  <Component id="locationComboBox" alignment="0" pref="570" max="32767" attributes="2"/>
-                  <Component id="packageComboBox" alignment="0" pref="570" max="32767" attributes="2"/>
-                  <Component id="createdFilesText" alignment="0" pref="570" max="32767" attributes="2"/>
+                  <Component id="projectTextField" alignment="0" pref="585" max="32767" attributes="2"/>
+                  <Component id="locationComboBox" alignment="0" pref="585" max="32767" attributes="2"/>
+                  <Component id="packageComboBox" alignment="0" pref="585" max="32767" attributes="2"/>
+                  <Component id="createdFilesText" alignment="0" pref="585" max="32767" attributes="2"/>
               </Group>
           </Group>
           <Component id="jLabel1" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -41,8 +41,8 @@
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Component id="remoteCheckBox" min="-2" max="-2" attributes="0"/>
-              <EmptySpace type="separate" min="-2" max="-2" attributes="0"/>
-              <Component id="inProjectCombo" pref="498" max="32767" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="inProjectCombo" pref="521" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -74,11 +74,12 @@
               <Component id="jLabel6" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="localCheckBox" min="-2" max="-2" attributes="0"/>
-              <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="remoteCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="inProjectCombo" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
+              <EmptySpace max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
