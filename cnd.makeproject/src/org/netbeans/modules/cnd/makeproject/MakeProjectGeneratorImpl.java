@@ -107,7 +107,11 @@ public class MakeProjectGeneratorImpl {
 
     public static String getDefaultProjectFolder(ExecutionEnvironment env) {
         try {
-            return HostInfoUtils.getHostInfo(env).getUserDir() + '/' + ProjectChooser.getProjectsFolder().getName();  //NOI18N
+            if (env.isLocal()) {
+                return getDefaultProjectFolder();
+            } else {
+                return HostInfoUtils.getHostInfo(env).getUserDir() + '/' + ProjectChooser.getProjectsFolder().getName();  //NOI18N
+            }
         } catch (IOException ex) {
             ex.printStackTrace(System.err); // it doesn't make sense to disturb user
         } catch (CancellationException ex) {
