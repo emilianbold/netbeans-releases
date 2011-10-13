@@ -3172,7 +3172,8 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
                 }
                 else { // component not precreated ...
                     RADComponent targetComponent = targetContainer;
-                    if (javax.swing.border.Border.class.isAssignableFrom(paletteItem.getComponentClass())) {
+                    Class clazz = paletteItem.getComponentClass();
+                    if ((clazz!=null) && javax.swing.border.Border.class.isAssignableFrom(clazz)) {
                         int mode = ((modifiers & InputEvent.ALT_MASK) != 0) ? COMP_SELECTED : COMP_DEEPEST;
                         targetComponent = HandleLayer.this.getMetaComponentAt(p, mode);
                     }
