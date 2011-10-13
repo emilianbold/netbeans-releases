@@ -446,8 +446,6 @@ public final class MainWindow {
         JMenuBar menu = getCustomMenuBar();
         if (menu == null) {
              menu = new MenuBar (null);
-             if( isShowCustomBackground() )
-                menu.setOpaque( false);
         }
         menu.setBorderPainted(false);
         if (menu instanceof MenuBar) {
