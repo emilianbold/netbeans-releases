@@ -123,13 +123,13 @@ public class NbmWizardIterator implements WizardDescriptor.BackgroundInstantiati
         return new NbmWizardIterator(NB_MODULE_ARCH);
     }
 
-    @TemplateRegistration(folder=ArchetypeWizards.TEMPLATE_FOLDER, position=500, displayName="#template.app", iconBase="org/netbeans/modules/maven/apisupport/suiteicon.png", description="NbAppDescription.html")
+    @TemplateRegistration(folder=ArchetypeWizards.TEMPLATE_FOLDER, position=450, displayName="#template.app", iconBase="org/netbeans/modules/maven/apisupport/suiteicon.png", description="NbAppDescription.html")
     @Messages("template.app=NetBeans Application")
     public static NbmWizardIterator createNbAppIterator() {
         return new NbmWizardIterator(NB_APP_ARCH);
     }
 
-    @TemplateRegistration(folder=ArchetypeWizards.TEMPLATE_FOLDER, position=450, displayName="#template.suite", iconBase="org/netbeans/modules/maven/apisupport/suiteicon.png", description="NbSuiteDescription.html")
+    @TemplateRegistration(folder=ArchetypeWizards.TEMPLATE_FOLDER, position=500, displayName="#template.suite", iconBase="org/netbeans/modules/maven/apisupport/suiteicon.png", description="NbSuiteDescription.html")
     @Messages("template.suite=NetBeans Module Suite")
     public static NbmWizardIterator createNbSuiteIterator() {
         return new NbmWizardIterator(NB_SUITE_ARCH);
