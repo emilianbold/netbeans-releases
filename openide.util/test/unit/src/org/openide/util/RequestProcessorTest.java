@@ -47,6 +47,7 @@ package org.openide.util;
 import java.lang.ref.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 import java.util.logging.Level;
@@ -79,6 +80,34 @@ public class RequestProcessorTest extends NbTestCase {
     @Override
     protected Level logLevel() {
         return Level.FINE;
+    }
+    
+    public void testUseAsInCND() throws Exception {
+        final RequestProcessor processor = new RequestProcessor("testUseAsInCND");
+        final AtomicReference<String> threadName = new AtomicReference<String>();
+        final Runnable task = new Runnable() {
+            @Override
+            public void run() {
+                threadName.set(Thread.currentThread().getName());
+            }
+        };
+        final String taskName = "MyTask";
+        final RequestProcessor.Task rpTask = processor.create(new Runnable() {
+            @Override
+            public void run() {
+                String oldName = Thread.currentThread().getName();
+                Thread.currentThread().setName(taskName);
+                try {
+                    task.run();
+                } finally {
+                    Thread.currentThread().setName(oldName);
+                }
+            }
+        });
+        processor.post(rpTask);
+        rpTask.waitFinished();
+        
+        assertEquals("Executed and named OK", taskName, threadName.get());
     }
     
     public void testStartCreatedJob() throws Exception {

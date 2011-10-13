@@ -1425,7 +1425,7 @@ outer:  do {
                 run.run();
             } finally {
                 Item scheduled = this.item;
-                if (scheduled != null && scheduled.getTask() == this) {
+                if (scheduled != null && !scheduled.isNew() && scheduled.getTask() == this) {
                     // do not mark as finished, we are scheduled for future
                 } else {
                     notifyFinished();
@@ -1774,6 +1774,10 @@ outer:  do {
             }
         }
 
+        boolean isNew() {
+            return false;
+        }
+
         final Processor getProcessor() {
             Object a = action;
 
@@ -1802,6 +1806,11 @@ outer:  do {
         @Override
         boolean clear(Processor processor) {
             return false;
+        }
+
+        @Override
+        boolean isNew() {
+            return true;
         }
     } // end of CreatedItem
 
