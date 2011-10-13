@@ -104,6 +104,8 @@ import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.EditorCookie.Observable;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileSystem;
 import org.openide.loaders.DataObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -365,7 +367,7 @@ public class CsmUtilities {
     }
 
     /**
-     * Tries to find project that contains given file under its root directory.
+     * Tries to find project that contains given file under its source roots directories.
      * File doesn't have to be included into project or code model.
      * This is somewhat similar to default FileOwnerQueryImplementation,
      * but only for CsmProjects.
@@ -377,12 +379,25 @@ public class CsmUtilities {
     public static CsmProject getCsmProject(FileObject fo) {
         if (fo != null && fo.isValid()) {
             String path = fo.getPath();
+            FileSystem fileSystem = null;
+            try {
+                fileSystem = fo.getFileSystem();
+            } catch (FileStateInvalidException ex) {
+                return null;
+            }
             for (CsmProject csmProject : CsmModelAccessor.getModel().projects()) {
                 Object platformProject = csmProject.getPlatformProject();
                 if (platformProject instanceof NativeProject) {
                     NativeProject nativeProject = (NativeProject)platformProject;
-                    if (path.startsWith(nativeProject.getProjectRoot() + File.separator)) {
-                        return csmProject;
+                    if (nativeProject.getFileSystem().equals(fileSystem)) {
+                        for (String src : nativeProject.getSourceRoots()) {
+                            if (path.startsWith(src)) {
+                                final int length = src.length();
+                                if (path.length() == length || path.charAt(length) == '\\' || path.charAt(length) == '/') {
+                                    return csmProject;
+                                }
+                            }
+                        }
                     }
                 }
             }
