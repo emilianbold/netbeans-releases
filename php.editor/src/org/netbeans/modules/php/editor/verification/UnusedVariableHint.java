@@ -330,7 +330,7 @@ public class UnusedVariableHint extends AbstractRule implements PHPRuleWithPrefe
         @Override
         public void visit(FunctionInvocation node) {
             forceVariableAsUsed = true;
-            scan(node.getParameters());
+            super.visit(node);
             forceVariableAsUsed = false;
         }
 
