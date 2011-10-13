@@ -72,6 +72,8 @@ public class WebAppMetadataModelImpl implements MetadataModelImplementation<WebA
     private final Object myLock = new Object();
     private AtomicBoolean isReady = new AtomicBoolean(false);
 
+    private static final RequestProcessor RP = new RequestProcessor();
+
     public static WebAppMetadataModelImpl create(MetadataUnit metadataUnit) {
         WebAppMetadataModelImpl result = new WebAppMetadataModelImpl(metadataUnit);
         result.initialize();
@@ -82,21 +84,20 @@ public class WebAppMetadataModelImpl implements MetadataModelImplementation<WebA
         this.metadataUnit = metadataUnit;
         createMetadata();
     }
-    
+
     private void createMetadata(){
         Runnable runnable = new Runnable(){
 
             public void run() {
                 synchronized (myLock) {
-                    metadata = new WebAppMetadataImpl(metadataUnit, 
+                    metadata = new WebAppMetadataImpl(metadataUnit,
                             WebAppMetadataModelImpl.this);
                     myLock.notifyAll();
                     isReady.set( true);
                 }
             }
-            
         };
-        RequestProcessor.getDefault().post( runnable );
+        RP.post(runnable);
     }
     
     private WebAppMetadata getMetadata(){
