@@ -77,6 +77,8 @@ public class CssHtmlTranslator implements CssEmbeddingProvider.Translator {
     static final Pattern CDATA_FILTER_PATTERN = Pattern.compile(".*<!\\[CDATA\\[\\s*(\\*/)?\\s*(<!--)?(.*?)(-->)?\\s*(/\\*)?\\s*]]>.*", Pattern.DOTALL | Pattern.MULTILINE);
     static final int CDATA_BODY_GROUP_INDEX = 3; //                                                  ^^^^
     
+    static final Pattern ILLEGAL_CHARS_IN_SELECTOR = Pattern.compile("[{}\\.:]");
+ 
     @Override
     public List<Embedding> getEmbeddings(Snapshot snapshot) {
         TokenHierarchy th = snapshot.getTokenHierarchy();
@@ -218,7 +220,8 @@ public class CssHtmlTranslator implements CssEmbeddingProvider.Translator {
                         //class or id attribute value - generate fake selector with # or . prefix
 
                         //#180576 - filter out "illegal" characters from the selector name
-                        if (text.indexOf(".") == -1 && text.indexOf(":") == -1) {
+                        
+                        if (!ILLEGAL_CHARS_IN_SELECTOR.matcher(text).find()) {
                             embeddings.add(snapshot.create("\n ", CSS_MIME_TYPE)); //NOI18N
 
                             String prefix = HTMLTokenId.VALUE_CSS_TOKEN_TYPE_CLASS.equals(valueCssType) ? " ." : " #";

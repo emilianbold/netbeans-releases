@@ -1875,7 +1875,22 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
     public final void onFileExternalCreate(FileObject file) {
         CndFileUtils.clearFileExistenceCache();
-        DeepReparsingUtils.reparseOnAdded(file, this);
+        // #196664 - Code Model ignores the generated files"
+        // when external file was created and assigned to this project => 
+        // create csm file for it if possible
+        CsmFile findFile = findFile(FSPath.toFSPath(file), true, false);
+        NativeFileItem nativeFileItem = null;
+        if (findFile instanceof FileImpl) {
+            nativeFileItem = ((FileImpl)findFile).getNativeFileItem();
+        }
+        // schedule reparse either based on NFI 
+        // or use FO as fallback, it can be helpful for header files not included into
+        // project, but used in include directives which were broken so far
+        if (nativeFileItem != null) {
+            DeepReparsingUtils.reparseOnAdded(Collections.singletonList(nativeFileItem), this);
+        } else {
+            DeepReparsingUtils.reparseOnAdded(file, this);
+        }
     }
 
     public final void onFileExternalChange(FileImpl file) {

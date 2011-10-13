@@ -44,9 +44,9 @@ package org.netbeans.modules.maven.j2ee.newproject.archetype;
 import java.util.Map;
 import java.util.TreeMap;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.maven.api.archetype.Archetype;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -65,15 +65,15 @@ abstract class BaseJ2eeArchetypeProvider {
     /**
      * Implementor of this method should create proper archetypes and add them into the archetype map.
      * 
-     * It's possible to use addMojeArchetype(Profile p, String version, String artifactId) method for creating new
-     * archetypes with groupId set to org.codehaus.mojo.archetypes or we can add archetypes directly to the map
+     * It's possible to use {@link #addMojoArchetype} method for creating
+     * new archetypes with groupId set to org.codehaus.mojo.archetypes or we can add archetypes directly to the map
      * 
      * If we want to create the same archetype for all possible profiles, we can use 
-     * addSameMojoArchetypeForAllProfiles(String version, String artifactId) method
+     * {@link #addSameMojoArchetypeForAllProfiles} method
      */
     protected abstract void setUpProjectArchetypes();
     
-    protected void addMojeArchetype(Profile j2eeProfile, String version, String artifactId) {
+    protected void addMojoArchetype(Profile j2eeProfile, String version, String artifactId) {
         map.put(j2eeProfile, createMojoArchetype(version, artifactId));
     }
     
@@ -96,20 +96,20 @@ abstract class BaseJ2eeArchetypeProvider {
     }
     
     /**
-     * Returns archetype for a given profile or throws an exception if there isn't defined any Archetype for the given Profile
-     * If such an exception is thrown, it means we have some kind of an inconsistency between UI and ConcreteArchetype class
+     * Returns archetype for a given profile.
+     * If an exception is thrown, it means we have some kind of an inconsistency between UI and ConcreteArchetype class
      * 
      * @param profile for which we want to get proper archetype
-     * @return archetype or null if there is no archetype found for the given Profile
+     * @return archetype found for the given Profile
      * @throws IllegalStateException if there isn't defined any Archetype for the given profile
      */
-    public Archetype getArchetypeFor(Profile profile) {
+    public @NonNull Archetype getArchetypeFor(Profile profile) {
         Archetype archetype = map.get(profile);
         
         if (archetype != null) {
             return archetype;
         } else {
-            throw new IllegalStateException(NbBundle.getMessage(BaseJ2eeArchetypeProvider.class, "NO_DEFINED_ARCHETYPE_EXCEPTION") + profile); //NOI18N
+            throw new IllegalStateException("No archetype defined for profile " + profile + " in " + getClass() + "; check whether all possible <Profile, Archetype> pairs have been added"); //NOI18N
         }
     }
     

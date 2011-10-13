@@ -262,10 +262,10 @@ public final class EjbFacadeVisualPanel2 extends JPanel implements DocumentListe
                     .addComponent(jLabel5))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(projectTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 570, Short.MAX_VALUE)
-                    .addComponent(locationComboBox, 0, 570, Short.MAX_VALUE)
-                    .addComponent(packageComboBox, 0, 570, Short.MAX_VALUE)
-                    .addComponent(createdFilesText, javax.swing.GroupLayout.DEFAULT_SIZE, 570, Short.MAX_VALUE)))
+                    .addComponent(projectTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 585, Short.MAX_VALUE)
+                    .addComponent(locationComboBox, 0, 585, Short.MAX_VALUE)
+                    .addComponent(packageComboBox, 0, 585, Short.MAX_VALUE)
+                    .addComponent(createdFilesText, javax.swing.GroupLayout.DEFAULT_SIZE, 585, Short.MAX_VALUE)))
             .addComponent(jLabel1)
             .addComponent(jLabel6)
             .addGroup(layout.createSequentialGroup()
@@ -275,8 +275,8 @@ public final class EjbFacadeVisualPanel2 extends JPanel implements DocumentListe
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(remoteCheckBox)
-                .addGap(18, 18, 18)
-                .addComponent(inProjectCombo, 0, 498, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(inProjectCombo, 0, 521, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -302,10 +302,11 @@ public final class EjbFacadeVisualPanel2 extends JPanel implements DocumentListe
                 .addComponent(jLabel6)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(localCheckBox)
-                .addGap(0, 0, 0)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(remoteCheckBox)
-                    .addComponent(inProjectCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addComponent(inProjectCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 

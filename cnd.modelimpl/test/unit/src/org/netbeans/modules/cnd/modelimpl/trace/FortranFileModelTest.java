@@ -107,5 +107,10 @@ public class FortranFileModelTest extends TraceModelTestBase {
         // Bug 186251 - *Fortran* Navigator has to recognize long strings
         performTest("bug186251.f"); // NOI18N
     }
+
+    public void testBug184997() throws Exception {
+        // Bug 184997 - *Fortran* navigator doesn't show subroutine with two parameters
+        performTest("bug184997.f"); // NOI18N
+    }
     
 }
