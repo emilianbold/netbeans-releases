@@ -102,6 +102,7 @@ abstract public class CsmCompletion {
     public static final SimpleClass UNSIGNED_INT_CLASS = new SimpleClass("unsigned int", ""); // NOI18N
     public static final SimpleClass UNSIGNED_LONG_CLASS = new SimpleClass("unsigned long", ""); // NOI18N
     public static final SimpleClass UNSIGNED_SHORT_CLASS = new SimpleClass("unsigned short", ""); // NOI18N
+    public static final SimpleClass LONG_DOUBLE_CLASS = new SimpleClass("long double", ""); // NOI18N
     public static final BaseType BOOLEAN_TYPE = new BaseType(BOOLEAN_CLASS, 0, false, 0, false);
     public static final BaseType BYTE_TYPE = new BaseType(BYTE_CLASS, 0, false, 0, false);
     public static final BaseType CHAR_TYPE = new BaseType(CHAR_CLASS, 0, false, 0, false);
@@ -114,6 +115,7 @@ abstract public class CsmCompletion {
     public static final BaseType UNSIGNED_INT_TYPE = new BaseType(UNSIGNED_INT_CLASS, 0, false, 0, false);
     public static final BaseType UNSIGNED_LONG_TYPE = new BaseType(UNSIGNED_LONG_CLASS, 0, false, 0, false);
     public static final BaseType UNSIGNED_SHORT_TYPE = new BaseType(UNSIGNED_SHORT_CLASS, 0, false, 0, false);
+    public static final BaseType LONG_DOUBLE_TYPE = new BaseType(LONG_DOUBLE_CLASS, 0, false, 0, false);
     public static final BaseType VOID_TYPE = new BaseType(VOID_CLASS, 0, false, 0, false);
     public static final SimpleClass INVALID_CLASS = new SimpleClass("", ""); // NOI18N
     public static final BaseType INVALID_TYPE = new BaseType(INVALID_CLASS, 0, false, 0, false);
@@ -154,7 +156,8 @@ abstract public class CsmCompletion {
         BaseType[] types = new BaseType[]{
             BOOLEAN_TYPE, BYTE_TYPE, CHAR_TYPE, DOUBLE_TYPE, FLOAT_TYPE,
             INT_TYPE, LONG_TYPE, SHORT_TYPE, VOID_TYPE,
-            UNSIGNED_CHAR_TYPE, UNSIGNED_INT_TYPE, UNSIGNED_LONG_TYPE, UNSIGNED_SHORT_TYPE
+            UNSIGNED_CHAR_TYPE, UNSIGNED_INT_TYPE, UNSIGNED_LONG_TYPE, UNSIGNED_SHORT_TYPE,
+            LONG_DOUBLE_TYPE
         };
 
         for (int i = types.length - 1; i >= 0; i--) {
