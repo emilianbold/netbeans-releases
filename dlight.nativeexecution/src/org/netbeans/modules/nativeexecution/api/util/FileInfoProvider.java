@@ -148,9 +148,6 @@ public class FileInfoProvider {
         private static final char S_UNDEF_C  =  'u';    // for other stat info (0x0 and 0xF) to have a default in swithces
         
         private final String name;
-        private final boolean directory;
-        private final boolean link;
-        private final boolean regularFile;
         
         private final int gid;
         private final int uid;
@@ -166,13 +163,17 @@ public class FileInfoProvider {
             this.gid = gid;
             this.uid = uid;
             this.size = size;
+            if (directory) {
+                access = (access & ~S_IFMT) | S_IFDIR;
+            }
+            if (link) {
+                access = (access & ~S_IFMT) | S_IFLNK;
+            }
             this.access = access;
-            
-            this.directory = directory;
-            this.link = link;
-            this.regularFile = (access & S_IFMT) == S_IFREG;
             this.linkTarget = linkTarget;
             this.lastModified = lastModified;
+            assert directory == isDirectory();
+            assert link == isLink();
         }
         
         public int getAccess() {
@@ -208,15 +209,15 @@ public class FileInfoProvider {
         }
 
         public boolean isDirectory() {
-            return directory;
+            return (access & S_IFMT) == S_IFDIR;
         }
 
         public boolean isLink() {
-            return link;
+            return (access & S_IFMT) == S_IFLNK;
         }
 
         public boolean isPlainFile() {
-            return regularFile;
+            return (access & S_IFMT) == S_IFREG;
         }
 
         public FileType getFileType() {
@@ -326,7 +327,7 @@ public class FileInfoProvider {
 
         @Override
         public String toString() {
-            return name + ' ' + uid + ' ' + gid + ' '+ accessToString(getAccess()) + ' ' + directory + ' ' + lastModified + ' ' + (link ? " -> " + linkTarget : ""); // NOI18N
+            return name + ' ' + uid + ' ' + gid + ' '+ accessToString(getAccess()) + ' ' + isDirectory() + ' ' + lastModified + ' ' + (isLink() ? " -> " + linkTarget : ""); // NOI18N
         }
     }
     
