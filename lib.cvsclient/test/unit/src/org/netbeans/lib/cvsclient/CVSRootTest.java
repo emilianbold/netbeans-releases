@@ -147,6 +147,16 @@ public class CVSRootTest extends TestCase {
         
     }
     
+    public void testRepositoryPathNormalizing() {
+        // pass some cvsroots with path separator repetitions and trailing path separator char
+        CVSRoot root = CVSRoot.parse(":pserver:mike@javadev.zappmobile.ro:2401:/home//cvsroot/");
+        compareRoot(root, CVSRoot.METHOD_PSERVER, "mike", null, "javadev.zappmobile.ro", 2401, "/home/cvsroot");
+        root = CVSRoot.parse(":ssh;ver=2:username@cvs.sf.net:/cvsroot//xoops/");
+        compareRoot(root, CVSRoot.METHOD_EXT, "username", null, "cvs.sf.net", 0, "/cvsroot/xoops");
+        root = CVSRoot.parse("c:\\CVSROOT\\\\Module1\\");
+        compareRoot(root, CVSRoot.METHOD_LOCAL, null, null, null, 0, "c:\\CVSROOT\\Module1");
+    }
+    
     /**
      * Test of CVSRoot.parse() method.
      * It should not parse the CVSROOT String if not of the form
