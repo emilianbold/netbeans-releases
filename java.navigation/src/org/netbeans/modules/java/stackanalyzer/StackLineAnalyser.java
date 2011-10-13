@@ -88,6 +88,14 @@ class StackLineAnalyser {
             } catch (NumberFormatException nfe) {
                 return null;
             }
+            if (matcher.group(1)==null ) {
+                return new Link(matcher.group(4).split("\\$")[0],
+                            lineNumber,
+                            matcher.start(4),
+                            matcher.end(6)+1
+                            );
+                
+            }
             return new Link(matcher.group(1) + matcher.group(4).split("\\$")[0],
                             lineNumber,
                             matcher.start(1),
