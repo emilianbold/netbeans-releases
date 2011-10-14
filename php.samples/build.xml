@@ -13,6 +13,7 @@
         <property name="excludes" value="CVS private build-impl.xml" />
         <mkdir dir="${examples}"/>
         <zip basedir="samples_src/TodoList" excludes="${excludes}" destfile="${examples}/TodoList.zip"/>
+        <zip basedir="samples_src/RentAFlat-Symfony" excludes="${excludes}" destfile="${examples}/RentAFlat-Symfony.zip"/>
         <zip basedir="samples_src/RentAFlat-Zend" excludes="${excludes}" destfile="${examples}/RentAFlat-Zend.zip"/>
     </target>
 </project>

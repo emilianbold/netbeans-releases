@@ -1,0 +1,22 @@
+# You can find more information about this file on the symfony website:
+# http://www.symfony-project.org/reference/1_4/en/13-View
+
+default:
+  http_metas:
+    content-type: text/html
+
+  metas:
+    title:        Rent-a-Flat - NetBeans sample!
+    description:  Sample Symfony framework project for NetBeans
+    keywords:     flat, rental, home, low prices
+    language:     en
+    robots:       index, follow
+    author:       Oracle corp.
+    copyright:    (c) 2011 Oracle
+
+  stylesheets:    [cssweb.css]
+
+  javascripts:    [jquery.js,function.js]
+
+  has_layout:     true
+  layout:         layout
