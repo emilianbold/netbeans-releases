@@ -54,13 +54,13 @@ import org.netbeans.modules.tomcat5.util.ServerLog.ServerLogSupport;
  * @author sherold
  */
 public class ServerLogTest extends NbTestCase {
-    
+
     public ServerLogTest(String testName) {
         super(testName);
     }
-    
+
     public void testAnalyzeLine() {
-        
+
         String log[] = new String[] {
             "Jan 5, 2006 6:46:45 PM org.apache.catalina.core.StandardWrapperValve invoke",
             "SEVERE: Servlet.service() for servlet HyperlinkTest threw exception",
@@ -69,7 +69,7 @@ public class ServerLogTest extends NbTestCase {
             "       at t.HyperlinkTest.processRequest(HyperlinkTest.java:27)",
             "       at foo.bar",
         };
-        
+
         String files[] = new String[] {
             null,
             null,
@@ -78,7 +78,7 @@ public class ServerLogTest extends NbTestCase {
             "t/HyperlinkTest.java",
             null,
         };
-        
+
         int lines[] = new int[] {
             -1,
             -1,
@@ -87,7 +87,7 @@ public class ServerLogTest extends NbTestCase {
             27,
             -1,
         };
-        
+
         String message[] = new String[] {
             null,
             null,
@@ -96,7 +96,7 @@ public class ServerLogTest extends NbTestCase {
             "java.lang.IllegalStateException",
             null,
         };
-        
+
         ServerLogSupport sup = new ServerLogSupport();
         for (int i = 0; i < log.length; i++) {
             LineInfo nfo = sup.analyzeLine(log[i]);
@@ -109,28 +109,28 @@ public class ServerLogTest extends NbTestCase {
                          message[i], nfo.message());
         }
     }
-    
+
     public void testAnalyzeLine191810() {
         String log[] = new String[] {
             "java.lang.StringIndexOutOfBoundsException: String index out of range: -1",
             "       at java.lang.String.substring(String.java:1949) ~[na:1.6.0_18]"
         };
-        
+
         String files[] = new String[] {
             null,
             "java/lang/String.java",
         };
-        
+
         int lines[] = new int[] {
             -1,
             1949
         };
-        
+
         String message[] = new String[] {
             null,
             "java.lang.StringIndexOutOfBoundsException: String index out of range: -1"
         };
-        
+
         ServerLogSupport sup = new ServerLogSupport();
         for (int i = 0; i < log.length; i++) {
             LineInfo nfo = sup.analyzeLine(log[i]);
