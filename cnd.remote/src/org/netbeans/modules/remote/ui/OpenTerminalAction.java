@@ -45,10 +45,7 @@ package org.netbeans.modules.remote.ui;
 import java.awt.Frame;
 import java.io.File;
 import java.io.IOException;
-import javax.swing.JFileChooser;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
 import org.netbeans.modules.dlight.api.terminal.TerminalSupport;
@@ -312,6 +309,11 @@ public class OpenTerminalAction extends SingleHostAction {
             }
         }
         if (fo == null || !fo.isFolder()) {
+            String msg = fileChooser.getSelectedFile() != null ? fileChooser.getSelectedFile().getPath() : null;
+            if (msg != null) {
+                JOptionPane.showMessageDialog(WindowManager.getDefault().getMainWindow(),
+                        NbBundle.getMessage(OpenRemoteProjectAction.class, "InvalidFolder", msg));
+            }            
             return null;
         }
         String lastPath = fo.getParent() == null ? fo.getPath() : fo.getParent().getPath();

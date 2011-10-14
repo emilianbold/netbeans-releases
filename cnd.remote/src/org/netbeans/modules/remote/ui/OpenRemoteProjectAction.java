@@ -175,6 +175,11 @@ public class OpenRemoteProjectAction extends SingleHostAction {
         }
         FileObject remoteProjectFO = fileChooser.getSelectedFileObject();
         if (remoteProjectFO == null || !remoteProjectFO.isFolder()) {
+            String msg = fileChooser.getSelectedFile() != null ? fileChooser.getSelectedFile().getPath() : null;
+            if (msg != null) {
+                JOptionPane.showMessageDialog(WindowManager.getDefault().getMainWindow(),
+                    NbBundle.getMessage(OpenRemoteProjectAction.class, "InvalidFolder", msg));
+            }
             return;
         }
         homeDir = remoteProjectFO.getParent() == null ? remoteProjectFO.getPath() : remoteProjectFO.getParent().getPath();
