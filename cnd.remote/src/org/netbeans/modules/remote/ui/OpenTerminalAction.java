@@ -82,6 +82,7 @@ import org.openide.windows.WindowManager;
 @ActionReference(path = "Remote/Host/Actions", name = "OpenTerminalAction", position = 700)
 public class OpenTerminalAction extends SingleHostAction {
     private JMenu remotePopupMenu;
+    private JMenuItem localPopupMenu;
 
     @Override
     public String getName() {
@@ -103,13 +104,13 @@ public class OpenTerminalAction extends SingleHostAction {
 
     @Override
     public JMenuItem getPopupPresenter() {
+        createSubMenu();
+        JMenuItem out = localPopupMenu;
         Node[] activatedNodes = getActivatedNodes();
         if (activatedNodes != null && activatedNodes.length == 1 && isRemote(activatedNodes[0])) {
-            createSubMenu();
-            return remotePopupMenu;
-        } else {
-            return super.getPopupPresenter();
+            out = remotePopupMenu;
         }
+        return out;
     }
 
     private void createSubMenu() {
@@ -119,6 +120,9 @@ public class OpenTerminalAction extends SingleHostAction {
             remotePopupMenu.add(SystemAction.get(AddMirror.class).getPopupPresenter());
 //            remotePopupMenu.add(SystemAction.get(AddRoot.class).getPopupPresenter());
 //            remotePopupMenu.add(SystemAction.get(AddOther.class).getPopupPresenter());
+        }
+        if (localPopupMenu == null) {
+            localPopupMenu = super.getPopupPresenter();
         }
     }
 
