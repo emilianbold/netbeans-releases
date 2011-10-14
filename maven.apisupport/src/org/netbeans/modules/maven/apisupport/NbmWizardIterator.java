@@ -53,8 +53,6 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
-import javax.xml.namespace.QName;
-import org.apache.maven.cli.MavenCli;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.validation.adapters.WizardDescriptorAdapter;
@@ -70,10 +68,6 @@ import org.netbeans.modules.maven.model.pom.Dependency;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.Plugin;
 import org.netbeans.modules.maven.model.pom.Repository;
-import org.netbeans.modules.maven.model.settings.Activation;
-import org.netbeans.modules.maven.model.settings.Profile;
-import org.netbeans.modules.maven.model.settings.SettingsModel;
-import org.netbeans.modules.maven.model.settings.SettingsQName;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.netbeans.validation.api.ui.ValidationGroup;
 import org.openide.WizardDescriptor;
@@ -123,13 +117,13 @@ public class NbmWizardIterator implements WizardDescriptor.BackgroundInstantiati
         return new NbmWizardIterator(NB_MODULE_ARCH);
     }
 
-    @TemplateRegistration(folder=ArchetypeWizards.TEMPLATE_FOLDER, position=500, displayName="#template.app", iconBase="org/netbeans/modules/maven/apisupport/suiteicon.png", description="NbAppDescription.html")
+    @TemplateRegistration(folder=ArchetypeWizards.TEMPLATE_FOLDER, position=450, displayName="#template.app", iconBase="org/netbeans/modules/maven/apisupport/suiteicon.png", description="NbAppDescription.html")
     @Messages("template.app=NetBeans Application")
     public static NbmWizardIterator createNbAppIterator() {
         return new NbmWizardIterator(NB_APP_ARCH);
     }
 
-    @TemplateRegistration(folder=ArchetypeWizards.TEMPLATE_FOLDER, position=450, displayName="#template.suite", iconBase="org/netbeans/modules/maven/apisupport/suiteicon.png", description="NbSuiteDescription.html")
+    @TemplateRegistration(folder=ArchetypeWizards.TEMPLATE_FOLDER, position=500, displayName="#template.suite", iconBase="org/netbeans/modules/maven/apisupport/suiteicon.png", description="NbSuiteDescription.html")
     @Messages("template.suite=NetBeans Module Suite")
     public static NbmWizardIterator createNbSuiteIterator() {
         return new NbmWizardIterator(NB_SUITE_ARCH);
@@ -177,31 +171,6 @@ public class NbmWizardIterator implements WizardDescriptor.BackgroundInstantiati
             if (Boolean.TRUE.equals(wiz.getProperty(OSGIDEPENDENCIES))) {
                 //now we have the nbm-archetype (or the netbeans platform one).
                 addNbmPluginOsgiParameter(projFile);
-            }
-            if (archetype == NB_SUITE_ARCH) {
-                FileObject settingsXml = FileUtil.toFileObject(MavenCli.DEFAULT_USER_SETTINGS_FILE);
-                if (settingsXml == null) {
-                    settingsXml = FileUtil.copyFile(FileUtil.getConfigFile("Maven2Templates/settings.xml"), FileUtil.createFolder(MavenCli.DEFAULT_USER_SETTINGS_FILE.getParentFile()), "settings");
-                }
-                Utilities.performSettingsModelOperations(settingsXml, Collections.<ModelOperation<SettingsModel>>singletonList(new ModelOperation<SettingsModel>() {
-                    public @Override void performOperation(SettingsModel model) {
-                        Profile netbeansIde = model.getSettings().findProfileById("netbeans-ide");
-                        if (netbeansIde != null) {
-                            return;
-                        }
-                        netbeansIde = model.getFactory().createProfile();
-                        netbeansIde.setId("netbeans-ide");
-                        Activation activation = model.getFactory().createActivation();
-                        // XXX why does the model not have this property??
-                        QName ACTIVE_BY_DEFAULT = SettingsQName.createQName("activeByDefault", true, false);
-                        activation.setChildElementText("activeByDefault", "true", ACTIVE_BY_DEFAULT);
-                        netbeansIde.setActivation(activation);
-                        org.netbeans.modules.maven.model.settings.Properties properties = model.getFactory().createProperties();
-                        properties.setProperty("netbeans.installation", new File(System.getProperty("netbeans.home")).getParent());
-                        netbeansIde.setProperties(properties);
-                        model.getSettings().addProfile(netbeansIde);
-                    }
-                }));
             }
             Set<FileObject> projects = ArchetypeWizards.openProjects(projFile, new File(projFile, "application"));
             for (FileObject project : projects) {
