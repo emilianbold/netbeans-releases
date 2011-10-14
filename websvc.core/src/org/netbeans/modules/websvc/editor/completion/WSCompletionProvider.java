@@ -55,6 +55,12 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
@@ -86,6 +92,8 @@ import org.openide.util.NbBundle;
  * @author Milan Kuchtiak
  */
 public class WSCompletionProvider implements CompletionProvider {
+    
+    private static Logger LOG = Logger.getLogger( WSCompletionProvider.class.getCanonicalName().toString());
     
     private static final String[] BINDING_TYPES = {
         "SOAPBinding.SOAP11HTTP_BINDING", //NOI18N
@@ -121,17 +129,39 @@ public class WSCompletionProvider implements CompletionProvider {
                 NbEditorUtilities.getFileObject(doc);
                 JavaSource js = JavaSource.forDocument(doc);
                 if (js!=null) {
-                        if (SourceUtils.isScanInProgress())
-                            resultSet.setWaitText(NbBundle.getMessage(WSCompletionProvider.class, "scanning-in-progress")); //NOI18N
-                        js.runUserActionTask(this, true);
-                        if (results != null)
-                            resultSet.addAllItems(results);
-                        if (anchorOffset > -1)
-                            resultSet.setAnchorOffset(anchorOffset);
+                    Future<Void> f = js.runWhenScanFinished(this, true);
+                    if (f != null && !f.isDone()) {
+                        setCompletionHack(false);
+                        resultSet.setWaitText(NbBundle.
+                                getMessage(WSCompletionProvider.class, 
+                                        "scanning-in-progress"));       // NOI18N
+                        f.get();
+                    }
+                    if (isTaskCancelled()) {
+                        return;
+                    }
+
+                    if (results != null) {
+                        resultSet.addAllItems(results);
+                    }
+                    if (anchorOffset > -1) {
+                        resultSet.setAnchorOffset(anchorOffset);
+                    }
                 }
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            } finally {
+            } 
+            catch( CancellationException e ){
+            }
+            catch (IOException ex) {
+                LOG.log( Level.WARNING , null , ex );
+            }
+            catch ( InterruptedException e ){
+                LOG.log( Level.INFO , null , e );
+            }
+            catch( ExecutionException e ){
+                LOG.log( Level.WARNING , null , e );
+            }
+            finally 
+            {
                 resultSet.finish();
             }
         }
@@ -143,6 +173,11 @@ public class WSCompletionProvider implements CompletionProvider {
         }
          
         private void resolveCompletion(CompilationController controller) throws IOException {
+            
+            if (isTaskCancelled()) {
+                return;
+            }
+            setCompletionHack(true);
             
             controller.toPhase(Phase.PARSED);
             results = new ArrayList<CompletionItem>();
@@ -196,6 +231,16 @@ public class WSCompletionProvider implements CompletionProvider {
             controller.toPhase(Phase.PARSED);
             TreePath path = controller.getTreeUtilities().pathFor(caretOffset);
             return new Env(offset, prefix, path);
+        }
+        
+        /** #145615: this helps to work around the issue with stuck
+         * {@code JavaSource.runWhenScanFinished}
+         * It is copied from {@code JavaCompletionQuery}.
+         */
+        private void setCompletionHack(boolean flag) {
+            if (component != null) {
+                component.putClientProperty("completion-active", flag); //NOI18N
+            }
         }
         
         private void createStringResults(CompilationController controller, Env env) 
