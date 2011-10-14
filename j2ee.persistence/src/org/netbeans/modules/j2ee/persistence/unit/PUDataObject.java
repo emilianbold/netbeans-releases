@@ -63,7 +63,6 @@ import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.modules.j2ee.persistence.dd.common.JPAParseUtils;
 import org.netbeans.modules.schema2beans.BaseBean;
 import org.netbeans.modules.schema2beans.Schema2BeansException;
-import org.netbeans.modules.xml.multiview.DesignMultiViewDesc;
 import org.netbeans.modules.xml.multiview.ToolBarMultiViewElement;
 import org.netbeans.modules.xml.multiview.XmlMultiViewDataObject;
 import org.netbeans.modules.xml.multiview.XmlMultiViewDataSynchronizer;
@@ -78,7 +77,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
-import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -137,6 +135,11 @@ public class PUDataObject extends XmlMultiViewDataObject {
     @Override
     protected String getEditorMimeType() {
         return PUDataLoader.REQUIRED_MIME;
+    }
+    
+    @Override
+    protected int getXMLMultiViewIndex(){
+        return 1;
     }
     
     @MultiViewElement.Registration(
