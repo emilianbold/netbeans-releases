@@ -54,7 +54,6 @@ import org.netbeans.junit.NbTestCase;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.test.TestFileUtils;
 import static org.netbeans.modules.openide.util.Bundle.*;
-import org.openide.util.Exceptions;
 
 @Messages("k3=value #3")
 public class NbBundleProcessorTest extends NbTestCase {
