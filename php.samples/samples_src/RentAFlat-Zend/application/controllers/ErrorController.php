@@ -1,7 +1,8 @@
+<?php
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +25,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,66 +35,54 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- */
-
-package org.netbeans.modules.tomcat5;
-
-import javax.enterprise.deploy.spi.Target;
-import javax.enterprise.deploy.spi.TargetModuleID;
-
-/** Dummy implementation of target for Tomcat 5 server
  *
- * @author  Radim Kubacki
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-public final class TomcatModule implements TargetModuleID {
 
-    private TomcatTarget target;
+require_once 'BaseController.php';
 
-    private final String path;
-    private final String docRoot;
+class ErrorController extends BaseController {
 
-    public TomcatModule (Target target, String path) {
-        this(target, path, null);
-    }
+    public function errorAction() {
+        $errors = $this->_getParam('error_handler');
 
-    public TomcatModule (Target target, String path, String docRoot) {
-        assert path.isEmpty() || path.startsWith("/") 
-                : "Non empty module path must start with '/'; was " + path;
-        this.target = (TomcatTarget) target;
-        this.path = "".equals(path) ? "/" : path; // NOI18N
-        this.docRoot = docRoot;
-    }
-    
-    public String getDocRoot () {
-        return docRoot;
-    }
-    
-    public TargetModuleID[] getChildTargetModuleID () {
-        return null;
-    }
-    
-    public String getModuleID () {
-        return getWebURL ();
-    }
-    
-    public TargetModuleID getParentTargetModuleID () {
-        return null;
-    }
-    
-    public Target getTarget () {
-        return target;
-    }
-    
-    /** Context root path of this module. */
-    public String getPath () {
-        return path;
+        switch ($errors->type) {
+            case Zend_Controller_Plugin_ErrorHandler::EXCEPTION_NO_ROUTE:
+            case Zend_Controller_Plugin_ErrorHandler::EXCEPTION_NO_CONTROLLER:
+            case Zend_Controller_Plugin_ErrorHandler::EXCEPTION_NO_ACTION:
+
+                // 404 error -- controller or action not found
+                $this->getResponse()->setHttpResponseCode(404);
+                $this->view->message = 'Page not found';
+                break;
+            default:
+                // application error
+                $this->getResponse()->setHttpResponseCode(500);
+                $this->view->message = 'Application error';
+                break;
+        }
+
+        // Log exception, if logger available
+        if ($log = $this->getLog()) {
+            // noop
+        }
+
+        // conditionally display exceptions
+        if ($this->getInvokeArg('displayExceptions') == true) {
+            $this->view->exception = $errors->exception;
+        }
     }
 
-    public String getWebURL () {
-        return target.getServerUri () + path.replaceAll(" ", "%20");
+    public function getLog() {
+        $bootstrap = $this->getInvokeArg('bootstrap');
+        if (!$bootstrap->hasPluginResource('Log')) {
+            return false;
+        }
+        $log = $bootstrap->getResource('Log');
+        return $log;
     }
-    
-    public String toString () {
-        return getModuleID ();
-    }
+
 }
+

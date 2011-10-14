@@ -1,7 +1,8 @@
+<?php
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +25,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,66 +35,57 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- */
-
-package org.netbeans.modules.tomcat5;
-
-import javax.enterprise.deploy.spi.Target;
-import javax.enterprise.deploy.spi.TargetModuleID;
-
-/** Dummy implementation of target for Tomcat 5 server
  *
- * @author  Radim Kubacki
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-public final class TomcatModule implements TargetModuleID {
 
-    private TomcatTarget target;
+/**
+ * Base Controller is base class that overrides
+ * method from zend controller. These methodes are
+ * then inheritted in other Controllers and so we
+ * don't have to override these methodes in every
+ * controller
+ *
+ * @author Filip Zamboj (fzamboj@netbeans.org)
+ * @version 1.0
+ *
+ * @abstract
+ */
+abstract class BaseController extends Zend_Controller_Action {
 
-    private final String path;
-    private final String docRoot;
-
-    public TomcatModule (Target target, String path) {
-        this(target, path, null);
-    }
-
-    public TomcatModule (Target target, String path, String docRoot) {
-        assert path.isEmpty() || path.startsWith("/") 
-                : "Non empty module path must start with '/'; was " + path;
-        this.target = (TomcatTarget) target;
-        this.path = "".equals(path) ? "/" : path; // NOI18N
-        this.docRoot = docRoot;
-    }
-    
-    public String getDocRoot () {
-        return docRoot;
-    }
-    
-    public TargetModuleID[] getChildTargetModuleID () {
-        return null;
-    }
-    
-    public String getModuleID () {
-        return getWebURL ();
-    }
-    
-    public TargetModuleID getParentTargetModuleID () {
-        return null;
-    }
-    
-    public Target getTarget () {
-        return target;
-    }
-    
-    /** Context root path of this module. */
-    public String getPath () {
-        return path;
+    /**
+     *
+     * @param string $method
+     * @param string $args
+     */
+    public function __call($method, $args) {
+        $this->_redirect("index");
     }
 
-    public String getWebURL () {
-        return target.getServerUri () + path.replaceAll(" ", "%20");
+    public function init() {
+        $this->view->controller = $this->getRequest()->getControllerName();
+        $this->view->action = $this->getRequest()->getActionName();
+
+        if ($this->getRequest()->getParam("removeFromFavorites") != null) {
+            Misc_Utils::removeFromFavorites($this->getRequest()->getParam("removeFromFavorites"));
+            $this->_redirect("/my-favorites");
+            exit;
+        } elseif ($this->getRequest()->getParam("addToFavorites") != null) {
+            Misc_Utils::addToFavorites($this->getRequest()->getParam("addToFavorites"));
+            $this->_redirect("/my-favorites");
+            exit;
+        }
     }
-    
-    public String toString () {
-        return getModuleID ();
+
+    public function preDispatch() {
+        $this->view->render('index/_menu.phtml');
     }
+
+    public function postDispatch() {
+        $this->view->render('index/_footer.phtml');
+    }
+
 }
+

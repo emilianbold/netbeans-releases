@@ -1,7 +1,8 @@
+<?php
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +25,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,66 +35,75 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- */
-
-package org.netbeans.modules.tomcat5;
-
-import javax.enterprise.deploy.spi.Target;
-import javax.enterprise.deploy.spi.TargetModuleID;
-
-/** Dummy implementation of target for Tomcat 5 server
  *
- * @author  Radim Kubacki
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-public final class TomcatModule implements TargetModuleID {
 
-    private TomcatTarget target;
+class Application_Model_PropertyLocation {
 
-    private final String path;
-    private final String docRoot;
+    protected $id;
+    protected $city_part;
+    protected $city;
 
-    public TomcatModule (Target target, String path) {
-        this(target, path, null);
-    }
-
-    public TomcatModule (Target target, String path, String docRoot) {
-        assert path.isEmpty() || path.startsWith("/") 
-                : "Non empty module path must start with '/'; was " + path;
-        this.target = (TomcatTarget) target;
-        this.path = "".equals(path) ? "/" : path; // NOI18N
-        this.docRoot = docRoot;
-    }
-    
-    public String getDocRoot () {
-        return docRoot;
-    }
-    
-    public TargetModuleID[] getChildTargetModuleID () {
-        return null;
-    }
-    
-    public String getModuleID () {
-        return getWebURL ();
-    }
-    
-    public TargetModuleID getParentTargetModuleID () {
-        return null;
-    }
-    
-    public Target getTarget () {
-        return target;
-    }
-    
-    /** Context root path of this module. */
-    public String getPath () {
-        return path;
+    public function __construct(array $options = null) {
+        if (is_array($options)) {
+            $this->setOptions($options);
+        }
     }
 
-    public String getWebURL () {
-        return target.getServerUri () + path.replaceAll(" ", "%20");
+    public function __set($name, $value) {
+        $method = 'set' . $name;
+        if (('mapper' == $name) || !method_exists($this, $method)) {
+            throw new Exception('Invalid content property');
+        }
+        $this->$method($value);
     }
-    
-    public String toString () {
-        return getModuleID ();
+
+    public function __get($name) {
+        $method = 'get' . $name;
+        if (('mapper' == $name) || !method_exists($this, $method)) {
+            throw new Exception('Invalid content property');
+        }
+        return $this->$method();
     }
+
+    public function setOptions(array $options) {
+        $methods = get_class_methods($this);
+        foreach ($options as $key => $value) {
+            $method = 'set' . ucfirst($key);
+            if (in_array($method, $methods)) {
+
+                $this->$method($value);
+            }
+        }
+        return $this;
+    }
+
+    public function getId() {
+        return $this->id;
+    }
+
+    public function setId($id) {
+        $this->id = $id;
+    }
+
+    public function getCityPart() {
+        return $this->city_part;
+    }
+
+    public function setCityPart($city_part) {
+        $this->city_part = $city_part;
+    }
+
+    public function getCity() {
+        return $this->city;
+    }
+
+    public function setCity($city) {
+        $this->city = $city;
+    }
+
 }
+

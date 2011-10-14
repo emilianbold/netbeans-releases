@@ -1,7 +1,8 @@
+<?php
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +25,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,66 +35,68 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- */
-
-package org.netbeans.modules.tomcat5;
-
-import javax.enterprise.deploy.spi.Target;
-import javax.enterprise.deploy.spi.TargetModuleID;
-
-/** Dummy implementation of target for Tomcat 5 server
  *
- * @author  Radim Kubacki
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-public final class TomcatModule implements TargetModuleID {
 
-    private TomcatTarget target;
+final class Utils {
 
-    private final String path;
-    private final String docRoot;
-
-    public TomcatModule (Target target, String path) {
-        this(target, path, null);
+    private function __construct() {
     }
 
-    public TomcatModule (Target target, String path, String docRoot) {
-        assert path.isEmpty() || path.startsWith("/") 
-                : "Non empty module path must start with '/'; was " + path;
-        this.target = (TomcatTarget) target;
-        this.path = "".equals(path) ? "/" : path; // NOI18N
-        this.docRoot = docRoot;
-    }
-    
-    public String getDocRoot () {
-        return docRoot;
-    }
-    
-    public TargetModuleID[] getChildTargetModuleID () {
-        return null;
-    }
-    
-    public String getModuleID () {
-        return getWebURL ();
-    }
-    
-    public TargetModuleID getParentTargetModuleID () {
-        return null;
-    }
-    
-    public Target getTarget () {
-        return target;
-    }
-    
-    /** Context root path of this module. */
-    public String getPath () {
-        return path;
+    public static function getPerex($text) {
+        if (mb_strlen($text) > 200) {
+            $firstPor = mb_substr($text, 0, 200);
+            $space = mb_strrpos($firstPor, " ");
+            return mb_substr($firstPor, 0, $space) . " ...";
+        }
+        return $text;
     }
 
-    public String getWebURL () {
-        return target.getServerUri () + path.replaceAll(" ", "%20");
+    /**
+     * @return ArrayObject
+     */
+    public static function getFavorites() {
+        $session = new sfSessionStorage();
+        if ($session->read('favorites') === null) {
+            $session->initialize(array(
+                'session_cookie_lifetime' => 2592000,
+            ));
+            $session->write('favorites', new ArrayObject(array()));
+        }
+        return $session->read('favorites');
     }
-    
-    public String toString () {
-        return getModuleID ();
+
+    public static function addToFavorites($id) {
+        if (is_numeric($id)) {
+            self::getFavorites()->offsetSet($id, $id);
+        }
     }
+
+    public static function removeFromFavorites($id) {
+        if (self::isInFavorites($id)) {
+            self::getFavorites()->offsetUnset($id);
+        }
+    }
+
+    public static function isInFavorites($id) {
+        if (is_numeric($id)) {
+            return self::getFavorites()->offsetExists($id);
+        }
+        return false;
+    }
+
+    public static function processAction(sfActions $action) {
+        if ($action->getRequest()->hasParameter("removeFromFavorites")) {
+            self::removeFromFavorites($action->getRequest()->getParameter("removeFromFavorites"));
+            $action->redirect("my-favorites/index");
+        } elseif ($action->getRequest()->hasParameter("addToFavorites")) {
+            self::addToFavorites($action->getRequest()->getParameter("addToFavorites"));
+            $action->redirect("my-favorites/index");
+        }
+    }
+
 }
+

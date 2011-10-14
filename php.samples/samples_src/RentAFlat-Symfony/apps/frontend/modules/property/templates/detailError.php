@@ -1,3 +1,4 @@
+<?php
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
@@ -41,65 +42,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
-package org.netbeans.modules.tomcat5;
-
-import javax.enterprise.deploy.spi.Target;
-import javax.enterprise.deploy.spi.TargetModuleID;
-
-/** Dummy implementation of target for Tomcat 5 server
- *
- * @author  Radim Kubacki
- */
-public final class TomcatModule implements TargetModuleID {
-
-    private TomcatTarget target;
-
-    private final String path;
-    private final String docRoot;
-
-    public TomcatModule (Target target, String path) {
-        this(target, path, null);
-    }
-
-    public TomcatModule (Target target, String path, String docRoot) {
-        assert path.isEmpty() || path.startsWith("/") 
-                : "Non empty module path must start with '/'; was " + path;
-        this.target = (TomcatTarget) target;
-        this.path = "".equals(path) ? "/" : path; // NOI18N
-        this.docRoot = docRoot;
-    }
-    
-    public String getDocRoot () {
-        return docRoot;
-    }
-    
-    public TargetModuleID[] getChildTargetModuleID () {
-        return null;
-    }
-    
-    public String getModuleID () {
-        return getWebURL ();
-    }
-    
-    public TargetModuleID getParentTargetModuleID () {
-        return null;
-    }
-    
-    public Target getTarget () {
-        return target;
-    }
-    
-    /** Context root path of this module. */
-    public String getPath () {
-        return path;
-    }
-
-    public String getWebURL () {
-        return target.getServerUri () + path.replaceAll(" ", "%20");
-    }
-    
-    public String toString () {
-        return getModuleID ();
-    }
-}
+?>
+<h1>OFFER NOT FOUND</h1>
+<strong>Requested offer was not found.</strong>

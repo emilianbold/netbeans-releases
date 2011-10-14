@@ -1,3 +1,4 @@
+<?php
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
@@ -42,64 +43,35 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.tomcat5;
+require_once 'misc/Utils.php';
 
-import javax.enterprise.deploy.spi.Target;
-import javax.enterprise.deploy.spi.TargetModuleID;
+class Bootstrap extends Zend_Application_Bootstrap_Bootstrap {
 
-/** Dummy implementation of target for Tomcat 5 server
- *
- * @author  Radim Kubacki
- */
-public final class TomcatModule implements TargetModuleID {
-
-    private TomcatTarget target;
-
-    private final String path;
-    private final String docRoot;
-
-    public TomcatModule (Target target, String path) {
-        this(target, path, null);
+    protected function _initEncoding() {
+        mb_internal_encoding("UTF-8");
     }
 
-    public TomcatModule (Target target, String path, String docRoot) {
-        assert path.isEmpty() || path.startsWith("/") 
-                : "Non empty module path must start with '/'; was " + path;
-        this.target = (TomcatTarget) target;
-        this.path = "".equals(path) ? "/" : path; // NOI18N
-        this.docRoot = docRoot;
-    }
-    
-    public String getDocRoot () {
-        return docRoot;
-    }
-    
-    public TargetModuleID[] getChildTargetModuleID () {
-        return null;
-    }
-    
-    public String getModuleID () {
-        return getWebURL ();
-    }
-    
-    public TargetModuleID getParentTargetModuleID () {
-        return null;
-    }
-    
-    public Target getTarget () {
-        return target;
-    }
-    
-    /** Context root path of this module. */
-    public String getPath () {
-        return path;
+    protected function _initDoctype() {
+        $this->bootstrap('view');
+        $view = $this->getResource('view');
+        $view->doctype('XHTML1_STRICT');
     }
 
-    public String getWebURL () {
-        return target.getServerUri () + path.replaceAll(" ", "%20");
+    protected function _initMenu() {
+        $this->bootstrap('view');
+        $view = $this->getResource('view');
+        $view->placeholder('menu')
+                ->setPrefix("<div id=\"menu\">")
+                ->setPostfix("</div>");
     }
-    
-    public String toString () {
-        return getModuleID ();
+
+    protected function _initfFooter() {
+        $this->bootstrap('view');
+        $view = $this->getResource('view');
+        $view->placeholder('footer')
+                ->setPrefix("<div id=\"footbox\"><div id=\"foot\">")
+                ->setPostfix("</div></div>");
     }
+
 }
+

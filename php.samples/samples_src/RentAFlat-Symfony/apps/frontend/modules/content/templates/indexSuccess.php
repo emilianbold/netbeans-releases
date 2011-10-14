@@ -1,3 +1,4 @@
+<?php
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
@@ -41,65 +42,17 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+?>
+<h1>About the Project</h1>
 
-package org.netbeans.modules.tomcat5;
+Welcome to Rent-a-Flat.
 
-import javax.enterprise.deploy.spi.Target;
-import javax.enterprise.deploy.spi.TargetModuleID;
+<p>This is sample project created to demonstrate
+Symfony Framework support in NetBeans IDE. Don't worry to dig into code to
+see how it works and how you can make your development easier with Symfony and NetBeans!</p>
 
-/** Dummy implementation of target for Tomcat 5 server
- *
- * @author  Radim Kubacki
- */
-public final class TomcatModule implements TargetModuleID {
+<p>Let us know what you think on our mailing list <a href="mailto:users@php.netbeans.org">users@php.netbeans.org</a></p>
 
-    private TomcatTarget target;
+<p>Let us know if you find any mistake or place for improvement.</p>
 
-    private final String path;
-    private final String docRoot;
-
-    public TomcatModule (Target target, String path) {
-        this(target, path, null);
-    }
-
-    public TomcatModule (Target target, String path, String docRoot) {
-        assert path.isEmpty() || path.startsWith("/") 
-                : "Non empty module path must start with '/'; was " + path;
-        this.target = (TomcatTarget) target;
-        this.path = "".equals(path) ? "/" : path; // NOI18N
-        this.docRoot = docRoot;
-    }
-    
-    public String getDocRoot () {
-        return docRoot;
-    }
-    
-    public TargetModuleID[] getChildTargetModuleID () {
-        return null;
-    }
-    
-    public String getModuleID () {
-        return getWebURL ();
-    }
-    
-    public TargetModuleID getParentTargetModuleID () {
-        return null;
-    }
-    
-    public Target getTarget () {
-        return target;
-    }
-    
-    /** Context root path of this module. */
-    public String getPath () {
-        return path;
-    }
-
-    public String getWebURL () {
-        return target.getServerUri () + path.replaceAll(" ", "%20");
-    }
-    
-    public String toString () {
-        return getModuleID ();
-    }
-}
+<p>The README file can be found <a href="<?php echo url_for('content/readme'); ?>" target="_blank">here</a>.</p>
