@@ -82,8 +82,7 @@ made subject to such option by the copyright holder.
         <compatibility addition="yes"/>
         <description>
             <p>
-                Some plugins needs a way to suppress <a href="http://download.oracle.com/javase/6/docs/api/java/net/Authenticator.html">
-                    Authenticator</a> without asking
+                Some plugins needs a way to suppress {@link java.net.Authenticator} without asking
                 user a question about the credentials. 
                 Invoke <a href="@TOP@/org/openide/util/NetworkSettings.html#suppressAuthenticationDialog(java.util.concurrent.Callable)">
                 suppressAuthenticationDialog</a> with a block of code where authentication dialog will be suppressed.                
