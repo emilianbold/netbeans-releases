@@ -48,6 +48,8 @@ import java.awt.EventQueue;
 import java.awt.GraphicsEnvironment;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.FlavorEvent;
+import java.awt.datatransfer.FlavorListener;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
@@ -56,7 +58,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -72,9 +73,6 @@ import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
-import org.openide.util.datatransfer.ClipboardEvent;
-import org.openide.util.datatransfer.ClipboardListener;
-import org.openide.util.datatransfer.ExClipboard;
 import org.openide.util.datatransfer.ExTransferable;
 import org.openide.util.datatransfer.MultiTransferObject;
 import org.openide.util.datatransfer.PasteType;
@@ -162,12 +160,10 @@ final class ExplorerActionsImpl {
         actionStateUpdater = new ActionStateUpdater(manager);
 
         Clipboard c = getClipboard();
-
-        if (c instanceof ExClipboard) {
-            ExClipboard clip = (ExClipboard) c;
-            clip.addClipboardListener(
+        if (c != null) {
+            c.addFlavorListener(
                 WeakListeners.create(
-                    ClipboardListener.class, actionStateUpdater, clip
+                    FlavorListener.class, actionStateUpdater, c
                 )
             );
         }
@@ -336,9 +332,8 @@ final class ExplorerActionsImpl {
 
             if (node != null) {
                 try {
-                    Clipboard clip = getClipboard();
-                    if (clip != null) {
-                        Transferable trans = clip.getContents(this);
+                    Transferable trans = actionStateUpdater.getTransferable();
+                    if (trans != null) {
                         updatePasteTypes(trans, node);
                     }
                 } catch (NullPointerException npe) {
@@ -465,6 +460,7 @@ final class ExplorerActionsImpl {
         *         paste action. It can be null, which means that clipboard content
         *         should be cleared.
         */
+        @Override
         public Transferable paste() throws IOException {
             int size = p.length;
             Transferable[] arr = new Transferable[size];
@@ -730,9 +726,10 @@ final class ExplorerActionsImpl {
 
     /** Class which register changes in manager, and clipboard, coalesces
      * them if they are frequent and performs the update of actions state. */
-    private class ActionStateUpdater implements PropertyChangeListener, ClipboardListener, Runnable {
+    private class ActionStateUpdater implements PropertyChangeListener, FlavorListener, Runnable {
         private final RequestProcessor.Task timer;
         private final PropertyChangeListener weakL;
+        private Transferable trans;
 
         ActionStateUpdater(ExplorerManager m) {
             timer = RP.create(this);
@@ -754,10 +751,8 @@ final class ExplorerActionsImpl {
         }
 
         @Override
-        public void clipboardChanged(ClipboardEvent ev) {
-            if (!ev.isConsumed()) {
-                schedule();
-            }
+        public void flavorsChanged(FlavorEvent ev) {
+            schedule();
         }
 
         @Override
@@ -765,9 +760,21 @@ final class ExplorerActionsImpl {
             if (EventQueue.isDispatchThread()) {
                 syncActions();
             } else {
+                updateTrans();
                 updateActions(true);
                 EventQueue.invokeLater(this);
             }
+        }
+
+        private void updateTrans() {
+            Transferable t = getClipboard().getContents(ExplorerActionsImpl.this);
+            synchronized (this) {
+                trans = t;
+            }
+        }
+        
+        final Transferable getTransferable() {
+            return trans;
         }
 
         /** Updates actions states now if there is pending event. */
@@ -782,11 +789,12 @@ final class ExplorerActionsImpl {
             deleteActionPerformerNoConfirm.toEnabled(false);
             pasteActionPerformer.toEnabled(false);
             EventQueue.invokeLater(this);
-            timer.schedule(100);
+            timer.schedule(0);
         }
 
         final void waitFinished() {
             timer.waitFinished();
         }
+
     }
 }

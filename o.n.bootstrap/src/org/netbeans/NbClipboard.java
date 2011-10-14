@@ -341,10 +341,15 @@ implements LookupListener, Runnable, FlavorListener, AWTEventListener
         }
     }
 
+    @Override
     public void flavorsChanged(FlavorEvent e) {
         fireClipboardChange();
+        for (FlavorListener l : getFlavorListeners()) {
+            l.flavorsChanged(e);
+        }
     }
 
+    @Override
     public void eventDispatched(AWTEvent ev) {
         if (!(ev instanceof WindowEvent))
             return;
