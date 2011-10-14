@@ -118,14 +118,14 @@ public class OpenTerminalAction extends SingleHostAction {
 //            popupMenu.add(new AddProjects().getPopupPresenter());
             remotePopupMenu.add(SystemAction.get(AddMirror.class).getPopupPresenter());
             remotePopupMenu.add(SystemAction.get(AddRoot.class).getPopupPresenter());
-            remotePopupMenu.add(SystemAction.get(AddOther.class).getPopupPresenter());
+//            remotePopupMenu.add(SystemAction.get(AddOther.class).getPopupPresenter());
         }
         if (localPopupMenu == null) {
             localPopupMenu = new JMenu(getName());
             localPopupMenu.add(SystemAction.get(AddHome.class).getPopupPresenter());
 //            popupMenu.add(new AddProjects().getPopupPresenter());
             localPopupMenu.add(SystemAction.get(AddRoot.class).getPopupPresenter());
-            localPopupMenu.add(SystemAction.get(AddOther.class).getPopupPresenter());
+//            localPopupMenu.add(SystemAction.get(AddOther.class).getPopupPresenter());
         }
     }
 
@@ -306,17 +306,20 @@ public class OpenTerminalAction extends SingleHostAction {
         if (ret == JFileChooser.CANCEL_OPTION) {
             return null;
         }
-        FileObject fo;
+        FileObject fo = null;
         if (fileChooser instanceof JFileChooserEx) {
             fo = ((JFileChooserEx)fileChooser).getSelectedFileObject();
         } else {
             File selectedFile = fileChooser.getSelectedFile();
-            fo = FileUtil.toFileObject(selectedFile);
+            if (selectedFile != null) {
+                fo = FileUtil.toFileObject(selectedFile);
+            }
         }
         if (fo == null || !fo.isFolder()) {
             return null;
         }
-        lastUsedDirs.put(env, fo.getParent().getPath());
+        String lastPath = fo.getParent() == null ? fo.getPath() : fo.getParent().getPath();
+        lastUsedDirs.put(env, lastPath);
         return fo;
     }    
 }

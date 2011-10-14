@@ -349,7 +349,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         } else if (entry.isPlainFile()) {
             fo = getFileSystem().getFactory().createRemotePlainFile(this, childPath, childCache, FileType.Regular);
         } else {
-            fo = getFileSystem().getFactory().createUnsupportedFile(this, childPath, childCache, entry.getFileType());
+            fo = getFileSystem().getFactory().createSpecialFile(this, childPath, childCache, entry.getFileType());
         }
         return fo;
     }
