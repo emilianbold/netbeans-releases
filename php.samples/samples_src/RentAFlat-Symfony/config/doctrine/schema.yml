@@ -1,0 +1,246 @@
+Disposition:
+  connection: doctrine
+  tableName: disposition
+  options:
+    type: INNODB
+    collate: utf8_general_ci
+    charset: utf8
+  columns:
+    id:
+      type: integer(4)
+      fixed: false
+      unsigned: false
+      primary: true
+      autoincrement: true
+    text:
+      type: string(255)
+      fixed: false
+      unsigned: false
+      primary: false
+      notnull: true
+      autoincrement: false
+  relations:
+    Property:
+      local: id
+      foreign: disposition_id
+      type: many
+
+Location:
+  connection: doctrine
+  tableName: location
+  options:
+    type: INNODB
+    collate: utf8_general_ci
+    charset: utf8
+  columns:
+    id:
+      type: integer(4)
+      fixed: false
+      unsigned: false
+      primary: true
+      autoincrement: true
+    city_part:
+      type: string()
+      fixed: false
+      unsigned: false
+      primary: false
+      notnull: false
+      autoincrement: false
+    city:
+      type: string()
+      fixed: false
+      unsigned: false
+      primary: false
+      notnull: true
+      autoincrement: false
+  relations:
+    Property:
+      local: id
+      foreign: location_id
+      type: many
+
+Property:
+  connection: doctrine
+  tableName: property
+  options:
+    type: INNODB
+    collate: utf8_general_ci
+    charset: utf8
+  columns:
+    id:
+      type: integer(4)
+      fixed: false
+      unsigned: false
+      primary: true
+      autoincrement: true
+    reference_no:
+      type: string(255)
+      fixed: false
+      unsigned: false
+      primary: false
+      notnull: true
+      autoincrement: false
+    title:
+      type: string()
+      fixed: false
+      unsigned: false
+      primary: false
+      notnull: true
+      autoincrement: false
+    text:
+      type: string()
+      fixed: false
+      unsigned: false
+      primary: false
+      notnull: true
+      autoincrement: false
+    disposition_id:
+      type: integer(4)
+      fixed: false
+      unsigned: false
+      primary: false
+      notnull: true
+      autoincrement: false
+    area:
+      type: float(10)
+      fixed: false
+      unsigned: false
+      primary: false
+      notnull: true
+      autoincrement: false
+    floor:
+      type: integer(4)
+      fixed: false
+      unsigned: false
+      primary: false
+      notnull: true
+      autoincrement: false
+    lift:
+      type: boolean
+      fixed: false
+      unsigned: false
+      primary: false
+      notnull: true
+      autoincrement: false
+    cellar:
+      type: float(10)
+      fixed: false
+      unsigned: false
+      primary: false
+      notnull: false
+      autoincrement: false
+    balcony:
+      type: float(10)
+      fixed: false
+      unsigned: false
+      primary: false
+      notnull: false
+      autoincrement: false
+    location_id:
+      type: integer(4)
+      fixed: false
+      unsigned: false
+      primary: false
+      notnull: true
+      autoincrement: false
+    price:
+      type: integer(4)
+      fixed: false
+      unsigned: false
+      primary: false
+      notnull: true
+      autoincrement: false
+    created_on:
+      type: timestamp(25)
+      fixed: false
+      unsigned: false
+      primary: false
+      notnull: true
+      autoincrement: false
+    street:
+      type: string()
+      fixed: false
+      unsigned: false
+      primary: false
+      notnull: true
+      autoincrement: false
+    property_build_id:
+      type: integer(4)
+      fixed: false
+      unsigned: false
+      primary: false
+      notnull: true
+      autoincrement: false
+    terace:
+      type: float(10)
+      fixed: false
+      unsigned: false
+      primary: false
+      notnull: false
+      autoincrement: false
+    loggia:
+      type: float(10)
+      fixed: false
+      unsigned: false
+      primary: false
+      notnull: false
+      autoincrement: false
+    garden:
+      type: float(10)
+      fixed: false
+      unsigned: false
+      primary: false
+      notnull: false
+      autoincrement: false
+    garage:
+      type: float(10)
+      fixed: false
+      unsigned: false
+      primary: false
+      notnull: false
+      autoincrement: false
+    parking_place:
+      type: boolean
+      primary: false
+      default: false
+      notnull: true
+  relations:
+    Disposition:
+      local: disposition_id
+      foreign: id
+      type: one
+    Location:
+      local: location_id
+      foreign: id
+      type: one
+    PropertyBuild:
+      local: property_build_id
+      foreign: id
+      type: one
+
+PropertyBuild:
+  connection: doctrine
+  tableName: property_build
+  options:
+    type: INNODB
+    collate: utf8_general_ci
+    charset: utf8
+  columns:
+    id:
+      type: integer(4)
+      fixed: false
+      unsigned: false
+      primary: true
+      autoincrement: true
+    text:
+      type: string()
+      fixed: false
+      unsigned: false
+      primary: false
+      notnull: true
+      autoincrement: false
+  relations:
+    Property:
+      local: id
+      foreign: property_build_id
+      type: many
