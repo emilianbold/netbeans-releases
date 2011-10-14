@@ -80,7 +80,7 @@ public final class LocalFileSystemProvider implements FileSystemProviderImplemen
     private FileSystem rootFileSystem = null;
     private Map<String, LocalFileSystem> nonRootFileSystems = new HashMap<String, LocalFileSystem>();
     private final boolean isWindows = Utilities.isWindows();
-    private static RequestProcessor RP = new RequestProcessor(LocalFileSystemProvider.class.getSimpleName());
+    private static final RequestProcessor RP = new RequestProcessor(LocalFileSystemProvider.class.getSimpleName());
     private static volatile RequestProcessor.Task lastRefreshTask;
 
     @Override

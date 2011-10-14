@@ -83,9 +83,9 @@ public abstract class CsmFileTaskFactory {
 
     // processors below should have FileTaskFactory in their names, because name is checked
     // to suppress warnings in org.netbeans.modules.cnd.modelimpl.uid.UIDProviderIml
-    private static RequestProcessor WORKER = new RequestProcessor("CsmFileTaskFactory", 1); //NOI18N
-    private static RequestProcessor HIGH_PRIORITY_WORKER = new RequestProcessor("CsmHighPriorityFileTaskFactory", 1); //NOI18N
-    private static RequestProcessor DECISION_WORKER = new RequestProcessor("CsmDecisionFileTaskFactory", 1); //NOI18N
+    private static final RequestProcessor WORKER = new RequestProcessor("CsmFileTaskFactory", 1); //NOI18N
+    private static final RequestProcessor HIGH_PRIORITY_WORKER = new RequestProcessor("CsmHighPriorityFileTaskFactory", 1); //NOI18N
+    private static final RequestProcessor DECISION_WORKER = new RequestProcessor("CsmDecisionFileTaskFactory", 1); //NOI18N
 
     public final static String USE_OWN_CARET_POSITION = "use-own-caret-position"; // NOI18N
 

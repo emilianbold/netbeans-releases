@@ -44,14 +44,17 @@
 
 package org.netbeans.modules.refactoring.java.plugins;
 
+import com.sun.source.tree.AnnotationTree;
 import javax.lang.model.element.Element;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.swing.Action;
@@ -91,7 +94,7 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
     public SafeDeleteRefactoringPlugin(SafeDeleteRefactoring refactoring) {
         this.refactoring = refactoring;
     }
-    
+
     /**
      * For each element to be refactored, the corresponding
      * prepare method of the underlying WhereUsed query is
@@ -101,6 +104,7 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
      * @param refactoringElements
      * @return
      */
+    @Override
     public Problem prepare(RefactoringElementsBag refactoringElements) {
         RefactoringSession inner = RefactoringSession.create("delete"); // NOI18N
         Collection<ElementGrip> abstractMethHandles = new ArrayList<ElementGrip>();
@@ -133,15 +137,58 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
             fireProgressListenerStep();
         }
         Problem problemFromWhereUsed = null;
+        Problem problemImplemented = null;
         for (RefactoringElement refacElem : inner.getRefactoringElements()) {
-            ElementGrip elem = refacElem.getLookup().lookup(ElementGrip.class);
+            final ElementGrip elem = refacElem.getLookup().lookup(ElementGrip.class);
             if (files.contains(refacElem.getParentFile())) {
                 continue;
             }
+            
             if (!isPendingDelete(elem, refactoredObjects)) {
-                problemFromWhereUsed = new Problem(false, getString("ERR_ReferencesFound"), ProblemDetailsFactory.createProblemDetails(new ProblemDetailsImplemen(new WhereUsedQueryUI(elem!=null?elem.getHandle():null, getWhereUsedItemNames(), refactoring), inner)));
+                JavaSource src = JavaSource.forFileObject(elem.getFileObject());
+                final AtomicBoolean override = new AtomicBoolean(false);
+                try {
+                    src.runUserActionTask(new CancellableTask<CompilationController>() {
+
+                        @Override
+                        public void cancel() {}
+
+                        @Override
+                        public void run(CompilationController parameter) throws Exception {
+                            parameter.toPhase(JavaSource.Phase.PARSED);
+                            TreePath resolve = elem.getHandle().resolve(parameter);
+                            if(resolve.getLeaf().getKind() == Tree.Kind.METHOD) {
+                                MethodTree method = (MethodTree) resolve.getLeaf();
+                                List<? extends AnnotationTree> annotations = method.getModifiers().getAnnotations();
+                                boolean hasOverride = false;
+                                for (AnnotationTree annotationTree : annotations) {
+                                    if(annotationTree.toString().equals("@Override()")) { //NOI18N
+                                        hasOverride = true;
+                                    }
+                                }
+                                if(!hasOverride) {
+                                    override.set(true);
+                                }
+                            }
+                        }
+                        
+                    }, true);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                if(override.get()) {
+                    problemImplemented = new Problem(false, getString("WRN_ImplementsFound"), ProblemDetailsFactory.createProblemDetails(new ProblemDetailsImplemen(new WhereUsedQueryUI(elem!=null?elem.getHandle():null, getWhereUsedItemNames(), refactoring), inner)));
+                } else {
+                    problemFromWhereUsed = new Problem(false, getString("ERR_ReferencesFound"), ProblemDetailsFactory.createProblemDetails(new ProblemDetailsImplemen(new WhereUsedQueryUI(elem!=null?elem.getHandle():null, getWhereUsedItemNames(), refactoring), inner)));
+                }
                 break;
             }
+        }
+
+        if(problemFromWhereUsed != null && problemImplemented != null){
+            problemFromWhereUsed.setNext(problemImplemented);
+        } else if(problemImplemented != null) {
+            problemFromWhereUsed = problemImplemented;
         }
         
         for(ElementGrip absMethodGrip : abstractMethHandles){
@@ -315,6 +362,7 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
         return null;
     }
     
+    @Override
     protected JavaSource getJavaSource(Phase p) {
         return null;
     }

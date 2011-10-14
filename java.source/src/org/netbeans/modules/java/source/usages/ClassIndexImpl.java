@@ -104,7 +104,7 @@ public abstract class ClassIndexImpl {
     private final List<WeakReference<ClassIndexImplListener>> listeners = Collections.synchronizedList(new ArrayList<WeakReference<ClassIndexImplListener>> ());
 
     public abstract <T> void search (
-            @NonNull String binaryName,
+            @NonNull ElementHandle<?> binaryName,
             @NonNull Set<? extends UsageType> usageType,
             @NonNull Set<? extends ClassIndex.SearchScopeType> scope,
             @NonNull Convertor<? super Document, T> convertor,

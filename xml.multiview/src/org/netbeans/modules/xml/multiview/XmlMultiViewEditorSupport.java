@@ -404,6 +404,7 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
         if (multiViewDescriptions == null) {
             if (suppressXmlView) {
                 multiViewDescriptions = dObj.getMultiViewDesc();
+                xmlMultiViewIndex = 0;
             } else {
                 MultiViewDescription[] customDesc = dObj.getMultiViewDesc();
                 MultiViewDescription xmlDesc = new XmlViewDesc(dObj);
@@ -411,6 +412,7 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
                 multiViewDescriptions = new MultiViewDescription[customDesc.length + 1];
                 System.arraycopy(customDesc, 0, multiViewDescriptions, 1, customDesc.length);
                 multiViewDescriptions[0] = xmlDesc;
+                xmlMultiViewIndex = dObj.getXMLMultiViewIndex();
             }
         }
         return multiViewDescriptions;
@@ -840,7 +842,7 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
             super.componentClosed();
         }
 
-        protected void componentShowing() {
+        protected void componentShowing() {getTabPosition();
             super.componentShowing();
         }
 

@@ -221,6 +221,17 @@ public class Icefaces2Implementation implements JsfComponentImplementation {
 
     @Override
     public void remove(WebModule webModule) {
+        try {
+            List<Library> allRegisteredIcefaces2 = Icefaces2Customizer.getIcefacesLibraries();
+            ProjectClassPathModifier.removeLibraries(
+                    allRegisteredIcefaces2.toArray(new Library[allRegisteredIcefaces2.size()]),
+                    webModule.getJavaSources()[0],
+                    ClassPath.COMPILE);
+        } catch (IOException ex) {
+            LOGGER.log(Level.WARNING, "Exception during removing JSF suite from an web project", ex); //NOI18N
+        } catch (UnsupportedOperationException ex) {
+            LOGGER.log(Level.WARNING, "Exception during removing JSF suite from an web project", ex); //NOI18N
+        }
     }
 
     /**
