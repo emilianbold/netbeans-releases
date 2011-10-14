@@ -119,6 +119,13 @@ public class UtilitiesTest extends NbTestCase {
     public void testNameGuessKeywordNoShortName2() throws Exception {
         assertEquals("aDo", Utilities.adjustName("do"));
     }
+
+    public void testToConstantName() {
+        assertEquals("SOME_CONSTANT", Utilities.toConstantName("someConstant"));
+        assertEquals("SOME_HTML_CONSTANT", Utilities.toConstantName("someHTMLConstant"));
+        assertEquals("CAPITAL_START", Utilities.toConstantName("CapitalStart"));
+        assertEquals("", Utilities.toConstantName(""));
+    }
     
     public void testCapturedTypeArray164543() throws Exception {
         performCapturedTypeTest("package test; public class Test {public void t() {java.util.Map m; m.getClass().getTypeParameters(|); }}",
