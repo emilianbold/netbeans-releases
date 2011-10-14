@@ -70,10 +70,7 @@ import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.j2seproject.J2SEProject;
 import org.netbeans.modules.java.j2seproject.J2SEProjectGenerator;
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.EditableProperties;
-import org.netbeans.spi.project.support.ant.ProjectGenerator;
-import org.netbeans.spi.project.support.ant.ReferenceHelper;
+import org.netbeans.spi.project.support.ant.*;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
@@ -400,7 +397,7 @@ public class J2SEProjectBuilder {
         ep.setProperty(ProjectProperties.ANNOTATION_PROCESSING_PROCESSOR_OPTIONS, ""); // NOI18N
         ep.setProperty("dist.dir", "dist"); // NOI18N
         ep.setComment("dist.dir", new String[] {"# " + NbBundle.getMessage(J2SEProjectGenerator.class, "COMMENT_dist.dir")}, false); // NOI18N
-        ep.setProperty("dist.jar", "${dist.dir}/" + validatePropertyValue(name) + ".jar"); // NOI18N
+        ep.setProperty("dist.jar", "${dist.dir}/" + PropertyUtils.getUsablePropertyName(name) + ".jar"); // NOI18N
         ep.setProperty("javac.classpath", compileClassPath); // NOI18N
         ep.setProperty(ProjectProperties.JAVAC_PROCESSORPATH, new String[] {"${javac.classpath}"}); // NOI18N
         ep.setProperty("javac.test.processorpath", new String[] {"${javac.test.classpath}"}); // NOI18N
@@ -547,16 +544,7 @@ public class J2SEProjectBuilder {
         //logRecord.setParameters(new Object[] {""}); // NOI18N
         Logger.getLogger(loggerName).log(logRecord);
     }
-    
-    private static final Pattern INVALID_NAME = Pattern.compile("[$/\\\\\\p{Cntrl}]");  //NOI18N    
-    private static String validatePropertyValue (String value) {
-        final Matcher m = INVALID_NAME.matcher(value);
-        if (m.find()) {
-            value = m.replaceAll("_");  //NOI18N
-        }
-        return value;
-    }
-    
+
     private SpecificationVersion getDefaultSourceLevel () {
         if (defaultSourceLevel != null) {
             return defaultSourceLevel;
