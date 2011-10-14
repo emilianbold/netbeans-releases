@@ -42,7 +42,10 @@
 package org.netbeans.modules.web.primefaces;
 
 import java.io.IOException;
+import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -50,6 +53,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFVersion;
 import org.netbeans.modules.web.jsf.spi.components.JsfComponentCustomizer;
@@ -65,11 +69,11 @@ public class Primefaces2Implementation implements JsfComponentImplementation {
 
     private final String name;
     private final String description;
-    
+
     private static final Logger LOGGER = Logger.getLogger(Primefaces2Implementation.class.getName());
     private static final String PRIMEFACES_SPECIFIC_CLASS = "org.primefaces.application.PrimeResource"; //NOI18N
     private static final String PRIMEFACES_LIBRARY_NAME = "primefaces"; //NOI18N
-    
+
     public Primefaces2Implementation() {
         this.name = NbBundle.getMessage(PrimefacesProvider.class, "LBL_PrimeFaces");  //NOI18N
         this.description = NbBundle.getMessage(PrimefacesProvider.class, "LBL_PrimeFaces_Description"); //NOI18N
@@ -89,8 +93,8 @@ public class Primefaces2Implementation implements JsfComponentImplementation {
     public Set<FileObject> extend(WebModule webModule, JsfComponentCustomizer jsfComponentCustomizer) {
         try {
             ProjectClassPathModifier.addLibraries(
-                    new Library[]{ LibraryManager.getDefault().getLibrary(PRIMEFACES_LIBRARY_NAME) }, 
-                    webModule.getJavaSources()[0], 
+                    new Library[]{ LibraryManager.getDefault().getLibrary(PRIMEFACES_LIBRARY_NAME) },
+                    webModule.getJavaSources()[0],
                     ClassPath.COMPILE);
         } catch (IOException ex) {
             LOGGER.log(Level.WARNING, "Exception during extending an web project", ex); //NOI18N
@@ -117,7 +121,55 @@ public class Primefaces2Implementation implements JsfComponentImplementation {
     }
 
     @Override
-    public void remove(WebModule wm) {
+    public void remove(WebModule webModule) {
+        try {
+            List<Library> allRegisteredPrimefaces2 = getAllRegisteredPrimefaces2();
+            ProjectClassPathModifier.removeLibraries(
+                    allRegisteredPrimefaces2.toArray(new Library[allRegisteredPrimefaces2.size()]),
+                    webModule.getJavaSources()[0],
+                    ClassPath.COMPILE);
+        } catch (IOException ex) {
+            LOGGER.log(Level.WARNING, "Exception during removing JSF suite from an web project", ex); //NOI18N
+        } catch (UnsupportedOperationException ex) {
+            LOGGER.log(Level.WARNING, "Exception during removing JSF suite from an web project", ex); //NOI18N
+        }
     }
-    
+
+     /**
+     * Returns {@code List} of all Primefaces2 libraries registered in the IDE.
+     *
+     * @return {{@code List} of libraries
+     */
+    public static List<Library> getAllRegisteredPrimefaces2() {
+        List<Library> libraries = new ArrayList<Library>();
+        List<URL> content;
+        for (Library library : LibraryManager.getDefault().getLibraries()) {
+            if (!"j2se".equals(library.getType())) { //NOI18N
+                continue;
+            }
+
+            content = library.getContent("classpath"); //NOI18N
+            if (isValidPrimefaces2Library(content)) {
+                libraries.add(library);
+            }
+        }
+        return libraries;
+    }
+
+    /**
+     * Checks if given library content contains mandatory class in cases of
+     * Primefaces2 library.
+     *
+     * @param libraryContent library content
+     * @return {@code true} if the given content contains Primefaces2 library,
+     * {@code false} otherwise
+     */
+    public static boolean isValidPrimefaces2Library(List<URL> libraryContent) {
+        try {
+            return Util.containsClass(libraryContent, PRIMEFACES_SPECIFIC_CLASS);
+        } catch (IOException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+            return false;
+        }
+    }
 }

@@ -76,7 +76,6 @@ made subject to such option by the copyright holder.
                 <project>../../api.xml</project>
                 <project>../../apisupport.ant</project>
                 <project>../../apisupport.crudsample</project>
-                <project>../../apisupport.facebooksample</project>
                 <project>../../apisupport.feedreader</project>
                 <project>../../apisupport.harness</project>
                 <project>../../apisupport.installer</project>
@@ -718,7 +717,6 @@ made subject to such option by the copyright holder.
                 <project>../../websvc.saas.kit</project>
                 <project>../../websvc.saas.services.amazon</project>
                 <project>../../websvc.saas.services.delicious</project>
-                <project>../../websvc.saas.services.facebook</project>
                 <project>../../websvc.saas.services.flickr</project>
                 <project>../../websvc.saas.services.google</project>
                 <project>../../websvc.saas.services.strikeiron</project>

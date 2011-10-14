@@ -207,7 +207,9 @@ public final class Deployment {
                 deploymentTarget.setTargetModules(modules);
             } else {
                 String msg = NbBundle.getMessage(Deployment.class, "MSG_ModuleNotDeployed");
-                throw new DeploymentException(msg);
+                DeploymentException ex = new DeploymentException(msg);
+                LOGGER.log(Level.INFO, null, ex);
+                throw ex;
             }
             return deploymentTarget.getClientUrl(clientUrlPart);
         } catch (ServerException ex) {
