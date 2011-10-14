@@ -421,16 +421,19 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
             TreePathHandle h = TreePathHandle.create(resolved, info);
             TreePath method   = findMethod(resolved);
             boolean expressionStatement = resolved.getParentPath().getLeaf().getKind() == Kind.EXPRESSION_STATEMENT;
-            TreePath value = resolved.getLeaf().getKind() != Kind.VARIABLE ? resolved : new TreePath(resolved, ((VariableTree) resolved.getLeaf()).getInitializer());
+            boolean variableRewrite = resolved.getLeaf().getKind() == Kind.VARIABLE;
+            TreePath value = !variableRewrite ? resolved : new TreePath(resolved, ((VariableTree) resolved.getLeaf()).getInitializer());
             boolean isConstant = checkConstantExpression(info, value) && !expressionStatement;
-            boolean isVariable = findStatement(resolved) != null && method != null && resolved.getLeaf().getKind() != Kind.VARIABLE;
+            boolean isVariable = findStatement(resolved) != null && method != null && !variableRewrite;
             Set<TreePath> duplicatesForVariable = isVariable ? SourceUtils.computeDuplicates(info, resolved, method, cancel) : null;
             Set<TreePath> duplicatesForConstant = /*isConstant ? */SourceUtils.computeDuplicates(info, resolved, new TreePath(info.getCompilationUnit()), cancel);// : null;
             Scope scope = info.getTrees().getScope(resolved);
             boolean statik = scope != null ? info.getTreeUtilities().isStaticContext(scope) : false;
-            String guessedName = Utilities.guessName(info, resolved);
-            Fix variable = isVariable ? new IntroduceFix(h, info.getJavaSource(), guessedName, duplicatesForVariable.size() + 1, IntroduceKind.CREATE_VARIABLE) : null;
-            Fix constant = isConstant ? new IntroduceFix(h, info.getJavaSource(), guessedName, duplicatesForConstant.size() + 1, IntroduceKind.CREATE_CONSTANT) : null;
+            String guessedName = Utilities.getName(resolved.getLeaf());
+            if (guessedName == null) guessedName = "name";
+            Scope s = info.getTrees().getScope(resolved);
+            Fix variable = isVariable ? new IntroduceFix(h, info.getJavaSource(), variableRewrite ? guessedName : Utilities.makeNameUnique(info, s, guessedName), duplicatesForVariable.size() + 1, IntroduceKind.CREATE_VARIABLE) : null;
+            Fix constant = isConstant ? new IntroduceFix(h, info.getJavaSource(), variableRewrite ? guessedName : Utilities.makeNameUnique(info, s, Utilities.toConstantName(guessedName)), duplicatesForConstant.size() + 1, IntroduceKind.CREATE_CONSTANT) : null;
             Fix parameter = isVariable ? new IntroduceParameterFix(h) : null;
             Fix field = null;
             Fix methodFix = null;
@@ -457,7 +460,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
 
                 field = new IntroduceFieldFix(h, info.getJavaSource(), guessedName, duplicatesForConstant.size() + 1, initilizeIn, statik, allowFinalInCurrentMethod);
 
-                if (resolved.getLeaf().getKind() != Kind.VARIABLE) {
+                if (!variableRewrite) {
                     //introduce method based on expression:
                     Element methodEl = info.getTrees().getElement(method);
                     Map<TypeMirror, TreePathHandle> typeVar2Def = new HashMap<TypeMirror, TreePathHandle>();
