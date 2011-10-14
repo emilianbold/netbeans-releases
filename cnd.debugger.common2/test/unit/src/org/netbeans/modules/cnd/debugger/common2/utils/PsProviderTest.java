@@ -70,6 +70,7 @@ public class PsProviderTest {
         data.addProcess("     5408       0       0       5408    ?    0 11:36:17 C:\\Program Files (x86)\\totalcmd\\TOTALCMD.EXE");
         Vector<Vector<String>> res = data.processes(Pattern.compile(".*"));
         assertEquals("C:\\Program Files (x86)\\totalcmd\\TOTALCMD.EXE", res.get(0).get(data.commandColumnIdx()));
+        assertEquals("5408", res.get(0).get(0));
     }
     
     @Test
@@ -78,6 +79,7 @@ public class PsProviderTest {
         data.addProcess("S    4316    6592    4316       5564    1 13352 13:54:32 /cygdrive/d/Projekty/moderngres-bin/bin/initdb");
         Vector<Vector<String>> res = data.processes(Pattern.compile(".*"));
         assertEquals("/cygdrive/d/Projekty/moderngres-bin/bin/initdb", res.get(0).get(data.commandColumnIdx()));
+        assertEquals("4316", res.get(0).get(0));
     }
     
     @Test
@@ -86,6 +88,7 @@ public class PsProviderTest {
         data.addProcess("I    6484    6760    6484       6400    0 13352 13:39:04 /usr/bin/bash");
         Vector<Vector<String>> res = data.processes(Pattern.compile(".*"));
         assertEquals("/usr/bin/bash", res.get(0).get(data.commandColumnIdx()));
+        assertEquals("6484", res.get(0).get(0));
     }
     
     private PsProvider.PsData prepareSolarisData() {
@@ -101,6 +104,7 @@ public class PsProviderTest {
         data.addProcess("    abcd 18719   994   1   Oct 05 pts/1     273:08 ./firefox");
         Vector<Vector<String>> res = data.processes(Pattern.compile(".*"));
         assertEquals("./firefox", res.get(0).get(data.commandColumnIdx()));
+        assertEquals("18719", res.get(0).get(1));
     }
     
     @Test
@@ -109,6 +113,7 @@ public class PsProviderTest {
         data.addProcess("longusername 18719   994   1   Oct 05 pts/1     273:08 ./firefox");
         Vector<Vector<String>> res = data.processes(Pattern.compile(".*"));
         assertEquals("./firefox", res.get(0).get(data.commandColumnIdx()));
+        assertEquals("18719", res.get(0).get(1));
     }
     
     private PsProvider.PsData prepareLinuxData() {
@@ -124,6 +129,7 @@ public class PsProviderTest {
         data.addProcess("tester   29270 29241  0 20:15 pts/2    00:00:00 ps -ef");
         Vector<Vector<String>> res = data.processes(Pattern.compile(".*"));
         assertEquals("ps -ef", res.get(0).get(data.commandColumnIdx()));
+        assertEquals("29270", res.get(0).get(1));
     }
     
     @Test
@@ -132,6 +138,7 @@ public class PsProviderTest {
         data.addProcess("longusername 29270 29241  0 20:15 pts/2    00:00:00 ps -ef");
         Vector<Vector<String>> res = data.processes(Pattern.compile(".*"));
         assertEquals("ps -ef", res.get(0).get(data.commandColumnIdx()));
+        assertEquals("29270", res.get(0).get(1));
     }
     
     private PsProvider.PsData prepareMacData() {
@@ -147,6 +154,7 @@ public class PsProviderTest {
         data.addProcess("    0   625   615   0   0:00.00 ttys000    0:00.00 ps -ef");
         Vector<Vector<String>> res = data.processes(Pattern.compile(".*"));
         assertEquals("ps -ef", res.get(0).get(data.commandColumnIdx()));
+        assertEquals("625", res.get(0).get(1));
     }
     
     @Test
@@ -155,5 +163,6 @@ public class PsProviderTest {
         data.addProcess("longusername   625   615   0   0:00.00 ttys000    0:00.00 ps -ef");
         Vector<Vector<String>> res = data.processes(Pattern.compile(".*"));
         assertEquals("ps -ef", res.get(0).get(data.commandColumnIdx()));
+        assertEquals("625", res.get(0).get(1));
     }
 }
