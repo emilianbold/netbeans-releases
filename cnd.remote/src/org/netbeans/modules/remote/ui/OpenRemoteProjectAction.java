@@ -87,7 +87,6 @@ public class OpenRemoteProjectAction extends SingleHostAction {
     private static RequestProcessor RP = new RequestProcessor("Opening remote project", 1); //NOI18N
     private static boolean isRunning = false;
     private static final Object lock = new Object();
-    private static Map<ExecutionEnvironment, String> lastUsedDirs = new HashMap<ExecutionEnvironment, String>();
     
     @Override
     public String getName() {
