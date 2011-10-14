@@ -377,6 +377,7 @@ public class CsmUtilities {
      *      or <code>null</code> if there is no such project
      */
     public static CsmProject getCsmProject(FileObject fo) {
+        CsmProject pathBasedCandidate = null;
         if (fo != null && fo.isValid()) {
             String path = fo.getPath();
             FileSystem fileSystem = null;
@@ -390,14 +391,20 @@ public class CsmUtilities {
                 if (platformProject instanceof NativeProject) {
                     NativeProject nativeProject = (NativeProject)platformProject;
                     if (nativeProject.getFileSystem().equals(fileSystem)) {
-                        final List<String> sourceRoots = new ArrayList<String>();
-                        sourceRoots.add(nativeProject.getProjectRoot());
-                        sourceRoots.addAll(nativeProject.getSourceRoots());
-                        for (String src : sourceRoots) {
-                            if (path.startsWith(src)) {
-                                final int length = src.length();
-                                if (path.length() == length || path.charAt(length) == '\\' || path.charAt(length) == '/') {
-                                    return csmProject;
+                        NativeFileItem item = nativeProject.findFileItem(fo);
+                        if (item != null) {
+                            return csmProject;
+                        }
+                        if (pathBasedCandidate == null) {
+                            final List<String> sourceRoots = new ArrayList<String>();
+                            sourceRoots.add(nativeProject.getProjectRoot());
+                            sourceRoots.addAll(nativeProject.getSourceRoots());
+                            for (String src : sourceRoots) {
+                                if (path.startsWith(src)) {
+                                    final int length = src.length();
+                                    if (path.length() == length || path.charAt(length) == '\\' || path.charAt(length) == '/') {
+                                        pathBasedCandidate = csmProject;
+                                    }
                                 }
                             }
                         }
@@ -405,7 +412,7 @@ public class CsmUtilities {
                 }
             }
         }
-        return null;
+        return pathBasedCandidate;
     }
 
     public static boolean isAnyNativeProjectOpened() {
