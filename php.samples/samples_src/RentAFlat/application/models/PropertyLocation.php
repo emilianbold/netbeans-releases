@@ -62,25 +62,17 @@ class Application_Model_PropertyLocation {
     }
 
     public function __get($name) {
-
         $method = 'get' . $name;
-
         if (('mapper' == $name) || !method_exists($this, $method)) {
-
             throw new Exception('Invalid content property');
         }
-
         return $this->$method();
     }
 
     public function setOptions(array $options) {
-
         $methods = get_class_methods($this);
-
         foreach ($options as $key => $value) {
-
             $method = 'set' . ucfirst($key);
-
             if (in_array($method, $methods)) {
 
                 $this->$method($value);

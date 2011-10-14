@@ -45,28 +45,23 @@ echo $this->doctype();
 ?>
 <html xmlns="http://www.w3.org/1999/xhtml" dir="ltr" lang="en-US">
     <head>
-        <meta http-equiv="X-UA-Compatible" content="IE=7" />
-        <link rel="shortcut icon" href="images/favicon.ico" type="image/x-icon" />
-        <meta http-equiv="content-type" content="text/html; charset=utf-8" />
-        <meta http-equiv="content-language" content="en-US"/>
         <title>Rent-a-Flat - NetBeans sample!</title>
+
+        <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+        <meta name="language" content="en" />
         <meta name="keywords" content="flat, rental, home, low prices" />
         <meta name="description" content="Sample Zend framework project for NetBeans" />
         <meta name="author" content="Oracle corp." />
         <meta name="copyright" content="(c) 2011 Oracle" />
-        <meta name="robots" content="all,index,follow" />
-        <meta name="revisit-after" content="14 day" />
-        <meta name="expires" content="never" />
-        <meta name="cache-control" content="no-cache" />
-        <meta http-equiv="pragma" content="no-cache" />
+
+        <link rel="shortcut icon" href="<?php echo $this->baseUrl(); ?>/favicon.ico" type="image/x-icon" />
         <link href="<?php echo $this->baseUrl(); ?>/css/cssweb.css" media="screen" rel="stylesheet" type="text/css" />
 
         <script type="text/javascript">
-            var BASE_URL = '<?php echo 'http://' . $_SERVER['HTTP_HOST'] . '/' . $this->baseUrl(); ?>';
+            var BASE_URL = '<?php echo 'http://' . $_SERVER['HTTP_HOST'] . $this->baseUrl(); ?>';
         </script>
         <script src="<?php echo $this->baseUrl(); ?>/js/jquery.js" type="text/javascript"></script>
         <script src="<?php echo $this->baseUrl(); ?>/js/function.js" type="text/javascript"></script>
-
     </head>
     <body>
         <div id="bodyimg">
@@ -74,7 +69,7 @@ echo $this->doctype();
                 <div id="top">
                     <h2><a href="<?php echo $this->url(array("controller" => "index", "action" => "index"), null, true); ?>"
                            title="Go to Homepage">
-                            <img src="/images/netbeans-logo.gif" height="93" alt="Logo - Rent A Flat" /></a>
+                            <img src="<?php echo $this->baseUrl(); ?>/images/netbeans-logo.gif" height="93" alt="Logo - Rent A Flat" /></a>
                         <span>
                             Rent-a-Flat with NetBeans <br />
                             Zend Framework Sample <br />
@@ -83,7 +78,22 @@ echo $this->doctype();
                         </span>
                     </h2>
                 </div>
-                <?php echo $this->placeholder('menu'); ?> <?php echo $this->layout()->content; ?> <?php echo $this->placeholder('footer'); ?>
+
+                <?php echo $this->placeholder('menu'); ?>
+                <div class="cleaner"></div>
+
+                <div id="conbox">
+                    <div id="skip" class="none"><a name="skip"></a></div>
+                    <div id="con">
+                        <?php echo $this->layout()->content; ?>
+                        <div class="cleaner"></div>
+                    </div>
+                </div>
+                <div class="cleaner"></div>
+
+                <?php echo $this->placeholder('footer'); ?>
+                <div class="cleaner"></div>
+
             </div>
         </div>
     </body>

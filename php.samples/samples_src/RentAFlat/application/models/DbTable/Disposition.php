@@ -1,4 +1,5 @@
 <?php
+
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
@@ -41,11 +42,9 @@
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
-class Application_Model_DbTable_Disposition extends Zend_Db_Table_Abstract
-{
+class Application_Model_DbTable_Disposition extends Zend_Db_Table_Abstract {
 
     protected $_name = 'disposition';
-
 
 }
 

@@ -1,4 +1,5 @@
 <?php
+
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
@@ -41,8 +42,7 @@
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
-class Application_Model_PropertyBuildType
-{
+class Application_Model_PropertyBuildType {
 
     protected $id;
     protected $text;
@@ -54,15 +54,10 @@ class Application_Model_PropertyBuildType
     }
 
     public function setOptions(array $options) {
-
         $methods = get_class_methods($this);
-
         foreach ($options as $key => $value) {
-
-            $method = 'set' . ucfirst($key);
-
+            $method = 'set'.ucfirst($key);
             if (in_array($method, $methods)) {
-
                 $this->$method($value);
             }
         }
@@ -70,7 +65,7 @@ class Application_Model_PropertyBuildType
     }
 
     public function __set($name, $value) {
-        $method = 'set' . $name;
+        $method = 'set'.$name;
         if (('mapper' == $name) || !method_exists($this, $method)) {
             throw new Exception('Invalid content property');
         }
@@ -78,14 +73,10 @@ class Application_Model_PropertyBuildType
     }
 
     public function __get($name) {
-
-        $method = 'get' . $name;
-
+        $method = 'get'.$name;
         if (('mapper' == $name) || !method_exists($this, $method)) {
-
             throw new Exception('Invalid content property');
         }
-
         return $this->$method();
     }
 
@@ -106,5 +97,4 @@ class Application_Model_PropertyBuildType
     }
 
 }
-
 

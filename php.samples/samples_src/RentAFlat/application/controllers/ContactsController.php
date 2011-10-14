@@ -41,7 +41,7 @@
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
-include_once 'BaseController.php';
+require_once 'BaseController.php';
 
 class ContactsController extends BaseController {
 

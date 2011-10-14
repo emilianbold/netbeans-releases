@@ -41,29 +41,49 @@
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
-include_once 'BaseController.php';
+final class Misc_Utils {
 
-class SellEstateController extends BaseController {
+    private function __construct() {
+    }
 
-    public function init() {
-        parent::init();
-
-        if ($this->getRequest()->getParam("removeFromFavorites") != null) {
-            General::removeFromCookie($this->getRequest()->getParam("removeFromFavorites"));
-            $this->_redirect("/my-favorites");
-            exit;
+    public static function getPerex($text) {
+        if (mb_strlen($text) > 200) {
+            $firstPor = mb_substr($text, 0, 200);
+            $space = mb_strrpos($firstPor, " ");
+            return mb_substr($firstPor, 0, $space) . " ...";
         }
+        return $text;
+    }
 
-        if ($this->getRequest()->getParam("addToFavorites") != null) {
-            General::addToCookie($this->getRequest()->getParam("addToFavorites"));
-            $this->_redirect("/my-favorites");
-            exit;
+    /**
+     * @return ArrayObject
+     */
+    public static function getFavorites() {
+        $session = new Zend_Session_Namespace('favorites');
+        if ($session->favorites === null) {
+            $session->setExpirationSeconds(2592000);
+            $session->favorites = new ArrayObject(array());
+        }
+        return $session->favorites;
+    }
+
+    public static function addToFavorites($id) {
+        if (is_numeric($id)) {
+            self::getFavorites()->offsetSet($id, $id);
         }
     }
 
-    public function indexAction() {
-        $properties = new Application_Model_PropertyMapper();
-        $this->view->properties = $properties->fetchAll();
+    public static function removeFromFavorites($id) {
+        if (self::isInFavorites($id)) {
+            self::getFavorites()->offsetUnset($id);
+        }
+    }
+
+    public static function isInFavorites($id) {
+        if (is_numeric($id)) {
+            return self::getFavorites()->offsetExists($id);
+        }
+        return false;
     }
 
 }

@@ -41,26 +41,49 @@
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
-include_once 'SellEstateController.php';
+require_once 'BaseController.php';
 
-class MyFavoritesController extends SellEstateController {
+class MyFavoritesController extends BaseController {
 
     public function indexAction() {
-        $session = new Zend_Session_Namespace('favorites');
+        $model = new Application_Model_PropertyMapper();
+        $properties = $model->fetchByIds(Misc_Utils::getFavorites()->getArrayCopy());
 
-        $query = "";
-        $this->view->count = 0;
-        if (count($session->favorites)) {
-            $query = "id IN(" . implode(", ", $session->favorites) . ")";
-            $this->view->count = count($session->favorites);
-        }
-
-        $properties = new Application_Model_PropertyMapper();
-        if ($this->view->count > 0) {
-            $this->view->properties = $properties->fetchAll($query);
+        $count = count($properties);
+        if ($count) {
+            $this->view->count = $count;
+            $this->view->properties = $properties;
         } else {
-            $this->renderScript ("my-favorites/no-results.phtml");
+            $this->renderScript('my-favorites/no-results.phtml');
         }
+    }
+
+    public function addAction() {
+        Misc_Utils::addToFavorites($this->getRequest()->getParam("id"));
+        echo '<a id="p'. $this->getRequest()->getParam("id") .'" class="fav-del" href="#" onclick="return removeFromFavorites(' . $this->getRequest()->getParam("id") . ')"
+            title="Remove from favorites">Remove from favorites</a>';
+        exit;
+    }
+
+    public function removeAction() {
+        Misc_Utils::removeFromFavorites($this->getRequest()->getParam("id"));
+        echo '<a id="p'. $this->getRequest()->getParam("id") .'" class="fav" href="#" onclick="return addToFavorites(' . $this->getRequest()->getParam("id") . ')"
+            title="Add to favorites">Add to favorites</a>';
+        exit;
+    }
+
+    public function addDetailAction() {
+        Misc_Utils::addToFavorites($this->getRequest()->getParam("id"));
+        echo '<a id="p'. $this->getRequest()->getParam("id") .'" href="#" onclick="return removeFromFavoritesDetail(' . $this->getRequest()->getParam("id") . ')"
+            title="Remove from favorites">Remove from favorites</a>';
+        exit;
+    }
+
+    public function removeDetailAction() {
+        Misc_Utils::removeFromFavorites($this->getRequest()->getParam("id"));
+        echo '<a id="p'. $this->getRequest()->getParam("id") .'" href="#" onclick="return addToFavoritesDetail(' . $this->getRequest()->getParam("id") . ')"
+            title="Add to favorites">Add to favorites</a>';
+        exit;
     }
 
 }

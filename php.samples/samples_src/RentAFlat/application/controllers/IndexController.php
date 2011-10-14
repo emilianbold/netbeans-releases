@@ -41,12 +41,11 @@
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
-include_once 'BaseController.php';
+require_once 'BaseController.php';
 
 class IndexController extends BaseController {
 
     public function indexAction() {
-        $this->view->readme = realpath(__DIR__ . '/../../readme.html');
     }
 
     public function readmeAction() {

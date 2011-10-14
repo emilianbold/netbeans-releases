@@ -67,6 +67,16 @@ abstract class BaseController extends Zend_Controller_Action {
     public function init() {
         $this->view->controller = $this->getRequest()->getControllerName();
         $this->view->action = $this->getRequest()->getActionName();
+
+        if ($this->getRequest()->getParam("removeFromFavorites") != null) {
+            Misc_Utils::removeFromFavorites($this->getRequest()->getParam("removeFromFavorites"));
+            $this->_redirect("/my-favorites");
+            exit;
+        } elseif ($this->getRequest()->getParam("addToFavorites") != null) {
+            Misc_Utils::addToFavorites($this->getRequest()->getParam("addToFavorites"));
+            $this->_redirect("/my-favorites");
+            exit;
+        }
     }
 
     public function preDispatch() {

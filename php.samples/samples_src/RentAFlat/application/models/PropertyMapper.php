@@ -41,52 +41,28 @@
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
-/**
- *
- *
- * @author Filip Zamboj (fzamboj@netbeans.org)
- */
 class Application_Model_PropertyMapper {
 
-    /**
-     *
-     * @global String
-     */
     protected $_dbTable;
 
-    /**
-     *
-     * @param type $dbTable
-     * @return Application_Model_PropertyMapper
-     */
     public function setDbTable($dbTable) {
-
         if (is_string($dbTable)) {
-
             $dbTable = new $dbTable();
         }
-
         if (!$dbTable instanceof Zend_Db_Table_Abstract) {
-
             throw new Exception('Invalid table data gateway provided');
         }
-
         $this->_dbTable = $dbTable;
-
         return $this;
     }
 
     /**
-     *
      * @return Application_Model_DbTable_Property
      */
     public function getDbTable() {
-
         if (null === $this->_dbTable) {
-
             $this->setDbTable('Application_Model_DbTable_Property');
         }
-
         return $this->_dbTable;
     }
 
@@ -96,7 +72,6 @@ class Application_Model_PropertyMapper {
      * @return type
      */
     public function save(Application_Model_Property $property) {
-
         $data = array(
             'reference_no' => $property->getReference_no(),
             'title' => $property->getTitle(),
@@ -118,16 +93,10 @@ class Application_Model_PropertyMapper {
             'garage' => $property->getGarage(),
             'parking_place' => $property->getParking_place(),
         );
-
-
-
         if (null === ($id = $property->getId())) {
-
             unset($data['id']);
-
             return $this->getDbTable()->insert($data);
         } else {
-
             $this->getDbTable()->update($data, array('id = ?' => $id));
             return $id;
         }
@@ -140,20 +109,14 @@ class Application_Model_PropertyMapper {
      * @return type
      */
     public function find($id, Application_Model_Property $property) {
-
         $result = $this->getDbTable()->find($id);
-
         if (0 == count($result)) {
-
             return;
         }
-
         $row = $result->current();
-
         $property->setId($row->id)
                 ->setTitle($row->title)
                 ->setText($row->text)
-
                 ->setDisposition_id($row->diposition_id)
                 ->setArea($row->area)
                 ->setFloor($row->floor)
@@ -176,9 +139,7 @@ class Application_Model_PropertyMapper {
     private function processResultSet($resultSet) {
         $entries = array();
         foreach ($resultSet as $row) {
-
             $entry = new Application_Model_Property();
-
             $entry->setId($row->id);
             $entry->setReference_no($row->reference_no);
             $entry->setTitle($row->title);
@@ -199,29 +160,34 @@ class Application_Model_PropertyMapper {
             $entry->setGarden($row->garden);
             $entry->setGarage($row->garage);
             $entry->setParking_place($row->parking_place);
-
             $entries[] = $entry;
         }
-
         return $entries;
     }
 
-    /**
-     *
-     * @return type
-     */
     public function fetchAll($query = NULL) {
         if ($query === NULL) {
             $resultSet = $this->getDbTable()->fetchAll();
-
         } else {
             $table = $this->getDbTable();
             $select = $table->select();
             $select->from($table)
                     ->where($query);
-
             $resultSet = $this->getDbTable()->fetchAll($select);
         }
+        return $this->processResultSet($resultSet);
+    }
+
+    public function fetchByIds(array $ids) {
+        if (count($ids) == 0) {
+            return array();
+        }
+        $in = "id IN(" . implode(", ", $ids) . ")";
+        $select = $this->getDbTable()
+                ->select()
+                ->from($this->getDbTable())
+                ->where($in);
+        $resultSet = $this->getDbTable()->fetchAll($select);
         return $this->processResultSet($resultSet);
     }
 

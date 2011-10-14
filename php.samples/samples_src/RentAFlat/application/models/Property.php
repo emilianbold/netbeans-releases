@@ -64,14 +64,6 @@ class Application_Model_Property {
     protected $garage;
     protected $parking_place;
 
-    public function getCoverObject() {
-        $pictures = new Application_Model_PropertyPicturesMapper();
-        $results = $pictures->fetchAll("cover = 1 and property_id = " . $this->getId());
-        foreach ($results as $result) {
-            return $result;
-        }
-    }
-
     public function __construct(array $options = null) {
         if (is_array($options)) {
             $this->setOptions($options);
@@ -87,27 +79,18 @@ class Application_Model_Property {
     }
 
     public function __get($name) {
-
         $method = 'get' . $name;
-
         if (('mapper' == $name) || !method_exists($this, $method)) {
-
             throw new Exception('Invalid content property');
         }
-
         return $this->$method();
     }
 
     public function setOptions(array $options) {
-
         $methods = get_class_methods($this);
-
         foreach ($options as $key => $value) {
-
             $method = 'set' . ucfirst($key);
-
             if (in_array($method, $methods)) {
-
                 $this->$method($value);
             }
         }
@@ -157,12 +140,11 @@ class Application_Model_Property {
         $this->disposition_id = $disposition_id;
     }
 
-    public function getArea()
-    {
+    public function getArea() {
         return str_replace(".0", "", $this->area);
     }
 
-	public function getAreaFormatted() {
+	public function getFormattedArea() {
 		return number_format($this->area, 0, ".", " ");
     }
 
@@ -218,33 +200,24 @@ class Application_Model_Property {
         $this->price = $price;
     }
 
-
-
     public function getCreated_on() {
         return $this->created_on;
     }
-
 
     public function setCreated_on($created_on) {
         $this->created_on = $created_on;
     }
 
     public function getLocation() {
-        $location = new Application_Model_PropertyLocationMapper();
-        return $location->fetchAll('id = ' . $this->getLocation_id());
+        $model = new Application_Model_PropertyLocationMapper();
+        $locations = $model->fetchAll('id = ' . $this->getLocation_id());
+        return $locations[0];
     }
-
 
     public function getDisposition() {
         $disposition = new Application_Model_DispositionMapper();
         foreach ($disposition->fetchAll('id = ' . $this->getDisposition_id()) as $disposition_type) {
             return $disposition_type->getText();
-        }
-    }
-
-    public function getTextLocation() {
-        foreach ($this->getLocation() as $location) {
-            return $location;
         }
     }
 
@@ -259,8 +232,6 @@ class Application_Model_Property {
     public function getFormattedPrice() {
         return number_format($this->getPrice(), 0, ".", " ");
     }
-
-
 
     public function getProperty_build_id() {
         return $this->property_build_id;
@@ -316,8 +287,6 @@ class Application_Model_Property {
     public function setParking_place($parking_place) {
         $this->parking_place = $parking_place;
     }
-
-
 
 }
 
