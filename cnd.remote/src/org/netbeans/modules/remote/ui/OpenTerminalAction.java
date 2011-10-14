@@ -84,7 +84,6 @@ import org.openide.windows.WindowManager;
 @ActionReference(path = "Remote/Host/Actions", name = "OpenTerminalAction", position = 700)
 public class OpenTerminalAction extends SingleHostAction {
     private JMenu remotePopupMenu;
-    private JMenu localPopupMenu;
 
     @Override
     public String getName() {
@@ -93,6 +92,10 @@ public class OpenTerminalAction extends SingleHostAction {
 
     @Override
     protected void performAction(final ExecutionEnvironment env, Node node) {
+        Node[] activatedNodes = getActivatedNodes();
+        if (activatedNodes != null && activatedNodes.length == 1 && !isRemote(activatedNodes[0])) {
+            SystemAction.get(AddHome.class).performAction(env, node);
+        }        
     }
 
     @Override
@@ -102,30 +105,22 @@ public class OpenTerminalAction extends SingleHostAction {
 
     @Override
     public JMenuItem getPopupPresenter() {
-        createSubMenu();
-        JMenuItem out = localPopupMenu;
         Node[] activatedNodes = getActivatedNodes();
         if (activatedNodes != null && activatedNodes.length == 1 && isRemote(activatedNodes[0])) {
-            out = remotePopupMenu;
+            createSubMenu();
+            return remotePopupMenu;
+        } else {
+            return super.getPopupPresenter();
         }
-        return out;
     }
 
     private void createSubMenu() {
         if (remotePopupMenu == null) {
             remotePopupMenu = new JMenu(getName());
             remotePopupMenu.add(SystemAction.get(AddHome.class).getPopupPresenter());
-//            popupMenu.add(new AddProjects().getPopupPresenter());
             remotePopupMenu.add(SystemAction.get(AddMirror.class).getPopupPresenter());
-            remotePopupMenu.add(SystemAction.get(AddRoot.class).getPopupPresenter());
+//            remotePopupMenu.add(SystemAction.get(AddRoot.class).getPopupPresenter());
 //            remotePopupMenu.add(SystemAction.get(AddOther.class).getPopupPresenter());
-        }
-        if (localPopupMenu == null) {
-            localPopupMenu = new JMenu(getName());
-            localPopupMenu.add(SystemAction.get(AddHome.class).getPopupPresenter());
-//            popupMenu.add(new AddProjects().getPopupPresenter());
-            localPopupMenu.add(SystemAction.get(AddRoot.class).getPopupPresenter());
-//            localPopupMenu.add(SystemAction.get(AddOther.class).getPopupPresenter());
         }
     }
 
@@ -174,14 +169,14 @@ public class OpenTerminalAction extends SingleHostAction {
                     }
                     final String path = getPath(env);
                     if (path != null && path.length() > 0) {
-                        Runnable openFavorites = new Runnable() {
+                        Runnable openTask = new Runnable() {
 
                             @Override
                             public void run() {
                                 TerminalSupport.openTerminal(env.getDisplayName(), env, path);
                             }
                         };
-                        SwingUtilities.invokeLater(openFavorites);
+                        SwingUtilities.invokeLater(openTask);
                     } else {
                         if (path != null) {
                             String msg;
