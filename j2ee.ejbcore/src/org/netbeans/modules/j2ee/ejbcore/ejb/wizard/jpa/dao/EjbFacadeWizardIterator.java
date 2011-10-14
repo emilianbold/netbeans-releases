@@ -462,6 +462,7 @@ import org.openide.util.NbBundle;
     private List<GenerationOptions> getMethodOptions(String entityFQN, String variableName){
 
         GenerationOptions getEMOptions = new GenerationOptions();
+        getEMOptions.setAnnotation("java.lang.Override"); //NOI18N
         getEMOptions.setMethodName("getEntityManager"); //NOI18N
         getEMOptions.setOperation(GenerationOptions.Operation.GET_EM);
         getEMOptions.setReturnType("javax.persistence.EntityManager");//NOI18N

@@ -110,7 +110,14 @@ public class FSCompletion implements CompletionProvider {
 
                     final List<FileObject> includePath = PhpSourcePath.getIncludePath(file);
                     try {
-                        ParserManager.parse(Collections.singleton(Source.create(file)), new UserTask() {
+                        Source source = Source.create(file);
+                        
+                        if (source == null) {
+                            // the create source checks, whether the file is valid and whether is not a folder
+                            // in such case returns null. 
+                            return;
+                        }
+                        ParserManager.parse(Collections.singleton(source), new UserTask() {
 
                             @Override
                             public void run(ResultIterator resultIterator) throws Exception {
