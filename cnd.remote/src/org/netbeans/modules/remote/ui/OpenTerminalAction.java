@@ -118,14 +118,14 @@ public class OpenTerminalAction extends SingleHostAction {
 //            popupMenu.add(new AddProjects().getPopupPresenter());
             remotePopupMenu.add(SystemAction.get(AddMirror.class).getPopupPresenter());
             remotePopupMenu.add(SystemAction.get(AddRoot.class).getPopupPresenter());
-            remotePopupMenu.add(SystemAction.get(AddOther.class).getPopupPresenter());
+//            remotePopupMenu.add(SystemAction.get(AddOther.class).getPopupPresenter());
         }
         if (localPopupMenu == null) {
             localPopupMenu = new JMenu(getName());
             localPopupMenu.add(SystemAction.get(AddHome.class).getPopupPresenter());
 //            popupMenu.add(new AddProjects().getPopupPresenter());
             localPopupMenu.add(SystemAction.get(AddRoot.class).getPopupPresenter());
-            localPopupMenu.add(SystemAction.get(AddOther.class).getPopupPresenter());
+//            localPopupMenu.add(SystemAction.get(AddOther.class).getPopupPresenter());
         }
     }
 
