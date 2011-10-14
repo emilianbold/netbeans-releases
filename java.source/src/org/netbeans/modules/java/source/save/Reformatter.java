@@ -540,6 +540,8 @@ public class Reformatter implements ReformatTask {
                         tokens.move(startPos);
                         tokens.moveNext();
                     }
+                    if (startPos >= endPos)
+                        endPos = -1;
                 }
             }
             try {
