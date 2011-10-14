@@ -160,7 +160,7 @@ public class OpenRemoteProjectAction extends SingleHostAction {
     }
     
     private void openRemoteProject(ExecutionEnvironment env) {            
-        String homeDir = lastUsedDirs.get(env);
+        String homeDir = RemoteFileUtil.getCurrentChooserFile(env);
         if (homeDir == null) {
             homeDir = getRemoteProjectDir(env);
         }            
@@ -174,10 +174,11 @@ public class OpenRemoteProjectAction extends SingleHostAction {
             return;
         }
         FileObject remoteProjectFO = fileChooser.getSelectedFileObject();
-        lastUsedDirs.put(env, remoteProjectFO.getParent().getPath());
         if (remoteProjectFO == null || !remoteProjectFO.isFolder()) {
             return;
         }
+        homeDir = remoteProjectFO.getParent() == null ? remoteProjectFO.getPath() : remoteProjectFO.getParent().getPath();
+        RemoteFileUtil.setCurrentChooserFile(homeDir, env);
         Project project;
         try {
             project = ProjectManager.getDefault().findProject(remoteProjectFO);
