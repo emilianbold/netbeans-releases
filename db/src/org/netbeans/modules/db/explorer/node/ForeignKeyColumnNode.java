@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -88,6 +88,7 @@ public class ForeignKeyColumnNode extends BaseNode {
         keyColumnHandle = getLookup().lookup(MetadataElementHandle.class);
     }
 
+    @Override
     protected void initialize() {
         boolean connected = !connection.getConnector().isDisconnected();
         MetadataModel metaDataModel = connection.getMetadataModel();
@@ -95,6 +96,7 @@ public class ForeignKeyColumnNode extends BaseNode {
             try {
                 metaDataModel.runReadAction(
                     new Action<Metadata>() {
+                        @Override
                         public void run(Metadata metaData) {
                             ForeignKeyColumn column = keyColumnHandle.resolve(metaData);
                             name = column.getReferringColumn().getName()
@@ -139,6 +141,7 @@ public class ForeignKeyColumnNode extends BaseNode {
         try {
             metaDataModel.runReadAction(
                 new Action<Metadata>() {
+                    @Override
                     public void run(Metadata metaData) {
                         ForeignKeyColumn column = keyColumnHandle.resolve(metaData);
                         array[0] = column == null ? -1 : column.getPosition();
