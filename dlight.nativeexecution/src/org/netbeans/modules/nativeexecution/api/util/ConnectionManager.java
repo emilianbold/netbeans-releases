@@ -59,8 +59,6 @@ import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.nativeexecution.ConnectionManagerAccessor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -72,7 +70,6 @@ import org.netbeans.modules.nativeexecution.support.Logger;
 import org.netbeans.modules.nativeexecution.support.NativeTaskExecutorService;
 import org.netbeans.modules.nativeexecution.support.ui.AuthenticationSettingsPanel;
 import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 
 /**
@@ -101,7 +98,7 @@ public final class ConnectionManager {
     private static final ConnectionManager instance = new ConnectionManager();
     private static final ConcurrentHashMap<ExecutionEnvironment, JSch> jschPool =
             new ConcurrentHashMap<ExecutionEnvironment, JSch>();
-    private static final ConcurrentHashMap<ExecutionEnvironment, JSchConnectionTask> connectionTasks =
+    private final ConcurrentHashMap<ExecutionEnvironment, JSchConnectionTask> connectionTasks =
             new ConcurrentHashMap<ExecutionEnvironment, JSchConnectionTask>();
     private static final boolean UNIT_TEST_MODE = Boolean.getBoolean("nativeexecution.mode.unittest"); // NOI18N
 
@@ -285,28 +282,27 @@ public final class ConnectionManager {
     }
 
     private void initiateConnection(final ExecutionEnvironment env, final JSch jsch) throws IOException, CancellationException {
-        JSchConnectionTask connectionTask;
-
-        synchronized (connectionTasks) {
-            connectionTask = connectionTasks.get(env);
-
-            if (connectionTask == null) {
-                connectionTask = new JSchConnectionTask(jsch, env);
+        JSchConnectionTask connectionTask = connectionTasks.get(env);
+        
+        if (connectionTask == null) {
+            JSchConnectionTask newTask = new JSchConnectionTask(jsch, env);
+            JSchConnectionTask oldTask = connectionTasks.putIfAbsent(env, newTask);
+            if (oldTask != null) {
+                connectionTask = oldTask;
+            } else {
+                connectionTask = newTask;
                 connectionTask.start();
-                connectionTasks.put(env, connectionTask);
             }
         }
-
-        final ProgressHandle ph = ProgressHandleFactory.createHandle(
-                loc("ConnectionManager.Connecting", // NOI18N
-                env.toString()), connectionTask);
-
-        ph.start();
-
+        
         try {
             JSchChannelsSupport cs = connectionTask.getResult();
-
+            
             if (cs != null) {
+                if (!cs.isConnected()) {
+                    throw new IOException("JSchChannelsSupport lost connection with " + env.getDisplayName() + "during initialization "); // NOI18N
+                }
+                
                 synchronized (channelsSupportLock) {
                     channelsSupport.put(env, cs);
                 }
@@ -320,9 +316,9 @@ public final class ConnectionManager {
                         // but on socket timeout as well. These cases are
                         // indistinguishable based on information from JSch.
                         throw new IOException(env.getDisplayName() + ": " + problem.type.name(), problem.cause); // NOI18N
-                    }
+                }
             }
-
+            
             HostInfo hostInfo = HostInfoUtils.getHostInfo(env);
             log.log(Level.FINE, "New connection established: {0} - {1}", new String[]{env.toString(), hostInfo.getOS().getName()}); // NOI18N
 
@@ -332,7 +328,6 @@ public final class ConnectionManager {
         } catch (ExecutionException ex) {
             Exceptions.printStackTrace(ex);
         } finally {
-            ph.finish();
             connectionTasks.remove(env);
         }
     }
@@ -365,10 +360,6 @@ public final class ConnectionManager {
         connectionActions.put(execEnv, action);
 
         return action;
-    }
-
-    private static String loc(String key, String... params) {
-        return NbBundle.getMessage(ConnectionManager.class, key, params);
     }
 
     private void reconnect(ExecutionEnvironment env) throws IOException {
