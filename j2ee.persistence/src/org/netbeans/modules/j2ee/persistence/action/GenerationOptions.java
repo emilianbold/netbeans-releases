@@ -123,6 +123,7 @@ public final class GenerationOptions {
     private String parameterName;
     private String parameterType;
     private String queryAttribute;
+    private String annotationType;
     private Set<Modifier> modifiers = EnumSet.of(Modifier.PUBLIC);
 
     /** Creates a new instance of GenerationOptions */
@@ -203,6 +204,14 @@ public final class GenerationOptions {
     
     public void setReturnType(String returnType) {
         this.returnType = returnType;
+    }
+
+    public String getAnnotation() {
+        return annotationType;
+    }
+
+    public void setAnnotation(String annotationType) {
+        this.annotationType = annotationType;
     }
  
 }
