@@ -56,6 +56,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.lang.model.element.ElementKind;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause.Occur;
@@ -63,11 +64,8 @@ import org.apache.lucene.search.Query;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
-import org.netbeans.api.java.source.Task;
-import org.netbeans.api.java.source.ClassIndex;
+import org.netbeans.api.java.source.*;
 import org.netbeans.api.java.source.ClasspathInfo.PathKind;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.parsing.lucene.support.Convertor;
@@ -79,6 +77,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
+import org.openide.util.Parameters;
 
 /**
  *
@@ -184,33 +183,53 @@ public class PersistentClassIndex extends ClassIndexImpl {
     // Implementation of UsagesQueryImpl ---------------------------------------    
     @Override
     public <T> void search (
-            @NonNull final String binaryName,
+            @NonNull final ElementHandle<?> element,
             @NonNull final Set<? extends UsageType> usageType,
             @NonNull final Set<? extends ClassIndex.SearchScopeType> scope,
             @NonNull final Convertor<? super Document, T> convertor,
             @NonNull final Set<? super T> result) throws InterruptedException, IOException {
+        Parameters.notNull("element", element); //NOI18N
+        Parameters.notNull("usageType", usageType); //NOI18N
+        Parameters.notNull("scope", scope); //NOI18N
+        Parameters.notNull("convertor", convertor); //NOI18N
+        Parameters.notNull("result", result);   //NOI18N
         updateDirty();
         try {
-            if (BinaryAnalyser.OBJECT.equals(binaryName)) {
-                this.getDeclaredTypes(
-                    "", //NOI18N
-                    ClassIndex.NameKind.PREFIX,
-                    scope,
-                    convertor,
-                    result);
-            } else {
-                IndexManager.readAccess(new IndexManager.Action<Void> () {
-                    @Override
-                    public Void run () throws IOException, InterruptedException {
-                        final Query usagesQuery = QueryUtil.scopeFilter(
-                                QueryUtil.createUsagesQuery(binaryName, usageType, Occur.SHOULD),
-                                scope);
-                        if (usagesQuery != null) {
-                            index.query(result, convertor, DocumentUtil.declaredTypesFieldSelector(), cancel.get(), usagesQuery);
-                        }
-                        return null;
+            final String binaryName = SourceUtils.getJVMSignature(element)[0];
+            final ElementKind kind = element.getKind();
+            if (kind == ElementKind.PACKAGE) {
+                    final Query q = QueryUtil.scopeFilter(
+                            QueryUtil.createPackageUsagesQuery(binaryName,usageType,Occur.SHOULD),
+                            scope);
+                    if (q!=null) {
+                        index.query(result, convertor, DocumentUtil.declaredTypesFieldSelector(), cancel.get(), q);
                     }
-                });
+            } else if (kind.isClass() ||
+                       kind.isInterface() ||
+                       kind == ElementKind.OTHER) {
+                if (BinaryAnalyser.OBJECT.equals(binaryName)) {
+                    this.getDeclaredTypes(
+                        "", //NOI18N
+                        ClassIndex.NameKind.PREFIX,
+                        scope,
+                        convertor,
+                        result);
+                } else {
+                    IndexManager.readAccess(new IndexManager.Action<Void> () {
+                        @Override
+                        public Void run () throws IOException, InterruptedException {
+                            final Query usagesQuery = QueryUtil.scopeFilter(
+                                    QueryUtil.createUsagesQuery(binaryName, usageType, Occur.SHOULD),
+                                    scope);
+                            if (usagesQuery != null) {
+                                index.query(result, convertor, DocumentUtil.declaredTypesFieldSelector(), cancel.get(), usagesQuery);
+                            }
+                            return null;
+                        }
+                    });
+                }
+            } else {
+                throw new IllegalArgumentException(element.toString());
             }
         } catch (IOException ioe) {
             this.<Void,IOException>handleException(null, ioe);

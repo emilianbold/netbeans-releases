@@ -436,14 +436,14 @@ public class IntroduceHintTest extends NbTestCase {
     public void testIntroduceFieldFix1() throws Exception {
         performCheckFixesTest("package test; public class Test {int y = 3 + 4; int z = 3 + 4;}",
                        73 - 32, 78 - 32,
-                       "[IntroduceFix:name:2:CREATE_CONSTANT]");
+                       "[IntroduceFix:NAME:2:CREATE_CONSTANT]");
     }
     
     public void testIntroduceFieldFix2() throws Exception {
         performCheckFixesTest("package test; public class Test {public void test() {int y = 3 + 4; int z = 3 + 4;}}",
                        93 - 32, 98 - 32,
                        "[IntroduceFix:name:2:CREATE_VARIABLE]",
-                       "[IntroduceFix:name:2:CREATE_CONSTANT]",
+                       "[IntroduceFix:NAME:2:CREATE_CONSTANT]",
                        "[IntroduceField:name:2:false:false:[7, 7]]",
                        "[IntroduceExpressionBasedMethodFix]",
                        "[Introduce Parameter Fix]");
@@ -453,7 +453,7 @@ public class IntroduceHintTest extends NbTestCase {
         performCheckFixesTest("package test; public class Test {public void test() {int y = 3 + 4; int z = 3 + 4;} public void test2() {int u = 3 + 4;}}",
                        93 - 32, 98 - 32,
                        "[IntroduceFix:name:2:CREATE_VARIABLE]",
-                       "[IntroduceFix:name:3:CREATE_CONSTANT]",
+                       "[IntroduceFix:NAME:3:CREATE_CONSTANT]",
                        "[IntroduceField:name:3:false:false:[7, 6]]",
                        "[IntroduceExpressionBasedMethodFix]",
                        "[Introduce Parameter Fix]");
@@ -499,7 +499,7 @@ public class IntroduceHintTest extends NbTestCase {
         performCheckFixesTest("package test; public class Test {int u = 0; public void test() {int y = u + 4; int z = u + 4;} private int i = 4;}",
                        108 - 32, 109 - 32,
                        "[IntroduceFix:name:2:CREATE_VARIABLE]",
-                       "[IntroduceFix:name:3:CREATE_CONSTANT]",
+                       "[IntroduceFix:NAME:3:CREATE_CONSTANT]",
                        "[IntroduceField:name:3:false:false:[7, 6]]",
                        "[IntroduceExpressionBasedMethodFix]",
                        "[Introduce Parameter Fix]");
@@ -518,7 +518,7 @@ public class IntroduceHintTest extends NbTestCase {
         performCheckFixesTest("package test; public class Test {public Test() {int y = 3 + 4; int z = 3 + 4;}}",
                        88 - 32, 93 - 32,
                        "[IntroduceFix:name:2:CREATE_VARIABLE]",
-                       "[IntroduceFix:name:2:CREATE_CONSTANT]",
+                       "[IntroduceFix:NAME:2:CREATE_CONSTANT]",
                        "[IntroduceField:name:2:false:true:[7, 7]]",
                        "[IntroduceExpressionBasedMethodFix]",
                        "[Introduce Parameter Fix]");
@@ -528,7 +528,7 @@ public class IntroduceHintTest extends NbTestCase {
         performCheckFixesTest("package test; public class Test {public Test() {int y = 3 + 4; int z = 3 + 4;} public Test(int i) {}}",
                        88 - 32, 93 - 32,
                        "[IntroduceFix:name:2:CREATE_VARIABLE]",
-                       "[IntroduceFix:name:2:CREATE_CONSTANT]",
+                       "[IntroduceFix:NAME:2:CREATE_CONSTANT]",
                        "[IntroduceField:name:2:false:false:[7, 7]]",
                        "[IntroduceExpressionBasedMethodFix]",
                        "[Introduce Parameter Fix]");
@@ -1553,6 +1553,26 @@ public class IntroduceHintTest extends NbTestCase {
 
     public void test193775() throws Exception {
         performCheckFixesTest("package test; import java.util.Collection; import java.util.Map.Entry; public class Test { public void test(|Collection<Entry> e|) {} }");
+    }
+
+    public void test203478() throws Exception {
+        performFixTest("package test;\n" +
+                       "import java.util.ArrayList;\n" +
+                       "public class Test {\n" +
+                       "    public void loop() {\n" +
+                       "        String someExampleHere = |\"someExampleHere\"|;\n" +
+                       "    }\n" +
+                       "}",
+                       ("package test;\n" +
+                       "import java.util.ArrayList;\n" +
+                       "public class Test {\n" +
+                       "    private static final String SOME_EXAMPLE_HERE = \"someExampleHere\";\n" +
+                       "    public void loop() {\n" +
+                       "        String someExampleHere = SOME_EXAMPLE_HERE;\n" +
+                       "    }\n" +
+                       "}").replaceAll("[ \t\n]+", " "),
+                       new DialogDisplayerImpl(null, false, false, true, EnumSet.<Modifier>of(Modifier.PRIVATE)),
+                       5, 1);
     }
 
     protected void prepareTest(String code) throws Exception {
