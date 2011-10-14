@@ -306,17 +306,20 @@ public class OpenTerminalAction extends SingleHostAction {
         if (ret == JFileChooser.CANCEL_OPTION) {
             return null;
         }
-        FileObject fo;
+        FileObject fo = null;
         if (fileChooser instanceof JFileChooserEx) {
             fo = ((JFileChooserEx)fileChooser).getSelectedFileObject();
         } else {
             File selectedFile = fileChooser.getSelectedFile();
-            fo = FileUtil.toFileObject(selectedFile);
+            if (selectedFile != null) {
+                fo = FileUtil.toFileObject(selectedFile);
+            }
         }
         if (fo == null || !fo.isFolder()) {
             return null;
         }
-        lastUsedDirs.put(env, fo.getParent().getPath());
+        String lastPath = fo.getParent() == null ? fo.getPath() : fo.getParent().getPath();
+        lastUsedDirs.put(env, lastPath);
         return fo;
     }    
 }
