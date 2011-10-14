@@ -161,7 +161,7 @@ public class MakeOSGi extends Task {
                     JarFile jf = new JarFile(jar);
                     try {
                         Info info = new Info();
-                        String cnb = prescan(jf, info);
+                        String cnb = prescan(jf, info, this);
                         if (cnb == null) {
                             log(jar + " does not appear to be either a module or a bundle; skipping", Project.MSG_WARN);
                         } else if (SKIPPED_PSEUDO_MODULES.contains(cnb)) {
@@ -196,7 +196,7 @@ public class MakeOSGi extends Task {
         }
     }
 
-    private String prescan(JarFile module, Info info) throws Exception {
+    static String prescan(JarFile module, Info info, Task task) throws Exception {
         Manifest manifest = module.getManifest();
         if (manifest == null) {
             return null;
@@ -208,7 +208,7 @@ public class MakeOSGi extends Task {
             return cnb;
         }
         Set<String> availablePackages = new TreeSet<String>();
-        scanClasses(module, info.importedPackages, availablePackages);
+        scanClasses(module, info.importedPackages, availablePackages, task);
         File antlib = new File(module.getName().replaceFirst("([/\\\\])modules([/\\\\][^/\\\\]+)", "$1ant$1nblib$2"));
         if (antlib.isFile()) {
             // ant/nblib/org-netbeans-modules-debugger-jpda-ant.jar references com.sun.jdi.* packages.
@@ -218,7 +218,7 @@ public class MakeOSGi extends Task {
             Set<String> antlibPackages = new HashSet<String>();
             JarFile antlibJF = new JarFile(antlib);
             try {
-                scanClasses(antlibJF, antlibPackages, new HashSet<String>());
+                scanClasses(antlibJF, antlibPackages, new HashSet<String>(), task);
             } finally {
                 antlibJF.close();
             }
@@ -274,15 +274,15 @@ public class MakeOSGi extends Task {
                 }
             }
         } else { // #180201
-            cnb = attr.getValue("Bundle-SymbolicName");
+            cnb = JarWithModuleAttributes.extractCodeName(attr);
             if (cnb == null) {
                 return null;
             }
             String exportPackage = attr.getValue("Export-Package");
             if (exportPackage != null) {
-                for (String piece : exportPackage.split("[, ]+")) {
-                    // XXX might in general need to follow spec, but this is all JarWithModuleAttributes would create
-                    info.exportedPackages.add(piece);
+                // http://stackoverflow.com/questions/1757065/java-splitting-a-comma-separated-string-but-ignoring-commas-in-quotes
+                for (String piece : exportPackage.split(",(?=([^\"]*\"[^\"]*\")*[^\"]*$)")) {
+                    info.exportedPackages.add(piece.trim().replaceFirst(";.+", ""));
                 }
             }
         }
@@ -307,9 +307,8 @@ public class MakeOSGi extends Task {
         try {
             Manifest netbeans = jar.getManifest();
             Attributes netbeansAttr = netbeans.getMainAttributes();
-            String originalBundleName = netbeansAttr.getValue("Bundle-SymbolicName");
-            if (originalBundleName != null) { // #180201
-                File bundleFile = findDestFile(originalBundleName, netbeansAttr.getValue("Bundle-Version"));
+            if (netbeansAttr.getValue("Bundle-SymbolicName") != null) { // #180201
+                File bundleFile = findDestFile(JarWithModuleAttributes.extractCodeName(netbeansAttr), netbeansAttr.getValue("Bundle-Version"));
                 if (bundleFile.lastModified() > module.lastModified()) {
                     log("Skipping " + module + " since " + bundleFile + " is newer", Project.MSG_VERBOSE);
                     return;
@@ -676,9 +675,9 @@ public class MakeOSGi extends Task {
         return result;
     }
 
-    private void scanClasses(JarFile module, Set<String> importedPackages, Set<String> availablePackages) throws Exception {
+    private static void scanClasses(JarFile module, Set<String> importedPackages, Set<String> availablePackages, Task task) throws Exception {
         Map<String, byte[]> classfiles = new TreeMap<String, byte[]>();
-        VerifyClassLinkage.read(module, classfiles, new HashSet<File>(Collections.singleton(new File(module.getName()))), this, null);
+        VerifyClassLinkage.read(module, classfiles, new HashSet<File>(Collections.singleton(new File(module.getName()))), task, null);
         for (Map.Entry<String,byte[]> entry : classfiles.entrySet()) {
             String available = entry.getKey();
             int idx = available.lastIndexOf('.');
@@ -920,6 +919,7 @@ public class MakeOSGi extends Task {
 
     private static final Set<String> SKIPPED_PSEUDO_MODULES = new HashSet<String>(Arrays.asList(
             "org.netbeans.core.netigso",
+            "org.netbeans.modules.netbinox",
             "org.netbeans.libs.osgi",
             "org.netbeans.libs.felix"
     ));
@@ -931,7 +931,8 @@ public class MakeOSGi extends Task {
             "org.netbeans.bootstrap",
             "org.openide.filesystems",
             "org.netbeans.core.startup",
-            "org.netbeans.core.osgi"
+            "org.netbeans.core.osgi",
+            "org.eclipse.osgi"
     ));
 
 }
