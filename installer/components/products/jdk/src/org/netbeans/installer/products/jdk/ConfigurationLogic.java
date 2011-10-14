@@ -144,27 +144,10 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                             }
                         }
                     }
-                    results = runJDKInstallerWindows(location, installer, jdkProgress,
-                            isFullSilentInstaller, jreAlreadyInstalled, javadbBundled);
-                    if(results.getErrorCode()==0) {
-                        getProduct().setProperty(JDK_INSTALLED_WINDOWS_PROPERTY,
-                                "" + true);
-                    }
-                    addUninsallationJVM(results, location);
-                    
-                    if(isFullSilentInstaller) {
-                        if (!jreAlreadyInstalled) {
-                            configureJREProductWindows(results);
-                        } else {
-                              LogManager.log("... jre " + getProduct().getVersion() +
-                                        " is already installed, skipping its configuration");
-                        }
-                        if(javadbBundled) {
-                            configureJavaDBProductWindows(results);
-                        }
-                    } else {
+
+                    if(!isFullSilentInstaller) {
                         //before jdk6u15(isFullSilentInstaller == true) there were separate jre and javadb installers
-                        if(!progress.isCanceled() && results.getErrorCode()==0) {
+                        if(!progress.isCanceled()) {
                             if(!jreAlreadyInstalled) {
                                 jreInstallation = true;
                                 final File jreInstaller = findJREWindowsInstaller();
@@ -177,7 +160,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                                         " is already installed, skipping its configuration");
                             }
                         }
-                        if (!progress.isCanceled() && javadbBundled && results.getErrorCode()==0) {
+                        if (!progress.isCanceled() && javadbBundled) {
                             final File javadbInstaller = findJavaDBWindowsInstaller();
                             if (javadbInstaller != null) {
                                 javadbInstallation = true;
@@ -185,6 +168,27 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                                 results = runJavaDBInstallerWindows(javadbInstaller, javadbProgress);
                                 configureJavaDBProductWindows(results);
                             }
+                        }
+                    }
+
+                    if(!progress.isCanceled()) {
+                        results = runJDKInstallerWindows(location, installer, jdkProgress,
+                                isFullSilentInstaller, jreAlreadyInstalled, javadbBundled);
+                        if(results.getErrorCode()==0) {
+                            getProduct().setProperty(JDK_INSTALLED_WINDOWS_PROPERTY,
+                                    "" + true);
+                        }
+                        addUninsallationJVM(results, location);
+                    }
+                    if(isFullSilentInstaller) {
+                        if (!jreAlreadyInstalled) {
+                            configureJREProductWindows(results);
+                        } else {
+                              LogManager.log("... jre " + getProduct().getVersion() +
+                                        " is already installed, skipping its configuration");
+                        }
+                        if(javadbBundled) {
+                            configureJavaDBProductWindows(results);
                         }
                     }
                 } else {
@@ -272,7 +276,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         final String loggingOption = (logFile!=null) ?
             "/log " + BACK_SLASH + QUOTE  + logFile.getAbsolutePath()  + BACK_SLASH + QUOTE +" ":
             EMPTY_STRING;
-        final String installLocationOption = "/qn INSTALLDIR=" + BACK_SLASH + QUOTE + location + BACK_SLASH + QUOTE;
+        final String installLocationOption = "/qn /norestart INSTALLDIR=" + BACK_SLASH + QUOTE + location + BACK_SLASH + QUOTE;
         LogManager.log("... JDK installation log file : " + logFile);
         
         String [] commands = new String [] {
@@ -397,8 +401,9 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     private boolean isJDK6U10orLater() {
         return getProduct().getVersion().newerOrEquals(Version.getVersion("1.6.0_10"));
     }
-    private boolean isJDK6U15orLater() {       
-        return getProduct().getVersion().newerOrEquals(Version.getVersion("1.6.0_15"));
+    private boolean isJDK6U15orLater() {
+        return getProduct().getVersion().newerOrEquals(Version.getVersion("1.6.0_15")) &&
+                !getProduct().getVersion().equals(Version.getVersion("1.7.0_01"));
     }
     private boolean isJDK7() {
         return getProduct().getVersion().newerOrEquals(Version.getVersion("1.7.0"));
@@ -439,12 +444,25 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                 LogManager.log("... JRE installation log file : " + logFile);
             }
         } else {
+           /* final String packageOption = "/i \"" + jreInstaller.getPath() +"\" ";
+            final String loggingOption = (logFile!=null) ?
+                "/log \"" + logFile.getAbsolutePath()  +"\" ":
+                EMPTY_STRING;
+            final String silentOption = "/qn /norestart";
+            String [] commands = new String [] {
+                "CMD",
+                "/C",
+                "msiexec.exe " + packageOption + loggingOption + installLocationOption
+                //"msiexec.exe /i D:\\NBI\\FXSDK_bundle\\test msi\\fx2.0.msi /log \"D:\\NBI\\FXSDK_bundle\\test space\\log.log1\" /qn"
+            };*/
             commands.add(jreInstaller.getPath());
             commands.add("/s");
+            commands.add("/v");
+            commands.add("/qn");
+            commands.add("/norestart");
             final String loggingOption = (logFile!=null) ?
             "/log " + BACK_SLASH + QUOTE  + logFile.getAbsolutePath()  + BACK_SLASH + QUOTE +" " : EMPTY_STRING;
             commands.add(loggingOption);
-
         }
         
         final String [] command = commands.toArray(new String [] {});
@@ -717,7 +735,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         } else if (minorVersion == 6) {
             return 90000000L;
         } else if (minorVersion == 7) {
-            return 150000000L;
+            return 100000000L;
         } else {
             return 100000000L;
         }
