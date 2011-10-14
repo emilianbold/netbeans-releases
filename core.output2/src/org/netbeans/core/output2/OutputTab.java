@@ -99,6 +99,7 @@ import org.openide.windows.WindowManager;
 import org.openide.xml.XMLUtil;
 
 import static org.netbeans.core.output2.OutputTab.ACTION.*;
+import org.openide.windows.IOProvider;
 
 
 /**
@@ -291,10 +292,12 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
         if (w != null && w.isClosed()) {
             //Will dispose the document
             setDocument(null);
+            io.dispose();
         } else if (w != null) {
             //Something is still writing to the stream, but we're getting rid of the tab.  Don't dispose
             //the writer, just kill the tab's document
             getDocument().disposeQuietly();
+            NbIOProvider.dispose(io);
         }
     }
 
