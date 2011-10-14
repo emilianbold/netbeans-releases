@@ -141,7 +141,7 @@ public class ForeignKeyColumnNode extends BaseNode {
                 new Action<Metadata>() {
                     public void run(Metadata metaData) {
                         ForeignKeyColumn column = keyColumnHandle.resolve(metaData);
-                        array[0] = column.getPosition();
+                        array[0] = column == null ? -1 : column.getPosition();
                     }
                 }
             );
