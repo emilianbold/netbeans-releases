@@ -594,9 +594,10 @@ public final class FolderObj extends BaseFileObj {
         
     }
 
+    @Override
     public boolean isValid() {
         //assert checkCacheState(valid, getFileName().getFile());        
-        return valid;
+        return valid && super.isValid();
     }
 
     public final InputStream getInputStream() throws FileNotFoundException {
