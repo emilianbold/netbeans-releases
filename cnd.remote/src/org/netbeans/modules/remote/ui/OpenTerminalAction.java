@@ -45,8 +45,6 @@ package org.netbeans.modules.remote.ui;
 import java.awt.Frame;
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 import javax.swing.JFileChooser;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -269,7 +267,6 @@ public class OpenTerminalAction extends SingleHostAction {
         }
     }
     
-    private static Map<ExecutionEnvironment, String> lastUsedDirs = new HashMap<ExecutionEnvironment, String>();
     private static final class AddOther extends AddPlace {
         private final Frame mainWindow;
         
@@ -288,15 +285,15 @@ public class OpenTerminalAction extends SingleHostAction {
     }
 
     /**/ static FileObject getRemoteFileObject(ExecutionEnvironment env, String title, String btn, Frame mainWindow) {
-        String homeDir = lastUsedDirs.get(env);
-        if (homeDir == null) {
-            homeDir = getHomeDir(env);
+        String curDir = RemoteFileUtil.getCurrentChooserFile(env);
+        if (curDir == null) {
+            curDir = getHomeDir(env);
         }
         JFileChooser fileChooser =  RemoteFileUtil.createFileChooser(
                 env,
                 title,
                 btn,
-                JFileChooser.DIRECTORIES_ONLY, null, homeDir, true);
+                JFileChooser.DIRECTORIES_ONLY, null, curDir, true);
         int ret = fileChooser.showOpenDialog(mainWindow);
         if (ret == JFileChooser.CANCEL_OPTION) {
             return null;
@@ -314,7 +311,7 @@ public class OpenTerminalAction extends SingleHostAction {
             return null;
         }
         String lastPath = fo.getParent() == null ? fo.getPath() : fo.getParent().getPath();
-        lastUsedDirs.put(env, lastPath);
+        RemoteFileUtil.setCurrentChooserFile(lastPath, env);
         return fo;
     }    
 }
