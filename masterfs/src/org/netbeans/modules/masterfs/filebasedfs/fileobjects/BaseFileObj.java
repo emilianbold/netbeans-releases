@@ -788,6 +788,11 @@ public abstract class BaseFileObj extends FileObject {
     abstract protected void setValid(boolean valid);
     abstract void refreshImpl(final boolean expected, boolean fire);
 
+    @Override
+    public boolean isValid() {
+        return NamingFactory.isValid(getFileName());
+    }
+
     public final void refresh(final boolean expected, boolean fire) {
         Statistics.StopWatch stopWatch = Statistics.getStopWatch(Statistics.REFRESH_FILE);
         stopWatch.start();

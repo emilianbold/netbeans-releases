@@ -66,6 +66,7 @@ public class ExplorerUtilsTest extends NbTestCase {
     public void testIsEnabledOnDelete() {
         ExplorerManager em = new ExplorerManager();
         Action a = ExplorerUtils.actionDelete(em, true);
+        em.waitActionsFinished();
         assertFalse("No AWT", EventQueue.isDispatchThread());
         assertFalse("Is disabled", a.isEnabled());
     }
