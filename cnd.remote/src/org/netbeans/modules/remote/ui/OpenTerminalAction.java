@@ -43,9 +43,8 @@
 package org.netbeans.modules.remote.ui;
 
 import java.awt.Frame;
+import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 import javax.swing.JFileChooser;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -66,6 +65,7 @@ import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -82,7 +82,7 @@ import org.openide.windows.WindowManager;
 @ActionReference(path = "Remote/Host/Actions", name = "OpenTerminalAction", position = 700)
 public class OpenTerminalAction extends SingleHostAction {
     private JMenu remotePopupMenu;
-    private JMenu localPopupMenu;
+    private JMenuItem localPopupMenu;
 
     @Override
     public String getName() {
@@ -91,6 +91,10 @@ public class OpenTerminalAction extends SingleHostAction {
 
     @Override
     protected void performAction(final ExecutionEnvironment env, Node node) {
+        Node[] activatedNodes = getActivatedNodes();
+        if (activatedNodes != null && activatedNodes.length == 1 && !isRemote(activatedNodes[0])) {
+            SystemAction.get(AddHome.class).performAction(env, node);
+        }        
     }
 
     @Override
@@ -113,17 +117,12 @@ public class OpenTerminalAction extends SingleHostAction {
         if (remotePopupMenu == null) {
             remotePopupMenu = new JMenu(getName());
             remotePopupMenu.add(SystemAction.get(AddHome.class).getPopupPresenter());
-//            popupMenu.add(new AddProjects().getPopupPresenter());
             remotePopupMenu.add(SystemAction.get(AddMirror.class).getPopupPresenter());
-            remotePopupMenu.add(SystemAction.get(AddRoot.class).getPopupPresenter());
-            remotePopupMenu.add(SystemAction.get(AddOther.class).getPopupPresenter());
+//            remotePopupMenu.add(SystemAction.get(AddRoot.class).getPopupPresenter());
+//            remotePopupMenu.add(SystemAction.get(AddOther.class).getPopupPresenter());
         }
         if (localPopupMenu == null) {
-            localPopupMenu = new JMenu(getName());
-            localPopupMenu.add(SystemAction.get(AddHome.class).getPopupPresenter());
-//            popupMenu.add(new AddProjects().getPopupPresenter());
-            localPopupMenu.add(SystemAction.get(AddRoot.class).getPopupPresenter());
-            localPopupMenu.add(SystemAction.get(AddOther.class).getPopupPresenter());
+            localPopupMenu = super.getPopupPresenter();
         }
     }
 
@@ -172,14 +171,14 @@ public class OpenTerminalAction extends SingleHostAction {
                     }
                     final String path = getPath(env);
                     if (path != null && path.length() > 0) {
-                        Runnable openFavorites = new Runnable() {
+                        Runnable openTask = new Runnable() {
 
                             @Override
                             public void run() {
                                 TerminalSupport.openTerminal(env.getDisplayName(), env, path);
                             }
                         };
-                        SwingUtilities.invokeLater(openFavorites);
+                        SwingUtilities.invokeLater(openTask);
                     } else {
                         if (path != null) {
                             String msg;
@@ -231,7 +230,12 @@ public class OpenTerminalAction extends SingleHostAction {
         try {
             HostInfo hostInfo = HostInfoUtils.getHostInfo(env);
             if (hostInfo != null) {
-                String userDir = hostInfo.getUserDir();
+                String userDir;
+                if (env.isLocal()) {
+                    userDir = hostInfo.getUserDirFile().getAbsolutePath();
+                } else {
+                    userDir = hostInfo.getUserDir();
+                }
                 return userDir;
             }
         } catch (IOException ex) {
@@ -267,7 +271,6 @@ public class OpenTerminalAction extends SingleHostAction {
         }
     }
     
-    private static Map<ExecutionEnvironment, String> lastUsedDirs = new HashMap<ExecutionEnvironment, String>();
     private static final class AddOther extends AddPlace {
         private final Frame mainWindow;
         
@@ -286,24 +289,33 @@ public class OpenTerminalAction extends SingleHostAction {
     }
 
     /**/ static FileObject getRemoteFileObject(ExecutionEnvironment env, String title, String btn, Frame mainWindow) {
-        String homeDir = lastUsedDirs.get(env);
-        if (homeDir == null) {
-            homeDir = getHomeDir(env);
+        String curDir = RemoteFileUtil.getCurrentChooserFile(env);
+        if (curDir == null) {
+            curDir = getHomeDir(env);
         }
-        JFileChooserEx fileChooser = (JFileChooserEx) RemoteFileUtil.createFileChooser(
+        JFileChooser fileChooser =  RemoteFileUtil.createFileChooser(
                 env,
                 title,
                 btn,
-                JFileChooser.DIRECTORIES_ONLY, null, homeDir, true);
+                JFileChooser.DIRECTORIES_ONLY, null, curDir, true);
         int ret = fileChooser.showOpenDialog(mainWindow);
         if (ret == JFileChooser.CANCEL_OPTION) {
             return null;
         }
-        FileObject remoteProjectFO = fileChooser.getSelectedFileObject();
-        lastUsedDirs.put(env, remoteProjectFO.getParent().getPath());
-        if (remoteProjectFO == null || !remoteProjectFO.isFolder()) {
+        FileObject fo = null;
+        if (fileChooser instanceof JFileChooserEx) {
+            fo = ((JFileChooserEx)fileChooser).getSelectedFileObject();
+        } else {
+            File selectedFile = fileChooser.getSelectedFile();
+            if (selectedFile != null) {
+                fo = FileUtil.toFileObject(selectedFile);
+            }
+        }
+        if (fo == null || !fo.isFolder()) {
             return null;
         }
-        return remoteProjectFO;
+        String lastPath = fo.getParent() == null ? fo.getPath() : fo.getParent().getPath();
+        RemoteFileUtil.setCurrentChooserFile(lastPath, env);
+        return fo;
     }    
 }
