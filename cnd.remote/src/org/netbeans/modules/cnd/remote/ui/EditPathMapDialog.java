@@ -219,6 +219,14 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
         return RemotePathMap.getPathMap(host);
     }
 
+    private boolean acceptEditedValue() {
+        TableCellEditor tce = tblPathMappings.getCellEditor();
+        if (tce != null) {
+            return tce.stopCellEditing();
+        }
+        return false;
+    }
+
     private void addTableActions() throws MissingResourceException {
 
         Action removeAction = new AbstractAction(NbBundle.getMessage(getClass(), "ACTION_Remove")) {
@@ -252,8 +260,9 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
         class MenuListener extends MouseAdapter {
             private void showMenu(MouseEvent evt) {
                 if (evt != null) {
+                    acceptEditedValue();
                     int row = tblPathMappings.rowAtPoint(evt.getPoint());
-                    if (row >= 0 && tblPathMappings.getSelectionModel().isSelectionEmpty()) {
+                    if (row >= 0) {
                         tblPathMappings.getSelectionModel().setSelectionInterval(row, row);
                     }
                     menu.show(evt.getComponent(), evt.getX(), evt.getY());

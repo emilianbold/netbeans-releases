@@ -114,6 +114,8 @@ import org.netbeans.modules.cnd.debugger.gdb2.mi.MIConst;
 import org.netbeans.modules.cnd.debugger.gdb2.mi.MITListItem;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
+import org.netbeans.modules.nativeexecution.api.util.Signal;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
@@ -864,13 +866,16 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     // interface NativeDebugger
     @Override
     public void terminate() {
-        notImplemented("terminate");	// NOI18N
+        int pid = (int) session().getPid();
+	if (pid > 0) {
+	    CommonTasksSupport.sendSignal(getHost().executionEnvironment(), pid, Signal.SIGKILL, null);
+        }
     }
 
     // interface NativeDebugger
     @Override
     public void detach() {
-        notImplemented("detach");	// NOI18N
+        sendCommandInt(new MiCommandImpl("detach")); //NOI18N
     }
 
     private class MiCommandImpl extends MICommand {

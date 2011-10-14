@@ -36,12 +36,6 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.websvc.saas.services.facebook</code-name-base>
-                    <run-dependency>
-                        <specification-version>1.0</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.netbeans.modules.websvc.saas.services.flickr</code-name-base>
                     <run-dependency>
                         <specification-version>1.0</specification-version>

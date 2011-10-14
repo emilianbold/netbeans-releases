@@ -180,16 +180,16 @@ public class RemoteFileObjectFactory {
         return (RemotePlainFile) fo;
     }
 
-    SpecialRemotePlainFileObject createUnsupportedFile(RemoteDirectory parent, String remotePath, File cacheFile, FileType fileType) {
+    SpecialRemoteFileObject createSpecialFile(RemoteDirectory parent, String remotePath, File cacheFile, FileType fileType) {
         cacheRequests++;
         if (fileObjectsCache.size() == 0) {
             scheduleCleanDeadEntries(); // schedule on 1-st request
         }
         RemoteFileObjectBase fo = fileObjectsCache.get(remotePath);
-        if (fo instanceof SpecialRemotePlainFileObject && fo.isValid()) {
+        if (fo instanceof SpecialRemoteFileObject && fo.isValid()) {
             if (fo.getParent() == parent) {
                 cacheHits++;
-                return (SpecialRemotePlainFileObject) fo;
+                return (SpecialRemoteFileObject) fo;
             }
             fo = null;
         }
@@ -197,14 +197,14 @@ public class RemoteFileObjectFactory {
             fo.invalidate();
             fileObjectsCache.remove(remotePath, fo);
         }
-        fo = SpecialRemotePlainFileObject.createNew(fileSystem, env, parent, remotePath, fileType);
+        fo = SpecialRemoteFileObject.createNew(fileSystem, env, parent, remotePath, fileType);
         if (fo.isValid()) {
             RemoteFileObjectBase result = putIfAbsent(remotePath, fo);
-            if (result instanceof SpecialRemotePlainFileObject && result.getParent() == parent) {
-                return (SpecialRemotePlainFileObject)result;
+            if (result instanceof SpecialRemoteFileObject && result.getParent() == parent) {
+                return (SpecialRemoteFileObject)result;
             }
         }
-        return (SpecialRemotePlainFileObject) fo;
+        return (SpecialRemoteFileObject) fo;
     }
 
 

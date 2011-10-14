@@ -131,16 +131,10 @@ class MultiBundleStructure extends BundleStructure implements Serializable {
                     listFileObjects.add(0,file);
                 }
                 if (fName.indexOf(baseName) != -1) {
-                    int index = fName.indexOf(PropertiesDataLoader.PRB_SEPARATOR_CHAR);
+                    int index = fName.indexOf(PropertiesDataLoader.PRB_SEPARATOR_CHAR, baseName.length() - 1);
                     if (index == baseName.length()) {
-                        oldCandidate = null;
-                        while (index != -1) {
-                            FileObject candidate = file;
-                            if (candidate != null && isValidLocaleSuffix(fName.substring(index)) && oldCandidate == null && file.isValid()) {
-                                listFileObjects.add(candidate);
-                                oldCandidate = candidate;
-                            }
-                            index = fName.indexOf(PropertiesDataLoader.PRB_SEPARATOR_CHAR, index + 1);
+                         if (file != null && isValidLocaleSuffix(fName.substring(index)) && file.isValid()) {
+                            listFileObjects.add(file);
                         }
                     }
                 }
