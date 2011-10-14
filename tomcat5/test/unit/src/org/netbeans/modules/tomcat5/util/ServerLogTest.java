@@ -44,10 +44,8 @@
 
 package org.netbeans.modules.tomcat5.util;
 
-import java.io.File;
 import junit.textui.TestRunner;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.tomcat5.util.LogSupport.LineInfo;
 import org.netbeans.modules.tomcat5.util.ServerLog.ServerLogSupport;
 
@@ -57,21 +55,8 @@ import org.netbeans.modules.tomcat5.util.ServerLog.ServerLogSupport;
  */
 public class ServerLogTest extends NbTestCase {
     
-    private File datadir;
-    
     public ServerLogTest(String testName) {
         super(testName);
-    }
-    
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new ServerLogTest("testAnalyzeLine"));
-        return suite;
-    }
-    
-    protected void setUp() throws Exception {
-        super.setUp ();
-        datadir = getDataDir();
     }
     
     public void testAnalyzeLine() {
@@ -125,7 +110,37 @@ public class ServerLogTest extends NbTestCase {
         }
     }
     
-    public static void main(java.lang.String[] args) {
-        TestRunner.run(suite());
+    public void testAnalyzeLine191810() {
+        String log[] = new String[] {
+            "java.lang.StringIndexOutOfBoundsException: String index out of range: -1",
+            "       at java.lang.String.substring(String.java:1949) ~[na:1.6.0_18]"
+        };
+        
+        String files[] = new String[] {
+            null,
+            "java/lang/String.java",
+        };
+        
+        int lines[] = new int[] {
+            -1,
+            1949
+        };
+        
+        String message[] = new String[] {
+            null,
+            "java.lang.StringIndexOutOfBoundsException: String index out of range: -1"
+        };
+        
+        ServerLogSupport sup = new ServerLogSupport();
+        for (int i = 0; i < log.length; i++) {
+            LineInfo nfo = sup.analyzeLine(log[i]);
+            System.out.println(nfo);
+            assertEquals("Path \"" + nfo.path() + "\" incorrectly recognized from: " + log[i],
+                         files[i], nfo.path());
+            assertEquals("Line \"" + nfo.line() + "\" incorrectly recognized from: " + log[i],
+                         lines[i], nfo.line());
+            assertEquals("Message \"" + nfo.message() + "\" incorrectly recognized from: " + log[i],
+                         message[i], nfo.message());
+        }
     }
 }

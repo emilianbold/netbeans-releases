@@ -244,16 +244,22 @@ class ServerLog {
                     int lastDotIdx = classWithMethod.lastIndexOf('.');
                     if (lastDotIdx > -1) {  
                         int lastParenthIdx = logLine.lastIndexOf(')');
-                        int lastColonIdx = logLine.lastIndexOf(':');
-                        if (lastParenthIdx > -1 && lastColonIdx > -1) {
-                            String lineNum = logLine.substring(lastColonIdx + 1, lastParenthIdx);
-                            try {
-                                line = Integer.valueOf(lineNum).intValue();
-                            } catch(NumberFormatException nfe) {
-                                // ignore it
-                                Logger.getLogger(ServerLog.class.getName()).log(Level.INFO, null, nfe);
+                        String content = null;
+                        if (lastParenthIdx > -1) {
+                            content = logLine.substring(parenthIdx + 1, lastParenthIdx);
+                        }
+                        if (content != null) {
+                            int lastColonIdx = content.lastIndexOf(':');
+                            if (lastColonIdx > -1) {
+                                String lineNum = content.substring(lastColonIdx + 1);
+                                try {
+                                    line = Integer.valueOf(lineNum).intValue();
+                                } catch(NumberFormatException nfe) {
+                                    // ignore it
+                                    Logger.getLogger(ServerLog.class.getName()).log(Level.INFO, null, nfe);
+                                }
+                                message = prevMessage;
                             }
-                            message = prevMessage;
                         }
                         int firstDolarIdx = classWithMethod.indexOf('$'); // > -1 for inner classes
                         String className = classWithMethod.substring(0, firstDolarIdx > -1 ? firstDolarIdx : lastDotIdx);
