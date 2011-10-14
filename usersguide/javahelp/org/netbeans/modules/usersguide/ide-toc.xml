@@ -18,6 +18,7 @@ Other names may be trademarks of their respective owners.
 <tocitem text="IDE Basics" expand="false">
 
   <tocitem text="Getting Started" >
+    <tocitem text="Using the IDE Help System" target="ide.welcome"/>
 
 
   </tocitem>

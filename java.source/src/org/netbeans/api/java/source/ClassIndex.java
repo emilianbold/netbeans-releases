@@ -343,14 +343,13 @@ public final class ClassIndex {
         final Set<ElementHandle<TypeElement>> result = new HashSet<ElementHandle<TypeElement>> ();
         final Iterable<? extends ClassIndexImpl> queries = this.getQueries (scope);
         final Set<ClassIndexImpl.UsageType> ut =  encodeSearchKind(element.getKind(),searchKind);
-        final String binaryName = element.getSignature()[0];
         final Convertor<? super Document, ElementHandle<TypeElement>> thConvertor = DocumentUtil.elementHandleConvertor();
         try {
             if (!ut.isEmpty()) {
                 for (ClassIndexImpl query : queries) {
                     try {
                         query.search(
-                            binaryName,
+                            element,
                             ut,
                             scope,
                             thConvertor,
@@ -387,14 +386,13 @@ public final class ClassIndex {
         final Set<FileObject> result = new HashSet<FileObject> ();
         final Iterable<? extends ClassIndexImpl> queries = this.getQueries (scope);
         final Set<ClassIndexImpl.UsageType> ut =  encodeSearchKind(element.getKind(),searchKind);
-        final String binaryName = element.getSignature()[0];
         try {
             if (!ut.isEmpty()) {
                 for (ClassIndexImpl query : queries) {
                     final Convertor<? super Document, FileObject> foConvertor = DocumentUtil.fileObjectConvertor (query.getSourceRoots());
                     try {
                         query.search(
-                            binaryName,
+                            element,
                             ut,
                             scope,
                             foConvertor,

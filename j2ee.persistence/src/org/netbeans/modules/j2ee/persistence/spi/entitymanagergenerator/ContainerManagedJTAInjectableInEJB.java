@@ -53,8 +53,10 @@ import com.sun.source.tree.TypeParameterTree;
 import java.io.File;
 import java.text.MessageFormat;
 import java.util.Collections;
+import javax.lang.model.SourceVersion;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.core.api.support.java.GenerationUtils;
 import org.netbeans.modules.j2ee.persistence.action.GenerationOptions;
 import org.netbeans.modules.j2ee.persistence.spi.targetinfo.JPATargetInfo;
 import org.openide.filesystems.FileObject;
@@ -105,7 +107,18 @@ public final class ContainerManagedJTAInjectableInEJB extends EntityManagerGener
                 "{ " + getMethodBody(em, isEJB) + "}",
                 null
                 );
-     
+
+        if (getWorkingCopy().getSourceVersion().compareTo(SourceVersion.RELEASE_5) >= 0) {
+            // create annotation for the method if required
+            String annotation = getGenerationOptions().getAnnotation();
+            if (annotation != null) {
+                GenerationUtils genUtils = GenerationUtils.newInstance(getWorkingCopy());
+                AnnotationTree annotationTree = genUtils.createAnnotation(annotation);
+                if (annotationTree != null) {
+                    newMethod = genUtils.addAnnotation(newMethod, annotationTree);
+                }
+            }
+        }
 
         return getTreeMaker().addClassMember(modifiedClazz, importFQNs(newMethod));
     }

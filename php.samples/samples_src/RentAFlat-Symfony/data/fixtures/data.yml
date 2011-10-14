@@ -1,0 +1,227 @@
+Location:
+  Location_1:
+    city_part: Chodov
+    city: Prague
+  Location_2:
+    city_part: Vinohrady
+    city: Prague
+
+Disposition:
+  Disposition_1:
+    text: 1+0
+  Disposition_2:
+    text: 1+kk
+  Disposition_3:
+    text: 1+1
+  Disposition_4:
+    text: 2+kk
+  Disposition_5:
+    text: 2+1
+  Disposition_6:
+    text: 3+kk
+  Disposition_7:
+    text: 3+1
+  Disposition_8:
+    text: 4+1
+  Disposition_9:
+    text: 4+kk
+  Disposition_10:
+    text: 5+1
+  Disposition_11:
+    text: 5+kk
+  Disposition_12:
+    text: 6+1
+  Disposition_13:
+    text: 6+kk
+  Disposition_14:
+    text: 'Apartment house'
+
+PropertyBuild:
+  PropertyBuild_1:
+    text: brick
+  PropertyBuild_2:
+    text: concrete
+  PropertyBuild_3:
+    text: 'skeletal structure'
+
+Property:
+  Property_1:
+    reference_no: NetBeans001
+    title: 'Great flat for PHP Development'
+    text: 'This fabulous three bedroomed penthouse apartment is arranged over the sixth and seventh floors (with lift and concierge) of Orechovka, a smart residential development on the banks of the River Vltava.  The property offers chic and spacious accommodation and comprises vast reception room with door to the roof terrace, contemporary kitchen with ample space for dining, master bedroom with en suite shower room, two additional bedrooms, bathroom, good storage space, balcony, roof terrace, and secure underground parking.'
+    disposition_id: 11
+    area: '110.0'
+    floor: '2'
+    lift: '1'
+    cellar: '0.0'
+    balcony: '40.0'
+    location_id: '1'
+    price: '1000'
+    created_on: '2010-11-03 11:15:44'
+    street: 'V parku 2308/8'
+    property_build_id: '1'
+    terace: '0.0'
+    loggia: '0.0'
+    garden: '0.0'
+    garage: '0.0'
+    parking_place: '1'
+  Property_2:
+    reference_no: NetBeans002
+    title: 'Great flat for J2EE Development'
+    text: 'Benefiting from well proportioned living space and high-quality interiors throughout, this recently refurbished two bedroomed flat is attractively arranged over the ground and lower ground floors of a beautiful period block in the heart of historic Marylebone.  The property comprises reception room with well equipped contemporary kitchen, master bedroom with en suite shower room, second bedroom/study, bathroom and guest cloakroom. '
+    disposition_id: 7
+    area: '99.2'
+    floor: '3'
+    lift: '0'
+    cellar: '0.0'
+    balcony: '0.0'
+    location_id: '1'
+    price: '1500'
+    created_on: '2010-11-08 15:32:51'
+    street: 'V parku 2308/8'
+    property_build_id: '1'
+    terace: '0.0'
+    loggia: '0.0'
+    garden: '0.0'
+    garage: '0.0'
+    parking_place: '0'
+  Property_3:
+    reference_no: NetBeans003
+    title: 'Great flat for Java Web Development'
+    text: 'A simply stunning two bedroomed third floor flat offering generous accommodation, with stylish and neutral décor, fantastic roof terrace and gorgeous wood floors.  The property comprises spacious reception room with lovely gas fireplace, amazing adjoining kitchen, contemporary master bedroom with chic en suite bathroom, second bedroom with fitted wardrobes, en suite shower room and guest cloakroom.'
+    disposition_id: 6
+    area: '98.6'
+    floor: '4'
+    lift: '1'
+    cellar: '0.0'
+    balcony: '5.5'
+    location_id: '1'
+    price: '2000'
+    created_on: '2010-11-01 08:40:08'
+    street: 'V parku 2308/8'
+    property_build_id: '1'
+    terace: '0.0'
+    loggia: '0.0'
+    garden: '0.0'
+    garage: '0.0'
+    parking_place: '0'
+  Property_4:
+    reference_no: NetBeans004
+    title: 'Great flat for Javascript Development'
+    text: 'With a sought-after location in the heart of Belsize Park, this stunning three bedroomed maisonette offers abundant living space with modern fixtures and fittings, wood floors and en suite master bedroom.  Situated on the first and second floors of a grand period conversion the property comprises a light and spacious reception room with open-plan kitchen, dining room, utility room, excellent master bedroom with en suite bathroom, two further good-sized bedrooms and shower room.'
+    disposition_id: 7
+    area: '76.0'
+    floor: '5'
+    lift: '1'
+    cellar: '0.0'
+    balcony: '0.0'
+    location_id: '2'
+    price: '800'
+    created_on: '2010-11-08 12:34:09'
+    street: 'V parku 2308/8'
+    property_build_id: '2'
+    terace: '0.0'
+    loggia: '0.0'
+    garden: '0.0'
+    garage: '0.0'
+    parking_place: '0'
+  Property_5:
+    reference_no: NetBeans005
+    title: 'Apartment for you and entire family'
+    text: 'This light and airy, three bedroomed, first floor flat (with lift and porterage) is exceptionally proportioned throughout benefiting from a secure gated mews with security guard, sunny terrace and sought-after location.  The property comprises spacious reception room with access to balcony, fully fitted kitchen, master bedroom with en suite bathroom, second bedroom with fitted wardrobe, one additional bedroom and shower room.'
+    disposition_id: 14
+    area: '324.0'
+    floor: '6'
+    lift: '0'
+    cellar: '0.0'
+    balcony: '34.0'
+    location_id: '1'
+    price: '950'
+    created_on: '2010-12-29 01:28:24'
+    street: 'V parku 2308/8'
+    property_build_id: '1'
+    terace: '4.0'
+    loggia: '2.0'
+    garden: '0.0'
+    garage: '32.0'
+    parking_place: '0'
+  Property_6:
+    reference_no: NetBeans006
+    title: 'Flat suitable for students'
+    text: 'Benefiting from well proportioned living space and high-quality interiors throughout, this recently refurbished two bedroomed flat is attractively arranged over the ground and lower ground floors of a beautiful period block close to Czech Technical University complex.  The property comprises reception room with well equipped contemporary kitchen, master bedroom with en suite shower room, second bedroom/study, bathroom and guest cloakroom.'
+    disposition_id: 6
+    area: '800.0'
+    floor: '1'
+    lift: '0'
+    cellar: '0.0'
+    balcony: '0.0'
+    location_id: '1'
+    price: '2210'
+    created_on: '2011-01-02 00:45:21'
+    street: 'V parku 2308/8'
+    property_build_id: '1'
+    terace: '0.0'
+    loggia: '0.0'
+    garden: '0.0'
+    garage: '0.0'
+    parking_place: '0'
+  Property_7:
+    reference_no: NetBeans007
+    title: '2 double bedroom apartment'
+    text: 'We are pleased to offer for rental this executive apartment situated within the Cathedral complex in city center. There is an open plan living area two double bedrooms and allocated parking space. A viewing is highly recommended.'
+    disposition_id: 3
+    area: '51.0'
+    floor: '19'
+    lift: '0'
+    cellar: '0.0'
+    balcony: '0.0'
+    location_id: '1'
+    price: '1209'
+    created_on: '2011-01-02 22:23:06'
+    street: 'V parku 2308/8'
+    property_build_id: '1'
+    terace: '0.0'
+    loggia: '0.0'
+    garden: '0.0'
+    garage: '0.0'
+    parking_place: '0'
+  Property_8:
+    reference_no: NetBeans008
+    title: 'Renovated apartment + parking place'
+    text: 'Completely re-decorated ground floor apartment in the popular ''Mezzo'' complex in Prague. This lovely apartment offers 1 double and 1 generous single bedroom, family bathroom with over bath shower and a large open plan living / dining / kitchen with high specification integrated appliances and contemporary fixtures and fittings. With a security entrance system, allocated parking and a rarely available private low maintenance rear garden with decking, this is a lovely property in a great location with easy access to the city centre,'
+    disposition_id: 7
+    area: '51.0'
+    floor: '0'
+    lift: '1'
+    cellar: '23.0'
+    balcony: '34.0'
+    location_id: '1'
+    price: '1400'
+    created_on: '2011-01-03 16:40:16'
+    street: 'V parku 2308/8'
+    property_build_id: '1'
+    terace: '4.0'
+    loggia: '2.0'
+    garden: '23.0'
+    garage: '32.0'
+    parking_place: '1'
+  Property_9:
+    reference_no: NetBeans009
+    title: '4 bed flat to rent'
+    text: "A gorgeous four bedroomed flat offering an extremely high standard of interior styling and design, African wood flooring, professional soundproofing, modern fittings and fixtures, gorgeous bathroom facilities and plenty of living and entertaining space.\r\n\r\nThe property further benefits from original period features and recent refurbishment to a very high standard.\r\n\r\nThe flat comprises spacious 30\\\' double reception room with dining area and access to the balcony, modern fitted kitchen with dining area, bay-fronted master bedroom, two further good-sized bedrooms, study/fourth bedroom, bathroom, shower room, guest cloakroom and a balcony."
+    disposition_id: 10
+    area: '150.0'
+    floor: '3'
+    lift: '1'
+    cellar: '0.0'
+    balcony: '30.0'
+    location_id: '2'
+    price: '3000'
+    created_on: '2011-01-04 21:53:22'
+    street: 'V parku 2308/8'
+    property_build_id: '1'
+    terace: '0.0'
+    loggia: '0.0'
+    garden: '0.0'
+    garage: '0.0'
+    parking_place: '1'

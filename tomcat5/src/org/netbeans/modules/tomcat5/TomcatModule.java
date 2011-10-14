@@ -56,7 +56,6 @@ public final class TomcatModule implements TargetModuleID {
     private TomcatTarget target;
 
     private final String path;
-    private final String tomcatPath;
     private final String docRoot;
 
     public TomcatModule (Target target, String path) {
@@ -64,12 +63,10 @@ public final class TomcatModule implements TargetModuleID {
     }
 
     public TomcatModule (Target target, String path, String docRoot) {
+        assert path.isEmpty() || path.startsWith("/") 
+                : "Non empty module path must start with '/'; was " + path;
         this.target = (TomcatTarget) target;
-        /*
-         * Tomcat ROOT context path bug hack.
-         */
-        this.path = path;
-        this.tomcatPath = "".equals(path) ? "/" : path; // NOI18N
+        this.path = "".equals(path) ? "/" : path; // NOI18N
         this.docRoot = docRoot;
     }
     
@@ -95,18 +92,11 @@ public final class TomcatModule implements TargetModuleID {
     
     /** Context root path of this module. */
     public String getPath () {
-        return tomcatPath;
+        return path;
     }
-    
-//    // PENDING
+
     public String getWebURL () {
         return target.getServerUri () + path.replaceAll(" ", "%20");
-//        try {
-//            return new java.net.URL ("http", "localhost", target.getPort (), path).toExternalForm ();
-//        }
-//        catch (java.net.MalformedURLException ex) {
-//            return "http://localhost:8080"+path;    // NOI18N
-//        }
     }
     
     public String toString () {
