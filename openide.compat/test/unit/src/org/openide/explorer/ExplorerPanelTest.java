@@ -141,6 +141,7 @@ public class ExplorerPanelTest extends NbTestCase {
         assertTrue("Cut action has to be disabled", !cut.isEnabled());
 
         manager.setSelectedNodes(new Node[] {enabledNode});
+        manager.waitActionsFinished();
 
         assertTrue("Copy action has to be enabled", copy.isEnabled());
         assertTrue("Cut action has to be enabled", cut.isEnabled());
@@ -153,6 +154,7 @@ public class ExplorerPanelTest extends NbTestCase {
         
 
         manager.setSelectedNodes(new Node[] {disabledNode});
+        manager.waitActionsFinished();
 
         assertTrue("Copy action has to be disabled", !copy.isEnabled());
         assertTrue("Cut action has to be disabled", !cut.isEnabled());
@@ -171,18 +173,23 @@ public class ExplorerPanelTest extends NbTestCase {
         assertTrue ("By default delete is disabled", !delete.isEnabled());
         
         manager.setSelectedNodes(new Node[] { enabledNode });
+        manager.waitActionsFinished();
         assertTrue ("Now it gets enabled", delete.isEnabled ());
         
         manager.setSelectedNodes (new Node[] { disabledNode });
+        manager.waitActionsFinished();
         assertTrue ("Is disabled", !delete.isEnabled ());
 
         manager.setSelectedNodes(new Node[] { manager.getRootContext() });
+        manager.waitActionsFinished();
         assertTrue ("Delete is enabled on root", delete.isEnabled ());
         
         manager.setSelectedNodes(new Node[] { manager.getRootContext(), enabledNode });
+        manager.waitActionsFinished();
         assertTrue ("But is disabled on now, as one selected node is child of another", !delete.isEnabled ());
         
         manager.setSelectedNodes (new Node[] { enabledNode, enabledNode2 });
+        manager.waitActionsFinished();
         assertTrue ("It gets enabled", delete.isEnabled ());
         
         delete.actionPerformed(new java.awt.event.ActionEvent (this, 0, "waitFinished"));
@@ -229,6 +236,7 @@ public class ExplorerPanelTest extends NbTestCase {
         
         // but delete should not ask for confirmation if the node wants to perform handle delete 
         delManager.setSelectedNodes (new Node[] { nodes[1] });
+        delManager.waitActionsFinished();
         assertTrue ("It gets enabled", delete.isEnabled ());
         
         delete.actionPerformed(new java.awt.event.ActionEvent (this, 0, "waitFinished"));
@@ -239,6 +247,7 @@ public class ExplorerPanelTest extends NbTestCase {
         
         // anyway ask for confirmation if at least one node has default behaviour
         delManager.setSelectedNodes (new Node[] { nodes[2], nodes[3] });
+        delManager.waitActionsFinished();
         assertTrue ("It gets enabled", delete.isEnabled ());
         
         delete.actionPerformed(new java.awt.event.ActionEvent (this, 0, "waitFinished"));
@@ -273,6 +282,7 @@ public class ExplorerPanelTest extends NbTestCase {
         enabledNode.types = arr;
         
         manager.setSelectedNodes (new Node[] { enabledNode });
+        manager.waitActionsFinished();
         
         assertTrue ("Paste is enabled", paste.isEnabled ());
         
@@ -280,12 +290,14 @@ public class ExplorerPanelTest extends NbTestCase {
         assertEquals ("Paste invoked", 1, arr[0].count);
         
         manager.setSelectedNodes (new Node[] { disabledNode });
+        manager.waitActionsFinished();
         assertTrue ("Disabled paste", !paste.isEnabled ());
         
         arr = new PT[] { new PT(), new PT() };
         enabledNode.types = arr;
         
         manager.setSelectedNodes (new Node[] { enabledNode });
+        manager.waitActionsFinished();
         assertTrue ("Paste enabled again", paste.isEnabled ());
         
         org.openide.util.datatransfer.ExClipboard ec = (org.openide.util.datatransfer.ExClipboard)Lookup.getDefault().lookup (org.openide.util.datatransfer.ExClipboard.class);
@@ -298,6 +310,7 @@ public class ExplorerPanelTest extends NbTestCase {
         stopActions (manager);
 
         manager.setSelectedNodes(new Node[] { disabledNode });
+        manager.waitActionsFinished();
         assertTrue("Paste still enabled as we are not listening", paste.isEnabled());
         
         java.awt.datatransfer.StringSelection ns = new java.awt.datatransfer.StringSelection ("New Selection");
@@ -306,6 +319,7 @@ public class ExplorerPanelTest extends NbTestCase {
         
         startActions (manager);
         
+        manager.waitActionsFinished();
         assertFalse ("The selected node is the disabled one, so now we are disabled", paste.isEnabled ());
         assertTranferables (ns, disabledNode.getLastTransferable(ns));
         
