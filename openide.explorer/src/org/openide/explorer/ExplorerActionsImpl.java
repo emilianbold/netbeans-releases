@@ -412,22 +412,6 @@ final class ExplorerActionsImpl {
         return c;
     }
 
-    /** Updates actions state via updater (if the updater is present). */
-    private void updateActionsState() {
-        ActionStateUpdater asu;
-
-        synchronized (this) {
-            asu = actionStateUpdater;
-        }
-
-        if (asu != null) {
-            asu.update();
-        }
-        if (EventQueue.isDispatchThread()) {
-            syncActions();
-        }
-    }
-    
     final void syncActions() {
         copyActionPerformer.syncEnable();
         cutActionPerformer.syncEnable();
