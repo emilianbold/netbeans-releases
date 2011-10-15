@@ -1575,6 +1575,10 @@ public class IntroduceHintTest extends NbTestCase {
                        5, 1);
     }
 
+    public void testConstant203499() throws Exception {
+        performConstantAccessTest("package test; public class Test { static String g(String s) { return s; } static String d(String s) { return |g(s)|; } }", false);
+    }
+
     protected void prepareTest(String code) throws Exception {
         clearWorkDir();
         
