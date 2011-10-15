@@ -48,6 +48,8 @@ import java.io.*;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.form.project.ClassPathUtils;
 import org.openide.filesystems.FileLock;
@@ -204,16 +206,13 @@ public class MasterDetailGenerator {
      * @return result of the generation.
      */
     private String generateMasterColumns(String result) {
-        String template = findTemplate(result, MASTER_SUBBINDING_TEMPLATE);
-        int index = result.indexOf(template);
-        result = result.substring(0, index) + result.substring(index+template.length());
-        template = uncomment(template, false);
+        TemplateInfo info = findTemplate(result, MASTER_SUBBINDING_TEMPLATE);
 
         StringBuilder sb = new StringBuilder();
         int i = 0;
         Iterator<String> iter = masterColumnTypes.iterator();
         for (String column : masterColumns) {
-            String binding = template.replace("_index_", ""+i++); // NOI18N
+            String binding = info.template.replace("_index_", ""+i++); // NOI18N
             binding = binding.replace("_fieldName_", column); // NOI18N
             String type = iter.hasNext() ? iter.next() : null;
             if (type == null) { // fallback - shouldn't happen - means corrupted entity
@@ -224,8 +223,8 @@ public class MasterDetailGenerator {
             binding = binding.replace("_fieldType_", type); // NOI18N
             sb.append(binding);
         }
-        StringBuilder rsb = new StringBuilder(result);
-        rsb.insert(index, sb.toString());
+        StringBuilder rsb = new StringBuilder(info.form);
+        rsb.insert(info.formIndex, sb.toString());
         return rsb.toString();
     }
 
@@ -236,22 +235,19 @@ public class MasterDetailGenerator {
      * @return result of the generation.
      */
     private String generateDetailColumns(String result) {
-        String template = findTemplate(result, DETAIL_SUBBINDING_TEMPLATE);
-        int index = result.indexOf(template);
-        result = result.substring(0, index) + result.substring(index+template.length());
-        template = uncomment(template, false);
+        TemplateInfo info = findTemplate(result, DETAIL_SUBBINDING_TEMPLATE);
 
         StringBuilder sb = new StringBuilder();
         int i = 0;
         Iterator<String> iter = detailColumnTypes.iterator();
         for (String column : detailColumns) {
-            String binding = template.replace("_index_", ""+i++); // NOI18N
+            String binding = info.template.replace("_index_", ""+i++); // NOI18N
             binding = binding.replace("_fieldName_", column); // NOI18N
             binding = binding.replace("_fieldType_", iter.next()); // NOI18N
             sb.append(binding);
         }
-        StringBuilder rsb = new StringBuilder(result);
-        rsb.insert(index, sb.toString());
+        StringBuilder rsb = new StringBuilder(info.form);
+        rsb.insert(info.formIndex, sb.toString());
         return rsb.toString();
     }
 
@@ -262,19 +258,16 @@ public class MasterDetailGenerator {
      * @return result of the generation.
      */
     private String generateLabels(String result) {
-        String template = findTemplate(result, LABEL_TEMPLATE);
-        int index = result.indexOf(template);
-        result = result.substring(0, index) + result.substring(index+template.length());
-        template = uncomment(template, false);
+        TemplateInfo info = findTemplate(result, LABEL_TEMPLATE);
 
         StringBuilder sb = new StringBuilder();
         for (String column : detailColumns) {
-            String binding = template.replace("_labelName_", columnToLabelName(column)); // NOI18N
+            String binding = info.template.replace("_labelName_", columnToLabelName(column)); // NOI18N
             binding = binding.replace("_labelText_", capitalize(column)); // NOI18N
             sb.append(binding);
         }
-        StringBuilder rsb = new StringBuilder(result);
-        rsb.insert(index, sb.toString());
+        StringBuilder rsb = new StringBuilder(info.form);
+        rsb.insert(info.formIndex, sb.toString());
         return rsb.toString();
     }
 
@@ -285,19 +278,16 @@ public class MasterDetailGenerator {
      * @return result of the generation.
      */
     private String generateFields(String result) {
-        String template = findTemplate(result, FIELD_TEMPLATE);
-        int index = result.indexOf(template);
-        result = result.substring(0, index) + result.substring(index+template.length());
-        template = uncomment(template, false);
+        TemplateInfo info = findTemplate(result, FIELD_TEMPLATE);
 
         StringBuilder sb = new StringBuilder();
         for (String column : detailColumns) {
-            String binding = template.replace("_textFieldName_", columnToFieldName(column)); // NOI18N
+            String binding = info.template.replace("_textFieldName_", columnToFieldName(column)); // NOI18N
             binding = binding.replace("_fieldName_", column); // NOI18N
             sb.append(binding);
         }
-        StringBuilder rsb = new StringBuilder(result);
-        rsb.insert(index, sb.toString());
+        StringBuilder rsb = new StringBuilder(info.form);
+        rsb.insert(info.formIndex, sb.toString());
         return rsb.toString();
     }
 
@@ -308,19 +298,16 @@ public class MasterDetailGenerator {
      * @return result of the generation.
      */
     private String generateVLayout(String result) {
-        String template = findTemplate(result, V_LAYOUT_TEMPLATE);
-        int index = result.indexOf(template);
-        result = result.substring(0, index) + result.substring(index+template.length());
-        template = uncomment(template, false);
+        TemplateInfo info = findTemplate(result, V_LAYOUT_TEMPLATE);
 
         StringBuilder sb = new StringBuilder();
         for (String column : detailColumns) {
-            String binding = template.replace("_labelName_", columnToLabelName(column)); // NOI18N
+            String binding = info.template.replace("_labelName_", columnToLabelName(column)); // NOI18N
             binding = binding.replace("_textFieldName_", columnToFieldName(column)); // NOI18N
             sb.append(binding);
         }
-        StringBuilder rsb = new StringBuilder(result);
-        rsb.insert(index, sb.toString());
+        StringBuilder rsb = new StringBuilder(info.form);
+        rsb.insert(info.formIndex, sb.toString());
         return rsb.toString();
     }
 
@@ -331,18 +318,15 @@ public class MasterDetailGenerator {
      * @return result of the generation.
      */
     private String generateLabelsHLayout(String result) {
-        String template = findTemplate(result, LABEL_H_LAYOUT_TEMPLATE);
-        int index = result.indexOf(template);
-        result = result.substring(0, index) + result.substring(index+template.length());
-        template = uncomment(template, false);
+        TemplateInfo info = findTemplate(result, LABEL_H_LAYOUT_TEMPLATE);
 
         StringBuilder sb = new StringBuilder();
         for (String column : detailColumns) {
-            String binding = template.replace("_labelName_", columnToLabelName(column)); // NOI18N
+            String binding = info.template.replace("_labelName_", columnToLabelName(column)); // NOI18N
             sb.append(binding);
         }
-        StringBuilder rsb = new StringBuilder(result);
-        rsb.insert(index, sb.toString());
+        StringBuilder rsb = new StringBuilder(info.form);
+        rsb.insert(info.formIndex, sb.toString());
         return rsb.toString();
     }
 
@@ -353,18 +337,15 @@ public class MasterDetailGenerator {
      * @return result of the generation.
      */
     private String generateFieldsHLayout(String result) {
-        String template = findTemplate(result, FIELD_H_LAYOUT_TEMPLATE);
-        int index = result.indexOf(template);
-        result = result.substring(0, index) + result.substring(index+template.length());
-        template = uncomment(template, false);
+        TemplateInfo info = findTemplate(result, FIELD_H_LAYOUT_TEMPLATE);
 
         StringBuilder sb = new StringBuilder();
         for (String column : detailColumns) {
-            String binding = template.replace("_textFieldName_", columnToFieldName(column)); // NOI18N
+            String binding = info.template.replace("_textFieldName_", columnToFieldName(column)); // NOI18N
             sb.append(binding);
         }
-        StringBuilder rsb = new StringBuilder(result);
-        rsb.insert(index, sb.toString());
+        StringBuilder rsb = new StringBuilder(info.form);
+        rsb.insert(info.formIndex, sb.toString());
         return rsb.toString();
     }
 
@@ -379,48 +360,26 @@ public class MasterDetailGenerator {
      * @return text with the specified sections removed.
      */
     private static String deleteSections(String result, String sectionName, boolean commentsOnly, boolean java) {
-        String section = comment(sectionName, java);
-        int begin;
-        if (commentsOnly) {
-            while ((begin = result.indexOf(section)) != -1) {
-                result = result.substring(0, begin) + result.substring(begin+section.length());
-            }
-        } else {
-            while ((begin = result.indexOf(section)) != -1) {
-                int end = result.indexOf(section, begin+1);
-                assert (end != -1);
-                result = result.substring(0, begin) + result.substring(end+section.length());
-            }            
+        String marker = markerRegexp(sectionName, java);
+        String delimiter = commentsOnly ? marker : marker + "(.|\\s)*?" + marker; // NOI18N
+        StringBuilder sb = new StringBuilder();
+        for (String part : result.split(delimiter)) {
+            sb.append(part);
         }
-        return result;
+        return sb.toString();
     }
 
     /**
-     * Comments (e.g. adds the HTML/XML or Java comment) around the given text.
+     * Returns regular expression for the given mark (in XML or Java).
      *
-     * @param comment comment that should be wrapped.
-     * @param java determines whether to use Java or HTML/XML comments.
-     * @return wrapped comment.
+     * @param name name of the mark.
+     * @param java determines whether the mark should be in Java or XML.
+     * @return regular expression for the mark of the given name.
      */
-    private static String comment(String comment, boolean java) {
-        String open = java ? "/*" : "<!--"; // NOI18N
-        String close = java ? "*/" : "-->"; // NOI18N
-        return open + " " + comment + " " + close; // NOI18N
-    }
-    
-    /**
-     * Uncomments (e.g. removes the HTML comment tags) from the given text.
-     *
-     * @param comment comment that should be unwrapped.
-     * @param java determines whether to use Java or HTML/XML comments.
-     * @return unwrapped comment.
-     */
-    private static String uncomment(String comment, boolean java) {
-        String open = java ? "/*" : "<!--"; // NOI18N
-        String close = java ? "*/" : "-->"; // NOI18N
-        int begin = comment.indexOf(close); // NOI18N
-        int end = comment.lastIndexOf(open); // NOI18N
-        return comment.substring(begin + open.length(), end);
+    private static String markerRegexp(String name, boolean java) {
+        String open = java ? "/\\*[\\*\\s]*" : "\\<\\!\\-\\-\\s*"; // NOI18N
+        String close = java ? "[\\*\\s]*\\*/" : "\\s*\\-\\-\\>"; // NOI18N
+        return open + Pattern.quote(name) + close;
     }
 
     /**
@@ -512,17 +471,38 @@ public class MasterDetailGenerator {
     }
 
     /**
-     * Finds the content of the template.
+     * Finds the template with the specified name.
      *
      * @param where where the template should be found.
      * @param templateName name of the template.
-     * @return the content of the template.
+     * @return template information.
      */
-    private static String findTemplate(String where, String templateName) {
-        String template = comment(templateName, false);
-        int index1 = where.indexOf(template);
-        int index2 = where.lastIndexOf(template);
-        return where.substring(index1, index2 + template.length());
+    private static TemplateInfo findTemplate(String where, String templateName) {
+        String marker = markerRegexp(templateName, false);
+        Pattern pattern = Pattern.compile(marker+"((.|\\s)*?)"+marker); // NOI18N
+        Matcher matcher = pattern.matcher(where);
+        matcher.find();
+        TemplateInfo info = new TemplateInfo();
+        int index1 = matcher.start(1);
+        int index2 = matcher.end(1);
+        info.template = where.substring(index1, index2);
+        index1 = matcher.start();
+        index2 = matcher.end();
+        info.form = where.substring(0,index1) + where.substring(index2);
+        info.formIndex = index1;
+        return info;
+    }
+
+    /**
+     * Template information.
+     */
+    private static class TemplateInfo {
+        /** Text of the template. */
+        String template;
+        /** Form where the template should be used. */
+        String form;
+        /** Index on the form where the template should be used. */
+        int formIndex;
     }
 
     /**
