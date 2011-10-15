@@ -44,6 +44,8 @@ package org.netbeans.nbbuild;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
@@ -52,7 +54,10 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.jar.Attributes;
+import java.util.jar.JarFile;
+import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
+import org.apache.tools.ant.Task;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.nbbuild.MakeOSGi.Info;
 
@@ -60,6 +65,10 @@ public class MakeOSGiTest extends NbTestCase {
 
     public MakeOSGiTest(String n) {
         super(n);
+    }
+
+    @Override protected void setUp() throws Exception {
+        clearWorkDir();
     }
 
     public void testTranslate() throws Exception {
@@ -139,6 +148,26 @@ public class MakeOSGiTest extends NbTestCase {
         assertEquals("org.netbeans.core.windows", MakeOSGi.findFragmentHost(new File(getWorkDir(), "modules/locale/org-netbeans-core-windows_nb.jar")));
         assertEquals("org.netbeans.core.startup", MakeOSGi.findFragmentHost(new File(getWorkDir(), "core/locale/core_nb.jar")));
         assertEquals("org.netbeans.bootstrap", MakeOSGi.findFragmentHost(new File(getWorkDir(), "lib/locale/boot_nb.jar")));
+    }
+
+    public void testPrescan() throws Exception {
+        File j = new File(getWorkDir(), "x.jar");
+        OutputStream os = new FileOutputStream(j);
+        try {
+            JarOutputStream jos = new JarOutputStream(os, new Manifest(new ByteArrayInputStream("Manifest-Version: 1.0\nBundle-SymbolicName: org.eclipse.mylyn.bugzilla.core;singleton:=true\nExport-Package: org.eclipse.mylyn.internal.bugzilla.core;x-friends:=\"org.eclipse.mylyn.bugzilla.ide,org.eclipse.mylyn.bugzilla.ui\",org.eclipse.mylyn.internal.bugzilla.core.history;x-friends:=\"org.eclipse.mylyn.bugzilla.ide,org.eclipse.mylyn.bugzilla.ui\",org.eclipse.mylyn.internal.bugzilla.core.service;x-internal:=true\n".getBytes())));
+            jos.flush();
+            jos.close();
+        } finally {
+            os.close();
+        }
+        Info info = new MakeOSGi.Info();
+        JarFile jf = new JarFile(j);
+        try {
+            assertEquals("org.eclipse.mylyn.bugzilla.core", MakeOSGi.prescan(jf, info, new Task() {}));
+        } finally {
+            jf.close();
+        }
+        assertEquals("[org.eclipse.mylyn.internal.bugzilla.core, org.eclipse.mylyn.internal.bugzilla.core.history, org.eclipse.mylyn.internal.bugzilla.core.service]", info.exportedPackages.toString());
     }
 
 }

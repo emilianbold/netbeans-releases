@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -73,6 +73,7 @@ public class SchemaNodeProvider extends NodeProvider {
 
     private static class FactoryHolder {
         static final NodeProviderFactory FACTORY = new NodeProviderFactory() {
+            @Override
             public SchemaNodeProvider createInstance(Lookup lookup) {
                 SchemaNodeProvider provider = new SchemaNodeProvider(lookup);
                 return provider;
@@ -89,6 +90,7 @@ public class SchemaNodeProvider extends NodeProvider {
         catalogHandle = getLookup().lookup(MetadataElementHandle.class);
     }
 
+    @Override
     protected synchronized void initialize() {
         final List<Node> newList = new ArrayList<Node>();
 
@@ -98,6 +100,7 @@ public class SchemaNodeProvider extends NodeProvider {
             try {
                 metaDataModel.runReadAction(
                     new Action<Metadata>() {
+                        @Override
                         public void run(Metadata metaData) {
                             Catalog cat = catalogHandle.resolve(metaData);
                             if (cat != null) {
@@ -145,7 +148,10 @@ public class SchemaNodeProvider extends NodeProvider {
 
     static class SchemaComparator implements Comparator<Node> {
 
+        @Override
         public int compare(Node node1, Node node2) {
+            assert node1.getDisplayName() != null : node1 + " has display name.";
+            assert node2.getDisplayName() != null : node2 + " has display name.";
             return node1.getDisplayName().compareToIgnoreCase(node2.getDisplayName());
         }
 
