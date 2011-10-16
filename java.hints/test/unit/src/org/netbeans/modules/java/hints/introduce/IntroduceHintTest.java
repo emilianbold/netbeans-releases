@@ -160,7 +160,7 @@ public class IntroduceHintTest extends NbTestCase {
     }
 
     public void test121420() throws Exception {
-        performFixTest("package test; import java.util.ArrayList; public class Test {public void test() { |new ArrayList<String>()|; }}", "package test; import java.util.ArrayList; public class Test {public void test() {ArrayList<String> arrayList = new ArrayList<String>(); }}", new DialogDisplayerImpl(null, false, false, true), 2, 0);
+        performFixTest("package test; import java.util.ArrayList; public class Test {public void test() { |new ArrayList<String>()|; }}", "package test; import java.util.ArrayList; public class Test {public void test() {ArrayList<String> arrayList = new ArrayList<String>(); }}", new DialogDisplayerImpl(null, false, false, true), 5, 0);
     }
 
     public void test142424() throws Exception {
@@ -1572,6 +1572,54 @@ public class IntroduceHintTest extends NbTestCase {
                        "    }\n" +
                        "}").replaceAll("[ \t\n]+", " "),
                        new DialogDisplayerImpl(null, false, false, true, EnumSet.<Modifier>of(Modifier.PRIVATE)),
+                       5, 1);
+    }
+
+    public void testIntroduceFieldFix203621a() throws Exception {
+        performFixTest("package test; public class Test {\n" +
+                       "    public void test() {\n" +
+                       "        |String.valueOf(1)|;\n" +
+                       "    }\n" +
+                       "}\n",
+                       "package test; public class Test { private String valueOf = String.valueOf(1); public void test() { }  } ",
+                       new DialogDisplayerImpl2(null, IntroduceFieldPanel.INIT_FIELD, false, EnumSet.<Modifier>of(Modifier.PRIVATE), false, true),
+                       5, 2);
+    }
+
+    public void testIntroduceFieldFix203621b() throws Exception {
+        performFixTest("package test; public class Test {\n" +
+                       "    public Test() {\n" +
+                       "        System.err.println(1);\n" +
+                       "        |String.valueOf(1)|;\n" +
+                       "        System.err.println(2);\n" +
+                       "    }\n" +
+                       "}\n",
+                       "package test; public class Test { private String valueOf; public Test() { System.err.println(1); valueOf = String.valueOf(1); System.err.println(2); } } ",
+                       new DialogDisplayerImpl2(null, IntroduceFieldPanel.INIT_CONSTRUCTORS, false, EnumSet.<Modifier>of(Modifier.PRIVATE), false, true),
+                       5, 2);
+    }
+
+    public void testIntroduceFieldFix203621c() throws Exception {
+        performFixTest("package test; public class Test {\n" +
+                       "    public void test() {\n" +
+                       "        System.err.println(1);\n" +
+                       "        |String.valueOf(1)|;\n" +
+                       "        System.err.println(2);\n" +
+                       "    }\n" +
+                       "}\n",
+                       "package test; public class Test { private String valueOf; public void test() { System.err.println(1); valueOf = String.valueOf(1); System.err.println(2); } } ",
+                       new DialogDisplayerImpl2(null, IntroduceFieldPanel.INIT_METHOD, false, EnumSet.<Modifier>of(Modifier.PRIVATE), false, true),
+                       5, 2);
+    }
+
+    public void testIntroduceConstantFix203621() throws Exception {
+        performFixTest("package test; public class Test {\n" +
+                       "    public void test() {\n" +
+                       "        |String.valueOf(1)|;\n" +
+                       "    }\n" +
+                       "}\n",
+                       "package test; public class Test { static final String VALUE_OF = String.valueOf(1); public void test() { }  } ",
+                       new DialogDisplayerImpl(null, true, true, true, EnumSet.noneOf(Modifier.class)),
                        5, 1);
     }
 
