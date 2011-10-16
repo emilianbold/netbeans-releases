@@ -236,7 +236,7 @@ public class DeclarativeHintRegistry implements HintProvider, ClassPathBasedHint
         if (description == null) {
             description = fallbackDisplayName;
         }
-        if (id == null || file != null) {
+        if (id == null && file != null) {
             id = file.getNameExt();
         }
         
