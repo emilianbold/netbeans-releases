@@ -201,6 +201,10 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
 
     //TODO: does not currently support variables:
     public static Collection<? extends MethodDuplicateDescription> computeDuplicatesAndRemap(CompilationInfo info, Collection<? extends TreePath> searchingFor, TreePath scope, Collection<VariableElement> variablesWithAllowedRemap, AtomicBoolean cancel) {
+        return computeDuplicatesAndRemap(info, searchingFor, scope, variablesWithAllowedRemap, cancel, Options.ALLOW_REMAP_VARIABLE_TO_EXPRESSION);
+    }
+
+    public static Collection<? extends MethodDuplicateDescription> computeDuplicatesAndRemap(CompilationInfo info, Collection<? extends TreePath> searchingFor, TreePath scope, Collection<VariableElement> variablesWithAllowedRemap, AtomicBoolean cancel, Options... options) {
         TreePath first = searchingFor.iterator().next();
         boolean statement = StatementTree.class.isAssignableFrom(first.getLeaf().getKind().asInterface());
         
@@ -208,7 +212,7 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
 
         List<MethodDuplicateDescription> result = new LinkedList<MethodDuplicateDescription>();
 
-        CopyFinder firstStatementSearcher = new CopyFinder(first, info, cancel);
+        CopyFinder firstStatementSearcher = new CopyFinder(first, info, cancel, options);
 
         firstStatementSearcher.designedTypeHack = Collections.<String, TypeMirror>emptyMap();
         firstStatementSearcher.variablesWithAllowedRemap = new HashSet<VariableElement>(variablesWithAllowedRemap);
@@ -242,7 +246,7 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
                 currentIndex++;
 
                 TreePath currentToProcess = toProcess.next();
-                CopyFinder ver = new CopyFinder(currentToProcess, info, cancel);
+                CopyFinder ver = new CopyFinder(currentToProcess, info, cancel, options);
 
                 ver.designedTypeHack = Collections.<String, TypeMirror>emptyMap();
                 ver.allowGoDeeper = false;
@@ -396,7 +400,7 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
             //TODO: remap with qualified name?
             Element remappable = info.getTrees().getElement(p);
 
-            if (variablesWithAllowedRemap.contains(remappable)) {
+            if (variablesWithAllowedRemap.contains(remappable) && (options.contains(Options.ALLOW_REMAP_VARIABLE_TO_EXPRESSION) || node.getKind() == Kind.IDENTIFIER)) {
                 TreePath existing = bindState.variablesRemapToTrees.get(remappable);
 
                 if (existing != null) {
@@ -1621,6 +1625,6 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
     }
 
     public enum Options {
-        ALLOW_VARIABLES_IN_PATTERN
+        ALLOW_VARIABLES_IN_PATTERN, ALLOW_REMAP_VARIABLE_TO_EXPRESSION;
     }
 }
