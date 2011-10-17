@@ -128,7 +128,9 @@ public final class SimpleConverter implements PathConverter {
             Process p = pb.start();
             if (p.waitFor() == 0) {
                 String output = ProcessUtils.readProcessOutputLine(p);
-                cygwinPrefix = output.substring(0, output.length() - 1);
+                if (output.length() > 1) {
+                    cygwinPrefix = output.substring(0, output.length() - 1);
+                }
             }
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
