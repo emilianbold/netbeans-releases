@@ -69,8 +69,14 @@ public class NbCss3LexerTest extends NbTestCase {
     
     public void testAllANTLRTokensHasNbTokenIds() {
         for(String tokenName : Css3Parser.tokenNames) {
-            if(!tokenName.startsWith("<")) {
-                assertNotNull(CssTokenId.valueOf(tokenName));
+            char first = tokenName.charAt(0);
+            switch(first) {
+                case '<':
+                case '\'':
+                    continue;
+                default:
+                    assertNotNull(CssTokenId.valueOf(tokenName));
+                    
             }
         }
     }
