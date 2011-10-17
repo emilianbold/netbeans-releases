@@ -46,6 +46,7 @@ package org.netbeans.modules.cnd.debugger.gdb2.mi;
 
 import java.util.LinkedList;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import org.netbeans.modules.cnd.debugger.gdb2.GdbLogger;
 
 /*
  * Manages ...
@@ -56,6 +57,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 class MICommandManager {
     private final MICommandInjector injector;
+    private final GdbLogger gdbLogger;
     
     private static final int MIN_TOKEN = 2;
     private static final int MAX_TOKEN = Integer.MAX_VALUE-1000;
@@ -64,8 +66,9 @@ class MICommandManager {
     
     private final ConcurrentLinkedQueue<MICommand> pendingCommands = new ConcurrentLinkedQueue<MICommand>();
 
-    public MICommandManager(MICommandInjector injector) {
+    public MICommandManager(MICommandInjector injector, GdbLogger gdbLogger) {
 	this.injector = injector;
+        this.gdbLogger = gdbLogger;
     } 
 
     /**
@@ -82,7 +85,9 @@ class MICommandManager {
             commandToken = MIN_TOKEN;
         }
 	pendingCommands.add(cmd);
-	injector.inject(String.valueOf(cmd.getToken()) + cmd.command() + "\n"); // NOI18N
+        String commandStr = String.valueOf(cmd.getToken()) + cmd.command() + '\n';
+        gdbLogger.logMessage(commandStr);
+	injector.inject(commandStr);
     }
     
     /**

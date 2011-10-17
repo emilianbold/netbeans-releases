@@ -196,7 +196,8 @@ public enum CssTokenId implements TokenId {
     ENDS(Css3Lexer.ENDS, OPERATORS),
     CONTAINS(Css3Lexer.CONTAINS, OPERATORS),
     
-    FONT_FACE_SYM(Css3Lexer.FONT_FACE_SYM, KEYWORDS);
+    FONT_FACE_SYM(Css3Lexer.FONT_FACE_SYM, KEYWORDS),
+    HASH_CHAR_ONLY(Css3Lexer.T__110, OTHERS);
     
     
     private static final Map<Integer, CssTokenId> codesMap = new HashMap<Integer, CssTokenId>();

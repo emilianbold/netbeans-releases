@@ -165,6 +165,11 @@ public class TemplateSpecializationsTestCase extends HyperlinkBaseTestCase {
         // Bug 196157 - Template friend functions highlighting problems 
         performTest("bug196157.cpp", 15, 23, "bug196157.cpp", 10, 5);
     }
+
+    public void testBug195283() throws Exception {
+        // Bug 195283 - go to jumps to base template instead of specialization
+        performTest("bug195283.cpp", 7, 7, "bug195283.cpp", 4, 1);
+    }
     
     public static class Failed extends HyperlinkBaseTestCase {
 
