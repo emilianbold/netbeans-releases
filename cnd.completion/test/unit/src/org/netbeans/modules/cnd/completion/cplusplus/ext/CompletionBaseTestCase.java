@@ -96,15 +96,19 @@ public abstract class CompletionBaseTestCase extends ProjectBasedTestCase {
     protected void performTest(String source, int lineIndex, int colIndex, String textToInsert, int offsetAfterInsertion, String goldenFileName) throws Exception {
         performTest(source, lineIndex, colIndex, textToInsert, offsetAfterInsertion, goldenFileName, null, null);
     }
-    
+
     protected void performTest(String source, int lineIndex, int colIndex, String textToInsert, int offsetAfterInsertion, String goldenFileName, String toPerformItemRE, String goldenFileName2) throws Exception {
+        performTest(source, lineIndex, colIndex, textToInsert, offsetAfterInsertion, goldenFileName, toPerformItemRE, goldenFileName2, false);
+    }
+    
+    protected void performTest(String source, int lineIndex, int colIndex, String textToInsert, int offsetAfterInsertion, String goldenFileName, String toPerformItemRE, String goldenFileName2, boolean tooltip) throws Exception {
         File workDir = getWorkDir();
         File testFile = getDataFile(source);
         
         File output = new File(workDir, goldenFileName);
         PrintStream streamOut = new PrintStream(output);
         
-        CompletionItem[] array = createTestPerformer().test(logWriter, textToInsert, offsetAfterInsertion, false, testFile, lineIndex, colIndex); // NOI18N        
+        CompletionItem[] array = createTestPerformer().test(logWriter, textToInsert, offsetAfterInsertion, false, testFile, lineIndex, colIndex, tooltip); // NOI18N        
 
 	assertNotNull("Result should not be null", array);
         Arrays.sort(array, CompletionItemComparator.BY_PRIORITY);
