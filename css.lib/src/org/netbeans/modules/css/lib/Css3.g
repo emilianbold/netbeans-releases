@@ -341,9 +341,23 @@ bodyset
         | page
         | counterStyle
         | fontFace
+        | moz_document
       )
       WS*
     ;
+    
+moz_document
+	: 
+	MOZ_DOCUMENT_SYM WS* ( moz_document_function WS*) ( COMMA WS* moz_document_function WS* )*
+	LBRACE WS*
+	 ( ( ruleSet | page ) WS*)*
+	RBRACE
+	;
+
+moz_document_function
+	:
+	URI | MOZ_URL_PREFIX | MOZ_DOMAIN | MOZ_REGEXP
+	;
     
 page
     : PAGE_SYM WS? IDENT? (pseudoPage WS*)?
@@ -1078,6 +1092,7 @@ RIGHTTOP_SYM          :'@right-top';
 RIGHTMIDDLE_SYM       :'@right-middle';
 RIGHTBOTTOM_SYM       :'@right-bottom';
 
+MOZ_DOCUMENT_SYM      : '@-moz-document';
 
 //I cannot figure out how to use the fragment tokens to generate the following tokens.
 //the parser generator cycles itself indefinitely.
@@ -1195,6 +1210,32 @@ URI :   U R L
             ((WS)=>WS)? (URL|STRING) WS?
         ')'
     ;
+    
+MOZ_URL_PREFIX
+	:
+	'url-prefix('
+            ((WS)=>WS)? (URL|STRING) WS?
+        ')'
+    
+    	;
+
+MOZ_DOMAIN
+	:
+	'domain('
+            ((WS)=>WS)? (URL|STRING) WS?
+        ')'
+    
+    	;
+
+MOZ_REGEXP
+	:
+	'regexp('
+            ((WS)=>WS)? STRING WS?
+        ')'
+    
+    	;
+
+
 
 // -------------
 // Whitespace.  Though the W3 standard shows a Yacc/Lex style parser and lexer

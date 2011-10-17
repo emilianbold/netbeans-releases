@@ -182,7 +182,12 @@ public class CssCompletionTest extends CssModuleTestBase {
         checkCC("h1 { color:red; %| }", arr("-moz-animation"), Match.EMPTY);
         checkCC("h1 { color:red; %moz| }", arr("-moz-animation"), Match.EMPTY);
         
-        
+    }
+    
+    public void testCompletionInMozillaSpecificAtRule() throws ParseException {
+        checkCC(" @-moz-document url(http://www.w3.org/) { | }", arr("color"), Match.CONTAINS);
+        checkCC(" @-moz-document url(http://www.w3.org/) { p { } | }", arr("color"), Match.CONTAINS);
+        checkCC(" @-moz-document url(http://www.w3.org/) { p { } | div { } }", arr("color"), Match.CONTAINS);
     }
     
 }
