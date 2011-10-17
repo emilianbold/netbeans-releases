@@ -453,32 +453,6 @@ public final class MavenModelUtils {
             dep.setVersion("1.4"); //NOI18N
             dep.setScope(Artifact.SCOPE_PROVIDED);
         }
-
-        NbMavenProject mavenProject = project.getLookup().lookup(NbMavenProject.class);
-        if (mavenProject != null) {
-            Repository rep =
-                    ModelUtils.addModelRepository(
-                        mavenProject.getMavenProject(),
-                        model,
-                        "http://download.java.net/maven/2/"); //NOI18N
-            if (rep != null) {
-                rep.setId("java.net2"); //NOI18N
-                rep.setLayout("default"); //NOI18N
-            }
-        }
-        addPluginRepository( model );
-    }
-    
-    public static void addPluginRepository(POMModel model){
-        assert model.isIntransaction();
-        
-        Repository pluginRepository = model.getFactory().createPluginRepository();
-        
-        pluginRepository.setId("java.net2"); // NOI18N
-        pluginRepository.setUrl("http://download.java.net/maven/2/");    // NOI18N
-        
-        org.netbeans.modules.maven.model.pom.Project project = model.getProject();
-        project.addPluginRepository(pluginRepository);
     }
 
     /** Detect JAX-WS 2.1 Library in project.
