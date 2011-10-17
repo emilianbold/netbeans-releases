@@ -285,6 +285,9 @@ public abstract class BasicCompilerConfiguration implements AllOptionsProvider, 
         if (CndPathUtilitities.isPathAbsolute(fileName) || filePath.startsWith("..")) { // NOI18N;
             String ofileName = CndPathUtilitities.getBaseName(fileName);
             String odirName = CndPathUtilitities.getDirName(fileName);
+            if (odirName == null) {
+                odirName = ""; // NOI18N
+            }
             String absPath = dirName + '/' + MakeConfiguration.EXT_FOLDER + '/' + Math.abs(odirName.hashCode()) + '/' + ofileName; // UNIX path
             absPath = CndPathUtilitities.replaceOddCharacters(absPath, '_');
             return absPath;
