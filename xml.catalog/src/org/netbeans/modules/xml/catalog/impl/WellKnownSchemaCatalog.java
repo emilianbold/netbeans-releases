@@ -64,10 +64,6 @@ import org.xml.sax.EntityResolver;
  *
  * @author sdedic
  */
-@org.openide.util.lookup.ServiceProviders({
-    @org.openide.util.lookup.ServiceProvider(service = CatalogReader.class),
-    @org.openide.util.lookup.ServiceProvider(service = EntityResolver.class)
-})
 public class WellKnownSchemaCatalog implements CatalogReader, CatalogDescriptor, EntityResolver {
     
     /**
