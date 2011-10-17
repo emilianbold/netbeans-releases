@@ -68,6 +68,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import java.util.logging.Level;
+import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.NameAcceptor;
@@ -2980,6 +2981,17 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         FileContainer container = getFileContainer();
         Set<Entry<CharSequence, FileEntry>> entrySet = container.getFileStorage().entrySet();
         err.printf("FileContainer (%d) for project %s\n", entrySet.size(), toString()); //NOI18N
+        Map<CharSequence, Object> canonicalNames = container.getCanonicalNames();
+        for (Entry<CharSequence, Object> entry : canonicalNames.entrySet()) {
+            Object altKey = entry.getValue();
+            if (altKey instanceof CharSequence) {
+                if (!CharSequenceUtilities.textEquals(entry.getKey(), (CharSequence)altKey)) {
+                    err.printf("\tAltKey: %s->%s\n", entry.getKey(), altKey); //NOI18N
+                } 
+            } else if (altKey != null) {
+                err.printf("\tAltKeys: %s->%s\n", entry.getKey(), Arrays.asList((CharSequence[]) altKey).toString()); //NOI18N
+            }
+        }
         for(Map.Entry<CharSequence, FileEntry> entry : entrySet){
             err.println("\tEntry "+entry.getKey()); //NOI18N
             if (entry.getValue().getStatePairs().isEmpty()) {
