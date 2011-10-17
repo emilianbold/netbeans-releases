@@ -87,7 +87,7 @@ public class SQLEditorSupportNormalTest extends NbTestCase {
     
     @Override
     public void setUp() throws Exception {
-        FileObject folder = FileUtil.toFileObject(getWorkDir()).createFolder("folder");
+        FileObject folder = FileUtil.toFileObject(getWorkDir()).createFolder("folder" + System.currentTimeMillis());
         fileObject = folder.createData("SQLFile", "sql");
         
         MockServices.setServices(Pool.class);
