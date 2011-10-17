@@ -262,37 +262,39 @@ public class CssFileModel {
                 currentBodyRange = NodeUtil.getRuleBodyRange(node);
             } else if (NodeUtil.isSelectorNode(node)) {
 
-                Collection<Entry> collection;
-                int start_offset_diff;
+                if(!NodeUtil.containsError(node)) {
+                    Collection<Entry> collection;
+                    int start_offset_diff;
 
-                switch (node.type()) {
-                    case cssClass:
-                        collection = getClassesCollectionInstance();
-                        start_offset_diff = 1; //cut off the dot (.)
-                        break;
-                    case cssId:
-                        collection = getIdsCollectionInstance();
-                        start_offset_diff = 1; //cut of the hash (#)
-                        break;
-                    case elementName:
-                        collection = getHtmlElementsCollectionInstance();
-                        start_offset_diff = 0;
-                        break;
-                    default:
-                        collection = null; //cannot happen
-                        start_offset_diff = 0;
-                }
+                    switch (node.type()) {
+                        case cssClass:
+                            collection = getClassesCollectionInstance();
+                            start_offset_diff = 1; //cut off the dot (.)
+                            break;
+                        case cssId:
+                            collection = getIdsCollectionInstance();
+                            start_offset_diff = 1; //cut of the hash (#)
+                            break;
+                        case elementName:
+                            collection = getHtmlElementsCollectionInstance();
+                            start_offset_diff = 0;
+                            break;
+                        default:
+                            collection = null; //cannot happen
+                            start_offset_diff = 0;
+                    }
 
-                CharSequence image = node.image().subSequence(start_offset_diff, node.image().length());
-                OffsetRange range = new OffsetRange(node.from() + start_offset_diff, node.to());
+                    CharSequence image = node.image().subSequence(start_offset_diff, node.image().length());
+                    OffsetRange range = new OffsetRange(node.from() + start_offset_diff, node.to());
 
-                //check if the real start offset can be translated to the original offset
-                boolean isVirtual = getSnapshot().getOriginalOffset(node.from()) == -1;
+                    //check if the real start offset can be translated to the original offset
+                    boolean isVirtual = getSnapshot().getOriginalOffset(node.from()) == -1;
 
-                OffsetRange body = currentBodyRange != null ? new OffsetRange(currentBodyRange[0], currentBodyRange[1]) : OffsetRange.NONE;
-                Entry e = createEntry(image.toString(), range, body, isVirtual);
-                if (e != null) {
-                    collection.add(e);
+                    OffsetRange body = currentBodyRange != null ? new OffsetRange(currentBodyRange[0], currentBodyRange[1]) : OffsetRange.NONE;
+                    Entry e = createEntry(image.toString(), range, body, isVirtual);
+                    if (e != null) {
+                        collection.add(e);
+                    }
                 }
 
             } else if (node.type() == NodeType.hexColor) {
