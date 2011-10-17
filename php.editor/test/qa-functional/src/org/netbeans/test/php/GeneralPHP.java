@@ -559,7 +559,7 @@ public class GeneralPHP extends JellyTestCase {
 
     protected void Backit(EditorOperator eoPHP, int iCount) {
         for (int i = 0; i < iCount; i++) {
-            eoPHP.pressKey(KeyEvent.VK_BACK_SPACE);
+            eoPHP.pushKey(KeyEvent.VK_BACK_SPACE);
         }
     }
 
