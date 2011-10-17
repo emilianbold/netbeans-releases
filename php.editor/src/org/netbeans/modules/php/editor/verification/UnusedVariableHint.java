@@ -81,6 +81,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.IfStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Include;
 import org.netbeans.modules.php.editor.parser.astnodes.InstanceOfExpression;
+import org.netbeans.modules.php.editor.parser.astnodes.InterfaceDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.LambdaFunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.NamespaceDeclaration;
@@ -530,6 +531,11 @@ public class UnusedVariableHint extends AbstractRule implements PHPRuleWithPrefe
             scan(node.getLexicalVariables());
             forceVariableAsUsed = false;
             scan(node.getBody());
+        }
+
+        @Override
+        public void visit(InterfaceDeclaration node) {
+            // intentionally
         }
 
         @Override
