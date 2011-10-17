@@ -55,6 +55,7 @@ import java.awt.Point;
 import java.awt.event.MouseWheelListener;
 import java.util.Collection;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
@@ -93,7 +94,7 @@ import org.openide.util.NbBundle;
  *
  * @author Ajit Bhate
  */
-public class DesignView extends JPanel  {
+public class DesignView extends JPanel  implements Flushable {
     
     public static final Object messageLayerKey = new Object();
     
@@ -227,6 +228,21 @@ public class DesignView extends JPanel  {
         super.requestFocusInWindow();
         // Ensure the graph widgets have the focus.
         return getContent().requestFocusInWindow();
+    }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.websvc.design.view.Flushable#flushContent()
+     */
+    @Override
+    public void flushContent() {
+        if ( contentWidget != null ){
+            List<Widget> children = contentWidget.getChildren();
+            for (Widget widget : children) {
+                if ( widget instanceof Flushable ){
+                    ((Flushable)widget).flushContent();;
+                }
+            }
+        }
     }
     
     private void initServiceModel(){

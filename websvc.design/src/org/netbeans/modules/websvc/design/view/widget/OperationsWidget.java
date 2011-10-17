@@ -72,7 +72,7 @@ import org.openide.util.NbBundle;
  *
  * @author Ajit Bhate
  */
-public class OperationsWidget extends AbstractTitledWidget {
+public class OperationsWidget extends FlushableWidget {
     
     private transient ServiceModel serviceModel;
     private transient Action addAction;

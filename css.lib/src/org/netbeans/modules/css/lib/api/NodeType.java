@@ -118,6 +118,18 @@ public enum NodeType {
         media_type,
         medium, 
         
+        /** 
+         * Mozilla specific at rule @-moz-document 
+         * See https://developer.mozilla.org/en/CSS/@-moz-document
+         */
+        moz_document,
+        
+        /**
+         * Mozilla @-moz-document at rule argument
+         * See https://developer.mozilla.org/en/CSS/@-moz-document
+         */
+        moz_document_function,
+        
         /**
          * Namespace declaration: @namespace prefix "http://myns";
          */
