@@ -409,16 +409,56 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin {
                     if(exMethod.getSimpleName().equals(method.getSimpleName())
                             && exMethod.getParameters().size() == paramTable.length) {
                         boolean sameParameters = true;
+                        boolean wideningConversion = true;
                         for (int j = 0; j < exMethod.getParameters().size(); j++) {
                             TypeMirror exType = ((VariableElement)exMethod.getParameters().get(j)).asType();
                             String type = paramTable[j].getType();
                             TypeMirror paramType = javac.getTreeUtilities().parseType(type, enclosingTypeElement);
                             if(!javac.getTypes().isSameType(exType, paramType)) {
                                 sameParameters = false;
+                                if(exType.getKind().isPrimitive() && paramType.getKind().isPrimitive()) {
+                                    /*
+                                     * byte to short, int, long, float, or double
+                                     * short to int, long, float, or double
+                                     * char to int, long, float, or double
+                                     * int to long, float, or double
+                                     * long to float or double
+                                     * float to double
+                                     */
+                                    switch (exType.getKind()) {
+                                        case DOUBLE:
+                                            if(paramType.getKind().equals(TypeKind.FLOAT)) {
+                                                break;
+                                            }
+                                        case FLOAT:
+                                            if(paramType.getKind().equals(TypeKind.LONG)) {
+                                                break;
+                                            }
+                                        case LONG:
+                                            if(paramType.getKind().equals(TypeKind.INT)) {
+                                                break;
+                                            }
+                                        case INT:
+                                            if(paramType.getKind().equals(TypeKind.SHORT)) {
+                                                break;
+                                            }
+                                        case SHORT:
+                                            if(paramType.getKind().equals(TypeKind.BYTE)) {
+                                                break;
+                                            }
+                                        case BYTE:
+                                            wideningConversion = false;
+                                            break;
+                                    }
+                                } else {
+                                    wideningConversion = false;
+                                }
                             }
                         }
                         if(sameParameters) {
                             p = createProblem(p, false, NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_existingMethod", exMethod.toString(), enclosingTypeElement.getQualifiedName())); // NOI18N
+                        } else if(wideningConversion) {
+                            p = createProblem(p, false, NbBundle.getMessage(ChangeParametersPlugin.class, "WRN_wideningConversion", exMethod.toString(), enclosingTypeElement.getQualifiedName())); // NOI18N
                         }
                     }
                 }
