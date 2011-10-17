@@ -185,7 +185,11 @@ class LayoutFeeder implements LayoutConstants {
                 LayoutDragger.PositionDef newPos = dragger.getPositions()[dim];
                 if (newPos == null || !newPos.snapped) {
                     if (!pos.snapped()) {
-                        pos.alignment = LayoutInterval.getEffectiveAlignment(resizingComp);
+                        int effAlign = LayoutInterval.getEffectiveAlignment(resizingComp);
+                        if (effAlign != pos.alignment) {
+                            pos.alignment = effAlign;
+                            findAlignedInterval(selCompList, inCommonParent, dimension, effAlign, pos);
+                        }
                     }
                 } else if ((pos.alignment == CENTER || pos.alignment == BASELINE)
                         && (newPos.alignment == LEADING || newPos.alignment == TRAILING)
@@ -397,10 +401,12 @@ class LayoutFeeder implements LayoutConstants {
                 // resizing only in this dimension and without snap, check for
                 // possible growing in parallel with part of its own parent sequence
                 aEdge = originalPos1.alignment;
-                aSnappedParallel = originalPos1.snappedParallel;
-                aSnappedNextTo = originalPos1.snappedNextTo;
+                if (originalPos1.alignment == (dragger.getResizingEdge(dim)^1)) {
+                    aSnappedParallel = originalPos1.snappedParallel;
+                    aSnappedNextTo = originalPos1.snappedNextTo;
+                }
                 aPaddingType = originalPos1.paddingType;
-                preserveOriginal = true;
+                preserveOriginal = !resizingOutOfOriginalAlignment(originalPos1, dragger.getResizingEdge(dim), addingSpace, dim);
             } else { // otherwise plain moving without snap
                 aEdge = DEFAULT;
                 aSnappedParallel = aSnappedNextTo = null;
@@ -717,56 +723,48 @@ class LayoutFeeder implements LayoutConstants {
      */
     private static List<LayoutInterval> getIntervalsInCommonParent(LayoutInterval[] compIntervals) {
         List<LayoutInterval> inParent = null;
-        if (compIntervals.length == 1) {
-            inParent = Collections.singletonList(compIntervals[0]);
-        } else {
-            LayoutInterval commonParent = LayoutInterval.getCommonParent(compIntervals);
-            Set<LayoutInterval> comps = new HashSet<LayoutInterval>();
-            Collections.addAll(comps, compIntervals);
-            if (commonParent != null) {
-                boolean found = false;
-                boolean previous = false;
-                boolean all = true;
-                for (int i=0; i < commonParent.getSubIntervalCount(); i++) {
-                    LayoutInterval li = commonParent.getSubInterval(i);
-                    if (!li.isEmptySpace()) {
-                        int sel = isInSelectedComponents(li, compIntervals, true);
-                        if (sel > 0) { // 'li' contains selected components and nothing else
-                            if (!found) {
-                                found = true;
-                                inParent = new ArrayList<LayoutInterval>();
-                            } else if (!previous && commonParent.isSequential()) {
-                                inParent.clear();
-                                break; // not a continuous sub-sequence
+        LayoutInterval commonParent = LayoutInterval.getCommonParent(compIntervals);
+        if (commonParent != null) {
+            if (compIntervals.length == 1) {
+                inParent = Collections.singletonList(compIntervals[0]);
+            } else {
+                Set<LayoutInterval> comps = new HashSet<LayoutInterval>();
+                Collections.addAll(comps, compIntervals);
+                if (commonParent != null) {
+                    boolean found = false;
+                    boolean previous = false;
+                    boolean all = true;
+                    for (int i=0; i < commonParent.getSubIntervalCount(); i++) {
+                        LayoutInterval li = commonParent.getSubInterval(i);
+                        if (!li.isEmptySpace()) {
+                            int sel = isInSelectedComponents(li, compIntervals, true);
+                            if (sel > 0) { // 'li' contains selected components and nothing else
+                                if (!found) {
+                                    found = true;
+                                    inParent = new ArrayList<LayoutInterval>();
+                                } else if (!previous && commonParent.isSequential()) {
+                                    inParent.clear();
+                                    break; // not a continuous sub-sequence
+                                }
+                                previous = true;
+                                inParent.add(li);
+                            } else if (sel < 0) { // 'li' does not contain any selected component
+                                previous = false;
+                                all = false;
+                            } else { // 'li' contains both, not continuous
+                                if (inParent != null) {
+                                    inParent.clear();
+                                }
+                                break;
                             }
-                            // [TODO alignment in parallel matters?]
-    //                        if (commonParent.isParallel()) {
-    //                            int align = LayoutInterval.wantResize(li) ? LayoutRegion.ALL_POINTS : li.getAlignment();
-    //                            if (commonAlign != LEADING && commonAlign != TRAILING && commonAlign != CENTER && commonAlign != BASELINE) {
-    //                                commonAlign = align;
-    //                            } else if (commonAlign != align && align != LayoutRegion.ALL_POINTS) {
-    //                                inParent.clear();
-    //                                break; // alignment does not much
-    //                            }
-    //                        }
-                            previous = true;
-                            inParent.add(li);
-                        } else if (sel < 0) { // 'li' does not contain any selected component
-                            previous = false;
-                            all = false;
-                        } else { // 'li' contains both, not continuous
-                            if (inParent != null) {
-                                inParent.clear();
-                            }
-                            break;
                         }
                     }
-                }
-                if (commonParent.isParallel() && commonParent.getParent() != null && found && all) {
-                    // entire parallel group selected, use it as a whole
-                    inParent.clear();
-                    inParent.add(commonParent);
-                    commonParent = commonParent.getParent();
+                    if (commonParent.isParallel() && commonParent.getParent() != null && found && all) {
+                        // entire parallel group selected, use it as a whole
+                        inParent.clear();
+                        inParent.add(commonParent);
+                        commonParent = commonParent.getParent();
+                    }
                 }
             }
         }
@@ -1029,6 +1027,21 @@ class LayoutFeeder implements LayoutConstants {
             }
         }
         return LayoutInterval.getEffectiveAlignmentInParent(resizingInterval, parent, fixedEdge);
+    }
+
+    private static boolean resizingOutOfOriginalAlignment(IncludeDesc originalPos,
+                             int resizingEdge, LayoutRegion space, int dimension) {
+        if (originalPos.snappedParallel != null) {
+            int align = originalPos.alignment;
+            if ((align == LEADING || align == TRAILING) && resizingEdge == align) {
+                int d = align==LEADING ? 1 : -1;
+                if (space.positions[dimension][align]*d
+                        < originalPos.snappedParallel.getCurrentSpace().positions[dimension][align]*d) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /**
@@ -4026,7 +4039,12 @@ class LayoutFeeder implements LayoutConstants {
             }
             IncludeDesc iDesc = addInclusion(group, parallelWithSequence, distance, ortDistance, inclusions);
             if (iDesc != null) {
-                iDesc.index = (aEdge == LEADING) ? startIndex : endIndex; //index;
+                iDesc.index = (aEdge == LEADING) ? startIndex : endIndex;
+                if (iDesc.snappedParallel != null && group.isParentOf(iDesc.snappedParallel)
+                         && !parallelWithSequence && dragger.isResizing(dimension^1)) {
+                    // original position likely aligned with indent, but now resized next to (indent bigger than the component)
+                    iDesc.snappedParallel = null;
+                }
             }
         }
     }
@@ -4191,45 +4209,46 @@ class LayoutFeeder implements LayoutConstants {
      * aligning needs to be preserved even if overlapping can't be avoided.
      */
     private IncludeDesc addAligningInclusion(List<IncludeDesc> inclusions) {
-        if (aSnappedParallel == null)
+        if (aSnappedParallel == null) {
             return null;
-
-        boolean compatibleFound = false;
-        for (Iterator it=inclusions.iterator(); it.hasNext(); ) {
-            IncludeDesc iDesc = (IncludeDesc) it.next();
-            if (canAlignWith(aSnappedParallel, iDesc.parent, aEdge)) {
-                compatibleFound = true;
-                break;
+        }
+        for (IncludeDesc inc : inclusions) {
+            if (canAlignWith(aSnappedParallel, inc.parent, aEdge)) {
+                return null;
             }
         }
-        if (!compatibleFound) {
-            IncludeDesc iDesc = new IncludeDesc();
-            if (!aSnappedParallel.isParallel()) {
-                // When the component to align with spans the whole parallel group,
-                // it may be desirable to align with the whole group instead to:
-                // - not influence its size (if there's anything resizable),
-                // - preserve the group (not creating unnecessary subgroup in it).
-                LayoutInterval parent = LayoutInterval.getFirstParent(aSnappedParallel, PARALLEL);
-                if (parent != null && parent.getParent() != null
-                        && LayoutInterval.isPlacedAtBorder(aSnappedParallel, parent, dimension, aEdge)
-                        && ((LayoutInterval.contentWantResize(parent) && !LayoutInterval.wantResize(addingInterval))
-                            || !LayoutInterval.isAlignedAtBorder(aSnappedParallel, parent, aEdge))) {
-                    iDesc.snappedParallel = parent;
-                    iDesc.parent = LayoutInterval.getFirstParent(parent, PARALLEL);
+
+        IncludeDesc iDesc = new IncludeDesc();
+        if (!aSnappedParallel.isParallel()) {
+            // If the component to align with spans the whole parallel group, it
+            // may be desirable to align with the whole group instead in order to:
+            // 1) not influence the group size (if there's anything resizable),
+            // 2) preserve the group inner alignment of components at the opposite
+            // edge (avoiding nesting that is more tending to S-layout problem).
+            LayoutInterval parent = LayoutInterval.getFirstParent(aSnappedParallel, PARALLEL);
+            if (parent != null && parent.getParent() != null
+                    && LayoutInterval.isPlacedAtBorder(aSnappedParallel, parent, dimension, aEdge)
+                    && ((LayoutInterval.contentWantResize(parent) && !LayoutInterval.wantResize(addingInterval))
+                        || !LayoutInterval.isAlignedAtBorder(aSnappedParallel, parent, aEdge))) {
+                iDesc.snappedParallel = parent;
+                iDesc.parent = LayoutInterval.getFirstParent(parent, PARALLEL);
+                for (IncludeDesc inc : inclusions) {
+                    if (inc.snappedParallel == aSnappedParallel) {
+                        inc.snappedParallel = iDesc.snappedParallel;
+                    }
                 }
             }
-            if (iDesc.snappedParallel == null) {
-                iDesc.snappedParallel = aSnappedParallel;
-                iDesc.parent = LayoutInterval.getFirstParent(aSnappedParallel, PARALLEL);
-            }
-            if (iDesc.parent == null) {
-                iDesc.parent = aSnappedParallel;
-            }
-            iDesc.alignment = aEdge;
-            inclusions.add(0, iDesc);
-            return iDesc;
         }
-        else return null;
+        if (iDesc.snappedParallel == null) {
+            iDesc.snappedParallel = aSnappedParallel;
+            iDesc.parent = LayoutInterval.getFirstParent(aSnappedParallel, PARALLEL);
+        }
+        if (iDesc.parent == null) {
+            iDesc.parent = aSnappedParallel;
+        }
+        iDesc.alignment = aEdge;
+        inclusions.add(0, iDesc);
+        return iDesc;
     }
 
     private boolean forwardIntoSubParallel(LayoutInterval seq, int startIndex, int endIndex, List<IncludeDesc> inclusions) {
@@ -4759,12 +4778,16 @@ class LayoutFeeder implements LayoutConstants {
         if (iDesc2 == null || !canCombine(iDesc1, iDesc2)) {
             return 1;
         }
-
         assert (iDesc1.alignment == LEADING || iDesc1.alignment == TRAILING)
                 && (iDesc2.alignment == LEADING || iDesc2.alignment == TRAILING)
                 && iDesc1.alignment == (iDesc2.alignment^1);
 
+        boolean orig1 = originalPosition != null && iDesc1 == originalPosition.desc1;
         if (iDesc1.parent == iDesc2.parent) {
+            if (orig1) {
+                iDesc1.newSubGroup = iDesc2.newSubGroup;
+                iDesc1.neighbor = iDesc2.neighbor;
+            }
             return 3;
         }
 
@@ -4779,6 +4802,9 @@ class LayoutFeeder implements LayoutConstants {
             }
             commonGroup = iDesc2.parent;
             nextTo = iDesc2.neighbor != null || iDesc1.snappedNextTo != null || iDesc1.parent.isSequential();
+            if (orig1 && iDesc1.neighbor != null && !LayoutUtils.contentOverlap(addingSpace, iDesc1.neighbor, dimension^1)) {
+                iDesc1.neighbor = null; // original neighbor is not intersecting in other dimension
+            }
         } else {
             commonGroup = LayoutInterval.getFirstParent(iDesc1.parent, SEQUENTIAL);
             nextTo = false;

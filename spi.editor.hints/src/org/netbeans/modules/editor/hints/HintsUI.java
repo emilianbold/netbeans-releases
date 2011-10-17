@@ -120,7 +120,9 @@ import org.openide.util.TaskListener;
  * @author Tim Boudreau
  */
 public final class HintsUI implements MouseListener, MouseMotionListener, KeyListener, PropertyChangeListener, AWTEventListener  {
-    
+
+    //-J-Dorg.netbeans.modules.editor.hints.HintsUI.always.show.error=true
+    private static final boolean ALWAYS_SHOW_ERROR_MESSAGE = Boolean.getBoolean(HintsUI.class.getName() + ".always.show.error");
     private static HintsUI INSTANCE;
     private static final Set<String> fixableAnnotations;
     private static final String POPUP_NAME = "hintsPopup"; // NOI18N
@@ -407,6 +409,7 @@ public final class HintsUI implements MouseListener, MouseMotionListener, KeyLis
             final Dimension hintPopup = hintListComponent.getPreferredSize();
             boolean exceedsHeight = p.y + hintPopup.height > screen.height;
 
+            if (ALWAYS_SHOW_ERROR_MESSAGE) {
             try {
                 int pos = javax.swing.text.Utilities.getRowStart(comp, comp.getCaret().getDot());
                 Rectangle r = comp.modelToView (pos);
@@ -430,6 +433,7 @@ public final class HintsUI implements MouseListener, MouseMotionListener, KeyLis
             } catch( BadLocationException blE ) {
                 ErrorManager.getDefault().notify (blE);
                 errorTooltip = null;
+            }
             }
 
             if(exceedsHeight) {

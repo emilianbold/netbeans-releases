@@ -141,6 +141,9 @@ public class DesignMultiViewElement extends TopComponent
     @Override
     public void componentDeactivated() {
         super.componentDeactivated();
+        if ( designView != null ){
+            designView.flushContent();
+        }
     }
     
     @Override
@@ -153,6 +156,9 @@ public class DesignMultiViewElement extends TopComponent
     @Override
     public void componentClosed() {
         super.componentClosed();
+        if ( designView != null ){
+            designView.flushContent();
+        }
     }
     
     @Override
@@ -165,6 +171,9 @@ public class DesignMultiViewElement extends TopComponent
     public void componentHidden() {
         super.componentHidden();
         setActivatedNodes(new Node[] {});
+        if ( designView != null ){
+            designView.flushContent();
+        }
     }
     
     public JComponent getToolbarRepresentation() {

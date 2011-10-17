@@ -141,12 +141,13 @@ public class CompletionTestPerformer {
             JEditorPane  editor,
             BaseDocument doc,
             int caretOffset,
-            boolean      unsorted) {
+            boolean unsorted,
+            boolean tooltip) {
         doc = doc == null ? Utilities.getDocument(editor) : doc;
         CsmFile csmFile = CsmUtilities.getCsmFile(doc, false, false);
         assert csmFile != null : "Must be csmFile for document " + doc;        
         CsmCompletionQuery query = CsmCompletionProvider.getCompletionQuery(csmFile, this.queryScope, null);
-        CsmCompletionQuery.CsmCompletionResult res = query.query(editor, doc, caretOffset, false, !unsorted, true);
+        CsmCompletionQuery.CsmCompletionResult res = query.query(editor, doc, caretOffset, tooltip, !unsorted, true, tooltip);
         
         CompletionItem[] array =  res == null ? new CompletionItem[0] : res.getItems().toArray(new CompletionItem[res.getItems().size()]);
         assert array != null;
@@ -168,7 +169,8 @@ public class CompletionTestPerformer {
             boolean unsorted,
             final String textToInsert, int offsetAfterInsertion, 
             int lineIndex,
-            int colIndex) throws BadLocationException, IOException {
+            int colIndex,
+            boolean tooltip) throws BadLocationException, IOException {
         if (!SwingUtilities.isEventDispatchThread()) {
             throw new IllegalStateException("The testPerform method may be called only inside AWT event dispatch thread.");
         }
@@ -202,12 +204,12 @@ public class CompletionTestPerformer {
             editor.grabFocus();
             editor.getCaret().setDot(offset);
         }        
-        return completionQuery(log, editor, doc, offset, unsorted);
+        return completionQuery(log, editor, doc, offset, unsorted, tooltip);
     }
     
     public CompletionItem[] test(final PrintWriter log,
             final String textToInsert, final int offsetAfterInsertion, final boolean unsorted,
-            final File testSourceFile, final int line, final int col) throws Exception {
+            final File testSourceFile, final int line, final int col, final boolean tooltip) throws Exception {
         try {
             final CompletionItem[][] array = new CompletionItem[][] {null};
             log.println("Completion test start.");
@@ -224,7 +226,7 @@ public class CompletionTestPerformer {
                 Runnable run = new Runnable() {
                     public void run() {
                         try {
-                            array[0] = testPerform(log, null, doc, unsorted, textToInsert, offsetAfterInsertion, line, col);
+                            array[0] = testPerform(log, null, doc, unsorted, textToInsert, offsetAfterInsertion, line, col, tooltip);
                         } catch (IOException ex) {
                             ex.printStackTrace(log);
                         } catch (BadLocationException ex) {

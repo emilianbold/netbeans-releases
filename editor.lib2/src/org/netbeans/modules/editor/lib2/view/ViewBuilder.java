@@ -657,6 +657,7 @@ final class ViewBuilder {
         boolean firstReplaceValid = firstReplace != null && firstReplace.isChanged();
         if (firstReplaceValid) {
             // This generally does not affect layout (will be computed later and possibly fire a VH change)
+            // Also the lowerMeasuredEndIndex(index) is called by replace()
             firstReplace.view.replace(firstReplace.index,
                     firstReplace.removeCount, firstReplace.addedViews(), modLength);
         }

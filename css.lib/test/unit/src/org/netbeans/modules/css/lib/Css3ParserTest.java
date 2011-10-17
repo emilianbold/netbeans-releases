@@ -834,6 +834,16 @@ public class Css3ParserTest extends CslTestBase {
         assertResultOK(result);
 
     }
+    
+    public void testMozDocumentAtRule() throws BadLocationException, ParseException {
+        CssParserResult result = TestUtil.parse(
+                "@-moz-document url(http://www.w3.org/),  "
+                + "url-prefix(http://www.w3.org/Style/),  "
+                + "domain(mozilla.org),  "
+                + "regexp(\"^https:.*\") { div { color: red; } }");
+        
+        assertResultOK(result);
+    }
 
     private CssParserResult assertResultOK(CssParserResult result) {
         return assertResult(result, 0);

@@ -220,6 +220,7 @@ final class ParagraphViewChildren extends ViewChildren<EditorView> {
         assert (newMeasuredEndIndex >= 0) : "newMeasuredEndIndex=" + newMeasuredEndIndex + " < 0"; // NOI18N
         assert (newMeasuredEndIndex <= measuredEndIndex);
         while (measuredEndIndex > newMeasuredEndIndex) {
+            wrapInfo = null; // Clear wrapInfo since it would not contain valid content
             EditorView view = get(--measuredEndIndex);
             if (view instanceof HighlightsView) {
                 HighlightsView hView = (HighlightsView) view;

@@ -312,13 +312,18 @@ public class DocumentViewChildren extends ViewChildren<ParagraphView> {
         int pIndex = viewIndexAtY(y, docViewAlloc);
         int offset;
         if (pIndex >= 0) {
-            // First find valid child (can lead to change of child allocation bounds)
-            ParagraphView pView = getParagraphViewChildrenValid(docView, pIndex);
-            docView.op.getTextLayoutCache().activate(pView);
-            Shape childAlloc = getChildAllocation(docView, pIndex, docViewAlloc);
-            // forward to the child view
-            offset = pView.viewToModelChecked(x, y, childAlloc, biasReturn);
-            checkChildrenSpanChange(docView, pIndex);
+            if (x > 0d) {
+                // First find valid child (can lead to change of child allocation bounds)
+                ParagraphView pView = getParagraphViewChildrenValid(docView, pIndex);
+                docView.op.getTextLayoutCache().activate(pView);
+                Shape childAlloc = getChildAllocation(docView, pIndex, docViewAlloc);
+                // forward to the child view
+                offset = pView.viewToModelChecked(x, y, childAlloc, biasReturn);
+                checkChildrenSpanChange(docView, pIndex);
+            } else { // Optimization for x <= 0d to not compute children of pView
+                ParagraphView pView = get(pIndex);
+                offset = pView.getStartOffset();
+            }
         } else { // at the end
             offset = docView.getStartOffset();
         }

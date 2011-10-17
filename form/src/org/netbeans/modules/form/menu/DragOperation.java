@@ -330,6 +330,8 @@ class DragOperation {
             menuEditLayer.repaint();
         }
         menuEditLayer.dropTargetLayer.clearDropTarget();
+        // #133628: deselect menu-related component in the palette
+        menuEditLayer.formDesigner.toggleSelectionMode();
     }
     
     // only looks at JMenu and JMenubar RADComponents as well as anything in the popups
@@ -410,9 +412,6 @@ class DragOperation {
         PaletteItem paletteItem = PaletteUtils.getSelectedItem();
         if(paletteItem == null) return;
         
-        if(targetComponent == null) return;
-        
-        
         //check if it's still a valid target
         JComponent tcomp = getDeepestComponent(pt);
         if(targetComponent != tcomp) {
@@ -445,6 +444,13 @@ class DragOperation {
         creator.getPrecreatedLayoutComponent();
         
         Point pt2 = SwingUtilities.convertPoint(menuEditLayer.glassLayer, pt, targetComponent);
+        if(targetComponent == null) {
+            // #115563: add menu-related component to the Inspector's "Other Components" node
+            creator.addPrecreatedComponent(null, null);
+            // #133628: deselect menu-related component in the palette
+            menuEditLayer.formDesigner.toggleSelectionMode();
+            return;
+        }
         // dragged to a menu, add inside the menu instead of next to it
         if(targetComponent instanceof JMenu) {
             

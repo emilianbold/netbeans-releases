@@ -51,6 +51,7 @@ import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.java.hints.jackpot.impl.RulesManager;
 import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata;
 import org.netbeans.modules.java.hints.options.HintsSettings;
@@ -61,6 +62,7 @@ import org.openide.util.ContextAwareAction;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 
@@ -94,21 +96,34 @@ public final class AnalyzeFolder extends AbstractAction implements ContextAwareA
     private static final Set<String> SUPPORTED_IDS = new HashSet<String>(Arrays.asList("create-javadoc", "error-in-javadoc"));
     
     public void actionPerformed(ActionEvent e) {
-        Map<String, Preferences> preferencesOverlay = new HashMap<String, Preferences>();
-        for (HintMetadata hm : RulesManager.getInstance().allHints.keySet()) {
-            String id = hm.id;
+        RequestProcessor.getDefault().post(new Runnable() {
 
-            if (!preferencesOverlay.containsKey(id)) {
-                Preferences origPreferences = RulesManager.getPreferences(id, HintsSettings.getCurrentProfileId());
-                OverridePreferences prefs = new OverridePreferences(origPreferences);
+            @Override
+            public void run() {
+                final Map<String, Preferences> preferencesOverlay = new HashMap<String, Preferences>();
+                for (HintMetadata hm : RulesManager.getInstance().allHints.keySet()) {
+                    String id = hm.id;
 
-                preferencesOverlay.put(id, prefs);
-                HintsSettings.setEnabled(prefs, SUPPORTED_IDS.contains(id));
-                HintsSettings.setSeverity(prefs, HintSeverity.WARNING);
+                    if (!preferencesOverlay.containsKey(id)) {
+                        Preferences origPreferences = RulesManager.getPreferences(id, HintsSettings.getCurrentProfileId());
+                        OverridePreferences prefs = new OverridePreferences(origPreferences);
+
+                        preferencesOverlay.put(id, prefs);
+                        HintsSettings.setEnabled(prefs, SUPPORTED_IDS.contains(id));
+                        HintsSettings.setSeverity(prefs, HintSeverity.WARNING);
+                    }
+                }
+
+                SwingUtilities.invokeLater(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        Analyzer.process(Analyzer.normalizeLookup(context), preferencesOverlay);
+                    }
+                });
             }
-        }
-        
-        Analyzer.process(Analyzer.normalizeLookup(context), preferencesOverlay);
+            
+        });
     }
 
     public Action createContextAwareInstance(Lookup actionContext) {
