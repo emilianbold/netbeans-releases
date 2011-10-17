@@ -581,10 +581,11 @@ public final class LayoutInterval implements LayoutConstants {
      * @return common parent of the given intervals.
      */
     static LayoutInterval getCommonParent(LayoutInterval[] intervals) {
-        assert (intervals != null) && (intervals.length > 0);
         LayoutInterval parent = intervals[0].getParent();
-        for (int i=1; i<intervals.length; i++) {
-            parent = getCommonParent(parent, intervals[i]);
+        if (parent != null) {
+            for (int i=1; i<intervals.length; i++) {
+                parent = getCommonParent(parent, intervals[i]);
+            }
         }
         return parent;
     }
