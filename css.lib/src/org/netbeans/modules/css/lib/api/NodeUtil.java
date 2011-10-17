@@ -46,6 +46,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.StringTokenizer;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.modules.css.lib.TokenNode;
 
@@ -336,4 +337,22 @@ public final class NodeUtil {
         return false;
     }
     
+    public static boolean containsError(Node node) {
+        AtomicBoolean error = new AtomicBoolean(false);
+        NodeVisitor<AtomicBoolean> visitor = new NodeVisitor<AtomicBoolean>(error) {
+
+            @Override
+            public boolean visit(Node node) {
+                if(node.type() == NodeType.error) {
+                    getResult().set(true);
+                    return true;
+                }
+                return false;
+            }
+        };
+        
+        visitor.visitChildren(node);
+        
+        return visitor.getResult().get();
+    }
 }
