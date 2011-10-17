@@ -363,7 +363,7 @@ public final class CndFileUtils {
                         parentDirFlags = Flags.get(fs, parent);
                         files.putIfAbsent(parent, parentDirFlags);
                     }
-                    if (parentDirFlags == Flags.NOT_FOUND || parentDirFlags == Flags.FILE) {
+                    if (parentDirFlags == Flags.NOT_FOUND || parentDirFlags == Flags.BROKEN_LINK || parentDirFlags == Flags.FILE) {
                         // no need to check non existing file
                         exists = Flags.NOT_FOUND;
 //                        files.put(path, exists);
@@ -374,7 +374,7 @@ public final class CndFileUtils {
                         exists = files.get(absolutePath);
                     }
                 } else {
-                    if (parentDirFlags == Flags.NOT_FOUND) {
+                    if (parentDirFlags == Flags.NOT_FOUND || parentDirFlags == Flags.BROKEN_LINK) {
                         // no need to check non existing file
                         exists = Flags.NOT_FOUND;
                     } else {
@@ -414,8 +414,11 @@ public final class CndFileUtils {
                     }
                     if (curFile.directory) {
                         files.putIfAbsent(absPath, Flags.DIRECTORY);
-                    } else {
+                    } else if (curFile.file) {
                         files.put(absPath, Flags.FILE);
+                    } else {
+                        // broken link
+                        files.put(absPath, Flags.BROKEN_LINK);
                     }
                 }
             }        
@@ -426,8 +429,11 @@ public final class CndFileUtils {
                     String absPath = child.getPath();
                     if (child.isFolder()) {
                         files.putIfAbsent(absPath, Flags.DIRECTORY);
-                    } else {
+                    } else if (child.isData()) {
                         files.put(absPath, Flags.FILE);
+                    } else {
+                        // broken link
+                        files.put(absPath, Flags.BROKEN_LINK);
                     }
                 }
             }
@@ -502,7 +508,7 @@ public final class CndFileUtils {
             if (children != null) {
                 info = new CndFileSystemProvider.FileInfo[children.length];
                 for (int i = 0; i < children.length; i++) {
-                    info[i] = new CndFileSystemProvider.FileInfo(children[i].getAbsolutePath(), children[i].isDirectory());
+                    info[i] = new CndFileSystemProvider.FileInfo(children[i].getAbsolutePath(), children[i].isDirectory(), children[i].isFile());
                 }
             } else {
                 info = new CndFileSystemProvider.FileInfo[0];
@@ -562,6 +568,7 @@ public final class CndFileUtils {
         private static final Flags DIRECTORY = new Flags(true,true);
         private static final Flags INDEXED_DIRECTORY = new Flags(true,true);
         private static final Flags NOT_FOUND = new Flags(false,true);
+        private static final Flags BROKEN_LINK = new Flags(false, false);
         
         private static Flags get(FileSystem fs, String absPath) {
             FileObject fo;
@@ -597,6 +604,8 @@ public final class CndFileUtils {
                 return "DIRECTORY"; // NOI18N
             } else if (this == FILE) {
                 return "FILE"; // NOI18N
+            } else if (this == BROKEN_LINK) {
+                return "BROKEN_LINK"; // NOI18N
             } else {
                 return "UNKNOWN"; // NOI18N
             }
