@@ -40,7 +40,7 @@
 
 -- structure
 
-CREATE TABLE `todolist`.`todo` (
+CREATE TABLE `todo` (
     `id` INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
     `priority` INT(1) NOT NULL DEFAULT 2,
     `created_on` DATETIME NOT NULL,
