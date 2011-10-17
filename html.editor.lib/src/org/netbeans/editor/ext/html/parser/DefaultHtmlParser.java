@@ -41,12 +41,11 @@
  */
 package org.netbeans.editor.ext.html.parser;
 
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
-import java.util.LinkedList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.editor.ext.html.dtd.DTD;
@@ -130,24 +129,24 @@ public class DefaultHtmlParser implements HtmlParser {
             }
 
             @Override
-            public Collection<HtmlTag> getPossibleTagsInContext(AstNode afterNode, boolean type) {
-                if (type) {
+            public Collection<HtmlTag> getPossibleOpenTags(AstNode context) {
+                return DTD2HtmlTag.convert(version.getDTD(), AstNodeUtils.getPossibleOpenTagElements(context));
+            }
 
-                    return DTD2HtmlTag.convert(version.getDTD(), AstNodeUtils.getPossibleOpenTagElements(afterNode));
-                } else {
-                    Collection<AstNode> possibleEndTags = AstNodeUtils.getPossibleEndTagElements(afterNode);
-                    Collection<HtmlTag> result = new LinkedList<HtmlTag>();
-                    for (AstNode node : possibleEndTags) {
-                        if (node.getDTDElement() != null) {
-                            //DTD element bound node
-                            result.add(DTD2HtmlTag.getTagForElement(version.getDTD(), node.getDTDElement()));
-                        } else {
-                            //non-dtd node
-                            result.add(new UnknownHtmlTag(node.name()));
-                        }
+            @Override
+            public Map<HtmlTag, AstNode> getPossibleEndTags(AstNode context) {
+                Collection<AstNode> possibleEndTags = AstNodeUtils.getPossibleEndTagElements(context);
+                Map<HtmlTag, AstNode> result = new LinkedHashMap<HtmlTag, AstNode>();
+                for (AstNode node : possibleEndTags) {
+                    if (node.getDTDElement() != null) {
+                        //DTD element bound node
+                        result.put(DTD2HtmlTag.getTagForElement(version.getDTD(), node.getDTDElement()), node);
+                    } else {
+                        //non-dtd node
+                        result.put(new UnknownHtmlTag(node.name()), node);
                     }
-                    return result;
                 }
+                return result;
 
             }
 

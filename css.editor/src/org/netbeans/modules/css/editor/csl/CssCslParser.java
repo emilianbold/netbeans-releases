@@ -54,7 +54,7 @@ import org.netbeans.modules.parsing.spi.SourceModificationEvent;
 /**
  * Wraps the CssParserResult from css.lib as an instance of CSL's Parser
  *
- * @author marekfukala
+ * @author mfukala@netbeans.org
  */
 public class CssCslParser extends Parser {
 

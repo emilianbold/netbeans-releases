@@ -47,7 +47,7 @@ import java.util.StringTokenizer;
  *  I18N note - some messages here are not localized since the code is not used so far
  * 
  * 
- * @author marekfukala
+ * @author mfukala@netbeans.org
  */
 public class Color implements CssPropertyValueAcceptor, CustomErrorMessageProvider {
 

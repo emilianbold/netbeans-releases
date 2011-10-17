@@ -381,7 +381,6 @@ public final class Terminal extends JComponent {
 	shortcutsDir.removeFileChangeListener(shortcutsListener);
         termOptions.removePropertyChangeListener(termOptionsPCL);
 	tio.dispose();
-	TerminalIOProvider.dispose(tio);
     }
 
     boolean isDisposed() {

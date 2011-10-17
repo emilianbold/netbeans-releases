@@ -51,8 +51,10 @@ import org.openide.filesystems.FileObject;
  */
 class CdiEditorAnalysisTask extends CancellableAnalysysTask {
     
-    CdiEditorAnalysisTask(FileObject javaFile){
-        super( javaFile );
+    CdiEditorAnalysisTask(FileObject javaFile,  
+            CdiEditorAwareJavaSourceTaskFactory factory ) 
+    {
+        super( javaFile , factory );
     }
     
     @Override
@@ -65,7 +67,7 @@ class CdiEditorAnalysisTask extends CancellableAnalysysTask {
      */
     @Override
     protected AbstractAnalysisTask createTask() {
-        return new CdiAnalysisTask();
+        return new CdiAnalysisTask( getFactory() );
     };
     
     

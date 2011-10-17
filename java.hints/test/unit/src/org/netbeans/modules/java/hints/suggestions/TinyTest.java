@@ -170,6 +170,21 @@ public class TinyTest extends TestBase {
                         "}\n").replaceAll("[\t\n ]+", " "));
     }
 
+    public void testConvertBaseNegative203362() throws Exception {
+        setSourceLevel("1.7");
+        performFixTest("test/Test.java",
+                       "package test;\n" +
+                       "public class Test {\n" +
+                       "     private final int I = -|1;\n" +
+                       "}\n",
+                       "2:27-2:29:hint:ERR_convertToDifferentBase",
+                       "FIX_convertToDifferentBase_16",
+                       ("package test;\n" +
+                        "public class Test {\n" +
+                       "     private final int I = 0xffffffff;\n" +
+                        "}\n").replaceAll("[\t\n ]+", " "));
+    }
+
     @Override
     protected String toDebugString(CompilationInfo info, Fix f) {
         return f.getText();

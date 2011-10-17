@@ -49,6 +49,8 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
+import org.netbeans.modules.cnd.spi.model.services.CodeModelProblemResolver;
+import org.netbeans.modules.cnd.spi.model.services.CodeModelProblemResolver.ParsingProblemDetector;
 import org.openide.util.NbBundle;
 
 
@@ -66,6 +68,7 @@ final class ParsingProgress {
     private static final int ALL_WORK_INT = 10000;
     private boolean started = false;
     private boolean determinate = false;
+    private final ParsingProblemDetector problemDetector;
     
     /**  
      * Delay amount of milliseconds
@@ -91,6 +94,8 @@ final class ParsingProgress {
     public ParsingProgress(CsmProject project) {
         String msg=NbBundle.getMessage(ModelSupport.class, "MSG_ParsingProgress", project.getName());
         handle = ProgressHandleFactory.createHandle(msg);
+        CodeModelProblemResolver.getParsingProblemDetector(project);
+        problemDetector = CodeModelProblemResolver.getParsingProblemDetector(project);
     }
     
     /**
@@ -102,6 +107,9 @@ final class ParsingProgress {
             if(!started) {
                 started = true;
                 handle.setInitialDelay(INITIAL_DELAY);
+                if (problemDetector != null) {
+                    problemDetector.start();
+                }
                 handle.start();
             }
         }
@@ -113,6 +121,9 @@ final class ParsingProgress {
     public void finish() {
         synchronized (handle) {
             if( started ) {
+                if (problemDetector != null) {
+                    problemDetector.finish();
+                }
                 handle.finish();
                 started = false;
             }
@@ -144,9 +155,15 @@ final class ParsingProgress {
                 if (allWork <= work && work < ALL_WORK_INT) {
                     allWork = work;
                 }
-            }
+            } 
             try {
-                String msg = NbBundle.getMessage(ModelSupport.class, "MSG_ParsingProgressFull", ""+curWorkedUnits, ""+(maxWorkUnits + addedAfterStartParsing), file.getName().toString()); // NOI18N
+                String problem = ""; // NOI18N
+                String elapsedTime = ""; // NOI18N
+                if (problemDetector != null) {
+                    problem = problemDetector.nextCsmFile(file, curWorkedUnits, maxWorkUnits + addedAfterStartParsing);
+                    elapsedTime = problemDetector.getRemainingTime();
+                }
+                String msg = NbBundle.getMessage(ModelSupport.class, "MSG_ParsingProgressFull", ""+curWorkedUnits, ""+(maxWorkUnits + addedAfterStartParsing), file.getName().toString(), elapsedTime, problem); // NOI18N
                 handle.progress(msg, allWork);
                 //assert(curWorkedUnits <= maxWorkUnits);
             } catch (NullPointerException ex) {
@@ -166,10 +183,15 @@ final class ParsingProgress {
             if( ! started ) {
                 return;
             }
-            this.maxWorkUnits = maxWorkUnits;
-            addedAfterStartParsing = 0;
-            handle.switchToDeterminate(ALL_WORK_INT);
-            determinate = true;
+            if (!determinate) {
+                this.maxWorkUnits = maxWorkUnits;
+                addedAfterStartParsing = 0;
+                if (problemDetector != null) {
+                    problemDetector.switchToDeterminate(maxWorkUnits);
+                }
+                handle.switchToDeterminate(ALL_WORK_INT);
+                determinate = true;
+            }
         }
     }
 }   

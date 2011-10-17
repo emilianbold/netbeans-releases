@@ -299,7 +299,7 @@ public final class FileObjectCrawler extends Crawler {
             if (rootFile == null) {
                 return LinkType.OUT;
             }
-            if (isParentOf(rootFile, canDirectory)) {
+            if (Util.isParentOf(rootFile, canDirectory)) {
                 inLink = true;
                 return LinkType.IN;
             } else {
@@ -313,12 +313,6 @@ public final class FileObjectCrawler extends Crawler {
                 stats.linkCheckTime+=(System.currentTimeMillis()-st);
             }
         }
-    }
-
-    private static boolean isParentOf(
-            @NonNull final File folder,
-            @NonNull final File file) {
-        return file.getAbsolutePath().startsWith(folder.getAbsolutePath());
     }
 
     /*test*/ static enum LinkType {

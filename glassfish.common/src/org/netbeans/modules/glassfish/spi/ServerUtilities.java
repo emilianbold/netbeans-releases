@@ -77,7 +77,7 @@ public final class ServerUtilities {
     public static final TimeUnit ACTION_TIMEOUT_UNIT = TimeUnit.MILLISECONDS;
     public static final String GFV3_MODULES_DIR_NAME = "modules"; // NOI18N
     public static final String GFV3_LIB_DIR_NAME = "lib"; // NOI18N
-    public static final String GFV3_VERSION_MATCHER = "(?:-[0-9]+(?:\\.[0-9]+(?:_[0-9]+|)|).*|).jar"; // NOI18N
+    public static final String GFV3_VERSION_MATCHER = "(?:-[0-9bSNAPHOT]+(?:\\.[0-9]+(?:_[0-9]+|)|).*|).jar"; // NOI18N
     public static final String GFV3_JAR_MATCHER = "glassfish" + GFV3_VERSION_MATCHER; // NOI18N
     static public final String PROP_FIRST_RUN = "first_run";
     private GlassfishInstanceProvider gip;
@@ -193,8 +193,16 @@ public final class ServerUtilities {
      */
     public InstantiatingIterator getAddInstanceIterator() {
         return new ServerWizardIterator(new ServerDetails[] { 
+            ServerDetails.GLASSFISH_SERVER_3_1_1,
+            ServerDetails.GLASSFISH_SERVER_3_1_2,
+            ServerDetails.GLASSFISH_SERVER_4_0,
+            ServerDetails.GLASSFISH_SERVER_3_0_1, 
+            ServerDetails.GLASSFISH_SERVER_3_1,
             ServerDetails.GLASSFISH_SERVER_3, 
-            ServerDetails.GLASSFISH_SERVER_3_1
+        },
+                new ServerDetails[] { 
+            ServerDetails.GLASSFISH_SERVER_3_1_1,
+            ServerDetails.GLASSFISH_SERVER_3_0_1, 
         });
     }
     

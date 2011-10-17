@@ -57,7 +57,7 @@ import org.openide.util.HelpCtx;
 
 final class JSFConfigurationWizardPanel implements WizardDescriptor.Panel, WizardDescriptor.FinishablePanel {
 
-    private ExtenderController controller = ExtenderController.create();
+    private ExtenderController controller;
     private WizardDescriptor wizardDescriptor;
     private JSFConfigurationWizardPanelVisual component;
     private WebModuleExtender wme;
@@ -65,6 +65,13 @@ final class JSFConfigurationWizardPanel implements WizardDescriptor.Panel, Wizar
     /** Create the wizard panel descriptor. */
     public JSFConfigurationWizardPanel(WebModuleExtender wme) {
         this.wme = wme;
+        controller = ExtenderController.create();
+    }
+
+    /** Create the wizard panel descriptor with specified ExtenderController. */
+    public JSFConfigurationWizardPanel(WebModuleExtender wme, ExtenderController extenderController) {
+        this.wme = wme;
+        this.controller = extenderController;
     }
     
     public boolean isFinishPanel() {

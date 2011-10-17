@@ -54,7 +54,6 @@ import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.MultiFileLoader;
 import org.openide.nodes.CookieSet;
-import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.windows.CloneableTopComponent;
@@ -70,8 +69,6 @@ import java.util.Date;
 import java.lang.ref.WeakReference;
 import org.netbeans.modules.xml.api.XmlFileEncodingQueryImpl;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
-import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
 
 /**
  * Base class for data objects that are used as a basis for
@@ -364,6 +361,14 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
     
     public DataCache getDataCache() {
         return dataCache;
+    }
+
+    /**
+     * 
+     * @return index for source view
+     */
+    protected int getXMLMultiViewIndex() {
+        return 0;
     }
     
     /** Is that necesary for this class to be public ?

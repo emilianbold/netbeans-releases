@@ -56,6 +56,7 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.css.editor.Css3Utils;
 import org.netbeans.modules.css.editor.module.CssModuleSupport;
 import org.netbeans.modules.css.editor.module.spi.CompletionContext;
+import org.netbeans.modules.css.editor.module.spi.CssEditorModule;
 import org.netbeans.modules.css.editor.module.spi.CssModule;
 import org.netbeans.modules.css.editor.module.spi.FeatureContext;
 import org.netbeans.modules.css.editor.module.spi.Property;
@@ -65,14 +66,15 @@ import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.NodeType;
 import org.netbeans.modules.css.lib.api.NodeVisitor;
 import org.netbeans.modules.web.common.api.LexerUtils;
+import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author mfukala@netbeans.org
  */
-@ServiceProvider(service = CssModule.class)
-public class PagedMediaModule extends CssModule {
+@ServiceProvider(service = CssEditorModule.class)
+public class PagedMediaModule extends CssEditorModule implements CssModule {
 
     private static final String PROPERTIES_DEFINITION_PATH = "org/netbeans/modules/css/editor/module/main/properties/paged_media"; //NOI18N
     private static Collection<Property> propertyDescriptors;
@@ -94,13 +96,13 @@ public class PagedMediaModule extends CssModule {
                 "left-bottom",
                 "right-top",
                 "right-middle",
-                "right-bottom"
+                "right-bottom" //NOI18N
             });
 
     @Override
     public synchronized Collection<Property> getProperties() {
         if (propertyDescriptors == null) {
-            propertyDescriptors = Utilities.parsePropertyDefinitionFile(PROPERTIES_DEFINITION_PATH);
+            propertyDescriptors = Utilities.parsePropertyDefinitionFile(PROPERTIES_DEFINITION_PATH, this);
         }
         return propertyDescriptors;
     }
@@ -115,10 +117,10 @@ public class PagedMediaModule extends CssModule {
         }
         String prefix = context.getPrefix(); //default
         Token<CssTokenId> token = context.getTokenSequence().token();
-        if(token == null) {
+        if (token == null) {
             return Collections.emptyList(); //empty file - no tokens
         }
-        
+
         CssTokenId tokenId = token.id();
         switch (activeNode.type()) {
             case page:
@@ -144,7 +146,7 @@ public class PagedMediaModule extends CssModule {
                         break;
                     case ERROR:
                         //@page { @|  }
-                        if(token.text().charAt(0) == '@') {
+                        if (token.text().charAt(0) == '@') {
                             proposals.addAll(getPageMarginSymbolsCompletionProposals(context, true));
                         }
                         break;
@@ -159,7 +161,7 @@ public class PagedMediaModule extends CssModule {
                 }
                 break;
             case margin:
-                switch(tokenId) {
+                switch (tokenId) {
                     case WS:
                         //no prefix in margin
                         proposals.addAll(getPropertiesCompletionProposals(context));
@@ -180,12 +182,10 @@ public class PagedMediaModule extends CssModule {
         String prefix = addColonPrefix ? ":" : null;
         return Utilities.createRAWCompletionProposals(PAGE_PSEUDO_CLASSES, ElementKind.FIELD, context.getAnchorOffset(), prefix);
     }
-    
+
     private static List<CompletionProposal> getPropertiesCompletionProposals(CompletionContext context) {
         return Utilities.wrapProperties(CssModuleSupport.getProperties(), context.getAnchorOffset());
     }
-    
-    
 
     @Override
     public <T extends Map<OffsetRange, Set<ColoringAttributes>>> NodeVisitor<T> getSemanticHighlightingNodeVisitor(FeatureContext context, T result) {
@@ -201,5 +201,20 @@ public class PagedMediaModule extends CssModule {
                 return false;
             }
         };
+    }
+
+    @Override
+    public String getName() {
+        return "paged_media"; //NOI18N
+    }
+
+    @Override
+    public String getDisplayName() {
+        return NbBundle.getMessage(this.getClass(), Constants.CSS_MODULE_DISPLAYNAME_BUNDLE_KEY_PREFIX + getName());
+    }
+
+    @Override
+    public String getSpecificationURL() {
+        return "http://www.w3.org/TR/css3-page";
     }
 }

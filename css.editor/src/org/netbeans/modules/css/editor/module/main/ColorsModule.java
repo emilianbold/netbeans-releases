@@ -41,11 +41,14 @@
  */
 package org.netbeans.modules.css.editor.module.main;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collection;
 import org.netbeans.modules.css.editor.csl.CssColor;
+import org.netbeans.modules.css.editor.module.spi.CssEditorModule;
 import org.netbeans.modules.css.editor.module.spi.CssModule;
 import org.netbeans.modules.css.editor.module.spi.Property;
+import org.netbeans.modules.css.editor.module.spi.Utilities;
+import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -54,75 +57,51 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author mfukala@netbeans.org
  */
-@ServiceProvider(service = CssModule.class)
-public class ColorsModule extends CssModule {
+@ServiceProvider(service = CssEditorModule.class)
+public class ColorsModule extends CssEditorModule implements CssModule {
 
-    private final Property colorPropertyDescriptor = new Property(
-            "color", 
-            "<colors-list> | <system-color> |  <rgb> | <rgba> | <hsl> | <hsla> "
-            + "| !hash_color_code | transparent | currentColor");
-    
-    private final Property rgbPropertyDescriptor = new Property(
-            "@rgb", 
-            "rgb  (  [!number | !percentage]  ,  [ !number | !percentage ]  "
-            + ", [ !number | !percentage]  )");
-    
-    private final Property rgbaPropertyDescriptor = new Property(
-            "@rgba", 
-            "rgba  (  [!number | !percentage]  ,  [ !number | !percentage ]  "
-            + ",  [ !number | !percentage]  ,  !number )");
-    
-    private final Property hslPropertyDescriptor = new Property(
-            "@hsl", 
-            "hsl  (  [!number | !percentage]  ,  [ !number | !percentage ]  "
-            + ",  [ !number | !percentage]  )");
-    
-    private final Property hslaPropertyDescriptor = new Property(
-            "@hsla", 
-            "hsla  (  [!number | !percentage]  ,  [ !number | !percentage ]  "
-            + ",  [ !number | !percentage]  ,  !number )");
-    
+    private static final String PROPERTY_DEFINITIONS_PATH = "org/netbeans/modules/css/editor/module/main/properties/colors"; //NOI18N    
     private final Property colorsListPropertyDescriptor = new Property(
-            "@colors-list", 
-            generateColorsList());
-    
-    private final Property systemColorPropertyDescriptor = new Property(
-            "@system-color", 
-            "activeborder | activecaption | appworkspace | background "
-            + "| buttonface | buttonhighlight | buttonshadow | buttontext "
-            + "| captiontext | graytext | highlight | highlighttext "
-            + "| inactiveborder | inactivecaption | inactivecaptiontext "
-            + "| infobackground | infotext | menu | menutext | scrollbar "
-            + "| threeddarkshadow | threedface | threedhighlight "
-            + "| threedlightshadow | threedshadow | window | windowframe "
-            + "| windowtext");
-    
-    private final Collection<Property> propertyDescriptors = 
-            Arrays.asList(new Property[]{
-                colorPropertyDescriptor, 
-                rgbPropertyDescriptor, 
-                rgbaPropertyDescriptor,
-                hslPropertyDescriptor, 
-                hslaPropertyDescriptor, 
-                colorsListPropertyDescriptor, 
-                systemColorPropertyDescriptor});
-    
+            "@colors-list", //NOI18N
+            generateColorsList(), this);
+    private final Collection<Property> propertyDescriptors;
+
+    public ColorsModule() {
+        propertyDescriptors = new ArrayList<Property>();
+        propertyDescriptors.add(colorsListPropertyDescriptor);
+        propertyDescriptors.addAll(Utilities.parsePropertyDefinitionFile(PROPERTY_DEFINITIONS_PATH, this));
+    }
+
     private String generateColorsList() {
         StringBuilder sb = new StringBuilder();
         CssColor[] vals = CssColor.values();
-        for(int i = 0; i < vals.length; i++) {
+        for (int i = 0; i < vals.length; i++) {
             sb.append(' ');
             sb.append(vals[i]);
-            if(i < vals.length - 1) {
-                sb.append(" |");
+            if (i < vals.length - 1) {
+                sb.append(" |"); //NOI18N
             }
         }
         return sb.toString();
     }
-    
+
     @Override
     public Collection<Property> getProperties() {
         return propertyDescriptors;
     }
 
+    @Override
+    public String getName() {
+        return "color"; //NOI18N
+    }
+
+    @Override
+    public String getDisplayName() {
+        return NbBundle.getMessage(this.getClass(), Constants.CSS_MODULE_DISPLAYNAME_BUNDLE_KEY_PREFIX + getName());
+    }
+
+    @Override
+    public String getSpecificationURL() {
+        return "http://www.w3.org/TR/css3-color"; //NOI18N
+    }
 }

@@ -272,7 +272,7 @@ public final class TabView extends EditorView implements TabableView {
 
     @Override
     public String toString() {
-        return appendViewInfo(new StringBuilder(200), 0, -1).toString();
+        return appendViewInfo(new StringBuilder(200), 0, "", -1).toString();
     }
 
 }

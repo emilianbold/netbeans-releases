@@ -63,7 +63,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -72,8 +71,6 @@ import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.project.libraries.Library;
-import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.ProjectXMLManager;
 import org.netbeans.modules.apisupport.project.ui.customizer.AddModulePanel;
@@ -83,7 +80,6 @@ import org.netbeans.modules.apisupport.project.ui.customizer.SingleModulePropert
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.modules.apisupport.project.universe.ModuleList;
 import org.netbeans.modules.apisupport.project.universe.TestModuleDependency;
-import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport.LibraryDefiner;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -268,14 +264,14 @@ final class UnitTestLibrariesNode extends AbstractNode {
                 File jarF = dep.getModule().getJarLocation();
                 URL jarRootURL = FileUtil.urlForArchiveOrDir(jarF);
                 assert jarRootURL != null;
-                FileObject root = URLMapper.findFileObject(jarRootURL);
-                if (root == null) {
-                    LOG.warning("#195341: no FO for " + jarRootURL);
-                    return null;
-                }
                 ModuleEntry me = dep.getModule();
                 String name = me.getLocalizedName() + " - " + me.getCodeNameBase(); // NOI18N
                 Icon icon = getLibrariesIcon();
+                FileObject root = URLMapper.findFileObject(jarRootURL);
+                if (root == null) {
+                    LOG.log(Level.WARNING, "#195341: no FO for {0}", jarRootURL);
+                    root = FileUtil.createMemoryFileSystem().getRoot();
+                }
                 Node pvNode = ActionFilterNode.create(
                         PackageView.createPackageView(new LibrariesSourceGroup(root, name, icon, icon)));
                 node = new LibraryDependencyNode(dep, testType, project, pvNode);
@@ -500,28 +496,6 @@ final class UnitTestLibrariesNode extends AbstractNode {
                 LOG.log(Level.INFO, null, x);
                 return;
             }
-            if (moduleList.getEntry(JUNIT_MODULE) == null && LibraryManager.getDefault().getLibrary("junit_4") == null) {
-                for (LibraryDefiner definer : Lookup.getDefault().lookupAll(LibraryDefiner.class)) {
-                    final Callable<Library> download = definer.missingLibrary("junit_4");
-                    if (download != null) {
-                        RP.post(new Runnable() {
-                            public @Override void run() {
-                                try {
-                                    download.call();
-                                    ModuleList.refresh();
-                                    resolve(project.getModuleList(), addNBJUnit);
-                                } catch (Exception x) {
-                                    LOG.log(Level.INFO, null, x);
-                                }
-                            }
-                        });
-                        return;
-                    }
-                }
-            }
-            resolve(moduleList, addNBJUnit);
-        }
-        private void resolve(ModuleList moduleList, boolean addNBJUnit) {
             try {
                 resolveJUnitDependencies(project, moduleList, testType, addNBJUnit);
             } catch (IOException ex) {

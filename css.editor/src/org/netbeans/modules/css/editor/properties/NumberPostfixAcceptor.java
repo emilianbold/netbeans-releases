@@ -46,7 +46,7 @@ import java.util.List;
 
 /**
  *
- * @author marekfukala
+ * @author mfukala@netbeans.org
  */
 public abstract class NumberPostfixAcceptor implements CssPropertyValueAcceptor{
 

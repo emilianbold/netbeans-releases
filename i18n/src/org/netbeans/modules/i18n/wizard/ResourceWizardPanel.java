@@ -536,7 +536,7 @@ final class ResourceWizardPanel extends JPanel {
                                       != null) {
                         continue;
                     }
-                    map.put(hcString, support.getDefaultI18nString(hcString));
+                        map.put(hcString, support.getDefaultI18nString(hcString));
                 }
 
                 progressPanel.setMainProgress((int)((i+1)/(float)sourceMap.size() * 100));

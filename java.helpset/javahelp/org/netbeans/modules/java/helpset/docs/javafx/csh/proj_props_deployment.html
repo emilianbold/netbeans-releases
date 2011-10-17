@@ -1,0 +1,56 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright © 1997, 2011, Oracle and/or its affiliates. All rights reserved.
+* Use is subject to license terms.
+-->
+<html>
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <title>Java FX Project Properties: Deployment</title>
+        <link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head>
+    <body>
+        <h2>Java FX Project Properties: Deployment</h2>
+        <p> <small><a href="#seealso">See Also</a>&nbsp; </small> 
+        <p>The Deployment panel lets you configure options for deploying your project. These options apply only to projects that are run as Java Web Start or Browser applications.(Select how to run your project in the <a href="proj_props_run.html">Run properties</a>.)</p>
+        <p>The IDE uses the settings in this panel, along with the settings in the Run and Application panels, to generate the project's JNLP file.</p>
+        <p>The panel contains the following deployment settings:</p>
+        <ul>
+            <li><strong>Check for Application Updates in Background</strong>.  Java Web Start and browser-embedded applications automatically check for updates to the application at the original location where the application was loaded. By default the application checks for updates in the background and applies updates only on application restart ("lazy" mode). Uncheck this box and the application checks for and applies updates at start time, before running ("eager" mode). In the JNLP file, unchecking this box changes <tt>&lt;update check="lazy"/&gt;</tt> to <tt>&lt;update check="eager"/&gt;</tt></li>
+            <li><strong>Install permanently.</strong> Permanently install the application on the client machine.</li>
+            <li><strong>Add desktop shortcut.</strong> Add desktop shortcut to the client machine.</li>
+            <li><strong>Add Start Menu shortcut.</strong> Add a start menu shortcut to the client machine.</li>
+            <li><strong>Request unrestricted access.</strong> By default, Java Web Start applications run in a restricted environment where they have limited access to local computing resources. Tick this box if you want the application to request unrestricted access to the local file system. When you tick this box, the IDE inserts the <tt>&lt;all-permissions&gt;</tt> element into the <tt>security</tt> section of the JNLP file. The application must be signed in order to request unrestricted access.
+                <ul><li><strong>Signing certificate.</strong> If the application requests unrestricted access, the application must be signed. The IDE can generate a self-signed key, or you can use an existing key. To select a key, click Edit. A dialog opens in which you select to use either a self-signed key or a specified key. If you select to use a specified key, enter the path to the key, its password, the key alias, and the key password.</li></ul>
+            </li>
+            <li><strong>Custom JavaScript Actions.</strong> The JavaFX 2.0 Deployment Toolkit provides a set of hooks that can be used to customize startup behavior. Click Edit to open a table of these hooks. Type your own callback function for each hook you want the application to use.</li>
+            <li><strong>Download Mode for Libraries.</strong> Click Edit to open a dialog where you can change the download mode for libraries. The modes are: <ul><li><strong>"eager" (default).</strong> Libraries are downloaded before the application starts. </li><li><strong>"lazy".</strong> Libraries are downloaded in the background as the application runs and are applied on restart.</li></ul></li>
+        </ul>
+
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                    <param name="content" value="http://download.oracle.com/javafx/2.0/deployment/jfxpub-deployment.htm">
+                    <param name="text" value="<html><u>Deploying JavaFX Applications</u></html>">
+                    <param name="textFontSize" value="medium">
+                    <param name="textColor" value="blue"></object></dd>
+            <dd><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                    <param name="content" value="http://download.oracle.com/javafx/2.0/deployment/packaging.htm">
+                    <param name="text" value="<html><u>Deploying JavaFX Applications: Packaging</u></html>">
+                    <param name="textFontSize" value="medium">
+                    <param name="textColor" value="blue"></object></dd>
+                    <dd><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                    <param name="content" value="http://download.oracle.com/javafx/2.0/deployment/deployment_toolkit.htm">
+                    <param name="text" value="<html><u>Deploying JavaFX Applications: Deploying in the Browser</u></html>">
+                    <param name="textFontSize" value="medium">
+                    <param name="textColor" value="blue"></object></dd>
+        </dl>
+
+        <hr><small><a href="../../credits.html">Legal Notices</a></small>
+
+        <table border="0" cellpadding="20">
+            <tr><td>&nbsp;</td></tr>
+            <tr><td>&nbsp;</td></tr>
+            <tr><td>&nbsp;</td></tr>
+        </table></body>
+</html>

@@ -72,10 +72,12 @@ package org.netbeans.modules.css.editor.module.spi;
 public class Property {
     
     private String name, valueGrammar;
+    private CssModule cssmodule;
 
-    public Property(String name, String valueGrammar) {
+    public Property(String name, String valueGrammar, CssModule cssmodule) {
         this.name = name;
         this.valueGrammar = valueGrammar;
+        this.cssmodule = cssmodule;
     }
     
     /**
@@ -92,10 +94,10 @@ public class Property {
         return valueGrammar;
     }
     
+    public CssModule getCssModule() {
+        return cssmodule;
+    }
     
-    
-//    public URL getHelpURL();
-
     @Override
     public boolean equals(Object obj) {
         if (obj == null) {

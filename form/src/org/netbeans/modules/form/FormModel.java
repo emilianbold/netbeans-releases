@@ -715,7 +715,7 @@ public class FormModel
 
     // [Undo manager performing undo/redo in AWT event thread should not be
     //  probably implemented here - in FormModel - but seperately.]
-    class UndoRedoManager extends UndoRedo.Manager {
+    public class UndoRedoManager extends UndoRedo.Manager {
         private Mutex.ExceptionAction<Object> runUndo = new Mutex.ExceptionAction<Object>() {
             @Override
             public Object run() throws Exception {
@@ -731,11 +731,30 @@ public class FormModel
             }
         };
 
+        private boolean undoInProgress;
+        private boolean redoInProgress;
+        public boolean isUndoInProgress() {
+            return undoInProgress;
+        }
+        public boolean isRedoInProgress() {
+            return redoInProgress;
+        }
+
         public void superUndo() throws CannotUndoException {
-            super.undo();
+            undoInProgress = true;
+            try {
+                super.undo();
+            } finally {
+                undoInProgress = false;
+            }
         }
         public void superRedo() throws CannotRedoException {
-            super.redo();
+            redoInProgress = true;
+            try {
+                super.redo();
+            } finally {
+                redoInProgress = false;
+            }
         }
 
         @Override

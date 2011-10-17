@@ -118,7 +118,18 @@ public class Richfaces4Implementation implements JsfComponentImplementation {
     }
 
     @Override
-    public void remove(WebModule wm) {
+    public void remove(WebModule webModule) {
+        try {
+            List<Library> allRegisteredRichfaces4 = Richfaces4Customizer.getRichfacesLibraries();
+            ProjectClassPathModifier.removeLibraries(
+                    allRegisteredRichfaces4.toArray(new Library[allRegisteredRichfaces4.size()]),
+                    webModule.getJavaSources()[0],
+                    ClassPath.COMPILE);
+        } catch (IOException ex) {
+            LOGGER.log(Level.WARNING, "Exception during removing JSF suite from an web project", ex); //NOI18N
+        } catch (UnsupportedOperationException ex) {
+            LOGGER.log(Level.WARNING, "Exception during removing JSF suite from an web project", ex); //NOI18N
+        }
     }
 
     @Override

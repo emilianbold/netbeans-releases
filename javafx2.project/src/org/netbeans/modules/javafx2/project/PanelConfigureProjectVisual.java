@@ -70,6 +70,7 @@ public class PanelConfigureProjectVisual extends JPanel {
         setName(NbBundle.getMessage(PanelConfigureProjectVisual.class, "TXT_NameAndLoc")); // NOI18N
         switch (type) {
             case APPLICATION:
+            case FXML:
                 projectLocationPanel = new PanelProjectLocationVisual(panel, type);
                 putClientProperty("NewProjectWizard_Title", NbBundle.getMessage(PanelConfigureProjectVisual.class, "TXT_NewJavaFXApp")); // NOI18N
                 jSeparator1.setVisible(true);

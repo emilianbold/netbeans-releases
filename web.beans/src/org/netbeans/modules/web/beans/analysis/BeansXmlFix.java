@@ -57,8 +57,12 @@ import org.openide.util.NbBundle;
  */
 class BeansXmlFix implements Fix {
 
-    BeansXmlFix( Project project ) {
+    BeansXmlFix( Project project , FileObject fileObject , 
+            CdiEditorAwareJavaSourceTaskFactory factory ) 
+    {
         myProject = project;
+        myFileObject = fileObject;
+        myFactory = factory;
     }
 
     /* (non-Javadoc)
@@ -76,12 +80,20 @@ class BeansXmlFix implements Fix {
     public ChangeInfo implement() throws Exception {
         FileObject inf = CdiAnalysisResult.getInf(myProject, true); 
         if ( inf != null ){
+            FileObject beansXml = inf.getFileObject(CdiAnalysisResult.BEANS_XML);
+            if ( beansXml != null ){
+                return null;
+            }
             DDHelper.createBeansXml(Profile.JAVA_EE_6_FULL, inf, 
                     CdiAnalysisResult.BEANS);
+            if ( myFactory != null ){
+                myFactory.restart(myFileObject);
+            }
         }
         return null;
     }
     
     private Project myProject;
-
+    private CdiEditorAwareJavaSourceTaskFactory myFactory;
+    private FileObject myFileObject;
 }

@@ -8,11 +8,13 @@
  */
 
 define("DOC_URL", "./html/");      // PHP documentation, separate HTML files
+if (!is_dir(DOC_URL)) {
+    die('Incorrect directory for separated HTML files ("./html/" expected)!');
+}
 
 if (version_compare(phpversion(), "5.0.0") < 0) {
 	die ("This script requires PHP 5.0.0 or higher!\n");
 }
-
 
 $splitFiles = true;
 $phpdocDir = null;
@@ -235,20 +237,30 @@ function parse_phpdoc_functions ($phpdocDir, $extensions) {
 					$description = $match[1].$match[6];
 					$has_object_style = true;
 				}
-				if (preg_match ('@<methodsynopsis>.*?<type>(.*?)</type>.*?<methodname>(.*?)</methodname>(.*?)</methodsynopsis>@s', $description, $match)) {
+                                $methodsynopsis;
+                                if ($refname == 'number_format') {
+                                    $methodsynopsis = preg_match_all ('@<methodsynopsis>.*?<type>(.*?)</type>.*?<methodname>(.*?)</methodname>(.*?)</methodsynopsis>@s', $description, $tmp);
+                                    $match = array();
+                                    foreach ($tmp as $key => $val) {
+                                        $match[$key] = $val[count($val) - 1];
+                                    }
+                                } else {
+                                    $methodsynopsis = preg_match ('@<methodsynopsis>.*?<type>(.*?)</type>.*?<methodname>(.*?)</methodname>(.*?)</methodsynopsis>@s', $description, $match);
+                                }
+				if ($methodsynopsis) {
 					if ($has_object_style) {
 						$function_alias = trim($match[2]);
 					} else {
 						$functionsDoc[$refname]['returntype'] = trim($match[1]);
 						$functionsDoc[$refname]['methodname'] = trim($match[2]);
-						$parameters = $match[3];
+                                                $parameters = $match[3];
 					}
 				}
 				if ($parameters) {
-					if (preg_match_all ('@<methodparam\s*(.*?)>.*?<type>(.*?)</type>.*?<parameter\s*(.*?)>(.*?)</parameter>.*?</methodparam>@s', $parameters, $match)) {
+					if (preg_match_all ('@<methodparam\s*(.*?)>.*?<type>(.*?)</type>.*?<parameter\s*(.*?)>(.*?)</parameter>(?:<initializer>(.+?)</initializer>)?.*?</methodparam>@s', $parameters, $match)) {
 						for ($i = 0; $i < count($match[0]); ++$i) {
 							$parameter = array (
-								'type' => trim($match[2][$i]),
+								'type' => trim(str_replace('-', '_', $match[2][$i])), // e.g. OCI-Collection -> OCI_Collection
 								'name' => clean_php_identifier(trim($match[4][$i])),
 							);
 							if (preg_match ('@choice=[\'"]opt[\'"]@', $match[1][$i])) {
@@ -256,6 +268,10 @@ function parse_phpdoc_functions ($phpdocDir, $extensions) {
 							}
 							if (preg_match ('@role=[\'"]reference[\'"]@', $match[3][$i])) {
 								$parameter['isreference'] = true;
+							}
+							if (@strlen(trim($match[5][$i]))) {
+								$parameter['defaultvalue'] = trim($match[5][$i]);
+                                                                $parameter['isoptional'] = true;
 							}
 							$functionsDoc[$refname]['parameters'][] = $parameter;
 						}
@@ -267,7 +283,7 @@ function parse_phpdoc_functions ($phpdocDir, $extensions) {
                 if (preg_match_all('@<varlistentry\s*.*?>.*?<parameter>(.*?)</parameter>.*?<listitem\s*.*?>(.*?)</listitem>.*?</varlistentry>@s', $parameters, $match)) {
                     for ($i = 0; $i < count($match[0]); $i++) {
                         for ($j = 0; $j < count(@$functionsDoc[$refname]['parameters']); $j++) {
-                            if ($match[1][$i] == $functionsDoc[$refname]['parameters'][$j]['name']) {
+                            if (clean_php_identifier(trim($match[1][$i])) == $functionsDoc[$refname]['parameters'][$j]['name']) {
                                 $functionsDoc[$refname]['parameters'][$j]['paramdoc'] = xml_to_phpdoc ($match[2][$i]);
                                 break;
                             }
@@ -331,7 +347,7 @@ function parse_phpdoc_fields ($phpdocDir, $extensions) {
                     $fieldsDoc[$reference]['type'] = $match[2];
                     //$fieldsDoc[$refname]['quickref'] = trim($match[3]);
                 }
-            } 
+            }
 
         }
         if (isset($fieldsDoc)) {
@@ -364,7 +380,7 @@ function parse_phpdoc_classes ($phpdocDir, $extensions) {
     $classesDoc = array();
 	foreach ($xml_files as $xml_file) {
 		$xml = file_get_contents ($xml_file);
-		if (preg_match ('@xml:id=["\'](.*?)["\']@', $xml, $match)) {			
+		if (preg_match ('@xml:id=["\'](.*?)["\']@', $xml, $match)) {
 			$id = $match[1];
 			$prefixId = substr($id, 0, strlen("class."));
 			$clsNamePattern = ($prefixId === "class.") ?
@@ -519,6 +535,10 @@ function print_class ($classRef, $tabs = 0) {
 	$methodsRef = $classRef->getMethods();
 	if (count ($methodsRef) > 0) {
 		foreach ($methodsRef as $methodRef) {
+            /* @var $methodRef ReflectionMethod */
+            if ($methodRef->getName() == 'clone') {
+                continue;
+            }
 			print_function ($methodRef, $tabs + 1);
 		}
 		print "\n";
@@ -532,7 +552,7 @@ function print_class ($classRef, $tabs = 0) {
  * @param ReflectionProperty $propertyRef  object
  * @param integer[optional] tabs  number of tabs for indentation
  */
-function print_property ($propertyRef, $tabs = 0) {        
+function print_property ($propertyRef, $tabs = 0) {
 	print_doccomment ($propertyRef, $tabs);
 	print_tabs ($tabs);
 	print_modifiers ($propertyRef);
@@ -579,26 +599,44 @@ function print_parameters ($parameters) {
 			if ($i++ > 0) {
 				print ", ";
 			}
+			$type = $parameter['type'];
+			if ($type && !in_array($type, array(
+                            'mixed',
+                            'string',
+                            'int',
+                            'bool',
+                            'object',
+                            'callback',
+                            'resource',
+                            'string|array',
+                            'bitmask',
+                            'name',
+                            'number',
+                            'float',
+                            'string|int',
+                        ))) {
+				print "{$type} ";
+			}
 			if (@$parameter['isreference']) {
 				print "&";
 			}
                         print "\${$parameter['name']}";
 
 			if (@$parameter['isoptional']) {
-				if (@$parameter['defaultvalue']) {
+				if (@strlen($parameter['defaultvalue'])) {
 					$value = $parameter['defaultvalue'];
-					if (!is_numeric ($value)) {
-						$value = "'{$value}'";
-					}
+                                        if (is_numeric ($value)
+                                                || in_array(strtolower($value), array('true', 'false', '&null'))
+                                                || (substr($value, 0, 1) == '\'' && substr($value, -1) == '\'')
+                                                || (substr($value, 0, 1) == '"' && substr($value, -1) == '"')) {
+                                            // no apostrophes
+                                        } else {
+                                            $value = "'{$value}'";
+                                        }
                                         print " = {$value}";
 				} else {
 					print " = null";
 				}
-			}
-
-			$type = $parameter['type'];
-			if ($type && (class_exists ($type) || $type == "array")) {
-				print "{$type} ";
 			}
 		}
 	}
@@ -814,8 +852,11 @@ function print_doccomment ($ref, $tabs = 0) {
                                 if (@$parameter['isoptional']) {
                                     print " [optional]";
                                 }
-                                $paramdoc = newline_to_phpdoc(@$parameter['paramdoc'], $tabs);
-                                print " {$paramdoc}";
+                                $paramdoc = @$parameter['paramdoc'];
+                                if ($paramdoc && $paramdoc != "<p>\n</p>") {
+                                    $paramdoc = newline_to_phpdoc(@$parameter['paramdoc'], $tabs);
+                                    print " {$paramdoc}";
+                                }
                                 print "\n";
                             }
                         } else {
@@ -839,7 +880,7 @@ function print_doccomment ($ref, $tabs = 0) {
                         }
 			if ($returntype) {
 				print_tabs ($tabs);
-				print " * @return {$returntype} {$returndoc}\n";
+				print " * @return " . trim("{$returntype} {$returndoc}") . "\n";
 			}
 			print_tabs ($tabs);
 			print " */\n";
@@ -847,7 +888,7 @@ function print_doccomment ($ref, $tabs = 0) {
 	}else if ($ref instanceof ReflectionProperty) {
             $property_from_ref = make_property_from_ref($ref);
             $fieldName = @$fieldsDoc[$property_from_ref]['field'];
-            $fieldType = @$fieldsDoc[$property_from_ref]['type'];            
+            $fieldType = @$fieldsDoc[$property_from_ref]['type'];
             if (isset ($fieldName) && isset ($fieldType)) {
                 print_tabs ($tabs);
                 print "/**\n";
@@ -868,6 +909,7 @@ function xml_to_phpdoc ($str) {
 	$str = str_replace ("&return.success;", "Returns true on success or false on failure.", $str);
 	$str = str_replace ("&return.void;", "", $str);
 	$str = str_replace ("&true;", "true", $str);
+	$str = str_replace ("&null;", "null", $str);
 	$str = str_replace ("&false;", "false", $str);
 	$str = str_replace ("&resource;", "resource", $str);
 	$str = str_replace ("&style.oop;", "Oriented object style", $str);
@@ -886,7 +928,7 @@ function xml_to_phpdoc ($str) {
  * @return string PHPDOC string
  */
 function newline_to_phpdoc ($str, $tabs = 0) {
-	$str = preg_replace ("@[\r\n]+@", "\n".str_repeat("\t", $tabs)." * ", $str);
+	$str = preg_replace ("@\s*[\r\n]+@", "\n".str_repeat("\t", $tabs)." * ", $str);
 	return $str;
 }
 

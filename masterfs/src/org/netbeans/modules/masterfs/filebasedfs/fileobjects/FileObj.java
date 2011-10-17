@@ -52,7 +52,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -66,6 +65,7 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Enumerations;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.Utilities;
 
 /**
@@ -73,6 +73,7 @@ import org.openide.util.Utilities;
  */
 public class FileObj extends BaseFileObj {
     static final long serialVersionUID = -1133540210876356809L;
+    private static final MutualExclusionSupport<FileObj> MUT_EXCL_SUPPORT = new MutualExclusionSupport<FileObj>();
     private long lastModified = -1;
     private boolean realLastModifiedCached;
     private static final Logger LOGGER = Logger.getLogger(FileObj.class.getName());
@@ -97,9 +98,14 @@ public class FileObj extends BaseFileObj {
         return getOutputStream(lock, extensions, this);
     }
     
+    @Messages(
+        "EXC_INVALID_FILE=File {0} is not valid"
+    )
     public OutputStream getOutputStream(final FileLock lock, ProvidedExtensions extensions, FileObject mfo) throws IOException {
         if (!isValid()) {
-            throw new FileNotFoundException("FileObject " + this + " is not valid."); //NOI18N
+            FileNotFoundException fnf = new FileNotFoundException("FileObject " + this + " is not valid."); //NOI18N
+            Exceptions.attachLocalizedMessage(fnf, Bundle.EXC_INVALID_FILE(this));
+            throw fnf;
         }
 
         final File f = getFileName().getFile();
@@ -108,7 +114,7 @@ public class FileObj extends BaseFileObj {
             throw new IOException(f.getAbsolutePath());
         }
         
-        final MutualExclusionSupport.Closeable closable = MutualExclusionSupport.getDefault().addResource(this, false);
+        final MutualExclusionSupport<FileObj>.Closeable closable = MUT_EXCL_SUPPORT.addResource(this, false);
 
         if (extensions != null) {
             extensions.beforeChange(mfo);
@@ -161,7 +167,7 @@ public class FileObj extends BaseFileObj {
             throw ex;
         }
         InputStream inputStream;
-        MutualExclusionSupport.Closeable closeableReference = null;
+        MutualExclusionSupport<FileObj>.Closeable closeableReference = null;
         
         try {
             if (Utilities.isWindows()) {
@@ -172,7 +178,7 @@ public class FileObj extends BaseFileObj {
             } else if (!f.isFile()) {
                 return new ByteArrayInputStream(new byte[] {});
             }
-            final MutualExclusionSupport.Closeable closable = MutualExclusionSupport.getDefault().addResource(this, true);
+            final MutualExclusionSupport<FileObj>.Closeable closable = MUT_EXCL_SUPPORT.addResource(this, true);
             closeableReference = closable;            
             inputStream = new FileInputStream(f) {
 
@@ -261,11 +267,12 @@ public class FileObj extends BaseFileObj {
         return null;
     }
 
+    @Override
     public boolean isValid() {
         //0 - because java.io.File.lastModififed returns 0 for not existing files        
         boolean retval = getLastModified() != 0;
         //assert checkCacheState(retval, getFileName().getFile());
-        return retval;
+        return retval && super.isValid();
     }
 
     protected void setValid(boolean valid) {
@@ -302,7 +309,7 @@ public class FileObj extends BaseFileObj {
             );
         }
         if (fire && oldLastModified != -1 && getLastModified() != -1 && getLastModified() != 0 && isModified) {
-            if (!MutualExclusionSupport.getDefault().isBeingWritten(this)) {
+            if (!MUT_EXCL_SUPPORT.isBeingWritten(this)) {
                 fireFileChangedEvent(expected);
             }
         }

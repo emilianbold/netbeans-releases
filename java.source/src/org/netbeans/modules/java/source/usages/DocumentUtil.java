@@ -211,7 +211,7 @@ public class DocumentUtil {
             pkgName = resourceName.substring(0,index);
             sName = resourceName.substring(index+1);
         }
-        sName = sName + WILDCARD;
+        sName = sName + WILDCARD;   //Type of type element (Enum, Class, Interface, Annotation)
         query.add (new TermQuery (new Term (FIELD_PACKAGE_NAME, pkgName)),BooleanClause.Occur.MUST);
         query.add (new WildcardQuery (new Term (FIELD_BINARY_NAME, sName)),BooleanClause.Occur.MUST);
         return query;

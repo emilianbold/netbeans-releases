@@ -193,7 +193,7 @@ public final class LayoutInterval implements LayoutConstants {
     void setSize(int size) {
         setMinimumSize(size);
         setPreferredSize(size);
-        setMaximumSize(size);
+        setMaximumSize(USE_PREFERRED_SIZE);
     }
 
     void setSizes(int min, int pref, int max) {
@@ -1209,6 +1209,15 @@ public final class LayoutInterval implements LayoutConstants {
             interval = interval.getParent();
         }
         return -1;
+    }
+
+    static int getDepthInParent(LayoutInterval interval, LayoutInterval parent) {
+        int depth = 0;
+        while (interval != null && interval != parent) {
+            depth++;
+            interval = interval.getParent();
+        }
+        return interval != null ? depth : -1;
     }
 
     /**

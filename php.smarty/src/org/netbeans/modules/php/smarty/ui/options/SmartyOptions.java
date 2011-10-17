@@ -64,6 +64,7 @@ public final class SmartyOptions {
     private static final String OPEN_DELIMITER = "{"; // NOI18N
     private static final String CLOSE_DELIMITER = "}"; // NOI18N
     protected static final String PROP_TPL_SCANNING_DEPTH = "tpl-scanning-depth";
+    protected static final String PROP_TPL_VERSION = "tpl-version";
 
     // TODO - temporary property which should be removed release after NB71
     protected static final String PROP_TPL_SCANNING_DEPTH_OLD = "1";
@@ -92,7 +93,7 @@ public final class SmartyOptions {
     }
 
     public String getDefaultOpenDelimiter() {
-        return getPreferences().get(OPEN_DELIMITER, "{"); // NOI18N
+        return getPreferences().get(OPEN_DELIMITER, SmartyFramework.OPEN_DELIMITER);
     }
 
     public void setDefaultOpenDelimiter(String delimiter) {
@@ -101,12 +102,22 @@ public final class SmartyOptions {
     }
 
     public String getDefaultCloseDelimiter() {
-        return getPreferences().get(CLOSE_DELIMITER, "}"); // NOI18N
+        return getPreferences().get(CLOSE_DELIMITER, SmartyFramework.CLOSE_DELIMITER);
     }
 
     public void setDefaultCloseDelimiter(String delimiter) {
         getPreferences().put(CLOSE_DELIMITER, delimiter);
         SmartyFramework.setDelimiterDefaultClose(delimiter);
+    }
+
+    public SmartyFramework.Version getSmartyVersion() {
+        String version = getPreferences().get(PROP_TPL_VERSION, "SMARTY3"); // NOI18N
+        return SmartyFramework.Version.valueOf(version);
+    }
+
+    public void setSmartyVersion(SmartyFramework.Version version) {
+        getPreferences().put(PROP_TPL_VERSION, version.name());
+        SmartyFramework.setSmartyVersion(version);
     }
 
     private static Preferences getPreferences() {

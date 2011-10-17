@@ -50,6 +50,7 @@ import java.io.*;
 import java.util.*;
 import org.netbeans.lib.cvsclient.connection.Connection;
 import org.netbeans.lib.cvsclient.connection.ConnectionFactory;
+import org.netbeans.lib.cvsclient.util.PathUtils;
 
 /**
     <p>
@@ -207,7 +208,7 @@ public class CVSRoot {
         if (r == null)
             throw new IllegalArgumentException("Repository is obligatory.");
         else
-            this.repository = r;
+            setRepository(r);
     }
 	
     /**
@@ -242,7 +243,7 @@ public class CVSRoot {
                 if (cvsroot.indexOf(':') == 1 && cvsroot.indexOf('\\') == 2) {
                     //#67504 it looks like windows drive  => local
                     method = METHOD_LOCAL;
-                    repository = cvsroot;
+                    setRepository(cvsroot);
                     return;
                 }                
                 colonPosition = cvsroot.indexOf(':');
@@ -313,7 +314,7 @@ public class CVSRoot {
         
         if (localFormat) {
             // everything after method is repository in local format
-            this.repository = cvsroot.substring(colonPosition);
+            setRepository(cvsroot.substring(colonPosition));
         } else {
             /* So now we parse SERVER_FORMAT
             :method:[[user][:password]@]hostname[:[port]]/reposi/tory
@@ -403,10 +404,10 @@ public class CVSRoot {
                 if (pr.startsWith(":")) {  // NOI18N
                     pr = pr.substring(1);
                 }
-                this.repository = pr;
+                setRepository(pr);
             } else {
                 this.port = 0;
-                this.repository = cvsroot.substring(pathBegin);
+                setRepository(cvsroot.substring(pathBegin));
             }
         }
     }
@@ -729,7 +730,7 @@ public class CVSRoot {
         if (repository == null) {
             throw new IllegalArgumentException("The repository must not be null.");
         }
-        this.repository = repository;
+        this.repository = PathUtils.normalizePath(repository);
     }
 
 }

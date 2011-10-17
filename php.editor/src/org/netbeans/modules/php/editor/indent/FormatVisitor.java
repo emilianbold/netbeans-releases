@@ -42,6 +42,7 @@
 package org.netbeans.modules.php.editor.indent;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
@@ -1348,6 +1349,15 @@ public class FormatVisitor extends DefaultVisitor {
                     tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
                     tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AFTER_COMMA, ts.offset() + ts.token().length()));
                 } else if ("!".equals(text)) {
+                    int origOffset = ts.offset();
+                    if (ts.movePrevious()) {
+                        Token <? extends PHPTokenId> previous = LexUtilities.findPrevious(ts, Arrays.asList(PHPTokenId.WHITESPACE));
+                        if (previous.id() == PHPTokenId.PHP_RETURN) {
+                            tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AFTER_KEYWORD, origOffset));
+                        }
+                        ts.move(origOffset);
+                        ts.moveNext();
+                    }
                     tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_UNARY_OP, ts.offset()));
                     tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), text));
                     tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_UNARY_OP, ts.offset() + ts.token().length()));

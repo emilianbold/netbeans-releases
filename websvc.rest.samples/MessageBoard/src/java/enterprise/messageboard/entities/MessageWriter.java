@@ -56,7 +56,7 @@ import javax.ws.rs.ext.Provider;
 public class MessageWriter implements MessageBodyWriter<Message> {
 
     public boolean isWriteable(Class<?> clazz, Type type, Annotation[] annotation, MediaType mediaType) {
-        return clazz == Message.class;
+        return mediaType.toString().equals( MediaType.TEXT_HTML) && clazz == Message.class;
     }
 
     public long getSize(Message message, Class<?> clazz, Type type, Annotation[] annotation, MediaType mediaType) {

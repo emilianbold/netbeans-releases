@@ -72,17 +72,17 @@ public class NamespaceCompletionItem implements CompletionProposal {
 
     @Override
     public String getRhsHtml(HtmlFormatter formatter) {
-        formatter.appendHtml("<font color=999999>");
+        formatter.appendHtml("<font color=999999>"); //NOI18N
         formatter.appendText(resource);
-        formatter.appendHtml("</font>");
+        formatter.appendHtml("</font>"); //NOI18N
         return formatter.getText();
     }
 
     @Override
     public String getLhsHtml(HtmlFormatter formatter) {
-        formatter.appendHtml("<b>");
+        formatter.appendHtml("<b>"); //NOI18N
         formatter.appendText(namespacePrefix);
-        formatter.appendHtml("</b>");
+        formatter.appendHtml("</b>"); //NOI18N
         return formatter.getText();
     }
 

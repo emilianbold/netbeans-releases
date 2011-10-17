@@ -41,75 +41,20 @@
  */
 package org.netbeans.modules.coherence.xml.pof;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlType;
-
-
 /**
- * 
+ *
+ * @author Andrew Hopkinson (Oracle A-Team)
  */
-@XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "", propOrder = {
-    "paramType",
-    "paramValue"
-})
-@XmlRootElement(name = "init-param")
-public class InitParam {
+public interface InitParam extends PofConfigComponent {
 
-    @XmlElement(name = "param-type", required = true)
-    protected String paramType;
-    @XmlElement(name = "param-value", required = true)
-    protected String paramValue;
-
-    /**
-     * Gets the value of the paramType property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getParamType() {
-        return paramType;
-    }
-
-    /**
-     * Sets the value of the paramType property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setParamType(String value) {
-        this.paramType = value;
-    }
-
-    /**
-     * Gets the value of the paramValue property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getParamValue() {
-        return paramValue;
-    }
-
-    /**
-     * Sets the value of the paramValue property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setParamValue(String value) {
-        this.paramValue = value;
-    }
+    static String XML_TAG_NAME = "init-param";
+    
+    public ParamType getParamType();
+    
+    public void setParamType(ParamType element);
+    
+    public ParamValue getParamValue();
+    
+    public void setParamValue(ParamValue element);
 
 }

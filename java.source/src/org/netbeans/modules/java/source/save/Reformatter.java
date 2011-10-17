@@ -424,7 +424,7 @@ public class Reformatter implements ReformatTask {
         private int startOffset;
         private int endOffset;
         private int tpLevel;
-        private int lastCommentIndex = -1;
+        private boolean eof = false;
 
         private Pretty(CompilationInfo info, TreePath path, CodeStyle cs, int startOffset, int endOffset, boolean templateEdit) {
             this(info.getText(), info.getTokenHierarchy().tokenSequence(JavaTokenId.language()),
@@ -540,6 +540,8 @@ public class Reformatter implements ReformatTask {
                         tokens.move(startPos);
                         tokens.moveNext();
                     }
+                    if (startPos >= endPos)
+                        endPos = -1;
                 }
             }
             try {
@@ -2450,7 +2452,7 @@ public class Reformatter implements ReformatTask {
             Token<JavaTokenId> lastWSToken = null;
             int after = 0;
             do {
-                if (tokens.offset() >= endPos) {
+                if (tokens.offset() >= endPos || eof) {
                     if (lastWSToken != null) {
                         lastBlankLines = 0;
                         lastBlankLinesTokenIndex = tokens.index() - 1;
@@ -2578,6 +2580,7 @@ public class Reformatter implements ReformatTask {
                         return null;
                 }
             } while(tokens.moveNext());
+            eof = true;
             return null;
         }
 
@@ -2943,6 +2946,7 @@ public class Reformatter implements ReformatTask {
                         return;
                 }
             } while(tokens.moveNext());
+            eof = true;
         }
 
         private void rollback(int index, int col, Diff diff) {
@@ -3282,10 +3286,8 @@ public class Reformatter implements ReformatTask {
         }
         
         private void reformatComment() {
-            if ((tokens.token().id() != BLOCK_COMMENT && tokens.token().id() != JAVADOC_COMMENT)
-                    || tokens.index() <= lastCommentIndex)
+            if (tokens.token().id() != BLOCK_COMMENT && tokens.token().id() != JAVADOC_COMMENT)
                 return;
-            lastCommentIndex = tokens.index();
             String text = tokens.token().text().toString();
             int offset = tokens.offset();
             TokenSequence<JavadocTokenId> javadocTokens = tokens.embedded(JavadocTokenId.language());
@@ -3299,6 +3301,7 @@ public class Reformatter implements ReformatTask {
                 int lastWSOffset = -1;
                 boolean afterText = false;
                 boolean insideTag = false;
+                Pair<Integer, Integer> toAdd = null;
                 while (javadocTokens.moveNext()) {
                     switch (javadocTokens.token().id()) {
                         case TAG:
@@ -3332,31 +3335,35 @@ public class Reformatter implements ReformatTask {
                                 lastWSOffset = currWSOffset = -1;
                                 break;
                             }
-                            if (currWSOffset >= 0) {
-                                marks.add(Pair.of(currWSOffset, afterText && (state == 0 && cs.blankLineAfterJavadocDescription()
+                            if (currWSOffset >= 0 && afterText) {
+                                marks.add(Pair.of(currWSOffset, state == 0 && cs.blankLineAfterJavadocDescription()
                                         || state == 2 && newState != 1 && cs.blankLineAfterJavadocParameterDescriptions()
-                                        || state == 3 && cs.blankLineAfterJavadocReturnTag()) ? 0 : 1));
+                                        || state == 3 && cs.blankLineAfterJavadocReturnTag() ? 0 : 1));
                             }
                             state = newState;
                             if (state == 3 && cs.alignJavadocReturnDescription()) {
-                                marks.add(Pair.of(javadocTokens.offset() + javadocTokens.token().length() - offset, 3));
+                                toAdd = Pair.of(javadocTokens.offset() + javadocTokens.token().length() - offset, 3);
                             }
                             lastWSOffset = currWSOffset = -1;
                             break;
                         case IDENT:
+                            if (toAdd != null) {
+                                marks.add(toAdd);
+                                toAdd = null;
+                            }
                             if (state == 1) {
                                 int len = javadocTokens.token().length();
                                 if (len > maxParamNameLength)
                                     maxParamNameLength = len;
                                 if (cs.alignJavadocParameterDescriptions())
-                                    marks.add(Pair.of(javadocTokens.offset() + len - offset, 2));
+                                    toAdd = Pair.of(javadocTokens.offset() + len - offset, 2);
                                 state = 2;
                             } else if (state == 4) {
                                 int len = javadocTokens.token().length();
                                 if (len > maxExcNameLength)
                                     maxExcNameLength = len;
                                 if (cs.alignJavadocExceptionDescriptions())
-                                    marks.add(Pair.of(javadocTokens.offset() + len - offset, 4));
+                                    toAdd = Pair.of(javadocTokens.offset() + len - offset, 4);
                                 state = 5;
                             }
                             lastWSOffset = currWSOffset = -1;
@@ -3381,6 +3388,10 @@ public class Reformatter implements ReformatTask {
                                         if (lastWSOffset < 0 && currWSOffset >= 0)
                                             lastWSOffset = -2;
                                     } else if (c != '*') {
+                                        if (toAdd != null) {
+                                            marks.add(toAdd);
+                                            toAdd = null;
+                                        }
                                         if (insideTag && c == '}') {
                                             insideTagEndOffset = javadocTokens.offset() + i - offset - 1;
                                             insideTag = false;
@@ -3397,11 +3408,16 @@ public class Reformatter implements ReformatTask {
                                 marks.add(Pair.of(insideTagEndOffset, 6));
                             break;
                         case HTML_TAG:
+                            if (toAdd != null) {
+                                marks.add(toAdd);
+                                toAdd = null;
+                            }
                             tokenText = javadocTokens.token().text().toString();
                             if (P_TAG.equalsIgnoreCase(tokenText)) {
                                 if (currWSOffset >= 0) {
                                     marks.add(Pair.of(currWSOffset, 1));
                                 }
+                                marks.add(Pair.of(javadocTokens.offset() + javadocTokens.token().length() - offset, 1));
                                 afterText = false;
                             } else if (PRE_TAG.equalsIgnoreCase(tokenText)
                                     || CODE_TAG.equalsIgnoreCase(tokenText)) {
@@ -3415,6 +3431,11 @@ public class Reformatter implements ReformatTask {
                             }
                             lastWSOffset = currWSOffset = -1;
                             break;
+                        default:
+                           if (toAdd != null) {
+                                marks.add(toAdd);
+                                toAdd = null;
+                            }
                     }
                 }
             }
@@ -3470,11 +3491,13 @@ public class Reformatter implements ReformatTask {
                                         s += getSpaces(num);
                                         col += num;
                                     }
+                                } else {
+                                    col++;
                                 }
                                 if (!s.equals(text.substring(lastWSPos, endOff)))
                                     addDiff(new Diff(offset + lastWSPos, offset + endOff, s));
                             } else if (pendingDiff != null) {
-                                String sub = text.substring(pendingDiff.start - offset, i);
+                                String sub = text.substring(pendingDiff.start - offset, pendingDiff.end - offset);
                                 if (!sub.equals(pendingDiff.text)) {
                                     addDiff(pendingDiff);
                                 }
@@ -3539,7 +3562,7 @@ public class Reformatter implements ReformatTask {
                                     } else if (num < 0) {
                                         addDiff(new Diff(offset + i + num, offset + i, null));
                                     }
-                                    col += num;
+                                    col += (maxParamNameLength + lastNWSPos- currWSPos);
                                     align = col;
                                     currWSPos = -1;
                                     break;
@@ -3553,7 +3576,7 @@ public class Reformatter implements ReformatTask {
                                     } else if (num < 0) {
                                         addDiff(new Diff(offset + i + num, offset + i, null));
                                     }
-                                    col += num;
+                                    col += (maxExcNameLength + lastNWSPos- currWSPos);
                                     align = col;
                                     currWSPos = -1;
                                     break;
@@ -3641,7 +3664,10 @@ public class Reformatter implements ReformatTask {
                                                 }
                                             } else if (currWSPos >= 0) {
                                                 if (pendingDiff != null) {
-                                                    addDiff(pendingDiff);
+                                                    String sub = text.substring(pendingDiff.start - offset, pendingDiff.end - offset);
+                                                    if (!sub.equals(pendingDiff.text)) {
+                                                        addDiff(pendingDiff);
+                                                    }
                                                 }
                                                 pendingDiff = new Diff(offset + currWSPos, offset + i, javadocTokens != null && lastNWSPos >= 0 && cs.generateParagraphTagOnBlankLines() ? SPACE + P_TAG : EMPTY);
                                             }
@@ -3681,8 +3707,12 @@ public class Reformatter implements ReformatTask {
                                                 }
                                                 String subs = text.substring(currWSPos, i);
                                                 if (!noFormat && !SPACE.equals(subs)) {
-                                                    if (pendingDiff != null)
-                                                        addDiff(pendingDiff);
+                                                    if (pendingDiff != null) {
+                                                        String sub = text.substring(pendingDiff.start - offset, pendingDiff.end - offset);
+                                                        if (!sub.equals(pendingDiff.text)) {
+                                                            addDiff(pendingDiff);
+                                                        }
+                                                    }
                                                     pendingDiff = new Diff(offset + currWSPos, offset + i, SPACE);                                                    
                                                 }
                                             }
@@ -3706,7 +3736,10 @@ public class Reformatter implements ReformatTask {
                                 lastNewLinePos = -1;
                             }
                             if (pendingDiff != null) {
-                                addDiff(pendingDiff);
+                                String sub = text.substring(pendingDiff.start - offset, pendingDiff.end - offset);
+                                if (!sub.equals(pendingDiff.text)) {
+                                    addDiff(pendingDiff);
+                                }
                                 pendingDiff = null;
                             }
                         }
@@ -3738,7 +3771,10 @@ public class Reformatter implements ReformatTask {
                     if (c == '\n') {
                         break;
                     } else if (!Character.isWhitespace(c)) {
-                        addDiff(new Diff(offset + i + 1, offset + text.length() - 2, cs.wrapOneLineComments() ? NEWLINE + indentString + SPACE : SPACE));
+                        String s = cs.wrapOneLineComments() ? NEWLINE + indentString + SPACE : SPACE;
+                        String sub = text.substring(i + 1, text.length() - 2);
+                        if (!s.equals(sub))
+                            addDiff(new Diff(offset + i + 1, offset + text.length() - 2, s));
                         break;
                     }
                 }

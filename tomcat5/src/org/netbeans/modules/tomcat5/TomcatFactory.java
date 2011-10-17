@@ -113,7 +113,11 @@ public final class TomcatFactory implements DeploymentFactory {
     private TomcatFactory() {
         super();
     }
-    
+
+    public static TomcatFactory create50() {
+        return getInstance();
+    }
+
     public static synchronized TomcatFactory getInstance() {
         if (instance == null) {
             instance = new TomcatFactory();

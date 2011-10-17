@@ -80,6 +80,7 @@ public class ClassImplementsTest extends GeneratorTestMDRCompat {
 //        suite.addTest(new ClassImplementsTest("testRemoveAll"));
 //        suite.addTest(new ClassImplementsTest("testRemoveMid"));
 //        suite.addTest(new ClassImplementsTest("testRemoveFirst"));
+//        suite.addTest(new ClassImplementsTest("testRemoveFirstTwo"));
 //        suite.addTest(new ClassImplementsTest("testRemoveLast"));
 //        suite.addTest(new ClassImplementsTest("testRemoveJust"));
 //        suite.addTest(new ClassImplementsTest("testAddFirstTypeParam"));
@@ -430,6 +431,47 @@ public class ClassImplementsTest extends GeneratorTestMDRCompat {
                 }
             }
         
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
+    public void testRemoveFirstTwo() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package hierbas.del.litoral;\n\n" +
+            "import java.util.*;\n\n" +
+            "public class Test implements List, Collection, Serializable {\n" +
+            "    public void taragui() {\n" +
+            "    }\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n\n" +
+            "import java.util.*;\n\n" +
+            "public class Test implements Serializable {\n" +
+            "    public void taragui() {\n" +
+            "    }\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        Task task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                for (Tree typeDecl : cut.getTypeDecls()) {
+                    // should check kind, here we can be sure!
+                    ClassTree clazz = (ClassTree) typeDecl;
+                    ClassTree copy = make.removeClassImplementsClause(clazz, 0);
+                    copy = make.removeClassImplementsClause(copy, 0);
+                    workingCopy.rewrite(clazz, copy);
+                }
+            }
+
         };
         src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);

@@ -100,6 +100,16 @@ made subject to such option by the copyright holder.
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
             </file>
                         
+            <file name="XmlSchema.xsd" url="templates/emptyXmlSchema.xsd.template">
+                <attr name="position" intvalue="170"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/resources/xmlObject.gif"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xml/resources/emptySchema.html"/>
+                <attr name="templateCategory" stringvalue="XML"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+            </file>
+                        
             <file name="xml_entity.ent" url="templates/xml_entity.ent.template">
                 <attr name="position" intvalue="600"/>
                 <attr name="template" boolvalue="true"/>

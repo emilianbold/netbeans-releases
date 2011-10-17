@@ -47,7 +47,6 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
@@ -69,7 +68,8 @@ import org.netbeans.modules.versioning.util.ListenersSupport;
 import org.netbeans.modules.versioning.util.VersioningListener;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.nodes.Node;
+import org.openide.loaders.DataObject;
+import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.openide.windows.TopComponent;
@@ -96,8 +96,11 @@ public class LocalHistory {
     private Pattern includeFiles = null;
     private Pattern excludeFiles = null;
 
+    public static final String LH_TMP_FILE_SUFFIX = ".nblh~";                   // NOI18N
+    
     // XXX hotfix - issue 119042
     private final Pattern metadataPattern = Pattern.compile(".*\\" + File.separatorChar + "((\\.|_)svn|.hg|CVS)(\\" + File.separatorChar + ".*|$)");
+    private final Pattern lhTmpFilePattern = Pattern.compile(".*\\.\\d+?\\" + LH_TMP_FILE_SUFFIX);
         
     public final static Object EVENT_FILE_CREATED = new Object();
     final static Object EVENT_PROJECTS_CHANGED = new Object();
@@ -291,6 +294,10 @@ public class LocalHistory {
             return false;
         }
         
+        if(lhTmpFilePattern.matcher(path).matches()) {
+            return false;
+        }
+        
         if(includeFiles != null) {
             return includeFiles.matcher(path).matches();        
         }
@@ -438,19 +445,19 @@ public class LocalHistory {
             if (obj instanceof TopComponent) {
                 List<File> ret = new ArrayList<File>();
                 TopComponent tc = (TopComponent) obj;
-                LOG.log(Level.FINER, " getting nodes from tc ", new Object[]{tc});
-                Node[] nodes = tc.getActivatedNodes();
-                if (nodes != null) {
-                    for (Node node : nodes) {
-                        LOG.log(Level.FINER, " getting files from node ", new Object[]{node});
-                        Collection<? extends FileObject> fos = node.getLookup().lookupAll(FileObject.class);
-                        if(fos != null) {
-                            for (FileObject fo : fos) {
-                                File f = FileUtil.toFile(fo);
-                                if (f != null) {
-                                    ret.add(f);
-                                }
-                            }
+                LOG.log(Level.FINER, " looking up files in tc {0} ", new Object[]{tc});
+                DataObject tcDataObject = tc.getLookup().lookup(DataObject.class);
+                if(tcDataObject == null) {
+                    return Collections.EMPTY_LIST;
+                }
+                LOG.log(Level.FINER, "  looking up files in dataobject {0} ", new Object[]{tcDataObject});
+                Set<FileObject> fos = tcDataObject.files();
+                if(fos != null) {
+                    for (FileObject fo : fos) {
+                        LOG.log(Level.FINER, "   found file {0}", new Object[]{fo});
+                        File f = FileUtil.toFile(fo);
+                        if (f != null) {
+                            ret.add(f);
                         }
                     }
                 }

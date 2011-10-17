@@ -390,17 +390,18 @@ public final class BIEditorSupport extends DataEditorSupport
         
         private static final long serialVersionUID = 1L;
         private MultiViewElementCallback callback;
-        private DataObject dataObject;
 
         public JavaElement(Lookup context) {
             super(context.lookup(DataEditorSupport.class));
-            this.dataObject = context.lookup(DataObject.class);
+            DataObject dataObject = context.lookup(DataObject.class);
+            setActivatedNodes(new Node[]{dataObject.getNodeDelegate()});
         }
 
         /**
          * serialization stuff; do not use
          */
         private JavaElement() {
+            super();
         }
 
         public JComponent getVisualRepresentation() {
@@ -426,6 +427,7 @@ public final class BIEditorSupport extends DataEditorSupport
         }
 
         public CloseOperationState canCloseElement() {
+            DataObject dataObject = callback.getTopComponent().getLookup().lookup(DataObject.class);
             BIEditorSupport editor = findEditor(dataObject);
             return editor.canCloseElement(callback.getTopComponent());
         }

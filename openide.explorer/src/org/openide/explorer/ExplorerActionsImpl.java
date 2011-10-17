@@ -56,6 +56,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -493,8 +494,6 @@ final class ExplorerActionsImpl {
 
         @Override
         public boolean isEnabled() {
-            updateActionsState();
-
             return super.isEnabled();
         }
 
@@ -522,8 +521,6 @@ final class ExplorerActionsImpl {
 
         @Override
         public Object getValue(String s) {
-            updateActionsState();
-
             if ("delegates".equals(s)) { // NOI18N
 
                 return pasteTypes;
@@ -561,7 +558,6 @@ final class ExplorerActionsImpl {
 
         @Override
         public boolean isEnabled() {
-            updateActionsState();
             return super.isEnabled();
         }
 
@@ -617,7 +613,6 @@ final class ExplorerActionsImpl {
 
         @Override
         public boolean isEnabled() {
-            updateActionsState();
             return super.isEnabled();
         }
 
@@ -712,6 +707,26 @@ final class ExplorerActionsImpl {
         }
 
     }
+    
+    final void waitFinished() {
+        ActionStateUpdater u = actionStateUpdater;
+        synchronized (this) {
+            u = actionStateUpdater;
+        }
+        if (u == null) {
+            return;
+        }
+        u.waitFinished();
+        if (EventQueue.isDispatchThread()) {
+            u.run();
+        } else {
+            try {
+                EventQueue.invokeAndWait(u);
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+    }
 
     /** Class which register changes in manager, and clipboard, coalesces
      * them if they are frequent and performs the update of actions state. */
@@ -768,6 +783,10 @@ final class ExplorerActionsImpl {
             pasteActionPerformer.toEnabled(false);
             EventQueue.invokeLater(this);
             timer.schedule(100);
+        }
+
+        final void waitFinished() {
+            timer.waitFinished();
         }
     }
 }

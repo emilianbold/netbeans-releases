@@ -295,7 +295,7 @@ public abstract class PhpEnvironment {
             String urlSuffix = projectName != null ? "/" + projectName : ""; // NOI18N
             String url = getDefaultUrl("~" + user + urlSuffix); // NOI18N
             String hint = NbBundle.getMessage(PhpEnvironment.class, "TXT_UserDir");
-            docRoot = new DocumentRoot(documentRoot, url, hint, userDir.canWrite());
+            docRoot = new DocumentRoot(documentRoot, url, hint, FileUtils.isDirectoryWritable(userDir));
         }
         return docRoot;
     }

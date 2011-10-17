@@ -1015,6 +1015,15 @@ public class EditorOperator extends TopComponentOperator {
         }
     }
 
+    /**
+     * Click for popup on JEditorPane component. All events should be delivered
+     * to JEditorPane otherwise they are not dispatched correctly.
+     */
+    @Override
+    public void clickForPopup() {
+        txtEditorPane().clickForPopup();
+    }
+
     /** Performs verification by accessing all sub-components */
     public void verify() {
 

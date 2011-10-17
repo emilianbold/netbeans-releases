@@ -52,8 +52,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.JTextComponent;
 import org.apache.maven.artifact.Artifact;
+import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.modules.maven.grammar.POMDataObject;
 import org.netbeans.modules.maven.model.pom.DependencyContainer;
 import org.netbeans.modules.maven.model.pom.Exclusion;
 import org.netbeans.modules.maven.model.pom.POMModel;
@@ -74,6 +76,7 @@ import org.openide.util.NbBundle;
  */
 public class ExclusionGenerator implements CodeGenerator {
 
+    @MimeRegistration(mimeType=POMDataObject.MIME_TYPE, service=CodeGenerator.Factory.class, position=150)
     public static class Factory implements CodeGenerator.Factory {
         
         public List<? extends CodeGenerator> create(Lookup context) {

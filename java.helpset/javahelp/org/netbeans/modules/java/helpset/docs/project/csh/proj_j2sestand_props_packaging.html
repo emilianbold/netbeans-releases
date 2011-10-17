@@ -29,7 +29,7 @@
                 <param name="textColor" value="blue">
             </object>
 
-            &nbsp;and choosing Properties.
+            &nbsp; or JavaFX project and choosing Properties.
 
         <p>The Packaging panel includes the following options:
 
@@ -49,6 +49,8 @@
                 from your project sources each time during compilation and places it to the specified
                 location (see the JAR File field). If you deselect this checkbox, the Java compiler will
                 produce only <tt>.class</tt> files, without building JAR files for the application.</li>
+            <li><strong>Copy Dependent Libraries.</strong> Copies dependent libraries to a <tt>lib</tt> directory in the <tt>dist</tt> and adds the Class-Path attribute to the manifest. Enabled by default in Java and JavaFX applications. Disabled by default in library projects, as it can fill up application server logs.</li>
+            <li><strong>Binary Encode JavaFX CSS Files.</strong> JavaFX projects only. Converts CSS files to binary form to reduce parsing overhead at application runtime. Enabled by default.</li>
         </ul>
 
         <p><b>Notes:</b></p>

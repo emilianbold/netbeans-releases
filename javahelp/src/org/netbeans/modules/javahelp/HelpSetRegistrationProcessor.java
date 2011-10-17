@@ -50,7 +50,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URL;
+import java.net.URLDecoder;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -70,6 +73,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.annotations.LayerBuilder;
 import org.openide.filesystems.annotations.LayerGeneratingProcessor;
 import org.openide.filesystems.annotations.LayerGenerationException;
+import org.openide.util.Utilities;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
@@ -157,7 +161,7 @@ public class HelpSetRegistrationProcessor extends LayerGeneratingProcessor {
                                 os.close();
                             }
                             processingEnv.getMessager().printMessage(Kind.NOTE, "Indexing " + cnt + " HTML files in " + d + " into " + out);
-                            File db = File.createTempFile("jhindexer-out", "");
+                            File db = createTempFile("jhindexer-out", "");
                             db.delete();
                             db.mkdir();
                             try {
@@ -196,6 +200,88 @@ public class HelpSetRegistrationProcessor extends LayerGeneratingProcessor {
             // XXX try to port CheckHelpSets
         }
         return true;
+    }
+
+    /** Create a temp file that can be used for turning into directory
+     * and setting as database directory for indexing JavaHelp files.
+     * 
+     * This method was created because default temp directory on some systems
+     * (Mac) contains plus sign "+" in its path. Plus signs are replaced with
+     * spaces in JavaHelp indexer because of encoding path to URL and later
+     * decoding URL back to path.
+     * 
+     * #201194
+     *
+     * This is workaround only. Fixed upstream, see
+     * http://java.net/jira/browse/JAVAHELP-33.
+     * When a new version of JavaHelp with that fix is released (e.g. 2.0_06)
+     * and bundled in NetBeans, standard File.createTempFile can be used instead
+     * of this method, and createTempFile, replaceTempFile and isUrlCompatible
+     * methods can be removed.
+     */
+    static File createTempFile(String pref, String suff) throws IOException {
+
+        File f = File.createTempFile(pref, suff); //file in default tmp folder
+        if (!isUrlCompatible(f)) {
+            if (Utilities.isWindows()) {
+                f = replaceTempFile(f, "c:\\Temp", pref, suff);         //NOI18N
+            } else if (Utilities.isUnix()) {
+                f = replaceTempFile(f, "/tmp", pref, suff);             //NOI18N
+            }
+        }
+        return f;
+    }
+
+    /** Try to replace invalid temp file with a better one.
+     * On success, original temp file is deleted and newly found one is
+     * returned. Otherwise, original temp file is returned.
+     */
+    private static File replaceTempFile(File origTmpFile, String tmpDirPath,
+            String pref, String suff) {
+
+        File tmpDir = new File(tmpDirPath);
+        if (tmpDir.isDirectory()) {
+            File tmpFile;
+            int num = 0;
+            do {
+                String fileName = pref + System.currentTimeMillis()
+                        + "_" + (++num) + suff;                         //NOI18N
+                tmpFile = new File(tmpDir, fileName);
+            } while (tmpFile.exists()); // file to create cannot already exist
+            try {
+                tmpFile.createNewFile();
+            } catch (Exception e) {
+                return origTmpFile;
+            }
+            if (tmpFile.isFile() && isUrlCompatible(tmpFile)) {
+                origTmpFile.delete();
+                return tmpFile;
+            } else {
+                tmpFile.delete();
+                return origTmpFile;
+            }
+        } else {
+            return origTmpFile;
+        }
+    }
+
+    /** Test that file path is preserved if it is encoded to to URL and
+     * decoded back to path.
+     * 
+     * This happens internally in the JavaHelp Indexer and it can damage paths 
+     * that contain special characters (e.g. plus sign "+").
+     */
+    static boolean isUrlCompatible(File f) {
+
+        URL baseURL;
+        try {
+            baseURL = new URL("file", "", f.getAbsolutePath());         //NOI18N
+        } catch (MalformedURLException ex) {
+            return false;
+        }
+        String fileFromUrl = baseURL.getFile();
+        String decodedFileFromUrl = URLDecoder.decode(fileFromUrl);
+        return f.getAbsolutePath().equals(decodedFileFromUrl);
     }
 
     private static void scan(File d, PrintWriter pw, AtomicInteger cnt, Set<String> excludes, String path) {

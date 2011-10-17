@@ -208,6 +208,27 @@ public class Utilities {
             return sb.toString();
     }
     
+    public static String toConstantName(String camelCaseName) {
+        StringBuilder result = new StringBuilder();
+        char[] chars = camelCaseName.toCharArray();
+
+        for (int i = 0; i < chars.length; i++) {
+            char c = chars[i];
+
+            if (Character.isUpperCase(c) && i > 0) {
+                if (Character.isLowerCase(chars[i - 1])) {
+                    result.append('_');
+                } else if (i + 1 < chars.length && Character.isLowerCase(chars[i + 1])) {
+                    result.append('_');
+                }
+            }
+            
+            result.append(Character.toUpperCase(c));
+        }
+
+        return result.toString();
+    }
+
     /**
      * @param tp tested {@link TreePath}
      * @return true if <code>tp</code> is an IDENTIFIER in a VARIABLE in an ENHANCED_FOR_LOOP

@@ -44,7 +44,15 @@ package org.netbeans.modules.php.project.util;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.util.Random;
+import junit.framework.Assert;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.MockServices;
+import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.api.PhpLanguageOptions.PhpVersion;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 
@@ -64,6 +72,28 @@ public final class TestUtils {
         // noop
     }
 
+    public static PhpProject createPhpProject(File workDir) throws IOException {
+        String projectName = "phpProject" + new Random().nextInt();
+        File projectDir = new File(workDir, projectName);
+        File srcDir = projectDir;
+
+        final PhpProjectGenerator.ProjectProperties properties = new PhpProjectGenerator.ProjectProperties()
+                .setProjectDirectory(projectDir)
+                .setSourcesDirectory(srcDir)
+                .setName(projectName)
+                .setUrl("http://localhost/" + projectName)
+                .setCharset(Charset.defaultCharset())
+                .setPhpVersion(PhpVersion.PHP_53);
+
+        AntProjectHelper antProjectHelper = PhpProjectGenerator.createProject(properties, null);
+
+        final Project project = ProjectManager.getDefault().findProject(antProjectHelper.getProjectDirectory());
+        ProjectManager.getDefault().saveProject(project);
+        Assert.assertTrue("Not PhpProject but: " + project.getClass().getName(), project instanceof PhpProject);
+        return (PhpProject) project;
+    }
+
+    //~ Inner classes
 
     public static final class MockInstalledFileLocator extends InstalledFileLocator {
 

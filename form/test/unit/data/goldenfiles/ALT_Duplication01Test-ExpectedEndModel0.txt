@@ -11,7 +11,7 @@
                       <Component id="jButton2" min="$pref" max="$pref" attributes="1024"/>
                   </Group>
                   <Group type="sequential" attributes="0">
-                      <EmptySpace min="89" pref="89" max="89" attributes="0"/>
+                      <EmptySpace min="89" pref="89" max="$pref" attributes="0"/>
                       <Component id="jButton3" min="$pref" max="$pref" attributes="0"/>
                   </Group>
               </Group>

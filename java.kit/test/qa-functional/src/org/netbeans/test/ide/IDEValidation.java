@@ -232,16 +232,6 @@ public class IDEValidation extends JellyTestCase {
         npnlso.btFinish().pushNoBlock();
         npnlso.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 120000);
         npnlso.waitClosed();
-        // Opening Projects
-        String openingProjectsTitle = Bundle.getString("org.netbeans.modules.project.ui.Bundle", "CAP_Opening_Projects");
-        try {
-            // wait at most 120 second until progress dialog dismiss
-            NbDialogOperator openingOper = new NbDialogOperator(openingProjectsTitle);
-            openingOper.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 120000);
-            openingOper.waitClosed();
-        } catch (TimeoutExpiredException e) {
-            // ignore when progress dialog was closed before we started to wait for it
-        }
         // wait project appear in projects view
         new ProjectsTabOperator().getProjectRootNode(SAMPLE_PROJECT_NAME);
 
@@ -956,28 +946,18 @@ public class IDEValidation extends JellyTestCase {
             eo.select(brpText);
 
             ToggleBreakpointAction toggleBreakpointAction = new ToggleBreakpointAction();
-            // toggle breakpoint via Shift+F8
-            toggleBreakpointAction.performShortcut(eo);
-
-            // wait breakpoint established
-            new Waiter(new Waitable() {
-
-                @Override
-                public Object actionProduced(Object editorOper) {
-                    Object[] annotations = ((EditorOperator) editorOper).getAnnotations(insertLine);
-                    for (int i = 0; i < annotations.length; i++) {
-                        if ("Breakpoint".equals(EditorOperator.getAnnotationType(annotations[i]))) { // NOI18N
-                            return Boolean.TRUE;
-                        }
-                    }
-                    return null;
-                }
-
-                @Override
-                public String getDescription() {
-                    return ("Wait breakpoint established on line " + insertLine); // NOI18N
-                }
-            }).waitAction(eo);
+            try {
+                // toggle breakpoint via Shift+F8
+                toggleBreakpointAction.performShortcut(eo);
+                waitBreakpoint(eo, insertLine);
+            } catch (TimeoutExpiredException e) {
+                // need to be realiable test => repeat action once more to be sure it is problem in IDE
+                // this time use events instead of Robot
+                MainWindowOperator.getDefault().pushKey(
+                        toggleBreakpointAction.getKeyStrokes()[0].getKeyCode(),
+                        toggleBreakpointAction.getKeyStrokes()[0].getModifiers());
+                waitBreakpoint(eo, insertLine);
+            }
 
             // if file not contains second brpText from previous test cases, insert it
             brpText = "System.out.println(\"Good bye\");"; // NOI18N
@@ -991,24 +971,7 @@ public class IDEValidation extends JellyTestCase {
             // text was selected
             toggleBreakpointAction.perform(eo.txtEditorPane());
             // wait second breakpoint established
-            new Waiter(new Waitable() {
-
-                @Override
-                public Object actionProduced(Object editorOper) {
-                    Object[] annotations = ((EditorOperator) editorOper).getAnnotations(insertLine + 1);
-                    for (int i = 0; i < annotations.length; i++) {
-                        if ("Breakpoint".equals(EditorOperator.getAnnotationType(annotations[i]))) { // NOI18N
-                            return Boolean.TRUE;
-                        }
-                    }
-                    return null;
-                }
-
-                @Override
-                public String getDescription() {
-                    return ("Wait breakpoint established on line " + (insertLine + 1)); // NOI18N
-                }
-            }).waitAction(eo);
+            waitBreakpoint(eo, insertLine + 1);
             // start to track Main Window status bar
             stt.start();
             debuggerStarted = true;
@@ -1095,7 +1058,7 @@ public class IDEValidation extends JellyTestCase {
         String proxyHostLabel = Bundle.getStringTrimmed(
                 "org.netbeans.core.ui.options.general.Bundle", "CTL_Proxy_Host");
         JLabelOperator jloHost = new JLabelOperator(optionsOper, proxyHostLabel);
-        new JTextFieldOperator((JTextField) jloHost.getLabelFor()).typeText("emea-proxy.uk.oracle.com"); // NOI18N
+        new JTextFieldOperator((JTextField) jloHost.getLabelFor()).setText("emea-proxy.uk.oracle.com"); // NOI18N
         // "Port:"
         String proxyPortLabel = Bundle.getStringTrimmed(
                 "org.netbeans.core.ui.options.general.Bundle", "CTL_Proxy_Port");
@@ -1436,5 +1399,32 @@ public class IDEValidation extends JellyTestCase {
         if (helpWindow != null) {
             new WindowOperator(helpWindow).close();
         }
+    }
+
+    /**
+     * Waits for breakpoint at specified line in editor.
+     *
+     * @param line line with breakpoint
+     * @param eo EditorOperator instance
+     */
+    private static void waitBreakpoint(EditorOperator eo, final int line) throws Exception {
+        new Waiter(new Waitable() {
+
+            @Override
+            public Object actionProduced(Object editorOper) {
+                Object[] annotations = ((EditorOperator) editorOper).getAnnotations(line);
+                for (int i = 0; i < annotations.length; i++) {
+                    if ("Breakpoint".equals(EditorOperator.getAnnotationType(annotations[i]))) { // NOI18N
+                        return Boolean.TRUE;
+                    }
+                }
+                return null;
+            }
+
+            @Override
+            public String getDescription() {
+                return ("Wait breakpoint established on line " + line); // NOI18N
+            }
+        }).waitAction(eo);
     }
 }

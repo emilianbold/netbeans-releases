@@ -60,6 +60,8 @@ public class HtmlLoader extends UniFileLoader {
 
     private static final long serialVersionUID = -5809935261731217882L;
 
+    static final String HTML_MIMETYPE = "text/html"; //NOI18N
+    
     public HtmlLoader() {
         super("org.netbeans.modules.html.HtmlDataObject"); // NOI18N
     }
@@ -71,7 +73,7 @@ public class HtmlLoader extends UniFileLoader {
     }
 
     protected String getPrimartyMimeType() {
-        return "text/html"; //NOI18N
+        return HTML_MIMETYPE; //NOI18N
     }
     
     @Override

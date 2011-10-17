@@ -1,3 +1,4 @@
+<%@page import="org.apache.taglibs.standard.examples.util.DataSourceProvider"%>
 <%@ taglib prefix="sql" uri="http://java.sun.com/jsp/jstl/sql" %>
 
 <html>
@@ -8,22 +9,15 @@
 
 <h1>SQL Transactions</h1>
 
-
-<!-- NOTE: the sql:setDataSource tag is for prototyping and simple applications. You should really use a DataSource object instead -->
-
-<sql:setDataSource
-  var="example"
-  driver="${sessionScope.myDbDriver}"
-  url="${sessionScope.myDbUrl}"
-  user="${sessionScope.myDbUserName}"
-  password="${sessionScope.myDbPassword}"
-/>
+<%
+    DataSourceProvider dataSource = new DataSourceProvider(session);
+%>
 
 <p>You can group transactions together using the &lt;sql:transaction&gt; tag.</p>
 
 <h2>Creating table using a transaction</h2>
 
-<sql:transaction dataSource="${example}">
+<sql:transaction dataSource="<%=dataSource%>">
   <sql:update var="newTable">
     create table mytable (
       nameid int primary key,
@@ -38,7 +32,7 @@
 
 <h2>Populating table in one transaction</h2>
 
-<sql:transaction dataSource="${example}">
+<sql:transaction dataSource="<%=dataSource%>">
   <sql:update var="updateCount">
     INSERT INTO mytable VALUES (1,'Paul Oakenfold')
   </sql:update>
@@ -52,7 +46,7 @@
 
 <p>DONE: Populating table in one transaction</p>
 
-<sql:update var="newTable" dataSource="${example}">
+<sql:update var="newTable" dataSource="<%=dataSource%>">
   drop table mytable
 </sql:update>
 

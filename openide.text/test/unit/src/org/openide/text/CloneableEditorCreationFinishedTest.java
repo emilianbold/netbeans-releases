@@ -44,6 +44,8 @@
 
 package org.openide.text;
 
+import java.awt.Component;
+import java.awt.Container;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.VetoableChangeListener;
@@ -56,10 +58,15 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import javax.swing.JEditorPane;
 import javax.swing.text.EditorKit;
 import org.netbeans.junit.NbTestCase;
 import org.openide.cookies.EditorCookie;
+import org.openide.text.CloneableEditorSupport.Pane;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.windows.CloneableOpenSupport;
@@ -75,7 +82,7 @@ import org.openide.windows.CloneableTopComponent;
  * @author Marek Slama
  */
 public class CloneableEditorCreationFinishedTest extends NbTestCase
-implements CloneableEditorSupport.Env {
+implements CloneableEditorSupport.Env, PropertyChangeListener {
     static {
         System.setProperty("org.openide.windows.DummyWindowManager.VISIBLE", "false");
     }
@@ -101,13 +108,25 @@ implements CloneableEditorSupport.Env {
         super(s);
     }
     
+    // to be overriden in core.multiview
+    protected CloneableEditorSupport.Pane createPane(CloneableEditorSupport sup) {
+        return new CloneableEditor(sup);
+    }
+    
+    @Override
     protected void setUp () {
         support = new CES (this, Lookup.EMPTY);
         RUNNING = this;
     }
     
+    @Override
     protected boolean runInEQ() {
         return true;
+    }
+
+    @Override
+    protected int timeOut() {
+        return 15000;
     }
     
     private Object writeReplace () {
@@ -126,19 +145,9 @@ implements CloneableEditorSupport.Env {
      * @throws Exception
      */
     public void testEditorPaneFinished () throws Exception {
-        support.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                if (evt.getPropertyName().equals(EditorCookie.Observable.PROP_OPENED_PANES)) {
-                    CloneableEditor ed = (CloneableEditor)support.getRef ().getAnyComponent ();
-                    if (eventCounter == 0) {
-                        assertFalse("First event. isEditorPaneReady must return false", ed.isEditorPaneReady());
-                        eventCounter++;
-                    } else if (eventCounter == 1) {
-                        assertTrue("Second event. isEditorPaneReady must return true", ed.isEditorPaneReady());
-                    }
-                }
-            }
-        });
+        FocusHandler h = new FocusHandler();
+        
+        support.addPropertyChangeListener(this);
         support.open ();
         JEditorPane pane = support.getRecentPane();
         assertNull("Must return null", pane);
@@ -152,6 +161,9 @@ implements CloneableEditorSupport.Env {
         
         assertTrue(isUsedByCloneableEditor(pane));
         
+        h.assertFocused("Our pane has been focused", pane);
+
+        support.removePropertyChangeListener(this);
         support.close();
 
         assertFalse(isUsedByCloneableEditor(pane));
@@ -240,6 +252,16 @@ implements CloneableEditorSupport.Env {
         public CES (Env env, Lookup l) {
             super (env, l);
         }
+
+        @Override
+        protected boolean asynchronousOpen() {
+            return false;
+        }
+        
+        @Override
+        protected Pane createPane() {
+            return CloneableEditorCreationFinishedTest.this.createPane(this);
+        }
         
         public CloneableTopComponent.Ref getRef () {
             return allEditors;
@@ -286,6 +308,69 @@ implements CloneableEditorSupport.Env {
     private static final class Replace implements Serializable {
         public Object readResolve () {
             return RUNNING;
+        }
+    }
+    
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (evt.getPropertyName().equals(EditorCookie.Observable.PROP_OPENED_PANES)) {
+            final CloneableTopComponent cmp = support.getRef ().getArbitraryComponent();
+            CloneableEditor ed = findEditor(cmp);
+            assertNotNull("Editor is found", ed);
+            final boolean paneReady = ed.isEditorPaneReady();
+            if (eventCounter == 0) {
+                assertFalse("First event. isEditorPaneReady must return false", paneReady);
+                eventCounter++;
+            } else if (eventCounter == 1) {
+                assertTrue("Second event. isEditorPaneReady must return true", paneReady);
+            }
+        }
+    }
+
+    private CloneableEditor findEditor(Component cmp) {
+        if (cmp instanceof CloneableEditor) {
+            return (CloneableEditor)cmp;
+        }
+        if (cmp instanceof Container) {
+            for (Component c : ((Container)cmp).getComponents()) {
+                CloneableEditor ed = findEditor(c);
+                if (ed != null) {
+                    return ed;
+                }
+            }
+        }
+        return null;
+    }
+
+    private static final class FocusHandler extends Handler {
+        private final Logger LOG;
+
+        public FocusHandler() {
+            LOG = Logger.getLogger("org.openide.text.CloneableEditor");
+            LOG.setLevel(Level.FINE);
+            LOG.addHandler(this);
+            setLevel(Level.FINE);
+        }
+        List<JEditorPane> focused = new ArrayList<JEditorPane>();
+        @Override
+        public void publish(LogRecord record) {
+            if (record.getMessage().startsWith("requestFocusInWindow")) {
+                focused.add((JEditorPane)record.getParameters()[0]);
+            }
+        }
+
+        @Override
+        public void flush() {
+        }
+
+        @Override
+        public void close() throws SecurityException {
+        }
+
+        public void assertFocused(String msg, JEditorPane pane) {
+            assertEquals("One focused object. " + msg + ": " + focused, 1, focused.size());
+            assertEquals(msg, pane, focused.get(0));
+            focused.clear();
         }
     }
 }

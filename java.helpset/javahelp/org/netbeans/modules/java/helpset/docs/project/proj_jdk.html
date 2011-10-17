@@ -23,12 +23,16 @@
       command line or in your <tt><i>IDE-HOME</i>/etc/netbeans.conf</tt> file. 
       For more information, see <a href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/configure/configure_startup-switches.html">IDE 
       Startup Parameters</a>. 
+    <li>You cannot enable JavaFX for the default registered Java platform. However,
+    you can use the same JDK sources as the default platform in a new registered 
+    Java platform and enable JavaFX in the new platform.</li>
 </ul>
 
 <p>In the IDE, you can register multiple Java platforms and attach Javadoc and 
   source code to each platform. For example, if you want to work with the new 
-  features introduced in JDK 5.0, you would either run the IDE on JDK 5.0 or register 
-  JDK 5.0 as a platform and attach the source code and Javadoc to the platform. 
+  features introduced in JDK 7, you would either run the IDE on JDK 7 or register 
+  JDK 7 as a platform and attach the source code and Javadoc to the platform. You can
+  also enable JavaFX for multiple platforms.</p>
 <p>In <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
     <param name="content" value="./csh/glossary_standard.html">
     <param name="viewerActivator" value="javax.help.LinkLabel">
@@ -62,6 +66,7 @@
     in the file chooser.</li>
   <li>Use the Sources and Javadoc tabs to attach Javadoc documentation and source 
     code for debugging to the platform.</li>
+  <li>Use the JavaFX tab to enable JavaFX for the platform, if desired.</li>
   <li>Click Close.</li>
 </ol>
 <p><b>To set the default Java platform for a standard project:</b></p>

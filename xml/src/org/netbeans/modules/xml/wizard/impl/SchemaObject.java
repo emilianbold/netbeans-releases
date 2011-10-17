@@ -52,6 +52,7 @@ public class SchemaObject {
     private String namespace;
     private String prefix;
     private String fileName;
+    private boolean fromCatalog;
     
     public SchemaObject(String schemaFileName){
         str=schemaFileName;
@@ -59,6 +60,14 @@ public class SchemaObject {
     
     public String toString(){
         return str;
+    }
+
+    public boolean isFromCatalog() {
+        return fromCatalog;
+    }
+
+    public void setFromCatalog(boolean fromCatalog) {
+        this.fromCatalog = fromCatalog;
     }
 
     String[] getRootElements() {

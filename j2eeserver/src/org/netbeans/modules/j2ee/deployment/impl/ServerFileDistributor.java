@@ -105,23 +105,28 @@ public class ServerFileDistributor extends ServerProgress {
         }
     }
 
-    static Map j2eeTypeMap = null;
+    private static Map<J2eeModule.Type, List<String>> j2eeTypeMap = null;
     static synchronized List getDescriptorPath(J2eeModule module) {
         if (j2eeTypeMap == null) {
             j2eeTypeMap = new HashMap();
-            j2eeTypeMap.put(J2eeModule.Type.EJB, Arrays.asList(new String[]{J2eeModule.EJBJAR_XML, J2eeModule.EJBSERVICES_XML}));
-            j2eeTypeMap.put(J2eeModule.Type.WAR, Arrays.asList(new String[]{J2eeModule.WEB_XML, J2eeModule.WEBSERVICES_XML}));
-            j2eeTypeMap.put(J2eeModule.Type.CAR, Arrays.asList(new String[]{J2eeModule.CLIENT_XML}));
-            j2eeTypeMap.put(J2eeModule.Type.RAR, Arrays.asList(new String[]{J2eeModule.CONNECTOR_XML}));
-            j2eeTypeMap.put(J2eeModule.Type.EAR, Arrays.asList(new String[]{J2eeModule.APP_XML}));
+            j2eeTypeMap.put(J2eeModule.Type.EJB,
+                    Arrays.asList(new String[]{J2eeModule.EJBJAR_XML, J2eeModule.EJBSERVICES_XML}));
+            j2eeTypeMap.put(J2eeModule.Type.WAR,
+                    Arrays.asList(new String[]{J2eeModule.WEB_XML, J2eeModule.WEBSERVICES_XML}));
+            j2eeTypeMap.put(J2eeModule.Type.CAR,
+                    Arrays.asList(new String[]{J2eeModule.CLIENT_XML}));
+            j2eeTypeMap.put(J2eeModule.Type.RAR,
+                    Arrays.asList(new String[]{J2eeModule.CONNECTOR_XML}));
+            j2eeTypeMap.put(J2eeModule.Type.EAR,
+                    Arrays.asList(new String[]{J2eeModule.APP_XML}));
         }
-        return (List) j2eeTypeMap.get(module.getType());
+        return j2eeTypeMap.get(module.getType());
     }
 
     private J2eeModule getJ2eeModule(TargetModuleID target) {
-        if (target.getParentTargetModuleID() == null)
+        if (target.getParentTargetModuleID() == null) {
             return dtarget.getModule();
-        else {
+        } else {
             String moduleUrl = incremental.getModuleUrl(target);
             return (J2eeModule) childModuleMap.get(moduleUrl);
         }

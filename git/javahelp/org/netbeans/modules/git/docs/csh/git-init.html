@@ -42,10 +42,13 @@ Copyright © 1997, 2011, Oracle and/or its affiliates. All rights reserved.
 
 
             <p>In the Initialize a Git Repository dialog box, <span title="Monday, September 5, 2011 8:21:10 AM PDT"> specify the path to the intended root of the repository </span> in the <tt>Repository root path</tt> dialog box or click Browse and browse for the directory required.</p>    
-            <p>The IDE initiates the Git initialize action. You can  view files being added to the 
-            repository from the Output window (Ctrl-4).</p>   
+<p>Upon clicking OK, the IDE initiates the Git initialize action. </p> 
+<h4>Notes:</h4>
+        <ul class="note">
+		<li>A <tt>.git</tt> subfolder is created in the folder you specified (your NetBeans project folder by default),   which is your Git repository where all the data of your project   snapshots are stored. Git starts versioning all files in the folder you specified.</li>
+		<li>You can  view files being added to the repository from the Output window (Ctrl-4).</li></ul>   
 
-<p>The repository metadata files are placed under the selected repository root directory.</p>
+
 <dl>
 	    <dt><a name="seealso">See Also</a></dt>
 		<dd><a href="../git-about.html">About Git Support</a></dd>

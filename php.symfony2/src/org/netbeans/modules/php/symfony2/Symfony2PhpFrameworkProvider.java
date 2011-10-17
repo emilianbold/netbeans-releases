@@ -77,7 +77,7 @@ public final class Symfony2PhpFrameworkProvider extends PhpFrameworkProvider {
         "LBL_FrameworkDescription=Symfony2 PHP Web Framework"
     })
     private Symfony2PhpFrameworkProvider() {
-        super("Symfony PHP Web Framework", Bundle.LBL_FrameworkName(), Bundle.LBL_FrameworkDescription()); // NOI18N
+        super("Symfony2 PHP Web Framework", Bundle.LBL_FrameworkName(), Bundle.LBL_FrameworkDescription()); // NOI18N
         badgeIcon = new BadgeIcon(
                 ImageUtilities.loadImage(ICON_PATH),
                 Symfony2PhpFrameworkProvider.class.getResource("/" + ICON_PATH)); // NOI18N

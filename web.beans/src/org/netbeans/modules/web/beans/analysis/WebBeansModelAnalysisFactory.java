@@ -44,10 +44,8 @@ package org.netbeans.modules.web.beans.analysis;
 
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.JavaSource.Priority;
 import org.netbeans.api.java.source.JavaSourceTaskFactory;
-import org.netbeans.api.java.source.support.EditorAwareJavaSourceTaskFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -58,11 +56,11 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service=JavaSourceTaskFactory.class)
 public class WebBeansModelAnalysisFactory extends
-        EditorAwareJavaSourceTaskFactory
+        CdiEditorAwareJavaSourceTaskFactory
 {
 
     public WebBeansModelAnalysisFactory( ) {
-        super(Phase.RESOLVED, Priority.LOW, "text/x-java");    // NOI18N
+        super(Priority.LOW);    
     }
 
     /* (non-Javadoc)
@@ -70,7 +68,7 @@ public class WebBeansModelAnalysisFactory extends
      */
     @Override
     protected CancellableTask<CompilationInfo> createTask( FileObject fileObject ) {
-        return new WebBeansEditorAnalysisTask( fileObject );
+        return new WebBeansEditorAnalysisTask( fileObject, this );
     }
-
+    
 }

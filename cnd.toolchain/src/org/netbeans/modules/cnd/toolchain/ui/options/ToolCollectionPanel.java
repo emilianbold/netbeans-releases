@@ -112,7 +112,7 @@ import org.openide.util.Utilities;
     private boolean isUrl = false;
     private Map<ToolKind,Boolean> lastValid = new ConcurrentHashMap<ToolKind, Boolean>();
 
-    private RequestProcessor RP = new RequestProcessor("ToolCollectionPanel: check remote file", 1); // NOI18N
+    private final RequestProcessor RP = new RequestProcessor("ToolCollectionPanel: check remote file", 1); // NOI18N
 
     private final ToolsPanel manager;
 

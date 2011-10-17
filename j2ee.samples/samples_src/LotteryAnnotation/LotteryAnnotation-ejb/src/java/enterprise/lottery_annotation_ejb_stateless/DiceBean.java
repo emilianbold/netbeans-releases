@@ -30,15 +30,23 @@
 
 package enterprise.lottery_annotation_ejb_stateless;
 
-import java.util.Random;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ejb.Stateless;
 
 @Stateless
 public class DiceBean implements Dice {
 
     public int play() {
-	Random random = new Random();
-	return random.nextInt(10);
+	try {
+            SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
+            return random.nextInt(10);
+        } catch (NoSuchAlgorithmException ex) {
+            Logger.getLogger(DiceBean.class.getName()).log(Level.WARNING, null, ex);
+        }
+        return 0;
     }
 
 }

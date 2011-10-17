@@ -56,6 +56,7 @@ import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.ByteArrayOutputStream;
@@ -225,7 +226,23 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
         assert SwingUtilities.isEventDispatchThread();
         if (okButton != null) {
             okButton.setEnabled (false);
-        }        
+        } 
+        //handling http://netbeans.org/bugzilla/show_bug.cgi?id=178555
+        //add a MouseListener to the messageLabel JLabel so that the search can be cancelled without exiting the dialog
+        final GoToPanel goToPanel = panel;
+        final MouseListener warningMouseListener = new java.awt.event.MouseAdapter() {
+
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                if (running != null) {
+                    running.cancel();
+                    task.cancel();
+                    running = null;
+                }
+                goToPanel.setListPanelContent(NbBundle.getMessage(GoToPanel.class, "TXT_SearchCanceled"),false); // NOI18N
+            }
+        };
+        panel.setMouseListener(warningMouseListener);
         if ( running != null ) {
             running.cancel();
             task.cancel();

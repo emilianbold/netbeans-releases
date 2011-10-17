@@ -98,7 +98,7 @@ public class RefactoringTestBase extends NbTestCase {
             TestUtilities.copyStringToFile(fo, f.content);
         }
 
-        SourceUtils.waitScanFinished();
+        RepositoryUpdater.getDefault().refreshAll(true, true, false);
     }
 
     protected void verifyContent(FileObject sourceRoot, File... files) throws Exception {
@@ -107,6 +107,8 @@ public class RefactoringTestBase extends NbTestCase {
         todo.add(sourceRoot);
 
         Map<String, String> content = new HashMap<String, String>();
+        
+        FileUtil.refreshFor(FileUtil.toFile(sourceRoot));
 
         while (!todo.isEmpty()) {
             FileObject file = todo.remove(0);
@@ -121,6 +123,9 @@ public class RefactoringTestBase extends NbTestCase {
         for (File f : files) {
             String fileContent = content.remove(f.filename);
 
+            assertNotNull(f);
+            assertNotNull(f.content);
+            assertNotNull("Cannot find " + f.filename + " in map " + content, fileContent);
             assertEquals(getName() ,f.content.replaceAll("[ \t\n]+", " "), fileContent.replaceAll("[ \t\n]+", " "));
         }
 
@@ -198,7 +203,7 @@ public class RefactoringTestBase extends NbTestCase {
             },
             new ProjectFactory() {
             public boolean isProject(FileObject projectDirectory) {
-                return src.getParent() == projectDirectory;
+                return src != null && src.getParent() == projectDirectory;
             }
             public Project loadProject(final FileObject projectDirectory, ProjectState state) throws IOException {
                 if (!isProject(projectDirectory)) return null;

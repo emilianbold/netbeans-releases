@@ -282,8 +282,11 @@ final public class LocalHistoryTopComponent extends TopComponent implements Mult
     })
     @Override
     public CloseOperationState canCloseElement() {
-        File file = masterView.getFiles()[0];
-        FileObject fo = FileUtil.toFileObject(file);
+        File[] files = masterView.getFiles();
+        if(files.length == 0) {
+            return CloseOperationState.STATE_OK;
+        }
+        FileObject fo = FileUtil.toFileObject(files[0]);
         if(fo != null) {
             final DataObject dataObject;
             try {

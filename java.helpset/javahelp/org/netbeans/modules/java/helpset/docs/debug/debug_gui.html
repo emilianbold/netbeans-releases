@@ -1,0 +1,68 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+*     Copyright © 1997, 2011, Oracle and/or its affiliates. All rights reserved.
+*     Use is subject to license terms.
+*
+-->
+<html>
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <title>Debugging Java GUI and JavaFX Applications</title>
+        <link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+        <meta name="keywords" content="debug, debugging" />
+    </head>
+    <body>
+
+        <h2>Debugging Java GUI and JavaFX Applications</h2>
+        <p><small><a href="#seealso">See Also</a></small></p>
+
+        <p>When debugging a GUI form or JavaFX Application, you can use the Visual Debugger to help
+            you locate the form elements in your source code, set breakpoints and explore component listeners.</p>
+
+        <p>To use the Visual Debugger, run the debugger and then take a GUI snapshot of the application UI.</p>
+        <h3>Taking a Snapshot</h3>
+        <p>When the debugger is running, expand the Debug menu at the top of the IDE and choose Take GUI Snapshot. The GUI snapshot opens in a tab in the main window.</p> <p>If you set breakpoints before running the debugger, the Take GUI Snapshot option may be grayed out. In this case Continue (F5) through breakpoints until Take GUI Snapshot is enabled. </p>
+        <h3>Viewing Component Location and Properties</h3>
+        <p>When you select a component in the GUI snapshot,
+            the IDE displays the location of the component 
+            in the hierarchy tree of components in the <a href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/editing/csh/nav_window.html">Navigator window</a>.
+            The IDE also displays the properties of the selected component in the <a href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/files/files_properties.html">Properties window</a>.
+        </p>
+        <h3>Navigating from Component to Source</h3>
+        <p>You can right-click a component in the GUI snapshot and select the following
+            commands in the popup menu. Note that some actions only apply to Java GUI applications and not JavaFX applications. </p>
+
+        <ul>
+            <li><b>Go to Component Declaration.</b> Select this to open the source file at the line where the component is declared. The sources must be available.</li>
+            <li><b>Go to Component Source.</b> Select this to open the source file at the line
+                where the component is defined. The sources must be available.</li>
+            <li><b>Go to Hierarchy Addition.</b> Select this to open the source file where the component was added to the parent container. 
+                <p>You need to enable this command in the Java Debugging tab in the Miscellaneous category in the Options window.</p></li>
+            <li><b>Show Listeners.</b> Select this to open the Events window and view the order of events and the listeners associated with the selected component. JavaFX does not use listeners, so this option does not appear for JavaFX components.</li>
+            <li><b>Toggle Component Breakpoint.</b> Select this to set a breakpoint on the selected component. 
+                You can view, enable and disable the breakpoints in the Breakpoints window.
+                <ul class="note">
+                    <li>After you set a breakpoint you will need to start a new debugging session to 
+            enable the breakpoint.</li>
+                </ul></li>
+        </ul>
+
+
+        
+
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="debug_process.html">Working with Debugging</a></dd>
+            <dd><a href="debug_quickref.html">Debugging Tasks: Quick Reference</a></dd>
+            <dd><a href="debug_local.html">Starting a Local Debugging Session</a></dd>
+            <dd><a href="breakpoint_setting.html">Setting a Java Breakpoint</a></dd>
+            <dd><a href="../gui/gui_about.html">About the GUI Builder</a></dd>
+            <dd><a href="CSH/events_view.html">Debugging: Events Window</a></dd>
+        </dl>
+        <hr>
+        <small><a href="../credits.html">Legal Notices</a></small>
+        <table border="0" cellpadding="50">
+            <tr><td>&nbsp;</td></tr>
+        </table>
+    </body>
+</html>

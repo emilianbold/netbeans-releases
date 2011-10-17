@@ -48,7 +48,6 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Vector;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
 import org.netbeans.modules.profiler.attach.panels.AttachWizardPanel;

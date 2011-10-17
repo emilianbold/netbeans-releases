@@ -120,5 +120,10 @@ import org.openide.util.Utilities;
         public String getRemotePath(String lpath,boolean useDefault) {
             return lpath;
         }
+
+        @Override
+        public String getTrueLocalPath(String rpath) {
+            return rpath;
+        }
     }
 }

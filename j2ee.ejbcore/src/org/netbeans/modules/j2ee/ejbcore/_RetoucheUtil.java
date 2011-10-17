@@ -57,6 +57,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -295,6 +297,15 @@ public final class _RetoucheUtil {
     public static FileObject resolveFileObjectForClass(FileObject referenceFileObject, final String className) throws IOException {
         final FileObject[] result = new FileObject[1];
         JavaSource javaSource = JavaSource.forFileObject(referenceFileObject);
+        if (javaSource == null) {
+            // Should not happen, at least some debug logging, see i.e. issue #202495.
+            Logger.getLogger(_RetoucheUtil.class.getName()).log(
+                    Level.SEVERE, "JavaSource not created for FileObject: path={0}, valid={1}, mime-type={2}",
+                    new Object[]{
+                        referenceFileObject.getPath(),
+                        referenceFileObject.isValid(),
+                        referenceFileObject.getMIMEType()});
+        }
         javaSource.runUserActionTask(new Task<CompilationController>() {
             public void run(CompilationController controller) {
                 TypeElement typeElement = controller.getElements().getTypeElement(className);

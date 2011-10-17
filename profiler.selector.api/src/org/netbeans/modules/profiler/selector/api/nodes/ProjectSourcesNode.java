@@ -41,11 +41,13 @@
  */
 package org.netbeans.modules.profiler.selector.api.nodes;
 
+import java.util.Arrays;
+import java.util.Collection;
+import org.netbeans.lib.profiler.client.ClientUtils.SourceCodeSelection;
 import org.netbeans.modules.profiler.api.icons.Icons;
 import org.netbeans.modules.profiler.api.icons.LanguageIcons;
 import org.netbeans.modules.profiler.api.java.SourcePackageInfo;
-import org.netbeans.modules.profiler.selector.api.nodes.ContainerNode;
-import org.netbeans.modules.profiler.selector.api.nodes.SelectorChildren;
+import org.netbeans.modules.profiler.api.project.ProjectContentsSupport;
 import org.openide.util.NbBundle;
 
 /**
@@ -64,5 +66,10 @@ class ProjectSourcesNode extends ContainerNode {
 
     protected SelectorChildren getChildren() {
         return new ProjectPackages(SourcePackageInfo.Scope.SOURCE, includeSubprojects);
+    }
+
+    @Override
+    public Collection<SourceCodeSelection> getRootMethods(boolean all) {
+        return Arrays.asList(ProjectContentsSupport.get((ProjectNode)getParent()).getProfilingRoots(null, false));
     }
 }

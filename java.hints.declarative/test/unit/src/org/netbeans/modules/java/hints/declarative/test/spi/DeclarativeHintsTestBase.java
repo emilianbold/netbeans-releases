@@ -37,7 +37,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.java.hints.declarative.test.spi;
+package org.netbeans.modules.java.hints.declarative.test.api;
 
 import java.io.File;
 import java.io.IOException;

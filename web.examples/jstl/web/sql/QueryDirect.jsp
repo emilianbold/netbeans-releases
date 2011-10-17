@@ -1,3 +1,4 @@
+<%@page import="org.apache.taglibs.standard.examples.util.DataSourceProvider"%>
 <%@ taglib prefix="sql" uri="http://java.sun.com/jsp/jstl/sql" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
@@ -10,18 +11,11 @@
 <h1>SQL Direct Query Execution</h1>
 <p>This example demonstrates how the row and columns can be directly accessed using various direct mechanisms.<p>
 
+<%
+    DataSourceProvider dataSource = new DataSourceProvider(session);
+%>
 
-<!-- NOTE: the sql:setDataSource tag is for prototyping and simple applications. You should really use a DataSource object instead -->
-
-<sql:setDataSource
-  var="example"
-  driver="${sessionScope.myDbDriver}"
-  url="${sessionScope.myDbUrl}"
-  user="${sessionScope.myDbUserName}"
-  password="${sessionScope.myDbPassword}"
-/>
-
-<sql:transaction dataSource="${example}">
+<sql:transaction dataSource="<%=dataSource%>">
 
   <sql:update var="newTable">
     create table mytable (
@@ -78,7 +72,7 @@ Row[2][0]: <c:out value="${deejays.rowsByIndex[2][0]}" />
 Row[2][1]: <c:out value="${deejays.rowsByIndex[2][1]}" />
 <br>
 
-<sql:update var="newTable" dataSource="${example}">
+<sql:update var="newTable" dataSource="<%=dataSource%>">
   drop table mytable
 </sql:update>
 

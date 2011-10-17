@@ -358,6 +358,7 @@ private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
                         continue;
                     FileObject fobj = dobj.getPrimaryFile();
                     SchemaObject obj = new SchemaObject(erdn.getSchemaFileName());
+                    obj.setFromCatalog(erdn.isResolveThroughCatalog());
                     obj.setNamespace(erdn.getNamespace());
                     obj.setSchemaFileName(erdn.getSchemaFileName());
                     

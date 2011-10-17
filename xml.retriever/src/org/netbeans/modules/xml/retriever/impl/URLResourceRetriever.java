@@ -63,6 +63,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.HashMap;
+import java.util.Map;
 import org.netbeans.modules.xml.retriever.*;
 
 /**
@@ -71,6 +72,20 @@ import org.netbeans.modules.xml.retriever.*;
  */
 public class URLResourceRetriever implements ResourceRetriever{
     
+    /**
+     * Hack: this is a URL rewriter for well-known XML namespaces whose resources
+     * do not follow the convention - most prominent is the XSLT schema
+     */
+    private static final Map<String, String>    rewriteURIMap = new HashMap<String, String>();
+    
+    /**
+     * Well known XML schemas from specs
+     */
+    static {
+        rewriteURIMap.put("http://www.w3.org/2001/XMLSchema", "http://www.w3.org/2001/XMLSchema.xsd");
+        rewriteURIMap.put("http://www.w3.org/1999/XSL/Transform", "http://www.w3.org/2007/schema-for-xslt20.xsd");
+    }
+
     /**
      * HTTP Location header name
      */
@@ -182,14 +197,36 @@ public class URLResourceRetriever implements ResourceRetriever{
     }
     
     public String getEffectiveAddress(String baseAddress, String documentAddress) throws IOException, URISyntaxException {
-        return resolveURL(baseAddress, documentAddress);
+        return resolveURL(baseAddress, documentAddress, true);
     }
     
     public static String resolveURL(String baseAddress, String documentAddress) throws URISyntaxException{
+        return resolveURL(baseAddress, documentAddress, false);
+    }
+    
+    /**
+     * Hack: in the orignal form the method was called with rewrite = false only. It should resolve
+     * URIs relative to base address. But when actually obtaining the resource stream, rewrite = true
+     * is used. This way the effective URL will differ from the resolved URL, which makes the rest
+     * of code think that the resource URI was redirected and remembers the appropriate original URI
+     * in the catalog.
+     * 
+     * @param baseAddress base address for the resolution
+     * @param documentAddress relative or absolute resource URI to resolve
+     * @param rewrite if true, rewrites URIs of well-known schemas to the proper locations
+     * @return resolved (or rewritten) URL
+     * @throws URISyntaxException 
+     */
+    static String resolveURL(String baseAddress, String documentAddress, boolean rewrite) throws URISyntaxException{
         URI currURI = new URI(documentAddress);
         String result = null;
         if(currURI.isAbsolute()){
-            result = currURI.toString();
+            String rewritten = rewriteURIMap.get(documentAddress);
+            if (rewrite && rewritten != null) {
+                result = rewritten;
+            } else {
+                result = currURI.toString();
+            }
             return result;
         }else{
             //relative URI

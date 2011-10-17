@@ -147,24 +147,29 @@ final class FindTypesSupport implements MouseMotionListener, MouseListener {
         }
     }
     
-    public void register(JTextPane pane) {
+    public void register(final JTextPane pane) {
         long t = System.currentTimeMillis();
         try {
-            StyledDocument doc = pane.getStyledDocument();
-            Style hlStyle = doc.addStyle("regularBlue-findtype", defStyle);     // NOI18N
-            hlStyle.addAttribute(HyperlinkSupport.TYPE_ATTRIBUTE, new TypeLink());
-            StyleConstants.setForeground(hlStyle, Color.BLUE);
-            StyleConstants.setUnderline(hlStyle, true);            
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    StyledDocument doc = pane.getStyledDocument();
+                    Style hlStyle = doc.addStyle("regularBlue-findtype", defStyle);     // NOI18N
+                    hlStyle.addAttribute(HyperlinkSupport.TYPE_ATTRIBUTE, new TypeLink());
+                    StyleConstants.setForeground(hlStyle, Color.BLUE);
+                    StyleConstants.setUnderline(hlStyle, true);            
+
+                    List<Integer> l = getHighlightOffsets(pane.getText());
+                    List<Highlight> highlights = new ArrayList<Highlight>(l.size());
+                    for (int i = 0; i < l.size(); i++) {
+                        highlights.add(new Highlight(l.get(i), l.get(++i)));
+                    }
+                    pane.putClientProperty(HIGHLIGHTS_PROPERTY, highlights);
+                    pane.addMouseMotionListener(FindTypesSupport.this);
+                    pane.addMouseListener(FindTypesSupport.this);
+                }
+            });
             
-            List<Integer> l = getHighlightOffsets(pane.getText());
-            List<Highlight> highlights = new ArrayList<Highlight>(l.size());
-            for (int i = 0; i < l.size(); i++) {
-                highlights.add(new Highlight(l.get(i), l.get(++i)));
-            }
-            pane.putClientProperty(HIGHLIGHTS_PROPERTY, highlights);
-            
-            pane.addMouseMotionListener(this);
-            pane.addMouseListener(this);
         } finally {
             BugtrackingManager.LOG.log(Level.FINE, "{0}.register took  {1}", new Object[]{this.getClass().getName(), System.currentTimeMillis() - t}); // NOI18N
         }

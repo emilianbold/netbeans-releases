@@ -73,6 +73,7 @@ import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.CouplingAbort;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Log;
+import java.awt.EventQueue;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -196,7 +197,7 @@ public class TreeLoader extends LazyTreeLoader {
             assert DISABLE_CONFINEMENT_TEST || JavaSourceAccessor.getINSTANCE().isJavaCompilerLocked() || !contended;
             if (clazz != null) {
                 JavadocHelper.TextStream page = JavadocHelper.getJavadoc(clazz, ALWAYS_ALLOW_JDOC_ARG_NAMES, null);
-                if (page != null) {
+                if (page != null && (!page.isRemote() || !EventQueue.isDispatchThread())) {
                     if (getParamNamesFromJavadocText(page, clazz)) {
                         return true;
                     }

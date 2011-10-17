@@ -136,6 +136,8 @@ import org.openide.util.NbBundle;
  */
     public final class EjbFacadeWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator {
 
+    private static final Logger LOGGER = Logger.getLogger(EjbFacadeWizardIterator.class.getName());
+
     private static final String WIZARD_PANEL_CONTENT_DATA = WizardDescriptor.PROP_CONTENT_DATA; // NOI18N
 
     private static final String FACADE_ABSTRACT = "AbstractFacade"; //NOI18N
@@ -460,6 +462,7 @@ import org.openide.util.NbBundle;
     private List<GenerationOptions> getMethodOptions(String entityFQN, String variableName){
 
         GenerationOptions getEMOptions = new GenerationOptions();
+        getEMOptions.setAnnotation("java.lang.Override"); //NOI18N
         getEMOptions.setMethodName("getEntityManager"); //NOI18N
         getEMOptions.setOperation(GenerationOptions.Operation.GET_EM);
         getEMOptions.setReturnType("javax.persistence.EntityManager");//NOI18N
@@ -583,6 +586,10 @@ import org.openide.util.NbBundle;
     FileObject createInterface(String name, final String annotationType, FileObject targetFolder) throws IOException {
         FileObject sourceFile = GenerationUtils.createInterface(targetFolder, name, null);
         JavaSource source = JavaSource.forFileObject(sourceFile);
+        if (source == null) {
+            LOGGER.log(Level.SEVERE, "JavaSource not created for FileObject: valid={0}, mime-type={1}",
+                    new Object[]{sourceFile.isValid(), sourceFile.getMIMEType()});
+        }
         ModificationResult result = source.runModificationTask(new Task<WorkingCopy>() {
 
             @Override

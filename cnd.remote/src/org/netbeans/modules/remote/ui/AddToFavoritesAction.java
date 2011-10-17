@@ -67,6 +67,7 @@ import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.actions.SystemAction;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
@@ -118,11 +119,11 @@ public class AddToFavoritesAction extends SingleHostAction {
     private void createSubMenu() {
         if (popupMenu == null) {
             popupMenu = new JMenu(getName());
-            popupMenu.add(new AddHome().getPopupPresenter());
-//            popupMenu.add(new AddProjects().getPopupPresenter());
-            popupMenu.add(new AddMirror().getPopupPresenter());
-            popupMenu.add(new AddRoot().getPopupPresenter());
-            popupMenu.add(new AddOther().getPopupPresenter());
+            popupMenu.add(SystemAction.get(AddHome.class).getPopupPresenter());
+//            popupMenu.add(SystemAction.get(AddProjects.class).getPopupPresenter());
+            popupMenu.add(SystemAction.get(AddMirror.class).getPopupPresenter());
+            popupMenu.add(SystemAction.get(AddRoot.class).getPopupPresenter());
+            popupMenu.add(SystemAction.get(AddOther.class).getPopupPresenter());
         }
     }    
     

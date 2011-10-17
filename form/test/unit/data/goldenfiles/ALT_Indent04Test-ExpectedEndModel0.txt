@@ -8,7 +8,7 @@
               <EmptySpace min="$pref" pref="34" max="$pref" attributes="16"/>
               <Group type="parallel" groupAlignment="leading" attributes="16">
                   <Group type="sequential" attributes="0">
-                      <EmptySpace min="10" pref="10" max="10" attributes="0"/>
+                      <EmptySpace min="10" pref="10" max="$pref" attributes="0"/>
                       <Component id="jLabel4" min="$pref" max="$pref" attributes="0"/>
                       <EmptySpace min="$pref" pref="53" max="$pref" attributes="0"/>
                       <Component id="jLabel2" min="$pref" max="$pref" attributes="0"/>

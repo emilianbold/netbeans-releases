@@ -85,7 +85,13 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
     private static final Logger LOG = Logger.getLogger(DocumentView.class.getName());
 
     // True to log real source chars
-    static final boolean LOG_SOURCE_TEXT = Boolean.getBoolean("org.netbeans.editor.log.source.text");
+    // -J-Dorg.netbeans.editor.log.source.text=true
+    static final boolean LOG_SOURCE_TEXT = Boolean.getBoolean("org.netbeans.editor.log.source.text"); // NOI18N
+
+    // True to disable extra virtual space of 1/3 of height of the visible viewport
+    // -J-Dorg.netbeans.editor.disable.end.virtual.space=true
+    static final boolean DISABLE_END_VIRTUAL_SPACE =
+            Boolean.getBoolean("org.netbeans.editor.disable.end.virtual.space"); // NOI18N
 
     /**
      * Text component's client property for the mutex doing synchronization
@@ -237,12 +243,14 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
                     span = allocation.width;
                 } else { // Y_AXIS
                     span = allocation.height;
-                    // Add extra span when component in viewport
-                    Component parent;
-                    if (textComponent != null && ((parent = textComponent.getParent()) instanceof JViewport)) {
-                        JViewport viewport = (JViewport) parent;
-                        int viewportHeight = viewport.getExtentSize().height;
-                        span += viewportHeight / 3;
+                    if (!DISABLE_END_VIRTUAL_SPACE) {
+                        // Add extra span when component in viewport
+                        Component parent;
+                        if (textComponent != null && ((parent = textComponent.getParent()) instanceof JViewport)) {
+                            JViewport viewport = (JViewport) parent;
+                            int viewportHeight = viewport.getExtentSize().height;
+                            span += viewportHeight / 3;
+                        }
                     }
                 }
                 return span;
@@ -340,22 +348,12 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
     public void replace(int index, int length, View[] views) {
         replaceViews(index, length, views);
     }
-    
-    void addChange(double startY, double endY, double deltaY) {
+
+    ViewHierarchyChange validChange() {
         if (change == null) {
             change = new ViewHierarchyChange();
-            change.startY = startY;
-            change.endY = endY;
-            change.deltaY = deltaY;
-
-        } else { // Merge new change with original one
-            change.startY = Math.min(startY, change.startY);
-            if (endY > change.endY) { // Lies before the shifted area
-                endY -= change.deltaY; // make original coordinate
-                change.endY = Math.max(endY, change.endY);
-            }
-            change.deltaY += deltaY;
         }
+        return change;
     }
 
     void checkFireEvent() {
@@ -946,8 +944,8 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
     }
 
     @Override
-    protected StringBuilder appendViewInfo(StringBuilder sb, int indent, int importantChildIndex) {
-        DocumentView.super.appendViewInfo(sb, indent, importantChildIndex);
+    protected StringBuilder appendViewInfo(StringBuilder sb, int indent, String xyInfo, int importantChildIndex) {
+        DocumentView.super.appendViewInfo(sb, indent, xyInfo, importantChildIndex);
         sb.append("; Bounds:<");
         sb.append(hasExtraStartBound() ? startPos.getOffset() : "DOC-START");
         sb.append(","); // NOI18N
@@ -979,7 +977,7 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
     }
     
     public String toStringUnlocked() {
-        return appendViewInfo(new StringBuilder(200), 0, -1).toString();
+        return appendViewInfo(new StringBuilder(200), 0, "", -1).toString();
     }
 
     public String toStringDetail() {
@@ -994,7 +992,7 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
     }
     
     public String toStringDetailUnlocked() { // Dump everything
-        return appendViewInfo(new StringBuilder(200), 0, -2).toString();
+        return appendViewInfo(new StringBuilder(200), 0, "", -2).toString();
     }
 
 }

@@ -310,6 +310,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         if (projectName == null) {
             switch (type) {
                 case APPLICATION:
+                case FXML:
                     int baseCount = WizardSettings.getNewApplicationCount() + 1;
                     String formatter = NbBundle.getMessage(PanelSourceFolders.class, "TXT_JavaFXApplication"); // NOI18N
                     while ((projectName = validFreeProjectName(projectLocation, formatter, baseCount)) == null) {

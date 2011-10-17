@@ -43,10 +43,14 @@
  */
 package org.netbeans.modules.localhistory.ui.view;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
-import java.util.MissingResourceException;
 import java.util.Set;
+import java.util.logging.Level;
+import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
@@ -54,19 +58,21 @@ import org.netbeans.core.api.multiview.MultiViewHandler;
 import org.netbeans.core.api.multiview.MultiViewPerspective;
 import org.netbeans.core.api.multiview.MultiViews;
 import org.netbeans.core.spi.multiview.MultiViewDescription;
+import org.netbeans.modules.localhistory.LocalHistory;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.openide.cookies.EditCookie;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
 import org.openide.windows.TopComponent;
+import org.openide.windows.TopComponent.Registry;
 
 /**
  *
@@ -85,7 +91,7 @@ public class ShowLocalHistoryAction extends NodeAction {
         VCSContext ctx = VCSContext.forNodes(activatedNodes);
         final Set<File> rootSet = ctx.getRootFiles();                    
 
-        File[] files = rootSet.toArray(new File[rootSet.size()]);                
+        final File[] files = rootSet.toArray(new File[rootSet.size()]);                
 
         if(!files[0].isFile()) {
             return;
@@ -98,23 +104,77 @@ public class ShowLocalHistoryAction extends NodeAction {
             try {
                 dataObject = DataObject.find(fo);
             } catch (DataObjectNotFoundException ex) {
-                Exceptions.printStackTrace(ex);
+                LocalHistory.LOG.log(Level.WARNING, null, ex);
             }
             if(dataObject != null) {
-                if(findInOpenTC(dataObject)) {
+                
+                if(!hasHistoryElement(dataObject)) {
+                    // there is no history element defined for this data object, so 
+                    // lets open in a separate TopComponent
+                    openLocalHistoryTC(files);
                     return;
                 }
-                if(findInMVDescriptions(dataObject)) {
+                
+                // activate the History tab if there is a opened TopComponent 
+                // with a History MultiView element
+                Set<TopComponent> tcs = TopComponent.getRegistry().getOpened();
+                final boolean[] gotEditorPanes = new boolean[] {false};
+                for (final TopComponent tc : tcs) {
+                    Lookup l = tc.getLookup();
+                    final DataObject tcDataObject = l.lookup(DataObject.class);
+                    if (tcDataObject != null && dataObject.equals(tcDataObject)) { 
+                        final MultiViewHandler handler = MultiViews.findMultiViewHandler(tc);
+                        if(handler != null) {
+                            if(activateHistoryTab(handler, tc)) {
+                                // done, history tab found and activated.
+                                return;
+                            }
+                        } 
+                        try {
+                            // this TopComponent has no history tab, yet doesn't necessarily has to be an editor.
+                            // lets try to guess if it's an editor TC so that we know if we have to 
+                            // open the Local History Top Component
+                            SwingUtilities.invokeAndWait(new Runnable() {
+                                @Override
+                                public void run() {
+                                    EditorCookie cookie = tcDataObject.getLookup().lookup(EditorCookie.class);
+                                    if(cookie != null) {
+                                        JEditorPane[] panes = cookie.getOpenedPanes();
+                                        if(panes != null && panes.length > 0) {
+                                            gotEditorPanes[0] = true;
+                                        }
+                                    }
+                                }
+                            });
+                        } catch (InterruptedException ex) {
+                            LocalHistory.LOG.log(Level.WARNING, null, ex);
+                        } catch (InvocationTargetException ex) {
+                            LocalHistory.LOG.log(Level.WARNING, null, ex);
+                        }
+                    }
+                }
+                if(gotEditorPanes[0]) {
+                    // files editor was open, but had no history tab
+                    openLocalHistoryTC(files);
+                    return;
+                }
+                
+                // no editor found, lets open it...
+                EditCookie cookie = dataObject.getLookup().lookup(EditCookie.class);
+                if(cookie != null) {
+                    // editcookie might return imediately, so listen for the TC 
+                    // to be opened and activate then
+                    TopComponent.getRegistry().addPropertyChangeListener(new TCOpenedListener(dataObject, files));
+                    cookie.edit();
                     return;
                 }
             }
         }
-
-        // fallback opening a LHTopComponent
-        openTC(files);
+        openLocalHistoryTC(files);
     }
-    
-    private void openTC(final File[] files) throws MissingResourceException {
+
+    private void openLocalHistoryTC(final File[] files) {
+        // fallback opening a LHTopComponent
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -126,11 +186,15 @@ public class ShowLocalHistoryAction extends NodeAction {
             }
         });
     }
-                
+
     /**
      * XXX HACK temporary solution to find out if the given dataobject provides a multiview
+     * 
+     * Returns EditCookie if there is a TopComponent with a history MultiView element
+     * @param dataObject
+     * @return EditCookie
      */
-    private boolean findInMVDescriptions(DataObject dataObject) {
+    private boolean hasHistoryElement(DataObject dataObject) {
         String mime = dataObject.getPrimaryFile().getMIMEType();
         Lookup l = MimeLookup.getLookup(MimePath.get(mime));
         Collection<? extends MultiViewDescription> descs = l.lookupAll(MultiViewDescription.class);
@@ -138,41 +202,28 @@ public class ShowLocalHistoryAction extends NodeAction {
             // LH is registred for every mimetype, so we need at least two
             for (MultiViewDescription desc : descs) {
                 if (desc.preferredID().equals(LocalHistoryTopComponent.PREFERRED_ID)) {
-                    EditCookie cookie = dataObject.getLookup().lookup(EditCookie.class);
-                    if (cookie != null) {
-                        cookie.edit();
-                        findInOpenTC(dataObject);
-                        return true;
-                    }
+                    return true;
                 } 
             } 
         }
         return false;
     }
 
-    private boolean findInOpenTC(DataObject dataObject) {
-        Set<TopComponent> tcs = TopComponent.getRegistry().getOpened();
-        for (final TopComponent tc : tcs) {
-            Lookup l = tc.getLookup();
-            DataObject tcDataObject = l.lookup(DataObject.class);
-            if (tcDataObject != null && dataObject.equals(tcDataObject)) {
-                final MultiViewHandler handler = MultiViews.findMultiViewHandler(tc);
-                if (handler != null) {
-                    MultiViewPerspective[] perspectives = handler.getPerspectives();
-                    for (final MultiViewPerspective p : perspectives) {
-                        if(p.preferredID().equals(LocalHistoryTopComponent.PREFERRED_ID)) {
-                            SwingUtilities.invokeLater(new Runnable() {
-                                @Override
-                                public void run() {
-                                    handler.requestActive(p);
-                                    tc.requestActive();
-                                }
-                            });
-                            break;
-                        } 
-                    }
+    private boolean activateHistoryTab(final MultiViewHandler handler, final TopComponent tc) {
+        if (handler != null) {
+            MultiViewPerspective[] perspectives = handler.getPerspectives();
+            for (final MultiViewPerspective p : perspectives) {
+                if(p.preferredID().equals(LocalHistoryTopComponent.PREFERRED_ID)) {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            tc.open();
+                            tc.requestActive();
+                            handler.requestActive(p);
+                        }
+                    });
                     return true;
-                }
+                } 
             }
         }
         return false;
@@ -205,5 +256,37 @@ public class ShowLocalHistoryAction extends NodeAction {
     public HelpCtx getHelpCtx() {
         return new HelpCtx(ShowLocalHistoryAction.class);
     }
-    
+
+    private class TCOpenedListener implements PropertyChangeListener {
+        private final DataObject dataObject;
+        private final File[] files;
+
+        private TCOpenedListener(DataObject dataObject, File[] files) {
+            this.dataObject = dataObject;
+            this.files = files;
+        }
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            if(Registry.PROP_ACTIVATED.equals(evt.getPropertyName())) {
+                try {
+                    TopComponent tc =(TopComponent) evt.getNewValue();
+                    Lookup l = tc.getLookup();
+                    DataObject tcDataObject = l.lookup(DataObject.class);
+                    
+                    if (tcDataObject != null && dataObject.equals(tcDataObject)) {
+                        final MultiViewHandler handler = MultiViews.findMultiViewHandler(tc);
+                        if (handler == null || !activateHistoryTab(handler, tc)) {
+                            // oops, whats this? 
+                            // lets fallback on LHTC
+                            tc.close();
+                            openLocalHistoryTC(files);
+                        }
+                    }
+                } finally {
+                    TopComponent.getRegistry().removePropertyChangeListener(this);
+                }
+            }
+        }
+
+    }
 }

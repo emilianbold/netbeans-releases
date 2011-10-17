@@ -89,6 +89,7 @@ public class ExplorerActionsImplTest extends NbTestCase implements PropertyChang
         em.setSelectedNodes(new Node[] { root });
         Action action = ExplorerUtils.actionPaste(em);
         Action cut = ExplorerUtils.actionCut(em);
+        em.waitActionsFinished();
         assertFalse("Not enabled", action.isEnabled());
         
         action.addPropertyChangeListener(this);
@@ -96,6 +97,7 @@ public class ExplorerActionsImplTest extends NbTestCase implements PropertyChang
         
 
         em.setSelectedNodes(new Node[] { ch3 });
+        em.waitActionsFinished();
         assertFalse("Cut is not enabled", cut.isEnabled());
         assertTrue("Now enabled", action.isEnabled());
         action.actionPerformed(new ActionEvent(this, 0, ""));

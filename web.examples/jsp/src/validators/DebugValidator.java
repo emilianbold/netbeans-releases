@@ -14,12 +14,12 @@
 * limitations under the License.
 */
 
-
 package validators;
-
 
 import java.io.InputStream;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.servlet.jsp.tagext.PageData;
 import javax.servlet.jsp.tagext.TagLibraryValidator;
 import javax.servlet.jsp.tagext.ValidationMessage;
@@ -56,8 +56,8 @@ public class DebugValidator extends TagLibraryValidator {
      * @param uri The value of the URI argument in this directive
      * @param page The page data for this page
      */
-    public ValidationMessage[] validate(String prefix, String uri,
-                                        PageData page) {
+    @Override
+    public ValidationMessage[] validate(String prefix, String uri, PageData page) {
 
         System.out.println("---------- Prefix=" + prefix + " URI=" + uri +
                            "----------");
@@ -71,6 +71,8 @@ public class DebugValidator extends TagLibraryValidator {
                 System.out.print((char) ch);
             } catch (IOException e) {
                 break;
+            } finally {
+                closeInputStream(is);
             }
         }
         System.out.println();
@@ -79,5 +81,11 @@ public class DebugValidator extends TagLibraryValidator {
 
     }
 
-
+    private void closeInputStream(InputStream is) {
+        try {
+            is.close();
+        } catch (IOException ex) {
+            Logger.getLogger(DebugValidator.class.getName()).log(Level.SEVERE, "Problem occurs during I/O operation", ex);
+        }
+    }
 }

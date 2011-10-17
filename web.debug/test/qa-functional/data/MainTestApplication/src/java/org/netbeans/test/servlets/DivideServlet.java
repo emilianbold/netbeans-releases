@@ -27,13 +27,13 @@ public class DivideServlet extends HttpServlet {
     throws ServletException, IOException {
         response.setContentType("text/html");
         PrintWriter out = response.getWriter();
-        
+        String contextPath = request.getContextPath();
         out.println("<html>");
         out.println("<head>");
         out.println("<title>Servlet DIVIDE</title>");
         out.println("</head>");
         out.println("<body>");
-        out.println("<h1>Servlet DivideServlet at " + request.getContextPath () + "</h1>");
+        out.println("<h1>Servlet DivideServlet at " + contextPath + "</h1>");
         
         org.netbeans.test.freeformlib.Multiplier d = new org.netbeans.test.freeformlib.Multiplier();
         try {

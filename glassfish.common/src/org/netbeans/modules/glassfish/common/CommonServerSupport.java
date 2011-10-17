@@ -867,8 +867,8 @@ public class CommonServerSupport implements GlassfishModule2, RefreshModulesCook
     }
 
     private String getServerFromTarget(String target) {
-        String retVal = "server"; // NOI18N
-        GetPropertyCommand  gpc = new GetPropertyCommand("clusters.cluster."+target+".server-ref.*.ref"); // NOI18N
+        String retVal = target; // NOI18N
+        GetPropertyCommand  gpc = new GetPropertyCommand("clusters.cluster."+target+".server-ref.*.ref", true); // NOI18N
 
         Future<OperationState> result2 = execute(true, gpc);
         try {

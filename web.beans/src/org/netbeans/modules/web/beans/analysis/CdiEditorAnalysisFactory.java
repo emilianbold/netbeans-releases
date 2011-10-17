@@ -58,7 +58,6 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.JavaSource.Priority;
 import org.netbeans.api.java.source.JavaSourceTaskFactory;
 import org.netbeans.api.java.source.TreeUtilities;
-import org.netbeans.api.java.source.support.EditorAwareJavaSourceTaskFactory;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
@@ -81,10 +80,10 @@ import com.sun.source.util.SourcePositions;
  *
  */
 @ServiceProvider(service=JavaSourceTaskFactory.class)
-public class CdiEditorAnalysisFactory extends EditorAwareJavaSourceTaskFactory {
+public class CdiEditorAnalysisFactory extends CdiEditorAwareJavaSourceTaskFactory {
 
     public CdiEditorAnalysisFactory( ){
-        super(Phase.RESOLVED, Priority.BELOW_NORMAL, "text/x-java");    // NOI18N
+        super(Priority.BELOW_NORMAL);
     }
 
     /* (non-Javadoc)
@@ -92,7 +91,7 @@ public class CdiEditorAnalysisFactory extends EditorAwareJavaSourceTaskFactory {
      */
     @Override
     protected CancellableTask<CompilationInfo> createTask( FileObject fileObject ) {
-        return new CdiEditorAnalysisTask( fileObject );
+        return new CdiEditorAnalysisTask( fileObject , this );
     }
     
     public static ErrorDescription createError( Element subject , 

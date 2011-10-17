@@ -45,9 +45,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.Collections;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.text.BadLocationException;
-import org.netbeans.api.lexer.Token;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.csl.api.test.CslTestBase;
 import org.netbeans.modules.css.lib.api.CssParserResult;
@@ -750,10 +750,50 @@ public class Css3ParserTest extends CslTestBase {
 
     }
     
+    public void testSubstringMatchingAttributeSelectors() throws BadLocationException, ParseException {
+        assertResultOK(TestUtil.parse("p[class$=\"st\"]{ } "));
+        assertResultOK(TestUtil.parse("p[class*=\"st\"]{ } "));
+        assertResultOK(TestUtil.parse("p[class^=\"st\"]{ } "));
+    }
+    
+        public void testFontFace() throws ParseException, BadLocationException {
+        String content = "@font-face { font-family: Gentium; src: url(http://example.com/fonts/Gentium.ttf); }";
+
+        CssParserResult result = TestUtil.parse(content);
+//        TestUtil.dumpTokens(result);
+//        TestUtil.dumpResult(result);
+
+        Node counterStyle = NodeUtil.query(result.getParseTree(),
+                TestUtil.bodysetPath
+                + "fontFace");
+        assertNotNull(counterStyle);
+        
+        Node declaration = NodeUtil.query(counterStyle, "declarations/declaration|0");
+        assertNotNull(declaration);
+        assertEquals("font-family: Gentium", declaration.image().toString());
+
+        assertResultOK(result);
+
+    }
+    
     public void testNetbeans_Css() throws ParseException, BadLocationException, IOException {
         CssParserResult result = TestUtil.parse(getTestFile("testfiles/netbeans.css"));
 //        TestUtil.dumpResult(result);
         assertResult(result, 0);
+    }
+    
+    public void testPropertyValueAsFunction() throws BadLocationException, ParseException {
+        String code = "div { animation: cubic-bezier(1,2,3,4); } ";
+        assertResultOK(TestUtil.parse(code));
+    }
+    
+    public void testIssue203573() throws ParseException, BadLocationException, IOException {
+        String code = "h1 { color:red; - }";
+        CssParserResult result = TestUtil.parse(code);
+        
+//        NodeUtil.dumpTree(result.getParseTree());
+        
+        assertNoTokenNodeLost(result);
     }
 
     private CssParserResult assertResultOK(CssParserResult result) {
@@ -771,4 +811,30 @@ public class Css3ParserTest extends CslTestBase {
 
         return result;
     }
+    
+    private void assertNoTokenNodeLost(CssParserResult result) {
+        final StringBuilder sourceCopy = new StringBuilder(result.getSnapshot().getText());
+        
+        NodeVisitor.visitChildren(result.getParseTree(), Collections.<NodeVisitor<Node>>singleton(new NodeVisitor<Node>() {
+
+            @Override
+            public boolean visit(Node node) {
+                if(node.type() == NodeType.token) {
+                    for(int i = node.from(); i < node.to(); i++) {
+                        sourceCopy.setCharAt(i, Character.MAX_VALUE);
+                    }
+                }
+                
+                return false;
+            }
+            
+        }));
+        
+        for(int i = 0; i < sourceCopy.length(); i++) {
+            if(sourceCopy.charAt(i) != Character.MAX_VALUE) {
+                assertTrue(String.format("No token node found for char '%s' at offset %s of the parser source.", sourceCopy.charAt(i), i), false);
+            }
+        }
+    }
+    
 }

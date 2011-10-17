@@ -83,8 +83,10 @@ public final class JavaFXPlatformUtils {
 
     // TODO any Mac OS predefined locations?
     public static final String[] KNOWN_JFX_LOCATIONS = new String[]{
-        "C:\\Program Files\\Oracle",        // NOI18N
-        "C:\\Program Files (x86)\\Oracle"   // NOI18N
+        (System.getenv("ProgramFiles") != null ? // NOI18N
+            System.getenv("ProgramFiles") : "C:\\Program Files") + "\\Oracle", // NOI18N
+        (System.getenv("ProgramFiles(x86)") != null ? // NOI18N
+            System.getenv("ProgramFiles(x86)") : "C:\\Program Files (x86)") + "\\Oracle" // NOI18N
     };
 
     private JavaFXPlatformUtils() {
@@ -130,7 +132,8 @@ public final class JavaFXPlatformUtils {
     
     /**
      * Constructs classpath for JavaFX project
-     * 
+     * xxx: Is this really an "API"?
+     * xxx:Is hard coding of jars really what you want?
      * @return classpath entries
      */
     @NonNull
@@ -206,6 +209,9 @@ public final class JavaFXPlatformUtils {
         File location = new File(path);
         if (location.exists()) {
             File[] children = location.listFiles();
+            if (children == null) {
+                return null;
+            }
             for (File child : children) {
                 File toolsJar = new File(child.getAbsolutePath() + File.separatorChar + "tools" + File.separatorChar + "ant-javafx.jar"); // NOI18N
                 if (toolsJar.exists()) {
@@ -227,8 +233,19 @@ public final class JavaFXPlatformUtils {
     public static String predictRuntimeLocation(@NonNull String path) {
         File location = new File(path);
         if (location.exists()) {
-            List<File> files = new ArrayList<File>(Arrays.asList(location.listFiles())); // check in neighbour folders: Win installation
-            files.add(location); // check inside SDK: Mac installation
+            List<File> files = new ArrayList<File>();
+            files.add(location); // check root location
+            File[] children = location.listFiles();
+            if (children == null) {
+                return null;
+            }
+            files.addAll(Arrays.asList(children));
+            for (File child : children) {
+                File[] f = child.listFiles();
+                if (f != null) {
+                    files.addAll(Arrays.asList(f));
+                }
+            }
             for (File file : files) {
                 File rtJar = new File(file.getAbsolutePath() + File.separatorChar + "lib" + File.separatorChar + "jfxrt.jar"); // NOI18N
                 if (rtJar.exists()) {
@@ -251,6 +268,9 @@ public final class JavaFXPlatformUtils {
         File location = new File(path);
         if (location.exists()) {
             File[] children = location.listFiles();
+            if (children == null) {
+                return null;
+            }
             for (File child : children) {
                 File docs = new File(child.getAbsolutePath() + File.separatorChar + "docs"); // NOI18N
                 if (docs.exists()) {

@@ -176,7 +176,8 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
         "http://c.validator.nu/unchecked/", "http://c.validator.nu/usemap/"};
     private static boolean INITIALIZED = false;
     
-    private static String INTERNAL_ERROR_MSG = "Validation of the code failed unexpectedly, the validator results may be inaccurate. See the IDE log for more information"; //NOI18N
+    private static String INTERNAL_ERROR_MSG_SEE_LOG = NbBundle.getMessage(ValidationTransaction.class, "MSG_Unexpected_Validator_Error_See_IDE_Log"); //NOI18N
+    private static String INTERNAL_ERROR_MSG = NbBundle.getMessage(ValidationTransaction.class, "MSG_Unexpected_Validator_Error"); //NOI18N
     
     protected String document = null;
     ParserMode parser = ParserMode.AUTO;
@@ -651,7 +652,7 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
             LOGGER.log(Level.INFO, getDocumentErrorMsg(), e);
             errorHandler.internalError(
                     e,
-                    INTERNAL_ERROR_MSG);
+                    INTERNAL_ERROR_MSG_SEE_LOG);
         } catch (TooManyErrorsException e) {
             LOGGER.log(Level.FINE, getDocumentErrorMsg(), e);
             errorHandler.fatalError(e);
@@ -664,15 +665,15 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
             LOGGER.log(Level.INFO, getDocumentErrorMsg(), e);
             errorHandler.schemaError(e);
         } catch (RuntimeException e) {
-            reportRuntimeExceptionOnce(e);
-            errorHandler.internalError(
-                    e,
-                    INTERNAL_ERROR_MSG);
+            String message = reportRuntimeExceptionOnce(e) 
+                    ? INTERNAL_ERROR_MSG_SEE_LOG 
+                    : INTERNAL_ERROR_MSG;
+            errorHandler.internalError(e, message);
         } catch (Error e) {
             LOGGER.log(Level.INFO, getDocumentInternalErrorMsg(), e);
             errorHandler.internalError(
                     e,
-                    INTERNAL_ERROR_MSG);
+                    INTERNAL_ERROR_MSG_SEE_LOG);
         } finally {
             errorHandler.end(successMessage(), failureMessage());
         }
@@ -680,8 +681,12 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
 
     private static final Set<Marker> REPORTED_RUNTIME_EXCEPTIONS = new HashSet<Marker>();
 
-    //report REs only once per ide session and use lower log levels for known issues
-    private void reportRuntimeExceptionOnce(RuntimeException e) {
+    /**
+     * Report REs only once per ide session and use lower log levels for known issues
+     * 
+     * @return true if the exception has been logged and is visible in the IDE log
+     */
+    private boolean reportRuntimeExceptionOnce(RuntimeException e) {
         int hash = document.hashCode();
         hash = 21 * hash + e.getClass().hashCode();
         if(e.getMessage() != null) {
@@ -696,11 +701,12 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
             hash = 21 * hash + sw.toString().hashCode();
         }
 
+        Level level = isKnownProblem(e) ? Level.FINE : Level.INFO;
         Marker marker = new Marker(hash);
         if(REPORTED_RUNTIME_EXCEPTIONS.add(marker)) {
-            Level level = isKnownProblem(e) ? Level.FINE : Level.INFO;
             LOGGER.log(level, getDocumentInternalErrorMsg(), e);
         }
+        return LOGGER.isLoggable(level);
     }
 
     private static boolean isKnownProblem(RuntimeException e) {

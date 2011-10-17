@@ -136,8 +136,13 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
         backingFolder = folder;
         initAll(folder.getName(), false);
         putClientProperty("folder", folder); //NOI18N
-        if( UIManager.getBoolean( "NbMainWindow.showCustomBackground" ) ) //NOI18N
-            setOpaque( false);
+    }
+
+    @Override
+    public boolean isOpaque() {
+        if( null != UIManager.get("NbMainWindow.showCustomBackground") ) //NOI18N
+            return !UIManager.getBoolean("NbMainWindow.showCustomBackground"); //NOI18N
+        return super.isOpaque();
     }
     
     DataFolder getFolder() {

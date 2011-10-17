@@ -79,6 +79,7 @@ public class ExternalReferenceDataNode extends FilterNode {
     private String prefix=null;
     private static int counter=0;
     private ExternalReferenceDecorator decorator;
+    private boolean resolveThroughCatalog;
 
     /**
      * Creates a new instance of ExternalReferenceDataNode.
@@ -90,6 +91,10 @@ public class ExternalReferenceDataNode extends FilterNode {
         super(original, new Children(original, dec));
         this.decorator=dec;
        
+    }
+    
+    public void setResolveThroughCatalog(boolean resolve) {
+        this.resolveThroughCatalog = resolve;
     }
 
     public boolean canRename() {
@@ -236,6 +241,10 @@ public class ExternalReferenceDataNode extends FilterNode {
              return SchemaParser.getNamespace(fobj);
         }
         return null;
+    }
+
+    public boolean isResolveThroughCatalog() {
+        return resolveThroughCatalog;
     }
     
     public String getSchemaFileName(){

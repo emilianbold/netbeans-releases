@@ -42,8 +42,6 @@
 package org.netbeans.modules.css.editor.module.spi;
 
 import java.net.URL;
-import java.util.Collection;
-import javax.swing.Icon;
 
 /**
  * Represents a browser 

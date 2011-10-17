@@ -100,7 +100,9 @@ public abstract class GraphLayout<N,E> {
      */
     public final void removeGraphLayoutListener (GraphLayoutListener<N,E> listener) {
         synchronized (listeners) {
-            listeners.add (listener);
+            // .add replaced with .remove for fix to bug http://netbeans.org/bugzilla/show_bug.cgi?id=197502
+            // listeners.add (listener);
+            listeners.remove (listener);
         }
     }
 

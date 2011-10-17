@@ -83,6 +83,7 @@ import org.netbeans.modules.css.editor.properties.parser.GrammarElement;
 import org.netbeans.modules.css.editor.properties.parser.PropertyValue;
 import org.netbeans.modules.css.editor.properties.parser.PropertyModel;
 import org.netbeans.modules.css.editor.HtmlTags;
+import org.netbeans.modules.css.editor.URLRetriever;
 import org.netbeans.modules.css.editor.module.CssModuleSupport;
 import org.netbeans.modules.css.editor.module.spi.CompletionContext;
 import org.netbeans.modules.css.editor.module.spi.Property;
@@ -335,6 +336,13 @@ public class CssCompletion implements CodeCompletionHandler {
             Collection<Property> possibleProps = filterProperties(CssModuleSupport.getProperties(), prefix);
             completionProposals.addAll(Utilities.wrapProperties(possibleProps, snapshot.getOriginalOffset(node.from())));
 
+        } else if (node.type() == NodeType.recovery || node.type() == NodeType.error) {
+            Node parent = node.parent();
+            if(parent != null && parent.type() == NodeType.ruleSet) {
+                //in a garbage (may be for example a dash prefix in a ruleset
+                Collection<Property> possibleProps = filterProperties(CssModuleSupport.getProperties(), prefix);
+                completionProposals.addAll(Utilities.wrapProperties(possibleProps, caretOffset));
+            }
         } else if (node.type() == NodeType.ruleSet || node.type() == NodeType.declarations) {
             //1. in empty rule (NodeType.ruleSet)
             //h1 { | }
@@ -698,7 +706,7 @@ public class CssCompletion implements CodeCompletionHandler {
             return resolver.getHelp(property);
         } else if ( element instanceof ElementHandle.UrlHandle){
             try {
-                return resolver.getHelp(new URL(element.getName()));
+                return URLRetriever.getURLContentAndCache(new URL(element.getName()));
             }
             catch( MalformedURLException e ){
                 assert false;

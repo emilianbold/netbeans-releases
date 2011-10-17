@@ -99,15 +99,15 @@ ltr
 rtl
 End cursor position = 255
 [&q|, &quot;, &quot;, 313]
-? &qfr;
-? &qint;
-? &qopf;
-? &qprime;
-? &qscr;
-? &quaternions;
-? &quatint;
+픮 &qfr;
+⨌ &qint;
+핢 &qopf;
+⁗ &qprime;
+퓆 &qscr;
+ℍ &quaternions;
+⨖ &quatint;
 ? &quest;
-? &questeq;
+≟ &questeq;
 " &quot;
 End cursor position = 320
 [<b|, body, <body, 380]

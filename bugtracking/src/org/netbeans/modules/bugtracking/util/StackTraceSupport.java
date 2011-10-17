@@ -43,7 +43,6 @@
 package org.netbeans.modules.bugtracking.util;
 
 import java.awt.Color;
-import java.awt.Cursor;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.io.File;
@@ -380,66 +379,71 @@ class StackTraceSupport {
         return GlobalPathRegistry.getDefault().findResource(path);
     }
 
-    public static void register(JTextPane textPane) {
-        StyledDocument doc = textPane.getStyledDocument();
-        String comment = textPane.getText();
-        List<StackTracePosition> stacktraces = find(comment);
+    public static void register(final JTextPane textPane) {
+        final StyledDocument doc = textPane.getStyledDocument();
+        final String comment = textPane.getText();
+        final List<StackTracePosition> stacktraces = find(comment);
         if (!stacktraces.isEmpty()) {
-            Style defStyle = StyleContext.getDefaultStyleContext().getStyle(StyleContext.DEFAULT_STYLE);
-            Style hlStyle = doc.addStyle("regularBlue-stacktrace", defStyle); // NOI18N
-            hlStyle.addAttribute(HyperlinkSupport.STACKTRACE_ATTRIBUTE, new StackTraceAction());
-            StyleConstants.setForeground(hlStyle, Color.BLUE);
-            StyleConstants.setUnderline(hlStyle, true);
-
-            int last = 0;
-            textPane.setText(""); // NOI18N
-            for (StackTraceSupport.StackTracePosition stp : stacktraces) {
-                int start = stp.getStartOffset();
-                int end = stp.getEndOffset();
-
-                if (last < start) {
-                    try {
-                        doc.insertString(doc.getLength(), comment.substring(last, start), defStyle);
-                    } catch (BadLocationException ex) {
-                        BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
-                    }
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    underlineStacktraces(doc, textPane, stacktraces, comment);
+                    textPane.addMouseListener(getHyperlinkListener());
+                    textPane.addMouseMotionListener(getHyperlinkListener());
                 }
-                last = start;
-
-                // for each line skip leading whitespaces (look bad underlined)
-                boolean inStackTrace = (comment.charAt(start) > ' ');
-                for (int i = start; i < end; i++) {
-                    char ch = comment.charAt(i);
-                    if ((inStackTrace && ch == '\n') || (!inStackTrace && ch > ' ')) {
-                        try {
-                            doc.insertString(doc.getLength(), comment.substring(last, i), inStackTrace ? hlStyle : defStyle);
-                        } catch (BadLocationException ex) {
-                            BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
-                        }
-                        inStackTrace = !inStackTrace;
-                        last = i;
-                    }
-                }
-
-                if (last < end) {
-                    try {
-                        doc.insertString(doc.getLength(), comment.substring(last, end), inStackTrace ? hlStyle : defStyle);
-                    } catch (BadLocationException ex) {
-                        BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
-                    }
-                }
-                last = end;
-            }
-            try {
-                doc.insertString(doc.getLength(), comment.substring(last), defStyle);
-            } catch (BadLocationException ex) {
-                BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
-            }
-            textPane.addMouseListener(getHyperlinkListener());
-            textPane.addMouseMotionListener(getHyperlinkListener());
+            });
         }
     }
 
+    private static void underlineStacktraces(StyledDocument doc, JTextPane textPane, List<StackTracePosition> stacktraces, String comment) {
+        Style defStyle = StyleContext.getDefaultStyleContext().getStyle(StyleContext.DEFAULT_STYLE);
+        Style hlStyle = doc.addStyle("regularBlue-stacktrace", defStyle); // NOI18N
+        hlStyle.addAttribute(HyperlinkSupport.STACKTRACE_ATTRIBUTE, new StackTraceAction());
+        StyleConstants.setForeground(hlStyle, Color.BLUE);
+        StyleConstants.setUnderline(hlStyle, true);
+
+        int last = 0;
+        textPane.setText(""); // NOI18N
+        for (StackTraceSupport.StackTracePosition stp : stacktraces) {
+            int start = stp.getStartOffset();
+            int end = stp.getEndOffset();
+
+            if (last < start) {
+                insertString(doc, comment, last, start, defStyle);
+            }
+            last = start;
+
+            // for each line skip leading whitespaces (look bad underlined)
+            boolean inStackTrace = (comment.charAt(start) > ' ');
+            for (int i = start; i < end; i++) {
+                char ch = comment.charAt(i);
+                if ((inStackTrace && ch == '\n') || (!inStackTrace && ch > ' ')) {
+                    insertString(doc, comment, last, i, inStackTrace ? hlStyle : defStyle);
+                    inStackTrace = !inStackTrace;
+                    last = i;
+                }
+            }
+
+            if (last < end) {
+                insertString(doc, comment, last, end, inStackTrace ? hlStyle : defStyle);
+            }
+            last = end;
+        }
+        try {
+            doc.insertString(doc.getLength(), comment.substring(last), defStyle);
+        } catch (BadLocationException ex) {
+            BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
+        }
+    }
+      
+    private static void insertString(final StyledDocument doc, final String comment, final int last, final int start, final Style defStyle) {
+        try {
+            doc.insertString(doc.getLength(), comment.substring(last, start), defStyle);
+        } catch (BadLocationException ex) {
+            BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
+        }
+    }
+    
     private static MouseInputAdapter hyperlinkListener;
     private static MouseInputAdapter getHyperlinkListener() {
         if (hyperlinkListener == null) {

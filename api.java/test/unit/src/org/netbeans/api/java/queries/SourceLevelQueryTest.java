@@ -46,6 +46,7 @@ package org.netbeans.api.java.queries;
 
 import java.util.HashMap;
 import java.util.Map;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
@@ -101,8 +102,14 @@ public class SourceLevelQueryTest extends NbTestCase {
         assertEquals("1.3", SourceLevelQuery.getSourceLevel(f2));   //NOI18N
         assertEquals("1.5", SourceLevelQuery.getSourceLevel2(f1).getSourceLevel().toString());   //NOI18N
         assertTrue(SourceLevelQuery.getSourceLevel2(f1).supportsChanges());
-        assertEquals("1.3",SourceLevelQuery.getSourceLevel2(f2).getSourceLevel().toString());   //NOI18N
-        assertFalse(SourceLevelQuery.getSourceLevel2(f2).supportsChanges());
+        SourceLevelQuery.Result sourceLevel2 = SourceLevelQuery.getSourceLevel2(f2);
+        assertEquals("1.3",sourceLevel2.getSourceLevel().toString());   //NOI18N
+        assertFalse(sourceLevel2.supportsChanges());
+        ChangeListener dummy = new ChangeListener() {@Override public void stateChanged(ChangeEvent e) {}};
+        sourceLevel2.addChangeListener(dummy);
+        sourceLevel2.removeChangeListener(dummy);
+        LEVEL = "1.5";
+        assertEquals("1.5",sourceLevel2.getSourceLevel().toString());   //NOI18N
     }
 
     public static final class SLQ implements SourceLevelQueryImplementation {

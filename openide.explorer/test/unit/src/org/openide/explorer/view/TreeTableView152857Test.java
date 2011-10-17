@@ -54,6 +54,7 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.tree.TreeNode;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.explorer.ExplorerManager;
@@ -215,6 +216,7 @@ public class TreeTableView152857Test extends NbTestCase {
         d.setVisible(false);
     }
 
+    @RandomlyFails // NB-Core-Build #7155: row 1 vs. count 1 with UI javax.swing.plaf.metal.MetalTreeUI@1f94884 (from view.getTableValueAt(1))
     public void testSetChildren() throws InterruptedException {
         TestNode root = new TestNode(Children.LEAF, "root");
         TreeNode ta = Visualizer.findVisualizer(root);

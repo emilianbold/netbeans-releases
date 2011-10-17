@@ -65,6 +65,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 import javax.swing.text.BadLocationException;
@@ -105,7 +106,9 @@ public class FmtImports extends javax.swing.JPanel implements Runnable, ListSele
         buttonGroup.add(fqnRadioButton);
         singleClassImportsRadioButton.putClientProperty(OPTION_ID, useSingleClassImport);
         importInnerClassesCheckBox.putClientProperty(OPTION_ID, importInnerClasses);
+        starImportTresholdCheckBox.putClientProperty(OPTION_ID, allowConvertToStarImport);
         starImportTresholdSpinner.putClientProperty(OPTION_ID, countForUsingStarImport);
+        starStaticImportTresholdCheckBox.putClientProperty(OPTION_ID, allowConvertToStaticStarImport);
         startStaticImportTresholdSpinner.putClientProperty(OPTION_ID, countForUsingStaticStarImport);
         starImportPackagesTable.putClientProperty(OPTION_ID, packagesForStarImport);
         packageImportsRadioButton.putClientProperty(OPTION_ID, usePackageImport);
@@ -152,9 +155,9 @@ public class FmtImports extends javax.swing.JPanel implements Runnable, ListSele
         buttonGroup = new javax.swing.ButtonGroup();
         singleClassImportsRadioButton = new javax.swing.JRadioButton();
         importInnerClassesCheckBox = new javax.swing.JCheckBox();
-        starImportTresholdLabel = new javax.swing.JLabel();
+        starImportTresholdCheckBox = new javax.swing.JCheckBox();
         starImportTresholdSpinner = new javax.swing.JSpinner();
-        starStaticImportTrasholdLabel = new javax.swing.JLabel();
+        starStaticImportTresholdCheckBox = new javax.swing.JCheckBox();
         startStaticImportTresholdSpinner = new javax.swing.JSpinner();
         starImportPackagesLabel = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
@@ -185,13 +188,21 @@ public class FmtImports extends javax.swing.JPanel implements Runnable, ListSele
 
         org.openide.awt.Mnemonics.setLocalizedText(importInnerClassesCheckBox, org.openide.util.NbBundle.getMessage(FmtImports.class, "LBL_imp_importInnerClasses")); // NOI18N
 
-        starImportTresholdLabel.setLabelFor(starImportTresholdSpinner);
-        org.openide.awt.Mnemonics.setLocalizedText(starImportTresholdLabel, org.openide.util.NbBundle.getMessage(FmtImports.class, "LBL_imp_importTreshold")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(starImportTresholdCheckBox, org.openide.util.NbBundle.getMessage(FmtImports.class, "LBL_imp_importTreshold")); // NOI18N
+        starImportTresholdCheckBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                starImportTresholdCheckBoxActionPerformed(evt);
+            }
+        });
 
         starImportTresholdSpinner.setModel(new javax.swing.SpinnerNumberModel(Integer.valueOf(0), Integer.valueOf(0), null, Integer.valueOf(1)));
 
-        starStaticImportTrasholdLabel.setLabelFor(startStaticImportTresholdSpinner);
-        org.openide.awt.Mnemonics.setLocalizedText(starStaticImportTrasholdLabel, org.openide.util.NbBundle.getMessage(FmtImports.class, "LBL_imp_staticImportTreshold")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(starStaticImportTresholdCheckBox, org.openide.util.NbBundle.getMessage(FmtImports.class, "LBL_imp_staticImportTreshold")); // NOI18N
+        starStaticImportTresholdCheckBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                starStaticImportTresholdCheckBoxActionPerformed(evt);
+            }
+        });
 
         startStaticImportTresholdSpinner.setModel(new javax.swing.SpinnerNumberModel(Integer.valueOf(0), Integer.valueOf(0), null, Integer.valueOf(1)));
 
@@ -199,6 +210,8 @@ public class FmtImports extends javax.swing.JPanel implements Runnable, ListSele
         org.openide.awt.Mnemonics.setLocalizedText(starImportPackagesLabel, org.openide.util.NbBundle.getMessage(FmtImports.class, "LBL_imp_starImportPackages")); // NOI18N
 
         starImportPackagesTable.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        starImportPackagesTable.getTableHeader().setResizingAllowed(false);
+        starImportPackagesTable.getTableHeader().setReorderingAllowed(false);
         jScrollPane1.setViewportView(starImportPackagesTable);
 
         org.openide.awt.Mnemonics.setLocalizedText(addStarImportPackageButton, org.openide.util.NbBundle.getMessage(FmtImports.class, "LBL_imp_add")); // NOI18N
@@ -238,6 +251,8 @@ public class FmtImports extends javax.swing.JPanel implements Runnable, ListSele
 
         org.openide.awt.Mnemonics.setLocalizedText(importLayoutLabel, org.openide.util.NbBundle.getMessage(FmtImports.class, "LBL_imp_importLayout")); // NOI18N
 
+        importLayoutTable.getTableHeader().setResizingAllowed(false);
+        importLayoutTable.getTableHeader().setReorderingAllowed(false);
         jScrollPane2.setViewportView(importLayoutTable);
 
         org.openide.awt.Mnemonics.setLocalizedText(addButton, org.openide.util.NbBundle.getMessage(FmtImports.class, "LBL_imp_add")); // NOI18N
@@ -279,16 +294,19 @@ public class FmtImports extends javax.swing.JPanel implements Runnable, ListSele
                     .addComponent(singleClassImportsRadioButton)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 279, Short.MAX_VALUE)
+                            .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
                             .addComponent(separateStaticImportsCheckBox)
                             .addGroup(layout.createSequentialGroup()
                                 .addGap(21, 21, 21)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 258, Short.MAX_VALUE)
-                                    .addComponent(starImportPackagesLabel)
-                                    .addComponent(starImportTresholdLabel)
-                                    .addComponent(starStaticImportTrasholdLabel)
-                                    .addComponent(importInnerClassesCheckBox))))
+                                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addComponent(starImportTresholdCheckBox)
+                                            .addComponent(starImportPackagesLabel)
+                                            .addComponent(importInnerClassesCheckBox)
+                                            .addComponent(starStaticImportTresholdCheckBox))
+                                        .addGap(0, 0, Short.MAX_VALUE)))))
                         .addGap(6, 6, 6)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
@@ -305,7 +323,7 @@ public class FmtImports extends javax.swing.JPanel implements Runnable, ListSele
                     .addComponent(packageImportsRadioButton)
                     .addComponent(fqnRadioButton)
                     .addComponent(separateGroupsCheckBox)
-                    .addComponent(jSeparator1, javax.swing.GroupLayout.DEFAULT_SIZE, 393, Short.MAX_VALUE))
+                    .addComponent(jSeparator1))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -316,12 +334,12 @@ public class FmtImports extends javax.swing.JPanel implements Runnable, ListSele
                 .addComponent(importInnerClassesCheckBox)
                 .addGap(2, 2, 2)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(starImportTresholdLabel)
-                    .addComponent(starImportTresholdSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(starImportTresholdSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(starImportTresholdCheckBox))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(starStaticImportTrasholdLabel)
-                    .addComponent(startStaticImportTresholdSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(startStaticImportTresholdSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(starStaticImportTresholdCheckBox))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(starImportPackagesLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -381,6 +399,9 @@ public class FmtImports extends javax.swing.JPanel implements Runnable, ListSele
     private void removeStarImportPackageButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeStarImportPackageButtonActionPerformed
         int row = starImportPackagesTable.getSelectedRow();
         if (row >= 0) {
+            TableCellEditor cellEditor = starImportPackagesTable.getCellEditor();
+            if (cellEditor != null)
+                cellEditor.cancelCellEditing();
             ((DefaultTableModel)starImportPackagesTable.getModel()).removeRow(row);
         }
     }//GEN-LAST:event_removeStarImportPackageButtonActionPerformed
@@ -416,6 +437,9 @@ public class FmtImports extends javax.swing.JPanel implements Runnable, ListSele
     private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeButtonActionPerformed
         int row = importLayoutTable.getSelectedRow();
         if (row >= 0) {
+            TableCellEditor cellEditor = importLayoutTable.getCellEditor();
+            if (cellEditor != null)
+                cellEditor.cancelCellEditing();
             ((DefaultTableModel)importLayoutTable.getModel()).removeRow(row);
         }
     }//GEN-LAST:event_removeButtonActionPerformed
@@ -430,13 +454,21 @@ public class FmtImports extends javax.swing.JPanel implements Runnable, ListSele
         importLayoutTable.setModel(newModel);
         setImportLayoutTableColumnsWidth();
     }//GEN-LAST:event_separateStaticImportsCheckBoxActionPerformed
+
+    private void starImportTresholdCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_starImportTresholdCheckBoxActionPerformed
+        starImportTresholdSpinner.setEnabled(starImportTresholdCheckBox.isSelected());
+    }//GEN-LAST:event_starImportTresholdCheckBoxActionPerformed
+
+    private void starStaticImportTresholdCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_starStaticImportTresholdCheckBoxActionPerformed
+        startStaticImportTresholdSpinner.setEnabled(starStaticImportTresholdCheckBox.isSelected());
+    }//GEN-LAST:event_starStaticImportTresholdCheckBoxActionPerformed
         
     private void enableControls(boolean b) {
         importInnerClassesCheckBox.setEnabled(b);
-        starImportTresholdLabel.setEnabled(b);
-        starImportTresholdSpinner.setEnabled(b);
-        starStaticImportTrasholdLabel.setEnabled(b);
-        startStaticImportTresholdSpinner.setEnabled(b);
+        starImportTresholdCheckBox.setEnabled(b);
+        starImportTresholdSpinner.setEnabled(b && starImportTresholdCheckBox.isSelected());
+        starStaticImportTresholdCheckBox.setEnabled(b);
+        startStaticImportTresholdSpinner.setEnabled(b && starStaticImportTresholdCheckBox.isSelected());
         starImportPackagesLabel.setEnabled(b);
         starImportPackagesTable.setEnabled(b);
         addStarImportPackageButton.setEnabled(b);
@@ -469,7 +501,7 @@ public class FmtImports extends javax.swing.JPanel implements Runnable, ListSele
             int colWidth = importLayoutTable.getTableHeader().getDefaultRenderer().getTableCellRendererComponent(null, column.getHeaderValue(), false, false, 0, 0).getPreferredSize().width;
             column.setPreferredWidth(colWidth);
             importLayoutTable.getColumnModel().getColumn(1).setPreferredWidth(tableWidth - colWidth);            
-        }        
+        }
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -493,9 +525,9 @@ public class FmtImports extends javax.swing.JPanel implements Runnable, ListSele
     private javax.swing.JRadioButton singleClassImportsRadioButton;
     private javax.swing.JLabel starImportPackagesLabel;
     private javax.swing.JTable starImportPackagesTable;
-    private javax.swing.JLabel starImportTresholdLabel;
+    private javax.swing.JCheckBox starImportTresholdCheckBox;
     private javax.swing.JSpinner starImportTresholdSpinner;
-    private javax.swing.JLabel starStaticImportTrasholdLabel;
+    private javax.swing.JCheckBox starStaticImportTresholdCheckBox;
     private javax.swing.JSpinner startStaticImportTresholdSpinner;
     // End of variables declaration//GEN-END:variables
 

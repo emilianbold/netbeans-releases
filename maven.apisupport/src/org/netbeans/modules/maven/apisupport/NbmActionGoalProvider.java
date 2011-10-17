@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.maven.apisupport;
 
-import java.io.File;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Collections;
@@ -90,11 +89,6 @@ public class NbmActionGoalProvider implements MavenActionsProvider {
             assert in != null : "no instream for " + path; //NOI18N
             return in;
         }
-
-        @Override
-        public boolean isActionEnable(String action, Project project, Lookup lookup) {
-            return isActionEnable(action, project, lookup);
-        }
     };
     private AbstractMavenActionsProvider ideDelegate = new AbstractMavenActionsProvider() {
 
@@ -103,11 +97,6 @@ public class NbmActionGoalProvider implements MavenActionsProvider {
             InputStream in = getClass().getResourceAsStream(path);
             assert in != null : "no instream for " + path; //NOI18N
             return in;
-        }
-
-        @Override
-        public boolean isActionEnable(String action, Project project, Lookup lookup) {
-            return isActionEnable(action, project, lookup);
         }
     };
 
@@ -162,7 +151,7 @@ public class NbmActionGoalProvider implements MavenActionsProvider {
                     DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbmActionGoalProvider_target_platform_not_running(), NotifyDescriptor.WARNING_MESSAGE));
                     return null;
                 }
-                RunConfig rc = createConfig(actionName, app, lookup, platformDelegate);
+                RunConfig rc = platformDelegate.createConfigForDefaultAction(actionName, app, lookup);
                 assert rc != null;
                 rc.setPreExecution(RunUtils.createRunConfig(FileUtil.toFile(project.getProjectDirectory()), project, rc.getTaskDisplayName(), Collections.singletonList("package")));
                 MavenProject prj = project.getLookup().lookup(NbMavenProject.class).getMavenProject();
@@ -182,10 +171,10 @@ public class NbmActionGoalProvider implements MavenActionsProvider {
             return null;
         }
         if (isPlatformApp(project)) {
-            return createConfig(actionName, project, lookup, platformDelegate);
+            return platformDelegate.createConfigForDefaultAction(actionName, project, lookup);
         }
         if (hasNbm(project)) {
-            return createConfig(actionName, project, lookup, ideDelegate);
+            return ideDelegate.createConfigForDefaultAction(actionName, project, lookup);
         }
         return null;
     }
@@ -195,7 +184,7 @@ public class NbmActionGoalProvider implements MavenActionsProvider {
         if (RELOAD_TARGET.equals(actionName) && hasNbm(project)) {
             Project app = MavenNbModuleImpl.findAppProject(project);
             if (app != null) {
-                return createMapping(actionName, app, platformDelegate);
+                return platformDelegate.getMappingForAction(actionName, app);
             }
         }
         if (!ActionProvider.COMMAND_RUN.equals(actionName) &&
@@ -205,34 +194,12 @@ public class NbmActionGoalProvider implements MavenActionsProvider {
             return null;
         }
         if (isPlatformApp(project)) {
-            return createMapping(actionName, project, platformDelegate);
+            return platformDelegate.getMappingForAction(actionName, project);
         }
         if (hasNbm(project)) {
-            return createMapping(actionName, project, ideDelegate);
+            return ideDelegate.getMappingForAction(actionName, project);
         }
         return null;
-    }
-
-    private RunConfig createConfig(String actionName, Project project, Lookup lookup, AbstractMavenActionsProvider delegate) {
-        RunConfig conf = delegate.createConfigForDefaultAction(actionName, project, lookup);
-        if (conf != null && hasNbm(project)) { //not for platform app anymore
-            NbMavenProject mp = project.getLookup().lookup(NbMavenProject.class);
-            if (mp.getMavenProject().getProperties().getProperty(MavenNbModuleImpl.PROP_NETBEANS_INSTALL) == null) {
-                conf.setProperty(MavenNbModuleImpl.PROP_NETBEANS_INSTALL, guessNetbeansInstallation());
-            }
-        }
-        return conf;
-    }
-
-    private NetbeansActionMapping createMapping(String actionName, Project project, AbstractMavenActionsProvider delegate) {
-        NetbeansActionMapping mapp = delegate.getMappingForAction(actionName, project);
-        if (mapp != null &&hasNbm(project)) { //not for platform app anymore
-            NbMavenProject mp = project.getLookup().lookup(NbMavenProject.class);
-            if (mp.getMavenProject().getProperties().getProperty(MavenNbModuleImpl.PROP_NETBEANS_INSTALL) == null) {
-                mapp.getProperties().setProperty(MavenNbModuleImpl.PROP_NETBEANS_INSTALL, guessNetbeansInstallation());
-            }
-        }
-        return mapp;
     }
 
     private boolean hasNbm(Project project) {
@@ -255,13 +222,6 @@ public class NbmActionGoalProvider implements MavenActionsProvider {
 //            }
 //        }
         return hasNbm;
-    }
-
-    private String guessNetbeansInstallation() {
-        //TODO netbeans.home is obsolete.. what to replace it with though?
-        File fil = new File(System.getProperty("netbeans.home")); //NOI18N
-        fil = FileUtil.normalizeFile(fil);
-        return fil.getParentFile().getAbsolutePath(); //NOI18N
     }
 
     private boolean isPlatformApp(Project p) {

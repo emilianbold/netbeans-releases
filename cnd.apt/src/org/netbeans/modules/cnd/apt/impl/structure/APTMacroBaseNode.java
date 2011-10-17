@@ -98,6 +98,12 @@ public abstract class APTMacroBaseNode extends APTTokenBasedNode
 
     @Override
     public boolean accept(APTFile curFile,APTToken token) {
+        if (APTUtils.isEndDirectiveToken(token.getType())) {
+            return false;
+        }
+        if (APTUtils.isCommentToken(token)) {
+            return true;
+        }
         if (APTUtils.isID(token)) {
             if (macroName != EMPTY_NAME) {
                 // init macro name only once
@@ -108,12 +114,23 @@ public abstract class APTMacroBaseNode extends APTTokenBasedNode
                     APTUtils.LOG.log(Level.WARNING, "{0}, line {1}: warning: extra tokens at end of {2} directive", // NOI18N
                             new Object[] {APTTraceUtils.toFileString(curFile), getToken().getLine(), getToken().getText().trim()} ); // NOI18N
                 }
+                return false;
             } else {
                 this.macroName = token;
             }
+        } else {
+            // everything else is not expected here
+            if (DebugUtils.STANDALONE) {
+                System.err.printf("%s, line %d: warning: unexpected token %s\n", // NOI18N
+                        APTTraceUtils.toFileString(curFile), getToken().getLine(), token.getText().trim()); // NOI18N
+            } else {
+                APTUtils.LOG.log(Level.WARNING, "{0}, line {1}: warning: unexpected token {2}", // NOI18N
+                        new Object[]{APTTraceUtils.toFileString(curFile), getToken().getLine(), token.getText().trim()}); // NOI18N
+            }
+            return false;
         }
         // eat all till END_PREPROC_DIRECTIVE
-        return !APTUtils.isEndDirectiveToken(token.getType());
+        return true;
     }
 
     @Override

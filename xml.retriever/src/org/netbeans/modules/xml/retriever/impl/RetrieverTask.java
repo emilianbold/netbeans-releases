@@ -223,6 +223,11 @@ public class RetrieverTask {
         int index = curAddr.lastIndexOf('/'); //NOI18N
         if(index != -1){
             curFileName = curAddr.substring(index+1);
+            // typically directores end with /. It's possible that some othe URI
+            // in that dir will be used -> clash between dirr and file name.
+            if ("".equals(curFileName)) {
+                curFileName = "index";
+            }
         }else{
             curFileName = curAddr;
         }
@@ -288,6 +293,11 @@ public class RetrieverTask {
         }
         resultStr = convertAllSpecialChars(resultStr);
         resultStr = rootFolderStr+"/"+resultStr;
+        // trailing slash indicates a possible directory; subsequent retrievals
+        // from that directory will clash on parent dir/file name -- experienced on WSDL schemas
+        if (resultStr.endsWith("/")) {
+            resultStr = resultStr + "index";
+        }
         try {
             return new File(new URI(resultStr).normalize());
         } catch (URISyntaxException ex) {

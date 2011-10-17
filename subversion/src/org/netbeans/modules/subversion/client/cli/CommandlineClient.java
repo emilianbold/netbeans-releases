@@ -82,7 +82,9 @@ import org.netbeans.modules.subversion.client.cli.commands.StatusCommand.Status;
 import org.netbeans.modules.subversion.client.cli.commands.SwitchToCommand;
 import org.netbeans.modules.subversion.client.cli.commands.UpdateCommand;
 import org.netbeans.modules.subversion.client.cli.commands.VersionCommand;
+import org.netbeans.modules.subversion.client.parser.EntriesCache;
 import org.netbeans.modules.subversion.client.parser.LocalSubversionException;
+import org.netbeans.modules.subversion.client.parser.ParserSvnStatus;
 import org.netbeans.modules.subversion.client.parser.SvnWcParser;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.tigris.subversion.svnclientadapter.AbstractClientAdapter;
@@ -824,18 +826,40 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
             try {
                 return wcParser.getSingleStatus(file);
             } catch (LocalSubversionException ex) {
-                throw new SVNClientException(ex);
-            }
-        } else {
-            try {
-                ISVNStatus[] statuses = getStatus(new File[]{file});
-                return statuses.length > 0 ? statuses[0] : null;
-            } catch (SVNClientException ex) {
-                if (!supportedMetadataFormat && SvnClientExceptionHandler.isUnversionedResource(ex.getMessage())) {
-                    return new SVNStatusUnversioned(file);
+                if (ex.getCause() != null && EntriesCache.WC17FORMAT.equals(ex.getCause().getMessage())) {
+                    // probably 1.7 WC, need to run command
                 } else {
-                    throw ex;
+                    throw new SVNClientException(ex);
                 }
+            }
+        }
+        try {
+            ISVNStatus[] statuses = getStatus(new File[]{file});
+            return statuses.length > 0 ? statuses[0] : new ParserSvnStatus(
+                    file,                                
+                    null,
+                    0,
+                    "unknown",                            // NOI18N   
+                    SVNStatusKind.UNVERSIONED.toString(),
+                    SVNStatusKind.UNVERSIONED.toString(),
+                    null,
+                    0,
+                    null,
+                    false,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    false,
+                    null);
+        } catch (SVNClientException ex) {
+            if (SvnClientExceptionHandler.isUnversionedResource(ex.getMessage())) {
+                return new SVNStatusUnversioned(file);
+            } else {
+                throw ex;
             }
         }
     }
@@ -846,11 +870,14 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
             try {
                 return wcParser.getStatus(file, descend, getAll);
             } catch (LocalSubversionException ex) {
-                throw new SVNClientException(ex);
+                if (ex.getCause() != null && EntriesCache.WC17FORMAT.equals(ex.getCause().getMessage())) {
+                    // probably 1.7 WC, need to run command
+                } else {
+                    throw new SVNClientException(ex);
+                }
             }
-        } else {
-            return getStatus(file, descend, getAll, false, true);
         }
+        return getStatus(file, descend, getAll, false, true);
     }
 
     @Override
@@ -859,18 +886,21 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
             try {
                 return wcParser.getInfoFromWorkingCopy(file);
             } catch (LocalSubversionException ex) {
-                throw new SVNClientException(ex);
-            }
-        } else {
-            try {
-                ISVNInfo[] infos = getInfo(new File[] { file }, null, null);
-                return infos.length > 0 ? infos[0] : null;
-            } catch (SVNClientException ex) {
-                if (!supportedMetadataFormat && SvnClientExceptionHandler.isNodeNotFound(ex.getMessage())) {
-                    return wcParser.getUnknownInfo(file);
+                if (ex.getCause() != null && EntriesCache.WC17FORMAT.equals(ex.getCause().getMessage())) {
+                    // probably 1.7 WC, need to run command
                 } else {
-                    throw ex;
+                    throw new SVNClientException(ex);
                 }
+            }
+        }
+        try {
+            ISVNInfo[] infos = getInfo(new File[] { file }, null, null);
+            return infos.length > 0 ? infos[0] : null;
+        } catch (SVNClientException ex) {
+            if (SvnClientExceptionHandler.isNodeNotFound(ex.getMessage())) {
+                return wcParser.getUnknownInfo(file);
+            } else {
+                throw ex;
             }
         }
     }

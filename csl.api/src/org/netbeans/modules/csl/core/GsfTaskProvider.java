@@ -52,6 +52,7 @@ import java.util.List;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
@@ -167,7 +168,7 @@ public final class GsfTaskProvider extends PushTaskScanner  {
         return sb.toString ();
     }
 
-    private static final Set<RequestProcessor.Task> TASKS = new HashSet<RequestProcessor.Task>();
+    private static final Map<RequestProcessor.Task,Work> TASKS = new HashMap<RequestProcessor.Task,Work>();
     private static boolean clearing;
     private static final RequestProcessor WORKER = new RequestProcessor("CSL Task Provider"); //NOI18N
 
@@ -175,7 +176,7 @@ public final class GsfTaskProvider extends PushTaskScanner  {
         synchronized (TASKS) {
             final RequestProcessor.Task task = WORKER.post(w);
 
-            TASKS.add(task);
+            TASKS.put(task,w);
             task.addTaskListener(new TaskListener() {
                 public void taskFinished(org.openide.util.Task task) {
                     synchronized (TASKS) {
@@ -195,8 +196,9 @@ public final class GsfTaskProvider extends PushTaskScanner  {
         synchronized (TASKS) {
             clearing = true;
             try {
-                for (RequestProcessor.Task t : TASKS) {
-                    t.cancel();
+                for (Map.Entry<RequestProcessor.Task,Work> t : TASKS.entrySet()) {
+                    t.getKey().cancel();
+                    t.getValue().cancel();
                 }
                 TASKS.clear();
             } finally {
@@ -209,6 +211,7 @@ public final class GsfTaskProvider extends PushTaskScanner  {
         private final FileObject file;
         private final Project project;
         private final Callback callback;
+        private final AtomicBoolean canceled = new AtomicBoolean();
 
         public Work(FileObject file, Callback callback) {
             Parameters.notNull("file", file); //NOI18N
@@ -228,7 +231,9 @@ public final class GsfTaskProvider extends PushTaskScanner  {
 
         public void run() {
             Collection<? extends IndexResult> results = null;
-
+            if (isCanceled()) {
+                return;
+            }
             if (file != null) {
                 Collection<FileObject> roots = QuerySupport.findRoots (
                     file,
@@ -236,7 +241,6 @@ public final class GsfTaskProvider extends PushTaskScanner  {
                     Collections.<String> emptyList (),
                     Collections.<String> emptyList ()
                 );
-                
                 String relativePath = null;
                 for(FileObject root : roots) {
                     if (null != (relativePath = FileUtil.getRelativePath(root, file))) {
@@ -252,6 +256,9 @@ public final class GsfTaskProvider extends PushTaskScanner  {
                             TLIndexerFactory.INDEXER_VERSION,
                             roots.toArray (new FileObject [roots.size ()])
                         );
+                        if (isCanceled()) {
+                            return;
+                        }
                         results = querySupport.query("_sn", relativePath, Kind.EXACT); //NOI18N
                     } catch (IOException ioe) {
                         LOG.log(Level.WARNING, null, ioe);
@@ -270,6 +277,9 @@ public final class GsfTaskProvider extends PushTaskScanner  {
                         TLIndexerFactory.INDEXER_VERSION,
                         roots.toArray (new FileObject [roots.size ()])
                     );
+                    if (isCanceled()) {
+                        return;
+                    }
                     // search for all documents in the roots
                     results = querySupport.query ("_sn", "", Kind.PREFIX); //NOI18N
                 } catch (IOException ioe) {
@@ -277,9 +287,17 @@ public final class GsfTaskProvider extends PushTaskScanner  {
                 }
             }
 
-            if (results != null) {
+            if (results != null && !isCanceled()) {
                 pushTasks(results, callback);
             }
+        }
+
+        public void cancel() {
+            canceled.set(true);
+        }
+
+        private boolean isCanceled() {
+            return canceled.get();
         }
 
         private static void pushTasks(Collection<? extends IndexResult> results, Callback callback) {
