@@ -57,6 +57,10 @@ public class TooltipTestCase extends CompletionBaseTestCase {
         super.performTest("file.cpp", 13, 17);
     }
 
+    public void testTooltip2() throws Exception {
+        super.performTest("file.cpp", 14, 20);
+    }
+    
     @Override
     protected void performTest(String source, int lineIndex, int colIndex, String textToInsert, int offsetAfterInsertion, String goldenFileName, String toPerformItemRE, String goldenFileName2) throws Exception {
         super.performTest(source, lineIndex, colIndex, textToInsert, offsetAfterInsertion, goldenFileName, toPerformItemRE, goldenFileName2, true);

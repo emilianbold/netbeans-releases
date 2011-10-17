@@ -11,5 +11,6 @@ void zoo(int i, int j) {
 
 int main() {
     zoo(foo(1), bar());
+    zoo(foo(1), ((1)));
     return 0;
 }

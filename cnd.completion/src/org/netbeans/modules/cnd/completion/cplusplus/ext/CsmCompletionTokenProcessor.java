@@ -89,12 +89,9 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
     // isMacro callback
     private MacroCallback macroCallback = null;
     
-    private boolean tooltip;
-
-    CsmCompletionTokenProcessor(int endScanOffset, int lastSeparatorOffset, boolean tooltip) {
+    CsmCompletionTokenProcessor(int endScanOffset, int lastSeparatorOffset) {
         this.endScanOffset = endScanOffset;
         this.lastSeparatorOffset = lastSeparatorOffset;
-        this.tooltip = tooltip;
     }
 
     /**
@@ -2269,7 +2266,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
     @SuppressWarnings("fallthrough")
     @Override
     public void end(int offset, int lastTokenOffset) {
-        if (lastValidTokenID != null && !tooltip) {
+        if (lastValidTokenID != null) {
             // if space or comment occurs as last token
             // add empty variable to save last position
             switch (lastValidTokenID) {
@@ -2347,13 +2344,6 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
             CsmCompletionExpression top2 = peekExp2();
             int top2ID = getValidExpID(top2);
             if (top != null) {
-                if(tooltip) {
-                    if(getValidExpID(top2) == METHOD_OPEN && getValidExpID(top) != METHOD_OPEN) {
-                        popExp();
-                        top2.addParameter(top);
-                        reScan = true;
-                    }
-                }
                 switch (getValidExpID(top)) {
                     case VARIABLE:
                         switch (top2ID) {
