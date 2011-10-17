@@ -172,6 +172,16 @@ public class MenuEditLayer extends JPanel {
         MouseInputAdapter mia = new GlassLayerMouseListener();
         glassLayer.addMouseListener(mia);
         glassLayer.addMouseMotionListener(mia);
+        glassLayer.addKeyListener(new KeyAdapter() {
+
+            @Override
+            public void keyPressed(KeyEvent e) {
+                // #133628: user wants to cancel the action so deselect menu-related component in the palette
+                if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+                    dragop.fastEnd();
+                }
+            }
+        });
         configureSelectionListener();
     }
     
@@ -323,14 +333,6 @@ public class MenuEditLayer extends JPanel {
         if(keyboardMenuNavigator == null) {
             keyboardMenuNavigator = new KeyboardMenuNavigator(this);
             glassLayer.addKeyListener(keyboardMenuNavigator);
-            glassLayer.addKeyListener(new KeyAdapter() {
-                @Override
-                public void keyPressed(KeyEvent e) {
-                    if(e.getKeyCode() == KeyEvent.VK_ESCAPE) {
-                        dragop.fastEnd();
-                    }
-                }                
-            });
         }
     }
     
@@ -1421,7 +1423,12 @@ public class MenuEditLayer extends JPanel {
             }
             // drag drag ops
             if(dragop.isStarted()) {
-                dragop.end(e.getPoint());
+                if (SwingUtilities.isRightMouseButton(e)) {
+                    // #133628: user wants to cancel the drop so deselect menu-related component in the palette
+                    dragop.fastEnd();
+                } else if (SwingUtilities.isLeftMouseButton(e)) {
+                    dragop.end(e.getPoint());
+                }
                 return;
             }
 
