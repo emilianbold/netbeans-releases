@@ -280,8 +280,15 @@ public abstract class LexerInputOperation<T extends TokenId> {
         }
         return null;
     }
-    
+
+    private void checkTokenIdNonNull(T id) {
+        if (id == null) {
+            throw new IllegalArgumentException("Token id must not be null. Fix lexer " + lexer); // NOI18N
+        }
+    }
+
     public AbstractToken<T> createToken(T id, int length) {
+        checkTokenIdNonNull(id);
         logTokenContent("createToken", id, length);
         assignTokenLength(length);
         AbstractToken<T> token;
@@ -317,6 +324,7 @@ public abstract class LexerInputOperation<T extends TokenId> {
         if (partType == PartType.COMPLETE)
             return createToken(id, length);
 
+        checkTokenIdNonNull(id);
         return createPropertyToken(id, length, null, partType);
     }
 
