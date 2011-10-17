@@ -1450,14 +1450,14 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         public String getCustomInsertTemplate() {
             StringBuilder builder = new StringBuilder();
             builder.append(getName());
-            builder.append("(${cursor});"); // NOI18N
+            builder.append("(${cursor})"); // NOI18N
             return builder.toString();
         }
 
         @Override
         public String getLhsHtml(HtmlFormatter formatter) {
             prependName(formatter);
-            formatter.appendText("();"); // NOI18N
+            formatter.appendText("()"); // NOI18N
             return formatter.getText();
         }
     }
