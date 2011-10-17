@@ -177,7 +177,6 @@ public class CssCompletion implements CodeCompletionHandler {
         CssTokenId tokenNodeTokenId = tokenNode.type() == NodeType.token ? NodeUtil.getTokenNodeTokenId(tokenNode) : null;
         
         Node node = NodeUtil.findNonTokenNodeAtOffset(root, astCaretOffset);
-        NodeType originalNodeKind = node.type();
 //        if (node.type() == NodeType.error) {
 //            node = node.parent();
 //            if (node == null) {
@@ -219,8 +218,10 @@ public class CssCompletion implements CodeCompletionHandler {
         //In such case the prefix is empty and the cc would offer all 
         //possible values there
         
-        if(node.type() == NodeType.cssClass || 
-                (unmappableClassOrId || originalNodeKind == NodeType.error) && prefix.length() == 1 && prefix.charAt(0) == '.') {
+        NodeType nodeType = node.type();
+        
+        if(nodeType == NodeType.cssClass || 
+                (unmappableClassOrId || nodeType == NodeType.error) && prefix.length() == 1 && prefix.charAt(0) == '.') {
             //complete class selectors
             if(file != null) {
                 CssProjectSupport sup = CssProjectSupport.findFor(file);
@@ -261,8 +262,8 @@ public class CssCompletion implements CodeCompletionHandler {
                 }
             }
         } else if (prefix.length() > 0 && (node.type() == NodeType.cssId
-                || (unmappableClassOrId || originalNodeKind == NodeType.error /*||
-                originalNodeKind == NodeType.JJTERROR_SKIPBLOCK*/) && prefix.charAt(0) == '#')) {
+                || (unmappableClassOrId || nodeType == NodeType.error /*||
+                nodeType == NodeType.JJTERROR_SKIPBLOCK*/) && prefix.charAt(0) == '#')) {
             //complete class selectors
             if(file != null) {
                 CssProjectSupport sup = CssProjectSupport.findFor(file);
@@ -306,7 +307,7 @@ public class CssCompletion implements CodeCompletionHandler {
             }
         } else if (NodeUtil.isOfType(node, NodeType.root, NodeType.styleSheet, NodeType.bodylist)
                 || 
-                node.type() == NodeType.error && NodeUtil.isOfType(node.parent(), NodeType.root, NodeType.styleSheet, NodeType.bodylist)) {
+                nodeType == NodeType.error && NodeUtil.isOfType(node.parent(), NodeType.root, NodeType.styleSheet, NodeType.bodylist)) {
             /* somewhere between rules, in an empty or very broken file, between rules */
             List<CompletionProposal> all = new ArrayList<CompletionProposal>();
             //complete at keywords without prefix
@@ -315,10 +316,10 @@ public class CssCompletion implements CodeCompletionHandler {
             all.addAll(completeHtmlSelectors(prefix, offset));
             completionProposals.addAll(all);
 
-        } else if (node.type() == NodeType.media /*|| node.type() == NodeType.JJTMEDIARULELIST*/) {
+        } else if (nodeType == NodeType.media /*|| nodeType == NodeType.JJTMEDIARULELIST*/) {
             completionProposals.addAll(completeHtmlSelectors(prefix, caretOffset));
 
-        } else if (node.type() == NodeType.imports || node.type() == NodeType.media || node.type() == NodeType.page || node.type() == NodeType.charSet/* || node.type() == NodeType.JJTFONTFACERULE*/) {
+        } else if (nodeType == NodeType.imports || nodeType == NodeType.media || nodeType == NodeType.page || nodeType == NodeType.charSet/* || nodeType == NodeType.JJTFONTFACERULE*/) {
             //complete at keywords with prefix - parse tree OK
             if (tokenFound) {
                 TokenId id = ts.token().id();
@@ -331,19 +332,21 @@ public class CssCompletion implements CodeCompletionHandler {
                 }
             }
 
-        } else if (node.type() == NodeType.property && (prefix.length() > 0 || astCaretOffset == node.from())) {
+        } else if (nodeType == NodeType.property && (prefix.length() > 0 || astCaretOffset == node.from())) {
             //css property name completion with prefix
             Collection<Property> possibleProps = filterProperties(CssModuleSupport.getProperties(), prefix);
             completionProposals.addAll(Utilities.wrapProperties(possibleProps, snapshot.getOriginalOffset(node.from())));
 
-        } else if (node.type() == NodeType.recovery || node.type() == NodeType.error) {
+        } else if (nodeType == NodeType.recovery || nodeType == NodeType.error) {
             Node parent = node.parent();
-            if(parent != null && parent.type() == NodeType.ruleSet) {
+            if(parent != null && ( parent.type() == NodeType.ruleSet || parent.type() == NodeType.moz_document)) {
                 //in a garbage (may be for example a dash prefix in a ruleset
                 Collection<Property> possibleProps = filterProperties(CssModuleSupport.getProperties(), prefix);
                 completionProposals.addAll(Utilities.wrapProperties(possibleProps, caretOffset));
             }
-        } else if (node.type() == NodeType.ruleSet || node.type() == NodeType.declarations) {
+        } else if (nodeType == NodeType.ruleSet 
+                || nodeType == NodeType.moz_document 
+                || nodeType == NodeType.declarations) {
             //1. in empty rule (NodeType.ruleSet)
             //h1 { | }
             //
@@ -352,7 +355,7 @@ public class CssCompletion implements CodeCompletionHandler {
             //
             //should be no prefix 
             completionProposals.addAll(Utilities.wrapProperties(CssModuleSupport.getProperties(), caretOffset));
-        } else if (node.type() == NodeType.declaration) {
+        } else if (nodeType == NodeType.declaration) {
             //value cc without prefix
             //find property node
 
@@ -443,8 +446,8 @@ public class CssCompletion implements CodeCompletionHandler {
             //Why we need the (prefix.length() > 0 || astCaretOffset == node.from())???
             //please refer to the comment above
 //        } else if (node.type() == NodeType.JJTTERM && (prefix.length() > 0 || astCaretOffset == node.from())) {
-        } else if (node.type() == NodeType.term || 
-                (node.type() == NodeType.error &&
+        } else if (nodeType == NodeType.term || 
+                (nodeType == NodeType.error &&
                 node.parent().type() == NodeType.declaration)) {
             //value cc with prefix
             //a. for term nodes
@@ -491,7 +494,7 @@ public class CssCompletion implements CodeCompletionHandler {
             }
 
             String expressionText;
-            if(node.type() == NodeType.term) {
+            if(nodeType == NodeType.term) {
                 Node expression = node.parent();
                 expressionText = expression.image().toString();
             } else {
@@ -548,20 +551,20 @@ public class CssCompletion implements CodeCompletionHandler {
                     extendedItemsOnly));
 
 
-        } else if (node.type() == NodeType.elementName) {
+        } else if (nodeType == NodeType.elementName) {
             //complete selector's element name - with a prefix
             completionProposals.addAll(completeHtmlSelectors(prefix, snapshot.getOriginalOffset(node.from())));
-        } else if((node.type() == NodeType.elementSubsequent  //after class or id selector
-                || node.type() == NodeType.typeSelector)  //after element selector
+        } else if((nodeType == NodeType.elementSubsequent  //after class or id selector
+                || nodeType == NodeType.typeSelector)  //after element selector
                 
                 && tokenNodeTokenId == CssTokenId.WS) {
             //complete element name - without a prefix
             completionProposals.addAll(completeHtmlSelectors(prefix, caretOffset));
             
-        } else if (node.type() == NodeType.selectorsGroup ||
-                node.type() == NodeType.combinator ||
-                node.type() == NodeType.selector ||
-                node.type() == NodeType.bodyset) {
+        } else if (nodeType == NodeType.selectorsGroup ||
+                nodeType == NodeType.combinator ||
+                nodeType == NodeType.selector ||
+                nodeType == NodeType.bodyset) {
             //complete selector list without prefix in selector list e.g. BODY, | { ... }
             completionProposals.addAll(completeHtmlSelectors(prefix, caretOffset));
         } 

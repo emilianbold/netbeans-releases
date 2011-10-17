@@ -58,7 +58,7 @@ echo $this->doctype();
         <link href="<?php echo $this->baseUrl(); ?>/css/cssweb.css" media="screen" rel="stylesheet" type="text/css" />
 
         <script type="text/javascript">
-            var BASE_URL = '<?php echo 'http://' . $_SERVER['HTTP_HOST'] . $this->baseUrl(); ?>';
+            var BASE_URL = '<?php echo htmlspecialchars($this->serverUrl() . $this->baseUrl(), ENT_QUOTES); ?>';
         </script>
         <script src="<?php echo $this->baseUrl(); ?>/js/jquery.js" type="text/javascript"></script>
         <script src="<?php echo $this->baseUrl(); ?>/js/function.js" type="text/javascript"></script>

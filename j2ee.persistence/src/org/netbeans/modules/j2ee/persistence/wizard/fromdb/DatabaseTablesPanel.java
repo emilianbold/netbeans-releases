@@ -850,7 +850,6 @@ public class DatabaseTablesPanel extends javax.swing.JPanel implements AncestorL
         tablesPanel.add(tableClosureCheckBox, gridBagConstraints);
 
         addAllTypeCombo.setModel(new javax.swing.DefaultComboBoxModel(filterComboTxts));
-        addAllTypeCombo.setEditor(null);
         addAllTypeCombo.setRenderer(new ItemListCellRenderer());
         addAllTypeCombo.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
