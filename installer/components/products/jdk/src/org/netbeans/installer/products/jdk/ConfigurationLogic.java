@@ -103,8 +103,9 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             ExecutionResults results = null;
             
             
-            boolean jreInstallation = false;
+            boolean jreInstallationFailed = false;
             boolean javadbInstallation = false;
+            boolean restartIsNeeded = false;
             final CompositeProgress overallProgress = new CompositeProgress();
             overallProgress.synchronizeTo(progress);
             overallProgress.synchronizeDetails(true);
@@ -148,12 +149,19 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                     if(!isFullSilentInstaller) {
                         //before jdk6u15(isFullSilentInstaller == true) there were separate jre and javadb installers
                         if(!progress.isCanceled()) {
-                            if(!jreAlreadyInstalled) {
-                                jreInstallation = true;
+                            if(!jreAlreadyInstalled) {                                
                                 final File jreInstaller = findJREWindowsInstaller();
                                 if(jreInstaller!=null) {
                                     results = runJREInstallerWindows(jreInstaller, jreProgress);
                                     configureJREProductWindows(results);
+                                }
+                                if(results.getErrorCode() != 0) {
+                                    jreInstallationFailed = true;                                    
+                                }
+                                if(results.getErrorCode() == 3010) {                                    
+                                    jreInstallationFailed = false;
+                                    LogManager.log("The system Restart is required to complete the configuration of JRE");
+                                    //TODO add RESTART_PROPERTY and check it in postinstall panel?
                                 }
                             } else {
                                 LogManager.log("... jre " + getProduct().getVersion() +
@@ -211,9 +219,13 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             if(results.getErrorCode()!=0) {
                 throw new InstallationException(
                         ResourceUtils.getString(ConfigurationLogic.class,
-                        javadbInstallation ? ERROR_JAVADB_INSTALL_SCRIPT_RETURN_NONZERO_KEY : 
-                        ((jreInstallation) ? ERROR_JRE_INSTALL_SCRIPT_RETURN_NONZERO_KEY
-                        : ERROR_JDK_INSTALL_SCRIPT_RETURN_NONZERO_KEY),
+                         ERROR_JDK_INSTALL_SCRIPT_RETURN_NONZERO_KEY,
+                        StringUtils.EMPTY_STRING + results.getErrorCode()));
+            }
+            if(jreInstallationFailed) {
+                throw new InstallationException(
+                        ResourceUtils.getString(ConfigurationLogic.class,
+                        ERROR_JRE_INSTALL_SCRIPT_RETURN_NONZERO_KEY,
                         StringUtils.EMPTY_STRING + results.getErrorCode()));
             }
         }  finally {
