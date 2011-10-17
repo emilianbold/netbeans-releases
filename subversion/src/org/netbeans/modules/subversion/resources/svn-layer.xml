@@ -50,7 +50,7 @@ made subject to such option by the copyright holder.
     <folder name="Actions">
         <folder name="Subversion">
            
-            <file name="org-netbeans-modules-subversion-ui-UpdateWithDependenciesAction.instance">
+            <file name="org-netbeans-modules-subversion-ui-update-UpdateWithDependenciesAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.subversion.ui.update.UpdateWithDependenciesAction"/>
             </file>
 
@@ -92,6 +92,9 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-modules-subversion-ui-blame-BlameAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.subversion.ui.blame.BlameAction"/>
             </file>
+            <file name="org-netbeans-modules-subversion-ui-export-ExportAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.subversion.ui.export.ExportAction"/>
+            </file>
             <file name="org-netbeans-modules-subversion-ui-history-SearchHistoryAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.subversion.ui.history.SearchHistoryAction"/>
             </file>
@@ -109,6 +112,9 @@ made subject to such option by the copyright holder.
              </file>
             <file name="org-netbeans-modules-subversion-ui-cleanup-CleanupAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.subversion.ui.cleanup.CleanupAction"/>
+            </file>
+            <file name="org-netbeans-modules-subversion-ui-relocate-RelocateAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.subversion.ui.cleanup.RelocateAction"/>
             </file>
             <file name="org-netbeans-modules-subversion-ui-properties-VersioningInfoAction.instance">
                  <attr name="instanceClass" stringvalue="org.netbeans.modules.subversion.ui.properties.VersioningInfoAction"/>
