@@ -1686,9 +1686,7 @@ public class MetaComponentCreator {
             return null;
 
         Dimension size = new Dimension(width, height);
-        if (comp instanceof JComponent) {
-            ((JComponent)comp).setPreferredSize(size);
-        }
+        comp.setPreferredSize(size);
         return size;
     }
 
