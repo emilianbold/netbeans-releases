@@ -58,6 +58,7 @@ import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.actions.GitAction;
 import org.openide.awt.ActionID;
+import org.openide.awt.ActionRegistration;
 import org.openide.nodes.Node;
 import org.openide.cookies.EditorCookie;
 import org.openide.util.NbBundle;
@@ -69,6 +70,7 @@ import org.openide.windows.TopComponent;
 import org.openide.text.NbDocument;
 
 @ActionID(id = "org.netbeans.modules.git.ui.blame.AnnotateAction", category = "Git")
+@ActionRegistration(displayName = "#CTL_MenuItem_ShowAnnotations")
 public class AnnotateAction extends GitAction {
     
     @Override
