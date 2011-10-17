@@ -83,6 +83,8 @@ import org.netbeans.modules.subversion.ui.export.ExportAction;
 import org.netbeans.modules.subversion.ui.lock.LockAction;
 import org.netbeans.modules.subversion.ui.lock.UnlockAction;
 import org.netbeans.modules.subversion.ui.properties.VersioningInfoAction;
+import org.openide.awt.AcceleratorBinding;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.ImageUtilities;
@@ -427,10 +429,10 @@ public class Annotator {
         File[] files = ctx.getRootFiles().toArray(new File[ctx.getRootFiles().size()]);
         boolean noneVersioned = isNothingVersioned(files);
         if (destination == VCSAnnotator.ActionDestination.MainMenu) {
-            Action a = FileUtil.getConfigObject("Actions/Subversion/org-netbeans-modules-subversion-ui-checkout-CheckoutAction.instance", Action.class);
+            Action a = Utils.getAcceleratedAction("Actions/Subversion/org-netbeans-modules-subversion-ui-checkout-CheckoutAction.instance");
             if(a != null) actions.add(a);
             if (noneVersioned) {
-                a = FileUtil.getConfigObject("Actions/Subversion/org-netbeans-modules-subversion-ui-project-ImportAction.instance", Action.class);
+                a = Utils.getAcceleratedAction("Actions/Subversion/org-netbeans-modules-subversion-ui-project-ImportAction.instance");
                 if(a instanceof ContextAwareAction) {
                     a = ((ContextAwareAction)a).createContextAwareInstance(Lookups.singleton(ctx));
                 }            
