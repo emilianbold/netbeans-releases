@@ -340,9 +340,21 @@ public class ChangeParametersPlugin extends CsmModificationRefactoringPlugin {
                     skipComma = false;
                     // new parameter
                     if (decl) {
+                        boolean setDefaultValue = refactoring.isUseDefaultValueOnlyInFunctionDeclaration();
+                        if (setDefaultValue && def) {
+                            // check if there is only one function declaration or more
+                            // if only one => change it anyway
+                            setDefaultValue = false;
+                            CsmFunction fun = (CsmFunction) ref.getReferencedObject();
+                            if (fun != null) {
+                                if (fun.getDeclaration() == fun.getDefinition()) {
+                                    setDefaultValue = true;
+                                }
+                            }
+                        }
                         // in declaration add parameter
                         newText.append(pi.getType()).append(" ").append(pi.getName()); // NOI18N
-                        if (!def && refactoring.isUseDefaultValueOnlyInFunctionDeclaration()) {
+                        if (setDefaultValue) {
                             newText.append(" = ").append(pi.getDefaultValue()); // NOI18N
                         } else {
                             newText.append(" /* = ").append(pi.getDefaultValue()).append(" */"); // NOI18N
