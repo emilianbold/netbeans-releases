@@ -65,6 +65,7 @@ import org.netbeans.api.debugger.Properties;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointListener;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
@@ -321,43 +322,17 @@ public class JPDABreakpoint extends Breakpoint {
     }
 
     static void fillFilesForClass(String className, List<FileObject> files) {
-        int simpleNameIndex = className.lastIndexOf('.');
         int innerClassIndex = className.indexOf('$');
         if (innerClassIndex > 0) {
             className = className.substring(0, innerClassIndex);
         }
-        String simpleClassName = className;
-        if (simpleNameIndex > 0) {
-            //packageName = className.substring(0, simpleNameIndex);
-            simpleClassName = className.substring(simpleNameIndex + 1);
-        }
-        Collection<FileObject> srcRoots = QuerySupport.findRoots(
-                (Project) null,
-                Collections.singleton(ClassPath.SOURCE),
-                Collections.<String>emptySet(),
-                Collections.<String>emptySet());
-        for (FileObject root : srcRoots) {
-            URL rootUrl;
-            try {
-                rootUrl = root.getURL();
-            } catch (FileStateInvalidException fsie) {
-                continue;
-            }
-            ClassPath cp = ClassPathSupport.createClassPath(rootUrl);
-            ClasspathInfo ci = ClasspathInfo.create (EMPTY_CLASSPATH,
-                                                     EMPTY_CLASSPATH,
-                                                     cp);
-            final Set<ElementHandle<TypeElement>> names = ci.getClassIndex().getDeclaredTypes(
-                    simpleClassName, ClassIndex.NameKind.SIMPLE_NAME, EnumSet.of(ClassIndex.SearchScope.SOURCE)
-            );
-            for (ElementHandle<TypeElement> eh : names) {
-                if (!className.equals(eh.getQualifiedName())) {
-                    continue;
-                }
-                FileObject f = SourceUtils.getFile(eh, ci);
+        String resource = className.replaceAll("\\.", "/")+".java";
+        for (ClassPath cp : GlobalPathRegistry.getDefault().getPaths(ClassPath.SOURCE)) {
+            FileObject f = cp.findResource(resource);
+            if (f != null) {
                 files.add(f);
             }
-        }
+        }            
     }
 
 }
