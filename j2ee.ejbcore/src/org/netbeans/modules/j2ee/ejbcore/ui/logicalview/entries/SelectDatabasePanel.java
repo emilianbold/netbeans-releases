@@ -119,6 +119,13 @@ public class SelectDatabasePanel extends javax.swing.JPanel {
                 }
             }
         });
+        
+        if(org.netbeans.modules.j2ee.common.Util.isValidServerInstance(provider)){
+            errorLabel.setVisible(false);
+        } else {
+            errorLabel.setVisible(true);
+            errorLabel.setText(NbBundle.getMessage(SelectDatabasePanel.class, "ERR_MissingServer"));
+        }
     }
     
     public String getDatasourceReference() {
@@ -149,6 +156,7 @@ public class SelectDatabasePanel extends javax.swing.JPanel {
         serviceLocatorPanel = new javax.swing.JPanel();
         dsRefCombo = new javax.swing.JComboBox();
         buttonAdd = new javax.swing.JButton();
+        errorLabel = new javax.swing.JLabel();
 
         dsRefLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(SelectDatabasePanel.class, "LBL_ConnectionMnemonic").charAt(0));
         dsRefLabel.setLabelFor(dsRefCombo);
@@ -164,6 +172,8 @@ public class SelectDatabasePanel extends javax.swing.JPanel {
             }
         });
 
+        errorLabel.setForeground(new java.awt.Color(255, 0, 0));
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -174,12 +184,15 @@ public class SelectDatabasePanel extends javax.swing.JPanel {
                         .addGap(12, 12, 12)
                         .addComponent(dsRefLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(dsRefCombo, 0, 351, Short.MAX_VALUE)
+                        .addComponent(dsRefCombo, 0, 393, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(buttonAdd))
                     .addGroup(layout.createSequentialGroup()
                         .addContainerGap()
-                        .addComponent(serviceLocatorPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 522, Short.MAX_VALUE)))
+                        .addComponent(serviceLocatorPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 522, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(errorLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 522, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -192,7 +205,9 @@ public class SelectDatabasePanel extends javax.swing.JPanel {
                     .addComponent(buttonAdd))
                 .addGap(26, 26, 26)
                 .addComponent(serviceLocatorPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 114, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(41, 41, 41))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(errorLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 24, Short.MAX_VALUE)
+                .addContainerGap())
         );
 
         dsRefLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SelectDatabasePanel.class, "LBL_DsReference")); // NOI18N
@@ -267,6 +282,7 @@ public class SelectDatabasePanel extends javax.swing.JPanel {
     private javax.swing.JButton buttonAdd;
     private javax.swing.JComboBox dsRefCombo;
     private javax.swing.JLabel dsRefLabel;
+    private javax.swing.JLabel errorLabel;
     private javax.swing.JPanel serviceLocatorPanel;
     // End of variables declaration//GEN-END:variables
     
