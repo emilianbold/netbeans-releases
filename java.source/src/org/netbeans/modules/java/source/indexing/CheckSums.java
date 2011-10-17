@@ -96,7 +96,7 @@ public final class CheckSums {
 
     public boolean checkAndSet(final URL file, final Iterable<? extends TypeElement> topLevelElements, final Elements elements) {
         String fileId = file.toExternalForm();
-        String sum = computeCheckSum(topLevelElements, elements);
+        String sum = computeCheckSum(md, topLevelElements, elements);
         String value = (String) props.setProperty(fileId, sum);
         return value == null || value.equals(sum);
     }
@@ -130,7 +130,7 @@ public final class CheckSums {
         }
     }
 
-    private String computeCheckSum(Iterable<? extends TypeElement> topLevelElements, Elements elements) {
+    static String computeCheckSum(MessageDigest md, Iterable<? extends TypeElement> topLevelElements, Elements elements) {
         Queue<TypeElement> toHandle = new LinkedList<TypeElement>();
         for (TypeElement te : topLevelElements)
             toHandle.offer(te);
@@ -150,7 +150,8 @@ public final class CheckSums {
                     case INTERFACE:
                     case ENUM:
                     case ANNOTATION_TYPE:
-                        toHandle.offer((TypeElement) e);
+                        if (!e.getModifiers().contains(Modifier.PRIVATE))
+                            toHandle.offer((TypeElement) e);
                         break;
                     case CONSTRUCTOR:
                     case METHOD:
@@ -173,7 +174,7 @@ public final class CheckSums {
         return new String(bytes);
     }
 
-    private String getExtendedModifiers(Elements elements, Element el) {
+    private static String getExtendedModifiers(Elements elements, Element el) {
         StringBuilder sb = new StringBuilder();
         for (Modifier m : el.getModifiers())
             sb.append(m.name());
