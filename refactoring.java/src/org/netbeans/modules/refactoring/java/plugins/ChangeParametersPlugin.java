@@ -130,6 +130,7 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin {
         if(!isConstructor) {
             p = check.returnType(p, refactoring.getReturnType(), method, enclosingTypeElement);
             p = check.duplicateSignature(p, paramTable, method, enclosingTypeElement, allMembers);
+            p = check.accessModifiers(p, refactoring.getModifiers() != null ? refactoring.getModifiers() : method.getModifiers(), method, enclosingTypeElement, paramTable);
         } else {
             p = check.duplicateConstructor(p, paramTable, method, enclosingTypeElement, allMembers);
         }
@@ -566,6 +567,66 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin {
                 }
             }
             return p;
+        }
+        
+        
+        private Problem accessModifiers(Problem p, Set<Modifier> modifiers, ExecutableElement method, TypeElement enclosingTypeElement, ParameterInfo[] paramTable) {
+            List<ExecutableElement> allMethods = findDuplicateSubMethods(enclosingTypeElement, method, paramTable);
+            if(!allMethods.isEmpty()) {
+                Collection<ExecutableElement> overridingMethods = RetoucheUtils.getOverridingMethods(method, javac);
+                boolean willBeOverriden = false;
+                for (ExecutableElement executableElement : allMethods) {
+                    if(!overridingMethods.contains(executableElement)) {
+                        willBeOverriden = true;
+                        break;
+                    }
+                }
+                if(willBeOverriden) {
+                    p = createProblem(p, false, NbBundle.getMessage(ChangeParametersPlugin.class, "WRN_MethodIsOverridden", enclosingTypeElement.toString())); // NOI18N
+                }
+            }
+            for (ExecutableElement exMethod : allMethods) {
+                if(!exMethod.getReturnType().equals(method.getReturnType())) {
+                    p = createProblem(p, true, NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_existingReturnType", exMethod.getSimpleName(), exMethod.getEnclosingElement().getSimpleName(), method.getReturnType().toString(), exMethod.getReturnType().toString())); // NOI18N
+                }
+            }
+            for (ExecutableElement exMethod : allMethods) {
+                if(!modifiers.contains(Modifier.PRIVATE)) {
+                    if(RetoucheUtils.isWeakerAccess(exMethod.getModifiers(), modifiers)) {
+                        p = createProblem(p, true, NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_WeakerAccess", exMethod.getSimpleName(), exMethod.getEnclosingElement().getSimpleName())); // NOI18N
+                    }
+                }
+            }
+            return p;
+        }
+
+        private List<ExecutableElement> findDuplicateSubMethods(TypeElement enclosingTypeElement, ExecutableElement method, ParameterInfo[] paramTable) {
+            List<ExecutableElement> returnmethods = new LinkedList<ExecutableElement>();
+            Set<ElementHandle<TypeElement>> subTypes = RetoucheUtils.getImplementorsAsHandles(javac.getClasspathInfo().getClassIndex(), javac.getClasspathInfo(), enclosingTypeElement);
+            for (ElementHandle<TypeElement> elementHandle : subTypes) {
+                TypeElement subtype = elementHandle.resolve(javac);
+                List<ExecutableElement> methods = ElementFilter.methodsIn(javac.getElements().getAllMembers(subtype));
+                for (ExecutableElement exMethod : methods) {
+                    if (!exMethod.equals(method)) {
+                        if (exMethod.getSimpleName().equals(method.getSimpleName())
+                                && exMethod.getParameters().size() == paramTable.length) {
+                            boolean sameParameters = true;
+                            for (int j = 0; j < exMethod.getParameters().size(); j++) {
+                                TypeMirror exType = ((VariableElement) exMethod.getParameters().get(j)).asType();
+                                String type = paramTable[j].getType();
+                                TypeMirror paramType = javac.getTreeUtilities().parseType(type, enclosingTypeElement);
+                                if (!javac.getTypes().isSameType(exType, paramType)) {
+                                    sameParameters = false;
+                                }
+                            }
+                            if (sameParameters) {
+                                returnmethods.add(exMethod);
+                            }
+                        }
+                    }
+                }
+            }
+            return returnmethods;
         }
 
         boolean isParameterBeingRemoved(ExecutableElement method, String s, ParameterInfo[] paramTable) {
