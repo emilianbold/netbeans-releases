@@ -142,7 +142,6 @@ public class SQLCloneableEditor extends CloneableEditor implements MultiViewElem
     public SQLCloneableEditor() {
         super(null);
         putClientProperty("oldInitialize", Boolean.TRUE); // NOI18N
-        initialize();
     }
 
     public SQLCloneableEditor(Lookup context) {
@@ -433,7 +432,9 @@ public class SQLCloneableEditor extends CloneableEditor implements MultiViewElem
 
     @Override
     public void componentClosed() {
-        sqlExecution.editorClosed();
+        if (sqlExecution != null) {
+            sqlExecution.editorClosed();
+        }
         super.componentClosed();
     }
 
@@ -452,10 +453,11 @@ public class SQLCloneableEditor extends CloneableEditor implements MultiViewElem
     @Override
     public void readExternal(java.io.ObjectInput in) throws IOException, ClassNotFoundException {
         super.readExternal(in);
-        initialize();
     }
+    
+    
 
-    private void initialize() {
+    void initialize() {
         sqlExecution = new SQLExecutionImpl();
         instanceContent.add(sqlExecution);
         instanceContent.add(this);
