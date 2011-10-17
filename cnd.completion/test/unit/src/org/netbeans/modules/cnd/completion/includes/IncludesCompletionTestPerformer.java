@@ -55,7 +55,8 @@ public class IncludesCompletionTestPerformer extends CompletionTestPerformer {
             JEditorPane  editor,
             BaseDocument doc,
             int caretOffset,
-            boolean      unsorted
+            boolean unsorted,
+            boolean tooltip
             ) {
         doc = doc == null ? Utilities.getDocument(editor) : doc;
         Collection<CsmIncludeCompletionItem> items = null;
