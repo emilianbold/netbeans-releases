@@ -68,7 +68,6 @@ import org.netbeans.modules.php.editor.parser.astnodes.DeclareStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.DoStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.EchoStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.ExpressionStatement;
-import org.netbeans.modules.php.editor.parser.astnodes.FieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldsDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ForEachStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.ForStatement;
@@ -81,6 +80,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.IfStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Include;
 import org.netbeans.modules.php.editor.parser.astnodes.InstanceOfExpression;
+import org.netbeans.modules.php.editor.parser.astnodes.InterfaceDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.LambdaFunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.NamespaceDeclaration;
@@ -96,7 +96,6 @@ import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.ReflectionVariable;
 import org.netbeans.modules.php.editor.parser.astnodes.ReturnStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.SingleFieldDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.StaticConstantAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticFieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticMethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.SwitchCase;
@@ -168,6 +167,8 @@ public class UnusedVariableHint extends AbstractRule implements PHPRuleWithPrefe
                 List<Variable> scopeVariables = unusedVariables.get(scopeNode);
                 for (Variable variable : scopeVariables) {
                     int start = variable.getStartOffset() + 1;
+
+
                     int end = variable.getEndOffset();
                     OffsetRange offsetRange = new OffsetRange(start, end);
                     hints.add(new Hint(UnusedVariableHint.this, Bundle.UnusedVariableHintCustom(getIdentifier(variable).getName()), fileObject, offsetRange, null, 500));
@@ -533,6 +534,18 @@ public class UnusedVariableHint extends AbstractRule implements PHPRuleWithPrefe
         }
 
         @Override
+        public void visit(StaticFieldAccess node) {
+            forceVariableAsUsed = true;
+            super.visit(node);
+            forceVariableAsUsed = false;
+        }
+
+        @Override
+        public void visit(InterfaceDeclaration node) {
+            // intentionally
+        }
+
+        @Override
         public void visit(FieldsDeclaration node) {
             // intentionally
         }
@@ -578,22 +591,7 @@ public class UnusedVariableHint extends AbstractRule implements PHPRuleWithPrefe
         }
 
         @Override
-        public void visit(FieldAccess node) {
-            super.visit(node);
-        }
-
-        @Override
         public void visit(SingleFieldDeclaration node) {
-            // intentionally
-        }
-
-        @Override
-        public void visit(StaticConstantAccess node) {
-            // intentionally
-        }
-
-        @Override
-        public void visit(StaticFieldAccess node) {
             // intentionally
         }
 

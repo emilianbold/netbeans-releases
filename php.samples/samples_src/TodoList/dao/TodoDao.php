@@ -63,7 +63,7 @@ final class TodoDao {
      */
     public function find(TodoSearchCriteria $search = null) {
         $result = array();
-        foreach ($this->getDb()->query($this->getFindSql($search), PDO::FETCH_ASSOC) as $row) {
+        foreach ($this->query($this->getFindSql($search)) as $row) {
             $todo = new Todo();
             TodoMapper::map($todo, $row);
             $result[$todo->getId()] = $todo;
@@ -231,9 +231,24 @@ final class TodoDao {
 
     private function executeStatement(PDOStatement $statement, array $params) {
         if (!$statement->execute($params)) {
-            // TODO log error, send email, etc.
-            throw new Exception('DB error: ' . $this->getDb()->errorInfo());
+            self::throwDbError($this->getDb()->errorInfo());
         }
+    }
+
+    /**
+     * @return PDOStatement
+     */
+    private function query($sql) {
+        $rows = $this->getDb()->query($sql, PDO::FETCH_ASSOC);
+        if ($rows === false) {
+            self::throwDbError($this->getDb()->errorInfo());
+        }
+        return $rows;
+    }
+
+    private static function throwDbError(array $errorInfo) {
+        // TODO log error, send email, etc.
+        throw new Exception('DB error [' . $errorInfo[0] . ', ' . $errorInfo[1] . ']: ' . $errorInfo[2]);
     }
 
     private static function formatDateTime(DateTime $date) {

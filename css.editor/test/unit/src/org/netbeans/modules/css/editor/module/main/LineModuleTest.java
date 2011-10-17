@@ -1,4 +1,3 @@
-<?php
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
@@ -40,10 +39,24 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.css.editor.module.main;
 
-class Zend_View_Helper_BaseUrl {
-    function baseUrl() {
-        return Zend_Controller_Front::getInstance()->getBaseUrl();
+/**
+ *
+ * @author mfukala@netbeans.org
+ */
+public class LineModuleTest extends CssModuleTestBase {
+
+    public LineModuleTest(String testName) {
+        super(testName);
     }
-}
 
+    public void testLineHeight() {
+        assertPropertyDeclaration("line-height: inherit");
+        assertPropertyDeclaration("line-height: normal");
+        assertPropertyDeclaration("line-height: 20px");
+        assertPropertyDeclaration("line-height: 10%");
+        assertPropertyDeclaration("line-height: 100");
+    }
+
+}

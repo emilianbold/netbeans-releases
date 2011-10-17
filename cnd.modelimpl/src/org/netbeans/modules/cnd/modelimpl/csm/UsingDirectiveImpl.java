@@ -92,7 +92,6 @@ public final class UsingDirectiveImpl extends OffsetableDeclarationBase<CsmUsing
         // TODO: process preceding aliases
         CsmNamespace referencedNamespace = _getReferencedNamespace();
         if (referencedNamespace == null) {
-            _setReferencedNamespace(null);
             CsmObject result = null;
             Resolver aResolver = ResolverFactory.createResolver(this);
             try {
@@ -105,43 +104,45 @@ public final class UsingDirectiveImpl extends OffsetableDeclarationBase<CsmUsing
             }
             if (CsmKindUtilities.isNamespace(result)) {
                 referencedNamespace = (CsmNamespace)result;
-                _setReferencedNamespace(referencedNamespace);
             }
+            _setReferencedNamespace(referencedNamespace);
         }
         return referencedNamespace;
     }
     
     private CsmNamespace _getReferencedNamespace() {
-        // can be null if namespace was removed 
-        CsmNamespace referencedNamespace = UIDCsmConverter.UIDtoNamespace(referencedNamespaceUID);
-        if (referencedNamespaceUID == null) {
-            FileImpl file = (FileImpl) getContainingFile();
-            CsmReference typeReference = file.getResolvedReference(new CsmUsingReferenceImpl(this));
-            if (typeReference != null) {
-                CsmObject referencedObject = typeReference.getReferencedObject();
-                if (CsmKindUtilities.isNamespace(referencedObject)) {
-                    referencedNamespace =  (CsmNamespace) referencedObject;
-                    referencedNamespaceUID = UIDCsmConverter.namespaceToUID(referencedNamespace);
-                    //System.out.println("Hit "+referencedNamespace);
+        synchronized (this) {
+            // can be null if namespace was removed 
+            CsmNamespace referencedNamespace = UIDCsmConverter.UIDtoNamespace(referencedNamespaceUID);
+            if (referencedNamespaceUID == null) {
+                FileImpl file = (FileImpl) getContainingFile();
+                CsmReference typeReference = file.getResolvedReference(new CsmUsingReferenceImpl(this));
+                if (typeReference != null) {
+                    CsmObject referencedObject = typeReference.getReferencedObject();
+                    if (CsmKindUtilities.isNamespace(referencedObject)) {
+                        referencedNamespace =  (CsmNamespace) referencedObject;
+                        referencedNamespaceUID = UIDCsmConverter.namespaceToUID(referencedNamespace);
+                        //System.out.println("Hit "+referencedNamespace);
+                    }
                 }
             }
+            return referencedNamespace;
         }
-        return referencedNamespace;
     }    
 
     private void _setReferencedNamespace(CsmNamespace referencedNamespace) {
-        this.referencedNamespaceUID = UIDCsmConverter.namespaceToUID(referencedNamespace);
-        
-        if (referencedNamespace == null) {
-            FileImpl file = (FileImpl) getContainingFile();
-            file.removeResolvedReference(new CsmUsingReferenceImpl(this));
+        synchronized (this) {
+            referencedNamespaceUID = UIDCsmConverter.namespaceToUID(referencedNamespace);
+            if (referencedNamespace == null) {
+                FileImpl file = (FileImpl) getContainingFile();
+                file.removeResolvedReference(new CsmUsingReferenceImpl(this));
+            }
+            if (referencedNamespaceUID != null && referencedNamespace != null && CsmBaseUtilities.isValid(referencedNamespace)) {
+                FileImpl file = (FileImpl) getContainingFile();
+                file.addResolvedReference(new CsmUsingReferenceImpl(this), referencedNamespace);
+            }
+            assert referencedNamespaceUID != null || referencedNamespace == null;
         }
-        if (referencedNamespaceUID != null && referencedNamespace != null && CsmBaseUtilities.isValid(referencedNamespace)) {
-            FileImpl file = (FileImpl) getContainingFile();
-            file.addResolvedReference(new CsmUsingReferenceImpl(this), referencedNamespace);
-        }
-        
-        assert this.referencedNamespaceUID != null || referencedNamespace == null;
     }
  
     @Override
