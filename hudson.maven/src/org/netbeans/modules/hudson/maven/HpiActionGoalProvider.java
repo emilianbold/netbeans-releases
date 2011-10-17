@@ -45,9 +45,7 @@ package org.netbeans.modules.hudson.maven;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
-import java.util.WeakHashMap;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.execute.RunConfig;
@@ -65,17 +63,6 @@ import org.openide.util.lookup.ServiceProvider;
 public class HpiActionGoalProvider implements MavenActionsProvider {
 
     private static final HashSet<String> ACTIONS = new HashSet<String>(Arrays.asList(ActionProvider.COMMAND_RUN, ActionProvider.COMMAND_DEBUG));
-
-    private static Map<Project,Boolean> IS_HPI = new WeakHashMap<Project,Boolean>();
-
-    private static synchronized boolean isHPI(Project p) {
-        Boolean b = IS_HPI.get(p);
-        if (b == null) {
-            b = "hpi".equals(p.getLookup().lookup(NbMavenProject.class).getPackagingType()); // NOI18N
-            IS_HPI.put(p, b);
-        }
-        return b;
-    }
 
     private static final AbstractMavenActionsProvider delegate = new AbstractMavenActionsProvider() {
         protected InputStream getActionDefinitionStream() {
@@ -100,7 +87,7 @@ public class HpiActionGoalProvider implements MavenActionsProvider {
     }
 
     public boolean isActionEnable(String action, Project project, Lookup lookup) {
-        return ACTIONS.contains(action) && isHPI(project);
+        return ACTIONS.contains(action) && "hpi".equals(project.getLookup().lookup(NbMavenProject.class).getPackagingType());
     }
 
     public Set<String> getSupportedDefaultActions() {
