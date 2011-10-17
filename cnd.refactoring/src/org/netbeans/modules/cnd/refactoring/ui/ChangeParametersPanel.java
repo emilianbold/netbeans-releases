@@ -668,7 +668,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
                 String defParam = (String) parameters[i].get(PARAM_VALUE);
                 defParam = defParam.trim();
                 if (defParam != null && defParam.length() > 0) {
-                    buf.append(" /* = ").append(defParam).append(" */"); // NOI18N
+                    buf.append(" = ").append(defParam); // NOI18N
                 }
             }
             if (i < parameters.length - 1) {
