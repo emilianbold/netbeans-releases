@@ -45,6 +45,7 @@ package org.netbeans.modules.bugzilla.query;
 import java.awt.Component;
 import java.util.LinkedList;
 import java.util.List;
+import javax.rmi.CORBA.Util;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
@@ -54,6 +55,8 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JTextField;
 import javax.swing.ListModel;
+import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.bugtracking.util.TextUtils;
 import org.netbeans.modules.bugzilla.BugzillaConfig;
 
 /**
@@ -179,7 +182,7 @@ public abstract class QueryParameter {
             sb.append("&"); // NOI18N
             sb.append(getParameter());
             sb.append("="); // NOI18N
-            sb.append(pv.getValue());
+            sb.append(TextUtils.encodeURL(pv.getValue()));
         }
         return sb;
     }

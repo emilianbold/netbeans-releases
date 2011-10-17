@@ -40,56 +40,30 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.git.ui.actions;
+package org.netbeans.modules.cnd.completion;
 
-import java.io.File;
-import org.netbeans.libs.git.GitClient;
-import org.netbeans.libs.git.GitException;
-import org.netbeans.modules.git.FileInformation;
-import org.netbeans.modules.git.Git;
-import org.netbeans.modules.git.client.GitClientExceptionHandler;
-import org.netbeans.modules.git.client.GitProgressSupport;
-import org.netbeans.modules.git.utils.GitUtils;
-import org.netbeans.modules.versioning.spi.VCSContext;
-import org.openide.awt.ActionID;
-import org.openide.awt.ActionRegistration;
-import org.openide.util.NbBundle;
+import org.netbeans.modules.cnd.completion.cplusplus.ext.CompletionBaseTestCase;
 
 /**
  *
- * @author Tomas Stupka
+ * @author Nikolay Krasilnikov
  */
-@ActionID(id = "org.netbeans.modules.git.ui.actions.AddAction", category = "Git")
-@ActionRegistration(displayName = "#LBL_AddAction_Name")
-public class AddAction extends SingleRepositoryAction {
+public class TooltipTestCase extends CompletionBaseTestCase {
+    public TooltipTestCase(String testName) {
+        super(testName, false);
+    }
 
+    public void testTooltip() throws Exception {
+        super.performTest("file.cpp", 13, 17);
+    }
+
+    public void testTooltip2() throws Exception {
+        super.performTest("file.cpp", 14, 20);
+    }
+    
     @Override
-    protected void performAction (File repository, final File[] roots, VCSContext context) {
-        GitProgressSupport supp = new GitProgressSupport () {
-            @Override
-            protected void perform() {
-                GitClient client;
-                File[] actionRoots = GitUtils.listFiles(roots, FileInformation.STATUS_LOCAL_CHANGES);
-                if (actionRoots.length == 0) {
-                    return;
-                }
-                try {
-                    client = getClient();
-                    client.addNotificationListener(new DefaultFileListener(actionRoots));
-                    client.add(actionRoots, this);
-                } catch (GitException ex) {
-                    GitClientExceptionHandler.notifyException(ex, true);
-                } finally {
-                    setDisplayName(NbBundle.getMessage(GitAction.class, "LBL_Progress.RefreshingStatuses")); //NOI18N
-                    Git.getInstance().getFileStatusCache().refreshAllRoots(actionRoots);                    
-                }               
-            }
-            @Override
-            public void finished() {
-                super.finished();
-            }
-        };
-        supp.start(Git.getInstance().getRequestProcessor(repository), repository, NbBundle.getMessage(AddAction.class, "LBL_AddProgress"));
+    protected void performTest(String source, int lineIndex, int colIndex, String textToInsert, int offsetAfterInsertion, String goldenFileName, String toPerformItemRE, String goldenFileName2) throws Exception {
+        super.performTest(source, lineIndex, colIndex, textToInsert, offsetAfterInsertion, goldenFileName, toPerformItemRE, goldenFileName2, true);
     }
     
 }
