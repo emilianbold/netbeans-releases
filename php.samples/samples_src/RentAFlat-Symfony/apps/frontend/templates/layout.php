@@ -53,7 +53,7 @@
         <?php include_stylesheets(); ?>
 
         <script type="text/javascript">
-            var BASE_URL = '<?php echo 'http://' . $_SERVER['HTTP_HOST'] . $sf_request->getRelativeUrlRoot(); ?>';
+            var BASE_URL = '<?php echo htmlspecialchars('http://' . $sf_request->getHost() . $sf_request->getRelativeUrlRoot(), ENT_QUOTES); ?>';
         </script>
         <?php include_javascripts(); ?>
 

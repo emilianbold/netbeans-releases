@@ -42,7 +42,7 @@
 
 function addToFavorites(id) {
     jQuery.ajax({
-        type: "GET",
+        type: "POST",
         url: BASE_URL + "/my-favorites/add",
         data: "id=" + id,
         success: function(message) {
@@ -54,7 +54,7 @@ function addToFavorites(id) {
 
 function removeFromFavorites(id) {
     jQuery.ajax({
-        type: "GET",
+        type: "POST",
         url: BASE_URL + "/my-favorites/remove",
         data: "id=" + id,
         success: function(message) {
@@ -66,7 +66,7 @@ function removeFromFavorites(id) {
 
 function addToFavoritesDetail(id) {
     jQuery.ajax({
-        type: "GET",
+        type: "POST",
         url: BASE_URL + "/my-favorites/add-detail",
         data: "id=" + id,
         success: function(message) {
@@ -78,7 +78,7 @@ function addToFavoritesDetail(id) {
 
 function removeFromFavoritesDetail(id) {
     jQuery.ajax({
-        type: "GET",
+        type: "POST",
         url: BASE_URL + "/my-favorites/remove-detail",
         data: "id=" + id,
         success: function(message) {
@@ -90,7 +90,7 @@ function removeFromFavoritesDetail(id) {
 
 function removeFromFavoritesInFavorites(id) {
     jQuery.ajax({
-        type: "GET",
+        type: "POST",
         url: BASE_URL + "/my-favorites/remove-detail",
         data: "id=" + id,
         success: function() {
