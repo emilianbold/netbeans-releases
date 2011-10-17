@@ -45,42 +45,18 @@ package org.netbeans.modules.css.editor.module.main;
  *
  * @author mfukala@netbeans.org
  */
-public class GeneratedAndReplacedContentModuleTest extends CssModuleTestBase {
+public class LineModuleTest extends CssModuleTestBase {
 
-    public GeneratedAndReplacedContentModuleTest(String testName) {
+    public LineModuleTest(String testName) {
         super(testName);
     }
-    
-    public void testContent() {
-        assertPropertyDeclaration("content: attr(title)");
-        assertPropertyDeclaration("content: \"Note: \" ");
-        assertPropertyDeclaration("content: \"after1\" pending(example1);");
-        assertPropertyDeclaration("content: \"Chapter \" counter(chapter) \"\\A\"; ");
-        assertPropertyDeclaration("content: counter(item, decimal) '.';");
-        
-        assertPropertyDeclaration("content: url(\"link\")");
-        assertPropertyDeclaration("content: url(\"link\"), normal");
-        assertPropertyDeclaration("content: url(\"link\"), counter(anid, anotherid)");
-        
+
+    public void testLineHeight() {
+        assertPropertyDeclaration("line-height: inherit");
+        assertPropertyDeclaration("line-height: normal");
+        assertPropertyDeclaration("line-height: 20px");
+        assertPropertyDeclaration("line-height: 10%");
+        assertPropertyDeclaration("line-height: 100");
     }
-    
-    public void testCrop() {
-        assertPropertyValues("crop", "auto");
-        assertPropertyValues("crop", "rect(10px,20px,10px,20px)");
-        assertPropertyValues("crop", "inter-rect(10px,20px,10px,20px)");
-        assertPropertyValues("crop", "inter-rect(10%,20%,10%,20px)");
-    }
-    
-    public void testCounter() {
-        assertPropertyDeclaration("counter-increment: chapter;");
-        assertPropertyDeclaration("counter-increment: chapter 10;");
-        assertPropertyDeclaration("counter-reset: chapter;");
-        assertPropertyDeclaration("counter-reset: chapter 2;");
-    }
-    
-    public void testQuotes() {
-        assertPropertyDeclaration("quotes: 'arg1' 'arg2'");
-        assertPropertyDeclaration("quotes: \"arg1\" 'arg2' 'arg3' 'arg4'");
-    }
-    
+
 }
