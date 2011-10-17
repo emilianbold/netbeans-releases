@@ -153,11 +153,16 @@ class StackLineAnalyser {
                     StyledDocument doc = editorCookie.openDocument ();
                     if (doc != null) {
                         if (lineNumber != -1) {
-                            Line l = lineCookie.getLineSet ().getCurrent (lineNumber - 1);
+                            try {
+                                Line l = lineCookie.getLineSet().getCurrent(lineNumber - 1);
 
-                            if (l != null) {
-                                l.show (Line.SHOW_GOTO);
-                                return;
+                                if (l != null) {
+                                    l.show(Line.SHOW_GOTO);
+                                    return;
+                                }
+                            } catch (IndexOutOfBoundsException oob) {
+                                //line number is no more valid
+                                ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, oob);
                             }
                         }
                     }
