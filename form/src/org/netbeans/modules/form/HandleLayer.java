@@ -49,6 +49,7 @@ import java.awt.datatransfer.*;
 import java.awt.dnd.*;
 import java.awt.event.*;
 import java.awt.geom.Area;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import javax.swing.*;
@@ -2588,10 +2589,19 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
         Composite originalComposite = g2.getComposite();
         g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.7f));
         try {
-            if (comp instanceof JComponent)
+            if (comp instanceof JComponent) {
                 comp.paint(g);
-            else
-                comp.getPeer().paint(g);
+            } else {
+                int width = comp.getWidth();
+                int height = comp.getHeight();
+                if ((width>0) && (height>0)) {
+                    Image image = comp.createImage(width, height);
+                    Graphics gImage = image.getGraphics();
+                    gImage.setClip(0, 0, width, height);
+                    comp.getPeer().paint(gImage);
+                    g.drawImage(image, 0, 0, null);
+                }
+            }
         }
         catch (RuntimeException ex) { // inspired by bug #62041 (JProgressBar bug #5035852)
             org.openide.ErrorManager.getDefault().notify(
