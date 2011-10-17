@@ -83,7 +83,8 @@ public abstract class JavadocTestSupport extends NbTestCase {
         
 //        MockMimeLookup.setInstances(MimePath.parse("text/x-java"), new JavaKit());
         SourceUtilsTestUtil.prepareTest(new String[] {
-            "org/netbeans/modules/java/editor/resources/layer.xml"
+            "org/netbeans/modules/java/editor/resources/layer.xml",
+            "META-INF/generated-layer.xml"
         },
         new Object[] {
             new Pool(),

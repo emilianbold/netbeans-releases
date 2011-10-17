@@ -79,7 +79,6 @@ import org.openide.util.RequestProcessor;
  */
 public class FollowUp extends JPanel {
     private static final RequestProcessor RP = new RequestProcessor(FollowUp.class.getName(), 2);
-    private CsmProject csmProject;
     /** Creates new form FollowUp */
     private FollowUp(ImportProject importer, NativeProject project) {
         initComponents();
@@ -93,8 +92,7 @@ public class FollowUp extends JPanel {
         showCodeAssistanceState(map, project);
         CsmModel model = CsmModelAccessor.getModel();
         if (model != null  && project != null) {
-            csmProject = model.getProject(project);
-            initDetails();
+            initDetails(model.getProject(project));
         }
     }
 
@@ -140,7 +138,7 @@ public class FollowUp extends JPanel {
             codeAssistance.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/cnd/discovery/wizard/resources/error.png"))); // NOI18N
         } else {
             State stateMake = map.get(Step.Make);
-            if (stateMake == stateMake.Fail) {
+            if (stateMake == State.Fail) {
                 codeAssistance.setText(getString("CodeAssistanceInfoText")); // NOI18N
                 codeAssistance.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/cnd/discovery/wizard/resources/info.png"))); // NOI18N
             }
@@ -155,7 +153,10 @@ public class FollowUp extends JPanel {
         return false;
     }
 
-    private void initDetails() {
+    private void initDetails(CsmProject csmProject) {
+        if (csmProject == null) {
+            return;
+        }
         Object o = csmProject.getPlatformProject();
         if (o instanceof NativeProject) {
             NativeProject nativeProject = (NativeProject) o;
@@ -220,7 +221,7 @@ public class FollowUp extends JPanel {
             icon  = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/discovery/wizard/resources/info.png", false); // NOI18N
         } else {
             State stateMake = importer.getImportResult().get(Step.Make);
-            if (stateMake == stateMake.Fail) {
+            if (stateMake == State.Fail) {
                 title = getString("Configure_Info"); // NOI18N
                 icon  = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/discovery/wizard/resources/info.png", false); // NOI18N
             } else {
