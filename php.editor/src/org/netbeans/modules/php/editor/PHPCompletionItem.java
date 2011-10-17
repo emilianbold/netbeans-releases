@@ -486,17 +486,16 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         static List<FunctionElementItem> getItems(final BaseFunctionElement function, CompletionRequest request) {
             final List<FunctionElementItem> retval = new ArrayList<FunctionElementItem>();
             final List<ParameterElement> parameters = new ArrayList<ParameterElement>();
-            final ExistingVariableResolver existingVariableResolver = new ExistingVariableResolver(request);
             for (ParameterElement param : function.getParameters()) {
                 if (!param.isMandatory()) {
                     if (retval.isEmpty()) {
                         retval.add(new FunctionElementItem(function, request, parameters));
                     }
-                    parameters.add(existingVariableResolver.resolveVariable(param));
+                    parameters.add(param);
                     retval.add(new FunctionElementItem(function, request, parameters));
                 } else {
                     //assert retval.isEmpty():param.asString();
-                    parameters.add(existingVariableResolver.resolveVariable(param));
+                    parameters.add(param);
                 }
             }
             if (retval.isEmpty()) {
@@ -604,8 +603,9 @@ public abstract class PHPCompletionItem implements CompletionProposal {
 
         public List<String> getInsertParams() {
             List<String> insertParams = new LinkedList<String>();
+            final ExistingVariableResolver existingVariableResolver = new ExistingVariableResolver(request);
             for (ParameterElement parameter : parameters) {
-                insertParams.add(parameter.getName());
+                insertParams.add(existingVariableResolver.resolveVariable(parameter).getName());
             }
             return insertParams;
         }
