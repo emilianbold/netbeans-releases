@@ -114,7 +114,7 @@ made subject to such option by the copyright holder.
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.subversion.ui.cleanup.CleanupAction"/>
             </file>
             <file name="org-netbeans-modules-subversion-ui-relocate-RelocateAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.subversion.ui.cleanup.RelocateAction"/>
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.subversion.ui.relocate.RelocateAction"/>
             </file>
             <file name="org-netbeans-modules-subversion-ui-properties-VersioningInfoAction.instance">
                  <attr name="instanceClass" stringvalue="org.netbeans.modules.subversion.ui.properties.VersioningInfoAction"/>
@@ -172,7 +172,7 @@ made subject to such option by the copyright holder.
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.subversion.resources.Bundle"/>
 
                 <file name="UpdateWithDependenciesAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-ui-UpdateWithDependenciesAction.instance"/>
+                    <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-ui-update-UpdateWithDependenciesAction.instance"/>
                 </file>
 
                 <file name="StatusAction.shadow">
