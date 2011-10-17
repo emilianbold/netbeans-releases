@@ -674,7 +674,7 @@ attribute
 	;
     
 attrname
-	: IDENT
+	: IDENT (DOT IDENT)*
 	;
 	
 attrvalue
