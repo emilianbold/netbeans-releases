@@ -76,7 +76,7 @@ final class TodoDao {
      * @return Todo Todo or <i>null</i> if not found
      */
     public function findById($id) {
-        $row = $this->getDb()->query('SELECT * FROM todo WHERE deleted = 0 and id = ' . (int) $id, PDO::FETCH_ASSOC)->fetch();
+        $row = $this->query('SELECT * FROM todo WHERE deleted = 0 and id = ' . (int) $id)->fetch();
         if (!$row) {
             return null;
         }
@@ -239,11 +239,11 @@ final class TodoDao {
      * @return PDOStatement
      */
     private function query($sql) {
-        $rows = $this->getDb()->query($sql, PDO::FETCH_ASSOC);
-        if ($rows === false) {
+        $statement = $this->getDb()->query($sql, PDO::FETCH_ASSOC);
+        if ($statement === false) {
             self::throwDbError($this->getDb()->errorInfo());
         }
-        return $rows;
+        return $statement;
     }
 
     private static function throwDbError(array $errorInfo) {
