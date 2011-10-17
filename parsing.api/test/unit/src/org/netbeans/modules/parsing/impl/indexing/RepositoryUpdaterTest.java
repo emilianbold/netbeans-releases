@@ -1928,14 +1928,20 @@ public class RepositoryUpdaterTest extends NbTestCase {
         perfLogger.addHandler(h);
         try {
             perfLogger.setLevel(Level.FINE);
-            h.expect("reportScanOfFile:","reportIndexerStatistics:");   //NOI18N
+            h.expect("reportScanOfFile:","INDEXING_FINISHED");   //NOI18N
             globalPathRegistry_register(SOURCES, new ClassPath[]{cp});
             final PerfLoghandler.R r = h.await(5000);
             assertNotNull(r);
             assertEquals(rootFo.getURL(), r.getParams("reportScanOfFile:")[0]);     //NOI18N
-            final Map<String,int[]> istat = (Map<String,int[]>)r.getParams("reportIndexerStatistics:")[0];  //NOI18N
-            assertEquals(1,istat.get("emb")[0]);    //NOI18N
-            assertEquals(1,istat.get("foo")[0]);    //NOI18N
+            final Object[] data = r.getParams("INDEXING_FINISHED"); //NOI18N
+            assertEquals(7, data.length);
+            assertTrue((Long)data[0] >= 0);
+            assertTrue("emb".equals(data[1]) || "foo".equals(data[1])); //NOI18N
+            assertTrue((Integer)data[2] == 1);
+            assertTrue((Integer)data[3] >= 0);
+            assertTrue("emb".equals(data[4]) || "foo".equals(data[4])); //NOI18N
+            assertTrue((Integer)data[5] == 1);
+            assertTrue((Integer)data[6] >= 0);
         } finally {
             perfLogger.removeHandler(h);
         }

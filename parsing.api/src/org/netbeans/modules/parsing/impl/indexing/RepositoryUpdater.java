@@ -953,6 +953,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
     private static final Logger TEST_LOGGER = Logger.getLogger(RepositoryUpdater.class.getName() + ".tests"); //NOI18N
     private static final Logger PERF_LOGGER = Logger.getLogger(RepositoryUpdater.class.getName() + ".perf"); //NOI18N
     private static final Logger SFEC_LOGGER = Logger.getLogger("org.netbeans.ui.ScanForExternalChanges"); //NOI18N
+    private static final Logger UI_LOGGER = Logger.getLogger("org.netbeans.ui.indexing");   //NOI18N
     private static final RequestProcessor RP = new RequestProcessor("RepositoryUpdater.delay"); //NOI18N
     private static final boolean notInterruptible = getSystemBoolean("netbeans.indexing.notInterruptible", false); //NOI18N
     private static final boolean useRecursiveListeners = getSystemBoolean("netbeans.indexing.recursiveListeners", true); //NOI18N
@@ -1658,6 +1659,9 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
 
     /* test */ static abstract class Work {
 
+        //@GuardedBy("org.netbeans.modules.parsing.impl.Taskprocessor.parserLock")
+        private static long lastScanEnded = -1L;
+
         private final AtomicBoolean cancelled = new AtomicBoolean(false);
         private final AtomicBoolean finished = new AtomicBoolean(false);
         private final AtomicBoolean externalCancel = new AtomicBoolean(false);
@@ -2311,21 +2315,29 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
 
         public final void doTheWork() {
             try {
-                if (PERF_LOGGER.isLoggable(Level.FINE)) {
+                long startTime = -1L;
+                if (UI_LOGGER.isLoggable(Level.INFO) ||
+                    PERF_LOGGER.isLoggable(Level.FINE)) {
+                    reportIndexingStart(UI_LOGGER, Level.INFO, lastScanEnded);
+                    startTime = System.currentTimeMillis();
                     indexerStatistics = new HashMap<String, int[]>();
                 }
                 try {
                     finished.compareAndSet(false, getDone());
                 } finally {
                     if (indexerStatistics != null) {
-                        Map<String,int[]> stats = indexerStatistics;
+                        lastScanEnded = System.currentTimeMillis();
+                        final Object[] stats = createIndexerStatLogData(
+                                lastScanEnded - startTime,
+                                indexerStatistics);
                         indexerStatistics = null;
-                        reportIndexerStatistics(stats);
+                        reportIndexerStatistics(UI_LOGGER, Level.INFO, stats);
+                        reportIndexerStatistics(PERF_LOGGER, Level.FINE, stats);
                     }
                 }
             } catch (Throwable t) {
                 LOGGER.log(Level.WARNING, null, t);
-                
+
                 // prevent running the faulty work again
                 finished.set(true);
 
@@ -2422,13 +2434,48 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
             }
         }
 
-        private void reportIndexerStatistics(final @NonNull Map<String,int[]> stats) {
-            PERF_LOGGER.log(
-                Level.FINE,
-                "reportIndexerStatistics: {0}",    //NOI18N
-                new Object[] {
-                    stats
-                });
+        private static void reportIndexerStatistics(
+                final @NonNull Logger logger,
+                final @NonNull Level level,
+                final @NonNull Object[] data) {
+            if (logger.isLoggable(level)) {
+                final LogRecord r = new LogRecord(level, "INDEXING_FINISHED"); //NOI18N
+                r.setParameters(data);
+                r.setResourceBundle(NbBundle.getBundle(RepositoryUpdater.class));
+                r.setResourceBundleName(RepositoryUpdater.class.getPackage().getName() + ".Bundle"); //NOI18N
+                r.setLoggerName(logger.getName());
+                logger.log(r);
+            }
+        }
+
+        private static void reportIndexingStart(
+                @NonNull final Logger logger,
+                @NonNull final Level level,
+                final long lastScanEnded) {
+            if (logger.isLoggable(level)) {
+                final LogRecord r = new LogRecord(level, "INDEXING_STARTED"); //NOI18N
+                r.setParameters(new Object [] {lastScanEnded == -1 ? 0 : System.currentTimeMillis()-lastScanEnded});
+                r.setResourceBundle(NbBundle.getBundle(RepositoryUpdater.class));
+                r.setResourceBundleName(RepositoryUpdater.class.getPackage().getName() + ".Bundle"); //NOI18N
+                r.setLoggerName(logger.getName());
+                logger.log(r);
+            }
+        }
+
+        private static Object[] createIndexerStatLogData(
+                final long indexingTime,
+                final Map<String,int[]> stats) {
+            final Object[] result = new Object[3*stats.size()+1];
+            result[0] = indexingTime;
+            final Iterator<Map.Entry<String,int[]>> it = stats.entrySet().iterator();
+            for (int i=1; it.hasNext(); i+=3) {
+                final Map.Entry<String,int[]> e = it.next();
+                result[i] = e.getKey();
+                final int[] countTimePair = e.getValue();
+                result[i+1] = countTimePair[0];
+                result[i+2] = countTimePair[1];
+            }
+            return result;
         }
 
     } // End of Work class
