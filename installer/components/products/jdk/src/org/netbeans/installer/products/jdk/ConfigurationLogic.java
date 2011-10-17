@@ -116,7 +116,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                     final Progress jdkProgress = new Progress();
                     final Progress jreProgress = new Progress();
                     final Progress javadbProgress = new Progress();
-                    final boolean isFullSilentInstaller = isJDK6U15orLater();
+                    final boolean isFullSilentInstaller = isJDK6U15orLater() && !isJDK7(); //workaround for restart issue
                     //TODO: JavaDB feature is turned off for 64-bit OS
                     final boolean javadbBundled =
                             getProduct().getVersion().newerOrEquals(Version.getVersion("1.6.0"));
@@ -402,8 +402,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         return getProduct().getVersion().newerOrEquals(Version.getVersion("1.6.0_10"));
     }
     private boolean isJDK6U15orLater() {
-        return getProduct().getVersion().newerOrEquals(Version.getVersion("1.6.0_15")) &&
-                !getProduct().getVersion().equals(Version.getVersion("1.7.0_01"));
+        return getProduct().getVersion().newerOrEquals(Version.getVersion("1.6.0_15"));
     }
     private boolean isJDK7() {
         return getProduct().getVersion().newerOrEquals(Version.getVersion("1.7.0"));
