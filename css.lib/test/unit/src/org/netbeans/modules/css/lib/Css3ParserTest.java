@@ -796,6 +796,32 @@ public class Css3ParserTest extends CslTestBase {
         assertNoTokenNodeLost(result);
     }
 
+    public void testParserRecovery_Issue203579() throws BadLocationException, ParseException {
+        String code = "p {} #{} .{} div {}";
+        CssParserResult result = TestUtil.parse(code);
+        
+//        NodeUtil.dumpTree(result.getParseTree());
+        
+        Node node = NodeUtil.query(result.getParseTree(),
+                "styleSheet/bodylist/bodyset|0/"
+                + "ruleSet/selectorsGroup/selector/simpleSelectorSequence/typeSelector/elementName");
+        assertNotNull(node);
+        assertFalse(NodeUtil.containsError(node));
+        
+        node = NodeUtil.query(result.getParseTree(),
+                "styleSheet/bodylist/bodyset|1/"
+                + "ruleSet/selectorsGroup/selector/simpleSelectorSequence/elementSubsequent/cssId");
+        assertNotNull(node);
+        assertTrue(NodeUtil.containsError(node));
+        
+        node = NodeUtil.query(result.getParseTree(),
+                "styleSheet/bodylist/bodyset|2/"
+                + "ruleSet/selectorsGroup/selector/simpleSelectorSequence/elementSubsequent/cssClass");
+        assertNotNull(node);
+        assertTrue(NodeUtil.containsError(node));
+        
+    }
+    
     private CssParserResult assertResultOK(CssParserResult result) {
         return assertResult(result, 0);
     }

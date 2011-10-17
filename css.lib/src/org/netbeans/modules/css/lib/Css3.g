@@ -491,9 +491,9 @@ namespace_wildcard_prefix
   	:	
   	STAR
   	;
-        
+       
 esPred
-    : HASH | DOT | LBRACKET | COLON | DCOLON
+    : '#' | HASH | DOT | LBRACKET | COLON | DCOLON
     ;
     
 elementSubsequent
@@ -507,13 +507,22 @@ elementSubsequent
     WS*
     ;
     
+//Error Recovery: Allow the parser to enter the cssId rule even if there's just hash char.
 cssId
-    : HASH
+    : HASH | ( '#' NAME )
     ;
+    catch[ RecognitionException rce] {
+        reportError(rce);
+        consumeUntil(input, BitSet.of(WS, IDENT, LBRACE)); 
+    }
 
 cssClass
     : DOT ( IDENT | GEN  )
     ;
+    catch[ RecognitionException rce] {
+        reportError(rce);
+        consumeUntil(input, BitSet.of(WS, IDENT, LBRACE)); 
+    }
     
 //using typeSelector even for the universal selector since the lookahead would have to be 3 (IDENT PIPE (IDENT|STAR) :-(
 elementName
