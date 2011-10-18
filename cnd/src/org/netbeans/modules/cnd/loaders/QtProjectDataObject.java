@@ -66,9 +66,7 @@ public class QtProjectDataObject extends MultiDataObject {
     public QtProjectDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
         super(pf, loader);
         registerEditor(MIMENames.QTPROJECT_MIME_TYPE, true);
-        CookieSet cookies = getCookieSet();
-        //cookies.add((Node.Cookie) DataEditorSupport.create(this, getPrimaryEntry(), cookies));
-        cookies.add(new QMakeExecSupport(getPrimaryEntry()));
+        getCookieSet().add(new QMakeExecSupport(getPrimaryEntry()));
     }
 
     @MultiViewElement.Registration(
@@ -85,18 +83,18 @@ public class QtProjectDataObject extends MultiDataObject {
 
     @Override
     protected Node createNodeDelegate() {
-        return new QMakeDataNode(this, Children.LEAF);
+        return new QMakeDataNode(this);
     }
 
     @Override
-    public Lookup getLookup() {
-        return getCookieSet().getLookup();
+    protected int associateLookup() {
+        return 1;
     }
 
     private static class QMakeDataNode extends DataNode {
         /** Construct the DataNode */
-        public QMakeDataNode(QtProjectDataObject obj, Children ch) {
-            super(obj, ch, obj.getLookup());
+        public QMakeDataNode(QtProjectDataObject obj) {
+            super(obj, Children.LEAF, obj.getLookup());
         }
 
         /** Get the support for methods which need it */

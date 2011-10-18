@@ -72,14 +72,12 @@ public class ShellDataObject extends MultiDataObject {
         super(pf, loader);
 
         registerEditor(MIMENames.SHELL_MIME_TYPE, true);
-        CookieSet cookies = getCookieSet();
-        //cookies.add((Node.Cookie) DataEditorSupport.create(this, getPrimaryEntry(), cookies));
-        cookies.add(new ShellExecSupport(getPrimaryEntry()));
+        getCookieSet().add(new ShellExecSupport(getPrimaryEntry()));
     }
 
     @Override
-    public Lookup getLookup() {
-        return getCookieSet().getLookup();
+    protected int associateLookup() {
+        return 1;
     }
 
     @Messages("Source=&Source")
