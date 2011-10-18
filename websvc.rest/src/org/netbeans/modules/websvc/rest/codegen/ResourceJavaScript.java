@@ -69,6 +69,8 @@ import org.openide.util.Utilities;
  *
  */
 class ResourceJavaScript extends TokenReplacer {
+    private static final String ENTITY_NAME_VAR = "entity_name";
+    
     final String RJSSUPPORT = "rjsSupport";         // NOI18N
 
     ResourceJavaScript( ClientStubsGenerator generator, Resource r, 
@@ -87,9 +89,9 @@ class ResourceJavaScript extends TokenReplacer {
         StringBuilder stubsMethods = new StringBuilder();
         createRestMethods(resource, object, pkg, restMethods , stubsMethods);
         
-        tokens.put("__GENERIC_NAME__", resource.getName());          // NOI18N
-        tokens.put("__REST_METHODS__", restMethods.toString());      // NOI18N
-        tokens.put("__STUB_METHODS__", stubsMethods.toString());      // NOI18N
+        tokens.put("generic_name", resource.getName());          // NOI18N
+        tokens.put("rest_methods", restMethods.toString());      // NOI18N
+        tokens.put("stub_methods", stubsMethods.toString());      // NOI18N
         setTokens(tokens);
     }
 
@@ -104,7 +106,7 @@ class ResourceJavaScript extends TokenReplacer {
                 continue;
             }
             Map<String,String> tokens = new HashMap<String, String>();
-            tokens.put("__ENTITY_NAME__", entityName);
+            tokens.put(ENTITY_NAME_VAR, entityName);
             FileObject entity = createResource(ClientStubsGenerator.JS_ENTITY_TEMPLATE, 
                     entityName ,tokens );
             entityFiles.add( entity.getName() );
@@ -135,15 +137,16 @@ class ResourceJavaScript extends TokenReplacer {
                                 File.separator+fileNameExt));
             }
         }
-        getGenerator().createDataObjectFromTemplate(
-                templateName , jsFolder, name, 
-                ClientStubsGenerator.JS, getGenerator().canOverwrite());
-        fo = jsFolder.getFileObject(fileNameExt);
+        
         if ( tokens == null ){
-            replaceTokens(fo);
+            fo = getGenerator().createDataObjectFromTemplate(
+                    templateName , jsFolder, name, 
+                    ClientStubsGenerator.JS, getGenerator().canOverwrite(), getTokens());
         }
         else {
-            replaceTokens(fo, tokens);
+            fo = getGenerator().createDataObjectFromTemplate(
+                    templateName , jsFolder, name, 
+                    ClientStubsGenerator.JS, getGenerator().canOverwrite(), tokens);
         }
         return fo;
     }

@@ -1,18 +1,18 @@
 /*
-* Support js for __GENERIC_NAME__
+* Support js for ${generic_name}
 */
 
-function __GENERIC_NAME__(uri_) {
+function ${generic_name}(uri_) {
     this.uri = uri_;
 }
 
-__GENERIC_NAME__.prototype = {
+${generic_name}.prototype = {
 
    getUri : function() {
       return this.uri;
    },
 
-__REST_METHODS__
+${rest_methods}
 
    toString : function() {
       var myObj = 
@@ -64,11 +64,11 @@ __REST_METHODS__
    }
 }
 
-function __GENERIC_NAME__Remote(uri_) {
+function ${generic_name}Remote(uri_) {
     this.uri = uri_;
 }
 
-__GENERIC_NAME__Remote.prototype = {
+${generic_name}Remote.prototype = {
 
 /* Default getJson_() method . Do not remove. */
    getJson_ : function(uri_) {
@@ -86,5 +86,5 @@ __GENERIC_NAME__Remote.prototype = {
    deleteJson_ : function(uri_, content) {
       return rjsSupport.delete_(this.uri+uri_, 'application/json', content);
    },
-__STUB_METHODS__
+${stub_methods}
 }
