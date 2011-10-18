@@ -142,6 +142,9 @@ form input.submit {
 .errors li {
     color: red;
 }
+.error-field {
+    background-color: pink;
+}
 
 /** boxes **/
 .box {
@@ -263,6 +266,20 @@ table.detail td {
 
 .title {
     margin-bottom: 18px;
+}
+
+/** flashes **/
+ul#flashes {
+    margin: 0;
+    margin-bottom: 15px;
+    padding: 0;
+    list-style: none;
+}
+ul#flashes li {
+    margin: 0;
+    padding: 0;
+    color: green;
+    font-weight: bold;
 }
 
 /** jquery ui **/

@@ -167,14 +167,17 @@ public class PHPHintsProvider implements HintsProvider {
         }
     }
 
+    @Override
     public void cancel() {
 
     }
 
+    @Override
     public List<Rule> getBuiltinRules() {
         return Collections.<Rule>emptyList();
     }
 
+    @Override
     public RuleContext createRuleContext() {
         return new PHPRuleContext();
     }

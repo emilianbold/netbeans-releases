@@ -155,6 +155,13 @@ public final class ConsoleTopComponent extends TopComponent implements IOTopComp
     }
 
     @Override
+    public void requestActive() {
+        super.requestActive();
+        // redirect focus into terminal, see IZ 203882
+        tc.requestFocusInWindow();
+    }
+
+    @Override
     protected void componentActivated() {
         super.componentActivated();
         tc.componentActivated();

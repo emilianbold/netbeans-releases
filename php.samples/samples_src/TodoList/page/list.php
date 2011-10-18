@@ -41,7 +41,7 @@
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
-$status = ProjectUtil::getUrlParam('status');
+$status = Utils::getUrlParam('status');
 TodoValidator::validateStatus($status);
 
 $dao = new TodoDao();
@@ -49,7 +49,7 @@ $search = new TodoSearchCriteria();
 $search->setStatus($status);
 
 // data for template
-$title = ProjectUtil::capitalize($status) . ' TODOs';
+$title = Utils::capitalize($status) . ' TODOs';
 $todos = $dao->find($search);
 
 ?>

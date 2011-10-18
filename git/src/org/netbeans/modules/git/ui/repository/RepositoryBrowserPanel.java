@@ -774,15 +774,19 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
             branchId = branch.getId();
             setIconBaseWithExtension("org/netbeans/modules/git/resources/icons/branch.png"); //NOI18N
             RepositoryInfo info = RepositoryInfo.getInstance(repository);
-            info.addPropertyChangeListener(WeakListeners.propertyChange(list = new PropertyChangeListener() {
-                @Override
-                public void propertyChange (PropertyChangeEvent evt) {
-                    if (RepositoryInfo.PROPERTY_ACTIVE_BRANCH.equals(evt.getPropertyName()) || RepositoryInfo.PROPERTY_HEAD.equals(evt.getPropertyName())) {
-                        refreshActiveBranch((GitBranch) evt.getNewValue());
+            if (info == null) {
+                LOG.log(Level.INFO, "BranchNode() : Null info for {0}", repository); //NOI18N
+            } else {
+                info.addPropertyChangeListener(WeakListeners.propertyChange(list = new PropertyChangeListener() {
+                    @Override
+                    public void propertyChange (PropertyChangeEvent evt) {
+                        if (RepositoryInfo.PROPERTY_ACTIVE_BRANCH.equals(evt.getPropertyName()) || RepositoryInfo.PROPERTY_HEAD.equals(evt.getPropertyName())) {
+                            refreshActiveBranch((GitBranch) evt.getNewValue());
+                        }
                     }
-                }
-            }, info));
-            refreshActiveBranch(info.getActiveBranch());
+                }, info));
+                refreshActiveBranch(info.getActiveBranch());
+            }
         }
 
         @Override
@@ -939,7 +943,11 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
         private TagChildren (File repository) {
             this.repository = repository;
             RepositoryInfo info = RepositoryInfo.getInstance(repository);
-            info.addPropertyChangeListener(WeakListeners.propertyChange(this, info));
+            if (info == null) {
+                LOG.log(Level.INFO, "TagChildren() : Null info for {0}", repository); //NOI18N
+            } else {
+                info.addPropertyChangeListener(WeakListeners.propertyChange(this, info));
+            }
         }
 
         
@@ -1023,15 +1031,20 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
             revisionId = tag.getTaggedObjectId();
             setIconBaseWithExtension("org/netbeans/modules/git/resources/icons/tag.png"); //NOI18N
             RepositoryInfo info = RepositoryInfo.getInstance(repository);
-            info.addPropertyChangeListener(WeakListeners.propertyChange(list = new PropertyChangeListener() {
-                @Override
-                public void propertyChange (PropertyChangeEvent evt) {
-                    if (RepositoryInfo.PROPERTY_ACTIVE_BRANCH.equals(evt.getPropertyName()) || RepositoryInfo.PROPERTY_HEAD.equals(evt.getPropertyName())) {
-                        refreshActiveBranch((GitBranch) evt.getNewValue());
+            if (info == null) {
+                LOG.log(Level.INFO, "TagNode() : Null info for {0}", repository); //NOI18N
+                list = null;
+            } else {
+                info.addPropertyChangeListener(WeakListeners.propertyChange(list = new PropertyChangeListener() {
+                    @Override
+                    public void propertyChange (PropertyChangeEvent evt) {
+                        if (RepositoryInfo.PROPERTY_ACTIVE_BRANCH.equals(evt.getPropertyName()) || RepositoryInfo.PROPERTY_HEAD.equals(evt.getPropertyName())) {
+                            refreshActiveBranch((GitBranch) evt.getNewValue());
+                        }
                     }
-                }
-            }, info));
-            refreshActiveBranch(info.getActiveBranch());
+                }, info));
+                refreshActiveBranch(info.getActiveBranch());
+            }
         }
 
         @Override
@@ -1168,7 +1181,11 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
         private AllRemotesChildren (File repository) {
             this.repository = repository;
             RepositoryInfo info = RepositoryInfo.getInstance(repository);
-            info.addPropertyChangeListener(WeakListeners.propertyChange(this, info));
+            if (info == null) {
+                LOG.log(Level.INFO, "AllRemotesChildren() : Null info for {0}", repository); //NOI18N
+            } else {
+                info.addPropertyChangeListener(WeakListeners.propertyChange(this, info));
+            }
         }
 
         @Override
