@@ -46,10 +46,10 @@
 package org.netbeans.modules.cnd.debugger.common2.debugger.options;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
+import org.netbeans.modules.cnd.debugger.common2.utils.options.CatalogDynamic;
 import org.netbeans.modules.cnd.debugger.common2.utils.options.Option;
 import org.netbeans.modules.cnd.debugger.common2.utils.options.OptionValue;
 import org.netbeans.modules.cnd.debugger.common2.utils.options.Validity;
-import org.netbeans.modules.cnd.debugger.common2.utils.options.CatalogDynamic;
 
 public class DebuggerOption extends Option {
 
@@ -302,7 +302,7 @@ public class DebuggerOption extends Option {
 			    true, // is engine option
 			    CHECK_BOX, true); //type
 
-    static String default_dbx_init_file = System.getProperty("user.home") + "/.dbxrc";
+    private static final String default_dbx_init_file = System.getProperty("user.home") + "/.dbxrc";
     public static final DebuggerOption DBX_INIT_FILE =
 	new DebuggerOption( // NOI18N
 			    "dbx_init_file", // NOI18N //name
@@ -310,13 +310,20 @@ public class DebuggerOption extends Option {
 			    true, // is engine option
 			    FILE, true);  //type , hasToolTip
 
-    static String default_gdb_init_file = System.getProperty("user.home") + "/.gdbinit";
+    private static final String default_gdb_init_file = System.getProperty("user.home") + "/.gdbinit";
     public static final DebuggerOption GDB_INIT_FILE =
 	new DebuggerOption( // NOI18N
 			    "gdb_init_file", // NOI18N //name
 			    default_gdb_init_file, // deault value
 			    false, // is engine option
 			    FILE, true);  //type , hasToolTip
+    
+    public static final DebuggerOption GDB_SOURCE_DIRS =
+	new DebuggerOption( // NOI18N
+			    "gdb_source_dirs", // NOI18N //name
+			    "", //NOI18N // deault value
+			    false, // is engine option
+			    TEXT_AREA, true);  //type , hasToolTip
 
     public static final DebuggerOption OUTPUT_BASE  =
 	new DebuggerOption( // NOI18N
