@@ -43,7 +43,8 @@
 
 //~ Template for index.php
 // variables:
-//  $template - template to be displayed (included)
+//  $template - page to be displayed (included)
+//  $flashes - flash messages
 
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
@@ -77,14 +78,14 @@
                         <div class="inner">
                             <div class="title"><a href="http://netbeans.org/features/php/">NetBeans IDE PHP</a></div>
                             <ul class="list">
-                                <li><span><a href="<?php echo ProjectUtil::createLink('home'); ?>">Home</a></span></li>
-                                <li><span><a href="<?php echo ProjectUtil::createLink('list', array('status' => Todo::STATUS_PENDING)); ?>"
+                                <li><span><a href="<?php echo Utils::createLink('home'); ?>">Home</a></span></li>
+                                <li><span><a href="<?php echo Utils::createLink('list', array('status' => Todo::STATUS_PENDING)); ?>"
                                              ><img src="img/status/PENDING.png" alt="" title="Pending TODOs" class="icon" />Pending TODOs</a></span></li>
-                                <li><span><a href="<?php echo ProjectUtil::createLink('list', array('status' => Todo::STATUS_DONE)); ?>"
+                                <li><span><a href="<?php echo Utils::createLink('list', array('status' => Todo::STATUS_DONE)); ?>"
                                              ><img src="img/status/DONE.png" alt="" title="Done TODOs" class="icon" />Done TODOs</a></span></li>
-                                <li><span><a href="<?php echo ProjectUtil::createLink('list', array('status' => Todo::STATUS_VOIDED)); ?>"
+                                <li><span><a href="<?php echo Utils::createLink('list', array('status' => Todo::STATUS_VOIDED)); ?>"
                                              ><img src="img/status/VOIDED.png" alt="" title="Voided TODOs" class="icon" />Voided TODOs</a></span></li>
-                                <li class="last"><span><a href="<?php echo ProjectUtil::createLink('add-edit'); ?>"
+                                <li class="last"><span><a href="<?php echo Utils::createLink('add-edit'); ?>"
                                              ><img src="img/action/add.png" alt="" title="Add TODO" class="icon" />Add TODO</a></span></li>
                             </ul>
                         </div>
@@ -92,9 +93,15 @@
                 </div>
                 <div class="col-2">
                     <div class="indent">
-                        <?php
-                            require $template;
-                        ?>
+                        <?php if ($flashes): ?>
+                            <ul id="flashes">
+                            <?php foreach ($flashes as $flash): ?>
+                                <li><?php echo $flash; ?></li>
+                            <?php endforeach; ?>
+                            </ul>
+                        <?php endif; ?>
+
+                        <?php require $template; ?>
                     </div>
                 </div>
             </div>

@@ -41,15 +41,16 @@
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
-$todo = ProjectUtil::getTodoByGetId();
-$todo->setStatus(ProjectUtil::getUrlParam('status'));
+$todo = Utils::getTodoByGetId();
+$todo->setStatus(Utils::getUrlParam('status'));
 if (array_key_exists('comment', $_POST)) {
     $todo->setComment($_POST['comment']);
 }
 
 $dao = new TodoDao();
-$dao->save($todo->getId(), $todo);
+$dao->save($todo);
+Flash::addFlash('TODO status changed successfully.');
 
-ProjectUtil::redirect('detail', array('id' => $todo->getId()));
+Utils::redirect('detail', array('id' => $todo->getId()));
 
 ?>
