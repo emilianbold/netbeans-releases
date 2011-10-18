@@ -39,6 +39,11 @@
                     <param name="textColor" value="blue"></object>.</li>
             <li><strong>Maximum Depth of Structures.</strong> Sets the visibility of nested structures (such as nested arrays, objects in objects, etc.) </li>
             <li><strong>Maximum Number of Children.</strong> Sets the visibility of array items during Watch evaluation. (If you set Maximum Number of Children to 1 you will see only the first item of an array even if the array has more then one item.)</li>
+            <li><strong>Show Requested URLs.</strong> Opens new Output window  during debugging. This Output window is named PHP Requested Urls and it shows currently processed URLs. The URLs are clickable. Click on a URL in the Output window to open the URL in a browser window.</li>
+            <li><strong>PHP Debugger Console.</strong> Opens new Output window that shows the output of debugged scripts.
+                <ul class="note">
+                    <li>Set <tt>output_buffering = Off</tt> in your <tt>php.ini</tt> file. Otherwise there will be a delay in seeing script output in the Output window.</li>
+                </ul></li>
         </ul>
 
         <dl> 
