@@ -232,19 +232,20 @@ public class JavaFXProjectWizardIterator implements WizardDescriptor.ProgressIns
         
                 // create additional files
                 if (type == WizardType.FXML) {
-                    int lastDotIdx = mainClass.lastIndexOf('.'); // NOI18N
-                    String pName = null;
-                    if (lastDotIdx != -1) {
-                        pName = mainClass.substring(0, lastDotIdx).trim();
-                        pName = pName.replace('.', '/'); // NOI18N
+                    String pName = ""; // NOI18N
+                    if (mainClass != null && mainClass.length() > 0) {
+                        int lastDotIdx = mainClass.lastIndexOf('.'); // NOI18N
+                        if (lastDotIdx != -1) {
+                            pName = mainClass.substring(0, lastDotIdx).trim();
+                            pName = pName.replace('.', '/'); // NOI18N
+                            pName += '/'; // NOI18N
+                        }
                     }
-                    
-                    FileObject controller = sourcesRoot.getFileObject(pName + '/' + GENERATED_FXML_CLASS_NAME + ".java"); // NOI18N
+                    FileObject controller = sourcesRoot.getFileObject(pName + GENERATED_FXML_CLASS_NAME + ".java"); // NOI18N
                     if (controller != null) {
                         resultSet.add(controller);
                     }
-
-                    FileObject fxml = sourcesRoot.getFileObject(pName + '/' + GENERATED_FXML_CLASS_NAME + ".fxml"); // NOI18N
+                    FileObject fxml = sourcesRoot.getFileObject(pName + GENERATED_FXML_CLASS_NAME + ".fxml"); // NOI18N
                     if (fxml != null) {
                         resultSet.add(fxml);
                     }
