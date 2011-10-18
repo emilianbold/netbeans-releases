@@ -38,32 +38,37 @@
         <p>In this panel you create a new FTP/SFTP connection or reconfigure an existing remote connection.</p>
         
         <ul>
-            <li><b>Name:</b> The arbitrary name of the connection. Set the name in the
+            <li><b>Name.</b> The arbitrary name of the connection. Set the name in the
                 <a href="#create-new-connection">Create New Connection panel</a>.</li>
             
-            <li><b>Host name:</b> The root name of your (S)FTP host, such as http://x10hosting.com.</li>
-            <li><b>User name:</b> Your user name on the (S)FTP host.</li>
-            <li><b>Password:</b> Your password on the (S)FTP host. Leave this field
+            <li><b>Host name.</b> The root name of your (S)FTP host, such as http://x10hosting.com.</li>
+            <li><strong>Port.</strong> Port number of your (S)FTP connection.</li>
+            <li><strong>Encryption. (FTP only)</strong> Select whether to encrypt your FTP communication over TLS. You can select Pure FTP (no encryption), Explicit FTP (explicit method to invoke client security) or Implicit FTP (implicit method to invoke client security.)
+            <ul><li><strong>Encrypt Only Authentication Process.</strong> If you choose to encrypt FTP communication, select this to encrypt only the login process.</li></ul></li>
+            <li><b>User name.</b> Your user name on the (S)FTP host.</li>
+            <li><b>Password.</b> Your password on the (S)FTP host. Leave this field
             blank and the IDE will prompt you for your password.</li>
-            <li><b>Private Key file: (SFTP only)</b> The file with the private key
+            <li><b>Private Key file. (SFTP only)</b> The file with the private key
             for your SFTP client. You do not need to use public/private key for 
             SFTP--you can use username/password--but it is better practice to use
             key pair authentication.</li>
-            <li><b>Known Hosts file: (SFTP only)</b> File that stores host names 
+            <li><b>Known Hosts file. (SFTP only)</b> File that stores host names 
                 and public keys. If you do not have a known_hosts file, the public 
                 key must be resent every time a connection is re-established.</li>
-            <li><b>Initial directory:</b> The root directory on your host for all
+            <li><b>Initial directory.</b> The root directory on your host for all
             of your projects. By default it is only a slash, meaning that your host name +
             user name is your root directory.</li>
             <li><b>Timeout (s):</b> Time in which the client waits for a server response
             before timing out the connection. Timeout is in seconds.</li>
-            <li><b>Passive mode: (FTP only)</b> Tick this for the IDE to communicate with the server
+            <li><strong>Keep-alive interval (s).</strong> Sets the connection keep-alive interval. Helps when <a href="runconfig-remote.html">upload-on-save</a> is selected.</li>
+            <li><b>Passive mode. (FTP only)</b> Tick this for the IDE to communicate with the server
             in passive mode. See <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
                     <param name="content" value="http://slacksite.com/other/ftp.html">
                     <param name="text" value="<html><u>Active FTP vs. Passive FTP, a Definitive Explanation</u>.</html>">
                     <param name="textFontSize" value="medium">
                     <param name="textColor" value="blue"></object>
             </li>
+            <li><strong>Ignore Disconnect Errors. (FTP only)</strong> IDE ignores errors during <tt>disconnect()</tt> calls.</li>
             <li><b>Add...</b> Click to add a remote connection. The 
                 <a href="#create-new-connection">Create New Connection panel</a>
             opens.</li>       
