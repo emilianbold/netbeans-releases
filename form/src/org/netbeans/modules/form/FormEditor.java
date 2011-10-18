@@ -172,7 +172,7 @@ public class FormEditor {
         return formDataObject;
     }
 
-    private EditorSupport getEditorSupport() {
+    EditorSupport getEditorSupport() {
         return editorSupport;
     }
 
