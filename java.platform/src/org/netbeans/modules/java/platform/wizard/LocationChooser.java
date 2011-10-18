@@ -162,7 +162,12 @@ public class LocationChooser extends JFileChooser implements PropertyChangeListe
     private void read (WizardDescriptor settings) {
         PlatformSettings ps = PlatformSettings.getDefault();
         if (ps !=null) {
-            this.setCurrentDirectory(ps.getPlatformsFolder());
+            //#199448
+            File curDir = ps.getPlatformsFolder();
+            if( curDir.equals(this.getCurrentDirectory()) && null != curDir.getParentFile() ) {
+                this.setCurrentDirectory(curDir.getParentFile());
+            }
+            this.setCurrentDirectory(curDir);
         }
     }
 

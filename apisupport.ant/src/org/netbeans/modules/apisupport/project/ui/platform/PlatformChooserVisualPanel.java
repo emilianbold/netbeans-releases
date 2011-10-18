@@ -75,7 +75,12 @@ public class PlatformChooserVisualPanel extends BasicVisualPanel
         initAccessibility();
         String location = ModuleUISettings.getDefault().getLastUsedNbPlatformLocation();
         if (location != null) {
-            platformChooser.setCurrentDirectory(new File(location));
+            //#199448
+            File curDir = new File(location);
+            if( curDir.equals(platformChooser.getCurrentDirectory()) && null != curDir.getParentFile() ) {
+                platformChooser.setCurrentDirectory(curDir.getParentFile());
+            }
+            platformChooser.setCurrentDirectory(curDir);
         }
         platformChooser.setAcceptAllFileFilterUsed(false);
         platformChooser.setFileFilter(new FileFilter() {
