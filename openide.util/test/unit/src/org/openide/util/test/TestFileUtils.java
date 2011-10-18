@@ -51,6 +51,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -154,6 +155,9 @@ public class TestFileUtils {
     public static void writeZipFile(OutputStream os, Map<String,byte[]> entries) throws IOException {
         ZipOutputStream zos = new ZipOutputStream(os);
         Set<String> parents = new HashSet<String>();
+        if (entries.isEmpty()) {
+            entries = Collections.singletonMap("PLACEHOLDER", new byte[0]);
+        }
         for (Map.Entry<String,byte[]> entry : entries.entrySet()) {
             String name = entry.getKey();
             assert name.length() > 0 && !name.endsWith("/") && !name.startsWith("/") && name.indexOf("//") == -1 : name;
