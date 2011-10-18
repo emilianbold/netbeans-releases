@@ -1790,33 +1790,36 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         boolean modsDone = false;
         boolean lastAtomic = false;
         synchronized (this) {
-            extWriteUnlock();
             if (atomicDepth == 0) {
                 throw new IllegalStateException("atomicUnlock() without atomicLock()"); // NOI18N
             }
 
             if (--atomicDepth == 0) { // lock really ended
-                AtomicCompoundEdit localAtomicEdits = null;
-                lastAtomic = true;
-                fireAtomicUnlock(atomicLockEventInstance);
+                try {
+                    AtomicCompoundEdit localAtomicEdits = null;
+                    lastAtomic = true;
+                    fireAtomicUnlock(atomicLockEventInstance);
 
-                if (atomicEdits != null && atomicEdits.size() > 0) {
-                    modsDone = true;
-                    // Some edits performed
-                    atomicEdits.end();
-                    localAtomicEdits = atomicEdits;
-                    atomicEdits = null; // Clear the var to allow doc.runAtomic() in undoableEditHappened()
-                }
+                    if (atomicEdits != null && atomicEdits.size() > 0) {
+                        modsDone = true;
+                        // Some edits performed
+                        atomicEdits.end();
+                        localAtomicEdits = atomicEdits;
+                        atomicEdits = null; // Clear the var to allow doc.runAtomic() in undoableEditHappened()
+                    }
 
-                if (modsUndoneOrRedone) { // Check whether any modifications were undone or redone
-                    modsUndoneOrRedone = false;
-                    modsDone = true;
-                }
+                    if (modsUndoneOrRedone) { // Check whether any modifications were undone or redone
+                        modsUndoneOrRedone = false;
+                        modsDone = true;
+                    }
 
-                if (localAtomicEdits != null) {
-                    fireUndoableEditUpdate(new UndoableEditEvent(this, localAtomicEdits));
+                    if (localAtomicEdits != null) {
+                        fireUndoableEditUpdate(new UndoableEditEvent(this, localAtomicEdits));
+                    }
+                } finally {
+                    atomicLockListenerList = null;
+                    extWriteUnlock();
                 }
-                atomicLockListenerList = null;
             }
         }
 
