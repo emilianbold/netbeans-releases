@@ -266,7 +266,8 @@ public class OptionsDisplayerImpl {
         final Rectangle screenBounds = Utilities.getUsableScreenBounds();
         int x = NbPreferences.forModule(OptionsDisplayerImpl.class).getInt("OptionsX", Integer.MAX_VALUE);//NOI18N
         int y = NbPreferences.forModule(OptionsDisplayerImpl.class).getInt("OptionsY", Integer.MAX_VALUE);//NOI18N
-        if (x > screenBounds.getWidth() || y > screenBounds.getHeight()) {
+        if (x > screenBounds.getWidth() || y > screenBounds.getHeight()
+                || x < screenBounds.x || y < screenBounds.y ) {
             return null;
         } else {
             return new Point(x, y);
