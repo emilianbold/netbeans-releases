@@ -1,0 +1,68 @@
+<!--       
+*     Copyright © 1997, 2011, Oracle and/or its affiliates. All rights reserved.
+*     Use is subject to license terms.
+-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+    <head>
+        <title>Options: PHP: Debugging</title>
+        <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
+        <link rel="stylesheet" href=
+              "nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+        <meta name="keywords" content="options, php">
+    </head>
+    <body>
+        <p> <small><a href="#seealso">See Also</a>&nbsp; </small> 
+        <h2>Options: PHP: Debugging</h2>
+        <p>In this tab, set the following options:</p>
+        <ul>
+            <li><strong>Debugger port </strong>This is the port that XDebug uses, 
+                as set in php.ini. By default it is port 9000. <i>The port number 
+                    in this dialog must be the same as the debugger port you set 
+                    in php.ini. You cannot affect the port that XDebug uses in 
+                    this dialog. You only inform NetBeans IDE of the port that 
+                    XDebug uses.</i></li>
+            <li><strong>Session ID</strong> Arbitrary name of the debugging session. 
+                By default it is netbeans-xdebug. This value is important to note 
+                in cases where you have to set the <tt>xdebug.idekey</tt> property 
+                in php.ini, such as some remote debugging scenarios.</li>
+            <li><strong>Stop at First Line</strong> Tick this option for the debugger 
+                session to stop at the first line of code instead of at the first 
+                breakpoint. This keeps your screen focused in the IDE instead of 
+                switching to a browser window when you launch a debugging session.</li>
+            <li><strong>Watches and Balloon Evaluation</strong> Due to a number 
+                of bugs, watches and balloon evaluation is disabled by default. 
+                See <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                    <param name="content" value="http://netbeans.org/bugzilla/show_bug.cgi?id=181186">
+                    <param name="text" value="<html><u>Issue 181186</u></html>">
+                    <param name="textFontSize" value="medium">
+                    <param name="textColor" value="blue"></object>.</li>
+            <li><strong>Maximum Depth of Structures.</strong> Sets the visibility of nested structures (such as nested arrays, objects in objects, etc.) </li>
+            <li><strong>Maximum Number of Children.</strong> Sets the visibility of array items during Watch evaluation. (If you set Maximum Number of Children to 1 you will see only the first item of an array even if the array has more then one item.)</li>
+        </ul>
+
+        <dl> 
+            <dt><a name="seealso">See Also</a></dt>
+
+            <dd><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                    <param name="content" value="http://wiki.netbeans.org/HowToConfigureXDebug">
+                    <param name="text" value="<html><u>How to Configure XDebug</u> (NetBeans IDE wiki)</html>">
+                    <param name="textFontSize" value="medium">
+                    <param name="textColor" value="blue"></object></dd>
+            <dd><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                    <param name="content" value="http://netbeans.org/kb/docs/php/debugging.html">
+                    <param name="text" value="<html><u>Debugging PHP Source Code in NetBeans IDE</u></html>">
+                    <param name="textFontSize" value="medium">
+                    <param name="textColor" value="blue"></object></dd>
+
+        </dl>
+
+        <hr><small><a href="../credits.html">Legal Notices</a></small>
+
+        <table border="0" cellpadding="20">
+            <tr><td>&nbsp;</td></tr>
+            <tr><td>&nbsp;</td></tr>
+            <tr><td>&nbsp;</td></tr>
+        </table>
+    </body>
+</html>
