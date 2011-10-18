@@ -835,6 +835,11 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
                     //TODO
                 }
             }
+        } else if ((keyCode == KeyEvent.VK_R) && e.isControlDown() && (e.getID() == KeyEvent.KEY_PRESSED)) {
+            FormEditor formEditor = formDesigner.getFormEditor();
+            EditorSupport editorSupport = formEditor.getEditorSupport();
+            editorSupport.reloadForm();
+            e.consume();
         }
 
         super.processKeyEvent(e);
