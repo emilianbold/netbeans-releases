@@ -83,7 +83,7 @@ public class JavaFXProjectWizardIterator implements WizardDescriptor.ProgressIns
     static final String PROP_PRELOADER_NAME = "preloader.name"; // NOI18N
     
     static final String MANIFEST_FILE = "manifest.mf"; // NOI18N
-    static final String GENERATED_PRELOADER_CLASS_NAME = "SimplePreloader"; // NOI18N
+    //static final String GENERATED_PRELOADER_CLASS_NAME = "SimplePreloader"; // NOI18N
     static final String GENERATED_FXML_CLASS_NAME = "Sample"; // NOI18N
 
     private static final long serialVersionUID = 1L;
@@ -488,7 +488,8 @@ public class JavaFXProjectWizardIterator implements WizardDescriptor.ProgressIns
         StringBuilder sb = new StringBuilder();
         sb.append(preloaderProjectName.toLowerCase().replace('-', '.')); // NOI18N
         sb.append('.'); // NOI18N
-        sb.append(JavaFXProjectWizardIterator.GENERATED_PRELOADER_CLASS_NAME);
+        //sb.append(JavaFXProjectWizardIterator.GENERATED_PRELOADER_CLASS_NAME);
+        sb.append(preloaderProjectName.replace('-','_').replace('.','_'));
         return  sb.toString();
     }
 
