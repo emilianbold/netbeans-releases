@@ -797,7 +797,7 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
                 if (!subdirs[i].isDirectory()) {
                     continue;
                 }
-                if (!subdirs[i].getName().startsWith("platform")) { // NOI18N
+                if (!subdirs[i].getName().matches("platform\\d*")) { // NOI18N
                     continue;
                 }
                 File coreJar = new File(subdirs[i], "core" + File.separatorChar + "core.jar"); // NOI18N
