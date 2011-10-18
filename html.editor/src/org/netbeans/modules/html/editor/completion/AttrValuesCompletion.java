@@ -61,48 +61,38 @@ public abstract class AttrValuesCompletion {
 
     private static final Map<String, Map<String, ValueCompletion<HtmlCompletionItem>>> SUPPORTS =
             new HashMap<String, Map<String, ValueCompletion<HtmlCompletionItem>>>();
-
     private static final Map<String, ValueCompletion<HtmlCompletionItem>> ALL_TAG_SUPPORTS =
             new HashMap<String, ValueCompletion<HtmlCompletionItem>>();
-
     public static final ValueCompletion<HtmlCompletionItem> FILE_NAME_SUPPORT = new FilenameSupport();
-    
     private static final ValueCompletion<HtmlCompletionItem> CONTENT_TYPE_SUPPORT =
             new ValuesSetSupport(new String[]{"text/css", "text/javascript"});
-    
     private static final ValueCompletion<HtmlCompletionItem> TRUE_FALSE_SUPPORT =
             new ValuesSetSupport(new String[]{"true", "false"});
-    
     private static final ValueCompletion<HtmlCompletionItem> SCOPE_SUPPORT =
-            new ValuesSetSupport(new String[]{"row", "col", "rowgroup", "colgroup" });
-
+            new ValuesSetSupport(new String[]{"row", "col", "rowgroup", "colgroup"});
     private static final ValueCompletion<HtmlCompletionItem> SHAPE_SUPPORT =
-            new ValuesSetSupport(new String[]{"circle", "default", "poly", "rect"  });
-
+            new ValuesSetSupport(new String[]{"circle", "default", "poly", "rect"});
     private static final ValueCompletion<HtmlCompletionItem> ON_OFF_SUPPORT =
             new ValuesSetSupport(new String[]{"on", "off"});
-
     private static final ValueCompletion<HtmlCompletionItem> FORMENCTYPE_SUPPORT =
             new ValuesSetSupport(new String[]{"application/x-www-form-urlencoded", "multipart/form-data", "text/plain"});
-
     private static final ValueCompletion<HtmlCompletionItem> FORMMETHOD_SUPPORT =
             new ValuesSetSupport(new String[]{"GET", "POST", "PUT", "DELETE"});
-
     private static final ValueCompletion<HtmlCompletionItem> PRELOAD_SUPPORT =
             new ValuesSetSupport(new String[]{"none", "metadata", "auto"});
-
     private static final ValueCompletion<HtmlCompletionItem> BUTTON_TYPE_SUPPORT =
-            new ValuesSetSupport(new String[]{"submit", "reset", "button" });
-
+            new ValuesSetSupport(new String[]{"submit", "reset", "button"});
     private static final ValueCompletion<HtmlCompletionItem> COMMAND_TYPE_SUPPORT =
-            new ValuesSetSupport(new String[]{"command", "checkbox", "radio" });
-
+            new ValuesSetSupport(new String[]{"command", "checkbox", "radio"});
     private static final ValueCompletion<HtmlCompletionItem> MENU_TYPE_SUPPORT =
-            new ValuesSetSupport(new String[]{"context", "toolbar" });
-
+            new ValuesSetSupport(new String[]{"context", "toolbar"});
     private static final ValueCompletion<HtmlCompletionItem> WRAP_SUPPORT =
-            new ValuesSetSupport(new String[]{"soft", "hard" });
-    
+            new ValuesSetSupport(new String[]{"soft", "hard"});
+    private static final ValueCompletion<HtmlCompletionItem> INPUT_TYPE_SUPPORT =
+            new ValuesSetSupport(new String[]{"hidden",
+                "text","search","tel","url","email","password","datetime","date",
+                "month","week","time","datetime-local","number","range","color",
+                "checkbox","radio","file","submit","image","reset","button"});
 
     static {
         //TODO uff, such long list ... redo it so it resolves according to the DTD attribute automatically
@@ -177,10 +167,11 @@ public abstract class AttrValuesCompletion {
 
         putSupport("textarea", "wrap", WRAP_SUPPORT); //NOI18N
 
+        putSupport("input", "type", INPUT_TYPE_SUPPORT); //NOI18N
     }
 
     private static void putSupport(String tag, String attr, ValueCompletion<HtmlCompletionItem> support) {
-        if(tag == null) {
+        if (tag == null) {
             ALL_TAG_SUPPORTS.put(attr, support);
         } else {
             Map<String, ValueCompletion<HtmlCompletionItem>> map = SUPPORTS.get(tag);
@@ -198,7 +189,7 @@ public abstract class AttrValuesCompletion {
 
     public static ValueCompletion<HtmlCompletionItem> getSupport(String tag, String attr) {
         Map<String, ValueCompletion<HtmlCompletionItem>> map = getSupportsForTag(tag);
-        if(map == null) {
+        if (map == null) {
             return ALL_TAG_SUPPORTS.get(attr);
         } else {
             return map.get(attr.toLowerCase(Locale.ENGLISH));
@@ -217,14 +208,13 @@ public abstract class AttrValuesCompletion {
         public List<HtmlCompletionItem> getItems(FileObject file, int offset, String valuePart) {
             //linear search, too little items, no problem
             List<HtmlCompletionItem> items = new ArrayList<HtmlCompletionItem>();
-            for(int i = 0; i < values.length; i++) {
-                if(values[i].startsWith(valuePart)) {
+            for (int i = 0; i < values.length; i++) {
+                if (values[i].startsWith(valuePart)) {
                     items.add(HtmlCompletionItem.createAttributeValue(values[i], offset));
                 }
             }
             return items;
         }
-
     }
 
     public static class FilenameSupport extends FileReferenceCompletion<HtmlCompletionItem> {
@@ -239,5 +229,4 @@ public abstract class AttrValuesCompletion {
             return HtmlCompletionItem.createGoUpFileCompletionItem(anchor, color, icon); // NOI18N
         }
     }
-    
 }
