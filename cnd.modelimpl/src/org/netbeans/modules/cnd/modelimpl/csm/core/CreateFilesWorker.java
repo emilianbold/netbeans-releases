@@ -172,6 +172,9 @@ final class CreateFilesWorker {
             }
             final CsmModelState modelState = ModelImpl.instance().getState();
             if (modelState == CsmModelState.CLOSING || modelState == CsmModelState.OFF) {
+                if (TraceFlags.TRACE_VALIDATION || TraceFlags.TRACE_MODEL_STATE) {
+                    System.err.printf("createProjectFilesIfNeedRun: %s file [%s] is interrupted on closing model\n", nativeFileItem.getAbsolutePath(), project.getName());
+                }                
                 return false;
             }            
             if (project.isDisposing()) {
