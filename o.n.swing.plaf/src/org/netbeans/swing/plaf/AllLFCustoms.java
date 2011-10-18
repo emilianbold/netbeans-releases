@@ -61,7 +61,7 @@ final class AllLFCustoms extends LFCustoms {
         //ColorUIResource errorColor = new ColorUIResource(89, 79, 191);
         // 65358: asked Red color for error messages
         ColorUIResource errorColor = new ColorUIResource (255, 0, 0);
-        ColorUIResource warningColor = new ColorUIResource(51, 51, 51);
+        ColorUIResource warningColor = new ColorUIResource(153,153,0);
         
         Object[] uiDefaults = {
 

@@ -43,6 +43,8 @@
 package org.openide.awt;
 
 import java.awt.event.ActionListener;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.JComponent;
 import org.openide.awt.StatusDisplayer.Message;
@@ -80,6 +82,7 @@ public abstract class NotificationDisplayer {
     public static NotificationDisplayer getDefault() {
         NotificationDisplayer res = Lookup.getDefault().lookup(NotificationDisplayer.class);
         if( null == res ) {
+            Logger.getLogger( NotificationDisplayer.class.getName()).log( Level.INFO, "No NotificationDisplayer implementation available."); //NOI18N
             res = new SimpleNotificationDisplayer();
         }
         return res;
