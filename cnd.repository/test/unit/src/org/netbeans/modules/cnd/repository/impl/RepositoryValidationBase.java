@@ -117,6 +117,7 @@ public class RepositoryValidationBase extends TraceModelTestBase {
                 if (returnOnShutdown()) {
                     return;
                 }
+                System.err.printf("not parsed on closing: %s\n", f.toString());
                 CndUtils.threadsDump();
             }
         }

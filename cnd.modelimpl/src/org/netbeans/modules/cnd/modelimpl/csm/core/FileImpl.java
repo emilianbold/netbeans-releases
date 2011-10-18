@@ -473,8 +473,15 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
             if (!inEnsureParsed.compareAndSet(false, true)) {
                 assert false : "concurrent ensureParsed in file " + getAbsolutePath() + parsingState + state; 
             }
-            final CsmModelState modelState = ModelImpl.instance().getState();
+            CsmModelState modelState = ModelImpl.instance().getState();
             if (modelState == CsmModelState.CLOSING || modelState == CsmModelState.OFF) {
+                if (TraceFlags.TRACE_VALIDATION || TraceFlags.TRACE_MODEL_STATE) {
+                    System.err.printf("ensureParsed: %s file is interrupted on closing model\n", this.getAbsolutePath());
+                }                
+                synchronized (changeStateLock) {
+                    state = State.INITIAL;
+                }         
+                RepositoryUtils.put(this);
                 return;
             }
             boolean wasDummy = false;
@@ -574,6 +581,17 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
                     }
                 }
             }
+            // check state at the end as well, because there could be interruption during parse of file
+            modelState = ModelImpl.instance().getState();
+            if (modelState == CsmModelState.CLOSING || modelState == CsmModelState.OFF) {
+                if (TraceFlags.TRACE_VALIDATION || TraceFlags.TRACE_MODEL_STATE) {
+                    System.err.printf("after ensureParsed: %s file is interrupted on closing model\n", this.getAbsolutePath());
+                }
+                synchronized (changeStateLock) {
+                    state = State.INITIAL;
+                }
+                RepositoryUtils.put(this);
+            }            
         } finally {
             if (!inEnsureParsed.compareAndSet(true, false)) {
                 assert false : "broken state in file " + getAbsolutePath() + parsingState + state; 
@@ -1709,7 +1727,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
     public
     @Override
     String toString() {
-        return "FileImpl @" + hashCode() + ":" + super.hashCode() + ' ' + getAbsolutePath() + " prj:" + System.identityHashCode(this.projectUID) + this.projectUID; // NOI18N
+        return "" + this.state + " FileImpl @" + hashCode() + ":" + super.hashCode() + ' ' + getAbsolutePath() + " prj:" + System.identityHashCode(this.projectUID) + this.projectUID + " " + this.parsingState; // NOI18N
     }
 
     @Override

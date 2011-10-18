@@ -929,8 +929,15 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                             System.err.printf("Validation: %s properties are changed \n", nativeFile.getAbsolutePath());
                         }
                         reparseOnPropertyChanged.add(nativeFile);
+                    } else {
+                        if (TraceFlags.TRACE_VALIDATION) {
+                            System.err.printf("Validation: %s file is skipped as valid PARSED\n", nativeFile.getAbsolutePath());
+                        }                        
                     }
                 } else {
+                    if (TraceFlags.TRACE_VALIDATION) {
+                        System.err.printf("Validation: %s file to be parsed, because of state %s\n", nativeFile.getAbsolutePath(), fileAndHandler.fileImpl.getState());
+                    }
                     if (validator.arePropertiesChanged(nativeFile)) {
                         if (fileAndHandler.fileImpl.getState() == FileImpl.State.INITIAL){
                             fileAndHandler.preprocHandler = createPreprocHandler(nativeFile);
@@ -1310,6 +1317,9 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
         final CsmModelState modelState = ModelImpl.instance().getState();
         if (modelState == CsmModelState.CLOSING || modelState == CsmModelState.OFF) {
+            if (TraceFlags.TRACE_VALIDATION || TraceFlags.TRACE_MODEL_STATE) {
+                System.err.printf("onFileIncluded: %s file [%s] is interrupted on closing model\n", file, base.getName());
+            }
             return null;
         }
         csmFile = findFile(file, true, FileImpl.FileType.HEADER_FILE, preprocHandler, false, null, null);
