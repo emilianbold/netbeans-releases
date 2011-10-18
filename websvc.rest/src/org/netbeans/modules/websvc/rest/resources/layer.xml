@@ -160,21 +160,26 @@
             </file>
             <file name="JsProjectStub.js" url="/org/netbeans/modules/websvc/rest/codegen/resources/JsProjectStub.template">
                 <attr name="position" intvalue="0"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
             </file>
             <file name="JsStubSupport.js" url="/org/netbeans/modules/websvc/rest/codegen/resources/JsStubSupport.template">
                 <attr name="position" intvalue="0"/>
             </file>
             <file name="JsTestStubs.html" url="/org/netbeans/modules/websvc/rest/codegen/resources/JsTestStubs.template">
                 <attr name="position" intvalue="0"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
             </file>
             <file name="JsStub.js" url="/org/netbeans/modules/websvc/rest/codegen/resources/JsStub.template">
                 <attr name="position" intvalue="0"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
             </file>
             <file name="JsEntity.js" url="/org/netbeans/modules/websvc/rest/codegen/resources/JsEntity.template">
                 <attr name="position" intvalue="0"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
             </file>
             <file name="JsReadme.html" url="/org/netbeans/modules/websvc/rest/codegen/resources/JsReadme.template">
                 <attr name="position" intvalue="0"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
             </file>
             <file name="RestProxyServlet.txt" url="/org/netbeans/modules/websvc/rest/codegen/resources/RestProxyServlet.template">
                 <attr name="position" intvalue="0"/>
