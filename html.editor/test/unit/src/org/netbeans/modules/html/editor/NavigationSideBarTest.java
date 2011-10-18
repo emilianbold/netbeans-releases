@@ -52,6 +52,7 @@ import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.editor.ext.html.parser.api.AstNode;
 import org.netbeans.junit.MockServices;
@@ -131,6 +132,7 @@ public class NavigationSideBarTest extends CslTestBase {
             @Override
             public void run() {
                 try {
+                    EditorRegistry.lastFocusedComponent().requestFocus();
                     //this should cause the navigation side bar to update
                     pane.setCaretPosition(pipe);
                     //strange, the document needs to be modified to force the caret aware scheduler tast to run
