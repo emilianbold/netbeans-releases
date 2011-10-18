@@ -62,6 +62,7 @@ import java.util.Set;
 
 import javax.swing.*;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup;
 
 
 /** Permits dialogs to be displayed.
@@ -77,7 +78,7 @@ public abstract class DialogDisplayer {
      * @return the default instance from lookup
      */
     public static DialogDisplayer getDefault() {
-        DialogDisplayer dd = null;//Lookup.getDefault ().lookup (DialogDisplayer.class);
+        DialogDisplayer dd = Lookup.getDefault ().lookup (DialogDisplayer.class);
 
         if (dd == null) {
             dd = new Trivial();
