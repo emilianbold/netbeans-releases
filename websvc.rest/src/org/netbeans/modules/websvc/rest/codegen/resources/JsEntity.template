@@ -1,17 +1,17 @@
 /*
-* Support js for __ENTITY_NAME__
+* Support js for ${entity_name}
 */
 
-function __ENTITY_NAME__(ref_) {
+function ${entity_name}(ref_) {
     this.ref = ref_;
 }
-function __ENTITY_NAME__(ref_, uri_) {
+function ${entity_name}(ref_, uri_) {
     this.ref = ref_;
     this.uri = uri_;
 }
 
 
-__ENTITY_NAME__.prototype = {
+${entity_name}.prototype = {
 
    getUri : function() {
       return this.uri;
