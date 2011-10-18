@@ -83,7 +83,7 @@ public class RepositoryStepPanel extends javax.swing.JPanel {
 
         jPanel1.setLayout(new java.awt.BorderLayout());
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, "Specify Git Repository Location:");
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(RepositoryStepPanel.class, "LBL_RepositoryStepPanel.jLabel1.text")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);

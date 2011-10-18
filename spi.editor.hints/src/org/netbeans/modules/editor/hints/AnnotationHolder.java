@@ -707,7 +707,9 @@ public final class AnnotationHolder implements ChangeListener, PropertyChangeLis
             int rowHighlightStart = Utilities.getRowFirstNonWhite(doc, rowStart);
             int rowHighlightEnd = Utilities.getRowLastNonWhite(doc, rowStart) + 1;
 
-            bag.removeHighlights(rowStart, rowEnd, false);
+            if (rowStart <= rowEnd) {
+                bag.removeHighlights(rowStart, rowEnd, false);
+            }
 
             if (errorDescriptions != null) {
                 bag.addAllHighlights(computeHighlights(doc, errorDescriptions).getHighlights(rowHighlightStart, rowHighlightEnd));

@@ -41,42 +41,56 @@
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
-//~ Template for list.php
-// variables:
-//  $title - page title
-//  $status - status of TODOs to be displayed
-//  $todos - TODOs to be displayed
+/**
+ * Class managing flash messages.
+ * <p>
+ * (Flash messages are positive messages that are displayed exactly once,
+ * on the next page; typically after form submitting.)
+ */
+final class Flash {
+
+    const FLASHES_KEY = '_flashes';
+
+    private static $flashes = null;
+
+
+    private function __construct() {
+    }
+
+    public static function hasFlashes() {
+        self::initFlashes();
+        return count(self::$flashes) > 0;
+    }
+
+    public static function addFlash($message) {
+        if (!strlen(trim($message))) {
+            throw new Exception('Cannot insert empty flash message.');
+        }
+        self::initFlashes();
+        self::$flashes[] = $message;
+    }
+
+    /**
+     * Get flash messages and clear them.
+     * @return array flash messages
+     */
+    public static function getFlashes() {
+        self::initFlashes();
+        $copy = self::$flashes;
+        self::$flashes = array();
+        return $copy;
+    }
+
+    private static function initFlashes() {
+        if (self::$flashes !== null) {
+            return;
+        }
+        if (!array_key_exists(self::FLASHES_KEY, $_SESSION)) {
+            $_SESSION[self::FLASHES_KEY] = array();
+        }
+        self::$flashes = &$_SESSION[self::FLASHES_KEY];
+    }
+
+}
 
 ?>
-
-<h1>
-    <img src="img/status/<?php echo $status; ?>.png" alt="" title="<?php echo Utils::capitalize($status); ?>" class="icon" />
-    <?php echo $title; ?>
-</h1>
-
-<?php if (empty($todos)): ?>
-    <p>No TODO items found.</p>
-<?php else: ?>
-    <ul class="list">
-        <?php foreach ($todos as $todo): ?>
-            <?php /* @var $todo Todo */ ?>
-            <?php $tooLate = $status == Todo::STATUS_PENDING && $todo->getDueOn() < new DateTime(); ?>
-            <li>
-                <?php if ($tooLate): ?>
-                    <img src="img/exclamation.png" alt="" title="Should be already done!" />
-                <?php endif; ?>
-                <img src="img/priority/<?php echo $todo->getPriority(); ?>.png" alt="Priority <?php echo $todo->getPriority(); ?>" title="Priority <?php echo $todo->getPriority(); ?>" />
-                <h3><a href="<?php echo Utils::createLink('detail', array('id' => $todo->getId())) ?>"><?php echo Utils::escape($todo->getTitle()); ?></a></h3>
-                <?php if ($todo->getDescription()): ?>
-                    <p class="description"><?php echo Utils::escape($todo->getDescription()); ?></p>
-                <?php endif; ?>
-                <p><span class="label">Created On:</span> <?php echo Utils::escape(Utils::formatDateTime($todo->getCreatedOn())); ?></p>
-                <p><span class="label">Due On:</span>
-                    <?php if ($tooLate): ?><span class="too-late"><?php endif; ?>
-                    <?php echo Utils::escape(Utils::formatDateTime($todo->getDueOn())); ?>
-                    <?php if ($tooLate): ?></span><?php endif; ?>
-                </p>
-            </li>
-        <?php endforeach; ?>
-    </ul>
-<?php endif; ?>
