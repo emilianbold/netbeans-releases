@@ -109,6 +109,7 @@ public class ProfileOptionSet extends OptionSetSupport {
 
 	DebuggerOption.DBX_INIT_FILE,
 	DebuggerOption.GDB_INIT_FILE,
+        DebuggerOption.GDB_SOURCE_DIRS
     };
 
 
