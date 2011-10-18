@@ -92,10 +92,11 @@ public final class MutualExclusionSupport<K> {
         }
 
         if (isInUse) {
-            if (isShared) {
-                FSException.io("EXC_CannotGetSharedAccess", key.toString()); // NOI18N        
-            } else {
-                FSException.io("EXC_CannotGetExclusiveAccess", key.toString()); // NOI18N        
+            try {
+                FSException.io(isShared ? "EXC_CannotGetSharedAccess" : "EXC_CannotGetExclusiveAccess", key.toString()); // NOI18N
+            } catch (IOException x) {
+                assert addStack(x, unexpectedCounter, expectedCounter);
+                throw x;
             }
         }
 
@@ -103,6 +104,25 @@ public final class MutualExclusionSupport<K> {
         final Closeable retVal = new Closeable(key, isShared);
         expectedCounter.add(retVal);
         return retVal;
+    }
+    private boolean addStack(IOException x, Set<Closeable> unexpectedCounter, Set<Closeable> expectedCounter) {
+        addStack(x, unexpectedCounter);
+        addStack(x, expectedCounter);
+        return true;
+    }
+    private void addStack(IOException x, Set<Closeable> cs) {
+        if (cs != null) {
+            for (Closeable c : cs) {
+                Throwable stack = c.stack;
+                if (stack != null) {
+                    Throwable t = x;
+                    while (t.getCause() != null) {
+                        t = t.getCause();
+                    }
+                    t.initCause(stack);
+                }
+            }
+        }
     }
 
     private synchronized void removeResource(final K key, final Closeable value, final boolean isShared) {
@@ -124,10 +144,17 @@ public final class MutualExclusionSupport<K> {
         private final boolean isShared;
         private final Reference<K> keyRef;
         private boolean isClosed = false;
+        Throwable stack;
 
         private Closeable(final K key, final boolean isShared) {
             this.isShared = isShared;
             this.keyRef = new WeakReference<K>(key);
+            assert populateStack();
+        }
+
+        private boolean populateStack() {
+            stack = new Throwable("opened stream here");
+            return true;
         }
 
         public void close() {
