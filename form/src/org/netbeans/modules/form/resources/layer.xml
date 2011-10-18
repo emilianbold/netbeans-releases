@@ -667,13 +667,8 @@ made subject to such option by the copyright holder.
     </folder>
 
     <folder name="Shortcuts">
-        <!-- Bind explicitly to Ctrl-R, not D-R for Command on mac - Command-R
-             is already bound to Replace -->
         <file name="C-D.shadow">
             <attr name="originalFile" stringvalue="Actions/Form/org-netbeans-modules-form-actions-DuplicateAction.instance"/>
-        </file>
-        <file name="CS-R.shadow">
-            <attr name="originalFile" stringvalue="Actions/Form/org-netbeans-modules-form-actions-ReloadAction.instance"/>
         </file>
     </folder>
 
