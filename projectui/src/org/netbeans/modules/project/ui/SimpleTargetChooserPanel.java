@@ -46,17 +46,19 @@ package org.netbeans.modules.project.ui;
 
 import java.awt.Component;
 import java.io.IOException;
+import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
+import static org.netbeans.modules.project.ui.Bundle.*;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
@@ -78,9 +80,6 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel<WizardDes
     SimpleTargetChooserPanel(Project project, SourceGroup[] folders,
             WizardDescriptor.Panel<WizardDescriptor> bottomPanel, boolean isFolder, boolean freeFileExtension) {
         this.folders = folders;
-        if (folders != null && folders.length == 0) {
-            throw new IllegalArgumentException("Attempting to create panel with an empty folders list"); // #161478
-        }
         this.project = project;
         this.bottomPanel = bottomPanel;
         if ( bottomPanel != null ) {
@@ -92,11 +91,18 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel<WizardDes
     }
 
     public @Override Component getComponent() {
+        if (noFolders()) {
+            return new JPanel();
+        }
         if (gui == null) {
             gui = new SimpleTargetChooserPanelGUI(project, folders, bottomPanel == null ? null : bottomPanel.getComponent(), isFolder, freeFileExtension);
             gui.addChangeListener(this);
         }
         return gui;
+    }
+
+    private boolean noFolders() { // #202410
+        return folders != null && folders.length == 0;
     }
 
     public @Override HelpCtx getHelp() {
@@ -113,6 +119,10 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel<WizardDes
     }
 
     public @Override boolean isValid() {
+        if (noFolders()) {
+            return false;
+        }
+
         boolean ok = ( gui != null && gui.getTargetName() != null && gui.getTargetGroup() != null &&
                ( bottomPanel == null || bottomPanel.isValid() ) );
         
@@ -138,10 +148,18 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel<WizardDes
         changeSupport.removeChangeListener(l);
     }
 
-    public @Override void readSettings(WizardDescriptor settings) {
-                
+    @Messages({
+        "SimpleTargetChooserPanelGUI_no_source_folders=No source folders in project; perhaps it has been deleted?",
+        "LBL_TemplatesPanel_Name=Choose File Type"
+    })
+    @Override public void readSettings(WizardDescriptor settings) {
         wizard = settings;
                 
+        if (noFolders()) {
+            wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, SimpleTargetChooserPanelGUI_no_source_folders());
+            return;
+        }
+
         if ( gui == null ) {
             getComponent();
         }
@@ -163,9 +181,7 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel<WizardDes
             wizard.putProperty ("NewFileWizard_Title", substitute); // NOI18N
         }
         
-        wizard.putProperty(WizardDescriptor.PROP_CONTENT_DATA, new String[] { // NOI18N
-            NbBundle.getBundle (SimpleTargetChooserPanel.class).getString ("LBL_TemplatesPanel_Name"), // NOI18N
-            NbBundle.getBundle (SimpleTargetChooserPanel.class).getString ("LBL_SimpleTargetChooserPanel_Name")}); // NOI18N
+        wizard.putProperty(WizardDescriptor.PROP_CONTENT_DATA, new String[] {LBL_TemplatesPanel_Name(), LBL_SimpleTargetChooserPanel_Name()});
             
         if ( bottomPanel != null ) {
             bottomPanel.readSettings( settings );
@@ -173,6 +189,10 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel<WizardDes
     }
     
     public @Override void storeSettings(WizardDescriptor settings) {
+        if (noFolders()) {
+            return;
+        }
+
         if (WizardDescriptor.PREVIOUS_OPTION.equals(settings.getValue())) {
             return;
         }
