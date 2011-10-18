@@ -4,8 +4,8 @@
 
 <html>
     <head>
-        <title>TTL_RestClient_Stubs - MSG_Readme</title>
-        <meta http-equiv="Content-Type" content="text/html; charset=__FILE_ENCODING__" />
+        <title>${rest_client_stubs} - ${msg_readme}</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=${encoding}" />
         <link rel="stylesheet" href="./css/clientstubs.css" type="text/css"/>
         <link rel="stylesheet" href="./css/css_master-all.css" type="text/css"/>
     </head>
@@ -19,7 +19,7 @@
                 <table width="100%">
                     <tr>
                         <td id="content" class="content" valign="top" colspan="12">
-                            MSG_JS_Readme_Content
+                            ${readme_content}
                         </td>
                     </tr>
                 </table>
