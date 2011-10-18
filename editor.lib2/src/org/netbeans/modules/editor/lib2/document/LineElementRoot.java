@@ -21,12 +21,7 @@ package org.netbeans.modules.editor.lib2.document;
 
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.text.AbstractDocument;
-import javax.swing.text.Element;
-import javax.swing.text.Document;
-import javax.swing.text.AttributeSet;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Position;
+import javax.swing.text.*;
 import javax.swing.undo.UndoableEdit;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.lib.editor.util.swing.GapBranchElement;
@@ -183,7 +178,8 @@ public final class LineElementRoot extends GapBranchElement {
 
     @Override
     public AttributeSet getAttributes() {
-        return null;
+        // Do not return null since Swing's view factories assume that this is non-null.
+        return SimpleAttributeSet.EMPTY;
     }
 
     @Override
