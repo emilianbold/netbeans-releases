@@ -275,7 +275,13 @@ public class AntProjectSupport implements AntProjectCookie.ParseStatus, Document
                     styledDocRef = new WeakReference<StyledDocument>(document);
                 }
                 InputSource in = createInputSource(file, document);
-                doc = documentBuilder.parse(in);
+                try {
+                    doc = documentBuilder.parse(in);
+                } finally {
+                    if (in.getByteStream() != null) {
+                        in.getByteStream().close();
+                    }
+                }
             } else if (file != null) {
                 InputStream is = file.getInputStream();
                 try {
