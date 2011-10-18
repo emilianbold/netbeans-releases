@@ -45,7 +45,7 @@ $errors = array();
 $todo = null;
 $edit = array_key_exists('id', $_GET);
 if ($edit) {
-    $todo = ProjectUtil::getTodoByGetId();
+    $todo = Utils::getTodoByGetId();
 } else {
     // set defaults
     $todo = new Todo();
@@ -57,7 +57,7 @@ if ($edit) {
 
 if (array_key_exists('cancel', $_POST)) {
     // redirect
-    ProjectUtil::redirect('detail', array('id' => $todo->getId()));
+    Utils::redirect('detail', array('id' => $todo->getId()));
 } elseif (array_key_exists('save', $_POST)) {
     // for security reasons, do not map the whole $_POST['todo']
     $data = array(
@@ -76,9 +76,10 @@ if (array_key_exists('cancel', $_POST)) {
     if (empty($errors)) {
         // save
         $dao = new TodoDao();
-        $todo = $dao->save($todo->getId(), $todo);
+        $todo = $dao->save($todo);
+        Flash::addFlash('TODO saved successfully.');
         // redirect
-        ProjectUtil::redirect('detail', array('id' => $todo->getId()));
+        Utils::redirect('detail', array('id' => $todo->getId()));
     }
 }
 

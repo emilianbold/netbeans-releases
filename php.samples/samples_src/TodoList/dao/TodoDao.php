@@ -87,15 +87,14 @@ final class TodoDao {
 
     /**
      * Save {@link Todo}.
-     * @param int $id ID to be updated, <i>null</i> for new TODO
      * @param ToDo $todo {@link Todo} to be saved
      * @return Todo saved {@link Todo} instance
      */
-    public function save($id, ToDo $todo) {
-        if ($id === null) {
+    public function save(ToDo $todo) {
+        if ($todo->getId() === null) {
             return $this->insert($todo);
         }
-        return $this->update($id, $todo);
+        return $this->update($todo);
     }
 
     /**
@@ -178,8 +177,7 @@ final class TodoDao {
      * @return Todo
      * @throws Exception
      */
-    private function update($id, Todo $todo) {
-        $todo->setId($id);
+    private function update(Todo $todo) {
         $todo->setLastModifiedOn(new DateTime());
         $sql = '
             UPDATE todo SET
@@ -205,6 +203,9 @@ final class TodoDao {
         $this->executeStatement($statement, $this->getParams($todo));
         if (!$todo->getId()) {
             return $this->findById($this->getDb()->lastInsertId());
+        }
+        if (!$statement->rowCount()) {
+            throw new NotFoundException('TODO with ID "' . $todo->getId() . '" does not exist.');
         }
         return $todo;
     }
