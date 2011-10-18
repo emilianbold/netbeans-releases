@@ -1,0 +1,4 @@
+org.openide.filesystems.FileUtil.preventFileChooserSymlinkTraversal($c, $d)
+=>
+$c.setCurrentDirectory($d)
+;;

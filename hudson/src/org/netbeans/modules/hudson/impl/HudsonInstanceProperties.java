@@ -128,7 +128,10 @@ public class HudsonInstanceProperties extends HashMap<String,String> {
                             public Integer getValue() {
                                 return Integer.valueOf(get(INSTANCE_SYNC));
                             }
-                            public void setValue(Integer val) {
+                            @Override public void setValue(Integer val) {
+                                if (val == null || val < 0) {
+                                    throw new IllegalArgumentException();
+                                }
                                 put(INSTANCE_SYNC, val.toString());
                             }
                             public @Override boolean canWrite() {
