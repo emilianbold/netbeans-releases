@@ -53,7 +53,7 @@
     <?php if ($tooLate): ?>
         <img src="img/exclamation.png" alt="" title="Should be already done!" />
     <?php endif; ?>
-    <?php echo $todo->getTitle(); ?>
+    <?php echo Utils::escape($todo->getTitle()); ?>
 </h1>
 
 <table class="detail">
@@ -63,31 +63,31 @@
     </tr>
     <tr>
         <th>Created On</th>
-        <td><?php echo ProjectUtil::formatDateTime($todo->getCreatedOn()); ?></td>
+        <td><?php echo Utils::escape(Utils::formatDateTime($todo->getCreatedOn())); ?></td>
     </tr>
     <tr>
         <th>Due On</th>
         <td>
             <?php if ($tooLate): ?><span class="too-late"><?php endif; ?>
-            <?php echo ProjectUtil::formatDateTime($todo->getDueOn()); ?>
+            <?php echo Utils::escape(Utils::formatDateTime($todo->getDueOn())); ?>
             <?php if ($tooLate): ?></span><?php endif; ?>
         </td>
     </tr>
     <tr>
         <th>Last Modified On</th>
-        <td><?php echo ProjectUtil::formatDateTime($todo->getLastModifiedOn()); ?></td>
+        <td><?php echo Utils::escape(Utils::formatDateTime($todo->getLastModifiedOn())); ?></td>
     </tr>
     <tr>
         <th>Description</th>
-        <td><?php echo $todo->getDescription(); ?></td>
+        <td><?php echo Utils::escape($todo->getDescription()); ?></td>
     </tr>
     <tr>
         <th>Comment</th>
-        <td><?php echo $todo->getComment(); ?></td>
+        <td><?php echo Utils::escape($todo->getComment()); ?></td>
     </tr>
     <tr>
         <th>Status</th>
-        <td><img src="img/status/<?php echo $todo->getStatus(); ?>.png" alt="" title="<?php echo ProjectUtil::capitalize($todo->getStatus()); ?>" class="icon" /></td>
+        <td><img src="img/status/<?php echo $todo->getStatus(); ?>.png" alt="" title="<?php echo Utils::capitalize($todo->getStatus()); ?>" class="icon" /></td>
     </tr>
     <tr>
         <td colspan="2">&nbsp;</td>
@@ -98,23 +98,23 @@
             <div class="statuses">
             <?php foreach (Todo::allStatuses() as $status): ?>
                 <?php if ($status != $todo->getStatus()): ?>
-                    <a href="<?php echo ProjectUtil::createLink('change-status', array('id' => $todo->getId(), 'status' => $status)); ?>" title="Change TODO status to <?php echo ProjectUtil::capitalize($status); ?>." class="change-status-link"
-                       ><img src="img/status/<?php echo $status; ?>.png" alt="" title="Make it <?php echo ProjectUtil::capitalize($status); ?>." class="icon" /></a>
+                    <a href="<?php echo Utils::createLink('change-status', array('id' => $todo->getId(), 'status' => $status)); ?>" title="Change TODO status to <?php echo Utils::capitalize($status); ?>." class="change-status-link"
+                       ><img src="img/status/<?php echo $status; ?>.png" alt="" title="Make it <?php echo Utils::capitalize($status); ?>." class="icon" /></a>
                 <?php else: ?>
-                    <img src="img/status/<?php echo $status; ?>-disabled.png" alt="" title="This TODO is already <?php echo ProjectUtil::capitalize($status); ?>." class="icon" />
+                    <img src="img/status/<?php echo $status; ?>-disabled.png" alt="" title="This TODO is already <?php echo Utils::capitalize($status); ?>." class="icon" />
                 <?php endif; ?>
             <?php endforeach; ?>
             </div>
             <div class="actions">
-                <a href="<?php echo ProjectUtil::createLink('add-edit', array('id' => $todo->getId())); ?>"><img src="img/action/edit.png" alt="" title="Edit it." class="icon" /></a>
-                <a href="<?php echo ProjectUtil::createLink('delete', array('id' => $todo->getId())); ?>" id="delete-link"><img src="img/action/delete.png" alt="" title="Delete it." class="icon" /></a>
+                <a href="<?php echo Utils::createLink('add-edit', array('id' => $todo->getId())); ?>"><img src="img/action/edit.png" alt="" title="Edit it." class="icon" /></a>
+                <a href="<?php echo Utils::createLink('delete', array('id' => $todo->getId())); ?>" id="delete-link"><img src="img/action/delete.png" alt="" title="Delete it." class="icon" /></a>
             </div>
         </td>
     </tr>
 </table>
 
 <p>
-    <?php $backLink = ProjectUtil::createLink('list', array('status' => $todo->getStatus())); ?>
+    <?php $backLink = Utils::createLink('list', array('status' => $todo->getStatus())); ?>
     <a href="<?php echo $backLink; ?>"><img src="img/action/back.png" alt="" title="Back to the list." class="icon"/></a>&nbsp;
     <a href="<?php echo $backLink; ?>">To the list</a>
 </p>

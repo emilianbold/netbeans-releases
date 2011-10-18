@@ -41,11 +41,12 @@
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
-$todo = ProjectUtil::getTodoByGetId();
+$todo = Utils::getTodoByGetId();
 
 $dao = new TodoDao();
 $dao->delete($todo->getId());
+Flash::addFlash('TODO deleted successfully.');
 
-ProjectUtil::redirect('list', array('status' => $todo->getStatus()));
+Utils::redirect('list', array('status' => $todo->getStatus()));
 
 ?>
