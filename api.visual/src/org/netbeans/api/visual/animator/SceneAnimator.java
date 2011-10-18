@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -79,6 +79,8 @@ public final class SceneAnimator {
     private PreferredBoundsAnimator preferredBoundsAnimator = new PreferredBoundsAnimator (this);
     private ZoomAnimator zoomAnimator = new ZoomAnimator (this);
     private ColorAnimator colorAnimator = new ColorAnimator (this);
+    
+    private static final RequestProcessor RP = new RequestProcessor(SceneAnimator.class.toString(), 50);
 
     /**
      * Creates a scene animator.
@@ -102,7 +104,7 @@ public final class SceneAnimator {
             animator.reset ();
             if (! taskAlive) {
                 taskAlive = true;
-                RequestProcessor.getDefault ().post (task);
+                RP.post (task);
             }
         }
     }
@@ -288,7 +290,7 @@ public final class SceneAnimator {
                 cache = null;
                 taskAlive = animators.size () > 0;
                 if (taskAlive)
-                    RequestProcessor.getDefault ().post (task, SLEEP);
+                    RP.post (task, SLEEP);
             }
         }
 

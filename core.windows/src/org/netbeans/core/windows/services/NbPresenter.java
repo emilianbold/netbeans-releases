@@ -143,12 +143,12 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
     {
         stdYesButton.setDefaultCapable(true);
         stdOKButton.setDefaultCapable(true);
-        stdNoButton.setDefaultCapable(false);
-        stdCancelButton.setDefaultCapable(false);
+        stdNoButton.setDefaultCapable(true);
+        stdCancelButton.setDefaultCapable(true);
         stdCancelButton.setVerifyInputWhenFocusTarget(false);
-        stdClosedButton.setDefaultCapable(false);
-        stdHelpButton.setDefaultCapable(false);
-        stdDetailButton.setDefaultCapable(false);
+        stdClosedButton.setDefaultCapable(true);
+        stdHelpButton.setDefaultCapable(true);
+        stdDetailButton.setDefaultCapable(true);
         Mnemonics.setLocalizedText (stdHelpButton, NbBundle.getBundle(NbPresenter.class).getString("HELP_OPTION_CAPTION")); // NOI18N
         
         /** Initilizes accessible contexts */

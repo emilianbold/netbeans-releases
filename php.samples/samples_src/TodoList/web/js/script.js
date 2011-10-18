@@ -42,6 +42,8 @@
 
 $(document).ready(function() {
     initDatepicker();
+    initFlashes();
+    initErrorFields();
     initChangeStatusDialog();
     initDeleteDialog();
 });
@@ -52,6 +54,20 @@ function initDatepicker() {
         .datepicker({
             dateFormat: 'yy-m-d'
         });
+}
+
+function initFlashes() {
+    var flashes = $("#flashes");
+    if (!flashes.length) {
+        return;
+    }
+    setTimeout(function() {
+        flashes.slideUp("slow");
+    }, 2000);
+}
+
+function initErrorFields() {
+    $('.error-field').first().focus();
 }
 
 function initDeleteDialog() {
