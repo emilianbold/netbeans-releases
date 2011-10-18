@@ -230,7 +230,7 @@ class JavaOperationsImpl<T> implements ModelOperations {
         }
         cmts = control.getTreeUtilities().getComments(tp.getLeaf(), false);
         if (!cmts.isEmpty()) {
-            end = cmts.listIterator().previous().pos();
+            end = cmts.listIterator(cmts.size()).previous().pos();
         }
         if (start == -1) {
             start = (int) trees.getSourcePositions().getStartPosition(tp.getCompilationUnit(),tp.getLeaf());

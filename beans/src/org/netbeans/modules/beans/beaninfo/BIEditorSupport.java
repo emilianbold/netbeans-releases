@@ -428,7 +428,7 @@ public final class BIEditorSupport extends DataEditorSupport
 
         public CloseOperationState canCloseElement() {
             DataObject dataObject = callback.getTopComponent().getLookup().lookup(DataObject.class);
-            BIEditorSupport editor = findEditor(dataObject);
+            BIEditorSupport editor = (BIEditorSupport) cloneableEditorSupport();
             return editor.canCloseElement(callback.getTopComponent());
         }
 

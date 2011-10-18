@@ -68,9 +68,7 @@ public class CMakeDataObject extends MultiDataObject {
     public CMakeDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
         super(pf, loader);
         registerEditor(MIMENames.CMAKE_MIME_TYPE, true);
-        CookieSet cookies = getCookieSet();
-        //cookies.add((Node.Cookie) DataEditorSupport.create(this, getPrimaryEntry(), cookies));
-        cookies.add(new CMakeExecSupport(getPrimaryEntry()));
+        getCookieSet().add(new CMakeExecSupport(getPrimaryEntry()));
     }
 
     @MultiViewElement.Registration(displayName = "#Source",
@@ -85,18 +83,18 @@ public class CMakeDataObject extends MultiDataObject {
 
     @Override
     protected Node createNodeDelegate() {
-        return new CMakeDataNode(this, Children.LEAF);
+        return new CMakeDataNode(this);
     }
 
     @Override
-    public Lookup getLookup() {
-        return getCookieSet().getLookup();
+    protected int associateLookup() {
+        return 1;
     }
 
     private static class CMakeDataNode extends DataNode {
         /** Construct the DataNode */
-        public CMakeDataNode(CMakeDataObject obj, Children ch) {
-            super(obj, ch, obj.getLookup());
+        public CMakeDataNode(CMakeDataObject obj) {
+            super(obj, Children.LEAF, obj.getLookup());
         }
 
         /** Get the support for methods which need it */

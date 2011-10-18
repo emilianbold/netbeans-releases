@@ -1249,6 +1249,12 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         send("-gdb-set backtrace limit " + STACK_MAX_DEPTH); // NOI18N
         send("-gdb-set print elements " + PRINT_ELEMENTS); // NOI18N
         
+        // set extra source folders
+        String sourceFolders = DebuggerOption.GDB_SOURCE_DIRS.getCurrValue(optionLayers());
+        if (sourceFolders != null && !sourceFolders.isEmpty()) {
+            send("-environment-directory \"" + sourceFolders + '\"'); // NOI18N
+        }
+        
         // set terminal mode on windows, see IZ 193220
         if (getHost().getPlatform() == Platform.Windows_x86 && getIOPack().isExternal()) {
             send("set new-console"); //NOI18N

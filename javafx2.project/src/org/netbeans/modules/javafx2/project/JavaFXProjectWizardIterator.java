@@ -83,7 +83,7 @@ public class JavaFXProjectWizardIterator implements WizardDescriptor.ProgressIns
     static final String PROP_PRELOADER_NAME = "preloader.name"; // NOI18N
     
     static final String MANIFEST_FILE = "manifest.mf"; // NOI18N
-    static final String GENERATED_PRELOADER_CLASS_NAME = "SimplePreloader"; // NOI18N
+    //static final String GENERATED_PRELOADER_CLASS_NAME = "SimplePreloader"; // NOI18N
     static final String GENERATED_FXML_CLASS_NAME = "Sample"; // NOI18N
 
     private static final long serialVersionUID = 1L;
@@ -232,19 +232,20 @@ public class JavaFXProjectWizardIterator implements WizardDescriptor.ProgressIns
         
                 // create additional files
                 if (type == WizardType.FXML) {
-                    int lastDotIdx = mainClass.lastIndexOf('.'); // NOI18N
-                    String pName = null;
-                    if (lastDotIdx != -1) {
-                        pName = mainClass.substring(0, lastDotIdx).trim();
-                        pName = pName.replace('.', '/'); // NOI18N
+                    String pName = ""; // NOI18N
+                    if (mainClass != null && mainClass.length() > 0) {
+                        int lastDotIdx = mainClass.lastIndexOf('.'); // NOI18N
+                        if (lastDotIdx != -1) {
+                            pName = mainClass.substring(0, lastDotIdx).trim();
+                            pName = pName.replace('.', '/'); // NOI18N
+                            pName += '/'; // NOI18N
+                        }
                     }
-                    
-                    FileObject controller = sourcesRoot.getFileObject(pName + '/' + GENERATED_FXML_CLASS_NAME + ".java"); // NOI18N
+                    FileObject controller = sourcesRoot.getFileObject(pName + GENERATED_FXML_CLASS_NAME + ".java"); // NOI18N
                     if (controller != null) {
                         resultSet.add(controller);
                     }
-
-                    FileObject fxml = sourcesRoot.getFileObject(pName + '/' + GENERATED_FXML_CLASS_NAME + ".fxml"); // NOI18N
+                    FileObject fxml = sourcesRoot.getFileObject(pName + GENERATED_FXML_CLASS_NAME + ".fxml"); // NOI18N
                     if (fxml != null) {
                         resultSet.add(fxml);
                     }
@@ -487,7 +488,8 @@ public class JavaFXProjectWizardIterator implements WizardDescriptor.ProgressIns
         StringBuilder sb = new StringBuilder();
         sb.append(preloaderProjectName.toLowerCase().replace('-', '.')); // NOI18N
         sb.append('.'); // NOI18N
-        sb.append(JavaFXProjectWizardIterator.GENERATED_PRELOADER_CLASS_NAME);
+        //sb.append(JavaFXProjectWizardIterator.GENERATED_PRELOADER_CLASS_NAME);
+        sb.append(preloaderProjectName.replace('-','_').replace('.','_'));
         return  sb.toString();
     }
 
