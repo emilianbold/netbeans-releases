@@ -60,6 +60,8 @@ final class Index {
         mb_internal_encoding('UTF-8');
         set_exception_handler(array($this, 'handleException'));
         spl_autoload_register(array($this, 'loadClass'));
+        // session
+        session_start();
     }
 
     /**
@@ -91,13 +93,14 @@ final class Index {
         $classes = array(
             'Config' => '../config/Config.php',
             'Error' => '../validation/Error.php',
+            'Flash' => '../flash/Flash.php',
             'NotFoundException' => '../exception/NotFoundException.php',
-            'ProjectUtil' => '../util/ProjectUtil.php',
             'TodoDao' => '../dao/TodoDao.php',
             'TodoMapper' => '../mapping/TodoMapper.php',
             'Todo' => '../model/Todo.php',
             'TodoSearchCriteria' => '../dao/TodoSearchCriteria.php',
             'TodoValidator' => '../validation/TodoValidator.php',
+            'Utils' => '../util/Utils.php',
         );
         if (!array_key_exists($name, $classes)) {
             die('Class "' . $name . '" not found.');
@@ -135,6 +138,10 @@ final class Index {
             $run = true;
             // data for main template
             $template = $this->getTemplate($page);
+            $flashes = null;
+            if (Flash::hasFlashes()) {
+                $flashes = Flash::getFlashes();
+            }
 
             // main template (layout)
             require self::LAYOUT_DIR . 'index.phtml';

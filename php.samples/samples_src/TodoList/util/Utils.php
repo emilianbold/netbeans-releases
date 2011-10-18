@@ -44,7 +44,7 @@
 /**
  * Miscellaneous utility methods.
  */
-final class ProjectUtil {
+final class Utils {
 
     private function __construct() {
     }
@@ -136,6 +136,15 @@ final class ProjectUtil {
      */
     public static function capitalize($string) {
         return ucfirst(mb_strtolower($string));
+    }
+
+    /**
+     * Escape the given string
+     * @param string $string string to be escaped
+     * @return string escaped string
+     */
+    public static function escape($string) {
+        return htmlspecialchars($string, ENT_QUOTES);
     }
 
 }
