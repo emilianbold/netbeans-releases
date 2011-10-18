@@ -107,7 +107,7 @@ public class AttachmentsPanel extends JPanel {
     private boolean hadNoAttachments;
 
     public AttachmentsPanel() {
-        setBackground(UIManager.getColor("EditorPane.background")); // NOI18N
+        setBackground(UIManager.getColor("TextArea.background")); // NOI18N
         ResourceBundle bundle = NbBundle.getBundle(AttachmentsPanel.class);
         noneLabel = new JLabel(bundle.getString("AttachmentsPanel.noneLabel.text")); // NOI18N
         createNewButton = new LinkButton(new CreateNewAction());

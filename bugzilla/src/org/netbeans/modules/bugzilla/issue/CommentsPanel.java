@@ -122,7 +122,7 @@ public class CommentsPanel extends JPanel {
     private final Link issueLink;
     
     public CommentsPanel() {
-        setBackground(UIManager.getColor("EditorPane.background")); // NOI18N
+        setBackground(UIManager.getColor("TextArea.background")); // NOI18N
         
         issueLink = new HyperlinkSupport.Link() {
             @Override
