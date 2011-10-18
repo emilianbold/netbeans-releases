@@ -43,7 +43,6 @@
  */
 package org.openide;
 
-import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 
 import java.awt.*;
@@ -56,6 +55,7 @@ import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -77,7 +77,7 @@ public abstract class DialogDisplayer {
      * @return the default instance from lookup
      */
     public static DialogDisplayer getDefault() {
-        DialogDisplayer dd = Lookup.getDefault ().lookup (DialogDisplayer.class);
+        DialogDisplayer dd = null;//Lookup.getDefault ().lookup (DialogDisplayer.class);
 
         if (dd == null) {
             dd = new Trivial();
@@ -204,6 +204,7 @@ public abstract class DialogDisplayer {
         private static Component option2Button(Object option, NotifyDescriptor nd, ActionListener l, JRootPane rp) {
             if (option instanceof AbstractButton) {
                 AbstractButton b = (AbstractButton) option;
+                removeOldListeners(b);
                 b.addActionListener(l);
 
                 return b;
@@ -247,6 +248,18 @@ public abstract class DialogDisplayer {
                 return b;
             }
         }
+
+        private static void removeOldListeners( AbstractButton button ) {
+            ArrayList<ActionListener> toRem = new ArrayList<ActionListener>();
+            for( ActionListener al : button.getActionListeners() ) {
+                if( al instanceof StandardDialog.ButtonListener ) {
+                    toRem.add( al );
+                }
+            }
+            for( ActionListener al : toRem ) {
+                button.removeActionListener( al );
+            }
+                            }
 
         private static final class StandardDialog extends JDialog {
             final NotifyDescriptor nd;
@@ -478,26 +491,35 @@ public abstract class DialogDisplayer {
             }
 
             private ActionListener makeListener(final Object option) {
-                return new ActionListener() {
-                        public void actionPerformed(ActionEvent e) {
-                            //System.err.println("actionPerformed: " + option);
-                            nd.setValue(option);
-
-                            if (buttonListener != null) {
-                                // #34485: some listeners expect that the action source is the option, not the button
-                                ActionEvent e2 = new ActionEvent(
-                                        option, e.getID(), e.getActionCommand(), e.getWhen(), e.getModifiers()
-                                    );
-                                buttonListener.actionPerformed(e2);
-                            }
-
-                            if ((closingOptions == null) || Arrays.asList(closingOptions).contains(option)) {
-                                haveFinalValue = true;
-                                setVisible(false);
-                            }
-                        }
-                    };
+                return new ButtonListener( option );
             }
+            
+            private class ButtonListener implements ActionListener {
+
+                private final Object option;
+                
+                public ButtonListener( Object option ) {
+                    this.option = option;
+                }
+                
+                @Override
+                public void actionPerformed( ActionEvent e ) {
+                    nd.setValue(option);
+
+                    if (buttonListener != null) {
+                        // #34485: some listeners expect that the action source is the option, not the button
+                        ActionEvent e2 = new ActionEvent(
+                                option, e.getID(), e.getActionCommand(), e.getWhen(), e.getModifiers()
+                            );
+                        buttonListener.actionPerformed(e2);
+                    }
+
+                    if ((closingOptions == null) || Arrays.asList(closingOptions).contains(option)) {
+                        haveFinalValue = true;
+                        setVisible(false);
+                    }
+                }
+            }     
         }
 
         private static class DialogUpdater implements PropertyChangeListener {
