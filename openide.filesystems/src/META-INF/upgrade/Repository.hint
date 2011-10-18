@@ -1,0 +1,9 @@
+org.openide.filesystems.Repository.getDefault().getDefaultFileSystem().findResource($p)
+=>
+org.openide.filesystems.FileUtil.getConfigFile($p)
+;;
+
+org.openide.filesystems.Repository.getDefault().getDefaultFileSystem().getRoot()
+=>
+org.openide.filesystems.FileUtil.getConfigRoot()
+;;
