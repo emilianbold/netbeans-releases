@@ -709,17 +709,23 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
     }
 
     public double modelToY(int offset) {
-        double retY = 0d;
         if (lock()) {
             try {
                 checkDocumentLockedIfLogging();
-                op.checkViewsInited();
-                if (op.isActive()) {
-                    retY = modelToYUnlocked(offset);
-                }
+                return modelToYUnlocked(offset);
             } finally {
                 unlock();
             }
+        }
+        return 0d;
+    }
+    
+    public double modelToYUnlocked(int offset) {
+        double retY = 0d;
+        op.checkViewsInited();
+        if (op.isActive()) {
+            int index = getViewIndex(offset);
+            retY = getY(index);
         }
         if (ViewHierarchyImpl.OP_LOG.isLoggable(Level.FINE)) {
             ViewUtils.log(ViewHierarchyImpl.OP_LOG, "modelToY(" + offset + ")=" + retY + "\n"); // NOI18N
@@ -727,30 +733,28 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
         return retY;
     }
     
-    public double modelToYUnlocked(int offset) {
-        int index = getViewIndex(offset);
-        return getY(index);
-    }
-    
     public double[] modelToYUnlocked(int[] offsets) {
         double[] retYs = new double[offsets.length];
-        if (offsets.length > 0) {
-            // Can in fact assume lastOffset == 0 corresponds to retY == 0d even if the view hierarchy
-            // covers only portion of document since offset == 0 should be covered and it falls into first pView.
-            int lastOffset = 0;
-            int lastIndex = 0;
-            double lastY = 0d;
-            for (int i = 0; i < offsets.length; i++) {
-                int offset = offsets[i];
-                double y;
-                if (offset == lastOffset) {
-                    y = lastY;
-                } else {
-                    int startIndex = (offset > lastOffset) ? lastIndex : 0;
-                    int index = children.viewIndexFirstByStartOffset(offset, startIndex);
-                    y = getY(index);
+        op.checkViewsInited();
+        if (op.isActive()) { // Otherwise leave 0d for all retYs
+            if (offsets.length > 0) {
+                // Can in fact assume lastOffset == 0 corresponds to retY == 0d even if the view hierarchy
+                // covers only portion of document since offset == 0 should be covered and it falls into first pView.
+                int lastOffset = 0;
+                int lastIndex = 0;
+                double lastY = 0d;
+                for (int i = 0; i < offsets.length; i++) {
+                    int offset = offsets[i];
+                    double y;
+                    if (offset == lastOffset) {
+                        y = lastY;
+                    } else {
+                        int startIndex = (offset > lastOffset) ? lastIndex : 0;
+                        int index = children.viewIndexFirstByStartOffset(offset, startIndex);
+                        y = getY(index);
+                    }
+                    retYs[i] = y;
                 }
-                retYs[i] = y;
             }
         }
         return retYs;
