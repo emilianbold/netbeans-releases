@@ -70,6 +70,31 @@ public class InlineTest extends RefactoringTestBase {
     public InlineTest(String name) {
         super(name);
     }
+    
+    public void test203887() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/TestClass.java", "package t;\n"
+                + "public class TestClass {\n"
+                + "    public int power(int x) {\n"
+                + "        return x*x;\n"
+                + "    }\n"
+                + "    public void  neco(int i) {\n"
+                + "        int a = 4;\n"
+                + "        int c = power(1);\n"
+                + "    }\n"
+                + "}"));
+        final InlineRefactoring[] r1 = new InlineRefactoring[1];
+        createInlineMethodRefactoring(src.getFileObject("t/TestClass.java"), 1, r1);
+        performRefactoring(r1);
+        verifyContent(src,
+                new File("t/TestClass.java", "package t;\n"
+                + "public class TestClass {\n"
+                + "    public void  neco(int i) {\n"
+                + "        int a = 4;\n"
+                + "        int c = (1 * 1);\n"
+                + "    }\n"
+                + "}"));
+    }
 
     public void test203520() throws Exception {
         writeFilesAndWaitForScan(src,
