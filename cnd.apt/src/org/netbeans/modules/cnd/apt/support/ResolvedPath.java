@@ -45,6 +45,8 @@
 package org.netbeans.modules.cnd.apt.support;
 
 import java.io.File;
+import java.util.logging.Level;
+import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
@@ -69,11 +71,29 @@ public final class ResolvedPath {
         this.path = FilePathCache.getManager().getString(path);
         this.isDefaultSearchPath = isDefaultSearchPath;
         this.index = index;
-        assert CndFileUtils.isExistingFile(fileSystem, this.path.toString()) : "isExistingFile failed in " + fileSystem + " for " + path;
-        assert !CndFileUtils.isLocalFileSystem(fileSystem) || new File(this.path.toString()).isFile() : "not a file " + this.path;
-        assert CndFileUtils.toFileObject(fileSystem, path) != null : "no FileObject in " + fileSystem + " for " + path + 
-                " FileUtil.toFileObject = " + FileUtil.toFileObject(new File(FileUtil.normalizePath(path.toString()))) + // NOI18N
-                " second check = " + fileSystem.findResource(path.toString()); // NOI18N
+        boolean debug = false;
+        assert debug = true;
+        if (debug) {
+            if (!CndFileUtils.isExistingFile(fileSystem, this.path.toString())) {
+                APTUtils.LOG.log(Level.WARNING, "ResolvedPath: isExistingFile failed in {0} for {1}", new Object[]{fileSystem, path});
+            }
+            // there are situations when file is edited, but included file is 
+            // removed/created by running undeground build infrastructure,
+            // so resolved path can correspond to the file which is already not a file
+            if (CndFileUtils.isLocalFileSystem(fileSystem)) {
+                // check file existence using java.io.file as well
+                if (!new File(this.path.toString()).isFile()) {
+                    APTUtils.LOG.log(Level.WARNING, "ResolvedPath: isFile failed for {0}", path);
+                }
+            }
+            if (CndFileUtils.toFileObject(fileSystem, path) == null) {
+                APTUtils.LOG.log(Level.WARNING, "ResolvedPath: no FileObject in {0} for {1} FileUtil.toFileObject = {2} second check = {3}", 
+                        new Object[]{
+                            fileSystem, path, 
+                            FileUtil.toFileObject(new File(FileUtil.normalizePath(path.toString()))), 
+                            fileSystem.findResource(path.toString())});
+            }
+        }
         CndUtils.assertNormalized(fileSystem, folder);
         CndUtils.assertNormalized(fileSystem, path);
     }
