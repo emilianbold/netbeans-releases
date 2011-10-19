@@ -69,7 +69,12 @@ import org.openide.util.lookup.ServiceProvider;
 public class NbFormServices implements FormServices {
 
     @Override
-    public void setupEditorPane(JEditorPane editor, FileObject srcFile, int ccPosition) {
+    public JEditorPane createCodeEditorPane() {
+        return new JEditorPane();
+    }
+
+    @Override
+    public void setupCodeEditorPane(JEditorPane editor, FileObject srcFile, int ccPosition) {
         DataObject dob = null;
         try {
             dob = DataObject.find(srcFile);

@@ -39,73 +39,64 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.php.project.util;
 
-package org.netbeans.modules.vmd.inspector;
-
-import java.awt.BorderLayout;
-import java.awt.Color;
-import org.openide.util.Lookup;
-import javax.swing.*;
-import org.netbeans.spi.navigator.NavigatorPanel;
-import org.openide.util.NbBundle;
-import org.openide.util.lookup.AbstractLookup;
-import org.openide.util.lookup.InstanceContent;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.Queue;
+import java.util.logging.Handler;
+import java.util.logging.LogRecord;
 
 /**
- * @author Karol Harezlak
+ * Log handler which is able to wait for a log message.
  */
+public final class TestLogHandler extends Handler {
 
-final class InspectorPanel implements NavigatorPanel {
+    final class R {
 
-    private static InspectorPanel INSTANCE;
+        private final Queue<String> toExpect;
 
-    private JPanel panel;
-    private Lookup lookup;
-    private final InstanceContent ic;
-    
-    static InspectorPanel getInstance() {
-        if (INSTANCE != null) {
-            return INSTANCE;
+
+        private R(final String... toExpect) {
+            this.toExpect = new LinkedList<String>(Arrays.asList(toExpect));
         }
-        synchronized (InspectorPanel.class) {
-            if (INSTANCE == null) {
-                INSTANCE = new InspectorPanel();
+
+    }
+
+    private R r;
+
+
+    public synchronized void expect(final String... expect) {
+        r = new R(expect);
+    }
+
+    public synchronized R await(long timeOut) throws InterruptedException {
+        final long st = System.currentTimeMillis();
+        while (!r.toExpect.isEmpty()) {
+            if (System.currentTimeMillis() - st > timeOut) {
+                return null;
             }
-            return INSTANCE;
+            wait(timeOut);
+        }
+        return r;
+    }
+
+    @Override
+    public synchronized void publish(LogRecord record) {
+        if (record.getMessage() != null && record.getMessage().equals(r.toExpect.peek())) {
+            r.toExpect.poll();
+        }
+        if (r.toExpect.isEmpty()) {
+            notifyAll();
         }
     }
-    
-    private InspectorPanel() {
-        this.ic = new InstanceContent();
-        this.lookup = new AbstractLookup(ic);
-        this.panel = new JPanel(new BorderLayout());
-        this.panel.setBackground(Color.WHITE);
+
+    @Override
+    public void flush() {
     }
 
-    public String getDisplayName() {
-        return NbBundle.getMessage(InspectorPanel.class, "LBL_InspectorPanelDisplayName"); //NOI18N
-    }
-
-    public String getDisplayHint() {
-        return NbBundle.getMessage(InspectorPanel.class, "LBL_InspectorPanelHint"); //NOI18N
-    }
-
-    public synchronized JComponent getComponent() {
-        return panel;
-    }
-
-    public void panelActivated(Lookup lookup) {
-    }
-
-    public void panelDeactivated() {
-    }
-
-    public Lookup getLookup() {
-        return lookup;
-    }
-
-    InstanceContent getInstanceContent() {
-        return ic;
+    @Override
+    public void close() {
     }
 
 }

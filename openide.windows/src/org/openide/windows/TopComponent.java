@@ -1428,11 +1428,11 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
         /** Shall the component be opened at start */
         boolean openAtStartup();
         /** 
-         * Window layout role or an empty string for the default layout 
+         * Window layout roles or no roles for the default layout
          * @see WindowManager#setRole(java.lang.String) 
-         * @since 6.45
+         * @since 6.47
          */
-        String role() default "";
+        String[] roles() default {};
     }
     
     /** Creates an action that can open the component.
