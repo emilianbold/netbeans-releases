@@ -434,13 +434,20 @@ public final class DatabaseConnection implements DBConnection {
             return;
         }
 
+        String oldDisplayName = getDisplayName();
+        String oldName = getName();
         String olddb = db;
         db = database;
         name = null;
         name = getName();
+        String newDisplayName = getDisplayName();
         if (propertySupport != null) {
             propertySupport.firePropertyChange(PROP_DATABASE, olddb, db);
+            propertySupport.firePropertyChange(PROP_NAME, oldName, name);
+            if(! oldDisplayName.equals(newDisplayName)) {
+                propertySupport.firePropertyChange(PROP_DISPLAY_NAME, oldDisplayName, newDisplayName);
         }
+    }
     }
 
     /** Returns user login name */
@@ -463,13 +470,20 @@ public final class DatabaseConnection implements DBConnection {
             return;
         }
 
+        String oldDisplayName = getDisplayName();
+        String oldName = getName();
         String oldusr = usr;
         usr = user;
         name = null;
         name = getName();
+        String newDisplayName = getDisplayName();
         if (propertySupport != null) {
             propertySupport.firePropertyChange(PROP_USER, oldusr, usr);
+            propertySupport.firePropertyChange(PROP_NAME, oldName, name);
+            if(! oldDisplayName.equals(displayName)) {
+                propertySupport.firePropertyChange(PROP_DISPLAY_NAME, oldDisplayName, newDisplayName);
         }
+    }
     }
 
     /** Returns name of the connection */
@@ -492,7 +506,7 @@ public final class DatabaseConnection implements DBConnection {
      */
     @Override
     public void setName(String value) {
-        if (name == null || name.equals(value)) {
+        if (name == null || getName().equals(value)) {
             return;
         }
 
@@ -510,7 +524,7 @@ public final class DatabaseConnection implements DBConnection {
 
     @Override
     public void setDisplayName(String value) {
-        if ((displayName == null && value == null) || (displayName != null && displayName.equals(value))) {
+        if ((displayName == null && value == null) || getDisplayName().equals(value)) {
             return;
         }
 
@@ -544,16 +558,20 @@ public final class DatabaseConnection implements DBConnection {
         if (schema_name == null || schema_name.equals(schema)) {
             return;
         }
-
+        String oldDisplayName = getDisplayName();
         String oldName = getName();
-        name = null;
         String oldschema = schema;
+        name = null;
         schema = schema_name;
         name = getName();
+        String newDisplayName = getDisplayName();
         if (propertySupport != null) {
             propertySupport.firePropertyChange(PROP_SCHEMA, oldschema, schema);
             propertySupport.firePropertyChange(PROP_NAME, oldName, name);
+            if(! oldDisplayName.equals(displayName)) {
+                propertySupport.firePropertyChange(PROP_DISPLAY_NAME, oldDisplayName, newDisplayName);
         }
+    }
     }
 
     public void setDefaultCatalog(String val) throws CommandNotSupportedException, DDLException {
