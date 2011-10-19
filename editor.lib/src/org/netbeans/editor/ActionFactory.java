@@ -102,6 +102,7 @@ import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.modules.editor.lib2.RectangularSelectionUtils;
 import org.netbeans.modules.editor.lib2.search.EditorFindSupport;
 import org.netbeans.modules.editor.lib2.typinghooks.TypedBreakInterceptorsManager;
+import org.netbeans.modules.editor.lib2.view.DocumentView;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
@@ -1094,13 +1095,14 @@ public class ActionFactory {
                 try {
                     Caret caret = target.getCaret();
                     BaseDocument doc = (BaseDocument)target.getDocument();
+                    int dotPos = caret.getDot();
                     if (Utilities.isSelectionShowing(caret)) { // valid selection
                         int startPos = target.getSelectionStart();
                         int endPos = target.getSelectionEnd();
                         Utilities.changeCase(doc, startPos, endPos - startPos, changeCaseMode);
-                        caret.setDot(endPos);
+                        caret.setDot(dotPos == startPos ? endPos : startPos);
+                        caret.moveDot(dotPos == startPos ? startPos : endPos);
                     } else { // no selection - change current char
-                        int dotPos = caret.getDot();
                         Utilities.changeCase(doc, dotPos, 1, changeCaseMode);
                         caret.setDot(dotPos + 1);
                     }
@@ -2435,11 +2437,17 @@ public class ActionFactory {
             View rootView = null;
             TextUI textUI = target.getUI();
             if (textUI != null) {
-                rootView = textUI.getRootView(target);
+                rootView = textUI.getRootView(target); // Root view impl in BasicTextUI
+                if (rootView != null && rootView.getViewCount() == 1) {
+                    rootView = rootView.getView(0); // Get DocumentView
+                }
             }
             if (rootView != null) {
+                String rootViewDump = (rootView instanceof DocumentView)
+                        ? ((DocumentView)rootView).toStringDetail()
+                        : rootView.toString();
                 /*DEBUG*/System.err.println("DOCUMENT VIEW: " + System.identityHashCode(rootView) + // NOI18N
-                        "\n" + rootView); // NOI18N
+                        "\n" + rootViewDump); // NOI18N
                 int caretOffset = target.getCaretPosition();
                 int caretViewIndex = rootView.getViewIndex(caretOffset, Position.Bias.Forward);
                 /*DEBUG*/System.err.println("caretOffset=" + caretOffset + ", caretViewIndex=" + caretViewIndex); // NOI18N

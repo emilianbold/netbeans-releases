@@ -81,8 +81,8 @@ public class MakefileDataObject extends MultiDataObject {
     }
 
     @Override
-    public Lookup getLookup() {
-        return getCookieSet().getLookup();
+    protected int associateLookup() {
+        return 1;
     }
 
     @Messages("Source=&Source")

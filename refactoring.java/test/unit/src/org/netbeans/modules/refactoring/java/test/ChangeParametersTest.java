@@ -233,6 +233,107 @@ public class ChangeParametersTest extends RefactoringTestBase {
         performChangeParameters(null, null, null, paramTable, Javadoc.NONE, 0, false, new Problem(false, "ERR_existingConstructor"));
     }
     
+    public void test201140() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t; public class A {\n"
+                + "    public void testMethod() {\n"
+                + "         System.out.println(1);\n"
+                + "    }\n"
+                + "}\n"),
+                new File("t/B.java", "package t; public class B extends A {\n"
+                + "    public void testMethod(short x) {\n"
+                + "         System.out.println(x);\n"
+                + "    }\n"
+                + "}\n"));
+        ParameterInfo[] paramTable = new ParameterInfo[] {new ParameterInfo(-1, "y", "short", "1")};
+        performChangeParameters(null, null, null, paramTable, Javadoc.NONE, 1, false, new Problem(false, "WRN_MethodIsOverridden"));
+        
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t; public class A {\n"
+                + "    public void testMethod() {\n"
+                + "         System.out.println(1);\n"
+                + "    }\n"
+                + "}\n"),
+                new File("t/B.java", "package t; public class B extends A {\n"
+                + "    protected void testMethod(short x) {\n"
+                + "         System.out.println(x);\n"
+                + "    }\n"
+                + "}\n"));
+        paramTable = new ParameterInfo[] {new ParameterInfo(-1, "y", "short", "1")};
+        performChangeParameters(null, null, null, paramTable, Javadoc.NONE, 1, false, new Problem(true, "ERR_WeakerAccess"), new Problem(false, "WRN_MethodIsOverridden"));
+        
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t; public class A {\n"
+                + "    public void testMethod() {\n"
+                + "         System.out.println(1);\n"
+                + "    }\n"
+                + "}\n"),
+                new File("t/B.java", "package t; public class B extends A {\n"
+                + "    public int testMethod(short x) {\n"
+                + "         System.out.println(x);\n"
+                + "         return 0;\n"
+                + "    }\n"
+                + "}\n"));
+        paramTable = new ParameterInfo[] {new ParameterInfo(-1, "y", "short", "1")};
+        performChangeParameters(null, null, null, paramTable, Javadoc.NONE, 1, false, new Problem(true, "ERR_existingReturnType"), new Problem(false, "WRN_MethodIsOverridden"));
+        
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t; public class A {\n"
+                + "    private void testMethod() {\n"
+                + "         System.out.println(1);\n"
+                + "    }\n"
+                + "}\n"),
+                new File("t/B.java", "package t; public class B extends A {\n"
+                + "    protected void testMethod() {\n"
+                + "         System.out.println(2);\n"
+                + "    }\n"
+                + "}\n"));
+        paramTable = new ParameterInfo[] {};
+        performChangeParameters(EnumSet.of(Modifier.PUBLIC), null, null, paramTable, Javadoc.NONE, 1, false, new Problem(true, "ERR_WeakerAccess"), new Problem(false, "WRN_MethodIsOverridden"));
+    }
+    
+    public void test201161() throws Exception { // [Change Method Parameter] Change Parameters - changes method invocation because of widening conversions (behavioral change)
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t; public class A {\n"
+                + "    public void testMethod() {\n"
+                + "         System.out.println(1);\n"
+                + "    }\n"
+                + "\n"
+                + "    public void testMethod(long x) {\n"
+                + "         System.out.println(x);\n"
+                + "    }\n"
+                + "}\n"));
+        ParameterInfo[] paramTable = {new ParameterInfo(-1, "y", "int", "1")};
+        performChangeParameters(null, null, null, paramTable, Javadoc.NONE, 1, false, new Problem(false, "WRN_wideningConversion"));
+        
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t; public class A {\n"
+                + "    public void testMethod() {\n"
+                + "         System.out.println(1);\n"
+                + "    }\n"
+                + "\n"
+                + "    public void testMethod(short x) {\n"
+                + "         System.out.println(x);\n"
+                + "    }\n"
+                + "}\n"));
+        paramTable = new ParameterInfo[] {new ParameterInfo(-1, "y", "int", "1")};
+        performChangeParameters(null, null, null, paramTable, Javadoc.NONE, 1, false);
+        
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t; public class A extends B {\n"
+                + "    public void testMethod() {\n"
+                + "         System.out.println(1);\n"
+                + "    }\n"
+                + "}\n"),
+                new File("t/B.java", "package t; public class B {\n"
+                + "    public void testMethod(short x) {\n"
+                + "         System.out.println(x);\n"
+                + "    }\n"
+                + "}\n"));
+        paramTable = new ParameterInfo[] {new ParameterInfo(-1, "y", "short", "1")};
+        performChangeParameters(null, null, null, paramTable, Javadoc.NONE, 1, false, new Problem(false, "ERR_existingMethod"));
+    }
+    
     public void test114328() throws Exception { // [Change parameters] Check if method with the same signature already exists
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", "package t; public class A {\n"
@@ -544,6 +645,29 @@ public class ChangeParametersTest extends RefactoringTestBase {
                 + "\n"
                 + "    public static void main(string[] args) {\n"
                 + "        testMethod(1, 2);\n"
+                + "    }\n"
+                + "}\n"));
+    }
+
+    public void test202336() throws Exception { // [71cat] ArrayIndexOutOfBoundsException: -1
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t; public class A {\n"
+                + "    public static void testMethod(int x, String y) {\n"
+                + "    }\n"
+                + "\n"
+                + "    public static void main(string[] args) {\n"
+                + "        testMethod(2, \"ddd\");\n"
+                + "    }\n"
+                + "}\n"));
+        ParameterInfo[] paramTable = new ParameterInfo[0];
+        performChangeParameters(null, null, null, paramTable, Javadoc.NONE, 1, false);
+        verifyContent(src,
+                new File("t/A.java", "package t; public class A {\n"
+                + "    public static void testMethod() {\n"
+                + "    }\n"
+                + "\n"
+                + "    public static void main(string[] args) {\n"
+                + "        testMethod();\n"
                 + "    }\n"
                 + "}\n"));
     }

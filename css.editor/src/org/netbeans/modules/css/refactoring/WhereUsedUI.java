@@ -53,7 +53,7 @@ import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author marekfukala
+ * @author mfukala@netbeans.org
  */
 public class WhereUsedUI implements RefactoringUI {
 

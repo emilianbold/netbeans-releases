@@ -247,6 +247,7 @@ private void enableCommentFormatCheckBoxActionPerformed(java.awt.event.ActionEve
         addLeadingStarCheckBox.setEnabled(b);
         alignExceptionsCheckBox.setEnabled(b);
         alignParamsCheckBox.setEnabled(b);
+        alignReturnCheckBox.setEnabled(b);
         blankLineAfterDescCheckBox.setEnabled(b);
         blankLineAfterParamsCheckBox.setEnabled(b);
         blankLineAfterReturnCheckBox.setEnabled(b);

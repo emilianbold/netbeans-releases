@@ -44,6 +44,8 @@
 
 package org.netbeans.modules.cnd.debugger.gdb2.mi;
 
+import org.netbeans.modules.cnd.debugger.gdb2.GdbLogger;
+
 /**
  * The main class for interacting with an MI engine.
  *
@@ -78,11 +80,13 @@ public abstract class MIProxy {
     private final MICommandManager cmdManager;
     private final String prompt;
     private final MIParser parser;
+    private final GdbLogger gdbLogger;
 
     protected MIProxy(MICommandInjector injector, String prompt, String encoding) {
 	assert prompt != null;
 
-	cmdManager = new MICommandManager(injector);
+        gdbLogger = new GdbLogger();
+	cmdManager = new MICommandManager(injector, gdbLogger);
 	this.prompt = prompt;
 
 	parser = new MIParser(encoding);
@@ -107,6 +111,7 @@ public abstract class MIProxy {
      */
 
     public boolean processLine(/* TMP final */ String line) {
+        gdbLogger.logMessage(line);
 
 	if (line.trim().equals(prompt)) {
 	    if (!connected) {

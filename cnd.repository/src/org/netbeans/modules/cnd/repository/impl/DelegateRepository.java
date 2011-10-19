@@ -46,6 +46,7 @@ package org.netbeans.modules.cnd.repository.impl;
 import java.util.Set;
 import org.netbeans.modules.cnd.repository.api.DatabaseTable;
 import org.netbeans.modules.cnd.repository.api.Repository;
+import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
 import org.netbeans.modules.cnd.repository.disk.DiskRepositoryManager;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
@@ -152,7 +153,7 @@ public final class DelegateRepository implements Repository {
     @Override
     public void startup(int persistMechanismVersion) {
         initDelegate();
-        RepositoryTranslatorImpl.startup(persistMechanismVersion);
+        ((RepositoryTranslatorImpl) RepositoryAccessor.getTranslator()).startup(persistMechanismVersion);
         delegate.startup(persistMechanismVersion);
     }
 

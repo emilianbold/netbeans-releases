@@ -139,7 +139,7 @@ public final class APTFileCacheEntry {
         Integer key = Integer.valueOf(node.getOffset());
         PostIncludeData old = cache.get(key);
         assert old != null;
-        assert !old.hasPostIncludeMacroState();
+        assert !old.hasPostIncludeMacroState() : filePath + " serial=" + serial + " for node " + node + " already has post macro state";
         if (serial) {
             cache.put(key, newData);
         } else {

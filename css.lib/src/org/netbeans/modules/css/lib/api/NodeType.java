@@ -94,6 +94,12 @@ public enum NodeType {
         elementName, 
         esPred, 
         expr, 
+        
+        /**
+         * @font-face { ... }
+         */
+        fontFace,
+        
         function, 
         function_name, 
         charSet, 
@@ -111,6 +117,18 @@ public enum NodeType {
         media_query,
         media_type,
         medium, 
+        
+        /** 
+         * Mozilla specific at rule @-moz-document 
+         * See https://developer.mozilla.org/en/CSS/@-moz-document
+         */
+        moz_document,
+        
+        /**
+         * Mozilla @-moz-document at rule argument
+         * See https://developer.mozilla.org/en/CSS/@-moz-document
+         */
+        moz_document_function,
         
         /**
          * Namespace declaration: @namespace prefix "http://myns";

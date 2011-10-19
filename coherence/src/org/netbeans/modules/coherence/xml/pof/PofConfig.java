@@ -41,129 +41,30 @@
  */
 package org.netbeans.modules.coherence.xml.pof;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlType;
-
+import java.util.List;
 
 /**
- * 
+ *
+ * @author Andrew Hopkinson (Oracle A-Team)
  */
-@XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "", propOrder = {
-    "userTypeList",
-    "allowInterfaces",
-    "allowSubclasses",
-    "defaultSerializer"
-})
-@XmlRootElement(name = "pof-config")
-public class PofConfig {
+public interface PofConfig extends PofConfigComponent {
 
-    @XmlElement(name = "user-type-list", required = true)
-    protected UserTypeList userTypeList;
-    @XmlElement(name = "allow-interfaces")
-    protected String allowInterfaces;
-    @XmlElement(name = "allow-subclasses")
-    protected String allowSubclasses;
-    @XmlElement(name = "default-serializer")
-    protected DefaultSerializer defaultSerializer;
+    public static String XML_TAG_NAME = "pof-config";
 
-    /**
-     * Gets the value of the userTypeList property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link UserTypeList }
-     *     
-     */
-    public UserTypeList getUserTypeList() {
-        return userTypeList;
-    }
+    public UserTypeList getUserTypeList();
 
-    /**
-     * Sets the value of the userTypeList property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link UserTypeList }
-     *     
-     */
-    public void setUserTypeList(UserTypeList value) {
-        this.userTypeList = value;
-    }
+    public void setUserTypeList(UserTypeList element);
 
-    /**
-     * Gets the value of the allowInterfaces property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getAllowInterfaces() {
-        return allowInterfaces;
-    }
+    public AllowInterfaces getAllowInterfaces();
 
-    /**
-     * Sets the value of the allowInterfaces property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setAllowInterfaces(String value) {
-        this.allowInterfaces = value;
-    }
+    public void setAllowInterfaces(AllowInterfaces element);
 
-    /**
-     * Gets the value of the allowSubclasses property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getAllowSubclasses() {
-        return allowSubclasses;
-    }
+    public AllowSubclasses getAllowSubclasses();
 
-    /**
-     * Sets the value of the allowSubclasses property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setAllowSubclasses(String value) {
-        this.allowSubclasses = value;
-    }
+    public void setAllowSubclasses(AllowSubclasses element);
 
-    /**
-     * Gets the value of the defaultSerializer property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link DefaultSerializer }
-     *     
-     */
-    public DefaultSerializer getDefaultSerializer() {
-        return defaultSerializer;
-    }
+    public DefaultSerializer getDefaultSerializer();
 
-    /**
-     * Sets the value of the defaultSerializer property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link DefaultSerializer }
-     *     
-     */
-    public void setDefaultSerializer(DefaultSerializer value) {
-        this.defaultSerializer = value;
-    }
+    public void setDefaultSerializer(DefaultSerializer element);
 
 }

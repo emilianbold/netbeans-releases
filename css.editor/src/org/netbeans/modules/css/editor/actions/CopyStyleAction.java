@@ -52,16 +52,12 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.editor.NbEditorUtilities;
 
-import org.openide.*;
 import org.openide.awt.StatusDisplayer;
 import org.openide.loaders.DataObject;
-import org.openide.nodes.Node;
 import org.openide.util.*;
 import org.openide.util.datatransfer.ExClipboard;
-import org.openide.util.actions.*;
 import org.openide.filesystems.*;
 
-import org.netbeans.modules.css.*;
 
 /**
  * Action that put XML style processing instruction in clipboard.
@@ -77,6 +73,7 @@ public abstract class CopyStyleAction extends BaseAction {
         super(name);
     }
     
+    @Override
     public void actionPerformed(ActionEvent evt, JTextComponent target) {
         BaseDocument bdoc = Utilities.getDocument(target);
         if(bdoc == null) {
@@ -91,7 +88,7 @@ public abstract class CopyStyleAction extends BaseAction {
         StringSelection ss = new StringSelection(pi);
         ExClipboard clipboard = Lookup.getDefault().lookup(ExClipboard.class);
         clipboard.setContents(ss, null);
-        StatusDisplayer.getDefault().setStatusText( NbBundle.getMessage(CheckStyleAction.class, "MSG_Style_tag_in_clipboard"));  // NOI18N
+        StatusDisplayer.getDefault().setStatusText( NbBundle.getMessage(CopyStyleAction.class, "MSG_Style_tag_in_clipboard"));  // NOI18N
         
     }
     
@@ -126,6 +123,7 @@ public abstract class CopyStyleAction extends BaseAction {
             putValue(SHORT_DESCRIPTION, copyStyleAction);
         }
         
+        @Override
         protected String createText(DataObject csso) {
             return comment + "<?xml-stylesheet type=\"text/css\" href=\"" + this.getHref(csso.getPrimaryFile()) + "\" ?>"; // NOI18N
         }
@@ -142,6 +140,7 @@ public abstract class CopyStyleAction extends BaseAction {
             putValue(SHORT_DESCRIPTION, copyStyleAction);
         }
         
+        @Override
         protected String createText(DataObject csso) {
             return comment + "<link rel=\"StyleSheet\" type=\"text/css\" href=\"" + this.getHref(csso.getPrimaryFile()) + "\" media=\"screen\" >";  // NOI18N
         }

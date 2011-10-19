@@ -88,6 +88,14 @@ class StackLineAnalyser {
             } catch (NumberFormatException nfe) {
                 return null;
             }
+            if (matcher.group(1)==null ) {
+                return new Link(matcher.group(4).split("\\$")[0],
+                            lineNumber,
+                            matcher.start(4),
+                            matcher.end(6)+1
+                            );
+                
+            }
             return new Link(matcher.group(1) + matcher.group(4).split("\\$")[0],
                             lineNumber,
                             matcher.start(1),
@@ -145,11 +153,16 @@ class StackLineAnalyser {
                     StyledDocument doc = editorCookie.openDocument ();
                     if (doc != null) {
                         if (lineNumber != -1) {
-                            Line l = lineCookie.getLineSet ().getCurrent (lineNumber - 1);
+                            try {
+                                Line l = lineCookie.getLineSet().getCurrent(lineNumber - 1);
 
-                            if (l != null) {
-                                l.show (Line.SHOW_GOTO);
-                                return;
+                                if (l != null) {
+                                    l.show(Line.SHOW_GOTO);
+                                    return;
+                                }
+                            } catch (IndexOutOfBoundsException oob) {
+                                //line number is no more valid
+                                ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, oob);
                             }
                         }
                     }

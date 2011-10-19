@@ -66,7 +66,7 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author Vladimir Kvashin
  */
-@ServiceProvider(service=org.netbeans.modules.remote.spi.FileSystemProviderImplementation.class, position=50)
+@ServiceProvider(service=org.netbeans.modules.remote.spi.FileSystemProviderImplementation.class, position=150)
 public class RemoteFileSystemProvider implements FileSystemProviderImplementation {
 
     @Override
@@ -207,13 +207,32 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
         if (path.startsWith(RemoteFileURLStreamHandler.PROTOCOL_PREFIX)) {
             // path is like "rfs:hostname:22/tmp/filename.ext"
             // or           "rfs:username@hostname:22/tmp/filename.ext"
+            // or           "rfs://username@hostname:22/tmp/filename.ext"
             int port = 0;
             StringBuilder hostName = new StringBuilder();
             String userName = null;
             CharSequence remotePath = "";
             boolean insideHostOrUser = true;
+            int firstSlashes = 0;
             for (int i = RemoteFileURLStreamHandler.PROTOCOL_PREFIX.length(); i < path.length(); i++) {
                 char c = path.charAt(i);
+                if (firstSlashes >= 0) {
+                    if (c == '/') {
+                        firstSlashes++;
+                        if (firstSlashes > 2) {
+                            // error
+                            throw new IllegalArgumentException("Invalid path: " + path); //NOI18N
+                        }
+                        continue;
+                    } else {
+                        if (firstSlashes != 0 && firstSlashes != 2) {
+                            // error
+                            throw new IllegalArgumentException("Invalid path: " + path); //NOI18N
+                        }
+                        firstSlashes = -1;
+                        insideHostOrUser = true;
+                    }
+                }
                 if (insideHostOrUser) {
                     if (c == '@') {
                         userName = hostName.toString(); // it was user, not host

@@ -71,6 +71,7 @@ import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.pom.Dependency;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.Properties;
+import org.netbeans.modules.maven.model.pom.Repository;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
@@ -83,7 +84,7 @@ import org.openide.util.NbBundle;
 
 
 /**
- * Warn user when implementation of EJBContainer is missing.
+ * Warn user when implementation of EJBContainer is missing and offers him Embeddable EJB Container to use .
  */
 public class EmbeddableEJBContainerHint extends AbstractHint {
 
@@ -107,7 +108,7 @@ public class EmbeddableEJBContainerHint extends AbstractHint {
     }
 
     @Override
-    public List<org.netbeans.spi.editor.hints.ErrorDescription> run(CompilationInfo info, TreePath treePath) {
+    public List<ErrorDescription> run(CompilationInfo info, TreePath treePath) {
         Tree t = treePath.getLeaf();
 
         Element el = info.getTrees().getElement(treePath);
@@ -206,18 +207,18 @@ public class EmbeddableEJBContainerHint extends AbstractHint {
                     assert files.length == 1 : "expecting one item: " + Arrays.asList(files);
                     
                     try {
-                        URL u;
+                        URL pomUrl;
                         if (serId.indexOf("gfv3ee6wc") != -1) {
-                            u = new URL("http://download.java.net/maven/glassfish/org/glassfish/extras/glassfish-embedded-static-shell/3.1/glassfish-embedded-static-shell-3.1.pom");
+                            pomUrl = new URL("http://repo2.maven.org/maven2/org/glassfish/extras/glassfish-embedded-static-shell/3.1.1/glassfish-embedded-static-shell-3.1.1.pom");
                         } else {
-                            u = new URL("http://download.java.net/maven/glassfish/org/glassfish/extras/glassfish-embedded-static-shell/3.0.1/glassfish-embedded-static-shell-3.0.1.pom");
+                            pomUrl = new URL("http://repo2.maven.org/maven2/org/glassfish/extras/glassfish-embedded-static-shell/3.0.1/glassfish-embedded-static-shell-3.0.1.pom");
                         }
                         if (serId.equals(usedServer)) {
                             fixes.clear();
                         }
                         fixes.add(new FixEjbContainerAction(
                                 NbBundle.getMessage(EmbeddableEJBContainerHint.class, "EmbeddableEJBContainer_FixGFStatic", server.getDisplayName()),
-                                u, files[0], prj));
+                                pomUrl, files[0], prj));
                         if (serId.equals(usedServer)) {
                             return fixes;
                         }
@@ -237,7 +238,7 @@ public class EmbeddableEJBContainerHint extends AbstractHint {
             ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
                 @Override
                 public void performOperation(POMModel model) {
-                    added[0] = checkAndAddPom(pomUrl, model, "system", null, null, f);
+                    added[0] = checkAndAddPom(pomUrl, model, f);
                 }
             };
             FileObject pom = prj.getProjectDirectory().getFileObject("pom.xml");//NOI18N
@@ -250,15 +251,14 @@ public class EmbeddableEJBContainerHint extends AbstractHint {
             return null;
         }
 
-        private boolean checkAndAddPom(URL pom, POMModel model, String scope, String repoId, String repoName, File systemDep) {
+        private boolean checkAndAddPom(URL pom, POMModel model, File systemDep) {
             ModelUtils.LibraryDescriptor result = ModelUtils.checkLibrary(pom);
             if (result != null) {
                 //set dependency
                 Dependency dep = ModelUtils.checkModelDependency(model, result.getGroupId(), result.getArtifactId(), true);
                 dep.setVersion(result.getVersion());
-                if (scope != null) {
-                    dep.setScope(scope);
-                }
+                dep.setScope("system"); //NOI18N
+                
                 if (result.getClassifier() != null) {
                     dep.setClassifier(result.getClassifier());
                 }
@@ -269,24 +269,9 @@ public class EmbeddableEJBContainerHint extends AbstractHint {
                     }
                     dep.setSystemPath("${"+PROP_GF_EMBEDDED_JAR+ "}");
                 }
-                //set repository
-                NbMavenProject mavenPrj = prj.getLookup().lookup(NbMavenProject.class);
-                if (mavenPrj != null) {
-                    org.netbeans.modules.maven.model.pom.Repository reposit = ModelUtils.addModelRepository(
-                            mavenPrj.getMavenProject(), model, result.getRepoRoot());
-                    if (reposit != null) {
-                        if (repoId == null) {
-                            repoId = result.getRepoRoot();
-                        }
-                        reposit.setId(repoId);
-                        reposit.setLayout(result.getRepoType());
-                        reposit.setName(repoName); //NOI18N - content coming into the pom.xml file
-                    }
-                }
                 return true;
-            } else {
-                return false;
             }
+            return false;
         }
 
         @Override

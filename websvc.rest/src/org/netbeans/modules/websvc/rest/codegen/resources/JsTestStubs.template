@@ -4,12 +4,13 @@
 
 <html>
     <head>
-        <title>TTL_RestClient_Stubs - MSG_TestPage</title>
-        <meta http-equiv="Content-Type" content="text/html; charset=__FILE_ENCODING__" />
+        <title>${rest_client_stubs} - ${test_page}</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=${encoding}" />
         <link rel="stylesheet" href="./css/clientstubs.css" type="text/css"/>
         <link rel="stylesheet" href="./css/css_master-all.css" type="text/css"/>
         <!-- JS_DECLARE_START - DO NOT REMOVE-->
         <script type="text/javascript" src="./Support.js"></script>
+        ${js_scripts_declaration}
         <!-- JS_DECLARE_END - DO NOT REMOVE-->
 	<!--<script type="text/javascript">
             //rest debug, uncomment to enable debugging
@@ -25,9 +26,10 @@
                 <div class="banner"><img src="./css/images/pname-clientstubs.png"/></div>
             </div> <!-- header -->
             <div id="main" class="main">
-              <h2>TTL_RestClient_Stubs - MSG_TestPage</h2>
+              <h2>${rest_client_stubs} - ${test_page}</h2>
               <div id="containerContent"> </div>
               <!-- JS_USAGE_START - DO NOT REMOVE-->
+              ${js_usage}
               <!-- JS_USAGE_END - DO NOT REMOVE--> 
             </div> <!-- main -->
         </div> <!-- outerborder -->

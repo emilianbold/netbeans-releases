@@ -66,6 +66,7 @@ import org.netbeans.libs.git.GitRemoteConfig;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.GitModuleConfig;
 import org.netbeans.modules.git.client.GitProgressSupport;
+import org.netbeans.modules.git.utils.WizardStepProgressSupport;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.AsynchronousValidatingPanel;
 import org.openide.util.HelpCtx;
@@ -205,7 +206,7 @@ public class SelectUriStep extends AbstractWizardPanel implements ActionListener
         setValid(valid, msg);
         if (valid && !EventQueue.isDispatchThread()) {
             final Message[] message = new Message[1];
-            supp = new GitProgressSupport.NoOutputLogging() {
+            supp = new WizardStepProgressSupport(panel.progressPanel, true) {
                 @Override
                 protected void perform () {
                     String uri = getSelectedUri();
@@ -218,7 +219,7 @@ public class SelectUriStep extends AbstractWizardPanel implements ActionListener
                             client = getClient();
                         }
                         remoteBranches = client.listRemoteBranches(uri, this);
-                        if (mode == Mode.PUSH) {
+                        if (!isCanceled() && mode == Mode.PUSH) {
                             remoteTags = client.listRemoteTags(uri, this);
                         }
                     } catch (GitException ex) {
@@ -229,8 +230,16 @@ public class SelectUriStep extends AbstractWizardPanel implements ActionListener
                         message[0] = new Message(NbBundle.getMessage(SelectUriStep.class, "MSG_SelectUriStep.errorCannotConnect", uri), false); //NOI18N
                     }
                 }
+
+                @Override
+                public void setEnabled (boolean flag) {
+                    SelectUriStep.this.setEnabled(flag);
+                }
             };
             supp.start(Git.getInstance().getRequestProcessor(repositoryFile), repositoryFile, NbBundle.getMessage(SelectUriStep.class, "LBL_SelectUriStep.progressName")).waitFinished(); //NOI18N
+            if (message[0] == null && supp.isCanceled()) {
+                message[0] = new Message(NbBundle.getMessage(SelectUriStep.class, "MSG_SelectUriStep.validationCanceled"), true); //NOI18N
+            }
             if (message[0] != null) {
                 setValid(false, message[0]);
             }

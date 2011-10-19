@@ -47,6 +47,7 @@ package org.netbeans.modules.websvc.design.javamodel;
 import com.sun.javadoc.Doc;
 import com.sun.javadoc.Tag;
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
@@ -101,6 +102,7 @@ import org.openide.execution.ExecutorTask;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import static org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.Task;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
@@ -378,6 +380,32 @@ public class Utils {
         }
         methodModel.setFaults(faults);
         
+        initJavaDoc(controller, methodEl, methodModel);
+        
+        
+        // populate params
+        List<? extends VariableElement> paramElements = methodEl.getParameters();
+        List<ParamModel> params = new ArrayList<ParamModel>();
+        int i=0;
+        for (VariableElement paramEl:paramElements) {
+            ParamModel param = new ParamModel("arg"+String.valueOf(i++), paramEl.getSimpleName().toString());
+            param.setImplementationClass(methodModel.getImplementationClass());
+            param.setMethodHandle(methodHandle);
+            populateParam(controller, paramEl, param);
+            params.add(param);
+        }
+        methodModel.setParams(params);
+        
+        // set SOAP Request
+        setSoapRequest(methodModel, targetNamespace);
+        
+        // set SOAP Response
+        setSoapResponse(methodModel, targetNamespace);
+    }
+    
+    private static void initJavaDoc( CompilationController controller,
+            ExecutableElement methodEl, MethodModel methodModel )
+    {
         // populate javadoc
         Doc javadoc = controller.getElementUtilities().javaDocFor(methodEl);
         if (javadoc!=null) {
@@ -413,27 +441,8 @@ public class Utils {
             javadocModel.setInlineJavadoc(inlineJavadoc);
             methodModel.setJavadoc(javadocModel);
         }
-        
-        
-        // populate params
-        List<? extends VariableElement> paramElements = methodEl.getParameters();
-        List<ParamModel> params = new ArrayList<ParamModel>();
-        int i=0;
-        for (VariableElement paramEl:paramElements) {
-            ParamModel param = new ParamModel("arg"+String.valueOf(i++), paramEl.getSimpleName().toString());
-            param.setImplementationClass(methodModel.getImplementationClass());
-            param.setMethodHandle(methodHandle);
-            populateParam(controller, paramEl, param);
-            params.add(param);
-        }
-        methodModel.setParams(params);
-        
-        // set SOAP Request
-        setSoapRequest(methodModel, targetNamespace);
-        
-        // set SOAP Response
-        setSoapResponse(methodModel, targetNamespace);
     }
+
     
     private static void populateParam(CompilationController controller, VariableElement paramEl, ParamModel paramModel) {
         paramModel.setParamType(paramEl.asType().toString());
@@ -673,9 +682,30 @@ public class Utils {
                 }
                 if (targetMethod!=null) {
                     Comment comment = Comment.create(Style.JAVADOC, 0,0,0, text);
-                    // Issue in Retouche (90302) : the following part couldn't be used for now
-                    // MethodTree newMethod = make.addComment(targetMethod, comment , true);
-                    // workingCopy.rewrite(targetMethod, newMethod);
+                    MethodTree newMethod = make.setLabel(targetMethod, targetMethod.getName());
+                    
+                    ElementHandle methodHandle = methodModel.getMethodHandle();
+                    Element method = methodHandle.resolve(workingCopy);
+                    if ( method == null ){
+                        return;
+                    }
+                    
+                    Doc javadoc = workingCopy.getElementUtilities().javaDocFor(method);
+                    if ( javadoc != null ){
+                        make.removeComment(newMethod, 0, true);
+                    }
+                    /*MethodTree copy = make.Method(targetMethod.getModifiers(),
+                            targetMethod.getName(),
+                            targetMethod.getReturnType(),
+                            targetMethod.getTypeParameters(),
+                            targetMethod.getParameters(),
+                            targetMethod.getThrows(),
+                            targetMethod.getBody(),
+                            (ExpressionTree) targetMethod.getDefaultValue()
+                    );
+                    make.removeComment(copy, 0, true);*/
+                    make.addComment(newMethod, comment, true);
+                    workingCopy.rewrite(targetMethod, newMethod);
                 }
                 
             }
@@ -684,6 +714,20 @@ public class Utils {
         };
         try {
             javaSource.runModificationTask(modificationTask).commit();
+            javaSource.runUserActionTask( new Task<CompilationController>(){
+
+                @Override
+                public void run(CompilationController controller) throws Exception {
+                    controller.toPhase(Phase.RESOLVED);
+                    ElementHandle methodHandle = methodModel.getMethodHandle();
+                    Element method = methodHandle.resolve(controller);
+                    if ( method == null ){
+                        return;
+                    }
+                    initJavaDoc(controller, (ExecutableElement)method, methodModel);
+                }
+
+                }, true);
         } catch (IOException ex) {
             ErrorManager.getDefault().notify(ex);
         }

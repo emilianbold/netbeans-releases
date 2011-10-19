@@ -88,7 +88,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
 
     // isMacro callback
     private MacroCallback macroCallback = null;
-
+    
     CsmCompletionTokenProcessor(int endScanOffset, int lastSeparatorOffset) {
         this.endScanOffset = endScanOffset;
         this.lastSeparatorOffset = lastSeparatorOffset;

@@ -166,7 +166,7 @@ public abstract class CacheManagerTestBaseHid extends NbTestCase implements Imag
         // #29356: methodvalue should pass in MultiFileObject, not the original FileObject:
         FileSystem ffs = FileUtil.createMemoryFileSystem();
         FileUtil.createData(ffs.getRoot(), "foo/29356").setAttribute("x", "val");
-        MultiFileSystem mfs = new MultiFileSystem(new FileSystem[] {f, ffs});
+        MultiFileSystem mfs = new MultiFileSystem(f, ffs);
         assertEquals("val", attr(ffs, "foo/29356", "x"));
         assertEquals("val", attr(mfs, "foo/29356", "x"));
         assertEquals("val/a", attr(mfs, "foo/29356", "a"));

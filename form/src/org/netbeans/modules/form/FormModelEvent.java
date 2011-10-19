@@ -192,8 +192,8 @@ public class FormModelEvent extends EventObject
             component = event.getComponent();
         componentEvent = event;
         propertyName = handler;
-        newPropertyValue = bodyText;
-        oldPropertyValue = annotationText;
+        oldPropertyValue = bodyText;
+        newPropertyValue = annotationText;
         createdDeleted = createdNew;
     }
 
@@ -311,18 +311,7 @@ public class FormModelEvent extends EventObject
         return (String) newPropertyValue;
     }
 
-    public final String getNewEventHandlerContent() {
-        return changeType == EVENT_HANDLER_ADDED
-                   || changeType == EVENT_HANDLER_REMOVED ?
-               (String) newPropertyValue : null;
-    }
-
-    public final String getNewEventHandlerAnnotation() {
-        return (changeType == EVENT_HANDLER_ADDED || changeType == EVENT_HANDLER_REMOVED) ?
-               (String)oldPropertyValue : null;
-    }
-
-    public final String getOldEventHandlerContent() {
+    public final String getEventHandlerContent() {
         if (changeType == EVENT_HANDLER_ADDED
             || changeType == EVENT_HANDLER_REMOVED)
         {
@@ -339,13 +328,13 @@ public class FormModelEvent extends EventObject
         return null;
     }
 
-    public final void setOldEventHandlerContent(String text) {
+    public final void setEventHandlerContent(String text) {
         if (changeType == EVENT_HANDLER_ADDED
                 || changeType == EVENT_HANDLER_REMOVED)
             oldPropertyValue = text;
     }
 
-    public final String getOldEventHandlerAnnotation() {
+    public final String getEventHandlerAnnotation() {
         if (changeType == EVENT_HANDLER_ADDED || changeType == EVENT_HANDLER_REMOVED) {
             if (additionalEvent != null) {
                 if (additionalEvent.changeType == EVENT_HANDLER_REMOVED || additionalEvent.changeType == EVENT_HANDLER_ADDED) {
@@ -358,7 +347,7 @@ public class FormModelEvent extends EventObject
         return null;
     }
 
-    public final void setOldEventHandlerAnnotation(String text) {
+    public final void setEventHandlerAnnotation(String text) {
         if (changeType == EVENT_HANDLER_ADDED || changeType == EVENT_HANDLER_REMOVED) {
             newPropertyValue = text;
         }
@@ -925,8 +914,8 @@ public class FormModelEvent extends EventObject
             getFormModel().getFormEvents().attachEvent(
                 event,
                 getEventHandler(),
-                getOldEventHandlerContent(),
-                getOldEventHandlerAnnotation());
+                getEventHandlerContent(),
+                getEventHandlerAnnotation());
 
             // hack: set the event property to update the property sheet
             Node.Property prop = getComponent().getPropertyByName(event.getId());
@@ -948,8 +937,8 @@ public class FormModelEvent extends EventObject
             getFormModel().getFormEvents().attachEvent(
                 event,
                 getEventHandler(),
-                getOldEventHandlerContent(),
-                getOldEventHandlerAnnotation());
+                getEventHandlerContent(),
+                getEventHandlerAnnotation());
 
             // hack: set the event property to update the property sheet
             Node.Property prop = getComponent().getPropertyByName(event.getId());

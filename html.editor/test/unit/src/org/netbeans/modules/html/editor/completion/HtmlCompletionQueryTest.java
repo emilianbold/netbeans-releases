@@ -468,6 +468,12 @@ public class HtmlCompletionQueryTest extends HtmlCompletionTestBase {
         
         
     }
+    
+    public void testInputTagTypeAttributeCompletion() throws BadLocationException, ParseException {
+        assertItems("<input type=\"|\">", arr("text", "password", "reset"), Match.CONTAINS);
+    }
+    
+    
     //helper methods ------------
 
     @Override

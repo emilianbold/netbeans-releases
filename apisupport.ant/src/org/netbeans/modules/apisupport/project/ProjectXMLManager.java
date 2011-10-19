@@ -169,6 +169,9 @@ public final class ProjectXMLManager {
      */
     public static ProjectXMLManager getInstance(final File projectDir) throws IOException {
         FileObject dir = FileUtil.toFileObject(projectDir);
+        if (dir == null) {
+            throw new IOException("no project dir " + projectDir);
+        }
         NbModuleProject p = (NbModuleProject) ProjectManager.getDefault().findProject(dir);
         if (p == null) {
             throw new IOException("no project in " + projectDir);

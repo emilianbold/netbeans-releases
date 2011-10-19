@@ -61,9 +61,11 @@ import java.awt.Rectangle;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.HierarchyEvent;
+import java.awt.event.HierarchyListener;
 import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
@@ -316,6 +318,7 @@ public class WizardDescriptor extends DialogDescriptor {
     /** a component with wait cursor */
     private Component waitingComponent;
     private boolean changeStateInProgress = false;
+    private boolean addedWindowListener;
     private boolean currentPanelWasChangedWhileStoreSettings = false;
 
     /** Whether wizard panel will be constructed from <CODE>WizardDescriptor.getProperty()</CODE>/
@@ -395,6 +398,12 @@ public class WizardDescriptor extends DialogDescriptor {
     private static final String PROGRESS_BAR_DISPLAY_NAME = NbBundle.getMessage (WizardDescriptor.class, "CTL_InstantiateProgress_Title"); // NOI18N
 
     private ActionListener escapeActionListener;
+    
+    /**
+     * If non-null and non-default HelpCtx is set on the WizardDescriptor instance (true) 
+     * then help context provided by individual wizard panels is ignored.
+     */
+    private boolean isWizardWideHelpSet = false;
 
     {
         // button init
@@ -507,38 +516,6 @@ public class WizardDescriptor extends DialogDescriptor {
         super.initialize();
 
         updateState();
-
-        // #81938: special handling WizardDescriptor to avoid close wizard during instantiate
-        SwingUtilities.invokeLater (new Runnable () {
-            public void run () {
-                final Window w = SwingUtilities.getWindowAncestor((Component) getMessage());
-                if (w != null) {
-                    w.addWindowListener (new WindowListener () {
-                        public void windowActivated (WindowEvent e) {
-                        }
-                        public void windowClosed (WindowEvent e) {
-                        }
-                        public void windowClosing (WindowEvent e) {
-                            if (!changeStateInProgress) {
-                                if (WizardDescriptor.this.getValue () == null || WizardDescriptor.NEXT_OPTION.equals (WizardDescriptor.this.getValue ())) {
-                                    WizardDescriptor.this.setValue (NotifyDescriptor.CLOSED_OPTION);
-                                }
-                                w.setVisible (false);
-                                w.dispose ();
-                            }
-                        }
-                        public void windowDeactivated (WindowEvent e) {
-                        }
-                        public void windowDeiconified (WindowEvent e) {
-                        }
-                        public void windowIconified (WindowEvent e) {
-                        }
-                        public void windowOpened (WindowEvent e) {
-                        }
-                    });
-                }
-            }
-        });
 
         // update buttons when setValid(...) called
         addPropertyChangeListener(new PropertyChangeListener() {
@@ -800,6 +777,11 @@ public class WizardDescriptor extends DialogDescriptor {
 
     @Override
     public void setHelpCtx(final HelpCtx helpCtx) {
+        isWizardWideHelpSet = null != helpCtx && !HelpCtx.DEFAULT_HELP.equals( helpCtx );
+        doSetHelpCtx( helpCtx );
+    }
+    
+    private void doSetHelpCtx(final HelpCtx helpCtx ) {
         if ((wizardPanel != null) && (helpCtx != null)) {
             HelpCtx.setHelpIDString(wizardPanel, helpCtx.getHelpID());
         }
@@ -935,7 +917,8 @@ public class WizardDescriptor extends DialogDescriptor {
                 (!next || (data.current instanceof FinishPanel))
             );
         }
-        setHelpCtx(p.getHelp());
+        if( !isWizardWideHelpSet )
+            doSetHelpCtx(p.getHelp());
 
         assert SwingUtilities.isEventDispatchThread () : "getComponent() must be called in EQ only.";
         java.awt.Component c = p.getComponent();
@@ -1001,6 +984,38 @@ public class WizardDescriptor extends DialogDescriptor {
             }
         } else if (c != getMessage()) {
             setMessage(c);
+        }
+
+        if (!addedWindowListener && getMessage() instanceof Component) {
+            final Component comp = (Component) getMessage();
+            // #81938: special handling WizardDescriptor to avoid close wizard during instantiate
+            comp.addHierarchyListener(new HierarchyListener() {
+                {
+                    check();
+                }
+                @Override public void hierarchyChanged(HierarchyEvent e) {
+                    if ((e.getChangeFlags() & HierarchyEvent.DISPLAYABILITY_CHANGED) != 0) {
+                        check();
+                    }
+                }
+                private void check() {
+                    final Window w = SwingUtilities.getWindowAncestor(comp);
+                    if (!addedWindowListener && w != null) {
+                        addedWindowListener = true;
+                        w.addWindowListener(new WindowAdapter() {
+                            @Override public void windowClosing(WindowEvent e) {
+                                if (!changeStateInProgress) {
+                                    if (getValue() == null || WizardDescriptor.NEXT_OPTION.equals(getValue())) {
+                                        setValue(NotifyDescriptor.CLOSED_OPTION);
+                                    }
+                                    w.setVisible(false);
+                                    w.dispose();
+                                }
+                            }
+                        });
+                    }
+                }
+            });
         }
 
         String panelName = c.getName();

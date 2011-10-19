@@ -128,7 +128,6 @@ import org.netbeans.modules.java.source.PostFlowAnalysis;
 import org.netbeans.modules.java.source.TreeLoader;
 import org.netbeans.modules.java.source.indexing.APTUtils;
 import org.netbeans.modules.java.source.indexing.FQN2Files;
-import org.netbeans.modules.java.source.indexing.JavaCustomIndexer;
 import org.netbeans.modules.java.source.tasklist.CompilerSettings;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
@@ -643,13 +642,6 @@ public class JavacParser extends Parser {
                 LOGGER.log(Level.FINER, "Created new JavacTask for: {0}", FileUtil.getFileDisplayName(file));
             }
             sourceLevel = SourceLevelQuery.getSourceLevel(file);
-            if (root != null && sourceLevel != null) {
-                try {
-                    JavaCustomIndexer.verifySourceLevel(root, file, sourceLevel);
-                } catch (IOException ex) {
-                    LOGGER.log(Level.FINE, null, ex);
-                }
-            }
         }
         FQN2Files dcc = null;
         if (root != null) {
@@ -679,7 +671,7 @@ public class JavacParser extends Parser {
         }
         if (!backgroundCompilation) {
             options.add("-Xjcov"); //NOI18N, Make the compiler store end positions
-            options.add("-XDdisableStringFolding"); //NOI18N
+            options.add("-XDallowStringFolding=false"); //NOI18N
         } else {
             options.add("-XDbackgroundCompilation");    //NOI18N
             options.add("-XDcompilePolicy=byfile");     //NOI18N
@@ -1146,6 +1138,9 @@ public class JavacParser extends Parser {
                         JavacParser.this.changedMethod.set(changedMethod);
                     }
                 }
+            } else if (evt.type() == TokenHierarchyEventType.ACTIVITY) {
+                positions.clear();
+                JavacParser.this.changedMethod.set(null);
             }
         }
     }

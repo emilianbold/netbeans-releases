@@ -40,12 +40,13 @@
 package org.netbeans.modules.junit.actions;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JEditorPane;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.modules.junit.output.OutputUtils;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.SingleMethod;
@@ -67,30 +68,28 @@ public abstract class TestMethodAction extends NodeAction {
     
     @Override
     protected boolean enable(Node[] activatedNodes) {
-        if (activatedNodes.length != 1) {
-            return false;
-        }
-        SingleMethod sm = getTestMethod(activatedNodes[0].getLookup());
-        if (sm != null){
-            ActionProvider ap = OutputUtils.getActionProvider(sm.getFile());
-            if (ap != null){
-                return Arrays.asList(ap.getSupportedActions()).contains(command) && ap.isActionEnabled(command, Lookups.singleton(sm));
-            }
-        }
-        return false;
+        return (activatedNodes.length == 1);
     }
 
     @Override
-    protected void performAction(Node[] activatedNodes) {
-        SingleMethod sm = getTestMethod(activatedNodes[0].getLookup());
-        if (sm != null){
-            ActionProvider ap = OutputUtils.getActionProvider(sm.getFile());
-            if (ap != null){
-                ap.invokeAction(command, Lookups.singleton(sm));
+    protected void performAction(final Node[] activatedNodes) {
+        ProgressUtils.runOffEventDispatchThread(new Runnable() {
+
+            @Override
+            public void run() {
+                SingleMethod sm = getTestMethod(activatedNodes[0].getLookup());
+                if (sm != null) {
+                    ActionProvider ap = OutputUtils.getActionProvider(sm.getFile());
+                    if (ap != null) {
+                        ap.invokeAction(command, Lookups.singleton(sm));
+                    }
+                }
             }
-        }
+        },
+        getName(), new AtomicBoolean(), false);
     }
 
+    
     private SingleMethod getTestMethod(Lookup lkp){
         SingleMethod sm = lkp.lookup(SingleMethod.class);
         if (sm == null){

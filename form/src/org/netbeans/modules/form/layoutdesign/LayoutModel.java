@@ -462,10 +462,9 @@ public class LayoutModel implements LayoutConstants {
             }
             max = Short.MAX_VALUE;
         } else {
-            min = (interval.getMinimumSize() == size)
+            min = (size == 0 || size == NOT_EXPLICITLY_DEFINED)
                     ? interval.getMinimumSize() : USE_PREFERRED_SIZE;
-            max = interval.getMaximumSize() == interval.getPreferredSize()
-                    ? size : USE_PREFERRED_SIZE;
+            max = USE_PREFERRED_SIZE;
         }
         if (resizeHandler != null) {
             resizeHandler.setIntervalSize(interval, dimension, min, size, max);
@@ -984,10 +983,6 @@ public class LayoutModel implements LayoutConstants {
 
     boolean undo(Object startMark, Object endMark) {
         assert !undoRedoInProgress;
-        if (!undoMap.containsKey(startMark)) {
-            return false; // the mark is not present in the undo queue
-        }
-
         boolean undone = false;
         int start = ((Integer)startMark).intValue();
         int end = ((Integer)endMark).intValue();
@@ -1008,10 +1003,6 @@ public class LayoutModel implements LayoutConstants {
 
     boolean redo(Object startMark, Object endMark) {
         assert !undoRedoInProgress;
-        if (!redoMap.containsKey(startMark)) {
-            return false; // the mark is not present in the redo queue
-        }
-
         int start = ((Integer)startMark).intValue();
         int end = ((Integer)endMark).intValue();
         undoRedoInProgress = true;

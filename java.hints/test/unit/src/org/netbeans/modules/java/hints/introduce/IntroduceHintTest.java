@@ -160,7 +160,7 @@ public class IntroduceHintTest extends NbTestCase {
     }
 
     public void test121420() throws Exception {
-        performFixTest("package test; import java.util.ArrayList; public class Test {public void test() { |new ArrayList<String>()|; }}", "package test; import java.util.ArrayList; public class Test {public void test() {ArrayList<String> arrayList = new ArrayList<String>(); }}", new DialogDisplayerImpl(null, false, false, true), 2, 0);
+        performFixTest("package test; import java.util.ArrayList; public class Test {public void test() { |new ArrayList<String>()|; }}", "package test; import java.util.ArrayList; public class Test {public void test() {ArrayList<String> arrayList = new ArrayList<String>(); }}", new DialogDisplayerImpl(null, false, false, true), 5, 0);
     }
 
     public void test142424() throws Exception {
@@ -436,14 +436,14 @@ public class IntroduceHintTest extends NbTestCase {
     public void testIntroduceFieldFix1() throws Exception {
         performCheckFixesTest("package test; public class Test {int y = 3 + 4; int z = 3 + 4;}",
                        73 - 32, 78 - 32,
-                       "[IntroduceFix:name:2:CREATE_CONSTANT]");
+                       "[IntroduceFix:NAME:2:CREATE_CONSTANT]");
     }
     
     public void testIntroduceFieldFix2() throws Exception {
         performCheckFixesTest("package test; public class Test {public void test() {int y = 3 + 4; int z = 3 + 4;}}",
                        93 - 32, 98 - 32,
                        "[IntroduceFix:name:2:CREATE_VARIABLE]",
-                       "[IntroduceFix:name:2:CREATE_CONSTANT]",
+                       "[IntroduceFix:NAME:2:CREATE_CONSTANT]",
                        "[IntroduceField:name:2:false:false:[7, 7]]",
                        "[IntroduceExpressionBasedMethodFix]",
                        "[Introduce Parameter Fix]");
@@ -453,7 +453,7 @@ public class IntroduceHintTest extends NbTestCase {
         performCheckFixesTest("package test; public class Test {public void test() {int y = 3 + 4; int z = 3 + 4;} public void test2() {int u = 3 + 4;}}",
                        93 - 32, 98 - 32,
                        "[IntroduceFix:name:2:CREATE_VARIABLE]",
-                       "[IntroduceFix:name:3:CREATE_CONSTANT]",
+                       "[IntroduceFix:NAME:3:CREATE_CONSTANT]",
                        "[IntroduceField:name:3:false:false:[7, 6]]",
                        "[IntroduceExpressionBasedMethodFix]",
                        "[Introduce Parameter Fix]");
@@ -499,7 +499,7 @@ public class IntroduceHintTest extends NbTestCase {
         performCheckFixesTest("package test; public class Test {int u = 0; public void test() {int y = u + 4; int z = u + 4;} private int i = 4;}",
                        108 - 32, 109 - 32,
                        "[IntroduceFix:name:2:CREATE_VARIABLE]",
-                       "[IntroduceFix:name:3:CREATE_CONSTANT]",
+                       "[IntroduceFix:NAME:3:CREATE_CONSTANT]",
                        "[IntroduceField:name:3:false:false:[7, 6]]",
                        "[IntroduceExpressionBasedMethodFix]",
                        "[Introduce Parameter Fix]");
@@ -518,7 +518,7 @@ public class IntroduceHintTest extends NbTestCase {
         performCheckFixesTest("package test; public class Test {public Test() {int y = 3 + 4; int z = 3 + 4;}}",
                        88 - 32, 93 - 32,
                        "[IntroduceFix:name:2:CREATE_VARIABLE]",
-                       "[IntroduceFix:name:2:CREATE_CONSTANT]",
+                       "[IntroduceFix:NAME:2:CREATE_CONSTANT]",
                        "[IntroduceField:name:2:false:true:[7, 7]]",
                        "[IntroduceExpressionBasedMethodFix]",
                        "[Introduce Parameter Fix]");
@@ -528,7 +528,7 @@ public class IntroduceHintTest extends NbTestCase {
         performCheckFixesTest("package test; public class Test {public Test() {int y = 3 + 4; int z = 3 + 4;} public Test(int i) {}}",
                        88 - 32, 93 - 32,
                        "[IntroduceFix:name:2:CREATE_VARIABLE]",
-                       "[IntroduceFix:name:2:CREATE_CONSTANT]",
+                       "[IntroduceFix:NAME:2:CREATE_CONSTANT]",
                        "[IntroduceField:name:2:false:false:[7, 7]]",
                        "[IntroduceExpressionBasedMethodFix]",
                        "[Introduce Parameter Fix]");
@@ -1553,6 +1553,78 @@ public class IntroduceHintTest extends NbTestCase {
 
     public void test193775() throws Exception {
         performCheckFixesTest("package test; import java.util.Collection; import java.util.Map.Entry; public class Test { public void test(|Collection<Entry> e|) {} }");
+    }
+
+    public void test203478() throws Exception {
+        performFixTest("package test;\n" +
+                       "import java.util.ArrayList;\n" +
+                       "public class Test {\n" +
+                       "    public void loop() {\n" +
+                       "        String someExampleHere = |\"someExampleHere\"|;\n" +
+                       "    }\n" +
+                       "}",
+                       ("package test;\n" +
+                       "import java.util.ArrayList;\n" +
+                       "public class Test {\n" +
+                       "    private static final String SOME_EXAMPLE_HERE = \"someExampleHere\";\n" +
+                       "    public void loop() {\n" +
+                       "        String someExampleHere = SOME_EXAMPLE_HERE;\n" +
+                       "    }\n" +
+                       "}").replaceAll("[ \t\n]+", " "),
+                       new DialogDisplayerImpl(null, false, false, true, EnumSet.<Modifier>of(Modifier.PRIVATE)),
+                       5, 1);
+    }
+
+    public void testIntroduceFieldFix203621a() throws Exception {
+        performFixTest("package test; public class Test {\n" +
+                       "    public void test() {\n" +
+                       "        |String.valueOf(1)|;\n" +
+                       "    }\n" +
+                       "}\n",
+                       "package test; public class Test { private String valueOf = String.valueOf(1); public void test() { }  } ",
+                       new DialogDisplayerImpl2(null, IntroduceFieldPanel.INIT_FIELD, false, EnumSet.<Modifier>of(Modifier.PRIVATE), false, true),
+                       5, 2);
+    }
+
+    public void testIntroduceFieldFix203621b() throws Exception {
+        performFixTest("package test; public class Test {\n" +
+                       "    public Test() {\n" +
+                       "        System.err.println(1);\n" +
+                       "        |String.valueOf(1)|;\n" +
+                       "        System.err.println(2);\n" +
+                       "    }\n" +
+                       "}\n",
+                       "package test; public class Test { private String valueOf; public Test() { System.err.println(1); valueOf = String.valueOf(1); System.err.println(2); } } ",
+                       new DialogDisplayerImpl2(null, IntroduceFieldPanel.INIT_CONSTRUCTORS, false, EnumSet.<Modifier>of(Modifier.PRIVATE), false, true),
+                       5, 2);
+    }
+
+    public void testIntroduceFieldFix203621c() throws Exception {
+        performFixTest("package test; public class Test {\n" +
+                       "    public void test() {\n" +
+                       "        System.err.println(1);\n" +
+                       "        |String.valueOf(1)|;\n" +
+                       "        System.err.println(2);\n" +
+                       "    }\n" +
+                       "}\n",
+                       "package test; public class Test { private String valueOf; public void test() { System.err.println(1); valueOf = String.valueOf(1); System.err.println(2); } } ",
+                       new DialogDisplayerImpl2(null, IntroduceFieldPanel.INIT_METHOD, false, EnumSet.<Modifier>of(Modifier.PRIVATE), false, true),
+                       5, 2);
+    }
+
+    public void testIntroduceConstantFix203621() throws Exception {
+        performFixTest("package test; public class Test {\n" +
+                       "    public void test() {\n" +
+                       "        |String.valueOf(1)|;\n" +
+                       "    }\n" +
+                       "}\n",
+                       "package test; public class Test { static final String VALUE_OF = String.valueOf(1); public void test() { }  } ",
+                       new DialogDisplayerImpl(null, true, true, true, EnumSet.noneOf(Modifier.class)),
+                       5, 1);
+    }
+
+    public void testConstant203499() throws Exception {
+        performConstantAccessTest("package test; public class Test { static String g(String s) { return s; } static String d(String s) { return |g(s)|; } }", false);
     }
 
     protected void prepareTest(String code) throws Exception {

@@ -48,7 +48,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.JComponent;
@@ -59,6 +59,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
+import org.netbeans.modules.javafx2.project.api.JavaFXProjectUtils;
 import org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -76,14 +77,14 @@ import org.openide.util.NbBundle;
  * @author phrebejk, Anton Chechel
  */
 public class JavaFXProjectWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator {
-    enum WizardType {APPLICATION, PRELOADER, LIBRARY, EXTISTING}
+    enum WizardType {APPLICATION, PRELOADER, FXML, LIBRARY, EXTISTING}
     
     static final String PROP_NAME_INDEX = "nameIndex"; // NOI18N
-    static final String PROP_JAVA_PLATFORM_NAME = "java.platform.name"; // NOI18N
     static final String PROP_PRELOADER_NAME = "preloader.name"; // NOI18N
     
     static final String MANIFEST_FILE = "manifest.mf"; // NOI18N
-    static final String GENERATED_PRELOADER_CLASS_NAME = "SimplePreloader"; // NOI18N
+    //static final String GENERATED_PRELOADER_CLASS_NAME = "SimplePreloader"; // NOI18N
+    static final String GENERATED_FXML_CLASS_NAME = "Sample"; // NOI18N
 
     private static final long serialVersionUID = 1L;
     
@@ -91,6 +92,10 @@ public class JavaFXProjectWizardIterator implements WizardDescriptor.ProgressIns
 
     public JavaFXProjectWizardIterator() {
         this(WizardType.APPLICATION);
+    }
+
+    public static JavaFXProjectWizardIterator fxml() {
+        return new JavaFXProjectWizardIterator(WizardType.FXML);
     }
 
     public static JavaFXProjectWizardIterator preloader() {
@@ -146,7 +151,8 @@ public class JavaFXProjectWizardIterator implements WizardDescriptor.ProgressIns
     public Set<FileObject> instantiate(ProgressHandle handle) throws IOException {
         handle.start(4);
         //handle.progress (NbBundle.getMessage (NewJ2SEProjectWizardIterator.class, "LBL_NewJ2SEProjectWizardIterator_WizardProgress_ReadingProperties"));
-        Set<FileObject> resultSet = new HashSet<FileObject>();
+        Set<FileObject> resultSet = new LinkedHashSet<FileObject>();
+        FileObject mainClassFo = null;
         File dirF = (File) wiz.getProperty("projdir"); // NOI18N
         if (dirF == null) {
             throw new NullPointerException("projdir == null, props:" + wiz.getProperties()); // NOI18N
@@ -164,7 +170,7 @@ public class JavaFXProjectWizardIterator implements WizardDescriptor.ProgressIns
             librariesDefinition += SharableLibrariesUtils.DEFAULT_LIBRARIES_FILENAME;
         }
         
-        String platformName = (String) wiz.getProperty(JavaFXProjectWizardIterator.PROP_JAVA_PLATFORM_NAME);
+        String platformName = (String) wiz.getProperty(JavaFXProjectUtils.PROP_JAVA_PLATFORM_NAME);
         String preloader = (String) wiz.getProperty(JavaFXProjectWizardIterator.PROP_PRELOADER_NAME);
         
         handle.progress(NbBundle.getMessage(JavaFXProjectWizardIterator.class, "LBL_NewJ2SEProjectWizardIterator_WizardProgress_CreatingProject"), 1); // NOI18N
@@ -200,7 +206,10 @@ public class JavaFXProjectWizardIterator implements WizardDescriptor.ProgressIns
                 }
                 break;
             default:
-                String manifest = type == WizardType.APPLICATION ? MANIFEST_FILE : null;
+                String manifest = null;
+                if (type == WizardType.APPLICATION || type == WizardType.FXML) {
+                    manifest = MANIFEST_FILE;
+                }
                 if (type == WizardType.PRELOADER) {
                     projectHelper = JFXProjectGenerator.createPreloaderProject(dirF, name, librariesDefinition, platformName, mainClass);
                 } else {
@@ -208,29 +217,45 @@ public class JavaFXProjectWizardIterator implements WizardDescriptor.ProgressIns
                             platformName, preloader, type);
                 }
                 handle.progress(2);
+                FileObject sourcesRoot = projectHelper.getProjectDirectory().getFileObject("src"); // NOI18N
                 if (mainClass != null && mainClass.length() > 0) {
                     try {
                         //String sourceRoot = "src"; //(String)j2seProperties.get (J2SEProjectProperties.SRC_DIR); // NOI18N
-                        FileObject sourcesRoot = projectHelper.getProjectDirectory().getFileObject("src"); // NOI18N
-                        FileObject mainClassFo = getClassFO(sourcesRoot, mainClass);
+                        mainClassFo = getClassFO(sourcesRoot, mainClass);
                         assert mainClassFo != null : "sourcesRoot: " + sourcesRoot + ", mainClass: " + mainClass; // NOI18N
                         // Returning FileObject of main class, will be called its preferred action
-                        resultSet.add(mainClassFo);
+                        //resultSet.add(mainClassFo); postponed because of creation order
                     } catch (Exception x) {
                         ErrorManager.getDefault().notify(x);
                     }
                 }
-            // if ( type == TYPE_LIB ) {
-            // resultSet.add( h.getProjectDirectory ().getFileObject ("src") );        //NOI18N 
-            // resultSet.add( h.getProjectDirectory() ); // Only expand the project directory
-            // }            // if ( type == TYPE_LIB ) {
-            // resultSet.add( h.getProjectDirectory ().getFileObject ("src") );        //NOI18N 
-            // resultSet.add( h.getProjectDirectory() ); // Only expand the project directory
-            // }
+        
+                // create additional files
+                if (type == WizardType.FXML) {
+                    String pName = ""; // NOI18N
+                    if (mainClass != null && mainClass.length() > 0) {
+                        int lastDotIdx = mainClass.lastIndexOf('.'); // NOI18N
+                        if (lastDotIdx != -1) {
+                            pName = mainClass.substring(0, lastDotIdx).trim();
+                            pName = pName.replace('.', '/'); // NOI18N
+                            pName += '/'; // NOI18N
+                        }
+                    }
+                    FileObject controller = sourcesRoot.getFileObject(pName + GENERATED_FXML_CLASS_NAME + ".java"); // NOI18N
+                    if (controller != null) {
+                        resultSet.add(controller);
+                    }
+                    FileObject fxml = sourcesRoot.getFileObject(pName + GENERATED_FXML_CLASS_NAME + ".fxml"); // NOI18N
+                    if (fxml != null) {
+                        resultSet.add(fxml);
+                    }
+                }
         }
+
         FileObject dir = FileUtil.toFileObject(dirF);
         switch (type) {
             case APPLICATION:
+            case FXML:
                 createManifest(dir, false);
                 break;
             case EXTISTING:
@@ -239,6 +264,9 @@ public class JavaFXProjectWizardIterator implements WizardDescriptor.ProgressIns
         }
         handle.progress(3);
 
+        // add main project dir before preloader one to keep it selected as main
+        resultSet.add(dir);
+        
         // create preloader project
         handle.progress(NbBundle.getMessage(JavaFXProjectWizardIterator.class, "LBL_NewJ2SEProjectWizardIterator_WizardProgress_Preloader"), 4); // NOI18N
         if (preloader != null && preloader.length() > 0) {
@@ -268,6 +296,7 @@ public class JavaFXProjectWizardIterator implements WizardDescriptor.ProgressIns
         switch (type) {
             case APPLICATION:
             case PRELOADER:
+            case FXML:
                 WizardSettings.setNewApplicationCount(ind);
                 break;
             case LIBRARY:
@@ -277,7 +306,6 @@ public class JavaFXProjectWizardIterator implements WizardDescriptor.ProgressIns
                 WizardSettings.setNewProjectCount(ind);
                 break;
         }
-        resultSet.add(dir);
 //        Project project = ProjectManager.getDefault().findProject(dir);
 //        OpenProjects.getDefault().setMainProject(project);
         
@@ -288,6 +316,9 @@ public class JavaFXProjectWizardIterator implements WizardDescriptor.ProgressIns
         }
 
         SharableLibrariesUtils.setLastProjectSharable(librariesDefinition != null);
+        if(mainClassFo != null) {
+            resultSet.add(mainClassFo);
+        }
         return resultSet;
     }
     private transient int index;
@@ -457,7 +488,8 @@ public class JavaFXProjectWizardIterator implements WizardDescriptor.ProgressIns
         StringBuilder sb = new StringBuilder();
         sb.append(preloaderProjectName.toLowerCase().replace('-', '.')); // NOI18N
         sb.append('.'); // NOI18N
-        sb.append(JavaFXProjectWizardIterator.GENERATED_PRELOADER_CLASS_NAME);
+        //sb.append(JavaFXProjectWizardIterator.GENERATED_PRELOADER_CLASS_NAME);
+        sb.append(preloaderProjectName.replace('-','_').replace('.','_'));
         return  sb.toString();
     }
 

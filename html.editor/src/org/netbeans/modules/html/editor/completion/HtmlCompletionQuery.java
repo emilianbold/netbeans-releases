@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.html.editor.completion;
 
+import java.util.Map.Entry;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
@@ -401,7 +402,7 @@ public class HtmlCompletionQuery extends UserTask {
             result = new ArrayList<CompletionItem>();
 
             if (queryHtmlContent) {
-                Collection<HtmlTag> possibleOpenTags = htmlResult.getPossibleTagsInContext(node, true);
+                Collection<HtmlTag> possibleOpenTags = htmlResult.getPossibleOpenTags(node);
                 Collection<HtmlTag> allTags = filterHtmlElements(model.getAllTags(), preText);
                 Collection<HtmlTag> filteredByPrefix = filterHtmlElements(possibleOpenTags, preText);
                 result.addAll(translateHtmlTags(documentItemOffset - 1, filteredByPrefix, allTags));
@@ -429,7 +430,7 @@ public class HtmlCompletionQuery extends UserTask {
             result = new ArrayList<CompletionItem>();
 
             if (queryHtmlContent) {
-                Collection<HtmlTag> possibleOpenTags = htmlResult.getPossibleTagsInContext(node, true);
+                Collection<HtmlTag> possibleOpenTags = htmlResult.getPossibleOpenTags(node);
                 Collection<HtmlTag> allTags = model.getAllTags();
                 result.addAll(translateHtmlTags(offset - 1, possibleOpenTags, allTags));
 
@@ -649,18 +650,18 @@ public class HtmlCompletionQuery extends UserTask {
     }
 
     private Collection<CompletionItem> getPossibleEndTags(HtmlParseResult htmlResult, AstNode leaf, int offset, String prefix) {
-        Collection<HtmlTag> possible = htmlResult.getPossibleTagsInContext(leaf, false);
+        Map<HtmlTag, AstNode> possible = htmlResult.getPossibleEndTags(leaf);
         Collection<CompletionItem> items = new ArrayList<CompletionItem>();
-        int order = 0;
-        for(HtmlTag tag : possible) {
-            //XXX this wont' work now since the API exposes only the tags desceriptions, not the physical nodes
+        for(Entry<HtmlTag, AstNode> entry : possible.entrySet()) {
+            HtmlTag tag = entry.getKey();
+            AstNode node = entry.getValue();
+            
+            //distance from the caret position - lower number, higher precedence
+            //this will ensure the two end tags list from html and undeclared content being properly ordered
+            int order = offset - (node != null ? node.startOffset() : 0);
 
-//            //distance from the caret position - lower number, higher precedence
-//            //this will ensure the two end tags list from html and undeclared content being properly ordered
-//            int order = offset - leaf.startOffset();
-//
             String tagName = isXHtml ? tag.getName() : (lowerCase ? tag.getName().toLowerCase(Locale.ENGLISH) : tag.getName().toUpperCase(Locale.ENGLISH));
-            items.add(HtmlCompletionItem.createEndTag(tagName, offset - 2 - prefix.length(), tagName, order++, getEndTagType(leaf)));
+            items.add(HtmlCompletionItem.createEndTag(tagName, offset - 2 - prefix.length(), tagName, order, getEndTagType(leaf)));
         }
         return items;
     }

@@ -58,11 +58,12 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.api.diff.StreamSource;
+import static org.netbeans.modules.hudson.mercurial.Bundle.*;
 import org.netbeans.modules.hudson.spi.HudsonJobChangeItem.HudsonJobChangeFile;
 import org.netbeans.modules.hudson.spi.HudsonJobChangeItem.HudsonJobChangeFile.EditType;
 import org.netbeans.modules.hudson.spi.HudsonSCM.Helper;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.OutputEvent;
 import org.openide.windows.OutputListener;
@@ -106,6 +107,7 @@ class MercurialHyperlink implements OutputListener {
 
     public void outputLineCleared(OutputEvent ev) {}
 
+    @Messages({"# {0} - file basename", "# {1} - revision hash (or \"null\")", "MercurialHyperlink.title={0} @{1}"})
     private StreamSource makeSource(boolean after) throws IOException {
         Reader r;
         String rev;
@@ -125,8 +127,7 @@ class MercurialHyperlink implements OutputListener {
         }
         String mimeType = "text/plain"; // NOI18N // XXX use FileUtil.getMIMETypeExtensions
         String name = file.getName();
-        String title = NbBundle.getMessage(MercurialHyperlink.class, "MercurialHyperlink.title",
-                name.replaceFirst(".+/", ""), rev != null ? rev.substring(0, 12) : "null"); // NOI18N
+        String title = MercurialHyperlink_title(name.replaceFirst(".+/", ""), rev != null ? rev.substring(0, 12) : "null"); // NOI18N
         return StreamSource.createSource(name, title, mimeType, r);
     }
 

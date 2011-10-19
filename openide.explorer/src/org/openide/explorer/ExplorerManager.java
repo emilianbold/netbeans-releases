@@ -871,6 +871,16 @@ bigloop:
             );
         }
     }
+    
+    final void waitActionsFinished() {
+        ExplorerActionsImpl a;
+        synchronized (ExplorerManager.class) {
+            a = actions;
+        }
+        if (a != null) {
+            a.waitFinished();
+        }
+    }
 
     private static String getString(String key) {
         return NbBundle.getMessage(ExplorerManager.class, key);

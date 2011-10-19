@@ -68,6 +68,7 @@ public class OutputDocument implements Document, Element, ChangeListener {
     
     private StringBuffer inBuffer;
     private AbstractOutputPane pane;
+    private int lastInputOff = -1; // offset of start of input string, #142721
    
     /** Creates a new instance of OutputDocument */
     OutputDocument(OutWriter writer) {
@@ -234,9 +235,19 @@ public class OutputDocument implements Document, Element, ChangeListener {
         }
     }
     public void insertString(int offset, String str, AttributeSet attributeSet) throws BadLocationException {
-        final int off = Math.max(offset, getLength() - inBuffer.length());
+        final int off;
+        final int docLen = getLength();
+        final int inputOff = docLen - inBuffer.length(); // start of input
+        if (inputOff != lastInputOff) { // output written since last input
+            lastInputOff = inputOff;
+            off = docLen;
+        } else if (offset < inputOff) { // cursor before start of input
+            off = inputOff;
+        } else {
+            off = offset;
+        }
+        inBuffer.insert(off - inputOff, str);
         final int len = str.length();
-        inBuffer.insert(off - (getLength() - inBuffer.length()), str);
         DocumentEvent ev = new DocumentEvent() {
             public int getOffset() {
                 return off;
@@ -311,7 +322,10 @@ public class OutputDocument implements Document, Element, ChangeListener {
         int startOff = getLength() - inBuffer.length();
         final int off = Math.max(startOff, offset);
         final int len = Math.min(length, inBuffer.length());
-        if (off - startOff + len <= getLength()) {
+        if (startOff != lastInputOff) { // output written since last input
+            lastInputOff = startOff;
+            inBuffer.delete(inBuffer.length() - len, inBuffer.length());
+        } else if (off - startOff + len <= getLength()) {
             inBuffer.delete(off - startOff, off - startOff + len);
             DocumentEvent ev = new DocumentEvent() {
             public int getOffset() {

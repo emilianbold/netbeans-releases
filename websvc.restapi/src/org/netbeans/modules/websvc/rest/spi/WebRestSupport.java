@@ -246,6 +246,9 @@ public abstract class WebRestSupport extends RestSupport {
         if ( moduleProvider != null ){
             try {
                 String id = moduleProvider.getServerInstanceID();
+                if ( id == null ){
+                    return null;
+                }
                 J2eePlatform j2eePlatform = Deployment.getDefault().
                     getServerInstance(id).getJ2eePlatform();
                 return JaxRsStackSupport.getInstance(j2eePlatform);

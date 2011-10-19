@@ -1,4 +1,6 @@
 <html><body><pre>
+
+&lt;%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 &lt;html>
 &lt;!--
   Copyright 2004 The Apache Software Foundation
@@ -19,39 +21,29 @@
 &lt;body bgcolor="white">
 &lt;h1> Request Information &lt;/h1>
 &lt;font size="4">
-JSP Request Method: &lt;%= request.getMethod() %>
-&lt;br>
-Request URI: &lt;%= request.getRequestURI() %>
-&lt;br>
-Request Protocol: &lt;%= request.getProtocol() %>
-&lt;br>
-Servlet path: &lt;%= request.getServletPath() %>
-&lt;br>
-Path info: &lt;% out.print(util.HTMLFilter.filter(request.getPathInfo())); %>
-&lt;br>
-Query string: &lt;% out.print(util.HTMLFilter.filter(request.getQueryString())); %>
-&lt;br>
-Content length: &lt;%= request.getContentLength() %>
-&lt;br>
-Content type: &lt;%= request.getContentType() %>
-&lt;br>
-Server name: &lt;%= request.getServerName() %>
-&lt;br>
-Server port: &lt;%= request.getServerPort() %>
-&lt;br>
-Remote user: &lt;%= request.getRemoteUser() %>
-&lt;br>
-Remote address: &lt;%= request.getRemoteAddr() %>
-&lt;br>
-Remote host: &lt;%= request.getRemoteHost() %>
-&lt;br>
-Authorization scheme: &lt;%= request.getAuthType() %> 
-&lt;br>
-Locale: &lt;%= request.getLocale() %>
-&lt;hr>
-The browser you are using is &lt;% out.print(util.HTMLFilter.filter(request.getHeader("User-Agent"))); %>
-&lt;hr>
+
+&lt;c:out value="JSP Request Method: ${pageContext.request.method}" />&lt;br/>
+&lt;c:out value="Request URI: ${pageContext.request.requestURI}" />&lt;br/>
+&lt;c:out value="Request Protocol: ${pageContext.request.protocol}" />&lt;br/>
+&lt;c:out value="Servlet path: ${pageContext.request.servletPath}" />&lt;br/>
+&lt;c:out value="Path info: ${pageContext.request.pathInfo}" />&lt;br/>
+&lt;c:out value="Query string: ${pageContext.request.queryString}" />&lt;br/>
+&lt;c:out value="Content length: ${pageContext.request.contentLength}" />&lt;br/>
+&lt;c:out value="Content type: ${pageContext.request.contentType}" />&lt;br/>
+&lt;c:out value="Server name: ${pageContext.request.serverName}" />&lt;br/>
+&lt;c:out value="Server port: ${pageContext.request.serverPort}" />&lt;br/>
+&lt;c:out value="Remote user: ${pageContext.request.remoteUser}" />&lt;br/>
+&lt;c:out value="Remote address: ${pageContext.request.remoteAddr}" />&lt;br/>
+&lt;c:out value="Remote host: ${pageContext.request.remoteHost}" />&lt;br/>
+&lt;c:out value="Authorization scheme: ${pageContext.request.authType}" />&lt;br/>
+&lt;c:out value="Locale: ${pageContext.request.locale}" />&lt;br/>
+
+&lt;hr/>
+The browser you are using is &lt;c:out value="${pageContext.request.getHeader('User-agent')}" />
+&lt;hr/>
+
 &lt;/font>
 &lt;/body>
 &lt;/html>
+
 </pre></body></html>

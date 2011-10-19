@@ -377,9 +377,10 @@ public final class MarkVector {
                 if (dirFirstItem != null) { // some marks to undo
                     // Find the dirFirstItem's mark
                     MultiMark firstItemMark = dirFirstItem.mark;
-                    int index = offsetGapIndex;
+                    int index = offsetGapIndex - 1;
                     
-                    while (markArray[getRawIndex(--index)] != firstItemMark) {
+                    while (index >= 0 && markArray[getRawIndex(index)] != firstItemMark) {
+                        index--;
                     }
                     index++;
                     

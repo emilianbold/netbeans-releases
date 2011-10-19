@@ -51,6 +51,70 @@ made subject to such option by the copyright holder.
     <apidef name="actions">Actions API</apidef>
 </apidefs>
 <changes>
+    <change id="rp.cancel">
+        <api name="util"/>
+        <summary>RequestProcessor tweaks</summary>
+        <version major="8" minor="19"/>
+        <date day="12" month="10" year="2011"/>
+        <author login="jtulach"/>
+        <compatibility binary="compatible" semantic="incompatible">
+            The changes are supposed to be as compatible as possible. The only
+            desirable change is that calling <code>cancel(); cancel()</code> on
+            the same task returns <code>false</code> on the second call now.
+            In spite of that the changes caused bunch of regressions and it took
+            a week to stabilize them. That is why they deserve a warning note
+            in compatibility section.
+        </compatibility>            
+        <description>
+            <p>
+            In order to deal with bug #202354 there were some minor tweaks
+            inside <code>RequestProcessor</code> implementation.
+            </p>
+        </description>
+        <class package="org.openide.util" name="RequestProcessor"/>
+        <issue number="202354"/>
+    </change>
+    <change id="ProxyCredentialsProvider">
+        <api name="util"/>
+        <summary>SPI <code>NetworkSettings.ProxyCredentialsProvider</code> added</summary>
+        <version major="8" minor="17"/>
+        <date day="20" month="9" year="2011"/>
+        <author login="jrechtacek"/>
+        <compatibility addition="yes"/>
+        <description>
+            <p>
+                Most of the proxy and network credentials are currently read
+                from a default NetBeans storage. This may not be ideal
+                for other Platform aplications storing the settings in a different
+                way or computing them dynamically. 
+                A SPI <a href="@TOP@/org/openide/util/NetworkSettings.ProxyCredentialsProvider.html">
+                NetworkSettings.ProxyCredentialsProvider</a> allows NetBeans Platform
+                users to provide proxy and network credentials separately.
+                See <a href="http://wiki.netbeans.org/Authenticator">http://wiki.netbeans.org/Authenticator</a>
+            </p>
+        </description>
+        <class package="org.openide.util" name="NetworkSettings"/>
+        <issue number="201662"/>
+    </change>
+    <change id="SuppressAuthentication">
+        <api name="util"/>
+        <summary><code>NetworkSettings.suppressAuthenticationDialog</code> added</summary>
+        <version major="8" minor="17"/>
+        <date day="20" month="9" year="2011"/>
+        <author login="jrechtacek"/>
+        <compatibility addition="yes"/>
+        <description>
+            <p>
+                Some plugins needs a way to suppress {@link java.net.Authenticator} without asking
+                user a question about the credentials. 
+                Invoke <a href="@TOP@/org/openide/util/NetworkSettings.html#suppressAuthenticationDialog(java.util.concurrent.Callable)">
+                suppressAuthenticationDialog</a> with a block of code where authentication dialog will be suppressed.                
+                See <a href="http://wiki.netbeans.org/Authenticator">http://wiki.netbeans.org/Authenticator</a>
+            </p>
+        </description>
+        <class package="org.openide.util" name="NetworkSettings"/>
+        <issue number="201662"/>
+    </change>
     <change id="NetworkSettings">
         <api name="util"/>
         <summary><code>NetworkSettings</code> added</summary>

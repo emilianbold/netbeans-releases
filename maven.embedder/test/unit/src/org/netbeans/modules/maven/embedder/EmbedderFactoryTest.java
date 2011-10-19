@@ -45,6 +45,7 @@ package org.netbeans.modules.maven.embedder;
 import java.io.File;
 import java.util.Collections;
 import java.util.List;
+import java.util.Properties;
 import java.util.TreeSet;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.execution.MavenExecutionRequest;
@@ -179,6 +180,13 @@ public class EmbedderFactoryTest extends NbTestCase {
         MavenProject prj = res.getProject();
         assertEquals("v", prj.getProperties().getProperty("k"));
         assertEquals("[g:b:jar:0:compile, g:s:jar:0:compile]", new TreeSet<Artifact>(prj.getArtifacts()).toString());
+    }
+
+    public void testSystemProperties() throws Exception {
+        Properties p = EmbedderFactory.getProjectEmbedder().getSystemProperties();
+        assertEquals(System.getProperty("java.home"), p.getProperty("java.home"));
+        assertEquals(System.getenv("PATH"), p.getProperty("env.PATH"));
+        // XXX perhaps -Dkey=value (and -Dkey) should be honored in "Global Execution Options"?
     }
 
 }

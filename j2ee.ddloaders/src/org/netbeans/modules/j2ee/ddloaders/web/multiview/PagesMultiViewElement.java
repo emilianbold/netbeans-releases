@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.j2ee.ddloaders.web.multiview;
 
+import org.netbeans.core.api.multiview.MultiViewPerspective;
 import org.openide.nodes.*;
 import org.netbeans.modules.j2ee.dd.api.web.*;
 import org.netbeans.modules.j2ee.ddloaders.web.*;
@@ -155,7 +156,9 @@ public class PagesMultiViewElement extends ToolBarMultiViewElement implements ja
                  name.indexOf("ErrorPage")>0 || //NOI18N
                  name.indexOf("version")>0 ) { //NOI18N
                 // repaint view if the wiew is active and something is changed with elements listed above
-                if (PAGES_MV_ID.equals(dObj.getSelectedPerspective().preferredID())) {
+                MultiViewPerspective perspective = dObj.getSelectedPerspective();
+                // dont repaint if the top component doens't exist any more
+                if (perspective != null && PAGES_MV_ID.equals(perspective.preferredID())) {
                     repaintingTask.schedule(100);
                 } else {
                     needInit=true;

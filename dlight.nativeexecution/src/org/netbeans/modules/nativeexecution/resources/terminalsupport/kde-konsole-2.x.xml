@@ -67,6 +67,8 @@ made subject to such option by the copyright holder.
             -->
             <arg>--title</arg>
             <arg>$title</arg>
+            <arg>--workdir</arg>
+            <arg>$workdir</arg>
             <arg>-p</arg>
             <arg>ShowMenuBar=false</arg>
             <arg>-p</arg>

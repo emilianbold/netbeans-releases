@@ -446,8 +446,8 @@ final class FixLineSyntaxState {
                     
                     lineIndex++;
                     if (lineIndex >= lineCount) { // still not match at begining of last line
-                        return doc.getLength();
-                    }
+                        return doc.getLength(); 
+                   }
 
                     lineElem = nextLineElem;
                     lineStartOffset = nextLineStartOffset;
@@ -468,6 +468,10 @@ final class FixLineSyntaxState {
                     if (textLength == -1) { // not retrieved yet
                         textStartOffset = lineStartOffset - preScan;
                         textLength = requestedTextLength;
+                        if (textLength < 0) {
+                            throw new IndexOutOfBoundsException("len=" + textLength + " < 0: nextLineStartOffset=" + // NOI18N
+                                nextLineStartOffset + ", lineStartOffset=" + lineStartOffset + ", preScan=" + preScan); // NOI18N
+                        }
                         doc.getText(textStartOffset, textLength, text);
                         textBufferStartOffset = textStartOffset - text.offset;
                         

@@ -87,7 +87,6 @@ public class OpenRemoteProjectAction extends SingleHostAction {
     private static RequestProcessor RP = new RequestProcessor("Opening remote project", 1); //NOI18N
     private static boolean isRunning = false;
     private static final Object lock = new Object();
-    private static Map<ExecutionEnvironment, String> lastUsedDirs = new HashMap<ExecutionEnvironment, String>();
     
     @Override
     public String getName() {
@@ -160,7 +159,7 @@ public class OpenRemoteProjectAction extends SingleHostAction {
     }
     
     private void openRemoteProject(ExecutionEnvironment env) {            
-        String homeDir = lastUsedDirs.get(env);
+        String homeDir = RemoteFileUtil.getCurrentChooserFile(env);
         if (homeDir == null) {
             homeDir = getRemoteProjectDir(env);
         }            
@@ -174,10 +173,16 @@ public class OpenRemoteProjectAction extends SingleHostAction {
             return;
         }
         FileObject remoteProjectFO = fileChooser.getSelectedFileObject();
-        lastUsedDirs.put(env, remoteProjectFO.getParent().getPath());
         if (remoteProjectFO == null || !remoteProjectFO.isFolder()) {
+            String msg = fileChooser.getSelectedFile() != null ? fileChooser.getSelectedFile().getPath() : null;
+            if (msg != null) {
+                JOptionPane.showMessageDialog(WindowManager.getDefault().getMainWindow(),
+                    NbBundle.getMessage(OpenRemoteProjectAction.class, "InvalidFolder", msg));
+            }
             return;
         }
+        homeDir = remoteProjectFO.getParent() == null ? remoteProjectFO.getPath() : remoteProjectFO.getParent().getPath();
+        RemoteFileUtil.setCurrentChooserFile(homeDir, env);
         Project project;
         try {
             project = ProjectManager.getDefault().findProject(remoteProjectFO);

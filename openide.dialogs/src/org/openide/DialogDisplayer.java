@@ -43,7 +43,6 @@
  */
 package org.openide;
 
-import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 
 import java.awt.*;
@@ -56,12 +55,14 @@ import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
 import javax.swing.*;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup;
 
 
 /** Permits dialogs to be displayed.
@@ -204,6 +205,7 @@ public abstract class DialogDisplayer {
         private static Component option2Button(Object option, NotifyDescriptor nd, ActionListener l, JRootPane rp) {
             if (option instanceof AbstractButton) {
                 AbstractButton b = (AbstractButton) option;
+                removeOldListeners(b);
                 b.addActionListener(l);
 
                 return b;
@@ -247,6 +249,18 @@ public abstract class DialogDisplayer {
                 return b;
             }
         }
+
+        private static void removeOldListeners( AbstractButton button ) {
+            ArrayList<ActionListener> toRem = new ArrayList<ActionListener>();
+            for( ActionListener al : button.getActionListeners() ) {
+                if( al instanceof StandardDialog.ButtonListener ) {
+                    toRem.add( al );
+                }
+            }
+            for( ActionListener al : toRem ) {
+                button.removeActionListener( al );
+            }
+                            }
 
         private static final class StandardDialog extends JDialog {
             final NotifyDescriptor nd;
@@ -366,19 +380,44 @@ public abstract class DialogDisplayer {
                     switch (nd.getOptionType()) {
                     case NotifyDescriptor.DEFAULT_OPTION:
                     case NotifyDescriptor.OK_CANCEL_OPTION:
-                        options = new Object[] { NotifyDescriptor.OK_OPTION, NotifyDescriptor.CANCEL_OPTION, };
-
+                        if (!Utilities.isMac()) {
+                            // Windows UI Guidelines
+                            options = new Object[] { NotifyDescriptor.OK_OPTION, NotifyDescriptor.CANCEL_OPTION, };
+                        } else {
+                            // see http://netbeans.org/bugzilla/show_bug.cgi?id=202784 - according to
+                            // Apple HIG guidelines 'Cancel' should be on the left
+                            // http://developer.apple.com/library/mac/#documentation/UserExperience/Conceptual/AppleHIGuidelines/Windows/Windows.html#//apple_ref/doc/uid/20000961-TP9
+                            options = new Object[] { NotifyDescriptor.CANCEL_OPTION, NotifyDescriptor.OK_OPTION, };
+                        }
                         break;
 
                     case NotifyDescriptor.YES_NO_OPTION:
-                        options = new Object[] { NotifyDescriptor.YES_OPTION, NotifyDescriptor.NO_OPTION, };
+                        if (!Utilities.isMac()) {
+                            // Windows UI Guidelines
+                            options = new Object[] { NotifyDescriptor.YES_OPTION, NotifyDescriptor.NO_OPTION, };
+                        } else {
+                            // see http://netbeans.org/bugzilla/show_bug.cgi?id=202784 - according to
+                            // Apple HIG guidelines 'Cancel' should be on the left
+                            // http://developer.apple.com/library/mac/#documentation/UserExperience/Conceptual/AppleHIGuidelines/Windows/Windows.html#//apple_ref/doc/uid/20000961-TP9
+                            options = new Object[] { NotifyDescriptor.NO_OPTION, NotifyDescriptor.YES_OPTION, };
+                        }
 
                         break;
 
                     case NotifyDescriptor.YES_NO_CANCEL_OPTION:
-                        options = new Object[] {
+                        if (!Utilities.isMac()) {
+                            // Windows UI Guidelines
+                            options = new Object[] {
                                 NotifyDescriptor.YES_OPTION, NotifyDescriptor.NO_OPTION, NotifyDescriptor.CANCEL_OPTION,
                             };
+                        } else {
+                            // see http://netbeans.org/bugzilla/show_bug.cgi?id=202784 - according to
+                            // Apple HIG guidelines 'Cancel' should be on the left
+                            // http://developer.apple.com/library/mac/#documentation/UserExperience/Conceptual/AppleHIGuidelines/Windows/Windows.html#//apple_ref/doc/uid/20000961-TP9
+                            options = new Object[] {
+                                NotifyDescriptor.NO_OPTION, NotifyDescriptor.CANCEL_OPTION, NotifyDescriptor.YES_OPTION,
+                            };
+                        }
 
                         break;
 
@@ -453,26 +492,35 @@ public abstract class DialogDisplayer {
             }
 
             private ActionListener makeListener(final Object option) {
-                return new ActionListener() {
-                        public void actionPerformed(ActionEvent e) {
-                            //System.err.println("actionPerformed: " + option);
-                            nd.setValue(option);
-
-                            if (buttonListener != null) {
-                                // #34485: some listeners expect that the action source is the option, not the button
-                                ActionEvent e2 = new ActionEvent(
-                                        option, e.getID(), e.getActionCommand(), e.getWhen(), e.getModifiers()
-                                    );
-                                buttonListener.actionPerformed(e2);
-                            }
-
-                            if ((closingOptions == null) || Arrays.asList(closingOptions).contains(option)) {
-                                haveFinalValue = true;
-                                setVisible(false);
-                            }
-                        }
-                    };
+                return new ButtonListener( option );
             }
+            
+            private class ButtonListener implements ActionListener {
+
+                private final Object option;
+                
+                public ButtonListener( Object option ) {
+                    this.option = option;
+                }
+                
+                @Override
+                public void actionPerformed( ActionEvent e ) {
+                    nd.setValue(option);
+
+                    if (buttonListener != null) {
+                        // #34485: some listeners expect that the action source is the option, not the button
+                        ActionEvent e2 = new ActionEvent(
+                                option, e.getID(), e.getActionCommand(), e.getWhen(), e.getModifiers()
+                            );
+                        buttonListener.actionPerformed(e2);
+                    }
+
+                    if ((closingOptions == null) || Arrays.asList(closingOptions).contains(option)) {
+                        haveFinalValue = true;
+                        setVisible(false);
+                    }
+                }
+            }     
         }
 
         private static class DialogUpdater implements PropertyChangeListener {

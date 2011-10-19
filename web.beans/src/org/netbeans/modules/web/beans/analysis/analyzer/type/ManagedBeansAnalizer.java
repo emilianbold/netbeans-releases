@@ -114,7 +114,9 @@ public class ManagedBeansAnalizer implements ClassAnalyzer {
         if ( decorators!= null && decorators.size() >0 ){
             EditorAnnotationsHelper helper = EditorAnnotationsHelper.getInstance(result);
             ElementHandle<TypeElement> handle = ElementHandle.create(element);
-            helper.addDecoratedBean( result , handle.resolve( result.getInfo() ));
+            if ( helper != null ){
+                helper.addDecoratedBean( result , handle.resolve( result.getInfo() ));
+            }
         }
     }
 

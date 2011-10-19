@@ -41,62 +41,97 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.web.project.ui.customizer;
 
+import java.text.MessageFormat;
+import java.util.regex.Pattern;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
 import org.netbeans.modules.j2ee.common.Util;
+import org.netbeans.modules.j2ee.common.project.ui.MessageUtils;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport.Item;
 import org.netbeans.modules.java.api.common.project.ui.ClassPathUiSupport;
 import org.netbeans.modules.java.api.common.project.ui.customizer.EditMediator;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.web.project.classpath.ClassPathSupportCallbackImpl;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /** Customizer for WAR packaging.
  */
 public class CustomizerWar extends JPanel implements HelpCtx.Provider, TableModelListener {
-    
+
     WebProjectProperties uiProperties;
-    
+    ProjectCustomizer.Category category;
+
     /** Creates new form CustomizerCompile */
-    public CustomizerWar(WebProjectProperties uiProperties) {
+    public CustomizerWar(ProjectCustomizer.Category category, WebProjectProperties uiProperties) {
+        this.category=category;
         this.uiProperties = uiProperties;
         initComponents();
         this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerWar.class, "ACS_CustomizeWAR_A11YDesc")); //NOI18N
-        
+
         jTextFieldFileName.setDocument( uiProperties.WAR_NAME_MODEL );
+        jTextFieldFileName.getDocument().addDocumentListener(new DocumentListener() {
+            
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                if(checkValidWarFilename()){
+                    showWarningOnWARnameChange();
+                }
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                if(checkValidWarFilename()){
+                    showWarningOnWARnameChange();
+                }
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                if(checkValidWarFilename()){
+                    showWarningOnWARnameChange();
+                }
+            }
+            
+        });
         jTextFieldExContent.setDocument( uiProperties.BUILD_CLASSES_EXCLUDES_MODEL );
         uiProperties.WAR_COMPRESS_MODEL.setMnemonic( jCheckBoxCompress.getMnemonic() );
         jCheckBoxCompress.setModel( uiProperties.WAR_COMPRESS_MODEL );
         ClassPathUiSupport.Callback callback = new ClassPathUiSupport.Callback() {
+
             public void initItem(Item item) {
                 if (item.getType() != ClassPathSupport.Item.TYPE_LIBRARY || !item.getLibrary().getType().equals(J2eePlatform.LIBRARY_TYPE)) {
                     item.setAdditionalProperty(ClassPathSupportCallbackImpl.PATH_IN_DEPLOYMENT, "/"); //NOI18N
                 }
             }
+            
         };
-        
-        jTableAddContent.setModel( uiProperties.WAR_CONTENT_ADDITIONAL_MODEL);
+
+        jTableAddContent.setModel( uiProperties.WAR_CONTENT_ADDITIONAL_MODEL );
         jTableAddContent.setDefaultRenderer(ClassPathSupport.Item.class, uiProperties.CLASS_PATH_TABLE_ITEM_RENDERER);
         Util.initTwoColumnTableVisualProperties(this, jTableAddContent);
         jTableAddContent.setRowHeight(jTableAddContent.getRowHeight() + 4);
-        
+
         EditMediator.register( uiProperties.getProject(),
                 uiProperties.getProject().getAntProjectHelper(),
                 uiProperties.getProject().getReferenceHelper(),
-                EditMediator.createListComponent(jTableAddContent, uiProperties.WAR_CONTENT_ADDITIONAL_MODEL.getDefaultListModel()) , 
+                EditMediator.createListComponent(jTableAddContent, uiProperties.WAR_CONTENT_ADDITIONAL_MODEL.getDefaultListModel()) ,
                 jButtonAddJar.getModel(),
                 jButtonAddLib.getModel(),
                 jButtonAddProject.getModel(),
@@ -110,7 +145,7 @@ public class CustomizerWar extends JPanel implements HelpCtx.Provider, TableMode
                 null, JFileChooser.FILES_AND_DIRECTORIES);
         uiProperties.WAR_CONTENT_ADDITIONAL_MODEL.addTableModelListener(this);
     }
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -134,6 +169,7 @@ public class CustomizerWar extends JPanel implements HelpCtx.Provider, TableMode
         jButtonAddLib = new javax.swing.JButton();
         jButtonAddJar = new javax.swing.JButton();
         jButtonRemove = new javax.swing.JButton();
+        errorLabel = new javax.swing.JLabel();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -147,8 +183,6 @@ public class CustomizerWar extends JPanel implements HelpCtx.Provider, TableMode
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
         jPanel1.add(jLabelFileName, gridBagConstraints);
-
-        jTextFieldFileName.setEditable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -171,7 +205,6 @@ public class CustomizerWar extends JPanel implements HelpCtx.Provider, TableMode
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         jPanel1.add(jTextFieldExContent, gridBagConstraints);
         jTextFieldExContent.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerWar.class, "ACS_CustomizeWAR_Content_A11YDesc")); // NOI18N
@@ -181,7 +214,6 @@ public class CustomizerWar extends JPanel implements HelpCtx.Provider, TableMode
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         jPanel1.add(excludeMessage, gridBagConstraints);
@@ -229,7 +261,7 @@ public class CustomizerWar extends JPanel implements HelpCtx.Provider, TableMode
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridheight = 6;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
@@ -280,9 +312,18 @@ public class CustomizerWar extends JPanel implements HelpCtx.Provider, TableMode
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         add(jButtonRemove, gridBagConstraints);
         jButtonRemove.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_CustomizeWAR_AdditionalRemove_A11YDesc")); // NOI18N
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 10;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTH;
+        gridBagConstraints.weightx = 1.0;
+        add(errorLabel, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
-    
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel errorLabel;
     private javax.swing.JLabel excludeMessage;
     private javax.swing.JButton jButtonAddJar;
     private javax.swing.JButton jButtonAddLib;
@@ -298,12 +339,45 @@ public class CustomizerWar extends JPanel implements HelpCtx.Provider, TableMode
     private javax.swing.JTextField jTextFieldExContent;
     private javax.swing.JTextField jTextFieldFileName;
     // End of variables declaration//GEN-END:variables
-    
+
     /** Help context where to find more about the paste type action.
      * @return the help context for this action
      */
     public HelpCtx getHelpCtx() {
         return new HelpCtx(CustomizerWar.class);
+    }
+    
+    private boolean checkValidWarFilename(){
+        MessageUtils.clear(errorLabel);
+        category.setValid(true);
+        
+        String filename=jTextFieldFileName.getText();
+        String pattern;
+        String forbiddenChars;
+        if (Utilities.isWindows()) {
+            pattern = ".*[\\\\/:\\*\\?\"<>\\|].*";    // NOI18N
+            forbiddenChars = "\\ / : * ? \" < > |";    // NOI18N
+        } else {
+            pattern = ".*[\\\\/].*";    // NOI18N
+            forbiddenChars = "\\ /";    // NOI18N
+        }
+        String message=null;
+        if (filename.trim().length() == 0) {
+            message = NbBundle.getMessage(CustomizerWar.class, "MSG_EmptyWarName");
+        }else if (Pattern.matches(pattern, filename)) {
+            message = NbBundle.getMessage(CustomizerWar.class, "MSG_ForbiddenCharactersInWarName");
+            message=MessageFormat.format(message, forbiddenChars);
+        }
+        if(message != null){
+            category.setValid(false);
+            MessageUtils.setMessage(errorLabel, MessageUtils.MessageType.ERROR, "<html>"+message+"</html>"); // NOI18N
+        }
+        return message == null;
+    }
+    
+    private void showWarningOnWARnameChange(){
+        String message=NbBundle.getMessage(CustomizerWar.class, "MSG_WarningOnWARnameChange");
+        MessageUtils.setMessage(errorLabel, MessageUtils.MessageType.WARNING, "<html>"+message+"</html>"); // NOI18N
     }
 
     public void tableChanged(TableModelEvent e) {
@@ -332,5 +406,4 @@ public class CustomizerWar extends JPanel implements HelpCtx.Provider, TableMode
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message (message, NotifyDescriptor.WARNING_MESSAGE));
         }
     }
-    
 }

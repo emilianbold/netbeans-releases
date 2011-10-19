@@ -344,9 +344,11 @@ public class CGSGenerator implements CodeGenerator {
                         String changedName = cgsInfo.getHowToGenerate() == GenWay.WITHOUT_UNDERSCORE
                                 ? upFirstLetterWithoutUnderscore(name) : upFirstLetter(name);
                         methodName = getUnusedMethodName(createdMethods, changedName);
+                        paramName = cgsInfo.getHowToGenerate() == GenWay.WITHOUT_UNDERSCORE
+                                ? withoutUnderscore(name) : name;
                         gettersAndSetters.append(getterTemplate.replace(PROPERTY, name).replace(UP_FIRST_LETTER_PROPERTY, upFirstLetter(methodName)).replace(UP_FIRST_LETTER_PROPERTY_WITHOUT_UNDERSCORE, methodName));
                         gettersAndSetters.append(NEW_LINE);
-                        gettersAndSetters.append(setterTemplate.replace(PROPERTY, name).replace(UP_FIRST_LETTER_PROPERTY, upFirstLetter(methodName)).replace(UP_FIRST_LETTER_PROPERTY_WITHOUT_UNDERSCORE, methodName));
+                        gettersAndSetters.append(setterTemplate.replace(PROPERTY, name).replace(PARAM_NAME, paramName).replace(UP_FIRST_LETTER_PROPERTY, upFirstLetter(methodName)).replace(UP_FIRST_LETTER_PROPERTY_WITHOUT_UNDERSCORE, methodName));
                         gettersAndSetters.append(NEW_LINE);
                     }
                 }

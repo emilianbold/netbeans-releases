@@ -52,6 +52,8 @@ import java.util.*;
 import java.text.DateFormat;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -130,16 +132,23 @@ public class PatchAction extends NodeAction {
     }
 
     public static boolean performPatch(File patch, File file) throws MissingResourceException {
-        ContextualPatch cp = ContextualPatch.create(patch, file);
+        ProgressHandle ph = ProgressHandleFactory.createHandle(NbBundle.getMessage(PatchAction.class, "MSG_AplyingPatch", new Object[] {patch.getName()}));
+        List<ContextualPatch.PatchReport> report = null;
         try {
-            List<ContextualPatch.PatchReport> report = cp.patch(false);
-            return displayPatchReport(report, patch);
-        } catch (Exception ioex) {
-            ErrorManager.getDefault().annotate(ioex, NbBundle.getMessage(PatchAction.class, "EXC_PatchParsingFailed", ioex.getLocalizedMessage()));
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioex);
-            ErrorManager.getDefault().notify(ErrorManager.USER, ioex);
-            return false;
+            ph.start();
+            ContextualPatch cp = ContextualPatch.create(patch, file);
+            try {
+                report = cp.patch(false, ph);
+            } catch (Exception ioex) {
+                ErrorManager.getDefault().annotate(ioex, NbBundle.getMessage(PatchAction.class, "EXC_PatchParsingFailed", ioex.getLocalizedMessage()));
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioex);
+                ErrorManager.getDefault().notify(ErrorManager.USER, ioex);
+                return false;
+            }
+        } finally {
+            ph.finish();
         }
+        return displayPatchReport(report, patch);
     }
 
 

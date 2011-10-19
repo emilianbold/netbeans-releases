@@ -86,10 +86,8 @@ import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
-import org.openide.util.RequestProcessor.Task;
 import org.openide.util.Utilities;
 
 /**
@@ -97,7 +95,7 @@ import org.openide.util.Utilities;
  * @author Alexander Simon
  */
 public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends NbTestCase
-    private static final String LOG_POSTFIX = ".discoveryLog";
+    protected static final String LOG_POSTFIX = ".discoveryLog";
     private static final boolean TRACE = true;
 
     public MakeProjectTestBase(String name) {
@@ -167,7 +165,7 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
         RepositoryUtils.debugClear();
     }
 
-    private File detectConfigure(String path){
+    protected File detectConfigure(String path){
         File configure = new File(path, "configure");
         if (configure.exists()) {
             return configure;
@@ -382,7 +380,7 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
         }
     }
 
-    private boolean findObjectFiles(String path){
+    protected boolean findObjectFiles(String path){
         return findObjectFiles(new File(path));
     }
 
@@ -415,7 +413,7 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
         return list;
     }
 
-    private Map<String, String> findTools(){
+    protected Map<String, String> findTools(){
         Map<String, String> map = new HashMap<String, String>();
         for(String t: requiredTools()){
             map.put(t, null);
@@ -631,7 +629,7 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
         }
     }
 
-    private static boolean hasLogs(File projectDir) {
+    protected static boolean hasLogs(File projectDir) {
         File configureLog = new File(projectDir, "configure" + LOG_POSTFIX);
         if (!configureLog.exists()) {
             return false;
@@ -640,7 +638,7 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
         return makeLog.exists();
     }
 
-    private static void hackConfigure(File file) {
+    protected static void hackConfigure(File file) {
         try {
             BufferedReader in = new BufferedReader(new FileReader(file));
             String firstLine = in.readLine();
@@ -654,7 +652,7 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
         }
     }
 
-    private static void hackMakefile(File file) {
+    protected static void hackMakefile(File file) {
         try {
             BufferedWriter out = new BufferedWriter(new FileWriter(file));
             out.write("all:");

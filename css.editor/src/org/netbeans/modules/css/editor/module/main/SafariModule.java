@@ -41,19 +41,18 @@
  */
 package org.netbeans.modules.css.editor.module.main;
 
-import org.netbeans.modules.css.editor.module.spi.CssModule;
-import org.netbeans.modules.css.editor.module.spi.PropertySupportResolver.Factory;
+import org.netbeans.modules.css.editor.module.spi.CssEditorModule;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author mfukala@netbeans.org
  */
-@ServiceProvider(service = CssModule.class)
+@ServiceProvider(service = CssEditorModule.class)
 public class SafariModule extends BrowserSupportModule {
 
     public SafariModule() {
-        super(new DefaultBrowser("Safari", "Apple", "webkit", "webkit", "safari20"), "webkit");
+        super(new DefaultBrowser("Safari", "Apple", "webkit", "webkit", "safari20"), "webkit"); //NOI18N
     }
 
 }

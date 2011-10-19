@@ -45,11 +45,10 @@ package org.netbeans.modules.java.source.usages;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.regex.Pattern;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.FilteredQuery;
-import org.apache.lucene.search.PrefixFilter;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.WildcardQuery;
@@ -57,6 +56,8 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.source.ClassIndex.SearchScopeType;
+import org.netbeans.modules.java.source.usages.ClassIndexImpl.UsageType;
+import org.netbeans.modules.parsing.lucene.support.Queries;
 import org.netbeans.modules.parsing.lucene.support.StoppableConvertor;
 import org.openide.util.Parameters;
 
@@ -84,6 +85,29 @@ class QueryUtil {
             return query;
         } else if (operator == Occur.MUST) {
             return new WildcardQuery(DocumentUtil.referencesTerm (resourceName, mask));
+        } else {
+            throw new IllegalArgumentException();
+        }
+    }
+
+    @NonNull
+    static Query createPackageUsagesQuery (
+            @NonNull final String packageName,
+            @NonNull final Set<? extends UsageType> mask,
+            @NonNull Occur operator) {
+        Parameters.notNull("packageName", packageName); //NOI18N
+        Parameters.notNull("mask", mask); //NOI18N
+        final String pattern = Pattern.quote(packageName) + "\\.[^\\.]+";   //NOI18N
+        if (operator == Occur.SHOULD) {
+            final BooleanQuery query = new BooleanQuery ();
+            for (ClassIndexImpl.UsageType ut : mask) {
+                final Term t = DocumentUtil.referencesTerm (pattern, EnumSet.of(ut));
+                query.add(Queries.createQuery(t.field(), t.field(), t.text(), Queries.QueryKind.REGEXP), operator);
+            }
+            return query;
+        } else if (operator == Occur.MUST) {
+            final Term t = DocumentUtil.referencesTerm (pattern, mask);
+            return Queries.createQuery(t.field(), t.field(), t.text(), Queries.QueryKind.REGEXP);
         } else {
             throw new IllegalArgumentException();
         }
@@ -150,7 +174,7 @@ class QueryUtil {
         final StoppableConvertor<Term,String> filter = new PackageFilter(startTerm, directOnly);
         return Pair.of(filter,startTerm);
     }
-    
+
     // <editor-fold defaultstate="collapsed" desc="Private implementation">
                             
                                     

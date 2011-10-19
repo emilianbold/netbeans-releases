@@ -50,6 +50,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -240,7 +241,9 @@ public class RestUtils {
     }
 
     public static DataObject createDataObjectFromTemplate(String template, 
-            FileObject targetFolder, String targetName) throws IOException {
+            FileObject targetFolder, String targetName, 
+            Map<String, String> parameters ) throws IOException 
+    {
         assert template != null;
         assert targetFolder != null;
         assert targetName != null && targetName.trim().length() > 0;
@@ -249,7 +252,18 @@ public class RestUtils {
         DataObject templateDO = DataObject.find(templateFO);
         DataFolder dataFolder = DataFolder.findFolder(targetFolder);
 
-        return templateDO.createFromTemplate(dataFolder, targetName);
+        if ( parameters == null ){
+            return templateDO.createFromTemplate(dataFolder, targetName);
+        }
+        else {
+            return templateDO.createFromTemplate(dataFolder, targetName, parameters);
+        }
+    }
+    
+    public static DataObject createDataObjectFromTemplate(String template, 
+            FileObject targetFolder, String targetName) throws IOException 
+    {
+        return createDataObjectFromTemplate(template, targetFolder, targetName , null );
     }
 
     public static String findStubNameFromClass(String className) {

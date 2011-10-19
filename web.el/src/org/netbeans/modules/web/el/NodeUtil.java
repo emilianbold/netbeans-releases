@@ -42,6 +42,7 @@
 package org.netbeans.modules.web.el;
 
 import com.sun.el.parser.Node;
+import org.openide.util.Parameters;
 
 
 /**
@@ -67,4 +68,32 @@ public class NodeUtil {
             dump(child, prefix + INDENT, buf);
         }
     }
+    
+    private static int getIndex(Node parent, Node child) {
+        for(int i = 0; i < parent.jjtGetNumChildren(); i++) {
+            Node n = parent.jjtGetChild(i);
+            if(n.equals(child)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+    
+    public static Node getSiblingBefore(Node node) {
+        Parameters.notNull("node", node);
+        Node parent = node.jjtGetParent();
+        if(parent == null) {
+            return null;
+        }
+        
+        int index = getIndex(parent, node);
+        assert index >= 0;
+        if(index == 0) {
+            //first child, no sibling before
+            return null; 
+        }
+        
+        return parent.jjtGetChild(index - 1);
+    }
+    
 }

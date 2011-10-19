@@ -164,6 +164,54 @@ public class RenameTest extends RefactoringTestBase {
                 new File("t/B.java", "class B extends A { public void bind(){ binding();}}"));
     }
     
+    public void test202251() throws Exception { // #202251 - Refactoring code might lead to uncompilable code
+        writeFilesAndWaitForScan(src, new File("test/Tool.java", "package test;\n"
+                + "\n"
+                + "import java.util.StringTokenizer;\n"
+                + "\n"
+                + "/**\n"
+                + " *\n"
+                + " * @author Javier A. Ortiz Bultrón <javier.ortiz.78@gmail.com>\n"
+                + " */\n"
+                + "public class Tool {\n"
+                + "\n"
+                + "    private Tool() {\n"
+                + "    }\n"
+                + "\n"
+                + "    public static boolean compareNumberStrings(String first, String second) {\n"
+                + "        return conpareNumberStrings(first, second, \".\");\n"
+                + "    }\n"
+                + "\n"
+                + "    public static boolean conpareNumberStrings(String first, String second,\n"
+                + "            String separator) {\n"
+                + "        return true;\n"
+                + "    }\n"
+                + "}"));
+        performRename(src.getFileObject("test/Tool.java"), 2, "compareNumberStrings", null);
+        verifyContent(src, new File("test/Tool.java", "package test;\n"
+                + "\n"
+                + "import java.util.StringTokenizer;\n"
+                + "\n"
+                + "/**\n"
+                + " *\n"
+                + " * @author Javier A. Ortiz Bultrón <javier.ortiz.78@gmail.com>\n"
+                + " */\n"
+                + "public class Tool {\n"
+                + "\n"
+                + "    private Tool() {\n"
+                + "    }\n"
+                + "\n"
+                + "    public static boolean compareNumberStrings(String first, String second) {\n"
+                + "        return compareNumberStrings(first, second, \".\");\n"
+                + "    }\n"
+                + "\n"
+                + "    public static boolean compareNumberStrings(String first, String second,\n"
+                + "            String separator) {\n"
+                + "        return true;\n"
+                + "    }\n"
+                + "}"));
+    }
+    
     public void test104819() throws Exception{ // #104819 [Rename] Cannot rename inner class to same name as class in same package
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", "package t;\n"
@@ -245,6 +293,34 @@ public class RenameTest extends RefactoringTestBase {
                 + "}"));
     }
     
+    public void test202675() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("a/A.java", "package a;\n"
+                + "import b.B;\n"
+                + "public class A {\n"
+                + "    B b;\n"
+                + "}"),
+                new File("b/B.java", "package b;\n"
+                + "public class B {\n"
+                + "}"));
+        
+        RefactoringSession rs = RefactoringSession.create("Rename");
+        RenameRefactoring rr = new RenameRefactoring(Lookups.singleton(src.getFileObject("b/B.java")));
+        rr.setNewName("C");
+        rr.setSearchInComments(true);
+        rr.prepare(rs);
+        rs.doRefactoring(true);
+
+        verifyContent(src,
+                new File("a/A.java", "package a;\n"
+                + "import b.C;\n"
+                + "public class A {\n"
+                + "    C b;\n"
+                + "}"),
+                new File("b/C.java", "package b;\n"
+                + "public class C {\n"
+                + "}"));
+    }
     
     public void test104819_2() throws Exception {
         writeFilesAndWaitForScan(src,

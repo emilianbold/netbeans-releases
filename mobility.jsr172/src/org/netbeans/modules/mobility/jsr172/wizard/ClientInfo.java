@@ -136,7 +136,7 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ClientInfo.class, "ACSD_Web_Service_Client_Wizard")); // NOI18N
 
         jRbnServiceURL.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ClientInfo.class, "ACSD_WsdlSourceUrl")); // NOI18N
-        jRbnFilesystem.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ClientInfo.class, "ACSD_WsdlSourceFilesyst")); // NOI18N
+        jRbnFilesystem.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ClientInfo.class, "ACSD_WsdlSourceFilesystem")); // NOI18N
 
         jTxtProject.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ClientInfo.class, "ACSD_Project")); // NOI18N
         jTxtLocalFilename.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ClientInfo.class, "ACSD_LocalFilename")); // NOI18N

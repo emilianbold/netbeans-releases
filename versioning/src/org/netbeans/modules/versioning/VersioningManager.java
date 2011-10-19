@@ -221,7 +221,11 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
         synchronized(versioningSystems) {
             // inline unloadVersioningSystems();
             for (VersioningSystem system : versioningSystems) {
-                system.removePropertyChangeListener(this);
+                if(system instanceof DelegatingVCS) {
+                    ((DelegatingVCS)system).unregisterVersioningManager();
+                } else {
+                    system.removePropertyChangeListener(this);
+                }
             }
             versioningSystems.clear();
             localHistory = null;
@@ -233,7 +237,11 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
                 if (localHistory == null && Utils.isLocalHistory(system)) {
                     localHistory = system;
                 }
-                system.addPropertyChangeListener(this);
+                if(system instanceof DelegatingVCS) {
+                    ((DelegatingVCS)system).registerVersioningManager();
+                } else {
+                    system.addPropertyChangeListener(this);
+                }
             }
             // inline loadVersioningSystems(systems);
         }
@@ -468,9 +476,15 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
      * @return VersioningSystem local history versioning system or null if there is no local history for the file
      */
     VersioningSystem getLocalHistory(File file, Boolean isFile) {
+                
         VersioningSystem lh = localHistory;
         if (lh == null) return null;
 
+        String nbUserdir = System.getProperty("netbeans.user", ""); //NOI18N
+        if (!nbUserdir.isEmpty() && !Utils.isVersionUserdir() && Utils.isAncestorOrEqual(new File(nbUserdir), file)) { 
+            return null;
+        }
+        
         synchronized(localHistoryFiles) {
             Boolean isManagedByLocalHistory = localHistoryFiles.get(file);
             if (isManagedByLocalHistory != null && isManagedByLocalHistory) {
@@ -499,8 +513,8 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
             return lh;
         } else {
             isManaged = lh.getTopmostManagedAncestor(file) != null;
-            putLocalHistoryFile(isManaged, file, folder);
-            return null;
+            putLocalHistoryFile(isManaged, file);
+            return lh;
         }        
     }
 

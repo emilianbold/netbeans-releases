@@ -72,13 +72,9 @@ public class RevertModificationsPanel extends javax.swing.JPanel {
         localChangesRadioButton.setSelected(true);
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/update/Bundle"); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(localChangesRadioButton, bundle.getString("CTL_RevertPanel_RevertLocal")); // NOI18N
-        localChangesRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        localChangesRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         buttonGroup.add(moreCommitsRadioButton);
         org.openide.awt.Mnemonics.setLocalizedText(moreCommitsRadioButton, bundle.getString("CTL_RevertPanel_RevertMulti")); // NOI18N
-        moreCommitsRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        moreCommitsRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         jLabel2.setLabelFor(startRevisionTextField);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, bundle.getString("CTL_RevertPanel_StartingRevision")); // NOI18N
@@ -102,8 +98,6 @@ public class RevertModificationsPanel extends javax.swing.JPanel {
 
         buttonGroup.add(oneCommitRadioButton);
         org.openide.awt.Mnemonics.setLocalizedText(oneCommitRadioButton, bundle.getString("CTL_RevertPanel_RevertSingle")); // NOI18N
-        oneCommitRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        oneCommitRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         jLabel4.setLabelFor(oneRevisionTextField);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel4, bundle.getString("CTL_RevertPanel_SingleRevision")); // NOI18N
@@ -132,7 +126,7 @@ public class RevertModificationsPanel extends javax.swing.JPanel {
                         .addGap(17, 17, 17)
                         .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 126, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(oneRevisionTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 133, Short.MAX_VALUE)
+                        .addComponent(oneRevisionTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 137, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(oneRevisionSearchButton, javax.swing.GroupLayout.PREFERRED_SIZE, 98, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(oneCommitRadioButton)
@@ -150,8 +144,8 @@ public class RevertModificationsPanel extends javax.swing.JPanel {
                             .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(endRevisionTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 133, Short.MAX_VALUE)
-                            .addComponent(startRevisionTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 133, Short.MAX_VALUE))
+                            .addComponent(endRevisionTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 137, Short.MAX_VALUE)
+                            .addComponent(startRevisionTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 137, Short.MAX_VALUE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(endSearchButton)
@@ -175,7 +169,7 @@ public class RevertModificationsPanel extends javax.swing.JPanel {
                     .addComponent(oneRevisionTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(oneRevisionSearchButton))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(moreCommitsRadioButton, javax.swing.GroupLayout.PREFERRED_SIZE, 15, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(moreCommitsRadioButton)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel2)

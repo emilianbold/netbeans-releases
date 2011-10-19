@@ -439,6 +439,7 @@ abstract class WeakListenerImpl implements java.util.EventListener {
 
         public java.lang.Object invoke(Object proxy, Method method, Object[] args)
         throws Throwable {
+            try {
             if (method.getDeclaringClass() == Object.class) {
                 // a method from object => call it on your self
                 if (method == getEquals()) {
@@ -459,6 +460,9 @@ abstract class WeakListenerImpl implements java.util.EventListener {
                 return method.invoke(listener, args);
             } else {
                 return null;
+            }
+            } catch (InvocationTargetException x) {
+                throw x.getCause();
             }
         }
 

@@ -71,10 +71,11 @@ import java.io.StringReader;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import org.netbeans.modules.profiler.api.java.JavaProfilerSource;
-import org.netbeans.modules.profiler.projectsupport.utilities.SourceUtils;
 import org.openide.util.Lookup;
 
 
@@ -84,7 +85,8 @@ import org.openide.util.Lookup;
  */
 public class WebProjectUtils {
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------
-
+    final private static Logger LOGGER = Logger.getLogger(WebProjectUtils.class.getName());
+    
     // -----
     // I18N String constants
     private static final String CANNOT_FIND_SERVLET_MSG = NbBundle.getMessage(WebProjectUtils.class,
@@ -190,7 +192,7 @@ public class WebProjectUtils {
         NodeList filtersList = getFilters(deploymentDescriptorDocument);
         NodeList filterMappingsList = getFilterMappings(deploymentDescriptorDocument);
 
-        Vector mappedFilterNames = new Vector();
+        Collection<String> mappedFilterNames = new HashSet<String>();
 
         for (int i = 0; i < filterMappingsList.getLength(); i++) {
             String mappedFilterName = getElementContent((Element) filterMappingsList.item(i), "filter-name"); // NOI18N
@@ -267,10 +269,7 @@ public class WebProjectUtils {
         String jspPseudoServletClass = getJSPPseudoServletClass(project, jspFile);
 
         if (jspPseudoServletClass == null) {
-            Profiler.getDefault()
-                    .log(ErrorManager.WARNING,
-                         MessageFormat.format(CANNOT_FIND_SERVLET_MSG, new Object[] { FileUtil.toFile(jspFile).getPath() }));
-
+            LOGGER.log(Level.WARNING, CANNOT_FIND_SERVLET_MSG, FileUtil.toFile(jspFile).getPath());
             return null; // According to Issue 62519, jsp file is not resolved/found due odd project layout
         }
 
@@ -386,7 +385,7 @@ public class WebProjectUtils {
         NodeList servletsList = getServlets(deploymentDescriptorDocument);
         NodeList servletMappingsList = getServletMappings(deploymentDescriptorDocument);
 
-        Vector mappedServletNames = new Vector();
+        Collection<String> mappedServletNames = new HashSet<String>();
 
         for (int i = 0; i < servletMappingsList.getLength(); i++) {
             String mappedServletName = getElementContent((Element) servletMappingsList.item(i), "servlet-name"); // NOI18N

@@ -1661,7 +1661,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                             doc.insertString(pos.getOffset(), getInsertPrefix().toString(), null);
                             if (semiPosition != null) {
                                 doc.insertString(semiPosition.getOffset(), ";", null); //NOI18N
-                                c.setCaretPosition(semiPosition.getOffset() - 1);
+                                c.setCaretPosition(pos.getOffset());
                             }
                         } catch (BadLocationException e) {
                             // Can't update

@@ -1,0 +1,655 @@
+<?xml version="1.0"?>
+
+<!--
+Note: This XML document is an example Coherence POF Configuration deployment
+descriptor that should be customized, replaced or extended for your
+particular application requirements.
+
+For detailed information on each of the elements that can be used in this
+descriptor please see the Coherence POF Configuration document type
+descriptor: pof-config.xsd.
+
+-->
+
+<pof-config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xmlns="http://xmlns.oracle.com/coherence/coherence-pof-config"
+              xsi:schemaLocation="http://xmlns.oracle.com/coherence/coherence-pof-config coherence-pof-config.xsd">        
+
+  <user-type-list>
+
+    <!-- Exceptions (0-9) -->
+    <user-type>
+      <type-id>0</type-id>
+      <class-name>java.lang.Throwable</class-name>
+      <serializer>
+        <class-name>com.tangosol.io.pof.ThrowablePofSerializer</class-name>
+      </serializer>
+    </user-type>
+
+    <user-type>
+      <type-id>1</type-id>
+      <class-name>com.tangosol.license.LicenseException</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>2</type-id>
+      <class-name>com.tangosol.net.RequestTimeoutException</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>3</type-id>
+      <class-name>com.tangosol.net.messaging.ConnectionException</class-name>
+    </user-type>
+
+    <!-- com.tangosol.util package (10-19) -->
+
+    <user-type>
+      <type-id>10</type-id>
+      <class-name>com.tangosol.util.NullFilter</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>11</type-id>
+      <class-name>com.tangosol.util.NullImplementation$NullSet</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>12</type-id>
+      <class-name>com.tangosol.util.NullImplementation$NullObservableMap</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>13</type-id>
+      <class-name>com.tangosol.util.NullImplementation$NullValueExtractor</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>14</type-id>
+      <class-name>com.tangosol.util.UUID</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>15</type-id>
+      <class-name>com.tangosol.util.UID</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>16</type-id>
+      <class-name>com.tangosol.util.NullImplementation$NullEntryProcessor</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>17</type-id>
+      <class-name>com.tangosol.util.NullImplementation$NullMap</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>18</type-id>
+      <class-name>com.tangosol.util.CompositeKey</class-name>
+    </user-type>
+
+    <!-- com.tangosol.util.aggregator package (20-39) and (200-249) -->
+
+    <user-type>
+      <type-id>20</type-id>
+      <class-name>com.tangosol.util.aggregator.BigDecimalAverage</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>21</type-id>
+      <class-name>com.tangosol.util.aggregator.BigDecimalMax</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>22</type-id>
+      <class-name>com.tangosol.util.aggregator.BigDecimalMin</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>23</type-id>
+      <class-name>com.tangosol.util.aggregator.BigDecimalSum</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>24</type-id>
+      <class-name>com.tangosol.util.aggregator.ComparableMax</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>25</type-id>
+      <class-name>com.tangosol.util.aggregator.ComparableMin</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>26</type-id>
+      <class-name>com.tangosol.util.aggregator.CompositeAggregator</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>27</type-id>
+      <class-name>com.tangosol.util.aggregator.CompositeAggregator$Parallel</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>28</type-id>
+      <class-name>com.tangosol.util.aggregator.Count</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>29</type-id>
+      <class-name>com.tangosol.util.aggregator.DistinctValues</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>30</type-id>
+      <class-name>com.tangosol.util.aggregator.DoubleAverage</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>31</type-id>
+      <class-name>com.tangosol.util.aggregator.DoubleMax</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>32</type-id>
+      <class-name>com.tangosol.util.aggregator.DoubleMin</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>33</type-id>
+      <class-name>com.tangosol.util.aggregator.DoubleSum</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>34</type-id>
+      <class-name>com.tangosol.util.aggregator.GroupAggregator</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>35</type-id>
+      <class-name>com.tangosol.util.aggregator.GroupAggregator$Parallel</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>36</type-id>
+      <class-name>com.tangosol.util.aggregator.LongMax</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>37</type-id>
+      <class-name>com.tangosol.util.aggregator.LongMin</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>38</type-id>
+      <class-name>com.tangosol.util.aggregator.LongSum</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>39</type-id>
+      <class-name>com.tangosol.util.aggregator.PriorityAggregator</class-name>
+    </user-type>
+
+    <!-- com.tangosol.util.comparator package (40-49) -->
+
+    <user-type>
+      <type-id>40</type-id>
+      <class-name>com.tangosol.util.comparator.ChainedComparator</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>41</type-id>
+      <class-name>com.tangosol.util.comparator.EntryComparator</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>42</type-id>
+      <class-name>com.tangosol.util.comparator.InverseComparator</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>43</type-id>
+      <class-name>com.tangosol.util.comparator.SafeComparator</class-name>
+    </user-type>
+
+    <!-- com.tangosol.util.extractor package (50-59) and (190-199) -->
+
+    <user-type>
+      <type-id>50</type-id>
+      <class-name>com.tangosol.util.extractor.ChainedExtractor</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>51</type-id>
+      <class-name>com.tangosol.util.extractor.CompositeUpdater</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>52</type-id>
+      <class-name>com.tangosol.util.extractor.IdentityExtractor</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>53</type-id>
+      <class-name>com.tangosol.util.extractor.KeyExtractor</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>54</type-id>
+      <class-name>com.tangosol.util.extractor.MultiExtractor</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>55</type-id>
+      <class-name>com.tangosol.util.extractor.ReflectionExtractor</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>56</type-id>
+      <class-name>com.tangosol.util.extractor.ReflectionUpdater</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>57</type-id>
+      <class-name>com.tangosol.util.extractor.ComparisonValueExtractor</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>58</type-id>
+      <class-name>com.tangosol.util.extractor.PofExtractor</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>59</type-id>
+      <class-name>com.tangosol.util.extractor.PofUpdater</class-name>
+    </user-type>
+
+    <!-- com.tangosol.util.filter package (60-89) and (200-249) -->
+
+    <user-type>
+      <type-id>60</type-id>
+      <class-name>com.tangosol.util.filter.AllFilter</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>61</type-id>
+      <class-name>com.tangosol.util.filter.AlwaysFilter</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>62</type-id>
+      <class-name>com.tangosol.util.filter.AndFilter</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>63</type-id>
+      <class-name>com.tangosol.util.filter.AnyFilter</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>64</type-id>
+      <class-name>com.tangosol.util.filter.BetweenFilter</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>65</type-id>
+      <class-name>com.tangosol.util.filter.ContainsAllFilter</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>66</type-id>
+      <class-name>com.tangosol.util.filter.ContainsAnyFilter</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>67</type-id>
+      <class-name>com.tangosol.util.filter.ContainsFilter</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>68</type-id>
+      <class-name>com.tangosol.util.filter.EqualsFilter</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>69</type-id>
+      <class-name>com.tangosol.util.filter.GreaterEqualsFilter</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>70</type-id>
+      <class-name>com.tangosol.util.filter.GreaterFilter</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>71</type-id>
+      <class-name>com.tangosol.util.filter.InFilter</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>72</type-id>
+      <class-name>com.tangosol.util.filter.InKeySetFilter</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>73</type-id>
+      <class-name>com.tangosol.util.filter.IsNotNullFilter</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>74</type-id>
+      <class-name>com.tangosol.util.filter.IsNullFilter</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>75</type-id>
+      <class-name>com.tangosol.util.filter.LessEqualsFilter</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>76</type-id>
+      <class-name>com.tangosol.util.filter.LessFilter</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>77</type-id>
+      <class-name>com.tangosol.util.filter.LikeFilter</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>78</type-id>
+      <class-name>com.tangosol.util.filter.LimitFilter</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>79</type-id>
+      <class-name>com.tangosol.util.filter.MapEventFilter</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>80</type-id>
+      <class-name>com.tangosol.util.filter.NeverFilter</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>81</type-id>
+      <class-name>com.tangosol.util.filter.NotEqualsFilter</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>82</type-id>
+      <class-name>com.tangosol.util.filter.NotFilter</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>83</type-id>
+      <class-name>com.tangosol.util.filter.OrFilter</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>84</type-id>
+      <class-name>com.tangosol.util.filter.PresentFilter</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>85</type-id>
+      <class-name>com.tangosol.util.filter.ValueChangeEventFilter</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>86</type-id>
+      <class-name>com.tangosol.util.filter.XorFilter</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>87</type-id>
+      <class-name>com.tangosol.util.filter.PriorityFilter</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>88</type-id>
+      <class-name>com.tangosol.util.filter.MapEventTransformerFilter</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>89</type-id>
+      <class-name>com.tangosol.util.filter.FilterTrigger</class-name>
+    </user-type>
+
+    <!-- com.tangosol.util.processor package (90-109) -->
+
+    <user-type>
+      <type-id>90</type-id>
+      <class-name>com.tangosol.util.processor.CompositeProcessor</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>91</type-id>
+      <class-name>com.tangosol.util.processor.ConditionalProcessor</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>92</type-id>
+      <class-name>com.tangosol.util.processor.ConditionalPut</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>93</type-id>
+      <class-name>com.tangosol.util.processor.ConditionalPutAll</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>94</type-id>
+      <class-name>com.tangosol.util.processor.ConditionalRemove</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>95</type-id>
+      <class-name>com.tangosol.util.processor.ExtractorProcessor</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>96</type-id>
+      <class-name>com.tangosol.util.processor.NumberIncrementor</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>97</type-id>
+      <class-name>com.tangosol.util.processor.NumberMultiplier</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>98</type-id>
+      <class-name>com.tangosol.util.processor.PreloadRequest</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>99</type-id>
+      <class-name>com.tangosol.util.processor.PropertyManipulator</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>100</type-id>
+      <class-name>com.tangosol.util.processor.UpdaterProcessor</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>101</type-id>
+      <class-name>com.tangosol.util.processor.VersionedPut</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>102</type-id>
+      <class-name>com.tangosol.util.processor.VersionedPutAll</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>103</type-id>
+      <class-name>com.tangosol.util.processor.PriorityProcessor</class-name>
+    </user-type>
+
+    <!-- com.tangosol.util.transformer package (120-139) -->
+
+    <user-type>
+      <type-id>120</type-id>
+      <class-name>com.tangosol.util.transformer.SemiLiteEventTransformer</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>121</type-id>
+      <class-name>com.tangosol.util.transformer.ExtractorEventTransformer</class-name>
+    </user-type>
+
+    <!-- com.tangosol.io.pof.reflect package (140-159) -->
+
+    <user-type>
+      <type-id>140</type-id>
+      <class-name>com.tangosol.io.pof.reflect.SimplePofPath</class-name>
+    </user-type>
+
+    <!-- com.tangosol.net package (160-169) -->
+
+    <user-type>
+      <type-id>160</type-id>
+      <!-- interface com.tangosol.net.Member -->
+      <class-name>com.tangosol.coherence.component.net.Member</class-name>
+    </user-type>
+
+    <!-- com.tangosol.net.partition package (170-179) -->
+
+    <user-type>
+      <type-id>170</type-id>
+      <class-name>com.tangosol.net.partition.Ownership</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>171</type-id>
+      <class-name>com.tangosol.net.partition.PartitionSet</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>172</type-id>
+      <class-name>com.tangosol.net.partition.SimplePartitionKey</class-name>
+    </user-type>
+
+    <!-- com.tangosol.util.extractor package (continued) (190-199) -->
+
+    <user-type>
+      <type-id>190</type-id>
+      <class-name>com.tangosol.util.extractor.ConditionalExtractor</class-name>
+    </user-type>
+
+    <!-- com.tangosol.util.filter package (continued) (200-249) -->
+
+    <user-type>
+      <type-id>200</type-id>
+      <class-name>com.tangosol.util.filter.KeyAssociatedFilter</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>201</type-id>
+      <class-name>com.tangosol.util.filter.RegexFilter</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>202</type-id>
+      <class-name>com.tangosol.util.filter.PartitionedFilter</class-name>
+    </user-type>
+
+    <!-- com.tangosol.util.aggregator package (continued) (250-259) -->
+
+    <user-type>
+      <type-id>250</type-id>
+      <class-name>com.tangosol.util.aggregator.ReducerAggregator</class-name>
+    </user-type>
+
+    <!-- com.tangosol.net.internal package (300-349) -->
+
+    <user-type>
+      <type-id>300</type-id>
+      <class-name>com.tangosol.net.internal.AspNetSessionStoreProvider$SessionHolder</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>301</type-id>
+      <class-name>com.tangosol.net.internal.AspNetSessionStoreProvider$SessionKey</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>302</type-id>
+      <class-name>com.tangosol.net.internal.AspNetSessionStoreProvider$AcquireSessionProcessor</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>303</type-id>
+      <class-name>com.tangosol.net.internal.AspNetSessionStoreProvider$ReleaseSessionProcessor</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>304</type-id>
+      <class-name>com.tangosol.net.internal.AspNetSessionStoreProvider$ResetSessionTimeoutProcessor</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>305</type-id>
+      <class-name>com.tangosol.net.internal.AspNetSessionStoreProvider$SaveSessionProcessor</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>306</type-id>
+      <class-name>com.tangosol.net.internal.AspNetSessionStoreProvider$ExternalAttributeKey</class-name>
+    </user-type>
+
+    <!-- com.tangosol.net.security package (350-399) -->
+
+    <user-type>
+      <type-id>350</type-id>
+      <class-name>com.tangosol.net.security.PermissionInfo</class-name>
+    </user-type>
+
+    <!-- com.tangosol.run.xml package (500-509) -->
+
+    <user-type>
+      <type-id>500</type-id>
+      <class-name>com.tangosol.run.xml.SimpleDocument</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>501</type-id>
+      <class-name>com.tangosol.run.xml.SimpleElement</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>502</type-id>
+      <class-name>com.tangosol.run.xml.SimpleValue</class-name>
+    </user-type>
+
+    <!-- type id reservations for Coherence types not in coherence.jar -->
+
+    <!-- com.tangosol.coherence.commonj package (600-609) -->
+    <!-- defined in coherence-work-pof-config.xml within coherence-work.jar -->
+
+    <!-- java packages (900 - 949) -->
+
+    <user-type>
+      <type-id>900</type-id>
+      <class-name>java.security.Principal</class-name>
+      <serializer>
+        <class-name>com.tangosol.io.pof.PrincipalPofSerializer</class-name>
+      </serializer>
+    </user-type>
+
+    <!-- javax packages (950-999) -->
+
+    <user-type>
+      <type-id>950</type-id>
+      <class-name>javax.security.auth.Subject</class-name>
+      <serializer>
+        <class-name>com.tangosol.io.pof.SubjectPofSerializer</class-name>
+      </serializer>
+    </user-type>
+  </user-type-list>
+
+  <allow-interfaces>true</allow-interfaces>
+  <allow-subclasses>true</allow-subclasses>
+</pof-config>

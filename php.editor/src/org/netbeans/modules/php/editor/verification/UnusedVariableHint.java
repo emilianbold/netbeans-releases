@@ -41,37 +41,72 @@
  */
 package org.netbeans.modules.php.editor.verification;
 
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.Stack;
+import java.util.prefs.Preferences;
+import javax.swing.JComponent;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.annotations.common.CheckForNull;
-import org.netbeans.api.lexer.Token;
-import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintSeverity;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.php.editor.lexer.LexUtilities;
-import org.netbeans.modules.php.editor.lexer.PHPTokenId;
-import org.netbeans.modules.php.editor.model.FunctionScope;
-import org.netbeans.modules.php.editor.model.Model;
-import org.netbeans.modules.php.editor.model.ModelUtils;
-import org.netbeans.modules.php.editor.model.VariableName;
-import org.netbeans.modules.php.editor.model.VariableScope;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
+import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
+import org.netbeans.modules.php.editor.parser.astnodes.CastExpression;
+import org.netbeans.modules.php.editor.parser.astnodes.CatchClause;
+import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
+import org.netbeans.modules.php.editor.parser.astnodes.CloneExpression;
+import org.netbeans.modules.php.editor.parser.astnodes.ConditionalExpression;
+import org.netbeans.modules.php.editor.parser.astnodes.ConstantDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.ContinueStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.DeclareStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.DoStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.EchoStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.ExpressionStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.FieldsDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.ForEachStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.ForStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
+import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
+import org.netbeans.modules.php.editor.parser.astnodes.GotoLabel;
+import org.netbeans.modules.php.editor.parser.astnodes.GotoStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
-import org.netbeans.modules.php.editor.parser.astnodes.NamespaceName;
-import org.netbeans.modules.php.editor.parser.astnodes.Reference;
+import org.netbeans.modules.php.editor.parser.astnodes.IfStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.Include;
+import org.netbeans.modules.php.editor.parser.astnodes.InstanceOfExpression;
+import org.netbeans.modules.php.editor.parser.astnodes.InterfaceDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.LambdaFunctionDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
+import org.netbeans.modules.php.editor.parser.astnodes.NamespaceDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocBlock;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocMethodTag;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocStaticAccessType;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTypeTag;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocVarTypeTag;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPVarComment;
+import org.netbeans.modules.php.editor.parser.astnodes.PostfixExpression;
+import org.netbeans.modules.php.editor.parser.astnodes.PrefixExpression;
+import org.netbeans.modules.php.editor.parser.astnodes.Program;
+import org.netbeans.modules.php.editor.parser.astnodes.ReflectionVariable;
+import org.netbeans.modules.php.editor.parser.astnodes.ReturnStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.SingleFieldDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.StaticFieldAccess;
+import org.netbeans.modules.php.editor.parser.astnodes.StaticMethodInvocation;
+import org.netbeans.modules.php.editor.parser.astnodes.SwitchCase;
+import org.netbeans.modules.php.editor.parser.astnodes.SwitchStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.ThrowStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.UnaryOperation;
+import org.netbeans.modules.php.editor.parser.astnodes.UseStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.UseStatementPart;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
-import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultTreePathVisitor;
+import org.netbeans.modules.php.editor.parser.astnodes.WhileStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.netbeans.modules.php.editor.verification.PHPHintsProvider.Kind;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle.Messages;
@@ -80,10 +115,12 @@ import org.openide.util.NbBundle.Messages;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class UnusedVariableHint extends AbstractRule {
+public class UnusedVariableHint extends AbstractRule implements PHPRuleWithPreferences {
 
     private static final String HINT_ID = "Unused.Variable.Hint"; //NOI18N
+    private static final String CHECK_UNUSED_FORMAL_PARAMETERS = "php.verification.check.unused.formal.parameters"; //NOI18N
     private static final List<String> UNCHECKED_VARIABLES = new LinkedList<String>();
+    private Preferences preferences;
 
     static {
         UNCHECKED_VARIABLES.add("this"); //NOI18N
@@ -105,217 +142,477 @@ public class UnusedVariableHint extends AbstractRule {
             return;
         }
         FileObject fileObject = phpParseResult.getSnapshot().getSource().getFileObject();
-        VariablesHeap variablesHeap = new VariablesHeap(phpParseResult.getModel(), context.doc);
-        HintsCreator hintsCreator = new HintsCreator(variablesHeap, fileObject, context.doc);
-
-        CheckVisitor checkVisitor = new CheckVisitor(variablesHeap);
+        CheckVisitor checkVisitor = new CheckVisitor(fileObject);
         phpParseResult.getProgram().accept(checkVisitor);
-        hints.addAll(hintsCreator.getHints());
+        hints.addAll(checkVisitor.getHints());
     }
 
-    private class CheckVisitor extends DefaultTreePathVisitor {
+    private class CheckVisitor extends DefaultVisitor {
 
-        private static final String FUNC_GET_ARG = "func_get_arg"; //NOI18N
-        private final VariablesHeap variablesHeap;
-
-        public CheckVisitor(VariablesHeap variablesHeap) {
-            this.variablesHeap = variablesHeap;
-        }
-
-        @Override
-        public void visit(FormalParameter node) {
-            super.visit(node);
-            processNode(node);
-        }
-
-        @Override
-        public void visit(Variable node) {
-            super.visit(node);
-            processNode(node);
-        }
-
-        private void processNode(ASTNode node) {
-            Identifier identifier = getIdentifier(node);
-            if (identifier != null) {
-                variablesHeap.addNodeUsage(node);
-            }
-        }
-
-        @Override
-        public void visit(FunctionInvocation node) {
-            super.visit(node);
-            if (node.getFunctionName().getName() instanceof NamespaceName) {
-                NamespaceName namespaceName = (NamespaceName) node.getFunctionName().getName();
-                if (namespaceName.getSegments().size() == 1) {
-                    Identifier functionIdentifier = ModelUtils.getFirst(namespaceName.getSegments());
-                    if (functionIdentifier.getName().startsWith(FUNC_GET_ARG)) {
-                        variablesHeap.setParamUsageInScope(node.getStartOffset());
-                    }
-                }
-            }
-        }
-
-    }
-
-    private class VariablesHeap {
-
-        private final Map<VariableScope, Map<String, List<Identifier>>> allVariables = new HashMap<VariableScope, Map<String, List<Identifier>>>();
-        private final Set<VariableScope> scopesWithUsedParams = new HashSet<VariableScope>();
-        private final Model model;
-        private final BaseDocument doc;
-
-        public VariablesHeap(Model model, BaseDocument doc) {
-            this.model = model;
-            this.doc = doc;
-        }
-
-        public void setParamUsageInScope(int inScopeOffset) {
-            VariableScope variableScope = model.getVariableScope(inScopeOffset);
-            scopesWithUsedParams.add(variableScope);
-        }
-
-        public boolean isUsedParamInScope(VariableScope variableScope) {
-            return scopesWithUsedParams.contains(variableScope);
-        }
-
-        public void addNodeUsage(ASTNode node) {
-            Identifier identifier = getIdentifier(node);
-            if (identifier != null && !UNCHECKED_VARIABLES.contains(identifier.getName())) {
-                int inScopeOffset = resolveInScopeOffset(node);
-                VariableScope variableScope = model.getVariableScope(inScopeOffset);
-                Map<String, List<Identifier>> scopeVars = getScopeVariables(variableScope);
-                List<Identifier> identifiers = getIdentifiersOfName(scopeVars, identifier.getName());
-                identifiers.add(identifier);
-            }
-        }
-
-        private int resolveInScopeOffset(ASTNode node) {
-            int retval = 0;
-            if (node instanceof FormalParameter) {
-                retval = getOffsetAfterBlockCurlyOpen(doc, node.getEndOffset());
-            } else if (node instanceof Variable) {
-                retval = node.getEndOffset();
-            }
-            return retval;
-        }
-
-        private int getOffsetAfterBlockCurlyOpen(BaseDocument doc, int offset) {
-            int retval = offset;
-            TokenSequence<? extends PHPTokenId> ts = LexUtilities.getPHPTokenSequence(doc, retval);
-            if (ts != null) {
-                ts.move(retval);
-                while (ts.moveNext()) {
-                    Token t = ts.token();
-                    if (t.id() == PHPTokenId.PHP_CURLY_OPEN) {
-                        ts.moveNext();
-                        retval = ts.offset();
-                        break;
-                    }
-                }
-            }
-            return retval;
-        }
-
-        public Map<String, List<Identifier>> getScopeVariables(VariableScope variableScope) {
-            Map<String, List<Identifier>> scopeVars = allVariables.get(variableScope);
-            if (scopeVars == null) {
-                scopeVars = new HashMap<String, List<Identifier>>();
-                allVariables.put(variableScope, scopeVars);
-            }
-            return scopeVars;
-        }
-
-        private List<Identifier> getIdentifiersOfName(Map<String, List<Identifier>> scopeVars, String name) {
-            List<Identifier> identifiers = scopeVars.get(name);
-            if (identifiers == null) {
-                identifiers = new LinkedList<Identifier>();
-                scopeVars.put(name, identifiers);
-            }
-            return identifiers;
-        }
-
-        public Set<VariableScope> getVariableScopes() {
-            return allVariables.keySet();
-        }
-
-    }
-
-    private class HintsCreator {
-
-        private final List<Hint> hints = new LinkedList<Hint>();
-        private final VariablesHeap variablesHeap;
+        private final Stack<ASTNode> parentNodes = new Stack<ASTNode>();
+        private final Map<ASTNode, List<Variable>> unusedVariables = new HashMap<ASTNode, List<Variable>>();
+        private final Map<ASTNode, List<Variable>> usedVariables = new HashMap<ASTNode, List<Variable>>();
         private final FileObject fileObject;
-        private final BaseDocument doc;
+        private boolean forceVariableAsUsed;
+        private boolean forceVariableAsUnused;
 
-        public HintsCreator(VariablesHeap variablesHeap, FileObject fileObject, BaseDocument doc) {
-            this.variablesHeap = variablesHeap;
+        public CheckVisitor(FileObject fileObject) {
             this.fileObject = fileObject;
-            this.doc = doc;
         }
 
+        @Messages("UnusedVariableHintCustom=Variable ${0} seems to be unused in its scope")
         public List<Hint> getHints() {
-            for (VariableScope variableScope : variablesHeap.getVariableScopes()) {
-                checkVariableScope(variableScope);
+            List<Hint> hints = new LinkedList<Hint>();
+            for (ASTNode scopeNode : unusedVariables.keySet()) {
+                List<Variable> scopeVariables = unusedVariables.get(scopeNode);
+                for (Variable variable : scopeVariables) {
+                    int start = variable.getStartOffset() + 1;
+
+
+                    int end = variable.getEndOffset();
+                    OffsetRange offsetRange = new OffsetRange(start, end);
+                    hints.add(new Hint(UnusedVariableHint.this, Bundle.UnusedVariableHintCustom(getIdentifier(variable).getName()), fileObject, offsetRange, null, 500));
+                }
             }
             return hints;
         }
 
-        private void checkVariableScope(VariableScope variableScope) {
-            Collection<? extends VariableName> declaredVariables = variableScope.getDeclaredVariables();
-            for (VariableName variableName : declaredVariables) {
-                if (!UNCHECKED_VARIABLES.contains(getPureName(variableName)) && !isInPhpVarDoc(variableName.getOffset())) {
-                    checkVariableName(variableName, variableScope);
-                }
-            }
-        }
-
-        private boolean isInPhpVarDoc(int offset) {
-            Token<? extends PHPTokenId> token = LexUtilities.getToken(doc, offset);
-            return token.id() == PHPTokenId.PHP_COMMENT;
-        }
-
-        private void checkVariableName(VariableName variableName, VariableScope variableScope) {
-            Map<String, List<Identifier>> scopeVars = variablesHeap.getScopeVariables(variableScope);
-            if (isParam(variableName) && variablesHeap.isUsedParamInScope(variableScope)) {
-                scopeVars.remove(getPureName(variableName));
-            } else {
-                checkIdentifiers(variableName, scopeVars);
-            }
-        }
-
-        private boolean isParam(VariableName variableName) {
-            boolean retval = false;
-            if (variableName.getInScope() instanceof FunctionScope) {
-                FunctionScope scope = (FunctionScope) variableName.getInScope();
-                if (variableName.getNameRange().getStart() > scope.getOffset()
-                        && variableName.getNameRange().getEnd() < scope.getBlockRange().getStart()) {
-                    retval = true;
+        @CheckForNull
+        private Identifier getIdentifier(Variable variable) {
+            Identifier retval = null;
+            if (variable != null && variable.isDollared()) {
+                if (variable.getName() instanceof Identifier) {
+                    retval = (Identifier) variable.getName();
                 }
             }
             return retval;
         }
 
-        private void checkIdentifiers(VariableName variableName, Map<String, List<Identifier>> scopeVars) {
-            List<Identifier> identifiers = scopeVars.get(getPureName(variableName));
-            if (identifiers != null && identifiers.size() > 1) {
-                scopeVars.remove(getPureName(variableName));
-            } else {
-                hints.add(createHint(variableName));
+        private List<Variable> getUsedScopeVariables(ASTNode parentNode) {
+            List<Variable> usedScopeVariables = usedVariables.get(parentNode);
+            if (usedScopeVariables == null) {
+                usedScopeVariables = new LinkedList<Variable>();
+                usedVariables.put(parentNode, usedScopeVariables);
+            }
+            return usedScopeVariables;
+        }
+
+        private List<Variable> getUnusedScopeVariables(ASTNode parentNode) {
+            List<Variable> unusedScopeVariables = unusedVariables.get(parentNode);
+            if (unusedScopeVariables == null) {
+                unusedScopeVariables = new LinkedList<Variable>();
+                unusedVariables.put(parentNode, unusedScopeVariables);
+            }
+            return unusedScopeVariables;
+        }
+
+        @CheckForNull
+        private Variable getUnusedVariable(String currentVarName, List<Variable> unusedScopeVariables) {
+            Variable retval = null;
+            for (Variable variable : unusedScopeVariables) {
+                String varName = getIdentifier(variable).getName();
+                if (currentVarName.equals(varName)) {
+                    retval = variable;
+                    break;
+                }
+            }
+            return retval;
+        }
+
+        private boolean isVariableUsed(String currentVarName, List<Variable> usedScopeVariables) {
+            boolean retval = false;
+            for (Variable variable : usedScopeVariables) {
+                String varName = getIdentifier(variable).getName();
+                if (currentVarName.equals(varName)) {
+                    retval = true;
+                    break;
+                }
+            }
+            return retval;
+        }
+
+        private void forceVariableAsUnused(Variable node, List<Variable> unusedScopeVariables) {
+            String currentVarName = getIdentifier(node).getName();
+            Variable unusedVariable = getUnusedVariable(currentVarName, unusedScopeVariables);
+            if (unusedVariable != null) {
+                unusedScopeVariables.remove(unusedVariable);
+            }
+            unusedScopeVariables.add(node);
+        }
+
+        private void forceVariableAsUsed(Variable node, List<Variable> usedScopeVariables, List<Variable> unusedScopeVariables) {
+            String currentVarName = getIdentifier(node).getName();
+            if (isVariableUsed(currentVarName, usedScopeVariables)) {
+                return;
+            }
+            usedScopeVariables.add(node);
+            Variable unusedVariable = getUnusedVariable(currentVarName, unusedScopeVariables);
+            if (unusedVariable != null) {
+                unusedScopeVariables.remove(unusedVariable);
+            }
+            return;
+        }
+
+        @Override
+        public void visit(Variable node) {
+            Identifier identifier = getIdentifier(node);
+            if (identifier != null && !UNCHECKED_VARIABLES.contains(identifier.getName())) {
+                ASTNode parentNode = parentNodes.peek();
+                String currentVarName = getIdentifier(node).getName();
+                List<Variable> usedScopeVariables = getUsedScopeVariables(parentNode);
+                List<Variable> unusedScopeVariables = getUnusedScopeVariables(parentNode);
+                if (forceVariableAsUnused) {
+                    forceVariableAsUnused(node, unusedScopeVariables);
+                    return;
+                }
+                if (forceVariableAsUsed) {
+                    forceVariableAsUsed(node, usedScopeVariables, unusedScopeVariables);
+                    return;
+                }
+                if (isVariableUsed(currentVarName, usedScopeVariables)) {
+                    return;
+                }
+                Variable unusedVariable = getUnusedVariable(currentVarName, unusedScopeVariables);
+                if (unusedVariable != null) {
+                    unusedScopeVariables.remove(unusedVariable);
+                    usedScopeVariables.add(node);
+                    return;
+                }
+                unusedScopeVariables.add(node);
             }
         }
 
-        private String getPureName(VariableName variableName) {
-            return variableName.getName().substring(1);
+        @Override
+        public void visit(Program node) {
+            parentNodes.push(node);
+            super.visit(node);
+            parentNodes.pop();
         }
 
-        @Messages("UnusedVariableHintCustom=Variable ${0} does not seem to be used in its scope")
-        private Hint createHint(VariableName variableName) {
-            String varName = getPureName(variableName);
-            int start = variableName.getNameRange().getStart();
-            int end = start + varName.length();
-            OffsetRange offsetRange = new OffsetRange(start, end);
-            Hint hint = new Hint(UnusedVariableHint.this, Bundle.UnusedVariableHintCustom(varName), fileObject, offsetRange, null, 500);
-            return hint;
+        @Override
+        public void visit(NamespaceDeclaration node) {
+            parentNodes.push(node);
+            super.visit(node);
+            parentNodes.pop();
+        }
+
+        @Override
+        public void visit(FunctionDeclaration node) {
+            parentNodes.push(node);
+            super.visit(node);
+            parentNodes.pop();
+        }
+
+        @Override
+        public void visit(EchoStatement node) {
+            forceVariableAsUsed = true;
+            scan(node.getExpressions());
+            forceVariableAsUsed = false;
+        }
+
+        @Override
+        public void visit(ExpressionStatement node) {
+            if (node.getExpression() instanceof Variable) { // just variable without anything: {  $var; }
+                forceVariableAsUnused = true;
+                scan(node.getExpression());
+                forceVariableAsUnused = false;
+            } else {
+                scan(node.getExpression());
+            }
+        }
+
+        @Override
+        public void visit(Include node) {
+            forceVariableAsUsed = true;
+            scan(node.getExpression());
+            forceVariableAsUsed = false;
+        }
+
+        @Override
+        public void visit(FunctionInvocation node) {
+            forceVariableAsUsed = true;
+            super.visit(node);
+            forceVariableAsUsed = false;
+        }
+
+        @Override
+        public void visit(MethodInvocation node) {
+            forceVariableAsUsed = true;
+            scan(node.getDispatcher());
+            forceVariableAsUsed = false;
+            scan(node.getMethod());
+        }
+
+        @Override
+        public void visit(IfStatement node) {
+            forceVariableAsUsed = true;
+            scan(node.getCondition());
+            forceVariableAsUsed = false;
+            scan(node.getTrueStatement());
+            scan(node.getFalseStatement());
+        }
+
+        @Override
+        public void visit(InstanceOfExpression node) {
+            forceVariableAsUsed = true;
+            scan(node.getExpression());
+            forceVariableAsUsed = false;
+        }
+
+        @Override
+        public void visit(PostfixExpression node) {
+            forceVariableAsUsed = true;
+            scan(node.getVariable());
+            forceVariableAsUsed = false;
+        }
+
+        @Override
+        public void visit(PrefixExpression node) {
+            forceVariableAsUsed = true;
+            scan(node.getVariable());
+            forceVariableAsUsed = false;
+        }
+
+        @Override
+        public void visit(ReflectionVariable node) {
+            forceVariableAsUsed = true;
+            scan(node.getName());
+            forceVariableAsUsed = false;
+        }
+
+        @Override
+        public void visit(CloneExpression node) {
+            forceVariableAsUsed = true;
+            scan(node.getExpression());
+            forceVariableAsUsed = false;
+        }
+
+        @Override
+        public void visit(CastExpression node) {
+            forceVariableAsUsed = true;
+            scan(node.getExpression());
+            forceVariableAsUsed = false;
+        }
+
+        @Override
+        public void visit(Assignment node) {
+            scan(node.getLeftHandSide());
+            forceVariableAsUsed = true;
+            scan(node.getRightHandSide());
+            forceVariableAsUsed = false;
+        }
+
+        @Override
+        public void visit(ConditionalExpression node) {
+            forceVariableAsUsed = true;
+            scan(node.getCondition());
+            scan(node.getIfTrue());
+            scan(node.getIfFalse());
+            forceVariableAsUsed = false;
+        }
+
+        @Override
+        public void visit(ReturnStatement node) {
+            forceVariableAsUsed = true;
+            scan(node.getExpression());
+            forceVariableAsUsed = false;
+        }
+
+        @Override
+        public void visit(SwitchStatement node) {
+            forceVariableAsUsed = true;
+            scan(node.getExpression());
+            forceVariableAsUsed = false;
+            scan(node.getBody());
+        }
+
+        @Override
+        public void visit(ThrowStatement node) {
+            forceVariableAsUsed = true;
+            scan(node.getExpression());
+            forceVariableAsUsed = false;
+        }
+
+        @Override
+        public void visit(UnaryOperation node) {
+            forceVariableAsUsed = true;
+            scan(node.getExpression());
+            forceVariableAsUsed = false;
+        }
+
+        @Override
+        public void visit(ClassDeclaration node) {
+            scan(node.getBody());
+        }
+
+        @Override
+        public void visit(ClassInstanceCreation node) {
+            forceVariableAsUsed = true;
+            scan(node.getClassName());
+            scan(node.ctorParams());
+            forceVariableAsUsed = false;
+        }
+
+        @Override
+        public void visit(DoStatement node) {
+            forceVariableAsUsed = true;
+            scan(node.getCondition());
+            forceVariableAsUsed = false;
+            scan(node.getBody());
+        }
+
+        @Override
+        public void visit(DeclareStatement node) {
+            scan(node.getBody());
+        }
+
+        @Override
+        public void visit(CatchClause node) {
+            scan(node.getVariable());
+            scan(node.getBody());
+        }
+
+        @Override
+        public void visit(FormalParameter node) {
+            if (checkUnusedFormalParameters(preferences)) {
+                scan(node.getParameterName());
+            } else {
+                forceVariableAsUsed = true;
+                scan(node.getParameterName());
+                forceVariableAsUsed = false;
+            }
+        }
+
+        @Override
+        public void visit(ForEachStatement node) {
+            forceVariableAsUsed = true;
+            scan(node.getExpression());
+            forceVariableAsUsed = false;
+            scan(node.getKey());
+            scan(node.getValue());
+            scan(node.getStatement());
+        }
+
+        @Override
+        public void visit(ForStatement node) {
+            forceVariableAsUsed = true;
+            scan(node.getInitializers());
+            scan(node.getConditions());
+            scan(node.getUpdaters());
+            forceVariableAsUsed = false;
+            scan(node.getBody());
+        }
+
+        @Override
+        public void visit(StaticMethodInvocation node) {
+            forceVariableAsUsed = true;
+            scan(node.getClassName());
+            forceVariableAsUsed = false;
+            scan(node.getMethod());
+        }
+
+        @Override
+        public void visit(SwitchCase node) {
+            scan(node.getActions());
+        }
+
+        @Override
+        public void visit(WhileStatement node) {
+            forceVariableAsUsed = true;
+            scan(node.getCondition());
+            forceVariableAsUsed = false;
+            scan(node.getBody());
+        }
+
+        @Override
+        public void visit(LambdaFunctionDeclaration node) {
+            forceVariableAsUsed = true;
+            scan(node.getFormalParameters());
+            scan(node.getLexicalVariables());
+            forceVariableAsUsed = false;
+            scan(node.getBody());
+        }
+
+        @Override
+        public void visit(StaticFieldAccess node) {
+            forceVariableAsUsed = true;
+            super.visit(node);
+            forceVariableAsUsed = false;
+        }
+
+        @Override
+        public void visit(InterfaceDeclaration node) {
+            // intentionally
+        }
+
+        @Override
+        public void visit(FieldsDeclaration node) {
+            // intentionally
+        }
+
+        @Override
+        public void visit(PHPDocBlock node) {
+            // intentionally
+        }
+
+        @Override
+        public void visit(PHPDocTypeTag node) {
+            // intentionally
+        }
+
+        @Override
+        public void visit(PHPDocMethodTag node) {
+            // intentionally
+        }
+
+        @Override
+        public void visit(PHPDocVarTypeTag node) {
+            // intentionally
+        }
+
+        @Override
+        public void visit(PHPDocStaticAccessType node) {
+            // intentionally
+        }
+
+        @Override
+        public void visit(PHPVarComment node) {
+            // intentionally
+        }
+
+        @Override
+        public void visit(ConstantDeclaration node) {
+            // intentionally
+        }
+
+        @Override
+        public void visit(ContinueStatement node) {
+            // intentionally
+        }
+
+        @Override
+        public void visit(SingleFieldDeclaration node) {
+            // intentionally
+        }
+
+        @Override
+        public void visit(UseStatement node) {
+            // intentionally
+        }
+
+        @Override
+        public void visit(UseStatementPart node) {
+            // intentionally
+        }
+
+        @Override
+        public void visit(GotoLabel node) {
+            // intentionally
+        }
+
+        @Override
+        public void visit(GotoStatement node) {
+            // intentionally
         }
 
     }
@@ -326,13 +623,13 @@ public class UnusedVariableHint extends AbstractRule {
     }
 
     @Override
-    @Messages("UnusedVariableHintDesc=Variable does not seem to be used in its scope")
+    @Messages("UnusedVariableHintDesc=Variable seems to be unused in its scope")
     public String getDescription() {
         return Bundle.UnusedVariableHintDesc();
     }
 
     @Override
-    @Messages("UnusedVariableHintDispName=Variable does not seem to be used in its scope")
+    @Messages("UnusedVariableHintDispName=Variable seems to be unused in its scope")
     public String getDisplayName() {
         return Bundle.UnusedVariableHintDispName();
     }
@@ -342,29 +639,22 @@ public class UnusedVariableHint extends AbstractRule {
         return HintSeverity.WARNING;
     }
 
-    @CheckForNull
-    static Identifier getIdentifier(ASTNode node) {
-        Variable variable = null;
-        Identifier retval = null;
-        if (node instanceof FormalParameter) {
-            FormalParameter formalParameter = (FormalParameter) node;
-            if (formalParameter.getParameterName() instanceof Variable) {
-                variable = (Variable) formalParameter.getParameterName();
-            } else if (formalParameter.getParameterName() instanceof Reference) {
-                Reference reference = (Reference) formalParameter.getParameterName();
-                if (reference.getExpression() instanceof Variable) {
-                    variable = (Variable) reference.getExpression();
-                }
-            }
-        } else if (node instanceof Variable) {
-            variable = (Variable) node;
-        }
-        if (variable != null && variable.isDollared()) {
-            if (variable.getName() instanceof Identifier) {
-                retval = (Identifier) variable.getName();
-            }
-        }
-        return retval;
+    @Override
+    public void setPreferences(Preferences preferences) {
+        this.preferences = preferences;
+    }
+
+    @Override
+    public JComponent getCustomizer(Preferences preferences) {
+        return new UnusedVariableCustomizer(preferences, this);
+    }
+
+    public void setCheckUnusedFormalParameters(Preferences preferences, boolean isEnabled) {
+        preferences.putBoolean(CHECK_UNUSED_FORMAL_PARAMETERS, isEnabled);
+    }
+
+    public boolean checkUnusedFormalParameters(Preferences preferences) {
+        return preferences.getBoolean(CHECK_UNUSED_FORMAL_PARAMETERS, true);
     }
 
 }

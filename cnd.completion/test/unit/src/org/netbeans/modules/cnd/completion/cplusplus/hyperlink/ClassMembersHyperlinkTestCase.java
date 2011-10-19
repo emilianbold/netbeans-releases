@@ -1018,6 +1018,11 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug200673.cpp", 18, 13, "bug200673.cpp", 22, 1);
         performTest("bug200673.cpp", 22, 27, "bug200673.cpp", 18, 3);
     }
+
+    public void testBug203212() throws Exception {
+        // Bug 203212 - Autocompletion does not work if usign namespaces
+        performTest("bug203212.cpp", 28, 54, "bug203212.cpp", 21, 1);
+    }    
     
     public static class Failed extends HyperlinkBaseTestCase {
 

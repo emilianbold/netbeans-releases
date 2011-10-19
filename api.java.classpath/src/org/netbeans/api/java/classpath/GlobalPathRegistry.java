@@ -238,7 +238,8 @@ public final class GlobalPathRegistry {
                     throw new NullPointerException();
                 }
                 if (!l2.remove(path)) {
-                    throw new IllegalArgumentException("Attempt to remove nonexistent path " + path); // NOI18N
+                    throw new IllegalArgumentException("Attempt to remove nonexistent path [" + path + 
+                            "] from list of registered paths ["+l2+"] for id "+id+". All paths: "+this.paths); // NOI18N
                 }
                 if (removed != null && !removed.contains(path) && !l2.contains(path)) {
                     removed.add(path);

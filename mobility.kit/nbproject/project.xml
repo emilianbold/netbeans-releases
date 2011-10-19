@@ -18,12 +18,6 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.deployment.wm</code-name-base>
-                    <run-dependency>
-                        <specification-version>1.3</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.netbeans.modules.j2me.cdc.kit</code-name-base>
                     <run-dependency>
                         <specification-version>1.3</specification-version>

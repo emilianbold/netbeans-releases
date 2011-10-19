@@ -33,9 +33,6 @@
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="4100"/>
                     </file>
-                    <file name="org-netbeans-modules-css-editor-actions-CheckStyleAction.instance">
-                        <attr name="position" intvalue="4300"/>
-                    </file>
                     <file name="org-netbeans-modules-css-editor-actions-CopyStyleAction$HTML.instance">
                         <attr name="position" intvalue="4400"/>
                     </file>
@@ -127,10 +124,6 @@
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="870"/>
                     </file>
-                    <file name="org-netbeans-modules-css-editor-actions-CheckStyleAction.shadow">
-			<attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-css-editor-actions-CheckStyleAction.instance"/>
-			<attr name="position" intvalue="880"/>
-		    </file>
                     <file name="org-openide-actions-SaveAsTemplateAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-SaveAsTemplateAction.instance"/>
                         <attr name="position" intvalue="1000"/>

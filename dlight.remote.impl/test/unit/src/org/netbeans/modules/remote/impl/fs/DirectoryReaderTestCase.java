@@ -47,6 +47,7 @@ import junit.framework.Test;
 import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
+import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.StatInfo.FileType;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.ShellScriptRunner;
@@ -152,10 +153,13 @@ public class DirectoryReaderTestCase extends RemoteFileTestBase {
 
     private void prepareDirectory() throws Exception {
         ShellScriptRunner scriptRunner = new ShellScriptRunner(execEnv, script, new LineProcessor() {
+            @Override
             public void processLine(String line) {
                 System.err.println(line);
             }
+            @Override
             public void reset() {}
+            @Override
             public void close() {}
         });
         int rc = scriptRunner.execute();

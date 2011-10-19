@@ -576,6 +576,11 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                         parentIssue = issue.getRepository().getIssue(parentKey);
                     }
                     final Issue parent = parentIssue;
+                    if(parent == null) {
+                        // how could this be possible? parent removed?
+                        Jira.LOG.log(Level.INFO, "issue {0} is referencing not available parent with key {1}", new Object[]{issue.getKey(), parentKey}); // NOI18N
+                        return;
+                    }
                     EventQueue.invokeLater(new Runnable() {
                         @Override
                         public void run() {
@@ -1856,10 +1861,10 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     private void projectComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_projectComboActionPerformed
         Object value = projectCombo.getSelectedItem();
         if (!(value instanceof Project)) return;
-        final Project project = (Project)value;
-
+        final Project cachedProject = (Project)value;
+        
         String msgPattern = NbBundle.getMessage(IssuePanel.class, "IssuePanel.projectMetaData"); // NOI18N
-        String msg = MessageFormat.format(msgPattern, project.getName());
+        String msg = MessageFormat.format(msgPattern, cachedProject.getName());
         final boolean wasReloading = reloading;
         final ProgressHandle handle = ProgressHandleFactory.createHandle(msg);
         handle.start();
@@ -1868,10 +1873,12 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             @Override
             public void run() {
 
+                final Project project;
                 // The project meta-data may not be initialized.
                 // Their intialization must be performed outside event-dispatch thread
                 try {
                     JiraConfiguration config = issue.getRepository().getConfiguration();
+                    project = config.getProjectById(cachedProject.getId()); // lets make sure we hold the rigth instance
                     config.ensureProjectLoaded(project);
                     config.ensureIssueTypes(project);
                 } finally {

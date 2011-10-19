@@ -63,6 +63,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.util.TreePath;
+import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.TreeScanner;
 import com.sun.source.util.Trees;
 import java.util.ArrayList;
@@ -74,6 +75,7 @@ import java.util.Map;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeKind;
 import org.netbeans.modules.refactoring.api.Problem;
+import org.netbeans.modules.refactoring.java.Pair;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
 import org.openide.util.NbBundle;
@@ -400,25 +402,29 @@ public class InlineMethodTransformer extends RefactoringVisitor {
 
             body = methodTree.getBody();
             if (hasParameters) {
-                Map<Element, ExpressionTree> values = new HashMap<Element, ExpressionTree>();
-                
+                final Map<ExpressionTree, ExpressionTree> original2Translated = new HashMap<ExpressionTree, ExpressionTree>();
+
+                TreeScanner<Void, Pair<Element, ExpressionTree>> idScan = new TreeScanner<Void, Pair<Element, ExpressionTree>>() {
+
+                    @Override
+                    public Void visitIdentifier(IdentifierTree node, Pair<Element, ExpressionTree> p) {
+                        TreePath currentPath = trees.getPath(workingCopy.getCompilationUnit(), node);
+                        Element el = trees.getElement(currentPath);
+                        if (p.first.equals(el)) {
+                            original2Translated.put(node, p.second);
+                        }
+                        return super.visitIdentifier(node, p);
+                    }
+                };
                 for (int i = 0; i < methodTree.getParameters().size(); i++) {
                     VariableTree variable = methodTree.getParameters().get(i);
                     ExpressionTree argument = node.getArguments().get(i);
-                    
                     TreePath path = trees.getPath(workingCopy.getCompilationUnit(), variable);
                     Element element = trees.getElement(path);
-                    
-                    values.put(element, argument);
+                    final Pair<Element, ExpressionTree> pair = Pair.of(element, argument);
+                    idScan.scan(body, pair);
                 }
-                
-                InlineParametersTransformerVisitor iptv = new InlineParametersTransformerVisitor(make, body, values, trees, workingCopy);
-                for (VariableTree expressionTree : methodTree.getParameters()) {
-                    TreePath path = trees.getPath(workingCopy.getCompilationUnit(), expressionTree);
-                    Element element = trees.getElement(path);
-                    iptv.scan(body, element);
-                    body = iptv.getBody();
-                }
+                body = (BlockTree) workingCopy.getTreeUtilities().translate(body, original2Translated);
             }
             
             TreeScanner nameClashScanner = new TreeScanner() {

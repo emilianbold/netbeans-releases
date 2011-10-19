@@ -99,6 +99,7 @@ import org.openide.windows.WindowManager;
 import org.openide.xml.XMLUtil;
 
 import static org.netbeans.core.output2.OutputTab.ACTION.*;
+import org.openide.windows.IOProvider;
 
 
 /**
@@ -209,8 +210,10 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
             assert range[1] < size : "Size: " + size + " range: " + range[0] + " " + range[1];
             ControllerOutputEvent oe = new ControllerOutputEvent(io, out, line);
             l.outputLineAction(oe);
-            //Select the text on click
-            getOutputPane().sendCaretToPos(range[0], range[1], true);
+            //Select the text on click if it is still visible
+            if (getOutputPane().getLength() >= range[1]) { // #179768
+                getOutputPane().sendCaretToPos(range[0], range[1], true);
+            }
         }
     }
 
@@ -289,10 +292,12 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
         if (w != null && w.isClosed()) {
             //Will dispose the document
             setDocument(null);
+            io.dispose();
         } else if (w != null) {
             //Something is still writing to the stream, but we're getting rid of the tab.  Don't dispose
             //the writer, just kill the tab's document
             getDocument().disposeQuietly();
+            NbIOProvider.dispose(io);
         }
     }
 

@@ -84,5 +84,19 @@ public class HtmlCompletionProviderTest extends TestBase {
 
     }
 
+    //Bug 203048 - code completion autopopup doesn't always work on space
+    public void test_issue203048() throws BadLocationException {
+        Document doc = createDocument();
+
+        doc.insertString(0, "<div >", null);
+        //                   012345
+        assertTrue(HtmlCompletionProvider.checkOpenCompletion(doc, 5, " "));
+        
+        doc = createDocument();
+        doc.insertString(0, "<div    >", null);
+        //                   012345
+        assertTrue(HtmlCompletionProvider.checkOpenCompletion(doc, 6, " "));
+
+    }
 
 }

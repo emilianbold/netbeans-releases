@@ -45,17 +45,20 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.nio.charset.Charset;
+import java.util.EnumSet;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
+import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
+import org.netbeans.lib.terminalemulator.Term;
 import org.netbeans.modules.terminal.api.IOEmulation;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcess.State;
@@ -69,6 +72,8 @@ import org.netbeans.modules.terminal.api.IOTerm;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.Exceptions;
 import org.openide.util.WeakListeners;
+import org.openide.windows.IOSelect;
+import org.openide.windows.IOSelect.AdditionalOperation;
 
 /**
  * This is a wrapper over an <tt>Executionservice</tt> that handles running
@@ -158,10 +163,24 @@ public final class NativeExecutionService {
 
                             @Override
                             public void run() {
-                                descriptor.inputOutput.select();
+                                IOSelect.select(descriptor.inputOutput,
+                                        EnumSet.<AdditionalOperation>of(
+                                        AdditionalOperation.OPEN,
+                                        AdditionalOperation.REQUEST_ACTIVE,
+                                        AdditionalOperation.REQUEST_VISIBLE));
+
+                                // Still terminal (if any) doesn't get focus in
+                                // this case - so try to request it implicitly
+                                Term term = IOTerm.term(descriptor.inputOutput);
+
+                                if (term != null) {
+                                    JComponent screen = term.getScreen();
+                                    if (screen != null) {
+                                        screen.requestFocusInWindow();
+                                    }
+                                }
                             }
                         });
-
                     }
 
                     /**
@@ -307,7 +326,31 @@ public final class NativeExecutionService {
                 charset(charset);
 
         ExecutionService es = ExecutionService.newService(processBuilder, descr, displayName);
-        return es.run();
+        final Future<Integer> result = es.run();
+        
+        SwingUtilities.invokeLater(new Runnable() {
+
+            @Override
+            public void run() {
+                // AdditionalOperation.REQUEST_ACTIVE has effect only if
+                // isFocusTaken() is true... 
+                // force this condition ... 
+                boolean prevFocusTaken = descriptor.inputOutput.isFocusTaken();
+                descriptor.inputOutput.setFocusTaken(true);
+                
+                IOSelect.select(descriptor.inputOutput,
+                        EnumSet.<AdditionalOperation>of(
+                        AdditionalOperation.OPEN,
+                        AdditionalOperation.REQUEST_ACTIVE,
+                        AdditionalOperation.REQUEST_VISIBLE));
+                
+                // ... and restore it to the original state as leaving it
+                // in TRUE state is strongly discouraged  
+                descriptor.inputOutput.setFocusTaken(prevFocusTaken);
+            }
+        });
+        
+        return result;
     }
 
     private void closeIO() {

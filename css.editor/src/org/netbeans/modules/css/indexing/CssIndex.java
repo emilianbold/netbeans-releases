@@ -66,7 +66,7 @@ import org.openide.util.Exceptions;
 /**
  * An instance of the indexer which can be held until the source roots are valid.
  * 
- * @author marekfukala
+ * @author mfukala@netbeans.org
  */
 public class CssIndex {
 

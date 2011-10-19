@@ -1,3 +1,43 @@
+//  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+// 
+//  Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+// 
+//  Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+//  Other names may be trademarks of their respective owners.
+// 
+//  The contents of this file are subject to the terms of either the GNU
+//  General Public License Version 2 only ("GPL") or the Common
+//  Development and Distribution License("CDDL") (collectively, the
+//  "License"). You may not use this file except in compliance with the
+//  License. You can obtain a copy of the License at
+//  http://www.netbeans.org/cddl-gplv2.html
+//  or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+//  specific language governing permissions and limitations under the
+//  License.  When distributing the software, include this License Header
+//  Notice in each file and include the License file at
+//  nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
+//  particular file as subject to the "Classpath" exception as provided
+//  by Oracle in the GPL Version 2 section of the License file that
+//  accompanied this code. If applicable, add the following below the
+//  License Header, with the fields enclosed by brackets [] replaced by
+//  your own identifying information:
+//  "Portions Copyrighted [year] [name of copyright owner]"
+// 
+//  If you wish your version of this file to be governed by only the CDDL
+//  or only the GPL Version 2, indicate your decision by adding
+//  "[Contributor] elects to include this software in this distribution
+//  under the [CDDL or GPL Version 2] license." If you do not indicate a
+//  single choice of license, a recipient has the option to distribute
+//  your version of this file under either the CDDL, the GPL Version 2 or
+//  to extend the choice of license to its licensees as provided above.
+//  However, if you add GPL Version 2 code and therefore, elected the GPL
+//  Version 2 license, then the option applies only if the new code is
+//  made subject to such option by the copyright holder.
+// 
+//  Contributor(s):
+// 
+//  Portions Copyrighted 2011 Sun Microsystems, Inc.
+//
 // A complete lexer and grammar for CSS 2.1 as defined by the
 // W3 specification.
 //
@@ -34,7 +74,48 @@ grammar Css3;
 //}
 
 @header {
-    package org.netbeans.modules.css.lib;
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Oracle in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ */
+package org.netbeans.modules.css.lib;
     
 }
 
@@ -120,7 +201,48 @@ grammar Css3;
 }
 
 @lexer::header {
-    package org.netbeans.modules.css.lib;
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Oracle in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ */
+package org.netbeans.modules.css.lib;
 }
 
 // -------------
@@ -218,9 +340,24 @@ bodyset
         | media
         | page
         | counterStyle
+        | fontFace
+        | moz_document
       )
       WS*
     ;
+    
+moz_document
+	: 
+	MOZ_DOCUMENT_SYM WS* ( moz_document_function WS*) ( COMMA WS* moz_document_function WS* )*
+	LBRACE WS*
+	 ( ( ruleSet | page ) WS*)*
+	RBRACE
+	;
+
+moz_document_function
+	:
+	URI | MOZ_URL_PREFIX | MOZ_DOMAIN | MOZ_REGEXP
+	;
     
 page
     : PAGE_SYM WS? IDENT? (pseudoPage WS*)?
@@ -239,6 +376,14 @@ counterStyle
 		declarations
         RBRACE
     ;
+    
+fontFace
+    : FONT_FACE_SYM WS*
+        LBRACE WS* syncTo_IDENT_RBRACE
+		declarations
+        RBRACE
+    ;
+    
 
 margin	
 	: margin_sym WS* LBRACE WS* syncTo_IDENT_RBRACE declarations RBRACE
@@ -360,9 +505,9 @@ namespace_wildcard_prefix
   	:	
   	STAR
   	;
-        
+       
 esPred
-    : HASH | DOT | LBRACKET | COLON | DCOLON
+    : '#' | HASH | DOT | LBRACKET | COLON | DCOLON
     ;
     
 elementSubsequent
@@ -376,13 +521,22 @@ elementSubsequent
     WS*
     ;
     
+//Error Recovery: Allow the parser to enter the cssId rule even if there's just hash char.
 cssId
-    : HASH
+    : HASH | ( '#' NAME )
     ;
+    catch[ RecognitionException rce] {
+        reportError(rce);
+        consumeUntil(input, BitSet.of(WS, IDENT, LBRACE)); 
+    }
 
 cssClass
     : DOT ( IDENT | GEN  )
     ;
+    catch[ RecognitionException rce] {
+        reportError(rce);
+        consumeUntil(input, BitSet.of(WS, IDENT, LBRACE)); 
+    }
     
 //using typeSelector even for the universal selector since the lookahead would have to be 3 (IDENT PIPE (IDENT|STAR) :-(
 elementName
@@ -399,6 +553,9 @@ attrib
                       OPEQ
                     | INCLUDES
                     | DASHMATCH
+                    | BEGINS
+                    | ENDS
+                    | CONTAINS
                 )
                 WS*
                 attrib_value
@@ -531,7 +688,7 @@ attribute
 	;
     
 attrname
-	: IDENT
+	: IDENT (DOT IDENT)*
 	;
 	
 attrvalue
@@ -851,6 +1008,9 @@ CDC             : '-->'
                 
 INCLUDES        : '~='      ;
 DASHMATCH       : '|='      ;
+BEGINS          : '^='      ;
+ENDS            : '$='      ;
+CONTAINS        : '*='      ;
 
 GREATER         : '>'       ;
 LBRACE          : '{'       ;
@@ -910,6 +1070,8 @@ MEDIA_SYM           : '@' M E D I A         ;
 NAMESPACE_SYM       : '@' N A M E S P A C E ;
 CHARSET_SYM         : '@charset'           ;
 COUNTER_STYLE_SYM   : '@counter-style';
+FONT_FACE_SYM       : '@font-face';
+
 
 IMPORTANT_SYM   : '!' (WS|COMMENT)* I M P O R T A N T   ;
 
@@ -930,6 +1092,7 @@ RIGHTTOP_SYM          :'@right-top';
 RIGHTMIDDLE_SYM       :'@right-middle';
 RIGHTBOTTOM_SYM       :'@right-bottom';
 
+MOZ_DOCUMENT_SYM      : '@-moz-document';
 
 //I cannot figure out how to use the fragment tokens to generate the following tokens.
 //the parser generator cycles itself indefinitely.
@@ -1047,6 +1210,32 @@ URI :   U R L
             ((WS)=>WS)? (URL|STRING) WS?
         ')'
     ;
+    
+MOZ_URL_PREFIX
+	:
+	'url-prefix('
+            ((WS)=>WS)? (URL|STRING) WS?
+        ')'
+    
+    	;
+
+MOZ_DOMAIN
+	:
+	'domain('
+            ((WS)=>WS)? (URL|STRING) WS?
+        ')'
+    
+    	;
+
+MOZ_REGEXP
+	:
+	'regexp('
+            ((WS)=>WS)? STRING WS?
+        ')'
+    
+    	;
+
+
 
 // -------------
 // Whitespace.  Though the W3 standard shows a Yacc/Lex style parser and lexer

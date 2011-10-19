@@ -89,8 +89,8 @@ public class NewJspFileNameStepOperator extends WizardOperator {
     private JTextAreaOperator _txtDescription;
     
     private static final String JSP_FILE = Bundle.getStringTrimmed(
-            "org.netbeans.modules.web.wizards.Bundle",
-            "TITLE_JspFile");
+            "org.netbeans.modules.web.core.Bundle",
+            "Templates/JSP_Servlet/JSP.jsp");
     private static final String NEW = Bundle.getStringTrimmed(
             "org.netbeans.modules.project.ui.Bundle",
             "LBL_NewFileWizard_Subtitle");
@@ -108,7 +108,7 @@ public class NewJspFileNameStepOperator extends WizardOperator {
     /** Invokes dialog from main menu "File|New..." and selects Web/JSP template.
      * @return instance of NewJspFileNameStepOperator
      */
-    public static final NewJspFileNameStepOperator invoke() {
+    public static NewJspFileNameStepOperator invoke() {
                 NewFileWizardOperator wizarOperator = NewFileWizardOperator.invoke();
         wizarOperator.selectCategory(Bundle.getStringTrimmed(
                 "org.netbeans.modules.web.core.Bundle",
@@ -518,6 +518,7 @@ public class NewJspFileNameStepOperator extends WizardOperator {
     /**
      * Performs verification of NewJspFileNameStepOperator by accessing all its components.
      */
+    @Override
     public void verify() {
         lblNameAndLocation();
         lblJSPFileName();

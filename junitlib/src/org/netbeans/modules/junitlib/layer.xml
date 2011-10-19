@@ -3,10 +3,10 @@
 <filesystem>
     <folder name="org-netbeans-api-project-libraries">
         <folder name="Libraries">
-            <file name="junit-3.8.2.xml" url="junit-3.8.2.xml">
+            <file name="junit.xml" url="junit.xml">
                 <attr name="displayName" bundlevalue="org.netbeans.modules.junitlib.Bundle#junit"/>
             </file>
-            <file name="junit-4.8.2.xml" url="junit-4.8.2.xml">
+            <file name="junit_4.xml" url="junit_4.xml">
                 <attr name="displayName" bundlevalue="org.netbeans.modules.junitlib.Bundle#junit_4"/>
             </file>
         </folder>

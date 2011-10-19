@@ -629,7 +629,8 @@ public class CopyFinderTest extends NbTestCase {
                              "        |System.err.println(a);|\n" +
                              "    }\n" +
                              "}\n",
-                             "i");
+                             "i",
+                             Options.ALLOW_REMAP_VARIABLE_TO_EXPRESSION);
     }
 
     public void testSimpleRemapping2() throws Exception {
@@ -648,7 +649,8 @@ public class CopyFinderTest extends NbTestCase {
                              "         System.err.println(a2);|\n" +
                              "    }\n" +
                              "}\n",
-                             "i");
+                             "i",
+                             Options.ALLOW_REMAP_VARIABLE_TO_EXPRESSION);
     }
 
     public void testSimpleRemapping3() throws Exception {
@@ -666,7 +668,9 @@ public class CopyFinderTest extends NbTestCase {
                              "         int a2 = 0;\n" +
                              "         System.err.println(a2);|\n" +
                              "    }\n" +
-                             "}\n");
+                             "}\n",
+                             "",
+                             Options.ALLOW_REMAP_VARIABLE_TO_EXPRESSION);
     }
 
     public void testSimpleRemapping4() throws Exception {
@@ -681,7 +685,39 @@ public class CopyFinderTest extends NbTestCase {
                              "        |System.err.println(a[0]);|\n" +
                              "    }\n" +
                              "}\n",
-                             "i");
+                             "i",
+                             Options.ALLOW_REMAP_VARIABLE_TO_EXPRESSION);
+    }
+
+    public void testPreventRemapOnExpressions1() throws Exception {
+        performRemappingTest("package test;\n" +
+                             "public class Test {\n" +
+                             "    void t1() {\n" +
+                             "        Throwable t = null;\n" +
+                             "        |System.err.println(t);|\n" +
+                             "    }\n" +
+                             "    void t2() {\n" +
+                             "        Throwable t = null;\n" +
+                             "        |System.err.println(t.getCause());|\n" +
+                             "    }\n" +
+                             "}\n",
+                             "t",
+                             Options.ALLOW_REMAP_VARIABLE_TO_EXPRESSION);
+    }
+
+    public void testPreventRemapOnExpressions2() throws Exception {
+        performRemappingTest("package test;\n" +
+                             "public class Test {\n" +
+                             "    void t1() {\n" +
+                             "        Throwable t = null;\n" +
+                             "        |System.err.println(t);|\n" +
+                             "    }\n" +
+                             "    void t2() {\n" +
+                             "        Throwable t = null;\n" +
+                             "        System.err.println(t.getCause());\n" +
+                             "    }\n" +
+                             "}\n",
+                             "t");
     }
 
     public void testVariableMemberSelect() throws Exception {
@@ -1205,7 +1241,7 @@ public class CopyFinderTest extends NbTestCase {
         return CopyFinder.computeDuplicates(info, searchingFor, scope, true, cancel, designedTypeHack, Options.ALLOW_VARIABLES_IN_PATTERN);
     }
 
-    private void performRemappingTest(String code, String... remappableVariables) throws Exception {
+    private void performRemappingTest(String code, String remappableVariables, Options... options) throws Exception {
         List<int[]> regions = new LinkedList<int[]>();
 
         code = findRegions(code, regions);
@@ -1232,7 +1268,8 @@ public class CopyFinderTest extends NbTestCase {
 
         final Set<VariableElement> vars = new HashSet<VariableElement>();
 
-        for (final String name : remappableVariables) {
+        for (final String name : remappableVariables.split(",")) {
+            if (name.isEmpty()) continue;
             new TreePathScanner<Object, Object>() {
                 @Override
                 public Object visitVariable(VariableTree node, Object p) {
@@ -1245,7 +1282,7 @@ public class CopyFinderTest extends NbTestCase {
             }.scan(info.getCompilationUnit(), null);
         }
 
-        Collection<? extends MethodDuplicateDescription> result = CopyFinder.computeDuplicatesAndRemap(info, searchFor, new TreePath(info.getCompilationUnit()), vars, new AtomicBoolean());
+        Collection<? extends MethodDuplicateDescription> result = CopyFinder.computeDuplicatesAndRemap(info, searchFor, new TreePath(info.getCompilationUnit()), vars, new AtomicBoolean(), options);
         Set<List<Integer>> realSpans = new HashSet<List<Integer>>();
 
         for (MethodDuplicateDescription mdd : result) {

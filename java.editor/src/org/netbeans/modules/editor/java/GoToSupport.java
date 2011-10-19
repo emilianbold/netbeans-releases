@@ -145,7 +145,7 @@ public class GoToSupport {
                 @Override
                 public void run(ResultIterator resultIterator) throws Exception {
                     Result res = resultIterator.getParserResult (offset);
-                    CompilationController controller = CompilationController.get(res);
+                    CompilationController controller = res != null ? CompilationController.get(res) : null;
                     if (controller == null || controller.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0)
                         return;
 
@@ -195,7 +195,7 @@ public class GoToSupport {
                     Result res = resultIterator.getParserResult (offset);
                     if (cancel != null && cancel.get())
                         return ;
-                    CompilationController controller = CompilationController.get(res);
+                    CompilationController controller = res != null ? CompilationController.get(res) : null;
                     if (controller == null || controller.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0)
                         return;
                     cpInfo[0] = controller.getClasspathInfo();

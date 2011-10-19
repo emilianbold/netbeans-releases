@@ -59,8 +59,10 @@ public class J2eeTestCaseGlassfishTest extends JellyTestCase {
 
     public static Test suite() {
         TestSuite suite = new TestSuite();
-        //suite.addTest(new J2eeTestCaseGlassfishTest("testAddEmptyTestIntoEmptyConfiguration"));
-        suite.addTestSuite(J2eeTestCaseGlassfishTest.class);
+        suite.addTest(new J2eeTestCaseGlassfishTest("testAddEmptyTestIntoEmptyConfiguration"));
+        suite.addTest(new J2eeTestCaseGlassfishTest("testGlassfishWithoutDomain"));
+        suite.addTest(new J2eeTestCaseGlassfishTest("testGlassfishWithDomain"));
+        suite.addTest(new J2eeTestCaseGlassfishTest("testCreateAllModulesServerSuiteWithoutFiles"));
         return suite;
     }
 
@@ -78,7 +80,7 @@ public class J2eeTestCaseGlassfishTest extends JellyTestCase {
 
     public void testAddEmptyTestIntoEmptyConfiguration() {
         Configuration conf = NbModuleSuite.emptyConfiguration();
-        conf = J2eeTestCase.addServerTests(ANY, conf, TD.class);
+        conf = J2eeTestCase.addServerTests(ANY, conf, TD.class).gui(false);
         Test t = NbModuleSuite.create(conf);
         t.run(new TestResult());
         assertEquals("just one empty test", 1, t.countTestCases());

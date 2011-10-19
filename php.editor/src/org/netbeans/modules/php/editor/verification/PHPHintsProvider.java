@@ -89,6 +89,10 @@ public class PHPHintsProvider implements HintsProvider {
             ruleContext.fileScope = modelScope;
             for (AstRule astRule : modelHints) {
                 if (mgr.isEnabled(astRule)) {
+                    if (astRule instanceof PHPRuleWithPreferences) {
+                        PHPRuleWithPreferences icm = (PHPRuleWithPreferences) astRule;
+                        icm.setPreferences(mgr.getPreferences(astRule));
+                    }
                     if (astRule instanceof AbstractRule) {
                         AbstractRule icm = (AbstractRule) astRule;
                         try {
@@ -163,14 +167,17 @@ public class PHPHintsProvider implements HintsProvider {
         }
     }
 
+    @Override
     public void cancel() {
 
     }
 
+    @Override
     public List<Rule> getBuiltinRules() {
         return Collections.<Rule>emptyList();
     }
 
+    @Override
     public RuleContext createRuleContext() {
         return new PHPRuleContext();
     }

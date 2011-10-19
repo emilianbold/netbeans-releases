@@ -220,7 +220,7 @@ public final class HudsonInstanceImpl implements HudsonInstance, OpenableInBrows
         HudsonInstanceImpl instance = new HudsonInstanceImpl(properties, interactive);
         assert instance.getName() != null;
         assert instance.getUrl() != null;
-        assert Integer.parseInt(instance.getProperties().get(INSTANCE_SYNC)) >= 0;
+        assert instance.getProperties().get(INSTANCE_SYNC) != null;
         
         if (null == HudsonManagerImpl.getDefault().addInstance(instance))
             return null;

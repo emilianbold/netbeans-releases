@@ -89,6 +89,7 @@ import org.netbeans.modules.php.editor.api.elements.TypeMemberElement;
 import org.netbeans.modules.php.editor.api.elements.TypeResolver;
 import org.netbeans.modules.php.editor.api.elements.VariableElement;
 import org.netbeans.modules.php.editor.elements.ParameterElementImpl;
+import org.netbeans.modules.php.editor.indent.CodeStyle;
 import org.netbeans.modules.php.editor.index.PredefinedSymbolElement;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.model.FileScope;
@@ -216,7 +217,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         ElementHandle elem = getElement();
         if (elem instanceof MethodElement) {
             final MethodElement method = (MethodElement) elem;
-            if (method.isConstructor()) {
+            if (method.isConstructor() && request.context.equals(CompletionContext.NEW_CLASS)) {
                 elem = method.getType();
             }
         }
@@ -413,31 +414,33 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         }
 
         public ParameterElement resolveVariable(ParameterElement param) {
-            Collection<? extends VariableName> declaredVariables = getDeclaredVariables();
-            VariableName variableToUse = null;
-            if (declaredVariables != null) {
-                int oldOffset = 0;
-                for (VariableName variable : declaredVariables) {
-                    if (!usedVariables.contains(variable) && !variable.representsThis()) {
-                        if (isPreviousVariable(variable)) {
-                            if (hasCorrectType(variable, param.getTypes())) {
-                                if (variable.getName().equals(param.getName())) {
-                                    variableToUse = variable;
-                                    break;
-                                }
-                                int newOffset = variable.getNameRange().getStart();
-                                if (newOffset > oldOffset) {
-                                    oldOffset = newOffset;
-                                    variableToUse = variable;
+            if (OptionsUtils.codeCompletionSmartParametersPreFilling()) {
+                Collection<? extends VariableName> declaredVariables = getDeclaredVariables();
+                VariableName variableToUse = null;
+                if (declaredVariables != null) {
+                    int oldOffset = 0;
+                    for (VariableName variable : declaredVariables) {
+                        if (!usedVariables.contains(variable) && !variable.representsThis()) {
+                            if (isPreviousVariable(variable)) {
+                                if (hasCorrectType(variable, param.getTypes())) {
+                                    if (variable.getName().equals(param.getName())) {
+                                        variableToUse = variable;
+                                        break;
+                                    }
+                                    int newOffset = variable.getNameRange().getStart();
+                                    if (newOffset > oldOffset) {
+                                        oldOffset = newOffset;
+                                        variableToUse = variable;
+                                    }
                                 }
                             }
                         }
                     }
                 }
-            }
-            if (variableToUse != null) {
-                usedVariables.add(variableToUse);
-                return new ParameterElementImpl(variableToUse.getName(), param.getDefaultValue(), param.getOffset(), param.getTypes(), param.isMandatory(), param.hasDeclaredType(), param.isReference());
+                if (variableToUse != null) {
+                    usedVariables.add(variableToUse);
+                    return new ParameterElementImpl(variableToUse.getName(), param.getDefaultValue(), param.getOffset(), param.getTypes(), param.isMandatory(), param.hasDeclaredType(), param.isReference());
+                }
             }
             return param;
         }
@@ -463,7 +466,8 @@ public abstract class PHPCompletionItem implements CompletionProposal {
             if (!typeNames.isEmpty()) {
                 for (TypeResolver type : possibleTypes) {
                     if (typeNames.contains(type.getRawTypeName()) || type.getRawTypeName().equals("mixed") ||
-                            (typeNames.contains("real") && type.getRawTypeName().equals("float"))) { // NOI18N
+                            (typeNames.contains("real") && type.getRawTypeName().equals("float")) ||
+                            (typeNames.contains("int") && type.getRawTypeName().equals("integer"))) { // NOI18N
                         return true;
                     }
                 }
@@ -482,17 +486,16 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         static List<FunctionElementItem> getItems(final BaseFunctionElement function, CompletionRequest request) {
             final List<FunctionElementItem> retval = new ArrayList<FunctionElementItem>();
             final List<ParameterElement> parameters = new ArrayList<ParameterElement>();
-            final ExistingVariableResolver existingVariableResolver = new ExistingVariableResolver(request);
             for (ParameterElement param : function.getParameters()) {
                 if (!param.isMandatory()) {
                     if (retval.isEmpty()) {
                         retval.add(new FunctionElementItem(function, request, parameters));
                     }
-                    parameters.add(existingVariableResolver.resolveVariable(param));
+                    parameters.add(param);
                     retval.add(new FunctionElementItem(function, request, parameters));
                 } else {
                     //assert retval.isEmpty():param.asString();
-                    parameters.add(existingVariableResolver.resolveVariable(param));
+                    parameters.add(param);
                 }
             }
             if (retval.isEmpty()) {
@@ -600,8 +603,9 @@ public abstract class PHPCompletionItem implements CompletionProposal {
 
         public List<String> getInsertParams() {
             List<String> insertParams = new LinkedList<String>();
+            final ExistingVariableResolver existingVariableResolver = new ExistingVariableResolver(request);
             for (ParameterElement parameter : parameters) {
-                insertParams.add(parameter.getName());
+                insertParams.add(existingVariableResolver.resolveVariable(parameter).getName());
             }
             return insertParams;
         }
@@ -706,6 +710,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
             return field.getName(field.isStatic());
         }
 
+        @Override
         protected String getTypeName() {
             Set<TypeResolver> types = getField().getInstanceTypes();
             String typeName = types.isEmpty() ? "?" : types.size() > 1 ?  "mixed" : "?";//NOI18N
@@ -969,6 +974,9 @@ public abstract class PHPCompletionItem implements CompletionProposal {
             if (type == null) {
                 return getName();
             }
+            CodeStyle codeStyle = CodeStyle.get(EditorRegistry.lastFocusedComponent().getDocument());
+            boolean appendSpace = true;
+            String name = null;
             switch(type) {
                 case SIMPLE:
                     return null;
@@ -977,16 +985,64 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                     builder.append(" ${cursor}"); //NOI18N
                     break;
                 case CURSOR_INSIDE_BRACKETS:
-                    builder.append(getName());
-                    builder.append(" (${cursor})"); //NOI18N
+                    name = getName();
+                    builder.append(name);
+                    if (name.equals("foreach") || name.equals("for")) { //NOI18N
+                        appendSpace = codeStyle.spaceBeforeForParen();
+                    } else if (name.equals("if")) { //NOI18N
+                        appendSpace = codeStyle.spaceBeforeIfParen();
+                    } else if (name.equals("switch")) { //NOI18N
+                        appendSpace = codeStyle.spaceBeforeSwitchParen();
+                    } else if (name.equals("array")) { //NOI18N
+                        appendSpace = codeStyle.spaceBeforeArrayDeclParen();
+                    } else if (name.equals("while")) { //NOI18N
+                        appendSpace = codeStyle.spaceBeforeWhileParen();
+                    } else if (name.equals("catch")) { //NOI18N
+                        appendSpace = codeStyle.spaceBeforeCatchParen();
+                    }
+                    if (appendSpace) {
+                        builder.append(" "); //NOI18N
+                    }
+                    builder.append("(${cursor})"); //NOI18N
                     break;
                 case ENDS_WITH_CURLY_BRACKETS:
-                    builder.append(getName());
-                    builder.append(" {${cursor}"); //NOI18N
+                    name = getName();
+                    builder.append(name);
+                    if (name.equals("try")) { //NOI18N
+                        appendSpace = codeStyle.spaceBeforeTryLeftBrace();
+                    } else if (name.equals("do")) { //NOI18N
+                        appendSpace = codeStyle.spaceBeforeDoLeftBrace();
+                    } else if (name.equals("else")) { //NOI18N
+                        appendSpace = codeStyle.spaceBeforeElseLeftBrace();
+                    }
+                    if (appendSpace) {
+                        builder.append(" "); //NOI18N
+                    }
+                    builder.append("{${cursor}}"); //NOI18N
+                    break;
+                case ENDS_WITH_BRACKETS_AND_CURLY_BRACKETS:
+                    name = getName();
+                    builder.append(name);
+                    if (name.equals("elseif")) { //NOI18N
+                        appendSpace = codeStyle.spaceBeforeIfParen();
+                    }
+                    if (appendSpace) {
+                        builder.append(" "); //NOI18N
+                    }
+                    builder.append("(${cursor})"); //NOI18N
+                    if (name.equals("elseif")) { //NOI18N
+                        appendSpace = codeStyle.spaceBeforeIfLeftBrace();
+                    }
+                    if (appendSpace) {
+                        builder.append(" "); //NOI18N
+                    }
+                    builder.append("{}"); //NOI18N
                     break;
                 case ENDS_WITH_SEMICOLON:
                     builder.append(getName());
-                    if (';' != request.info.getSnapshot().getText().charAt(request.anchor + request.prefix.length())) {
+                    CharSequence text = request.info.getSnapshot().getText();
+                    int index = request.anchor + request.prefix.length();
+                    if (index == text.length() || ';' != text.charAt(index)) { //NOI18N
                         builder.append(";"); //NOI18N
                     }
                     break;
@@ -1394,14 +1450,14 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         public String getCustomInsertTemplate() {
             StringBuilder builder = new StringBuilder();
             builder.append(getName());
-            builder.append("(${cursor});"); // NOI18N
+            builder.append("(${cursor})"); // NOI18N
             return builder.toString();
         }
 
         @Override
         public String getLhsHtml(HtmlFormatter formatter) {
             prependName(formatter);
-            formatter.appendText("();"); // NOI18N
+            formatter.appendText("()"); // NOI18N
             return formatter.getText();
         }
     }

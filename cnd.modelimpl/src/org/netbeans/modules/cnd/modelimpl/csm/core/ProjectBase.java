@@ -68,6 +68,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import java.util.logging.Level;
+import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.NameAcceptor;
@@ -928,8 +929,15 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                             System.err.printf("Validation: %s properties are changed \n", nativeFile.getAbsolutePath());
                         }
                         reparseOnPropertyChanged.add(nativeFile);
+                    } else {
+                        if (TraceFlags.TRACE_VALIDATION) {
+                            System.err.printf("Validation: %s file is skipped as valid PARSED\n", nativeFile.getAbsolutePath());
+                        }                        
                     }
                 } else {
+                    if (TraceFlags.TRACE_VALIDATION) {
+                        System.err.printf("Validation: %s file to be parsed, because of state %s\n", nativeFile.getAbsolutePath(), fileAndHandler.fileImpl.getState());
+                    }
                     if (validator.arePropertiesChanged(nativeFile)) {
                         if (fileAndHandler.fileImpl.getState() == FileImpl.State.INITIAL){
                             fileAndHandler.preprocHandler = createPreprocHandler(nativeFile);
@@ -1305,6 +1313,13 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         assert preprocHandler != null : "null preprocHandler for " + file;
         FileImpl csmFile = null;
         if (isDisposing()) {
+            return null;
+        }
+        final CsmModelState modelState = ModelImpl.instance().getState();
+        if (modelState == CsmModelState.CLOSING || modelState == CsmModelState.OFF) {
+            if (TraceFlags.TRACE_VALIDATION || TraceFlags.TRACE_MODEL_STATE) {
+                System.err.printf("onFileIncluded: %s file [%s] is interrupted on closing model\n", file, base.getName());
+            }
             return null;
         }
         csmFile = findFile(file, true, FileImpl.FileType.HEADER_FILE, preprocHandler, false, null, null);
@@ -1871,7 +1886,25 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
     public final void onFileExternalCreate(FileObject file) {
         CndFileUtils.clearFileExistenceCache();
-        DeepReparsingUtils.reparseOnAdded(file, this);
+        // #196664 - Code Model ignores the generated files"
+        // when external file was created and assigned to this project => 
+        // create csm file for it if possible
+        NativeFileItem nativeFileItem = null;
+        // Try to find native file
+        if (getPlatformProject() instanceof NativeProject) {
+            NativeProject prj = (NativeProject) getPlatformProject();
+            if (prj != null) {
+                nativeFileItem = prj.findFileItem(file);
+            }
+        }
+        // schedule reparse either based on NFI 
+        // or use FO as fallback, it can be helpful for header files not included into
+        // project, but used in include directives which were broken so far
+        if (nativeFileItem != null) {
+            onFileAdded(nativeFileItem);
+        } else {
+            DeepReparsingUtils.reparseOnAdded(file, this);
+        }
     }
 
     public final void onFileExternalChange(FileImpl file) {
@@ -2958,6 +2991,17 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         FileContainer container = getFileContainer();
         Set<Entry<CharSequence, FileEntry>> entrySet = container.getFileStorage().entrySet();
         err.printf("FileContainer (%d) for project %s\n", entrySet.size(), toString()); //NOI18N
+        Map<CharSequence, Object> canonicalNames = container.getCanonicalNames();
+        for (Entry<CharSequence, Object> entry : canonicalNames.entrySet()) {
+            Object altKey = entry.getValue();
+            if (altKey instanceof CharSequence) {
+                if (!CharSequenceUtilities.textEquals(entry.getKey(), (CharSequence)altKey)) {
+                    err.printf("\tAltKey: %s->%s\n", entry.getKey(), altKey); //NOI18N
+                } 
+            } else if (altKey != null) {
+                err.printf("\tAltKeys: %s->%s\n", entry.getKey(), Arrays.asList((CharSequence[]) altKey).toString()); //NOI18N
+            }
+        }
         for(Map.Entry<CharSequence, FileEntry> entry : entrySet){
             err.println("\tEntry "+entry.getKey()); //NOI18N
             if (entry.getValue().getStatePairs().isEmpty()) {

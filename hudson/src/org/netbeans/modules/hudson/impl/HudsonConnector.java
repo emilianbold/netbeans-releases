@@ -385,7 +385,15 @@ public class HudsonConnector {
                             LOG.fine("#178360: unexpected empty <module> child: " + nodeName);
                         }
                     }
-                    job.addModule(name, displayName, color, url);
+                    if (name != null && url != null && color != null) {
+                        if (displayName == null) {
+                            LOG.log(Level.FINE, "#202671: missing displayName in {0}", job);
+                            displayName = name;
+                        }
+                        job.addModule(name, displayName, color, url);
+                    } else {
+                        LOG.log(Level.FINE, "#202671: missing name/url/color in {0}", job);
+                    }
                 } else {
                     LOG.fine("unexpected global <job> child: " + nodeName);
                 }

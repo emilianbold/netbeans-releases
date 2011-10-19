@@ -46,9 +46,12 @@ package org.netbeans.modules.editor;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.font.TextAttribute;
+import java.text.AttributedCharacterIterator;
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.editor.BaseKit;
@@ -134,6 +137,52 @@ public class HtmlPrintContainer implements PrintContainer {
         this.headerBackgroundColor = hbgColor;
         this.syntaxColoring = ColoringMap.get(mimePath.getPath()).getMap();
         this.charset = charset;
+    }
+    
+    public void addLines(List<AttributedCharacterIterator> lines) {
+        for (int i = 0; i < lines.size(); i++) {
+            AttributedCharacterIterator line = lines.get(i);
+            int endIndex = line.getEndIndex();
+            int index = 0;
+            line.setIndex(0);
+            while (index < endIndex) { // Service a single text run
+                Font font = (Font) line.getAttribute(TextAttribute.FONT);
+                if (font == null) {
+                    String family = (String) line.getAttribute(TextAttribute.FAMILY);
+                    boolean italic = TextAttribute.POSTURE_OBLIQUE.equals(line.getAttribute(TextAttribute.POSTURE));
+                    boolean bold = TextAttribute.WEIGHT_BOLD.equals(line.getAttribute(TextAttribute.WEIGHT));
+                    Integer size = (Integer) line.getAttribute(TextAttribute.SIZE);
+                    // Both family and size are expected to be non-null
+//                    assert (family != null && size != null) : "family=" + family + ", size=" + size; // NOI18N
+                    if (family != null && size != null) {
+                        font = new Font(family, (bold ? Font.BOLD : 0) | (italic ? Font.ITALIC : 0), size);
+                    } else {
+                        font = getDefaultFont();
+                    }
+                }
+                Color foreground = (Color) line.getAttribute(TextAttribute.FOREGROUND);
+                if (foreground == null) {
+                    foreground = getDefaultColor();
+                }
+                Color background = (Color) line.getAttribute(TextAttribute.BACKGROUND);
+                if (background == null) {
+                    background = getDefaultBackgroundColor();
+                }
+                // Get text
+                int runEndIndex = line.getRunLimit();
+                char text[] = new char[runEndIndex - index];
+                int j = 0;
+                while (index < runEndIndex) {
+                    // First char is current
+                    text[j] = (j == 0) ? line.current() : line.next();
+                    j++;
+                    index++;
+                }
+                line.next(); // One char forward in order to make line.current() in next iter
+                add(text, font, foreground, background);
+            }
+            eol();
+        }
     }
 
     public final void add(char[] chars, Font font, Color foreColor, Color backColor) {

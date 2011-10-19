@@ -129,6 +129,7 @@ public class MercurialAnnotator extends VCSAnnotator implements PropertyChangeLi
     public static final String ANNOTATION_FOLDER      = "folder";       //NOI18N
 
     public static String[] LABELS = new String[] {ANNOTATION_STATUS, ANNOTATION_FOLDER};
+    public static final String ACTIONS_PATH_PREFIX = "Actions/Mercurial/";
 
     private FileStatusCache cache;
     private MessageFormat format;
@@ -312,13 +313,13 @@ public class MercurialAnnotator extends VCSAnnotator implements PropertyChangeLi
 
         List<Action> actions = new ArrayList<Action>(INITIAL_ACTION_ARRAY_LENGTH);
         if (destination == VCSAnnotator.ActionDestination.MainMenu) {
-            Action a = (Action) FileUtil.getConfigObject("Actions/Mercurial/org-netbeans-modules-mercurial-ui-create-CreateAction.instance", Action.class);
+            Action a = Utils.getAcceleratedAction("Actions/Mercurial/org-netbeans-modules-mercurial-ui-create-CreateAction.instance");
             if(a instanceof ContextAwareAction) {
                 a = ((ContextAwareAction)a).createContextAwareInstance(Lookups.singleton(ctx));
             }            
             if(a != null) actions.add(a);
             if (noneVersioned) {
-                a = (Action) FileUtil.getConfigObject("Actions/Mercurial/org-netbeans-modules-mercurial-ui-clone-CloneExternalAction.instance", Action.class);
+                a = (Action) Utils.getAcceleratedAction("Actions/Mercurial/org-netbeans-modules-mercurial-ui-clone-CloneExternalAction.instance");
                 if(a != null) actions.add(a);
             } else {
                 actions.add(null);
@@ -333,7 +334,7 @@ public class MercurialAnnotator extends VCSAnnotator implements PropertyChangeLi
 
                 actions.add(null);
                 actions.add(SystemAction.get(CloneAction.class));
-                a = (Action) FileUtil.getConfigObject("Actions/Mercurial/org-netbeans-modules-mercurial-ui-clone-CloneExternalAction.instance", Action.class);
+                a = (Action) Utils.getAcceleratedAction("Actions/Mercurial/org-netbeans-modules-mercurial-ui-clone-CloneExternalAction.instance");
                 if(a != null) actions.add(a);
 
                 actions.add(SystemAction.get(FetchAction.class));
@@ -363,6 +364,7 @@ public class MercurialAnnotator extends VCSAnnotator implements PropertyChangeLi
                 actions.add(null);
                 actions.add(SystemAction.get(PropertiesAction.class));
             }
+            Utils.setAcceleratorBindings(ACTIONS_PATH_PREFIX, actions.toArray(new Action[actions.size()]));
         } else {
             Lookup context = ctx.getElements();
             if (noneVersioned){

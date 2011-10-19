@@ -15,6 +15,15 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.core.multiview</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.25</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.csl.api</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -29,7 +38,7 @@
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.0</specification-version>
+                        <specification-version>1.3</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -161,7 +170,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.0</specification-version>
+                        <specification-version>1.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -344,14 +353,6 @@
                 <package>org.netbeans.modules.css.editor.api.model</package>
                 <package>org.netbeans.modules.css.refactoring.api</package>
             </friend-packages>
-            <class-path-extension>
-                <runtime-relative-path>ext/flute-1.3.jar</runtime-relative-path>
-                <binary-origin>external/flute-1.3.jar</binary-origin>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/sac-1.3.jar</runtime-relative-path>
-                <binary-origin>external/sac-1.3.jar</binary-origin>
-            </class-path-extension>
         </data>
     </configuration>
 </project>

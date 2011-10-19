@@ -516,7 +516,7 @@ public class VariousUtils {
     public static Stack<? extends ModelElement> getElemenst(FileScope topScope, final VariableScope varScope, String semiTypeName, int offset) throws IllegalStateException {
         Stack<ModelElement> emptyStack = new Stack<ModelElement>();
         Stack<ModelElement> retval = new Stack<ModelElement>();
-        Stack<Collection<? extends TypeScope>> stack = new Stack<Collection<? extends TypeScope>>();;
+        Stack<Collection<? extends TypeScope>> stack = new Stack<Collection<? extends TypeScope>>();
 
         TypeScope type = null;
         if (semiTypeName != null && semiTypeName.contains("@")) {
@@ -532,19 +532,14 @@ public class VariousUtils {
                 if (VariousUtils.METHOD_TYPE_PREFIX.equalsIgnoreCase(operationPrefix)) {
                     operation = VariousUtils.METHOD_TYPE_PREFIX;
                 } else if (VariousUtils.FUNCTION_TYPE_PREFIX.equalsIgnoreCase(operationPrefix)) {
-                    assert operation == null;
                     operation = VariousUtils.FUNCTION_TYPE_PREFIX;
                 } else if (VariousUtils.STATIC_METHOD_TYPE_PREFIX.equalsIgnoreCase(operationPrefix)) {
-                    assert operation == null;
                     operation = VariousUtils.STATIC_METHOD_TYPE_PREFIX;
                 } else if (VariousUtils.VAR_TYPE_PREFIX.equalsIgnoreCase(operationPrefix)) {
-                    assert operation == null;
                     operation = VariousUtils.VAR_TYPE_PREFIX;
                 } else if (VariousUtils.FIELD_TYPE_PREFIX.equalsIgnoreCase(operationPrefix)) {
-                    assert operation == null;
                     operation = VariousUtils.FIELD_TYPE_PREFIX;
                 } else if (VariousUtils.CONSTRUCTOR_TYPE_PREFIX.equalsIgnoreCase(operationPrefix)) {
-                    assert operation == null;
                     operation = VariousUtils.CONSTRUCTOR_TYPE_PREFIX;
                 } else {
                     if (operation == null) {
@@ -811,7 +806,10 @@ public class VariousUtils {
             PHPTokenId.PHP_IF, PHPTokenId.PHP_ELSE, PHPTokenId.PHP_ELSEIF, PHPTokenId.PHP_PRINT,
             PHPTokenId.PHP_FOR, PHPTokenId.PHP_FOREACH, PHPTokenId.PHP_WHILE,
             PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.PHP_COMMENT_END, PHPTokenId.PHP_LINE_COMMENT,
-            PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING, PHPTokenId.PHP_ENCAPSED_AND_WHITESPACE);
+            PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING, PHPTokenId.PHP_ENCAPSED_AND_WHITESPACE,
+            PHPTokenId.PHPDOC_COMMENT_START, PHPTokenId.PHP_COMMENT_START,
+            PHPTokenId.PHPDOC_COMMENT, PHPTokenId.PHP_COMMENT,
+            PHPTokenId.PHP_LINE_COMMENT);
 
 
     public enum State {

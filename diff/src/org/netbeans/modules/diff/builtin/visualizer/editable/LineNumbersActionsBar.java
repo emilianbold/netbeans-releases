@@ -390,6 +390,9 @@ class LineNumbersActionsBar extends JPanel implements Scrollable, MouseMotionLis
                 try {
                     int localLineHeight = lineHeight;
                     View rootView = Utilities.getDocumentView(master.getEditorPane());
+                    if(rootView == null) { // this might happen
+                        return;
+                    }
                     int lineNumber = Utilities.getLineOffset((BaseDocument) master.getEditorPane().getDocument(), master.getEditorPane().viewToModel(new Point(clip.x, clip.y)));
                     if (lineNumber > 0) {
                         --lineNumber;
@@ -422,7 +425,7 @@ class LineNumbersActionsBar extends JPanel implements Scrollable, MouseMotionLis
             }
         });
     }
-
+    
     private String formatLineNumber(int lineNumber) {
         String strNumber = Integer.toString(lineNumber);
         int nc = getNumberCount(lineNumber);

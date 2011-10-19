@@ -86,6 +86,7 @@ public class WebFrameworksPanel extends javax.swing.JPanel implements ListSelect
     private final ProjectCustomizer.Category category;
     private Project project;
     private List<WebModuleExtender> newExtenders = new LinkedList<WebModuleExtender>();
+    private List<WebModuleExtender> existingExtenders = new LinkedList<WebModuleExtender>();
     private List<WebFrameworkProvider> usedFrameworks = new LinkedList<WebFrameworkProvider>();
     private Map<WebFrameworkProvider, WebModuleExtender> extenders = new IdentityHashMap<WebFrameworkProvider, WebModuleExtender>();
     List<WebFrameworkProvider> addedFrameworks = new LinkedList<WebFrameworkProvider>();
@@ -140,12 +141,18 @@ public class WebFrameworksPanel extends javax.swing.JPanel implements ListSelect
             logRecord.setParameters(addedFrameworks.toArray());
             UI_LOGGER.log(logRecord);
         }
-        
+
+        for (WebModuleExtender webModuleExtender : existingExtenders) {
+            if (webModuleExtender instanceof WebModuleExtender.Savable) {
+                ((WebModuleExtender.Savable) webModuleExtender).save(webModule);
+            }
+        }
+        existingExtenders.clear();
     }
     
     private void initFrameworksList() {
         WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
-
+        existingExtenders.clear();
         
         ExtenderController.Properties properties = controller.getProperties();
         String j2eeVersion = webModule.getJ2eePlatformVersion();
@@ -168,6 +175,7 @@ public class WebFrameworksPanel extends javax.swing.JPanel implements ListSelect
                 ((DefaultListModel) jListFrameworks.getModel()).addElement(framework);
                 WebModuleExtender extender = framework.createWebModuleExtender(webModule, controller);
                 extenders.put(framework, extender);
+                existingExtenders.add(extender);
                 extender.addChangeListener(new ExtenderListener(extender));
             }                
         }

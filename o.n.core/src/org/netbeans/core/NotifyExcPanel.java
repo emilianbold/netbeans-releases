@@ -187,8 +187,10 @@ public final class NotifyExcPanel extends JPanel implements ActionListener {
         setPreferredSize(new Dimension(SIZE_PREFERRED_WIDTH + extraW, SIZE_PREFERRED_HEIGHT + extraH));
 
         dialog = DialogDisplayer.getDefault().createDialog(descriptor);
-        if( null != lastBounds )
+        if( null != lastBounds ) {
+            lastBounds.width = Math.max( lastBounds.width, SIZE_PREFERRED_WIDTH+extraW );
             dialog.setBounds( lastBounds );
+        }
         
         dialog.getAccessibleContext().setAccessibleName(bundle.getString("ACN_NotifyExcPanel_Dialog")); // NOI18N
         dialog.getAccessibleContext().setAccessibleDescription(bundle.getString("ACD_NotifyExcPanel_Dialog")); // NOI18N
@@ -198,6 +200,9 @@ public final class NotifyExcPanel extends JPanel implements ActionListener {
         ArrayList<Object> arr = new ArrayList<java.lang.Object>();
         arr.add(previous);
         arr.add(next);
+        
+        extraH = 0;
+        extraW = 0;
         
         for (Handler h : Logger.getLogger("").getHandlers()) {
             if (h instanceof Callable<?>) {

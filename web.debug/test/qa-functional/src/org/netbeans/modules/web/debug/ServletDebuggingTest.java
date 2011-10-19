@@ -89,8 +89,9 @@ public class ServletDebuggingTest extends J2eeTestCase {
         return NbModuleSuite.create(addServerTests(Server.GLASSFISH, NbModuleSuite.createConfiguration(ServletDebuggingTest.class),
                 "testSetBreakpoint",
                 "testDebugProject",
-                "testStepInto",
+                // testStepOut must be before testStepInto to prevent stopping debugger at JDK sources
                 "testStepOut",
+                "testStepInto",
                 "testStepOver",
                 "testApplyCodeChanges",
                 "testStopServer").
@@ -161,14 +162,10 @@ public class ServletDebuggingTest extends J2eeTestCase {
     public void testStepInto() {
         debugServlet();
         new StepIntoAction().perform();
-        // confirm step into selection
-        new StepIntoAction().perform();
-        // #201275 - use Debugger Console instead of status bar
-        new OutputTabOperator("Debugger Console").waitText("DivideServlet.java:" + (line + 2)); //NOI18N
-        //stt.waitText("DivideServlet.java:"+(line+2)); //NOI18N
+        waitText("DivideServlet.java:" + (line + 2)); //NOI18N
         new StepIntoAction().perform();
         // org.netbeans.test.freeformlib.Divider should be used in servlet when #199615 is fixed
-        stt.waitText("Multiplier.java:"); //NOI18N
+        waitText("Multiplier.java:"); //NOI18N
         new EditorOperator("Multiplier.java").close(); //NOI18N
         new ContinueAction().perform();
     }
@@ -182,10 +179,9 @@ public class ServletDebuggingTest extends J2eeTestCase {
      */
     public void testStepOut() {
         debugServlet();
-        stt.clear();
         new StepOutAction().perform();
         // it stops at doGet method
-        stt.waitText("DivideServlet.java:"); //NOI18N
+        waitText("DivideServlet.java:"); //NOI18N
         new ContinueAction().perform();
     }
 
@@ -201,9 +197,9 @@ public class ServletDebuggingTest extends J2eeTestCase {
     public void testStepOver() {
         debugServlet();
         new StepOverAction().perform();
-        stt.waitText("DivideServlet.java:" + (line + 2)); //NOI18N
+        waitText("DivideServlet.java:" + (line + 2)); //NOI18N
         new StepOverAction().perform();
-        stt.waitText("DivideServlet.java:" + (line + 4)); //NOI18N
+        waitText("DivideServlet.java:" + (line + 4)); //NOI18N
         new ContinueAction().perform();
     }
 
@@ -218,12 +214,11 @@ public class ServletDebuggingTest extends J2eeTestCase {
      */
     public void testApplyCodeChanges() {
         debugServlet();
-        stt.clear();
         EditorOperator eo = new EditorOperator("DivideServlet.java"); // NOI18N
         eo.replace("Servlet DIVIDE", "Servlet DIVIDE Changed"); //NOI18N
         new ApplyCodeChangesAction().perform();
         Utils.waitFinished(this, SAMPLE_WEB_PROJECT_NAME, "debug-fix");
-        stt.waitText("DivideServlet.java:"); //NOI18N
+        waitText("DivideServlet.java:"); //NOI18N
         Utils.finishDebugger();
         Utils.waitText(SAMPLE_WEB_PROJECT_NAME + "/DivideServlet", 240000, "Servlet DIVIDE Changed");
     }
@@ -251,6 +246,21 @@ public class ServletDebuggingTest extends J2eeTestCase {
         Utils.waitFinished(this, SAMPLE_WEB_PROJECT_NAME, "run"); // should be "debug" when #199576 fixed
         // reload page because browser is suppressed
         Utils.reloadPage(SAMPLE_WEB_PROJECT_NAME + "/DivideServlet");
-        stt.waitText("DivideServlet.java:" + line); //NOI18N
+        waitText("DivideServlet.java:" + line); //NOI18N
+    }
+
+    /**
+     * Waits for text in status bar or in debugger console. Used to check that
+     * breakpoint was reached.
+     *
+     * @param text text to wait for
+     */
+    private void waitText(String text) {
+        // stt.waitText(text);
+        // stt.clear();
+        // #201275 - use Debugger Console instead of status bar
+        OutputTabOperator debuggerConsole = new OutputTabOperator("Debugger Console");
+        debuggerConsole.waitText(text);
+        debuggerConsole.clear();
     }
 }

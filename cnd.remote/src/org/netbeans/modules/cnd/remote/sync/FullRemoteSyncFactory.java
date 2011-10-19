@@ -122,5 +122,10 @@ public class FullRemoteSyncFactory extends BaseSyncFactory {
         public String getRemotePath(String lpath, boolean useDefault) {
             return lpath;
         }
+
+        @Override
+        public String getTrueLocalPath(String rpath) {
+            return null;
+        }
     }
 }

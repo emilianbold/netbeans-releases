@@ -52,6 +52,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -154,10 +155,12 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
                     controller.toPhase(JavaSource.Phase.RESOLVED);
                     // retrieve supertypes (will be used in the combo)
                     Collection<TypeElement> supertypes = RetoucheUtils.getSuperTypes((TypeElement)handle.resolveElement(controller), controller, true);
-                    MemberInfo[] minfo = new MemberInfo[supertypes.size()];
-                    int i=0;
+                    List<MemberInfo> minfo = new LinkedList<MemberInfo>();
                     for (Element e: supertypes) {
-                        minfo[i++] = MemberInfo.create(e, controller);
+                        MemberInfo<ElementHandle<Element>> memberInfo = MemberInfo.create(e, controller);
+                        if(memberInfo.getElementHandle().resolve(controller) != null) { // #200200 - Error in pulling up to a interface with cyclic inheritance error
+                            minfo.add(memberInfo);
+                        }
                     }
                     
                     TypeElement sourceTypeElement = (TypeElement) handle.resolveElement(controller);
@@ -166,7 +169,7 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
                     // *** initialize combo
                     // set renderer for the combo (to display name of the class)
                     supertypeCombo.setRenderer(new UIUtilities.JavaElementListCellRenderer());        // set combo model
-                    supertypeCombo.setModel(new ComboModel(minfo));
+                    supertypeCombo.setModel(new ComboModel(minfo.toArray(new MemberInfo[0])));
                     
                     // *** initialize table
                     // set renderer for the second column ("Member") do display name of the feature

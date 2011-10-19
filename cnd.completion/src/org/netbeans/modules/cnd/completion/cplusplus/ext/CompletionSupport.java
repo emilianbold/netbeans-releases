@@ -84,6 +84,7 @@ import org.netbeans.modules.cnd.completion.csm.CsmOffsetResolver;
 import org.netbeans.modules.cnd.completion.csm.CsmOffsetUtilities;
 import org.netbeans.modules.cnd.completion.impl.xref.FileReferencesContext;
 import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.spi.editor.completion.CompletionProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
@@ -422,6 +423,10 @@ public final class CompletionSupport implements DocumentListener {
     // utitlies
 
     public static boolean isCompletionEnabled(Document doc, int offset) {
+        return isCompletionEnabled(doc, offset, -1);
+    }
+    
+    public static boolean isCompletionEnabled(Document doc, int offset, int queryType) {
         if (doc.getLength() == 0) {
             // it's fine to show completion in empty doc
             return true;
@@ -452,7 +457,7 @@ public final class CompletionSupport implements DocumentListener {
                 if (CppTokenId.PREPROCESSOR_KEYWORD_DIRECTIVE_CATEGORY.equals(ts.token().id().primaryCategory())) {
                     return false;
                 }
-                if (CppTokenId.NUMBER_CATEGORY.equals(ts.token().id().primaryCategory())) {
+                if (queryType != CompletionProvider.TOOLTIP_QUERY_TYPE && CppTokenId.NUMBER_CATEGORY.equals(ts.token().id().primaryCategory())) {
                     return false;
                 }
             }

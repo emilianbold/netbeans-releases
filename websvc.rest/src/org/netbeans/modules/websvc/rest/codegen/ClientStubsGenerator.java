@@ -54,9 +54,11 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -118,22 +120,23 @@ public class ClientStubsGenerator extends AbstractGenerator {
     public static final String JS_README_TEMPLATE = "Templates/WebServices/JsReadme.html"; //NOI18N
 
     public static final String PROXY = "RestProxyServlet"; //NOI18N
-    public static final String PROXY_URL = "/restproxy";
+    public static final String PROXY_URL = "/restproxy";   //NOI18N
     public static final String PROXY_TEMPLATE = "Templates/WebServices/RestProxyServlet.txt"; //NOI18N
 
-    public static final String TTL_DojoResources_Stubs = "TTL_DojoResources_Stubs";
-    public static final String MSG_Readme = "MSG_Readme";
-    public static final String MSG_TestPage = "MSG_TestPage";
-    public static final String TTL_RestClient_Stubs = "TTL_RestClient_Stubs";
-    public static final String MSG_SelectResource = "MSG_SelectResource";
-    public static final String MSG_JS_Readme_Content = "MSG_JS_Readme_Content";
+    public static final String MSG_Readme = "MSG_Readme";               //NOI18N
+    public static final String README_VAR ="msg_readme";             //NOI18N
+    public static final String MSG_TestPage = "MSG_TestPage";           //NOI18N
+    public static final String TESTPAGE_VAR = "test_page";           //NOI18N
+    public static final String TTL_RestClient_Stubs = "TTL_RestClient_Stubs";//NOI18N
+    public static final String RESTCLIENT_STABS_VAR="rest_client_stubs";//NOI18N
+    public static final String MSG_JS_Readme_Content = "MSG_JS_Readme_Content";//NOI18N
+    public static final String README_CONTENT_VAR = "readme_content";       //NOI18N 
 
-    public static final String DEFAULT_PROTOCOL = "http";
-    public static final String DEFAULT_HOST = "localhost";
-    public static final String DEFAULT_PORT = "8080";
+    public static final String DEFAULT_PROTOCOL = "http";               //NOI18N
+    public static final String DEFAULT_HOST = "localhost";              //NOI18N
+    public static final String DEFAULT_PORT = "8080";                   //NOI18N
     public static final String DEFAULT_BASE_URL = DEFAULT_PROTOCOL+"://"+DEFAULT_HOST+":"+DEFAULT_PORT;
-    public static final String BASE_URL_TOKEN = "__BASE_URL__";
-    public static final String FILE_ENCODING_TOKEN = "__FILE_ENCODING__";
+    public static final String BASE_URL_TOKEN = "base_url";             //NOI18N
 
     private FileObject stubFolder;
     private Project p;
@@ -313,16 +316,16 @@ public class ClientStubsGenerator extends AbstractGenerator {
         List<Resource> resourceList = getModel().getResources();
 
         rjsDir = getStubFolder();
-        initJs(p);
 
         FileObject prjStubDir = createFolder(rjsDir, getProjectName().toLowerCase());
         createDataObjectFromTemplate(JS_PROJECTSTUB_TEMPLATE, prjStubDir, 
-                getProjectName(), JS, canOverwrite());
+                getProjectName(), JS, canOverwrite(), getProjectStubParameters(  
+                        getProjectName()));
         Set<String> entities = new HashSet<String>();
         for (Resource r : resourceList) {
             if(pHandle != null) {
                 reportProgress(NbBundle.getMessage(ClientStubsGenerator.class,
-                    "MSG_GeneratingClass", r.getName(), JS));
+                    "MSG_GeneratingClass", r.getName(), JS));           // NOI18N
             }
             ResourceJavaScript js = new ResourceJavaScript( this , r, prjStubDir,
                     entities );
@@ -331,9 +334,8 @@ public class ClientStubsGenerator extends AbstractGenerator {
             Set<String> generated = r.getEntities();
             entities.addAll( generated );
         }
-        updateProjectStub(prjStubDir.getFileObject(getProjectName(), JS), 
-                getProjectName());
-        updateRestStub(rjsDir.getFileObject(JS_TESTSTUBS, HTML), resourceList, "");
+        
+        initJs(p, getRestStubContentParams( resourceList, ""));
 
         Set<FileObject> files = new HashSet<FileObject>();
         FileObject rjsTest = rjsDir.getFileObject(JS_TESTSTUBS, HTML);
@@ -345,8 +347,10 @@ public class ClientStubsGenerator extends AbstractGenerator {
         return files;
     }
 
-    protected FileObject createDataObjectFromTemplate(final String template, final FileObject dir,
-            final String fileName, final String ext, final boolean overwrite) throws IOException {
+    protected FileObject createDataObjectFromTemplate(final String template, 
+            final FileObject dir,final String fileName, final String ext, 
+            final boolean overwrite, Map<String,String> parameters ) throws IOException 
+   {
         FileObject rF0 = dir.getFileObject(fileName, ext);
         if(rF0 != null) {
             if(overwrite) {
@@ -357,8 +361,17 @@ public class ClientStubsGenerator extends AbstractGenerator {
                 return rF0;
             }
         }
-        DataObject d0 = RestUtils.createDataObjectFromTemplate(template, dir, fileName);
+        DataObject d0 = RestUtils.createDataObjectFromTemplate(template, dir, 
+                fileName, parameters);
         return d0.getPrimaryFile();
+    }
+    
+    protected FileObject createDataObjectFromTemplate(final String template, 
+            final FileObject dir,final String fileName, final String ext, 
+            final boolean overwrite) throws IOException 
+    {
+        return createDataObjectFromTemplate(template, dir, fileName, ext, 
+                overwrite, null);
     }
 
     protected void copyDirectory(final FileSystem fs, final File src, final File dst)
@@ -396,21 +409,23 @@ public class ClientStubsGenerator extends AbstractGenerator {
         }
     }
 
-    private void initJs(Project p) throws IOException {
-        TokenReplacer tr = new TokenReplacer(this);
-        tr.addToken(TTL_RestClient_Stubs, NbBundle.getMessage(ClientStubsGenerator.class, TTL_RestClient_Stubs));
-        tr.addToken(MSG_Readme, NbBundle.getMessage(ClientStubsGenerator.class, MSG_Readme));
-        tr.addToken(MSG_TestPage, NbBundle.getMessage(ClientStubsGenerator.class, MSG_TestPage));
-        tr.addToken(MSG_JS_Readme_Content, NbBundle.getMessage(ClientStubsGenerator.class, MSG_JS_Readme_Content));
-        tr.addToken(FILE_ENCODING_TOKEN, getBaseEncoding().name());
+    private void initJs(Project p, Map<String,String> testStubsParams) throws IOException {
+        Map<String,String> map = new HashMap<String, String>();
+        map.put(RESTCLIENT_STABS_VAR, NbBundle.getMessage(ClientStubsGenerator.class, TTL_RestClient_Stubs));
+        map.put(README_VAR, NbBundle.getMessage(ClientStubsGenerator.class, MSG_Readme));
+        map.put(TESTPAGE_VAR, NbBundle.getMessage(ClientStubsGenerator.class, MSG_TestPage));
+        map.put(README_CONTENT_VAR, NbBundle.getMessage(ClientStubsGenerator.class, MSG_JS_Readme_Content));
+        
 
-        FileObject fo = createDataObjectFromTemplate(JS_TESTSTUBS_TEMPLATE, rjsDir, JS_TESTSTUBS, HTML, false);
-        tr.replaceTokens(fo);
+        testStubsParams.putAll(map);
+        FileObject fo = createDataObjectFromTemplate(JS_TESTSTUBS_TEMPLATE, 
+                rjsDir, JS_TESTSTUBS, HTML, false, testStubsParams );
 
-        createDataObjectFromTemplate(JS_STUBSUPPORT_TEMPLATE, rjsDir, JS_SUPPORT, JS, false);
+        createDataObjectFromTemplate(JS_STUBSUPPORT_TEMPLATE, rjsDir, JS_SUPPORT, 
+                JS, false);
 
-        fo = createDataObjectFromTemplate(JS_README_TEMPLATE, rjsDir, JS_README, HTML, false);
-        tr.replaceTokens(fo);
+        fo = createDataObjectFromTemplate(JS_README_TEMPLATE, rjsDir, JS_README, 
+                HTML, false , map );
 
         fo = createDataObjectFromTemplate(PROXY_TEMPLATE, rjsDir, PROXY, TXT, false);
 
@@ -475,61 +490,44 @@ public class ClientStubsGenerator extends AbstractGenerator {
         return folder;
     }
 
-    private void updateProjectStub(FileObject projectStub, String prjName) 
-        throws IOException 
+    private Map<String,String> getProjectStubParameters( String prjName) 
     {
-        FileLock lock = projectStub.lock();
-        try {
-            BufferedReader reader = new BufferedReader(new FileReader(
-                    FileUtil.toFile(projectStub)));
-            String line;
-            StringBuilder sb = new StringBuilder();
-            while ((line = reader.readLine()) != null) {
-                if (line.contains(BASE_URL_TOKEN)) {
-                    String url = getBaseUrl();
-                    if ( url.endsWith("/")){
-                        url = url.substring(0, url.length()-1);
-                    }
-                    sb.append(line.replaceAll(BASE_URL_TOKEN, url));
-                } else if (line.contains("__PROJECT_NAME__")) {
-                    sb.append(line.replaceAll("__PROJECT_NAME__", prjName));
-                } else if (line.contains("__PROJECT_INIT_BODY__")) {
-                    StringBuilder initBody = new StringBuilder();
-                    int count = 0;
-                    List<Resource> resourceList = getModel().getResources();
-                    for (Resource resource : resourceList) {
-                        if (resource.hasDefaultGet()) {
-                            String path = resource.getPath();
-                            if (!path.startsWith("/")) {
-                                path = "/"+path;
-                            }
-                            initBody.append( "      this.resources[");
-                            initBody.append( count++ );
-                            initBody.append( "] = new " ); 
-                            initBody.append( resource.getName());
-                            initBody.append("(this.uri+'" );
-                            initBody.append( path );
-                            initBody.append("');\n");
-                        }
-                    }
-                    sb.append(initBody);
-                } else {
-                    sb.append(line);
-                }
-                sb.append("\n");
-            }
-            OutputStreamWriter writer = new OutputStreamWriter(projectStub.getOutputStream(lock), getBaseEncoding());
-            try {
-                writer.write(sb.toString());
-            } finally {
-                writer.close();
-            }
-        } finally {
-            lock.releaseLock();
+        Map<String,String> map = new HashMap<String, String>();
+        
+        String url = getBaseUrl();
+        if ( url.endsWith("/")){                        // NOI18N
+            url = url.substring(0, url.length()-1);
         }
+        map.put(BASE_URL_TOKEN, url);
+        map.put("project_name", prjName);               // NOI18N
+        
+        StringBuilder initBody = new StringBuilder();
+        int count = 0;
+        List<Resource> resourceList = getModel().getResources();
+        for (Resource resource : resourceList) {
+            if (resource.hasDefaultGet()) {
+                
+                initBody.append( "      this.resources[");// NOI18N
+                initBody.append( count++ );              // NOI18N
+                initBody.append( "] = new " );           // NOI18N
+                initBody.append( resource.getName());   
+                initBody.append("(this.uri+'" );         // NOI18N
+                String path = resource.getPath();
+                if (!path.startsWith("/")) {             // NOI18N
+                    initBody.append( '/' );
+                }
+                initBody.append( path );
+                initBody.append("');\n");                // NOI18N
+            }
+        }
+        map.put("project_init_body", initBody.toString());// NOI18N
+        
+        return map;
     }
 
-    private void updateRestStub(FileObject restStub, List<Resource> resourceList, String pkg) throws IOException {
+    private Map<String,String> getRestStubContentParams(List<Resource> resourceList, 
+            String pkg) throws IOException 
+    {
         String prjName = getProjectName();
         String prjStubDir = prjName.toLowerCase();
         StringBuilder sb1 = new StringBuilder();
@@ -601,28 +599,10 @@ public class ClientStubsGenerator extends AbstractGenerator {
         sb2.append("\t\tvar n = document.getElementById('containerContent');\n");
         sb2.append("\t\tn.innerHTML = n.innerHTML + str;\n\n");
         sb2.append("\t</script>\n");
-        FileLock lock = restStub.lock();
-        try {
-            BufferedReader reader = new BufferedReader(new FileReader(FileUtil.toFile(restStub)));
-            String line;
-            StringBuilder sb = new StringBuilder();
-            while ((line = reader.readLine()) != null) {
-                if (line.contains("JS_DECLARE_END")) {
-                    sb.append(sb1.toString());
-                } else if (line.contains("JS_USAGE_END")) {
-                    sb.append(sb2.toString());
-                }
-                sb.append(line);
-                sb.append("\n");
-            }
-            OutputStreamWriter writer = new OutputStreamWriter(restStub.getOutputStream(lock), getBaseEncoding());
-            try {
-                writer.write(sb.toString());
-            } finally {
-                writer.close();
-            }
-        } finally {
-            lock.releaseLock();
-        }
+        Map<String,String> map = new HashMap<String, String>();
+        map.put("js_scripts_declaration", sb1.toString());      // NOI18N
+        map.put("js_usage", sb2.toString());                    // NOI18N
+        
+        return map;
     }
 }

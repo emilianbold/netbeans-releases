@@ -78,4 +78,9 @@ public class GeneratedAndReplacedContentModuleTest extends CssModuleTestBase {
         assertPropertyDeclaration("counter-reset: chapter 2;");
     }
     
+    public void testQuotes() {
+        assertPropertyDeclaration("quotes: 'arg1' 'arg2'");
+        assertPropertyDeclaration("quotes: \"arg1\" 'arg2' 'arg3' 'arg4'");
+    }
+    
 }

@@ -42,7 +42,10 @@
 package org.netbeans.modules.cnd.loaders;
 
 import java.io.IOException;
+import org.netbeans.core.spi.multiview.MultiViewElement;
+import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
 import org.netbeans.modules.cnd.builds.QMakeExecSupport;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObjectExistsException;
@@ -53,7 +56,7 @@ import org.openide.nodes.Node;
 import org.openide.nodes.Children;
 import org.openide.nodes.Sheet;
 import org.openide.util.Lookup;
-import org.openide.text.DataEditorSupport;
+import org.openide.windows.TopComponent;
 
 /**
  * @author Alexey Vladykin
@@ -62,25 +65,36 @@ public class QtProjectDataObject extends MultiDataObject {
 
     public QtProjectDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
         super(pf, loader);
-        CookieSet cookies = getCookieSet();
-        cookies.add((Node.Cookie) DataEditorSupport.create(this, getPrimaryEntry(), cookies));
-        cookies.add(new QMakeExecSupport(getPrimaryEntry()));
+        registerEditor(MIMENames.QTPROJECT_MIME_TYPE, true);
+        getCookieSet().add(new QMakeExecSupport(getPrimaryEntry()));
+    }
+
+    @MultiViewElement.Registration(
+        displayName="#Source", // NOI18N
+        iconBase="org/netbeans/modules/cnd/loaders/QtProjectIcon.png", // NOI18N
+        persistenceType=TopComponent.PERSISTENCE_ONLY_OPENED,
+        mimeType=MIMENames.QTPROJECT_MIME_TYPE,
+        preferredID="qtptoject.source", // NOI18N
+        position=1
+    )
+    public static MultiViewEditorElement createMultiViewEditorElement(Lookup context) {
+        return new MultiViewEditorElement(context);
     }
 
     @Override
     protected Node createNodeDelegate() {
-        return new QMakeDataNode(this, Children.LEAF);
+        return new QMakeDataNode(this);
     }
 
     @Override
-    public Lookup getLookup() {
-        return getCookieSet().getLookup();
+    protected int associateLookup() {
+        return 1;
     }
 
     private static class QMakeDataNode extends DataNode {
         /** Construct the DataNode */
-        public QMakeDataNode(QtProjectDataObject obj, Children ch) {
-            super(obj, ch, obj.getLookup());
+        public QMakeDataNode(QtProjectDataObject obj) {
+            super(obj, Children.LEAF, obj.getLookup());
         }
 
         /** Get the support for methods which need it */

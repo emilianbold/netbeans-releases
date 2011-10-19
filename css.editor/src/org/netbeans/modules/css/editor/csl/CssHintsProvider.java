@@ -64,7 +64,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author marekfukala
+ * @author mfukala@netbeans.org
  */
 public class CssHintsProvider implements HintsProvider {
 
@@ -119,10 +119,25 @@ public class CssHintsProvider implements HintsProvider {
                         ? Collections.<HintFix>singletonList(new ErrorCheckFix(context.parserResult.getSnapshot(), e.getKey(), cancelled))
                         : Collections.<HintFix>emptyList();
 
+                int astFrom = e.getStartPosition();
+                int astTo = e.getEndPosition();
+                
+                int docFrom = context.parserResult.getSnapshot().getOriginalOffset(astFrom);
+                int docTo = context.parserResult.getSnapshot().getOriginalOffset(astTo);
+                
+                if(docFrom == -1 && docTo == -1) {
+                    //unmappable, put it to the file beginning
+                    docFrom = docTo = 0;
+                } else if(docFrom == -1 && docTo != -1) {
+                    docFrom = docTo;
+                } else if(docTo == -1 && docFrom != -1) {
+                    docTo = docFrom;
+                }
+                
                 Hint h = new Hint(getCssRule(e.getSeverity()),
                         e.getDescription(),
                         e.getFile(),
-                        new OffsetRange(e.getStartPosition(), e.getEndPosition()),
+                        new OffsetRange(docFrom, docTo),
                         fixes,
                         10);
 

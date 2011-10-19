@@ -47,12 +47,14 @@ package org.netbeans.modules.mercurial.ui.menu;
 import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import org.netbeans.modules.mercurial.MercurialAnnotator;
 import org.netbeans.modules.mercurial.ui.branch.CloseBranchAction;
 import org.netbeans.modules.mercurial.ui.branch.CreateBranchAction;
 import org.netbeans.modules.mercurial.ui.branch.SwitchToBranchAction;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.versioning.util.SystemActionBridge;
+import org.netbeans.modules.versioning.util.Utils;
 import org.openide.awt.Actions;
 import org.openide.util.Lookup;
 import org.openide.util.actions.Presenter;
@@ -77,13 +79,21 @@ public class BranchMenu extends DynamicMenu implements Presenter.Menu {
         if (lkp == null) {
             org.openide.awt.Mnemonics.setLocalizedText(menu, NbBundle.getMessage(BranchMenu.class, "CTL_MenuItem_BranchMenu")); // NOI18N
             item = new JMenuItem();
-            Actions.connect(item, (Action) SystemAction.get(SwitchToBranchAction.class), false);
+            Action action = (Action) SystemAction.get(SwitchToBranchAction.class);
+            Utils.setAcceleratorBindings(MercurialAnnotator.ACTIONS_PATH_PREFIX, action);
+            Actions.connect(item, action, false);
             menu.add(item);
+            
             item = new JMenuItem();
-            Actions.connect(item, (Action) SystemAction.get(CreateBranchAction.class), false);
+            action = (Action) SystemAction.get(CreateBranchAction.class);
+            Actions.connect(item, action, false);
+            Utils.setAcceleratorBindings(MercurialAnnotator.ACTIONS_PATH_PREFIX, action);
             menu.add(item);
+
             item = new JMenuItem();
-            Actions.connect(item, (Action) SystemAction.get(CloseBranchAction.class), false);
+            action = (Action) SystemAction.get(CloseBranchAction.class);
+            Actions.connect(item, action, false);
+            Utils.setAcceleratorBindings(MercurialAnnotator.ACTIONS_PATH_PREFIX, action);
             menu.add(item);
         } else {
             item = menu.add(SystemActionBridge.createAction(SystemAction.get(SwitchToBranchAction.class), NbBundle.getMessage(SwitchToBranchAction.class, "CTL_PopupMenuItem_SwitchToBranch"), lkp)); //NOI18N

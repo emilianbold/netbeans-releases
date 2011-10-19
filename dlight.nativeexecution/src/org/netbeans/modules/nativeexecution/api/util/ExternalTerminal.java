@@ -66,6 +66,7 @@ public final class ExternalTerminal {
             new ConcurrentHashMap<TermEnvPair, String>();
     private final TerminalProfile profile;
     private String title = null;
+    private String workdir = null;
 
     private static final boolean CLOSE_TERMINAL = Boolean.getBoolean("org.netbeans.modules.nativeexecution.api.util.CloseTerminal"); // NOI18N
     private String prompt = CLOSE_TERMINAL ? "NO" : loc("Terminal.DefaultPrompt.text"); // NOI18N
@@ -81,6 +82,7 @@ public final class ExternalTerminal {
     private ExternalTerminal(ExternalTerminal terminal) {
         profile = terminal.profile;
         title = terminal.title;
+        workdir = terminal.workdir;
         prompt = terminal.prompt;
     }
 
@@ -119,9 +121,26 @@ public final class ExternalTerminal {
         result.title = title;
         return result;
     }
+    
+    /**
+     * Returnes an ExternalTerminal with configured workdir that
+     * is ued in terminal that executes a native process.
+     *
+     * @param workdir String to be used as a working dir in terminal (if a
+     *        terminal has capabilities to set a workdir)
+     * 
+     * @return ExternalTerminal with configured title
+     */
+    public ExternalTerminal setWorkdir(String workdir) {
+        ExternalTerminal result = new ExternalTerminal(this);
+        result.workdir = workdir;
+        return result;
+    }
 
     private static class ExternalTerminalAccessorImpl
             extends ExternalTerminalAccessor {
+        private static final String ARG_TITLE = "$title"; //NOI18N
+        private static final String ARG_WORKDIR = "$workdir"; //NOI18N
 
         @Override
         public TerminalProfile getTerminalProfile(ExternalTerminal terminal) {
@@ -157,8 +176,12 @@ public final class ExternalTerminal {
                     }
                 }
 
-                if (arg.contains("$title")) { // NOI18N
-                    arg = arg.replace("$title", terminal.title); // NOI18N
+                if (arg.contains(ARG_TITLE)) { // NOI18N
+                    arg = arg.replace(ARG_TITLE, terminal.title); // NOI18N
+                }
+                
+                if (arg.contains(ARG_WORKDIR)) { // NOI18N
+                    arg = arg.replace(ARG_WORKDIR, terminal.workdir); // NOI18N
                 }
 
                 result.add(arg);

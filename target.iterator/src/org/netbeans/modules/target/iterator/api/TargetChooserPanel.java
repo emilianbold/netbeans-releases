@@ -192,8 +192,10 @@ public final class TargetChooserPanel<T> implements WizardDescriptor.Panel {
             myGui.initValues( );
             String wizardTitle = getProvider().getWizardTitle();
             if ( wizardTitle!= null ) {
-                getTemplateWizard().putProperty ("NewFileWizard_Title",     // NOI18N 
-                    wizardTitle);
+                if( null == getTemplateWizard().getProperty( "NewFileWizard_Title" ) ) {// NOI18N 
+                    getTemplateWizard().putProperty ("NewFileWizard_Title",     // NOI18N 
+                        wizardTitle);
+                }
             }
             getProvider().readSettings( this );
         }

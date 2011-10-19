@@ -159,41 +159,6 @@ public class InstallerInitTest extends NbTestCase {
 //        assertNotNull("A dialog shown at begining", DD.d);
     }
 
-    public void testGenerateTooLittleLogs() throws Exception {
-        LogRecord r = new LogRecord(Level.INFO, "MSG_SOMETHING");
-        r.setLoggerName("org.netbeans.ui.anything");
-
-        String utf8 = 
-            "<html><head>" +
-            "</head>" +
-            "<body>" +
-            "<form action='http://anna.nbextras.org/analytics/upload.jsp' method='post'>" +
-            "  <input name='submit' value='&amp;Fill Survey' type='hidden'> </input>" +
-            "</form>" +
-            "</body></html>";
-        ByteArrayInputStream is = new ByteArrayInputStream(utf8.getBytes("utf-8"));
-        
-        MemoryURL.registerURL("memory://start.html", is);
-        
-        for (int i = 0; i < 500; i++) {
-            Logger.getLogger("org.netbeans.ui.anything").log(r);
-        }
-        assertEquals("not full buffer", 500, InstallerTest.getLogsSize());
-        
-        assertNull("No dialogs so far", DD.d);
-        
-        installer.doClose();
-        waitForGestures();
-        
-        assertNull("No dialogs at close", DD.d);
-        
-        installer.restored();
-        
-        waitForGestures();
-
-        assertNull("No dialog shown at begining", DD.d);
-    }
-
     public void testDontSubmitTwiceIssue128306(){
         final AtomicBoolean submittingTwiceStopped = new AtomicBoolean(false);
         final Installer.SubmitInteractive interactive = new Installer.SubmitInteractive("hallo", true);

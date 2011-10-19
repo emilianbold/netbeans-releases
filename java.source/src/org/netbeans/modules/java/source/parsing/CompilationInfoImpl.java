@@ -44,6 +44,7 @@ package org.netbeans.modules.java.source.parsing;
 
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.tools.javac.api.ClientCodeWrapper.Trusted;
 import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.util.JCDiagnostic;
 import java.io.IOException;
@@ -425,7 +426,8 @@ public final class CompilationInfoImpl {
     }
     
     
-    // Innerclasses ------------------------------------------------------------    
+    // Innerclasses ------------------------------------------------------------
+    @Trusted
     static class DiagnosticListenerImpl implements DiagnosticListener<JavaFileObject> {
         
         private final Map<JavaFileObject, TreeMap<Integer, Collection<Diagnostic<? extends JavaFileObject>>>> source2Errors;

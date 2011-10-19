@@ -361,7 +361,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         if (TraceFlags.TRACE_182342_BUG) {
             new Exception(taskName).printStackTrace(System.err);
         }
-        final RequestProcessor.Task rpTask = processor.create(new Runnable() {
+        return processor.post(new Runnable() {
             @Override
             public void run() {
                 String oldName = Thread.currentThread().getName();
@@ -375,8 +375,6 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
                 }
             }
         });
-        processor.post(rpTask);
-        return rpTask;
     }
 
     @Override

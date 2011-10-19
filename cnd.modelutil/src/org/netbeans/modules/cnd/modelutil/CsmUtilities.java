@@ -43,56 +43,35 @@
  */
 package org.netbeans.modules.cnd.modelutil;
 
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.util.Iterator;
-import java.util.List;
-import org.netbeans.modules.cnd.api.model.CsmFunction;
-import org.netbeans.modules.cnd.api.model.CsmMethod;
-import org.netbeans.modules.cnd.api.model.CsmParameter;
-import org.netbeans.modules.cnd.api.model.CsmType;
-import org.netbeans.modules.cnd.api.model.CsmClassifier;
-import org.netbeans.modules.cnd.api.model.CsmDeclaration;
-import org.netbeans.modules.cnd.api.model.CsmMember;
-import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
-import org.netbeans.modules.cnd.api.model.CsmObject;
-import org.netbeans.modules.cnd.api.model.CsmOffsetable;
-import org.netbeans.modules.cnd.api.model.CsmVariable;
-import org.netbeans.modules.cnd.api.model.CsmVisibility;
-import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
-import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Utilities;
-import org.netbeans.modules.cnd.api.project.NativeFileItem;
-import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
-import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmNamedElement;
-import org.netbeans.modules.cnd.api.model.CsmProject;
 import java.awt.Container;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.BufferUnderflowException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
-import javax.swing.text.JTextComponent;
-import javax.swing.text.Position;
-import javax.swing.text.StyledDocument;
+import javax.swing.text.*;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.JumpList;
-import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
-import org.netbeans.modules.cnd.api.model.CsmModelState;
-import org.netbeans.modules.cnd.api.model.CsmTemplate;
+import org.netbeans.editor.Utilities;
+import org.netbeans.modules.cnd.api.model.*;
+import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
 import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.api.project.NativeFileItem;
+import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectRegistry;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
@@ -104,18 +83,20 @@ import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.EditorCookie.Observable;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.util.Exceptions;
-import org.openide.util.RequestProcessor;
-import org.openide.windows.TopComponent;
 import org.openide.nodes.Node;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.NbDocument;
 import org.openide.text.PositionBounds;
 import org.openide.text.PositionRef;
+import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 import org.openide.util.UserQuestionException;
+import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
 /**
@@ -365,7 +346,7 @@ public class CsmUtilities {
     }
 
     /**
-     * Tries to find project that contains given file under its root directory.
+     * Tries to find project that contains given file under its source roots directories.
      * File doesn't have to be included into project or code model.
      * This is somewhat similar to default FileOwnerQueryImplementation,
      * but only for CsmProjects.
@@ -375,19 +356,42 @@ public class CsmUtilities {
      *      or <code>null</code> if there is no such project
      */
     public static CsmProject getCsmProject(FileObject fo) {
+        CsmProject pathBasedCandidate = null;
         if (fo != null && fo.isValid()) {
             String path = fo.getPath();
+            FileSystem fileSystem = null;
+            try {
+                fileSystem = fo.getFileSystem();
+            } catch (FileStateInvalidException ex) {
+                return null;
+            }
             for (CsmProject csmProject : CsmModelAccessor.getModel().projects()) {
                 Object platformProject = csmProject.getPlatformProject();
                 if (platformProject instanceof NativeProject) {
                     NativeProject nativeProject = (NativeProject)platformProject;
-                    if (path.startsWith(nativeProject.getProjectRoot() + File.separator)) {
-                        return csmProject;
+                    if (nativeProject.getFileSystem().equals(fileSystem)) {
+                        NativeFileItem item = nativeProject.findFileItem(fo);
+                        if (item != null) {
+                            return csmProject;
+                        }
+                        if (pathBasedCandidate == null) {
+                            final List<String> sourceRoots = new ArrayList<String>();
+                            sourceRoots.add(nativeProject.getProjectRoot());
+                            sourceRoots.addAll(nativeProject.getSourceRoots());
+                            for (String src : sourceRoots) {
+                                if (path.startsWith(src)) {
+                                    final int length = src.length();
+                                    if (path.length() == length || path.charAt(length) == '\\' || path.charAt(length) == '/') {
+                                        pathBasedCandidate = csmProject;
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
         }
-        return null;
+        return pathBasedCandidate;
     }
 
     public static boolean isAnyNativeProjectOpened() {
@@ -814,11 +818,14 @@ public class CsmUtilities {
                                 if (pane != null || detach) {
                                     ec.removePropertyChangeListener(this);
                                 }
-                                detach = true;
                                 if (pane != null) {
                                     // redirect to jump on position after showing document content
                                     SwingUtilities.invokeLater(this);
+                                } else if (detach) {
+                                    // last try hack due to bug with PROP_OPENED_PANES (IZ#202242)
+                                    SwingUtilities.invokeLater(this);
                                 }
+                                detach = true;
                             }
                         }
 

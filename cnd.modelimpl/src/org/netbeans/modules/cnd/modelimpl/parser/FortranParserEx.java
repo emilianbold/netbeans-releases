@@ -45,9 +45,12 @@
 package org.netbeans.modules.cnd.modelimpl.parser;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Stack;
 import org.antlr.runtime.CharStream;
+import org.antlr.runtime.RecognitionException;
 import org.antlr.runtime.Token;
 import org.antlr.runtime.TokenSource;
 import org.netbeans.modules.cnd.antlr.TokenBuffer;
@@ -57,15 +60,31 @@ import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.FortranParser;
+import org.netbeans.modules.cnd.modelimpl.parser.generated.FortranParser.program_return;
 import org.openide.util.Exceptions;
 
 /**
  *
  * @author nk220367
  */
-public class FortranParserEx extends FortranParser {
+public class FortranParserEx {
+    
+   public static final int UNKNOWN_SOURCE_FORM = -1;
+   public static final int FREE_FORM = 1;
+   public static final int FIXED_FORM = 2;
+    
     public List<Object> parsedObjects = new ArrayList<Object>();
 
+    private FortranParser parser;
+
+    public program_return program() throws RecognitionException {
+        return parser.program();
+    }
+
+    int getNumberOfSyntaxErrors() {
+        return parser.getNumberOfSyntaxErrors();
+    }
+    
     public class ProgramData {
         public String name;
         public int startOffset;
@@ -113,20 +132,34 @@ public class FortranParserEx extends FortranParser {
     }
 
     public FortranParserEx(TokenStream ts) {
+        MyTokenSource myts = new MyTokenSource(ts);
+        FortranTokenStream tokens = new FortranTokenStream(myts);
+        tokens.fill();
+        tokens.toString();
+        parser = new FortranParser(tokens);
+        try {
+            FortranLexicalPrepass prepass = new FortranLexicalPrepass(tokens);
+            prepass.setSourceForm(FIXED_FORM);
+            prepass.performPrepass();
+            tokens.finalizeTokenStream();
+            
+//            int i = 0;
+//            Token token = tokens.get(i);
+//            while (token.getType() != -1) {
+//                System.out.println(token.getType() + "" + token.getText() + " " + token.getLine() + " " + (token.getCharPositionInLine()));
+//                i++;
+//                token = tokens.get(i);
+//            }
+//            System.out.println(token.getType() + "" + token.getText() + " " + token.getLine() + " " + (token.getCharPositionInLine()));
+            
+        } catch (Throwable t) {
+            System.out.println(t);
+            t.printStackTrace(System.out);
+        }
+        
+        parser.inputStreams = new Stack<String>();
 
-        super(new FortranTokenStream(new MyTokenSource(ts)));
-        //super(new MyTokenStream(new TokenBuffer(ts)));
-
-//        FortranTokenStream tokens = (FortranTokenStream) getTokenStream();
-//        FortranLexicalPrepass prepass = new FortranLexicalPrepass(tokens);
-//        prepass.performPrepass();
-//        tokens.finalizeTokenStream();
-
-
-
-        inputStreams = new Stack<String>();
-
-        action = new IFortranParserAction() {
+        parser.action = new IFortranParserAction() {
 
             // Proogram
 
@@ -267,7 +300,9 @@ public class FortranParserEx extends FortranParser {
 
             public void dummy_arg_list__begin() {
                 if(subroutineData != null) {
-                    subroutineData.args = new ArrayList<String>();
+                    if(subroutineData.args == null) {
+                        subroutineData.args = new ArrayList<String>();
+                    }
                 }
                 if(functionData != null) {
                     if(functionData.args == null) {
@@ -292,7 +327,9 @@ public class FortranParserEx extends FortranParser {
 
             public void generic_name_list__begin() {
                 if(subroutineData != null) {
-                    subroutineData.args = new ArrayList<String>();
+                    if(subroutineData.args == null) {
+                        subroutineData.args = new ArrayList<String>();
+                    }
                 }
                 if(functionData != null) {
                     if(functionData.args == null) {
@@ -2242,15 +2279,18 @@ public class FortranParserEx extends FortranParser {
         };
     }
 
-    static public class MyToken implements Token {
+    static public class MyToken implements org.antlr.runtime.Token {
 
         org.netbeans.modules.cnd.antlr.Token t;
+        int chanel = 0;
+        int type = 0;
 
         public MyToken(org.netbeans.modules.cnd.antlr.Token t) {
-            if(t.getType() == APTTokenTypes.EOF) {
-                t = APTUtils.EOF_TOKEN2;
-            }
+//            if(t.getType() == APTTokenTypes.EOF) {
+//                t = APTUtils.EOF_TOKEN2;
+//            }
             this.t = t;
+            type = t.getType();
         }
 
         public String getText() {
@@ -2262,11 +2302,11 @@ public class FortranParserEx extends FortranParser {
         }
 
         public int getType() {
-            return t.getType();
+            return t.getType() != APTTokenTypes.EOF ? type : APTUtils.EOF_TOKEN2.getType();
         }
 
         public void setType(int arg0) {
-            t.setType(arg0);
+            type = arg0;
         }
 
         public int getLine() {
@@ -2278,7 +2318,7 @@ public class FortranParserEx extends FortranParser {
         }
 
         public int getCharPositionInLine() {
-            return t.getColumn();
+            return t.getColumn() - 1;
         }
 
         public void setCharPositionInLine(int arg0) {
@@ -2286,12 +2326,11 @@ public class FortranParserEx extends FortranParser {
         }
 
         public int getChannel() {
-            //
-            return 0;
+            return t.getType() == APTTokenTypes.CONTINUE_CHAR ? 99 : chanel;
         }
 
         public void setChannel(int arg0) {
-            //
+            chanel = arg0;
         }
 
         public int getTokenIndex() {
@@ -2315,7 +2354,7 @@ public class FortranParserEx extends FortranParser {
         public String toString() {
             return t.toString();
         }
-
+        
     }
 
 
@@ -2392,6 +2431,11 @@ public class FortranParserEx extends FortranParser {
         }
 
         public String getSourceName() {
+            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+        }
+
+        @Override
+        public int range() {
             throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
     }

@@ -49,6 +49,7 @@ import java.awt.datatransfer.*;
 import java.awt.dnd.*;
 import java.awt.event.*;
 import java.awt.geom.Area;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import javax.swing.*;
@@ -834,6 +835,11 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
                     //TODO
                 }
             }
+        } else if ((keyCode == KeyEvent.VK_R) && e.isControlDown() && (e.getID() == KeyEvent.KEY_PRESSED)) {
+            FormEditor formEditor = formDesigner.getFormEditor();
+            EditorSupport editorSupport = formEditor.getEditorSupport();
+            editorSupport.reloadForm();
+            e.consume();
         }
 
         super.processKeyEvent(e);
@@ -2588,10 +2594,19 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
         Composite originalComposite = g2.getComposite();
         g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.7f));
         try {
-            if (comp instanceof JComponent)
+            if (comp instanceof JComponent) {
                 comp.paint(g);
-            else
-                comp.getPeer().paint(g);
+            } else {
+                int width = comp.getWidth();
+                int height = comp.getHeight();
+                if ((width>0) && (height>0)) {
+                    Image image = comp.createImage(width, height);
+                    Graphics gImage = image.getGraphics();
+                    gImage.setClip(0, 0, width, height);
+                    comp.getPeer().paint(gImage);
+                    g.drawImage(image, 0, 0, null);
+                }
+            }
         }
         catch (RuntimeException ex) { // inspired by bug #62041 (JProgressBar bug #5035852)
             org.openide.ErrorManager.getDefault().notify(
@@ -3128,8 +3143,6 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
             formDesigner.getMenuEditLayer().clearRollover();
             
             if (p != null) {
-                targetContainer = getTargetContainer(p, modifiers);
-
                 if (movingComponents != null) { // there is a precreated visual component
                     boolean newLayout;
                     boolean oldLayout;
@@ -3174,7 +3187,8 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
                 }
                 else { // component not precreated ...
                     RADComponent targetComponent = targetContainer;
-                    if (javax.swing.border.Border.class.isAssignableFrom(paletteItem.getComponentClass())) {
+                    Class clazz = paletteItem.getComponentClass();
+                    if ((clazz!=null) && javax.swing.border.Border.class.isAssignableFrom(clazz)) {
                         int mode = ((modifiers & InputEvent.ALT_MASK) != 0) ? COMP_SELECTED : COMP_DEEPEST;
                         targetComponent = HandleLayer.this.getMetaComponentAt(p, mode);
                     }

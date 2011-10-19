@@ -62,8 +62,8 @@ import org.openide.text.Annotation;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.util.Dictionary;
+import java.util.List;
 import java.util.Map;
-import java.util.WeakHashMap;
 import javax.swing.JToolBar;
 import org.netbeans.editor.BaseDocument;
 import javax.swing.text.BadLocationException;
@@ -77,6 +77,7 @@ import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.editor.indent.spi.CodeStylePreferences;
 import org.netbeans.modules.editor.lib.BaseDocument_PropertyHandler;
 import org.netbeans.modules.editor.lib2.EditorPreferencesDefaults;
+import org.netbeans.modules.editor.lib2.view.PrintUtils;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
@@ -179,10 +180,12 @@ NbDocument.Printable, NbDocument.CustomEditor, NbDocument.CustomToolbar, NbDocum
         }
     }
 
+    @Override
     public java.text.AttributedCharacterIterator[] createPrintIterators() {
-        NbPrintContainer npc = new NbPrintContainer();
-        print(npc);
-        return npc.getIterators();
+        List<AttributedCharacterIterator> lineList = PrintUtils.printDocument(this, true, 0, getLength() + 1);
+        AttributedCharacterIterator[] lines = new AttributedCharacterIterator[lineList.size()];
+        lineList.toArray(lines);
+        return lines;
     }
 
     public Component createEditor(JEditorPane j) {
@@ -197,7 +200,8 @@ NbDocument.Printable, NbDocument.CustomEditor, NbDocument.CustomToolbar, NbDocum
     }
 
     public JToolBar createToolbar(JEditorPane j) {
-        return Utilities.getEditorUI(j).getToolBarComponent();
+        final EditorUI ui = Utilities.getEditorUI(j);
+        return ui != null ? ui.getToolBarComponent() : null;
     }
     
     /** Add annotation to the document. For annotation of whole line
@@ -249,7 +253,7 @@ NbDocument.Printable, NbDocument.CustomEditor, NbDocument.CustomToolbar, NbDocum
             if (annotation.getAnnotationType() != null) {
                 AnnotationDescDelegate a = (AnnotationDescDelegate)annoMap.get(annotation);
                 if (a == null) { // not added yet
-                    throw new IllegalStateException("Annotation not added: " + a);
+                    throw new IllegalStateException("Annotation not added: " + annotation.getAnnotationType() + annotation.getShortDescription());
                 }
                 a.detachListeners();
                 getAnnotations().removeAnnotation(a);

@@ -83,6 +83,8 @@ import org.netbeans.modules.subversion.ui.export.ExportAction;
 import org.netbeans.modules.subversion.ui.lock.LockAction;
 import org.netbeans.modules.subversion.ui.lock.UnlockAction;
 import org.netbeans.modules.subversion.ui.properties.VersioningInfoAction;
+import org.openide.awt.AcceleratorBinding;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.ImageUtilities;
@@ -122,6 +124,7 @@ public class Annotator {
 
     public static final String[] LABELS = new String[] {ANNOTATION_REVISION, ANNOTATION_STATUS, ANNOTATION_LOCK, ANNOTATION_FOLDER, ANNOTATION_MIME_TYPE, ANNOTATION_COMMIT_REVISION,
                                                         ANNOTATION_COMMIT_DATE, ANNOTATION_COMMIT_AUTHOR};
+    private static final String ACTIONS_PATH_PREFIX = "Actions/Subversion/";          // NOI18N
 
     private final FileStatusCache cache;
     private MessageFormat format;
@@ -426,10 +429,10 @@ public class Annotator {
         File[] files = ctx.getRootFiles().toArray(new File[ctx.getRootFiles().size()]);
         boolean noneVersioned = isNothingVersioned(files);
         if (destination == VCSAnnotator.ActionDestination.MainMenu) {
-            Action a = FileUtil.getConfigObject("Actions/Subversion/org-netbeans-modules-subversion-ui-checkout-CheckoutAction.instance", Action.class);
+            Action a = Utils.getAcceleratedAction("Actions/Subversion/org-netbeans-modules-subversion-ui-checkout-CheckoutAction.instance");
             if(a != null) actions.add(a);
             if (noneVersioned) {
-                a = FileUtil.getConfigObject("Actions/Subversion/org-netbeans-modules-subversion-ui-project-ImportAction.instance", Action.class);
+                a = Utils.getAcceleratedAction("Actions/Subversion/org-netbeans-modules-subversion-ui-project-ImportAction.instance");
                 if(a instanceof ContextAwareAction) {
                     a = ((ContextAwareAction)a).createContextAwareInstance(Lookups.singleton(ctx));
                 }            
@@ -472,6 +475,7 @@ public class Annotator {
                 actions.add(SystemAction.get(VersioningInfoAction.class));
                 actions.add(SystemAction.get(SvnPropertiesAction.class));
             }
+            Utils.setAcceleratorBindings(ACTIONS_PATH_PREFIX, actions.toArray(new Action[actions.size()]));
         } else {
             ResourceBundle loc = NbBundle.getBundle(Annotator.class);
             Lookup context = ctx.getElements();

@@ -234,7 +234,12 @@ public abstract class LexerInputOperation<T extends TokenId> {
     }
 
     public AbstractToken<T> getFlyweightToken(T id, String text) {
-        assert (text.length() <= readLength());
+        if (text.length() > readLength()) {
+            throw new IllegalArgumentException("getFlyweightToken(): Creating token " + // NOI18N
+                    " for unread characters: text=\"" + // NOI18N
+                    CharSequenceUtilities.debugText(text) + "\"; text.length()=" + // NOI18N
+                    text.length() + " > readLength()=" + readLength()); // NOI18N
+        }
         // Compare each recognized char with the corresponding char in text
         if (LOG.isLoggable(Level.FINE)) {
             for (int i = 0; i < text.length(); i++) {
@@ -275,8 +280,15 @@ public abstract class LexerInputOperation<T extends TokenId> {
         }
         return null;
     }
-    
+
+    private void checkTokenIdNonNull(T id) {
+        if (id == null) {
+            throw new IllegalArgumentException("Token id must not be null. Fix lexer " + lexer); // NOI18N
+        }
+    }
+
     public AbstractToken<T> createToken(T id, int length) {
+        checkTokenIdNonNull(id);
         logTokenContent("createToken", id, length);
         assignTokenLength(length);
         AbstractToken<T> token;
@@ -312,6 +324,7 @@ public abstract class LexerInputOperation<T extends TokenId> {
         if (partType == PartType.COMPLETE)
             return createToken(id, length);
 
+        checkTokenIdNonNull(id);
         return createPropertyToken(id, length, null, partType);
     }
 

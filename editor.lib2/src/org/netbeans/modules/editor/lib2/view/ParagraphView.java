@@ -178,10 +178,19 @@ public final class ParagraphView extends EditorView implements EditorView.Parent
      */
     @Override
     public View getView(int index) {
-        return (children != null) ? children.get(index) : null;
+        View v;
+        if (children != null) {
+            v = getEditorView(index);
+        } else {
+            v = null;
+        }
+        return v;
     }
 
     public final EditorView getEditorView(int index) {
+        if (index >= getViewCount()) {
+            throw new IndexOutOfBoundsException("View index=" + index + " >= " + getViewCount()); // NOI18N
+        }
         return children.get(index);
     }
 
@@ -426,8 +435,8 @@ public final class ParagraphView extends EditorView implements EditorView.Parent
     }
 
     @Override
-    protected StringBuilder appendViewInfo(StringBuilder sb, int indent, int importantChildIndex) {
-        super.appendViewInfo(sb, indent, importantChildIndex);
+    protected StringBuilder appendViewInfo(StringBuilder sb, int indent, String xyInfo, int importantChildIndex) {
+        super.appendViewInfo(sb, indent, xyInfo, importantChildIndex);
         sb.append(", WxH:").append(getWidth()).append("x").append(getHeight());
         if (children != null) {
             children.appendViewInfo(this, sb);
@@ -442,11 +451,11 @@ public final class ParagraphView extends EditorView implements EditorView.Parent
     
     @Override
     public String toString() {
-        return appendViewInfo(new StringBuilder(200), 0, -1).toString();
+        return appendViewInfo(new StringBuilder(200), 0, "", -1).toString();
     }
 
     public String toStringDetail() { // Dump everything
-        return appendViewInfo(new StringBuilder(200), 0, -2).toString();
+        return appendViewInfo(new StringBuilder(200), 0, "", -2).toString();
     }
 
     @Override

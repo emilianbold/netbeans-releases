@@ -70,6 +70,7 @@ CLASS      Exception                       [PUBLIC]   issue194875.php
 CLASS      Exception                       [PUBLIC]   issue201310.php
 CLASS      Foo                             [PUBLIC]   issue159970.php
 CLASS      Foo                             [PUBLIC]   issue191666.php
+CLASS      Foo                             [PUBLIC]   test203294.php
 CLASS      ForClsCtxCodeCompletion         [PUBLIC]   insideClass3.php
 CLASS      HTML                            [PUBLIC]   html.php
 CLASS      HTMLbase                        [PUBLIC]   htmlbase.php
@@ -84,6 +85,7 @@ CLASS      InvisibleClass                  [PUBLIC]   issue194875.php
 CLASS      InvisibleClass                  [PUBLIC]   issue201310.php
 CLASS      InvisibleClassFromNs            [PUBLIC]   Extra
 CLASS      InvisibleClassFromNs            [PUBLIC]   ExtraThrow
+CLASS      InvocationComment               [PUBLIC]   issue160444.php
 CLASS      Magazine                        [PUBLIC]   mixedtypes.php
 CLASS      Magazine_1                      [PUBLIC]   mixedtypes_1.php
 CLASS      MagicMethods                    [PUBLIC]   issue196714.php
@@ -127,6 +129,7 @@ CLASS      TestClass                       [PUBLIC]   tests166339.php
 CLASS      TestClassFromNs                 [PUBLIC]   ExtraThrow
 CLASS      TestIssue145206                 [PUBLIC]   issue145206.php
 CLASS      TestIssue146176                 [PUBLIC]   issue146176.php
+CLASS      TestMethod                      [PUBLIC]   test202530.php
 CLASS      TestOptionalArgsClass           [PUBLIC]   optional_args.php
 CLASS      TypesinPHPDoc                   [PUBLIC]   types_in_phpdoc.php
 CLASS      UsageReturnTypeInOtherFile      [PUBLIC]   Usage.php

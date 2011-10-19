@@ -1,14 +1,5 @@
 #!/bin/sh
 
-# XXX awaiting Forest support:
-if [ -d contrib/.hg ] ; then
-    hg -R contrib up -C .
-    hg -R contrib --config extensions.purge= clean --all || exit
-    hg -R contrib pull -u
-else
-    hg clone http://hg.netbeans.org/main/contrib contrib
-fi
-
 keystore=$SECRET/NBstore
 storepass=`cat $SECRET/storepass`
 ant verify-libs-and-licenses || exit

@@ -205,7 +205,7 @@ public final class SourceJavadocAttacherUtil {
             @Override
             public URI call(String param) throws Exception {
                 final File f = new File (param);
-                assert f.isAbsolute();
+                assert f.isAbsolute() : param;
                 FileObject fo = FileUtil.toFileObject(f);
                 if (fo.isData()) {
                     fo = FileUtil.getArchiveRoot(fo);

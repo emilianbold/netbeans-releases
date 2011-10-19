@@ -6,22 +6,19 @@
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
  *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common
- * Development and Distribution License("CDDL") (collectively, the
- * "License"). You may not use this file except in compliance with the
- * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
- * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
- * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
- * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Oracle in the GPL Version 2 section of the License file that
- * accompanied this code. If applicable, add the following below the
- * License Header, with the fields enclosed by brackets [] replaced by
- * your own identifying information:
+ * The contents of this file are subject to the terms of either the GNU General
+ * Public License Version 2 only ("GPL") or the Common Development and
+ * Distribution License("CDDL") (collectively, the "License"). You may not use
+ * this file except in compliance with the License. You can obtain a copy of the
+ * License at http://www.netbeans.org/cddl-gplv2.html or
+ * nbbuild/licenses/CDDL-GPL-2-CP. See the License for the specific language
+ * governing permissions and limitations under the License. When distributing
+ * the software, include this License Header Notice in each file and include the
+ * License file at nbbuild/licenses/CDDL-GPL-2-CP. Oracle designates this
+ * particular file as subject to the "Classpath" exception as provided by Oracle
+ * in the GPL Version 2 section of the License file that accompanied this code.
+ * If applicable, add the following below the License Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * Contributor(s):
@@ -30,16 +27,15 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
- * If you wish your version of this file to be governed by only the CDDL
- * or only the GPL Version 2, indicate your decision by adding
- * "[Contributor] elects to include this software in this distribution
- * under the [CDDL or GPL Version 2] license." If you do not indicate a
- * single choice of license, a recipient has the option to distribute
- * your version of this file under either the CDDL, the GPL Version 2 or
- * to extend the choice of license to its licensees as provided above.
- * However, if you add GPL Version 2 code and therefore, elected the GPL
- * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder.
+ * If you wish your version of this file to be governed by only the CDDL or only
+ * the GPL Version 2, indicate your decision by adding "[Contributor] elects to
+ * include this software in this distribution under the [CDDL or GPL Version 2]
+ * license." If you do not indicate a single choice of license, a recipient has
+ * the option to distribute your version of this file under either the CDDL, the
+ * GPL Version 2 or to extend the choice of license to its licensees as provided
+ * above. However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is made
+ * subject to such option by the copyright holder.
  */
 package org.netbeans.modules.web.struts;
 
@@ -52,41 +48,26 @@ import java.net.URLConnection;
 import java.util.Properties;
 import javax.swing.JTextField;
 import junit.framework.Test;
-import org.netbeans.jellytools.Bundle;
-import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.NewFileWizardOperator;
-import org.netbeans.jellytools.OutputTabOperator;
-import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.actions.Action;
-import org.netbeans.jellytools.actions.EditAction;
-import org.netbeans.jemmy.JemmyException;
-import org.netbeans.jemmy.Waitable;
-import org.netbeans.jemmy.Waiter;
-import org.netbeans.jemmy.operators.JButtonOperator;
-import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.NewJavaFileNameLocationStepOperator;
-import org.netbeans.jellytools.NewProjectWizardOperator;
-import org.netbeans.jellytools.NewWebProjectNameLocationStepOperator;
 import org.netbeans.jellytools.actions.ActionNoBlock;
+import org.netbeans.jellytools.actions.EditAction;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.jellytools.modules.web.NewJspFileNameStepOperator;
 import org.netbeans.jellytools.modules.web.nodes.WebPagesNode;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jemmy.TimeoutExpiredException;
-import org.netbeans.jemmy.operators.JCheckBoxOperator;
-import org.netbeans.jemmy.operators.JLabelOperator;
-import org.netbeans.jemmy.operators.JRadioButtonOperator;
-import org.netbeans.jemmy.operators.JTableOperator;
-import org.netbeans.jemmy.operators.JTextFieldOperator;
-import org.netbeans.jemmy.operators.JTreeOperator;
+import org.netbeans.jemmy.JemmyException;
+import org.netbeans.jemmy.Waitable;
+import org.netbeans.jemmy.Waiter;
+import org.netbeans.jemmy.operators.*;
 import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.junit.ide.ProjectSupport;
 import org.openide.util.Exceptions;
 
-/** End-to-end scenario test based on
- * http://qa.netbeans.org/modules/webapps/promo-f/frameworks/struts-user-scenario.html.
+/**
+ * End-to-end scenario test based on
+ * http://wiki.netbeans.org/TS_71_StrutsSupport
  *
  * @author Jiri Skrivanek
  */
@@ -94,59 +75,52 @@ public class EndToEndTest extends J2eeTestCase {
 
     public static final String PROJECT_NAME = "StrutsWebApplication";
 
-    /** Constructor required by JUnit */
+    /**
+     * Constructor required by JUnit
+     */
     public EndToEndTest(String name) {
         super(name);
     }
 
-    /** Creates suite from particular test cases. You can define order of testcases here. */
+    /**
+     * Creates suite from particular test cases. You can define order of
+     * testcases here.
+     */
     public static Test suite() {
         NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(EndToEndTest.class);
-        conf = addServerTests(Server.GLASSFISH,conf,"testSetupStrutsProject","testCreateLoginPage","testCreateLoginBean",
-                "testCreateLoginAction","testCreateSecurityManager","testCreateForward","testCreateShopPage",
-                "testCreateLogoutPage","testCreateForwardInclude", "testCreateAction", "testCreateException",
+        conf = addServerTests(Server.GLASSFISH, conf, "testSetupStrutsProject", "testCreateLoginPage", "testCreateLoginBean",
+                "testCreateLoginAction", "testCreateSecurityManager", "testCreateForward", "testCreateShopPage",
+                "testCreateLogoutPage", "testCreateForwardInclude", "testCreateAction", "testCreateException",
                 "testCreateActionFormBean", "testCreateActionFormBeanProperty", "testRunApplication");
         conf = conf.enableModules(".*").clusters(".*");
         return NbModuleSuite.create(conf);
-
-    /*
-    return NbModuleSuite.create(
-    NbModuleSuite.createConfiguration(EndToEndTest.class)
-    .addTest("testSetupStrutsProject")
-    .addTest("testCreateLoginPage")
-    .addTest("testCreateLoginBean")
-    .addTest("testCreateLoginAction")
-    .addTest("testCreateSecurityManager")
-    .addTest("testCreateForward")
-    .addTest("testCreateShopPage")
-    .addTest("testCreateLogoutPage")
-    .addTest("testCreateForwardInclude")
-    .addTest("testRunApplication")
-    .enableModules(".*")
-    .clusters(".*")
-    );
-     */
     }
 
-    /** Called before every test case. */
+    /**
+     * Called before every test case.
+     */
     @Override
     public void setUp() {
-        System.out.println("########  "+getName()+"  #######");
+        System.out.println("########  " + getName() + "  #######");
     }
 
-    /** Called after every test case. */
+    /**
+     * Called after every test case.
+     */
     @Override
     public void tearDown() {
     }
 
-    /** Create web application with struts support and check correctness. */
+    /**
+     * Create web application with struts support and check correctness.
+     */
     public void testSetupStrutsProject() throws IOException {
         // "Web"
-        String web = Bundle.getStringTrimmed(
+        String web = org.netbeans.jellytools.Bundle.getStringTrimmed(
                 "org.netbeans.modules.web.core.Bundle",
                 "OpenIDE-Module-Display-Category");
         // "Web Application"
-        String webApplication = Bundle.getStringTrimmed(
+        String webApplication = org.netbeans.jellytools.Bundle.getStringTrimmed(
                 "org.netbeans.modules.web.project.ui.wizards.Bundle",
                 "Templates/Project/Web/emptyWeb.xml");
         NewProjectWizardOperator nop = NewProjectWizardOperator.invoke();
@@ -161,35 +135,21 @@ public class EndToEndTest extends J2eeTestCase {
         NewProjectWizardOperator frameworkStep = new NewProjectWizardOperator();
         // select Struts
         JTableOperator tableOper = new JTableOperator(frameworkStep);
-        for(int i=0; i<tableOper.getRowCount(); i++) {
-            if(tableOper.getValueAt(i, 1).toString().startsWith("org.netbeans.modules.web.struts.StrutsFrameworkProvider")) { // NOI18N
+        for (int i = 0; i < tableOper.getRowCount(); i++) {
+            if (tableOper.getValueAt(i, 1).toString().startsWith("org.netbeans.modules.web.struts.StrutsFrameworkProvider")) { // NOI18N
                 tableOper.selectCell(i, 0);
                 break;
             }
         }
         // set ApplicationResource location
         new JTextFieldOperator(
-                (JTextField)new JLabelOperator(frameworkStep, "Application Resource:").getLabelFor()
-                ).setText("com.mycompany.eshop.struts.ApplicationResource");
+                (JTextField) new JLabelOperator(frameworkStep, "Application Resource:").getLabelFor()).setText("com.mycompany.eshop.struts.ApplicationResource");
         frameworkStep.btFinish().pushNoBlock();
         frameworkStep.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 60000);
         frameworkStep.waitClosed();
-        // Opening Projects
-        String openingProjectsTitle = Bundle.getString(
-                "org.netbeans.modules.project.ui.Bundle",
-                "LBL_Opening_Projects_Progress");
-        try {
-            // wait at most 60 second until progress dialog dismiss
-            NbDialogOperator openingOper = new NbDialogOperator(openingProjectsTitle);
-            frameworkStep.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 60000);
-            openingOper.waitClosed();
-        } catch (TimeoutExpiredException e) {
-            // ignore when progress dialog was closed before we started to wait for it
-        }
-        ProjectSupport.waitScanFinished();
         // Check project contains all needed files.
         WebPagesNode webPages = new WebPagesNode(PROJECT_NAME);
-        new Node(webPages, "welcomeStruts.jsp");
+        Node welcomeNode = new Node(webPages, "welcomeStruts.jsp");
         Node strutsConfig = new Node(webPages, "WEB-INF|struts-config.xml");
         new OpenAction().performAPI(strutsConfig);
         webPages.setComparator(new DefaultStringComparator(true, true));
@@ -200,9 +160,12 @@ public class EndToEndTest extends J2eeTestCase {
         assertTrue("ActionServlet should be created in web.xml.", webXMLEditor.getText().indexOf(expected) > -1);
         webXMLEditor.replace("index.jsp", "login.jsp");
         webXMLEditor.save();
+        waitScanFinished();
     }
 
-    /** Create login.jsp and insert prepared source code to it. */
+    /**
+     * Create login.jsp and insert prepared source code to it.
+     */
     public void testCreateLoginPage() throws IOException {
         NewFileWizardOperator newWizardOper = NewFileWizardOperator.invoke();
         newWizardOper.selectProject(PROJECT_NAME);
@@ -219,12 +182,14 @@ public class EndToEndTest extends J2eeTestCase {
         properties.load(this.getClass().getResourceAsStream("EndToEndTest.properties"));
         String sourceCode = properties.getProperty("login");
         // wait for text to be displayed
-        loginEditorOper.txtEditorPane().waitText("JSP Page", -1);
-        loginEditorOper.replace(loginEditorOper.getText(), sourceCode);
+        loginEditorOper.txtEditorPane().waitText("JSP Page");
+        loginEditorOper.replace(loginEditorOper.txtEditorPane().getDisplayedText(), sourceCode);
         loginEditorOper.save();
     }
 
-    /** Create bean which handles login form. */
+    /**
+     * Create bean which handles login form.
+     */
     public void testCreateLoginBean() throws IOException {
         NewFileWizardOperator newWizardOper = NewFileWizardOperator.invoke();
         newWizardOper.selectProject(PROJECT_NAME);
@@ -239,14 +204,16 @@ public class EndToEndTest extends J2eeTestCase {
         Properties properties = new Properties();
         properties.load(this.getClass().getResourceAsStream("EndToEndTest.properties"));
         String sourceCode = properties.getProperty("LoginForm");
-        loginEditorOper.replace(loginEditorOper.getText(), sourceCode);
+        loginEditorOper.replace(loginEditorOper.txtEditorPane().getDisplayedText(), sourceCode);
         loginEditorOper.save();
         EditorOperator strutsConfigEditor = new EditorOperator("struts-config.xml");
         String expected = "<form-bean name=\"LoginForm\" type=\"com.mycompany.eshop.struts.forms.LoginForm\"/>";
         assertTrue("form-bean record should be added to struts-config.xml.", strutsConfigEditor.getText().indexOf(expected) > -1);
     }
 
-    /** Create struts action which verify input fields in login form. */
+    /**
+     * Create struts action which verify input fields in login form.
+     */
     public void testCreateLoginAction() throws IOException {
         NewFileWizardOperator newWizardOper = NewFileWizardOperator.invoke();
         newWizardOper.selectProject(PROJECT_NAME);
@@ -270,14 +237,16 @@ public class EndToEndTest extends J2eeTestCase {
         Properties properties = new Properties();
         properties.load(this.getClass().getResourceAsStream("EndToEndTest.properties"));
         String sourceCode = properties.getProperty("LoginVerifyAction");
-        loginEditorOper.replace(loginEditorOper.getText(), sourceCode);
+        loginEditorOper.replace(loginEditorOper.txtEditorPane().getDisplayedText(), sourceCode);
         loginEditorOper.save();
         EditorOperator strutsConfigEditor = new EditorOperator("struts-config.xml");
         String expected = "<action input=\"/login.jsp\" name=\"LoginForm\" path=\"/Login/Verify\" scope=\"request\" type=\"com.mycompany.eshop.struts.actions.LoginVerifyAction\"/>";
         assertTrue("action record should be added to struts-config.xml.", strutsConfigEditor.getText().indexOf(expected) > -1);
     }
 
-    /** Create SecurityManager class.  */
+    /**
+     * Create SecurityManager class.
+     */
     public void testCreateSecurityManager() throws IOException {
         NewFileWizardOperator newWizardOper = NewFileWizardOperator.invoke();
         newWizardOper.selectProject(PROJECT_NAME);
@@ -294,11 +263,14 @@ public class EndToEndTest extends J2eeTestCase {
         Properties properties = new Properties();
         properties.load(this.getClass().getResourceAsStream("EndToEndTest.properties"));
         String sourceCode = properties.getProperty("SecurityManager");
-        editorOper.replace(editorOper.getText(), sourceCode);
+        editorOper.replace(editorOper.txtEditorPane().getDisplayedText(), sourceCode);
         editorOper.save();
     }
 
-    /** Call "Add Forward" action in struts-config.xml and fill in the dialog values. */
+    /**
+     * Call "Add Forward" action in struts-config.xml and fill in the dialog
+     * values.
+     */
     public void testCreateForward() {
         EditorOperator strutsConfigEditor = new EditorOperator("struts-config.xml");
         strutsConfigEditor.select(18);
@@ -312,7 +284,7 @@ public class EndToEndTest extends J2eeTestCase {
         }
         NbDialogOperator addForwardOper = new NbDialogOperator("Add Forward");
         JTextFieldOperator txtForwardName = new JTextFieldOperator(
-                (JTextField)new JLabelOperator(addForwardOper, "Forward Name:").getLabelFor());
+                (JTextField) new JLabelOperator(addForwardOper, "Forward Name:").getLabelFor());
         txtForwardName.setText("success");
         new JTextFieldOperator(addForwardOper, "/").setText("/shop.jsp");
         // set Redirect check box
@@ -325,7 +297,9 @@ public class EndToEndTest extends J2eeTestCase {
         strutsConfigEditor.save();
     }
 
-    /** Create shop.jsp and insert prepared source code to it. */
+    /**
+     * Create shop.jsp and insert prepared source code to it.
+     */
     public void testCreateShopPage() throws IOException {
         NewFileWizardOperator newWizardOper = NewFileWizardOperator.invoke();
         newWizardOper.selectProject(PROJECT_NAME);
@@ -343,11 +317,13 @@ public class EndToEndTest extends J2eeTestCase {
         String sourceCode = properties.getProperty("shop");
         // wait for text to be displayed
         editorOper.txtEditorPane().waitText("JSP Page", -1);
-        editorOper.replace(editorOper.getText(), sourceCode);
+        editorOper.replace(editorOper.txtEditorPane().getDisplayedText(), sourceCode);
         editorOper.save();
     }
 
-    /** Create logout.jsp and insert prepared source code to it. */
+    /**
+     * Create logout.jsp and insert prepared source code to it.
+     */
     public void testCreateLogoutPage() throws IOException {
         NewFileWizardOperator newWizardOper = NewFileWizardOperator.invoke();
         newWizardOper.selectProject(PROJECT_NAME);
@@ -365,11 +341,14 @@ public class EndToEndTest extends J2eeTestCase {
         String sourceCode = properties.getProperty("logout");
         // wait for text to be displayed
         editorOper.txtEditorPane().waitText("JSP Page", -1);
-        editorOper.replace(editorOper.getText(), sourceCode);
+        editorOper.replace(editorOper.txtEditorPane().getDisplayedText(), sourceCode);
         editorOper.save();
     }
 
-    /** Call "Add Forward/Include" action in struts-config.xml and fill in the dialog values. */
+    /**
+     * Call "Add Forward/Include" action in struts-config.xml and fill in the
+     * dialog values.
+     */
     public void testCreateForwardInclude() {
         EditorOperator strutsConfigEditor = new EditorOperator("struts-config.xml");
         ActionNoBlock addForwardAction = new ActionNoBlock(null, "Struts|Add Forward/Include");
@@ -392,7 +371,10 @@ public class EndToEndTest extends J2eeTestCase {
         strutsConfigEditor.save();
     }
 
-    /** Call "Add Action" action in struts-config.xml and fill in the dialog values. */
+    /**
+     * Call "Add Action" action in struts-config.xml and fill in the dialog
+     * values.
+     */
     public void testCreateAction() {
         EditorOperator strutsConfigEditor = new EditorOperator("struts-config.xml");
         ActionNoBlock addAction = new ActionNoBlock(null, "Struts|Add Action");
@@ -417,7 +399,10 @@ public class EndToEndTest extends J2eeTestCase {
         strutsConfigEditor.save();
     }
 
-    /** Call "Add Exception" action in struts-config.xml and fill in the dialog values. */
+    /**
+     * Call "Add Exception" action in struts-config.xml and fill in the dialog
+     * values.
+     */
     public void testCreateException() {
         EditorOperator strutsConfigEditor = new EditorOperator("struts-config.xml");
         ActionNoBlock addException = new ActionNoBlock(null, "Struts|Add Exception");
@@ -442,7 +427,10 @@ public class EndToEndTest extends J2eeTestCase {
         strutsConfigEditor.save();
     }
 
-    /** Call "Add ActionForm Bean" action in struts-config.xml and fill in the dialog values. */
+    /**
+     * Call "Add ActionForm Bean" action in struts-config.xml and fill in the
+     * dialog values.
+     */
     public void testCreateActionFormBean() {
         EditorOperator strutsConfigEditor = new EditorOperator("struts-config.xml");
         ActionNoBlock addActionFormBean = new ActionNoBlock(null, "Struts|Add ActionForm Bean");
@@ -464,7 +452,10 @@ public class EndToEndTest extends J2eeTestCase {
         strutsConfigEditor.save();
     }
 
-    /** Call "Add ActionForm Bean Property" action in struts-config.xml and fill in the dialog values. */
+    /**
+     * Call "Add ActionForm Bean Property" action in struts-config.xml and fill
+     * in the dialog values.
+     */
     public void testCreateActionFormBeanProperty() {
         EditorOperator strutsConfigEditor = new EditorOperator("struts-config.xml");
         ActionNoBlock addActionFormBeanProp = new ActionNoBlock(null, "Struts|Add ActionForm Bean Property");
@@ -485,25 +476,25 @@ public class EndToEndTest extends J2eeTestCase {
         strutsConfigEditor.save();
     }
 
-    /** Run created application. */
+    /**
+     * Run created application.
+     */
     public void testRunApplication() {
         // not display browser on run
         // open project properties
         ProjectsTabOperator.invoke().getProjectRootNode(PROJECT_NAME).properties();
         // "Project Properties"
-        String projectPropertiesTitle = Bundle.getStringTrimmed("org.netbeans.modules.web.project.ui.customizer.Bundle", "LBL_Customizer_Title");
+        String projectPropertiesTitle = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.web.project.ui.customizer.Bundle", "LBL_Customizer_Title");
         NbDialogOperator propertiesDialogOper = new NbDialogOperator(projectPropertiesTitle);
         // select "Run" category
         new Node(new JTreeOperator(propertiesDialogOper), "Run").select();
-        String displayBrowserLabel = Bundle.getStringTrimmed("org.netbeans.modules.web.project.ui.customizer.Bundle", "LBL_CustomizeRun_DisplayBrowser_JCheckBox");
+        String displayBrowserLabel = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.web.project.ui.customizer.Bundle", "LBL_CustomizeRun_DisplayBrowser_JCheckBox");
         new JCheckBoxOperator(propertiesDialogOper, displayBrowserLabel).setSelected(false);
         // confirm properties dialog
         propertiesDialogOper.ok();
 
         try {
-            // "Run Project"
-            String runProjectItem = Bundle.getString("org.netbeans.modules.web.project.ui.Bundle", "LBL_RunAction_Name");
-            new Action(null, runProjectItem).perform(new ProjectsTabOperator().getProjectRootNode(PROJECT_NAME));
+            new Action(null, "Run").perform(new ProjectsTabOperator().getProjectRootNode(PROJECT_NAME));
             waitText(PROJECT_NAME, 360000, "Login");
         } finally {
             // log messages from output
@@ -512,24 +503,28 @@ public class EndToEndTest extends J2eeTestCase {
         }
     }
 
-    /** Opens URL connection and waits for given text. It thows TimeoutExpiredException
-     * if timeout expires.
+    /**
+     * Opens URL connection and waits for given text. It throws
+     * TimeoutExpiredException if timeout expires.
+     *
      * @param urlSuffix suffix added to server URL
      * @param timeout time to wait
      * @param text text to be found
      */
     public static void waitText(final String urlSuffix, final long timeout, final String text) {
         Waitable waitable = new Waitable() {
+
+            @Override
             public Object actionProduced(Object obj) {
                 InputStream is = null;
                 try {
-                    URLConnection connection = new URI("http://localhost:8080/"+urlSuffix).toURL().openConnection();
+                    URLConnection connection = new URI("http://localhost:8080/" + urlSuffix).toURL().openConnection();
                     connection.setReadTimeout(Long.valueOf(timeout).intValue());
                     is = connection.getInputStream();
                     BufferedReader br = new BufferedReader(new InputStreamReader(is));
                     String line = br.readLine();
-                    while(line != null) {
-                        if(line.indexOf(text) > -1) {
+                    while (line != null) {
+                        if (line.indexOf(text) > -1) {
                             return Boolean.TRUE;
                         }
                         line = br.readLine();
@@ -539,7 +534,7 @@ public class EndToEndTest extends J2eeTestCase {
                     //e.printStackTrace();
                     return null;
                 } finally {
-                    if(is != null) {
+                    if (is != null) {
                         try {
                             is.close();
                         } catch (IOException e) {
@@ -549,8 +544,10 @@ public class EndToEndTest extends J2eeTestCase {
                 }
                 return null;
             }
+
+            @Override
             public String getDescription() {
-                return("Text \""+text+"\" at http://localhost:8080/"+urlSuffix);
+                return ("Text \"" + text + "\" at http://localhost:8080/" + urlSuffix);
             }
         };
         Waiter waiter = new Waiter(waitable);

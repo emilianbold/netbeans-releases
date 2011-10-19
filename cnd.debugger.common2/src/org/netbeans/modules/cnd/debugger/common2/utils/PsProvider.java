@@ -96,6 +96,10 @@ public abstract class PsProvider {
 	public Vector<String> header() {
 	    return header;
 	}
+        
+        void setHeader(Vector<String> header) {
+            this.header = header;
+        }
 
         public int commandColumnIdx() {
             return commandColumnIndex();
@@ -122,14 +126,27 @@ public abstract class PsProvider {
             return res;
 	}
 
-        private void addProcess(String line) {
+        void addProcess(String line) {
+            int offset = 0;
+            
             Vector<String> columns = new Vector<String>(headerStr().length-3);
             for (int cx = 0; cx < headerStr().length; cx++) {
                 String s = null;
                 if (cx == 7) {
-                    s = line.substring(fields[cx][0]);
+                    s = line.substring(offset + fields[cx][0]);
                 } else {
-                    s = line.substring(fields[cx][0], fields[cx][1]+1);
+                    // extra check for UID, see IZ 199423
+                    if (headerStr()[cx].contains("UID")) { //NOI18N
+                        assert offset == 0;
+                        int end = fields[cx][1];
+                        while (line.charAt(end+1) != ' ') {
+                            end++;
+                        }
+                        s = line.substring(fields[cx][0], end+1);
+                        offset = end - fields[cx][1];
+                    } else {
+                        s = line.substring(offset + fields[cx][0], offset + fields[cx][1]+1);
+                    }
                 }
 
                 if (cx !=3 && cx != 5 && cx != 6) { // No "C", "TIME" and "TTY" columns
@@ -159,7 +176,7 @@ public abstract class PsProvider {
     /**
      * Specialization of PsProvider for Solaris
      */
-    private static class SolarisPsProvider extends PsProvider {
+    static class SolarisPsProvider extends PsProvider {
 
 	private final static String header_str_solaris[] = {
 	    "UID", // NOI18N
@@ -287,7 +304,7 @@ public abstract class PsProvider {
     /**
      * Specialization of PsProvider for Linux
      */
-    private static class LinuxPsProvider extends PsProvider {
+    static class LinuxPsProvider extends PsProvider {
 
 	private final static String header_str_linux[] = {
 	    "UID     ", // NOI18N
@@ -373,7 +390,7 @@ public abstract class PsProvider {
 	}
     }
     
-    private static class MacOSPsProvider extends LinuxPsProvider {
+    static class MacOSPsProvider extends LinuxPsProvider {
         private final static String header_str_mac[] = {
 	    "  UID", // NOI18N
 	    "   PID", // NOI18N
@@ -407,7 +424,7 @@ public abstract class PsProvider {
     /**
      * Specialization of PsProvider for Windows
      */
-    private static class WindowsPsProvider extends PsProvider {
+    static class WindowsPsProvider extends PsProvider {
 
 	private final static String header_str_windows[] = {
 	    "PID", // NOI18N
@@ -640,7 +657,7 @@ public abstract class PsProvider {
      * to wing it for now and postpone making this column discovery even more
      * involved.
      */
-    private Vector<String> parseHeader(String str) {
+    Vector<String> parseHeader(String str) {
 
 	/* OLD 
 	// parsedHeader is static so we only do this once
@@ -727,7 +744,7 @@ public abstract class PsProvider {
 
 		if (line.indexOf("UID", 0) != -1) { // NOI18N
 		    // first line
-		    psData.header = parseHeader(line);
+		    psData.setHeader(parseHeader(line));
 		    lineNo++;
 		} else {
 		    if (lineNo++ > 0) {

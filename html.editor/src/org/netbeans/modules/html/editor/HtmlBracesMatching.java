@@ -43,10 +43,13 @@
  */
 package org.netbeans.modules.html.editor;
 
+import org.netbeans.editor.ext.html.parser.spi.HtmlParseResult;
+import org.netbeans.editor.ext.html.parser.spi.HtmlTag;
 import org.netbeans.modules.html.editor.api.Utils;
 import org.netbeans.modules.html.editor.api.HtmlKit;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -212,7 +215,11 @@ public class HtmlBracesMatching implements BracesMatcher, BracesMatcherFactory {
                     if (result == null) {
                         return;
                     }
-
+                    
+                    HtmlParseResult parseResult = result.getSyntaxAnalyzerResult().parseHtml();
+                    if(parseResult == null) {
+                        return ;
+                    }
                     int searchOffsetLocal = searchOffset;
                     while(searchOffsetLocal != context.getLimitOffset()) {
                         int searched = result.getSnapshot().getEmbeddedOffset(searchOffsetLocal);
@@ -228,13 +235,18 @@ public class HtmlBracesMatching implements BracesMatcher, BracesMatcherFactory {
 
                                     AstNode match = origin.getMatchingTag();
                                     if (match == null) {
-                                        if (origin.needsToHaveMatchingTag()) {
-                                            //error
-                                            ret[0] = null; //no match
-                                        } else {
-                                            //valid
-                                            ret[0] = new int[]{searchOffsetLocal, searchOffsetLocal}; //match nothing, origin will be yellow  - workaround
+                                        //no matched tag foud
+                                        HtmlTag tag = parseResult.model().getTag(origin.getNameWithoutPrefix().toLowerCase(Locale.ENGLISH));
+                                        if(tag != null) {
+                                            if(origin.type() == AstNode.NodeType.OPEN_TAG && tag.hasOptionalEndTag() 
+                                                    || origin.type() == AstNode.NodeType.ENDTAG && tag.hasOptionalOpenTag()) {
+                                                //valid
+                                                ret[0] = new int[]{searchOffsetLocal, searchOffsetLocal}; //match nothing, origin will be yellow  - workaround
+                                                return ;
+                                            }
                                         }
+                                        //error
+                                        ret[0] = null; //no match
                                     } else {
                                         //match
 

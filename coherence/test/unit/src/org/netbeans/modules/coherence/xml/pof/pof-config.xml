@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+
+<pof-config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xmlns="http://xmlns.oracle.com/coherence/coherence-pof-config"
+              xsi:schemaLocation="http://xmlns.oracle.com/coherence/coherence-pof-config coherence-pof-config.xsd">     
+    <user-type-list>
+    <!-- coherence POF user types -->
+        <include>coherence-pof-config.xml</include>
+        <user-type>
+            <type-id>950</type-id>
+            <class-name>javax.security.auth.Subject</class-name>
+            <serializer>
+                <class-name>com.tangosol.io.pof.SubjectPofSerializer</class-name>
+            </serializer>
+        </user-type>
+        <user-type>
+            <type-id>950</type-id>
+            <class-name>javax.security.auth.Subject</class-name>
+            <serializer>
+                <class-name>com.tangosol.io.pof.SubjectPofSerializer</class-name>
+            </serializer>
+        </user-type>
+    </user-type-list>
+    <allow-interfaces>true</allow-interfaces>
+    <allow-subclasses>true</allow-subclasses>
+    <default-serializer>
+        <class-name>com.tangosol.io.pof.SubjectPofSerializer</class-name>
+        <init-params>
+            <init-param>
+                <param-type>String</param-type>
+                <param-value>String 1</param-value>
+            </init-param>
+            <init-param>
+                <param-type>String</param-type>
+                <param-value>String 2</param-value>
+            </init-param>
+            <init-param>
+                <param-type>String</param-type>
+                <param-value>String 3</param-value>
+            </init-param>
+        </init-params>
+    </default-serializer>
+</pof-config>

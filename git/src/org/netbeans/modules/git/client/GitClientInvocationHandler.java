@@ -57,6 +57,7 @@ import org.netbeans.libs.git.GitClient;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
 import org.netbeans.modules.versioning.util.IndexingBridge;
+import org.openide.util.NetworkSettings;
 
 /**
  *
@@ -158,6 +159,16 @@ public class GitClientInvocationHandler implements InvocationHandler {
             "removeRemote", //NOI18N - updates remotes
             "revert", //NOI18N - creates a new head
             "setRemote")); //NOI18N - updates remotes
+    /**
+     * Commands accessing a remote repository. For these NbAuthenticator must be switched off
+     */
+    private static final HashSet<String> NETWORK_COMMANDS = new HashSet<String>(Arrays.asList(
+            "fetch", //NOI18N
+            "listRemoteBranches", //NOI18N
+            "listRemoteTags", //NOI18N
+            "pull", //NOI18N
+            "push" //NOI18N
+            ));
     private static final Logger LOG = Logger.getLogger(GitClientInvocationHandler.class.getName());
     private GitProgressSupport progressSupport;
     private boolean handleAuthenticationIssues = true;
@@ -208,7 +219,17 @@ public class GitClientInvocationHandler implements InvocationHandler {
                         LOG.log(Level.FINE, "Starting a git command: [{0}] on repository [{1}]", new Object[] { method.getName(), repositoryRoot.getAbsolutePath() }); //NOI18N
                     }
                     try {
-                        return invokeClientMethod(method, args);
+                        Callable<Object> withoutAuthenticator = new Callable<Object>() {
+                            @Override
+                            public Object call () throws Exception {
+                                return invokeClientMethod(method, args);
+                            }
+                        };
+                        if (withoutAuthenticator(method)) {
+                            return NetworkSettings.suppressAuthenticationDialog(withoutAuthenticator);
+                        } else {
+                            return withoutAuthenticator.call();
+                        }
                     } catch (InvocationTargetException ex) {
                         Throwable err = ex.getCause();
                         if (err instanceof Exception) {
@@ -280,6 +301,10 @@ public class GitClientInvocationHandler implements InvocationHandler {
 
     private boolean modifiesWorkingTree (Method method) {
         return !WORKING_TREE_READ_ONLY_COMMANDS.contains(method.getName());
+    }
+
+    private boolean withoutAuthenticator (Method method) {
+        return NETWORK_COMMANDS.contains(method.getName());
     }
 
     public void setProgressSupport (GitProgressSupport progressSupport) {

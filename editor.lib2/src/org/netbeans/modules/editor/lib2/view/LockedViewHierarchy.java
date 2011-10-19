@@ -56,14 +56,28 @@ import org.netbeans.api.annotations.common.NonNull;
  */
 public final class LockedViewHierarchy {
     
-    private final ViewHierarchyImpl impl;
+    private ViewHierarchyImpl impl;
+    
+    private final DocumentView docView;
     
     LockedViewHierarchy(ViewHierarchyImpl impl) {
+        assert (impl != null);
         this.impl = impl;
+        docView = impl.getDocumentView();
+        if (docView != null) {
+            docView.lock();
+        }
     }
 
+    /**
+     * Unlock this view hierarchy which causes all methods in it to no longer work.
+     */
     public void unlock() {
-        impl.unlock(this);
+        checkActive();
+        if (docView != null) {
+            docView.unlock();
+        }
+        impl = null;
     }
 
     /**
@@ -73,6 +87,7 @@ public final class LockedViewHierarchy {
      * @return non-null text component.
      */
     public @NonNull JTextComponent getTextComponent() {
+        checkActive();
         return impl.textComponent();
     }
     
@@ -89,7 +104,8 @@ public final class LockedViewHierarchy {
      * @return y
      */
     public double modelToY(int offset) {
-        return impl.modelToY(this, offset);
+        checkActive();
+        return impl.modelToY(docView, offset);
     }
     
     /**
@@ -100,7 +116,8 @@ public final class LockedViewHierarchy {
      * @return array of y-coordinates (with the same cardinality as offsets array).
      */
     public double[] modelToY(int[] offsets) {
-        return impl.modelToY(this, offsets);
+        checkActive();
+        return impl.modelToY(docView, offsets);
     }
     
     /**
@@ -111,7 +128,19 @@ public final class LockedViewHierarchy {
      * @return shape corresponding to given offset.
      */
     public Shape modelToView(int offset, Position.Bias bias) {
-        return impl.modelToView(offset, bias);
+        checkActive();
+        return impl.modelToView(docView, offset, bias);
+    }
+
+    /**
+     * Return mapping of an offset to visual boundaries of a paragraph view in view hierarchy.
+     *
+     * @param offset
+     * @return shape corresponding to paragraph view containing the given offset.
+     */
+    public Shape modelToParagraphView(int offset) {
+        checkActive();
+        return impl.modelToParagraphView(docView, offset);
     }
 
     /**
@@ -123,7 +152,8 @@ public final class LockedViewHierarchy {
      * @return offset corresponding to given visual point.
      */
     public int viewToModel(double x, double y, Position.Bias[] biasReturn) {
-        return impl.viewToModel(x, y, biasReturn);
+        checkActive();
+        return impl.viewToModel(docView, x, y, biasReturn);
     }
     
     /**
@@ -136,7 +166,8 @@ public final class LockedViewHierarchy {
      * @return height of a visual row.
      */
     public float getDefaultRowHeight() {
-        return impl.getDefaultRowHeight(this);
+        checkActive();
+        return impl.getDefaultRowHeight(docView);
     }
     
     /**
@@ -146,7 +177,13 @@ public final class LockedViewHierarchy {
      * but certain tools such as retangular selection may use this value.
      */
     public float getDefaultCharWidth() {
-        return impl.getDefaultCharWidth(this);
+        checkActive();
+        return impl.getDefaultCharWidth(docView);
     }
 
+    private void checkActive() {
+        if (impl == null) {
+            throw new IllegalStateException("Inactive LockedViewHierarchy: unlock() already called.");
+        }
+    }
 }

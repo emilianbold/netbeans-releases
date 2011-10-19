@@ -119,6 +119,7 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
     private final FileStatusCache cache;
     private MessageFormat format;
     private String emptyFormat;
+    public static final String ACTIONS_PATH_PREFIX = "Actions/Git/";                        // NOI18N
 
     public Annotator() {
         cache = Git.getInstance().getFileStatusCache();
@@ -132,8 +133,8 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
         List<Action> actions = new LinkedList<Action>();
         if (destination.equals(ActionDestination.MainMenu)) {
             if (noneVersioned) {
-                addAction("org-netbeans-modules-git-ui-clone-CloneAction", context, actions);
-                addAction("org-netbeans-modules-git-ui-init-InitAction", context, actions);
+                addAction("org-netbeans-modules-git-ui-clone-CloneAction", context, actions, true);
+                addAction("org-netbeans-modules-git-ui-init-InitAction", context, actions, true);
                 actions.add(null);
                 actions.add(SystemAction.get(RepositoryBrowserAction.class));
             } else {            
@@ -170,11 +171,12 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
                 actions.add(null);
                 actions.add(SystemAction.get(ResetAction.class));
                 actions.add(null);
-                addAction("org-netbeans-modules-git-ui-clone-CloneAction", context, actions);
+                addAction("org-netbeans-modules-git-ui-clone-CloneAction", context, actions, true);
                 actions.add(new RemoteMenu(ActionDestination.MainMenu, null));
                 actions.add(SystemAction.get(SearchHistoryAction.class));
                 actions.add(SystemAction.get(AnnotateAction.class));
             }
+            Utils.setAcceleratorBindings(ACTIONS_PATH_PREFIX, actions.toArray(new Action[actions.size()]));
         } else {
             Lookup lkp = context.getElements();
             if (noneVersioned) {                    
@@ -222,10 +224,19 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
     }
 
     private void addAction(String name, VCSContext context, List<Action> actions) {
-        Action action = (Action) FileUtil.getConfigObject("Actions/Git/" + name + ".instance", Action.class);
-            if(action instanceof ContextAwareAction) {
-                action = ((ContextAwareAction)action).createContextAwareInstance(Lookups.singleton(context));
-            }            
+        addAction(name, context, actions, false);
+    }
+
+    private void addAction(String name, VCSContext context, List<Action> actions, boolean accelerate) {
+        Action action;
+        if(accelerate) {
+            action = Utils.getAcceleratedAction(ACTIONS_PATH_PREFIX + name + ".instance");
+        } else {
+            action = (Action) FileUtil.getConfigObject(ACTIONS_PATH_PREFIX + name + ".instance", Action.class);
+        }
+        if(action instanceof ContextAwareAction) {
+            action = ((ContextAwareAction)action).createContextAwareInstance(Lookups.singleton(context));
+        }            
         if(action != null) actions.add(action);
     }
 

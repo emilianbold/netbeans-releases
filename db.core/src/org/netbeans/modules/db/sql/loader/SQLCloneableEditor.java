@@ -70,6 +70,7 @@ import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.plaf.UIResource;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.actions.Savable;
@@ -141,7 +142,6 @@ public class SQLCloneableEditor extends CloneableEditor implements MultiViewElem
     public SQLCloneableEditor() {
         super(null);
         putClientProperty("oldInitialize", Boolean.TRUE); // NOI18N
-        initialize();
     }
 
     public SQLCloneableEditor(Lookup context) {
@@ -247,7 +247,7 @@ public class SQLCloneableEditor extends CloneableEditor implements MultiViewElem
             @Override
             public void actionPerformed(ActionEvent e) {
                 for (Component component : resultComponent.getComponents()) {
-                    if (! component.equals(resultComponent.getSelectedComponent())) {
+                    if (! (component instanceof UIResource) && ! component.equals(resultComponent.getSelectedComponent())) {
                         resultComponent.remove(component);
                         enableTabActions();
                     }
@@ -261,7 +261,7 @@ public class SQLCloneableEditor extends CloneableEditor implements MultiViewElem
             @Override
             public void actionPerformed(ActionEvent e) {
                 for (Component component : resultComponent.getComponents()) {
-                    if ((currentResultTabs != null) && (! currentResultTabs.contains(component))) {
+                    if (! (component instanceof UIResource) && (currentResultTabs != null) && (! currentResultTabs.contains(component))) {
                         resultComponent.remove(component);
                         enableTabActions();
                     }
@@ -432,7 +432,9 @@ public class SQLCloneableEditor extends CloneableEditor implements MultiViewElem
 
     @Override
     public void componentClosed() {
-        sqlExecution.editorClosed();
+        if (sqlExecution != null) {
+            sqlExecution.editorClosed();
+        }
         super.componentClosed();
     }
 
@@ -451,10 +453,11 @@ public class SQLCloneableEditor extends CloneableEditor implements MultiViewElem
     @Override
     public void readExternal(java.io.ObjectInput in) throws IOException, ClassNotFoundException {
         super.readExternal(in);
-        initialize();
     }
+    
+    
 
-    private void initialize() {
+    void initialize() {
         sqlExecution = new SQLExecutionImpl();
         instanceContent.add(sqlExecution);
         instanceContent.add(this);

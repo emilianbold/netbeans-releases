@@ -112,7 +112,7 @@ public class TargetLister {
      */
     public static Set<Target> getTargets(AntProjectCookie script) throws IOException {
         Set<File> alreadyImported = new HashSet<File>();
-        Map<String,String> properties = NbCollections.checkedMapByFilter(System.getProperties(), String.class, String.class, false);
+        Map<String,String> properties = NbCollections.checkedMapByCopy(System.getProperties(), String.class, String.class, false);
         properties.putAll(AntSettings.getProperties()); // #130460
         Script main = new Script(null, script, alreadyImported, properties, Collections.<String,Element>emptyMap());
         Set<Target> targets = new HashSet<Target>();

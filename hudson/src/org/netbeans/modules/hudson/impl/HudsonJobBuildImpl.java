@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.hudson.impl;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import org.netbeans.modules.hudson.api.HudsonJob.Color;
 import org.netbeans.modules.hudson.api.HudsonMavenModuleBuild;
@@ -54,16 +55,26 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.modules.hudson.api.ConnectionBuilder;
 import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.HudsonJobBuild;
+import org.netbeans.modules.hudson.api.Utilities;
 import org.netbeans.modules.hudson.spi.HudsonSCM;
 import org.netbeans.modules.hudson.ui.interfaces.OpenableInBrowser;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 import static org.netbeans.modules.hudson.impl.Bundle.*;
+import org.openide.windows.OutputListener;
+import org.openide.xml.XMLUtil;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
 public class HudsonJobBuildImpl implements HudsonJobBuild, OpenableInBrowser {
+
+    private static final Logger LOG = Logger.getLogger(HudsonJobBuildImpl.class.getName());
 
     private final HudsonJobImpl job;
     private final int build;
@@ -121,7 +132,7 @@ public class HudsonJobBuildImpl implements HudsonJobBuild, OpenableInBrowser {
                 }
             }
             if (changes == null) {
-                changes = Collections.emptyList();
+                changes = parseChangeSetGeneric();
             }
         }
         return changes;
@@ -142,6 +153,58 @@ public class HudsonJobBuildImpl implements HudsonJobBuild, OpenableInBrowser {
     @Messages({"# {0} - job/module display name", "# {1} - build number", "HudsonJobBuildImpl.display_name={0} #{1,number,#}"})
     public String getDisplayName() {
         return HudsonJobBuildImpl_display_name(job.getDisplayName(), getNumber());
+    }
+
+    private Collection<? extends HudsonJobChangeItem> parseChangeSetGeneric() {
+        final Element changeSet;
+        try {
+            changeSet = XMLUtil.findElement(new ConnectionBuilder().job(job).url(getUrl() + "api/xml?tree=changeSet[items[author[fullName],msg,affectedFile[path,editType]]]").parseXML().getDocumentElement(), "changeSet", null);
+        } catch (IOException x) {
+            LOG.log(Level.WARNING, "could not parse changelog for {0}: {1}", new Object[] {this, x});
+            return Collections.emptyList();
+        }
+        class Item implements HudsonJobChangeItem {
+            final Element itemXML;
+            Item(Element itemXML) {
+                this.itemXML = itemXML;
+            }
+            @Override public String getUser() {
+                return Utilities.xpath("author/fullName", itemXML);
+            }
+            @Override public String getMessage() {
+                return Utilities.xpath("msg", itemXML);
+            }
+            @Override public Collection<? extends HudsonJobChangeItem.HudsonJobChangeFile> getFiles() {
+                class AffectedFile implements HudsonJobChangeItem.HudsonJobChangeFile {
+                    final Element fileXML;
+                    AffectedFile(Element fileXML) {
+                        this.fileXML = fileXML;
+                    }
+                    @Override public String getName() {
+                        return Utilities.xpath("path", fileXML);
+                    }
+                    @Override public HudsonJobChangeItem.HudsonJobChangeFile.EditType getEditType() {
+                        return HudsonJobChangeItem.HudsonJobChangeFile.EditType.valueOf(Utilities.xpath("editType", fileXML));
+                    }
+                    @Override public OutputListener hyperlink() {
+                        return null;
+                    }
+                }
+                List<AffectedFile> files = new ArrayList<AffectedFile>();
+                // XXX this is not typically @Exported, in which case no file changes will be shown
+                NodeList nl = itemXML.getElementsByTagName("affectedFile");
+                for (int i = 0; i < nl.getLength(); i++) {
+                    files.add(new AffectedFile((Element) nl.item(i)));
+                }
+                return files;
+            }
+        }
+        List<Item> items = new ArrayList<Item>();
+        NodeList nl = changeSet.getElementsByTagName("item");
+        for (int i = 0; i < nl.getLength(); i++) {
+            items.add(new Item(((Element) nl.item(i))));
+        }
+        return items;
     }
 
     private final class HudsonMavenModuleBuildImpl implements HudsonMavenModuleBuild, OpenableInBrowser {

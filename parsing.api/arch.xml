@@ -743,9 +743,28 @@ Microsystems, Inc. All Rights Reserved.
         </question>
 -->
  <answer id="exec-property">
-  <p>
-   XXX no answer for exec-property
-  </p>
+  <api category="devel" group="logger" name="org.netbeans.ui.indexing" type="export">
+    Since version 1.47 the <code>RepositorUpdater</code> cooperates with <!-- XXX link to @org-netbeans-modules-uihandler@/overview-summary.html not OK from a stable API -->UI Gestures Collector
+    by sending following messages to the <code>org.netbeans.ui.indexing</code> <a href="@JDK@/java/util/logging/Logger.html">logger</a>:
+    <ul>
+        <li><b>INDEXING_STARTED</b> - message about a start of indexing (up to date check). Arguments:
+            <ul>
+                <li>{0}: Long - the time from the last indexing</li>
+            </ul>
+        </li>
+        <li><b>INDEXING_FINISHED</b> - message about an end of indexing (up to date check). Arguments:
+            <ul>
+                <li>{0}: Long - the time of indexing</li>
+                <li>For each indexer following 3 records are logged<ul>
+                    <li>{1}: String - name of indexer</li>
+                    <li>{2}: Integer - indexer invocation count</li>
+                    <li>{3}: Integer - indexing time spent in given indexer</li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+    </ul>
+  </api>
  </answer>
 
 

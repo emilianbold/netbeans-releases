@@ -81,6 +81,7 @@ import org.netbeans.modules.i18n.I18nSupport;
 import org.netbeans.modules.i18n.I18nUtil;
 import org.netbeans.modules.i18n.PropertyPanel;
 
+import org.netbeans.modules.i18n.java.JavaI18nFinder;
 import org.openide.DialogDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.loaders.DataObject;
@@ -193,6 +194,23 @@ final class TestStringWizardPanel extends JPanel {
                 label.setText((hcString != null)
                               ? hcString.getText()
                               : ""); // NOI18N
+                
+                // Handle Bug 33759 (http://netbeans.org/bugzilla/show_bug.cgi?id=33759)
+                SourceData data = sourceMap.get(sourceCombo.getSelectedItem());
+                I18nSupport support = data.getSupport();
+                if (support != null) {
+                    I18nSupport.I18nFinder finder = support.getFinder();
+                    if (finder instanceof JavaI18nFinder) {
+                        if(label != null) {
+                            if (hcString != null) {
+                                HardCodedString newHCstring = ((JavaI18nFinder) finder).modifyHCStringText(hcString);
+                                label.setText((newHCstring != null)
+                                        ? newHCstring.getText()
+                                        : hcString.getText());
+                            }
+                        }
+                    }
+                }
                 return label;
             }
         });

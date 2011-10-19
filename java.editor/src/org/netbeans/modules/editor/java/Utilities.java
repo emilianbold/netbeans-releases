@@ -349,7 +349,7 @@ public final class Utilities {
         return null;        
     }        
     
-    public static boolean isJavaContext(final JTextComponent component, final int offset) {
+    public static boolean isJavaContext(final JTextComponent component, final int offset, final boolean allowInStrings) {
         Document doc = component.getDocument();
         if (doc instanceof AbstractDocument) {
             ((AbstractDocument)doc).readLock();
@@ -385,6 +385,8 @@ public final class Utilities {
             case LINE_COMMENT:
             case BLOCK_COMMENT:
                 return false;
+            case STRING_LITERAL:
+                return allowInStrings;
         }
         return true;
         } finally {
@@ -773,8 +775,63 @@ public final class Utilities {
         public StringBuilder visitType(TypeElement e, Boolean p) {
             return DEFAULT_VALUE.append((p ? e.getQualifiedName() : e.getSimpleName()).toString());
         }        
-    }    
+    }
     
+    public static TypeMirror resolveCapturedType(CompilationInfo info, TypeMirror tm) {
+        TypeMirror type = resolveCapturedTypeInt(info, tm);
+        
+        if (type.getKind() == TypeKind.WILDCARD) {
+            TypeMirror tmirr = ((WildcardType) type).getExtendsBound();
+            if (tmirr != null)
+                return tmirr;
+            else { //no extends, just '?'
+                return info.getElements().getTypeElement("java.lang.Object").asType(); // NOI18N
+            }
+                
+        }
+        
+        return type;
+    }
+    
+    private static TypeMirror resolveCapturedTypeInt(CompilationInfo info, TypeMirror tm) {
+        TypeMirror orig = SourceUtils.resolveCapturedType(tm);
+
+        if (orig != null) {
+            if (orig.getKind() == TypeKind.WILDCARD) {
+                TypeMirror extendsBound = ((WildcardType) orig).getExtendsBound();
+                TypeMirror rct = SourceUtils.resolveCapturedType(extendsBound != null ? extendsBound : ((WildcardType) orig).getSuperBound());
+                if (rct != null) {
+                    return rct;
+                }
+            }
+            return orig;
+        }
+        
+        if (tm.getKind() == TypeKind.DECLARED) {
+            DeclaredType dt = (DeclaredType) tm;
+            List<TypeMirror> typeArguments = new LinkedList<TypeMirror>();
+            
+            for (TypeMirror t : dt.getTypeArguments()) {
+                typeArguments.add(resolveCapturedTypeInt(info, t));
+            }
+            
+            final TypeMirror enclosingType = dt.getEnclosingType();
+            if (enclosingType.getKind() == TypeKind.DECLARED) {
+                return info.getTypes().getDeclaredType((DeclaredType) enclosingType, (TypeElement) dt.asElement(), typeArguments.toArray(new TypeMirror[0]));
+            } else {
+                return info.getTypes().getDeclaredType((TypeElement) dt.asElement(), typeArguments.toArray(new TypeMirror[0]));
+            }
+        }
+
+        if (tm.getKind() == TypeKind.ARRAY) {
+            ArrayType at = (ArrayType) tm;
+
+            return info.getTypes().getArrayType(resolveCapturedTypeInt(info, at.getComponentType()));
+        }
+        
+        return tm;
+    }
+        
     /**
      * @since 2.12
      */

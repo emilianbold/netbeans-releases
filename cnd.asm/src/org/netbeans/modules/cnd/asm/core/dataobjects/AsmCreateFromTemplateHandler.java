@@ -47,6 +47,7 @@ import java.util.Map;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.CreateFromTemplateHandler;
+import org.openide.loaders.DataObject;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -65,6 +66,24 @@ public class AsmCreateFromTemplateHandler extends CreateFromTemplateHandler {
     protected FileObject createFromTemplate(FileObject orig, FileObject f, String name, Map<String, Object> parameters) throws IOException {
         String ext = (String) orig.getAttribute("fixedExtension"); //NOI18N
         ext = ext == null ? "" : ext;
-        return orig.copy(f, name, ext);
+        final FileObject fo = orig.copy(f, name, ext);
+        setTemplate(fo, false);
+        return fo;
+    }
+    
+    private static boolean setTemplate(FileObject fo, boolean newTempl) throws IOException {
+        boolean oldTempl = false;
+
+        Object o = fo.getAttribute(DataObject.PROP_TEMPLATE);
+        if ((o instanceof Boolean) && ((Boolean) o).booleanValue()) {
+            oldTempl = true;
+        }
+        if (oldTempl == newTempl) {
+            return false;
+        }
+
+        fo.setAttribute(DataObject.PROP_TEMPLATE, (newTempl ? Boolean.TRUE : null));
+
+        return true;
     }
 }

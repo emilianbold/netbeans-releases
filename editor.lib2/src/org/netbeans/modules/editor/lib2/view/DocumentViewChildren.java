@@ -312,13 +312,18 @@ public class DocumentViewChildren extends ViewChildren<ParagraphView> {
         int pIndex = viewIndexAtY(y, docViewAlloc);
         int offset;
         if (pIndex >= 0) {
-            // First find valid child (can lead to change of child allocation bounds)
-            ParagraphView pView = getParagraphViewChildrenValid(docView, pIndex);
-            docView.op.getTextLayoutCache().activate(pView);
-            Shape childAlloc = getChildAllocation(docView, pIndex, docViewAlloc);
-            // forward to the child view
-            offset = pView.viewToModelChecked(x, y, childAlloc, biasReturn);
-            checkChildrenSpanChange(docView, pIndex);
+            if (x > 0d) {
+                // First find valid child (can lead to change of child allocation bounds)
+                ParagraphView pView = getParagraphViewChildrenValid(docView, pIndex);
+                docView.op.getTextLayoutCache().activate(pView);
+                Shape childAlloc = getChildAllocation(docView, pIndex, docViewAlloc);
+                // forward to the child view
+                offset = pView.viewToModelChecked(x, y, childAlloc, biasReturn);
+                checkChildrenSpanChange(docView, pIndex);
+            } else { // Optimization for x <= 0d to not compute children of pView
+                ParagraphView pView = get(pIndex);
+                offset = pView.getStartOffset();
+            }
         } else { // at the end
             offset = docView.getStartOffset();
         }
@@ -473,15 +478,18 @@ public class DocumentViewChildren extends ViewChildren<ParagraphView> {
                     }
                 };
                 phContainer.addHighlightsChangeListener(hChangeListener);
-                HighlightsReader reader = new HighlightsReader(phContainer, startOffset, endOffset);
-                reader.readUntil(endOffset);
-                paintHighlights = reader.highlightsList();
-                if (!phStale[0]) {
-                    break;
-                } else {
-                    phStale[0] = false;
+                try {
+                    HighlightsReader reader = new HighlightsReader(phContainer, startOffset, endOffset);
+                    reader.readUntil(endOffset);
+                    paintHighlights = reader.highlightsList();
+                    if (!phStale[0]) {
+                        break;
+                    } else {
+                        phStale[0] = false;
+                    }
+                } finally {
+                    phContainer.removeHighlightsChangeListener(hChangeListener);
                 }
-                phContainer.removeHighlightsChangeListener(hChangeListener);
             } while (--maxPHReads >= 0);
 
             // Assert that paint highlight items cover the whole area being painted.
@@ -530,9 +538,8 @@ public class DocumentViewChildren extends ViewChildren<ParagraphView> {
     }
 
     @Override
-    protected StringBuilder appendChildInfo(StringBuilder sb, int index) {
-        sb.append("y=").append(startVisualOffset(index)).append(": ");
-        return sb;
+    protected String getXYInfo(int index) {
+        return new StringBuilder(10).append(" y=").append(startVisualOffset(index)).toString();
     }
 
 }

@@ -135,6 +135,11 @@ public class JSFConfigEditorSupport extends DataEditorSupport
     }
 
     @Override
+    protected boolean asynchronousOpen() {
+        return false;
+    }
+
+    @Override
     protected Pane createPane() {
         return (CloneableEditorSupport.Pane) MultiViews.createCloneableMultiView(JSFConfigLoader.MIME_TYPE, getDataObject());
     }

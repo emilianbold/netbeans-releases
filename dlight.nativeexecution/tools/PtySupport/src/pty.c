@@ -118,8 +118,10 @@ int main(int argc, char** argv) {
         }
 
         // Set passed environment variables
-        
-        for (int i = 0; i < envnum; i++) {
+
+        int i;
+
+        for (i = 0; i < envnum; i++) {
             putenv(envvars[i]);
         }
                 

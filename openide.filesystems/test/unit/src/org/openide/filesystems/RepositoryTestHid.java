@@ -133,7 +133,7 @@ public class RepositoryTestHid extends TestBaseHid {
     
     /** Test of reorder method, of class org.openide.filesystems.Repository. */
     public void testReorder() {
-        MultiFileSystem mfs = new MultiFileSystem (new FileSystem[] {testedFS});
+        MultiFileSystem mfs = new MultiFileSystem(testedFS);
         repo.addFileSystem(testedFS);
         repo.addFileSystem(mfs);        
         repo.reorder(new int[] {2,0,1});
@@ -170,7 +170,7 @@ public class RepositoryTestHid extends TestBaseHid {
         fss = repo.toArray();        
         fsAssert("Expected two elements in enumeration",fss.length == 2 && fss[1] == testedFS);        
         
-        MultiFileSystem mfs = new MultiFileSystem (new FileSystem[] {testedFS});
+        MultiFileSystem mfs = new MultiFileSystem(testedFS);
         repo.addFileSystem(mfs);        
         fss = repo.toArray();        
         fsAssert("Expected two elements in enumeration",fss.length == 3 && fss[2] == mfs);        

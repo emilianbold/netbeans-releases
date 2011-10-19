@@ -833,7 +833,7 @@ public class Term extends JComponent implements Accessible {
      */
     private boolean maybeConsume(KeyEvent e) {
 
-        if (e.isConsumed()) {
+        if (read_only || e.isConsumed()) {
             return false;
         }
 
@@ -1961,6 +1961,11 @@ public class Term extends JComponent implements Accessible {
                     System.out.println("Selection: '" + sel.sel_get() + "'"); // NOI18N
                      */
                     pasteFromSelection();
+                    
+                    // See IZ 193527
+                    if (click_to_type) {
+                        requestFocus();
+                    }
                 }
             }
 

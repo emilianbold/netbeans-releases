@@ -1,0 +1,4 @@
+$f.isReadOnly() :: $f instanceof org.openide.filesystems.FileObject
+=>
+!$f.canWrite()
+;;

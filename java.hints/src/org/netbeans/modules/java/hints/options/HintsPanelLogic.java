@@ -208,6 +208,7 @@ public class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectio
 	}
         if (depScn != null)
             DepScanningSettings.setDependencyTracking(depScn);
+        changes.clear();
     }
     
     /** Were there any changes in the settings
@@ -445,6 +446,11 @@ public class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectio
 
         if( treePath == null )
             return false;
+        
+        if (! (errorTree.getCellRenderer() instanceof HintsPanel.CheckBoxRenderer)) {
+            //no checkboxes, no toggle
+            return false;
+        }
 
         Object o = getUserObject(treePath);
 
@@ -508,6 +514,7 @@ public class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectio
     public void itemStateChanged(ItemEvent ie) {
         Object o = configCombo.getSelectedItem();
         if (o instanceof Configuration) {
+            applyChanges();
             currentProfileId = ((Configuration) o).id();
             valueChanged(null);
             errorTree.repaint();

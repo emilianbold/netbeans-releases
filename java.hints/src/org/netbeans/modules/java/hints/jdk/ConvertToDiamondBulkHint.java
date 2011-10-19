@@ -81,7 +81,7 @@ import org.openide.util.NbBundle;
  *
  * @author lahvac
  */
-@Hint(id=ConvertToDiamondBulkHint.ID, category="rules15",enabled=false, hintKind=Kind.HINT, customizerProvider=ConvertToDiamondBulkHint.CustomizerProviderImpl.class)
+@Hint(id=ConvertToDiamondBulkHint.ID, category="rules15",enabled=true, hintKind=Kind.HINT, customizerProvider=ConvertToDiamondBulkHint.CustomizerProviderImpl.class)
 public class ConvertToDiamondBulkHint {
 
     public static final String ID = "Javac_canUseDiamond";

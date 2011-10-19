@@ -52,11 +52,12 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.SwingUtilities;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.annotations.common.NonNull;
@@ -95,9 +96,14 @@ import org.openide.util.WeakListeners;
 public final class EventSupport {
     
     private static final Logger LOGGER = Logger.getLogger(EventSupport.class.getName());
-
-    // make sure that RP is initialized before anything else happens (#163056)
     private static final RequestProcessor RP = new RequestProcessor ("parsing-event-collector",1);       //NOI18N
+    /** Default reparse - sliding window for editor events*/
+    private static final int DEFAULT_REPARSE_DELAY = 500;
+    /** Default reparse - sliding window for focus events*/
+    private static final int IMMEDIATE_REPARSE_DELAY = 10;
+
+    private static int reparseDelay = DEFAULT_REPARSE_DELAY;
+    private static int immediateReparseDelay = IMMEDIATE_REPARSE_DELAY;
 
     private final Source source;
     private volatile boolean initialized;
@@ -153,12 +159,13 @@ public final class EventSupport {
                 initialized = true;
             }
         }
-    }   
-    
+    }
+
     public void resetState (
         final boolean           invalidate,
         final int               startOffset,
-        final int               endOffset
+        final int               endOffset,
+        final boolean           fast
     ) {
         final Set<SourceFlags> flags = EnumSet.of(SourceFlags.CHANGE_EXPECTED);
         if (invalidate) {
@@ -170,7 +177,7 @@ public final class EventSupport {
         TaskProcessor.resetState (this.source,invalidate,true);
 
         if (!EditorRegistryListener.k24.get()) {
-            resetTask.schedule(TaskProcessor.reparseDelay);
+            resetTask.schedule(getReparseDelay(fast));
         }
     }
 
@@ -189,6 +196,27 @@ public final class EventSupport {
         }
     }
 
+    /**
+     * Sets the reparse delays.
+     * Used by unit tests.
+     */
+    public static void setReparseDelays(
+        final int standardReparseDelay,
+        final int fastReparseDelay) throws IllegalArgumentException {
+        if (standardReparseDelay < fastReparseDelay) {
+            throw new IllegalArgumentException(
+                    String.format(
+                        "Fast reparse delay %d > standatd reparse delay %d",    //NOI18N
+                        fastReparseDelay,
+                        standardReparseDelay));
+        }
+        immediateReparseDelay = fastReparseDelay;
+        reparseDelay = standardReparseDelay;
+    }
+
+    public static int getReparseDelay(final boolean fast) {
+        return fast ? immediateReparseDelay : reparseDelay;
+    }
     // <editor-fold defaultstate="collapsed" desc="Private implementation">
 
     /**
@@ -216,10 +244,11 @@ public final class EventSupport {
         }
     }    
     
-    private class DocListener implements PropertyChangeListener, TokenHierarchyListener {
+    private class DocListener implements PropertyChangeListener, DocumentListener, TokenHierarchyListener {
         
-        private EditorCookie.Observable ec;
-        private TokenHierarchyListener lexListener;
+        private final EditorCookie.Observable ec;
+        private DocumentListener docListener;
+        private TokenHierarchyListener thListener;
         
         @SuppressWarnings("LeakingThisInConstructor")
         public DocListener (final EditorCookie.Observable ec) {
@@ -228,42 +257,62 @@ public final class EventSupport {
             this.ec.addPropertyChangeListener(WeakListeners.propertyChange(this, this.ec));
             final Document doc = source.getDocument(false);
             if (doc != null) {
-                assignTokenHierarchyListener(doc);
+                assignDocumentListener(doc);
             }
         }
         
         public DocListener(final Document doc) {
             assert doc != null;
             this.ec = null;
-            assignTokenHierarchyListener(doc);
+            assignDocumentListener(doc);
         }                
 
         @Override
         public void propertyChange(final PropertyChangeEvent evt) {
             if (EditorCookie.Observable.PROP_DOCUMENT.equals(evt.getPropertyName())) {
                 Object old = evt.getOldValue();                
-                if (old instanceof Document && lexListener != null) {
-                    TokenHierarchy th = TokenHierarchy.get((Document) old);
-                    th.removeTokenHierarchyListener(lexListener);
-                    lexListener = null;
+                if (old instanceof Document && docListener != null) {
+                    Document doc = (Document) old;
+                    TokenHierarchy th = TokenHierarchy.get(doc);
+                    th.removeTokenHierarchyListener(thListener);
+                    doc.removeDocumentListener(docListener);
+                    thListener = null;
+                    docListener = null;
                 }                
                 Document doc = source.getDocument(false);
                 if (doc != null) {
-                    TokenHierarchy th = TokenHierarchy.get(doc);
-                    th.addTokenHierarchyListener(lexListener = WeakListeners.create(TokenHierarchyListener.class, this,th));
-                    resetState(true, -1, -1);
+                    assignDocumentListener(doc);
+                    resetState(true, -1, -1, false);
                 }                
             }
         }
         
-        @Override
-        public void tokenHierarchyChanged(final TokenHierarchyEvent evt) {
-            resetState (true, evt.affectedStartOffset (), evt.affectedEndOffset ());
+        private void assignDocumentListener(final Document doc) {
+            TokenHierarchy th = TokenHierarchy.get(doc);
+            th.addTokenHierarchyListener(thListener = WeakListeners.create(TokenHierarchyListener.class, this,th));
+            doc.addDocumentListener(docListener = WeakListeners.create(DocumentListener.class, this, doc));
         }
-        
-        private void assignTokenHierarchyListener(final Document doc) {            
-            final TokenHierarchy th = TokenHierarchy.get(doc);
-            th.addTokenHierarchyListener(lexListener = WeakListeners.create(TokenHierarchyListener.class, this,th));
+
+        @Override
+        public void insertUpdate(DocumentEvent e) {
+            TokenHierarchy th = TokenHierarchy.get(e.getDocument());
+            if (th.isActive()) return ;//handled by the lexer based listener
+            resetState (true, e.getOffset(), e.getOffset() + e.getLength(), false);
+        }
+
+        @Override
+        public void removeUpdate(DocumentEvent e) {
+            TokenHierarchy th = TokenHierarchy.get(e.getDocument());
+            if (th.isActive()) return;//handled by the lexer based listener
+            resetState (true, e.getOffset(), e.getOffset(), false);
+        }
+
+        @Override
+        public void changedUpdate(DocumentEvent e) {}
+
+        @Override
+        public void tokenHierarchyChanged(TokenHierarchyEvent evt) {
+            resetState (true, evt.affectedStartOffset(), evt.affectedEndOffset(), false);
         }
     }
     
@@ -271,7 +320,7 @@ public final class EventSupport {
         
         @Override
         public void stateChanged(final ChangeEvent e) {
-            resetState(true, -1, -1);
+            resetState(true, -1, -1, false);
         }
     }
     
@@ -279,12 +328,12 @@ public final class EventSupport {
         
         @Override
         public void fileChanged(final FileEvent fe) {
-            resetState(true, -1, -1);
+            resetState(true, -1, -1, false);
         }        
 
         @Override
         public void fileRenamed(final FileRenameEvent fe) {
-            resetState(true, -1, -1);
+            resetState(true, -1, -1, false);
         }
     }
     
@@ -338,7 +387,7 @@ public final class EventSupport {
                         dobj.addPropertyChangeListener(wlistener);
                     }
                     assignDocumentListener(dobjNew);
-                    resetState(true, -1, -1);
+                    resetState(true, -1, -1, false);
                 } catch (DataObjectNotFoundException e) {
                     //Ignore - invalidated after fobj.isValid () was called
                 } catch (IOException ex) {
@@ -387,7 +436,7 @@ public final class EventSupport {
                     if (doc != null && mimeType != null) {
                         final Source source = Source.create (doc);
                         if (source != null)
-                            SourceAccessor.getINSTANCE().getEventSupport(source).resetState(true, -1, -1);
+                            SourceAccessor.getINSTANCE().getEventSupport(source).resetState(true, -1, -1, true);
                     }
                 }
             }
@@ -402,7 +451,7 @@ public final class EventSupport {
                 if (doc != null && mimeType != null) {
                     Source source = Source.create(doc);
                     if (source != null) {
-                        SourceAccessor.getINSTANCE().getEventSupport(source).resetState(false, -1, -1);
+                        SourceAccessor.getINSTANCE().getEventSupport(source).resetState(false, -1, -1, false);
                     }
                 }
             }

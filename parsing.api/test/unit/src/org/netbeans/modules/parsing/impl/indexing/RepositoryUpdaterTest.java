@@ -73,11 +73,16 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -104,6 +109,8 @@ import org.netbeans.modules.parsing.impl.SourceAccessor;
 import org.netbeans.modules.parsing.impl.SourceFlags;
 import org.netbeans.modules.parsing.impl.TaskProcessor;
 import org.netbeans.modules.parsing.impl.event.EventSupport;
+import org.netbeans.modules.parsing.impl.indexing.friendapi.DownloadedIndexPatcher;
+import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexDownloader;
 import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexingController;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
@@ -214,7 +221,9 @@ public class RepositoryUpdaterTest extends NbTestCase {
                 SFBQImpl.class,
                 OpenProject.class,
                 ClassPathProviderImpl.class,
-                Visibility.class);
+                Visibility.class,
+                IndexDownloaderImpl.class,
+                IndexPatcherImpl.class);
         MockMimeLookup.setInstances(MimePath.EMPTY, binIndexerFactory);
 //        MockMimeLookup.setInstances(MimePath.get(JARMIME), jarIndexerFactory);
         MockMimeLookup.setInstances(MimePath.get(MIME), indexerFactory);
@@ -1917,17 +1926,366 @@ public class RepositoryUpdaterTest extends NbTestCase {
         final PerfLoghandler h = new PerfLoghandler();
         final Logger perfLogger = Logger.getLogger(RepositoryUpdater.class.getName() + ".perf");    //NOI18N
         perfLogger.addHandler(h);
-        perfLogger.setLevel(Level.FINE);
-        h.expect("reportScanOfFile:","reportIndexerStatistics:");   //NOI18N
-        globalPathRegistry_register(SOURCES, new ClassPath[]{cp});
-        final PerfLoghandler.R r = h.await(5000);
-        assertNotNull(r);
-        assertEquals(rootFo.getURL(), r.getParams("reportScanOfFile:")[0]);     //NOI18N
-        final Map<String,int[]> istat = (Map<String,int[]>)r.getParams("reportIndexerStatistics:")[0];  //NOI18N
-        assertEquals(1,istat.get("emb")[0]);    //NOI18N
-        assertEquals(1,istat.get("foo")[0]);    //NOI18N
+        try {
+            perfLogger.setLevel(Level.FINE);
+            h.expect("reportScanOfFile:","INDEXING_FINISHED");   //NOI18N
+            globalPathRegistry_register(SOURCES, new ClassPath[]{cp});
+            final PerfLoghandler.R r = h.await(5000);
+            assertNotNull(r);
+            assertEquals(rootFo.getURL(), r.getParams("reportScanOfFile:")[0]);     //NOI18N
+            final Object[] data = r.getParams("INDEXING_FINISHED"); //NOI18N
+            assertEquals(7, data.length);
+            assertTrue((Long)data[0] >= 0);
+            assertTrue("emb".equals(data[1]) || "foo".equals(data[1])); //NOI18N
+            assertTrue((Integer)data[2] == 1);
+            assertTrue((Integer)data[3] >= 0);
+            assertTrue("emb".equals(data[4]) || "foo".equals(data[4])); //NOI18N
+            assertTrue((Integer)data[5] == 1);
+            assertTrue((Integer)data[6] >= 0);
+        } finally {
+            perfLogger.removeHandler(h);
+        }
     }
 
+    public void testUILogger() throws Exception {
+        final File workdDir  =  getWorkDir();
+        final File root = new File (workdDir,"loggerTest");             //NOI18N
+        final FileObject rootFo = FileUtil.createFolder(root);
+        final FileObject afoo = FileUtil.createData(rootFo, "a.foo");   //NOI18N
+        final FileObject aemb = FileUtil.createData(rootFo, "a.emb");   //NOI18N
+        final ClassPath cp = ClassPathSupport.createClassPath(rootFo);
+        class PerfLoghandler extends Handler {
+
+            class R {
+                private final Queue<String> toExpect;
+                private final Map<String,Object[]> values;
+
+                private R(final String... toExpect) {
+                    this.toExpect = new LinkedList<String>(Arrays.asList(toExpect));
+                    this.values = new HashMap<String, Object[]>();
+                }
+
+                Object[] getParams(String expectedKey) {
+                    return values.get(expectedKey);
+                }
+            }
+
+            private R r;
+
+            public synchronized void expect(final String... expect) {
+                r = new R(expect);
+            }
+
+            public synchronized R await(long timeOut) throws InterruptedException {
+                final long st = System.currentTimeMillis();
+                while (!r.toExpect.isEmpty()) {
+                    if (System.currentTimeMillis()-st > timeOut) {
+                        return null;
+                    }
+                    wait(timeOut);
+                }
+                return r;
+            }
+
+
+            @Override
+            public synchronized void publish(LogRecord record) {
+                if (record.getMessage() != null && record.getMessage().startsWith(r.toExpect.peek())) {
+                    r.values.put(r.toExpect.peek(),record.getParameters());
+                    r.toExpect.poll();
+                }
+                if (r.toExpect.isEmpty()) {
+                    notifyAll();
+                }
+            }
+
+            @Override
+            public void flush() {
+            }
+
+            @Override
+            public void close() throws SecurityException {
+            }
+        }
+        final PerfLoghandler h = new PerfLoghandler();
+        final Logger uiLogger = Logger.getLogger("org.netbeans.ui.indexing");    //NOI18N
+        uiLogger.addHandler(h);
+        final Class<?> c = Class.forName("org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater$Work"); //NOI18N
+        final Field f = c.getDeclaredField("lastScanEnded");
+        f.setAccessible(true);
+        f.setLong(null, -1L);
+        try {
+            uiLogger.setLevel(Level.FINE);
+            h.expect("INDEXING_STARTED","INDEXING_FINISHED");   //NOI18N
+            globalPathRegistry_register(SOURCES, new ClassPath[]{cp});
+            PerfLoghandler.R r = h.await(5000);
+            assertNotNull(r);
+            assertEquals(0L, r.getParams("INDEXING_STARTED")[0]);     //NOI18N
+            Object[] data = r.getParams("INDEXING_FINISHED"); //NOI18N
+            assertEquals(7, data.length);
+            assertTrue((Long)data[0] >= 0);
+            assertTrue("emb".equals(data[1]) || "foo".equals(data[1])); //NOI18N
+            assertTrue((Integer)data[2] == 1);
+            assertTrue((Integer)data[3] >= 0);
+            assertTrue("emb".equals(data[4]) || "foo".equals(data[4])); //NOI18N
+            assertTrue((Integer)data[5] == 1);
+            assertTrue((Integer)data[6] >= 0);
+            Thread.sleep(1000);
+            h.expect("INDEXING_STARTED","INDEXING_FINISHED");   //NOI18N
+            touch(afoo.getURL());
+            r = h.await(5000);
+            assertNotNull(r);
+            assertTrue(1000L <= (Long)r.getParams("INDEXING_STARTED")[0]);     //NOI18N
+            data = r.getParams("INDEXING_FINISHED"); //NOI18N
+            assertEquals(4, data.length);
+            assertTrue((Long)data[0] >= 0);
+            assertTrue("foo".equals(data[1])); //NOI18N
+            assertTrue((Integer)data[2] == 1);
+            assertTrue((Integer)data[3] >= 0);
+        } finally {
+            uiLogger.removeHandler(h);
+        }
+    }
+
+    public void testIndexDownloader() throws Exception {
+        final File workDir = getWorkDir();
+        final File root = new File (workDir,"testIndexDownloader"); //NOI18N
+        final File folder = new File (root,"folder");               //NOI18N
+        final File a = new File(folder,"a.foo");                    //NOI18N
+        final File b = new File(folder,"b.foo");                    //NOI18N
+        final File index = new File(workDir,"index.zip");           //NOI18N
+        folder.mkdirs();
+        a.createNewFile();
+        b.createNewFile();
+        final ZipOutputStream zout = new ZipOutputStream(new FileOutputStream(index));
+        try {
+            zout.putNextEntry(new ZipEntry("timestamps.properties"));   //NOI18N
+            zout.write("folder/a.foo=10\n".getBytes());                 //NOI18N
+            zout.write("folder/b.foo=10\n".getBytes());                 //NOI18N
+        } finally {
+            zout.close();
+        }
+
+        //Unsee root - index should be donwloaded and no indexer should be called
+        final URL rootURL = FileUtil.urlForArchiveOrDir(root);
+        final ClassPath cp1 = ClassPathSupport.createClassPath(rootURL);
+        IndexDownloaderImpl.expect(rootURL, index.toURI().toURL());
+        indexerFactory.indexer.setExpectedFile(
+                new URL[]{
+                    a.toURI().toURL(),
+                    b.toURI().toURL()},
+                new URL[0],
+                new URL[0]);
+        globalPathRegistry_register(SOURCES,new ClassPath[]{cp1});
+        assertTrue(IndexDownloaderImpl.await());
+        assertFalse(indexerFactory.indexer.awaitIndex());
+        assertEquals(0, indexerFactory.indexer.getIndexCount());
+
+        globalPathRegistry_unregister(SOURCES, new ClassPath[]{cp1});
+        RepositoryUpdater.getDefault().waitUntilFinished(TIME);
+        touchFile(a);
+
+        //Seen root - index should NOT be donwloaded and indexer should be called on modified file
+        IndexDownloaderImpl.expect(rootURL, index.toURI().toURL());
+        indexerFactory.indexer.setExpectedFile(
+                new URL[]{
+                    a.toURI().toURL(),
+                    b.toURI().toURL(),  //Should be removed if timestamps maps
+                },
+                new URL[0],
+                new URL[0]);
+        globalPathRegistry_register(SOURCES,new ClassPath[]{cp1});
+        assertFalse(IndexDownloaderImpl.await());
+        assertTrue(indexerFactory.indexer.awaitIndex());
+        assertEquals(2, indexerFactory.indexer.getIndexCount());
+
+        //Simulate the index download error - indexer should be started
+        globalPathRegistry_unregister(SOURCES, new ClassPath[]{cp1});
+        RepositoryUpdater.getDefault().waitUntilFinished(TIME);
+        FileObject fo = CacheFolder.getDataFolder(root.toURI().toURL());
+        fo.delete();
+        IndexDownloaderImpl.expect(rootURL, new File(workDir,"non_existent_index.zip").toURI().toURL());
+        indexerFactory.indexer.setExpectedFile(
+                new URL[]{
+                    a.toURI().toURL(),
+                    b.toURI().toURL()},
+                new URL[0],
+                new URL[0]);
+        globalPathRegistry_register(SOURCES,new ClassPath[]{cp1});
+        assertTrue(IndexDownloaderImpl.await());
+        assertTrue(indexerFactory.indexer.awaitIndex());
+        assertEquals(2, indexerFactory.indexer.getIndexCount());
+
+        //Test DownloadedIndexPatcher - votes false -> IndexDownloader should be called and then Indexers should be called
+        globalPathRegistry_unregister(SOURCES, new ClassPath[]{cp1});
+        RepositoryUpdater.getDefault().waitUntilFinished(TIME);
+        fo = CacheFolder.getDataFolder(root.toURI().toURL());
+        fo.delete();
+        IndexDownloaderImpl.expect(rootURL, index.toURI().toURL());
+        IndexPatcherImpl.expect(rootURL, false);
+        indexerFactory.indexer.setExpectedFile(
+                new URL[]{
+                    a.toURI().toURL(),
+                    b.toURI().toURL()},
+                new URL[0],
+                new URL[0]);
+        globalPathRegistry_register(SOURCES,new ClassPath[]{cp1});
+        assertTrue(IndexDownloaderImpl.await());
+        assertTrue(IndexPatcherImpl.await());
+        assertTrue(indexerFactory.indexer.awaitIndex());
+        assertEquals(2, indexerFactory.indexer.getIndexCount());
+
+        //Test DownloadedIndexPatcher - votes true -> IndexDownloader should be called and NO Indexers should be called
+        globalPathRegistry_unregister(SOURCES, new ClassPath[]{cp1});
+        RepositoryUpdater.getDefault().waitUntilFinished(TIME);
+        fo = CacheFolder.getDataFolder(root.toURI().toURL());
+        fo.delete();
+        IndexDownloaderImpl.expect(rootURL, index.toURI().toURL());
+        IndexPatcherImpl.expect(rootURL, true);
+        indexerFactory.indexer.setExpectedFile(
+                new URL[]{
+                    a.toURI().toURL(),
+                    b.toURI().toURL()},
+                new URL[0],
+                new URL[0]);
+        globalPathRegistry_register(SOURCES,new ClassPath[]{cp1});
+        assertTrue(IndexDownloaderImpl.await());
+        assertTrue(IndexPatcherImpl.await());
+        assertFalse(indexerFactory.indexer.awaitIndex());
+        assertEquals(0, indexerFactory.indexer.getIndexCount());
+    }
+
+    public void testVisibilityQueryInFileChangeListener() throws Exception {
+        final FileObject workDir = FileUtil.toFileObject(getWorkDir());
+        final FileObject root = FileUtil.createFolder(workDir,"visibilitySrc"); //NOI18N
+        final FileObject folder1 = FileUtil.createFolder(root,"folder");               //NOI18N
+        final FileObject a = FileUtil.createData(folder1,"a.foo");                    //NOI18N
+        final FileObject folder2 = FileUtil.createFolder(folder1,"invisible");          //NOI18N
+        final FileObject b = FileUtil.createData(folder2,"b.foo");                    //NOI18N
+        final Visibility vis = Lookup.getDefault().lookup(Visibility.class);
+        assertNotNull(vis);
+        vis.registerInvisibles(Collections.<FileObject>singleton(folder2));
+        final ClassPath cp = ClassPathSupport.createClassPath(root.getURL());
+        indexerFactory.indexer.setExpectedFile(
+                new URL[]{a.getURL()},
+                new URL[0],
+                new URL[0]);
+        globalPathRegistry_register(SOURCES, new ClassPath[]{cp});
+        assertTrue(indexerFactory.indexer.awaitIndex());
+        assertEquals(1, indexerFactory.indexer.getIndexCount());
+
+        //Modify a.foo - should trigger indexer
+        indexerFactory.indexer.setExpectedFile(
+            new URL[]{a.getURL()},
+            new URL[0],
+            new URL[0]);
+        touch(a.getURL());
+        assertTrue(indexerFactory.indexer.awaitIndex());
+        assertEquals(1, indexerFactory.indexer.getIndexCount());
+
+        //Modify b.foo - should NOT trigger indexer
+        indexerFactory.indexer.setExpectedFile(
+            new URL[]{b.getURL()},
+            new URL[0],
+            new URL[0]);
+        touch(b.getURL());
+        assertFalse(indexerFactory.indexer.awaitIndex());
+        assertEquals(0, indexerFactory.indexer.getIndexCount());
+
+        //Rename a.foo - should trigger indexer
+        File af = FileUtil.toFile(a);
+        File anf = new File (af.getParentFile(),"an.foo");  //NOI18N
+        indexerFactory.indexer.setExpectedFile(
+            new URL[]{anf.toURI().toURL()},
+            new URL[]{af.toURI().toURL()},
+            new URL[0]);
+        FileLock l = a.lock();
+        try {
+            a.rename(l, "an", a.getExt());  //NOI18N
+        } finally {
+            l.releaseLock();
+        }
+        assertTrue(indexerFactory.indexer.awaitIndex());
+        assertTrue(indexerFactory.indexer.awaitDeleted());
+        assertEquals(1, indexerFactory.indexer.getIndexCount());
+
+        //Rename b.foo - should trigger indexer
+        File bf = FileUtil.toFile(b);
+        File bnf = new File (bf.getParentFile(),"bn.foo");  //NOI18N
+        indexerFactory.indexer.setExpectedFile(
+            new URL[]{bnf.toURI().toURL()},
+            new URL[]{bf.toURI().toURL()},
+            new URL[0]);
+        l = b.lock();
+        try {
+            b.rename(l, "bn", b.getExt());  //NOI18N
+        } finally {
+            l.releaseLock();
+        }
+        assertFalse(indexerFactory.indexer.awaitIndex());
+        assertEquals(0, indexerFactory.indexer.getIndexCount());
+
+        //Delete a.foo - should trigger indexed
+        indexerFactory.indexer.setExpectedFile(
+            new URL[0],
+            new URL[]{a.getURL()},
+            new URL[0]);
+        a.delete();
+        assertTrue(indexerFactory.indexer.awaitDeleted());
+
+        //Delete b.foo - should NOT trigger indexed
+        indexerFactory.indexer.setExpectedFile(
+            new URL[0],
+            new URL[]{b.getURL()},
+            new URL[0]);
+        b.delete();
+        assertFalse(indexerFactory.indexer.awaitDeleted());
+    }
+
+//    public void testVisibilityQueryPerformance() throws Exception {
+//        final FileObject workDir = FileUtil.toFileObject(getWorkDir());
+//        final FileObject root = FileUtil.createFolder(workDir,"visibilitySrc"); //NOI18N
+//        FileObject folder = root;
+//        for (int i=0; i<10; i++) {
+//            folder = FileUtil.createFolder(folder,"folder");    //folder
+//        }
+//        final FileObject a = FileUtil.createData(folder,"a.foo"); //NOI18N
+//        final ClassPath cp = ClassPathSupport.createClassPath(root.getURL());
+//        indexerFactory.indexer.setExpectedFile(
+//                new URL[]{a.getURL()},
+//                new URL[0],
+//                new URL[0]);
+//        globalPathRegistry_register(SOURCES, new ClassPath[]{cp});
+//        assertTrue(indexerFactory.indexer.awaitIndex());
+//        assertEquals(1, indexerFactory.indexer.getIndexCount());
+//        class H extends Handler {
+//            long time = 0L;
+//            @Override
+//            public void publish(LogRecord record) {
+//                if (record.getMessage() != null && record.getMessage().startsWith("reportVisibilityOverhead:")) {   //NOI18N
+//                    time+=(Long)record.getParameters()[0];
+//                }
+//            }
+//            @Override
+//            public void flush() {
+//            }
+//            @Override
+//            public void close() throws SecurityException {
+//            }
+//        }
+//        final Logger logger = Logger.getLogger(RepositoryUpdater.class.getName() + ".perf");  //NOI18N
+//        final H h = new H();
+//        logger.setLevel(Level.FINE);
+//        logger.addHandler(h);
+//        try {
+//            for (int i=0; i< 10000; i++) {
+//                FileUtil.createData(folder, String.format("b%d.foo",i));    //NOI18N
+//            }
+//        } finally {
+//            logger.removeHandler(h);
+//        }
+//        System.out.println("Time: " + h.time);
+//    }
 
     // <editor-fold defaultstate="collapsed" desc="Mock Services">
     public static class TestHandler extends Handler {
@@ -2941,6 +3299,104 @@ public class RepositoryUpdaterTest extends NbTestCase {
         @Override
         public void removeChangeListener(ChangeListener l) {
             changeSupport.removeChangeListener(l);
+        }
+    }
+
+    public static class IndexDownloaderImpl implements IndexDownloader {
+
+        private static final Lock lck = new ReentrantLock();
+        private static final Condition cnd = lck.newCondition();
+        /*@GuardedBy("lck")*/
+        private static URL expectedURL;
+        /*@GuardedBy("lck")*/
+        private static URL indexURL;
+
+        @Override
+        public URL getIndexURL(URL root) {
+            URL index = null;
+            lck.lock();
+            try {
+                if (root.equals(expectedURL)) {
+                    index = indexURL;
+                    expectedURL = null;
+                    cnd.signal();
+                }
+            } finally {
+                lck.unlock();
+            }
+            return index;
+        }
+
+        public static void expect(URL url, URL index) {
+            lck.lock();
+            try {
+                expectedURL = url;
+                indexURL = index;
+            } finally {
+                lck.unlock();
+            }
+        }
+
+        public static boolean await() throws InterruptedException {
+            lck.lock();
+            try {
+                if (expectedURL != null) {
+                    return cnd.await(TIME, TimeUnit.MILLISECONDS) && expectedURL == null;
+                } else {
+                    return true;
+                }
+            } finally {
+                lck.unlock();
+            }
+        }
+    }
+
+    public static class IndexPatcherImpl implements DownloadedIndexPatcher {
+
+        private static final Lock lck = new ReentrantLock();
+        private static final Condition cnd = lck.newCondition();
+        //@GuardedBy("lck")
+        private static URL expectedSourceRoot;
+        //@GuardedBy("lck")
+        private static boolean expectedVote;
+
+        public static void expect (final URL sourceRoot, final boolean vote) {
+            lck.lock();
+            try {
+                expectedSourceRoot = sourceRoot;
+                expectedVote = vote;
+            } finally {
+                lck.unlock();
+            }
+        }
+
+        public static boolean await() throws InterruptedException {
+            lck.lock();
+            try {
+                if (expectedSourceRoot != null) {
+                    return cnd.await(TIME, TimeUnit.MILLISECONDS) && expectedSourceRoot == null;
+                } else {
+                    return true;
+                }
+            } finally {
+                lck.unlock();
+            }
+        }
+
+        @Override
+        public boolean updateIndex(URL sourceRoot, URL indexFolder) {
+            boolean vote = true;
+            lck.lock();
+            try {
+                if (sourceRoot.equals(expectedSourceRoot)) {
+                    expectedSourceRoot = null;
+                    vote = expectedVote;
+                    cnd.signal();
+                }
+            } finally {
+                lck.unlock();
+            }
+            return vote;
         }
     }
 

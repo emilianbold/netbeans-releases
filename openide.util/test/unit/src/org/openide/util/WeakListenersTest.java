@@ -461,6 +461,29 @@ public class WeakListenersTest extends NbTestCase {
         assertGC("Weak listener can go away as well", weakRef);
     }
 
+    public void testWrapOnlyCheckedExceptions() throws Exception {
+        try {
+            WeakListeners.create(ChangeListener.class, new ChangeListener() {
+                @Override public void stateChanged(ChangeEvent e) {
+                    throw new IllegalStateException();
+                }
+            }, null).stateChanged(null);
+            fail();
+        } catch (IllegalStateException x) {
+            // OK
+        }
+        try {
+            WeakListeners.create(ChangeListener.class, new ChangeListener() {
+                @Override public void stateChanged(ChangeEvent e) {
+                    throw new ThreadDeath();
+                }
+            }, null).stateChanged(null);
+            fail();
+        } catch (ThreadDeath x) {
+            // OK
+        }
+    }
+
     public static class Singleton {
         public static List<ChangeListener> listeners = new ArrayList<ChangeListener>();
         public static void addChangeListener(ChangeListener l) {

@@ -45,9 +45,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.Collections;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.text.BadLocationException;
-import org.netbeans.api.lexer.Token;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.csl.api.test.CslTestBase;
 import org.netbeans.modules.css.lib.api.CssParserResult;
@@ -79,9 +79,9 @@ public class Css3ParserTest extends CslTestBase {
         super.setUp();
         CssParserResult.IN_UNIT_TESTS = true;
     }
-    
+
     public void testAllANTLRRulesHaveNodeTypes() {
-        for(String rule : Css3Parser.ruleNames) {
+        for (String rule : Css3Parser.ruleNames) {
             assertNotNull(NodeType.valueOf(rule));
         }
     }
@@ -639,18 +639,18 @@ public class Css3ParserTest extends CslTestBase {
         Node media_type = NodeUtil.query(media_query, "media_type");
         assertNotNull(media_type);
         assertEquals("screen", media_type.image().toString());
-        
+
         Node media_expression = NodeUtil.query(media_query, "media_expression");
         assertNotNull(media_expression);
-        
-        
+
+
         Node media_feature = NodeUtil.query(media_expression, "media_feature");
         assertNotNull(media_feature);
-        
+
         assertResultOK(result);
 
     }
-    
+
     public void testMediaQueries2() throws ParseException, BadLocationException {
         assertResultOK(TestUtil.parse("@media tv and (scan: progressive) { p {} }"));
         assertResultOK(TestUtil.parse("@media print and (min-resolution: 118dpcm) { p {} }"));
@@ -677,55 +677,55 @@ public class Css3ParserTest extends CslTestBase {
 //        TestUtil.dumpResult(result);
 
         assertResultOK(result);
-        
+
         //test page node
         Node page = NodeUtil.query(result.getParseTree(),
                 TestUtil.bodysetPath
                 + "page");
         assertNotNull(page);
-        
+
         //pseudo page
         Node pseudoPage = NodeUtil.query(page,
                 "pseudoPage");
         assertNotNull(pseudoPage);
         assertEquals(":first", pseudoPage.image().toString());
-        
+
         //declaration
         Node declaration = NodeUtil.query(page,
                 "declaration");
         assertNotNull(declaration);
         assertEquals("color: green", declaration.image().toString());
-        
+
         //margin
         Node margin = NodeUtil.query(page,
                 "margin");
         assertNotNull(margin);
-        
+
         //margin symbol
         Node margin_sym = NodeUtil.query(margin, "margin_sym");
         assertNotNull(margin_sym);
         assertEquals("@top-left", margin_sym.image().toString());
-        
+
         //declaration in the margin body
         Node declarationInMargin = NodeUtil.query(margin, "declarations/declaration");
         assertNotNull(declarationInMargin);
-        
+
         //next margin
         Node margin2 = NodeUtil.query(page,
                 "margin|1");
         assertNotNull(margin2);
-        
+
         //next margin symbol
         Node margin_sym2 = NodeUtil.query(margin2, "margin_sym");
         assertNotNull(margin_sym2);
         assertEquals("@top-right", margin_sym2.image().toString());
 
         assertNotNull(NodeUtil.query(margin2, "declarations/declaration"));
-        
-        
+
+
 
     }
-    
+
     public void testCounterStyle() throws ParseException, BadLocationException {
         String content = "@counter-style cool { glyph: '|'; }";
 
@@ -737,11 +737,11 @@ public class Css3ParserTest extends CslTestBase {
                 TestUtil.bodysetPath
                 + "counterStyle");
         assertNotNull(counterStyle);
-        
+
         Node ident = NodeUtil.getChildTokenNode(counterStyle, CssTokenId.IDENT);
         assertNotNull(ident);
         assertEquals("cool", ident.image().toString());
-        
+
         Node declaration = NodeUtil.query(counterStyle, "declarations/declaration");
         assertNotNull(declaration);
         assertEquals("glyph: '|'", declaration.image().toString());
@@ -749,11 +749,100 @@ public class Css3ParserTest extends CslTestBase {
         assertResultOK(result);
 
     }
-    
+
+    public void testSubstringMatchingAttributeSelectors() throws BadLocationException, ParseException {
+        assertResultOK(TestUtil.parse("p[class$=\"st\"]{ } "));
+        assertResultOK(TestUtil.parse("p[class*=\"st\"]{ } "));
+        assertResultOK(TestUtil.parse("p[class^=\"st\"]{ } "));
+    }
+
+    public void testFontFace() throws ParseException, BadLocationException {
+        String content = "@font-face { font-family: Gentium; src: url(http://example.com/fonts/Gentium.ttf); }";
+
+        CssParserResult result = TestUtil.parse(content);
+//        TestUtil.dumpTokens(result);
+//        TestUtil.dumpResult(result);
+
+        Node counterStyle = NodeUtil.query(result.getParseTree(),
+                TestUtil.bodysetPath
+                + "fontFace");
+        assertNotNull(counterStyle);
+
+        Node declaration = NodeUtil.query(counterStyle, "declarations/declaration|0");
+        assertNotNull(declaration);
+        assertEquals("font-family: Gentium", declaration.image().toString());
+
+        assertResultOK(result);
+
+    }
+
     public void testNetbeans_Css() throws ParseException, BadLocationException, IOException {
         CssParserResult result = TestUtil.parse(getTestFile("testfiles/netbeans.css"));
 //        TestUtil.dumpResult(result);
         assertResult(result, 0);
+    }
+
+    public void testPropertyValueAsFunction() throws BadLocationException, ParseException {
+        String code = "div { animation: cubic-bezier(1,2,3,4); } ";
+        assertResultOK(TestUtil.parse(code));
+    }
+
+    public void testIssue203573() throws ParseException, BadLocationException, IOException {
+        String code = "h1 { color:red; - }";
+        CssParserResult result = TestUtil.parse(code);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+
+        assertNoTokenNodeLost(result);
+    }
+
+    public void testParserRecovery_Issue203579() throws BadLocationException, ParseException {
+        String code = "p {} #{} .{} div {}";
+        CssParserResult result = TestUtil.parse(code);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+
+        Node node = NodeUtil.query(result.getParseTree(),
+                "styleSheet/bodylist/bodyset|0/"
+                + "ruleSet/selectorsGroup/selector/simpleSelectorSequence/typeSelector/elementName");
+        assertNotNull(node);
+        assertFalse(NodeUtil.containsError(node));
+
+        node = NodeUtil.query(result.getParseTree(),
+                "styleSheet/bodylist/bodyset|1/"
+                + "ruleSet/selectorsGroup/selector/simpleSelectorSequence/elementSubsequent/cssId");
+        assertNotNull(node);
+        assertTrue(NodeUtil.containsError(node));
+
+        node = NodeUtil.query(result.getParseTree(),
+                "styleSheet/bodylist/bodyset|2/"
+                + "ruleSet/selectorsGroup/selector/simpleSelectorSequence/elementSubsequent/cssClass");
+        assertNotNull(node);
+        assertTrue(NodeUtil.containsError(node));
+
+    }
+
+    public void testMSExpression() throws BadLocationException, ParseException {
+        String code =
+                "div {"
+                + "zoom:expression(runtimeStyle.zoom = 1, insertAdjacentHTML('beforeEnd', '<u class=\"after\"></u>'));"
+                + "}";
+
+        CssParserResult result = TestUtil.parse(code);
+//        TestUtil.dumpResult(result);
+        
+        assertResultOK(result);
+
+    }
+    
+    public void testMozDocumentAtRule() throws BadLocationException, ParseException {
+        CssParserResult result = TestUtil.parse(
+                "@-moz-document url(http://www.w3.org/),  "
+                + "url-prefix(http://www.w3.org/Style/),  "
+                + "domain(mozilla.org),  "
+                + "regexp(\"^https:.*\") { div { color: red; } }");
+        
+        assertResultOK(result);
     }
 
     private CssParserResult assertResultOK(CssParserResult result) {
@@ -770,5 +859,29 @@ public class Css3ParserTest extends CslTestBase {
         assertEquals(problems, result.getDiagnostics().size());
 
         return result;
+    }
+
+    private void assertNoTokenNodeLost(CssParserResult result) {
+        final StringBuilder sourceCopy = new StringBuilder(result.getSnapshot().getText());
+
+        NodeVisitor.visitChildren(result.getParseTree(), Collections.<NodeVisitor<Node>>singleton(new NodeVisitor<Node>() {
+
+            @Override
+            public boolean visit(Node node) {
+                if (node.type() == NodeType.token) {
+                    for (int i = node.from(); i < node.to(); i++) {
+                        sourceCopy.setCharAt(i, Character.MAX_VALUE);
+                    }
+                }
+
+                return false;
+            }
+        }));
+
+        for (int i = 0; i < sourceCopy.length(); i++) {
+            if (sourceCopy.charAt(i) != Character.MAX_VALUE) {
+                assertTrue(String.format("No token node found for char '%s' at offset %s of the parser source.", sourceCopy.charAt(i), i), false);
+            }
+        }
     }
 }

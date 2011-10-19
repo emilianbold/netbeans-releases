@@ -288,12 +288,25 @@ public class XMLLexerFormatter extends TagBasedLexerFormatter {
         //i expected the call IndentUtils.createIndentString() to return
         //the correct string for the indent level, but it doesn't.
         //so this is just a workaround.
-        String newIndentText = IndentUtils.createIndentString(doc,
-                tag.getIndentLevel()*spacesPerTab);
+        int spaces;
+        boolean noNewline = false;
+        
+        switch (tag.getType()) {
+            case TOKEN_ATTR_NAME:
+                spaces = tag.getIndentLevel();
+                break;
+            case TOKEN_PI_START_TAG:
+                noNewline = true;
+                // fall through
+            default:
+                spaces = tag.getIndentLevel() * spacesPerTab;
+                break;
+        }
+        String newIndentText = IndentUtils.createIndentString(doc, spaces);
         //String newIndentText = formatter.getIndentString(doc, tag.getIndentLevel());
         int previousEndOffset = Utilities.getFirstNonWhiteBwd(doc, so) + 1;
         String temp = doc.getText(previousEndOffset, so - previousEndOffset);
-        if(temp.indexOf("\n") != -1){
+        if(noNewline || temp.indexOf("\n") != -1){
             int i = Utilities.getRowFirstNonWhite(doc, so);
             int rowStart = Utilities.getRowStart(doc, so);
             doc.insertString(so, newIndentText, null);
@@ -345,7 +358,14 @@ public class XMLLexerFormatter extends TagBasedLexerFormatter {
             }
             int currentTokensSize = 0;
             Stack<TokenElement> stack = new Stack<TokenElement>();
+
+            // will be set to indent of 1st attribute of a tag. Will be reset to -1 by start tag
+            int firstAttributeIndent = -1;
+            int lineIndent = -1;
+            int processingStart = -1;
+            
             while (tokenSequence.moveNext()) {
+                int indentLineStart = 1;
                 token = tokenSequence.token();
                 XMLTokenId tokenId = token.id();
                 String image = token.text().toString();
@@ -359,6 +379,7 @@ public class XMLLexerFormatter extends TagBasedLexerFormatter {
                                 // The tokens are only assessed if they are in the selection
                                 // range, which is the whole document if no text is selected.
                         int len = image.length();
+                        firstAttributeIndent = -1;
                         if (image.charAt(len - 1) == '>') {// '/>'
                             if (len == 2) {
                                 if (!preserveWhitespace) {
@@ -366,6 +387,14 @@ public class XMLLexerFormatter extends TagBasedLexerFormatter {
                                 }
                                 if (!stack.empty()) {
                                     stack.pop();
+                                }
+                            } else {
+                                // end tag name marker
+                                if (lineIndent > -1 && tokenInSelectionRange) {
+                                    // 1st item on a new line, will indent according to the opening tag
+                                    TokenElement tag = new TokenElement(TokenType.TOKEN_ELEMENT_END_TAG, image, 
+                                            tokenSequence.offset(), tokenSequence.offset() + token.length(), indentLevel);
+                                    tags.add(new TokenIndent(tag, false));
                                 }
                             }
                         } else {
@@ -385,6 +414,7 @@ public class XMLLexerFormatter extends TagBasedLexerFormatter {
                                 if ( !preserveNesting_outdent.isEmpty() && !preserveNesting_outdent.getLast()) {
                                     --indentLevel;
                                 }
+                                preserveWhitespace = !preserveNesting_outdent.isEmpty() && preserveNesting_outdent.getLast();
                             } else {
                                 String tagName = image.substring(1);
                                 int begin = currentTokensSize;
@@ -403,20 +433,114 @@ public class XMLLexerFormatter extends TagBasedLexerFormatter {
                         }
                         break;
                     }
+                    case PI_START: {
+                        tokenType = TokenType.TOKEN_PI_START_TAG;
+                        indentLevel++;
+                        if (tokenInSelectionRange && !preserveWhitespace) {
+                            TokenElement tag = new TokenElement(tokenType, tokenId.name(), tokenSequence.offset(), tokenSequence.offset() + token.length(), indentLevel);
+                            tags.add(new TokenIndent(tag, preserveWhitespace));
+                        }
+                        break;
+                    }
+                    case PI_END: {
+                        indentLevel--;
+                        if (lineIndent > -1 && tokenInSelectionRange) {
+                            // 1st item on a new line, will indent according to the opening tag
+                            TokenElement tag = new TokenElement(TokenType.TOKEN_PI_END_TAG, image, 
+                                    tokenSequence.offset(), tokenSequence.offset() + token.length(), indentLevel);
+                            tags.add(new TokenIndent(tag, false));
+                        }
+                        break;
+                    }
+                    case WS: {
+                            // we assume there is nothing except whitespace
+                            int lastNewline = image.lastIndexOf('\n');
+                            if (lastNewline == -1) {
+                                // nothing special here
+                                break;
+                            }
+                            int tokenOffset = tokenSequence.offset();
+                            int nextLine = tokenOffset + lastNewline;
+
+                            // determine line start of the newline
+                            lineIndent = Utilities.getRowIndent(basedoc, nextLine);
+                            break;
+                    }
+                    case PI_CONTENT:
+                        indentLineStart = 0;
+                        // fall through
+                    case TEXT: {
+                        // must detect newlines. If inside a tag (between attributes), the 1st attribute on the line
+                        // will emit indent token to the output stream.
+                        // if outside tags (normal text), each newline in non-ws-preserving tag will emit an indent token
+                        int lastNewline = image.lastIndexOf('\n');
+                        if (lastNewline == -1) {
+                            // nothing special here
+                            break;
+                        }
+                        if (preserveWhitespace || !tokenInSelectionRange) {
+                            break;
+                        }
+                        // emit tag record for each subsequent line
+                        String[] lines = image.split("\n");
+                        int lno = indentLineStart; // skip 1st line = up to the 1st newline
+                        int currentOffset = tokenSequence.offset();
+                        while (lno < lines.length) {
+                            currentOffset += lno == 0 ? 0 : lines[lno - 1].length() + 1; // add 1 for newline
+                            int lineEnd = currentOffset + lines[lno].length();
+                            int nonWhiteStart = Utilities.getFirstNonWhiteFwd(basedoc, currentOffset, lineEnd);
+                            // implies a check for nonWhitestart > -1
+                            if (nonWhiteStart >= startOffset && nonWhiteStart <= endOffset) {
+                                // emit a tag at this position
+                                tags.add(new TokenIndent(
+                                    new TokenElement(TokenType.TOKEN_CHARACTER_DATA, 
+                                            tokenId.name(), 
+                                            nonWhiteStart, lineEnd,
+                                            indentLevel + 1), 
+                                    false
+                                ));
+                            }
+                            lno++;
+                        }
+                        break;
+                    }
                     case BLOCK_COMMENT:
                     case CDATA_SECTION:
-                    case PI_START:
-                    case PI_TARGET:
-                    case PI_CONTENT:
-                    case PI_END:
-                    case TEXT:
                     case CHARACTER:
-                    case WS:
                     case OPERATOR:
+                    case PI_TARGET:
                     case DECLARATION:
                         break; //Do nothing for above case's
                     case ARGUMENT: //attribute of an element
                         settingSpaceValue = token.text().equals("xml:space");
+                        // fall through !
+                        if (lineIndent != -1) {
+                            int attrIndent;
+                            if (firstAttributeIndent == -1) {
+                                tokenType = TokenType.TOKEN_CHARACTER_DATA;
+                                // this is the 1st attribute, on its own line - we respect the indentation of the XML tags
+                                attrIndent = indentLevel + 1;
+                                firstAttributeIndent = attrIndent * spacesPerTab;
+                            } else {
+                                tokenType = TokenType.TOKEN_ATTR_NAME;
+                                attrIndent = firstAttributeIndent;
+                            }
+                            if (tokenInSelectionRange) {
+                                tags.add(
+                                    new TokenIndent(
+                                        new TokenElement(tokenType, 
+                                                token.text().toString(), 
+                                                tokenSequence.offset(), tokenSequence.offset() + token.length(), 
+                                                attrIndent), 
+                                        false
+                                    )
+                                );
+                            }
+                        } else {
+                            if (firstAttributeIndent == -1) {
+                                firstAttributeIndent = Utilities.getVisualColumn(basedoc, tokenSequence.offset());
+                            }
+                        }
                         break;
                     case VALUE:
                         if (settingSpaceValue) {
@@ -437,6 +561,10 @@ public class XMLLexerFormatter extends TagBasedLexerFormatter {
                                 + "Please use the text editor to resolve the issues...");
                 }
                 currentTokensSize += image.length();
+                if (tokenId != XMLTokenId.WS && tokenId != XMLTokenId.TEXT) {
+                    // clear indicator of the newline
+                    lineIndent = -1;
+                }
             }
         } finally {
             basedoc.readUnlock();

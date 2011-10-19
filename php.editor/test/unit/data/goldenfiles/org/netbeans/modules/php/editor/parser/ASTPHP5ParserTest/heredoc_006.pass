@@ -221,19 +221,19 @@
                         <Quote start='110' end='199' type='HEREDOC'>
                             <Expressions>
                                 <Scalar start='126' end='150' type='STRING' value='This is heredoc test #s '/>
-                                <Variable start='150' end='154' isDollared='false'>
+                                <ReflectionVariable start='150' end='154'>
                                     <Variable start='151' end='153' isDollared='true'>
                                         <Identifier start='152' end='153' name='a'/>
                                     </Variable>
-                                </Variable>
+                                </ReflectionVariable>
                                 <Scalar start='154' end='156' type='STRING' value=', '/>
-                                <Variable start='156' end='160' isDollared='false'>
+                                <ReflectionVariable start='156' end='160'>
                                     <Variable start='157' end='159' isDollared='true'>
                                         <Identifier start='158' end='159' name='b'/>
                                     </Variable>
-                                </Variable>
+                                </ReflectionVariable>
                                 <Scalar start='160' end='162' type='STRING' value=', '/>
-                                <Variable start='162' end='171' isDollared='false'>
+                                <ReflectionVariable start='162' end='171'>
                                     <ArrayAccess start='163' end='170' type='VARIABLE_ARRAY' isDollared='false'>
                                         <Index>
                                             <Scalar start='166' end='169' type='STRING' value='&apos;c&apos;'/>
@@ -244,9 +244,9 @@
                                             </Variable>
                                         </Name>
                                     </ArrayAccess>
-                                </Variable>
+                                </ReflectionVariable>
                                 <Scalar start='171' end='177' type='STRING' value=', and '/>
-                                <Variable start='177' end='184' isDollared='false'>
+                                <ReflectionVariable start='177' end='184'>
                                     <FieldAccess start='178' end='183'>
                                         <Variable start='178' end='180' isDollared='true'>
                                             <Identifier start='179' end='180' name='d'/>
@@ -255,7 +255,7 @@
                                             <Identifier start='182' end='183' name='d'/>
                                         </Variable>
                                     </FieldAccess>
-                                </Variable>
+                                </ReflectionVariable>
                                 <Scalar start='184' end='198' type='STRING' value='.\n\n'/>
                             </Expressions>
                         </Quote>
@@ -270,19 +270,19 @@
                     <Quote start='207' end='296' type='HEREDOC'>
                         <Expressions>
                             <Scalar start='223' end='247' type='STRING' value='This is heredoc test #s '/>
-                            <Variable start='247' end='251' isDollared='false'>
+                            <ReflectionVariable start='247' end='251'>
                                 <Variable start='248' end='250' isDollared='true'>
                                     <Identifier start='249' end='250' name='a'/>
                                 </Variable>
-                            </Variable>
+                            </ReflectionVariable>
                             <Scalar start='251' end='253' type='STRING' value=', '/>
-                            <Variable start='253' end='257' isDollared='false'>
+                            <ReflectionVariable start='253' end='257'>
                                 <Variable start='254' end='256' isDollared='true'>
                                     <Identifier start='255' end='256' name='b'/>
                                 </Variable>
-                            </Variable>
+                            </ReflectionVariable>
                             <Scalar start='257' end='259' type='STRING' value=', '/>
-                            <Variable start='259' end='268' isDollared='false'>
+                            <ReflectionVariable start='259' end='268'>
                                 <ArrayAccess start='260' end='267' type='VARIABLE_ARRAY' isDollared='false'>
                                     <Index>
                                         <Scalar start='263' end='266' type='STRING' value='&apos;c&apos;'/>
@@ -293,9 +293,9 @@
                                         </Variable>
                                     </Name>
                                 </ArrayAccess>
-                            </Variable>
+                            </ReflectionVariable>
                             <Scalar start='268' end='274' type='STRING' value=', and '/>
-                            <Variable start='274' end='281' isDollared='false'>
+                            <ReflectionVariable start='274' end='281'>
                                 <FieldAccess start='275' end='280'>
                                     <Variable start='275' end='277' isDollared='true'>
                                         <Identifier start='276' end='277' name='d'/>
@@ -304,7 +304,7 @@
                                         <Identifier start='279' end='280' name='d'/>
                                     </Variable>
                                 </FieldAccess>
-                            </Variable>
+                            </ReflectionVariable>
                             <Scalar start='281' end='295' type='STRING' value='.\n\n'/>
                         </Expressions>
                     </Quote>
@@ -318,11 +318,11 @@
                     <Parameters>
                         <Quote start='305' end='311' type='QUOTE'>
                             <Expressions>
-                                <Variable start='306' end='310' isDollared='false'>
+                                <ReflectionVariable start='306' end='310'>
                                     <Variable start='307' end='309' isDollared='true'>
                                         <Identifier start='308' end='309' name='x'/>
                                     </Variable>
-                                </Variable>
+                                </ReflectionVariable>
                             </Expressions>
                         </Quote>
                     </Parameters>

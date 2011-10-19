@@ -43,17 +43,12 @@
 package org.netbeans.modules.maven;
 
 import java.io.File;
-import java.lang.reflect.Method;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.logging.Handler;
 import java.util.logging.Level;
-import java.util.logging.LogRecord;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
-import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.test.TestFileUtils;
@@ -78,6 +73,7 @@ public class ProjectOpenedHookImplTest extends NbTestCase {
         return "org.netbeans.modules.maven";
     }
 
+    /* XXX
     public void testDoubleOpen() throws Exception { // #200500
         final AtomicInteger openCount = new AtomicInteger();
         ProjectOpenedHookImpl.USG_LOGGER.addHandler(new Handler() {
@@ -102,6 +98,7 @@ public class ProjectOpenedHookImplTest extends NbTestCase {
         }
         assertEquals(1, openCount.get());
     }
+    */
 
     public void testGeneratedSources() throws Exception { // #187595
         FileObject p = d.createFolder("p");

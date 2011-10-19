@@ -44,13 +44,16 @@
 
 package org.netbeans.modules.mercurial.ui.menu;
 
+import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import org.netbeans.modules.mercurial.MercurialAnnotator;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.mercurial.ui.diff.ExportBundleAction;
 import org.netbeans.modules.mercurial.ui.diff.ExportDiffAction;
 import org.netbeans.modules.mercurial.ui.diff.ExportDiffChangesAction;
 import org.netbeans.modules.versioning.util.SystemActionBridge;
+import org.netbeans.modules.versioning.util.Utils;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -69,13 +72,13 @@ public final class ExportMenu extends DynamicMenu {
         JMenu menu = new JMenu(this);
         org.openide.awt.Mnemonics.setLocalizedText(menu, NbBundle.getMessage(ExportMenu.class, "CTL_MenuItem_ExportMenu")); // NOI18N
         
-        JMenuItem item = menu.add(new SystemActionBridge(SystemAction.get(ExportDiffAction.class), NbBundle.getMessage(ExportDiffAction.class, "CTL_MenuItem_ExportDiff"))); //NOI18N
+        JMenuItem item = menu.add(new SystemActionBridge(SystemAction.get(ExportDiffAction.class), NbBundle.getMessage(ExportDiffAction.class, "CTL_MenuItem_ExportDiff"), MercurialAnnotator.ACTIONS_PATH_PREFIX)); //NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
 
-        item = menu.add(new SystemActionBridge(SystemAction.get(ExportDiffChangesAction.class), NbBundle.getMessage(ExportDiffChangesAction.class, "CTL_MenuItem_ExportDiffChanges"))); //NOI18N
+        item = menu.add(new SystemActionBridge(SystemAction.get(ExportDiffChangesAction.class), NbBundle.getMessage(ExportDiffChangesAction.class, "CTL_MenuItem_ExportDiffChanges"), MercurialAnnotator.ACTIONS_PATH_PREFIX)); //NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
         
-        item = menu.add(new SystemActionBridge(SystemAction.get(ExportBundleAction.class), NbBundle.getMessage(ExportBundleAction.class, "CTL_MenuItem_ExportBundle"))); //NOI18N
+        item = menu.add(new SystemActionBridge(SystemAction.get(ExportBundleAction.class), NbBundle.getMessage(ExportBundleAction.class, "CTL_MenuItem_ExportBundle"), MercurialAnnotator.ACTIONS_PATH_PREFIX)); //NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
         
         return menu;

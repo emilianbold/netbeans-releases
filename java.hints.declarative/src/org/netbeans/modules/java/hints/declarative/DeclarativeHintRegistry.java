@@ -232,8 +232,11 @@ public class DeclarativeHintRegistry implements HintProvider, ClassPathBasedHint
         String primarySuppressWarningsKey;
         String id = parsed.options.get("hint");
         String fallbackDisplayName = file != null ? file.getName() : null;
-
-        if (id == null || file != null) {
+        String description = parsed.options.get("description");
+        if (description == null) {
+            description = fallbackDisplayName;
+        }
+        if (id == null && file != null) {
             id = file.getNameExt();
         }
         
@@ -250,7 +253,7 @@ public class DeclarativeHintRegistry implements HintProvider, ClassPathBasedHint
 
             String[] w = suppressWarnings(parsed.options);
 
-            meta = HintMetadata.Builder.create(id).setBundle(bundle, fallbackDisplayName, fallbackDisplayName).setCategory(cat).addSuppressWarnings(w).build();
+            meta = HintMetadata.Builder.create(id).setBundle(bundle, fallbackDisplayName, description).setCategory(cat).addSuppressWarnings(w).build();
             primarySuppressWarningsKey = w.length > 0 ? w[0] : null;
         } else {
             meta = null;

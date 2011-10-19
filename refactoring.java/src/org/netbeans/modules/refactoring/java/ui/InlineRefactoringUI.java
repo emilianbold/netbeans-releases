@@ -92,15 +92,14 @@ public class InlineRefactoringUI implements RefactoringUI {
             }
         }
         InlineRefactoring.Type refactoringType;
-        switch (selectedElement.getKind()) {
-            case VARIABLE:
-                if (element.getKind().equals(ElementKind.FIELD)) {
-                    type = "Constant";
-                    refactoringType = InlineRefactoring.Type.CONSTANT;
-                } else {
-                    type = "Temp";
-                    refactoringType = InlineRefactoring.Type.TEMP;
-                }
+        switch (element.getKind()) {
+            case FIELD:
+                type = "Constant";
+                refactoringType = InlineRefactoring.Type.CONSTANT;
+                break;
+            case LOCAL_VARIABLE:
+                type = "Temp";
+                refactoringType = InlineRefactoring.Type.TEMP;
                 break;
             case METHOD:
                 type = "Method";

@@ -45,6 +45,7 @@
 package org.netbeans.modules.editor.lib2.search;
 
 import java.util.Map;
+import java.util.MissingResourceException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -66,6 +67,8 @@ import org.openide.util.NbBundle;
 public class DocumentFinder
 {
     private static final Logger LOG = Logger.getLogger(EditorFindSupport.class.getName());
+
+    
    
     /** Creates a new instance of DocumentFinder */
     private DocumentFinder()
@@ -274,12 +277,12 @@ public class DocumentFinder
                     try{
                         replaceText = matcher.replaceFirst(convertStringForMatcher(replaceText));
                     }catch(IndexOutOfBoundsException ioobe){
-                        NotifyDescriptor msg = new NotifyDescriptor.Message(
-                                ioobe.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE);
-                        msg.setTitle(NbBundle.getBundle(DocumentFinder.class).getString("pattern-error-dialog-title")); //NOI18N
-                        DialogDisplayer.getDefault().notify(msg);
+                        notifyRegexpException(ioobe);
                         return null;
-                    }
+                    } catch (IllegalArgumentException  iae) {
+                        notifyRegexpException(iae);
+                        return null;
+                    }   
                 }
             }
         }
@@ -335,6 +338,17 @@ public class DocumentFinder
         return preserveCaseImpl(findReplaceImpl, replaceString, doc, props);
     }
     
+    private static void notifyRegexpException(Exception ex) throws MissingResourceException {
+        String additionalHint = ""; //NOI18N
+        if (ex instanceof IllegalArgumentException)
+            additionalHint = "\n" + NbBundle.getBundle(DocumentFinder.class).getString("pattern-error-missing-escape-hint"); //NOI18N
+        NotifyDescriptor msg = new NotifyDescriptor.Message(
+                ex.getLocalizedMessage() + additionalHint, NotifyDescriptor.ERROR_MESSAGE);
+        
+        msg.setTitle(NbBundle.getBundle(DocumentFinder.class).getString("pattern-error-dialog-title")); //NOI18N
+        DialogDisplayer.getDefault().notify(msg);
+    }
+    
      private static boolean getBoolFromEditorFindSupport(Map searchProps, String editorFindSupportConstant) {
         Boolean b = (Boolean) searchProps.get(editorFindSupportConstant);
         return (b != null && b.booleanValue());
@@ -355,7 +369,7 @@ public class DocumentFinder
     }
     
     private static FindReplaceResult preserveCaseImpl(FindReplaceResult findReplaceResult, String replaceString, Document doc, Map searchProps) throws BadLocationException {
-        if (replaceString == null || findReplaceResult.getFoundPositions()[0] == -1) {
+        if (replaceString == null || findReplaceResult == null || findReplaceResult.getFoundPositions()[0] == -1) {
             return findReplaceResult;
         }
         boolean regExpSearch = getBoolFromEditorFindSupport(searchProps, EditorFindSupport.FIND_REG_EXP);

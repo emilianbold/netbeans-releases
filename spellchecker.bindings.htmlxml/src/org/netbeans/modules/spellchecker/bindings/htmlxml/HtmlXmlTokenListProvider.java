@@ -110,7 +110,7 @@ public class HtmlXmlTokenListProvider implements TokenListProvider {
         }
 
         //xml
-        if ("text/xml".equals(docMimetype)) { //NOI18N
+        if ((docMimetype != null) && (docMimetype.contains("xml"))) { //NOI18N
             return new XmlTokenList(bdoc);
         }
 

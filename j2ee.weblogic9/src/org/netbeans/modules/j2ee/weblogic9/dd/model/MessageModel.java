@@ -105,21 +105,34 @@ public final class MessageModel extends BaseDescriptorModel {
         return generate1031();
     }
 
-    public List<MessageDestination> getMessageDestinations(org.netbeans.modules.j2ee.deployment.common.api.MessageDestination.Type type) {
+    public List<MessageDestination> getMessageDestinations(
+            org.netbeans.modules.j2ee.deployment.common.api.MessageDestination.Type type, boolean includeLocal) {
         List<MessageDestination> ret = new ArrayList<MessageDestination>();
         switch (type) {
             case QUEUE:
                 for (QueueType qType : bean.getQueue()) {
-                    MessageDestination element = new MessageDestination(
-                            qType.getName(), qType.getJndiName(), type);
-                    ret.add(element);
+                    String jndiName = qType.getJndiName();
+                    if (jndiName == null && includeLocal) {
+                        jndiName = qType.getLocalJndiName();
+                    }
+                    if (jndiName != null) {
+                        MessageDestination element = new MessageDestination(
+                                qType.getName(), jndiName, type);
+                        ret.add(element);
+                    }
                 }
                 break;
             case TOPIC:
                 for (TopicType tType : bean.getTopic()) {
-                    MessageDestination element = new MessageDestination(
-                            tType.getName(), tType.getJndiName(), type);
-                    ret.add(element);
+                    String jndiName = tType.getJndiName();
+                    if (jndiName == null && includeLocal) {
+                        jndiName = tType.getLocalJndiName();
+                    }
+                    if (jndiName != null) {
+                        MessageDestination element = new MessageDestination(
+                                tType.getName(), tType.getJndiName(), type);
+                        ret.add(element);
+                    }
                 }
                 break;
             default:

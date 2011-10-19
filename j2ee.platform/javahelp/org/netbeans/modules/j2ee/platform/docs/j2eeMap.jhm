@@ -106,7 +106,6 @@ Other names may be trademarks of their respective owners.
 <!--End of RESTful web service section -->
 
 <!--Start of web service CSH -->
-	<mapID target="projrave_ui_elements_server_nav_add_websvcdb" url="webservice/csh/AddWebServiceDlg.html" />
 	<mapID target="org.netbeans.modules.websvc.core.client.wizard.WebServiceClientWizardDescriptor" url="webservice/csh/wizards/WebServiceClientWizardDescriptor.html" />
 	<mapID target="org.netbeans.modules.websvc.core.dev.wizard.WebServiceTypePanel" url="webservice/csh/wizards/WebServiceWizardDescriptor.html" />
         <mapID target="org.netbeans.modules.websvc.core.dev.wizard.WebServiceFromWSDLPanel" url="webservice/csh/wizards/WebServiceWizardFromWSDLDescriptor.html" />
@@ -357,20 +356,12 @@ Other names may be trademarks of their respective owners.
     <mapID target="org.netbeans.modules.j2ee.persistence.unit.AddEntityPanel" url="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/persistence/csh/db_persist_addentityclass.html" />
     <mapID target="org.netbeans.modules.j2ee.common.DatasourceCustomizer" url="persistence/csh/db_new_datasource.html" />
     <mapID target="org.netbeans.modules.j2ee.common.ui.MissingDatabaseConnectionWarning" url="persistence/csh/db_resolve_datasource.html" />
-
-    <!-- one of these needs to be changed -->
-    <mapID target="org.netbeans.modules.j2ee.persistence.wizard.dao.EjbFacadeWizardIterator$PersistenceClientEntitySelection" url="persistence/csh/persist_new_sessionfromentity1.html" />
+    <mapID target="org.netbeans.modules.j2ee.ejbcore.ejb.wizard.jpa.dao.EjbFacadeWizardIterator$PersistenceClientEntitySelection" url="persistence/csh/persist_new_sessionfromentity1.html" />
+    <mapID target="org.netbeans.modules.j2ee.ejbcore.ejb.wizard.jpa.dao.EjbFacadeWizardPanel2" url="persistence/csh/persist_new_sessionfromentity2.html" />
     
-    <!-- Persistence Unit Visual Editor CSH -->
-    <mapID target="persistence_multiview_design_persistenceUnitNode" url="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/persistence/csh/persist_editor_persistenceunit.html" />
+    <!-- Other Persistence topics located in Java helpset -->
 
-<!-- TODO: Need help ids for these
-PK - if help ID arrives for the first below, please make sure it gets in the java/helpset help set and is not duplicated here
-    <mapID target=" " url="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/persistence/csh/persist_new_persistenceunit.html" />
-    <mapID target=" " url="persistence/csh/persist_new_sessionfromentity2.html" />
--->
-
-    <!-- End of Persistence help -->
+<!-- End of Persistence help -->
 
 <!-- Start of Packaged Archive project help -->
 

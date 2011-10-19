@@ -75,6 +75,7 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.StatInfo;
+import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.StatInfo.FileType;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.remote.impl.RemoteLogger;
 import org.openide.filesystems.FileEvent;
@@ -340,13 +341,15 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     private RemoteFileObjectBase createFileObject(DirEntry entry) {
         File childCache = new File(getCache(), entry.getCache());
         String childPath = getPath() + '/' + entry.getName();
-        RemoteFileObjectBase fo;
+        RemoteFileObjectBase fo = null;
         if (entry.isDirectory()) {
             fo = getFileSystem().getFactory().createRemoteDirectory(this, childPath, childCache);
         }  else if (entry.isLink()) {
             fo = getFileSystem().getFactory().createRemoteLink(this, childPath, entry.getLinkTarget());
+        } else if (entry.isPlainFile()) {
+            fo = getFileSystem().getFactory().createRemotePlainFile(this, childPath, childCache, FileType.Regular);
         } else {
-            fo = getFileSystem().getFactory().createRemotePlainFile(this, childPath, childCache, FileType.File);
+            fo = getFileSystem().getFactory().createSpecialFile(this, childPath, childCache, entry.getFileType());
         }
         return fo;
     }
@@ -506,7 +509,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     }
     
     private DirEntry getSpecialDirChildEntry(String absPath, String childName) throws InterruptedException, ExecutionException {
-        FileInfoProvider.StatInfo statInfo;
+        StatInfo statInfo;
         try {
             statInfo = FileInfoProvider.stat(getExecutionEnvironment(), absPath, new PrintWriter(System.err)).get();
         } catch (ExecutionException e) {
@@ -1179,6 +1182,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         return FileType.Directory;
     }
 
+    @Override
     public final InputStream getInputStream() throws FileNotFoundException {
         throw new FileNotFoundException(getPath());
     }
@@ -1236,6 +1240,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         if (recursive && cache.exists()) {
             // no need to gather all files into array - process just in filter
             cache.listFiles(new FileFilter() {
+                @Override
                 public boolean accept(File pathname) {
                     if (pathname.isDirectory()) {
                         File childCache = new File(pathname, RemoteFileSystem.CACHE_FILE_NAME);

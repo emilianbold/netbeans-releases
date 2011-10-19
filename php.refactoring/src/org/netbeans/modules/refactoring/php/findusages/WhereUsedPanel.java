@@ -100,11 +100,13 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         return isMethodFromBaseClass() ? methodDeclaringSuperClass : methodDeclaringClass;
     }
 
+    @Override
     public void initialize() {
         if (initialized) {
             return;
         }
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 setupPanels();
             }
@@ -548,6 +550,7 @@ private void searchInCommentsActionPerformed(java.awt.event.ActionEvent evt) {//
         return searchInComments.isSelected();
     }
 
+    @Override
     public Component getComponent() {
         return this;
     }
@@ -560,6 +563,7 @@ private void searchInCommentsActionPerformed(java.awt.event.ActionEvent evt) {//
             setOpaque(true);
         }
 
+        @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected,
                 boolean cellHasFocus) {
             if (value instanceof ModelElement) {

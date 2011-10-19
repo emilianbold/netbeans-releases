@@ -43,9 +43,11 @@ package org.netbeans.modules.css.editor.module.main;
 
 import java.util.Arrays;
 import java.util.Collection;
+import org.netbeans.modules.css.editor.module.spi.CssEditorModule;
 import org.netbeans.modules.css.editor.module.spi.CssModule;
 import org.netbeans.modules.css.editor.module.spi.Property;
 import org.netbeans.modules.css.editor.module.spi.Utilities;
+import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -54,8 +56,8 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author mfukala@netbeans.org
  */
-@ServiceProvider(service = CssModule.class)
-public class BasicUserInterfaceModule extends CssModule {
+@ServiceProvider(service = CssEditorModule.class)
+public class BasicUserInterfaceModule extends CssEditorModule implements CssModule {
 
     //NOI18N>>>
     private static final Collection<String> PSEUDO_CLASSES = Arrays.asList(new String[]{
@@ -67,19 +69,18 @@ public class BasicUserInterfaceModule extends CssModule {
                 "required",
                 "optional",
                 "read-only",
-                "read-write"
+                "read-write" //NOI18N
             });
     private static final Collection<String> PSEUDO_ELEMENTS = Arrays.asList(new String[]{
                 "selection",
                 "value",
                 "choices",
                 "repeat-item",
-                "repeat-index"});
-
-    private static final String PROPERTIES_DEFINITION_PATH = "org/netbeans/modules/css/editor/module/main/properties/basic_user_interface"; //NOI18N
-    
+                "repeat-index"}); //NOI18N
+    private static final String PROPERTIES_DEFINITION_PATH =
+            "org/netbeans/modules/css/editor/module/main/properties/basic_user_interface"; //NOI18N
     private static Collection<Property> propertyDescriptors;
-    
+
     @Override
     public Collection<String> getPseudoClasses() {
         return PSEUDO_CLASSES;
@@ -90,13 +91,26 @@ public class BasicUserInterfaceModule extends CssModule {
         return PSEUDO_ELEMENTS;
     }
 
-    
     @Override
     public synchronized Collection<Property> getProperties() {
-        if(propertyDescriptors == null) {
-            propertyDescriptors = Utilities.parsePropertyDefinitionFile(PROPERTIES_DEFINITION_PATH);
+        if (propertyDescriptors == null) {
+            propertyDescriptors = Utilities.parsePropertyDefinitionFile(PROPERTIES_DEFINITION_PATH, this);
         }
         return propertyDescriptors;
-    }    
-    
+    }
+
+    @Override
+    public String getName() {
+        return "basic_user_interface"; //NOI18N
+    }
+
+    @Override
+    public String getDisplayName() {
+        return NbBundle.getMessage(this.getClass(), Constants.CSS_MODULE_DISPLAYNAME_BUNDLE_KEY_PREFIX + getName());
+    }
+
+    @Override
+    public String getSpecificationURL() {
+        return "http://www.w3.org/TR/css3-ui";
+    }
 }

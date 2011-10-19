@@ -261,6 +261,7 @@ public class TargetListerTest extends NbTestCase {
         assertEquals(1, targets.size());
         TargetLister.Target t = targets.get(0);
         assertEquals("correct qname", "imported.t", t.getQualifiedName());
+        assertNull(System.getProperty("imported")); // #202276
     }
     
     private static List<TargetLister.Target> getTargets(FileObject fo) throws IOException {

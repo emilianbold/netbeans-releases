@@ -75,6 +75,9 @@ import org.netbeans.modules.editor.lib2.EditorPreferencesKeys;
 import org.netbeans.modules.editor.lib.SettingsConversions;
 import org.netbeans.modules.editor.lib.drawing.DrawEngineDocView;
 import org.netbeans.modules.editor.lib.drawing.DrawEngineLineView;
+import org.netbeans.modules.editor.lib2.view.LockedViewHierarchy;
+import org.netbeans.modules.editor.lib2.view.ViewHierarchy;
+import org.netbeans.spi.lexer.MutableTextInput;
 import org.openide.util.WeakListeners;
 
 /**
@@ -92,7 +95,7 @@ public class BaseTextUI extends BasicTextUI implements
     /**
      * How many modifications inside atomic section is considered a lengthy operation (e.g. reformat).
      */
-    private static final int LENGTHY_ATOMIC_EDIT_THRESHOLD = 30;
+    private static final int LENGTHY_ATOMIC_EDIT_THRESHOLD = 80;
     
     /** Extended UI */
     private EditorUI editorUI;
@@ -296,46 +299,41 @@ public class BaseTextUI extends BasicTextUI implements
         }
     }
     
+    /**
+     * Return y coordinate value for given offset.
+     *
+     * @param pos offset in a read-locked document
+     * @return y
+     * @throws BadLocationException in case offset is not in document's bounds.
+     */
     public int getYFromPos(int pos) throws BadLocationException {
         JTextComponent component = getComponent();
+        int y = 0;
         if (component != null) {
-            Document doc = component.getDocument();
-            if (doc instanceof AbstractDocument) {
-                ((AbstractDocument)doc).readLock();
-            }
+            ViewHierarchy vh = ViewHierarchy.get(component);
+            LockedViewHierarchy lvh = vh.lock();
             try {
-                View rootView = getRootView(component);
-                if (rootView.getViewCount() > 0) {
-                    View view = rootView.getView(0);
-                    if (view instanceof LockView) {
-                        LockView lockView = (LockView) view;
-                        lockView.lock();
-                        try {
-                            DrawEngineDocView docView = (DrawEngineDocView)view.getView(0);
-                            Rectangle alloc = getVisibleEditorRect();
-                            if (alloc != null) {
-                                rootView.setSize(alloc.width, alloc.height);
-                                return docView.getYFromPos(pos, alloc);
-                            }
-                        } finally {
-                            lockView.unlock();
-                        }
-                    } else if (view instanceof org.netbeans.modules.editor.lib2.view.DocumentView) {
-                        return (int) Math.round(((org.netbeans.modules.editor.lib2.view.DocumentView) view).modelToY(pos));
-                    }
-                }
+                y = (int) lvh.modelToY(pos);
             } finally {
-                if (doc instanceof AbstractDocument) {
-                    ((AbstractDocument)doc).readUnlock();
-                }
+                lvh.unlock();
             }
         }
-        Rectangle ret = modelToView(component, pos);
-        return (ret == null) ? 0 : ret.y;
+        return y;
     }
 
     public int getPosFromY(int y) throws BadLocationException {
-        return viewToModel(getComponent(), 0, y);
+        JTextComponent component = getComponent();
+        int offset = 0;
+        if (component != null) {
+            ViewHierarchy vh = ViewHierarchy.get(component);
+            LockedViewHierarchy lvh = vh.lock();
+            try {
+                offset = lvh.viewToModel(0, y, null);
+            } finally {
+                lvh.unlock();
+            }
+        }
+        return offset;
     }
 
     public int getBaseX(int y) {
@@ -449,7 +447,7 @@ public class BaseTextUI extends BasicTextUI implements
 
     /** Insert to document notification. */
     public void insertUpdate(DocumentEvent evt) {
-        checkLengthyAtomicEdit();
+        checkLengthyAtomicEdit(evt);
         // No longer trigger syntax update related repaint
 //        try {
 //            BaseDocumentEvent bevt = (BaseDocumentEvent)evt;
@@ -471,7 +469,7 @@ public class BaseTextUI extends BasicTextUI implements
     
     /** Remove from document notification. */
     public void removeUpdate(DocumentEvent evt) {
-        checkLengthyAtomicEdit();
+        checkLengthyAtomicEdit(evt);
         // No longer trigger syntax update related repaint
 //        try {
 //            BaseDocumentEvent bevt = (BaseDocumentEvent)evt;
@@ -509,15 +507,22 @@ public class BaseTextUI extends BasicTextUI implements
         }
     }
 
-    private void checkLengthyAtomicEdit() {
+    private void checkLengthyAtomicEdit(DocumentEvent evt) {
         if (atomicModCount != -1) {
             if (++atomicModCount == LENGTHY_ATOMIC_EDIT_THRESHOLD) {
+                Document doc = evt.getDocument();
+                // Deactivate view hierarchy
                 View rootView = getRootView(getComponent());
                 View view;
                 if (rootView != null && rootView.getViewCount() > 0 &&
                         (view = rootView.getView(0)) instanceof org.netbeans.modules.editor.lib2.view.DocumentView)
                 {
                     ((org.netbeans.modules.editor.lib2.view.DocumentView)view).updateLengthyAtomicEdit(+1);
+                }
+                // Inactivate lexer's token hierarchy
+                MutableTextInput input = (MutableTextInput) doc.getProperty(MutableTextInput.class);
+                if (input != null) {
+                    input.tokenHierarchyControl().setActive(false);
                 }
             }
         }
@@ -533,12 +538,19 @@ public class BaseTextUI extends BasicTextUI implements
     public void atomicUnlock(AtomicLockEvent evt) {
         if (atomicModCount != -1) {
             if (atomicModCount >= LENGTHY_ATOMIC_EDIT_THRESHOLD) {
+                // Activate view hierarchy
                 View rootView = getRootView(getComponent());
                 View view;
                 if (rootView != null && rootView.getViewCount() > 0 &&
                         (view = rootView.getView(0)) instanceof org.netbeans.modules.editor.lib2.view.DocumentView)
                 {
                     ((org.netbeans.modules.editor.lib2.view.DocumentView)view).updateLengthyAtomicEdit(-1);
+                }
+                // Activate lexer's token hierarchy
+                Document doc = getComponent().getDocument();
+                MutableTextInput input = (MutableTextInput) doc.getProperty(MutableTextInput.class);
+                if (input != null) {
+                    input.tokenHierarchyControl().setActive(true);
                 }
             }
             atomicModCount = -1;

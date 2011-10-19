@@ -52,6 +52,9 @@ import java.awt.event.ComponentListener;
 import javax.swing.BorderFactory;
 import javax.swing.JEditorPane;
 import javax.swing.JScrollPane;
+import javax.swing.event.DocumentListener;
+
+import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 
@@ -133,12 +136,21 @@ public class EditorPaneWidget extends Widget {
      */
     protected final void paintWidget () {
         if(!componentAdded) {
+            setLayout( LayoutFactory.createHorizontalFlowLayout() );
             getScene().getView().add(scrollPane);
             componentAdded = true;
         }
         scrollPane.setBounds (getScene().convertSceneToView (convertLocalToScene (getClientArea())));
         editorPane.setFont(editorPane.getFont().deriveFont((float)getScene().getZoomFactor()*origoinalFontSize));
         editorPane.repaint();
+    }
+    
+    void addDocumentListener(DocumentListener listener){
+        editorPane.getDocument().addDocumentListener(listener);
+    }
+
+    void removeDocumentListener(DocumentListener listener){
+        editorPane.getDocument().removeDocumentListener(listener);
     }
 
     private final class ComponentSceneListener implements Scene.SceneListener {

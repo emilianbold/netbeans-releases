@@ -185,6 +185,9 @@ public class TextUtils {
      * @return text with correct escape sequences.
      */
     public static String escapeForHTMLLabel(String text) {
+        if(text == null) {
+            return "";                              // NOI18N
+        }
         StringBuilder sb = new StringBuilder();
         for (int i=0; i<text.length(); i++) {
             char c = text.charAt(i);

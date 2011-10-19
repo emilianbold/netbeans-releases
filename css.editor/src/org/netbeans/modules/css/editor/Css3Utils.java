@@ -43,7 +43,6 @@ package org.netbeans.modules.css.editor;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.csl.api.CompletionProposal;
 import org.netbeans.modules.csl.api.Error;

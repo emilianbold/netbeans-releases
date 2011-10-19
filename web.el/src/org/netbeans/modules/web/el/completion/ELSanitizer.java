@@ -63,6 +63,7 @@ public final class ELSanitizer {
     private final ELPreprocessor expression;
     private final ELElement element;
     private static final Set<Pair<ELTokenId, ELTokenId>> BRACKETS;
+    private final int relativeOffset;
 
     static {
         BRACKETS = new HashSet<Pair<ELTokenId, ELTokenId>>();
@@ -70,9 +71,10 @@ public final class ELSanitizer {
         BRACKETS.add(Pair.of(ELTokenId.LPAREN, ELTokenId.RPAREN));
     }
 
-    public ELSanitizer(ELElement element) {
+    public ELSanitizer(ELElement element, int relativeOffset) {
         this.element = element;
         this.expression = element.getExpression();
+        this.relativeOffset = relativeOffset;
     }
 
     /**
@@ -84,7 +86,7 @@ public final class ELSanitizer {
      */
     public ELElement sanitized() {
         try {
-            String sanitizedExpression = sanitize(expression.getOriginalExpression()); //use original expression!
+            String sanitizedExpression = sanitize(expression.getOriginalExpression(), relativeOffset); //use original expression!
             ELPreprocessor elp = new ELPreprocessor(sanitizedExpression, ELPreprocessor.XML_ENTITY_REFS_CONVERSION_TABLE);
             Node sanitizedNode = ELParser.parse(elp);
             return element.makeValidCopy(sanitizedNode, elp);
@@ -95,23 +97,41 @@ public final class ELSanitizer {
 
     // package private for unit tests
     static String sanitize(final String expression) {
+        return sanitize(expression, -1);
+    }
+    
+    static String sanitize(final String expression, int relativeOffset) {
+        boolean closingCurlyBracketAdded = false;
         String copy = expression;
         if (!expression.endsWith("}")) {
             copy += "}";
+            closingCurlyBracketAdded = true;
         }
         CleanExpression cleanExpression = CleanExpression.getCleanExression(copy);
         if (cleanExpression == null) {
             return expression;
         }
+        //the CleanExpression removed the #{ or ${ prefix
+        relativeOffset -= 2;
+        
         String result = cleanExpression.clean;
+        if (closingCurlyBracketAdded && relativeOffset >= 0) {
+            result = secondPass(result, relativeOffset);
+        }
         if (result.trim().isEmpty()) {
             result += ADDED_SUFFIX;
         }
-        result = secondPass(result);
+        result = thirdPass(result);
         return cleanExpression.prefix + result + cleanExpression.suffix;
     }
 
-    private static String secondPass(String expression) {
+    //unclosed expressions handling
+    private static String secondPass(String expression, int relativeOffset) {
+        //Cut everything after up to the relative offset (caret)
+        return expression.substring(0, relativeOffset);
+    }
+
+    private static String thirdPass(String expression) {
         String spaces = "";
         if (expression.endsWith(" ")) {
             int lastNonWhiteSpace = findLastNonWhiteSpace(expression);
@@ -160,7 +180,7 @@ public final class ELSanitizer {
         }
         return lastNonWhiteSpace;
     }
-    
+
     private static class CleanExpression {
 
         private final String clean, prefix, suffix;
