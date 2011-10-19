@@ -44,9 +44,9 @@ package org.netbeans.modules.maven.execute.ui;
 import org.netbeans.modules.maven.api.execute.RunConfig;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
 import javax.swing.SwingUtilities;
@@ -186,23 +186,18 @@ public class RunGoalsPanel extends javax.swing.JPanel {
 
     private void readMapping(NetbeansActionMapping mapp) {
         txtGoals.setText(createSpaceSeparatedList(mapp.getGoals()));
-        Properties properties = mapp.getProperties();
-        if (properties != null) {
-            StringBuilder buf = new StringBuilder();
-            for (Map.Entry<?,?> entry : properties.entrySet()) {
-                if (buf.length() > 0) {
-                    buf.append('\n');
-                }
-                buf.append(entry.getKey()).append('=').append(entry.getValue());
-                if (entry.getKey().equals(TestChecker.PROP_SKIP_TEST) && entry.getValue().equals("true")) { // NOI18N
-                    cbSkipTests.setSelected(true);
-                }
+        StringBuilder buf = new StringBuilder();
+        for (Map.Entry<String,String> entry : mapp.getProperties().entrySet()) {
+            if (buf.length() > 0) {
+                buf.append('\n');
             }
-            taProperties.setText(buf.toString());
-            taProperties.setCaretPosition(0);
-        } else {
-            taProperties.setText(""); //NOI18N
+            buf.append(entry.getKey()).append('=').append(entry.getValue());
+            if (entry.getKey().equals(TestChecker.PROP_SKIP_TEST) && entry.getValue().equals("true")) { // NOI18N
+                cbSkipTests.setSelected(true);
+            }
         }
+        taProperties.setText(buf.toString());
+        taProperties.setCaretPosition(0);
         txtProfiles.setText(createSpaceSeparatedList(mapp.getActivatedProfiles()));
     }
 
@@ -216,7 +211,7 @@ public class RunGoalsPanel extends javax.swing.JPanel {
 
         PropertySplitter split = new PropertySplitter(taProperties.getText());
         String token = split.nextPair();
-        Properties props = new Properties();
+        Map<String,String> props = new LinkedHashMap<String,String>();
         while (token != null) {
             String[] prp = StringUtils.split(token, "=", 2); //NOI18N
             if (prp.length == 2) {
@@ -228,12 +223,12 @@ public class RunGoalsPanel extends javax.swing.JPanel {
                 if (key.startsWith("-")) { //NOI18N
                     key = key.substring(1);
                 }
-                props.setProperty(key, prp[1]);
+                props.put(key, prp[1]);
             }
             token = split.nextPair();
         }
         if (cbSkipTests.isSelected()) {
-            props.setProperty(TestChecker.PROP_SKIP_TEST, "true"); //NOI18N
+            props.put(TestChecker.PROP_SKIP_TEST, "true"); //NOI18N
         }
         mapp.setProperties(props);
 

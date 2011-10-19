@@ -55,9 +55,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.regex.Matcher;
@@ -525,9 +525,9 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
             cbRecursively.removeActionListener(recursiveListener);
             cbBuildWithDeps.removeActionListener(depsListener);
             
-            txtGoals.setText(createSpaceSeparatedList(mapp != null ? mapp.getGoals() : Collections.EMPTY_LIST));
-            txtProfiles.setText(createSpaceSeparatedList(mapp != null ? mapp.getActivatedProfiles() : Collections.EMPTY_LIST));
-            taProperties.setText(createPropertiesList(mapp != null ? mapp.getProperties() : new Properties()));
+            txtGoals.setText(createSpaceSeparatedList(mapp != null ? mapp.getGoals() : Collections.<String>emptyList()));
+            txtProfiles.setText(createSpaceSeparatedList(mapp != null ? mapp.getActivatedProfiles() : Collections.<String>emptyList()));
+            taProperties.setText(createPropertiesList(mapp != null ? mapp.getProperties() : Collections.<String,String>emptyMap()));
             taProperties.setCaretPosition(0);
             if (handle != null && "pom".equals(handle.getProject().getPackaging())) { //NOI18N
                 cbRecursively.setEnabled(true);
@@ -628,16 +628,19 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
         model.addElement(wr);
     }
     
-    private String createSpaceSeparatedList(List list) {
-        String str = ""; //NOI18N
+    private String createSpaceSeparatedList(List<String> list) {
         if (list != null) {
-            Iterator it = list.iterator();
-            while (it.hasNext()) {
-                String elem = (String) it.next();
-                str = str + elem + " "; //NOI18N
+            StringBuilder b = new StringBuilder();
+            for (String elem : list) {
+                if (b.length() > 0) {
+                    b.append(' ');
+                }
+                b.append(elem);
             }
+            return b.toString();
+        } else {
+            return "";
         }
-        return str;
     }
     
     private void clearFields() {
@@ -670,10 +673,10 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
         lblProfiles.setFont(fnt);
     }
     
-    private String createPropertiesList(Properties properties) {
+    private String createPropertiesList(Map<String,String> properties) {
         StringBuilder b = new StringBuilder();
         if (properties != null) {
-            for (Map.Entry<?,?> entry : properties.entrySet()) {
+            for (Map.Entry<String,String> entry : properties.entrySet()) {
                 if (b.length() > 0) {
                     b.append('\n');
                 }
@@ -711,7 +714,7 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
         String text = taProperties.getText();
         PropertySplitter split = new PropertySplitter(text);
         String tok = split.nextPair();
-        Properties props = new Properties();
+        Map<String,String> props = new LinkedHashMap<String,String>();
         while (tok != null) {
             String[] prp = StringUtils.split(tok, "=", 2); //NOI18N
             if (prp.length == 2) {
@@ -723,7 +726,7 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
                 if (key.startsWith("-")) { //NOI18N
                     key = key.substring(1);
                 }
-                props.setProperty(key, prp[1]);
+                props.put(key, prp[1]);
             }
             tok = split.nextPair();
         }
