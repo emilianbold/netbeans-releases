@@ -167,7 +167,7 @@ public final class ProjectWebServiceView {
     /** 
      * Create view for given type (service or client)
      */
-    private final Node[] createView(ViewType viewType) {
+    final Node[] createView(ViewType viewType) {
         initImpls();
         List<Node> result = new ArrayList<Node>();
         for (ProjectWebServiceViewImpl view : getWebServiceViews()) {

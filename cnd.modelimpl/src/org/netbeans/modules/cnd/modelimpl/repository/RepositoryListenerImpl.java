@@ -169,7 +169,9 @@ public class RepositoryListenerImpl implements RepositoryListener {
     public void anExceptionHappened(final CharSequence unitName, RepositoryException exc) {
         assert exc != null;
         if (exc.getCause() != null) {
-            exc.getCause().printStackTrace(System.err);
+            if (!exc.getMessage().contains("INTENTIONAL")) {// NOI18N
+                exc.getCause().printStackTrace(System.err);
+            }
         }
         DiagnosticExceptoins.register(exc.getCause());
     }

@@ -296,6 +296,9 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
         } else if (w != null) {
             //Something is still writing to the stream, but we're getting rid of the tab.  Don't dispose
             //the writer, just kill the tab's document
+            if (getOut() != null) {
+                getOut().setDisposeOnClose(true);
+            }
             getDocument().disposeQuietly();
             NbIOProvider.dispose(io);
         }
