@@ -100,8 +100,8 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
 
     volatile boolean projectOpened = false;
     // #187060
-    private final AtomicInteger opened = new AtomicInteger();
-    private final AtomicInteger closed = new AtomicInteger();
+    final AtomicInteger opened = new AtomicInteger();
+    final AtomicInteger closed = new AtomicInteger();
 
     private final ProxyOperationFactory proxyOperationFactory;
     // @GuardedBy(this)
@@ -155,9 +155,9 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
     }
 
     public void projectOpened() {
-        LOGGER.log(Level.FINE, "Opening Copy support for project {0}", project.getName());
-
         opened.incrementAndGet();
+
+        LOGGER.log(Level.FINE, "Opening Copy support for project {0}", project.getName());
 
         assert !projectOpened : String.format("Copy Support already opened for project %s (opened: %d, closed: %d)", project.getName(), opened.get(), closed.get());
 
@@ -168,9 +168,9 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
     }
 
     public void projectClosed() {
-        LOGGER.log(Level.FINE, "Closing Copy support for project {0}", project.getName());
-
         closed.incrementAndGet();
+
+        LOGGER.log(Level.FINE, "Closing Copy support for project {0}", project.getName());
 
         assert projectOpened : String.format("Copy Support already closed for project %s (opened: %d, closed: %d)", project.getName(), opened.get(), closed.get());
 
