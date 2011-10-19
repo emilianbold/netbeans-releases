@@ -320,6 +320,12 @@ public class Hk2OptionalFactory extends OptionalDeploymentManagerFactory {
                     InstanceProperties.removeInstance(url);
                 }
             }
+            //
+//            final boolean needToRegisterDefaultServer =
+//                    !NbPreferences.forModule(this.getClass()).getBoolean(ServerUtilities.PROP_FIRST_RUN, false);
+//            if (needToRegisterDefaultServer) {
+//                commonUtilities.getServerProvider();
+//            }
         } catch (Exception ex) {
             throw new ServerInitializationException("failed to init default instance", ex);
         }

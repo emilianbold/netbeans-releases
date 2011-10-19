@@ -66,12 +66,12 @@ import org.openide.nodes.Node;
  */
 @NodeFactory.Registration(projectType="org-netbeans-modules-maven",position=50)
 public class WebAppNodeFactory implements NodeFactory {
-    private static final String KEY_WEBAPP = "webapp"; //NOI18N
     
     /** Creates a new instance of SiteDocsNodeFactory */
     public WebAppNodeFactory() {
     }
     
+    @Override
     public NodeList createNodes(Project project) {
         Project prj = project.getLookup().lookup(Project.class);
         return new NList(prj);
@@ -79,38 +79,42 @@ public class WebAppNodeFactory implements NodeFactory {
     
     
     private static class NList extends AbstractMavenNodeList<String> implements PropertyChangeListener{
+        
         private Project project;
         private NbMavenProject mavenproject;
-        private String currentWebAppKey;
+
         
         private NList(Project prj) {
             project = prj;
             mavenproject = project.getLookup().lookup(NbMavenProject.class);
         }
         
+        @Override
         public List<String> keys() {
             URI webapp = mavenproject.getWebAppDirectory();
             if (webapp != null) {
-                currentWebAppKey = KEY_WEBAPP + webapp.toString();
-                return Collections.singletonList(currentWebAppKey);
+                return Collections.singletonList(webapp.getPath());
             }
             return Collections.emptyList();
         }
         
+        @Override
         public Node node(String key) {
-            return createWebAppNode();
-        }
-        
-        private Node createWebAppNode() {
             Node n =  null;
             try {
                 FileObject fo = URLMapper.findFileObject(mavenproject.getWebAppDirectory().toURL());
                 if (fo != null) {
                     DataFolder fold = DataFolder.findFolder(fo);
-                    File fil = FileUtil.toFile(fo);
+                    File webAppFolder = FileUtil.toFile(fo);
                     if (fold != null) {
-                        n = new WebAppFilterNode(project, fold.getNodeDelegate().cloneNode(), fil);
+                        n = new WebAppFilterNode(project, fold.getNodeDelegate().cloneNode(), webAppFolder);
                     }
+                    
+                    // #197554 - Needs to be here to able to create the ejb-jar.xml file
+                    // Creates WEB-INF folder inside of webapp folder
+                    String webInfPath = webAppFolder.getAbsolutePath() + File.separator + "WEB-INF"; //NOI18N
+                    File webInfFolder = new File(webInfPath);
+                    webInfFolder.mkdir();
                 }
             } catch (MalformedURLException exc) {
                 n = null;
@@ -118,7 +122,7 @@ public class WebAppNodeFactory implements NodeFactory {
             return n;
         }
         
-        
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if (NbMavenProject.PROP_PROJECT.equals(evt.getPropertyName())) {
                 fireChange();
@@ -134,6 +138,5 @@ public class WebAppNodeFactory implements NodeFactory {
         public void removeNotify() {
             NbMavenProject.removePropertyChangeListener(project, this);
         }
-        
     }
 }

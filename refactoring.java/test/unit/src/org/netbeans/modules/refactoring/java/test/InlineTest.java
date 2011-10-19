@@ -71,6 +71,56 @@ public class InlineTest extends RefactoringTestBase {
         super(name);
     }
     
+    public void test203914() throws Exception { // #203914 - [inline]  Cannot inline this method, a already used.
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    private int power(int b) {\n"
+                + "        return b * c;\n"
+                + "    }\n"
+                + "    private int c = 4;\n"
+                + "    private void testMethod() {\n"
+                + "        int a = c;\n"
+                + "        int b = power(a);\n"
+                + "    }\n"
+                + "}"));
+        final InlineRefactoring[] r = new InlineRefactoring[1];
+        createInlineMethodRefactoring(src.getFileObject("t/A.java"), 1, r);
+        performRefactoring(r);
+        verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    private int c = 4;\n"
+                + "    private void testMethod() {\n"
+                + "        int a = c;\n"
+                + "        int b = a * c;\n"
+                + "    }\n"
+                + "}"));
+        
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    private int power(int b) {\n"
+                + "        return b * b;\n"
+                + "    }\n"
+                + "    private void testMethod() {\n"
+                + "        int a = 3;\n"
+                + "        int b = power(a);\n"
+                + "    }\n"
+                + "}"));
+        final InlineRefactoring[] r1 = new InlineRefactoring[1];
+        createInlineMethodRefactoring(src.getFileObject("t/A.java"), 1, r1);
+        performRefactoring(r1);
+        verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    private void testMethod() {\n"
+                + "        int a = 3;\n"
+                + "        int b = a * a;\n"
+                + "    }\n"
+                + "}"));
+    }
+    
     public void test203887() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("t/TestClass.java", "package t;\n"
@@ -91,7 +141,7 @@ public class InlineTest extends RefactoringTestBase {
                 + "public class TestClass {\n"
                 + "    public void  neco(int i) {\n"
                 + "        int a = 4;\n"
-                + "        int c = (1 * 1);\n"
+                + "        int c = 1 * 1;\n"
                 + "    }\n"
                 + "}"));
     }

@@ -326,6 +326,9 @@ private void jList1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:even
      */
     public void updatePopup (boolean isInProgress) {
         int modelSize = rModel.getSize();
+        if (modelSize > 0 && jList1.getSelectedIndex()<0) {
+            jList1.setSelectedIndex(0);
+        }
 
         // plug this popup into layered pane if needed
         JLayeredPane lPane = JLayeredPane.getLayeredPaneAbove(comboBar);

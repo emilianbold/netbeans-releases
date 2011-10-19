@@ -51,7 +51,8 @@
 	<mapID target="dd_multiview_security_securityrolesNode" url="web/csh/graphic_editor/dd_multiview_security_securityrolesNode.html"/>
 	<mapID target="dd_multiview_servlets_servletNode" url="web/csh/graphic_editor/dd_multiview_servlets_servletsNode.html"/>
 	<mapID target="dd_multiview_servlets_servletsNode" url="web/csh/graphic_editor/dd_multiview_servlets_servletsNode.html"/>
-	<mapID target="debug_webapp" url="web/debug/debug_webapp.html"/>
+	
+        <mapID target="debug_webapp" url="web/debug/debug_webapp.html"/>
 	<mapID target="deploy_changeserver" url="web/deploy/deploy_changeserver.html"/>
 	<mapID target="deploy_quickref" url="web/deploy/deploy_quickref.html"/>
 	<mapID target="deploy_webapp" url="web/deploy/deploy_webapp.html"/>
@@ -97,6 +98,7 @@
 	<mapID target="listener_addtodd" url="web/create/listener/listener_addtodd.html"/>
 	<mapID target="listener_create" url="web/create/listener/listener_create.html"/>
 	<mapID target="listener_run" url="web/create/listener/listener_run.html"/>
+
 	<mapID target="org.netbeans.modules.editor.html.HTMLKit" url="web/create/jsp/about_jsp_edit.html"/>
 	<mapID target="org.netbeans.modules.web.core.syntax.JSPKit" url="web/create/jsp/about_jsp_edit.html"/>
 	<mapID target="org.netbeans.modules.web.freeform.ui.WebClasspathPanel" url="web/csh/dbox_projprops_freeform/WebClasspathPanel.html"/>
@@ -106,7 +108,8 @@
 	<mapID target="org.netbeans.modules.web.jsf.dialogs.AddManagedBeanDialog" url="web/framework/jsf/csh/AddManagedBeanDialog.html"/>
 	<mapID target="org.netbeans.modules.web.jsf.dialogs.AddNavigationCaseDialog" url="web/framework/jsf/csh/AddNavigationCaseDialog.html"/>
 	<mapID target="org.netbeans.modules.web.jsf.dialogs.AddNavigationRuleDialog" url="web/framework/jsf/csh/AddNavigationRuleDialog.html"/>
-	<mapID target="org.netbeans.modules.web.jsf.wizards.JSFConfigurationPanelVisual" url="web/csh/projwiz_standard/PanelSupportedFrameworks.html"/>
+	<!-- Frameworks panel that is available in JSF from entity wizard if JSF Framework not added to project -->
+        <mapID target="org.netbeans.modules.web.jsf.wizards.JSFConfigurationPanelVisual" url="web/csh/projwiz_standard/JSFConfigurationPanelVisual.html"/>
 	<mapID target="org.netbeans.modules.web.jsf.wizards.ManagedBeanPanel" url="web/framework/jsf/csh/file_ManagedBeanPanel.html"/>
 	<mapID target="org.netbeans.modules.web.jsf.wizards.TemplatePanel" url="web/framework/jsf/csh/jsf-faceletstemplate.html"/>
 	<mapID target="org.netbeans.modules.web.jsf.wizards.TemplateClientPanel" url="web/framework/jsf/csh/jsf-faceletstemplateclient.html"/>

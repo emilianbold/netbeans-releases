@@ -262,7 +262,7 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
     @Override
     protected QueryParameter[] getSimpleSearchParameters() {
         List<QueryParameter> ret = new ArrayList<QueryParameter>();
-        ret.add(new QueryParameter.SimpleQueryParameter("product", new String[] { product } ));    //NOI18N        
+        ret.add(new QueryParameter.SimpleQueryParameter("product", new String[] { product }, getTaskRepository().getCharacterEncoding() ));    //NOI18N        
 
         // XXX this relies on the fact that the user can't change the selection
         //     while the quicksearch is oppened. Works for now, but might change in the future
@@ -271,8 +271,8 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
         if(ownerInfo != null && ownerInfo.getOwner().equals(product)) {
             List<String> data = ownerInfo.getExtraData();
             if(data != null && data.size() > 0) {
-                ret.add(new QueryParameter.SimpleQueryParameter("component", new String[] { data.get(0) }));    //NOI18N
-    }
+                ret.add(new QueryParameter.SimpleQueryParameter("component", new String[] { data.get(0) }, getTaskRepository().getCharacterEncoding()));    //NOI18N
+            }
         }
 
         return ret.toArray(new QueryParameter[ret.size()]);
