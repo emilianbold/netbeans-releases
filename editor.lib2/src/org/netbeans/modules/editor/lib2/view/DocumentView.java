@@ -153,7 +153,7 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
         EditorViewFactory.registerFactory(new HighlightsViewFactory.HighlightsFactory());
     }
     
-    DocumentViewOp op;
+    final DocumentViewOp op;
 
     private PriorityMutex pMutex;
     
@@ -318,6 +318,10 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
         return children.get(index);
     }
 
+    Shape getChildAllocation(int index) {
+        return getChildAllocation(index, getAllocation());
+    }
+
     @Override
     public Shape getChildAllocation(int index, Shape alloc) {
         return children.getChildAllocation(this, index, alloc);
@@ -335,6 +339,14 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
         return children.viewIndexFirstByStartOffset(offset, 0);
     }
     
+    public int getViewIndex(double y) {
+        if (op.isActive()) {
+            Shape alloc = getAllocation();
+            return children.viewIndexAtY(y, alloc);
+        }
+        return -1;
+    }
+
     public double getY(int pViewIndex) {
         return children.startVisualOffset(pViewIndex);
     }
