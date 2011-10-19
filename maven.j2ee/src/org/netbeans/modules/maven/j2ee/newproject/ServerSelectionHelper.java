@@ -102,9 +102,12 @@ public class ServerSelectionHelper {
         initServerModel(null);
         updatePlatformVersionModel();
     }
-    
+
     /**
      * Initiate servers in comboBox (adds all valid servers plus <No Server> option)
+     * 
+     * @param serverToSelectInstanceID ServerID for server which should be select in comboBox model or <code>null</code>
+     * if <No Server> option should be selected
      */
     private void initServerModel(String serverToSelectInstanceID) {
         Wrapper serverToSelect = null;
@@ -189,25 +192,13 @@ public class ServerSelectionHelper {
      * Handles situation when we need to Add new server into servers comboBox
      */
     public void addServerButtonPressed() {                                          
-        Wrapper selectedServer = getSelectedServer();
-        
-        String serverToSelectInstanceID = null;
-        if (selectedServer != null) {
-            serverToSelectInstanceID = selectedServer.getServerInstanceID();
-        }
-        
         // If new server were added then we want to set it as selected
         String addedServerInstanceID = ServerManager.showAddServerInstanceWizard();
+        
         if (addedServerInstanceID != null) {
-            serverToSelectInstanceID = addedServerInstanceID;
-            j2eeVersion.setSelectedItem(null);
-        } else {
-            return;
+            initServerModel(addedServerInstanceID);
+            updatePlatformVersionModel();
         }
-
-        // We need to refresh the list of servers because we've just added one
-        initServerModel(serverToSelectInstanceID);
-        updatePlatformVersionModel();
     }
     
     public Profile getSelectedProfile() {
@@ -238,23 +229,6 @@ public class ServerSelectionHelper {
     }
     
     /**
-     * Select specified server in servers comboBox
-     * @param instanceID server ID
-     * @return true if valid server was selected
-     */
-    private boolean selectAddedServerInModel(String instanceID) {
-        if (isServerInstanceValid(instanceID)) {
-            serverModel.setSelectedItem(new Wrapper(instanceID));
-            return true;
-        } else {
-            if (serverModel.getItemCount() > 0) {
-                serverModel.setSelectedItem(new Wrapper(ExecutionChecker.DEV_NULL));
-            }
-        }
-        return false;
-    }
-    
-    /**
      * @param instance which need to be validated
      * @return true if the server instance is valid and supports EAR projects, otherwise returns false
      */
@@ -272,9 +246,5 @@ public class ServerSelectionHelper {
             return false;
         }
         return false;
-    }
-    
-    private class J2eeVersion {
-        
     }
 }
