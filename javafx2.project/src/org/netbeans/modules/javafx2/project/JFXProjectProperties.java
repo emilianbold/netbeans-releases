@@ -1262,7 +1262,7 @@ public final class JFXProjectProperties {
     }
     
     private void storeJSCallbacks(final EditableProperties props) {
-        if (jsCallbacksChanged) {
+        if (jsCallbacksChanged && jsCallbacks != null) {
             for (Map.Entry<String,String> entry : jsCallbacks.entrySet()) {
                 if(entry.getValue() != null && !entry.getValue().isEmpty()) {
                     props.setProperty(JAVASCRIPT_CALLBACK_PREFIX + entry.getKey(), entry.getValue());  //NOI18N
@@ -1432,19 +1432,21 @@ public final class JFXProjectProperties {
         public void updateFile(OutputStream os) {
             final PrintWriter out = new PrintWriter(os); //todo: encoding
             copyReadme(out);
-            for(Map<String,String> m : params) {
-                String name = ""; //NOI18N
-                String value = ""; //NOI18N
-                for (Map.Entry<String,String> param : m.entrySet()) {
-                    if(param.getKey().equals("name")) { //NOI18N
-                        name = param.getValue();
-                    } else {
-                        if(param.getKey().equals("value")) { //NOI18N
-                            value = param.getValue();
+            if(params != null) {
+                for(Map<String,String> m : params) {
+                    String name = ""; //NOI18N
+                    String value = ""; //NOI18N
+                    for (Map.Entry<String,String> param : m.entrySet()) {
+                        if(param.getKey().equals("name")) { //NOI18N
+                            name = param.getValue();
+                        } else {
+                            if(param.getKey().equals("value")) { //NOI18N
+                                value = param.getValue();
+                            }
                         }
                     }
+                    out.println(line(name,value));
                 }
-                out.println(line(name,value));
             }
             out.flush();
         }
@@ -1465,11 +1467,13 @@ public final class JFXProjectProperties {
             //if (jsCallbacksChanged) {
                 final PrintWriter out = new PrintWriter(os); //todo: encoding
                 copyReadme(out);
-                for (Map.Entry<String,String> entry : jsCallbacks.entrySet()) {
-                    if(entry.getValue() != null && !entry.getValue().isEmpty()) {
-                        out.println("<callback name=\"" + entry.getKey() + "\">"); //NOI18N
-                        out.println(entry.getValue());
-                        out.println("</callback>"); //NOI18N
+                if(jsCallbacks != null) {
+                    for (Map.Entry<String,String> entry : jsCallbacks.entrySet()) {
+                        if(entry.getValue() != null && !entry.getValue().isEmpty()) {
+                            out.println("<callback name=\"" + entry.getKey() + "\">"); //NOI18N
+                            out.println(entry.getValue());
+                            out.println("</callback>"); //NOI18N
+                        }
                     }
                 }
                 out.flush();
@@ -1489,12 +1493,14 @@ public final class JFXProjectProperties {
         public void updateFile(OutputStream os) {
             final PrintWriter out = new PrintWriter(os); //todo: encoding
             copyReadme(out);
-            String vmo = props.get(RUN_JVM_ARGS);            
-            if (vmo != null) {
-                StringTokenizer tok = new StringTokenizer(vmo, " ");
-                while(tok.hasMoreElements()) {
-                    String s = tok.nextToken();
-                    out.println("<jvmarg value=\"" + s + "\"/>"); //NOI18N
+            if(props != null) {
+                String vmo = props.get(RUN_JVM_ARGS);            
+                if (vmo != null) {
+                    StringTokenizer tok = new StringTokenizer(vmo, " ");
+                    while(tok.hasMoreElements()) {
+                        String s = tok.nextToken();
+                        out.println("<jvmarg value=\"" + s + "\"/>"); //NOI18N
+                    }
                 }
             }
             out.flush();

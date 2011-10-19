@@ -2479,11 +2479,10 @@ public class FormDesigner {
             for (FormModelEvent event : events) {
                 l.add(event);
                 if (event.getContainer() instanceof RADVisualContainer) {
-                    for (int i=0; i < l.size(); i++) {
+                    int i = 0;
+                    int n = l.size() - 1;
+                    while (n > 0) {
                         FormModelEvent e = l.get(i);
-                        if (e == event){
-                            break;
-                        }
                         if (e.getContainer() instanceof RADVisualContainer
                                 && eventsOrder(e, event) == 0) {
                             // we want subcontainers updated before parent's
@@ -2494,6 +2493,7 @@ public class FormDesigner {
                         } else {
                             i++;
                         }
+                        n--;
                     }
                 }
             }

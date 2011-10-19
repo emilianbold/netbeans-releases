@@ -2239,7 +2239,10 @@ class LayoutFeeder implements LayoutConstants {
                             fixedGap = true;
                         }
                     } else {
-                        LayoutInterval p = LayoutInterval.getFirstParent(otherPar, PARALLEL);
+                        LayoutInterval p = LayoutInterval.getCommonParent(otherPar, parent);
+                        if (p == parent) {
+                            p = p.getParent();
+                        }
                         if (p != null && LayoutInterval.getEffectiveAlignmentInParent(parent, p, i) == (i^1)) {
                             fixedGap = true;
                         }
@@ -4565,6 +4568,9 @@ class LayoutFeeder implements LayoutConstants {
             if (iDesc != best)
                 it.remove();
         }
+        if (!inclusions.contains(best)) {
+            inclusions.add(best);
+        }
 
         // prepare the common group for merged content
         int[] borderPos = commonGroup.getCurrentSpace().positions[dimension];
@@ -4764,7 +4770,9 @@ class LayoutFeeder implements LayoutConstants {
 
     private static void updateMovedOriginalNeighbor(IncludeDesc iDesc) {
         if (iDesc != null && iDesc.neighbor != null) {
-            iDesc.parent = LayoutInterval.getFirstParent(iDesc.neighbor, PARALLEL);
+            if (iDesc.neighbor.getParent() != null) {
+                iDesc.parent = LayoutInterval.getFirstParent(iDesc.neighbor, PARALLEL);
+            }
             correctOriginalInclusion(iDesc, LayoutInterval.getRoot(iDesc.neighbor));
         }
     }

@@ -107,6 +107,10 @@ public class KeyboardMenuNavigator extends KeyAdapter {
         if(e.getKeyCode() == KeyEvent.VK_SPACE) {
             startEditing();
         }
+        // #116961: start inplace editing when F2 key is pressed on a menu
+        if(e.getKeyCode() == KeyEvent.VK_F2) {
+            startEditing();
+        }
         //we aren't getting tabs for some reason
         if(e.getKeyCode() == KeyEvent.VK_A) {
             if(e.isShiftDown()) {

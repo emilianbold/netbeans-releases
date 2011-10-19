@@ -248,12 +248,14 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
                 try {
                     FormLAF.setUseDesignerDefaults(getFormModel());
                     draggedComponent.paintFeedback(g2);
+                    
                     // Paint hidden components
+                    Area draggedArea = null;
                     for (Map.Entry<RADComponent,Rectangle[]> entry : hiddenComponents.entrySet()) {
                         RADComponent metacomp = entry.getKey();
                         Object object = formDesigner.getComponent(metacomp);
                         if (!(object instanceof Component)) {
-                            return;
+                            continue;
                         }
                         Component comp = (Component)object;
                         Rectangle[] value = entry.getValue();
@@ -262,8 +264,33 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
                         comp.setSize(bounds.getSize());
                         doLayout(comp);
                         bounds = convertRectangleFromComponent(bounds, comp.getParent());
-                        Graphics gg = g.create(bounds.x, bounds.y, bounds.width, bounds.height);
-                        gg.setClip(visibleBounds.x, visibleBounds.y, visibleBounds.width, visibleBounds.height);
+                        
+                        // Visible part of the component
+                        Rectangle visibleRect = new Rectangle(
+                            bounds.x+visibleBounds.x,
+                            bounds.y+visibleBounds.y,
+                            visibleBounds.width,
+                            visibleBounds.height);
+                        Area clip = new Area(visibleRect);
+                        
+                        // Hidden components should not be visible through the dragged components
+                        if (draggedArea == null) {
+                            // Area of dragged components
+                            draggedArea = new Area();
+                            for (int i=0; i<draggedComponent.showingComponents.length; i++) {
+                                Rectangle rect = new Rectangle(
+                                    draggedComponent.movingBounds[i].x + draggedComponent.convertPoint.x,
+                                    draggedComponent.movingBounds[i].y + draggedComponent.convertPoint.y,
+                                    draggedComponent.movingBounds[i].width + 1,
+                                    draggedComponent.movingBounds[i].height + 1);
+                                draggedArea.add(new Area(rect));
+                            }
+                        }
+                        clip.subtract(draggedArea);
+
+                        Graphics gg = g.create();
+                        gg.setClip(clip);
+                        gg.translate(bounds.x, bounds.y);
                         paintDraggedComponent(comp, gg, 0.3f);
                         gg.dispose();
                     }
