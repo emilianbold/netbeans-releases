@@ -96,7 +96,6 @@ import org.openide.nodes.NodeNotFoundException;
 import org.openide.nodes.NodeOp;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
-import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
 
 /**
@@ -129,13 +128,13 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
     private Node pleaseWait;
     private WizardDescriptor wiz;
 
-    /** Creates new form TemplatesPanelGUI */
+    @Messages("TXT_SelectTemplate=Select Project")
     public TemplatesPanelGUI (Builder firer) {
         assert firer != null : "Builder can not be null";  //NOI18N
         this.firer = firer;
         initComponents();
         postInitComponents ();
-        setName (NbBundle.getMessage(TemplatesPanelGUI.class, "TXT_SelectTemplate")); // NOI18N
+        setName(TXT_SelectTemplate());
     }
 
     public void setTemplatesFolder (final FileObject folder) {
@@ -317,26 +316,27 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
                                     description.read (descURL.openStream (), doc);
                                 } catch (IOException ioe) {
                                     ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, ioe);
-                                    this.description.setText (NbBundle.getBundle (TemplatesPanelGUI.class).getString ("TXT_NoDescription")); // NOI18N
+                                    this.description.setText(null);
                                 }
                             } catch (IOException e) {
                                 ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, e);
-                                this.description.setText (NbBundle.getBundle (TemplatesPanelGUI.class).getString ("TXT_NoDescription")); // NOI18N
+                                this.description.setText(null);
                             }
                         }
                         else {
-                            this.description.setText (NbBundle.getBundle (TemplatesPanelGUI.class).getString ("TXT_NoDescription")); // NOI18N
+                            this.description.setText(null);
                         }
                     }                    
                 } else {
                     // bugfix #46738, Description in New Project dialog doesn't show description of selected categories
-                    this.description.setText (NbBundle.getBundle (TemplatesPanelGUI.class).getString ("TXT_NoDescription")); // NOI18N
+                    this.description.setText(null);
                 }
                 this.firer.fireChange ();
             }
         }
     }
         
+    @Messages("LBL_TemplatesPanel_PleaseWait=Please wait...")
     private void postInitComponents () {        
         Mnemonics.setLocalizedText(jLabel1, this.firer.getCategoriesName());
         Mnemonics.setLocalizedText(jLabel2, this.firer.getTemplatesName());
@@ -349,7 +349,7 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
                 return PLEASE_WAIT_ICON;
             }
         };
-        pleaseWait.setName (NbBundle.getBundle (TemplatesPanelGUI.class).getString ("LBL_TemplatesPanel_PleaseWait"));
+        pleaseWait.setName(LBL_TemplatesPanel_PleaseWait());
         Children ch = new Children.Array ();
         ch.add (new Node[] {pleaseWait});
         final Node root = new AbstractNode (ch);
@@ -428,7 +428,6 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
         add(jLabel3, gridBagConstraints);
 
         description.setEditable(false);
-        description.setText(org.openide.util.NbBundle.getBundle(TemplatesPanelGUI.class).getString("TXT_NoDescription")); // NOI18N
         description.setPreferredSize(new java.awt.Dimension(100, 66));
         jScrollPane1.setViewportView(description);
 
@@ -602,6 +601,10 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
 
         private CategoriesBeanTreeView btv;
 
+        @Messages({
+            "ACSN_CategoriesPanel=Categories of types new objects",
+            "ACSD_CategoriesPanel=List of categories of new objects which can be choosen"
+        })
         protected synchronized JComponent createComponent () {
             if (this.btv == null) {
                 this.btv = new CategoriesBeanTreeView ();
@@ -609,8 +612,8 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
                 this.btv.setPopupAllowed(false);
                 this.btv.setFocusable(false);
                 this.btv.setDefaultActionAllowed(false);
-                this.btv.getAccessibleContext ().setAccessibleName (NbBundle.getMessage (TemplatesPanelGUI.class, "ACSN_CategoriesPanel")); // NOI18N
-                this.btv.getAccessibleContext ().setAccessibleDescription (NbBundle.getMessage (TemplatesPanelGUI.class, "ACSD_CategoriesPanel")); // NOI18N
+                this.btv.getAccessibleContext().setAccessibleName(ACSN_CategoriesPanel());
+                this.btv.getAccessibleContext().setAccessibleDescription(ACSD_CategoriesPanel());
                 Border b = (Border)UIManager.get("Nb.ScrollPane.border"); // NOI18N
                 if (b != null) {
                     this.btv.setBorder(b); 
@@ -645,12 +648,16 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
         
         private ListView list;
 
+        @Messages({
+            "ACSN_TemplatesPanel=Types of new objects",
+            "ACSD_TemplatesPanel=List of types of new objects which can be choosen"
+        })
         protected synchronized JComponent createComponent () {            
             if (this.list == null) {
                 this.list = new TemplatesListView ();
                 this.list.setPopupAllowed(false);
-                this.list.getAccessibleContext ().setAccessibleName (NbBundle.getMessage (TemplatesPanelGUI.class, "ACSN_TemplatesPanel")); // NOI18N
-                this.list.getAccessibleContext ().setAccessibleDescription (NbBundle.getMessage (TemplatesPanelGUI.class, "ACSD_TemplatesPanel")); // NOI18N
+                this.list.getAccessibleContext().setAccessibleName(ACSN_TemplatesPanel());
+                this.list.getAccessibleContext().setAccessibleDescription(ACSD_TemplatesPanel());
                 Border b = (Border)UIManager.get("Nb.ScrollPane.border");
                 if (b != null) {
                     this.list.setBorder(b); // NOI18N
