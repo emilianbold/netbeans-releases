@@ -895,16 +895,28 @@ public final class MakeActionProvider implements ActionProvider {
             String outputFile = null;
             if (itemConfiguration.getTool() == PredefinedToolKind.CCompiler) {
                 CCompilerConfiguration cCompilerConfiguration = itemConfiguration.getCCompilerConfiguration();
-                outputFile = cCompilerConfiguration.getOutputFile(item, conf, true);
+                outputFile = cCompilerConfiguration.getOutputFile(item, conf, false);
+                if(item.getFolder().isTest()) {
+                    outputFile = outputFile.replace(MakeConfiguration.OBJECTDIR_MACRO, "${TESTDIR}"); // NOI18N
+                }
             } else if (itemConfiguration.getTool() == PredefinedToolKind.CCCompiler) {
                 CCCompilerConfiguration ccCompilerConfiguration = itemConfiguration.getCCCompilerConfiguration();
-                outputFile = ccCompilerConfiguration.getOutputFile(item, conf, true);
+                outputFile = ccCompilerConfiguration.getOutputFile(item, conf, false);
+                if(item.getFolder().isTest()) {
+                    outputFile = outputFile.replace(MakeConfiguration.OBJECTDIR_MACRO, "${TESTDIR}"); // NOI18N
+                }
             } else if (itemConfiguration.getTool() == PredefinedToolKind.FortranCompiler) {
                 FortranCompilerConfiguration fortranCompilerConfiguration = itemConfiguration.getFortranCompilerConfiguration();
-                outputFile = fortranCompilerConfiguration.getOutputFile(item, conf, true);
+                outputFile = fortranCompilerConfiguration.getOutputFile(item, conf, false);
+                if(item.getFolder().isTest()) {
+                    outputFile = outputFile.replace(MakeConfiguration.OBJECTDIR_MACRO, "${TESTDIR}"); // NOI18N
+                }
             } else if (itemConfiguration.getTool() == PredefinedToolKind.Assembler) {
                 AssemblerConfiguration assemblerConfiguration = itemConfiguration.getAssemblerConfiguration();
-                outputFile = assemblerConfiguration.getOutputFile(item, conf, true);
+                outputFile = assemblerConfiguration.getOutputFile(item, conf, false);
+                if(item.getFolder().isTest()) {
+                    outputFile = outputFile.replace(MakeConfiguration.OBJECTDIR_MACRO, "${TESTDIR}"); // NOI18N
+                }
             } else if (itemConfiguration.getTool() == PredefinedToolKind.CustomTool) {
                 CustomToolConfiguration customToolConfiguration = itemConfiguration.getCustomToolConfiguration();
                 outputFile = customToolConfiguration.getOutputs().getValue();
