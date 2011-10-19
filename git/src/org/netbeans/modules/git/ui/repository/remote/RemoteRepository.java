@@ -215,6 +215,7 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
         if(ignoreComboEvents) return;
         validateFields();
         updateCurrentSettingsType();
+        findComboItem(false);
     }
 
     @Override
@@ -308,17 +309,19 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
 
     private boolean ignoreComboEvents = false;
     private void findComboItem(boolean selectAll) {
-        GitURI uri = getURI();
+        final GitURI uri = getURI();
         final String uriString = uri == null ? getURIString() : uri.setUser(null).setPass(null).toString();
         if(uriString == null || uriString.isEmpty()) {
             return;
         }
         DefaultComboBoxModel model = (DefaultComboBoxModel)panel.urlComboBox.getModel();
+        boolean found = false;
         for (int i = 0; i < model.getSize(); i++) {
             final String item = (String) model.getElementAt(i);
             if(item.toLowerCase().startsWith(uriString.toLowerCase())) {
                 final int start = selectAll ? 0 : uriString.length();
                 final int end = item.length();
+                found = true;
                 EventQueue.invokeLater(new Runnable() {
                     @Override
                     public void run() {
@@ -326,15 +329,25 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
                         try {
                             setComboText(item, start, end);
                             updateCurrentSettingsType();
-                            activeSettingsType.populateFields(recentConnectionSettings.get(item));
+                            ConnectionSettings setts = recentConnectionSettings.get(item);
+                            if (setts != null && uri != null) {
+                                String username = uri.getUser();
+                                username = username == null ? "" : username.trim(); //NOI18N
+                                if (!username.isEmpty() && !username.equals(setts.getUser())) {
+                                    setts = setts.copy();
+                                    setts.setUser(username);
+                                }
+                            }
+                            activeSettingsType.populateFields(setts);
                         } finally {
                             ignoreComboEvents = false;
                         }
                     }
                 });
-            } else {
-                
             }
+        }
+        if (!found && uri != null) {
+            activeSettingsType.populateFields(new ConnectionSettings(uri));
         }
     }
 
