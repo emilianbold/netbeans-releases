@@ -113,7 +113,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
-import javax.swing.text.html.HTMLEditorKit;
 import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.progress.ProgressHandle;
@@ -1958,6 +1957,7 @@ public class Installer extends ModuleInstall implements Runnable {
                 EventQueue.invokeAndWait(new Runnable() {
 
                     public void run() {
+                        LOG.log(Level.FINE, "Window system initialized:", WindowManager.getDefault().getMainWindow().isVisible());
                         if (reportPanel==null) {
                             reportPanel = new ReportPanel(isOOM, settings);
                         }
@@ -1970,21 +1970,21 @@ public class Installer extends ModuleInstall implements Runnable {
                         }
                         browser = new JEditorPane();
                         try {
-                            URL resource = new URL("nbresloc:/org/netbeans/modules/uihandler/Connecting.html"); // NOI18N
-                            browser.setPage(resource); // NOI18N
-                        } catch (IOException ex) {
-                            LOG.log(Level.SEVERE, ex.getMessage(), ex);
-                        }
-                        browser.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 0, 8));
-                        browser.setPreferredSize(dim);
-                        try {
                             browser.setEditable(false);
+                            try {
+                                URL resource = new URL("nbresloc:/org/netbeans/modules/uihandler/Connecting.html"); // NOI18N
+                                browser.setPage(resource); // NOI18N
+                            } catch (IOException ex) {
+                                LOG.log(Level.SEVERE, ex.getMessage(), ex);
+                            }
+                            browser.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 0, 8));
+                            browser.setPreferredSize(dim);
+                            // browser.setEditorKit(new HTMLEditorKit()); // needed up to nb5.5
+                            browser.setBackground(new JLabel().getBackground());
+                            browser.addHyperlinkListener(SubmitInteractive.this);
                         } catch (NullPointerException x) {
                             LOG.log(Level.WARNING, "Java bug #7050995?", x);
                         }
-                        browser.setEditorKit(new HTMLEditorKit()); // needed up to nb5.5
-                        browser.setBackground(new JLabel().getBackground());
-                        browser.addHyperlinkListener(SubmitInteractive.this);
                         JScrollPane p = new JScrollPane();
                         p.setViewportView(browser);
                         p.setBorder(BorderFactory.createEmptyBorder());
