@@ -20,7 +20,7 @@ import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
  * 
  * @version $Revision$ $Date$
  */
-@SuppressWarnings({"unchecked","deprecation"})
+@SuppressWarnings({"unchecked", "deprecation", "rawtypes", "cast"})
 public class NetbeansBuildActionXpp3Writer {
 
 

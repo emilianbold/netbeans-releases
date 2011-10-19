@@ -200,8 +200,8 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
         isDebugCompatible = checkMapping(debug);
         isProfileCompatible = checkMapping(profile);
 
-        oldUrl = isRunCompatible ? run.getProperties().getProperty(CLIENTURLPART) : //NOI18N
-                                   debug.getProperties().getProperty(CLIENTURLPART); //NOI18N
+        oldUrl = isRunCompatible ? run.getProperties().get(CLIENTURLPART) :
+                                   debug.getProperties().get(CLIENTURLPART);
         
         if (oldUrl != null) {
             txtRelativeUrl.setText(oldUrl);
@@ -485,17 +485,17 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
         String newUrl = txtRelativeUrl.getText().trim();
         if (!newUrl.equals(oldUrl)) {
             if (isRunCompatible) {
-                run.getProperties().setProperty( CLIENTURLPART, newUrl); //NOI18N
+                run.addProperty(CLIENTURLPART, newUrl);
                 ModelHandle.setUserActionMapping(run, handle.getActionMappings());
                 handle.markAsModified(handle.getActionMappings());
             }
             if (isDebugCompatible) {
-                debug.getProperties().setProperty( CLIENTURLPART, newUrl); //NOI18N
+                debug.addProperty(CLIENTURLPART, newUrl);
                 ModelHandle.setUserActionMapping(debug, handle.getActionMappings());
                 handle.markAsModified(handle.getActionMappings());
             }
             if (isProfileCompatible) {
-                profile.getProperties().setProperty( CLIENTURLPART, newUrl); //NOI18N
+                profile.addProperty(CLIENTURLPART, newUrl);
                 ModelHandle.setUserActionMapping(profile, handle.getActionMappings());
                 handle.markAsModified(handle.getActionMappings());
             }
