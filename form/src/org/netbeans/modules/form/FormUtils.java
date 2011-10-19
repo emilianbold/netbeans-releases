@@ -939,7 +939,7 @@ public class FormUtils
 
     public static void setupEditorPane(javax.swing.JEditorPane editor, FileObject srcFile, int ccPosition) {
         FormServices services = Lookup.getDefault().lookup(FormServices.class);
-        services.setupEditorPane(editor, srcFile, ccPosition);
+        services.setupCodeEditorPane(editor, srcFile, ccPosition);
     }
 
     public static void setupTextUndoRedo(javax.swing.text.JTextComponent editor) {
