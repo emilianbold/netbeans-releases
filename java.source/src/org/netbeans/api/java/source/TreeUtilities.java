@@ -340,11 +340,16 @@ public final class TreeUtilities {
                         case METHOD:
                         case FOR_LOOP:
                         case ENHANCED_FOR_LOOP:
-                        case IF:
                         case SYNCHRONIZED:
                         case WHILE_LOOP:
                         case TRY:
                             path = path.getParentPath();
+                            break;
+                        case IF:
+                            do {
+                                path = path.getParentPath();
+                            } while (path != null && path.getLeaf().getKind() == Tree.Kind.IF);
+                            break;
                     }
                     break;
             }

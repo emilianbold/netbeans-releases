@@ -46,7 +46,9 @@ package org.netbeans.modules.refactoring.spi;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.refactoring.spi.BackupFacility.Handle;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -62,7 +64,10 @@ public class BackupFacilityTest extends NbTestCase {
     
     protected void setUp() throws Exception {
         super.setUp();
-        f = FileUtil.toFileObject(getDataDir()).getFileObject("projects/default/src/defaultpkg/Main.java");
+        f = FileUtil.createData(FileUtil.toFileObject(getWorkDir()), "test");
+        OutputStream outputStream = f.getOutputStream();
+        outputStream.write("test".getBytes());
+        outputStream.close();
     }
 
     protected void tearDown() throws Exception {
@@ -73,13 +78,10 @@ public class BackupFacilityTest extends NbTestCase {
         assertNotNull(BackupFacility.getDefault());
     }
 
-    static BackupFacility.Handle transactionId;
     FileObject f;
-    public void testBackup() throws Exception {
-        transactionId = BackupFacility.getDefault().backup(f);
-    }
 
-    public void testRestore() throws Exception {
+    public void testBackupRestore() throws Exception {
+        Handle transactionId = BackupFacility.getDefault().backup(f);
         f.delete();
         assertFalse(f.isValid());
         transactionId.restore();
@@ -88,6 +90,9 @@ public class BackupFacilityTest extends NbTestCase {
     }
 
     public void testClear() throws IOException {
+        Handle transactionId = BackupFacility.getDefault().backup(f);
+        f.delete();
+        assertFalse(f.isValid());
         BackupFacility.getDefault().clear();
         try {
             transactionId.restore();
