@@ -260,15 +260,15 @@ public class HudsonJobImpl implements HudsonJob, OpenableInBrowser {
     }
 
     final List<HudsonMavenModule> mavenModules = new LinkedList<HudsonMavenModule>();
-    void addModule(String name, String displayName, Color color, String url) {
+    void addModule(@NonNull String name, @NonNull String displayName, @NonNull Color color, @NonNull String url) {
         mavenModules.add(new HudsonMavenModule(name, displayName, color, url));
     }
     static class HudsonMavenModule {
-        final String name;
-        final String displayName;
-        final Color color;
-        final String url;
-        HudsonMavenModule(String name, String displayName, Color color, String url) {
+        final @NonNull String name;
+        final @NonNull String displayName;
+        final @NonNull Color color;
+        final @NonNull String url;
+        HudsonMavenModule(@NonNull String name, @NonNull String displayName, @NonNull Color color, @NonNull String url) {
             this.name = name;
             this.displayName = displayName;
             this.color = color;

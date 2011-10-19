@@ -173,14 +173,14 @@ class ActionFilterNode extends FilterNode {
         protected Node[] createNodes(Node n) {
             switch (mode) {
                 case MODE_PACKAGE:
-                    DataObject dobj = n.getCookie(DataObject.class);
-                    if (dobj == null) {
-                        assert false : "DataNode without DataObject in Lookup";  //NOI18N
+                    FileObject fobj = n.getLookup().lookup(FileObject.class);
+                    if (fobj == null) {
+                        assert false : "DataNode without FileObject in Lookup";  //NOI18N
                         return new Node[0];
-                    } else if (dobj.getPrimaryFile().isFolder()) {
-                        return new Node[] {new ActionFilterNode(n, MODE_PACKAGE, cpRoot, dobj.getPrimaryFile())};
+                    } else if (fobj.isFolder()) {
+                        return new Node[] {new ActionFilterNode(n, MODE_PACKAGE, cpRoot, fobj)};
                     } else {
-                        return new Node[] {new ActionFilterNode(n, MODE_FILE, cpRoot, dobj.getPrimaryFile())};
+                        return new Node[] {new ActionFilterNode(n, MODE_FILE, cpRoot, fobj)};
                     }
                 case MODE_FILE:
                 case MODE_FILE_CONTENT:
