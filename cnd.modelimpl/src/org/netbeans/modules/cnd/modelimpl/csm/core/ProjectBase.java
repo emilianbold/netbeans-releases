@@ -715,7 +715,8 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             }
         }
         long time = System.currentTimeMillis();
-        final Set<NativeFileItem> removedFiles = Collections.synchronizedSet(new HashSet<NativeFileItem>());
+        final Set<NativeFileItem> removedFileItems = Collections.synchronizedSet(new HashSet<NativeFileItem>());
+        final Set<NativeFileItem> readOnlyRemovedFilesSet = Collections.unmodifiableSet(removedFileItems);
         NativeProjectItemsListener projectItemListener = new NativeProjectItemsListener() {
 
             @Override
@@ -728,12 +729,12 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
             @Override
             public void fileRemoved(NativeFileItem fileItem) {
-                removedFiles.add(fileItem);
+                removedFileItems.add(fileItem);
             }
 
             @Override
             public void filesRemoved(List<NativeFileItem> fileItems) {
-                removedFiles.addAll(fileItems);
+                removedFileItems.addAll(fileItems);
             }
 
             @Override
@@ -849,16 +850,16 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 }
             }
             CreateFilesWorker worker = new CreateFilesWorker(this);
-            worker.createProjectFilesIfNeed(sources, true, removedFiles, validator);
+            worker.createProjectFilesIfNeed(sources, true, readOnlyRemovedFilesSet, validator);
             if (status != Status.Validating  || RepositoryUtils.getRepositoryErrorCount(this) == 0){
-                worker.createProjectFilesIfNeed(headers, false, removedFiles, validator);
+                worker.createProjectFilesIfNeed(headers, false, readOnlyRemovedFilesSet, validator);
             }
             if (status == Status.Validating && RepositoryUtils.getRepositoryErrorCount(this) > 0){
                 System.err.println("Clean index for project \""+getUniqueName()+"\" because index was corrupted (was "+RepositoryUtils.getRepositoryErrorCount(this)+" errors)."); // NOI18N
                 validator = null;
                 reopenUnit();
-                worker.createProjectFilesIfNeed(sources, true, removedFiles, validator);
-                worker.createProjectFilesIfNeed(headers, false, removedFiles, validator);
+                worker.createProjectFilesIfNeed(sources, true, readOnlyRemovedFilesSet, validator);
+                worker.createProjectFilesIfNeed(headers, false, readOnlyRemovedFilesSet, validator);
             }
 
         } finally {
@@ -913,12 +914,12 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return fileAndHandler;
     }
 
-    final void createIfNeed(NativeFileItem nativeFile, boolean isSourceFile, FileModel lwm,
+    final FileImpl createIfNeed(NativeFileItem nativeFile, boolean isSourceFile, FileModel lwm,
             ProjectSettingsValidator validator, List<FileImpl> reparseOnEdit, List<NativeFileItem> reparseOnPropertyChanged) {
 
         FileAndHandler fileAndHandler = preCreateIfNeed(nativeFile, isSourceFile);
         if (fileAndHandler == null) {
-            return;
+            return null;
         }
         if (validator != null) {
             // fill up needed collections based on validation
@@ -968,6 +969,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 ParserQueue.instance().add(fileAndHandler.fileImpl, fileAndHandler.preprocHandler.getState(), ParserQueue.Position.TAIL);
             }
         }
+        return fileAndHandler.fileImpl;
     }
 
     /**
@@ -2474,6 +2476,15 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return getFileContainer().getFilesUID();
     }
 
+    public final Collection<CsmUID<CsmFile>> getHeaderFilesUID() {
+        List<CsmUID<CsmFile>> uids = new ArrayList<CsmUID<CsmFile>>();
+        for (FileImpl file : getAllFileImpls()) {
+            if (!file.isSourceFile()) {
+                uids.add(file.getUID());
+            }
+        }
+        return uids;
+    }
     /**
      * We'd better name this getFiles();
      * but unfortunately there already is such method,
@@ -2496,13 +2507,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
     @Override
     public final Collection<CsmFile> getHeaderFiles() {
-        List<CsmUID<CsmFile>> uids = new ArrayList<CsmUID<CsmFile>>();
-        for (FileImpl file : getAllFileImpls()) {
-            if (!file.isSourceFile()) {
-                uids.add(file.getUID());
-            }
-        }
-        return new LazyCsmCollection<CsmFile, CsmFile>(uids, TraceFlags.SAFE_UID_ACCESS);
+        return new LazyCsmCollection<CsmFile, CsmFile>(getHeaderFilesUID(), TraceFlags.SAFE_UID_ACCESS);
     }
 
     public final long getMemoryUsageEstimation() {
