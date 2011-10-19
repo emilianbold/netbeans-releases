@@ -815,6 +815,7 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
         passwordField.setEnabled(enable);
         passwordCheckBox.setEnabled(enable);
         urlField.setEnabled(enable);
+        bTestConnection.setEnabled(enable);
 
         for (Entry<String, UrlField> entry : urlFields.entrySet()) {
             entry.getValue().getField().setEnabled(enable);
@@ -954,12 +955,8 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
     }
 
     public void setWaitingState(boolean wait) {
-        Component parent = getParent();
         Component rootPane = getRootPane();
-        setEnabled(!wait);
-        if (parent != null) {
-            parent.setEnabled(!wait);
-        }
+        enableInput(! wait);
         if (rootPane != null) {
             rootPane.setCursor(wait ? Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR) : null);
         }

@@ -124,25 +124,16 @@ public final class SQLIdentifiers {
         public String unquote(String identifier) {
             Parameters.notNull("identifier", identifier);
 
-            int start = 0;
-            while (identifier.regionMatches(start, quoteString, 0, quoteString.length())) {
-                start += quoteString.length();
+            String result = identifier;
+
+            if (result.startsWith(quoteString)) {
+                result = result.substring(quoteString.length());
             }
-            int end = identifier.length();
-            if (end > start) {
-                for (;;) {
-                    int offset = end - quoteString.length();
-                    if (identifier.regionMatches(offset, quoteString, 0, quoteString.length())) {
-                        end = offset;
-                    } else {
-                        break;
-                    }
-                }
+
+            if (result.endsWith(quoteString)) {
+                result = result.substring(0, result.lastIndexOf(quoteString));
             }
-            String result = "";
-            if (start < end) {
-                result = identifier.substring(start, end);
-            }
+
             return result;
         }
 
@@ -151,7 +142,8 @@ public final class SQLIdentifiers {
         }
 
         boolean alreadyQuoted(String identifier) {
-            return (identifier.startsWith(quoteString) && identifier.endsWith(quoteString));
+            return (identifier.startsWith(quoteString)
+                    && identifier.substring(quoteString.length()).endsWith(quoteString));
         }
 
         String doQuote(String identifier) {
