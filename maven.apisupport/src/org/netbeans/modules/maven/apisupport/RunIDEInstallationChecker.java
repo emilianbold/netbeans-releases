@@ -45,7 +45,6 @@ import javax.xml.namespace.QName;
 import org.apache.maven.cli.MavenCli;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.NbMavenProject;
-import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.maven.api.execute.PrerequisitesChecker;
 import org.netbeans.modules.maven.api.execute.RunConfig;
 import static org.netbeans.modules.maven.apisupport.Bundle.*;
@@ -81,9 +80,7 @@ public class RunIDEInstallationChecker implements PrerequisitesChecker {
             Project project = config.getProject();
             if (project != null) {
                 NbMavenProject nbmp = project.getLookup().lookup(NbMavenProject.class);
-                if (nbmp != null) {
-                    if (!nbmp.getMavenProject().getProperties().containsKey(MavenNbModuleImpl.PROP_NETBEANS_INSTALL) &&
-                            PluginPropertyUtils.getPluginProperty(project, MavenNbModuleImpl.GROUPID_MOJO, MavenNbModuleImpl.NBM_PLUGIN, "netbeansInstallation", "run-ide") == null) {
+                if (nbmp != null && MavenNbModuleImpl.findIDEInstallation(nbmp) == null) {
                         String netbeansInstallation = new File(System.getProperty("netbeans.home")).getParent();
                         if (DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(RunIDEInstallationChecker_message(netbeansInstallation, MavenCli.DEFAULT_USER_SETTINGS_FILE), RunIDEInstallationChecker_title(), NotifyDescriptor.OK_CANCEL_OPTION)) == NotifyDescriptor.OK_OPTION) {
                             try {
@@ -94,7 +91,6 @@ public class RunIDEInstallationChecker implements PrerequisitesChecker {
                         }
                         // config.setProperty(MavenNbModuleImpl.PROP_NETBEANS_INSTALL, netbeansInstallation);
                         return false;
-                    }
                 }
             }
         }
