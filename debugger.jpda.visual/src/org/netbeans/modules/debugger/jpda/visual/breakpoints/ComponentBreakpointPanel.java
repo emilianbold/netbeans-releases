@@ -118,24 +118,36 @@ public class ComponentBreakpointPanel extends javax.swing.JPanel implements Cont
         this.breakpoint = cb;
         this.createBreakpoint = createBreakpoint;
         initComponents();
-        int type = cb.getType();
-        String componentName = ""; // NOI18N
-        if (cb.getComponent() != null && cb.getComponent().getComponentInfo() != null) {
+        int type;
+        int supportedTypes;
+        if (cb != null) {
+            type = cb.getType();
+            supportedTypes = cb.supportedTypes();
+        } else {
+            type = 0;
+            supportedTypes = 0;
+        }
+        String componentName;
+        if (cb != null && cb.getComponent() != null && cb.getComponent().getComponentInfo() != null) {
             componentName = cb.getComponent().getComponentInfo().getDisplayName();
+        } else {
+            componentName = NbBundle.getMessage(ComponentBreakpointPanel.class, "NoComponentSelected");
         }
         componentTextField.setText(componentName);
         addRemoveCheckBox.setSelected((type & AWTComponentBreakpoint.TYPE_ADD) != 0 || (type & AWTComponentBreakpoint.TYPE_REMOVE) != 0);
-        addRemoveCheckBox.setVisible(((ComponentBreakpoint.TYPE_ADD | ComponentBreakpoint.TYPE_REMOVE) & cb.supportedTypes()) > 0);
+        addRemoveCheckBox.setVisible(((ComponentBreakpoint.TYPE_ADD | ComponentBreakpoint.TYPE_REMOVE) & supportedTypes) > 0);
         showHideCheckBox.setSelected((type & AWTComponentBreakpoint.TYPE_SHOW) != 0 || (type & AWTComponentBreakpoint.TYPE_HIDE) != 0);
-        showHideCheckBox.setVisible(((ComponentBreakpoint.TYPE_SHOW | ComponentBreakpoint.TYPE_HIDE) & cb.supportedTypes()) > 0);
+        showHideCheckBox.setVisible(((ComponentBreakpoint.TYPE_SHOW | ComponentBreakpoint.TYPE_HIDE) & supportedTypes) > 0);
         repaintCheckBox.setSelected((type & AWTComponentBreakpoint.TYPE_REPAINT) != 0);
-        repaintCheckBox.setVisible(((ComponentBreakpoint.TYPE_REPAINT) & cb.supportedTypes()) > 0);
+        repaintCheckBox.setVisible(((ComponentBreakpoint.TYPE_REPAINT) & supportedTypes) > 0);
         conditionsPanel = new ConditionsPanel(HELP_ID);
         conditionsPanel.setupConditionPaneContext();
         conditionsPanel.showClassFilter(false);
-        conditionsPanel.setCondition(cb.getCondition());
-        conditionsPanel.setHitCountFilteringStyle(cb.getHitCountFilteringStyle());
-        conditionsPanel.setHitCount(cb.getHitCountFilter());
+        if (cb != null) {
+            conditionsPanel.setCondition(cb.getCondition());
+            conditionsPanel.setHitCountFilteringStyle(cb.getHitCountFilteringStyle());
+            conditionsPanel.setHitCount(cb.getHitCountFilter());
+        }
         cPanel.add(conditionsPanel, "Center");  // NOI18N
         
         fakeActionsBP = LineBreakpoint.create("", 0);
@@ -313,13 +325,15 @@ public class ComponentBreakpointPanel extends javax.swing.JPanel implements Cont
         }
 
         private void checkValid() {
-            ComponentDescription component = breakpoint.getComponent();
-            if (component == null || component.getComponentInfo() == null) {
-                setErrorMessage(NbBundle.getMessage(ComponentBreakpointPanel.class, "MSG_No_Component_Spec"));
-                setValid(false);
-            } else {
-                setValid(true);
+            if (breakpoint != null) {
+                ComponentDescription component = breakpoint.getComponent();
+                if (component != null && component.getComponentInfo() != null) {
+                    setValid(true);
+                    return ;
+                }
             }
+            setErrorMessage(NbBundle.getMessage(ComponentBreakpointPanel.class, "MSG_No_Component_Spec"));
+            setValid(false);
         }
         
         private void setErrorMessage(String msg) {

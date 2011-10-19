@@ -204,21 +204,27 @@ public class TakeScreenshotActionProvider extends ActionsProviderSupport {
         }
         
         private void markBreakpoint(RemoteScreenshot screenshot, ComponentBreakpoint b) {
-            ObjectReference oc = ((ComponentBreakpoint) b).getComponent().getComponent(debugger);
-            if (oc != null) {
-                ComponentInfo ci = findComponentInfo(screenshot.getComponentInfo(), oc);
-                if (ci != null) {
-                    screenshot.getScreenshotUIManager().markBreakpoint(ci);
+            ComponentBreakpoint.ComponentDescription cd = ((ComponentBreakpoint) b).getComponent();
+            if (cd != null) {
+                ObjectReference oc = cd.getComponent(debugger);
+                if (oc != null) {
+                    ComponentInfo ci = findComponentInfo(screenshot.getComponentInfo(), oc);
+                    if (ci != null) {
+                        screenshot.getScreenshotUIManager().markBreakpoint(ci);
+                    }
                 }
             }
         }
         
         private void unmarkBreakpoint(RemoteScreenshot screenshot, ComponentBreakpoint b) {
-            ObjectReference oc = ((ComponentBreakpoint) b).getComponent().getComponent(debugger);
-            if (oc != null) {
-                ComponentInfo ci = findComponentInfo(screenshot.getComponentInfo(), oc);
-                if (ci != null) {
-                    screenshot.getScreenshotUIManager().unmarkBreakpoint(ci);
+            ComponentBreakpoint.ComponentDescription cd = ((ComponentBreakpoint) b).getComponent();
+            if (cd != null) {
+                ObjectReference oc = cd.getComponent(debugger);
+                if (oc != null) {
+                    ComponentInfo ci = findComponentInfo(screenshot.getComponentInfo(), oc);
+                    if (ci != null) {
+                        screenshot.getScreenshotUIManager().unmarkBreakpoint(ci);
+                    }
                 }
             }
         }

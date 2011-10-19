@@ -166,6 +166,7 @@ public class Operator {
             params [0] = null;
             params [1] = null;
             params [2] = null;
+            AWTGrabHandler awtGrabHandler = new AWTGrabHandler(debugger);
 
        loop: for (;;) {
                  try {
@@ -320,6 +321,42 @@ public class Operator {
                          if (!silent && suspendedThread != null) {
                              resume = resume && suspendedThread.notifyToBeResumedNoFire();
                          }
+                         if (!resume) {
+                             if (!silent && suspendedAll) {
+                                 //TODO: Not really all might be suspended!
+                                 boolean grabSolved = awtGrabHandler.solveGrabbing(debugger.getVirtualMachine()); // TODO: check AWT thread!
+                                 if (!grabSolved) {
+                                    resume = true; // We must not stop here, nobody will ever be able to resume
+                                 } else {
+                                     List<PropertyChangeEvent> events = debugger.notifySuspendAll(false, false,
+                                                                                                  ignoredThreads.isEmpty() ? null : ignoredThreads);
+                                     if (eventAccessLock != null) {
+                                        logger.finer("Write access lock RELEASED:"+eventAccessLock);
+                                        eventAccessLock.unlock();
+                                        eventAccessLock = null;
+                                     }
+                                     for (PropertyChangeEvent event : events) {
+                                         ((JPDAThreadImpl) event.getSource()).fireEvent(event);
+                                     }
+                                 }
+                             }
+                             if (!silent && suspendedThread != null) {
+                                 boolean grabSolved = awtGrabHandler.solveGrabbing(thref);
+                                 if (!grabSolved) {
+                                    resume = true; // We must not stop here, nobody will ever be able to resume
+                                 } else {
+                                     PropertyChangeEvent event = suspendedThread.notifySuspended(false, false);
+                                     if (eventAccessLock != null) {
+                                        logger.finer("Write access lock RELEASED:"+eventAccessLock);
+                                        eventAccessLock.unlock();
+                                        eventAccessLock = null;
+                                     }
+                                     if (event != null) {
+                                        suspendedThread.fireEvent(event);
+                                     }
+                                 }
+                             }
+                         }
                          if (resume) {
                              try {
                                 EventSetWrapper.resume(eventSet);
@@ -332,31 +369,6 @@ public class Operator {
                                 logger.finer("Write access lock RELEASED:"+eventAccessLock);
                                 eventAccessLock.unlock();
                                 eventAccessLock = null;
-                             }
-                         } else {
-                             if (!silent && suspendedAll) {
-                                 //TODO: Not really all might be suspended!
-                                 List<PropertyChangeEvent> events = debugger.notifySuspendAll(false, false,
-                                                                                              ignoredThreads.isEmpty() ? null : ignoredThreads);
-                                 if (eventAccessLock != null) {
-                                    logger.finer("Write access lock RELEASED:"+eventAccessLock);
-                                    eventAccessLock.unlock();
-                                    eventAccessLock = null;
-                                 }
-                                 for (PropertyChangeEvent event : events) {
-                                     ((JPDAThreadImpl) event.getSource()).fireEvent(event);
-                                 }
-                             }
-                             if (!silent && suspendedThread != null) {
-                                 PropertyChangeEvent event = suspendedThread.notifySuspended(false, false);
-                                 if (eventAccessLock != null) {
-                                    logger.finer("Write access lock RELEASED:"+eventAccessLock);
-                                    eventAccessLock.unlock();
-                                    eventAccessLock = null;
-                                 }
-                                 if (event != null) {
-                                    suspendedThread.fireEvent(event);
-                                 }
                              }
                          }
                          continue;
@@ -452,6 +464,42 @@ public class Operator {
 
                      // Notify the resume under eventAccessLock so that nobody can get in between,
                      // which would result in resuming the thread twice.
+                     if (!resume) { // notify about the suspend if not resumed.
+                         if (!silent && suspendedAll) {
+                             //TODO: Not really all might be suspended!
+                             boolean grabSolved = awtGrabHandler.solveGrabbing(debugger.getVirtualMachine()); // TODO: check AWT thread!
+                             if (!grabSolved) {
+                                resume = true; // We must not stop here, nobody will ever be able to resume
+                             } else {
+                                 List<PropertyChangeEvent> events = debugger.notifySuspendAll(false, false,
+                                                                                              ignoredThreads.isEmpty() ? null : ignoredThreads);
+                                 if (eventAccessLock != null) {
+                                    logger.finer("Write access lock RELEASED:"+eventAccessLock);
+                                    eventAccessLock.unlock();
+                                    eventAccessLock = null;
+                                 }
+                                 for (PropertyChangeEvent event : events) {
+                                     ((JPDAThreadImpl) event.getSource()).fireEvent(event);
+                                 }
+                             }
+                         }
+                         if (!silent && suspendedThread != null) {
+                             boolean grabSolved = awtGrabHandler.solveGrabbing(thref);
+                             if (!grabSolved) {
+                                 resume = true; // We must not stop here, nobody will ever be able to resume
+                             } else {
+                                 PropertyChangeEvent event = suspendedThread.notifySuspended(false, false);
+                                 if (eventAccessLock != null) {
+                                    logger.finer("Write access lock RELEASED:"+eventAccessLock);
+                                    eventAccessLock.unlock();
+                                    eventAccessLock = null;
+                                 }
+                                 if (event != null) {
+                                    suspendedThread.fireEvent(event);
+                                 }
+                             }
+                         }
+                     }
                      if (resume) {
                          if (!silent && suspendedAll) {
                              //TODO: Not really all might be suspended!
@@ -459,32 +507,6 @@ public class Operator {
                          }
                          if (!silent && suspendedThread != null) {
                              resume = resume && suspendedThread.notifyToBeResumedNoFire();
-                         }
-                     }
-                     if (!resume) { // notify about the suspend if not resumed.
-                         if (!silent && suspendedAll) {
-                             //TODO: Not really all might be suspended!
-                             List<PropertyChangeEvent> events = debugger.notifySuspendAll(false, false,
-                                                                                          ignoredThreads.isEmpty() ? null : ignoredThreads);
-                             if (eventAccessLock != null) {
-                                logger.finer("Write access lock RELEASED:"+eventAccessLock);
-                                eventAccessLock.unlock();
-                                eventAccessLock = null;
-                             }
-                             for (PropertyChangeEvent event : events) {
-                                 ((JPDAThreadImpl) event.getSource()).fireEvent(event);
-                             }
-                         }
-                         if (!silent && suspendedThread != null) {
-                             PropertyChangeEvent event = suspendedThread.notifySuspended(false, false);
-                             if (eventAccessLock != null) {
-                                logger.finer("Write access lock RELEASED:"+eventAccessLock);
-                                eventAccessLock.unlock();
-                                eventAccessLock = null;
-                             }
-                             if (event != null) {
-                                suspendedThread.fireEvent(event);
-                             }
                          }
                      }
                      if (!startEventOnly) {
