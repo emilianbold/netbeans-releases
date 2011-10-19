@@ -42,9 +42,11 @@
 
 package org.netbeans.modules.bugzilla.query;
 
+import java.io.UnsupportedEncodingException;
 import java.util.logging.LogRecord;
 import org.netbeans.modules.bugzilla.*;
 import java.net.MalformedURLException;
+import java.net.URLEncoder;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Handler;
@@ -80,7 +82,7 @@ public class ControllerTest extends NbTestCase implements TestConstants {
     }
 
     @RandomlyFails
-    public void testParameters() throws MalformedURLException, CoreException, InterruptedException {
+    public void testParameters() throws MalformedURLException, CoreException, InterruptedException, UnsupportedEncodingException {
         LogHandler h = new LogHandler("Finnished populate query controller");
         Bugzilla.LOG.addHandler(h);
         String parametersUrl = getParametersUrl();
@@ -102,27 +104,40 @@ public class ControllerTest extends NbTestCase implements TestConstants {
         String[] parametersReturned = params.split("&");
 //        assertEquals(parametersGiven.length, parametersReturned.length);
 
-        Set<String> s = new HashSet<String>(parametersReturned.length);
+        Set<String> returnedSet = new HashSet<String>(parametersReturned.length);
         for (String string : parametersReturned) {
-            s.add(string);
+            returnedSet.add(string);
         }
         for (int i = 1; i < parametersGiven.length; i++) { // skip the first elemenent - its = ""
             String p = parametersGiven[i];
-            if(!s.contains(p)) {
+            p = handleEncoding(p);
+            if(!returnedSet.contains(p)) {
                 fail("missing given parameter [" + p + "] between returned at index " + i);
             }
         }
 
-        s.clear();
-        for (String string : parametersGiven) {
-            s.add(string);
+        returnedSet.clear();
+        for (String p : parametersGiven) {
+            p = handleEncoding(p);
+            returnedSet.add(p);
         }
         for (int i = 1; i < parametersReturned.length; i++) { // skip the first elemenent - its = ""
             String p = parametersReturned[i];
-            if(!s.contains(p)) {
+            if(!returnedSet.contains(p)) {
                 fail("missing returned parameter [" + p + "] between given");
             }
         }
+    }
+
+    private String handleEncoding(String p) throws UnsupportedEncodingException {
+        int idx = p.indexOf("=");
+        if(p.contains("Bug+creation")) {
+            // got some special handling - see also QueryParameter.java
+            p = p.substring(0, idx + 1) + URLEncoder.encode("[", "UTF-8") + "Bug+creation" + URLEncoder.encode("]", "UTF-8");
+        } else {
+            p = p.substring(0, idx + 1) + URLEncoder.encode(p.substring(idx + 1), "UTF-8");
+        }
+        return p;
     }
 
     private String getParametersUrl() {
@@ -130,8 +145,8 @@ public class ControllerTest extends NbTestCase implements TestConstants {
                 "&status_whiteboard_type=allwordssubstr" +
                 "&status_whiteboard=xxx" +
                 "&short_desc=xxx" +
-                "&product=TestProduct" +
-                "&component=TestComponent" +
+                "&product=some+product" +
+                "&component=some+component" +
                 "&version=unspecified" +
                 "&long_desc_type=substring" +
                 "&long_desc=xxx" +
