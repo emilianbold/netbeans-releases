@@ -44,13 +44,12 @@
 
 package org.netbeans.modules.cnd.debugger.common2.utils.options;
 
-import java.beans.PropertyChangeSupport;
-import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
-
-import org.openide.nodes.PropertySupport;
-
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import org.netbeans.modules.cnd.debugger.common2.utils.IpeUtils;
+import org.openide.nodes.PropertySupport;
+import org.openide.util.Exceptions;
 
 
 /**
@@ -64,20 +63,20 @@ public abstract class Option {
 
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
 
-    private String      name;        // name of the option
-    private String      label;       // label representing the name
-    private char	mnemonic;
-    private String      tooltip;     // tooltip for the label
-    private String[]    values;      // values defined by the option
+    private final String      name;        // name of the option
+    private final String      label;       // label representing the name
+    private final char        mnemonic;
+    private final String      tooltip;     // tooltip for the label
+    private final String[]    values;      // values defined by the option
     private String[]    valueLabels; // labels representing the values in GUI
     private String[]    valueDescrs; // Descriptions of values
     private String      optionDescr; // Description of the option
-    private String      defaultValue;// default value
-    private boolean     clientOption;// is this option handled by OptionClient?
-    private boolean 	trim;		// ... the string representation on set
-    private int         type;        // GUI represantation of the option
-    private CatalogDynamic 
-			catalog;
+    private final String      defaultValue;// default value
+    private final boolean     clientOption;// is this option handled by OptionClient?
+//    private final boolean     trim;		// ... the string representation on set
+    private final int         type;        // GUI represantation of the option
+    private final boolean hasTooltip;
+    private CatalogDynamic catalog;
 
     /**
      * types defining GUI representation
@@ -98,7 +97,7 @@ public abstract class Option {
 	    noString  = Catalog.get("VALUE_off"); // NOI18N
 	}
 	catch (Exception ex) {
-	    ex.printStackTrace();
+            Exceptions.printStackTrace(ex);
 	}
     }
 
@@ -126,21 +125,13 @@ public abstract class Option {
 	this.defaultValue = defaultValue;
 	this.clientOption = clientOption;
 	this.type = type;
+	this.label = catalog.get("LABEL_"+name); // NOI18N
 
-	label = catalog.get("LABEL_"+name); // NOI18N
-
-	if (hasTooltip) {
-	    // CR 6995039 tooltip = catalog.get("HINT_"+name); // NOI18N
-	    tooltip = name; // NOI18N
-	} else {
-	    tooltip = null;
-	}
-
-	if (hasMnemonic) {
-	    mnemonic = catalog.getMnemonic("MNEM_"+name); // NOI18N
-	} else {
-	    mnemonic = '\0';
-	}
+        // see CR 6995039, IZ 203918
+        this.tooltip = hasTooltip ? name : null;
+        this.hasTooltip = hasTooltip;
+        
+        this.mnemonic = hasMnemonic ? catalog.getMnemonic("MNEM_"+name) : '\0'; // NOI18N
 
 	setValueLabels();
     }
@@ -153,8 +144,10 @@ public abstract class Option {
     public char getMnemonic() { return mnemonic; }
 
     public String getLabelTip() { return tooltip; }
-    public String getShortDescription() { return tooltip; }
-
+    public String getShortDescription() {
+        return hasTooltip ? name : optionDescr;
+    }
+    
     public String[] getValues() {return values; }
     public String[] getValueLabels() {return valueLabels; }
     public String[] getValueDescrs() {return valueDescrs; }
@@ -267,7 +260,7 @@ public abstract class Option {
 		valueLabels[i] = catalog.get("VALUE_"+name+"_"+values[i]); // NOI18N
 	    }
 	    catch (Exception ex) {
-		ex.printStackTrace();
+                Exceptions.printStackTrace(ex);
 	    }
 	}
 	setValueDescrs();

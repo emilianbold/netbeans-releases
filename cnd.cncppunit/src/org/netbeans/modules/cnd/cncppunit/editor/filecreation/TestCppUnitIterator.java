@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.cnd.cncppunit.editor.filecreation;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -55,6 +54,8 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.cncppunit.codegeneration.CppUnitCodeGenerator;
+import org.netbeans.modules.cnd.makeproject.api.configurations.CCCompilerConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.CCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FolderConfiguration;
@@ -65,7 +66,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.simpleunit.spi.wizard.AbstractUnitTestIterator;
 import org.netbeans.modules.cnd.simpleunit.utils.MakefileUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
-import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.ui.UIGesturesSupport;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
@@ -154,7 +154,7 @@ public class TestCppUnitIterator extends AbstractUnitTestIterator {
             return dataObjects;
         }
 
-        setCUnitLinkerOptions(project, folder);
+        setCppUnitOptions(project, folder);
 
         DataObject formDataObject;
         DataObject dataObject;
@@ -201,7 +201,7 @@ public class TestCppUnitIterator extends AbstractUnitTestIterator {
         return ((NewTestCppUnitPanelGUI)targetChooserDescriptorPanel.getComponent()).getTargetGroup().getRootFolder();
     }
 
-    private void setCUnitLinkerOptions(Project project, Folder testFolder) {
+    private void setCppUnitOptions(Project project, Folder testFolder) {
         ConfigurationDescriptorProvider cdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
         MakeConfigurationDescriptor projectDescriptor = cdp.getConfigurationDescriptor();
         FolderConfiguration folderConfiguration = testFolder.getFolderConfiguration(projectDescriptor.getActiveConfiguration());
@@ -209,6 +209,11 @@ public class TestCppUnitIterator extends AbstractUnitTestIterator {
         LibrariesConfiguration librariesConfiguration = linkerConfiguration.getLibrariesConfiguration();
         librariesConfiguration.add(new LibraryItem.StdLibItem("CppUnit", "CppUnit", new String[]{"cppunit"})); // NOI18N
         linkerConfiguration.setLibrariesConfiguration(librariesConfiguration);
+        linkerConfiguration.getOutput().setValue("${TESTDIR}/" + testFolder.getPath()); // NOI18N
+        CCompilerConfiguration cCompilerConfiguration = folderConfiguration.getCCompilerConfiguration();
+        CCCompilerConfiguration ccCompilerConfiguration = folderConfiguration.getCCCompilerConfiguration();
+        cCompilerConfiguration.getIncludeDirectories().add("."); // NOI18N
+        ccCompilerConfiguration.getIncludeDirectories().add("."); // NOI18N
     }
 
     @Override
