@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.java.j2seplatform.wizard;
 
-import java.awt.EventQueue;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.io.File;
@@ -58,11 +57,13 @@ import java.util.Map;
 import java.util.StringTokenizer;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
@@ -458,15 +459,16 @@ public class DetectPanel extends javax.swing.JPanel {
     }
 
     /**
-     * Updates static information from the detected platform's properties
+     * Updates name of the platform from NewJ2SEPlatform
+     * threading: Has to be called in the EDT
      */
-    void updateData() {
-        Map<String,String> m = primaryPlatform.getSystemProperties();
-        // if the name is empty, fill something in:
-        if ("".equals(jdkName.getText())) {
-            jdkName.setEditable(true);
+    private void updatePlatformName(@NonNull final NewJ2SEPlatform platform) {
+        assert platform != null;
+        assert SwingUtilities.isEventDispatchThread();
+        final Map<String,String> m = platform.getSystemProperties();
+        if ("".equals(jdkName.getText())) { //NOI18N
             jdkName.setText(getInitialName (m));
-            this.jdkName.selectAll();
+            jdkName.selectAll();
         }
     }
 
@@ -620,7 +622,6 @@ public class DetectPanel extends javax.swing.JPanel {
                 firstPass = false;
             }
             this.component.setSources (srcPath);
-            this.component.jdkName.setEditable(false);
             this.component.progressPanel.setVisible (true);
             this.component.progressLabel.setVisible (true);
             
@@ -680,22 +681,21 @@ public class DetectPanel extends javax.swing.JPanel {
          */
         @Override
         public void taskFinished(Task task) {
-            EventQueue.invokeLater(new Runnable() {
+            SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run () {
-                    JavaPlatform platform = iterator.getPlatform();
+                    final NewJ2SEPlatform platform = iterator.getPlatform();
                     List<URL> jdoc = platform.getJavadocFolders();
-                    if (jdoc.isEmpty()) {                            
-                        jdoc = J2SEPlatformImpl.defaultJavadoc(platform);                            
+                    if (jdoc.isEmpty()) {
+                        jdoc = J2SEPlatformImpl.defaultJavadoc(platform);
                     }
                     component.setJavadoc(jdoc);
-                    component.updateData ();
-                    component.jdkName.setEditable(true);
+                    component.updatePlatformName(platform);
                     assert progressHandle != null;
                     progressHandle.finish ();
                     component.progressPanel.setVisible (false);
-                    component.progressLabel.setVisible (false);                    
-                    detected = iterator.getPlatform().isValid();                    
+                    component.progressLabel.setVisible (false);
+                    detected = iterator.getPlatform().isValid();
                     checkValid ();
                 }
             });            
