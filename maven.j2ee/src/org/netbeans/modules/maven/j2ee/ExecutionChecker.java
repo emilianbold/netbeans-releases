@@ -307,11 +307,8 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
             ProjectConfiguration cfg = project.getLookup().lookup(ProjectConfigurationProvider.class).getActiveConfiguration();
             NetbeansActionMapping mapp = ModelHandle.getMapping(actionName, project, cfg);
             if (mapp != null) {
-                java.util.Properties props = mapp.getProperties();
-                if (props != null) {
-                    props.remove(MavenJavaEEConstants.ACTION_PROPERTY_DEPLOY);
-                    ModelHandle.putMapping(mapp, project, cfg);
-                }
+                mapp.getProperties().remove(MavenJavaEEConstants.ACTION_PROPERTY_DEPLOY);
+                ModelHandle.putMapping(mapp, project, cfg);
             }
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
