@@ -51,6 +51,8 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
 import javax.swing.JCheckBox;
@@ -921,7 +923,7 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
                 // XXX takes very long time. Consider to call it when e.g. module is loaded
                 sfs = LayerUtils.getEffectiveSystemFilesystem(data.getProject());
             } catch (IOException ex) {
-                Util.err.notify(ex);
+                Logger.getLogger(GUIRegistrationPanel.class.getName()).log(Level.INFO, null, ex);
                 sfs = FileUtil.createMemoryFileSystem();
             }
         }
