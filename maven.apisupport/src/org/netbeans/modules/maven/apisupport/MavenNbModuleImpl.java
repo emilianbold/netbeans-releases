@@ -49,7 +49,6 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import org.apache.maven.artifact.Artifact;
@@ -315,11 +314,9 @@ public class MavenNbModuleImpl implements NbModuleProvider {
     public @Override boolean hasDependency(String codeNameBase) throws IOException {
         String artifactId = codeNameBase.replaceAll("\\.", "-"); //NOI18N
         NbMavenProject watch = project.getLookup().lookup(NbMavenProject.class);
-        Set<?> set = watch.getMavenProject().getDependencyArtifacts();
+        Set<Artifact> set = watch.getMavenProject().getDependencyArtifacts();
         if (set != null) {
-            Iterator<?> it = set.iterator();
-            while (it.hasNext()) {
-                Artifact art = (Artifact) it.next();
+            for (Artifact art : set) {
                 if (art.getGroupId().startsWith("org.netbeans") && art.getArtifactId().equals(artifactId)) { // NOI18N
                     return true;
                 }
