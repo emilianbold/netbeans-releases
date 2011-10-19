@@ -1612,7 +1612,21 @@ public final class LayoutDesigner implements LayoutModel.RemoveHandler, LayoutMo
         if ((comp != null) && (comp.getParent() != null)) {
             paintSelection(g, comp, HORIZONTAL);
             paintSelection(g, comp, VERTICAL);
+            if (isUnplacedComponent(componentId)) {
+                LayoutRegion region = comp.getCurrentSpace();
+                Rectangle rect = region.toRectangle(new Rectangle());
+                Image image = getWarningImage();
+                g.drawImage(image, rect.x+rect.width-image.getWidth(null), rect.y, null);
+            }
         }
+    }
+
+    private Image warningImage;
+    private Image getWarningImage() {
+        if (warningImage == null) {
+            warningImage = ImageUtilities.loadImage("org/netbeans/modules/form/layoutsupport/resources/warning.png"); // NOI18N
+        }
+        return warningImage;
     }
     
     /**
