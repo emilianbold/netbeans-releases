@@ -2788,6 +2788,7 @@ widthcheck:  {
                 Exceptions.attachMessage(ex, "Current component: " + c); // NOI18N
                 Exceptions.attachMessage(ex, "List of components: " + components); // NOI18N
                 Exceptions.attachMessage(ex, "List of actions: " + Arrays.asList(actions)); // NOI18N
+                Exceptions.printStackTrace(ex);
             }
         }
         return menu;
