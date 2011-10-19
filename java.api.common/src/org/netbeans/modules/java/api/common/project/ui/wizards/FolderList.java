@@ -182,6 +182,14 @@ public final class FolderList extends javax.swing.JPanel {
         return this.lastUsedFolder;
     }
 
+    @Override
+    public void setEnabled(final boolean active) {
+        this.addButton.setEnabled(active);
+        this.removeButton.setEnabled(active);
+        this.jScrollPane1.setEnabled(active);
+        this.roots.setEnabled(active);
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
