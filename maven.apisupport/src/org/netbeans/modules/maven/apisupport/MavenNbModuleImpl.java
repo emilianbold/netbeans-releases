@@ -176,8 +176,9 @@ public class MavenNbModuleImpl implements NbModuleProvider {
                 Xpp3Dom cnb = dom.getChild("codeNameBase"); //NOI18N
                 if (cnb != null) {
                     String val = cnb.getValue();
-                    if (val.indexOf( "/") > -1) { //NOI18N
-                        val = val.substring(0, val.indexOf("/")); //NOI18N
+                    int slash = val.indexOf('/');
+                    if (slash > -1) {
+                        val = val.substring(0, slash);
                     }
                     return val;
                 }
@@ -275,14 +276,9 @@ public class MavenNbModuleImpl implements NbModuleProvider {
                 dep.setVersion(version.toString());
             } else {
                 //try guessing the version according to the rest of netbeans dependencies..
-                List deps = watch.getMavenProject().getModel().getDependencies();
-                if (deps != null) {
-                    Iterator it = deps.iterator();
-                    while (it.hasNext()) {
-                        Dependency d = (Dependency)it.next();
-                        if ("org.netbeans.api".equals(d.getGroupId())) { //NOI18N
-                            dep.setVersion(d.getVersion());
-                        }
+                for (Dependency d : watch.getMavenProject().getModel().getDependencies()) {
+                    if ("org.netbeans.api".equals(d.getGroupId())) { // NOI18N
+                        dep.setVersion(d.getVersion());
                     }
                 }
             }
