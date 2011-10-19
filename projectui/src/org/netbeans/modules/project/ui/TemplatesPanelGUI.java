@@ -140,11 +140,9 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
     public void setTemplatesFolder (final FileObject folder) {
         final DataFolder dobj = DataFolder.findFolder (folder);
         dobj.addPropertyChangeListener(new PropertyChangeListener() {
-
-            public void propertyChange(PropertyChangeEvent evt) {
+            @Override public void propertyChange(PropertyChangeEvent evt) {
                 SwingUtilities.invokeLater(new Runnable() {
-
-                    public void run() {
+                    @Override public void run() {
                         setSelectedCategoryByName(OpenProjectListSettings.getInstance().getLastSelectedProjectCategory());
                     }
                 });
@@ -160,10 +158,11 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
                 ((org.netbeans.modules.project.ui.TemplatesPanelGUI.ExplorerProviderPanel) this.categoriesPanel).setSelectedNode(categoryName);
                 //expand explicitly selected category
                 SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
+                    @Override public void run() {
                         Node[] sel = ((ExplorerProviderPanel)categoriesPanel).getSelectedNodes();
-                        if( sel.length == 1 )
-                            ((CategoriesPanel)categoriesPanel).btv.expandNode(sel[0]);
+                        if (sel.length == 1) {
+                            ((CategoriesPanel) categoriesPanel).btv.expandNode(sel[0]);
+                        }
                     }
                 });
             }
@@ -186,7 +185,7 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
         final TemplatesPanel tempExplorer = ((TemplatesPanel)this.projectsPanel);
     
         SwingUtilities.invokeLater (new Runnable () {
-            public void run () {
+            @Override public void run () {
                 if (templateName != null) {
                     try {
                         tempExplorer.setSelectedNode(templateName);
@@ -354,7 +353,7 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
         ch.add (new Node[] {pleaseWait});
         final Node root = new AbstractNode (ch);
         SwingUtilities.invokeLater (new Runnable () {
-            public void run () {
+            @Override public void run() {
                 ((ExplorerProviderPanel)categoriesPanel).setRootNode (root);
             }
         });
@@ -383,7 +382,7 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
         setLayout(new java.awt.GridBagLayout());
 
         jLabel1.setLabelFor(categoriesPanel);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getBundle(TemplatesPanelGUI.class).getString("CTL_Categories")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(TemplatesPanelGUI.class, "CTL_Categories")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -394,7 +393,7 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
         add(jLabel1, gridBagConstraints);
 
         jLabel2.setLabelFor(projectsPanel);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getBundle(TemplatesPanelGUI.class).getString("CTL_Templates")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(TemplatesPanelGUI.class, "CTL_Templates")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -419,7 +418,7 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
         add(projectsPanel, gridBagConstraints);
 
         jLabel3.setLabelFor(description);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getBundle(TemplatesPanelGUI.class).getString("CTL_Description")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(TemplatesPanelGUI.class, "CTL_Description")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -515,7 +514,7 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
             }
             Node rootNode = this.manager.getRootContext();
             String[] path = NodeOp.createPath(selectedNodes[0],rootNode);
-            StringBuffer builder = new StringBuffer ();
+            StringBuilder builder = new StringBuilder();
             for (int i=0; i< path.length; i++) {
                 builder.append('/');        //NOI18N
                 builder.append(path[i]);
@@ -523,12 +522,12 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
             return builder.substring(1);
         }
         
-        public ExplorerManager getExplorerManager() {
+        @Override public ExplorerManager getExplorerManager() {
             return this.manager;
         }
         
      
-        public void propertyChange (final PropertyChangeEvent event) {
+        @Override public void propertyChange(final PropertyChangeEvent event) {
             // workaround of issue 43502, update of Help button set back the focus
             // to component which is active when this change starts
             //XXX: this workaround causes problems in the selection of templates
@@ -537,7 +536,7 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
             // select the first template only if no template is already selected,
             // but nicer solution is to remove this workaround at all.
             SwingUtilities.invokeLater (new Runnable () {
-                public void run () {
+                @Override public void run() {
                     firePropertyChange(event.getPropertyName(),
                         event.getOldValue(), event.getNewValue());            
                      }
@@ -545,7 +544,7 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
         }
         
         
-        public void vetoableChange(PropertyChangeEvent evt) throws PropertyVetoException {
+        @Override public void vetoableChange(PropertyChangeEvent evt) throws PropertyVetoException {
             if (ExplorerManager.PROP_SELECTED_NODES.equals (evt.getPropertyName())) {
                 Node[] newValue = (Node[]) evt.getNewValue();
                 if (newValue == null || (newValue.length != 1 && newValue.length != 0)) {
@@ -584,13 +583,12 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
 
 
     private static class CategoriesBeanTreeView extends BeanTreeView {
-        public CategoriesBeanTreeView () {
-            super ();
+        CategoriesBeanTreeView() {
             this.tree.setEditable(false);
         }
         public void selectFirstCategory () {
             SwingUtilities.invokeLater (new Runnable () {
-                public void run () {
+                @Override public void run() {
                     tree.setSelectionRow (0);
                 }
             });
@@ -605,7 +603,7 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
             "ACSN_CategoriesPanel=Categories of types new objects",
             "ACSD_CategoriesPanel=List of categories of new objects which can be choosen"
         })
-        protected synchronized JComponent createComponent () {
+        @Override protected synchronized JComponent createComponent() {
             if (this.btv == null) {
                 this.btv = new CategoriesBeanTreeView ();
                 this.btv.setRootVisible(false);
@@ -629,17 +627,15 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
     }
     
     private static class TemplatesListView extends ListView implements ActionListener {
-        public TemplatesListView () {
+        TemplatesListView() {
             super ();
             // bugfix #44717, Enter key must work regardless if TemplatesPanels is focused
             list.unregisterKeyboardAction (KeyStroke.getKeyStroke (KeyEvent.VK_ENTER, 0, false));
-            getAccessibleContext ().setAccessibleName ("OUTER LIST");
-            getAccessibleContext ().setAccessibleDescription ("DESC OUTER LIST");
             setDefaultProcessor( this );
             ToolTipManager.sharedInstance ().unregisterComponent (list);
         }
 
-        public void actionPerformed( ActionEvent e ) {
+        @Override public void actionPerformed(ActionEvent e) {
             // Do nothing
         }
     }
@@ -652,7 +648,7 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
             "ACSN_TemplatesPanel=Types of new objects",
             "ACSD_TemplatesPanel=List of types of new objects which can be choosen"
         })
-        protected synchronized JComponent createComponent () {            
+        @Override protected synchronized JComponent createComponent() {
             if (this.list == null) {
                 this.list = new TemplatesListView ();
                 this.list.setPopupAllowed(false);
@@ -726,8 +722,9 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
             
             HTMLEditorKit htmlkit = (HTMLEditorKit) description.getEditorKit();
             StyleSheet css = htmlkit.getStyleSheet();
-            if (css.getStyleSheets() != null)
+            if (css.getStyleSheets() != null) {
                 return;
+            }
 
             StyleSheet css2 = new StyleSheet();
             Font f = jLabel1.getFont();
@@ -759,7 +756,9 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
      */
     private static String findEncoding (String txt) {
         int headLen = txt.indexOf ("</HEAD>"); // NOI18N
-        if (headLen == -1) headLen = txt.length ();
+        if (headLen == -1) {
+            headLen = txt.length();
+        }
         
         int content = txt.indexOf ("CONTENT-TYPE"); // NOI18N
         if (content == -1 || content > headLen) {
