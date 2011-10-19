@@ -3341,24 +3341,24 @@ public final class LayoutDesigner implements LayoutModel.RemoveHandler, LayoutMo
 	}
     }
 
-    private void destroyRedundantGroups(Set<LayoutComponent> updatedContainers) {
-        Iterator it = layoutModel.getAllComponents();
-        while (it.hasNext()) {
-            LayoutComponent comp = (LayoutComponent) it.next();
-            if (!comp.isLayoutContainer())
-                continue;
-            
-            boolean updated = false;
-            for (LayoutInterval[] roots : comp.getLayoutRoots()) {
-                for (int dim=0; dim<DIM_COUNT; dim++) {
-                    updated = destroyRedundantGroups(roots[dim]) || updated;
-                }
-            }
-            if (updated) {
-                updatedContainers.add(comp);
-            }
-        }
-    }
+//    private void destroyRedundantGroups(Set<LayoutComponent> updatedContainers) {
+//        Iterator it = layoutModel.getAllComponents();
+//        while (it.hasNext()) {
+//            LayoutComponent comp = (LayoutComponent) it.next();
+//            if (!comp.isLayoutContainer())
+//                continue;
+//            
+//            boolean updated = false;
+//            for (LayoutInterval[] roots : comp.getLayoutRoots()) {
+//                for (int dim=0; dim<DIM_COUNT; dim++) {
+//                    updated = destroyRedundantGroups(roots[dim]) || updated;
+//                }
+//            }
+//            if (updated) {
+//                updatedContainers.add(comp);
+//            }
+//        }
+//    }
     
     private boolean destroyRedundantGroups(LayoutInterval interval) {
         boolean updated = false;
@@ -4281,9 +4281,9 @@ public final class LayoutDesigner implements LayoutModel.RemoveHandler, LayoutMo
 
                 if ((leadingNeighbor != null && trailingNeighbor != null) // inside a sequence
                     || (leadingNeighbor != null && ((trailingGap != null && LayoutInterval.canResize(trailingGap))
-                                                    || (!losingResizing && LayoutInterval.getEffectiveAlignment(leadingNeighbor, TRAILING) == TRAILING)))
+                                                    || (!losingResizing && LayoutInterval.getEffectiveAlignment(leadingNeighbor, TRAILING, true) == TRAILING)))
                     || (trailingNeighbor != null && ((leadingGap != null && LayoutInterval.canResize(leadingGap))
-                                                    || (!losingResizing && LayoutInterval.getEffectiveAlignment(trailingNeighbor, LEADING) == LEADING)))) {
+                                                    || (!losingResizing && LayoutInterval.getEffectiveAlignment(trailingNeighbor, LEADING, true) == LEADING)))) {
                     // in the middle or at aligned side - create a placeholder gap (filling the original space)
                     int min, pref = Integer.MIN_VALUE, max;
                     if (!losingResizing) {
@@ -4320,6 +4320,7 @@ public final class LayoutDesigner implements LayoutModel.RemoveHandler, LayoutMo
                             || (trailingNeighbor == null && trailingGap == null)) {
                         operations.optimizeGaps2(superParent, dimension);
                     }
+                    destroyRedundantGroups(superParent);
                 } else { // this is an "open" end - compensate the size in the parent
                     int resizingAlignment = -1;
                     if (losingResizing) { // could affect effective alignment of the rest of the sequence

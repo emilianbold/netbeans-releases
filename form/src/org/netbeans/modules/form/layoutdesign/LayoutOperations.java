@@ -1824,13 +1824,7 @@ class LayoutOperations implements LayoutConstants {
         if (gap.getPreferredSize() == NOT_EXPLICITLY_DEFINED) {
             LayoutInterval neighbor = LayoutInterval.getNeighbor(gap, alignment, false, true, false);
             if (neighbor != null) {
-                if (!LayoutUtils.hasSideComponents(neighbor, alignment^1, true, false)
-                    || (!LayoutUtils.hasSideComponents(neighbor, alignment^1, true, true)
-                        && LayoutUtils.hasSideGaps(neighbor, alignment^1, true))) {
-                    // GroupLayout can't compute default gap if the neighbor has
-                    // no edge component, or even if it is, none is aligned at
-                    // group edge while there is an aligned gap (so the only
-                    // aligned interval at the edge facing the default gap is a gap).
+                if (!LayoutUtils.isDefaultGapValidForNeighbor(neighbor, alignment^1)) {
                     return false;
                 }
                 if (!toBeProcessed && LayoutInterval.isAlignedAtBorder(seq, alignment)) {
@@ -2470,6 +2464,23 @@ class LayoutOperations implements LayoutConstants {
                         i--; // one interval less
                         interval = group.getSubInterval(i); // the merged gap
                         updated = true;
+                    } else if (i > 0 && i+1 < group.getSubIntervalCount()
+                            && interval.getPreferredSize() == NOT_EXPLICITLY_DEFINED
+                            && !LayoutInterval.canResize(interval)) {
+                        boolean removeInvalid;
+                        if (!LayoutUtils.isDefaultGapValidForNeighbor(group.getSubInterval(i-1), TRAILING)) {
+                            removeInvalid = true;
+                        } else {
+                            LayoutInterval neighbor = group.getSubInterval(i+1);
+                            removeInvalid = !neighbor.isEmptySpace()
+                                    && !LayoutUtils.isDefaultGapValidForNeighbor(neighbor, LEADING);
+                        }
+                        if (removeInvalid) { // invalid default gap (can't be computed)
+                            layoutModel.removeInterval(group, i);
+                            i--; // one interval less
+                            interval = group.getSubInterval(i);
+                            updated = true;
+                        }
                     }
                 } else if (prev != null && prev.isComponent() && interval.isComponent()) {
                     // no gap between two components
