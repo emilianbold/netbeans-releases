@@ -47,7 +47,10 @@ import java.awt.Image;
 import java.beans.BeanInfo;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -65,6 +68,8 @@ import org.openide.actions.PropertiesAction;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.nodes.AbstractNode;
+import org.openide.nodes.ChildFactory;
+import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.ChangeSupport;
 import org.openide.util.ImageUtilities;
@@ -100,7 +105,8 @@ public class ProjectWebServiceNodeFactory implements NodeFactory {
     public ProjectWebServiceNodeFactory() {
     }
 
-    public NodeList createNodes(Project p) {
+    @Override
+    public NodeList<ProjectWebServiceView.ViewType> createNodes(Project p) {
         assert p != null;
         return new WsNodeList(p);
     }
@@ -110,7 +116,7 @@ public class ProjectWebServiceNodeFactory implements NodeFactory {
         private Project project;
         private ChangeSupport changeSupport;
         private ProjectWebServiceView view;
-        private Node serviceNode,  clientNode;
+        private WSRootNode serviceNode,  clientNode;
         private ChangeListener weakL;
 
         public WsNodeList(Project proj) {
@@ -118,6 +124,7 @@ public class ProjectWebServiceNodeFactory implements NodeFactory {
             changeSupport = new ChangeSupport(this);
         }
 
+        @Override
         public List<ProjectWebServiceView.ViewType> keys() {
             initView();
             List<ProjectWebServiceView.ViewType> result = new ArrayList<ProjectWebServiceView.ViewType>();
@@ -146,14 +153,20 @@ public class ProjectWebServiceNodeFactory implements NodeFactory {
             switch (key) {
                 case SERVICE:
                     if (serviceNode == null) {
-                        serviceNode = new WSRootNode(new Children(key), createLookup(project, new WsPrivilegedTemplates()));
-                        serviceNode.setDisplayName(NbBundle.getBundle(ProjectWebServiceNodeFactory.class).getString("LBL_WebServices"));
+                        serviceNode = new WSRootNode(new WSChildrenFactory(view, key), 
+                                createLookup(project, new WsPrivilegedTemplates()));
+                        serviceNode.setDisplayName(NbBundle.getBundle(
+                                ProjectWebServiceNodeFactory.class).getString(
+                                        "LBL_WebServices"));        // NOI18N
                     }
                     return serviceNode;
                 case CLIENT:
                     if (clientNode == null) {
-                        clientNode = new WSRootNode(new Children(key), createLookup(project, new WsClientPrivilegedTemplates()));
-                        clientNode.setDisplayName(NbBundle.getBundle(ProjectWebServiceNodeFactory.class).getString("LBL_ServiceReferences"));
+                        clientNode = new WSRootNode(new WSChildrenFactory(view, key), 
+                                createLookup(project, new WsPrivilegedTemplates()));
+                        clientNode.setDisplayName(NbBundle.getBundle(
+                                ProjectWebServiceNodeFactory.class).getString(
+                                        "LBL_ServiceReferences"));  // NOI18N
                     }
                     return clientNode;
             }
@@ -184,12 +197,12 @@ public class ProjectWebServiceNodeFactory implements NodeFactory {
                     fireChange();
                     Object source = e.getSource();
                     if(source instanceof ProjectWebServiceViewImpl) {
-                        ProjectWebServiceViewImpl view = (ProjectWebServiceViewImpl) source;
+                        //ProjectWebServiceViewImpl view = (ProjectWebServiceViewImpl) source;
                         if (serviceNode != null) {
-                            ((Children) serviceNode.getChildren()).updateKey(view);
+                            serviceNode.getFactory().updateKeys();
                         }
                         if (clientNode != null) {
-                            ((Children) clientNode.getChildren()).updateKey(view);
+                            clientNode.getFactory().updateKeys();;
                         }
                     }
                 }
@@ -206,55 +219,91 @@ public class ProjectWebServiceNodeFactory implements NodeFactory {
             return Lookups.fixed(new Object[]{project, privilegedTemplates});
         }
 
-        private class Children extends org.openide.nodes.Children.Keys<ProjectWebServiceViewImpl> {
+    }
+    
+    private static class WSChildrenFactory extends ChildFactory<Pair> {
 
-            private ProjectWebServiceView.ViewType viewType;
+        private ProjectWebServiceView.ViewType viewType;
+        private ProjectWebServiceView view;
 
-            public Children(ProjectWebServiceView.ViewType viewType) {
-                super();
-                this.viewType = viewType;
-            }
-
-            @Override
-            protected Node[] createNodes(ProjectWebServiceViewImpl view) {
-                return view.createView(viewType);
-            }
-
-            @Override
-            protected void addNotify() {
-                super.addNotify();
-                if (view != null && !view.isViewEmpty(viewType) ) {
-                    setKeys(view.getWebServiceViews());
-                } else {
-                    setKeys(Collections.<ProjectWebServiceViewImpl>emptyList());
-                }
-            }
-
-            @Override
-            protected void removeNotify() {
-                super.removeNotify();
-                setKeys(Collections.<ProjectWebServiceViewImpl>emptyList());
-            }
-
-            private void updateKey (ProjectWebServiceViewImpl view) {
-                if (!isInitialized()) {
-                    return;
-                }
-                super.refreshKey(view);
-            }
+        public WSChildrenFactory(ProjectWebServiceView view,
+                ProjectWebServiceView.ViewType viewType) 
+        {
+            super();
+            this.view = view;
+            this.viewType = viewType;
         }
+        
+        /* (non-Javadoc)
+         * @see org.openide.nodes.ChildFactory#createKeys(java.util.List)
+         */
+        @Override
+        protected boolean createKeys( List<Pair> keys )
+        {
+            if (view != null && !view.isViewEmpty(viewType) ) {
+                List<ProjectWebServiceViewImpl> webServiceViews = 
+                    view.getWebServiceViews();
+                if ( Thread.interrupted() ){
+                    return false;
+                }
+                for (ProjectWebServiceViewImpl projectWebServiceViewImpl : webServiceViews)
+                {
+                    if ( Thread.interrupted() ){
+                        return false;
+                    }
+                    Node[] nodes = view.createView(viewType);
+                    keys.add( new Pair( projectWebServiceViewImpl , nodes ));
+                }
+            } 
+            return true;
+        }
+        
+        /* (non-Javadoc)
+         * @see org.openide.nodes.ChildFactory#createNodesForKey(java.lang.Object)
+         */
+        @Override
+        protected Node[] createNodesForKey( Pair key ) {
+            return key.getNodes();
+        }
+        
+        void updateKeys(){
+            refresh(true);
+        }
+
+    }
+    
+    private static class Pair {
+        
+        Pair(ProjectWebServiceViewImpl impl, Node[] nodes){
+            this.impl = impl;
+            this.nodes = nodes;
+        }
+        
+        ProjectWebServiceViewImpl getView(){
+            return impl;
+        }
+        
+        Node[] getNodes(){
+            return nodes;
+        }
+        
+        private final ProjectWebServiceViewImpl impl;
+        private final Node[] nodes; 
     }
 
     private static class WSRootNode extends AbstractNode {
 
-        private static final String SERVICES_BADGE = "org/netbeans/modules/websvc/core/webservices/ui/resources/webservicegroup.png"; // NOI18N
+        private static final String SERVICES_BADGE = 
+            "org/netbeans/modules/websvc/core/webservices/ui/resources/webservicegroup.png"; // NOI18N
 
         private Icon folderIconCache;
         private Icon openedFolderIconCache;
         private Image cachedServicesBadge;
+        private WSChildrenFactory factory;
 
-        public WSRootNode(WsNodeList.Children children, Lookup lookup) {
-            super(children, lookup);
+        public WSRootNode(WSChildrenFactory factory, Lookup lookup) {
+            super(Children.create(factory, true), lookup);
+            this.factory = factory;
         }
 
         @Override
@@ -278,6 +327,10 @@ public class ProjectWebServiceNodeFactory implements NodeFactory {
         @Override
         public Image getOpenedIcon(int type) {
             return computeIcon(true);
+        }
+        
+        WSChildrenFactory getFactory(){
+            return factory;
         }
 
         private java.awt.Image getServicesImage() {

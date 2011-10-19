@@ -100,6 +100,7 @@ public class JFXActionProvider implements ActionProvider {
             }
             try {
                 if(runAs.equalsIgnoreCase(JFXProjectProperties.RunAsType.STANDALONE.getString())) {
+                    target = "jfxsa-".concat(command); //NOI18N
                     final Properties p = new Properties();
                     ActionUtils.runTarget(buildFo, new String[] {target}, p);    //NOI18N
                 } else {
