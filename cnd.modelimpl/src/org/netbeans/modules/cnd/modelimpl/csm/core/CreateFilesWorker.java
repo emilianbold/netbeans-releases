@@ -152,6 +152,10 @@ final class CreateFilesWorker {
                         break;
                     }
                 }
+                if (TraceFlags.TRACE_203833_BUG) {
+                    enougth.set(true);
+                    RepositoryUtils.registerRepositoryError(project, new Exception("Validation: INTENTIONAL interrupt")); // NOI18N
+                }
             }
         }
         //for (NativeFileItem nativeFileItem : items) {

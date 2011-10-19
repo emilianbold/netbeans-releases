@@ -56,8 +56,9 @@ import org.netbeans.modules.cnd.debug.DebugUtils;
  * @author Vladimir Kvashim
  */
 public class TraceFlags {
-    public static volatile boolean TRACE_182342_BUG = Boolean.getBoolean("cnd.modelimpl.trace182342");
-    public static final boolean TRACE_191307_BUG = Boolean.getBoolean("cnd.modelimpl.trace191307");
+    public static volatile boolean TRACE_182342_BUG = Boolean.getBoolean("cnd.modelimpl.trace182342"); // NOI18N
+    public static final boolean TRACE_191307_BUG = Boolean.getBoolean("cnd.modelimpl.trace191307"); // NOI18N
+    public static final boolean TRACE_203833_BUG = Boolean.getBoolean("cnd.modelimpl.trace203833"); // NOI18N
 
     public static final boolean TRACE_CPU_CPP = false;
     public static final boolean TRACE_PARSER_QUEUE_DETAILS = Boolean.getBoolean("cnd.parser.queue.trace.details"); // NOI18N
