@@ -460,6 +460,10 @@ public abstract class AbstractSchemaBasedGrammar implements GrammarQuery {
         public boolean isEmptyElement() {
             return false;
         }
+
+        @Override public String toString() {
+            return getDisplayName();
+        }
         
     }
 
