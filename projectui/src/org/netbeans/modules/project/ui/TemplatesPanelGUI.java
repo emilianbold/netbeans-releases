@@ -631,8 +631,6 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
             super ();
             // bugfix #44717, Enter key must work regardless if TemplatesPanels is focused
             list.unregisterKeyboardAction (KeyStroke.getKeyStroke (KeyEvent.VK_ENTER, 0, false));
-            getAccessibleContext ().setAccessibleName ("OUTER LIST");
-            getAccessibleContext ().setAccessibleDescription ("DESC OUTER LIST");
             setDefaultProcessor( this );
             ToolTipManager.sharedInstance ().unregisterComponent (list);
         }
