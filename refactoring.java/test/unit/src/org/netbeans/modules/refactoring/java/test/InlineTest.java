@@ -457,17 +457,6 @@ public class InlineTest extends RefactoringTestBase {
         r = new InlineRefactoring[1];
         createInlineTempRefactoring(src.getFileObject("t/A.java"), 0, r);
         performRefactoring(r, new Problem(true, "ERR_InlineAssignedOnce"));
-        
-        writeFilesAndWaitForScan(src,
-                new File("t/A.java", "package t;\n"
-                + "public class A {\n"
-                + "    public void testMethod() {\n"
-                + "        int i = 0;\n"
-                + "    }\n"
-                + "}"));
-        r = new InlineRefactoring[1];
-        createInlineTempRefactoring(src.getFileObject("t/A.java"), 0, r);
-        performRefactoring(r, new Problem(false, "WRN_InlineNotUsed"));
     }
     
     public void testInlineConstant() throws Exception {
@@ -630,6 +619,63 @@ public class InlineTest extends RefactoringTestBase {
                 + "    }\n"
                 + "}"));
   }
+    public void testInlineNoUsageInFile() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    public static void printGreeting() {\n"
+                + "        System.out.println(\"Hello World!\");\n"
+                + "    }\n"
+                + "}"),
+                new File("t/B.java", "package t;\n"
+                + "public class B {\n"
+                + "    public void testMethodB() {\n"
+                + "        if(true)\n"
+                + "            A.printGreeting();\n"
+                + "    }\n"
+                + "}"));
+        final InlineRefactoring[] r = new InlineRefactoring[1];
+        createInlineMethodRefactoring(src.getFileObject("t/A.java"), 1, r);
+        performRefactoring(r);
+        verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "}"),
+                new File("t/B.java", "package t;\n"
+                + "public class B {\n"
+                + "    public void testMethodB() {\n"
+                + "        if(true) {\n"
+                + "            System.out.println(\"Hello World!\");\n"
+                + "        }\n"
+                + "    }\n"
+                + "}"));
+
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    static final int a = 10 + 20;\n"
+                + "}"),
+                new File("t/B.java", "package t;\n"
+                + "public class B {\n"
+                + "    public void testMethod() {\n"
+                + "        System.out.println(1 - A.a);\n"
+                + "    }\n"
+                + "}"));
+
+        final InlineRefactoring[] r2 = new InlineRefactoring[1];
+        createInlineConstantRefactoring(src.getFileObject("t/A.java"), 1, r2);
+        performRefactoring(r2);
+        verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "}"),
+                new File("t/B.java", "package t;\n"
+                + "public class B {\n"
+                + "    public void testMethod() {\n"
+                + "        System.out.println(1 - (10 + 20));\n"
+                + "    }\n"
+                + "}"));
+    }
     public void testInlineMethodMultipleFiles() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", "package t;\n"
@@ -718,22 +764,6 @@ public class InlineTest extends RefactoringTestBase {
                 + "        System.out.println(\"World\" + \": \" + message);\n"
                 + "    }\n"
                 + "}"));
-    }
-    
-    public void testCannotInlineMethodUsedOnce() throws Exception {
-        writeFilesAndWaitForScan(src,
-                new File("t/A.java", "package t;\n"
-                + "public class A {\n"
-                + "    private void printGreeting() {\n"
-                + "        System.out.println(\"Hello World!\");\n"
-                + "    }\n"
-                + "    public static void testMethod() {\n"
-                + "        printGreet();\n"
-                + "    }\n"
-                + "}"));
-        final InlineRefactoring[] r = new InlineRefactoring[1];
-        createInlineMethodRefactoring(src.getFileObject("t/A.java"), 1, r);
-        performRefactoring(r, new Problem(false, "WRN_InlineNotUsed"));
     }
     
     public void testCannotInlineMethodVoidReturn() throws Exception {
