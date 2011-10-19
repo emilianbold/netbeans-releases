@@ -189,6 +189,11 @@ org.netbeans.modules.j2ee.persistenceapi.FileChangeSupportListener
 org.netbeans.modules.j2ee.persistenceapi.PersistenceScopeAccessor
 org.netbeans.modules.j2ee.persistenceapi.PersistenceScopesAccessor
 
+#IZ 200049
+org.netbeans.modules.glassfish.common.wizards.GlassfishWizardProvider
+org.netbeans.modules.glassfish.javaee.Hk2DeploymentFactory
+org.netbeans.modules.glassfish.javaee.Hk2OptionalFactory
+org.netbeans.modules.glassfish.spi.ServerUtilities
 org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment
 org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule
 org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule$Type

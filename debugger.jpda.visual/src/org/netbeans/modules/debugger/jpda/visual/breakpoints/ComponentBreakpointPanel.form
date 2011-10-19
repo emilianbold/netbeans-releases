@@ -38,7 +38,7 @@
               <Group type="102" alignment="0" attributes="0">
                   <Component id="componentLabel" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="componentTextField" pref="291" max="32767" attributes="0"/>
+                  <Component id="componentTextField" pref="268" max="32767" attributes="0"/>
               </Group>
               <Group type="102" alignment="0" attributes="0">
                   <Component id="componentActionLabel" min="-2" max="-2" attributes="0"/>
@@ -50,12 +50,12 @@
                       <Component id="showHideCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
                       <Component id="addRemoveCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <EmptySpace pref="173" max="32767" attributes="0"/>
+                  <EmptySpace pref="127" max="32767" attributes="0"/>
               </Group>
               <Group type="102" alignment="0" attributes="0">
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="repaintCheckBox" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace pref="289" max="32767" attributes="0"/>
+                  <EmptySpace pref="279" max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>

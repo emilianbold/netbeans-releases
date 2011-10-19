@@ -157,9 +157,10 @@ public class J2eeRecoPrivTemplates implements RecommendedTemplates, PrivilegedTe
     };
 
     private static final String[] WEB_TYPES_EJB_LITE = new String[] {
-        "ejb-types",            // NOI18N
-        "ejb-types_3_0",        // NOI18N
-        "ejb-types_3_1"         // NOI18N
+        "ejb-types",                // NOI18N
+        "ejb-types_3_0",            // NOI18N
+        "ejb-types_3_1",            // NOI18N
+        "ejb-deployment-descriptor" // NOI18N
     };
 
     

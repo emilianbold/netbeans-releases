@@ -92,7 +92,7 @@ public class IssueLinksPanel extends JPanel {
 
     public IssueLinksPanel() {
         setLayout(new GridLayout(0,2));
-        setBackground(UIManager.getColor("EditorPane.background")); // NOI18N
+        setBackground(UIManager.getColor("TextArea.background")); // NOI18N
         titlePattern = NbBundle.getMessage(IssueLinksPanel.class, "IssueLinksPanel.thisIssue"); // NOI18N
         inwardIcon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/jira/resources/inwardLink.png")); // NOI18N
         outwardIcon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/jira/resources/subtask.png")); // NOI18N

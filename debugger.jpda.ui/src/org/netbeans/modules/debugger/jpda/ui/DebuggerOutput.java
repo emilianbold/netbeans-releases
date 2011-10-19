@@ -54,6 +54,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.MissingResourceException;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.debugger.ActionsManager;
 
 
@@ -74,6 +76,7 @@ import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
 
 import org.openide.util.NbBundle;
+import org.openide.windows.InputOutput;
 
 
 /**
@@ -121,6 +124,11 @@ PropertyChangeListener {
                 ("CTL_DebuggerConsole_Title");
         ioManager = new IOManager (title);
         managers.add (ioManager);
+        try {
+            debugger.getClass().getMethod("setIO", InputOutput.class).invoke(debugger, ioManager.getIO());
+        } catch (Exception ex) {
+            Logger.getLogger(DebuggerOutput.class.getName()).log(Level.INFO, "Not able to set debugger's IO", ex);
+        }
         
         debugger.addPropertyChangeListener (
             JPDADebugger.PROP_STATE,

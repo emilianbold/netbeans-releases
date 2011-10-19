@@ -178,17 +178,17 @@ public class GdbProfile extends DbgProfile implements
 	// LATER set.put(new SignalsNodeProp(this));
 	sheet.put(set);
 
-	set = new Sheet.Set();
-	set.setName("Expression Presentation"); // NOI18N
-	set.setDisplayName(NbBundle.getMessage(GdbProfile.class, "Expression_PresentationTxt")); // NOI18N
-	set.setShortDescription(NbBundle.getMessage(GdbProfile.class, "Expression_PresentationHint")); // NOI18N
-	set.put(DebuggerOption.OUTPUT_BASE.createNodeProp(this));
-	// LATER set.put(DebuggerOption.OUTPUT_DYNAMIC_TYPE.createNodeProp(this));
-	set.put(DebuggerOption.OUTPUT_INHERITED_MEMBERS.createNodeProp(this));
-	// LATER set.put(DebuggerOption.OUTPUT_CLASS_PREFIX.createNodeProp(this));
-	// LATER set.put(DebuggerOption.OUTPUT_MAX_OBJECT_SIZE.createNodeProp(this));
-	// LATER set.put(DebuggerOption.OUTPUT_MAX_STRING_LENGTH.createNodeProp(this));
-	sheet.put(set);
+//	set = new Sheet.Set();
+//	set.setName("Expression Presentation"); // NOI18N
+//	set.setDisplayName(NbBundle.getMessage(GdbProfile.class, "Expression_PresentationTxt")); // NOI18N
+//	set.setShortDescription(NbBundle.getMessage(GdbProfile.class, "Expression_PresentationHint")); // NOI18N
+//	set.put(DebuggerOption.OUTPUT_BASE.createNodeProp(this));
+//	// LATER set.put(DebuggerOption.OUTPUT_DYNAMIC_TYPE.createNodeProp(this));
+//	set.put(DebuggerOption.OUTPUT_INHERITED_MEMBERS.createNodeProp(this));
+//	// LATER set.put(DebuggerOption.OUTPUT_CLASS_PREFIX.createNodeProp(this));
+//	// LATER set.put(DebuggerOption.OUTPUT_MAX_OBJECT_SIZE.createNodeProp(this));
+//	// LATER set.put(DebuggerOption.OUTPUT_MAX_STRING_LENGTH.createNodeProp(this));
+//	sheet.put(set);
 
 /* LATER
 	set = new Sheet.Set();
