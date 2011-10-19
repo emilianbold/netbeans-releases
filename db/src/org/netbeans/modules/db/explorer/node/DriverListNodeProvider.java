@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -42,8 +42,10 @@
 
 package org.netbeans.modules.db.explorer.node;
 
+import java.util.Comparator;
 import org.netbeans.api.db.explorer.node.NodeProvider;
 import org.netbeans.api.db.explorer.node.NodeProviderFactory;
+import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 
 /**
@@ -60,17 +62,26 @@ public class DriverListNodeProvider extends NodeProvider {
 
     private static class FactoryHolder {
         static final NodeProviderFactory FACTORY = new NodeProviderFactory() {
+            @Override
             public DriverListNodeProvider createInstance(Lookup lookup) {
                 return new DriverListNodeProvider(lookup);
             }
         };
     }
 
+    @SuppressWarnings("LeakingThisInConstructor")
     private DriverListNodeProvider(Lookup lookup) {
-        super(lookup);
+        super(lookup, new Comparator<Node>() {
+
+            @Override
+            public int compare(Node o1, Node o2) {
+                return o1.getDisplayName().compareToIgnoreCase(o2.getDisplayName());
+            }
+        });
         addNode(DriverListNode.create(new NodeDataLookup(), this));
     }
 
+    @Override
     protected synchronized void initialize() {
     }
 }
