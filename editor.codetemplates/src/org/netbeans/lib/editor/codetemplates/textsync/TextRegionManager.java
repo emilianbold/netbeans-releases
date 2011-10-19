@@ -1264,7 +1264,7 @@ public final class TextRegionManager {
 
         public void keyPressed(KeyEvent evt) {
             TextRegionManager manager = textRegionManager(evt);
-            if (manager == null || !manager.isActive())
+            if (manager == null || !manager.isActive() || evt.isConsumed())
                 return;
 
             KeyStroke evtKeyStroke = KeyStroke.getKeyStrokeForEvent(evt);
