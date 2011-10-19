@@ -210,6 +210,10 @@ public class IOManager {
             }
         }
     }
+    
+    InputOutput getIO() {
+        return debuggerIO;
+    }
 
     void closeStream () {
         synchronized (buffer) {

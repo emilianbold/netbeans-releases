@@ -152,6 +152,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakSet;
 import org.openide.util.lookup.Lookups;
+import org.openide.windows.InputOutput;
 
 /**
 * Representation of a debugging session.
@@ -205,6 +206,8 @@ public class JPDADebuggerImpl extends JPDADebugger {
     private boolean                     doContinue = true; // Whether resume() will actually resume
     private Boolean                     singleThreadStepResumeDecision = null;
     private Boolean                     stepInterruptByBptResumeDecision = null;
+    
+    private InputOutput                 io;
 
     // init ....................................................................
 
@@ -399,6 +402,14 @@ public class JPDADebuggerImpl extends JPDADebugger {
             else
                 return true;
         }
+    }
+    
+    public void setIO(InputOutput io) {
+        this.io = io;
+    }
+    
+    public InputOutput getIO() {
+        return io;
     }
 
     /**
