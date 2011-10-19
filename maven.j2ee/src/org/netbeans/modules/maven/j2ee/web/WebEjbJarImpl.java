@@ -73,15 +73,22 @@ public class WebEjbJarImpl implements EjbJarImplementation2 {
         this.project = prj;
     }
 
+    @Override
     public Profile getJ2eeProfile() {
         return this.webModule.getJ2eeProfile();
     }
 
+    @Override
     public FileObject getMetaInf() {
-        // There is no META-INF dir in the web project
+        FileObject webInf = webModule.getWebInf();
+        
+        if (webInf != null) {
+            return webInf;
+        }
         return null;
     }
 
+    @Override
     public FileObject getDeploymentDescriptor() {
         FileObject webInfFo = this.webModule.getWebInf();
         if (webInfFo==null) {
@@ -92,10 +99,12 @@ public class WebEjbJarImpl implements EjbJarImplementation2 {
         return dd;
     }
 
+    @Override
     public FileObject[] getJavaSources() {
         return this.webModule.getJavaSources();
     }
 
+    @Override
     public synchronized MetadataModel<EjbJarMetadata> getMetadataModel() {
         if (ejbJarMetadataModel == null) {
             FileObject ddFO = getDeploymentDescriptor();
@@ -111,5 +120,4 @@ public class WebEjbJarImpl implements EjbJarImplementation2 {
         }
         return ejbJarMetadataModel;
     }
-
 }
