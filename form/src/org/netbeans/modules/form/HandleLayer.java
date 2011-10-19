@@ -248,6 +248,25 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
                 try {
                     FormLAF.setUseDesignerDefaults(getFormModel());
                     draggedComponent.paintFeedback(g2);
+                    // Paint hidden components
+                    for (Map.Entry<RADComponent,Rectangle[]> entry : hiddenComponents.entrySet()) {
+                        RADComponent metacomp = entry.getKey();
+                        Object object = formDesigner.getComponent(metacomp);
+                        if (!(object instanceof Component)) {
+                            return;
+                        }
+                        Component comp = (Component)object;
+                        Rectangle[] value = entry.getValue();
+                        Rectangle bounds = new Rectangle(value[0]);
+                        Rectangle visibleBounds = value[1];
+                        comp.setSize(bounds.getSize());
+                        doLayout(comp);
+                        bounds = convertRectangleFromComponent(bounds, comp.getParent());
+                        Graphics gg = g.create(bounds.x, bounds.y, bounds.width, bounds.height);
+                        gg.setClip(visibleBounds.x, visibleBounds.y, visibleBounds.width, visibleBounds.height);
+                        paintDraggedComponent(comp, gg, 0.3f);
+                        gg.dispose();
+                    }
                 } finally {
                     FormLAF.setUseDesignerDefaults(null);
                 }
@@ -2589,10 +2608,14 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
     }
 
     private static void paintDraggedComponent(Component comp, Graphics g) {
+        paintDraggedComponent(comp, g, 0.7f);
+    }
+
+    private static void paintDraggedComponent(Component comp, Graphics g, float opacity) {
         issue71257Hack(comp);
         Graphics2D g2 = (Graphics2D)g;
         Composite originalComposite = g2.getComposite();
-        g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.7f));
+        g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacity));
         try {
             if (comp instanceof JComponent) {
                 comp.paint(g);
@@ -2647,6 +2670,15 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
                     cont = cont.getParent();
                 }
             }
+        }
+    }
+
+    private Map<RADComponent,Rectangle[]> hiddenComponents = new IdentityHashMap<RADComponent,Rectangle[]>();
+    void updateHiddentComponent(RADComponent metacomp, Rectangle bounds, Rectangle visibleBounds) {
+        if (bounds == null) {
+            hiddenComponents.remove(metacomp);
+        } else {
+            hiddenComponents.put(metacomp, new Rectangle[] {bounds, visibleBounds});
         }
     }
 

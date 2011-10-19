@@ -2207,7 +2207,16 @@ public class FormDesigner {
         public void setComponentVisibility(String componentId, boolean visible) {
             Object comp = getComponent(componentId);
             if (comp instanceof Component) {
-                ((Component)comp).setVisible(visible);
+                Component component = ((Component)comp);
+                Rectangle bounds = null;
+                Rectangle visibleBounds = null;
+                if (!visible) {
+                    bounds = component.getBounds();
+                    visibleBounds = FormUtils.getVisibleRect(component);
+                }
+                component.setVisible(visible);
+                RADComponent metacomp = getMetaComponent(componentId);
+                handleLayer.updateHiddentComponent(metacomp, bounds, visibleBounds);
             }
         }
 

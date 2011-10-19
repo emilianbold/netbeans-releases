@@ -111,9 +111,12 @@ final class RemoveClassPathRootAction extends NodeAction {
                         final Set<Project> changedProjectsSet = new HashSet<Project>();
                         for (int i = 0; i < activatedNodes.length; i++) {
                             Removable removable = activatedNodes[i].getLookup().lookup(Removable.class);
-                            if (removable == null)
+                            if (removable == null) {
                                 continue;
-
+                            }
+                            if (cancel.get()) {
+                                break;
+                            }
                             Project p = removable.remove();
                             if (p != null)
                                 changedProjectsSet.add(p);
@@ -131,7 +134,11 @@ final class RemoveClassPathRootAction extends NodeAction {
             }
         };
 
-        ProgressUtils.runOffEventDispatchThread(action, NbBundle.getMessage(RemoveClassPathRootAction.class, "TXT_RemovingClassPathRoots"), cancel, true);
+        ProgressUtils.runOffEventDispatchThread(
+                action,
+                NbBundle.getMessage(RemoveClassPathRootAction.class, "TXT_RemovingClassPathRoots"),
+                cancel,
+                false);
     }
 
     protected boolean enable(Node[] activatedNodes) {
