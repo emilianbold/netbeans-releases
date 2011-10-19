@@ -506,8 +506,6 @@ class ShLexer implements Lexer<ShTokenId> {
             case LexerInput.EOF:
                 return null;
             case '+':
-            case '|':
-            case '&':
             case '<':
             case '>':
             case '!':
@@ -533,6 +531,24 @@ class ShLexer implements Lexer<ShTokenId> {
             case '$':
                 afterSeparator = i == ';' || (afterSeparator && (i == '@' || i == '+' || i == '-'));
                 return info.tokenFactory().createToken(ShTokenId.OPERATOR);
+            case '&':
+                i = input.read();
+                if(i == '&') {
+                    afterSeparator = true;
+                    return info.tokenFactory().createToken(ShTokenId.OPERATOR);
+                } else {
+                    input.backup(1);
+                    return info.tokenFactory().createToken(ShTokenId.OPERATOR);
+                }
+            case '|':
+                i = input.read();
+                if(i == '|') {
+                    afterSeparator = true;
+                    return info.tokenFactory().createToken(ShTokenId.OPERATOR);
+                } else {
+                    input.backup(1);
+                    return info.tokenFactory().createToken(ShTokenId.OPERATOR);
+                }
             case '\\':
                 i = input.read();
                 afterSeparator &= i == '\n';
@@ -640,11 +656,13 @@ class ShLexer implements Lexer<ShTokenId> {
                     );
                     input.backup (1);
                     String idstr = input.readText().toString();
+                    if (keywords.contains(idstr)) {
+                        afterSeparator = false;
+                        return info.tokenFactory().createToken(ShTokenId.KEYWORD);
+                    }
                     if (afterSeparator) {
                         afterSeparator = false;
-                        if (keywords.contains(idstr)) {
-                            return info.tokenFactory().createToken(ShTokenId.KEYWORD);
-                        } else if (commands.contains(idstr)) {
+                        if (commands.contains(idstr)) {
                             return info.tokenFactory().createToken(ShTokenId.COMMAND);
                         }
                     }
