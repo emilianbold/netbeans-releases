@@ -83,6 +83,24 @@ public class StorageTest extends TestCase {
         File f = ((FileMapStorage) filemap).getOutputFile();
         assertTrue("Memory mapped file should be created", f.exists());
         filemap.dispose();
+        tryToDeleteFile(f);
+        assertFalse("Memory mapped file should be deleted", f.exists());
+    }
+
+    public void testMMappedFileWithMoreBuffersCanBeDeleted() throws Exception {
+
+        for (int i = 0; i < 10; i++) {
+            int fwrite = write(filemap, "A string");
+            ByteBuffer fbuf = filemap.getReadBuffer(fwrite, filemap.size() - fwrite);
+            assertNotNull(fbuf);
+        }
+        File f = ((FileMapStorage) filemap).getOutputFile();
+        filemap.dispose();
+        tryToDeleteFile(f);
+        assertFalse("Memory mapped file should be deleted", f.exists());
+    }
+
+    private void tryToDeleteFile(File f) {
         for (int i = 0; i < 500; i++) {
             if (!f.exists()) {
                 break;
@@ -93,7 +111,6 @@ public class StorageTest extends TestCase {
                 Exceptions.printStackTrace(ex);
             }
         }
-        assertFalse("Memory mapped file should be deleted", f.exists());
     }
 
     public void testIsClosed() throws Exception {
