@@ -194,8 +194,18 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
     }
 
     void prepareValidation() {
-        //Todo: Disable panels
-        setCursor(Utilities.createProgressCursor(this));
+        enablePanels(false);
+    }
+
+    private void enablePanels(final boolean enable) {
+        setCursor(enable ?
+            Cursor.getDefaultCursor() :
+            Utilities.createProgressCursor(this));
+        sourcePanel.setEnabled(enable);
+        testsPanel.setEnabled(enable);
+        jLabel2.setText(enable ?
+                NbBundle.getMessage(PanelSourceFolders.class, "TXT_MoveRootDescription") :
+                NbBundle.getMessage(PanelSourceFolders.class, "TXT_SearchingClassFiles"));
     }
 
     private static void findClassFiles(File folder, List<File> files) {
@@ -269,7 +279,7 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {
-                    setCursor(Cursor.getDefaultCursor());
+                    enablePanels(true);
                 }
             });
         }

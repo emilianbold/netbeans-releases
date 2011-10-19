@@ -526,6 +526,19 @@ public class LayoutUtils implements LayoutConstants {
                && LayoutInterval.isAlignedAtBorder(interval2, parent, alignment);
     }
 
+    static boolean isDefaultGapValidForNeighbor(LayoutInterval neighbor, int neighborEdge) {
+        if (!hasSideComponents(neighbor, neighborEdge, true, false)
+            || (!hasSideComponents(neighbor, neighborEdge, true, true)
+                && hasSideGaps(neighbor, neighborEdge, true))) {
+            // GroupLayout can't compute default gap if the neighbor has
+            // no edge component, or even if it is, none is aligned at
+            // group edge while there is an aligned gap (so the only
+            // aligned interval at the edge facing the default gap is a gap).
+            return false;
+        }
+        return true;
+    }
+
     /**
      * Computes whether a space overlaps with content of given interval.
      * The difference from LayoutRegion.overlap(...) is that this method goes
