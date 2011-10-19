@@ -292,8 +292,8 @@ public class QueryController extends BugtrackingController implements DocumentLi
 
     private <T extends QueryParameter> T createQueryParameter(Class<T> clazz, Component c, String parameter) {
         try {
-            Constructor<T> constructor = clazz.getConstructor(c.getClass(), String.class);
-            T t = constructor.newInstance(c, parameter);
+            Constructor<T> constructor = clazz.getConstructor(c.getClass(), String.class, String.class);
+            T t = constructor.newInstance(c, parameter, getRepository().getTaskRepository().getCharacterEncoding());
             parameters.put(parameter, t);
             return t;
         } catch (Exception ex) {
