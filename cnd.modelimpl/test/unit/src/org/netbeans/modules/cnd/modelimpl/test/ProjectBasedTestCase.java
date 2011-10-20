@@ -148,8 +148,9 @@ public abstract class ProjectBasedTestCase extends ModelBasedTestCase {
             projectDir = getTestCaseDataDir();
         }
         File[] changedDirs = changeDefProjectDirBeforeParsingProjectIfNeeded(projectDir);
-        for (File file : changedDirs) {
-            TestModelHelper projectHelper = new TestModelHelper(true);
+        for (int i = 0; i < changedDirs.length; i++) {
+            File file = changedDirs[i];
+            TestModelHelper projectHelper = new TestModelHelper(i==0);
             projectHelper.initParsedProject(file.getAbsolutePath(), getSysIncludes(), getUsrIncludes());
             projectHelpers.put(file.getAbsolutePath(), projectHelper);
         }
@@ -171,8 +172,10 @@ public abstract class ProjectBasedTestCase extends ModelBasedTestCase {
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
-        for (TestModelHelper testModelHelper : projectHelpers.values()) {
-            testModelHelper.shutdown(true);
+        Iterator<TestModelHelper> iterator = projectHelpers.values().iterator();
+        while (iterator.hasNext()) {
+            TestModelHelper testModelHelper = iterator.next();
+            testModelHelper.shutdown(!iterator.hasNext());
         }
         outputWriter.flush();
         logWriter.flush();
