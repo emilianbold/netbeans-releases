@@ -173,23 +173,22 @@ public class DrillDown implements CCTResultsFilter.Evaluator {
         listeners.add(drillDownListener);
     }
 
-    public boolean canDrilldown(Category category) {
-        if (getCurrentCategory().getId().equals(SELF_CATEGORY_ID)) {
+    public boolean canDrilldown(Category cat) {
+        if (getCurrentCategory().getId().equals(cat.getId())) {
             return false;
-        } else {
-            return getSubCategories().size() > 1;
         }
+        return true;
     }
-
+    
     public void drilldown(String catId) {
+        if (getCurrentCategory().getId().equals(SELF_CATEGORY_ID)) return;
+        
         for (Category category : subCategories) {
             if (category.getId().equals(catId)) {
-                if (canDrilldown(category)) {
-                    currentCategory = category;
-                    ddPath.add(currentCategory);
-                    updateSubCategories();
-                    fireDrillDownChange();
-                }
+                currentCategory = category;
+                ddPath.add(currentCategory);
+                updateSubCategories();
+                fireDrillDownChange();
 
                 break;
             }
@@ -228,6 +227,7 @@ public class DrillDown implements CCTResultsFilter.Evaluator {
         }
     }
 
+    @Override
     public boolean evaluate(Mark categoryMark) {
         if ((currentCategory == null || (currentCategory.getAssignedMark() == Mark.DEFAULT && currentCategory.getSubcategories().size() > 1))) {
             return true;
@@ -235,6 +235,7 @@ public class DrillDown implements CCTResultsFilter.Evaluator {
 
         Boolean passed = currentCategory.accept(new Visitor<Visitable<Category>, Boolean, Mark>() {
 
+            @Override
             public Boolean visit(Visitable<Category> visitable, Mark parameter) {
                 if (visitable.getValue().getAssignedMark().equals(parameter)) {
                     return Boolean.TRUE;

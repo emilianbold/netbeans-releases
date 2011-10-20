@@ -42,32 +42,23 @@
 package org.netbeans.modules.profiler.nbimpl.providers;
 
 import java.io.BufferedInputStream;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.lib.profiler.results.cpu.marking.MarkMapping;
-import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.profiler.categorization.api.Category;
 import org.netbeans.modules.profiler.categorization.api.CategoryContainer;
 import org.netbeans.modules.profiler.categorization.api.definitions.PackageCategoryDefinition;
 import org.netbeans.modules.profiler.categorization.api.definitions.SingleTypeCategoryDefinition;
 import org.netbeans.modules.profiler.categorization.api.definitions.SubtypeCategoryDefinition;
 import org.netbeans.modules.profiler.nbimpl.BaseProjectTest;
-import org.netbeans.modules.profiler.nbimpl.TestUtilities;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 /**
- *
+ * Tests the correctness of translating category definitions to sets of marker methods
  * @author Jaroslav Bachorik
  */
 public class MarkerProcessorTest extends BaseProjectTest {
