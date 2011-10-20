@@ -160,7 +160,8 @@ public final class CustomizerComponentFactory {
         public Object getElementAt(int i) {
             switch (state) {
                 case OK:
-                    return currentDeps.toArray()[i];
+                    Object[] currentDepsA = currentDeps.toArray();
+                    return i >= 0 && i < currentDepsA.length ? currentDepsA[i] : /* #202954 */INVALID_PLATFORM;
                 case INVALID:
                     return INVALID_PLATFORM;
                 case WAITING:
