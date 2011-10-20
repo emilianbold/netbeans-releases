@@ -185,7 +185,7 @@ public class EjbRunCustomizerPanel extends javax.swing.JPanel {
         //TODO - not sure this is necessary since the PoHImpl listens on project changes.
         //any save of teh project shall effectively caus ethe module server change..
         POHImpl poh = project.getLookup().lookup(POHImpl.class);
-        poh.hackModuleServerChange();
+        poh.hackModuleServerChange(true);
     }
 
     /** This method is called from within the constructor to
