@@ -180,7 +180,7 @@ if [ ! -x "${jdkhome}/bin/java" ] ; then
 fi
 
 # if the Java option for heap dump on OOME is supported enable it
-if "${jdkhome}/bin/java" -XX:+HeapDumpOnOutOfMemoryError -cp $progdir/boot.jar org.netbeans.NbExecJavaStartTry > /dev/null 2>&1 ; then
+if "${jdkhome}/bin/java" -XX:+HeapDumpOnOutOfMemoryError -cp "${progdir}/boot.jar" org.netbeans.NbExecJavaStartTry > /dev/null 2>&1 ; then
    jargs="$jargs -XX:+HeapDumpOnOutOfMemoryError"
    if echo $jargs | grep -v -- "-XX:HeapDumpPath=" > /dev/null ; then
       jargs="$jargs -XX:HeapDumpPath=\"${userdir}/var/log/heapdump.hprof\""
