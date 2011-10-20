@@ -49,8 +49,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.xml.namespace.QName;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.repository.RepositorySystem;
 import org.netbeans.api.annotations.common.SuppressWarnings;
-import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.Build;
@@ -149,7 +149,7 @@ public final class ModelUtils {
      * @return null if repository with given url exists, otherwise a returned newly created item.
      */
     public static Repository addModelRepository(MavenProject project, POMModel mdl, String url) {
-        if (url.contains(RepositoryPreferences.REPO_CENTRAL)) { //NOI18N
+        if (url.contains(RepositorySystem.DEFAULT_REMOTE_REPO_URL)) {
             return null;
         }
         List<Repository> repos = mdl.getProject().getRepositories();
