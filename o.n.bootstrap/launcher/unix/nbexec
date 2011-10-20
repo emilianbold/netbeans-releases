@@ -185,6 +185,8 @@ if "${jdkhome}/bin/java" -XX:+HeapDumpOnOutOfMemoryError -cp $progdir/boot.jar o
    if echo $jargs | grep -v -- "-XX:HeapDumpPath=" > /dev/null ; then
       jargs="$jargs -XX:HeapDumpPath=\"${userdir}/var/log/heapdump.hprof\""
    fi
+   # rename old heap dump to .old
+   mv "${userdir}/var/log/heapdump.hprof" "${userdir}/var/log/heapdump.hprof.old" > /dev/null 2>&1
 fi
 
 jargs_without_clusters="$jargs"
