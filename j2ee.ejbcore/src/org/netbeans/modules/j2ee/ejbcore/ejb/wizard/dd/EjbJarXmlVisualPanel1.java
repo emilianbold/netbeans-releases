@@ -83,8 +83,6 @@ public final class EjbJarXmlVisualPanel1 extends JPanel {
                 locationCombo.addItem(ejbJar.getDeploymentDescriptor());
             } else if (ejbJar.getMetaInf() != null) { // WEB-INF/META-INF folder exists but there is no ejb-jar.xml
                 locationCombo.addItem(ejbJar.getMetaInf());
-            } else { // There is no valid location for ejb-jar.xml file
-                locationCombo.addItem(null);
             }
         }
         refreshLocation();
