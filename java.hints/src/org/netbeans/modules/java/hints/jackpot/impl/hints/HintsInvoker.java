@@ -507,7 +507,7 @@ public class HintsInvoker {
 
                     for (HintDescription hd : patternHints.get(d)) {
                         HintMetadata hm = hd.getMetadata();
-                        HintContext c = new HintContext(info, hm, candidate, verified.variables, verified.multiVariables, verified.variables2Names, constraints, problems, bulkMode);
+                        HintContext c = new HintContext(info, hm, candidate, verified.variables, verified.multiVariables, verified.variables2Names, constraints, problems, bulkMode, cancel);
 
                         if (!Collections.disjoint(suppressedWarnings, hm.suppressWarnings))
                             continue;
@@ -601,7 +601,7 @@ public class HintsInvoker {
                         }
                     }
 
-                    HintContext c = new HintContext(info, hm, path, Collections.<String, TreePath>emptyMap(), Collections.<String, Collection<? extends TreePath>>emptyMap(), Collections.<String, String>emptyMap(), Collections.<String, TypeMirror>emptyMap(), new ArrayList<MessageImpl>(), bulkMode);
+                    HintContext c = new HintContext(info, hm, path, Collections.<String, TreePath>emptyMap(), Collections.<String, Collection<? extends TreePath>>emptyMap(), Collections.<String, String>emptyMap(), Collections.<String, TypeMirror>emptyMap(), new ArrayList<MessageImpl>(), bulkMode, cancel);
                     Collection<? extends ErrorDescription> errors = runHint(hd, c);
 
                     if (errors != null) {

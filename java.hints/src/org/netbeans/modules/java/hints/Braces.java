@@ -195,19 +195,21 @@ public class Braces extends AbstractHint {
     // Private methods ---------------------------------------------------------
     
     private ErrorDescription checkStatement( StatementTree statement, TreePath tp, CompilationInfo info )  {
-                
+        int[] span;
+
         if ( statement != null && 
              statement.getKind() != Tree.Kind.EMPTY_STATEMENT && 
              statement.getKind() != Tree.Kind.BLOCK &&
              statement.getKind() != Tree.Kind.ERRONEOUS &&
-             !isErroneousExpression( statement ) ) {
+             !isErroneousExpression( statement ) &&
+             (span = span(info, statement)) != null) {
             return ErrorDescriptionFactory.createErrorDescription(
                         getSeverity().toEditorSeverity(), 
                         getDisplayName(), 
                         Collections.<Fix>singletonList(JavaFix.toEditorFix(new BracesFix( info.getFileObject(), TreePathHandle.create(tp, info) ) )),
                         info.getFileObject(),
-                        (int)info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), statement ),
-                        (int)info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), statement ) );
+                        span[0],
+                        span[1]);
                     
         }        
         return null;
@@ -237,8 +239,9 @@ public class Braces extends AbstractHint {
         }
         
         List<ErrorDescription> result = new ArrayList<ErrorDescription>();
+        int[] span;
         
-        if ( fixThen ) {
+        if ( fixThen && (span = span(info, thenSt)) != null) {
             BracesFix bf  = new BracesFix( info.getFileObject(), TreePathHandle.create(tp, info));
             bf.fixThen = fixThen;
             bf.fixElse = fixElse;
@@ -247,11 +250,11 @@ public class Braces extends AbstractHint {
                 getDisplayName(), 
                 Collections.<Fix>singletonList(JavaFix.toEditorFix(bf)),
                 info.getFileObject(),
-                (int)info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), thenSt ),
-                (int)info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), thenSt ) ) ); 
+                span[0],
+                span[1]));
         }
         
-        if ( fixElse ) {
+        if ( fixElse && (span = span(info, elseSt)) != null) {
             BracesFix bf  = new BracesFix( info.getFileObject(), TreePathHandle.create(tp, info));
             bf.fixThen = fixThen;
             bf.fixElse = fixElse;
@@ -260,8 +263,8 @@ public class Braces extends AbstractHint {
                 getDisplayName(), 
                 Collections.<Fix>singletonList(JavaFix.toEditorFix(bf)),
                 info.getFileObject(),
-                (int)info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), elseSt ),
-                (int)info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), elseSt ) ) ); 
+                span[0],
+                span[1]) );
 
         }
                 
@@ -275,6 +278,17 @@ public class Braces extends AbstractHint {
             }
         }
         return false;
+    }
+
+    private int[] span(CompilationInfo info, Tree t) {
+        int start = (int)info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), t);
+        int end   = (int)info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), t);
+
+        if (start >= 0 && end >= 0) {
+            return new int[] {start, end};
+        }
+
+        return null;
     }
     
     private static class BracesFix extends JavaFix {

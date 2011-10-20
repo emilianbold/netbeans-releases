@@ -40,22 +40,18 @@ import com.sun.source.tree.SynchronizedTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Set;
-import java.util.prefs.Preferences;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
-import javax.swing.JComponent;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
+import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerTreeKind;
+import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
 import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
-import org.netbeans.modules.java.hints.spi.AbstractHint;
+import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
@@ -64,28 +60,17 @@ import org.openide.util.NbBundle;
  *
  * @author Jaroslav tulach
  */
-public class DoubleCheck extends AbstractHint {
-    private transient volatile boolean stop;
-    
-    /** Creates a new instance of AddOverrideAnnotation */
-    public DoubleCheck() {
-        super( true, true, AbstractHint.HintSeverity.WARNING);
-    }
-    
-    public Set<Kind> getTreeKinds() {
-        return EnumSet.of(Kind.SYNCHRONIZED);
-    }
-    
-    public List<ErrorDescription> run(CompilationInfo compilationInfo,
-                                      TreePath treePath) {
-        stop = false;
+@Hint(id="org.netbeans.modules.java.hints.DoubleCheck", category="thread")
+public class DoubleCheck {
+
+    @TriggerTreeKind(Kind.SYNCHRONIZED)
+    public static ErrorDescription run(HintContext ctx) {
+        CompilationInfo compilationInfo = ctx.getInfo();
+        TreePath treePath = ctx.getPath();
         Tree e = treePath.getLeaf();
-        if (e == null || e.getKind() != Kind.SYNCHRONIZED) {
-            return null;
-        }
 
         SynchronizedTree synch = (SynchronizedTree)e;
-        TreePath outer = findOuterIf(compilationInfo, treePath);
+        TreePath outer = findOuterIf(ctx, treePath);
         if (outer == null) {
             return null;
         }
@@ -97,7 +82,7 @@ public class DoubleCheck extends AbstractHint {
                 same = (IfTree)statement;
                 break;
             }
-            if (stop) {
+            if (ctx.isCanceled()) {
                 return null;
             }
         }
@@ -105,56 +90,22 @@ public class DoubleCheck extends AbstractHint {
             return null;
         }
 
-        List<Fix> fixes = Collections.<Fix>singletonList(JavaFix.toEditorFix(new FixImpl(
+        Fix fix = JavaFix.toEditorFix(new FixImpl(
             TreePathHandle.create(treePath, compilationInfo),
             TreePathHandle.create(outer, compilationInfo),
             compilationInfo.getFileObject()
-        )));
+        ));
 
         int span = (int)compilationInfo.getTrees().getSourcePositions().getStartPosition(
             compilationInfo.getCompilationUnit(),
             synch
         );
 
-        ErrorDescription ed = ErrorDescriptionFactory.createErrorDescription(
-            getSeverity().toEditorSeverity(),
-            NbBundle.getMessage(DoubleCheck.class, "ERR_DoubleCheck"), // NOI18N
-            fixes,
-            compilationInfo.getFileObject(),
-            span,
-            span + "synchronized".length() // NOI18N
-        );
-
-        return Collections.singletonList(ed);
+        return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), NbBundle.getMessage(DoubleCheck.class, "ERR_DoubleCheck"), fix);// NOI18N
     }
 
-    public String getId() {
-        return getClass().getName();
-    }
-
-    public String getDisplayName() {
-        return NbBundle.getMessage(DoubleCheck.class, "MSG_DoubleCheck"); // NOI18N
-    }
-
-    public String getDescription() {
-        return NbBundle.getMessage(DoubleCheck.class, "HINT_DoubleCheck"); // NOI18N
-    }
-
-    public void cancel() {
-        stop = true;
-    }
-    
-    public Preferences getPreferences() {
-        return null;
-    }
-    
-    @Override
-    public JComponent getCustomizer(Preferences node) {
-        return null;
-    }    
-
-    private TreePath findOuterIf(CompilationInfo compilationInfo, TreePath treePath) {
-        while (!stop) {
+    private static TreePath findOuterIf(HintContext ctx, TreePath treePath) {
+        while (!ctx.isCanceled()) {
             treePath = treePath.getParentPath();
             if (treePath == null) {
                 break;
@@ -179,7 +130,7 @@ public class DoubleCheck extends AbstractHint {
         return null;
     }
 
-    private boolean sameIfAndValidate(CompilationInfo info, TreePath statementTP, TreePath secondTP) {
+    private static boolean sameIfAndValidate(CompilationInfo info, TreePath statementTP, TreePath secondTP) {
         StatementTree statement = (StatementTree) statementTP.getLeaf();
         
         if (statement.getKind() != Kind.IF) {
@@ -214,7 +165,7 @@ public class DoubleCheck extends AbstractHint {
         return false;
     }
     
-    private TreePath equalToNull(TreePath tp) {
+    private static TreePath equalToNull(TreePath tp) {
         ExpressionTree t = (ExpressionTree) tp.getLeaf();
         if (t.getKind() == Kind.PARENTHESIZED) {
             ParenthesizedTree p = (ParenthesizedTree)t;

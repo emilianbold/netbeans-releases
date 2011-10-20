@@ -48,6 +48,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.prefs.Preferences;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -74,6 +75,7 @@ public class HintContext {
     private final Collection<? super MessageImpl> messages;
     private final Map<String, TypeMirror> constraints;
     private final boolean bulkMode;
+    private final AtomicBoolean cancel;
 
     public HintContext(CompilationInfo info, HintMetadata metadata, TreePath path, Map<String, TreePath> variables, Map<String, Collection<? extends TreePath>> multiVariables, Map<String, String> variableNames) {
         this(info, metadata, path, variables, multiVariables, variableNames, new LinkedList<MessageImpl>());
@@ -84,10 +86,10 @@ public class HintContext {
     }
 
     public HintContext(CompilationInfo info, HintMetadata metadata, TreePath path, Map<String, TreePath> variables, Map<String, Collection<? extends TreePath>> multiVariables, Map<String, String> variableNames, Map<String, TypeMirror> constraints, Collection<? super MessageImpl> problems) {
-        this(info, metadata, path, variables, multiVariables, variableNames, constraints, problems, false);
+        this(info, metadata, path, variables, multiVariables, variableNames, constraints, problems, false, new AtomicBoolean());
     }
 
-    public HintContext(CompilationInfo info, HintMetadata metadata, TreePath path, Map<String, TreePath> variables, Map<String, Collection<? extends TreePath>> multiVariables, Map<String, String> variableNames, Map<String, TypeMirror> constraints, Collection<? super MessageImpl> problems, boolean bulkMode) {
+    public HintContext(CompilationInfo info, HintMetadata metadata, TreePath path, Map<String, TreePath> variables, Map<String, Collection<? extends TreePath>> multiVariables, Map<String, String> variableNames, Map<String, TypeMirror> constraints, Collection<? super MessageImpl> problems, boolean bulkMode, AtomicBoolean cancel) {
         this.info = info;
         this.preferences = metadata != null ? RulesManager.getPreferences(metadata.id, HintsSettings.getCurrentProfileId()) : null;
         this.severity = preferences != null ? HintsSettings.getSeverity(metadata, preferences) : HintSeverity.ERROR;
@@ -103,6 +105,7 @@ public class HintContext {
         this.messages = problems;
         this.constraints = constraints;
         this.bulkMode = bulkMode;
+        this.cancel = cancel;
     }
 
     public CompilationInfo getInfo() {
@@ -156,6 +159,10 @@ public class HintContext {
         return bulkMode;
     }
 
+    public boolean isCanceled() {
+        return cancel.get();
+    }
+    
     //XXX: probably should not be visible to clients:
     public static HintContext create(CompilationInfo info, HintMetadata metadata, TreePath path, Map<String, TreePath> variables, Map<String, Collection<? extends TreePath>> multiVariables, Map<String, String> variableNames) {
         return new HintContext(info, metadata, path, variables, multiVariables, variableNames);
