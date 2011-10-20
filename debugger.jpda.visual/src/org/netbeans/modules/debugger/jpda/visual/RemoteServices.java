@@ -75,6 +75,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.locks.Lock;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -301,7 +302,8 @@ public class RemoteServices {
         final JPDAThreadImpl t = (JPDAThreadImpl) thread;
         boolean wasSuspended = true;
         
-        t.accessLock.writeLock().lock();
+        Lock lock = t.accessLock.writeLock();
+        lock.lock();
         try {
             ThreadReference threadReference = t.getThreadReference();
             wasSuspended = t.isSuspended();
@@ -311,7 +313,8 @@ public class RemoteServices {
             }
             if (!t.isSuspended()) {
                 final CountDownLatch latch = new CountDownLatch(1);
-                t.accessLock.writeLock().unlock();
+                lock.unlock();
+                lock = null;
                 switch(sType) {
                     case AWT: {
                         runOnBreakpoint(
@@ -349,7 +352,6 @@ public class RemoteServices {
                 try {
                     // wait for the async operation to finish
                     latch.await();
-                    t.accessLock.writeLock().lock();
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                 }
@@ -380,7 +382,9 @@ public class RemoteServices {
                 }
             }
         } finally {
-            t.accessLock.writeLock().unlock();
+            if (lock != null) {
+                lock.unlock();
+            }
         }
     }
     
