@@ -64,6 +64,7 @@ import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentListener;
+import java.awt.event.FocusEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -143,12 +144,12 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
     {
         stdYesButton.setDefaultCapable(true);
         stdOKButton.setDefaultCapable(true);
-        stdNoButton.setDefaultCapable(true);
-        stdCancelButton.setDefaultCapable(true);
+        stdNoButton.setDefaultCapable(false);
+        stdCancelButton.setDefaultCapable(false);
         stdCancelButton.setVerifyInputWhenFocusTarget(false);
-        stdClosedButton.setDefaultCapable(true);
-        stdHelpButton.setDefaultCapable(true);
-        stdDetailButton.setDefaultCapable(true);
+        stdClosedButton.setDefaultCapable(false);
+        stdHelpButton.setDefaultCapable(false);
+        stdDetailButton.setDefaultCapable(false);
         Mnemonics.setLocalizedText (stdHelpButton, NbBundle.getBundle(NbPresenter.class).getString("HELP_OPTION_CAPTION")); // NOI18N
         
         /** Initilizes accessible contexts */
@@ -435,6 +436,8 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
         addWindowListener(this);
         
         initializeClosingOptions ();
+        
+        KeyboardFocusManager.getCurrentKeyboardFocusManager().addPropertyChangeListener( this );
     }
     
     /** Descriptor can be cached and reused. We need to remove listeners 
@@ -445,6 +448,8 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
         uninitializeMessage();
         uninitializeButtons();
         uninitializeClosingOptions ();
+        
+        KeyboardFocusManager.getCurrentKeyboardFocusManager().removePropertyChangeListener( this );
     }
     
     private final HackTypeAhead hack = new HackTypeAhead();
@@ -872,6 +877,22 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
     /** Checks default button and updates it
      */
     private void updateDefaultButton() {
+        Component c = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
+        if( c instanceof JButton ) {
+            //#focused button should always be the default one (unless it doesn't want to)
+            JButton button = ( JButton ) c;
+            boolean makeDefault = button.isDefaultCapable();
+            for( int i=0; null != currentPrimaryButtons && i<currentPrimaryButtons.length && !makeDefault; i++ ) {
+                makeDefault |= button == currentPrimaryButtons[i];
+            }
+            for( int i=0; null != currentSecondaryButtons && i<currentSecondaryButtons.length && !makeDefault; i++ ) {
+                makeDefault |= button == currentSecondaryButtons[i];
+            }
+            if( makeDefault ) {
+                getRootPane().setDefaultButton( button );
+            }
+            return;
+        }
         // bugfix 37083, respects DialogDescriptor's initial value ?
         if (descriptor.getDefaultValue () != null) {
             if (descriptor.getDefaultValue () instanceof JButton) {
@@ -1133,6 +1154,8 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
         } else if (NotifyDescriptor.PROP_ERROR_NOTIFICATION.equals (evt.getPropertyName ())) {
             // XXX: need set update on true?
             updateNotificationLine (MSG_TYPE_ERROR, evt.getNewValue ());
+        } else if( "focusOwner".equals( evt.getPropertyName() ) ) { //NOI18N
+            updateDefaultButton();
         }
         
         if (update) {
