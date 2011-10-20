@@ -110,25 +110,31 @@ public class HintsInvoker {
     private final int caret;
     private final int from;
     private final int to;
+    private final boolean bulkMode;
     private final AtomicBoolean cancel;
 
     public HintsInvoker(CompilationInfo info, AtomicBoolean cancel) {
-        this(info, -1, cancel);
+        this(info, false, cancel);
+    }
+
+    public HintsInvoker(CompilationInfo info, boolean bulkMode, AtomicBoolean cancel) {
+        this(info, -1, -1, -1, bulkMode, cancel);
     }
 
     public HintsInvoker(CompilationInfo info, int caret, AtomicBoolean cancel) {
-        this(info, caret, -1, -1, cancel);
+        this(info, caret, -1, -1, false, cancel);
     }
 
     public HintsInvoker(CompilationInfo info, int from, int to, AtomicBoolean cancel) {
-        this(info, -1, from, to, cancel);
+        this(info, -1, from, to, false, cancel);
     }
 
-    private HintsInvoker(CompilationInfo info, int caret, int from, int to, AtomicBoolean cancel) {
+    private HintsInvoker(CompilationInfo info, int caret, int from, int to, boolean bulkMode, AtomicBoolean cancel) {
         this.info = info;
         this.caret = caret;
         this.from = from;
         this.to = to;
+        this.bulkMode = bulkMode;
         this.cancel = cancel;
     }
 
@@ -230,7 +236,7 @@ public class HintsInvoker {
         if (!kindBasedHints.isEmpty()) {
             long kindStart = System.currentTimeMillis();
 
-            new ScannerImpl(info, cancel, sortByKinds(kindBasedHints)).scan(startAt, errors);
+            new ScannerImpl(info, cancel, sortByKinds(kindBasedHints), problems).scan(startAt, errors);
 
             long kindEnd = System.currentTimeMillis();
 
@@ -294,7 +300,7 @@ public class HintsInvoker {
         if (!kindBasedHints.isEmpty()) {
             long kindStart = System.currentTimeMillis();
 
-            new ScannerImpl(info, cancel, sortByKinds(kindBasedHints)).scan(path, errors);
+            new ScannerImpl(info, cancel, sortByKinds(kindBasedHints), problems).scan(path, errors);
 
             long kindEnd = System.currentTimeMillis();
 
@@ -346,7 +352,7 @@ public class HintsInvoker {
             TreePath proc = workOn;
 
             while (proc != null) {
-                new ScannerImpl(info, cancel, hints).scanDoNotGoDeeper(proc, errors);
+                new ScannerImpl(info, cancel, hints, problems).scanDoNotGoDeeper(proc, errors);
                 proc = proc.getParentPath();
             }
 
@@ -501,7 +507,7 @@ public class HintsInvoker {
 
                     for (HintDescription hd : patternHints.get(d)) {
                         HintMetadata hm = hd.getMetadata();
-                        HintContext c = new HintContext(info, hm, candidate, verified.variables, verified.multiVariables, verified.variables2Names, constraints, problems);
+                        HintContext c = new HintContext(info, hm, candidate, verified.variables, verified.multiVariables, verified.variables2Names, constraints, problems, bulkMode);
 
                         if (!Collections.disjoint(suppressedWarnings, hm.suppressWarnings))
                             continue;
@@ -560,21 +566,24 @@ public class HintsInvoker {
         private final FileObject file;
         private final ProcessingEnvironment env;
         private final Map<Kind, List<HintDescription>> hints;
-
-        public ScannerImpl(CompilationInfo info, AtomicBoolean cancel, Map<Kind, List<HintDescription>> hints) {
+        private final Collection<? super MessageImpl> problems;
+        
+        public ScannerImpl(CompilationInfo info, AtomicBoolean cancel, Map<Kind, List<HintDescription>> hints, Collection<? super MessageImpl> problems) {
             super(cancel);
             this.info = info;
             this.file = null;
             this.env  = null;
             this.hints = hints;
+            this.problems = problems;
         }
 
-        public ScannerImpl(FileObject file, ProcessingEnvironment env, Map<Kind, List<HintDescription>> hints) {
+        public ScannerImpl(FileObject file, ProcessingEnvironment env, Map<Kind, List<HintDescription>> hints, Collection<? super MessageImpl> problems) {
             super(new AtomicBoolean());
             this.info = null;
             this.file = file;
             this.env = env;
             this.hints = hints;
+            this.problems = problems;
         }
 
         private void runAndAdd(TreePath path, List<HintDescription> rules, Map<HintDescription, List<ErrorDescription>> d) {
@@ -592,7 +601,7 @@ public class HintsInvoker {
                         }
                     }
 
-                    HintContext c = new HintContext(info, hm, path, Collections.<String, TreePath>emptyMap(), Collections.<String, Collection<? extends TreePath>>emptyMap(), Collections.<String, String>emptyMap());
+                    HintContext c = new HintContext(info, hm, path, Collections.<String, TreePath>emptyMap(), Collections.<String, Collection<? extends TreePath>>emptyMap(), Collections.<String, String>emptyMap(), Collections.<String, TypeMirror>emptyMap(), new ArrayList<MessageImpl>(), bulkMode);
                     Collection<? extends ErrorDescription> errors = runHint(hd, c);
 
                     if (errors != null) {

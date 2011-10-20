@@ -167,8 +167,6 @@ public class UnusedVariableHint extends AbstractRule implements PHPRuleWithPrefe
                 List<Variable> scopeVariables = unusedVariables.get(scopeNode);
                 for (Variable variable : scopeVariables) {
                     int start = variable.getStartOffset() + 1;
-
-
                     int end = variable.getEndOffset();
                     OffsetRange offsetRange = new OffsetRange(start, end);
                     hints.add(new Hint(UnusedVariableHint.this, Bundle.UnusedVariableHintCustom(getIdentifier(variable).getName()), fileObject, offsetRange, null, 500));

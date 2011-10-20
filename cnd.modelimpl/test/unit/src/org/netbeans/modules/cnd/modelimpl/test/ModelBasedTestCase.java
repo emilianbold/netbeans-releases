@@ -77,12 +77,11 @@ public class ModelBasedTestCase extends CndBaseTestCase {
         super.setUp();
         DiagnosticExceptoins.Hook hook = new DiagnosticExceptoins.Hook() {
 
+            @Override
             public void exception(Throwable thr) {
-                if (!thr.getMessage().contains("INTENTIONAL")) {
-                    thr.printStackTrace();
-                    exceptions.add(thr);
-                    CndUtils.threadsDump();
-                }
+                thr.printStackTrace(System.err);
+                exceptions.add(thr);
+                CndUtils.threadsDump();
             }
         };
         DiagnosticExceptoins.setHook(hook);

@@ -46,6 +46,8 @@ package org.netbeans.jellytools.properties;
 import java.awt.Component;
 import java.awt.Frame;
 import java.awt.Window;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import javax.swing.JComponent;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.MainWindowOperator;
@@ -303,6 +305,45 @@ public class PropertySheetOperator extends TopComponentOperator {
         // close window where property sheet is hosted but not main window
         if(getWindow() != MainWindowOperator.getDefault().getSource()) {
             new WindowOperator(getWindow()).close();
+        }
+    }
+    
+    /**
+     * Dispatch mouse event directly in org.openide.explorer.propertysheet.PSheet
+     * to make it more reliable.
+     */
+    @Override
+    public void clickForPopup() {
+        final Component eventsHandleComponent = findSubComponent(new ComponentChooser() {
+
+            @Override
+            public boolean checkComponent(Component comp) {
+                return comp.getClass().getSimpleName().equals("PSheet");  //NOI18N
+            }
+
+            @Override
+            public String getDescription() {
+                return "org.openide.explorer.propertysheet.PSheet";  //NOI18N
+            }
+        });
+        if (eventsHandleComponent != null) {
+            runMapping(new MapVoidAction("mousePressed") {
+
+                @Override
+                public void map() {
+                    ((MouseListener) eventsHandleComponent).mousePressed(
+                            new MouseEvent(getSource(),
+                            MouseEvent.MOUSE_PRESSED,
+                            System.currentTimeMillis(),
+                            0,
+                            getCenterXForClick(),
+                            getCenterYForClick(),
+                            1,
+                            true));
+                }
+            });
+        } else {
+            super.clickForPopup();
         }
     }
     

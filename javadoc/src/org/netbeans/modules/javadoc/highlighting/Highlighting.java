@@ -159,6 +159,14 @@ public class Highlighting extends AbstractHighlightsContainer implements TokenHi
                         }
                         seq.movePrevious();
                      }
+                } else if (seq.token().id() == JavadocTokenId.TAG) {
+                    if (seq.movePrevious()) {
+                        if (!seq.token().text().toString().trim().endsWith("{")) {
+                            //not an inline tag
+                            return new int [] { start, seq.offset()};
+                        }
+                    }
+                    seq.moveNext();
                 }
             } while (seq.moveNext());
         }
