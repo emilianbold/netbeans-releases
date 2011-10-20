@@ -87,7 +87,10 @@ class SelectSourcesPanel extends javax.swing.JPanel {
         final List<URI> paths = new ArrayList<URI>();
         final String str = sourcesField.getText();
         for (String pathElement : str.split(File.pathSeparator)) {
-            paths.add(convertor.call(pathElement));
+            pathElement = pathElement.trim();
+            if (pathElement.length() > 0) {
+                paths.add(convertor.call(pathElement));
+            }
         }
         return paths;
     }
