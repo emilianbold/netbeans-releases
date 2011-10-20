@@ -34,14 +34,14 @@ import java.awt.event.ActionEvent;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import javax.swing.text.TextAction;
+import org.netbeans.editor.BaseAction;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author Vita Stejskal
  */
-public final class BracesMatchAction extends TextAction {
+public final class BracesMatchAction extends BaseAction {
 
     private final boolean select;
     
@@ -63,8 +63,7 @@ public final class BracesMatchAction extends TextAction {
         putValue(SHORT_DESCRIPTION, NbBundle.getMessage(BracesMatchAction.class, (String) getValue(NAME)));
     }
     
-    public void actionPerformed(ActionEvent e) {
-        JTextComponent component = getTextComponent(e);
+    public void actionPerformed(ActionEvent e, JTextComponent component) {
         Document document = component.getDocument();
         Caret caret = component.getCaret();
         

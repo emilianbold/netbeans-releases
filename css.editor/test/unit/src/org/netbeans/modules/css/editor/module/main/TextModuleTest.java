@@ -52,13 +52,9 @@ public class TextModuleTest extends CssModuleTestBase {
     }
     
     public void testProperties() {
-        assertPropertyValues("bikeshedding", "collapse");
         assertPropertyValues("hanging-punctuation", "first force-end");
         assertPropertyValues("hyphenate-limit-chars", "auto", "1", "1 2", "1 2 3");
         assertPropertyValues("text-align", "start center", "center");
-        assertPropertyValues("text-outline", "red 20px 30px", "20px blue");
-        assertPropertyValues("text-trim", "normal keep-end no-justify");
-        
     }
     
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,46 +37,37 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2007-2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2007-2011 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.java.hints;
 
-import com.sun.source.util.TreePath;
-import java.util.List;
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.java.hints.infrastructure.TreeRuleTestBase;
-import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.modules.java.hints.jackpot.code.spi.TestBase;
 
 /**
  *
  * @author Jan Lahoda
  */
-public class SyncOnNonFinalTest extends TreeRuleTestBase {
+public class SyncOnNonFinalTest extends TestBase {
     
     public SyncOnNonFinalTest(String testName) {
-        super(testName);
+        super(testName, SyncOnNonFinal.class);
     }
 
     public void testSimple1() throws Exception {
         performAnalysisTest("test/Test.java",
-                            "package test; public class Test {private Object o; private void t() {synch|ronized(o) {}}}",
+                            "package test; public class Test {private Object o; private void t() {synchronized(o) {}}}",
                             "0:81-0:84:verifier:Synchronization on non-final field");
     }
     
     public void testSimple2() throws Exception {
         performAnalysisTest("test/Test.java",
-                            "package test; public class Test {private final Object o; private void t() {synch|ronized(o) {}}}");
+                            "package test; public class Test {private final Object o; private void t() {synchronized(o) {}}}");
     }
     
     public void testSimple3() throws Exception {
         performAnalysisTest("test/Test.java",
-                            "package test; public class Test {private void t() {Object o = null; synch|ronized(o) {}}}");
+                            "package test; public class Test {private void t() {Object o = null; synchronized(o) {}}}");
     }
     
-    @Override
-    protected List<ErrorDescription> computeErrors(CompilationInfo info, TreePath path) {
-        return new SyncOnNonFinal().run(info, path);
-    }
-
 }
