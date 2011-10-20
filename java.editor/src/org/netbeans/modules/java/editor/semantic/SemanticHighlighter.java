@@ -1152,7 +1152,11 @@ public class SemanticHighlighter extends JavaParserResultTask {
             
             scan(tree.getType(), null);
             
-            tl.moveToEnd(tree.getType());
+            int[] span = info.getTreeUtilities().findNameSpan(tree);
+            if (span != null)
+                tl.moveToOffset(span[0]);
+            else
+                tl.moveToEnd(tree.getType());
             
 //            System.err.println("tree.getName().toString()=" + tree.getName().toString());
             
