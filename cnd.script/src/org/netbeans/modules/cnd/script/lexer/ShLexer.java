@@ -488,15 +488,21 @@ class ShLexer implements Lexer<ShTokenId> {
     }
 
     private LexerRestartInfo<ShTokenId> info;
-    private boolean afterSeparator;
+
+    private static enum State {
+        OTHER,
+        AFTER_SEPARATOR,
+        FOR,
+        FOR_ID,
+        CASE,
+        CASE_ID
+    }
+    
+    State state;
 
     ShLexer(LexerRestartInfo<ShTokenId> info) {
         this.info = info;
-        if (info.state() instanceof Integer) {
-            afterSeparator = false;
-        } else {
-            afterSeparator = true;
-        }
+        state = info.state() == null ? State.AFTER_SEPARATOR : State.values()[(Integer) info.state()];
     }
 
     public Token<ShTokenId> nextToken () {
@@ -506,8 +512,6 @@ class ShLexer implements Lexer<ShTokenId> {
             case LexerInput.EOF:
                 return null;
             case '+':
-            case '|':
-            case '&':
             case '<':
             case '>':
             case '!':
@@ -531,20 +535,46 @@ class ShLexer implements Lexer<ShTokenId> {
             case '`':
             case '%':
             case '$':
-                afterSeparator = i == ';' || (afterSeparator && (i == '@' || i == '+' || i == '-'));
+                state = (i == ';' || ((state == State.AFTER_SEPARATOR) && (i == '@' || i == '+' || i == '-'))) ? State.AFTER_SEPARATOR : State.OTHER;
                 return info.tokenFactory().createToken(ShTokenId.OPERATOR);
+            case '&':
+                i = input.read();
+                if(i == '&') {
+                    state = State.AFTER_SEPARATOR;
+                    return info.tokenFactory().createToken(ShTokenId.OPERATOR);
+                } else {
+                    state = State.OTHER;
+                    input.backup(1);
+                    return info.tokenFactory().createToken(ShTokenId.OPERATOR);
+                }
+            case '|':
+                i = input.read();
+                if(i == '|') {
+                    state = State.AFTER_SEPARATOR;
+                    return info.tokenFactory().createToken(ShTokenId.OPERATOR);
+                } else {
+                    state = State.OTHER;
+                    input.backup(1);
+                    return info.tokenFactory().createToken(ShTokenId.OPERATOR);
+                }
             case '\\':
                 i = input.read();
-                afterSeparator &= i == '\n';
+                if(i != '\n') {
+                    state = State.OTHER;
+                }
                 return info.tokenFactory().createToken(ShTokenId.OPERATOR);
             case ' ':
             case '\n':
             case '\r':
             case '\t':
-                afterSeparator |= i == '\n' || i == '\r';
+                if(i == '\n' || i == '\r') {
+                    state = State.AFTER_SEPARATOR;
+                }
                 do {
                     i = input.read ();
-                    afterSeparator |= i == '\n' || i == '\r';
+                    if(i == '\n' || i == '\r') {
+                        state = State.AFTER_SEPARATOR;
+                    }
                 } while (
                     i == ' ' ||
                     i == '\n' ||
@@ -563,7 +593,7 @@ class ShLexer implements Lexer<ShTokenId> {
                     i != '\r' &&
                     i != LexerInput.EOF
                 );
-                afterSeparator = true;
+                state = State.AFTER_SEPARATOR;
                 return info.tokenFactory ().createToken (ShTokenId.COMMENT);
             case '0':
             case '1':
@@ -590,7 +620,7 @@ class ShLexer implements Lexer<ShTokenId> {
                     );
                 }
                 input.backup (1);
-                afterSeparator = false;
+                state = State.OTHER;
                 return info.tokenFactory ().createToken (ShTokenId.NUMBER);
             case '"':
                 do {
@@ -605,7 +635,7 @@ class ShLexer implements Lexer<ShTokenId> {
                     i != '\r' &&
                     i != LexerInput.EOF
                 );
-                afterSeparator = false;
+                state = State.OTHER;
                 return info.tokenFactory ().createToken (ShTokenId.STRING);
             case '\'':
                 do {
@@ -620,7 +650,7 @@ class ShLexer implements Lexer<ShTokenId> {
                     i != '\r' &&
                     i != LexerInput.EOF
                 );
-                afterSeparator = false;
+                state = State.OTHER;
                 return info.tokenFactory ().createToken (ShTokenId.STRING);
             default:
                 if (
@@ -640,13 +670,30 @@ class ShLexer implements Lexer<ShTokenId> {
                     );
                     input.backup (1);
                     String idstr = input.readText().toString();
-                    if (afterSeparator) {
-                        afterSeparator = false;
+                    if (state == State.AFTER_SEPARATOR) {
+                        state = State.OTHER;
                         if (keywords.contains(idstr)) {
+                            if(idstr.equals("for")) { // NOI18N
+                                state = State.FOR;
+                            }
+                            if(idstr.equals("case")) { // NOI18N
+                                state = State.CASE;
+                            }
                             return info.tokenFactory().createToken(ShTokenId.KEYWORD);
                         } else if (commands.contains(idstr)) {
                             return info.tokenFactory().createToken(ShTokenId.COMMAND);
                         }
+                    } else if (state == State.FOR) {
+                        state = State.FOR_ID;
+                    } else if (state == State.CASE) {
+                        state = State.CASE_ID;
+                    } else if (state == State.FOR_ID || state == State.CASE_ID) {
+                        state = State.OTHER;
+                        if(idstr.equals("in")) { // NOI18N
+                            return info.tokenFactory().createToken(ShTokenId.KEYWORD);
+                        }
+                    } else {
+                        state = State.OTHER;
                     }
                     return info.tokenFactory().createToken(ShTokenId.IDENTIFIER);
                 }
@@ -655,7 +702,7 @@ class ShLexer implements Lexer<ShTokenId> {
     }
 
     public Object state() {
-        return afterSeparator? null : Integer.valueOf(1);
+        return state == State.AFTER_SEPARATOR ? null : state.ordinal();
     }
 
     public void release() {
