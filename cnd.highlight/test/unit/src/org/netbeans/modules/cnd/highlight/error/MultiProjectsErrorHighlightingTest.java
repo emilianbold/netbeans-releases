@@ -46,6 +46,10 @@ import java.util.List;
  * @author vv159170
  */
 public class MultiProjectsErrorHighlightingTest extends ErrorHighlightingBaseTestCase {
+    
+    static {
+        System.setProperty("cnd.modelimpl.tracemodel.project.name", "true"); // NOI18N
+    }
 
     public MultiProjectsErrorHighlightingTest(String testName) {
         super(testName);
@@ -57,6 +61,8 @@ public class MultiProjectsErrorHighlightingTest extends ErrorHighlightingBaseTes
         // test-folder
         //  --first\
         //        first.cc
+        //  --second\
+        //        second.cc
         //  --includedLibrary\ 
         //        lib_header.h
         //  --otherLibrary\
@@ -64,15 +70,17 @@ public class MultiProjectsErrorHighlightingTest extends ErrorHighlightingBaseTes
         //
         // so, adjust used folders
 
-        File srcDir = new File(projectDir, "first");
+        File srcDir1 = new File(projectDir, "first");
+        File srcDir2 = new File(projectDir, "second");
         File incl1 = new File(projectDir, "includedLibrary");
         File incl2 = new File(projectDir, "otherLibrary");
-        checkDir(srcDir);
+        checkDir(srcDir1);
+        checkDir(srcDir2);
         checkDir(incl1);
         checkDir(incl2);
         List<String> sysIncludes = Arrays.asList(incl1.getAbsolutePath(), incl2.getAbsolutePath());
         super.setSysIncludes(sysIncludes);
-        return new File[] {srcDir};
+        return new File[] {srcDir1, srcDir2};
     }
     
     private void checkDir(File srcDir) {
@@ -84,5 +92,6 @@ public class MultiProjectsErrorHighlightingTest extends ErrorHighlightingBaseTes
         performStaticTest("first/first.cpp");
         performStaticTest("includedLibrary/lib_header.h");
         performStaticTest("otherLibrary/other_lib_header.h");
+        performStaticTest("second/second.cpp");
     }
 }
