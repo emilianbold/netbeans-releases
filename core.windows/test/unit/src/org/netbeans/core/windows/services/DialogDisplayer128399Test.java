@@ -46,6 +46,7 @@ package org.netbeans.core.windows.services;
 
 import java.awt.Dialog;
 import javax.swing.JButton;
+import javax.swing.JTextField;
 import org.netbeans.junit.NbTestCase;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -141,9 +142,9 @@ public class DialogDisplayer128399Test extends NbTestCase {
      * 
      */
     public void testNotifyDescriptorConfirmation () {
-        final JButton testButton = new JButton ("for-test-only");
+        final JTextField testComponent = new JTextField ("for-test-only");
         NotifyDescriptor nd = new NotifyDescriptor.Confirmation (
-                testButton,
+                testComponent,
                 "testNotifyDescriptorConfirmation",
                 NotifyDescriptor.YES_NO_OPTION);
         assertEquals ("YES_OPTION is the default value.", NotifyDescriptor.YES_OPTION, nd.getDefaultValue ());
@@ -151,8 +152,8 @@ public class DialogDisplayer128399Test extends NbTestCase {
             public void run () {
                 assertEquals ("YES_OPTION is the default button on dialog",
                         NbBundle.getBundle (NbPresenter.class).getString ("YES_OPTION_CAPTION"),
-                        testButton.getRootPane ().getDefaultButton ().getText ());
-                testButton.getRootPane ().getDefaultButton ().doClick ();
+                        testComponent.getRootPane ().getDefaultButton ().getText ());
+                testComponent.getRootPane ().getDefaultButton ().doClick ();
             }
         }, 1000);
         DialogDisplayer.getDefault ().notify (nd);

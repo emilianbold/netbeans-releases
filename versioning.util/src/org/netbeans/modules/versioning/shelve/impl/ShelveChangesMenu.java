@@ -48,6 +48,7 @@ import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import org.netbeans.modules.versioning.shelve.ShelveChangesActionsRegistry;
+import org.netbeans.modules.versioning.shelve.ShelveChangesActionsRegistry.ShelveChangesActionProvider;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.spi.VersioningSystem;
 import org.netbeans.modules.versioning.util.Utils;
@@ -56,11 +57,9 @@ import org.openide.awt.ActionRegistration;
 import org.openide.awt.Actions;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.awt.Mnemonics;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
-import org.openide.util.lookup.Lookups;
 import org.openide.windows.TopComponent;
 
 /**
@@ -111,8 +110,9 @@ public class ShelveChangesMenu extends AbstractAction implements DynamicMenuCont
 
         if (vs.length == 1) {
             // actions depending on the central patch storage
-            Action action = ShelveChangesActionsRegistry.getInstance().getAction(vs[0]);
-            if (action != null && action.isEnabled()) {
+            ShelveChangesActionProvider actionProvider = ShelveChangesActionsRegistry.getInstance().getActionProvider(vs[0]);
+            Action action;
+            if (actionProvider != null && (action = actionProvider.getAction()) != null && action.isEnabled()) {
                 JMenuItem item = new JMenuItem();
                 Actions.connect(item, action, false);
                 items.add(item);
@@ -130,13 +130,11 @@ public class ShelveChangesMenu extends AbstractAction implements DynamicMenuCont
     private List<JComponent> getUnshelveActions () {
         List<JComponent> items = new LinkedList<JComponent>();
         List<String> list = Utils.getStringList(NbPreferences.forModule(ShelveChangesMenu.class), PREF_KEY_SHELVED_PATCHES);
-        for (Lookup.Item<Object> item : Lookups.forPath("Actions/Versioning/UnshelveChanges").lookupResult(Object.class).allItems()) {
-            if (Action.class.isAssignableFrom(item.getType())
-                    && (!list.isEmpty() || !item.getId().endsWith("/org-netbeans-modules-versioning-shelve-impl-UnshelveChangesAction"))) { //NOI18N
-                JMenuItem mItem = new JMenuItem();
-                Actions.connect(mItem, (Action) item.getInstance(), false);
-                items.add(mItem);
-            }
+        Action a = Utils.getAcceleratedAction("Actions/Versioning/UnshelveChanges/org-netbeans-modules-versioning-shelve-impl-UnshelveChangesAction.instance");
+        if (a != null && !list.isEmpty()) {
+            JMenuItem mItem = new JMenuItem();
+            Actions.connect(mItem, a, false);
+            items.add(mItem);
         }
         if (!list.isEmpty()) {
             List<PatchStorage.Patch> patches = PatchStorage.getInstance().getPatches();

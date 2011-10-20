@@ -551,6 +551,15 @@ void PlatformLauncher::prepareOptions() {
         option += userDir;
         option += HEAP_DUMP_PATH;
         javaOptions.push_back(option);
+        // rename old heap dump to .old
+        string heapdumpfile = userDir + HEAP_DUMP_PATH;
+        if (fileExists(heapdumpfile.c_str())) {
+            string heapdumpfileold = heapdumpfile + ".old";
+            if (fileExists(heapdumpfileold.c_str())) {
+                DeleteFileA(heapdumpfileold.c_str());
+            }
+            MoveFile (heapdumpfile.c_str(), heapdumpfileold.c_str());
+        }
     }
 
     string proxy, nonProxy, socksProxy;
