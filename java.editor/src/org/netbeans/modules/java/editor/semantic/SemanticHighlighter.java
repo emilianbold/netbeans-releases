@@ -82,12 +82,9 @@ import com.sun.source.tree.WildcardTree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
-import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -126,15 +123,9 @@ import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
 import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
-import org.netbeans.spi.editor.hints.Fix;
-import org.netbeans.spi.editor.hints.HintsController;
-import org.netbeans.spi.editor.hints.LazyFixList;
-import org.netbeans.spi.editor.hints.Severity;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
-import org.openide.util.NbBundle;
 
 
 /**
@@ -226,46 +217,7 @@ public class SemanticHighlighter extends JavaParserResultTask {
         return Scheduler.EDITOR_SENSITIVE_TASK_SCHEDULER;
     }
     
-    private static class FixAllImportsFixList implements LazyFixList {
-        private Fix removeImport;
-        private Fix removeAllUnusedImports;
-        private List<TreePathHandle> allUnusedImports;
-        
-        public FixAllImportsFixList(Fix removeImport, Fix removeAllUnusedImports, List<TreePathHandle> allUnusedImports) {
-            this.removeImport = removeImport;
-            this.removeAllUnusedImports = removeAllUnusedImports;
-            this.allUnusedImports = allUnusedImports;
-        }
-        
-        public void addPropertyChangeListener(PropertyChangeListener l) {
-        }
-        
-        public void removePropertyChangeListener(PropertyChangeListener l) {
-        }
-        
-        public boolean probablyContainsFixes() {
-            return true;
-        }
-        
-        private List<Fix> fixes;
-        
-        public synchronized List<Fix> getFixes() {
-            if (fixes != null)
-                return fixes;
-            
-            if (allUnusedImports.size() > 1) {
-                fixes = Arrays.asList(removeImport, removeAllUnusedImports);
-            } else {
-                fixes = Collections.singletonList(removeImport);
-            }
-            
-            return fixes;
-        }
-        
-        public boolean isComputed() {
-            return true;
-        }
-    }
+
     
     boolean process(CompilationInfo info, final Document doc) {
         return process(info, doc, ERROR_DESCRIPTION_SETTER);
@@ -299,7 +251,6 @@ public class SemanticHighlighter extends JavaParserResultTask {
         boolean computeUnusedImports = "text/x-java".equals(FileUtil.getMIMEType(info.getFileObject()));
         
         final List<TreePathHandle> allUnusedImports = computeUnusedImports ? new ArrayList<TreePathHandle>() : null;
-        final Fix removeAllUnusedImports = computeUnusedImports ? RemoveUnusedImportFix.create(file, allUnusedImports) : null;
         OffsetsBag imports = computeUnusedImports ? new OffsetsBag(doc) : null;
 
         if (computeUnusedImports) {
@@ -316,22 +267,9 @@ public class SemanticHighlighter extends JavaParserResultTask {
 
                 imports.addHighlight(startPos, endPos, ColoringManager.getColoringImpl(unused));
 
-                int line = (int) info.getCompilationUnit().getLineMap().getLineNumber(startPos);
-
                 TreePathHandle handle = TreePathHandle.create(tree, info);
 
-                final Fix removeImport = RemoveUnusedImportFix.create(file, handle);
-
                 allUnusedImports.add(handle);
-                if (RemoveUnusedImportFix.isEnabled()) {
-                    errors.add(ErrorDescriptionFactory.createErrorDescription(
-                            RemoveUnusedImportFix.getSeverity(),
-                            NbBundle.getMessage(SemanticHighlighter.class, "LBL_UnusedImport"),
-                            new FixAllImportsFixList(removeImport, removeAllUnusedImports, allUnusedImports),
-                            doc,
-                            line)
-                    );
-                }
             }
         }
         
@@ -1558,14 +1496,7 @@ public class SemanticHighlighter extends JavaParserResultTask {
     
     static ErrorDescriptionSetter ERROR_DESCRIPTION_SETTER = new ErrorDescriptionSetter() {
         
-        public void setErrors(Document doc, List<ErrorDescription> errors, List<TreePathHandle> allUnusedImports) {
-            FileObject file = NbEditorUtilities.getFileObject(doc);
-            if (file != null && org.netbeans.modules.editor.java.Utilities.disableErrors(file).contains(Severity.VERIFIER)) {
-                return;
-            }
-
-            HintsController.setErrors(doc, "semantic-highlighter", errors);
-        }
+        public void setErrors(Document doc, List<ErrorDescription> errors, List<TreePathHandle> allUnusedImports) {}
         
         public void setHighlights(final Document doc, final OffsetsBag highlights) {
             SwingUtilities.invokeLater(new Runnable() {
@@ -1584,11 +1515,12 @@ public class SemanticHighlighter extends JavaParserResultTask {
         }
     };
 
+    private static final Object KEY_UNUSED_IMPORTS = new Object();
     static OffsetsBag getImportHighlightsBag(Document doc) {
-        OffsetsBag bag = (OffsetsBag) doc.getProperty(FixAllImportsFixList.class);
+        OffsetsBag bag = (OffsetsBag) doc.getProperty(KEY_UNUSED_IMPORTS);
         
         if (bag == null) {
-            doc.putProperty(FixAllImportsFixList.class, bag = new OffsetsBag(doc));
+            doc.putProperty(KEY_UNUSED_IMPORTS, bag = new OffsetsBag(doc));
             
             Object stream = doc.getProperty(Document.StreamDescriptionProperty);
             

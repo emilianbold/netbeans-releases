@@ -73,6 +73,7 @@ public class HintContext {
     private final Map<String, String> variableNames;
     private final Collection<? super MessageImpl> messages;
     private final Map<String, TypeMirror> constraints;
+    private final boolean bulkMode;
 
     public HintContext(CompilationInfo info, HintMetadata metadata, TreePath path, Map<String, TreePath> variables, Map<String, Collection<? extends TreePath>> multiVariables, Map<String, String> variableNames) {
         this(info, metadata, path, variables, multiVariables, variableNames, new LinkedList<MessageImpl>());
@@ -83,6 +84,10 @@ public class HintContext {
     }
 
     public HintContext(CompilationInfo info, HintMetadata metadata, TreePath path, Map<String, TreePath> variables, Map<String, Collection<? extends TreePath>> multiVariables, Map<String, String> variableNames, Map<String, TypeMirror> constraints, Collection<? super MessageImpl> problems) {
+        this(info, metadata, path, variables, multiVariables, variableNames, constraints, problems, false);
+    }
+
+    public HintContext(CompilationInfo info, HintMetadata metadata, TreePath path, Map<String, TreePath> variables, Map<String, Collection<? extends TreePath>> multiVariables, Map<String, String> variableNames, Map<String, TypeMirror> constraints, Collection<? super MessageImpl> problems, boolean bulkMode) {
         this.info = info;
         this.preferences = metadata != null ? RulesManager.getPreferences(metadata.id, HintsSettings.getCurrentProfileId()) : null;
         this.severity = preferences != null ? HintsSettings.getSeverity(metadata, preferences) : HintSeverity.ERROR;
@@ -97,6 +102,7 @@ public class HintContext {
         this.variableNames = variableNames;
         this.messages = problems;
         this.constraints = constraints;
+        this.bulkMode = bulkMode;
     }
 
     public CompilationInfo getInfo() {
@@ -144,6 +150,10 @@ public class HintContext {
      */
     public void reportMessage(MessageKind kind, String text) {
         messages.add(new MessageImpl(kind, text));
+    }
+
+    public boolean isBulkMode() {
+        return bulkMode;
     }
 
     //XXX: probably should not be visible to clients:
