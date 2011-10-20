@@ -65,7 +65,7 @@ public class ReopenRepositoryValidationTest extends CndBaseTestSuite {
         
         addTestSuite(RepositoryValidationGoldens.class);
         addTestSuite(RepositoryValidationFirstParse.class);
-        addTestSuite(RepositoryValidationFinal.class);
+        addTestSuite(ReopenRepositoryValidationFinal.class);
     }
 
     public static Test suite() {
