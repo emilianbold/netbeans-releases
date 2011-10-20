@@ -108,6 +108,20 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="PackageUsages">
+             <api name="general"/>
+             <summary>Added <code>ClassIndex.getResourcesForPackage</code> and <code>ClassIndex.getElementsForPackage</code>to allow to find package usages.</summary>
+             <version major="0" minor="89"/>
+             <date day="20" month="10" year="2011"/>
+             <author login="tzezula"/>
+             <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
+             <description>
+                 Added <code>ClassIndex.getResourcesForPackage</code> and <code>ClassIndex.getElementsForPackage</code>to allow to find package usages.
+                 Currently the client which needs to find usages of all types declared in the package has to list the package and query usages of each type
+                 individually which is inefficient.
+             </description>
+             <issue number="131944"/>
+        </change>
         <change id="OrganizeImports">
              <api name="general"/>
              <summary>Added <code>GeneratorUtilities.addImports</code> and several methods to <code>CodeStyle</code> to support organizing imports.</summary>
