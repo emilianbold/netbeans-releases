@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.1" encoding="UTF-8" ?>
 
 <Form version="1.4" maxVersion="1.4" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <NonVisualComponents>
@@ -33,11 +33,11 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Component id="paramTitle" min="-2" max="-2" attributes="0"/>
           <Group type="102" alignment="0" attributes="0">
-              <Component id="westPanel" pref="537" max="32767" attributes="0"/>
+              <Component id="westPanel" pref="559" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="moveDownButton" linkSize="1" alignment="0" min="-2" max="-2" attributes="1"/>
-                  <Component id="addButton" linkSize="1" alignment="1" pref="98" max="32767" attributes="1"/>
+                  <Component id="addButton" linkSize="1" alignment="1" pref="117" max="32767" attributes="1"/>
                   <Component id="removeButton" linkSize="1" alignment="1" min="-2" pref="98" max="-2" attributes="0"/>
                   <Component id="moveUpButton" linkSize="1" alignment="1" min="-2" pref="98" max="-2" attributes="1"/>
               </Group>
@@ -51,7 +51,7 @@
               <EmptySpace min="-2" max="-2" attributes="0"/>
           </Group>
           <Group type="102" alignment="0" attributes="0">
-              <Component id="jScrollPane1" pref="629" max="32767" attributes="0"/>
+              <Component id="jScrollPane1" pref="665" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
           <Group type="102" alignment="0" attributes="0">
@@ -61,12 +61,12 @@
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Component id="rbUpdateMethod" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="434" max="32767" attributes="0"/>
+              <EmptySpace pref="486" max="32767" attributes="0"/>
           </Group>
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Component id="rbOverloadMethod" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="207" max="32767" attributes="0"/>
+              <EmptySpace pref="288" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -147,8 +147,8 @@
               <Group type="102" alignment="1" attributes="0">
                   <Group type="103" groupAlignment="3" attributes="0">
                       <Component id="modifiersLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="jLabel2" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="jLabel1" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="jLabel2" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
@@ -194,6 +194,9 @@
         </Component>
         <Component class="javax.swing.JLabel" name="jLabel1">
           <Properties>
+            <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+              <ComponentRef name="jScrollPane2"/>
+            </Property>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
               <ResourceString bundle="org/netbeans/modules/refactoring/java/ui/Bundle.properties" key="ChangeParametersPanel.jLabel1.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
@@ -201,6 +204,9 @@
         </Component>
         <Component class="javax.swing.JLabel" name="jLabel2">
           <Properties>
+            <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+              <ComponentRef name="methodNameText"/>
+            </Property>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
               <ResourceString bundle="org/netbeans/modules/refactoring/java/ui/Bundle.properties" key="ChangeParametersPanel.jLabel2.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
