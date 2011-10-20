@@ -152,7 +152,7 @@ final class CreateFilesWorker {
                         break;
                     }
                 }
-                if (TraceFlags.TRACE_203833_BUG) {
+                if (TraceFlags.DEBUG_BROKEN_REPOSITORY) {
                     enougth.set(true);
                     RepositoryUtils.registerRepositoryError(project, new Exception("Validation: INTENTIONAL interrupt")); // NOI18N
                 }

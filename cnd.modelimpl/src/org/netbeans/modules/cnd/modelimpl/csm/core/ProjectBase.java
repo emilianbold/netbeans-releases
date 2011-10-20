@@ -855,7 +855,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 worker.createProjectFilesIfNeed(headers, false, readOnlyRemovedFilesSet, validator);
             }
             if (status == Status.Validating && RepositoryUtils.getRepositoryErrorCount(this) > 0){
-                if (!TraceFlags.TRACE_203833_BUG) {
+                if (!TraceFlags.DEBUG_BROKEN_REPOSITORY) {
                     System.err.println("Clean index for project \""+getUniqueName()+"\" because index was corrupted (was "+RepositoryUtils.getRepositoryErrorCount(this)+" errors)."); // NOI18N
                 }
                 validator = null;

@@ -82,9 +82,7 @@ public class DiagnosticExceptoins {
      * See Hook.exception description for more details
      */
     public static void register(Throwable thr) {
-        if (CndUtils.isDebugMode() && !thr.getMessage().contains("INTENTIONAL")) { // NOI18N
-            thr.printStackTrace();
-        }
+        thr.printStackTrace(System.err);
         Hook aHook = hook;
         if (aHook != null) {
             hook.exception(thr);
