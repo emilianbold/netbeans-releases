@@ -68,7 +68,7 @@ public class IncrementalParseRepositoryValidationTest extends CndBaseTestSuite {
         
         addTestSuite(RepositoryValidationGoldens.class);
         addTestSuite(RepositoryValidationInterruptedParse.class);
-        addTestSuite(RepositoryValidationFinal.class);
+        addTestSuite(IncrementalParseRepositoryValidationFinal.class);
     }
 
     public static Test suite() {
