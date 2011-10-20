@@ -212,12 +212,17 @@ public final class FileUtils {
      * <p>
      * A valid script means that the <tt>filePath</tt> represents a valid, readable file
      * with absolute file path.
+     * <p>
+     * <b>This method will be removed after 7.1!</b>
      * @param filePath a file path to validate
      * @param scriptName the display name of the script
      * @return {@code null} if it is valid, otherwise an error
-     * @see #validateDirectory(String)
+     * @see #validateFile(java.lang.String, boolean)
+     * @see #validateDirectory(String, boolean)
      * @since 1.35
+     * @deprecated use {@link #validateFile(String, boolean)} instead
      */
+    @Deprecated
     public static String validateScript(String filePath, String scriptName) {
         if (!StringUtils.hasText(filePath)) {
             return NbBundle.getMessage(FileUtils.class, "MSG_NoScript", scriptName);
@@ -237,17 +242,66 @@ public final class FileUtils {
     }
 
     /**
+     * Validate a file path and return {@code null} if it is valid, otherwise an error.
+     * <p>
+     * A valid file means that the <tt>filePath</tt> represents a valid, readable file
+     * with absolute file path.
+     * @param filePath a file path to validate
+     * @param writable {@code true} if the file must be writable, {@code false} otherwise
+     * @return {@code null} if it is valid, otherwise an error
+     * @see #validateDirectory(String, boolean)
+     * @since 1.53
+     */
+    public static String validateFile(String filePath, boolean writable) {
+        if (!StringUtils.hasText(filePath)) {
+            return NbBundle.getMessage(FileUtils.class, "MSG_FileEmpty");
+        }
+
+        File file = new File(filePath);
+        if (!file.isAbsolute()) {
+            return NbBundle.getMessage(FileUtils.class, "MSG_FileNotAbsolute");
+        } else if (!file.isFile()) {
+            return NbBundle.getMessage(FileUtils.class, "MSG_NotFile");
+        } else if (!file.canRead()) {
+            return NbBundle.getMessage(FileUtils.class, "MSG_FileCannotRead");
+        } else if (writable && !file.canWrite()) {
+            return NbBundle.getMessage(FileUtils.class, "MSG_FileNotWritable");
+        }
+        return null;
+    }
+
+    /**
      * Validate a directory path and return {@code null} if it is valid, otherwise an error.
      * <p>
-     * A valid directory means that the <tt>dirPath</tt> represents a valid, writable directory
-     * with absolute file path.
+     * A valid directory means that the <tt>dirPath</tt> represents an existing, readable,
+     * writable directory with absolute file path.
+     * <p>
+     * <b>This method will be removed after 7.1!</b>
      * @param dirPath a file path to validate
      * @return {@code null} if it is valid, otherwise an error
      * @see #validateScript(String, String)
      * @see #isDirectoryWritable(File)
      * @since 1.35
+     * @deprecated use {@link #validateDirectory(String, boolean)} instead
      */
+    @Deprecated
     public static String validateDirectory(String dirPath) {
+        return validateDirectory(dirPath, true);
+    }
+
+    /**
+     * Validate a directory path and return {@code null} if it is valid, otherwise an error.
+     * <p>
+     * A valid directory means that the <tt>dirPath</tt> represents an existing, readable, optionally
+     * writable directory with absolute file path.
+     * @param dirPath a file path to validate
+     * @param writable {@code true} if the directory must be writable, {@code false} otherwise
+     * @return {@code null} if it is valid, otherwise an error
+     * @see #validateScript(String, String)
+     * @see #isDirectoryWritable(File)
+     * @since 1.53
+     */
+    public static String validateDirectory(String dirPath, boolean writable) {
         if (!StringUtils.hasText(dirPath)) {
             return NbBundle.getMessage(FileUtils.class, "MSG_DirEmpty");
         }
@@ -257,7 +311,9 @@ public final class FileUtils {
             return NbBundle.getMessage(FileUtils.class, "MSG_DirNotAbsolute");
         } else if (!dir.isDirectory()) {
             return NbBundle.getMessage(FileUtils.class, "MSG_NotDir");
-        } else if (!isDirectoryWritable(dir)) {
+        } else if (!dir.canRead()) {
+            return NbBundle.getMessage(FileUtils.class, "MSG_DirNotReadable");
+        } else if (writable && !isDirectoryWritable(dir)) {
             return NbBundle.getMessage(FileUtils.class, "MSG_DirNotWritable");
         }
         return null;
