@@ -60,7 +60,7 @@ public class GeneratedContentForPagedMediaModuleTest extends CssModuleTestBase {
     public void testProperties() {
         assertPropertyValues("bleed", "20px");
         assertPropertyValues("bookmark-label", "\"hello\"", "attr(hello)", "content(hello)");
-        assertPropertyValues("float-offset", "1px", "1cm 2em");
+//        assertPropertyValues("float-offset", "1px", "1cm 2em");
         assertPropertyValues("marks", "crop", "cross", "none", "cross crop", "cross crop");
         
         assertPropertyValues("string-set", "ble bli \"bla\" (ble)! 347 #@$#");

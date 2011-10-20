@@ -44,6 +44,8 @@ package org.netbeans.modules.css.editor.module.main;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -63,6 +65,20 @@ import org.openide.util.NbBundle;
  */
 public class StandardPropertiesHelpResolver extends HelpResolver {
 
+    //workaround for exceptions where the property name doesn't correspond 
+    //to the anchor name in the help file
+    //TODO possibly use some non class hardcoded mechanism - a property file
+    private static final Map<String, String> propertyNamesTranslationTable = 
+            new HashMap<String, String>();
+    static {
+        propertyNamesTranslationTable.put("transform", "effects"); //NOI18N
+        
+        propertyNamesTranslationTable.put("ruby-overhang", "rubyover"); //NOI18N
+        propertyNamesTranslationTable.put("ruby-align", "rubyalign"); //NOI18N
+        propertyNamesTranslationTable.put("ruby-span", "rubyspan"); //NOI18N
+        propertyNamesTranslationTable.put("ruby-position", "rubypos"); //NOI18N
+    }
+    
     private static final Logger LOGGER = Logger.getLogger(HelpResolver.class.getName());
     private static final String SPEC_ARCHIVE_NAME = "docs/css3-spec.zip"; //NOI18N
     private static final AtomicReference<String> SPEC_ARCHIVE_INTERNAL_URL =
@@ -102,11 +118,26 @@ public class StandardPropertiesHelpResolver extends HelpResolver {
             try {
                 URL propertyHelpURL = new URL(propertyUrl.toString());
                 String urlContent = URLRetriever.getURLContentAndCache(propertyHelpURL);
-
-                //<dfn id="property"> or <dfn id="propdef-property">
-                String patternImg = String.format("(?s)<dfn\\s+id=['\"]?\\w*-??%s['\"]?>", property.getName());
-
+                
+                assert urlContent != null : "null " + propertyHelpURL;
+                
                 //1. find the anchor
+
+                //there are some exceptions where the anchors are defined under different
+                //ids than the property names
+                String modifiedPropertyName = propertyNamesTranslationTable.get(property.getName());
+                String propertyName = modifiedPropertyName != null ? modifiedPropertyName : property.getName();
+                
+                //following forms of anchors are supported:
+                //<dfn id="property"> 
+                //<dfn id="property0"> ... sometimes the property is referred with a number suffix
+                
+                String elementName = "ruby".equals(cssModule.getName()) 
+                        ? "a" 
+                        : "dfn";
+                
+                String patternImg = String.format("(?s)<%s\\s+id=['\"]?\\w*-??%s\\d?['\"]?>", elementName, propertyName);
+
                 Pattern pattern = Pattern.compile(patternImg); //DOTALL mode
                 Matcher matcher = pattern.matcher(urlContent);
 
