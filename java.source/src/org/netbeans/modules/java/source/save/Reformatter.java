@@ -425,6 +425,7 @@ public class Reformatter implements ReformatTask {
         private int endOffset;
         private int tpLevel;
         private boolean eof = false;
+        private boolean bof = false;
 
         private Pretty(CompilationInfo info, TreePath path, CodeStyle cs, int startOffset, int endOffset, boolean templateEdit) {
             this(info.getText(), info.getTokenHierarchy().tokenSequence(JavaTokenId.language()),
@@ -466,6 +467,7 @@ public class Reformatter implements ReformatTask {
             this.endPos = tokens.offset();
             if (tree.getKind() == Tree.Kind.COMPILATION_UNIT) {
                 tokens.moveStart();
+                bof = true;
             } else {
                 tokens.move((int)sp.getStartPosition(path.getCompilationUnit(), tree));
             }
@@ -2477,6 +2479,7 @@ public class Reformatter implements ReformatTask {
                     if (after > 0)
                         col = indent;
                     col += tokens.token().length();
+                    bof = false;
                     return tokens.moveNext() ? id : null;
                 }
                 switch(id) {
@@ -2577,6 +2580,7 @@ public class Reformatter implements ReformatTask {
                             lastBlankLinesTokenIndex = tokens.index() - 1;
                             lastBlankLinesDiff = diffs.isEmpty() ? null : diffs.getFirst();
                         }
+                        bof = false;
                         return null;
                 }
             } while(tokens.moveNext());
@@ -3468,7 +3472,7 @@ public class Reformatter implements ReformatTask {
             col += start;
             boolean preserveNewLines = true;
             boolean firstLine = true;
-            boolean enableCommentFormatting = javadocTokens != null ? cs.enableJavadocFormatting() : cs.enableBlockCommentFormatting();
+            boolean enableCommentFormatting = javadocTokens != null ? cs.enableJavadocFormatting() : (!bof && cs.enableBlockCommentFormatting());
             boolean noFormat = false;
             int align = -1;
             for (int i = start; i < text.length(); i++) {
