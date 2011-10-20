@@ -88,7 +88,6 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopScoreDocCollector;
-import org.apache.lucene.store.LockObtainFailedException;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.InvalidArtifactRTException;
 import org.apache.maven.artifact.repository.ArtifactRepository;
@@ -140,10 +139,8 @@ import org.codehaus.plexus.component.repository.ComponentDescriptor;
 import org.codehaus.plexus.component.repository.ComponentRequirement;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.codehaus.plexus.util.Base64;
-import org.codehaus.plexus.util.FileUtils;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.embedder.MavenEmbedder;
-import static org.netbeans.modules.maven.indexer.Bundle.*;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.indexer.api.QueryField;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
@@ -157,14 +154,12 @@ import org.netbeans.modules.maven.indexer.spi.ContextLoadedQuery;
 import org.netbeans.modules.maven.indexer.spi.DependencyInfoQueries;
 import org.netbeans.modules.maven.indexer.spi.GenericFindQuery;
 import org.netbeans.modules.maven.indexer.spi.RepositoryIndexerImplementation;
-import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.Places;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
-import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
@@ -305,8 +300,6 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         }
     }
 
-    //always call from mutex.writeAccess
-    @Messages("MSG_Reconstruct_Index=Reconstructing a broken Maven repository index.")
     private void loadIndexingContext(final RepositoryInfo info) throws IOException {
         LOAD: {
             assert getRepoMutex(info).isWriteAccess();
@@ -331,7 +324,6 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 }
             }
             LOGGER.log(Level.FINE, "Loading Context: {0}", info.getId());
-            if (info.isLocal() || info.isRemoteDownloadable()) {
                 File loc = new File(getDefaultIndexLocation(), info.getId()); // index folder
                 boolean index = false;
                 if (!loc.exists() || loc.listFiles().length <= 0) {
@@ -362,26 +354,12 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                             creators);
                     LOGGER.log(Level.FINE, "using index creators: {0}", creators);
                 } catch (IOException ex) {
-                    LOGGER.log(Level.INFO, "Found a broken index at " + loc.getAbsolutePath(), ex);
-                    FileUtils.deleteDirectory(loc);
-                    StatusDisplayer.getDefault().setStatusText(MSG_Reconstruct_Index());
-                    try {
-                    indexer.addIndexingContextForced(
-                            info.getId(), // context id
-                            info.getId(), // repository id
-                            info.isLocal() ? new File(info.getRepositoryPath()) : null, // repository folder
-                            loc,
-                            info.isRemoteDownloadable() ? info.getRepositoryUrl() : null, // repositoryUrl
-                            info.isRemoteDownloadable() ? indexUpdateUrl : null,
-                            creators);
-                    } catch (LockObtainFailedException x) {
-                        LOGGER.log(Level.INFO, "#195357: could not clean up from broken index", x);
-                    }
+                    LOGGER.log(Level.INFO, "Found a broken index at " + loc + " with loaded contexts " + indexer.getIndexingContexts().keySet(), ex);
+                    break LOAD;
                 }
                 if (index) {
                     indexLoadedRepo(info, true);
                 }
-            }
         }
 
         //figure if a repository was removed from list, remove from context.
