@@ -530,13 +530,14 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
         if (listener.getValue() != null) {
             sc.setServerInstanceId(null);
         }
-        //TODO - not sure this is necessary since the PoHImpl listens on project changes.
-        //any save of teh project shall effectively caus ethe module server change..
-        POHImpl poh = project.getLookup().lookup(POHImpl.class);
-        poh.hackModuleServerChange();
+
         ProjectManager.mutex().postReadRequest(new Runnable() {
             @Override
             public void run() {
+                //TODO - not sure this is necessary since the PoHImpl listens on project changes.
+                //any save of teh project shall effectively caus ethe module server change..
+                POHImpl poh = project.getLookup().lookup(POHImpl.class);
+                poh.hackModuleServerChange(false);
                 moduleProvider = project.getLookup().lookup(WebModuleProviderImpl.class);
                 if (txtContextPath.isEnabled()) {
                     final String contextPath = txtContextPath.getText().trim();

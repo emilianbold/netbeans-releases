@@ -231,7 +231,7 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
                         sc.setServerInstanceId(instanceId);
                         WebModuleProviderImpl prv = project.getLookup().lookup(WebModuleProviderImpl.class);
                         POHImpl poh = project.getLookup().lookup(POHImpl.class);
-                        poh.hackModuleServerChange();
+                        poh.hackModuleServerChange(true);
                         //provider instance not relevant from here
                         provider = null;
                     }
@@ -366,7 +366,7 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
         }
         //#109507 workaround
         POHImpl poh = project.getLookup().lookup(POHImpl.class);
-        poh.hackModuleServerChange();
+        poh.hackModuleServerChange(true);
 
         // refresh all subprojects
         SubprojectProvider spp = targetPrj.getLookup().lookup(SubprojectProvider.class);
