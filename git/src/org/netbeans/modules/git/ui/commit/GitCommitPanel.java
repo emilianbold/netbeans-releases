@@ -111,10 +111,12 @@ public class GitCommitPanel extends VCSCommitPanel<GitFileNode> {
     private final File[] roots;
     private final File repository;
     private final boolean fromGitView;
+    private final DiffProvider diffProvider;
 
     private GitCommitPanel(GitCommitTable table, final File[] roots, final File repository, DefaultCommitParameters parameters, Preferences preferences, Collection<GitHook> hooks, 
-            VCSHookContext hooksContext, VCSCommitDiffProvider diffProvider, boolean fromGitView, List<VCSCommitFilter> filters) {
+            VCSHookContext hooksContext, DiffProvider diffProvider, boolean fromGitView, List<VCSCommitFilter> filters) {
         super(table, parameters, preferences, hooks, hooksContext, filters, diffProvider);
+        this.diffProvider = diffProvider;
         this.roots = roots;
         this.repository = repository;
         this.hooks = hooks;
@@ -176,6 +178,9 @@ public class GitCommitPanel extends VCSCommitPanel<GitFileNode> {
         }
         if (ok && !fromGitView) {
             GitModuleConfig.getDefault().setLastUsedCommitViewMode(getSelectedFilter() == GitCommitPanel.FILTER_HEAD_VS_INDEX ? Mode.HEAD_VS_INDEX : Mode.HEAD_VS_WORKING_TREE);
+        }
+        for (Map.Entry<File, MultiDiffPanelController> e : diffProvider.controllers.entrySet()) {
+            e.getValue().componentClosed();
         }
         return ok;
     }
