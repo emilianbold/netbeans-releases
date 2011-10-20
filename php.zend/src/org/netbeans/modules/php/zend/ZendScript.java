@@ -145,7 +145,11 @@ public class ZendScript extends PhpProgram {
 
     @Override
     public String validate() {
-        return FileUtils.validateScript(getProgram(), NbBundle.getMessage(ZendScript.class, "LBL_ZendScript"));
+        String error = FileUtils.validateFile(getProgram(), false);
+        if (error == null) {
+            return null;
+        }
+        return NbBundle.getMessage(ZendScript.class, "LBL_ZendScriptPrefix", error);
     }
 
     public static String validate(String command) {
