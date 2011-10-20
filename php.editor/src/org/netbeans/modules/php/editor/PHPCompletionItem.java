@@ -82,6 +82,7 @@ import org.netbeans.modules.php.editor.api.elements.InterfaceElement;
 import org.netbeans.modules.php.editor.api.elements.MethodElement;
 import org.netbeans.modules.php.editor.api.elements.NamespaceElement;
 import org.netbeans.modules.php.editor.api.elements.ParameterElement;
+import org.netbeans.modules.php.editor.api.elements.ParameterElement.OutputType;
 import org.netbeans.modules.php.editor.api.elements.PhpElement;
 import org.netbeans.modules.php.editor.api.elements.TypeConstantElement;
 import org.netbeans.modules.php.editor.api.elements.TypeElement;
@@ -627,7 +628,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                     formatter.appendText(", "); // NOI18N
                 }
 
-                final String paramTpl = parameter.asString(true);
+                final String paramTpl = parameter.asString(OutputType.SHORTEN_DECLARATION);
                 if (!parameter.isMandatory()) {
                     formatter.appendText(paramTpl);
                 } else {

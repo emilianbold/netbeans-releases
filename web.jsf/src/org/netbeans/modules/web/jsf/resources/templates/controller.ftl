@@ -203,6 +203,7 @@ public class ${controllerClassName} implements Serializable {
         current = (${entityClassName})getItems().getRowData();
         selectedItemIndex = pagination.getPageFirstItem() + getItems().getRowIndex();
         performDestroy();
+        recreatePagination();
         recreateModel();
         return "List";
     }
@@ -265,6 +266,10 @@ public class ${controllerClassName} implements Serializable {
 
     private void recreateModel() {
         items = null;
+    }
+
+    private void recreatePagination() {
+        pagination = null;
     }
 
     public String next() {
