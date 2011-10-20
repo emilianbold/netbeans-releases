@@ -46,8 +46,7 @@ package org.netbeans.modules.cnd.modelimpl.test;
 
 import java.io.File;
 import java.io.PrintWriter;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.modelimpl.trace.TestModelHelper;
@@ -70,7 +69,7 @@ import org.netbeans.modules.cnd.test.CndCoreTestUtils;
  */
 public abstract class ProjectBasedTestCase extends ModelBasedTestCase {
 
-    private TestModelHelper projectHelper = null;
+    private Map<String, TestModelHelper> projectHelpers = new HashMap<String, TestModelHelper>();
     private List<String>    sysIncludes = Collections.<String>emptyList();
     private List<String>    usrIncludes = Collections.<String>emptyList();
     
@@ -139,7 +138,6 @@ public abstract class ProjectBasedTestCase extends ModelBasedTestCase {
         logWriter = new PrintWriter(getLog());
         
         log("setUp preparing project.");
-        projectHelper = new TestModelHelper(true);
         File projectDir;
         if (performInWorkDir) {
             workDirBasedProject = new File(getWorkDir(), "project"); // NOI18N
@@ -149,8 +147,13 @@ public abstract class ProjectBasedTestCase extends ModelBasedTestCase {
         } else {
             projectDir = getTestCaseDataDir();
         }
-        projectDir = changeDefProjectDirBeforeParsingProjectIfNeeded(projectDir);
-        projectHelper.initParsedProject(projectDir.getAbsolutePath(), getSysIncludes(), getUsrIncludes());
+        File[] changedDirs = changeDefProjectDirBeforeParsingProjectIfNeeded(projectDir);
+        for (int i = 0; i < changedDirs.length; i++) {
+            File file = changedDirs[i];
+            TestModelHelper projectHelper = new TestModelHelper(i==0);
+            projectHelper.initParsedProject(file.getAbsolutePath(), getSysIncludes(), getUsrIncludes());
+            projectHelpers.put(file.getAbsolutePath(), projectHelper);
+        }
         log("setUp finished preparing project.");
         log("Test "+getName()+  "started");
     }
@@ -158,18 +161,22 @@ public abstract class ProjectBasedTestCase extends ModelBasedTestCase {
     /**
      * change the folder if needed from test folder to subfolder
      * i.e. if test folder has several folders: for project and libs =>
-     * change dir to subfolder corresponding to project dir
+     * change dir to subfolders corresponding to projects dirs
      * @param projectDir current project dir
-     * @return folder that should be used as project dir
+     * @return folders that should be used as project directories
      */
-    protected File changeDefProjectDirBeforeParsingProjectIfNeeded(File projectDir) {
-        return projectDir;
+    protected File[] changeDefProjectDirBeforeParsingProjectIfNeeded(File projectDir) {
+        return new File[] {projectDir};
     }
     
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
-        projectHelper.shutdown(true);
+        Iterator<TestModelHelper> iterator = projectHelpers.values().iterator();
+        while (iterator.hasNext()) {
+            TestModelHelper testModelHelper = iterator.next();
+            testModelHelper.shutdown(!iterator.hasNext());
+        }
         outputWriter.flush();
         logWriter.flush();
         outputWriter.close();
@@ -188,7 +195,11 @@ public abstract class ProjectBasedTestCase extends ModelBasedTestCase {
     }     
     
     protected CsmProject getProject() {
-        return projectHelper.getProject();
+        for (TestModelHelper testModelHelper : projectHelpers.values()) {
+            return testModelHelper.getProject();
+        }
+        assert false : "no initialized projects";
+        return null;
     }
 
     protected int getOffset(File testSourceFile, int lineIndex, int colIndex) throws Exception {
