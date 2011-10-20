@@ -94,12 +94,14 @@ public final class RepositoryPreferences {
     private final Map<String,RepositoryInfo> infoCache = new HashMap<String,RepositoryInfo>();
     private final Map<Object,List<RepositoryInfo>> transients = new LinkedHashMap<Object,List<RepositoryInfo>>();
     private final RepositoryInfo local;
+    private final RepositoryInfo central;
     private final ChangeSupport cs = new ChangeSupport(this);
 
     @Messages("local=Local")
     private RepositoryPreferences() {
         try {
             local = new RepositoryInfo(RepositorySystem.DEFAULT_LOCAL_REPO_ID, TYPE_NEXUS, local(), EmbedderFactory.getProjectEmbedder().getLocalRepository().getBasedir(), null);
+            central = new RepositoryInfo(RepositorySystem.DEFAULT_REMOTE_REPO_ID, TYPE_NEXUS, /* XXX pull display name from superpom? */RepositorySystem.DEFAULT_REMOTE_REPO_ID, null, RepositorySystem.DEFAULT_REMOTE_REPO_URL);
         } catch (URISyntaxException x) {
             throw new AssertionError(x);
         }
@@ -188,10 +190,16 @@ public final class RepositoryPreferences {
             } catch (BackingStoreException x) {
                 LOG.log(Level.INFO, null, x);
             }
-            for (List<RepositoryInfo> infos : transients.values()) {
-                for (RepositoryInfo info : infos) {
-                    if (ids.add(info.getId()) && urls.add(info.getRepositoryUrl())) {
-                        toRet.add(info);
+            if (transients.isEmpty()) {
+                if (ids.add(central.getId()) && urls.add(central.getRepositoryUrl())) {
+                    toRet.add(central);
+                }
+            } else {
+                for (List<RepositoryInfo> infos : transients.values()) {
+                    for (RepositoryInfo info : infos) {
+                        if (ids.add(info.getId()) && urls.add(info.getRepositoryUrl())) {
+                            toRet.add(info);
+                        }
                     }
                 }
             }

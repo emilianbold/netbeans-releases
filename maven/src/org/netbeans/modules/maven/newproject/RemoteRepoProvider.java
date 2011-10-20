@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.maven.newproject;
 
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -59,25 +58,11 @@ public class RemoteRepoProvider implements ArchetypeProvider {
     @Override public List<Archetype> getArchetypes() {
         List<Archetype> lst = new ArrayList<Archetype>();
         List<RepositoryInfo> infos = RepositoryPreferences.getInstance().getRepositoryInfos();
-        boolean searchedSomeRepo = false;
         for (RepositoryInfo info : infos) {
             if (RepositorySystem.DEFAULT_LOCAL_REPO_ID.equals(info.getId())) {
                 continue;
             }
-            searchedSomeRepo = true;
             search(info, lst);
-        }
-        if (!searchedSomeRepo) { // #201821
-            try {
-                RepositoryPreferences.getInstance().addTransientRepository(this, RepositorySystem.DEFAULT_REMOTE_REPO_ID, RepositorySystem.DEFAULT_REMOTE_REPO_ID, RepositorySystem.DEFAULT_REMOTE_REPO_URL);
-                RepositoryInfo info = RepositoryPreferences.getInstance().getRepositoryInfoById(RepositorySystem.DEFAULT_REMOTE_REPO_ID);
-                assert info != null;
-                search(info, lst);
-            } catch (URISyntaxException x) {
-                assert false : x;
-            } finally {
-                RepositoryPreferences.getInstance().removeTransientRepositories(this);
-            }
         }
         return lst;
     }
