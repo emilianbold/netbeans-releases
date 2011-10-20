@@ -49,6 +49,7 @@ import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpModule.Change;
 import org.netbeans.modules.php.spi.phpmodule.PhpModuleCustomizerExtender;
 import org.netbeans.modules.php.symfony2.ui.customizer.Symfony2CustomizerPanel;
+import org.netbeans.modules.php.symfony2.ui.options.Symfony2Options;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle.Messages;
 
@@ -72,7 +73,7 @@ public class Symfony2PhpModuleCustomizerExtender extends PhpModuleCustomizerExte
     }
 
     public static boolean isCacheDirectoryIgnored(PhpModule phpModule) {
-        return getPreferences(phpModule).getBoolean(IGNORE_CACHE_DIRECTORY, true);
+        return getPreferences(phpModule).getBoolean(IGNORE_CACHE_DIRECTORY, Symfony2Options.getInstance().getIgnoreCache());
     }
 
     @Messages("LBL_Symfony2=Symfony2")
