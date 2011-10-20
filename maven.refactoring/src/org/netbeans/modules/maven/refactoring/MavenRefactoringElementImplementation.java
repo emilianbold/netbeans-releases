@@ -54,11 +54,11 @@ import org.apache.maven.artifact.repository.ArtifactRepositoryPolicy;
 import org.apache.maven.artifact.repository.MavenArtifactRepository;
 import org.apache.maven.artifact.repository.layout.DefaultRepositoryLayout;
 import org.apache.maven.artifact.resolver.AbstractArtifactResolutionException;
+import org.apache.maven.repository.RepositorySystem;
 import org.netbeans.api.actions.Openable;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.embedder.MavenEmbedder;
-import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.indexer.api.RepositoryUtil;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.ui.TreeElementFactory;
@@ -178,7 +178,7 @@ class MavenRefactoringElementImplementation implements RefactoringElementImpleme
                         MavenEmbedder online = EmbedderFactory.getOnlineEmbedder();
                         Artifact sources = online.createArtifactWithClassifier(ref.artifact.getGroupId(), ref.artifact.getArtifactId(), ref.artifact.getVersion(), ref.artifact.getType(), "sources");
                         // XXX how do we get the exact remote repo from this?
-                        ArtifactRepository remote = new MavenArtifactRepository("central", RepositoryPreferences.REPO_CENTRAL, new DefaultRepositoryLayout(), new ArtifactRepositoryPolicy(), new ArtifactRepositoryPolicy());
+                        ArtifactRepository remote = new MavenArtifactRepository(RepositorySystem.DEFAULT_REMOTE_REPO_ID, RepositorySystem.DEFAULT_REMOTE_REPO_URL, new DefaultRepositoryLayout(), new ArtifactRepositoryPolicy(), new ArtifactRepositoryPolicy());
                         online.resolve(sources, Collections.singletonList(remote), online.getLocalRepository());
                         // XXX this does not make ClassDataObject.OpenSourceCookie work immediately; clicking repeatedly seems to fix it
                     } catch (AbstractArtifactResolutionException x) {

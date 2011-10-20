@@ -46,6 +46,7 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import org.apache.maven.repository.RepositorySystem;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
@@ -60,7 +61,7 @@ public class RemoteRepoProvider implements ArchetypeProvider {
         List<RepositoryInfo> infos = RepositoryPreferences.getInstance().getRepositoryInfos();
         boolean searchedSomeRepo = false;
         for (RepositoryInfo info : infos) {
-            if (RepositoryPreferences.LOCAL_REPO_ID.equals(info.getId())) {
+            if (RepositorySystem.DEFAULT_LOCAL_REPO_ID.equals(info.getId())) {
                 continue;
             }
             searchedSomeRepo = true;
@@ -68,8 +69,8 @@ public class RemoteRepoProvider implements ArchetypeProvider {
         }
         if (!searchedSomeRepo) { // #201821
             try {
-                RepositoryPreferences.getInstance().addTransientRepository(this, "central", "central", RepositoryPreferences.REPO_CENTRAL);
-                RepositoryInfo info = RepositoryPreferences.getInstance().getRepositoryInfoById("central");
+                RepositoryPreferences.getInstance().addTransientRepository(this, RepositorySystem.DEFAULT_REMOTE_REPO_ID, RepositorySystem.DEFAULT_REMOTE_REPO_ID, RepositorySystem.DEFAULT_REMOTE_REPO_URL);
+                RepositoryInfo info = RepositoryPreferences.getInstance().getRepositoryInfoById(RepositorySystem.DEFAULT_REMOTE_REPO_ID);
                 assert info != null;
                 search(info, lst);
             } catch (URISyntaxException x) {

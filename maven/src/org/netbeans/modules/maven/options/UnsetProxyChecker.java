@@ -40,11 +40,11 @@ package org.netbeans.modules.maven.options;
 
 import java.io.IOException;
 import java.net.URI;
+import org.apache.maven.repository.RepositorySystem;
 import org.netbeans.modules.maven.api.execute.ExecutionContext;
 import org.netbeans.modules.maven.api.execute.ExecutionResultChecker;
 import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
-import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import static org.netbeans.modules.maven.options.Bundle.*;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.DialogDisplayer;
@@ -64,7 +64,7 @@ public class UnsetProxyChecker implements ExecutionResultChecker { // #194916
         if (resultCode == 0) {
             return; // build seemed to work, do not bother user
         }
-        final String proxyHost = NetworkSettings.getProxyHost(URI.create(RepositoryPreferences.REPO_CENTRAL));
+        final String proxyHost = NetworkSettings.getProxyHost(URI.create(RepositorySystem.DEFAULT_REMOTE_REPO_URL));
         if (proxyHost == null) {
             return; // seem to be using a direct connection from the IDE
         }
