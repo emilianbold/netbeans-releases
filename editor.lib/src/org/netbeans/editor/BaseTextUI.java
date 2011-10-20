@@ -520,10 +520,11 @@ public class BaseTextUI extends BasicTextUI implements
                     ((org.netbeans.modules.editor.lib2.view.DocumentView)view).updateLengthyAtomicEdit(+1);
                 }
                 // Inactivate lexer's token hierarchy
-                MutableTextInput input = (MutableTextInput) doc.getProperty(MutableTextInput.class);
-                if (input != null) {
-                    input.tokenHierarchyControl().setActive(false);
-                }
+                // Commented out due to #200270
+//                MutableTextInput input = (MutableTextInput) doc.getProperty(MutableTextInput.class);
+//                if (input != null) {
+//                    input.tokenHierarchyControl().setActive(false);
+//                }
             }
         }
     }
