@@ -196,9 +196,6 @@ public class JavacClassInfo extends SourceClassInfo {
                         }
 
                         TypeElement type = handle.resolve(cc);
-                        for(TypeElement te : cc.getTopLevelElements()) {
-                            System.err.println(te);
-                        }
                         List<TypeElement> elements = ElementFilter.typesIn(type.getEnclosedElements());
 
                         for (TypeElement element : elements) {
