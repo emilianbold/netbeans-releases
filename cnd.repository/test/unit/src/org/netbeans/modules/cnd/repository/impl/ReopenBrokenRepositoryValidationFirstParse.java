@@ -37,33 +37,14 @@
  */
 package org.netbeans.modules.cnd.repository.impl;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
-import org.netbeans.modules.cnd.test.CndBaseTestSuite;
-
 /**
  *
  * @author vv159170
  */
-public class ReopenBrokenRepositoryValidationTest extends CndBaseTestSuite {
+public class ReopenBrokenRepositoryValidationFirstParse extends RepositoryValidationFirstParse {
 
-    static {
-        System.setProperty("cnd.modelimpl.parser.threads", "8");
-        System.setProperty("cnd.corrupt.repository", "true"); // NOI18N
-//        System.setProperty("cnd.pp.condition.comparision.trace", "true");
-//        System.setProperty("cnd.modelimpl.trace.file", "gmodule-dl.c");
+    public ReopenBrokenRepositoryValidationFirstParse(String testName) {
+        super(testName);
     }
-
-    public ReopenBrokenRepositoryValidationTest() {
-        super("Broken Repository"); // NOI18N
-        
-        addTestSuite(RepositoryValidationGoldens.class);
-        addTestSuite(ReopenBrokenRepositoryValidationFirstParse.class);
-        addTestSuite(ReopenBrokenRepositoryValidationFinal.class);
-    }
-
-    public static Test suite() {
-        TestSuite suite = new ReopenBrokenRepositoryValidationTest();
-        return suite;
-    }
+    
 }
