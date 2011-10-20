@@ -109,12 +109,6 @@ public class WebAppNodeFactory implements NodeFactory {
                     if (fold != null) {
                         n = new WebAppFilterNode(project, fold.getNodeDelegate().cloneNode(), webAppFolder);
                     }
-                    
-                    // #197554 - Needs to be here to able to create the ejb-jar.xml file
-                    // Creates WEB-INF folder inside of webapp folder
-                    String webInfPath = webAppFolder.getAbsolutePath() + File.separator + "WEB-INF"; //NOI18N
-                    File webInfFolder = new File(webInfPath);
-                    webInfFolder.mkdir();
                 }
             } catch (MalformedURLException exc) {
                 n = null;
