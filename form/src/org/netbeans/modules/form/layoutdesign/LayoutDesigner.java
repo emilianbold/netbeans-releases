@@ -2260,7 +2260,8 @@ public final class LayoutDesigner implements LayoutModel.RemoveHandler, LayoutMo
         }
 
         // duplicate the roots
-        for (LayoutInterval dRoot : dupRoots) {
+        while (!dupRoots.isEmpty()) {
+            LayoutInterval dRoot = dupRoots.iterator().next();
             // prepare parent sequence
             LayoutInterval seq;
             LayoutInterval parent = dRoot.getParent();
@@ -2286,11 +2287,11 @@ public final class LayoutDesigner implements LayoutModel.RemoveHandler, LayoutMo
             }
             // determine parts of the sequence to duplicate
             int start = -1;
-            boolean wholeSeq = dupRoots.contains(seq);
+            boolean wholeSeq = dupRoots.remove(seq);
             LayoutRegion space = seq.getParent().getCurrentSpace();
             for (int i=0; i < seq.getSubIntervalCount(); i++) {
                 LayoutInterval sub = seq.getSubInterval(i);
-                boolean duplicate = !sub.isEmptySpace() && (wholeSeq || dupRoots.contains(sub));
+                boolean duplicate = !sub.isEmptySpace() && (wholeSeq || dupRoots.remove(sub));
                 boolean last = (i+1 == seq.getSubIntervalCount());
                 if (duplicate && start < 0) {
                     start = i;
@@ -2340,6 +2341,7 @@ public final class LayoutDesigner implements LayoutModel.RemoveHandler, LayoutMo
                     start = -1;
                 }
             }
+            dupRoots.remove(dRoot); // should not be needed, but just for sure
         }
     }
 
