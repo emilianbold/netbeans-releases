@@ -73,6 +73,7 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.java.hints.spi.ErrorRule;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.beans.navigation.actions.WebBeansActionHelper;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
@@ -358,16 +359,7 @@ public class CreateQualifier implements ErrorRule<Void> {
 
     private boolean checkProject(CompilationInfo info){
         final FileObject fileObject = info.getFileObject();
-        if ( fileObject == null ){
-            return false;
-        }
-        WebModule webModule = WebModule.getWebModule(fileObject);
-        if ( webModule == null ){
-            return false;
-        }
-        Profile profile = webModule.getJ2eeProfile();
-        return profile.equals(Profile.JAVA_EE_6_FULL) || 
-            profile.equals(Profile.JAVA_EE_6_WEB);
+        return WebBeansActionHelper.isEnabled( fileObject );
     }
     
     private TreePath findUnresolvedElement(CompilationInfo info, int offset) 
