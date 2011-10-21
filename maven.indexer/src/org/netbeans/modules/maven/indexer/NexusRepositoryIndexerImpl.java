@@ -42,91 +42,55 @@
 
 package org.netbeans.modules.maven.indexer;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInput;
-import java.io.DataInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.WeakHashMap;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.zip.CRC32;
-import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field.Index;
-import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.MultiTermQuery;
 import org.apache.lucene.search.PrefixQuery;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.search.TopScoreDocCollector;
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.InvalidArtifactRTException;
 import org.apache.maven.artifact.repository.ArtifactRepository;
-import org.apache.maven.artifact.repository.ArtifactRepositoryPolicy;
-import org.apache.maven.artifact.repository.MavenArtifactRepository;
-import org.apache.maven.artifact.repository.layout.DefaultRepositoryLayout;
 import org.apache.maven.index.ArtifactAvailablility;
 import org.apache.maven.index.ArtifactContext;
 import org.apache.maven.index.ArtifactContextProducer;
 import org.apache.maven.index.ArtifactInfo;
-import org.apache.maven.index.DefaultArtifactContextProducer;
-import org.apache.maven.index.Field;
 import org.apache.maven.index.FlatSearchRequest;
 import org.apache.maven.index.FlatSearchResponse;
 import org.apache.maven.index.GroupedSearchRequest;
 import org.apache.maven.index.GroupedSearchResponse;
-import org.apache.maven.index.IndexerField;
-import org.apache.maven.index.IndexerFieldVersion;
 import org.apache.maven.index.MAVEN;
 import org.apache.maven.index.NexusIndexer;
 import org.apache.maven.index.SearchEngine;
 import org.apache.maven.index.artifact.ArtifactPackagingMapper;
 import org.apache.maven.index.context.IndexCreator;
-import org.apache.maven.index.context.IndexUtils;
 import org.apache.maven.index.context.IndexingContext;
-import org.apache.maven.index.creator.AbstractIndexCreator;
-import org.apache.maven.index.creator.MinimalArtifactInfoIndexCreator;
 import org.apache.maven.index.expr.StringSearchExpression;
 import org.apache.maven.index.search.grouping.GGrouping;
 import org.apache.maven.index.updater.IndexUpdateRequest;
 import org.apache.maven.index.updater.IndexUpdater;
 import org.apache.maven.index.updater.ResourceFetcher;
 import org.apache.maven.index.updater.WagonHelper;
-import org.apache.maven.model.Dependency;
-import org.apache.maven.model.building.ModelBuildingRequest;
-import org.apache.maven.project.DefaultProjectBuildingRequest;
-import org.apache.maven.project.MavenProject;
-import org.apache.maven.project.ProjectBuildingException;
-import org.apache.maven.project.ProjectBuildingResult;
 import org.apache.maven.settings.Mirror;
 import org.apache.maven.wagon.Wagon;
 import org.codehaus.plexus.ContainerConfiguration;
@@ -138,7 +102,6 @@ import org.codehaus.plexus.classworlds.realm.ClassRealm;
 import org.codehaus.plexus.component.repository.ComponentDescriptor;
 import org.codehaus.plexus.component.repository.ComponentRequirement;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
-import org.codehaus.plexus.util.Base64;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.embedder.MavenEmbedder;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
@@ -154,7 +117,6 @@ import org.netbeans.modules.maven.indexer.spi.ContextLoadedQuery;
 import org.netbeans.modules.maven.indexer.spi.DependencyInfoQueries;
 import org.netbeans.modules.maven.indexer.spi.GenericFindQuery;
 import org.netbeans.modules.maven.indexer.spi.RepositoryIndexerImplementation;
-import org.openide.filesystems.FileUtil;
 import org.openide.modules.Places;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -179,16 +141,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
     private IndexUpdater remoteIndexUpdater;
     private ArtifactContextProducer contextProducer;
     private boolean inited = false;
-    /*Indexer Keys*/
-    private static final String NB_DEPENDENCY_GROUP = "nbdg"; //NOI18N
-    private static final String NB_DEPENDENCY_ARTIFACT = "nbda"; //NOI18N
-    private static final String NB_DEPENDENCY_VERSION = "nbdv"; //NOI18N
-    /** Used for indexing all classes in a local repository artifact: bar.Foo&lt;foo.Bar (class bar.Foo is used by class for.Bar)
-     *  &lt; may be confusing to read, but will speed up the lucene prefix search: query: bar.Foo&lt;*
-     */
-    private static final String NB_DEPENDENCY_CLASSES = "nbdc"; //NOI18N
     private static final Logger LOGGER = Logger.getLogger(NexusRepositoryIndexerImpl.class.getName());
-    /*custom Index creators*/
     /**
      * any reads, writes from/to index shal be done under mutex access.
      */
@@ -211,7 +164,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
     
     private Lookup lookup;
 
-    private static final int MAX_RESULT_COUNT = 512;
+    static final int MAX_RESULT_COUNT = 512;
 
     public NexusRepositoryIndexerImpl() {
         lookup = Lookups.singleton(this);
@@ -268,38 +221,6 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         }
     }
 
-    /** Adapted from org.netbeans:nexus-for-netbeans. */
-    public static final class CustomArtifactContextProducer extends DefaultArtifactContextProducer {
-        @Override public ArtifactContext getArtifactContext(IndexingContext context, File file) {
-            ArtifactContext ac = super.getArtifactContext(context, file);
-            if (ac != null) {
-                ArtifactInfo ai = ac.getArtifactInfo();
-                String fext = ai.fextension;
-                if (fext != null) {
-                    if (fext.endsWith(".lastUpdated")) { // #197670: why is this even considered?
-                        return null;
-                    }
-                    // Workaround for anomalous classifier behavior of nbm-maven-plugin:
-                    if (fext.equals("nbm")) {
-                        return new ArtifactContext(ac.getPom(), ac.getArtifact(), ac.getMetadata(), new ArtifactInfo(ai.repository, ai.groupId, ai.artifactId, ai.version, null) {
-                            private String uinfo = null;
-                            public @Override String getUinfo() {
-                                if (uinfo == null) {
-                                    uinfo = new StringBuilder().append(groupId).append(FS).append(artifactId).append(FS).append(version).append(FS)
-                                            .append(NA) // no classifier in this case
-                                            .append(FS).append(packaging) // would otherwise omit this
-                                            .toString();
-                                }
-                                return uinfo;
-                            }
-                        }, ac.getGav());
-                    }
-                }
-            }
-            return ac;
-        }
-    }
-
     private void loadIndexingContext(final RepositoryInfo info) throws IOException {
         LOAD: {
             assert getRepoMutex(info).isWriteAccess();
@@ -338,8 +259,8 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                     throw new IOException(x);
                 }
                 if (info.isLocal()) { // #164593
-                    creators.add(new NbIndexCreator());
-                    creators.add(new NbClassDependenciesIndexCreator());
+                    creators.add(new ArtifactDependencyIndexCreator());
+                    creators.add(new ClassDependencyIndexCreator());
                 } else {
                     creators.add(new NotifyingIndexCreator());
                 }
@@ -574,29 +495,6 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         } finally {
             RepositoryPreferences.getInstance().setLastIndexUpdate(repo.getId(), new Date());
             fireChangeIndex(repo);
-        }
-    }
-    /** Just tracks what is being unpacked after a remote index has been downloaded. */
-    private static final class NotifyingIndexCreator extends AbstractIndexCreator {
-        private RemoteIndexTransferListener listener;
-        NotifyingIndexCreator() {
-            super(NotifyingIndexCreator.class.getName(), Arrays.asList(MinimalArtifactInfoIndexCreator.ID));
-        }
-        private void start(RemoteIndexTransferListener listener) {
-            this.listener = listener;
-        }
-        private void end() {
-            listener = null;
-        }
-        public @Override void updateDocument(ArtifactInfo artifactInfo, Document document) {
-            listener.unpackingProgress(artifactInfo.groupId + ':' + artifactInfo.artifactId);
-        }
-        public @Override Collection<IndexerField> getIndexerFields() {
-            return Collections.emptySet();
-        }
-        public @Override void populateArtifactInfo(ArtifactContext artifactContext) throws IOException {}
-        public @Override boolean updateArtifactInfo(Document document, ArtifactInfo artifactInfo) {
-            return false;
         }
     }
 
@@ -930,24 +828,6 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         return Collections.<NBVersionInfo>emptyList();
     }
 
-    /**
-     * @param s a string, such as a class name
-     * @return the CRC-32 of its UTF-8 representation, as big-endian Base-64 without padding (so six chars), with _ for + (safer for Lucene)
-     */
-    static String crc32base64(String s) {
-        crc.reset();
-        crc.update(s.getBytes(UTF8));
-        long v = crc.getValue();
-        byte[] b64 = Base64.encodeBase64(new byte[] {(byte) (v >> 24 & 0xFF), (byte) (v >> 16 & 0xFF), (byte) (v >> 8 & 0xFF), (byte) (v & 0xFF)});
-        assert b64.length == 8;
-        assert b64[6] == '=';
-        assert b64[7] == '=';
-        return new String(b64, 0, 6, LATIN1).replace('+', '_');
-    }
-    private static final CRC32 crc = new CRC32();
-    private static final Charset UTF8 = Charset.forName("UTF-8");
-    private static final Charset LATIN1 = Charset.forName("ISO-8859-1");
-
     @Override public List<ClassUsageResult> findClassUsages(final String className, final List<RepositoryInfo> repos) {
         try {
             final List<ClassUsageResult> results = new ArrayList<ClassUsageResult>();
@@ -956,49 +836,8 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                     getRepoMutex(repo).writeAccess(new Mutex.ExceptionAction<Void>() {
                         @Override public Void run() throws Exception {
                             loadIndexingContext(repo);
-                            String searchString = crc32base64(className.replace(".", "/"));
-                            final Query refClassQuery = indexer.constructQuery(NbClassDependenciesIndexCreator.FLD_NB_DEPENDENCY_CLASS.getOntology(), new StringSearchExpression(searchString));
-                            final TopScoreDocCollector collector = TopScoreDocCollector.create(MAX_RESULT_COUNT, true);
-                            final Collection<IndexingContext> contexts = getContexts(new RepositoryInfo[]{repo});
-                            final IndexingContext context = contexts.iterator().next(); // XXX check for hasNext
-                            context.getIndexSearcher().search(refClassQuery, collector);
-                            final ScoreDoc[] hits = collector.topDocs().scoreDocs;
-                            LOGGER.log(Level.FINER, "for {0} ~ {1} found {2} hits", new Object[] {className, searchString, hits.length});
-                            for (ScoreDoc hit : hits) {
-                                int docId = hit.doc;
-                                Document d = context.getIndexSearcher().doc(docId);
-                                String fldValue = d.get(NB_DEPENDENCY_CLASSES);
-                                LOGGER.log(Level.FINER, "{0} uses: {1}", new Object[] {className, fldValue});
-                                Set<String> refClasses = parseField(searchString, fldValue, d.get(ArtifactInfo.NAMES));
-                                if (!refClasses.isEmpty()) {
-                                    ArtifactInfo ai = IndexUtils.constructArtifactInfo(d, context);
-                                    if (ai != null) {
-                                        ai.repository = context.getRepositoryId();
-                                        List<NBVersionInfo> version = convertToNBVersionInfo(Collections.singleton(ai));
-                                        if (!version.isEmpty()) {
-                                            results.add(new ClassUsageResult(version.get(0), refClasses));
-                                        }
-                                    }
-                                }
-                            }
+                            ClassDependencyIndexCreator.search(className, indexer, getContexts(new RepositoryInfo[] {repo}), results);
                             return null;
-                        }
-                        private Set<String> parseField(String refereeCRC, String field, String referrersNL) {
-                            Set<String> referrers = new TreeSet<String>();
-                            int p = 0;
-                            for (String referrer : referrersNL.split("\n")) {
-                                while (true) {
-                                    if (field.charAt(p) == ' ') {
-                                        p++;
-                                        break;
-                                    }
-                                    if (field.substring(p, p + 6).equals(refereeCRC)) {
-                                        referrers.add(referrer.substring(1).replace('/', '.'));
-                                    }
-                                    p += 7;
-                                }
-                            }
-                            return referrers;
                         }
                     });
                 }
@@ -1016,18 +855,15 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
     }
     
     @Override
-    public List<NBVersionInfo> findDependencyUsage(final String groupId, final String artifactId, final String version, List<RepositoryInfo> repos) {
+    public List<NBVersionInfo> findDependencyUsage(String groupId, String artifactId, String version, List<RepositoryInfo> repos) {
+        final Query q = ArtifactDependencyIndexCreator.query(groupId, artifactId, version);
         try {
             final List<NBVersionInfo> infos = new ArrayList<NBVersionInfo>();
             for (final RepositoryInfo repo : repos) {
                 getRepoMutex(repo).writeAccess(new Mutex.ExceptionAction<Void>() {
                     public @Override Void run() throws Exception {
                         loadIndexingContext(repo);
-                        BooleanQuery bq = new BooleanQuery();
-                        bq.add(new BooleanClause(new TermQuery(new Term(NB_DEPENDENCY_GROUP, groupId)), BooleanClause.Occur.MUST));
-                        bq.add(new BooleanClause(new TermQuery(new Term(NB_DEPENDENCY_ARTIFACT, artifactId)), BooleanClause.Occur.MUST));
-                        bq.add(new BooleanClause(new TermQuery(new Term(NB_DEPENDENCY_VERSION, version)), BooleanClause.Occur.MUST));
-                        FlatSearchRequest fsr = new FlatSearchRequest(bq, ArtifactInfo.VERSION_COMPARATOR);
+                        FlatSearchRequest fsr = new FlatSearchRequest(q, ArtifactInfo.VERSION_COMPARATOR);
                         fsr.setCount(MAX_RESULT_COUNT);
                         FlatSearchResponse response = repeatedFlatSearch(fsr, getContexts(new RepositoryInfo[]{repo}), false);
                         if (response != null) {
@@ -1308,7 +1144,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         return artifactInfos;
     }
 
-    private List<NBVersionInfo> convertToNBVersionInfo(Collection<ArtifactInfo> artifactInfos) {
+    static List<NBVersionInfo> convertToNBVersionInfo(Collection<ArtifactInfo> artifactInfos) {
         List<NBVersionInfo> bVersionInfos = new ArrayList<NBVersionInfo>();
         for (ArtifactInfo ai : artifactInfos) {
             if ("javadoc".equals(ai.classifier) || "sources".equals(ai.classifier)) { //NOI18N
@@ -1339,340 +1175,6 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
             }
         }
         return q;
-    }
-    
-    /**
-     * Scans classes in (local) JARs for their Java dependencies.
-     */
-    private static class NbClassDependenciesIndexCreator extends AbstractIndexCreator {
-
-        NbClassDependenciesIndexCreator() {
-            super(NbClassDependenciesIndexCreator.class.getName(), Arrays.asList(MinimalArtifactInfoIndexCreator.ID));
-        }
-
-        // XXX should rather be Map<ArtifactInfo,...> so we do not rely on interleaving of populateArtifactInfo vs. updateDocument
-        /** class/in/this/Jar -> [foreign/Class, other/foreign/Nested$Class] */
-        private Map<String,Set<String>> classDeps;
-        
-        public @Override void populateArtifactInfo(ArtifactContext context) throws IOException {
-            classDeps = null;
-            ArtifactInfo ai = context.getArtifactInfo();
-            if (ai.classifier != null) {
-                return;
-            }
-            if ("pom".equals(ai.packaging) || ai.fextension.endsWith(".lastUpdated")) {
-                return;
-            }
-            File jar = context.getArtifact();
-            if (jar == null || !jar.isFile()) {
-                LOGGER.log(Level.FINER, "no artifact for {0}", ai); // not a big deal, maybe just *.pom (or *.pom + *.nbm) here
-                return;
-            }
-            if (!ai.packaging.equals("jar") && !isArchiveFile(jar)) {
-                LOGGER.log(Level.FINE, "skipping artifact {0} with unrecognized packaging based on {1}", new Object[] {ai, jar});
-                return;
-            }
-            LOGGER.log(Level.FINER, "reading {0}", jar);
-            Map<String,byte[]> classfiles = read(jar);
-            classDeps = new HashMap<String,Set<String>>();
-            Set<String> classes = classfiles.keySet();
-            for (Map.Entry<String,byte[]> entry : classfiles.entrySet()) {
-                addDependenciesToMap(entry.getKey(), entry.getValue(), classDeps, classes, jar);
-            }
-        }
-
-        // adapted from FileUtil, since we do not want to have to use FileObject's here
-        private static boolean isArchiveFile(File jar) throws IOException {
-            InputStream in = new FileInputStream(jar);
-            try {
-                byte[] buffer = new byte[4];
-                return in.read(buffer, 0, 4) == 4 && (Arrays.equals(ZIP_HEADER_1, buffer) || Arrays.equals(ZIP_HEADER_2, buffer));
-            } finally {
-                in.close();
-            }
-        }
-        private static byte[] ZIP_HEADER_1 = {0x50, 0x4b, 0x03, 0x04};
-        private static byte[] ZIP_HEADER_2 = {0x50, 0x4b, 0x05, 0x06};
-
-        @Override public boolean updateArtifactInfo(Document document, ArtifactInfo artifactInfo) {
-            return false;
-        }
-        
-        public @Override void updateDocument(ArtifactInfo ai, Document doc) {
-            if (classDeps == null || classDeps.isEmpty()) {
-                return;
-            }
-            if (ai.classNames == null) {
-                // Might be *.hpi, *.war, etc. - so JarFileContentsIndexCreator ignores it (and our results would anyway be wrong due to WEB-INF/classes/ prefix)
-                LOGGER.log(Level.FINE, "no class names in index for {0}; therefore cannot store class usages", ai);
-                return;
-            }
-            StringBuilder b = new StringBuilder();
-            String[] classNamesSplit = ai.classNames.split("\n");
-            for (String referrerTopLevel : classNamesSplit) {
-                Set<String> referees = classDeps.remove(referrerTopLevel./* strip off initial slash */substring(1));
-                if (referees != null) {
-                    for (String referee : referees) {
-                        b.append(crc32base64(referee));
-                        b.append(' ');
-                    }
-                }
-                b.append(' ');
-            }
-            if (!classDeps.isEmpty()) {
-                // E.g. findbugs-1.2.0.jar has TigerSubstitutes.class, TigerSubstitutesTest$Foo.class, etc., but no TigerSubstitutesTest.class (?)
-                // Or guice-3.0-rc2.jar has e.g. $Transformer.class with no source equivalent.
-                LOGGER.log(Level.FINE, "found dependencies for {0} from classes {1} not among {2}", new Object[] {ai, classDeps.keySet(), Arrays.asList(classNamesSplit)});
-            }
-            LOGGER.log(Level.FINER, "Class dependencies index field: {0}", b);
-            // XXX is it possible to _store_ something more compact (binary) using a custom tokenizer?
-            // seems like DefaultIndexingContext hardcodes NexusAnalyzer
-            doc.add(FLD_NB_DEPENDENCY_CLASS.toField(b.toString()));
-        }
-
-        /**
-         * @param referrer a referring class, as {@code pkg/Outer$Inner}
-         * @param data its bytecode
-         * @param depsMap map from referring outer classes (as {@code pkg/Outer}) to referred-to classes (as {@code pkg/Outer$Inner})
-         * @param siblings other referring classes in the same artifact (including this one), as {@code pkg/Outer$Inner}
-         * @param jar the jar file, for diagnostics
-         */
-        private static void addDependenciesToMap(String referrer, byte[] data, Map<String,Set<String>> depsMap, Set<String> siblings, File jar) throws IOException{
-            ClassLoader jre = ClassLoader.getSystemClassLoader().getParent();
-            int shell = referrer.indexOf('$', referrer.lastIndexOf('/') + 1);
-            String referrerTopLevel = shell == -1 ? referrer : referrer.substring(0, shell);
-            for (String referee : dependencies(data, referrer, jar)) {
-                if (siblings.contains(referee)) {
-                    continue; // in same JAR, not interesting
-                }
-                try {
-                    jre.loadClass(referee.replace('/', '.')); // XXX ought to cache this result
-                    continue; // in JRE, not interesting
-                } catch (ClassNotFoundException x) {}
-                Set<String> referees = depsMap.get(referrerTopLevel);
-                if (referees == null) {
-                    referees = new TreeSet<String>();
-                    depsMap.put(referrerTopLevel, referees);
-                }
-                referees.add(referee);
-            }
-        }
-
-        private static Map<String,byte[]> read(File jar) throws IOException {
-            JarFile jf = new JarFile(jar);
-            try {
-                Map<String,byte[]> classfiles = new TreeMap<String,byte[]>();
-                Enumeration<JarEntry> e = jf.entries();
-                while (e.hasMoreElements()) {
-                    JarEntry entry = e.nextElement();
-                    String name = entry.getName();
-                    if (!name.endsWith(".class")) {
-                        continue;
-                    }
-                    String clazz = name.substring(0, name.length() - 6);
-                    ByteArrayOutputStream baos = new ByteArrayOutputStream(Math.max((int) entry.getSize(), 0));
-                    InputStream is = jf.getInputStream(entry);
-                    try {
-                        FileUtil.copy(is, baos);
-                    } finally {
-                        is.close();
-                    }
-                    classfiles.put(clazz, baos.toByteArray());
-                }
-                return classfiles;
-            } finally {
-                jf.close();
-            }
-        }
-
-        // adapted from org.netbeans.nbbuild.VerifyClassLinkage
-        private static Set<String> dependencies(byte[] data, String clazz, File jar) throws IOException {
-            Set<String> result = new TreeSet<String>();
-            DataInput input = new DataInputStream(new ByteArrayInputStream(data));
-            skip(input, 8); // magic, minor_version, major_version
-            int size = input.readUnsignedShort() - 1; // constantPoolCount
-            String[] utf8Strings = new String[size];
-            boolean[] isClassName = new boolean[size];
-            boolean[] isDescriptor = new boolean[size];
-            for (int i = 0; i < size; i++) {
-                byte tag = input.readByte();
-                switch (tag) {
-                    case 1: // CONSTANT_Utf8
-                        utf8Strings[i] = input.readUTF();
-                        break;
-                    case 7: // CONSTANT_Class
-                        int index = input.readUnsignedShort() - 1;
-                        if (index >= size) {
-                            throw new IOException("@" + i + ": CONSTANT_Class_info.name_index " + index + " too big for size of pool " + size);
-                        }
-                        //LOGGER.finest("Class reference at " + index);
-                        isClassName[index] = true;
-                        break;
-                    case 3: // CONSTANT_Integer
-                    case 4: // CONSTANT_Float
-                    case 9: // CONSTANT_Fieldref
-                    case 10: // CONSTANT_Methodref
-                    case 11: // CONSTANT_InterfaceMethodref
-                        skip(input, 4);
-                        break;
-                    case 12: // CONSTANT_NameAndType
-                        skip(input, 2);
-                        index = input.readUnsignedShort() - 1;
-                        if (index >= size || index < 0) {
-                            throw new IOException("@" + i + ": CONSTANT_NameAndType_info.descriptor_index " + index + " too big for size of pool " + size);
-                        }
-                        isDescriptor[index] = true;
-                        break;
-                    case 8: // CONSTANT_String
-                        skip(input, 2);
-                        break;
-                    case 5: // CONSTANT_Long
-                    case 6: // CONSTANT_Double
-                        skip(input, 8);
-                        i++; // weirdness in spec
-                        break;
-                    default:
-                        // E.g. com/ibm/icu/icu4j/2.6.1/icu4j-2.6.1.jar!/com/ibm/icu/impl/data/LocaleElements_zh__PINYIN.class is corrupt even acc. to javap.
-                        LOGGER.log(Level.FINE, "jar:{4}!/{3}.class: Unrecognized constant pool tag {0} at index {1}; running UTF-8 strings: {2}", new Object[]{tag, i, Arrays.asList(utf8Strings), clazz, jar.toURI()});
-                        continue;
-                }
-            }
-            //LOGGER.finest("UTF-8 strings: " + Arrays.asList(utf8Strings));
-            for (int i = 0; i < size; i++) {
-                String s = utf8Strings[i];
-                if (s != null) {
-                    if (isClassName[i]) {
-                        while (s.charAt(0) == '[') {
-                            // array type
-                            s = s.substring(1);
-                        }
-                        if (s.length() == 1) {
-                            // primitive
-                            continue;
-                        }
-                        String c;
-                        if (s.charAt(s.length() - 1) == ';' && s.charAt(0) == 'L') {
-                            // Uncommon but seems sometimes this happens.
-                            c = s.substring(1, s.length() - 1);
-                        } else {
-                            c = s;
-                        }
-                        result.add(c);
-                    } else if (isDescriptor[i]) {
-                        int idx = 0;
-                        while ((idx = s.indexOf('L', idx)) != -1) {
-                            int semi = s.indexOf(';', idx);
-                            if (semi == -1) {
-                                throw new IOException("Invalid type or descriptor: " + s);
-                            }
-                            result.add(s.substring(idx + 1, semi));
-                            idx = semi;
-                        }
-                    }
-                }
-            }
-            return result;
-        }
-        private static void skip(DataInput input, int bytes) throws IOException {
-            int skipped = input.skipBytes(bytes);
-            if (skipped != bytes) {
-                throw new IOException("Truncated class file");
-            }
-        }
-
-        static final IndexerField FLD_NB_DEPENDENCY_CLASS = new IndexerField(new Field(
-            null, "urn:NbClassDependenciesIndexCreator", NB_DEPENDENCY_CLASSES, "From a class's inside an artifact used class-dependencies"),
-            IndexerFieldVersion.V3, NB_DEPENDENCY_CLASSES, "From a class's inside an artifact used class-dependencies", Store.YES, Index.ANALYZED);
-        @Override public Collection<IndexerField> getIndexerFields() {
-            return Arrays.asList(FLD_NB_DEPENDENCY_CLASS);
-        }
-    }
-    
-    private static class NbIndexCreator extends AbstractIndexCreator {
-
-        private final List<ArtifactRepository> remoteRepos;
-        NbIndexCreator() {
-            super(NbIndexCreator.class.getName(), Arrays.asList(MinimalArtifactInfoIndexCreator.ID));
-            remoteRepos = new ArrayList<ArtifactRepository>();
-            for (RepositoryInfo info : RepositoryPreferences.getInstance().getRepositoryInfos()) {
-                if (!info.isLocal()) {
-                    remoteRepos.add(new MavenArtifactRepository(info.getId(), info.getRepositoryUrl(), new DefaultRepositoryLayout(), new ArtifactRepositoryPolicy(), new ArtifactRepositoryPolicy()));
-                }
-            }
-        }
-
-        private final Map<ArtifactInfo,List<Dependency>> dependenciesByArtifact = new WeakHashMap<ArtifactInfo,List<Dependency>>();
-
-        public @Override void populateArtifactInfo(ArtifactContext context) throws IOException {
-            ArtifactInfo ai = context.getArtifactInfo();
-            if (ai.classifier != null) {
-                //don't process items with classifier
-                return;
-            }
-            try {
-                MavenProject mp = load(ai);
-                if (mp != null) {
-                    List<Dependency> dependencies = mp.getDependencies();
-                    LOGGER.log(Level.FINER, "Successfully loaded project model from repository for {0} with {1} dependencies", new Object[] {ai, dependencies.size()});
-                    dependenciesByArtifact.put(ai, dependencies);
-                }
-            } catch (InvalidArtifactRTException ex) {
-                ex.printStackTrace();
-            }
-        }
-
-        public @Override void updateDocument(ArtifactInfo ai, Document doc) {
-            List<Dependency> dependencies = dependenciesByArtifact.get(ai);
-            if (dependencies != null) {
-                for (Dependency d : dependencies) {
-                    doc.add(FLD_NB_DEPENDENCY_GROUP.toField(d.getGroupId()));
-                    doc.add(FLD_NB_DEPENDENCY_ARTIFACT.toField(d.getArtifactId()));
-                    doc.add(FLD_NB_DEPENDENCY_VERSION.toField(d.getVersion()));
-                }
-            }
-        }
-        private static final String NS = "urn:NbIndexCreator"; // NOI18N
-        private static IndexerField FLD_NB_DEPENDENCY_GROUP = new IndexerField(new Field(null, NS, NB_DEPENDENCY_GROUP, "Dependency group"),
-                IndexerFieldVersion.V3, NB_DEPENDENCY_GROUP, "Dependency group", Store.NO, Index.NOT_ANALYZED);
-        private static IndexerField FLD_NB_DEPENDENCY_ARTIFACT = new IndexerField(new Field(null, NS, NB_DEPENDENCY_ARTIFACT, "Dependency artifact"),
-                IndexerFieldVersion.V3, NB_DEPENDENCY_ARTIFACT, "Dependency artifact", Store.NO, Index.NOT_ANALYZED);
-        private static IndexerField FLD_NB_DEPENDENCY_VERSION = new IndexerField(new Field(null, NS, NB_DEPENDENCY_VERSION, "Dependency version"),
-                IndexerFieldVersion.V3, NB_DEPENDENCY_VERSION, "Dependency version", Store.NO, Index.NOT_ANALYZED);
-        @Override
-        public Collection<IndexerField> getIndexerFields() {
-            return Arrays.asList(FLD_NB_DEPENDENCY_GROUP, FLD_NB_DEPENDENCY_ARTIFACT, FLD_NB_DEPENDENCY_VERSION);
-        }
-
-        private MavenProject load(ArtifactInfo ai) {
-            try {
-                MavenEmbedder embedder = EmbedderFactory.getProjectEmbedder();
-                Artifact projectArtifact = embedder.createArtifact(
-                        ai.groupId,
-                        ai.artifactId,
-                        ai.version,
-                        ai.packaging != null ? ai.packaging : "jar");
-                DefaultProjectBuildingRequest dpbr = new DefaultProjectBuildingRequest();
-                dpbr.setLocalRepository(embedder.getLocalRepository());
-                dpbr.setRemoteRepositories(remoteRepos);
-                dpbr.setValidationLevel(ModelBuildingRequest.VALIDATION_LEVEL_MINIMAL);
-                dpbr.setSystemProperties(embedder.getSystemProperties());
-                ProjectBuildingResult res = embedder.buildProject(projectArtifact, dpbr);
-                if (res.getProject() != null) {
-                    return res.getProject();
-                } else {
-                    LOGGER.log(Level.FINER, "No project model from repository for {0}: {1}", new Object[] {ai, res.getProblems()});
-                }
-            } catch (ProjectBuildingException ex) {
-                LOGGER.log(Level.FINER, "Failed to load project model from repository for {0}: {1}", new Object[] {ai, ex});
-            } catch (Exception exception) {
-                LOGGER.log(Level.FINER, "Failed to load project model from repository for " + ai, exception);
-            }
-            return null;
-        }
-
-        public @Override boolean updateArtifactInfo(Document doc, ArtifactInfo ai) {
-            return false;
-        }
     }
 
 }
