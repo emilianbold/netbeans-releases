@@ -130,10 +130,10 @@ public final class JFXProjectProperties {
     
     // FX config properties (Run panel), replicated from ProjectProperties
     public static final String MAIN_CLASS = "javafx.main.class"; // NOI18N
-    //public static final String APPLICATION_ARGS = "javafx.application.args"; // NOI18N
+    public static final String APPLICATION_ARGS = ProjectProperties.APPLICATION_ARGS;
     public static final String APP_PARAM_PREFIX = "javafx.param."; // NOI18N
     public static final String APP_PARAM_SUFFIXES[] = new String[] { "name", "value" }; // NOI18N
-    public static final String RUN_JVM_ARGS = ProjectProperties.RUN_JVM_ARGS; // NOI18N
+    public static final String RUN_JVM_ARGS = ProjectProperties.RUN_JVM_ARGS;
     public static final String FALLBACK_CLASS = "javafx.fallback.class"; // NOI18N
     public static final String SIGNED_JAR = "dist.signed.jar"; // NOI18N
     
@@ -764,6 +764,54 @@ public final class JFXProjectProperties {
     }
 
     /**
+     * Gathers application parameters to one property APPLICATION_ARGS
+     * to be passed to run/debug target in build-impl.xml when Run as Standalone
+     */
+    void storeSingleParamsProperty(List<Map<String,String/*|null*/>> params,
+            EditableProperties projectProperties)
+    {
+        StringBuilder sb = new StringBuilder();
+        if(params != null) {
+            int index = 0;
+            for(Map<String,String> m : params) {
+                String name = null;
+                String value = null;
+                for (Map.Entry<String,String> propSuffix : m.entrySet()) {
+                    if(propSuffix.getKey().equalsIgnoreCase(APP_PARAM_SUFFIXES[0])) {
+                        name = propSuffix.getValue();
+                    }
+                    if(propSuffix.getKey().equalsIgnoreCase(APP_PARAM_SUFFIXES[1])) {
+                        value = propSuffix.getValue();
+                    }
+                }
+                if(name != null && name.length() > 0) {
+                    if(sb.length() > 0) {
+                        sb.append(" "); // NOI18N
+                    }
+                    if(value != null && value.length() > 0) {
+                        sb.append("--"); // NOI18N
+                        sb.append(name);
+                        sb.append("="); // NOI18N
+                        sb.append(value);
+                    } else {
+                        sb.append(name);                        
+                    }
+                }
+                index++;
+            }
+        }
+        String sbs = sb.toString();
+        if (!Utilities.compareObjects(sbs, projectProperties.getProperty(APPLICATION_ARGS))) {
+            if (sbs != null && sbs.length() > 0) {
+                projectProperties.setProperty(APPLICATION_ARGS, sbs);
+                projectProperties.setComment(APPLICATION_ARGS, new String[]{"# " + NbBundle.getMessage(JFXProjectProperties.class, "COMMENT_app_args")}, false); // NOI18N
+            } else {
+                projectProperties.remove(APPLICATION_ARGS);
+            }
+        }
+    }
+    
+    /**
      * A royal mess. (modified from J2SEProjectProperties)
      */
     void storeRunConfigs(Map<String/*|null*/,Map<String,String/*|null*/>/*|null*/> configs,
@@ -791,20 +839,25 @@ public final class JFXProjectProperties {
             }
         }
         int index = 0;
-        for(Map<String,String> m : params.get(null)) {
-            for (Map.Entry<String,String> propSuffix : m.entrySet()) {
-                String prop = APP_PARAM_PREFIX + index + "." + propSuffix.getKey();
-                String v = propSuffix.getValue();
-                if (!Utilities.compareObjects(v, projectProperties.getProperty(prop))) {
-                    if (v != null && v.length() > 0) {
-                        projectProperties.setProperty(prop, v);
-                    } else {
-                        projectProperties.remove(prop);
+        List<Map<String,String/*|null*/>> paramsDefault = params.get(null);
+        if(paramsDefault != null) {
+            for(Map<String,String> m : paramsDefault) {
+                for (Map.Entry<String,String> propSuffix : m.entrySet()) {
+                    String prop = APP_PARAM_PREFIX + index + "." + propSuffix.getKey();
+                    String v = propSuffix.getValue();
+                    if (!Utilities.compareObjects(v, projectProperties.getProperty(prop))) {
+                        if (v != null && v.length() > 0) {
+                            projectProperties.setProperty(prop, v);
+                        } else {
+                            projectProperties.remove(prop);
+                        }
                     }
                 }
+                index++;
             }
-            index++;
         }
+        storeSingleParamsProperty(paramsDefault, privateProperties);
+        
         for (Map.Entry<String,Map<String,String>> entry : configs.entrySet()) {
             String config = entry.getKey();
             if (config == null) {
@@ -867,6 +920,8 @@ public final class JFXProjectProperties {
                     index++;
                 }
             }
+            storeSingleParamsProperty(paramsConfig, privateCfgProps);
+            
             saveToFile(sharedPath, sharedCfgProps);    //Make sure the definition file is always created, even if it is empty.
             if (privatePropsChanged) {                              //Definition file is written, only when changed
                 saveToFile(privatePath, privateCfgProps);

@@ -45,17 +45,16 @@
 package org.netbeans.modules.editor.lib2.highlighting;
 
 import java.util.ArrayList;
-import java.util.ConcurrentModificationException;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.Document;
-import javax.swing.text.SimpleAttributeSet;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.AttributesUtilities;
@@ -70,41 +69,64 @@ import org.netbeans.api.lexer.TokenHierarchyEventType;
 import org.netbeans.api.lexer.TokenHierarchyListener;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.lib.editor.util.ListenerList;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
 import org.netbeans.spi.editor.highlighting.support.AbstractHighlightsContainer;
 import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.util.WeakListeners;
 
 /**
  * The syntax coloring layer.
  * 
  * @author Vita Stejskal
+ * @author Miloslav Metelka
  */
-public final class SyntaxHighlighting extends AbstractHighlightsContainer implements TokenHierarchyListener {
+public final class SyntaxHighlighting extends AbstractHighlightsContainer
+implements TokenHierarchyListener, ChangeListener {
     
     // -J-Dorg.netbeans.modules.editor.lib2.highlighting.SyntaxHighlighting.level=FINEST
     private static final Logger LOG = Logger.getLogger(SyntaxHighlighting.class.getName());
     
     public static final String LAYER_TYPE_ID = "org.netbeans.modules.editor.lib2.highlighting.SyntaxHighlighting"; //NOI18N
     
-    private final HashMap<String, WeakHashMap<TokenId, AttributeSet>> attribsCache = new HashMap<String, WeakHashMap<TokenId, AttributeSet>>();
-    private final HashMap<String, FontColorSettings> fcsCache = new HashMap<String, FontColorSettings>();
+    /**
+     * Static cache for colorings mapping mime-path to coloring info.
+     */
+    private static final HashMap<String, FCSInfo<?>> globalFCSCache = new HashMap<String, FCSInfo<?>>();
+
+    /**
+     * Local cache of items from globalFCSCache.
+     */
+    private final HashMap<String, FCSInfo<?>> fcsCache = new HashMap<String, FCSInfo<?>>();
     
     private final Document document;
-    private final String mimeTypeForHack;
+
+    /**
+     * Either null or a mime-type that starts with "test" and it's used
+     * for preview in Tools/Options/Fonts-and-Colors.
+     */
+    private final String mimeTypeForOptions;
+
     private TokenHierarchy<? extends Document> hierarchy = null;
+
     private long version = 0;
+    
+    private AttributeSet cachedAttrs;
     
     /** Creates a new instance of SyntaxHighlighting */
     public SyntaxHighlighting(Document document) {
         this.document = document;
-        
         String mimeType = (String) document.getProperty("mimeType"); //NOI18N
         if (mimeType != null && mimeType.startsWith("test")) { //NOI18N
-            this.mimeTypeForHack = mimeType;
+            this.mimeTypeForOptions = mimeType;
         } else {
-            this.mimeTypeForHack = null;
+            this.mimeTypeForOptions = null;
         }
+        
+        // Start listening on changes in global colorings since they may affect colorings for target language
+        findFCSInfo("", null);
     }
 
     public @Override HighlightsSequence getHighlights(int startOffset, int endOffset) {
@@ -155,6 +177,65 @@ public final class SyntaxHighlighting extends AbstractHighlightsContainer implem
     // ----------------------------------------------------------------------
     //  Private implementation
     // ----------------------------------------------------------------------
+
+    // XXX: This hack is here to make sure that preview panels in Tools-Options
+    // work. Currently there is no way how to force a particular JTextComponent
+    // to use a particular MimeLookup. They all use MimeLookup common for all components
+    // and for the mime path of things displayed in that component. The preview panels
+    // however need special MimeLookup that loads colorings from a special profile
+    // (i.e. not the currently active coloring profile, which is used normally by
+    // all the other components).
+    //
+    // The hack is that Tools-Options modifies mime type of the document loaded
+    // in the preview panel and prepend 'textXXXX_' at the beginning. The normal
+    // MimeLookup for this mime type and any mime path derived from this mime type
+    // is empty. The editor/settings/storage however provides a special handling
+    // for these 'test' mime paths and bridge them to the MimeLookup that you would
+    // normally get for the mime path without the 'testXXXX_' at the beginning, plus
+    // they supply special colorings from the profile called 'testXXXX'. This way
+    // the preview panels can have different colorings from the rest of the IDE.
+    //
+    // This is obviously very fragile and not fully transparent for clients as
+    // you can see here. We need a better solution for that. Generally it should
+    // be posible to ask somewhere for a component-specific MimeLookup. This would
+    // normally be a standard MimeLookup as you know it, but in special cases it
+    // could be modified by the client code that created the component - e.g. Tools-Options
+    // panel.
+    private String languagePathToMimePathOptions(LanguagePath languagePath) {
+        if (languagePath.size() == 1) {
+            return mimeTypeForOptions;
+        } else if (languagePath.size() > 1) {
+            return mimeTypeForOptions + "/" + languagePath.subPath(1).mimePath(); //NOI18N
+        } else {
+            throw new IllegalStateException("LanguagePath should not be empty."); //NOI18N
+        }
+    }
+
+    @Override
+    public void stateChanged(ChangeEvent e) {
+        fireHighlightsChange(0, Integer.MAX_VALUE); // Recompute highlights for whole document
+    }
+
+    private <T extends TokenId> FCSInfo<T> findFCSInfo(String mimePath, Language<T> language) {
+        @SuppressWarnings("unchecked")
+        FCSInfo<T> fcsInfo = (FCSInfo<T>) fcsCache.get(mimePath); // Search local cache
+        if (fcsInfo == null) { // Search in global cache
+            synchronized (globalFCSCache) {
+                @SuppressWarnings("unchecked")
+                FCSInfo<T> fcsI = (FCSInfo<T>) globalFCSCache.get(mimePath);
+                fcsInfo = fcsI;
+                if (fcsInfo == null) {
+                    fcsInfo = new FCSInfo<T>(mimePath, language);
+                    if (mimeTypeForOptions == null) { // Only cache non-test ones globally
+                        globalFCSCache.put(mimePath, fcsInfo);
+                    }
+                }
+            }
+            fcsInfo.addChangeListener(WeakListeners.change(this, fcsInfo));
+            fcsCache.put(mimePath, fcsInfo);
+        }
+        return fcsInfo;
+    }
 
     private static void dumpSequence(TokenSequence<?> seq, StringBuilder sb) {
         if (seq == null) {
@@ -252,7 +333,7 @@ public final class SyntaxHighlighting extends AbstractHighlightsContainer implem
         private final int startOffset;
         private final int endOffset;
         
-        private List<TokenSequence<?>> sequences;
+        private List<TSInfo<?>> sequences;
         private int state = -1;
         private LogHelper logHelper;
         
@@ -272,18 +353,16 @@ public final class SyntaxHighlighting extends AbstractHighlightsContainer implem
             synchronized (SyntaxHighlighting.this) {
                 if (checkVersion()) {
                     if (sequences == null) {
-                        sequences = new ArrayList<TokenSequence<?>>();
+                        sequences = new ArrayList<TSInfo<?>>();
                         
                         // initialize
-                        TokenSequence<?> seq = scanner.tokenSequence();
+                        @SuppressWarnings("unchecked")
+                        TokenSequence<TokenId> seq = (TokenSequence<TokenId>) scanner.tokenSequence();
                         if (seq != null) {
-                            try {
-                                seq.move(startOffset);
-                                sequences.add(seq);
-                                state = S_NORMAL;
-                            } catch (ConcurrentModificationException cme) {
-                                state = S_DONE;
-                            }
+                            seq.move(startOffset);
+                            TSInfo<TokenId> tsInfo = new TSInfo<TokenId>(seq);
+                            sequences.add(tsInfo);
+                            state = S_NORMAL;
                         } else {
                             state = S_DONE;
                         }
@@ -292,7 +371,7 @@ public final class SyntaxHighlighting extends AbstractHighlightsContainer implem
                     state = S_DONE;
                 }
 
-                try {
+                while (state != S_DONE) {
                     switch (state) {
                         case S_NORMAL:
                             // The current token is a normal one
@@ -301,9 +380,9 @@ public final class SyntaxHighlighting extends AbstractHighlightsContainer implem
 
                         case S_EMBEDDED_HEAD:
                             // The current token contains embedded language and we have processed it's head
-                            TokenSequence<?> seq = sequences.get(sequences.size() - 1);
-                            seq.moveStart();
-                            if (seq.moveNext()) {
+                            TSInfo<?> tsInfo = sequences.get(sequences.size() - 1);
+                            tsInfo.ts.moveStart();
+                            if (tsInfo.ts.moveNext()) {
                                 state = S_NORMAL;
                             } else {
                                 throw new IllegalStateException("Invalid state"); //NOI18N
@@ -323,17 +402,16 @@ public final class SyntaxHighlighting extends AbstractHighlightsContainer implem
                         default:
                             throw new IllegalStateException("Invalid state: " + state); //NOI18N
                     }
-                } catch (ConcurrentModificationException cme) {
-                    state = S_DONE;
-                }
 
-                if (state == S_NORMAL) {
-                    try {
+                    if (state == S_NORMAL) {
                         // We have moved to the next normal token, so look what it is
-                        TokenSequence<?> seq = sequences.get(sequences.size() - 1);
+                        TSInfo<?> tsInfo = sequences.get(sequences.size() - 1);
+                        TokenSequence seq = tsInfo.ts;
                         TokenSequence<?> embeddedSeq = seq.embedded();
                         while (embeddedSeq != null && embeddedSeq.moveNext()) {
-                            sequences.add(sequences.size(), embeddedSeq);
+                            @SuppressWarnings("unchecked")
+                            TokenSequence<TokenId> lts = (TokenSequence<TokenId>) embeddedSeq;
+                            sequences.add(new TSInfo<TokenId>(lts));
 
                             if (embeddedSeq.offset() + embeddedSeq.token().length() < startOffset) {
                                 embeddedSeq.move(startOffset);
@@ -349,13 +427,12 @@ public final class SyntaxHighlighting extends AbstractHighlightsContainer implem
                             seq = embeddedSeq;
                             embeddedSeq = seq.embedded();
                         }
-                    } catch (ConcurrentModificationException cme) {
-                        state = S_DONE;
                     }
-                }
-
-                if (state == S_DONE) {
-                    attribsCache.clear();
+                    
+                    cachedAttrs = null;
+                    if (state != S_DONE && getAttributes() != null) { // getAttributes() fills cachedAttrs
+                        break;
+                    }
                 }
 
                 if (LOG.isLoggable(Level.FINE)) {
@@ -387,18 +464,18 @@ public final class SyntaxHighlighting extends AbstractHighlightsContainer implem
             synchronized (SyntaxHighlighting.this) {
                 switch (state) {
                     case S_NORMAL: {
-                        TokenSequence<?> seq = sequences.get(sequences.size() - 1);
-                        return Math.max(seq.offset(), startOffset);
+                        TSInfo<?> tsInfo = sequences.get(sequences.size() - 1);
+                        return Math.max(tsInfo.ts.offset(), startOffset);
                     }
                     case S_EMBEDDED_HEAD: {
-                        TokenSequence<?> embeddingSeq = sequences.get(sequences.size() - 2);
-                        return Math.max(embeddingSeq.offset(), startOffset);
+                        TSInfo<?> embeddedTSInfo = sequences.get(sequences.size() - 2);
+                        return Math.max(embeddedTSInfo.ts.offset(), startOffset);
                     }
                     case S_EMBEDDED_TAIL: {
-                        TokenSequence<?> seq = sequences.get(sequences.size() - 1);
-                        seq.moveEnd();
-                        if (seq.movePrevious()) {
-                            return Math.max(seq.offset() + seq.token().length(), startOffset);
+                        TSInfo<?> tsInfo = sequences.get(sequences.size() - 1);
+                        tsInfo.ts.moveEnd();
+                        if (tsInfo.ts.movePrevious()) {
+                            return Math.max(tsInfo.ts.offset() + tsInfo.ts.token().length(), startOffset);
                         } else {
                             throw new IllegalStateException("Invalid state"); //NOI18N
                         }
@@ -416,22 +493,22 @@ public final class SyntaxHighlighting extends AbstractHighlightsContainer implem
             synchronized (SyntaxHighlighting.this) {
                 switch (state) {
                     case S_NORMAL: {
-                        TokenSequence<?> seq = sequences.get(sequences.size() - 1);
-                        return Math.min(seq.offset() + seq.token().length(), endOffset);
+                        TSInfo<?> tsInfo = sequences.get(sequences.size() - 1);
+                        return Math.min(tsInfo.ts.offset() + tsInfo.ts.token().length(), endOffset);
                     }
                     case S_EMBEDDED_HEAD: {
-                        TokenSequence<?> seq = sequences.get(sequences.size() - 1);
-                        seq.moveStart();
-                        if (seq.moveNext()) {
-                            return Math.min(seq.offset(), endOffset);
+                        TSInfo<?> tsInfo = sequences.get(sequences.size() - 1);
+                        tsInfo.ts.moveStart();
+                        if (tsInfo.ts.moveNext()) {
+                            return Math.min(tsInfo.ts.offset(), endOffset);
                         } else {
-                            TokenSequence<?> embeddingSeq = sequences.get(sequences.size() - 2);
-                            return Math.min(embeddingSeq.offset() + embeddingSeq.token().length(), endOffset);
+                            TSInfo<?> embeddedTSInfo = sequences.get(sequences.size() - 2);
+                            return Math.min(embeddedTSInfo.ts.offset() + embeddedTSInfo.ts.token().length(), endOffset);
                         }
                     }
                     case S_EMBEDDED_TAIL:
-                        TokenSequence<?> embeddingSeq = sequences.get(sequences.size() - 2);
-                        return Math.min(embeddingSeq.offset() + embeddingSeq.token().length(), endOffset);
+                        TSInfo<?> embeddedTSInfo = sequences.get(sequences.size() - 2);
+                        return Math.min(embeddedTSInfo.ts.offset() + embeddedTSInfo.ts.token().length(), endOffset);
 
                     case S_DONE:
                         throw new NoSuchElementException();
@@ -443,6 +520,9 @@ public final class SyntaxHighlighting extends AbstractHighlightsContainer implem
         }
 
         public @Override AttributeSet getAttributes() {
+            if (cachedAttrs != null) {
+                return cachedAttrs;
+            }
             synchronized (SyntaxHighlighting.this) {
                 switch (state) {
                     case S_NORMAL:
@@ -462,145 +542,43 @@ public final class SyntaxHighlighting extends AbstractHighlightsContainer implem
         }
         
         private AttributeSet findAttribs(int seqIdx) {
-            TokenSequence<?> seq = sequences.get(seqIdx);
-            TokenId tokenId = seq.token().id();
-            String mimePath;
-            
-            if (mimeTypeForHack != null) {
-                mimePath = languagePathToMimePathHack(seq.languagePath());
-            } else {
-                mimePath = seq.languagePath().mimePath();
-            }
-
-            WeakHashMap<TokenId, AttributeSet> token2attribs = attribsCache.get(mimePath);
-            if (token2attribs == null) {
-                token2attribs = new WeakHashMap<TokenId, AttributeSet>();
-                attribsCache.put(mimePath, token2attribs);
-            }
-            
-            AttributeSet tokenAttribs = token2attribs.get(tokenId);
-            if (tokenAttribs == null) {
-                tokenAttribs = findTokenAttribs(tokenId, mimePath, seq.languagePath().innerLanguage());
-                token2attribs.put(tokenId, tokenAttribs);
-            }
-
+            TSInfo<?> tsInfo = sequences.get(seqIdx);
+            AttributeSet attrs = tsInfo.findCurrentAttrs();
             if (LOG.isLoggable(Level.FINE)) {
                 // Add token info to the tooltip
-                tokenAttribs = AttributesUtilities.createComposite(
+                Token<?> token = tsInfo.ts.token();
+                TokenId tokenId = token.id();
+                attrs = AttributesUtilities.createComposite(
                     AttributesUtilities.createImmutable(EditorStyleConstants.Tooltip, 
                         "<html>" //NOI18N
-                        + "<b>Token:</b> " + seq.token().text() //NOI18N
+                        + "<b>Token:</b> " + token.text() //NOI18N
                         + "<br><b>Id:</b> " + tokenId.name() //NOI18N
                         + "<br><b>Category:</b> " + tokenId.primaryCategory() //NOI18N
                         + "<br><b>Ordinal:</b> " + tokenId.ordinal() //NOI18N
-                        + "<br><b>Mimepath:</b> " + mimePath //NOI18N
+                        + "<br><b>Mimepath:</b> " + tsInfo.ts.languagePath().mimePath() //NOI18N
                     ),
-                    tokenAttribs 
+                    attrs 
                 );
             }
 
-            return tokenAttribs;
+            return attrs;
         }
 
-        private AttributeSet findTokenAttribs(TokenId tokenId, String mimePath, Language<?> innerLanguage) {
-            FontColorSettings fcs = fcsCache.get(mimePath);
-            
-            if (fcs == null) {
-                Lookup lookup = MimeLookup.getLookup(MimePath.parse(mimePath));
-                fcs = lookup.lookup(FontColorSettings.class);
-                fcsCache.put(mimePath, fcs);
-                
-                if (fcs == null && LOG.isLoggable(Level.WARNING)) {
-                    // Should not normally happen; see #106337
-                    LOG.warning("No FontColorSettings for '" + mimePath + "' mime path."); //NOI18N
-                }
-            }
-            
-            AttributeSet attribs = fcs == null ? null : findFontAndColors(fcs, tokenId, innerLanguage);
-            
-            if (LOG.isLoggable(Level.FINER)) {
-                LOG.finer(tokenId(tokenId, false) + " -> {" + attributeSet(attribs) + "}"); //NOI18N
-            }
-            
-            return attribs != null ? attribs : SimpleAttributeSet.EMPTY;
-        }
-
-        // XXX: This hack is here to make sure that preview panels in Tools-Options
-        // work. Currently there is no way how to force a particular JTextComponent
-        // to use a particular MimeLookup. They all use MimeLookup common for all components
-        // and for the mime path of things displayed in that component. The preview panels
-        // however need special MimeLookup that loads colorings from a special profile
-        // (i.e. not the currently active coloring profile, which is used normally by
-        // all the other components).
-        //
-        // The hack is that Tools-Options modifies mime type of the document loaded
-        // in the preview panel and prepend 'textXXXX_' at the beginning. The normal
-        // MimeLookup for this mime type and any mime path derived from this mime type
-        // is empty. The editor/settings/storage however provides a special handling
-        // for these 'test' mime paths and bridge them to the MimeLookup that you would
-        // normally get for the mime path without the 'testXXXX_' at the beginning, plus
-        // they supply special colorings from the profile called 'testXXXX'. This way
-        // the preview panels can have different colorings from the rest of the IDE.
-        //
-        // This is obviously very fragile and not fully transparent for clients as
-        // you can see here. We need a better solution for that. Generally it should
-        // be posible to ask somewhere for a component-specific MimeLookup. This would
-        // normally be a standard MimeLookup as you know it, but in special cases it
-        // could be modified by the client code that created the component - e.g. Tools-Options
-        // panel.
-        private String languagePathToMimePathHack(LanguagePath languagePath) {
-            if (languagePath.size() == 1) {
-                return mimeTypeForHack;
-            } else if (languagePath.size() > 1) {
-                return mimeTypeForHack + "/" + languagePath.subPath(1).mimePath(); //NOI18N
-            } else {
-                throw new IllegalStateException("LanguagePath should not be empty."); //NOI18N
-            }
-        }
-        
-        private AttributeSet findFontAndColors(FontColorSettings fcs, TokenId tokenId, Language lang) {
-            // First try the token's name
-            String name = tokenId.name();
-            AttributeSet attribs = fcs.getTokenFontColors(name);
-            
-            // Then try the primary category
-            if (attribs == null) {
-                String primary = tokenId.primaryCategory();
-                if (primary != null) {
-                    attribs = fcs.getTokenFontColors(primary);
-                }
-            }
-            
-            // Then try all the other categories
-            if (attribs == null) {
-                @SuppressWarnings("unchecked")
-                List<String> categories = ((Language<TokenId>)lang).nonPrimaryTokenCategories(tokenId);
-                for(String c : categories) {
-                    attribs = fcs.getTokenFontColors(c);
-                    if (attribs != null) {
-                        break;
-                    }
-                }
-            }
-            
-            return attribs;
-        }
-        
         private int moveTheSequence() {
-            TokenSequence<?> seq = sequences.get(sequences.size() - 1);
+            TSInfo<?> tsInfo = sequences.get(sequences.size() - 1);
             
-            if (seq.moveNext()) {
-                if (seq.offset() < endOffset) {
+            if (tsInfo.ts.moveNext()) {
+                if (tsInfo.ts.offset() < endOffset) {
                     return S_NORMAL;
                 } else {
                     return S_DONE;
                 }
             } else {
                 if (sequences.size() > 1) {
-                    TokenSequence<?> embeddingSeq = sequences.get(sequences.size() - 2);
-                    seq.moveEnd();
-                    if (seq.movePrevious()) {
-                        if ((seq.offset() + seq.token().length()) < (embeddingSeq.offset() + embeddingSeq.token().length())) {
+                    TSInfo<?> embeddedTSInfo = sequences.get(sequences.size() - 2);
+                    tsInfo.ts.moveEnd();
+                    if (tsInfo.ts.movePrevious()) {
+                        if ((tsInfo.ts.offset() + tsInfo.ts.token().length()) < (embeddedTSInfo.ts.offset() + embeddedTSInfo.ts.token().length())) {
                             return S_EMBEDDED_TAIL;
                         } else {
                             sequences.remove(sequences.size() - 1);
@@ -626,6 +604,139 @@ public final class SyntaxHighlighting extends AbstractHighlightsContainer implem
 
         int tokenCount;
         long startTime;
+    }
+    
+    private static final class FCSInfo<T extends TokenId> implements LookupListener {
+        
+        static final ChangeEvent staticChangeEvent = new ChangeEvent(FCSInfo.class);
+        
+        private final Language<T> innerLanguage;
+        
+        private final String mimePath; // Can start with mimeTypeForOptions
+    
+        private final ListenerList<ChangeListener> listeners;
+
+        private final Lookup.Result<FontColorSettings> result;
+        
+        private AttributeSet[] tokenId2attrs;
+        
+        FontColorSettings fcs;
+        
+        /**
+         * @param innerLanguage
+         * @param mimePath note it may start with mimeTypeForOptions
+         */
+        public FCSInfo(String mimePath, Language<T> innerLanguage) {
+            this.innerLanguage = innerLanguage;
+            this.mimePath = mimePath;
+            this.listeners = new ListenerList<ChangeListener>();
+            Lookup lookup = MimeLookup.getLookup(MimePath.parse(mimePath));
+            result = lookup.lookupResult(FontColorSettings.class);
+            result.addLookupListener(this);
+            updateFCS();
+        }
+        
+        /**
+         * @param tokenId non-null token id.
+         * @return attributes for tokenId or null if none found.
+         */
+        synchronized AttributeSet findAttrs(T tokenId) {
+            AttributeSet attrs = tokenId2attrs[tokenId.ordinal()];
+            if (attrs == null && fcs != null) {
+                // First try the token's name
+                String name = tokenId.name();
+                attrs = fcs.getTokenFontColors(name);
+
+                // Then try the primary category
+                if (attrs == null) {
+                    String primary = tokenId.primaryCategory();
+                    if (primary != null) {
+                        attrs = fcs.getTokenFontColors(primary);
+                    }
+                }
+
+                // Then try all the other categories
+                if (attrs == null) {
+                    List<String> categories = innerLanguage.nonPrimaryTokenCategories(tokenId);
+                    for (String c : categories) {
+                        attrs = fcs.getTokenFontColors(c);
+                        if (attrs != null) {
+                            break;
+                        }
+                    }
+                }
+                
+                tokenId2attrs[tokenId.ordinal()] = attrs;
+            }
+
+            return attrs;
+        }
+
+        public void addChangeListener(ChangeListener l) {
+            listeners.add(l);
+        }
+        
+        public void removeChangeListener(ChangeListener l) {
+            listeners.remove(l);
+        }
+        
+        private void updateFCS() {
+            FontColorSettings newFCS = result.allInstances().iterator().next();
+            if (newFCS == null && LOG.isLoggable(Level.WARNING)) {
+                // Should not normally happen; see #106337
+                LOG.warning("No FontColorSettings for '" + mimePath + "' mime path."); //NOI18N
+            }
+            synchronized (this) {
+                fcs = newFCS;
+                if (innerLanguage != null) {
+                    tokenId2attrs = new AttributeSet[innerLanguage.maxOrdinal() + 1];
+                }
+            }
+        }
+
+        @Override
+        public void resultChanged(LookupEvent ev) {
+            updateFCS();
+            for (ChangeListener l : listeners.getListeners()) {
+                l.stateChanged(staticChangeEvent);
+            }
+        }
+   
+    }
+    
+    private final class TSInfo<T extends TokenId> {
+        
+        final TokenSequence<T> ts;
+        
+        final FCSInfo<T> fcsInfo;
+
+        /**
+         * @param ts
+         */
+        public TSInfo(TokenSequence<T> ts) {
+            this.ts = ts;
+            LanguagePath languagePath = ts.languagePath();
+            @SuppressWarnings("unchecked")
+            Language<T> innerLanguage = (Language<T>)languagePath.innerLanguage();
+            String mimePathExt;
+            if (mimeTypeForOptions != null) {
+                // First mime-type in mimePath starts with "test"
+                mimePathExt = languagePathToMimePathOptions(languagePath);
+            } else {
+                mimePathExt = languagePath.mimePath();
+            }
+
+            fcsInfo = findFCSInfo(mimePathExt, innerLanguage);
+        }
+        
+        AttributeSet findCurrentAttrs() {
+            return findAttrs(ts.token().id());
+        }
+        
+        AttributeSet findAttrs(T tokenId) {
+            return fcsInfo.findAttrs(tokenId);
+        }
+
     }
 
 }
