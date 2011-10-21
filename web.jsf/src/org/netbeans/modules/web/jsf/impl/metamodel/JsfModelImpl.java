@@ -61,6 +61,7 @@ import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigComponent;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModelFactory;
+import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
 import org.netbeans.modules.web.jsf.api.metamodel.Behavior;
 import org.netbeans.modules.web.jsf.api.metamodel.Component;
 import org.netbeans.modules.web.jsf.api.metamodel.FacesConverter;
@@ -128,7 +129,13 @@ public class JsfModelImpl extends JsfModelManagers implements JsfModel {
         List<T> result = new LinkedList<T>();
         for (FacesConfig config : getFacesConfigs()) {
             List<? extends JSFConfigComponent> children = config.getChildren(type);
-            result.addAll((List)children);
+            for (JSFConfigComponent component : children) {
+                if (clazz.isAssignableFrom(FacesManagedBean.class)
+                        && ((ManagedBean) component).getManagedBeanClass() == null) {
+                    continue;
+                }
+                result.add((T) component);
+            }
         }
 
         JSFConfigModel model = getMainModel();
