@@ -43,23 +43,33 @@
  */
 package org.netbeans.modules.refactoring.spi.impl;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
+import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import javax.swing.text.StyledDocument;
 import org.netbeans.api.diff.DiffController;
 import org.netbeans.api.diff.Difference;
 import org.netbeans.api.diff.StreamSource;
 import org.netbeans.modules.refactoring.api.impl.SPIAccessor;
 import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.ui.UI;
+import org.netbeans.spi.editor.guards.GuardedEditorSupport;
+import org.netbeans.spi.editor.guards.GuardedSectionsFactory;
+import org.netbeans.spi.editor.guards.GuardedSectionsProvider;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.CloneableEditorSupport;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
@@ -115,7 +125,7 @@ public class PreviewManager {
             m.put(element.getParentFile(), p);
             return p;
         } catch (IOException ioe) {
-            throw (RuntimeException) new RuntimeException().initCause(ioe);
+            throw new RuntimeException(ioe);
         }
     }
     
@@ -132,7 +142,7 @@ public class PreviewManager {
             if(element.getPosition() != null) 
                 p.dc.setLocation(DiffController.DiffPane.Base, DiffController.LocationType.LineNumber, element.getPosition().getBegin().getLine());
         } catch (IOException ioe) {
-            throw (RuntimeException) new RuntimeException().initCause(ioe);
+            throw new RuntimeException(ioe);
         }
     }
     
@@ -220,10 +230,47 @@ public class PreviewManager {
             return Lookups.singleton(getDocument());
         }
         
+        private boolean isOriginalDocumentLoaded() {
+            try {
+                FileObject fo = element.getParentFile();
+                DataObject dObj = DataObject.find(fo);
+                EditorCookie ec = dObj != null ? dObj.getCookie(org.openide.cookies.EditorCookie.class) : null;
+                if (ec != null) {
+                    StyledDocument doc = ec.getDocument();
+                    return doc!=null;
+                }
+            } catch (DataObjectNotFoundException ex) {
+                //ignore;
+            }
+            return false;
+            
+       }
+        
         public void setNewText(String newText) {
             try {
-                internal.remove(0, internal.getLength());
-                internal.insertString(0, newText, null);
+                
+                if (!isOriginalDocumentLoaded() && GuardedSectionsFactory.find(getMIMEType())!=null) {
+                    GuardedSectionsFactory guardedSectionsFactory = GuardedSectionsFactory.find(getMIMEType());
+                    GuardedSectionsProvider guardedProvider = guardedSectionsFactory.create(new GuardedEditorSupport() {
+                        @Override
+                        public StyledDocument getDocument() {
+                            return (StyledDocument) NewDiffSource.this.getDocument();
+                        }
+                    });
+                    Reader reader = guardedProvider.createGuardedReader(new ByteArrayInputStream(newText.getBytes()), Charset.defaultCharset());
+                    char buf[] = new char[newText.length()];
+                    try {
+                        reader.read(buf);
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+
+                    internal.remove(0, internal.getLength());
+                    internal.insertString(0, new String(buf), null);
+                } else {
+                    internal.remove(0, internal.getLength());
+                    internal.insertString(0, newText, null);
+                }
             } catch (BadLocationException ex) {
                 Logger.getLogger(getClass().getName()).log(Level.SEVERE, ex.getMessage(), ex);
             }
