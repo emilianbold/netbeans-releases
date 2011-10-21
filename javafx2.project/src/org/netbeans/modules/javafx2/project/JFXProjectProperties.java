@@ -79,20 +79,14 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
 import org.netbeans.modules.javafx2.platform.api.JavaFXPlatformUtils;
-import org.netbeans.modules.extbrowser.ExtWebBrowser;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ui.StoreGroup;
-import org.openide.cookies.InstanceCookie;
-import org.openide.execution.NbProcessDescriptor;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
@@ -202,7 +196,8 @@ public final class JFXProjectProperties {
     private Map<String/*|null*/,Map<String,String/*|null*/>/*|null*/> RUN_CONFIGS;
     private Map<String/*|null*/,List<Map<String,String/*|null*/>>/*|null*/> APP_PARAMS;
     private String activeConfig;
-    
+    private Map<String,String> browserPaths = null;
+
     public Map<String/*|null*/,Map<String,String/*|null*/>/*|null*/> getRunConfigs() {
         return RUN_CONFIGS;
     }    
@@ -223,6 +218,15 @@ public final class JFXProjectProperties {
     }
     public void setActiveConfig(String config) {
         this.activeConfig = config;
+    }
+    public Map<String, String> getBrowserPaths() {
+        return browserPaths;
+    }
+    public void resetBrowserPaths() {
+        this.browserPaths = new HashMap<String, String>();
+    }
+    public void setBrowserPaths(Map<String, String> browserPaths) {
+        this.browserPaths = browserPaths;
     }
 
     // CustomizerRun - Preloader source type
@@ -1341,19 +1345,11 @@ public final class JFXProjectProperties {
     }
 
     private String getSelectedBrowserPath() {
-        String selectedName = RUN_CONFIGS.get(activeConfig).get(RUN_IN_BROWSER);
-        if (selectedName == null) {
+        if (browserPaths == null) {
             return null;
         }
-        Lookup.Result<ExtWebBrowser> allBrowsers = Lookup.getDefault().lookupResult(ExtWebBrowser.class);
-        for(Lookup.Item<ExtWebBrowser> browser : allBrowsers.allItems()) {            
-            if(selectedName.equalsIgnoreCase(browser.getDisplayName())) {
-                NbProcessDescriptor proc = browser.getInstance().getBrowserExecutable();
-                String path = proc.getProcessName();
-                return path;
-            }
-        }
-        return null;
+        String selectedName = RUN_CONFIGS.get(activeConfig).get(RUN_IN_BROWSER);
+        return browserPaths.get(selectedName);
     }
     
     public class PreloaderClassComboBoxModel extends DefaultComboBoxModel {
