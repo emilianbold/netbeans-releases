@@ -48,8 +48,8 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpModule.Change;
 import org.netbeans.modules.php.spi.phpmodule.PhpModuleCustomizerExtender;
+import org.netbeans.modules.php.symfony2.options.Symfony2Options;
 import org.netbeans.modules.php.symfony2.ui.customizer.Symfony2CustomizerPanel;
-import org.netbeans.modules.php.symfony2.ui.options.Symfony2Options;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle.Messages;
 

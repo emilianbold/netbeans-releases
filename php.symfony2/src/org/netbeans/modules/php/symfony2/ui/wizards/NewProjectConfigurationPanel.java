@@ -54,7 +54,7 @@ import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.options.OptionsDisplayer;
-import org.netbeans.modules.php.symfony2.ui.options.Symfony2Options;
+import org.netbeans.modules.php.symfony2.options.Symfony2Options;
 import org.netbeans.modules.php.symfony2.ui.options.Symfony2OptionsPanelController;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
