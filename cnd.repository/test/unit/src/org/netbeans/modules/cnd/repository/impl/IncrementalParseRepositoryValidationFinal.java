@@ -37,11 +37,13 @@
  */
 package org.netbeans.modules.cnd.repository.impl;
 
+import java.util.List;
+
 /**
  *
  * @author vv159170
  */
-public class IncrementalParseRepositoryValidationFinal extends RepositoryValidationFinal {
+public class IncrementalParseRepositoryValidationFinal extends RepositoryValidationBase {
 
     public IncrementalParseRepositoryValidationFinal(String testName) {
         super(testName);
@@ -55,4 +57,13 @@ public class IncrementalParseRepositoryValidationFinal extends RepositoryValidat
         cleanCache = false;
         super.setUp();
     }
+    
+    public void testIncParse() throws Exception {
+        List<String> args = find();
+        assert args.size() > 0;
+        //args.add("-fq"); //NOI18N
+
+        performTest(args.toArray(new String[]{}), nimi + ".out", nimi + ".err");
+        assertNoExceptions();
+    }    
 }

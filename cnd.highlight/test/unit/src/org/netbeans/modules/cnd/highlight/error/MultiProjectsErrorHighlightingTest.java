@@ -40,21 +40,31 @@ package org.netbeans.modules.cnd.highlight.error;
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.modules.cnd.api.model.CsmModel;
+import org.netbeans.modules.cnd.api.model.CsmProject;
 
 /**
  *
  * @author vv159170
  */
 public class MultiProjectsErrorHighlightingTest extends ErrorHighlightingBaseTestCase {
-    
-    static {
-        System.setProperty("cnd.modelimpl.tracemodel.project.name", "true"); // NOI18N
-    }
 
     public MultiProjectsErrorHighlightingTest(String testName) {
         super(testName);
     }
-    
+
+    @Override
+    protected void setUp() throws Exception {
+        System.setProperty("cnd.csm.errors.async", "false");
+        Logger logger = Logger.getLogger("org.netbeans.modules.masterfs.filebasedfs.utils.FileChangedManager");
+        if (logger != null) {
+            logger.setLevel(Level.OFF);
+        }
+        super.setUp();
+    }
+        
     @Override
     protected File[] changeDefProjectDirBeforeParsingProjectIfNeeded(File projectDir) {
         // we have following structure for this test
@@ -88,8 +98,16 @@ public class MultiProjectsErrorHighlightingTest extends ErrorHighlightingBaseTes
         assertTrue("Not directory" + srcDir, srcDir.isDirectory());
     }
     
-    public void testProjectClose() throws Exception {
+    public void testRedFilesWhenProjectClose202433() throws Exception {
+        // #202433 - parser errors in studio system includes
+        CsmModel model = super.getModel();
+        assertNotNull("null model", model);
         performStaticTest("first/first.cpp");
+        CsmProject firstPrj = super.getProject("project_first");
+        assertNotNull("null project for first", firstPrj);
+        CsmProject secondPrj = super.getProject("project_second");
+        assertNotNull("null project for second", secondPrj);
+        super.closeProject(firstPrj);
         performStaticTest("includedLibrary/lib_header.h");
         performStaticTest("otherLibrary/other_lib_header.h");
         performStaticTest("second/second.cpp");
