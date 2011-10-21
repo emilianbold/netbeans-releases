@@ -221,8 +221,9 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
         synchronized(versioningSystems) {
             // inline unloadVersioningSystems();
             for (VersioningSystem system : versioningSystems) {
-                if(system instanceof DelegatingVCS) {
-                    ((DelegatingVCS)system).unregisterVersioningManager();
+                if(system instanceof DelegatingVCS && ((DelegatingVCS) system).isAlive()) {
+                    // can't override DelegatingVCS
+                    ((DelegatingVCS) system).getDelegate().removePropertyChangeListener(this);
                 } else {
                     system.removePropertyChangeListener(this);
                 }
@@ -237,8 +238,9 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
                 if (localHistory == null && Utils.isLocalHistory(system)) {
                     localHistory = system;
                 }
-                if(system instanceof DelegatingVCS) {
-                    ((DelegatingVCS)system).registerVersioningManager();
+                if(system instanceof DelegatingVCS && ((DelegatingVCS) system).isAlive()) {
+                    // can't override DelegatingVCS
+                    ((DelegatingVCS) system).getDelegate().addPropertyChangeListener(this);
                 } else {
                     system.addPropertyChangeListener(this);
                 }
