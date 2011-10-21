@@ -1411,11 +1411,11 @@ public class MenuEditLayer extends JPanel {
             if(dragop.isStarted() && dragop.getTargetComponent() != null &&
                     isMenuRelatedComponentClass(dragop.getTargetComponent().getClass())) {
                 if(e.isShiftDown()) {
-                    dragop.end(e.getPoint(), false);
+                    dragop.end(e, false);
                     PaletteItem item = PaletteUtils.getSelectedItem();
                     dragop.start(item, e.getPoint());
                 } else {
-                    dragop.end(e.getPoint(), true);                    
+                    dragop.end(e, true);
                 }
                 return;
             }
@@ -1430,7 +1430,7 @@ public class MenuEditLayer extends JPanel {
                     // #133628: user wants to cancel the drop so deselect menu-related component in the palette
                     dragop.fastEnd();
                 } else if (SwingUtilities.isLeftMouseButton(e)) {
-                    dragop.end(e.getPoint());
+                    dragop.end(e);
                 }
                 return;
             }
@@ -1563,7 +1563,7 @@ public class MenuEditLayer extends JPanel {
             }
             
             if(dragop.isStarted() && !e.isShiftDown()) {
-                dragop.end(e.getPoint());
+                dragop.end(e);
             } else {
                 if(!isEditing) {
                     JComponent c = dragop.getDeepestComponentInPopups(e.getPoint());
@@ -1775,7 +1775,7 @@ public class MenuEditLayer extends JPanel {
                 return;
             }
             if(dragop.isStarted()) {
-                dragop.end(dtde.getLocation());
+                dragop.end(dtde);
                 dragProxying = false;
                 return;
             }
