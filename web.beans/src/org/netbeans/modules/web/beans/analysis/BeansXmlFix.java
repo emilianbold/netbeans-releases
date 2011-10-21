@@ -42,6 +42,9 @@
  */
 package org.netbeans.modules.web.beans.analysis;
 
+import java.util.Collection;
+import java.util.Iterator;
+
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.common.dd.DDHelper;
@@ -78,16 +81,20 @@ class BeansXmlFix implements Fix {
      */
     @Override
     public ChangeInfo implement() throws Exception {
-        FileObject inf = CdiAnalysisResult.getInf(myProject, true); 
-        if ( inf != null ){
-            FileObject beansXml = inf.getFileObject(CdiAnalysisResult.BEANS_XML);
-            if ( beansXml != null ){
+        Collection<FileObject> infs = CdiAnalysisResult.getBeansTargetFolder(myProject, true);
+        for (FileObject inf : infs) {
+            if (inf != null) {
+                FileObject beansXml = inf
+                        .getFileObject(CdiAnalysisResult.BEANS_XML);
+                if (beansXml != null) {
+                    return null;
+                }
+                DDHelper.createBeansXml(Profile.JAVA_EE_6_FULL, inf,
+                        CdiAnalysisResult.BEANS);
+                if (myFactory != null) {
+                    myFactory.restart(myFileObject);
+                }
                 return null;
-            }
-            DDHelper.createBeansXml(Profile.JAVA_EE_6_FULL, inf, 
-                    CdiAnalysisResult.BEANS);
-            if ( myFactory != null ){
-                myFactory.restart(myFileObject);
             }
         }
         return null;
