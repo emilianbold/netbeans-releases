@@ -92,7 +92,12 @@ import org.apache.maven.index.updater.IndexUpdater;
 import org.apache.maven.index.updater.ResourceFetcher;
 import org.apache.maven.index.updater.WagonHelper;
 import org.apache.maven.settings.Mirror;
+import org.apache.maven.settings.Proxy;
+import org.apache.maven.settings.crypto.DefaultSettingsDecryptionRequest;
+import org.apache.maven.settings.crypto.SettingsDecrypter;
 import org.apache.maven.wagon.Wagon;
+import org.apache.maven.wagon.authentication.AuthenticationInfo;
+import org.apache.maven.wagon.proxy.ProxyInfo;
 import org.codehaus.plexus.ContainerConfiguration;
 import org.codehaus.plexus.DefaultContainerConfiguration;
 import org.codehaus.plexus.DefaultPlexusContainer;
@@ -451,8 +456,23 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 LOGGER.log(Level.FINE, "Indexing Remote Repository: {0}", repo.getId());
                 final RemoteIndexTransferListener listener = new RemoteIndexTransferListener(repo);
                 try {
-                    // XXX would use WagonHelper.getWagonResourceFetcher if that were not limited to http protocol
-                    ResourceFetcher fetcher = new WagonHelper.WagonFetcher(embedder.lookup(Wagon.class, URI.create(repo.getRepositoryUrl()).getScheme()), listener, null, null);
+                    String protocol = URI.create(indexingContext.getIndexUpdateUrl()).getScheme();
+                    AuthenticationInfo wagonAuth = null; // XXX #196593
+                    ProxyInfo wagonProxy = null;
+                    for (Proxy proxy : embedder.lookup(SettingsDecrypter.class).decrypt(new DefaultSettingsDecryptionRequest(EmbedderFactory.getOnlineEmbedder().getSettings())).getProxies()) {
+                        if (proxy.isActive()) {
+                            wagonProxy = new ProxyInfo();
+                            wagonProxy.setHost(proxy.getHost());
+                            wagonProxy.setPort(proxy.getPort());
+                            wagonProxy.setNonProxyHosts(proxy.getNonProxyHosts());
+                            wagonProxy.setUserName(proxy.getUsername());
+                            wagonProxy.setPassword(proxy.getPassword());
+                            wagonProxy.setType(protocol);
+                            break;
+                        }
+                    }
+                    // MINDEXER-42: cannot use WagonHelper.getWagonResourceFetcher
+                    ResourceFetcher fetcher = new WagonHelper.WagonFetcher(embedder.lookup(Wagon.class, protocol), listener, wagonAuth, wagonProxy);
                     IndexUpdateRequest iur = new IndexUpdateRequest(indexingContext, fetcher);
                     NotifyingIndexCreator nic = null;
                     for (IndexCreator ic : indexingContext.getIndexCreators()) {
