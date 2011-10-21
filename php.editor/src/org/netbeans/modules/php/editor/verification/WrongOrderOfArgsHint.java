@@ -237,7 +237,7 @@ public class WrongOrderOfArgsHint extends AbstractRule {
     }
 
     @Override
-    @Messages("WrongOrderOfArgsHintDispName=Argument without a default value should not be preceded by argument with a default value")
+    @Messages("WrongOrderOfArgsHintDispName=Order of Arguments")
     public String getDisplayName() {
         return Bundle.WrongOrderOfArgsHintDispName();
     }

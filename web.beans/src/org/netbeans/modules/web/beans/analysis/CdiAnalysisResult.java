@@ -44,6 +44,7 @@ package org.netbeans.modules.web.beans.analysis;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -162,16 +163,18 @@ public class CdiAnalysisResult {
     }
     
     protected boolean isCdiEnabled(Project project){
-        FileObject parent = getInf( project , false );
-        return parent!= null && parent.getFileObject(BEANS_XML)!=null;
-    }
-
-    static FileObject getInf( Project project , boolean create ) {
-        FileObject parent = getBeansTargetFolder(project, create );
-        return parent;
+        Collection<FileObject> beansTargetFolder = getBeansTargetFolder(project, false);
+        for (FileObject fileObject : beansTargetFolder) {
+            if ( fileObject != null && fileObject.getFileObject(BEANS_XML)!=null){
+                return true;
+            }
+        }
+        return false;
     }
     
-    private static FileObject getBeansTargetFolder(Project project, boolean create) {
+    static Collection<FileObject> getBeansTargetFolder(Project project, 
+            boolean create) 
+    {
         WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
         if (wm != null) {
             FileObject webInf = wm.getWebInf();
@@ -183,22 +186,43 @@ public class CdiAnalysisResult {
                             Level.WARNING, null, ex );
                 }
             }
-            return webInf;
+            return Collections.singleton(webInf);
         } 
         else {
             EjbJar ejbs[] = EjbJar.getEjbJars(project);
             if (ejbs.length > 0) {
-                return ejbs[0].getMetaInf();
+                return Collections.singleton(ejbs[0].getMetaInf());
             } else {
                 Car cars[] = Car.getCars(project);
                 if (cars.length > 0) {
-                    return cars[0].getMetaInf();
+                    return Collections.singleton(cars[0].getMetaInf());
                 } 
             }
         }
         Sources sources = project.getLookup().lookup(Sources.class);
         SourceGroup[] sourceGroups = sources.getSourceGroups(
                 JavaProjectConstants.SOURCES_TYPE_JAVA);
+        FileObject fileObject = getDefaultBeansTargetFolder(sourceGroups, false);
+        Collection<FileObject> result = new ArrayList<FileObject>(2);
+        if ( fileObject != null ){
+            result.add(fileObject);
+        }
+        sourceGroups = sources.getSourceGroups(
+                    JavaProjectConstants.SOURCES_TYPE_RESOURCES );
+        fileObject = getDefaultBeansTargetFolder(sourceGroups, false);
+        if ( fileObject != null ){
+            result.add(fileObject);
+        }
+        if ( result.size() == 0 && create ){
+            fileObject = getDefaultBeansTargetFolder(sourceGroups, false);
+            result.add(fileObject);
+        }
+        return result;
+    }
+
+    private static FileObject getDefaultBeansTargetFolder( SourceGroup[] sourceGroups,
+            boolean create )
+    {
         if ( sourceGroups.length >0 ){
             FileObject metaInf = sourceGroups[0].getRootFolder().getFileObject( META_INF );
             if ( metaInf == null && create ){
