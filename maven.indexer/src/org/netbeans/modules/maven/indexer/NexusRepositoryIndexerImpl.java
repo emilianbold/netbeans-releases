@@ -451,8 +451,8 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 LOGGER.log(Level.FINE, "Indexing Remote Repository: {0}", repo.getId());
                 final RemoteIndexTransferListener listener = new RemoteIndexTransferListener(repo);
                 try {
-                    // XXX would use WagonHelper.getWagonResourceFetcher if that were not limited to http protocol
-                    ResourceFetcher fetcher = new WagonHelper.WagonFetcher(embedder.lookup(Wagon.class, URI.create(repo.getRepositoryUrl()).getScheme()), listener, null, null);
+                    // MINDEXER-42: cannot use WagonHelper.getWagonResourceFetcher
+                    ResourceFetcher fetcher = new WagonHelper.WagonFetcher(embedder.lookup(Wagon.class, URI.create(indexingContext.getIndexUpdateUrl()).getScheme()), listener, null, null);
                     IndexUpdateRequest iur = new IndexUpdateRequest(indexingContext, fetcher);
                     NotifyingIndexCreator nic = null;
                     for (IndexCreator ic : indexingContext.getIndexCreators()) {
