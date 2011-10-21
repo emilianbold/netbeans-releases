@@ -91,7 +91,7 @@ public class PanelOptionsVisual extends JPanel implements TaskListener {
     }
 
     private void preInitComponents() {
-        platformsModel = JavaFXProjectUtils.createPlatformComboBoxModel("default_platform"); // NOI18N
+        platformsModel = JavaFXProjectUtils.createPlatformComboBoxModel();
         platformsCellRenderer = JavaFXProjectUtils.createPlatformListCellRenderer();
     }
     

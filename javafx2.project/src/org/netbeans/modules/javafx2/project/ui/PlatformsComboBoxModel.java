@@ -39,37 +39,69 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javafx2.project.api;
+package org.netbeans.modules.javafx2.project.ui;
 
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.ComboBoxModel;
-import javax.swing.ListCellRenderer;
+import javax.swing.event.ListDataListener;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
-import org.netbeans.modules.javafx2.project.J2SEProjectType;
-import org.netbeans.modules.javafx2.project.ui.PlatformsComboBoxModel;
+import org.netbeans.modules.javafx2.platform.api.JavaFXPlatformUtils;
 
 /**
+ * JavaFX enabled Java Platform ComboBoxModel decorator
  * 
  * @author Anton Chechel
  */
-public final class JavaFXProjectUtils {
+public class PlatformsComboBoxModel implements ComboBoxModel {
+    private ComboBoxModel delegate;
 
-    public static final String PROP_JAVA_PLATFORM_NAME = "java.platform.name"; // NOI18N
-    public static final String PROJECT_CONFIGURATION_NAMESPACE = J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE;
-
-    private JavaFXProjectUtils() {
+    public PlatformsComboBoxModel(ComboBoxModel delegate) {
+        this.delegate = delegate;
     }
 
-    public static ComboBoxModel createPlatformComboBoxModel() {
-        return new PlatformsComboBoxModel(PlatformUiSupport.createPlatformComboBoxModel("default_platform")); // NOI18N
+    @Override
+    public void setSelectedItem(Object anItem) {
+        delegate.setSelectedItem(anItem);
     }
 
-    public static ListCellRenderer createPlatformListCellRenderer() {
-        return PlatformUiSupport.createPlatformListCellRenderer();
+    @Override
+    public Object getSelectedItem() {
+        return delegate.getSelectedItem();
     }
 
-    public static JavaPlatform getPlatform(Object platformKey) {
-        return PlatformUiSupport.getPlatform(platformKey);
+    @Override
+    public int getSize() {
+        return getData().size();
     }
 
+    @Override
+    public Object getElementAt(int index) {
+        return getData().get(index);
+    }
+
+    @Override
+    public void addListDataListener(ListDataListener l) {
+        delegate.addListDataListener(l);
+    }
+
+    @Override
+    public void removeListDataListener(ListDataListener l) {
+        delegate.removeListDataListener(l);
+    }
+    
+    private List getData() {
+        List data = new ArrayList();
+        int origSize = delegate.getSize();
+        for (int i = 0; i < origSize; i++) {
+            final Object element = delegate.getElementAt(i);
+            final JavaPlatform platform = PlatformUiSupport.getPlatform(element);
+            if (JavaFXPlatformUtils.isJavaFXEnabled(platform)) {
+                data.add(element);
+            }
+        }
+        return data;
+    }
+    
 }
