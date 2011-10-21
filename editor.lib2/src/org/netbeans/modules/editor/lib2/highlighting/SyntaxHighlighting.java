@@ -605,7 +605,10 @@ implements TokenHierarchyListener, ChangeListener {
         int tokenCount;
         long startTime;
     }
-    
+
+    //for tests:
+    static AttributeSet TEST_FALLBACK_COLORING;
+
     private static final class FCSInfo<T extends TokenId> implements LookupListener {
         
         static final ChangeEvent staticChangeEvent = new ChangeEvent(FCSInfo.class);
@@ -664,6 +667,10 @@ implements TokenHierarchyListener, ChangeListener {
                             break;
                         }
                     }
+                }
+
+                if (attrs == null) {
+                    attrs = TEST_FALLBACK_COLORING;
                 }
                 
                 tokenId2attrs[tokenId.ordinal()] = attrs;
