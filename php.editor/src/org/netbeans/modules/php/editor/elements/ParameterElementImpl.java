@@ -282,9 +282,10 @@ public final class ParameterElementImpl implements ParameterElement {
     }
 
     @Override
-    public String asString(boolean forDeclaration) {
+    public String asString(OutputType outputType) {
         StringBuilder sb = new StringBuilder();
         Set<TypeResolver> typesResolvers = getTypes();
+        boolean forDeclaration = outputType.equals(OutputType.SHORTEN_DECLARATION) || outputType.equals(OutputType.COMPLETE_DECLARATION);
         if (forDeclaration && hasDeclaredType()) {
             if (typesResolvers.size() > 1) {
                 sb.append("mixed").append(' '); //NOI18N
@@ -306,8 +307,11 @@ public final class ParameterElementImpl implements ParameterElement {
             if (!isMandatory()) {
                 sb.append(" = ");//NOI18N
                 if (defVal != null) {
-                    sb.append(defVal.length() > 20 ?
-                                "..." : defVal); //NOI18N
+                    if (outputType.equals(OutputType.COMPLETE_DECLARATION)) {
+                        sb.append(defVal);
+                    } else {
+                        sb.append(defVal.length() > 20 ? "..." : defVal); //NOI18N
+                    }
                 }
             }
         }

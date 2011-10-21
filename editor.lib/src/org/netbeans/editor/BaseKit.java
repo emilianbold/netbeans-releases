@@ -1932,6 +1932,7 @@ public class BaseKit extends DefaultEditorKit {
                 
                 final BaseDocument doc = (BaseDocument)target.getDocument();
                 doc.runAtomicAsUser (new Runnable () {
+                    @Override
                     public void run () {
                     DocumentUtilities.setTypingModification(doc, true);
                     try {
@@ -1986,18 +1987,24 @@ public class BaseKit extends DefaultEditorKit {
             //#54893 putValue ("helpID", CopyAction.class.getName ()); // NOI18N
         }
 
+        @Override
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
             if (target != null) {
                 try {
+                    int caretPosition = target.getCaretPosition();
+                    boolean emptySelection = !Utilities.isSelectionShowing(target);
                     // If there is no selection then pre-select a current line including newline
-                    if (!Utilities.isSelectionShowing(target)) {
+                    if (emptySelection) {
                         Element elem = ((AbstractDocument) target.getDocument()).getParagraphElement(
-                                target.getCaretPosition());
+                                caretPosition);
                         if (!Utilities.isRowWhite((BaseDocument) target.getDocument(), elem.getStartOffset())) {
                             target.select(elem.getStartOffset(), elem.getEndOffset());
                         }
                     }
                     target.copy();
+                    if (emptySelection) {
+                        target.setCaretPosition(caretPosition);
+                    }
                 } catch (BadLocationException ble) {
                     LOG.log(Level.FINE, null, ble);
                 }

@@ -211,9 +211,18 @@ class BatLexer implements Lexer<BatTokenId> {
             case '"':
                 do {
                     i = input.read ();
-                    if (i == '\\') {
+                    if (i == '^') {
                         i = input.read ();
                         i = input.read ();
+                    }
+                    if (i == '"') {
+                        i = input.read ();
+                        if (i == '"') {
+                            i = input.read ();
+                        } else {
+                            input.backup (1);
+                            break;
+                        }
                     }
                 } while (
                     i != '"' &&

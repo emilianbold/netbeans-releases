@@ -2090,8 +2090,8 @@ class LayoutFeeder implements LayoutConstants {
             }
         }
         minorOriginalGap = originalGap != null && !LayoutInterval.canResize(originalGap)
-                && ((neighbors[LEADING] == null && LayoutInterval.getEffectiveAlignment(neighbors[TRAILING], LEADING) == TRAILING)
-                  || (neighbors[TRAILING] == null && LayoutInterval.getEffectiveAlignment(neighbors[LEADING], TRAILING) == LEADING));
+                && ((neighbors[LEADING] == null && LayoutInterval.getEffectiveAlignment(neighbors[TRAILING], LEADING, true) == TRAILING)
+                  || (neighbors[TRAILING] == null && LayoutInterval.getEffectiveAlignment(neighbors[LEADING], TRAILING, true) == LEADING));
 
         // compute leading and trailing gaps
         int edges = 2;
@@ -2221,7 +2221,7 @@ class LayoutFeeder implements LayoutConstants {
                     if (!span[i^1]
                         || (neighbors[i] == null && !LayoutInterval.canResize(originalGap))
                         || (neighbors[i] != null
-                            && (LayoutInterval.getEffectiveAlignment(neighbors[i], i^1) == (i^1)
+                            && (LayoutInterval.getEffectiveAlignment(neighbors[i], i^1, true) == (i^1)
                                 || !tiedToParallelSnap(neighbors[i], i, otherPar)))) {
                         fixedGap = true;
                     }
@@ -2230,7 +2230,7 @@ class LayoutFeeder implements LayoutConstants {
                 } else if (LayoutInterval.wantResize(seq)) {
                     fixedGap = true;
                 } else if (neighbors[i] != null) {
-                    if (LayoutInterval.getEffectiveAlignment(neighbors[i], i^1) == (i^1)) {
+                    if (LayoutInterval.getEffectiveAlignment(neighbors[i], i^1, true) == (i^1)) {
                         fixedGap = true;
                     }
                 } else if (otherPar != null) {
@@ -2239,7 +2239,10 @@ class LayoutFeeder implements LayoutConstants {
                             fixedGap = true;
                         }
                     } else {
-                        LayoutInterval p = LayoutInterval.getFirstParent(otherPar, PARALLEL);
+                        LayoutInterval p = LayoutInterval.getCommonParent(otherPar, parent);
+                        if (p == parent) {
+                            p = p.getParent();
+                        }
                         if (p != null && LayoutInterval.getEffectiveAlignmentInParent(parent, p, i) == (i^1)) {
                             fixedGap = true;
                         }
@@ -2322,6 +2325,12 @@ class LayoutFeeder implements LayoutConstants {
                         }
                     } else if (noMinPadding) {
                         gap.setPreferredSize(0);
+                    }
+                    if (fixedGap && gap.getPreferredSize() == NOT_EXPLICITLY_DEFINED
+                            && neighbors[i] != null
+                            && !LayoutUtils.isDefaultGapValidForNeighbor(neighbors[i], i^1)) {
+                        // likely a parallel neighbor group ending with gaps (could be created by mergeParallelInclusions)
+                        continue;
                     }
                 } else {
                     gap.setPaddingType(iiDesc.paddingType);
@@ -3316,7 +3325,7 @@ class LayoutFeeder implements LayoutConstants {
         }
 
         // check congruence of effective alignment
-        int effAlign1 = LayoutInterval.getEffectiveAlignment(toAlignWith, alignment);
+        int effAlign1 = LayoutInterval.getEffectiveAlignment(toAlignWith, alignment, true);
 //        int effAlign2 = LayoutInterval.getEffectiveAlignment(aligning, alignment);
 //        if (effAlign1 == (alignment^1) /*&& effAlign2 != effAlign1*/) {
 //            LayoutInterval gap = LayoutInterval.getDirectNeighbor(aligning, alignment, false);
@@ -3506,7 +3515,7 @@ class LayoutFeeder implements LayoutConstants {
     }
 
     private int extract(LayoutInterval interval, List<LayoutInterval> toAlign, List<List> toRemain, int alignment) {
-        int effAlign = LayoutInterval.getEffectiveAlignment(interval, alignment);
+        int effAlign = LayoutInterval.getEffectiveAlignment(interval, alignment, false);
         LayoutInterval parent = interval.getParent();
         if (parent.isSequential()) {
             int extractCount = operations.extract(interval, alignment, false,
@@ -4537,6 +4546,12 @@ class LayoutFeeder implements LayoutConstants {
             if (separatedTrailing.isEmpty())
                 extractAlign = LEADING;
         }
+        // Surroundings of adding interval determined in step 4 are created separately
+        // one by one, but we need to unify the resizability of all the gaps next to
+        // the adding interval together.
+        boolean[] anyResizingNeighbor = new boolean[2];
+        int[] fixedSideGaps = new int[2];
+        List<LayoutInterval[]> unifyGaps = null;
 
         // 4th collect surroundings of adding interval
         // (the intervals will go into a side group in step 5, or into subgroup
@@ -4547,6 +4562,30 @@ class LayoutFeeder implements LayoutConstants {
             IncludeDesc iDesc = (IncludeDesc) it.next();
             if (iDesc.parent.isParallel() || !iDesc.newSubGroup) {
                 addToGroup(iDesc, null, false);
+                if (subGroup == null && !LayoutInterval.wantResize(addingInterval)) {
+                    // now we may have L and T gaps next to the added interval
+                    LayoutInterval lGap = LayoutInterval.getDirectNeighbor(addingInterval, LEADING, false);
+                    LayoutInterval tGap = LayoutInterval.getDirectNeighbor(addingInterval, TRAILING, false);
+                    if (lGap != null && lGap.isEmptySpace() && tGap != null && tGap.isEmptySpace()) {
+                        LayoutInterval[] gaps = new LayoutInterval[] { lGap, tGap };
+                        for (int i=LEADING; i <= TRAILING; i++) {
+                            if (!LayoutInterval.canResize(gaps[i])) {
+                                if (LayoutInterval.hasAnyResizingNeighbor(gaps[i], i)) {
+                                    anyResizingNeighbor[i] = true;
+                                    gaps[i] = null;
+                                }
+                                fixedSideGaps[i]++;
+                            }
+                        }
+                        if (gaps[LEADING] != null && gaps[TRAILING] != null) {
+                            if (unifyGaps == null) {
+                                unifyGaps = new ArrayList();
+                            }
+                            unifyGaps.add(gaps);
+                        }
+                    }
+                }
+                // extract the surroundings
                 operations.extract(addingInterval, extractAlign, extractAlign == DEFAULT,
                                    separatedLeading, separatedTrailing);
                 LayoutInterval parent = addingInterval.getParent();
@@ -4564,6 +4603,26 @@ class LayoutFeeder implements LayoutConstants {
                 nextTo = iDesc.snappedNextTo;
             if (iDesc != best)
                 it.remove();
+        }
+        if (!inclusions.contains(best)) {
+            inclusions.add(best);
+        }
+
+        // unify the side gaps collected for the individual inclusions
+        if (unifyGaps != null) {
+            for (LayoutInterval[] gaps : unifyGaps) {
+                int preferredFixedSide = fixedSideGaps[LEADING] >= fixedSideGaps[TRAILING] ? LEADING : TRAILING;
+                for (int i=LEADING; i <= TRAILING; i++) {
+                    if (LayoutInterval.canResize(gaps[i]) && !anyResizingNeighbor[i]
+                            && (anyResizingNeighbor[i^1] || preferredFixedSide == i)) {
+                        operations.setIntervalResizing(gaps[i], false);
+                        if (!LayoutInterval.canResize(gaps[i^1])) {
+                            operations.setIntervalResizing(gaps[i^i], true);
+                        }
+                        break;
+                    }
+                }
+            }
         }
 
         // prepare the common group for merged content
@@ -4692,6 +4751,7 @@ class LayoutFeeder implements LayoutConstants {
         }
 
         best.index = index;
+        optimizeStructure = true;
     }
 
     private static boolean compatibleInclusions(IncludeDesc iDesc1, IncludeDesc iDesc2, int dimension) {
@@ -4764,7 +4824,9 @@ class LayoutFeeder implements LayoutConstants {
 
     private static void updateMovedOriginalNeighbor(IncludeDesc iDesc) {
         if (iDesc != null && iDesc.neighbor != null) {
-            iDesc.parent = LayoutInterval.getFirstParent(iDesc.neighbor, PARALLEL);
+            if (iDesc.neighbor.getParent() != null) {
+                iDesc.parent = LayoutInterval.getFirstParent(iDesc.neighbor, PARALLEL);
+            }
             correctOriginalInclusion(iDesc, LayoutInterval.getRoot(iDesc.neighbor));
         }
     }
@@ -5360,7 +5422,8 @@ class LayoutFeeder implements LayoutConstants {
                 return true;
             }
             if (aSnappedParallel == null || group == aSnappedParallel
-                    || group.isParentOf(aSnappedParallel)) {
+                    || group.isParentOf(aSnappedParallel)
+                    || LayoutUtils.contentOverlap(addingSpace, group, dimension^1)) {
                 return true;
             }
             if (alignment == LEADING || alignment == TRAILING) {
@@ -5375,7 +5438,6 @@ class LayoutFeeder implements LayoutConstants {
                     interval = parent;
                     parent = LayoutInterval.getFirstParent(interval, PARALLEL);
                 }
-                
             }
         }
         return false;

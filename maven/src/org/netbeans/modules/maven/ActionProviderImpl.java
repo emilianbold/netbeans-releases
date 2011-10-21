@@ -47,7 +47,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -314,9 +313,8 @@ public class ActionProviderImpl implements ActionProvider {
         @Override
         public void actionPerformed(java.awt.event.ActionEvent e) {
             Map<String,String> replacements = replacements((String) getValue(Action.NAME), /* is there ever a context? */Lookup.EMPTY);
-            Properties mappingProperties = mapping.getProperties();
-            for (Map.Entry<Object,Object> entry : mappingProperties.entrySet()) {
-                mappingProperties.put(entry.getKey(), AbstractMavenActionsProvider.dynamicSubstitutions(replacements, (String) entry.getValue()));
+            for (Map.Entry<String,String> entry : mapping.getProperties().entrySet()) {
+                entry.setValue(AbstractMavenActionsProvider.dynamicSubstitutions(replacements, entry.getValue()));
             }
 
             if (!showUI) {

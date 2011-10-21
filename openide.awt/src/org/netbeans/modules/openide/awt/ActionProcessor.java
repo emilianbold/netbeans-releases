@@ -174,6 +174,9 @@ public final class ActionProcessor extends LayerGeneratingProcessor {
         TypeMirror dmc = type(DynamicMenuContent.class);
         for (Element e : roundEnv.getElementsAnnotatedWith(ActionRegistration.class)) {
             ActionRegistration ar = e.getAnnotation(ActionRegistration.class);
+            if (ar == null) {
+                continue;
+            }
             ActionID aid = e.getAnnotation(ActionID.class);
             if (aid == null) {
                 throw new LayerGenerationException("@ActionRegistration can only be used together with @ActionID annotation", e, processingEnv, ar);

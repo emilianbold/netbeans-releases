@@ -56,6 +56,7 @@ public class IncrementalParseRepositoryValidationTest extends CndBaseTestSuite {
 
     static {
         System.setProperty("cnd.modelimpl.parser.threads", "8");
+//        System.setProperty("cnd.modelimpl.trace203833", "true"); // NOI18N
 //        System.setProperty("cnd.modelimpl.trace.validation", "true"); // NOI18N
 //        System.setProperty("cnd.modelimpl.installer.trace", "true"); // NOI18N
 //        System.setProperty("cnd.pp.condition.comparision.trace", "true");
@@ -63,11 +64,11 @@ public class IncrementalParseRepositoryValidationTest extends CndBaseTestSuite {
     }
 
     public IncrementalParseRepositoryValidationTest() {
-        super("Repository"); // NOI18N
+        super("Incremental Extra Parse Repository"); // NOI18N
         
         addTestSuite(RepositoryValidationGoldens.class);
         addTestSuite(RepositoryValidationInterruptedParse.class);
-        addTestSuite(RepositoryValidationFinal.class);
+        addTestSuite(IncrementalParseRepositoryValidationFinal.class);
     }
 
     public static Test suite() {

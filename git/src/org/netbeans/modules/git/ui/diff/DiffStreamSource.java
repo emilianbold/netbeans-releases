@@ -55,10 +55,13 @@ import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.modules.git.VersionsCache;
 import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.util.Utils;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.loaders.MultiDataObject;
+import org.openide.nodes.CookieSet;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
@@ -225,4 +228,45 @@ public class DiffStreamSource extends StreamSource {
         }
     }
 
+    @Override
+    public void close () {
+        EditorCookie.Observable ec = getEditableCookie(remoteFile);
+        if (ec != null && ec.getOpenedPanes() == null && !ec.isModified()) {
+            ec.close();
+        }
+        super.close();
+    }
+    
+    private static EditorCookie.Observable getEditableCookie (File file) {
+        EditorCookie.Observable editorCookie = null;
+        if (file == null) {
+            return null;
+        }
+        FileObject fileObj = FileUtil.toFileObject(file);
+        if (fileObj != null) {
+            try {
+                DataObject dao = DataObject.find(fileObj);
+                if (dao instanceof MultiDataObject) {
+                    MultiDataObject mdao = (MultiDataObject) dao;
+                    for (MultiDataObject.Entry entry : mdao.secondaryEntries()) {
+                        if (fileObj == entry.getFile() && entry instanceof CookieSet.Factory) {
+                            CookieSet.Factory factory = (CookieSet.Factory) entry;
+                            EditorCookie ec = factory.createCookie(EditorCookie.class);
+                            if (ec instanceof EditorCookie.Observable) {
+                                editorCookie = (EditorCookie.Observable) ec;
+                            }
+                        }
+                    }
+                }
+                if (editorCookie == null) {
+                    EditorCookie cookie = dao.getCookie(EditorCookie.class);
+                    if (cookie instanceof EditorCookie.Observable) {
+                        editorCookie = (EditorCookie.Observable) cookie;
+                    }
+                }
+            } catch (DataObjectNotFoundException ex) {
+            }
+        }
+        return editorCookie;
+    }
 }

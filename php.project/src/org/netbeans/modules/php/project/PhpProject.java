@@ -883,6 +883,8 @@ public final class PhpProject implements Project {
 
             // log usage
             PhpProjectUtils.logUsage(PhpProject.class, "USG_PROJECT_OPEN_PHP", Arrays.asList(PhpProjectUtils.getFrameworksForUsage(frameworkProviders))); // NOI18N
+            // #192386
+            LOGGER.finest("PROJECT_OPENED_FINISHED");
         }
 
         @Override
@@ -910,6 +912,8 @@ public final class PhpProject implements Project {
             } finally {
                 // #187060 - exception in projectClosed => project IS closed (so do it in finally block)
                 getCopySupport().projectClosed();
+                // #192386
+                LOGGER.finest("PROJECT_CLOSED_FINISHED");
             }
         }
     }

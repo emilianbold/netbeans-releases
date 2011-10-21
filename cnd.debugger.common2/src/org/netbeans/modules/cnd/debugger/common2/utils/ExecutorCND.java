@@ -76,6 +76,7 @@ import org.openide.util.Utilities;
     private NativeProcess engineProc;
     private int pid = -1;
     private final ExecutionEnvironment exEnv;
+    private String startError = null;
 
     public ExecutorCND(String name, Host host) {
 	super(name, host);
@@ -173,7 +174,8 @@ import org.openide.util.Utilities;
 			                TermComponent console,
                                         boolean usePty,
                                         boolean disableEcho) {
-
+        startError = null;
+        
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(exEnv);
 
 	String argv[] = new String[engine_argv.length-1];
@@ -204,8 +206,7 @@ import org.openide.util.Utilities;
         // error stream...
         if (engineProc.getState() == NativeProcess.State.ERROR) {
             try {
-                String cause = ProcessUtils.readProcessErrorLine(engineProc);
-                ErrorManager.getDefault().notify(new Exception(cause));
+                startError = ProcessUtils.readProcessErrorLine(engineProc);
             } catch (IOException ex) {
             }
 
@@ -232,8 +233,9 @@ import org.openide.util.Utilities;
         }
     }
 
+    @Override
     public String getStartError() {
-	return null;
+	return startError;
     }
 
     protected int waitForEngine() throws InterruptedException {

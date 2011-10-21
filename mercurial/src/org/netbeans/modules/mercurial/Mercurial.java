@@ -75,7 +75,6 @@ import org.netbeans.modules.versioning.util.VCSHyperlinkProvider;
 import org.openide.util.Lookup;
 import org.openide.util.Lookup.Result;
 import org.openide.util.Utilities;
-import org.openide.util.actions.SystemAction;
 
 /**
  * Main entry point for Mercurial functionality, use getInstance() to get the Mercurial object.
@@ -181,7 +180,7 @@ public class Mercurial {
             @Override
             public void run () {
                 if (isAvailable(false, false)) {
-                    ShelveChangesActionsRegistry.getInstance().registerAction(mvcs, SystemAction.get(ShelveChangesAction.class));
+                    ShelveChangesActionsRegistry.getInstance().registerAction(mvcs, ShelveChangesAction.getProvider());
                 }
             }
         });

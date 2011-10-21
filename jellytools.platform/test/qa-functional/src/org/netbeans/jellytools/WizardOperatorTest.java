@@ -81,9 +81,15 @@ public class WizardOperatorTest extends JellyTestCase implements PropertyChangeL
     /** Redirect output to log files, wait before each test case and
      * show dialog to test. */
     @Override
-    protected void setUp() {
+    protected void setUp() throws Exception {
         System.out.println("### " + getName() + " ###");
-        showTestWizard();
+        java.awt.EventQueue.invokeAndWait(new Runnable() {
+
+            @Override
+            public void run() {
+                showTestWizard();
+            }
+        });
     }
 
     /** Dispose test dialog. */
@@ -240,6 +246,7 @@ public class WizardOperatorTest extends JellyTestCase implements PropertyChangeL
         wd.setTitle(TEST_WIZARD_TITLE);
         wd.setModal(false);
         dialog = DialogDisplayer.getDefault().createDialog(wd);
+        dialog.setSize(600, 400);
         dialog.setVisible(true);
     }
 

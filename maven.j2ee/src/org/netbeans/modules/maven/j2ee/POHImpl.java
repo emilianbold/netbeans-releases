@@ -94,13 +94,17 @@ public class POHImpl {
         
     }
     
-    public void hackModuleServerChange() {
-        ProjectManager.mutex().postReadRequest(new Runnable() {
-            @Override
-            public void run() {
-                refreshAppServerAssignment();
-            }
-        });
+    public void hackModuleServerChange(boolean useMutex) {
+        if (!useMutex) {
+            refreshAppServerAssignment();
+        } else {
+            ProjectManager.mutex().postReadRequest(new Runnable() {
+                @Override
+                public void run() {
+                    refreshAppServerAssignment();
+                }
+            });
+        }
     }
     private void projectOpened() {
         refreshAppServerAssignment();
@@ -111,7 +115,7 @@ public class POHImpl {
                 @Override
                 public void propertyChange(PropertyChangeEvent evt) {
                     if (NbMavenProject.PROP_PROJECT.equals(evt.getPropertyName())) {
-                        hackModuleServerChange();
+                        hackModuleServerChange(true);
                     }
                 }
             };

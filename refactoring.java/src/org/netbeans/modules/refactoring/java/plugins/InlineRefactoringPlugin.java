@@ -268,10 +268,6 @@ public class InlineRefactoringPlugin extends JavaRefactoringPlugin {
                     preCheckProblem = createProblem(preCheckProblem, true, NbBundle.getMessage(InlineRefactoringPlugin.class, "ERR_InlineAssignedOnce")); //NOI18N
                     return preCheckProblem;
                 }
-                // Used at least once
-                if (visitor.usageCount <= 1) {
-                    preCheckProblem = createProblem(preCheckProblem, false, NbBundle.getMessage(InlineRefactoringPlugin.class, "WRN_InlineNotUsed"));
-                }
                 // Possible change
                 ExpressionTree initializer = variableTree.getInitializer();
                 int skipFirstMethodInvocation = 0;
@@ -301,13 +297,6 @@ public class InlineRefactoringPlugin extends JavaRefactoringPlugin {
                 }
                 break;
             case METHOD:
-                // Used at least once
-                InlineUsageVisitor visitorMethod = new InlineUsageVisitor(javac);
-                visitorMethod.scan(javac.getCompilationUnit(), element);
-                if (visitorMethod.usageCount <= 1) {
-                    preCheckProblem = createProblem(preCheckProblem, false, NbBundle.getMessage(InlineRefactoringPlugin.class, "WRN_InlineNotUsed")); //NOI18N
-                }
-                
                 // Method can not be polymorphic
                 Collection<ExecutableElement> overridenMethods = RetoucheUtils.getOverridenMethods((ExecutableElement) element, javac);
                 Collection<ExecutableElement> overridingMethods = RetoucheUtils.getOverridingMethods((ExecutableElement) element, javac);

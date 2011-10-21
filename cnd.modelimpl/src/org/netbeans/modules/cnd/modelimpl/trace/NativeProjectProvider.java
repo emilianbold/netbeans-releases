@@ -61,6 +61,7 @@ import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.MIMESupport;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
@@ -166,8 +167,8 @@ public final class NativeProjectProvider {
         private final List<NativeFileItem> files  = new ArrayList<NativeFileItem>();
 	
         private final String projectRoot;
-	private boolean pathsRelCurFile;
-	
+	private final boolean pathsRelCurFile;
+	private final String name;
 	private List<NativeProjectItemsListener> listeners = new ArrayList<NativeProjectItemsListener>();
 
         private static final class Lock {}
@@ -185,9 +186,26 @@ public final class NativeProjectProvider {
 	    this.usrIncludes = createIncludes(usrIncludes);
 	    this.sysMacros = new ArrayList<String>(sysMacros);
 	    this.usrMacros = new ArrayList<String>(usrMacros);
+            this.name = initName(projectRoot);
 	}
 	
-	private List<String> createIncludes(List<String> src) {
+        private String initName(String projectRoot) {
+            if (Boolean.getBoolean("cnd.modelimpl.tracemodel.project.name")) { // NOI18N
+                String out = PathUtilities.getBaseName(projectRoot);
+                String dir = PathUtilities.getDirName(projectRoot);
+                if (dir != null) {
+                    dir = PathUtilities.getBaseName(dir);
+                }
+                if (dir != null) {
+                    out = dir + "_" + out; // NOI18N
+                }
+                return out;
+            } else {
+                return "DummyProject"; // NOI18N
+            }
+        }
+
+        private List<String> createIncludes(List<String> src) {
 	    if( pathsRelCurFile ) {
 		return new ArrayList<String>(src);
 	    }
@@ -229,7 +247,7 @@ public final class NativeProjectProvider {
 
         @Override
         public String getProjectDisplayName() {
-            return "DummyProject"; // NOI18N
+            return name;
         }
 
         @Override

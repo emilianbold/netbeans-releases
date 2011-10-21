@@ -364,8 +364,10 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
             }
         });
 
+        jLabel1.setLabelFor(jScrollPane2);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(ChangeParametersPanel.class, "ChangeParametersPanel.jLabel1.text")); // NOI18N
 
+        jLabel2.setLabelFor(methodNameText);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(ChangeParametersPanel.class, "ChangeParametersPanel.jLabel2.text")); // NOI18N
 
         methodNameText.setPreferredSize(new java.awt.Dimension(112, 27));
@@ -402,8 +404,8 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, modifiersPanelLayout.createSequentialGroup()
                 .addGroup(modifiersPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(modifiersLabel)
-                    .addComponent(jLabel2)
-                    .addComponent(jLabel1))
+                    .addComponent(jLabel1)
+                    .addComponent(jLabel2))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(modifiersPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 31, Short.MAX_VALUE)
@@ -516,11 +518,11 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(paramTitle)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(westPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 537, Short.MAX_VALUE)
+                .addComponent(westPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 559, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(moveDownButton)
-                    .addComponent(addButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 98, Short.MAX_VALUE)
+                    .addComponent(addButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 117, Short.MAX_VALUE)
                     .addComponent(removeButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 98, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(moveUpButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 98, javax.swing.GroupLayout.PREFERRED_SIZE)))
             .addComponent(modifiersPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -530,7 +532,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
                     .addComponent(chkGenJavadoc))
                 .addContainerGap())
             .addGroup(layout.createSequentialGroup()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 629, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 665, Short.MAX_VALUE)
                 .addContainerGap())
             .addGroup(layout.createSequentialGroup()
                 .addComponent(lblCodeGeneration)
@@ -538,11 +540,11 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(rbUpdateMethod)
-                .addContainerGap(434, Short.MAX_VALUE))
+                .addContainerGap(486, Short.MAX_VALUE))
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(rbOverloadMethod)
-                .addContainerGap(207, Short.MAX_VALUE))
+                .addContainerGap(288, Short.MAX_VALUE))
         );
 
         layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {addButton, moveDownButton, moveUpButton, removeButton});

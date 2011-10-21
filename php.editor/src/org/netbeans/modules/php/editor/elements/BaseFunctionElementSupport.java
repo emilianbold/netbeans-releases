@@ -49,6 +49,7 @@ import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.elements.BaseFunctionElement;
 import org.netbeans.modules.php.editor.api.elements.BaseFunctionElement.PrintAs;
 import org.netbeans.modules.php.editor.api.elements.ParameterElement;
+import org.netbeans.modules.php.editor.api.elements.ParameterElement.OutputType;
 import org.netbeans.modules.php.editor.api.elements.TypeResolver;
 
 /**
@@ -80,12 +81,12 @@ public class BaseFunctionElementSupport  {
         switch (as) {
             case NameAndParamsDeclaration:
                 template.append(" ").append(element.getName()).append("("); //NOI18N
-                template.append(parameters2String(getParameters(), true));
+                template.append(parameters2String(getParameters(), OutputType.SHORTEN_DECLARATION));
                 template.append(")"); //NOI18N
                 break;
             case NameAndParamsInvocation:
                 template.append(" ").append(element.getName()).append("("); //NOI18N
-                template.append(parameters2String(getParameters(), false));
+                template.append(parameters2String(getParameters(), OutputType.SIMPLE_NAME));
                 template.append(")"); //NOI18N
                 break;
             case DeclarationWithoutBody:
@@ -145,7 +146,7 @@ public class BaseFunctionElementSupport  {
         return template.toString();
     }
 
-    private static String parameters2String(final List<ParameterElement> parameterList, boolean forDeclaration) {
+    private static String parameters2String(final List<ParameterElement> parameterList, OutputType stringOutputType) {
         StringBuilder template = new StringBuilder();
         if (parameterList.size() > 0) {
             for (int i = 0, n = parameterList.size(); i < n; i++) {
@@ -154,7 +155,7 @@ public class BaseFunctionElementSupport  {
                     paramSb.append(", "); //NOI18N
                 }
                 final ParameterElement param = parameterList.get(i);
-                paramSb.append(param.asString(forDeclaration));
+                paramSb.append(param.asString(stringOutputType));
                 template.append(paramSb);
             }
         }

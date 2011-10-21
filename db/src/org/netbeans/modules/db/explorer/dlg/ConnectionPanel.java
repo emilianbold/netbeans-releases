@@ -284,7 +284,9 @@ public class ConnectionPanel implements AddConnectionWizard.Panel, WizardDescrip
                 } else if (loop >= maxLoops) {
                     databaseConnection.removePropertyChangeListener(connectionListener);
                     databaseConnection.removeExceptionListener(excListener);
-                    throw new WizardValidationException((JComponent) component, "Too long", "Too long"); // NOI18N
+                    throw new WizardValidationException((JComponent) component,
+                            "Timeout expired", // NOI18N
+                            NbBundle.getMessage(ConnectionPanel.class, "ConnectionPanel_TimeoutExpired")); // NOI18N
                 }
             }
             databaseConnection.removePropertyChangeListener(connectionListener);

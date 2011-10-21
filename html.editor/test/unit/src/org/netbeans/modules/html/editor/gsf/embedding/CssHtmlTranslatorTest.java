@@ -73,5 +73,6 @@ public class CssHtmlTranslatorTest extends TestBase {
         assertTrue(CssHtmlTranslator.ILLEGAL_CHARS_IN_SELECTOR.matcher("b{le").find());
         assertTrue(CssHtmlTranslator.ILLEGAL_CHARS_IN_SELECTOR.matcher("b{le}").find());
         assertTrue(CssHtmlTranslator.ILLEGAL_CHARS_IN_SELECTOR.matcher("ble:").find());
+        assertTrue(CssHtmlTranslator.ILLEGAL_CHARS_IN_SELECTOR.matcher("validate[required,number]").find());
     }
 }

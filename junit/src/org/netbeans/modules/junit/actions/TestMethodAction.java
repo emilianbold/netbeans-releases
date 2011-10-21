@@ -45,6 +45,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JEditorPane;
+import javax.swing.text.Document;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.modules.junit.output.OutputUtils;
@@ -52,6 +53,7 @@ import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.SingleMethod;
 import org.openide.cookies.EditorCookie;
 import org.openide.nodes.Node;
+import org.openide.text.NbDocument;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.actions.NodeAction;
@@ -73,11 +75,29 @@ public abstract class TestMethodAction extends NodeAction {
 
     @Override
     protected void performAction(final Node[] activatedNodes) {
+        final Document doc;
+        final int caret;
+
+        EditorCookie ec = activatedNodes[0].getLookup().lookup(EditorCookie.class);
+        if (ec != null) {
+            JEditorPane pane = NbDocument.findRecentEditorPane(ec);
+            if (pane != null) {
+                doc = pane.getDocument();
+                caret = pane.getCaret().getDot();
+            } else {
+                doc = null;
+                caret = -1;
+            }
+        } else {
+            doc = null;
+            caret = -1;
+        }
+
         ProgressUtils.runOffEventDispatchThread(new Runnable() {
 
             @Override
             public void run() {
-                SingleMethod sm = getTestMethod(activatedNodes[0].getLookup());
+                SingleMethod sm = getTestMethod(activatedNodes[0].getLookup(), doc, caret);
                 if (sm != null) {
                     ActionProvider ap = OutputUtils.getActionProvider(sm.getFile());
                     if (ap != null) {
@@ -90,25 +110,18 @@ public abstract class TestMethodAction extends NodeAction {
     }
 
     
-    private SingleMethod getTestMethod(Lookup lkp){
+    private SingleMethod getTestMethod(Lookup lkp, Document doc, int cursor){
         SingleMethod sm = lkp.lookup(SingleMethod.class);
-        if (sm == null){
-            EditorCookie ec = lkp.lookup(EditorCookie.class);
-            if (ec != null){
-                JEditorPane[] panes = ec.getOpenedPanes();
-                if (panes.length > 0) {
-                    final int cursor = panes[0].getCaret().getDot();
-                    JavaSource js = JavaSource.forDocument(panes[0].getDocument());
-                    TestClassInfoTask task = new TestClassInfoTask(cursor);
-                    try {
-                        Future<Void> f = js.runWhenScanFinished(task, true);
-                        if (f.isDone() && task.getFileObject() != null && task.getMethodName() != null){
-                            sm = new SingleMethod(task.getFileObject(), task.getMethodName());
-                        }
-                    } catch (IOException ex) {
-                        LOGGER.log(Level.WARNING, null, ex);
-                    }
+        if (sm == null && doc != null){
+            JavaSource js = JavaSource.forDocument(doc);
+            TestClassInfoTask task = new TestClassInfoTask(cursor);
+            try {
+                Future<Void> f = js.runWhenScanFinished(task, true);
+                if (f.isDone() && task.getFileObject() != null && task.getMethodName() != null){
+                    sm = new SingleMethod(task.getFileObject(), task.getMethodName());
                 }
+            } catch (IOException ex) {
+                LOGGER.log(Level.WARNING, null, ex);
             }
         }
         return sm;

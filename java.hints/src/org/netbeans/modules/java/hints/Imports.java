@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -26,7 +26,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ * Portions Copyrighted 2007-2011 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.java.hints;
 
@@ -34,28 +34,24 @@ import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.ImportTree;
 import com.sun.source.tree.MemberSelectTree;
-import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
-import com.sun.source.util.Trees;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.List;
-import java.util.Set;
-import java.util.prefs.PreferenceChangeEvent;
-import java.util.prefs.PreferenceChangeListener;
-import java.util.prefs.Preferences;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.editor.java.Utilities;
-import org.netbeans.modules.java.editor.semantic.RemoveUnusedImportFix;
+import org.netbeans.modules.java.editor.semantic.SemanticHighlighter;
+import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
+import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerTreeKind;
+import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
 import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
-import org.netbeans.modules.java.hints.spi.AbstractHint;
+import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.util.NbBundle;
 
@@ -65,194 +61,96 @@ import org.openide.util.NbBundle;
  * @author phrebejk
  * @author Max Sauer
  */
-public class Imports extends AbstractHint implements  PreferenceChangeListener {
+public class Imports {
   
     private static final String DEFAULT_PACKAGE = "java.lang"; // NOI18N
-    private static final List<Fix> NO_FIXES = Collections.<Fix>emptyList();
-    
-    private static Imports delegate; // Always of kind null
-
-    private Imports duplicate;
-    private Imports defaultPackage; 
-    private Imports samePackage; 
-    private Imports excludedPackage;
-    private Imports unused; 
-    private Imports star;
-        
     private String IMPORTS_ID = "Imports_"; // NOI18N
     
-    private Set<Tree.Kind> treeKinds;
-    
-    private ImportHintKind kind;
-    
-    private Imports( ImportHintKind kind ) {
-        super( kind.defaultOn(), true, HintSeverity.WARNING );
-        this.kind = kind;        
-        treeKinds = EnumSet.of(Tree.Kind.IMPORT);
-    }
 
-    public static Imports createDelegate() {
-        return getDelegate();
-    }
-    
-    public static Imports createDuplicate() {
-        Imports d = getDelegate();
-        d.duplicate = new Imports( ImportHintKind.DUPLICATE );
-        return getDelegate();
-    }
-    
-    public static Imports createDefaultPackage() {
-        Imports d = getDelegate();        
-        d.defaultPackage = new Imports( ImportHintKind.DEFAULT_PACKAGE );
-        return d.defaultPackage;
-    }
-    
-    public static Imports createExcluded() {
-        Imports d = getDelegate();
-        d.excludedPackage = new Imports( ImportHintKind.EXCLUDED );
-        return d.excludedPackage;
-    }
-    
-    public static Imports createSamePackage() {
-        Imports d = getDelegate();
-        d.samePackage = new Imports( ImportHintKind.SAME_PACKAGE );
-        return  d.samePackage;
-    }
-    
-    public static Imports createUnused() {
-        Imports d = getDelegate();
-        d.unused = new Imports( ImportHintKind.UNUSED );
-        d.unused.getPreferences(null); // Adds listener        
-        return d.unused;
-    }
-    
-    public static Imports createStar() {
-        Imports d = getDelegate();
-        d.star = new Imports( ImportHintKind.STAR );
-        return d.star;
-    }
-    
-    public Set<Kind> getTreeKinds() {
-        return treeKinds;        
-    }
-
-    public List<ErrorDescription> run(CompilationInfo ci, TreePath treePath) {
-        List<ErrorDescription> result = new ArrayList<ErrorDescription>();
-
-        Tree t = treePath.getLeaf();
-        if (t.getKind() != Tree.Kind.IMPORT) {
-            return null;
-        }
-
-        ImportTree it = (ImportTree) t;
+    @Hint(category="imports", id="Imports_STAR", enabled=false)
+    @TriggerTreeKind(Kind.IMPORT)
+    public static ErrorDescription starImport(HintContext ctx) {
+        ImportTree it = (ImportTree) ctx.getPath().getLeaf();
 
         if (it.isStatic() || !(it.getQualifiedIdentifier() instanceof MemberSelectTree)) {
             return null; // XXX
         }
 
         MemberSelectTree ms = (MemberSelectTree) it.getQualifiedIdentifier();
+
+        if (!"*".equals(ms.getIdentifier().toString())) return null;
+
+        return ErrorDescriptionFactory.forTree(ctx, ctx.getPath(), NbBundle.getMessage(Imports.class, "DN_Imports_STAR"));
+    }
+
+    @Hint(category="imports", id="Imports_DEFAULT_PACKAGE")
+    @TriggerTreeKind(Kind.COMPILATION_UNIT)
+    public static List<ErrorDescription> defaultImport(HintContext ctx) {
+        return importMultiHint(ctx, ImportHintKind.DEFAULT_PACKAGE, getAllImportsOfKind(ctx.getInfo(), ImportHintKind.DEFAULT_PACKAGE));
+    }
+    
+    @Hint(category="imports", id="Imports_UNUSED")
+    @TriggerTreeKind(Kind.COMPILATION_UNIT)
+    public static List<ErrorDescription> unusedImport(HintContext ctx) throws IOException {
+        return importMultiHint(ctx, ImportHintKind.UNUSED, SemanticHighlighter.computeUnusedImports(ctx.getInfo()));
+    }
+
+    @Hint(category="imports", id="Imports_SAME_PACKAGE")
+    @TriggerTreeKind(Kind.COMPILATION_UNIT)
+    public static List<ErrorDescription> samePackage(HintContext ctx) throws IOException {
+        return importMultiHint(ctx, ImportHintKind.SAME_PACKAGE, getAllImportsOfKind(ctx.getInfo(), ImportHintKind.SAME_PACKAGE));
+    }
+
+    private static List<ErrorDescription> importMultiHint(HintContext ctx, ImportHintKind kind, List<TreePathHandle> violatingImports) {
+        // Has to be done in order to provide 'remove all' fix
         Fix allFix = null;
-
-        switch (kind) {
-            case STAR:
-                Imports starImport = getDelegate().star;
-                if (starImport != null &&
-                        starImport.isEnabled() &&
-                        "*".equals(ms.getIdentifier().toString())) { // NOI18N
-
-                    result.add(ErrorDescriptionFactory.createErrorDescription(
-                            starImport.getSeverity().toEditorSeverity(),
-                            starImport.getDisplayName(),
-                            NO_FIXES,
-                            ci.getFileObject(),
-                            (int) ci.getTrees().getSourcePositions().getStartPosition(ci.getCompilationUnit(), it),
-                            (int) ci.getTrees().getSourcePositions().getEndPosition(ci.getCompilationUnit(), it)));
-                }
-                break;
-            case DEFAULT_PACKAGE:
-                // Has to be done in order to provide 'remove all' fix
-                allFix = null;
-                List<ImportTree> defaultList = getAllImportsOfKind(ci, ImportHintKind.DEFAULT_PACKAGE);
-                if (defaultList.size() > 1) {
-                    allFix = createFix(ci, defaultList, ImportHintKind.DEFAULT_PACKAGE);
-                }
-                Imports defPackage = getDelegate().defaultPackage;
-                if (defPackage != null && defPackage.isEnabled() && ms.getExpression().toString().equals(DEFAULT_PACKAGE)) {
-                    List<Fix> fixes = new ArrayList<Fix>();
-                    fixes.add(createFix(ci, it, ImportHintKind.DEFAULT_PACKAGE));
-                    if (allFix != null) {
-                        fixes.add(allFix);
-                    }
-                    result.add(ErrorDescriptionFactory.createErrorDescription(
-                            defPackage.getSeverity().toEditorSeverity(),
-                            defPackage.getDisplayName(),
-                            fixes,
-                            ci.getFileObject(),
-                            (int) ci.getTrees().getSourcePositions().getStartPosition(ci.getCompilationUnit(), it),
-                            (int) ci.getTrees().getSourcePositions().getEndPosition(ci.getCompilationUnit(), it)));
-                }
-                break;
-
-            case SAME_PACKAGE:
-                ExpressionTree packageName = ci.getCompilationUnit().getPackageName();
-                allFix = null;
-                List<ImportTree> sameList = getAllImportsOfKind(ci, ImportHintKind.SAME_PACKAGE);
-                if (sameList.size() > 1) {
-                    allFix = createFix(ci, sameList, ImportHintKind.SAME_PACKAGE);
-                }
-                Imports samePack = getDelegate().samePackage;
-
-                if (samePack != null &&
-                        samePack.isEnabled() &&
-                        packageName != null &&
-                        ms.getExpression().toString().equals(packageName.toString())) {
-                    List<Fix> fixes = new ArrayList<Fix>();
-                    fixes.add(createFix(ci, it, ImportHintKind.SAME_PACKAGE));
-                    if (allFix != null) {
-                        fixes.add(allFix);
-                    }
-                    result.add(ErrorDescriptionFactory.createErrorDescription(
-                            samePack.getSeverity().toEditorSeverity(),
-                            samePack.getDisplayName(),
-                            fixes,
-                            ci.getFileObject(),
-                            (int) ci.getTrees().getSourcePositions().getStartPosition(ci.getCompilationUnit(), it),
-                            (int) ci.getTrees().getSourcePositions().getEndPosition(ci.getCompilationUnit(), it)));
-                }
-
-                break;
-            case EXCLUDED:
-                Imports excludePackage = getDelegate().excludedPackage;
-				String pkg = ms.getExpression().toString();
-				String klass = ms.getIdentifier().toString();
-				String exp = pkg + "." + (!klass.equals("*") ? klass : ""); //NOI18N
-                if (excludePackage != null &&
-                        excludePackage.isEnabled() &&
-                        Utilities.isExcluded(exp)) {
-                    result.add(ErrorDescriptionFactory.createErrorDescription(
-                            excludePackage.getSeverity().toEditorSeverity(),
-                            excludePackage.getDisplayName(),
-                            NO_FIXES,
-                            ci.getFileObject(),
-                            (int) ci.getTrees().getSourcePositions().getStartPosition(ci.getCompilationUnit(), it),
-                            (int) ci.getTrees().getSourcePositions().getEndPosition(ci.getCompilationUnit(), it)));
-                }
-
-                break;
-            default:
-                return null;
+        if (ctx.isBulkMode() && !violatingImports.isEmpty()) {
+            Fix af = JavaFix.toEditorFix(new ImportsFix(violatingImports, kind));
+            return Collections.singletonList(ErrorDescriptionFactory.forTree(ctx, ctx.getPath(), NbBundle.getMessage(Imports.class, "DN_Imports_" + kind.toString()), af));
         }
-
+        if (violatingImports.size() > 1) {
+            allFix = JavaFix.toEditorFix(new ImportsFix(violatingImports, kind));
+        }
+        List<ErrorDescription> result = new ArrayList<ErrorDescription>(violatingImports.size());
+        for (TreePathHandle it : violatingImports) {
+            List<Fix> fixes = new ArrayList<Fix>();
+            fixes.add(JavaFix.toEditorFix(new ImportsFix(Collections.singletonList(it), kind)));
+            if (allFix != null) {
+                fixes.add(allFix);
+            }
+            result.add(ErrorDescriptionFactory.forTree(ctx, it.resolve(ctx.getInfo()), NbBundle.getMessage(Imports.class, "DN_Imports_" + kind.toString()), fixes.toArray(new Fix[0])));
+        }
 
         return result;
     }
 
-    private List<ImportTree> getAllImportsOfKind(CompilationInfo ci, ImportHintKind kind) {
+    @Hint(category="imports", id="Imports_EXCLUDED")
+    @TriggerTreeKind(Kind.IMPORT)
+    public static ErrorDescription exlucded(HintContext ctx) throws IOException {
+        ImportTree it = (ImportTree) ctx.getPath().getLeaf();
+
+        if (it.isStatic() || !(it.getQualifiedIdentifier() instanceof MemberSelectTree)) {
+            return null; // XXX
+        }
+
+        MemberSelectTree ms = (MemberSelectTree) it.getQualifiedIdentifier();
+        String pkg = ms.getExpression().toString();
+        String klass = ms.getIdentifier().toString();
+        String exp = pkg + "." + (!klass.equals("*") ? klass : ""); //NOI18N
+        if (Utilities.isExcluded(exp)) {
+            return ErrorDescriptionFactory.forTree(ctx, ctx.getPath(), NbBundle.getMessage(Imports.class, "DN_Imports_EXCLUDED"));
+        }
+
+        return null;
+    }
+
+    private static List<TreePathHandle> getAllImportsOfKind(CompilationInfo ci, ImportHintKind kind) {
         //allow only default and samepackage
         assert (kind == ImportHintKind.DEFAULT_PACKAGE || kind == ImportHintKind.SAME_PACKAGE);
 
         CompilationUnitTree cut = ci.getCompilationUnit();
-        List<ImportTree> result = new ArrayList<ImportTree>(3);
+        TreePath topLevel = new TreePath(cut);
+        List<TreePathHandle> result = new ArrayList<TreePathHandle>(3);
 
         List<? extends ImportTree> imports = cut.getImports();
         for (ImportTree it : imports) {
@@ -262,93 +160,23 @@ public class Imports extends AbstractHint implements  PreferenceChangeListener {
             if (it.getQualifiedIdentifier() instanceof MemberSelectTree) {
                 MemberSelectTree ms = (MemberSelectTree) it.getQualifiedIdentifier();
                 if (kind == ImportHintKind.DEFAULT_PACKAGE) {
-                    if (getDelegate().defaultPackage != null &&
-                            getDelegate().defaultPackage.isEnabled() &&
-                            ms.getExpression().toString().equals(DEFAULT_PACKAGE)) {
-                        result.add(it);
+                    if (ms.getExpression().toString().equals(DEFAULT_PACKAGE)) {
+                        result.add(TreePathHandle.create(new TreePath(topLevel, it), ci));
                     }
                 }
                 if (kind == ImportHintKind.SAME_PACKAGE) {
                     ExpressionTree packageName = cut.getPackageName();
-                    if (getDelegate().samePackage != null &&
-                            getDelegate().samePackage.isEnabled() &&
-                            packageName != null &&
-                            ms.getExpression().toString().equals(packageName.toString())) {
-                        result.add(it);
+                    if (packageName != null &&
+                        ms.getExpression().toString().equals(packageName.toString())) {
+                        result.add(TreePathHandle.create(new TreePath(topLevel, it), ci));
                     }
                 }
             }
         }
         return result;
     }
-    
-
-    public void cancel() {
-        
-    }
-
-    public String getId() {
-        return IMPORTS_ID + kind.toString();
-    }
-    
-    public String getDisplayName() {        
-        return NbBundle.getMessage(Imports.class, "LBL_Imports_" + kind.toString()); // NOI18N
-    }
-
-    public String getDescription() {
-        return NbBundle.getMessage(Imports.class, "DSC_Imports_" + kind.toString()); // NOI18N
-    }
-
-    @Override
-    public Preferences getPreferences(String profile) {
-        Preferences p = super.getPreferences(profile);
-        
-        if( kind == ImportHintKind.UNUSED ) {
-            try {
-                p.removePreferenceChangeListener(this);
-            }
-            catch( IllegalArgumentException e) {
-                // Ignore if not set
-            }
-            p.addPreferenceChangeListener(this);
-        }
-        
-        return p;
-    }
-    
-    public void preferenceChange(PreferenceChangeEvent evt) {
-        if ( kind == ImportHintKind.UNUSED ) {
-            RemoveUnusedImportFix.setEnabled(isEnabled());
-            RemoveUnusedImportFix.setSeverity(getDelegate().unused.getSeverity().toEditorSeverity());
-        }
-    }
 
     // Private methods ---------------------------------------------------------
-    
-    private static synchronized Imports getDelegate() {
-        if ( delegate == null ) {
-            delegate = new Imports( ImportHintKind.DELEGATE );
-        }
-        return delegate;
-    }
-
-    private Fix createFix( CompilationInfo ci, ImportTree tree, ImportHintKind ihk ) {
-        return createFix(ci, Collections.<ImportTree>singletonList(tree), ihk);
-    }
-    
-    private Fix createFix( CompilationInfo ci, List<ImportTree> trees, ImportHintKind ihk ) {
-        
-        List<TreePathHandle> paths = new ArrayList<TreePathHandle>();
-        Trees t = ci.getTrees();
-        CompilationUnitTree cut = ci.getCompilationUnit();
-        
-        for( ImportTree tree : trees ) {
-            paths.add(TreePathHandle.create( t.getPath(cut, tree), ci ));
-        }
-        
-        return JavaFix.toEditorFix(new ImportsFix(paths, 
-                        ihk ));
-    }
     
     private static enum ImportHintKind {
 

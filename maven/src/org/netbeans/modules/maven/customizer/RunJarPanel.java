@@ -220,19 +220,19 @@ public class RunJarPanel extends javax.swing.JPanel {
         isCurrentDebug = checkNewMapping(debug);
         isCurrentProfile = checkNewMapping(profile);
         if (isCurrentDebug || isCurrentRun || isCurrentProfile) {
-            oldWorkDir = run.getProperties().getProperty(RUN_WORKDIR);
+            oldWorkDir = run.getProperties().get(RUN_WORKDIR);
             if (oldWorkDir == null) {
-                oldWorkDir = debug.getProperties().getProperty(RUN_WORKDIR);
+                oldWorkDir = debug.getProperties().get(RUN_WORKDIR);
             }
             if (oldWorkDir == null && profile != null) {
-                oldWorkDir = profile.getProperties().getProperty(RUN_WORKDIR);
+                oldWorkDir = profile.getProperties().get(RUN_WORKDIR);
             }
-            String params = run.getProperties().getProperty(RUN_PARAMS);
+            String params = run.getProperties().get(RUN_PARAMS);
             if (params == null) {
-                params = debug.getProperties().getProperty(RUN_PARAMS);
+                params = debug.getProperties().get(RUN_PARAMS);
             }
             if (params == null && profile != null) {
-                params = profile.getProperties().getProperty(RUN_PARAMS);
+                params = profile.getProperties().get(RUN_PARAMS);
             }
             if (params != null) {
                 oldAllParams = params;
@@ -434,11 +434,11 @@ public class RunJarPanel extends javax.swing.JPanel {
             if (isCurrentRun) {
                 boolean changed = false;
                 if (!oldAllParams.equals(newAllParams)) {
-                    run.getProperties().setProperty(RUN_PARAMS, newAllParams);
+                    run.addProperty(RUN_PARAMS, newAllParams);
                     changed = true;
                 }
                 if (!oldWorkDir.equals(newWorkDir)) {
-                    run.getProperties().setProperty(RUN_WORKDIR, newWorkDir);
+                    run.addProperty(RUN_WORKDIR, newWorkDir);
                     changed = true;
                 }
                 if (changed) {
@@ -449,11 +449,11 @@ public class RunJarPanel extends javax.swing.JPanel {
             if (isCurrentDebug) {
                 boolean changed = false;
                 if (!oldAllParams.equals(newAllParams)) {
-                    debug.getProperties().setProperty(RUN_PARAMS, DEFAULT_DEBUG_PARAMS + " " + newAllParams);
+                    debug.addProperty(RUN_PARAMS, DEFAULT_DEBUG_PARAMS + " " + newAllParams);
                     changed = true;
                 }
                 if (!oldWorkDir.equals(newWorkDir)) {
-                    debug.getProperties().setProperty(RUN_WORKDIR, newWorkDir);
+                    debug.addProperty(RUN_WORKDIR, newWorkDir);
                     changed = true;
                 }
                 if (changed) {
@@ -464,14 +464,14 @@ public class RunJarPanel extends javax.swing.JPanel {
             if (isCurrentProfile) {
                 boolean changed = false;
                 if (!oldAllParams.equals(newAllParams)) {
-                    profile.getProperties().setProperty(RUN_PARAMS, DEFAULT_PROFILE_PARAMS + " " + newAllParams);
+                    profile.addProperty(RUN_PARAMS, DEFAULT_PROFILE_PARAMS + " " + newAllParams);
                     changed = true;
                 }
                 if (!oldWorkDir.equals(newWorkDir)) {
-                    profile.getProperties().setProperty(RUN_WORKDIR, newWorkDir);
+                    profile.addProperty(RUN_WORKDIR, newWorkDir);
                     changed = true;
                 }
-                profile.getProperties().setProperty(RUN_EXEC, DEFAULT_PROFILER_EXEC);
+                profile.addProperty(RUN_EXEC, DEFAULT_PROFILER_EXEC);
                 if (changed) {
                     ModelHandle.setUserActionMapping(profile, a2gm);
                     handle.markAsModified(a2gm);

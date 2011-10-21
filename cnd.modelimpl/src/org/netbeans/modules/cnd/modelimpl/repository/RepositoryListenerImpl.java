@@ -168,6 +168,9 @@ public class RepositoryListenerImpl implements RepositoryListener {
     @Override
     public void anExceptionHappened(final CharSequence unitName, RepositoryException exc) {
         assert exc != null;
+        if (TraceFlags.DEBUG_BROKEN_REPOSITORY && exc.getMessage().contains("INTENTIONAL")) { // NOI18N
+            return;
+        }
         if (exc.getCause() != null) {
             exc.getCause().printStackTrace(System.err);
         }
