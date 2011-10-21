@@ -74,10 +74,10 @@
     </fontcolor>
     <!--<fontcolor name="mod-constructor" >
         <font style="bold" />
-    </fontcolor>
+    </fontcolor>-->
     <fontcolor name="mod-class" >
         <font style="bold" />
-    </fontcolor>-->
+    </fontcolor>
 <!--currently not used:-->
 <!--    <fontcolor name="mod-interface" />
     <fontcolor name="mod-annotation-type" />
