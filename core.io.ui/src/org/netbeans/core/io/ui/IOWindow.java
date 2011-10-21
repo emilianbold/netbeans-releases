@@ -424,9 +424,6 @@ public final class IOWindow implements IOContainer.Provider {
 
         void setToolbarActions(JComponent comp, Action[] toolbarActions) {
             if (toolbarActions != null && toolbarActions.length > 0) {
-                if (toolbarActions.length > 5) {
-                    throw new IllegalArgumentException("No more than 5 actions allowed in the output window toolbar"); //NOI18N
-                }
                 comp.putClientProperty(TOOLBAR_ACTIONS_PROP, toolbarActions);
             }
             if (getSelectedTab() == comp) {
