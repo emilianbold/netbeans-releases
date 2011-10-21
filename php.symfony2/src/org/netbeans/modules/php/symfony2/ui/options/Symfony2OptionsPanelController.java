@@ -62,7 +62,7 @@ import org.openide.util.NbBundle;
     id=Symfony2OptionsPanelController.OPTIONS_SUBPATH,
     displayName="#LBL_OptionsName",
 //    toolTip="#LBL_OptionsTooltip"
-    position=210
+    position=190
 )
 public class Symfony2OptionsPanelController extends OptionsPanelController implements ChangeListener {
 
@@ -73,6 +73,10 @@ public class Symfony2OptionsPanelController extends OptionsPanelController imple
     private Symfony2OptionsPanel symfony2OptionsPanel = null;
     private volatile boolean changed = false;
 
+
+    public static String getOptionsPath() {
+        return UiUtils.OPTIONS_PATH + "/" + OPTIONS_SUBPATH; // NOI18N
+    }
 
     @Override
     public void update() {
