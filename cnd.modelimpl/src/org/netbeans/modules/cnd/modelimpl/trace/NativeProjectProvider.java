@@ -190,8 +190,9 @@ public final class NativeProjectProvider {
 	}
 	
         private String initName(String projectRoot) {
-            if (Boolean.getBoolean("cnd.modelimpl.tracemodel.project.name")) { // NOI18N
-                String out = PathUtilities.getBaseName(projectRoot);
+            String out = System.getProperty("cnd.modelimpl.tracemodel.project.name"); // NOI18N
+            if (out == null) { 
+                out = PathUtilities.getBaseName(projectRoot);
                 String dir = PathUtilities.getDirName(projectRoot);
                 if (dir != null) {
                     dir = PathUtilities.getBaseName(dir);
@@ -199,10 +200,8 @@ public final class NativeProjectProvider {
                 if (dir != null) {
                     out = dir + "_" + out; // NOI18N
                 }
-                return out;
-            } else {
-                return "DummyProject"; // NOI18N
             }
+            return out;
         }
 
         private List<String> createIncludes(List<String> src) {

@@ -55,6 +55,12 @@ public class FuncVarElementProviderTestCase extends CppSymbolBaseTestCase {
     }
 
     @Override
+    protected void setUp() throws Exception {
+        System.setProperty("cnd.modelimpl.tracemodel.project.name", "DummyProject"); // NOI18N
+        super.setUp();
+    }
+
+    @Override
     protected File getTestCaseDataDir() {
         return getQuoteDataDir();
     }
