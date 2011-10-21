@@ -43,6 +43,7 @@ package org.netbeans.modules.remote.impl.fs;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
@@ -51,11 +52,11 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
  */
 public abstract class RemoteFileObjectFile extends RemoteFileObjectBase {
 
-    private ThreadLocal<Boolean> magic = new ThreadLocal<Boolean>() {
+    private ThreadLocal<AtomicInteger> magic = new ThreadLocal<AtomicInteger>() {
 
         @Override
-        protected Boolean initialValue() {
-            return Boolean.FALSE;
+        protected AtomicInteger initialValue() {
+            return new AtomicInteger(0);
         }
     };
 
@@ -66,16 +67,26 @@ public abstract class RemoteFileObjectFile extends RemoteFileObjectBase {
 
     @Override
     public String getMIMEType() {
-        magic.set(Boolean.TRUE);
+        magic.get().incrementAndGet();
         try {
             return super.getMIMEType();
         } finally {
-            magic.set(Boolean.FALSE);
+            magic.get().decrementAndGet();
         }
     }
-    
+
+    @Override
+    public String getMIMEType(String... withinMIMETypes) {
+        magic.get().incrementAndGet();
+        try {
+            return super.getMIMEType(withinMIMETypes);
+        } finally {
+            magic.get().decrementAndGet();
+        }
+    }
+
     protected boolean isMimeResolving() {
-        if (magic.get()) {
+        if (magic.get().intValue() > 0) {
             return true;
         }
         for(StackTraceElement element : Thread.currentThread().getStackTrace()) {
@@ -94,7 +105,7 @@ public abstract class RemoteFileObjectFile extends RemoteFileObjectBase {
                 return parent.getMagic(this);
             }
         } catch (IOException ex) {
-            ex.printStackTrace();
+            ex.printStackTrace(System.err);
         }
         return null;
     }

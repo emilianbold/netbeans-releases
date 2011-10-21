@@ -56,9 +56,12 @@ public class IncrementalParseRepositoryValidationTest extends CndBaseTestSuite {
 
     static {
         System.setProperty("cnd.modelimpl.parser.threads", "8");
+        if (Boolean.getBoolean("cnd.modelimpl.trace203833")) {
+            System.setProperty("cnd.modelimpl.trace.validation", "true"); // NOI18N
+            System.setProperty("cnd.modelimpl.installer.trace", "true"); // NOI18N
+            System.setProperty("cnd.skip.err.check", "true");
+        }
 //        System.setProperty("cnd.modelimpl.trace203833", "true"); // NOI18N
-//        System.setProperty("cnd.modelimpl.trace.validation", "true"); // NOI18N
-//        System.setProperty("cnd.modelimpl.installer.trace", "true"); // NOI18N
 //        System.setProperty("cnd.pp.condition.comparision.trace", "true");
 //        System.setProperty("cnd.modelimpl.trace.file", "gmodule-dl.c");
     }

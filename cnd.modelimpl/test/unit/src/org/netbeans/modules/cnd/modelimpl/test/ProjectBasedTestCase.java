@@ -48,7 +48,10 @@ import java.io.File;
 import java.io.PrintWriter;
 import java.util.*;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.cnd.api.model.CsmModel;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.trace.TestModelHelper;
 import org.netbeans.modules.cnd.test.CndCoreTestUtils;
 
@@ -202,6 +205,31 @@ public abstract class ProjectBasedTestCase extends ModelBasedTestCase {
         return null;
     }
 
+    protected CsmProject getProject(String name) {
+        for (TestModelHelper testModelHelper : projectHelpers.values()) {
+            CsmProject project = testModelHelper.getProject();
+            if (name.contentEquals(project.getName())) {
+                return project;
+            }
+        }
+        return null;
+    }
+
+    protected CsmModel getModel() {
+        for (TestModelHelper testModelHelper : projectHelpers.values()) {
+            return testModelHelper.getModel();
+        }
+        assert false : "no initialized projects";
+        return null;
+    }
+    
+    protected void closeProject(CsmProject project) {
+        CsmModel model = getModel();
+        if (model instanceof ModelImpl && project instanceof ProjectBase) {
+            ((ModelImpl)model).closeProjectBase((ProjectBase)project, false);
+        }
+    }
+    
     protected int getOffset(File testSourceFile, int lineIndex, int colIndex) throws Exception {
         BaseDocument doc = getBaseDocument(testSourceFile);
         assert doc != null;
