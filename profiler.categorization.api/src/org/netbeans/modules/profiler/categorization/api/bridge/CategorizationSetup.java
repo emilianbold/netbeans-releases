@@ -46,7 +46,7 @@ import org.netbeans.lib.profiler.common.ProfilingSettings;
 import org.netbeans.lib.profiler.results.cpu.marking.MarkingEngine;
 import org.netbeans.lib.profiler.ui.cpu.statistics.StatisticalModule;
 import org.netbeans.lib.profiler.ui.cpu.statistics.StatisticalModuleContainer;
-import org.netbeans.modules.profiler.categorization.api.Categorization;
+import org.netbeans.modules.profiler.categorization.api.ProjectCategorization;
 import org.netbeans.modules.profiler.categorization.api.ProjectAwareStatisticalModule;
 import org.netbeans.modules.profiler.spi.SessionListener;
 import org.openide.util.Lookup;
@@ -76,10 +76,10 @@ public class CategorizationSetup extends SessionListener.Adapter {
 
     private void setupMarks(ProfilingSettings ps, Lookup.Provider project) {
         boolean isMarksEnabled = (ps.getProfilingType() == ProfilingSettings.PROFILE_CPU_ENTIRE) || (ps.getProfilingType() == ProfilingSettings.PROFILE_CPU_PART);
-        isMarksEnabled &= Categorization.isAvailable(project);
+        isMarksEnabled &= ProjectCategorization.isAvailable(project);
 
         if (isMarksEnabled) {
-            Categorization ctg = new Categorization(project);
+            ProjectCategorization ctg = new ProjectCategorization(project);
             ctg.reset();
             MarkingEngine.getDefault().configure(ctg.getMappings(), Lookup.getDefault().lookupAll(MarkingEngine.StateObserver.class));
         } else {

@@ -42,6 +42,7 @@
 package org.netbeans.modules.profiler.nbimpl.javac;
 
 import com.sun.source.tree.ClassTree;
+import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import java.io.IOException;
 import java.util.Collections;
@@ -375,7 +376,7 @@ public class JavacClassInfo extends SourceClassInfo {
             }
         } 
         if (this.cpInfo != null) {
-            if (this.cpInfo != other.cpInfo && !this.cpInfo.equals(other.cpInfo)) {
+            if (this.cpInfo != other.cpInfo && !this.cpInfo.toString().equals(other.cpInfo.toString())) { // ClassPath does not implement "equals()" method and as such ClasspathInfo does effectivly neither
                 return false;
             }
         }
@@ -396,7 +397,7 @@ public class JavacClassInfo extends SourceClassInfo {
         final int parentClassNameLength = getQualifiedName().length();
 
         cc.toPhase(JavaSource.Phase.RESOLVED);
-        
+
         TreePathScanner<Void, Void> scanner = new TreePathScanner<Void, Void>() {
 
             @Override
@@ -421,7 +422,7 @@ public class JavacClassInfo extends SourceClassInfo {
                 super.visitClass(node, v);
 
                 return null;
-            }
+            }  
         };
 
         scanner.scan(cc.getCompilationUnit(), null);
