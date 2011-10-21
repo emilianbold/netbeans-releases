@@ -68,7 +68,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import org.netbeans.lib.profiler.results.RuntimeCCTNodeProcessor;
-import org.netbeans.modules.profiler.categorization.api.Categorization;
+import org.netbeans.modules.profiler.categorization.api.ProjectCategorization;
 import org.netbeans.modules.profiler.categorization.api.Category;
 import org.netbeans.modules.profiler.categorization.api.ProjectAwareStatisticalModule;
 import org.netbeans.modules.profiler.utilities.Visitable;
@@ -253,7 +253,7 @@ public class ForwardCategoryDistributionPanel extends ProjectAwareStatisticalMod
 
     @Override
     public boolean supportsProject(Lookup.Provider project) {
-        return Categorization.isAvailable(getProject());
+        return ProjectCategorization.isAvailable(getProject());
     }
     
     //~ Methods ------------------------------------------------------------------------------------------------------------------
@@ -343,7 +343,7 @@ public class ForwardCategoryDistributionPanel extends ProjectAwareStatisticalMod
 
                 uiUpdater = new Runnable() {
                         public void run() {
-                            final Categorization categorization = new Categorization(getProject());
+                            final ProjectCategorization categorization = new ProjectCategorization(getProject());
                             
                             removeAll();
 
