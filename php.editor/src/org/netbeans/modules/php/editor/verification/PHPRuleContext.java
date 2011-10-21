@@ -56,7 +56,6 @@ import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
  * @author Tomasz.Slota@Sun.COM
  */
 class PHPRuleContext extends RuleContext {
-    PHPVerificationVisitor.VariableStack variableStack;
     List<ASTNode> path;
     private ElementQuery.Index index;
     @NullAllowed
