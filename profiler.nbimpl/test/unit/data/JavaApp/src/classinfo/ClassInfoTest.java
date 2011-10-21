@@ -4,11 +4,17 @@
  */
 package classinfo;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import sun.org.mozilla.javascript.Callable;
+import sun.org.mozilla.javascript.Context;
+import sun.org.mozilla.javascript.Scriptable;
+
 /**
  *
  * @author Jaroslav Bachorik
  */
-public class ClassInfoTest {
+public class ClassInfoTest implements Serializable, Cloneable {
     private Runnable anonymous = new Runnable() {
 
         public void run() {
@@ -36,7 +42,7 @@ public class ClassInfoTest {
         return x+y;
     }
     
-    public static class StaticInner {
+    public static class StaticInner extends ClassInfoTest {
         public void doit() {
             
         }
@@ -45,6 +51,12 @@ public class ClassInfoTest {
     public class Inner {
         public void doit() {
             
+        }
+    }
+    
+    public static class CallableTest implements Callable {
+        public Object call(Context cntxt, Scriptable s, Scriptable s1, Object[] os) {
+            throw new UnsupportedOperationException("Not supported yet.");
         }
     }
 }
