@@ -55,15 +55,16 @@ import java.util.prefs.Preferences;
  * @author Tomasz.Slota@Sun.COM
  */
 public class AccidentalAssignmentCustomizer extends javax.swing.JPanel {
-    private Preferences prefs;
+    private final AccidentalAssignmentHint accidentalAssignmentHint;
+    private final Preferences preferences;
 
     /** Creates new form AccidentalAssignmentCustomizer */
-    public AccidentalAssignmentCustomizer(Preferences prefs) {
-        this.prefs = prefs;
+    public AccidentalAssignmentCustomizer(Preferences preferences, AccidentalAssignmentHint accidentalAssignmentHint) {
+        this.preferences = preferences;
+        this.accidentalAssignmentHint = accidentalAssignmentHint;
         initComponents();
-        boolean includeAssignementsInWhile = AccidentalAssignmentRule.includeAssignementsInWhile(prefs);
-        cbIncludeWhile.setSelected(includeAssignementsInWhile);
-        chkTopLvlStmtOnly.setSelected(AccidentalAssignmentRule.topLevelStmtsOnly(prefs));
+        checkAssignmentsInWhileStatementsCheckBox.setSelected(accidentalAssignmentHint.checkAssignmentsInWhileStatements(preferences));
+        checkAssignmentsInSubStatementsCheckBox.setSelected(accidentalAssignmentHint.checkAssignmentsInSubStatements(preferences));
     }
 
     /** This method is called from within the constructor to
@@ -75,24 +76,24 @@ public class AccidentalAssignmentCustomizer extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        cbIncludeWhile = new javax.swing.JCheckBox();
-        chkTopLvlStmtOnly = new javax.swing.JCheckBox();
+        checkAssignmentsInWhileStatementsCheckBox = new javax.swing.JCheckBox();
+        checkAssignmentsInSubStatementsCheckBox = new javax.swing.JCheckBox();
 
         setFocusTraversalPolicy(null);
 
-        cbIncludeWhile.setMnemonic('n');
-        cbIncludeWhile.setText(org.openide.util.NbBundle.getMessage(AccidentalAssignmentCustomizer.class, "AccidentalAssignmentCustomizer.includeWhileCB.text")); // NOI18N
-        cbIncludeWhile.addActionListener(new java.awt.event.ActionListener() {
+        checkAssignmentsInWhileStatementsCheckBox.setMnemonic('a');
+        checkAssignmentsInWhileStatementsCheckBox.setText(org.openide.util.NbBundle.getMessage(AccidentalAssignmentCustomizer.class, "AccidentalAssignmentCustomizer.includeWhileCB.text")); // NOI18N
+        checkAssignmentsInWhileStatementsCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cbIncludeWhileActionPerformed(evt);
+                checkAssignmentsInWhileStatementsCheckBoxActionPerformed(evt);
             }
         });
 
-        chkTopLvlStmtOnly.setMnemonic('I');
-        chkTopLvlStmtOnly.setText(org.openide.util.NbBundle.getMessage(AccidentalAssignmentCustomizer.class, "AccidentalAssignmentCustomizer.chkTopLvlStmtOnly.text")); // NOI18N
-        chkTopLvlStmtOnly.addActionListener(new java.awt.event.ActionListener() {
+        checkAssignmentsInSubStatementsCheckBox.setMnemonic('C');
+        checkAssignmentsInSubStatementsCheckBox.setText(org.openide.util.NbBundle.getMessage(AccidentalAssignmentCustomizer.class, "AccidentalAssignmentCustomizer.checkAssignmentsInSubStatementsCheckBox.text")); // NOI18N
+        checkAssignmentsInSubStatementsCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                chkTopLvlStmtOnlyActionPerformed(evt);
+                checkAssignmentsInSubStatementsCheckBoxActionPerformed(evt);
             }
         });
 
@@ -103,41 +104,41 @@ public class AccidentalAssignmentCustomizer extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(chkTopLvlStmtOnly)
-                    .addComponent(cbIncludeWhile))
-                .addContainerGap(101, Short.MAX_VALUE))
+                    .addComponent(checkAssignmentsInSubStatementsCheckBox)
+                    .addComponent(checkAssignmentsInWhileStatementsCheckBox))
+                .addContainerGap(108, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(chkTopLvlStmtOnly)
+                .addComponent(checkAssignmentsInSubStatementsCheckBox)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(cbIncludeWhile)
+                .addComponent(checkAssignmentsInWhileStatementsCheckBox)
                 .addContainerGap(238, Short.MAX_VALUE))
         );
 
-        cbIncludeWhile.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(AccidentalAssignmentCustomizer.class, "AccidentalAssignmentCustomizer.cbIncludeWhile.AccessibleContext.accessibleName")); // NOI18N
-        cbIncludeWhile.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AccidentalAssignmentCustomizer.class, "AccidentalAssignmentCustomizer.cbIncludeWhile.AccessibleContext.accessibleDescription")); // NOI18N
-        chkTopLvlStmtOnly.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(AccidentalAssignmentCustomizer.class, "AccidentalAssignmentCustomizer.chkTopLvlStmtOnly.AccessibleContext.accessibleName")); // NOI18N
-        chkTopLvlStmtOnly.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AccidentalAssignmentCustomizer.class, "AccidentalAssignmentCustomizer.chkTopLvlStmtOnly.AccessibleContext.accessibleDescription")); // NOI18N
+        checkAssignmentsInWhileStatementsCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(AccidentalAssignmentCustomizer.class, "AccidentalAssignmentCustomizer.cbIncludeWhile.AccessibleContext.accessibleName")); // NOI18N
+        checkAssignmentsInWhileStatementsCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AccidentalAssignmentCustomizer.class, "AccidentalAssignmentCustomizer.cbIncludeWhile.AccessibleContext.accessibleDescription")); // NOI18N
+        checkAssignmentsInSubStatementsCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(AccidentalAssignmentCustomizer.class, "AccidentalAssignmentCustomizer.chkTopLvlStmtOnly.AccessibleContext.accessibleName")); // NOI18N
+        checkAssignmentsInSubStatementsCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AccidentalAssignmentCustomizer.class, "AccidentalAssignmentCustomizer.chkTopLvlStmtOnly.AccessibleContext.accessibleDescription")); // NOI18N
 
         getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(AccidentalAssignmentCustomizer.class, "AccidentalAssignmentCustomizer.AccessibleContext.accessibleName")); // NOI18N
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AccidentalAssignmentCustomizer.class, "AccidentalAssignmentCustomizer.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
-    private void cbIncludeWhileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbIncludeWhileActionPerformed
-        AccidentalAssignmentRule.setIncludeAssignementsInWhile(prefs, cbIncludeWhile.isSelected());
-    }//GEN-LAST:event_cbIncludeWhileActionPerformed
+    private void checkAssignmentsInWhileStatementsCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_checkAssignmentsInWhileStatementsCheckBoxActionPerformed
+        accidentalAssignmentHint.setCheckAssignmentsInWhileStatements(preferences, checkAssignmentsInWhileStatementsCheckBox.isSelected());
+    }//GEN-LAST:event_checkAssignmentsInWhileStatementsCheckBoxActionPerformed
 
-    private void chkTopLvlStmtOnlyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chkTopLvlStmtOnlyActionPerformed
-        AccidentalAssignmentRule.setTopLevelStmtsOnly(prefs, chkTopLvlStmtOnly.isSelected());
-}//GEN-LAST:event_chkTopLvlStmtOnlyActionPerformed
+    private void checkAssignmentsInSubStatementsCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_checkAssignmentsInSubStatementsCheckBoxActionPerformed
+        accidentalAssignmentHint.setCheckAssignmentsInSubStatements(preferences, checkAssignmentsInSubStatementsCheckBox.isSelected());
+}//GEN-LAST:event_checkAssignmentsInSubStatementsCheckBoxActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JCheckBox cbIncludeWhile;
-    private javax.swing.JCheckBox chkTopLvlStmtOnly;
+    private javax.swing.JCheckBox checkAssignmentsInSubStatementsCheckBox;
+    private javax.swing.JCheckBox checkAssignmentsInWhileStatementsCheckBox;
     // End of variables declaration//GEN-END:variables
 
 }
