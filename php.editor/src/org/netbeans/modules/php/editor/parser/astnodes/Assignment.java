@@ -50,20 +50,31 @@ package org.netbeans.modules.php.editor.parser.astnodes;
 public class Assignment extends Expression {
 
     public enum Type {
-        EQUAL, // '='
-        PLUS_EQUAL, // '+='
-        MINUS_EQUAL, // '-='
-    	MUL_EQUAL, // '*='
-    	DIV_EQUAL, // '/='
-    	CONCAT_EQUAL, // '.='
-    	MOD_EQUAL, // '%='
-    	AND_EQUAL, // '&='
-    	OR_EQUAL, // '|='
-    	XOR_EQUAL, // '^='
-    	SL_EQUAL, // '<<='
-    	SR_EQUAL // '>>='
+        EQUAL("="), //NOI18N
+        PLUS_EQUAL("+="), //NOI18N
+        MINUS_EQUAL("-="), //NOI18N
+        MUL_EQUAL("*="), //NOI18N
+        DIV_EQUAL("/="), //NOI18N
+        CONCAT_EQUAL(".="), //NOI18N
+        MOD_EQUAL("%="), //NOI18N
+        AND_EQUAL("&="), //NOI18N
+        OR_EQUAL("|="), //NOI18N
+        XOR_EQUAL("^="), //NOI18N
+        SL_EQUAL("<<="), //NOI18N
+        SR_EQUAL(">>="); //NOI18N
+
+        private String operator;
+
+        private Type(String operator) {
+            this.operator = operator;
+        }
+
+        @Override
+        public String toString() {
+            return operator;
+        }
     }
-    
+
     private VariableBase leftHandSide;
     private Assignment.Type operator;
     private Expression rightHandSide;
