@@ -32,10 +32,10 @@
           <Group type="102" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="chkTopLvlStmtOnly" min="-2" max="-2" attributes="0"/>
-                  <Component id="cbIncludeWhile" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="checkAssignmentsInSubStatementsCheckBox" min="-2" max="-2" attributes="0"/>
+                  <Component id="checkAssignmentsInWhileStatementsCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace pref="101" max="32767" attributes="0"/>
+              <EmptySpace pref="108" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -43,18 +43,18 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="chkTopLvlStmtOnly" min="-2" max="-2" attributes="0"/>
+              <Component id="checkAssignmentsInSubStatementsCheckBox" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="cbIncludeWhile" min="-2" max="-2" attributes="0"/>
+              <Component id="checkAssignmentsInWhileStatementsCheckBox" min="-2" max="-2" attributes="0"/>
               <EmptySpace pref="238" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
   </Layout>
   <SubComponents>
-    <Component class="javax.swing.JCheckBox" name="cbIncludeWhile">
+    <Component class="javax.swing.JCheckBox" name="checkAssignmentsInWhileStatementsCheckBox">
       <Properties>
-        <Property name="mnemonic" type="int" value="110"/>
+        <Property name="mnemonic" type="int" value="97"/>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/php/editor/verification/Bundle.properties" key="AccidentalAssignmentCustomizer.includeWhileCB.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
@@ -68,14 +68,14 @@
         </Property>
       </AccessibilityProperties>
       <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="cbIncludeWhileActionPerformed"/>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="checkAssignmentsInWhileStatementsCheckBoxActionPerformed"/>
       </Events>
     </Component>
-    <Component class="javax.swing.JCheckBox" name="chkTopLvlStmtOnly">
+    <Component class="javax.swing.JCheckBox" name="checkAssignmentsInSubStatementsCheckBox">
       <Properties>
-        <Property name="mnemonic" type="int" value="73"/>
+        <Property name="mnemonic" type="int" value="67"/>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/php/editor/verification/Bundle.properties" key="AccidentalAssignmentCustomizer.chkTopLvlStmtOnly.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/php/editor/verification/Bundle.properties" key="AccidentalAssignmentCustomizer.checkAssignmentsInSubStatementsCheckBox.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <AccessibilityProperties>
@@ -87,7 +87,7 @@
         </Property>
       </AccessibilityProperties>
       <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="chkTopLvlStmtOnlyActionPerformed"/>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="checkAssignmentsInSubStatementsCheckBoxActionPerformed"/>
       </Events>
     </Component>
   </SubComponents>

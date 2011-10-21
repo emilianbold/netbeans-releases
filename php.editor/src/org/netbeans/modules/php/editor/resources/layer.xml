@@ -289,7 +289,6 @@
                     <folder name="stable">
                         <attr name="position" intvalue="200"/>
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.editor.verification.Bundle"/>
-                        <file name="org-netbeans-modules-php-editor-verification-AccidentalAssignmentRule.instance"/>
                         <file name="org-netbeans-modules-php-editor-verification-AddUseImportRule.instance"/>
                         <file name="org-netbeans-modules-php-editor-verification-ImplementAbstractMethods.instance"/>
                         <file name="org-netbeans-modules-php-editor-verification-VarDocHint.instance"/>
@@ -303,6 +302,7 @@
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.editor.verification.Bundle"/>
                         <file name="org-netbeans-modules-php-editor-verification-UninitializedVariableHint.instance"/>
                         <file name="org-netbeans-modules-php-editor-verification-WrongOrderOfArgsHint.instance"/>
+                        <file name="org-netbeans-modules-php-editor-verification-AccidentalAssignmentHint.instance"/>
                     </folder>
                 </folder>
             </folder>
