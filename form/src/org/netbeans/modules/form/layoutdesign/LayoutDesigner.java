@@ -2345,7 +2345,8 @@ public final class LayoutDesigner implements LayoutModel.RemoveHandler, LayoutMo
 
     private static boolean shouldDuplicateWholeGroup(LayoutInterval group, LayoutInterval knownSub, LayoutInterval[] dupIntervals) {
         assert group.isGroup();
-        if (group.isParallel() && knownSub.getAlignment() != LEADING && knownSub.getAlignment() != TRAILING) {
+        if (group.isParallel() && knownSub != null
+                && knownSub.getAlignment() != LEADING && knownSub.getAlignment() != TRAILING) {
             return true; // need to duplicate next to whole center/baseline group
         }
         Iterator it = group.getSubIntervals();
