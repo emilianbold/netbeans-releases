@@ -42,9 +42,7 @@
 
 package org.netbeans.modules.php.editor.verification;
 
-import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -104,9 +102,6 @@ public class PHPHintsProvider implements HintsProvider {
                 }
             }
         }
-
-        computeExperimentalHints(context, allHints, mgr, hints);
-
         if (LOGGER.isLoggable(Level.FINE)) {
             long execTime = Calendar.getInstance().getTimeInMillis() - startTime;
             FileObject fobj = info.getSnapshot().getSource().getFileObject();
@@ -182,41 +177,4 @@ public class PHPHintsProvider implements HintsProvider {
         return new PHPRuleContext();
     }
 
-    private void computeExperimentalHints(RuleContext context, Map<?, List<? extends AstRule>> allHints, HintsManager mgr, List<Hint> hints) {
-        Collection<PHPRule> firstPassHints = new ArrayList<PHPRule>();
-        for (Object obj : allHints.get(FIRST_PASS_HINTS)) {
-            if (obj instanceof PHPRule) {
-                PHPRule rule = (PHPRule) obj;
-                if (mgr.isEnabled(rule)) {
-                    firstPassHints.add(rule);
-                    if (rule instanceof PHPRuleWithPreferences) {
-                        PHPRuleWithPreferences ruleWithPrefs = (PHPRuleWithPreferences) rule;
-                        ruleWithPrefs.setPreferences(mgr.getPreferences(rule));
-                    }
-                }
-            }
-        }
-        // A temp workaround for performance problems with hints accessing the VarStack.
-        boolean maintainVarStack = false;
-        for (List<? extends Rule.AstRule> list : allHints.values()) {
-            for (Rule.AstRule obj : list) {
-                if (obj instanceof VarStackReadingRule) {
-                    VarStackReadingRule rule = (VarStackReadingRule) obj;
-                    if (mgr.isEnabled(rule)) {
-                        maintainVarStack = true;
-                        LOGGER.fine(rule.getClass().getName() + " is enabled, turning on the VarStack");
-                        break;
-                    }
-                }
-            }
-        }
-        // end of the workaround
-        PHPVerificationVisitor visitor = new PHPVerificationVisitor((PHPRuleContext) context, firstPassHints, maintainVarStack);
-        @SuppressWarnings(value = "unchecked")
-        PHPParseResult phpParseResult = (PHPParseResult) context.parserResult;
-        if (phpParseResult.getProgram() != null) {
-            phpParseResult.getProgram().accept(visitor);
-        }
-        hints.addAll(visitor.getResult());
-    }
 }
