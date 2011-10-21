@@ -55,7 +55,7 @@ import org.netbeans.lib.profiler.results.cpu.FlatProfileContainer;
 import org.netbeans.lib.profiler.results.cpu.marking.MarkMapping;
 import org.netbeans.lib.profiler.results.cpu.marking.MarkingEngine;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
-import org.netbeans.modules.profiler.categorization.api.Categorization;
+import org.netbeans.modules.profiler.categorization.api.ProjectCategorization;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
@@ -107,7 +107,7 @@ public class TestBase extends NbTestCase {
         IndexingManager.getDefault().refreshIndexAndWait( 
                 projectPath.getFileObject("src").getURL(), null);
         
-        myCategorization = new Categorization(myJavaApp);
+        myCategorization = new ProjectCategorization(myJavaApp);
         myCategorization.reset();
         MarkingEngine.getDefault().configure(myCategorization.getMappings(), Collections.emptyList());
     }
@@ -136,12 +136,12 @@ public class TestBase extends NbTestCase {
         return myJavaApp;
     }
     
-    protected Categorization getCategorization(){
+    protected ProjectCategorization getCategorization(){
         return myCategorization;
     }
     
     private Project myJavaApp;
-    private Categorization myCategorization;
+    private ProjectCategorization myCategorization;
     
     protected void dumpFlatProfile(FlatProfileContainer flatProfile, ProfilingSessionStatus status) {
         System.out.println("FlatProfilerContainer:");
