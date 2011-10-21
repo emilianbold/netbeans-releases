@@ -42,6 +42,7 @@
 package org.netbeans.modules.php.symfony2;
 
 import java.io.File;
+import java.util.Enumeration;
 import org.netbeans.modules.php.api.phpmodule.BadgeIcon;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpModuleProperties;
@@ -54,6 +55,7 @@ import org.netbeans.modules.php.spi.phpmodule.PhpModuleExtender;
 import org.netbeans.modules.php.spi.phpmodule.PhpModuleIgnoredFilesExtender;
 import org.netbeans.modules.php.symfony2.commands.Symfony2CommandSupport;
 import org.netbeans.modules.php.symfony2.commands.Symfony2Script;
+import org.netbeans.modules.php.symfony2.options.Symfony2Options;
 import org.netbeans.modules.php.symfony2.ui.actions.Symfony2PhpModuleActionsExtender;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -149,6 +151,41 @@ public final class Symfony2PhpFrameworkProvider extends PhpFrameworkProvider {
 
     @Override
     public EditorExtender getEditorExtender(PhpModule phpModule) {
+        return null;
+    }
+
+    @Override
+    public void phpModuleOpened(PhpModule phpModule) {
+        registerTwig(phpModule);
+    }
+
+    // XXX remove once twig support is added
+    private void registerTwig(PhpModule phpModule) {
+        if (Symfony2Options.getInstance().isTwigRegistered()) {
+            // nothing to do
+            return;
+        }
+        FileObject twigFile = locateTwigFile(phpModule);
+        if (twigFile == null) {
+            // no twig file? weird, do nothing...
+            return;
+        }
+        String mimeType = FileUtil.getMIMEType(twigFile);
+        if (mimeType == null) {
+            // register twig as smarty files
+            FileUtil.setMIMEType("twig", "text/x-tpl"); // NOI18N
+        }
+        Symfony2Options.getInstance().setTwigRegistered(true);
+    }
+
+    private FileObject locateTwigFile(PhpModule phpModule) {
+        Enumeration<? extends FileObject> children = phpModule.getSourceDirectory().getChildren(true);
+        while (children.hasMoreElements()) {
+            FileObject child = children.nextElement();
+            if ("twig".equalsIgnoreCase(child.getExt()) && child.isData()) { // NOI18N
+                return child;
+            }
+        }
         return null;
     }
 

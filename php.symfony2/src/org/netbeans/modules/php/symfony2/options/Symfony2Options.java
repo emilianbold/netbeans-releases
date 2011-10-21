@@ -62,6 +62,8 @@ public final class Symfony2Options {
     // properties
     private static final String SANDBOX = "sandbox"; // NOI18N
     private static final String IGNORE_CACHE = "ignore.cache"; // NOI18N
+    // XXX remove once twig support is added
+    private static final String TWIG_REGISTERED = "twig.registered"; // NOI18N
 
     final ChangeSupport changeSupport = new ChangeSupport(this);
 
@@ -101,6 +103,14 @@ public final class Symfony2Options {
 
     public void setIgnoreCache(boolean ignoreCache) {
         getPreferences().putBoolean(IGNORE_CACHE, ignoreCache);
+    }
+
+    public boolean isTwigRegistered() {
+        return getPreferences().getBoolean(TWIG_REGISTERED, false);
+    }
+
+    public void setTwigRegistered(boolean twigRegistered) {
+        getPreferences().putBoolean(TWIG_REGISTERED, twigRegistered);
     }
 
     private Preferences getPreferences() {
