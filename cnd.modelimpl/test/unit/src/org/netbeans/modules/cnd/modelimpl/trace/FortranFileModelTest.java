@@ -46,13 +46,13 @@ package org.netbeans.modules.cnd.modelimpl.trace;
  * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 public class FortranFileModelTest extends TraceModelTestBase {
-
     public FortranFileModelTest(String testName) {
         super(testName);
     }
 
     @Override
     protected void setUp() throws Exception {
+        System.setProperty("cnd.modelimpl.tracemodel.project.name", "DummyProject"); // NOI18N
         System.setProperty("parser.report.errors", "true");
         System.setProperty("antlr.exceptions.hideExpectedTokens", "true");
         super.setUp();

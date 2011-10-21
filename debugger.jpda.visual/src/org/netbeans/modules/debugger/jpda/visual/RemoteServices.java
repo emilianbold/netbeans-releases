@@ -75,6 +75,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.locks.Lock;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -139,60 +140,77 @@ public class RemoteServices {
         ObjectReference cl = (ObjectReference)tawt.invokeMethod(tawt, getContextCl, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
         t.notifyMethodInvoking();
         try {
-            ClassType classLoaderClass = null;
-            if (cl != null) {
-                classLoaderClass = (ClassType)cl.referenceType();
-            } else {
-                classLoaderClass = getClass(vm, ClassLoader.class.getName());
-                Method getSystemClassLoader = classLoaderClass.concreteMethodByName("getSystemClassLoader", "()Ljava/lang/ClassLoader;");
-                cl = (ObjectReference) classLoaderClass.invokeMethod(tawt, getSystemClassLoader, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
-            }
-
             List<RemoteClass> remoteClasses = getRemoteClasses();
             ClassObjectReference basicClass = null;
             for (RemoteClass rc : remoteClasses) {
-                if ((sType == ServiceType.AWT && rc.name.contains("AWT")) ||
-                    (sType == ServiceType.FX && rc.name.contains("FX"))) {
-                    ClassObjectReference theUploadedClass = null;
-                    ArrayReference byteArray = createTargetBytes(vm, rc.bytes);
-                    StringReference nameMirror = null;
-                    try {
-                        Method defineClass = classLoaderClass.concreteMethodByName("defineClass", "(Ljava/lang/String;[BII)Ljava/lang/Class;");
-                        boolean uploaded = false;
-                        while (!uploaded) {
-                            nameMirror = vm.mirrorOf(rc.name);
-                            try {
-                                nameMirror.disableCollection();
-                                uploaded = true;
-                            } catch (ObjectCollectedException ocex) {
-                                // Just collected, try again...
-                            }
+                String className = rc.name;
+                if (basicClass == null && className.indexOf('$') < 0) {
+                    if ((sType == ServiceType.AWT && className.contains("AWT")) ||
+                        (sType == ServiceType.FX && className.contains("FX"))) {
+                        List<ReferenceType> classesByName = vm.classesByName(className);
+                        if (!classesByName.isEmpty()) {
+                            basicClass = classesByName.get(0).classObject();
                         }
-                        uploaded = false;
-                        while (!uploaded) {
-                            theUploadedClass = (ClassObjectReference) cl.invokeMethod(tawt, defineClass, Arrays.asList(nameMirror, byteArray, vm.mirrorOf(0), vm.mirrorOf(rc.bytes.length)), ObjectReference.INVOKE_SINGLE_THREADED);
-                            if (basicClass == null && rc.name.indexOf('$') < 0) {
+                    }
+                    break;
+                }
+            }
+            // Suppose that when there's the basic class loaded, there are all.
+            if (basicClass == null) {  // Load the classes only if there's not the basic one.
+                ClassType classLoaderClass = null;
+                if (cl != null) {
+                    classLoaderClass = (ClassType)cl.referenceType();
+                } else {
+                    classLoaderClass = getClass(vm, ClassLoader.class.getName());
+                    Method getSystemClassLoader = classLoaderClass.concreteMethodByName("getSystemClassLoader", "()Ljava/lang/ClassLoader;");
+                    cl = (ObjectReference) classLoaderClass.invokeMethod(tawt, getSystemClassLoader, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
+                }
+
+                for (RemoteClass rc : remoteClasses) {
+                    String className = rc.name;
+                    if ((sType == ServiceType.AWT && className.contains("AWT")) ||
+                        (sType == ServiceType.FX && className.contains("FX"))) {
+                        ClassObjectReference theUploadedClass = null;
+                        ArrayReference byteArray = createTargetBytes(vm, rc.bytes);
+                        StringReference nameMirror = null;
+                        try {
+                            Method defineClass = classLoaderClass.concreteMethodByName("defineClass", "(Ljava/lang/String;[BII)Ljava/lang/Class;");
+                            boolean uploaded = false;
+                            while (!uploaded) {
+                                nameMirror = vm.mirrorOf(className);
                                 try {
-                                    // Disable collection only of the basic class
-                                    theUploadedClass.disableCollection();
-                                    basicClass = theUploadedClass;
+                                    nameMirror.disableCollection();
                                     uploaded = true;
                                 } catch (ObjectCollectedException ocex) {
                                     // Just collected, try again...
                                 }
-                            } else {
-                                uploaded = true;
+                            }
+                            uploaded = false;
+                            while (!uploaded) {
+                                theUploadedClass = (ClassObjectReference) cl.invokeMethod(tawt, defineClass, Arrays.asList(nameMirror, byteArray, vm.mirrorOf(0), vm.mirrorOf(rc.bytes.length)), ObjectReference.INVOKE_SINGLE_THREADED);
+                                if (basicClass == null && rc.name.indexOf('$') < 0) {
+                                    try {
+                                        // Disable collection only of the basic class
+                                        theUploadedClass.disableCollection();
+                                        basicClass = theUploadedClass;
+                                        uploaded = true;
+                                    } catch (ObjectCollectedException ocex) {
+                                        // Just collected, try again...
+                                    }
+                                } else {
+                                    uploaded = true;
+                                }
+                            }
+                        } finally {
+                            byteArray.enableCollection(); // We can dispose it now
+                            if (nameMirror != null) {
+                                nameMirror.enableCollection();
                             }
                         }
-                    } finally {
-                        byteArray.enableCollection(); // We can dispose it now
-                        if (nameMirror != null) {
-                            nameMirror.enableCollection();
-                        }
                     }
+                    //Method resolveClass = classLoaderClass.concreteMethodByName("resolveClass", "(Ljava/lang/Class;)V");
+                    //systemClassLoader.invokeMethod(tawt, resolveClass, Arrays.asList(theUploadedClass), ObjectReference.INVOKE_SINGLE_THREADED);
                 }
-                //Method resolveClass = classLoaderClass.concreteMethodByName("resolveClass", "(Ljava/lang/Class;)V");
-                //systemClassLoader.invokeMethod(tawt, resolveClass, Arrays.asList(theUploadedClass), ObjectReference.INVOKE_SINGLE_THREADED);
             }
             if (basicClass != null) {
                 // Initialize the class:
@@ -301,7 +319,8 @@ public class RemoteServices {
         final JPDAThreadImpl t = (JPDAThreadImpl) thread;
         boolean wasSuspended = true;
         
-        t.accessLock.writeLock().lock();
+        Lock lock = t.accessLock.writeLock();
+        lock.lock();
         try {
             ThreadReference threadReference = t.getThreadReference();
             wasSuspended = t.isSuspended();
@@ -311,7 +330,8 @@ public class RemoteServices {
             }
             if (!t.isSuspended()) {
                 final CountDownLatch latch = new CountDownLatch(1);
-                t.accessLock.writeLock().unlock();
+                lock.unlock();
+                lock = null;
                 switch(sType) {
                     case AWT: {
                         runOnBreakpoint(
@@ -349,7 +369,6 @@ public class RemoteServices {
                 try {
                     // wait for the async operation to finish
                     latch.await();
-                    t.accessLock.writeLock().lock();
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                 }
@@ -380,7 +399,9 @@ public class RemoteServices {
                 }
             }
         } finally {
-            t.accessLock.writeLock().unlock();
+            if (lock != null) {
+                lock.unlock();
+            }
         }
     }
     
