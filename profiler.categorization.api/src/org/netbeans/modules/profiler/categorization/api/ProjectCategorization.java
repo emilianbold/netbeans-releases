@@ -39,103 +39,72 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.profiler.categorization.api;
 
 import org.netbeans.modules.profiler.categorization.spi.CategoryDefinitionProcessor;
-import org.netbeans.modules.profiler.categorization.spi.CategoryDefinition;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-import org.netbeans.lib.profiler.marker.Mark;
+import org.netbeans.lib.profiler.marker.Marker;
+import org.netbeans.lib.profiler.results.cpu.marking.MarkMapping;
 import org.netbeans.modules.profiler.utilities.Visitable;
 import org.netbeans.modules.profiler.utilities.Visitor;
+import org.openide.util.Lookup;
 
 /**
  *
  * @author Jaroslav Bachorik
  */
-public abstract class Category implements Visitable<Category> {
-    private String id;
-    private String label;
-    
-    private Set<CategoryDefinition> definitions;
-    private Mark assignedMark;
-    
-    public static final Category DEFAULT = new Category("DEFAULT", "Default Category", new Mark((short)0)) {
-        public <R, P> R accept(Visitor<Visitable<Category>, R, P> visitor, P parameter) {
-            // DO NOTHING
-            return null;
-        }
+final public class ProjectCategorization extends Categorization {
+    private Lookup.Provider project;
 
-        @Override
-        public Set<Category> getSubcategories() {
-            return Collections.EMPTY_SET;
-        }
-    };
-    
-    public Category(String id, String label, Mark mark) {
-        this.id = id;
-        this.label = label;
-        this.definitions = new HashSet<CategoryDefinition>();
-        this.assignedMark = mark;
-    }
-    
-    public Category(String id, String label) {
-        this(id, label, new Mark());
-    }
-
-    public String getLabel() {
-        return label;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public Mark getAssignedMark() {
-        return assignedMark;
-    }
-
-    public Set<CategoryDefinition> getDefinitions() {
-        return definitions;
-    }
-        
-    public Category getValue() {
-        return this;
-    }
-    
-    public abstract Set<Category> getSubcategories();
-    
-    void processDefinitionsWith(CategoryDefinitionProcessor processor) {
-        for(CategoryDefinition def : definitions) {
-            def.processWith(processor);
-        }
+    public ProjectCategorization(Lookup.Provider project) {
+        super();
+        this.project = project;
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
+    protected void buildCategories(CategoryContainer root) {
+        for (CategoryBuilder builder : project.getLookup().lookupAll(CategoryBuilder.class)) {
+            root.addAll(builder.getRootCategory().getSubcategories());
         }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final Category other = (Category) obj;
-        if ((this.id == null) ? (other.id != null) : !this.id.equals(other.id)) {
-            return false;
-        }
-        if (this.assignedMark != other.assignedMark && (this.assignedMark == null || !this.assignedMark.equals(other.assignedMark))) {
-            return false;
-        }
-        return true;
+    }
+
+    /**
+     * A categorization is only available if there is a {@linkplain CategoryBuilder}
+     * associated with it
+     * @return Returns TRUE only if there is a {@linkplain CategoryBuilder} registered
+     *         in the project lookup
+     */
+    @Override
+    public boolean isAvailable() {
+        return isAvailable(this.project);
+    }
+
+    /**
+     * A categorization is only available if there is a {@linkplain CategoryBuilder}
+     * associated with it.
+     * The static method is defined here so the availability can be checked without
+     * unnecessary creation of the {@linkplain ProjectCategorization} instance
+     * @return Returns TRUE only if there is a {@linkplain CategoryBuilder} registered
+     *         in the project lookup
+     */
+    public static boolean isAvailable(Lookup.Provider project) {
+        if (project == null) return false;
+        return project.getLookup().lookup(CategoryBuilder.class) != null;
     }
 
     @Override
-    public int hashCode() {
-        int hash = 5;
-        hash = 53 * hash + (this.id != null ? this.id.hashCode() : 0);
-        hash = 53 * hash + (this.assignedMark != null ? this.assignedMark.hashCode() : 0);
-        return hash;
+    public MarkMapping[] getMappings() {
+        CategoryDefinitionProcessor mp = project.getLookup().lookup(CategoryDefinitionProcessor.class);
+        if (mp != null) {
+            getRoot().accept(new Visitor<Visitable<Category>, Void, CategoryDefinitionProcessor>() {
+
+                @Override
+                public Void visit(Visitable<Category> visitable, CategoryDefinitionProcessor parameter) {
+                    visitable.getValue().processDefinitionsWith(parameter);
+                    return null;
+                }
+            }, mp);
+            return ((Marker)mp).getMappings();
+        }
+        return new MarkMapping[0];
     }
 }

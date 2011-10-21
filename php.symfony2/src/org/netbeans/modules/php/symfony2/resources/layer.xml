@@ -45,6 +45,15 @@ made subject to such option by the copyright holder.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
 <filesystem>
+    <folder name="OptionsExport">
+        <folder name="PHP">
+            <file name="Symfony2">
+                <attr name="include" stringvalue="config/Preferences/org/netbeans/modules/php/symfony2/symfony2.properties"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.php.symfony2.resources.Bundle#LBL_Symfony2ExportName"/>
+                <attr name="position" intvalue="310"/>
+            </file>
+        </folder>
+    </folder>
     <folder name="Actions">
         <folder name="PHP">
             <file name="org-netbeans-modules-php-symfony2-ui-actions-Symfony2RunCommandAction.instance">

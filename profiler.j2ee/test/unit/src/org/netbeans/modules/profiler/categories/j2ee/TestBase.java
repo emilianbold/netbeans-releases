@@ -53,7 +53,7 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.profiler.results.cpu.marking.MarkMapping;
 import org.netbeans.lib.profiler.results.cpu.marking.MarkingEngine;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
-import org.netbeans.modules.profiler.categorization.api.Categorization;
+import org.netbeans.modules.profiler.categorization.api.ProjectCategorization;
 import org.netbeans.modules.profiler.categorization.api.Category;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -113,7 +113,7 @@ public class TestBase extends NbTestCase {
         IndexingManager.getDefault().refreshIndexAndWait( 
                 projectPath.getFileObject("src").getURL(), null);
         
-        myCategorization = new Categorization(myProject);
+        myCategorization = new ProjectCategorization(myProject);
         myCategorization.reset();
         MarkingEngine.getDefault().configure(myCategorization.getMappings(), Collections.emptyList());
     }
@@ -142,7 +142,7 @@ public class TestBase extends NbTestCase {
         return myProject;
     }
     
-    protected Categorization getCategorization(){
+    protected ProjectCategorization getCategorization(){
         return myCategorization;
     }
     
@@ -164,6 +164,6 @@ public class TestBase extends NbTestCase {
     }
     
     private Project myProject;
-    private Categorization myCategorization;
+    private ProjectCategorization myCategorization;
     
 }
