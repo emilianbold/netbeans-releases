@@ -415,13 +415,13 @@ public class UninitializedVariableHint extends AbstractRule {
     }
 
     @Override
-    @Messages("UninitializedVariableHintDesc=Variable seems to be uninitialized")
+    @Messages("UninitializedVariableHintDesc=Detects variables which are used, but not initialized.<br><br>Every variable should be initialized before its first use.")
     public String getDescription() {
         return Bundle.UninitializedVariableHintDesc();
     }
 
     @Override
-    @Messages("UninitializedVariableHintDispName=Variable seems to be uninitialized")
+    @Messages("UninitializedVariableHintDispName=Uninitialized Variables")
     public String getDisplayName() {
         return Bundle.UninitializedVariableHintDispName();
     }

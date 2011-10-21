@@ -621,13 +621,13 @@ public class UnusedVariableHint extends AbstractRule implements PHPRuleWithPrefe
     }
 
     @Override
-    @Messages("UnusedVariableHintDesc=Variable seems to be unused in its scope")
+    @Messages("UnusedVariableHintDesc=Detects variables which are declared, but not used in their scope.")
     public String getDescription() {
         return Bundle.UnusedVariableHintDesc();
     }
 
     @Override
-    @Messages("UnusedVariableHintDispName=Variable seems to be unused in its scope")
+    @Messages("UnusedVariableHintDispName=Unused Variables")
     public String getDisplayName() {
         return Bundle.UnusedVariableHintDispName();
     }

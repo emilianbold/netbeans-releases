@@ -307,7 +307,7 @@ public class AccidentalAssignmentHint extends AbstractRule implements PHPRuleWit
     }
 
     @Override
-    @Messages("AccidentalAssignmentHintDispName=Assignments in conditions should be avoided")
+    @Messages("AccidentalAssignmentHintDispName=Accidental Assignments")
     public String getDisplayName() {
         return Bundle.AccidentalAssignmentHintDispName();
     }
