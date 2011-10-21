@@ -115,7 +115,7 @@ public class PreviewManager {
             m.put(element.getParentFile(), p);
             return p;
         } catch (IOException ioe) {
-            throw (RuntimeException) new RuntimeException().initCause(ioe);
+            throw new RuntimeException(ioe);
         }
     }
     
@@ -132,7 +132,7 @@ public class PreviewManager {
             if(element.getPosition() != null) 
                 p.dc.setLocation(DiffController.DiffPane.Base, DiffController.LocationType.LineNumber, element.getPosition().getBegin().getLine());
         } catch (IOException ioe) {
-            throw (RuntimeException) new RuntimeException().initCause(ioe);
+            throw new RuntimeException(ioe);
         }
     }
     
