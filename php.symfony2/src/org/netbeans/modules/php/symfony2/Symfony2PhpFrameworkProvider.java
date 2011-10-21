@@ -113,7 +113,7 @@ public final class Symfony2PhpFrameworkProvider extends PhpFrameworkProvider {
 
     @Override
     public PhpModuleExtender createPhpModuleExtender(PhpModule phpModule) {
-        return null;
+        return new Symfony2PhpModuleExtender();
     }
 
     @Override
