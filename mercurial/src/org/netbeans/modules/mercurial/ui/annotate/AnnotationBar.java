@@ -209,6 +209,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
      * This can happen e.g. when showing annotations for file in a certain past revision - the displayed file is in fact a temporary file.
      */
     private FileObject referencedFileObject;
+    private String annotatedRevision;
 
     /**
      * Creates new instance initializing final fields.
@@ -505,6 +506,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         // revision previous to target line's revision
         final String revisionPerLine = al == null ? null : al.getRevision();
         final String changesetIdPerLine = al == null ? null : al.getId();
+        final int lineNumber = al == null ? -1 : al.getPreviousLineNumber();
         // used in menu Revert
         final File file = getCurrentFile();
         // used in diff menu, repository root set while computing revision
@@ -536,6 +538,25 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         popupMenu.add(rollbackMenu);
         rollbackMenu.setEnabled(revisionCanBeRolledBack);
 
+        // an action showing annotation for line's revisions
+        final JMenuItem annotationsForSelectedItem = new JMenuItem(NbBundle.getMessage(AnnotationBar.class, "CTL_MenuItem_ShowAnnotationsPrevious", revisionPerLine)); //NOI18N
+        annotationsForSelectedItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Mercurial.getInstance().getRequestProcessor().post(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            HgUtils.openInRevision(originalFile, lineNumber > 0 ? lineNumber - 1 : -1, new HgRevision(changesetIdPerLine, revisionPerLine), true);
+                        } catch (IOException ex) {
+                            //
+                        }
+                    }
+                });
+            }
+        });
+        popupMenu.add(annotationsForSelectedItem);
+
         // an action showing annotation for previous revisions
         final JMenuItem previousAnnotationsMenu = new JMenuItem();
         previousAnnotationsMenu.addActionListener(new ActionListener() {
@@ -546,7 +567,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
                     @Override
                     public void run() {
                         try {
-                            HgUtils.openInRevision(pri.getOriginalFile(), pri.getPreviousRevision(), !"-1".equals(pri.getPreviousRevision().getRevisionNumber())); //NOI18N
+                            HgUtils.openInRevision(pri.getOriginalFile(), -1, pri.getPreviousRevision(), !"-1".equals(pri.getPreviousRevision().getRevisionNumber())); //NOI18N
                         } catch (IOException ex) {
                             //
                         }
@@ -586,6 +607,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         popupMenu.add(menu);
 
         diffMenu.setVisible(false);
+        annotationsForSelectedItem.setVisible(false);
         previousAnnotationsMenu.setVisible(false);
         rollbackMenu.setVisible(false);
         separator.setVisible(false);
@@ -612,10 +634,15 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
                 previousAnnotationsMenu.setText(MessageFormat.format(format, new Object [] { previousRevisionNumber == null ? loc.getString("LBL_PreviousRevision") : previousRevisionNumber})); //NOI18N
                 previousAnnotationsMenu.setVisible(originalFile != null);
                 previousAnnotationsMenu.setEnabled(!"-1".equals(previousRevisionNumber)); //NOI18N
+                annotationsForSelectedItem.setVisible(originalFile != null && revisionPerLine != null && !revisionPerLine.equals(annotatedRevision));
             }
         }
 
         return popupMenu;
+    }
+
+    void setAnnotatedRevision (String revision) {
+        this.annotatedRevision = revision;
     }
 
     /**

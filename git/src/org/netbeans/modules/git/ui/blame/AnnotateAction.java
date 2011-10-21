@@ -149,6 +149,7 @@ public class AnnotateAction extends GitAction {
                         return;
                     }
                     AnnotateLine [] lines = toAnnotateLines(result);
+                    ab.setAnnotatedRevision(revision);
                     ab.annotationLines(file, Arrays.asList(lines));
                 } catch (GitException ex) {
                     GitClientExceptionHandler.notifyException(ex, true);

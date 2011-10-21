@@ -545,7 +545,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         if (o instanceof RepositoryRevision.Event) {
             try {
                 final RepositoryRevision.Event drev = (RepositoryRevision.Event) o;
-                HgUtils.openInRevision(drev.getFile(), drev.getLogInfoHeader().getLog().getHgRevision(), showAnnotations);
+                HgUtils.openInRevision(drev.getFile(), -1, drev.getLogInfoHeader().getLog().getHgRevision(), showAnnotations);
             } catch (IOException ex) {
                 // Ignore if file not available in cache
             }

@@ -199,6 +199,7 @@ public class HgCommand {
     private static final String HG_ANNOTATE_CMD = "annotate"; // NOI18N
     private static final String HG_ANNOTATE_FLAGN_CMD = "--number"; // NOI18N
     private static final String HG_ANNOTATE_FLAGU_CMD = "--user"; // NOI18N
+    private static final String HG_ANNOTATE_FLAGL_CMD = "--line-number"; // NOI18N
 
     private static final String HG_EXPORT_CMD = "export"; // NOI18N
     private static final String HG_IMPORT_CMD = "import"; // NOI18N
@@ -2381,6 +2382,7 @@ public class HgCommand {
         }
         command.add(HG_ANNOTATE_FLAGN_CMD);
         command.add(HG_ANNOTATE_FLAGU_CMD);
+        command.add(HG_ANNOTATE_FLAGL_CMD);
         command.add(HG_OPT_FOLLOW);
         command.add(file.getAbsolutePath());
         List<String> list = exec(command);
