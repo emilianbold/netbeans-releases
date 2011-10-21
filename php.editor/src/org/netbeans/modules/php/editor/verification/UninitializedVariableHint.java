@@ -136,7 +136,6 @@ public class UninitializedVariableHint extends AbstractRule {
             this.fileObject = fileObject;
         }
 
-        @Messages("UninitializedVariableVariableHintCustom=Variable ${0} seems to be uninitialized")
         private Collection<? extends Hint> getHints() {
             for (ASTNode scopeNode : uninitializedVariablesAll.keySet()) {
                 createHints(getUninitializedVariables(scopeNode));
@@ -144,6 +143,7 @@ public class UninitializedVariableHint extends AbstractRule {
             return hints;
         }
 
+        @Messages("UninitializedVariableVariableHintCustom=Variable ${0} seems to be uninitialized")
         private void createHints(List<Variable> uninitializedVariables) {
             for (Variable variable : uninitializedVariables) {
                 int start = variable.getStartOffset() + 1;
