@@ -136,7 +136,6 @@ public class UninitializedVariableHint extends AbstractRule {
             this.fileObject = fileObject;
         }
 
-        @Messages("UninitializedVariableVariableHintCustom=Variable ${0} seems to be uninitialized")
         private Collection<? extends Hint> getHints() {
             for (ASTNode scopeNode : uninitializedVariablesAll.keySet()) {
                 createHints(getUninitializedVariables(scopeNode));
@@ -144,6 +143,7 @@ public class UninitializedVariableHint extends AbstractRule {
             return hints;
         }
 
+        @Messages("UninitializedVariableVariableHintCustom=Variable ${0} seems to be uninitialized")
         private void createHints(List<Variable> uninitializedVariables) {
             for (Variable variable : uninitializedVariables) {
                 int start = variable.getStartOffset() + 1;
@@ -415,13 +415,13 @@ public class UninitializedVariableHint extends AbstractRule {
     }
 
     @Override
-    @Messages("UninitializedVariableHintDesc=Variable seems to be uninitialized")
+    @Messages("UninitializedVariableHintDesc=Detects variables which are used, but not initialized.<br><br>Every variable should be initialized before its first use.")
     public String getDescription() {
         return Bundle.UninitializedVariableHintDesc();
     }
 
     @Override
-    @Messages("UninitializedVariableHintDispName=Variable seems to be uninitialized")
+    @Messages("UninitializedVariableHintDispName=Uninitialized Variables")
     public String getDisplayName() {
         return Bundle.UninitializedVariableHintDispName();
     }

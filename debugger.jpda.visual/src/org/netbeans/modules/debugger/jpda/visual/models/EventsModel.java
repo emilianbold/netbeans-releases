@@ -283,12 +283,16 @@ public class EventsModel implements TreeModel, NodeModel, TableModel, NodeAction
             return false;
         }
         if (node == customListeners) {
-            List<RemoteListener> l = customListenersList;
-            return (l == null || l.isEmpty());
+            //List<RemoteListener> l = customListenersList;
+            //return (l == null || l.isEmpty());
+            return false; // To have the expand sign visible always so that it's
+                          // clear that the listeners would be listed under this node.
         }
         if (node == swingListeners) {
-            List<RemoteListener> l = swingListenersList;
-            return (l == null || l.isEmpty());
+            //List<RemoteListener> l = swingListenersList;
+            //return (l == null || l.isEmpty());
+            return false; // To have the expand sign visible always so that it's
+                          // clear that the listeners would be listed under this node.
         }
         if (node instanceof RemoteListener) {
             return true;
