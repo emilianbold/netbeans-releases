@@ -101,6 +101,11 @@ import org.w3c.dom.NodeList;
  */
 public class JFXProjectGenerator {
 
+    static final String METRICS_LOGGER = "org.netbeans.ui.metrics.jfx"; //NOI18N
+    static final String PROJECT_CREATE = "USG_PROJECT_CREATE_JFX";      //NOI18N
+    static final String PROJECT_OPEN = "USG_PROJECT_OPEN_JFX";          //NOI18N
+    static final String PROJECT_CLOSE = "USG_PROJECT_CLOSE_JFX";        //NOI18N
+
     private JFXProjectGenerator() {
     }
 
@@ -520,15 +525,17 @@ public class JFXProjectGenerator {
         logUsage();
         return h;
     }
-    private static final String loggerName = "org.netbeans.ui.metrics.j2se"; // NOI18N
-    private static final String loggerKey = "USG_PROJECT_CREATE_J2SE"; // NOI18N
 
-    // http://wiki.netbeans.org/UsageLoggingSpecification
+    /**
+     * Logs project specific usage.
+     * See: http://wiki.netbeans.org/UsageLoggingSpecification
+     * Todo: Should log also J2SE project usage? The JFX project is de facto J2SE project,
+     * most of this class should be replaced by J2SEProjectBuider.
+     */
     private static void logUsage() {
-        LogRecord logRecord = new LogRecord(Level.INFO, loggerKey);
-        logRecord.setLoggerName(loggerName);
-        //logRecord.setParameters(new Object[] {""}); // NOI18N
-        Logger.getLogger(loggerName).log(logRecord);
+        final LogRecord logRecord = new LogRecord(Level.INFO, PROJECT_CREATE);
+        logRecord.setLoggerName(METRICS_LOGGER);
+        Logger.getLogger(METRICS_LOGGER).log(logRecord);
     }
 
     private static void copyRequiredLibraries(AntProjectHelper h, ReferenceHelper rh) throws IOException {
