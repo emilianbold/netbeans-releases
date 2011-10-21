@@ -228,7 +228,7 @@ outer:      for(MultiKeyBinding mkb : m.getShortcuts()) {
 
                     DialogDisplayer.getDefault ().notify (descriptor);
                     if (descriptor.getValue () == DialogDescriptor.OK_OPTION) {
-                        panel.getModel().save();
+                        panel.save();
                     }
                 }
             }

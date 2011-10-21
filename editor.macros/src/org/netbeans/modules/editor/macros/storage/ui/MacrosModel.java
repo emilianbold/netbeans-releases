@@ -62,7 +62,6 @@ import javax.swing.table.TableModel;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.MultiKeyBinding;
 import org.netbeans.core.options.keymap.api.ShortcutAction;
-import org.netbeans.core.options.keymap.api.ShortcutsFinder;
 import org.netbeans.modules.editor.macros.MacroDialogSupport;
 import org.netbeans.modules.editor.macros.MacroShortcutsInjector;
 import org.netbeans.modules.editor.macros.MacrosKeymapManager;
@@ -72,7 +71,6 @@ import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettingsStorage;
 import org.netbeans.modules.editor.settings.storage.spi.support.StorageSupport;
 import org.netbeans.spi.options.OptionsPanelController;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -160,10 +158,6 @@ public final class MacrosModel {
         
         setChanged(false);
         
-        // force shortcut finder flush
-        ShortcutsFinder f = Lookup.getDefault().lookup(ShortcutsFinder.class);
-        f.apply();
-
         MacroShortcutsInjector.refreshShortcuts();
     }
     
