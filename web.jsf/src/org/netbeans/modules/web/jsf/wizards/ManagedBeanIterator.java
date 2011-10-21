@@ -58,6 +58,7 @@ import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
 import org.netbeans.modules.web.jsf.api.facesmodel.Description;
 import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
+import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;
 import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -74,6 +75,7 @@ import org.netbeans.modules.web.jsf.JSFUtils;
 import org.netbeans.modules.web.jsf.api.editor.JSFBeanCache;
 import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean.Scope;
 import org.netbeans.modules.web.jsf.api.metamodel.FacesManagedBean;
+import org.netbeans.modules.web.jsf.impl.facesmodel.JSFConfigModelUtilities;
 import org.netbeans.modules.web.wizards.Utilities;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -207,11 +209,12 @@ public class ManagedBeanIterator implements TemplateWizard.Iterator {
             dobj = dTemplate.createFromTemplate( df,targetName,templateProperties  );
         } else {
             FileObject fo = dir.getFileObject(configFile); //NOI18N
-            FacesConfig facesConfig = ConfigurationUtils.getConfigModel(fo, true).getRootComponent();
+            JSFConfigModel configModel = ConfigurationUtils.getConfigModel(fo, true);
+            FacesConfig facesConfig = configModel.getRootComponent();
             JSFBeanCache.getBeans(wm);
             dobj = dTemplate.createFromTemplate( df, Templates.getTargetName( wizard ));
 
-            ManagedBean bean = facesConfig.getModel().getFactory().createManagedBean();
+            ManagedBean bean = configModel.getFactory().createManagedBean();
             String targetName = Templates.getTargetName(wizard);
             Sources sources = ProjectUtils.getSources(project);
             SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
@@ -244,10 +247,11 @@ public class ManagedBeanIterator implements TemplateWizard.Iterator {
                 beanDescription.setValue(description);
                 bean.addDescription(beanDescription);
             }
-            facesConfig.getModel().startTransaction();
+            configModel.startTransaction();
             facesConfig.addManagedBean(bean);
-            facesConfig.getModel().endTransaction();
-            facesConfig.getModel().sync();
+            configModel.endTransaction();
+            configModel.sync();
+            JSFConfigModelUtilities.saveChanges(configModel);
         }
         return Collections.singleton(dobj);
     }
