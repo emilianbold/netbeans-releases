@@ -4354,8 +4354,8 @@ public final class LayoutDesigner implements LayoutModel.RemoveHandler, LayoutMo
                         parent.getCurrentSpace().set(dimension, l, t);
                         exclude = parent;
                     }
-                    LayoutInterval adjusted = maintainSize(superParent, losingResizing, dimension,
-                                 exclude, exclude.getCurrentSpace().size(dimension)/* - cutSize*/);
+                    LayoutInterval adjusted = operations.maintainSize(superParent, losingResizing,
+                            dimension, exclude, exclude.getCurrentSpace().size(dimension), true);
                     if (adjusted != null) {
                         operations.optimizeGaps2(adjusted, dimension);
                     } else {
@@ -4404,7 +4404,7 @@ public final class LayoutDesigner implements LayoutModel.RemoveHandler, LayoutMo
             int groupAlign = parent.getGroupAlignment();
             if (groupAlign == LEADING || groupAlign == TRAILING) {
                 unresized = operations.eliminateRedundantSuppressedResizing(parent, dimension);
-                LayoutInterval adjusted = maintainSize(parent, wasResizing, dimension, null, 0);
+                LayoutInterval adjusted = operations.maintainSize(parent, wasResizing, dimension, true);
                 operations.optimizeGaps2(adjusted != null ? adjusted : parent, dimension);
             } else {
                 preventParallelCollapse(parent, dimension);
@@ -4446,202 +4446,6 @@ public final class LayoutDesigner implements LayoutModel.RemoveHandler, LayoutMo
                 index++;
             }
         }
-    }
-
-    /**
-     * Adds a gap somewhere to maintain current size of given group (assuming
-     * some interval has been removed but there's still the original current size).
-     * Can be done in some parent if the given group is open at one side. Returns
-     * the group for which the size was adjusted (either wihin the group or next
-     * to it). This group should then go through optimization of its edge gaps
-     * vs the neighbor gaps (via optimizeGaps2).
-     * @param group
-     * @param wasResizing
-     * @param dimension
-     * @param excluded don't count this sub-interval (it's the one losing size)
-     * @param excludedSize size of the excluded interval it would have after removing the interval bla bla bla
-     * @return the group for which the size was fixed (or null if it was not necessary)
-     */
-    private LayoutInterval maintainSize(LayoutInterval group, boolean wasResizing, int dimension,
-                                        LayoutInterval excluded, int excludedSize)
-    {
-        assert group.isParallel(); // [also not used for center or baseline groups]
-
-        int groupSize = group.getCurrentSpace().size(dimension);
-        int[] groupPos = group.getCurrentSpace().positions[dimension];
-
-        boolean allSameAlignment = true;
-        int alignment = DEFAULT;
-        int leadCompPos = Integer.MAX_VALUE;
-        int trailCompPos = Integer.MIN_VALUE;
-        int maxSubSize = Integer.MIN_VALUE;
-        LayoutInterval biggest = null;
-
-        for (Iterator<LayoutInterval> it=group.getSubIntervals(); it.hasNext(); ) {
-            LayoutInterval li = it.next();
-            if (LayoutInterval.wantResize(li)) {
-                return null;
-            } else {
-                int align = li.getAlignment();
-                int l = LayoutRegion.UNKNOWN;
-                int t = LayoutRegion.UNKNOWN;
-                if (li != excluded) {
-                    int size = li.getCurrentSpace().size(dimension);
-                    if (size > groupSize) {
-                        size = groupSize;
-                    }
-                    if (size > maxSubSize) {
-                        maxSubSize = size;
-                        biggest = li;
-                    }
-                } else {
-                    if (excludedSize > maxSubSize) {
-                        maxSubSize = excludedSize;
-                    }
-                    if (align == LEADING) {
-                        l = groupPos[LEADING];
-                        t = groupPos[LEADING] + excludedSize;
-                    } else if (align == TRAILING) {
-                        l = groupPos[TRAILING] - excludedSize;
-                        t = groupPos[TRAILING];
-                    }
-                }
-                if (l == LayoutRegion.UNKNOWN) {
-                    l = LayoutUtils.getOutermostComponent(li, dimension, LEADING)
-                            .getCurrentSpace().positions[dimension][LEADING];
-                }
-                if (t == LayoutRegion.UNKNOWN) {
-                    t = LayoutUtils.getOutermostComponent(li, dimension, TRAILING)
-                            .getCurrentSpace().positions[dimension][TRAILING];
-                }
-                if (l < leadCompPos) {
-                    leadCompPos = l;
-                }
-                if (t > trailCompPos) {
-                    trailCompPos = t;
-                }
-
-                if (allSameAlignment) {
-                    if (alignment == DEFAULT) {
-                        alignment = align;
-                    } else if (alignment != align) {
-                        allSameAlignment = false;
-                    }
-                }
-            }
-        }
-
-        if (maxSubSize == groupSize) {
-            if (!wasResizing) {
-                return null; // we have same size and have not lost resizing
-            }
-            LayoutInterval seqRoot = LayoutInterval.getRoot(group, SEQUENTIAL);
-            if (seqRoot != null && LayoutInterval.wantResize(seqRoot)) {
-                return null; // this group lost resizing, but there's something else
-            }
-            // otherwise compensate by a zero resizing gap placed somewhere,
-            // which will be eliminated, but cause some existing gap resizing
-        }
-
-        LayoutInterval parent = group.getParent();
-        if (allSameAlignment && parent != null) {
-            // fixed content, same alignment, the group can shrink, compensate out of the group
-            if (alignment != LEADING && alignment != TRAILING) {
-                alignment = (groupPos[TRAILING] - trailCompPos) >= (leadCompPos - groupPos[LEADING]) 
-                        ? LEADING : TRAILING; // i.e. the opposite edge to where to compensate
-            }
-            if (alignment == LEADING) {
-                groupPos[TRAILING] = trailCompPos;
-            } else {
-                groupPos[LEADING] = leadCompPos;
-            }
-            groupPos[CENTER] = (groupPos[LEADING] + groupPos[LEADING]) / 2;
-
-            if (!LayoutInterval.canResize(group)) { // resizing disabled on the group
-                wasResizing = false;
-                operations.enableGroupResizing(group); // there's nothing resizing in the group anymore
-            }
-
-            if (parent.isParallel()
-                    && group.getAlignment() == alignment) {
-                // can compensate in parent
-                group = maintainSize(parent, wasResizing, dimension, group, maxSubSize);
-            } else { // one open edge - can compensate by a gap next to the group
-                boolean border;
-                if (parent.isParallel()) {
-                    border = true;
-                } else {
-                    int idx = parent.indexOf(group);
-                    border = (alignment == LEADING && idx == parent.getSubIntervalCount()-1)
-                             || (alignment == TRAILING && idx == 0);
-                }
-                int min, max;
-                if (wasResizing) {
-                    min = NOT_EXPLICITLY_DEFINED;
-                    max = Short.MAX_VALUE;
-                } else {
-                    min = max = USE_PREFERRED_SIZE;
-                }
-                LayoutInterval gap = new LayoutInterval(SINGLE);
-                gap.setSizes(min, groupSize - maxSubSize, max);
-                operations.insertGap(gap, group,
-                                     (alignment == LEADING) ? trailCompPos : leadCompPos,
-                                     dimension, alignment^1);
-                if (parent.isSequential()) {
-                    parent = parent.getParent();
-                }
-                if (border) {
-                    operations.optimizeGaps(parent, dimension);
-                    operations.optimizeGaps2(parent, dimension);
-                }
-            }
-        } else { // fixed content, different alignments, compensate by adding a
-                 // border gap to some sub-interval
-            LayoutInterval ext; // to extend with a gap
-            int min, pref, max;
-            if (excluded != null) {
-                ext = excluded;
-                pref = groupSize - excludedSize;
-            } else {
-                ext = biggest;
-                pref = groupSize - maxSubSize;
-            }
-            alignment = ext.getAlignment();
-            if (alignment == LEADING || alignment == TRAILING) {
-                if (wasResizing) {
-                    LayoutInterval outGap = LayoutInterval.getNeighbor(ext, alignment^1, false, true, false);
-                    min = (outGap != null && outGap.isEmptySpace()) ? 0 : NOT_EXPLICITLY_DEFINED;
-                    max = Short.MAX_VALUE;
-                } else {
-                    min = max = USE_PREFERRED_SIZE;
-                }
-
-                LayoutInterval extGap = null;
-                if (ext.isSequential()) {
-                    extGap = ext.getSubInterval(alignment == LEADING ? ext.getSubIntervalCount()-1 : 0);
-                    if (extGap.isEmptySpace()) {
-                        if (min == 0 && extGap.getMinimumSize() != 0) {
-                            min = NOT_EXPLICITLY_DEFINED;
-                        } else if (min == NOT_EXPLICITLY_DEFINED && extGap.getMinimumSize() == 0 && max == Short.MAX_VALUE) {
-                            min = 0;
-                        }
-                        layoutModel.setIntervalSize(extGap, min, pref, max);
-                    } else {
-                        extGap = null;
-                    }
-                }
-                if (extGap == null) {
-                    extGap = new LayoutInterval(SINGLE);
-                    extGap.setSizes(min, pref, max);
-                    operations.insertGap(extGap, ext,
-                            (alignment == LEADING) ? groupPos[LEADING] + maxSubSize : groupPos[TRAILING] - maxSubSize,
-                            dimension, alignment^1);
-                }
-                operations.optimizeGaps(group, dimension);
-            }
-        }
-
-        return group;
     }
 
     /**
@@ -4839,8 +4643,8 @@ public final class LayoutDesigner implements LayoutModel.RemoveHandler, LayoutMo
                         if (e == TRAILING) {
                             diff *= -1;
                         }
-                        maintainSize(superGroup, false, dimension, li,
-                                li.getCurrentSpace().size(dimension) - diff);
+                        operations.maintainSize(superGroup, false, dimension, li,
+                                li.getCurrentSpace().size(dimension) - diff, true);
                     }
                 }
             }

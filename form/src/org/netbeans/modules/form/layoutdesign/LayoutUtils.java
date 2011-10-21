@@ -473,7 +473,7 @@ public class LayoutUtils implements LayoutConstants {
         while (!candidates.isEmpty() && (!justFirst || intervals.isEmpty())) {
             LayoutInterval candidate = candidates.remove(0);
             if (candidate.isGroup()) {
-                if (candidate.isSequential()) {
+                if (candidate.isSequential() && candidate.getSubIntervalCount() > 0) {
                     int index = edge == LEADING ? 0 : candidate.getSubIntervalCount()-1;
                     LayoutInterval sub = candidate.getSubInterval(index);
                     candidates.add(sub);
