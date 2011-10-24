@@ -221,6 +221,9 @@ public class MetaDataCustomizer extends javax.swing.JPanel implements ListSelect
     // End of variables declaration
 
     public void initTable() {
+        // issue #202876 - save edited values by closing dialog
+        viewParamTable.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
+
         for (Entry entry : metadata.getProperties().entrySet()){
             tableModel.addRow(new String[]{(String)entry.getKey(),(String)entry.getValue()});
         }
