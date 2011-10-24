@@ -1691,8 +1691,18 @@ public class JavaCompletionProvider implements CompletionProvider {
                                             results.add(JavaCompletionItem.createTypeItem(env.getController(), (TypeElement)e, (DeclaredType)ex, anchorOffset, true, elements.isDeprecated(e), insideNew, insideNew || env.isInsideClass(), true, true, false, env.getWhiteList()));
                                     }
                             } else {
-                                if (el == null && exp.getKind() == Tree.Kind.PRIMITIVE_TYPE)
-                                    el = controller.getTypes().boxedClass((PrimitiveType)type);
+                                if (el == null) {
+                                    if (exp.getKind() == Tree.Kind.ARRAY_TYPE) {
+                                        TypeMirror tm = type;
+                                        while (tm.getKind() == TypeKind.ARRAY)
+                                            tm = ((ArrayType)tm).getComponentType();
+                                        if (tm.getKind().isPrimitive())
+                                            el = controller.getTypes().boxedClass((PrimitiveType)tm);
+                                        else if (tm.getKind() == TypeKind.DECLARED)
+                                            el = ((DeclaredType)tm).asElement();
+                                    } else if (exp.getKind() == Tree.Kind.PRIMITIVE_TYPE)
+                                        el = controller.getTypes().boxedClass((PrimitiveType)type);
+                                }
                                 addMembers(env, type, el, kinds, baseType, inImport, insideNew, false);
                             }
                             break;
