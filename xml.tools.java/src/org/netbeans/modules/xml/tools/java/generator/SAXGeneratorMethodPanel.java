@@ -248,6 +248,9 @@ public final class SAXGeneratorMethodPanel extends SAXGeneratorAbstractPanel {
          */
         public Object getValueAt(int row, int column) {
             ElementBindings.Entry entry = model.getElementBindings().getEntry(row);
+            if (entry == null) {
+                return null;
+            }
             switch (column) {
                 case ELEMENT_COLUMN: 
                     return entry.getElement();
