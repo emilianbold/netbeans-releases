@@ -66,7 +66,7 @@ import org.netbeans.modules.php.editor.api.elements.TypeElement;
 import org.netbeans.modules.php.editor.model.MethodScope;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.TypeScope;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 
 /**
  * @author Radek Matous
@@ -78,13 +78,15 @@ public class ImplementAbstractMethods extends AbstractRule {
     }
 
     @Override
+    @Messages("ImplementAbstractMethodsDesc=Implement All Abstract Methods")
     public String getDescription() {
-        return NbBundle.getMessage(ImplementAbstractMethods.class, "ImplementAbstractMethodsDesc");//NOI18N
+        return Bundle.ImplementAbstractMethodsDesc();
     }
 
     @Override
+    @Messages("ImplementAbstractMethodsDispName=Implement All Abstract Methods")
     public String getDisplayName() {
-        return NbBundle.getMessage(ImplementAbstractMethods.class, "ImplementAbstractMethodsDispName");//NOI18N
+        return Bundle.ImplementAbstractMethodsDispName();
     }
 
     @Override

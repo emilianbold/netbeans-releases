@@ -59,7 +59,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultTreePathV
 import org.netbeans.modules.php.project.api.PhpLanguageOptions;
 import org.netbeans.modules.php.project.api.PhpLanguageOptions.Properties;
 import org.openide.filesystems.FileObject;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
@@ -160,13 +160,15 @@ public class CheckPHPVersionVisitor extends DefaultTreePathVisitor {
         }
 
         @Override
+        @Messages("CheckPHPVerDesc=Detect language features not compatible with PHP version indicated in project settings")
         public String getDescription() {
-            return NbBundle.getMessage(CheckPHPVersionVisitor.class, "CheckPHPVerDesc");
+            return Bundle.CheckPHPVerDesc();
         }
 
         @Override
+        @Messages("CheckPHPVerDispName=Language feature not compatible with PHP version indicated in project settings")
         public String getDisplayName() {
-            return NbBundle.getMessage(CheckPHPVersionVisitor.class, "CheckPHPVerDispName");
+            return Bundle.CheckPHPVerDispName();
         }
 
         @Override
