@@ -44,18 +44,18 @@
 
 package org.netbeans.modules.refactoring.java.plugins;
 
+import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
-import java.util.List;
-import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
-import com.sun.source.tree.*;
 import java.util.*;
 import javax.lang.model.element.*;
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.java.SourceUtilsEx;
+import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
 import org.netbeans.modules.refactoring.java.spi.ToPhaseException;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -244,7 +244,7 @@ public class MoveTransformer extends RefactoringVisitor {
     }
 
     private boolean isThisPackageMoving(PackageElement el) {
-        return move.packages.contains(el.getQualifiedName().toString());
+        return move.packageNames.contains(el.getQualifiedName().toString());
     }
 
     private String getTargetPackageName(Element el) {
@@ -400,6 +400,7 @@ public class MoveTransformer extends RefactoringVisitor {
     @Override
     public Tree visitImport(ImportTree node, Element p) {
         if (!workingCopy.getTreeUtilities().isSynthetic(getCurrentPath())) {
+            Tree qualifiedIdentifier = node.getQualifiedIdentifier();
             final Element el = workingCopy.getTrees().getElement(new TreePath(getCurrentPath(), node.getQualifiedIdentifier()));
             if (el != null) {
                 if (isElementMoving(el)) {
@@ -410,6 +411,32 @@ public class MoveTransformer extends RefactoringVisitor {
                         if (cuPackageName.equals(newPackageName)) { //remove newly created import from same package
                             importToRemove.add(node);
                             return node;
+                        }
+                    }
+                }
+            } else if(qualifiedIdentifier.getKind() == Tree.Kind.MEMBER_SELECT) {
+                MemberSelectTree memberSelect = (MemberSelectTree) qualifiedIdentifier;
+                if(memberSelect.getIdentifier().contentEquals("*")) {
+                    PackageElement pakketje = (PackageElement) workingCopy.getTrees().getElement(new TreePath(getCurrentPath(), memberSelect.getExpression()));
+                    if(isThisPackageMoving(pakketje)) {
+                        importToRemove.add(node);
+                    } else if(move.packages.contains(ElementHandle.create(pakketje))) {
+                        boolean packageWillBeEmpty = true;
+                        List<? extends Element> enclosedElements = pakketje.getEnclosedElements();
+                        for (Element element : enclosedElements) {
+                            if(!isElementMoving(element)) {
+                                packageWillBeEmpty = false;
+                                break;
+                            } else {
+                                String targetPackageName = getTargetPackageName(element);
+                                if(pakketje.getQualifiedName().contentEquals(targetPackageName)) {
+                                    packageWillBeEmpty = false;
+                                    break;
+                                }
+                            }
+                        }
+                        if(packageWillBeEmpty) {
+                            importToRemove.add(node);
                         }
                     }
                 }
