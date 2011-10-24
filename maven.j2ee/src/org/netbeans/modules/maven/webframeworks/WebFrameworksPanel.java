@@ -139,8 +139,13 @@ public class WebFrameworksPanel extends javax.swing.JPanel implements ListSelect
     
     private void doUIandUsageLogging() {
         if ((addedFrameworks != null) && (addedFrameworks.size() > 0)) {
-            LoggingUtils.logUI(this.getClass(), "UI_PROJECT_CONFIG_MAVEN_FRAMEWORK_ADDED", addedFrameworks);  //NOI18N
-            LoggingUtils.logUsage(this.getClass(), "USG_PROJECT_CONFIG_MAVEN_FRAMEWORK_ADDED", addedFrameworks);  //NOI18N
+            LogRecord logRecord = new LogRecord(Level.INFO, "UI_PROJECT_CONFIG_MAVEN_FRAMEWORK_ADDED");  //NOI18N
+            logRecord.setLoggerName("org.netbeans.ui.web.project"); //NOI18N
+            logRecord.setResourceBundle(NbBundle.getBundle(WebFrameworksPanel.class));
+            logRecord.setParameters(addedFrameworks.toArray());
+            Logger.getLogger("org.netbeans.ui.web.project").log(logRecord);
+            //LoggingUtils.logUI(this.getClass(), "UI_PROJECT_CONFIG_MAVEN_FRAMEWORK_ADDED", addedFrameworks);  //NOI18N
+            //LoggingUtils.logUsage(this.getClass(), "USG_PROJECT_CONFIG_MAVEN_FRAMEWORK_ADDED", addedFrameworks);  //NOI18N
         }
     }
     
