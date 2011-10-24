@@ -190,4 +190,17 @@ public class CssCompletionTest extends CssModuleTestBase {
         checkCC(" @-moz-document url(http://www.w3.org/) { p { } | div { } }", arr("color"), Match.CONTAINS);
     }
     
+    //Bug 204128 - CC stops work after # in a color attribute 
+    public void testIssue204128() throws ParseException {
+        CssCompletion.TEST_USED_COLORS = new String[]{"#aabbcc"};
+        
+        String code =  "#test {\n"
+                + "color: #|\n"
+                + "\n"
+                + "   }\n";
+                
+        checkCC(code, arr("#aabbcc"), Match.CONTAINS);
+    }
+
+    
 }
