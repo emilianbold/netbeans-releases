@@ -263,7 +263,8 @@ class DropTargetLayer extends JComponent {
             JMenuItem menu = (JMenuItem) selected;
             Point location = SwingUtilities.convertPoint(menu, new Point(0, 0), this);
             g2.translate(location.x, location.y);
-            g2.setStroke(SELECTION_STROKE);
+            // #114610: keep drop rectangle guidelines consistent when menu component is inserted from menu-bar into submenu
+            g2.setStroke((currentTargetType == DropTargetType.INTO_SUBMENU) ? DROP_TARGET_LINE_STROKE : SELECTION_STROKE);
             g2.setColor(SELECTION_COLOR);
             g2.drawRect(0, 0, menu.getWidth() - 1, menu.getHeight() - 1);
             g2.translate(-location.x, -location.y);
