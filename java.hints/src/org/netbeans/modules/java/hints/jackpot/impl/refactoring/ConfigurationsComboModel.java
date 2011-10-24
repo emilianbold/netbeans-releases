@@ -111,6 +111,10 @@ public class ConfigurationsComboModel extends AbstractListModel implements Combo
         return ConfigurationsManager.getDefault().getConfiguration(i);
     }
 
+    public boolean canModify() {
+        return canModify;
+    }
+
     @Override
     public void setSelectedItem(Object o) {
         setLastSelected(selected);
