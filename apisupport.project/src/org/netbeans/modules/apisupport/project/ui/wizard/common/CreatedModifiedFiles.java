@@ -944,7 +944,7 @@ public final class CreatedModifiedFiles {
      *        <em>displayName</em> attribute will be
      *        created with the bundlevalue to a new entry in default bundle (from manifest).
      *        The entry will also be added into the bundle.
-     * @param fileAttributes &lt;String,Object&gt; map. key in the map is the
+     * @param fileAttributes key in the map is the
      *        name of the file attribute value is the actual value, currently
      *        supported types are Boolean and String Generates
      *        <pre>
@@ -957,7 +957,7 @@ public final class CreatedModifiedFiles {
             FileObject content,
             Map<String,? extends Object> substitutionTokens,
             String localizedDisplayName,
-            Map<String,Object> fileAttributes) {
+            Map<String,?> fileAttributes) {
         return new CreateLayerEntry(this, project, layerPath, content,
                 substitutionTokens, localizedDisplayName, fileAttributes);
     }
@@ -968,7 +968,7 @@ public final class CreatedModifiedFiles {
         
         public CreateLayerEntry(final CreatedModifiedFiles cmf, final Project project, final String layerPath,
                 final FileObject content,
-                final Map<String,? extends Object> tokens, final String localizedDisplayName, final Map<String,Object> attrs) {
+                final Map<String,? extends Object> tokens, final String localizedDisplayName, final Map<String,?> attrs) {
             
             super(project);
             final String locBundleKey = (localizedDisplayName != null ? LayerUtils.generateBundleKeyForFile(layerPath) : null);
@@ -994,7 +994,7 @@ public final class CreatedModifiedFiles {
                         }
                     }
                     if (attrs != null) {
-                        for (Map.Entry<String,Object> entry : attrs.entrySet()) {
+                        for (Map.Entry<String,?> entry : attrs.entrySet()) {
                             targetFO.setAttribute(entry.getKey(), entry.getValue());
                         }
                     }

@@ -152,7 +152,7 @@ public class NewJavaHelpIterator extends BasicWizardIterator {
                             CreatedModifiedFiles.getTemplate("template_myplugin-helpset.xml"), // NOI18N
                             tokens,
                             null,
-                            Collections.<String,Object>singletonMap("position", position))); // NOI18N
+                            Collections.singletonMap("position", position))); // NOI18N
                     files.add(files.addManifestToken(ManifestManager.OPENIDE_MODULE_REQUIRES, "org.netbeans.api.javahelp.Help")); // NOI18N
                 }
 

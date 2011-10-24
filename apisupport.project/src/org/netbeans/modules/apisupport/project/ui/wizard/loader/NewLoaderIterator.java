@@ -428,13 +428,11 @@ public final class NewLoaderIterator extends BasicWizardIterator {
                 assert false: ex;
             }
         }
-        Map<String, Object> attrs = new HashMap<String, Object>();
-        attrs.put("template", true); // NOI18N
         fileChanges.add(fileChanges.createLayerEntry("Templates/Other/" + namePrefix + suffix, //NOI18N
                 template,
                 replaceTokens,
                 "Empty " + namePrefix + " file", // NOI18N
-                attrs)); //NOI18N
+                Collections.singletonMap("template", true))); //NOI18N
         model.setCreatedModifiedFiles(fileChanges);
     }
     
