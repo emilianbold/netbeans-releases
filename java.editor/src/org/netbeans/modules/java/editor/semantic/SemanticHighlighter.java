@@ -400,6 +400,7 @@ public class SemanticHighlighter extends JavaParserResultTask {
         private Map<Element, List<Use>> type2Uses;
         
         private final Map<Element, ImportTree> element2Import = new HashMap<Element, ImportTree>();
+        private final Set<Element> importedBySingleImport = new HashSet<Element>();
         private final Map<String, ImportTree> method2Import = new HashMap<String, ImportTree>();
         private final Map<String, Collection<ImportTree>> simpleName2UnresolvableImports = new HashMap<String, Collection<ImportTree>>();
         private final Set<ImportTree> unresolvablePackageImports = new HashSet<ImportTree>();
@@ -1015,7 +1016,9 @@ public class SemanticHighlighter extends JavaParserResultTask {
                     if (decl != null && decl.getKind() == ElementKind.PACKAGE) {
                         if (!ElementFilter.typesIn(decl.getEnclosedElements()).isEmpty()) {
                             for (TypeElement te : ElementFilter.typesIn(decl.getEnclosedElements())) {
-                                element2Import.put(te, tree);
+                                if (!importedBySingleImport.contains(te)) {
+                                    element2Import.put(te, tree);
+                                }
                             }
                             import2Highlight.put(tree, getCurrentPath());
                         } else {
@@ -1029,6 +1032,7 @@ public class SemanticHighlighter extends JavaParserResultTask {
                     if (decl != null) {
                         if (decl.asType().getKind() != TypeKind.ERROR) {
                             element2Import.put(decl, tree);
+                            importedBySingleImport.add(decl);
                             import2Highlight.put(tree, getCurrentPath());
                         } else {
                             if (tree.getQualifiedIdentifier().getKind() == Kind.MEMBER_SELECT) {

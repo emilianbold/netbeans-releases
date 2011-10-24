@@ -57,6 +57,70 @@ public class MoveClassTest extends RefactoringTestBase {
         super(name);
     }
     
+    public void test168923() throws Exception { // #168923 - [Move] refactoring a package doesn't update star imports [68cat]
+        writeFilesAndWaitForScan(src,
+                                 new File("t/package-info.java", "package t;"),
+                                 new File("v/A.java", "package v; import u.*; public class A { public void foo() { int d = B.c; } }"),
+                                 new File("u/B.java", "package u; public class B { public static int c = 5; }"));
+        performMoveClass(Lookups.singleton(src.getFileObject("u")), new URL(src.getURL(), "t/"));
+        verifyContent(src,
+                      new File("t/package-info.java", "package t;"),
+                      new File("v/A.java", "package v; import t.u.B; public class A { public void foo() { int d = B.c; } }"),
+                      new File("t/u/B.java", "package t.u; public class B { public static int c = 5; }"));
+        
+        writeFilesAndWaitForScan(src,
+                                 new File("t/package-info.java", "package t;"),
+                                 new File("v/A.java", "package v; import u.*; import u.B; public class A { public void foo() { int d = B.c; } }"),
+                                 new File("u/B.java", "package u; public class B { public static int c = 5; }"));
+        performMoveClass(Lookups.singleton(src.getFileObject("u/B.java")), new URL(src.getURL(), "t/"));
+        verifyContent(src,
+                      new File("t/package-info.java", "package t;"),
+                      new File("v/A.java", "package v; import t.B; public class A { public void foo() { int d = B.c; } }"),
+                      new File("t/B.java", "package t; public class B { public static int c = 5; }"));
+        
+         writeFilesAndWaitForScan(src,
+                                 new File("t/package-info.java", "package t;"),
+                                 new File("u/package-info.java", "package u;"),
+                                 new File("v/A.java", "package v; import u.*; import u.B; public class A { public void foo() { int d = B.c; } }"),
+                                 new File("u/B.java", "package u; public class B { public static int c = 5; }"));
+        performMoveClass(Lookups.singleton(src.getFileObject("u/B.java")), new URL(src.getURL(), "t/"));
+        verifyContent(src,
+                      new File("t/package-info.java", "package t;"),
+                      new File("u/package-info.java", "package u;"),
+                      new File("v/A.java", "package v; import t.B; public class A { public void foo() { int d = B.c; } }"),
+                      new File("t/B.java", "package t; public class B { public static int c = 5; }"));
+        
+        writeFilesAndWaitForScan(src,
+                                 new File("t/package-info.java", "package t;"),
+                                 new File("A.java", "import u.*; import u.B; public class A { public void foo() { int d = B.c; } }"),
+                                 new File("u/B.java", "package u; public class B { public static int c = 5; }"));
+        performMoveClass(Lookups.singleton(src.getFileObject("u/B.java")), new URL(src.getURL(), "t/"));
+        verifyContent(src,
+                      new File("t/package-info.java", "package t;"),
+                      new File("A.java", " import t.B; public class A { public void foo() { int d = B.c; } }"),
+                      new File("t/B.java", "package t; public class B { public static int c = 5; }"));
+        
+        writeFilesAndWaitForScan(src,
+                                 new File("t/package-info.java", "package t;"),
+                                 new File("A.java", "import t.*; public class A { public void foo() { int d = B.c; } }"),
+                                 new File("B.java", "public class B { public static int c = 5; }"));
+        performMoveClass(Lookups.singleton(src.getFileObject("B.java")), new URL(src.getURL(), "t/"));
+        verifyContent(src,
+                      new File("t/package-info.java", "package t;"),
+                      new File("A.java", "import t.B; import t.*; public class A { public void foo() { int d = B.c; } }"),
+                      new File("t/B.java", "package t; public class B { public static int c = 5; }"));
+        
+//        writeFilesAndWaitForScan(src,
+//                                 new File("t/package-info.java", "package t;"),
+//                                 new File("v/A.java", "package v; import u.*; public class A { public void foo() { int d = 3; } }"),
+//                                 new File("u/B.java", "package u; public class B { public static int c = 5; }"));
+//        performMoveClass(Lookups.singleton(src.getFileObject("u/B.java")), new URL(src.getURL(), "t/"));
+//        verifyContent(src,
+//                      new File("t/package-info.java", "package t;"),
+//                      new File("v/A.java", "package v; public class A { public void foo() { int d = 3; } }"),
+//                      new File("t/B.java", "package t; public class B { public static int c = 5; }"));
+    }
+    
     public void test185959() throws Exception { // #185959 - [Move] No warning on move-refactoring a package-private class with references [69cat]
         writeFilesAndWaitForScan(src,
                                  new File("t/package-info.java", "package t;"),
@@ -164,7 +228,7 @@ public class MoveClassTest extends RefactoringTestBase {
         performMoveClass(Lookups.singleton(src.getFileObject("movepkg/MoveClass.java")), new URL(src.getURL(), "movepkgdst/"));
         verifyContent(src,
                 new File("movepkgdst/package-info.java", "package movepkgdst;"),
-                new File("movepkgdst/MoveClass.java", "package movepkgdst; import movepkg.*; public class MoveClass { public MoveClass() { } }"));
+                new File("movepkgdst/MoveClass.java", "package movepkgdst;public class MoveClass { public MoveClass() { } }"));
     }
     
     public void testMoveToSamePackage() throws Exception {

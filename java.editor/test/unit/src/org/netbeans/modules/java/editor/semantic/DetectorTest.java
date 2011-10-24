@@ -407,6 +407,10 @@ public class DetectorTest extends TestBase {
         performTest("ReadUseElseTernary191230");
     }
 
+    public void testImportDisambiguation203874() throws Exception {
+        performTest("ImportDisambiguation");
+    }
+
     private void performTest(String fileName) throws Exception {
         performTest(fileName, new Performer() {
             public void compute(CompilationController parameter, Document doc, ErrorDescriptionSetter setter) {
