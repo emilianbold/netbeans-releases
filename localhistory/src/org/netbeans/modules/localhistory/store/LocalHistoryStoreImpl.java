@@ -1181,10 +1181,10 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
      */
     private File fastCopyIfPosible(File source) {
         LocalHistory.LOG.log(Level.FINE, "fastCopy file {0} - start", new Object[]{source});
-        if(!Utilities.isWindows() && source.canExecute()) {
+        if(!Utilities.isWindows() && !"true".equals(System.getProperty("netbeans.localhistory.storeChangesAsynchronously"))) {
             // some special access setting perhaps? looks like this is not typical 
             // rw file, so skip this as we aren't able to properly set *nix like file modes
-            LocalHistory.LOG.log(Level.FINE, "fastCopy {0} - skipping because executable", new Object[]{source});
+            LocalHistory.LOG.log(Level.FINE, "fastCopy {0} - skipping because not on Windows", new Object[]{source});
             return null;
         }
         if("true".equals(System.getProperty("netbeans.localhistory.storeChangesSynchronously"))) {
