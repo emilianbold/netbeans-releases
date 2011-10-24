@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.apisupport.project.ui.wizard.wizard;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collections;
@@ -52,9 +53,12 @@ import java.util.Locale;
 import java.util.Map;
 import org.netbeans.modules.apisupport.project.ui.wizard.common.CreatedModifiedFiles;
 import org.netbeans.modules.apisupport.project.api.Util;
+import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.apisupport.project.ui.wizard.common.BasicWizardIterator;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.modules.SpecificationVersion;
+import org.openide.util.Exceptions;
 
 /**
  * Data model used across the <em>New Wizard Wizard</em>.
@@ -92,7 +96,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         basicTokens.put("PACKAGE_NAME", getPackageName()); // NOI18N
         basicTokens.put("WIZARD_PREFIX", prefix); // NOI18N
         
-        StringBuffer panelsDefinitionBlock = new StringBuffer();
+        StringBuilder panelsDefinitionBlock = new StringBuilder();
         String newLine = System.getProperty("line.separator") + "                "; // NOI18N
         
         // Create wizard and visual panels
@@ -120,12 +124,12 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
             template = CreatedModifiedFiles.getTemplate("wizardPanel.java"); // NOI18N
             cmf.add(cmf.createFileWithSubstitutions(path, template, replaceTokens));
             
-            panelsDefinitionBlock.append("new " + wizardPanelClass + "()"); // NOI18N
+            panelsDefinitionBlock.append("new ").append(wizardPanelClass).append("()"); // NOI18N
             if (stepNumber != nOfSteps) {
                 panelsDefinitionBlock.append(',').append(newLine);
             }
         }
-        
+
         cmf.add(cmf.addModuleDependency("org.openide.util")); // NOI18N
         cmf.add(cmf.addModuleDependency("org.openide.dialogs")); // NOI18N
         cmf.add(cmf.addModuleDependency("org.openide.awt")); // NOI18N
@@ -136,19 +140,31 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
             Map<String, String> replaceTokens = new HashMap<String, String>(basicTokens);
             replaceTokens.put("PANELS_DEFINITION_BLOCK", panelsDefinitionBlock.toString()); // NOI18N
             replaceTokens.put("ITERATOR_CLASS", iteratorClass); // NOI18N
-            String path = getDefaultPackagePath(iteratorClass + ".java", false); // NOI18N
-            FileObject template = CreatedModifiedFiles.getTemplate(fileTemplateType
-                    ? "instantiatingIterator.java" : "wizardIterator.java"); // NOI18N
-            cmf.add(cmf.createFileWithSubstitutions(path, template, replaceTokens));
             
             if (fileTemplateType) {
                 // generate .html description for the template
                 String lowerCasedPrefix = prefix.substring(0, 1).toLowerCase(Locale.ENGLISH) + prefix.substring(1);
-                template = CreatedModifiedFiles.getTemplate("wizardDescription.html"); // NOI18N
-                cmf.add(cmf.createFileWithSubstitutions(getDefaultPackagePath(lowerCasedPrefix, true) + ".html", template, Collections.<String,String>emptyMap())); // NOI18N
-                
-                // add layer entry about a new file wizard
+                cmf.add(cmf.createFileWithSubstitutions(getDefaultPackagePath(lowerCasedPrefix, true) + ".html", CreatedModifiedFiles.getTemplate("wizardDescription.html"), Collections.<String,String>emptyMap())); // NOI18N
+                boolean useTR = false;
+                NbModuleProvider nbmp = getModuleInfo();
+                if (nbmp != null) {
+                    try {
+                        SpecificationVersion v = nbmp.getDependencyVersion("org.openide.loaders");
+                        if (v != null && v.compareTo(new SpecificationVersion("7.29")) >= 0) {
+                            useTR = true;
+                        }
+                    } catch (IOException x) {
+                        Exceptions.printStackTrace(x);
+                    }
+                }
                 String instanceFullPath = category + '/' + lowerCasedPrefix;
+                if (useTR) {
+                    cmf.add(cmf.addModuleDependency("org.openide.loaders"));
+                    replaceTokens.put("TR_folder", category.replaceFirst("^Templates/", ""));
+                    replaceTokens.put("TR_displayName", displayName);
+                    replaceTokens.put("TR_description", lowerCasedPrefix + ".html");
+                } else {
+                // add layer entry about a new file wizard
                 cmf.add(cmf.createLayerEntry(instanceFullPath, null, null, displayName, null));
                 cmf.add(cmf.createLayerAttribute(instanceFullPath, "template", Boolean.TRUE)); // NOI18N
                 String fqIteratorClass = getPackageName() + '.' + iteratorClass;
@@ -161,13 +177,21 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
                 } catch (MalformedURLException ex) {
                     Util.err.notify(ex);
                 }
+                }
                 
                 // Copy wizard icon
                 if (origIconPath != null && origIconPath.length() > 0) {
                     String relToSrcDir = addCreateIconOperation(cmf, origIconPath);
+                    if (useTR) {
+                        replaceTokens.put("TR_iconBase", relToSrcDir);
+                    } else {
                     cmf.add(cmf.createLayerAttribute(instanceFullPath, "iconBase", relToSrcDir)); // NOI18N
+                    }
                 }
             }
+            FileObject template = CreatedModifiedFiles.getTemplate(fileTemplateType ? "instantiatingIterator.java" : "wizardIterator.java"); // NOI18N
+            String path = getDefaultPackagePath(iteratorClass + ".java", false); // NOI18N
+            cmf.add(cmf.createFileWithSubstitutions(path, template, replaceTokens));
         } else {
             Map<String, String> replaceTokens = new HashMap<String, String>(basicTokens);
             replaceTokens.put("PANELS_DEFINITION_BLOCK", panelsDefinitionBlock.toString()); // NOI18N
