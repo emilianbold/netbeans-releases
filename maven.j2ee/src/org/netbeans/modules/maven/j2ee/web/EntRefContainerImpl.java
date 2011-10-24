@@ -252,6 +252,10 @@ public class EntRefContainerImpl implements EnterpriseReferenceContainer {
             // if this results into unnecessary creation of web.xml then the caller of this
             // method should be fixed to not call it
             if (!isDescriptorMandatory(jp.getJ2eeProfile())) {
+                // in cases of missing WEB-INF directory create that folder
+                if (jp.getWebInf() == null) {
+                    jp.createWebInf();
+                }
                 DDHelper.createWebXml(jp.getJ2eeProfile(), jp.getWebInf());
                 wa = getWebApp();
             }
