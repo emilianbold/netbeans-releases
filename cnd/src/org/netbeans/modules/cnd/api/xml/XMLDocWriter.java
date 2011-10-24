@@ -58,20 +58,26 @@ import java.io.OutputStream;
 abstract public class XMLDocWriter implements XMLEncoder {
 
     private int indentChars = 2;
+    private String lineSeparator = System.getProperty("line.separator"); // NOI18N
+
     private XMLEncoderStream encoderStream;
 
     public XMLDocWriter() {
     }
 
+    /**
+     * Set number of spaces to be used for each indent level.
+     */
+    public void setLineSeparator(String separator) {
+	this.lineSeparator = separator;
+    } 
 
     /**
      * Set number of spaces to be used for each indent level.
      */
-
     public void setIndentChars(int indentChars) {
 	this.indentChars = indentChars;
     } 
-
 
     /**
      * Return the XML encoding string.
@@ -80,7 +86,6 @@ abstract public class XMLDocWriter implements XMLEncoder {
      * <br>
      * The default implementation handles US/Chinese/Japanese.
      */
-
     protected String encoding() {
 //	String lang = System.getenv("LANG");	// NOI18N
 	String encoding = "UTF-8";		// NOI18N
@@ -128,7 +133,6 @@ abstract public class XMLDocWriter implements XMLEncoder {
     private void writeTail() {
     } 
 
-
     /**
      * Drive the writing of an XML document.
      * <p>
@@ -143,7 +147,7 @@ abstract public class XMLDocWriter implements XMLEncoder {
      */
     public void write(OutputStream os) throws IOException {
 	try {
-	    encoderStream = new XMLEncoderStream(os, indentChars, encoding());
+	    encoderStream = new XMLEncoderStream(os, indentChars, encoding(), lineSeparator);
 	    writeHeader();
 	    writeDoctype();
 	    encode(encoderStream);

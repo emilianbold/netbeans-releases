@@ -844,6 +844,18 @@ public class Css3ParserTest extends CslTestBase {
         
         assertResultOK(result);
     }
+    
+    //Bug 204128 - CC stops work after # in a color attribute 
+    public void testErrorRecoveryAfterHash() throws BadLocationException, ParseException {
+        CssParserResult result = TestUtil.parse(
+                "#test {\n"
+                + "color: #\n"
+                + "\n"
+                + "   }\n"
+                + "div { color: red; }\n");
+                
+//        TestUtil.dumpResult(result);
+    }
 
     private CssParserResult assertResultOK(CssParserResult result) {
         return assertResult(result, 0);

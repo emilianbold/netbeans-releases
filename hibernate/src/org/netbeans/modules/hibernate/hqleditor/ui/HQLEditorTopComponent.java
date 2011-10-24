@@ -413,9 +413,10 @@ public final class HQLEditorTopComponent extends TopComponent {
         private void process() {
             if (hqlParserTask != null && !hqlParserTask.isFinished() && (hqlParserTask.getDelay() != 0)) {
                 hqlParserTask.cancel();
+            } else if(!requestProcessor.isShutdown()) {
+                hqlParserTask = requestProcessor.post(new ParseHQL(), 1000);
+                isSqlTranslationProcessDone = false;
             }
-            hqlParserTask = requestProcessor.post(new ParseHQL(), 1000);
-            isSqlTranslationProcessDone = false;
         }
     }
 
