@@ -171,6 +171,8 @@ public class CleanupTest extends LHTestCase {
     }
     
     public void testCleanUp() throws Exception {
+        System.setProperty("netbeans.localhistory.storeChangesAsynchronously", "true");
+                
         LocalHistoryTestStore store = createStore();
         LogHandler lh = new LogHandler("copied file", LogHandler.Compare.STARTS_WITH);
         File folder = new File(getDataDir(), "datafolder");        
@@ -206,6 +208,8 @@ public class CleanupTest extends LHTestCase {
     }    
         
     public void testCleanUpLabels() throws Exception {
+        System.setProperty("netbeans.localhistory.storeChangesAsynchronously", "true");
+        
         LocalHistoryTestStore store = createStore();
         LogHandler lh = new LogHandler("copied file", LogHandler.Compare.STARTS_WITH);
         File folder = new File(getDataDir(), "datafolder");        
