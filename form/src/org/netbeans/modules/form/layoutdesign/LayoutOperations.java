@@ -407,8 +407,8 @@ class LayoutOperations implements LayoutConstants {
     }
 
     /**
-     * @return true if group group either does not want to resize, or was set to
-     * suppressed resizing if parallel with more than one resizing sub interval
+     * @return true if group either does not want to resize, or was set to
+     * suppressed resizing when parallel with more than one resizing sub interval
      */
     private boolean suppressResizingInSubgroup(LayoutInterval group, Collection<LayoutInterval> eliminated) {
         LayoutInterval oneResizing = null;

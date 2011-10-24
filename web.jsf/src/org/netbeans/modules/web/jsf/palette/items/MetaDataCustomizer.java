@@ -168,13 +168,10 @@ public class MetaDataCustomizer extends javax.swing.JPanel implements ListSelect
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 449, Short.MAX_VALUE)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addGap(22, 22, 22)
-                                .addComponent(addButton))
-                            .addGroup(layout.createSequentialGroup()
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(removeButton))))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(addButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(removeButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                     .addComponent(viewParamLabel))
                 .addContainerGap())
         );
@@ -224,6 +221,9 @@ public class MetaDataCustomizer extends javax.swing.JPanel implements ListSelect
     // End of variables declaration
 
     public void initTable() {
+        // issue #202876 - save edited values by closing dialog
+        viewParamTable.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
+
         for (Entry entry : metadata.getProperties().entrySet()){
             tableModel.addRow(new String[]{(String)entry.getKey(),(String)entry.getValue()});
         }
