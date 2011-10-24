@@ -12,8 +12,18 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+<#if TR_folder??>
+import org.netbeans.api.templates.TemplateRegistration;
+</#if>
 import org.openide.WizardDescriptor;
+<#if TR_folder??>
+import org.openide.util.NbBundle.Messages;
+</#if>
 
+<#if TR_folder??>
+@TemplateRegistration(folder="${TR_folder}", /*position=...,*/ displayName="#${ITERATOR_CLASS}_displayName", <#if TR_iconBase??>iconBase="${TR_iconBase}", </#if>description="${TR_description}")
+@Messages("${ITERATOR_CLASS}_displayName=${TR_displayName}")
+</#if>
 public final class ${ITERATOR_CLASS} implements WizardDescriptor.InstantiatingIterator {
 
     private int index;
