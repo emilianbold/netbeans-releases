@@ -324,6 +324,7 @@ public final class NewLoaderIterator extends BasicWizardIterator {
         fileChanges.add(fileChanges.addModuleDependency("org.openide.util")); //NOI18N
         fileChanges.add(fileChanges.addModuleDependency("org.openide.util.lookup")); //NOI18N
         if (isEditable) {
+            // XXX unused at least for multiview case:
             fileChanges.add(fileChanges.addModuleDependency("org.openide.text")); //NOI18N
         }
         if (isEditable) {
@@ -331,6 +332,7 @@ public final class NewLoaderIterator extends BasicWizardIterator {
         }
         if (model.isUseMultiview()) {
             fileChanges.add(fileChanges.addModuleDependency("org.netbeans.core.multiview")); //NOI18N
+            fileChanges.add(fileChanges.addModuleDependency("org.openide.awt")); //NOI18N
         }
 
         if (!loaderlessObject) {
