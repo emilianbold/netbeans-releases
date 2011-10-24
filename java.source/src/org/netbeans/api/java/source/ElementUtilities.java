@@ -299,6 +299,14 @@ public final class ElementUtilities {
                         if (acceptor == null || acceptor.accept(member, type))
                             members.add(member);
                     }
+                    t = Symtab.instance(ctx).classType;
+                    typeargs = Source.instance(ctx).allowGenerics() ?
+                        com.sun.tools.javac.util.List.of((Type)type) :
+                        com.sun.tools.javac.util.List.<Type>nil();
+                    t = new ClassType(t.getEnclosingType(), typeargs, t.tsym);
+                    classPseudoMember = new VarSymbol(Flags.STATIC | Flags.PUBLIC | Flags.FINAL, Names.instance(ctx)._class, t, ((Type)type).tsym);
+                    if (acceptor == null || acceptor.accept(classPseudoMember, type))
+                        members.add(classPseudoMember);
                     break;
             }
         }

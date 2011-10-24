@@ -45,11 +45,15 @@ package org.netbeans.modules.localhistory;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
+import java.lang.reflect.InvocationTargetException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
@@ -62,6 +66,7 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.localhistory.store.LocalHistoryStore;
 import org.netbeans.modules.localhistory.store.LocalHistoryStoreFactory;
+import org.netbeans.modules.localhistory.utils.Utils;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
 import org.netbeans.modules.versioning.util.ListenersSupport;
@@ -69,10 +74,10 @@ import org.netbeans.modules.versioning.util.VersioningListener;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
-import org.openide.util.Lookup;
-import org.openide.util.RequestProcessor;
-import org.openide.util.WeakListeners;
+import org.openide.util.*;
+import org.openide.util.Lookup.Result;
 import org.openide.windows.TopComponent;
+import org.openide.windows.TopComponent.Registry;
 import org.openide.windows.WindowManager;
 
 /** 
@@ -109,9 +114,9 @@ public class LocalHistory {
     public static final Logger LOG = Logger.getLogger("org.netbeans.modules.localhistory"); // NOI18N
 
     /** holds all files which are actually opened */
-    private final Set<File> openedFiles = new HashSet<File>();
+    private final Set<String> openedFiles = new HashSet<String>();
     /** holds all files which where opened at some time during this nb session and changed */
-    private final Set<File> touchedFiles = new HashSet<File>();
+    private final Set<String> touchedFiles = new HashSet<String>();
     
     private LocalHistoryVCS lhvcs;
     private RequestProcessor parallelRP;
@@ -261,26 +266,37 @@ public class LocalHistory {
             return;
         }
         synchronized(touchedFiles) {
-            touchedFiles.add(file);
+            touchedFiles.add(file.getAbsolutePath());
         }
         synchronized(openedFiles) {
-            openedFiles.remove(file);
+            openedFiles.remove(file.getAbsolutePath());
         }
     }
 
-    boolean isOpened(File file) {
+    private boolean isOpened(File file) {
+        boolean opened;
         synchronized(openedFiles) {
-            return openedFiles.contains(file);
+            opened = openedFiles.contains(file.getAbsolutePath());
         }
+        if(LOG.isLoggable(Level.FINER)) {
+            LOG.log(Level.FINER, " file {0} {1}", new Object[]{file, opened ? "is opened" : "isn't opened"});
+        }
+        return opened;
     }
 
     boolean isOpenedOrTouched(File file) {
         if(isOpened(file)) {
             return true;
         }
+        
+        boolean touched;
         synchronized(touchedFiles) {
-            return touchedFiles.contains(file);
+            touched = touchedFiles.contains(file.getAbsolutePath());
         }
+        if(LOG.isLoggable(Level.FINER)) {
+            LOG.log(Level.FINER, " file {0} {1}", new Object[]{file, touched ? "is touched" : "isn't touched"});
+        }
+        return touched;
     }
 
     boolean isManaged(File file) {
@@ -416,54 +432,135 @@ public class LocalHistory {
     }
 
     private class OpenedFilesListener implements PropertyChangeListener {
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            if (WindowManager.getDefault().getRegistry().PROP_TC_OPENED.equals(evt.getPropertyName())) {
-                List<File> files = getFiles(evt);
-                synchronized (openedFiles) {
-                    for (File file : files) {
-                        LOG.log(Level.FINE, " adding to opened files : ", new Object[]{file});
-                        openedFiles.add(file);
-                    }
-                    for (File file : files) {
-                        if (handleManaged(file)) {
-                            break;
+            if (Registry.PROP_TC_OPENED.equals(evt.getPropertyName())) {
+                Object obj = evt.getNewValue();
+                if (obj instanceof TopComponent) {
+                    TopComponent tc = (TopComponent) obj;
+                    addOpenedFiles(getFiles(tc));
+                }
+            } else if (Registry.PROP_TC_CLOSED.equals(evt.getPropertyName())) {
+                Object obj = evt.getNewValue();
+                if (obj instanceof TopComponent) {
+                    TopComponent tc = (TopComponent) obj;
+                    removeOpenedFiles(getFiles(tc));
+                    removeLookupListeners(tc);
+                }
+            }
+        }
+
+        private void addLookupListener(TopComponent tc) {
+            Result<DataObject> r = tc.getLookup().lookupResult(DataObject.class);
+            L l = new L(new WeakReference<TopComponent>(tc), r);
+            synchronized(lookupListeners) {
+                lookupListeners.add(l);
+            }
+            r.addLookupListener(l);
+        }
+
+        private void removeLookupListeners(TopComponent tc) {
+            synchronized(lookupListeners) {
+                Iterator<L> it = lookupListeners.iterator();
+                synchronized(lookupListeners) {
+                    while(it.hasNext()) {
+                        L l = it.next();
+                        if(l.ref.get() == null) {
+                            l.r.removeLookupListener(l);
+                            it.remove();
+                        }
+                        if(l.ref.get() == tc) {
+                            l.r.removeLookupListener(l);
+                            it.remove();
                         }
                     }
+                }                    
+            }
+        }
+
+        private void addOpenedFiles(List<File> files) {
+            if(files == null) {
+                return;
+            }
+            synchronized (openedFiles) {
+                for (File file : files) {
+                    LOG.log(Level.FINE, " adding to opened files : ", new Object[]{file});
+                    openedFiles.add(file.getAbsolutePath());
                 }
-            } else if (WindowManager.getDefault().getRegistry().PROP_TC_CLOSED.equals(evt.getPropertyName())) {
-                List<File> files = getFiles(evt);
-                synchronized (openedFiles) {
-                    for (File file : files) {
-                        LOG.log(Level.FINE, " removing from opened files {0} ", new Object[]{file});
-                        openedFiles.remove(file);
+                for (File file : files) {
+                    if (handleManaged(file)) {
+                        break;
                     }
                 }
             }
         }
-        private List<File> getFiles(PropertyChangeEvent evt) {
-            Object obj = evt.getNewValue();
-            if (obj instanceof TopComponent) {
-                List<File> ret = new ArrayList<File>();
-                TopComponent tc = (TopComponent) obj;
-                LOG.log(Level.FINER, " looking up files in tc {0} ", new Object[]{tc});
-                DataObject tcDataObject = tc.getLookup().lookup(DataObject.class);
-                if(tcDataObject == null) {
-                    return Collections.EMPTY_LIST;
+        
+        private void removeOpenedFiles(List<File> files) {
+            if(files == null) {
+                return;
+            }
+            synchronized (openedFiles) {
+                for (File file : files) {
+                    LOG.log(Level.FINE, " removing from opened files {0} ", new Object[]{file});
+                    openedFiles.remove(file.getAbsolutePath());
                 }
-                LOG.log(Level.FINER, "  looking up files in dataobject {0} ", new Object[]{tcDataObject});
-                Set<FileObject> fos = tcDataObject.files();
-                if(fos != null) {
-                    for (FileObject fo : fos) {
-                        LOG.log(Level.FINER, "   found file {0}", new Object[]{fo});
-                        File f = FileUtil.toFile(fo);
-                        if (f != null) {
-                            ret.add(f);
+            }
+        }
+        
+        private List<File> getFiles(TopComponent tc) {
+            LOG.log(Level.FINER, " looking up files in tc {0} ", new Object[]{tc});
+            DataObject tcDataObject = tc.getLookup().lookup(DataObject.class);
+            if(tcDataObject == null) {
+                boolean alreadyListening = false;
+                Iterator<L> it = lookupListeners.iterator();
+                synchronized(lookupListeners) {
+                    while(it.hasNext()) {
+                        L l = it.next();
+                        if(l.ref.get() == null) {
+                            l.r.removeLookupListener(l);
+                            it.remove();
+                        }
+                        if(l.ref.get() == tc) {
+                           alreadyListening = true;
+                           break;
                         }
                     }
                 }
-                return ret;
+                if(!alreadyListening) {
+                    addLookupListener(tc);
+                }
+                return Collections.EMPTY_LIST;
+            } else {
+                try {
+                    return Utils.hasOpenedEditorPanes(tcDataObject) ? getFiles(tcDataObject) : Collections.EMPTY_LIST;
+                } catch (InterruptedException ex) {
+                    LOG.log(Level.WARNING, null, ex);
+                } catch (InvocationTargetException ex) {
+                    LOG.log(Level.WARNING, null, ex);
+                }
             }
             return Collections.EMPTY_LIST;
+        }
+
+        private List<File> getFiles(DataObject tcDataObject) {
+            List<File> ret = new ArrayList<File>();
+            LOG.log(Level.FINER, "  looking up files in dataobject {0} ", new Object[]{tcDataObject});
+            Set<FileObject> fos = tcDataObject.files();
+            if(fos != null) {
+                for (FileObject fo : fos) {
+                    LOG.log(Level.FINER, "   found file {0}", new Object[]{fo});
+                    File f = FileUtil.toFile(fo);
+                    if (f != null && !openedFiles.contains(f.getAbsolutePath()) && !touchedFiles.contains(f.getAbsolutePath())) {
+                        ret.add(f);
+                    }
+                }
+            }
+            if(LOG.isLoggable(Level.FINER)) {
+                for (File f : ret) {
+                    LOG.log(Level.FINER, "   returning file {0} ", new Object[]{f});
+                }
+            }
+            return ret;
         }
         private boolean handleManaged(File file) {
             if (isManagedByParent(file) != null) {
@@ -475,6 +572,49 @@ public class LocalHistory {
             }
             lh.managedFilesChanged();
             return true;
+        }
+        
+        private final List<L> lookupListeners = new ArrayList<L>();
+        
+        private class L implements LookupListener {
+            private final Reference<TopComponent> ref;
+            private final Result<DataObject> r;
+
+            public L(Reference<TopComponent> ref, Result<DataObject> r) {
+                this.ref = ref;
+                this.r = r;
+            }
+            
+            @Override
+            public void resultChanged(LookupEvent ev) {
+                TopComponent tc = ref.get();
+                if(tc == null) {
+                    r.removeLookupListener(this);
+                    synchronized(lookupListeners) {
+                        lookupListeners.remove(this);
+                    }                    
+                    return;
+                }
+                if(LOG.isLoggable(Level.FINER)) {
+                    LOG.log(Level.FINER, "  looking resut changed for {0} ", new Object[]{ref.get()});
+                }
+                DataObject tcDataObject = tc.getLookup().lookup(DataObject.class);
+                if(tcDataObject != null) {
+                    try {
+                        if(Utils.hasOpenedEditorPanes(tcDataObject)) {
+                            addOpenedFiles(getFiles(tcDataObject));
+                        }
+                    } catch (InterruptedException ex) {
+                        LOG.log(Level.WARNING, null, ex);
+                    } catch (InvocationTargetException ex) {
+                        LOG.log(Level.WARNING, null, ex);
+                    }
+                    r.removeLookupListener(this);
+                    synchronized(lookupListeners) {
+                        lookupListeners.remove(this);
+                    }
+                }
+            }
         }
     }
     

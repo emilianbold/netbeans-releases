@@ -12,8 +12,19 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+<#if TR_folder??>
+import org.netbeans.api.templates.TemplateRegistration;
+</#if>
 import org.openide.WizardDescriptor;
+<#if TR_folder??>
+import org.openide.util.NbBundle.Messages;
+</#if>
 
+<#if TR_folder??>
+// TODO define position attribute
+@TemplateRegistration(folder="${TR_folder}", displayName="#${ITERATOR_CLASS}_displayName", <#if TR_iconBase??>iconBase="${TR_iconBase}", </#if>description="${TR_description}")
+@Messages("${ITERATOR_CLASS}_displayName=${TR_displayName}")
+</#if>
 public final class ${ITERATOR_CLASS} implements WizardDescriptor.InstantiatingIterator {
 
     private int index;
@@ -21,10 +32,6 @@ public final class ${ITERATOR_CLASS} implements WizardDescriptor.InstantiatingIt
     private WizardDescriptor wizard;
     private WizardDescriptor.Panel[] panels;
 
-    /**
-     * Initialize panels representing individual wizard's steps and sets
-     * various properties for them influencing wizard appearance.
-     */
     private WizardDescriptor.Panel[] getPanels() {
         if (panels == null) {
             panels = new WizardDescriptor.Panel[] {
@@ -41,17 +48,11 @@ public final class ${ITERATOR_CLASS} implements WizardDescriptor.InstantiatingIt
                 }
                 if (c instanceof JComponent) { // assume Swing components
                     JComponent jc = (JComponent) c;
-                    // Sets step number of a component
-                    // TODO if using org.openide.dialogs >= 7.8, can use WizardDescriptor.PROP_*:
-                    jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i));
-                    // Sets steps names for a panel
-                    jc.putClientProperty("WizardPanel_contentData", steps);
-                    // Turn on subtitle creation on each step
-                    jc.putClientProperty("WizardPanel_autoWizardStyle", Boolean.TRUE);
-                    // Show steps on the left side with the image on the background
-                    jc.putClientProperty("WizardPanel_contentDisplayed", Boolean.TRUE);
-                    // Turn on numbering of all steps
-                    jc.putClientProperty("WizardPanel_contentNumbered", Boolean.TRUE);
+                    jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, i);
+                    jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps);
+                    jc.putClientProperty(WizardDescriptor.PROP_AUTO_WIZARD_STYLE, true);
+                    jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DISPLAYED, true);
+                    jc.putClientProperty(WizardDescriptor.PROP_CONTENT_NUMBERED, true);
                 }
             }
         }
@@ -59,6 +60,7 @@ public final class ${ITERATOR_CLASS} implements WizardDescriptor.InstantiatingIt
     }
 
     public Set instantiate() throws IOException {
+        // TODO return set of FileObject (or DataObject) you have created
         return Collections.EMPTY_SET;
     }
 
@@ -103,33 +105,10 @@ public final class ${ITERATOR_CLASS} implements WizardDescriptor.InstantiatingIt
     // If nothing unusual changes in the middle of the wizard, simply:
     public void addChangeListener(ChangeListener l) {}
     public void removeChangeListener(ChangeListener l) {}
-
     // If something changes dynamically (besides moving between panels), e.g.
-    // the number of panels changes in response to user input, then uncomment
-    // the following and call when needed: fireChangeEvent();
-    /*
-    private Set<ChangeListener> listeners = new HashSet<ChangeListener>(1); // or can use ChangeSupport in NB 6.0
-    public final void addChangeListener(ChangeListener l) {
-        synchronized (listeners) {
-            listeners.add(l);
-        }
-    }
-    public final void removeChangeListener(ChangeListener l) {
-        synchronized (listeners) {
-            listeners.remove(l);
-        }
-    }
-    protected final void fireChangeEvent() {
-        Iterator<ChangeListener> it;
-        synchronized (listeners) {
-            it = new HashSet<ChangeListener>(listeners).iterator();
-        }
-        ChangeEvent ev = new ChangeEvent(this);
-        while (it.hasNext()) {
-            it.next().stateChanged(ev);
-        }
-    }
-     */
+    // the number of panels changes in response to user input, then use
+    // ChangeSupport to implement add/removeChangeListener and call fireChange
+    // when needed
 
     // You could safely ignore this method. Is is here to keep steps which were
     // there before this wizard was instantiated. It should be better handled

@@ -50,7 +50,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 import java.util.Set;
 import java.util.logging.Level;
-import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
@@ -59,9 +58,9 @@ import org.netbeans.core.api.multiview.MultiViewPerspective;
 import org.netbeans.core.api.multiview.MultiViews;
 import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.modules.localhistory.LocalHistory;
+import org.netbeans.modules.localhistory.utils.Utils;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.openide.cookies.EditCookie;
-import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -118,7 +117,7 @@ public class ShowLocalHistoryAction extends NodeAction {
                 // activate the History tab if there is a opened TopComponent 
                 // with a History MultiView element
                 Set<TopComponent> tcs = TopComponent.getRegistry().getOpened();
-                final boolean[] gotEditorPanes = new boolean[] {false};
+                boolean hasEditorPanes = false;
                 for (final TopComponent tc : tcs) {
                     Lookup l = tc.getLookup();
                     final DataObject tcDataObject = l.lookup(DataObject.class);
@@ -132,20 +131,9 @@ public class ShowLocalHistoryAction extends NodeAction {
                         } 
                         try {
                             // this TopComponent has no history tab, yet doesn't necessarily has to be an editor.
-                            // lets try to guess if it's an editor TC so that we know if we have to 
+                            // lets try to guess if it has an opened editor so that we know if we have to 
                             // open the Local History Top Component
-                            SwingUtilities.invokeAndWait(new Runnable() {
-                                @Override
-                                public void run() {
-                                    EditorCookie cookie = tcDataObject.getLookup().lookup(EditorCookie.class);
-                                    if(cookie != null) {
-                                        JEditorPane[] panes = cookie.getOpenedPanes();
-                                        if(panes != null && panes.length > 0) {
-                                            gotEditorPanes[0] = true;
-                                        }
-                                    }
-                                }
-                            });
+                            hasEditorPanes = Utils.hasOpenedEditorPanes(tcDataObject);
                         } catch (InterruptedException ex) {
                             LocalHistory.LOG.log(Level.WARNING, null, ex);
                         } catch (InvocationTargetException ex) {
@@ -153,7 +141,7 @@ public class ShowLocalHistoryAction extends NodeAction {
                         }
                     }
                 }
-                if(gotEditorPanes[0]) {
+                if(hasEditorPanes) {
                     // files editor was open, but had no history tab
                     openLocalHistoryTC(files);
                     return;

@@ -406,8 +406,10 @@ public final class HintsUI implements MouseListener, MouseMotionListener, KeyLis
 
             hintListComponent =
                     new ScrollCompletionPane(comp, fixes, null, null, screenDim);
-            final Dimension hintPopup = hintListComponent.getPreferredSize();
+            Dimension hintPopup = hintListComponent.getPreferredSize();
+            int ySpaceWhenPlacedUp = p.y - (rowHeight + POPUP_VERTICAL_OFFSET);
             boolean exceedsHeight = p.y + hintPopup.height > screen.height;
+            boolean placeUp = exceedsHeight && (ySpaceWhenPlacedUp > screenDim.height - p.y);
 
             if (ALWAYS_SHOW_ERROR_MESSAGE) {
             try {
@@ -417,7 +419,7 @@ public final class HintsUI implements MouseListener, MouseMotionListener, KeyLis
 
                 int y;
                 final Dimension errorPopup = errorTooltip.getPreferredSize();
-                if (exceedsHeight)
+                if (placeUp)
                     y = p.y + POPUP_VERTICAL_OFFSET;
                 else
                     y = p.y-rowHeight-errorPopup.height-POPUP_VERTICAL_OFFSET;
@@ -436,8 +438,15 @@ public final class HintsUI implements MouseListener, MouseMotionListener, KeyLis
             }
             }
 
-            if(exceedsHeight) {
+            if (placeUp) {
+                hintListComponent =
+                    new ScrollCompletionPane(comp, fixes, null, null, new Dimension(screenDim.width, Math.min(ySpaceWhenPlacedUp, hintPopup.height)));
+                hintPopup = hintListComponent.getPreferredSize();
                 p.y -= hintPopup.height + rowHeight + POPUP_VERTICAL_OFFSET;
+                assert p.y >= 0;
+            } else if (exceedsHeight) {
+                hintListComponent =
+                        new ScrollCompletionPane(comp, fixes, null, null, new Dimension(screenDim.width, Math.min(screenDim.height - p.y, hintPopup.height)));
             }
 
             //shift hint popup left if necessary
