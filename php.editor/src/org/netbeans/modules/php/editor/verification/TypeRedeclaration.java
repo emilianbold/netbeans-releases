@@ -57,7 +57,7 @@ import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.verification.PHPHintsProvider.Kind;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 
 /**
  * @author Radek Matous
@@ -107,13 +107,15 @@ public class TypeRedeclaration extends AbstractRule {
     }
 
     @Override
+    @Messages("TypeRedeclarationRuleDesc=Type Redeclaration")
     public String getDescription() {
-        return NbBundle.getMessage(AddUseImportRule.class, "TypeRedeclarationRuleDesc");
+        return Bundle.TypeRedeclarationRuleDesc();
     }
 
     @Override
+    @Messages("TypeRedeclarationRuleDispName=Type Redeclaration")
     public String getDisplayName() {
-        return NbBundle.getMessage(AddUseImportRule.class, "TypeRedeclarationRuleDispName");
+        return Bundle.TypeRedeclarationRuleDispName();
     }
 
     @Override
