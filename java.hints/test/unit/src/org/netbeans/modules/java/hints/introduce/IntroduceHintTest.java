@@ -1640,6 +1640,28 @@ public class IntroduceHintTest extends NbTestCase {
                        1, 0);
     }
 
+    public void testIntroduceMethod203002() throws Exception {
+        performFixTest("package test;\n" +
+                       "class Test {\n" +
+                       "    public void test() {\n" +
+                       "        |double leftH, rightH;\n" +
+                       "        leftH = Math.max(1, 1);|\n" +
+                       "    }\n" +
+                       "}",
+                       ("package test;\n" +
+                       "class Test {\n" +
+                       "    public void test() {\n" +
+                       "        name();\n" +
+                       "    }\n" +
+                       "    private void name() {\n" +
+                       "        double leftH, rightH;\n" +
+                       "        leftH = Math.max(1, 1);\n" +
+                       "    }\n" +
+                       "}").replaceAll("[ \t\n]+", " "),
+                       new DialogDisplayerImpl3("name", EnumSet.of(Modifier.PRIVATE), true),
+                       1, 0);
+    }
+
     protected void prepareTest(String code) throws Exception {
         clearWorkDir();
         
