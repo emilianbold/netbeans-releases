@@ -299,6 +299,11 @@ public final class SAXGeneratorParsletPanel extends SAXGeneratorAbstractPanel {
           */
         public Object getValueAt(int row, int column) {
             ElementBindings.Entry entry = model.getElementBindings().getEntry(row);
+            
+            if (entry == null) {
+                return null;
+            }
+            
             ParsletBindings parslets = model.getParsletBindings();
 
             // set to parslet or null if none assigned
