@@ -1145,7 +1145,7 @@ public final class CreatedModifiedFiles {
         PackageInfo(Project project, String packageName, Map<String,? extends Map<String,?>> annotations) {
             super(project);
             this.annotations = annotations;
-            srcRootPath = getModuleInfo().getResourceDirectoryPath(false);
+            srcRootPath = getModuleInfo().getSourceDirectoryPath();
             srcRelPath = packageName.replace('.', '/') + "/package-info.java"; // NOI18N
             addCreatedOrModifiedPath(srcRootPath + '/' + srcRelPath, true);
         }
