@@ -84,6 +84,8 @@ public class SvnClientFactory {
     private final static int JAVAHL_INIT_STOP_REPORTING = 2;
 
     private static final Logger LOG = Logger.getLogger("org.netbeans.modules.subversion.client.SvnClientFactory");
+    private static final String FACTORY_PROP = "svnClientAdapterFactory"; //NOI18N
+    private static final String FACTORY_TYPE_COMMANDLINE = "commandline"; //NOI18N
 
     public enum ConnectionType {
         javahl,
@@ -127,6 +129,18 @@ public class SvnClientFactory {
         { 
             instance = null;
         }
+    }
+    
+    /**
+     * Switches to commandline client.
+     * Call this as a fallback when no integrated svn clients work with some working copies
+     */
+    static void switchToCLI () {
+        LOG.log(Level.INFO, "Switching forcefully to a commandline client"); //NOI18N
+        System.setProperty(FACTORY_PROP, FACTORY_TYPE_COMMANDLINE); //NOI18N
+        SvnModuleConfig.getDefault().setForceCommnandlineClient(true);
+        instance = null;
+        Subversion.getInstance().svnClientChanged();
     }
 
     public static boolean isCLI() {
@@ -196,10 +210,17 @@ public class SvnClientFactory {
      */
     private void setup() {
         try {
-            String factoryType = System.getProperty("svnClientAdapterFactory");
+            String factoryType = System.getProperty(FACTORY_PROP);
             // ping config file copying
             SvnConfigFiles.getInstance();
 
+            if ((factoryType == null || factoryType.trim().isEmpty())
+                    && SvnModuleConfig.getDefault().isForcedCommandlineClient()) {
+                // fallback to commandline only if factoryType is not set explicitely
+                factoryType = FACTORY_TYPE_COMMANDLINE;
+                LOG.log(Level.INFO, "setup: using commandline as the client - saved in preferences");
+            }
+            
             if(factoryType == null ||
                factoryType.trim().equals("")) {
                 if(setupJavaHl()) {
@@ -213,25 +234,29 @@ public class SvnClientFactory {
                 setupCommandline();
             } else if (factoryType.trim().equals("javahl")) {
                 if(setupJavaHl()) {
+                    SvnModuleConfig.getDefault().setForceCommnandlineClient(false);
                     return;
                 }
                 LOG.log(Level.INFO, "JavaHL not available. Falling back on SvnKit.");
                 if(setupSvnKit()) {
+                    SvnModuleConfig.getDefault().setForceCommnandlineClient(false);
                     return;
                 }          
                 LOG.log(Level.INFO, "SvnKit not available. Falling back on commandline.");
                 setupCommandline();
             } else if(factoryType.trim().equals("svnkit")) {
                 if(setupSvnKit()) {
+                    SvnModuleConfig.getDefault().setForceCommnandlineClient(false);
                     return;
                 }
                 LOG.log(Level.INFO, "SvnKit not available. Falling back on javahl.");
                 if(setupJavaHl()) {
+                    SvnModuleConfig.getDefault().setForceCommnandlineClient(false);
                     return;
                 }
                 LOG.log(Level.INFO, "JavaHL not available. Falling back on comandline.");
                 setupCommandline();
-            } else if(factoryType.trim().equals("commandline")) {
+            } else if(factoryType.trim().equals(FACTORY_TYPE_COMMANDLINE)) {
                 setupCommandline();
             } else {              
                 throw new SVNClientException("Unknown factory: " + factoryType);
