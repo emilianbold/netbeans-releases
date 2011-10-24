@@ -46,6 +46,7 @@ package org.netbeans.modules.cnd.makeproject.configurations;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import org.netbeans.modules.cnd.api.xml.LineSeparatorDetector;
 import org.netbeans.modules.cnd.api.xml.XMLDocWriter;
 import org.netbeans.modules.cnd.api.xml.XMLEncoderStream;
 import org.netbeans.modules.cnd.makeproject.SmartOutputStream;
@@ -86,6 +87,7 @@ public class ConfigurationXMLWriter extends XMLDocWriter {
      * was: ConfigurationDescriptorHelper.storeDescriptor()
      */
     private void write(String relPath) throws IOException {
+        setLineSeparator(new LineSeparatorDetector(projectDirectory.getFileObject(relPath), projectDirectory).getInitialSeparator());
         FileObject xml = FileUtil.createData(projectDirectory, relPath);
         try {
             org.openide.filesystems.FileLock lock = xml.lock();

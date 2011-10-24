@@ -46,6 +46,7 @@ package org.netbeans.modules.cnd.api.xml;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
@@ -69,19 +70,19 @@ import org.openide.xml.XMLUtil;
  */
 public final class XMLEncoderStream {
 
-    private String indentElement = "  ";	// NOI18N
+    private String indentElement = "  ";/// NOI18N
     private int indent;
     private PrintWriter writer;
     private OutputStream os;	// just so we can close it
 
 
-    XMLEncoderStream(OutputStream os, int indentChars, String encoding) {
+    XMLEncoderStream(OutputStream os, int indentChars, String encoding, String lineSeparator) {
 	this.os = os;
         try {
             Writer w = new BufferedWriter(new OutputStreamWriter(os, encoding));
-            writer = new PrintWriter(w);
+            writer = new MyPrintWriter(w, lineSeparator);
         } catch (UnsupportedEncodingException ex) {
-            ex.printStackTrace();
+            ex.printStackTrace(System.err);
             writer = new PrintWriter(os);
         }
 	makeIndentElement(indentChars);
@@ -96,7 +97,6 @@ public final class XMLEncoderStream {
 	    indentElement += " ";	// NOI18N
 	}
     }
-
 
     /**
      * .
@@ -393,5 +393,34 @@ public final class XMLEncoderStream {
 	    }
 	    return escapedContent;
 	}
+    }
+    
+    private static final class MyPrintWriter extends PrintWriter {
+        private final String lineSeparator;
+
+        public MyPrintWriter(Writer w, String lineSeparator) {
+            super(w);
+            this.lineSeparator = lineSeparator;
+        }
+
+        @Override
+        public void println() {
+            newLine();
+        }
+    
+        private void newLine() {
+            try {
+                synchronized (lock) {
+                    if (out == null) {
+                        throw new IOException("Stream closed");
+                    }
+                    out.write(lineSeparator);
+                }
+            } catch (InterruptedIOException x) {
+                Thread.currentThread().interrupt();
+            } catch (IOException x) {
+                setError();
+            }
+        }
     }
 }
