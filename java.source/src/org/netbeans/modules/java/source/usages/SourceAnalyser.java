@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.java.source.usages;
 
+import com.sun.istack.internal.NotNull;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ErroneousTree;
@@ -85,10 +86,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 import java.util.logging.Logger;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.*;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
@@ -96,7 +94,9 @@ import javax.lang.model.type.TypeMirror;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
 import javax.tools.StandardLocation;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.SourceUtils;
@@ -278,13 +278,15 @@ public class SourceAnalyser {
         private final boolean signatureFiles;
         private final Set<? super Pair<String,String>> topLevels;
         private final Set<? super ElementHandle<TypeElement>> newTypes;
-        private final Set<String> imports;
-        private final Set<String> staticImports;
-        private final Set<Pair<String,ClassIndexImpl.UsageType>> packageAnnotations;
+        private final Set<Symbol> imports;
+        private final Set<Symbol> staticImports;
+        private final Set<Symbol> unusedPkgImports;
+        private final Set<Pair<Symbol,ClassIndexImpl.UsageType>> packageAnnotations;
         private final Set<CharSequence> importIdents;
         private final Set<CharSequence> packageAnnotationIdents;
         private final boolean virtual;
         private boolean isStaticImport;
+        private boolean isPkgImport;
         private State state;
         private Element enclosingElement = null;
         private Set<String> rsList;         //List of references from source in case when the source has more top levels or is wrongly packaged
@@ -307,11 +309,12 @@ public class SourceAnalyser {
             assert sibling != null;
 
             this.activeClass = new Stack<Pair<String,String>> ();
-            this.imports = new HashSet<String> ();
-            this.staticImports = new HashSet<String> ();
+            this.imports = new HashSet<Symbol> ();
+            this.staticImports = new HashSet<Symbol> ();
+            this.unusedPkgImports = new HashSet<Symbol>();
             this.importIdents = new HashSet<CharSequence>();
             this.packageAnnotationIdents = new HashSet<CharSequence>();
-            this.packageAnnotations = new HashSet<Pair<String, ClassIndexImpl.UsageType>>();
+            this.packageAnnotations = new HashSet<Pair<Symbol, ClassIndexImpl.UsageType>>();
             this.errorName = Names.instance(jt.getContext()).error;
             this.state = State.OTHER;
             this.types = com.sun.tools.javac.code.Types.instance(jt.getContext());
@@ -338,11 +341,12 @@ public class SourceAnalyser {
             assert sibling != null;
 
             this.activeClass = new Stack<Pair<String,String>> ();
-            this.imports = new HashSet<String> ();
-            this.staticImports = new HashSet<String>();
+            this.imports = new HashSet<Symbol> ();
+            this.staticImports = new HashSet<Symbol>();
+            this.unusedPkgImports = new HashSet<Symbol>();
             this.importIdents = new HashSet<CharSequence>();
             this.packageAnnotationIdents = new HashSet<CharSequence>();
-            this.packageAnnotations = new HashSet<Pair<String, ClassIndexImpl.UsageType>>();
+            this.packageAnnotations = new HashSet<Pair<Symbol, ClassIndexImpl.UsageType>>();
             this.errorName = Names.instance(jt.getContext()).error;
             this.state = State.OTHER;
             this.types = com.sun.tools.javac.code.Types.instance(jt.getContext());
@@ -387,27 +391,20 @@ public class SourceAnalyser {
             scan(node.getTypeDecls(),p);
 
             String className = null;
-            if (!imports.isEmpty() || !staticImports.isEmpty()) {
+            if (!imports.isEmpty() ||
+                !staticImports.isEmpty() ||
+                !unusedPkgImports.isEmpty()) {
                 //Empty file
                 className = getResourceName(node);
+                final Pair<String,String> name;
                 if (className != null) {
-                    final String classNameType = className + DocumentUtil.encodeKind(ElementKind.CLASS);                            
-                    final Pair<String,String> name = Pair.<String,String>of(classNameType, null);
-                    for (String s : imports) {
-                        addUsage(name, s, p, ClassIndexImpl.UsageType.TYPE_REFERENCE);
-                    }                    
-                    for (String s : staticImports) {
-                        addUsage(name, s, p, ClassIndexImpl.UsageType.TYPE_REFERENCE);
-                        addUsage(name, s, p, ClassIndexImpl.UsageType.METHOD_REFERENCE);
-                        addUsage(name, s, p, ClassIndexImpl.UsageType.FIELD_REFERENCE);
-                    }                    
-                    for (CharSequence s : importIdents) {
-                        addIdent(name, s, p, false);
-                    }                    
+                    final String classNameType = className + DocumentUtil.encodeKind(ElementKind.CLASS);
+                    name = Pair.<String,String>of(classNameType, null);
+                } else {
+                    name = null;
                 }
-                imports.clear();
-                staticImports.clear();
-                importIdents.clear();
+                addAndClearImports(name,p);
+                addAndClearUnusedPkgImports(name, p);
             }
 
             if (!packageAnnotations.isEmpty()) {
@@ -417,8 +414,8 @@ public class SourceAnalyser {
                 if (className != null) {
                     final String classNameType = className + DocumentUtil.encodeKind(ElementKind.CLASS);
                     final Pair<String,String> name = Pair.<String,String>of(classNameType, null);
-                    for (Pair<String,ClassIndexImpl.UsageType> usage : packageAnnotations) {
-                        addUsage(name, usage.first, p, usage.second);
+                    for (Pair<Symbol,ClassIndexImpl.UsageType> usage : packageAnnotations) {
+                        addUsage(usage.first, name, p, usage.second);
                     }
                     for (CharSequence ident : packageAnnotationIdents) {
                         addIdent(name, ident, p, false);
@@ -427,7 +424,7 @@ public class SourceAnalyser {
                 packageAnnotations.clear();
                 packageAnnotationIdents.clear();
             }
-            
+
             return null;
         }
 
@@ -447,8 +444,10 @@ public class SourceAnalyser {
         
         public @Override Void visitImport (final ImportTree node, final Map<Pair<String,String>, Data> p) {
             this.isStaticImport = node.isStatic();
+            final Tree qit = node.getQualifiedIdentifier();
+            isPkgImport = qit.getKind() == Tree.Kind.MEMBER_SELECT && "*".contentEquals(((MemberSelectTree)qit).getIdentifier()); //NOI18N
             final Void ret = super.visitImport(node, p);
-            this.isStaticImport = false;
+            isStaticImport = isPkgImport = false;
             return ret;
         }
                                         
@@ -459,98 +458,70 @@ public class SourceAnalyser {
                     if (sym.kind == Kinds.ERR) {
                         final Symbol owner = sym.getEnclosingElement();
                         if (owner.getKind().isClass() || owner.getKind().isInterface()) {
-                            final String className = encodeClassName(owner);
-                            if (className != null) {
-                                addUsage(activeClass.peek(), className, p, ClassIndexImpl.UsageType.TYPE_REFERENCE);
-                            }
+                            addUsage(owner, activeClass.peek(), p, ClassIndexImpl.UsageType.TYPE_REFERENCE);
                         }
                     }
                     if (sym.getKind().isClass() || sym.getKind().isInterface()) {
-                        final String className = encodeClassName(sym);
-                        if (className != null) {
-                            switch (this.state) {
-                                case EXTENDS:
-                                    addUsage(activeClass.peek(),className, p, ClassIndexImpl.UsageType.SUPER_CLASS);
-                                    break;
-                                case IMPLEMENTS:
-                                    addUsage (activeClass.peek(),className,p, ClassIndexImpl.UsageType.SUPER_INTERFACE);
-                                    break;
-                                case OTHER:
-                                case GT:
-                                    addUsage (activeClass.peek(),className,p, ClassIndexImpl.UsageType.TYPE_REFERENCE);
-                                    break;
-                            }
+                        switch (this.state) {
+                            case EXTENDS:
+                                addUsage(sym, activeClass.peek(), p, ClassIndexImpl.UsageType.SUPER_CLASS);
+                                break;
+                            case IMPLEMENTS:
+                                addUsage (sym, activeClass.peek(), p, ClassIndexImpl.UsageType.SUPER_INTERFACE);
+                                break;
+                            case OTHER:
+                            case GT:
+                                addUsage (sym, activeClass.peek(), p, ClassIndexImpl.UsageType.TYPE_REFERENCE);
+                                break;
                         }
-                    }
-                    else if (sym.getKind().isField()) {
+                    } else if (sym.getKind().isField()) {
                         final Symbol owner = sym.getEnclosingElement();
                         if (owner.getKind().isClass() || owner.getKind().isInterface()) {
-                            final String className = encodeClassName(owner);
-                            if (className != null) {
-                                addUsage (activeClass.peek(),className,p,ClassIndexImpl.UsageType.FIELD_REFERENCE);
-                            }
+                            addUsage (owner, activeClass.peek(),p,ClassIndexImpl.UsageType.FIELD_REFERENCE);
                         }
-                    }
-                    else if (sym.getKind() == ElementKind.CONSTRUCTOR || sym.getKind() == ElementKind.METHOD) {
+                    } else if (sym.getKind() == ElementKind.CONSTRUCTOR || sym.getKind() == ElementKind.METHOD) {
                         final Symbol owner = sym.getEnclosingElement();
                         if (owner.getKind().isClass() || owner.getKind().isInterface()) {
-                            final String className = encodeClassName(owner);
-                            if (className != null) {
-                                addUsage (activeClass.peek(),className,p,ClassIndexImpl.UsageType.METHOD_REFERENCE);
-                            }
+                            addUsage (owner, activeClass.peek(), p, ClassIndexImpl.UsageType.METHOD_REFERENCE);
                         }
                     }
                 }
-            }
-            else {
+            } else {
                 if (state == State.IMPORT) {
                     importIdents.add(name);
                     if (sym != null && (sym.getKind().isClass() || sym.getKind().isInterface())) {
-                        final String className = encodeClassName(sym);
-                        if (className != null) {
-                            if (this.isStaticImport) {
-                                this.staticImports.add(className);
-                            }
-                            else {
-                                this.imports.add(className);
-                            }
+                        if (this.isStaticImport) {
+                            this.staticImports.add(sym);
                         }
+                        else {
+                            this.imports.add(sym);
+                        }
+                    } else if (isPkgImport && sym != null && sym.getKind() == ElementKind.PACKAGE) {
+                        unusedPkgImports.add(sym);
+                        isPkgImport = false;
                     }
-                }
-                else if (state == State.PACKAGE_ANN) {
+                } else if (state == State.PACKAGE_ANN) {
                     packageAnnotationIdents.add(name);
                     if (sym != null) {
                         if (sym.kind == Kinds.ERR) {
                             final Symbol owner = sym.getEnclosingElement();
                             if (owner.getKind().isClass() || owner.getKind().isInterface()) {
-                                final String className = encodeClassName(owner);
-                                if (className != null) {
-                                    packageAnnotations.add (Pair.of(className,ClassIndexImpl.UsageType.TYPE_REFERENCE));
-                                }
+                                packageAnnotations.add (Pair.of(owner,ClassIndexImpl.UsageType.TYPE_REFERENCE));
                             }
                         }
                         if (sym.getKind().isClass() || sym.getKind().isInterface()) {
-                            final String className = encodeClassName(sym);
-                            if (className != null) {
-                                packageAnnotations.add (Pair.of(className,ClassIndexImpl.UsageType.TYPE_REFERENCE));
-                            }
+                            packageAnnotations.add (Pair.of(sym,ClassIndexImpl.UsageType.TYPE_REFERENCE));
                         }
                         else if (sym.getKind().isField()) {
                             final Symbol owner = sym.getEnclosingElement();
                             if (owner.getKind().isClass() || owner.getKind().isInterface()) {
-                                final String className = encodeClassName(owner);
-                                if (className != null) {
-                                    packageAnnotations.add (Pair.of(className,ClassIndexImpl.UsageType.FIELD_REFERENCE));
-                                }
+                                packageAnnotations.add (Pair.of(owner,ClassIndexImpl.UsageType.FIELD_REFERENCE));
                             }
                         }
                         else if (sym.getKind() == ElementKind.CONSTRUCTOR || sym.getKind() == ElementKind.METHOD) {
                             final Symbol owner = sym.getEnclosingElement();
                             if (owner.getKind().isClass() || owner.getKind().isInterface()) {
-                                final String className = encodeClassName(owner);
-                                if (className != null) {
-                                    packageAnnotations.add(Pair.of(className,ClassIndexImpl.UsageType.METHOD_REFERENCE));
-                                }
+                                packageAnnotations.add(Pair.of(owner,ClassIndexImpl.UsageType.METHOD_REFERENCE));
                             }
                         }
                     }
@@ -568,44 +539,31 @@ public class SourceAnalyser {
         }
         
         public @Override Void visitClass (final ClassTree node, final Map<Pair<String,String>,Data> p) {
-            final ClassSymbol sym = ((JCTree.JCClassDecl)node).sym;            
+            final ClassSymbol sym = ((JCTree.JCClassDecl)node).sym;
             boolean errorInDecl = false;
             boolean errorIgnorSubtree = true;
-            String className = null;
+            Pair<String,String> name = null;
             if (sym != null) {
-                errorInDecl = hasErrorName(sym);               
+                errorInDecl = hasErrorName(sym);
                 if (errorInDecl) {
                     if (activeClass.size()>0) {
                         activeClass.push (activeClass.get(0));
                         errorIgnorSubtree = false;
                     }
                     else {
-                        className = getResourceName (this.cu);                   
+                        final String className = getResourceName (this.cu);
                         if (className != null) {
                             final String classNameType = className + DocumentUtil.encodeKind(ElementKind.CLASS);
-                            final Pair<String,String> name = Pair.<String,String>of(classNameType, null);
+                            name = Pair.<String,String>of(classNameType, null);
                             if (activeClass.isEmpty()) {
                                 if (topLevels != null) {
                                     topLevels.add (Pair.<String,String>of(className, null));
                                 }
-                                for (String s : imports) {
-                                    addUsage(name, s, p, ClassIndexImpl.UsageType.TYPE_REFERENCE);
-                                }
-                                imports.clear();
-                                for (String s : staticImports) {
-                                    addUsage(name, s, p, ClassIndexImpl.UsageType.TYPE_REFERENCE);
-                                    addUsage(name, s, p, ClassIndexImpl.UsageType.METHOD_REFERENCE);
-                                    addUsage(name, s, p, ClassIndexImpl.UsageType.FIELD_REFERENCE);
-                                }
-                                staticImports.clear();
-                                for (CharSequence s : importIdents) {
-                                    addIdent(name, s, p, false);
-                                }
-                                importIdents.clear();
+                                addAndClearImports(name, p);
                             }
                             activeClass.push (name);
                             errorIgnorSubtree = false;
-                            addUsage (name,className, p, ClassIndexImpl.UsageType.TYPE_REFERENCE);
+                            addUsage (className, name, p, ClassIndexImpl.UsageType.TYPE_REFERENCE);
                             addIdent(name, className, p, true);
                             if (newTypes !=null) {
                                 newTypes.add ((ElementHandle<TypeElement>)ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS,className));
@@ -619,7 +577,7 @@ public class SourceAnalyser {
                 else {
                     final StringBuilder classNameBuilder = new StringBuilder ();
                     ClassFileUtil.encodeClassName(sym, classNameBuilder, '.');  //NOI18N
-                    className = classNameBuilder.toString();
+                    final String className = classNameBuilder.toString();
                     ElementKind kind = sym.getKind();
                     classNameBuilder.append(DocumentUtil.encodeKind(kind));
                     final String classNameType = classNameBuilder.toString();
@@ -644,36 +602,23 @@ public class SourceAnalyser {
                     else {
                         resourceName = activeClass.peek().second;
                     }
-                    final Pair<String,String> name = Pair.<String,String>of(classNameType, resourceName);
+                    name = Pair.<String,String>of(classNameType, resourceName);
                     if (activeClass.isEmpty()) {
                         if (topLevels != null) {
                             topLevels.add (Pair.<String,String>of(className, resourceName));
                         }
-                        for (String s : imports) {
-                            addUsage(name, s, p, ClassIndexImpl.UsageType.TYPE_REFERENCE);
-                        }
-                        imports.clear();
-                        for (String s : staticImports) {
-                            addUsage(name, s, p, ClassIndexImpl.UsageType.TYPE_REFERENCE);
-                            addUsage(name, s, p, ClassIndexImpl.UsageType.METHOD_REFERENCE);
-                            addUsage(name, s, p, ClassIndexImpl.UsageType.FIELD_REFERENCE);
-                        }
-                        staticImports.clear();
-                        for (CharSequence s : importIdents) {
-                            addIdent(name, s, p, false);
-                        }
-                        importIdents.clear();
+                        addAndClearImports(name, p);
                     }
-                    activeClass.push (name);                    
+                    activeClass.push (name);
                     errorIgnorSubtree = false;
-                    addUsage (name,className, p, ClassIndexImpl.UsageType.TYPE_REFERENCE);
+                    addUsage (className, name, p, ClassIndexImpl.UsageType.TYPE_REFERENCE);
                     addIdent(name, node.getSimpleName(), p, true);
                     if (newTypes !=null) {
                         newTypes.add ((ElementHandle<TypeElement>)ElementHandleAccessor.INSTANCE.create(kind, className));
                     }
-                }                
+                }
             }
-            if (!errorIgnorSubtree) {                
+            if (!errorIgnorSubtree) {
                 Element old = enclosingElement;
                 try {
                     enclosingElement = sym;
@@ -685,6 +630,7 @@ public class SourceAnalyser {
                     scan(node.getImplementsClause(), p);
                     state = State.OTHER;
                     scan(node.getMembers(), p);
+                    addAndClearUnusedPkgImports(name, p);
                     activeClass.pop();
                 } finally {
                     enclosingElement = old;
@@ -692,25 +638,26 @@ public class SourceAnalyser {
             }
             if (!errorInDecl) {
                 if (this.rsList != null)
-                    this.rsList.add (className);
+                    this.rsList.add (name.first);
             }
             return null;
         }
-        
+
         public @Override Void visitNewClass(NewClassTree node, Map<Pair<String,String>,Data> p) {
-            final Symbol sym = ((JCTree.JCNewClass)node).constructor;                        
+            final Symbol sym = ((JCTree.JCNewClass)node).constructor;
             if (sym != null) {
                 final Symbol owner = sym.getEnclosingElement();
                 if (owner != null && owner.getKind().isClass()) {
-                    final String className = encodeClassName(owner);
-                    if (className != null) {                        
-                        addUsage(activeClass.peek(),className,p,ClassIndexImpl.UsageType.METHOD_REFERENCE);
-                    }
-                }                
+                    addUsage(
+                        owner,
+                        activeClass.peek(),
+                        p,
+                        ClassIndexImpl.UsageType.METHOD_REFERENCE);
+                }
             }
             return super.visitNewClass (node,p);
-        }       
-        
+        }
+
         public @Override Void visitErroneous(final  ErroneousTree tree, Map<Pair<String,String>,Data> p) {
             List<? extends Tree> trees = tree.getErrorTrees();
             for (Tree t : trees) {
@@ -742,6 +689,41 @@ public class SourceAnalyser {
                 addIdent(activeClass.peek(), node.getName(), p, true);
             }
             return super.visitVariable(node, p);
+        }
+
+        private void addAndClearImports(
+                @NullAllowed final Pair<String,String> nameOfCU,
+                @NonNull final Map<Pair<String,String>, Data> data) {
+            if (nameOfCU != null) {
+                for (Symbol s : imports) {
+                    addUsage(s, nameOfCU, data, ClassIndexImpl.UsageType.TYPE_REFERENCE);
+                }
+                for (Symbol s : staticImports) {
+                    addUsage(s, nameOfCU, data, ClassIndexImpl.UsageType.TYPE_REFERENCE);
+                    addUsage(s, nameOfCU, data, ClassIndexImpl.UsageType.METHOD_REFERENCE);
+                    addUsage(s, nameOfCU, data, ClassIndexImpl.UsageType.FIELD_REFERENCE);
+                }
+                for (CharSequence s : importIdents) {
+                    addIdent(nameOfCU, s, data, false);
+                }
+            }
+            imports.clear();
+            staticImports.clear();
+            importIdents.clear();
+        }
+
+        private void addAndClearUnusedPkgImports(
+                @NullAllowed final Pair<String,String> nameOfCU,
+                @NonNull final Map<Pair<String,String>, Data> data) {
+            if (nameOfCU != null) {
+                for (Symbol s : unusedPkgImports) {
+                    final StringBuilder sb = new StringBuilder();
+                    sb.append(s.getQualifiedName());
+                    sb.append(".package-info"); //NOI18N
+                    addUsage(sb.toString(), nameOfCU, data, ClassIndexImpl.UsageType.TYPE_REFERENCE);
+                }
+            }
+            unusedPkgImports.clear();
         }
 
         /**
@@ -780,19 +762,39 @@ public class SourceAnalyser {
         }
 
 
-        private void addUsage (final Pair<String,String>owner, final String className, final Map<Pair<String,String>,Data> map, final ClassIndexImpl.UsageType type) {
-            assert className != null;
+        private void addUsage (
+                @NullAllowed final Symbol sym,
+                @NotNull final Pair<String,String>owner,
+                @NonNull final Map<Pair<String,String>,Data> map,
+                @NonNull final ClassIndexImpl.UsageType type) {
             assert map != null;
             assert type != null;
-            final Data data = getData(owner, map);
-            Set<ClassIndexImpl.UsageType> usageType = data.usages.get (className);
-            if (usageType == null) {
-                usageType = EnumSet.noneOf(ClassIndexImpl.UsageType.class);
-                data.usages.put (className, usageType);
+            if (sym != null) {
+                final String className = encodeClassName(sym);
+                addUsage(className, owner, map, type);
+                final Symbol encElm = sym.getEnclosingElement();
+                if (encElm.getKind() == ElementKind.PACKAGE) {
+                    unusedPkgImports.remove(encElm);
+                }
             }
-            usageType.add (type);        
         }
-        
+
+        private void addUsage(
+            @NullAllowed final String className,
+            @NotNull final Pair<String,String>owner,
+            @NonNull final Map<Pair<String,String>,Data> map,
+            @NonNull final ClassIndexImpl.UsageType type) {
+            if (className != null) {
+                final Data data = getData(owner, map);
+                Set<ClassIndexImpl.UsageType> usageType = data.usages.get (className);
+                if (usageType == null) {
+                    usageType = EnumSet.noneOf(ClassIndexImpl.UsageType.class);
+                    data.usages.put (className, usageType);
+                }
+                usageType.add (type);
+            }
+        }
+
         private void addIdent (final Pair<String,String>owner, final CharSequence ident, final Map<Pair<String,String>,Data> map, final boolean feature) {
             assert owner != null;
             assert ident != null;
@@ -827,12 +829,13 @@ public class SourceAnalyser {
             }
             return false;
         }        
-        
-        private static String encodeClassName (final Symbol sym) {
+
+        @CheckForNull
+        private static String encodeClassName (@NonNull final Symbol sym) {
             assert sym instanceof Symbol.ClassSymbol;
             TypeElement toEncode = null;
             final TypeMirror  type = ((Symbol.ClassSymbol)sym).asType();
-            if (sym.getEnclosingElement().getKind() == ElementKind.TYPE_PARAMETER) {                
+            if (sym.getEnclosingElement().getKind() == ElementKind.TYPE_PARAMETER) {
                 if (type.getKind() == TypeKind.ARRAY) {
                     TypeMirror ctype = ((ArrayType) type).getComponentType();
                     if (ctype.getKind() == TypeKind.DECLARED) {

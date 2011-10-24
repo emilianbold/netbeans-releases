@@ -491,6 +491,20 @@ public class ClassIndexTest extends NbTestCase {
                 "public class T3 {\n"+                                  //NOI18N
                 "   private java.io.File f;"+                           //NOI18N
                 "}");                                                   //NOI18N
+        final FileObject t4 = createJavaFile(
+                root,
+                "org.me.test",                                          //NOI18N
+                "T4",                                                   //NOI18N
+                "package org.me.test;\n"+                               //NOI18N
+                "import u.*;\n"+                                        //NOI18N
+                "public class T4 {}");                                  //NOI18N
+        final FileObject dummy = createJavaFile(
+                root,
+                "u",                                                    //NOI18N
+                "D",                                                    //NOI18N
+                "package u;\n"+                                         //NOI18N
+                "public class D {\n"+                                   //NOI18N
+                "}");
         IndexingManager.getDefault().refreshIndexAndWait(root.getURL(), null);
         final ClassIndex ci = ClasspathInfo.create(bootPath, compilePath, sourcePath).getClassIndex();
         assertNotNull(ci);
@@ -518,6 +532,12 @@ public class ClassIndexTest extends NbTestCase {
             EnumSet.<ClassIndex.SearchScope>of(ClassIndex.SearchScope.SOURCE));
         assertNotNull(result);
         assertFiles(Collections.<FileObject>emptySet(),result);
+        result = ci.getResourcesForPackage(
+            ElementHandleAccessor.INSTANCE.create(ElementKind.PACKAGE, "u"),    //NOI18N
+            EnumSet.<ClassIndex.SearchKind>of(ClassIndex.SearchKind.TYPE_REFERENCES),
+            EnumSet.<ClassIndex.SearchScope>of(ClassIndex.SearchScope.SOURCE));
+        assertNotNull(result);
+        assertFiles(Arrays.asList(dummy, t4),result);
     }
 
     private FileObject createJavaFile (
