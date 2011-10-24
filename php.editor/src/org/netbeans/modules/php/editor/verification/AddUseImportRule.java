@@ -83,7 +83,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultTreePathV
 import org.netbeans.modules.php.project.api.PhpLanguageOptions;
 import org.netbeans.modules.php.project.api.PhpLanguageOptions.Properties;
 import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
@@ -101,13 +101,15 @@ public class AddUseImportRule extends AbstractRule {
     }
 
     @Override
+    @Messages("AddUseImportRuleDesc=Add Use Import")
     public String getDescription() {
-        return NbBundle.getMessage(AddUseImportRule.class, "AddUseImportRuleDesc");
+        return Bundle.AddUseImportRuleDesc();
     }
 
     @Override
+    @Messages("AddUseImportRuleDispName=Add Use Import")
     public String getDisplayName() {
-        return NbBundle.getMessage(AddUseImportRule.class, "AddUseImportRuleDispName");
+        return Bundle.AddUseImportRuleDispName();
     }
 
     @Override
@@ -307,8 +309,9 @@ public class AddUseImportRule extends AbstractRule {
         }
 
         @Override
+        @Messages("AddUseImportFix_Description=Generate \"{0}\"")
         public String getDescription() {
-            return NbBundle.getMessage(AddUseImportRule.class, "AddUseImportFix_Description", getGeneratedCode());
+            return Bundle.AddUseImportFix_Description(getGeneratedCode());
         }
 
         @Override
@@ -377,8 +380,9 @@ public class AddUseImportRule extends AbstractRule {
         }
 
         @Override
+        @Messages("ChangeNameFix_Description=Fix Name To \"{0}\"")
         public String getDescription() {
-            return NbBundle.getMessage(AddUseImportRule.class, "ChangeNameFix_Description", getGeneratedCode());
+            return Bundle.ChangeNameFix_Description(getGeneratedCode());
         }
 
         @Override

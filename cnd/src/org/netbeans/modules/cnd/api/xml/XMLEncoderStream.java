@@ -412,7 +412,7 @@ public final class XMLEncoderStream {
             try {
                 synchronized (lock) {
                     if (out == null) {
-                        throw new IOException("Stream closed");
+                        throw new IOException("Stream closed"); // NOI18N
                     }
                     out.write(lineSeparator);
                 }

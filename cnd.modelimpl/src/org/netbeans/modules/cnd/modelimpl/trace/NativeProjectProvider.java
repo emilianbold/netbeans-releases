@@ -45,6 +45,7 @@
 package org.netbeans.modules.cnd.modelimpl.trace;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -81,7 +82,7 @@ public final class NativeProjectProvider {
     
     public static NativeProject createProject(String projectRoot, List<File> files,
 	    List<String> sysIncludes, List<String> usrIncludes,
-	    List<String> sysMacros, List<String> usrMacros, boolean pathsRelCurFile) {
+	    List<String> sysMacros, List<String> usrMacros, boolean pathsRelCurFile) throws IOException {
 	
         NativeProjectImpl project = new NativeProjectImpl(projectRoot, 
 		sysIncludes, usrIncludes, sysMacros, usrMacros, pathsRelCurFile);
@@ -218,9 +219,14 @@ public final class NativeProjectProvider {
 	    }
 	}
 	
-	private void addFiles(List<File> files) {
+	private void addFiles(List<File> files) throws IOException {
 	    for( File file : files ) {
-		addFile(FileUtil.toFileObject(FileUtil.normalizeFile(file.getAbsoluteFile())));
+                final FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file.getAbsoluteFile()));
+                if (fo == null) {
+                    throw new IOException("no file object for " + file); // NOI18N
+                } else {
+                    addFile(fo);
+                }
 	    }
 	}
 	

@@ -65,7 +65,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticMethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
@@ -79,13 +79,15 @@ public class AssignVariableHint extends AbstractRule {
     }
 
     @Override
+    @Messages("AssignVariableHintDesc=Assign Return Value To New Variable")
     public String getDescription() {
-        return NbBundle.getMessage(AssignVariableHint.class, "AssignVariableHintDesc");//NOI18N
+        return Bundle.AssignVariableHintDesc();
     }
 
     @Override
+    @Messages("AssignVariableHintDisplayName=Introduce Variable")
     public String getDisplayName() {
-        return NbBundle.getMessage(AssignVariableHint.class, "AssignVariableHintDisplayName");//NOI18N
+        return Bundle.AssignVariableHintDisplayName();
     }
 
     @Override

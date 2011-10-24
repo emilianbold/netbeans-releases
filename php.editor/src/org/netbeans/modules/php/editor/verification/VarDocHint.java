@@ -64,7 +64,7 @@ import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.VariableName;
 import org.netbeans.modules.php.editor.model.VariableScope;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 
 /**
  * @author Radek Matous
@@ -78,13 +78,15 @@ public class VarDocHint extends AbstractRule {
     }
 
     @Override
+    @Messages("VarDocHintDesc=Generate Type Comment For Variable")
     public String getDescription() {
-        return NbBundle.getMessage(VarDocHint.class, "VarDocHintDesc");//NOI18N
+        return Bundle.VarDocHintDesc();
     }
 
     @Override
+    @Messages("VarDocHintDispName=Generate Type Comment For Variable /* @var $myvariable MyClass */")
     public String getDisplayName() {
-        return NbBundle.getMessage(VarDocHint.class, "VarDocHintDispName");//NOI18N
+        return Bundle.VarDocHintDispName();
     }
 
     @Override
