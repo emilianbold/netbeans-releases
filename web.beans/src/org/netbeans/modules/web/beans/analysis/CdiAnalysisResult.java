@@ -63,6 +63,7 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.modules.j2ee.api.ejbjar.Car;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.beans.UsageLogger;
 import org.netbeans.modules.web.beans.hints.CDIAnnotation;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -162,7 +163,7 @@ public class CdiAnalysisResult {
         return Collections.unmodifiableList(myCollectedAnnotations);
     }
     
-    protected boolean isCdiEnabled(Project project){
+    public static boolean isCdiEnabled(Project project){
         Collection<FileObject> beansTargetFolder = getBeansTargetFolder(project, false);
         for (FileObject fileObject : beansTargetFolder) {
             if ( fileObject != null && fileObject.getFileObject(BEANS_XML)!=null){
