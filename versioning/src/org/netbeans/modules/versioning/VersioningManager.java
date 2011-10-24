@@ -516,7 +516,7 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
         } else {
             isManaged = lh.getTopmostManagedAncestor(file) != null;
             putLocalHistoryFile(isManaged, file);
-            return lh;
+            return isManaged ? lh : null;
         }        
     }
 
