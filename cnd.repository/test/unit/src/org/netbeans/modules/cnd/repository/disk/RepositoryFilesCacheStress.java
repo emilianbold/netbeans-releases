@@ -44,10 +44,13 @@ package org.netbeans.modules.cnd.repository.disk;
 
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import java.io.File;
+import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
 import org.netbeans.modules.cnd.modelimpl.trace.TraceModelBase;
 import org.netbeans.modules.cnd.repository.access.RepositoryAccessTestBase;
+import org.openide.util.Exceptions;
 
 
 /**
@@ -90,7 +93,11 @@ public class RepositoryFilesCacheStress extends RepositoryAccessTestBase {
         Runnable r = new Runnable() {
             public void run() {
                 while( runOtherThread ) {
-                    createAndCloseExtraProject(traceModel, tmpSrcFile);
+                    try {
+                        createAndCloseExtraProject(traceModel, tmpSrcFile);
+                    } catch (IOException ex) {
+                        registerException(ex);
+                    }
                     closeCnt++;
                     sleep(100);
                 }
@@ -123,7 +130,7 @@ public class RepositoryFilesCacheStress extends RepositoryAccessTestBase {
 	}
     }
 
-    private void createAndCloseExtraProject(TraceModelBase traceModel, File tmpSrcFile) {
+    private void createAndCloseExtraProject(TraceModelBase traceModel, File tmpSrcFile) throws IOException {
         ProjectBase project = createExtraProject(traceModel, tmpSrcFile, "DummyProject2");
         project.waitParse();
         traceModel.getModel().closeProjectBase(project);
