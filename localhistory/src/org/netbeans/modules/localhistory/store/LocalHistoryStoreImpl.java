@@ -43,19 +43,7 @@
  */
 package org.netbeans.modules.localhistory.store;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.EOFException;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.FilenameFilter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -77,7 +65,6 @@ import org.netbeans.modules.turbo.TurboProvider;
 import org.netbeans.modules.turbo.TurboProvider.MemoryCache;
 import org.netbeans.modules.versioning.util.ListenersSupport;
 import org.netbeans.modules.versioning.util.VersioningListener;
-import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor.Task;
 import org.openide.util.Utilities;
 
@@ -93,9 +80,9 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
     private static final String DATA_FILE     = "data";                  // NOI18N
     private static final String HISTORY_FILE  = "history";               // NOI18N
     private static final String LABELS_FILE   = "labels";                // NOI18N
-    private static final String STORAGE_FILE  = "storage";                // NOI18N
+    private static final String STORAGE_FILE  = "storage";               // NOI18N
 
-    private static final String STORAGE_VERSION = "1.0";
+    private static final String STORAGE_VERSION = "1.0";                 // NOI18N
 
     private File storage;
     private Turbo turbo;
@@ -195,7 +182,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         try {
             try {
                 FileUtils.copy(file, StoreEntry.createStoreFileOutputStream(storeFile));
-                LocalHistory.LOG.log(Level.FINE, "copied {0} into {1}", new Object[]{file, storeFile});
+                LocalHistory.LOG.log(Level.FINE, "copied {0} into {1}", new Object[]{file, storeFile}); // NOI18N
 
                 LocalHistory.logChange(file, storeFile, ts);
                 touch(file, new StoreDataFile(file.getAbsolutePath(), TOUCHED, ts, true));
@@ -204,7 +191,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
                 lockedFolders.remove(storeFile.getParentFile());
             }
         } catch (FileNotFoundException ioe) {                                
-            LocalHistory.LOG.log(Level.INFO, "exception while copying file " + file + " to " + storeFile, ioe);                                    
+            LocalHistory.LOG.log(Level.INFO, "exception while copying file " + file + " to " + storeFile, ioe); // NOI18N                                    
         } catch (IOException ioe) {
             LocalHistory.LOG.log(Level.WARNING, null, ioe);
         }        
@@ -218,21 +205,21 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
                 public void run() {
                     File storeFile = getStoreFile(file, Long.toString(ts), true);
                     try {
-                        LocalHistory.LOG.log(Level.FINE, "starting copy file {0} into storage file {1}", new Object[]{backup, storeFile});
+                        LocalHistory.LOG.log(Level.FINE, "starting copy file {0} into storage file {1}", new Object[]{backup, storeFile}); // NOI18N
                         FileUtils.copy(backup, StoreEntry.createStoreFileOutputStream(storeFile));
-                        LocalHistory.LOG.log(Level.FINE, "copied file {0} into storage file {1}", new Object[]{backup, storeFile});
+                        LocalHistory.LOG.log(Level.FINE, "copied file {0} into storage file {1}", new Object[]{backup, storeFile}); // NOI18N
 
                         LocalHistory.logChange(file, storeFile, ts);
                         touch(file, new StoreDataFile(file.getAbsolutePath(), TOUCHED, ts, true));
                     } catch (FileNotFoundException ioe) {                                
-                        LocalHistory.LOG.log(Level.INFO, "exception while copying file " + backup + " to " + storeFile, ioe);                                    
+                        LocalHistory.LOG.log(Level.INFO, "exception while copying file " + backup + " to " + storeFile, ioe); // NOI18N                                    
                     } catch (IOException ioe) {
-                        LocalHistory.LOG.log(Level.WARNING, "exception while copying file " + backup + " to " + storeFile, ioe);                                    
+                        LocalHistory.LOG.log(Level.WARNING, "exception while copying file " + backup + " to " + storeFile, ioe); // NOI18N                                    
                     } finally {
                         // release
                         lockedFolders.remove(storeFile.getParentFile());
                         backup.delete();
-                        LocalHistory.LOG.log(Level.FINE, "finnished copy file {0} into storage file {1}", new Object[]{backup, storeFile});
+                        LocalHistory.LOG.log(Level.FINE, "finnished copy file {0} into storage file {1}", new Object[]{backup, storeFile}); // NOI18N
                     }
                 }
             });
@@ -666,8 +653,6 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         } catch (IOException ex) {
             LocalHistory.LOG.log(Level.SEVERE, null, ex);
         }
-
-        return;
     }
 
     @Override
@@ -680,6 +665,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         listenersSupport.removeListener(l);
     }
 
+    @Override
     public void cleanUp(final long ttl) {
         // XXX run only once a day - use the top folder metadata for version and cleanup flag
         LocalHistory.getInstance().getParallelRequestProcessor().post(new Runnable() {
@@ -917,7 +903,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
             if(data == null || data.getAbsolutePath().equals(filePath)) {
                 break;
             }
-            storeFolder = getStoreFolderName(filePath + "." + i++);
+            storeFolder = getStoreFolderName(filePath + "." + i++); // NOI18N
         }
         return storeFolder;
     }
@@ -1028,9 +1014,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
             dos.flush();
         } catch (Exception e) {
             LocalHistory.LOG.log(Level.INFO, null, e);
-            return;
-        }
-        finally {
+        } finally {
             if (dos != null) {
                 try { dos.close(); } catch (IOException e) { }
             }
@@ -1109,7 +1093,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
     private static String readString(DataInputStream dis) throws IOException {
         int len = dis.readInt();
         if(len == 0) {
-            return "";
+            return ""; // NOI18N
         }
         StringBuilder sb = new StringBuilder();
         while(len-- > 0) {
@@ -1180,15 +1164,15 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
      * @return the newly created copy
      */
     private File fastCopyIfPosible(File source) {
-        LocalHistory.LOG.log(Level.FINE, "fastCopy file {0} - start", new Object[]{source});
-        if(!Utilities.isWindows() && !"true".equals(System.getProperty("netbeans.localhistory.storeChangesAsynchronously"))) {
+        LocalHistory.LOG.log(Level.FINE, "fastCopy file {0} - start", new Object[]{source}); // NOI18N
+        if(!Utilities.isWindows() && !isStoreAsync()) {
             // some special access setting perhaps? looks like this is not typical 
             // rw file, so skip this as we aren't able to properly set *nix like file modes
-            LocalHistory.LOG.log(Level.FINE, "fastCopy {0} - skipping because not on Windows", new Object[]{source});
+            LocalHistory.LOG.log(Level.FINE, "fastCopy {0} - skipping because not on Windows", new Object[]{source}); // NOI18N
             return null;
         }
-        if("true".equals(System.getProperty("netbeans.localhistory.storeChangesSynchronously"))) {
-            LocalHistory.LOG.log(Level.FINE, "fastCopy {0} - skipping because netbeans.localhistory.storeChangesSynchronously is set", new Object[]{source});
+        if(isStoreSync()) {
+            LocalHistory.LOG.log(Level.FINE, "fastCopy {0} - skipping because netbeans.localhistory.storeChangesSynchronously is set", new Object[]{source}); // NOI18N
             return null;
         }
         
@@ -1211,17 +1195,25 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
                         LocalHistory.LOG.log(Level.WARNING, null, ex);
                     }
                     source.setLastModified(ts);
-                    LocalHistory.LOG.log(Level.FINE, "fastCopy file {0} to {1} - end", new Object[]{source, target});
+                    LocalHistory.LOG.log(Level.FINE, "fastCopy file {0} to {1} - end", new Object[]{source, target}); // NOI18N
                     return target;
                 } else {
                     // something went wrong, we don't know what 
-                    LocalHistory.LOG.log(Level.WARNING, "wasn't able to rename {0} into {1}", new Object[]{source, target});
+                    LocalHistory.LOG.log(Level.WARNING, "wasn't able to rename {0} into {1}", new Object[]{source, target}); // NOI18N
                     return null;
                 }
             }
         }
     }
 
+    private boolean isStoreAsync() {
+        return "true".equals(System.getProperty("netbeans.localhistory.storeChangesAsynchronously")); // NOI18N
+    }
+
+    private boolean isStoreSync() {
+        return "true".equals(System.getProperty("netbeans.localhistory.storeChangesSynchronously")); // NOI18N
+    }
+    
     private class HistoryEntry {
         private long ts;
         private String from;
