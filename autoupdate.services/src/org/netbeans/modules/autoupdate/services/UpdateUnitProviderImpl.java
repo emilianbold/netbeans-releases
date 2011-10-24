@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -483,10 +483,12 @@ public final class UpdateUnitProviderImpl {
     private static class LookupListenerImpl implements LookupListener {
         final Lookup.Result<UpdateProvider> result = Lookup.getDefault ().lookupResult(UpdateProvider.class);
         
+        @SuppressWarnings("LeakingThisInConstructor")
         public LookupListenerImpl() {
             result.addLookupListener(this);
         }
         
+        @Override
         public void resultChanged(LookupEvent ev) {
             err.log (Level.FINE, "Lookup.Result changed " + ev);
             try {
