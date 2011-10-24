@@ -331,9 +331,6 @@ public final class NewLoaderIterator extends BasicWizardIterator {
         }
         if (model.isUseMultiview()) {
             fileChanges.add(fileChanges.addModuleDependency("org.netbeans.core.multiview")); //NOI18N
-            String bundlePath = model.getDefaultPackagePath("Bundle.properties", true); // NOI18N
-            fileChanges.add(fileChanges.bundleKey(bundlePath, "LBL_" + namePrefix + "_EDITOR", // NOI18N
-                    "Source")); //NOI18N
         }
 
         if (!loaderlessObject) {
