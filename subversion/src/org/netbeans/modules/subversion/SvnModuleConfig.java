@@ -92,6 +92,7 @@ public class SvnModuleConfig {
     private static final String PREFIX_REPOSITORY_PATH = "prefixRepositoryPath"; //NOI18N
     private static final String SEPARATOR = "###"; //NOI18N
     private static final String KEY_SORTING = "sortingStatus."; //NOI18N
+    private static final String PROP_FORCE_COMMANDLINE = "forcedCommandline"; //NOI18N
 
     private static final SvnModuleConfig INSTANCE = new SvnModuleConfig();    
         
@@ -537,5 +538,17 @@ public class SvnModuleConfig {
                 outOfAWT.run();
             }
         }
+    }
+
+    public void setForceCommnandlineClient (boolean flag) {
+        if (flag) {
+            getPreferences().putBoolean(PROP_FORCE_COMMANDLINE, flag);
+        } else {
+            getPreferences().remove(PROP_FORCE_COMMANDLINE);
+        }
+    }
+
+    public boolean isForcedCommandlineClient () {
+        return getPreferences().getBoolean(PROP_FORCE_COMMANDLINE, false);
     }
 }
