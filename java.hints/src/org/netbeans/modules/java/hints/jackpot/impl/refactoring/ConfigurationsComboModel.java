@@ -178,7 +178,9 @@ public class ConfigurationsComboModel extends AbstractListModel implements Combo
             } else {
                 combo.getEditor().getEditorComponent().removeKeyListener(this);
             }
-            Configuration config = ConfigurationsManager.getDefault().create(tf.getText(), tf.getText());
+            Configuration config = configName==null ? 
+                    ConfigurationsManager.getDefault().duplicate(lastSelected, tf.getText(), tf.getText()):
+                    ConfigurationsManager.getDefault().create(tf.getText(), tf.getText());
             combo.setSelectedItem(config);
             combo.setEditable(false);
         }
