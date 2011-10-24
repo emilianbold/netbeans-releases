@@ -93,8 +93,10 @@ import org.apache.maven.index.updater.ResourceFetcher;
 import org.apache.maven.index.updater.WagonHelper;
 import org.apache.maven.settings.Mirror;
 import org.apache.maven.settings.Proxy;
+import org.apache.maven.settings.Server;
 import org.apache.maven.settings.crypto.DefaultSettingsDecryptionRequest;
 import org.apache.maven.settings.crypto.SettingsDecrypter;
+import org.apache.maven.settings.crypto.SettingsDecryptionResult;
 import org.apache.maven.wagon.Wagon;
 import org.apache.maven.wagon.authentication.AuthenticationInfo;
 import org.apache.maven.wagon.proxy.ProxyInfo;
@@ -457,9 +459,20 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 final RemoteIndexTransferListener listener = new RemoteIndexTransferListener(repo);
                 try {
                     String protocol = URI.create(indexingContext.getIndexUpdateUrl()).getScheme();
-                    AuthenticationInfo wagonAuth = null; // XXX #196593
+                    SettingsDecryptionResult settings = embedder.lookup(SettingsDecrypter.class).decrypt(new DefaultSettingsDecryptionRequest(EmbedderFactory.getOnlineEmbedder().getSettings()));
+                    AuthenticationInfo wagonAuth = null;
+                    for (Server server : settings.getServers()) {
+                        if (repo.getId().equals(server.getId())) {
+                            wagonAuth = new AuthenticationInfo();
+                            wagonAuth.setUserName(server.getUsername());
+                            wagonAuth.setPassword(server.getPassword());
+                            wagonAuth.setPassphrase(server.getPassphrase());
+                            wagonAuth.setPrivateKey(server.getPrivateKey());
+                            break;
+                        }
+                    }
                     ProxyInfo wagonProxy = null;
-                    for (Proxy proxy : embedder.lookup(SettingsDecrypter.class).decrypt(new DefaultSettingsDecryptionRequest(EmbedderFactory.getOnlineEmbedder().getSettings())).getProxies()) {
+                    for (Proxy proxy : settings.getProxies()) {
                         if (proxy.isActive()) {
                             wagonProxy = new ProxyInfo();
                             wagonProxy.setHost(proxy.getHost());

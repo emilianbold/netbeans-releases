@@ -4081,61 +4081,62 @@ class LayoutFeeder implements LayoutConstants {
         boolean ortOverlap;
         if (solveOverlap || !LayoutUtils.isOverlapPreventedInOtherDimension(addingInterval, interval, dimension)) {
             ortOverlap = LayoutUtils.contentOverlap(addingSpace, interval, dimension^1);
-            if (ortOverlap
-                && dragger.isResizing()
-                && (!dragger.isResizing(dimension^1) || LayoutRegion.overlap(addingSpace, interval.getCurrentSpace(), dimension, 0))
-                && originalPosition != null) {
-                // In case of resizing only in one dimension don't consider
-                // overlap that was not cared of already before the resizing
-                // started (i.e. the resizing interval was not in sequence with
-                // the interval in question).
-                IncludeDesc original = originalPosition.desc1;
-                LayoutInterval parent = original.parent;
-                if (parent.isParentOf(interval)) {
-                    if (parent.isParallel()
-                        && (original.neighbor == null
-                            || (original.neighbor != interval && !original.neighbor.isParentOf(interval))))
-                        ortOverlap = false;
-                }
-                else if (parent == interval) {
-                    if (parent.isParallel() && original.neighbor == null)
-                        ortOverlap = false;
-                }
-                else if (!interval.isParentOf(parent)) {
-                    parent = LayoutInterval.getCommonParent(parent, interval);
-                    if (parent != null && parent.isParallel())
-                        ortOverlap = false;
-                }
-            } else if (ortOverlap && !dragger.isResizing()) {
-                // The overlap may also be avoided in the other dimension when
-                // adding into baseline or center position.
-                LayoutDragger.PositionDef otherDimPos = newPositions[dimension^1];
-                if (otherDimPos != null && otherDimPos.snapped
-                        && (otherDimPos.alignment == CENTER || otherDimPos.alignment == BASELINE)) {
-                    // anticipating addSimplyAligned will be used
-                    LayoutInterval ortAligned = otherDimPos.interval;
-                    if (!ortAligned.isParallel()) {
-                        LayoutInterval li = LayoutInterval.getFirstParent(ortAligned, PARALLEL);
-                        if (li.getGroupAlignment() == otherDimPos.alignment) {
-                            ortAligned = li;
+            if (ortOverlap) {
+                if (dragger.isResizing()) {
+                    IncludeDesc original = originalPosition != null ? originalPosition.desc1 : null;
+                    if (original != null
+                        && (!dragger.isResizing(dimension^1)
+                            || LayoutUtils.contentOverlap(originalSpace, interval, dimension^1))) {
+                        // Don't consider overlap that was not cared of already before
+                        // the resizing started (i.e. the resizing interval was not
+                        // in sequence with the interval in question).
+                        LayoutInterval parent = original.parent;
+                        if (parent.isParentOf(interval)) {
+                            if (parent.isParallel()
+                                && (original.neighbor == null
+                                    || (original.neighbor != interval && !original.neighbor.isParentOf(interval))))
+                                ortOverlap = false;
+                        } else if (parent == interval) {
+                            if (parent.isParallel() && original.neighbor == null)
+                                ortOverlap = false;
+                        } else if (!interval.isParentOf(parent)) {
+                            parent = LayoutInterval.getCommonParent(parent, interval);
+                            if (parent != null && parent.isParallel()) {
+                                ortOverlap = false;
+                            }
                         }
                     }
-                    // first check if the center/baseline components from the
-                    // ort. dimension are part of the interval
-                    boolean intervalAligned = false;
-                    Iterator<LayoutInterval> it = LayoutUtils.getComponentIterator(ortAligned);
-                    while (it.hasNext()) {
-                        LayoutInterval li = it.next().getComponent().getLayoutInterval(dimension);
-                        if (interval == li || interval.isParentOf(li)) {
-                            intervalAligned = true; // so there is ort. overlap
-                            break;
+                } else {
+                    // The overlap may also be avoided in the other dimension when
+                    // adding into baseline or center position.
+                    LayoutDragger.PositionDef otherDimPos = newPositions[dimension^1];
+                    if (otherDimPos != null && otherDimPos.snapped
+                            && (otherDimPos.alignment == CENTER || otherDimPos.alignment == BASELINE)) {
+                        // anticipating addSimplyAligned will be used
+                        LayoutInterval ortAligned = otherDimPos.interval;
+                        if (!ortAligned.isParallel()) {
+                            LayoutInterval li = LayoutInterval.getFirstParent(ortAligned, PARALLEL);
+                            if (li.getGroupAlignment() == otherDimPos.alignment) {
+                                ortAligned = li;
+                            }
                         }
-                    }
-                    if (!intervalAligned) {
-                        LayoutInterval ortInterval = LayoutUtils.getComponentIterator(interval).next()
-                                .getComponent().getLayoutInterval(dimension^1);
-                        if (LayoutInterval.getCommonParent(ortAligned, ortInterval).isSequential()) {
-                            ortOverlap = false;
+                        // first check if the center/baseline components from the
+                        // ort. dimension are part of the interval
+                        boolean intervalAligned = false;
+                        Iterator<LayoutInterval> it = LayoutUtils.getComponentIterator(ortAligned);
+                        while (it.hasNext()) {
+                            LayoutInterval li = it.next().getComponent().getLayoutInterval(dimension);
+                            if (interval == li || interval.isParentOf(li)) {
+                                intervalAligned = true; // so there is ort. overlap
+                                break;
+                            }
+                        }
+                        if (!intervalAligned) {
+                            LayoutInterval ortInterval = LayoutUtils.getComponentIterator(interval).next()
+                                    .getComponent().getLayoutInterval(dimension^1);
+                            if (LayoutInterval.getCommonParent(ortAligned, ortInterval).isSequential()) {
+                                ortOverlap = false;
+                            }
                         }
                     }
                 }
@@ -4362,19 +4363,40 @@ class LayoutFeeder implements LayoutConstants {
             if (origParent.isSequential() && !origDesc.newSubGroup) {
                 origParent = origParent.getParent();
             }
+            LayoutRegion origClosedSpace = originalPosition.closedSpace;
             if ((newDesc.parent == origParent || newDesc.parent.isParentOf(origParent))
-                  && LayoutRegion.pointInside(addingSpace, LEADING, originalPosition.closedSpace, dimension)
-                  && LayoutRegion.pointInside(addingSpace, TRAILING, originalPosition.closedSpace, dimension)
-                  && newDesc.neighbor == origDesc.neighbor
+                  && LayoutRegion.pointInside(addingSpace, LEADING, origClosedSpace, dimension)
+                  && LayoutRegion.pointInside(addingSpace, TRAILING, origClosedSpace, dimension)
                   && newDesc.snappedNextTo == null
                   && (newDesc.snappedParallel == null || newDesc.snappedParallel == origParent
                       || origParent.isParentOf(newDesc.snappedParallel))) {
-                newDesc.parent = origParent;
-                newDesc.index = origDesc.parent == origParent ? origDesc.index : -1;
-                newDesc.newSubGroup = origDesc.newSubGroup;
-                closedSpace = new LayoutRegion(originalPosition.closedSpace);
-                closedSpace.set(dimension^1, addingSpace);
-                return true;
+                boolean sameNeighbors;
+                if (origParent.isParallel()) {
+                    sameNeighbors = (newDesc.neighbor == origDesc.neighbor);
+                } else {
+                    sameNeighbors = true;
+                    for (Iterator<LayoutInterval> it=origParent.getSubIntervals(); it.hasNext(); ) {
+                        LayoutInterval sub = it.next();
+                        if (sub.isEmptySpace()) {
+                            continue;
+                        }
+                        LayoutRegion subSapce = sub.getCurrentSpace();
+                        if (LayoutUtils.contentOverlap(addingSpace, sub, dimension^1)
+                                && LayoutRegion.overlap(addingSpace, subSapce, dimension, 0)
+                                   != LayoutRegion.overlap(origClosedSpace, subSapce, dimension, 0)) {
+                            sameNeighbors = false;
+                            break;
+                        }
+                    }
+                }
+                if (sameNeighbors) {
+                    newDesc.parent = origParent;
+                    newDesc.index = origDesc.parent == origParent ? origDesc.index : -1;
+                    newDesc.newSubGroup = origDesc.newSubGroup;
+                    closedSpace = new LayoutRegion(origClosedSpace);
+                    closedSpace.set(dimension^1, addingSpace);
+                    return true;
+                }
             }
         }
 
