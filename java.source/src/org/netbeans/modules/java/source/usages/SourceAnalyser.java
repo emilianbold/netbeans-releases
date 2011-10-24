@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.java.source.usages;
 
-import com.sun.istack.internal.NotNull;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ErroneousTree;
@@ -764,7 +763,7 @@ public class SourceAnalyser {
 
         private void addUsage (
                 @NullAllowed final Symbol sym,
-                @NotNull final Pair<String,String>owner,
+                @NonNull final Pair<String,String>owner,
                 @NonNull final Map<Pair<String,String>,Data> map,
                 @NonNull final ClassIndexImpl.UsageType type) {
             assert map != null;
@@ -781,7 +780,7 @@ public class SourceAnalyser {
 
         private void addUsage(
             @NullAllowed final String className,
-            @NotNull final Pair<String,String>owner,
+            @NonNull final Pair<String,String>owner,
             @NonNull final Map<Pair<String,String>,Data> map,
             @NonNull final ClassIndexImpl.UsageType type) {
             if (className != null) {
