@@ -474,6 +474,12 @@ public class HtmlCompletionQueryTest extends HtmlCompletionTestBase {
     }
     
     
+    public void testLinkTypeAttributeCompletion() throws BadLocationException, ParseException {
+        assertItems("<link rel=\"|\">", arr("stylesheet", "chapter"), Match.CONTAINS);
+        assertItems("<link rel=\"|\">", arr("foo"), Match.DOES_NOT_CONTAIN);
+    }
+    
+    
     //helper methods ------------
 
     @Override

@@ -112,6 +112,9 @@ public class CssCompletion implements CodeCompletionHandler {
     private static char firstPrefixChar; //read getPrefix() comment!
 
     private static final String EMPTY_STRING = ""; //NOI18N
+
+    //unit testing support
+    static String[] TEST_USED_COLORS;
     
     @Override
     public CodeCompletionResult complete(CodeCompletionContext context) {
@@ -447,6 +450,7 @@ public class CssCompletion implements CodeCompletionHandler {
             //please refer to the comment above
 //        } else if (node.type() == NodeType.JJTTERM && (prefix.length() > 0 || astCaretOffset == node.from())) {
         } else if (nodeType == NodeType.term || 
+                nodeType == NodeType.expr || 
                 (nodeType == NodeType.error &&
                 node.parent().type() == NodeType.declaration)) {
             //value cc with prefix
@@ -634,14 +638,24 @@ public class CssCompletion implements CodeCompletionHandler {
     private Collection<CompletionProposal> getUsedColorsItems(CodeCompletionContext context, String prefix,
             CssElement element, String origin, int anchor, boolean addSemicolon,
             boolean addSpaceBeforeItem) {
+        Collection<CompletionProposal> proposals = new HashSet<CompletionProposal>();
+        //unit testing - inject some testing used colors to the completion
+        if(TEST_USED_COLORS != null) {
+            for(String color: TEST_USED_COLORS) {
+                proposals.add(CssCompletionItem.createHashColorCompletionItem(element, color, origin,
+                            anchor, addSemicolon, addSpaceBeforeItem, true));
+            }
+        }
+        //
+        
         FileObject current = context.getParserResult().getSnapshot().getSource().getFileObject();
         if(current == null) {
-            return Collections.emptyList();
+            return proposals;
         }
         CssProjectSupport support = CssProjectSupport.findFor(current);
         if(support == null) {
             //we are outside of a project
-            return Collections.emptyList();
+            return proposals;
         }
         CssIndex index = support.getIndex();
         Map<FileObject, Collection<String>> result = index.findAll(RefactoringElementType.COLOR);
@@ -653,7 +667,6 @@ public class CssCompletion implements CodeCompletionHandler {
         if(resortedKeys.remove(current)) {
             resortedKeys.add(0, current);
         }
-        Collection<CompletionProposal> proposals = new HashSet<CompletionProposal>();
         for(FileObject file : resortedKeys) {
             Collection<String> colors = result.get(file);
             boolean usedInCurrentFile = file.equals(current);
@@ -664,6 +677,8 @@ public class CssCompletion implements CodeCompletionHandler {
                 }
             }
         }
+        
+        
         return proposals;
     }
 

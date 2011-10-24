@@ -96,7 +96,9 @@ public class WebModuleImpl implements WebModuleImplementation2, J2eeModuleImplem
     
     private boolean inplace = false;
     private NbMavenProject mavenproject;
-    
+
+    public static final String WEB_INF = "WEB-INF"; //NOI18N
+
     public WebModuleImpl(Project proj, WebModuleProviderImpl prov) {
         project = proj;
         mavenproject = project.getLookup().lookup(NbMavenProject.class);
@@ -106,7 +108,22 @@ public class WebModuleImpl implements WebModuleImplementation2, J2eeModuleImplem
     public FileObject getWebInf() {
         FileObject root = getDocumentBase();
         if (root != null) {
-            return root.getFileObject("WEB-INF"); //NOI18N
+            return root.getFileObject(WEB_INF); //NOI18N
+        }
+        return null;
+    }
+
+    /**
+     * Creates new WEB-INF folder in the web root.
+     *
+     * @return {@code FileObject} of the WEB-INF folder or {@code null} in cases of
+     * missing document base directory
+     * @throws IOException if the folder failed to be created
+     */
+    public FileObject createWebInf() throws IOException {
+        FileObject root = getDocumentBase();
+        if (root != null) {
+            return root.createFolder(WEB_INF);
         }
         return null;
     }

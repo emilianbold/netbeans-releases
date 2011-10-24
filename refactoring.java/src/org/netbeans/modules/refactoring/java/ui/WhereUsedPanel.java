@@ -54,10 +54,7 @@ import java.awt.event.ItemEvent;
 import java.beans.BeanInfo;
 import java.io.IOException;
 import java.text.MessageFormat;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -73,7 +70,6 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.openide.awt.Mnemonics;
-import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.refactoring.java.RefactoringModule;
@@ -96,9 +92,13 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.ui.ElementHeaders;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
-import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.*;
+import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.InstanceDataObject;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
+import org.openide.util.lookup.Lookups;
 
 
 /**
@@ -106,7 +106,12 @@ import org.openide.util.ImageUtilities;
  * @author  Ralph Ruijs
  */
 public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
-
+    private static final String CONFIG_ROOT = "org-netbeans-java-refactoring-whereused"; // NOI18N
+    private static final String SCOPE_CONFIG = CONFIG_ROOT + "/Scope"; // NOI18N
+    private static final String FILES = "/Files"; // NOI18N
+    private static final String FOLDERS = "/Folders"; // NOI18N
+    private static final String SOURCE_ROOTS = "/SourceRoots"; // NOI18N
+    
     private static final String PACKAGE = "org/netbeans/spi/java/project/support/ui/package.gif"; // NOI18N
     private final transient TreePathHandle element;
     private  TreePathHandle newElement;
@@ -299,6 +304,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
                         if(enableScope && currentProject!=null) {
                             scope.setModel(new DefaultComboBoxModel(new Object[]{allProjects, currentProject, currentPackage, currentFile, customScope }));
                             int defaultItem = (Integer) RefactoringModule.getOption("whereUsed.scope", 0); // NOI18N
+                            WhereUsedPanel.this.customScope = readScope();
                             scope.setSelectedIndex(defaultItem);
                             scope.setRenderer(new JLabelRenderer());
                         } else {
@@ -369,8 +375,94 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
             if (customScope != null) {
                 WhereUsedPanel.this.customScope = customScope;
                 scope.setSelectedIndex(4);
+                storeScope(customScope);
             }
         }
+    }
+    
+    private void storeScope(Scope customScope) {
+        try {
+            FileObject scopesFolder = FileUtil.getConfigFile(SCOPE_CONFIG);
+            if (scopesFolder == null) {
+                scopesFolder = FileUtil.getConfigRoot().createFolder(CONFIG_ROOT).createFolder("Scope"); // NOI18N
+            } else {
+                for (FileObject fileObject : scopesFolder.getChildren()) {
+                    fileObject.delete();
+                }
+            }
+            FileObject filesFolder = FileUtil.getConfigFile(SCOPE_CONFIG + FILES);
+            if (filesFolder == null) {
+                filesFolder = scopesFolder.createFolder("Files"); // NOI18N
+            }
+            int count = 0;
+            for (FileObject fileObject : customScope.getFiles()) {
+                InstanceDataObject.create(
+                    DataFolder.findFolder(filesFolder),
+                    "file - " + count++, // NOI18N
+                    fileObject, null, true);
+            }
+            FileObject foldersFolder = FileUtil.getConfigFile(SCOPE_CONFIG + FOLDERS);
+            if (foldersFolder == null) {
+                foldersFolder = scopesFolder.createFolder("Folders"); // NOI18N
+            }
+            count = 0;
+            for (NonRecursiveFolder fileObject : customScope.getFolders()) {
+                InstanceDataObject.create(
+                    DataFolder.findFolder(foldersFolder),
+                    "folder - " + count++, // NOI18N
+                    fileObject.getFolder(), null, true);
+            }
+            FileObject srcRootsFolder = FileUtil.getConfigFile(SCOPE_CONFIG + SOURCE_ROOTS);
+            if (srcRootsFolder == null) {
+                srcRootsFolder = scopesFolder.createFolder("SourceRoots"); // NOI18N
+            }
+            count = 0;
+            for (FileObject fileObject : customScope.getSourceRoots()) {
+                InstanceDataObject.create(
+                    DataFolder.findFolder(srcRootsFolder),
+                    "sourceRoot - " + count++, // NOI18N
+                    fileObject, null, true);
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+    
+    private Scope readScope() {
+        FileObject scopesConfig = FileUtil.getConfigFile(SCOPE_CONFIG);
+        if (scopesConfig == null) {
+            return null;
+        }
+        Collection<? extends FileObject> files = Lookups.forPath(SCOPE_CONFIG + FILES).lookupAll(FileObject.class);
+        Collection<? extends FileObject> folders = Lookups.forPath(SCOPE_CONFIG + FOLDERS).lookupAll(FileObject.class);
+        Collection<? extends FileObject> srcRoots = Lookups.forPath(SCOPE_CONFIG + SOURCE_ROOTS).lookupAll(FileObject.class);
+        
+        List<FileObject> validFiles = new LinkedList<FileObject>();
+        for (FileObject fileObject : files) {
+            if(fileObject.isValid()) {
+                validFiles.add(fileObject);
+            }
+        }
+        
+        List<NonRecursiveFolder> validFolders = new LinkedList<NonRecursiveFolder>();
+        for (final FileObject fileObject : folders) {
+            if(fileObject.isValid()) {
+                validFolders.add(new NonRecursiveFolder() {
+                    @Override public FileObject getFolder() {
+                        return fileObject;
+                    }
+                });
+            }
+        }
+        
+        List<FileObject> validSourceRoots = new LinkedList<FileObject>();
+        for (FileObject fileObject : srcRoots) {
+            if(fileObject.isValid()) {
+                validSourceRoots.add(fileObject);
+            }
+        }
+        
+        return Scope.create(validSourceRoots, validFolders, validFiles);
     }
     
     private String getSimpleName(Element clazz) {

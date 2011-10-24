@@ -41,12 +41,17 @@
  */
 package org.netbeans.modules.php.editor.verification;
 
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import javax.swing.text.BadLocationException;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.csl.api.EditList;
 import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.csl.api.HintSeverity;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
@@ -59,7 +64,6 @@ import org.netbeans.modules.php.editor.parser.astnodes.FieldsDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ForStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.GotoLabel;
 import org.netbeans.modules.php.editor.parser.astnodes.GotoStatement;
-import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.IfStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.InterfaceDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocBlock;
@@ -72,8 +76,6 @@ import org.netbeans.modules.php.editor.parser.astnodes.SingleFieldDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticFieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.UseStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.UseStatementPart;
-import org.netbeans.modules.php.editor.parser.astnodes.Variable;
-import org.netbeans.modules.php.editor.parser.astnodes.VariableBase;
 import org.netbeans.modules.php.editor.parser.astnodes.WhileStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.netbeans.modules.php.editor.verification.PHPHintsProvider.Kind;
@@ -91,6 +93,7 @@ public class AccidentalAssignmentHint extends AbstractRule implements PHPRuleWit
     private static final boolean CHECK_ASSIGNMENTS_IN_SUB_STATEMENTS_DEFAULT = false;
     private static final String CHECK_ASSIGNMENTS_IN_WHILE_STATEMENTS = "php.verification.check.assignments.in.while.statements"; //NOI18N
     private static final boolean CHECK_ASSIGNMENTS_IN_WHILE_STATEMENTS_DEFAULT = false;
+    private static final Logger LOGGER = Logger.getLogger(AccidentalAssignmentHint.class.getName());
     private Preferences preferences;
 
     @Override
@@ -100,7 +103,7 @@ public class AccidentalAssignmentHint extends AbstractRule implements PHPRuleWit
             return;
         }
         FileObject fileObject = phpParseResult.getSnapshot().getSource().getFileObject();
-        CheckVisitor checkVisitor = new CheckVisitor(fileObject);
+        CheckVisitor checkVisitor = new CheckVisitor(fileObject, context.doc);
         phpParseResult.getProgram().accept(checkVisitor);
         hints.addAll(checkVisitor.getHints());
     }
@@ -110,9 +113,11 @@ public class AccidentalAssignmentHint extends AbstractRule implements PHPRuleWit
         private final FileObject fileObject;
         private final List<Hint> hints = new LinkedList<Hint>();
         private final List<Assignment> accidentalAssignments = new LinkedList<Assignment>();
+        private final BaseDocument doc;
 
-        public CheckVisitor(FileObject fileObject) {
+        public CheckVisitor(FileObject fileObject, BaseDocument doc) {
             this.fileObject = fileObject;
+            this.doc = doc;
         }
 
         public List<Hint> getHints() {
@@ -125,59 +130,41 @@ public class AccidentalAssignmentHint extends AbstractRule implements PHPRuleWit
         @Messages("AccidentalAssignmentHintCustom=Accidental assignment in a condition {0}")
         private void createHint(Assignment assignment) {
             OffsetRange offsetRange = new OffsetRange(assignment.getStartOffset(), assignment.getEndOffset());
-            hints.add(new Hint(AccidentalAssignmentHint.this, Bundle.AccidentalAssignmentHintCustom(asText(assignment)), fileObject, offsetRange, null, 500));
+            hints.add(new Hint(AccidentalAssignmentHint.this, Bundle.AccidentalAssignmentHintCustom(asText(assignment)), fileObject, offsetRange, createFixes(assignment), 500));
         }
 
         private String asText(Assignment assignment) {
-            StringBuilder retval = new StringBuilder();
-            VariableBase leftHandSide = assignment.getLeftHandSide();
-            if (leftHandSide instanceof Variable) {
-                Variable variable = (Variable) leftHandSide;
-                retval.append(asText(variable)).append(" "); //NOI18N
-                retval.append(assignment.getOperator().toString()).append(" ..."); //NOI18N
+            String retval = ""; //NOI18N
+            try {
+                int start = assignment.getStartOffset();
+                int end = assignment.getEndOffset();
+                retval = doc.getText(start, end - start);
+            } catch (BadLocationException ex) {
+                LOGGER.warning("Can't obtain assignment text.");
+            } finally {
+                return retval;
             }
-            return retval.toString();
         }
 
-        private String asText(Variable variable) {
-            StringBuilder retval = new StringBuilder();
-            Expression name = variable.getName();
-            if (name instanceof Identifier) {
-                Identifier identifier = (Identifier) name;
-                if (variable.isDollared()) {
-                    retval.append("$"); //NOI18N
-                }
-                retval.append(identifier.getName());
-            } else {
-                retval.append("UNKNOWN"); //NOI18N
-            }
-            return retval.toString();
+        private List<HintFix> createFixes(Assignment assignment) {
+            List<HintFix> fixes = new LinkedList<HintFix>();
+            fixes.add(new IdenticalComparisonHintFix(assignment, doc));
+            fixes.add(new EqualComparisonHintFix(assignment, doc));
+            return fixes;
         }
 
         private void processCondition(Expression node) {
-            if (node instanceof Assignment) {
-                processAssignment((Assignment) node);
-            }
-        }
-
-        private void processAssignment(Assignment assignment) {
             if (checkAssignmentsInSubStatements(preferences)) {
-                processSubAssignments(assignment);
-            } else {
-                accidentalAssignments.add(assignment);
+                processSubAssignments(node);
+            } else if (node instanceof Assignment) {
+                accidentalAssignments.add((Assignment) node);
             }
         }
 
-        private void processSubAssignments(Assignment assignment) {
-            assignment.accept(new DefaultVisitor() {
-
-                @Override
-                public void visit(Assignment node) {
-                    accidentalAssignments.add(node);
-                    scan(node.getRightHandSide());
-                }
-
-            });
+        private void processSubAssignments(Expression node) {
+            AssignmentVisitor assignmentVisitor = new AssignmentVisitor();
+            node.accept(assignmentVisitor);
+            accidentalAssignments.addAll(assignmentVisitor.getAccidentalAssignments());
         }
 
         @Override
@@ -291,6 +278,112 @@ public class AccidentalAssignmentHint extends AbstractRule implements PHPRuleWit
         @Override
         public void visit(UseStatementPart node) {
             // intentionally
+        }
+
+    }
+
+    private class AssignmentVisitor extends DefaultVisitor {
+
+        private final List<Assignment> accidentalAssignments = new LinkedList<Assignment>();
+
+        @Override
+        public void visit(Assignment node) {
+            accidentalAssignments.add(node);
+            scan(node.getRightHandSide());
+        }
+
+        public List<Assignment> getAccidentalAssignments() {
+            return Collections.unmodifiableList(accidentalAssignments);
+        }
+
+    }
+
+    private abstract class ComparisonHintFix implements HintFix {
+
+        private final Assignment assignment;
+        private final BaseDocument doc;
+
+        public ComparisonHintFix(Assignment assignment, BaseDocument doc) {
+            this.assignment = assignment;
+            this.doc = doc;
+        }
+
+        @Override
+        @Messages("ChangeAssignmentDisp=Change assignment to comparison: {0}")
+        public String getDescription() {
+            return Bundle.ChangeAssignmentDisp(getCorrectedAssignmentText());
+        }
+
+        private String getCorrectedAssignmentText() {
+            StringBuilder sb = new StringBuilder();
+            try {
+                sb.append(getExpressionText(assignment.getLeftHandSide()));
+                sb.append(" ").append(getOperatorText()).append(" "); //NOI18N
+                sb.append(getExpressionText(assignment.getRightHandSide()));
+                return sb.toString();
+            } catch (BadLocationException ex) {
+                LOGGER.warning("Can't obtain corrected assignment text.");
+            } finally {
+                return sb.toString();
+            }
+        }
+
+        private String getExpressionText(Expression expression) throws BadLocationException {
+            int start = expression.getStartOffset();
+            int end = expression.getEndOffset();
+            return doc.getText(start, end - start);
+        }
+
+        @Override
+        public void implement() throws Exception {
+            EditList edits = new EditList(doc);
+            OffsetRange offsetRange = getOffsetRange();
+            edits.replace(offsetRange.getStart(), offsetRange.getLength(), getCorrectedAssignmentText(), true, 0);
+            edits.apply();
+        }
+
+        private OffsetRange getOffsetRange() {
+            int start = assignment.getStartOffset();
+            int end = assignment.getEndOffset();
+            return new OffsetRange(start, end);
+        }
+
+        @Override
+        public boolean isSafe() {
+            return true;
+        }
+
+        @Override
+        public boolean isInteractive() {
+            return false;
+        }
+
+        abstract protected String getOperatorText();
+
+    }
+
+    private class EqualComparisonHintFix extends ComparisonHintFix {
+
+        public EqualComparisonHintFix(Assignment assignment, BaseDocument doc) {
+            super(assignment, doc);
+        }
+
+        @Override
+        protected String getOperatorText() {
+            return "=="; //NOI18N
+        }
+
+    }
+
+    private class IdenticalComparisonHintFix extends ComparisonHintFix {
+
+        public IdenticalComparisonHintFix(Assignment assignment, BaseDocument doc) {
+            super(assignment, doc);
+        }
+
+        @Override
+        protected String getOperatorText() {
+            return "==="; //NOI18N
         }
 
     }

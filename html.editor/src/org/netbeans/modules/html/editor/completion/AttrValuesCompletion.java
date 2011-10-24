@@ -94,6 +94,12 @@ public abstract class AttrValuesCompletion {
                 "month","week","time","datetime-local","number","range","color",
                 "checkbox","radio","file","submit","image","reset","button"});
 
+    private static final ValueCompletion<HtmlCompletionItem> LINK_TYPES_SUPPORT =
+            new ValuesSetSupport(new String[]{
+                "alternate", "stylesheet", "start", "next", "prev", "contents",
+                "index", "glossary", "copyright", "chapter", "section", "subsection",
+                "appendix", "help","bookmark"});
+    
     static {
         //TODO uff, such long list ... redo it so it resolves according to the DTD attribute automatically
         //mixed with html5 content...
@@ -168,6 +174,8 @@ public abstract class AttrValuesCompletion {
         putSupport("textarea", "wrap", WRAP_SUPPORT); //NOI18N
 
         putSupport("input", "type", INPUT_TYPE_SUPPORT); //NOI18N
+        
+        putSupport(null, "rel", LINK_TYPES_SUPPORT);
     }
 
     private static void putSupport(String tag, String attr, ValueCompletion<HtmlCompletionItem> support) {
@@ -192,7 +200,8 @@ public abstract class AttrValuesCompletion {
         if (map == null) {
             return ALL_TAG_SUPPORTS.get(attr);
         } else {
-            return map.get(attr.toLowerCase(Locale.ENGLISH));
+            ValueCompletion completion = map.get(attr.toLowerCase(Locale.ENGLISH));
+            return completion == null ? ALL_TAG_SUPPORTS.get(attr) : completion;
         }
     }
 

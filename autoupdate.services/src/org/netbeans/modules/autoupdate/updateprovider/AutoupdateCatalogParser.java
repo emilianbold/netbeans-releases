@@ -208,13 +208,15 @@ public class AutoupdateCatalogParser extends DefaultHandler {
         if (p != null) {
             URL url = p.getUpdateCenterURL ();
             if (url != null) {
-                try {
-                    URLConnection conn = url.openConnection();
-                    String contentType = conn.getContentType();
-                    res = GZIP_MIME_TYPE.equals(contentType);
-                } catch (IOException ex) {
-                    ERR.log (Level.INFO, "Cannot read Content-Type HTTP header, using file extension, cause: ", ex);
-                    res = url.getPath ().toLowerCase ().endsWith (GZIP_EXTENSION);
+                res = url.getPath ().toLowerCase ().endsWith (GZIP_EXTENSION);
+                if (! res) {
+                    try {
+                        URLConnection conn = url.openConnection();
+                        String contentType = conn.getContentType();
+                        res = GZIP_MIME_TYPE.equals(contentType);
+                    } catch (IOException ex) {
+                        ERR.log (Level.INFO, "Cannot read Content-Type HTTP header, using file extension, cause: ", ex);
+                    }
                 }
                 ERR.log (Level.FINER, "Is GZIP " + url + " ? " + res);
             } else {
