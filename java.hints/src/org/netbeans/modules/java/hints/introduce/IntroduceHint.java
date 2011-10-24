@@ -318,7 +318,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         for (StatementTree s : statements) {
             long sStart = ci.getTrees().getSourcePositions().getStartPosition(ci.getCompilationUnit(), s);
 
-            if (sStart == start) {
+            if (sStart == start && from == (-1)) {
                 from = index;
             }
 
