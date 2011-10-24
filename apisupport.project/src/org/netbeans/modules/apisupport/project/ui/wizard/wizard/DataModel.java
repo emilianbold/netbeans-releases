@@ -96,7 +96,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         basicTokens.put("PACKAGE_NAME", getPackageName()); // NOI18N
         basicTokens.put("WIZARD_PREFIX", prefix); // NOI18N
         
-        StringBuffer panelsDefinitionBlock = new StringBuffer();
+        StringBuilder panelsDefinitionBlock = new StringBuilder();
         String newLine = System.getProperty("line.separator") + "                "; // NOI18N
         
         // Create wizard and visual panels
@@ -124,7 +124,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
             template = CreatedModifiedFiles.getTemplate("wizardPanel.java"); // NOI18N
             cmf.add(cmf.createFileWithSubstitutions(path, template, replaceTokens));
             
-            panelsDefinitionBlock.append("new " + wizardPanelClass + "()"); // NOI18N
+            panelsDefinitionBlock.append("new ").append(wizardPanelClass).append("()"); // NOI18N
             if (stepNumber != nOfSteps) {
                 panelsDefinitionBlock.append(',').append(newLine);
             }
