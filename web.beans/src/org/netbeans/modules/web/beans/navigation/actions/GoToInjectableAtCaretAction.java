@@ -45,6 +45,7 @@ package org.netbeans.modules.web.beans.navigation.actions;
 
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -235,13 +236,20 @@ public class GoToInjectableAtCaretAction extends AbstractInjectableAction {
     }
     
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.navigation.actions.AbstractCdiAction#handleProject(org.netbeans.api.project.Project)
+     * @see org.netbeans.modules.web.beans.navigation.actions.AbstractCdiAction#handleProject(org.netbeans.api.project.Project, java.awt.event.ActionEvent)
      */
     @Override
-    protected void handleProject( Project project ) {
+    protected void handleProject( Project project , ActionEvent event ) {
+        String msg = null;
+        if ( event == null ){
+            msg = "USG_CDI_GO_TO_INJECTABLE_GLYPH";           // NOI18N
+        }
+        else {
+            msg = "USG_CDI_GO_TO_INJECTABLE";                 // NOI18N
+        }
         UsageLogger logger = project.getLookup().lookup(UsageLogger.class);
         if (logger != null) {
-            logger.log("USG_CDI_GO_TO_INJECTABLE", // NOI18N
+            logger.log(msg, 
                     GoToInjectableAtCaretAction.class, new Object[] { project
                             .getClass().getName() });
         }
