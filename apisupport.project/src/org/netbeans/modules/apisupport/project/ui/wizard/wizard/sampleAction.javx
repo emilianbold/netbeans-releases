@@ -22,7 +22,7 @@ import org.openide.WizardDescriptor;
 // @ActionReference(path="Menu/Tools", position=...)
 public final class ${WIZARD_PREFIX}WizardAction implements ActionListener {
 
-    public @Override void actionPerformed(ActionEvent e) {
+    @Override public void actionPerformed(ActionEvent e) {
         List<WizardDescriptor.Panel<WizardDescriptor>> panels = new ArrayList<WizardDescriptor.Panel<WizardDescriptor>>();
         <#list panelClassNames as c>
         panels.add(new ${c}());
