@@ -103,16 +103,23 @@ public class ImportConfirmationPanel extends javax.swing.JPanel {
         cbRestart = new javax.swing.JCheckBox();
         lblMessage = new javax.swing.JLabel();
 
-        setPreferredSize(new java.awt.Dimension(350, 90));
+        setMinimumSize(new java.awt.Dimension(450, 112));
+        setPreferredSize(new java.awt.Dimension(450, 112));
         setLayout(new java.awt.BorderLayout());
 
         cbRestart.setSelected(true);
         cbRestart.setText(org.openide.util.NbBundle.getMessage(ImportConfirmationPanel.class, "ImportConfirmationPanel.cbRestart.text")); // NOI18N
+        cbRestart.setMaximumSize(new java.awt.Dimension(900, 56));
+        cbRestart.setMinimumSize(new java.awt.Dimension(450, 56));
+        cbRestart.setPreferredSize(new java.awt.Dimension(450, 56));
         add(cbRestart, java.awt.BorderLayout.SOUTH);
         cbRestart.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ImportConfirmationPanel.class, "ImportConfirmationPanel.cbRestart.AN")); // NOI18N
         cbRestart.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ImportConfirmationPanel.class, "ImportConfirmationPanel.cbRestart.AD")); // NOI18N
 
         lblMessage.setText(org.openide.util.NbBundle.getMessage(ImportConfirmationPanel.class, "ImportConfirmationPanel.lblMessage.text")); // NOI18N
+        lblMessage.setMaximumSize(new java.awt.Dimension(900, 56));
+        lblMessage.setMinimumSize(new java.awt.Dimension(450, 56));
+        lblMessage.setPreferredSize(new java.awt.Dimension(450, 56));
         add(lblMessage, java.awt.BorderLayout.NORTH);
         lblMessage.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ImportConfirmationPanel.class, "ImportConfirmationPanel.lblMessage.text")); // NOI18N
         lblMessage.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ImportConfirmationPanel.class, "ImportConfirmationPanel.lblMessage.AD")); // NOI18N
