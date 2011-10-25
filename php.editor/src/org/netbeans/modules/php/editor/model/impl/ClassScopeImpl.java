@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.php.editor.model.impl;
 
-import java.util.Iterator;
 import org.netbeans.modules.php.editor.api.QualifiedName;
 import java.util.Collection;
 import java.util.ArrayList;
@@ -50,7 +49,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.api.ElementQuery;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.api.elements.ClassElement;
@@ -66,7 +64,6 @@ import org.netbeans.modules.php.editor.model.nodes.ClassDeclarationInfo;
 import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
-import org.openide.util.Exceptions;
 import org.openide.util.Union2;
 
 /**
