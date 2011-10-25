@@ -123,11 +123,13 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
      * FQN.
      * @return possible fully qualified names, that are guess during parsing.
      */
+    @Override
     public Collection<QualifiedName> getPossibleFQSuperClassNames() {
         return this.possibleFQSuperClassNames;
     }
 
     @NonNull
+    @Override
     public Collection<? extends ClassScope> getSuperClasses() {
         List<ClassScope> retval = null;
         if (superClass.hasSecond() && superClass.second() != null) {
@@ -305,6 +307,7 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
 
 
     @NonNull
+    @Override
     public QualifiedName getSuperClassName() {
         List<? extends ClassScope> retval = null;
         if (superClass != null) {
@@ -365,14 +368,17 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
         return sb.toString();
     }
 
+    @Override
     public Collection<? extends MethodScope> getDeclaredConstructors() {
         return ModelUtils.filter(getDeclaredMethods(), new ModelUtils.ElementFilter<MethodScope>() {
+            @Override
             public boolean isAccepted(MethodScope methodScope) {
                 return methodScope.isConstructor();
             }
         });
     }
 
+    @Override
     public String getDefaultConstructorIndexSignature() {
         StringBuilder sb = new StringBuilder();
         sb.append(getName().toLowerCase()).append(";");//NOI18N
@@ -398,6 +404,7 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
         return super.getNamespaceName();
     }
 
+    @Override
     public Collection<? extends String> getSuperClassNames() {
         String supeClsName = superClass.hasFirst() ? superClass.first() : null;
         if (supeClsName != null) {
@@ -414,8 +421,10 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
         return retval;
     }
 
+    @Override
     public Collection<? extends VariableName> getDeclaredVariables() {
         return filter(getElements(), new ElementFilter() {
+            @Override
             public boolean isAccepted(ModelElement element) {
                 if (element instanceof MethodScopeImpl && ((MethodScopeImpl)element).isConstructor()
                         && element instanceof LazyBuild) {
@@ -430,6 +439,7 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
         });
     }
 
+    @Override
     public VariableNameImpl createElement(Variable node) {
         VariableNameImpl retval = new VariableNameImpl(this, node, false);
         addElement(retval);
