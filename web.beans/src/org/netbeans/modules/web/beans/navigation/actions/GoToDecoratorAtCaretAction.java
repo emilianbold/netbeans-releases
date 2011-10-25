@@ -68,7 +68,9 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.ui.ElementOpen;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.web.beans.UsageLogger;
 import org.netbeans.modules.web.beans.api.model.BeansModel;
 import org.netbeans.modules.web.beans.api.model.DependencyInjectionResult;
 import org.netbeans.modules.web.beans.api.model.InjectionPointDefinitionError;
@@ -258,6 +260,19 @@ public class GoToDecoratorAtCaretAction extends AbstractCdiAction {
     @Override
     protected String getPopupMenuKey() {
         return GOTO_DECORATOR_AT_CARET_POPUP;
+    }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.navigation.actions.AbstractCdiAction#handleProject(org.netbeans.api.project.Project)
+     */
+    @Override
+    protected void handleProject( Project project ) {
+        UsageLogger logger = project.getLookup().lookup(UsageLogger.class);
+        if (logger != null) {
+            logger.log("USG_CDI_GO_TO_DECORATOR", // NOI18N
+                    GoToDecoratorAtCaretAction.class, new Object[] { project
+                            .getClass().getName() });
+        }
     }
 
 }
