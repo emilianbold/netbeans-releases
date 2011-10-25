@@ -388,7 +388,7 @@ public class DefaultTabDataModel implements TabDataModel {
         ComplexListDataEvent lde = new ComplexListDataEvent(this,
                                                             ListDataEvent.INTERVAL_REMOVED,
                                                             start, end);
-        lde.setAffectedItems((TabData[]) list.toArray(new TabData[0]));
+        lde.setAffectedItems((TabData[]) affected.toArray(new TabData[0]));
         fireIntervalRemoved(lde);
     }
 
