@@ -368,7 +368,7 @@ public final class ProcessUtils {
      * @param processBuilder
      * @return
      */
-    private static ExitStatus execute(final NativeProcessBuilder processBuilder) {
+    public static ExitStatus execute(final NativeProcessBuilder processBuilder) {
         ExitStatus result;
         Future<String> error;
         Future<String> output;
