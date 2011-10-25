@@ -379,7 +379,7 @@ public class DefaultTabDataModel implements TabDataModel {
      */
     @Override
     public void removeTabs(int start, int end) {
-        java.util.List affected = list.subList(start, end);
+        java.util.List affected = new ArrayList(list.subList(start, end));
         if (start == end) {
             list.remove(start);
         } else {
