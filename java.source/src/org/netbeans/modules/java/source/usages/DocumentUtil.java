@@ -320,11 +320,12 @@ public class DocumentUtil {
         final int index = rawUsageLen - SIZE;
         final String className = rawUsage.substring(0,index);
         final String map = rawUsage.substring (index);
-        for (ClassIndexImpl.UsageType usageType : ClassIndexImpl.UsageType.values()) {
-            if (map.charAt(usageType.getOffset()) == YES) {
-                usageTypes.add (usageType);
+        final ClassIndexImpl.UsageType[] values = ClassIndexImpl.UsageType.values();
+        for (int i=0; i< values.length; i++) {
+            if (map.charAt(i) == YES) {
+                usageTypes.add (values[i]);
             }
-        }        
+        }
         return className;
     }
     
