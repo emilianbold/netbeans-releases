@@ -944,7 +944,7 @@ public final class CreatedModifiedFiles {
      *        <em>displayName</em> attribute will be
      *        created with the bundlevalue to a new entry in default bundle (from manifest).
      *        The entry will also be added into the bundle.
-     * @param fileAttributes &lt;String,Object&gt; map. key in the map is the
+     * @param fileAttributes key in the map is the
      *        name of the file attribute value is the actual value, currently
      *        supported types are Boolean and String Generates
      *        <pre>
@@ -957,7 +957,7 @@ public final class CreatedModifiedFiles {
             FileObject content,
             Map<String,? extends Object> substitutionTokens,
             String localizedDisplayName,
-            Map<String,Object> fileAttributes) {
+            Map<String,?> fileAttributes) {
         return new CreateLayerEntry(this, project, layerPath, content,
                 substitutionTokens, localizedDisplayName, fileAttributes);
     }
@@ -968,7 +968,7 @@ public final class CreatedModifiedFiles {
         
         public CreateLayerEntry(final CreatedModifiedFiles cmf, final Project project, final String layerPath,
                 final FileObject content,
-                final Map<String,? extends Object> tokens, final String localizedDisplayName, final Map<String,Object> attrs) {
+                final Map<String,? extends Object> tokens, final String localizedDisplayName, final Map<String,?> attrs) {
             
             super(project);
             final String locBundleKey = (localizedDisplayName != null ? LayerUtils.generateBundleKeyForFile(layerPath) : null);
@@ -994,7 +994,7 @@ public final class CreatedModifiedFiles {
                         }
                     }
                     if (attrs != null) {
-                        for (Map.Entry<String,Object> entry : attrs.entrySet()) {
+                        for (Map.Entry<String,?> entry : attrs.entrySet()) {
                             targetFO.setAttribute(entry.getKey(), entry.getValue());
                         }
                     }
@@ -1136,16 +1136,16 @@ public final class CreatedModifiedFiles {
      * and optionally add some annotations to the package.
      * Each annotation is of the form FQN -> {key -> val}.
      */
-    public Operation packageInfo(String packageName, Map<String,Map<String,Object>> annotations) {
+    public Operation packageInfo(String packageName, Map<String,? extends Map<String,?>> annotations) {
         return new PackageInfo(project, packageName, annotations);
     }
     private static class PackageInfo extends AbstractOperation {
-        private final Map<String,Map<String,Object>> annotations;
+        private final Map<String,? extends Map<String,?>> annotations;
         private final String srcRootPath, srcRelPath;
-        PackageInfo(Project project, String packageName, Map<String,Map<String,Object>> annotations) {
+        PackageInfo(Project project, String packageName, Map<String,? extends Map<String,?>> annotations) {
             super(project);
             this.annotations = annotations;
-            srcRootPath = getModuleInfo().getResourceDirectoryPath(false);
+            srcRootPath = getModuleInfo().getSourceDirectoryPath();
             srcRelPath = packageName.replace('.', '/') + "/package-info.java"; // NOI18N
             addCreatedOrModifiedPath(srcRootPath + '/' + srcRelPath, true);
         }
@@ -1169,14 +1169,14 @@ public final class CreatedModifiedFiles {
                                 wc.toPhase(JavaSource.Phase.RESOLVED);
                                 TreeMaker make = wc.getTreeMaker();
                                 List<AnnotationTree> anns = new ArrayList<AnnotationTree>();
-                                for (Map.Entry<String,Map<String,Object>> ann : annotations.entrySet()) {
+                                for (Map.Entry<String,? extends Map<String,?>> ann : annotations.entrySet()) {
                                     TypeElement annType = wc.getElements().getTypeElement(ann.getKey());
                                     if (annType == null) {
                                         throw new IOException("No annotation " + ann.getKey() + " in " + wc.getClasspathInfo());
                                     }
                                     ExpressionTree annotationTypeTree = make.QualIdent(annType);
                                     List<ExpressionTree> arguments = new ArrayList<ExpressionTree>();
-                                    for (Map.Entry<String,Object> attr : ann.getValue().entrySet()) {
+                                    for (Map.Entry<String,?> attr : ann.getValue().entrySet()) {
                                         arguments.add(make.Assignment(make.Identifier(attr.getKey()), make.Literal(attr.getValue())));
                                     }
                                     anns.add(make.Annotation(annotationTypeTree, arguments));
