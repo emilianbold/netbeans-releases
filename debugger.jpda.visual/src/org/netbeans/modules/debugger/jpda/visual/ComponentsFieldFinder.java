@@ -41,13 +41,18 @@
  */
 package org.netbeans.modules.debugger.jpda.visual;
 
-import com.sun.jdi.ClassType;
 import com.sun.jdi.Field;
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.Value;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Map;
+import org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ObjectReferenceWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ReferenceTypeWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
 
 /**
  * Find fields in which individual components are declared.
@@ -69,16 +74,23 @@ public class ComponentsFieldFinder {
         for (JavaComponentInfo jci : components) {
             if (jci.isCustomType() && jci.getSubComponents().length > 0) {
                 ObjectReference c = jci.getComponent();
-                Map<Field, Value> fieldValues = c.getValues(((ClassType) c.referenceType()).fields());
-                for (Map.Entry<Field, Value> fv : fieldValues.entrySet()) {
-                    Value value = fv.getValue();
-                    if (value instanceof ObjectReference) {
-                        long uid = ((ObjectReference) value).uniqueID();
-                        int index = Arrays.binarySearch(uids, uid);
-                        if (index >= 0) {
-                            components[index].setFieldInfo(new JavaComponentInfo.FieldInfo(fv.getKey(), jci));
+                try {
+                    Map<Field, Value> fieldValues = ObjectReferenceWrapper.getValues(c, ReferenceTypeWrapper.fields(ObjectReferenceWrapper.referenceType(c)));
+                    for (Map.Entry<Field, Value> fv : fieldValues.entrySet()) {
+                        Value value = fv.getValue();
+                        if (value instanceof ObjectReference) {
+                            long uid = ObjectReferenceWrapper.uniqueID((ObjectReference) value);
+                            int index = Arrays.binarySearch(uids, uid);
+                            if (index >= 0) {
+                                components[index].setFieldInfo(new JavaComponentInfo.FieldInfo(fv.getKey(), jci));
+                            }
                         }
                     }
+                } catch (ClassNotPreparedExceptionWrapper cnpex) {
+                } catch (InternalExceptionWrapper iex) {
+                } catch (ObjectCollectedExceptionWrapper ocex) {
+                } catch (VMDisconnectedExceptionWrapper vmdex) {
+                    return ;
                 }
             }
         }
