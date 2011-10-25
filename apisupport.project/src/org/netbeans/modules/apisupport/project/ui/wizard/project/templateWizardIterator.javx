@@ -43,7 +43,7 @@ import org.xml.sax.InputSource;
 
 <#if useTR??>
 // TODO define position attribute
-@TemplateRegistration(folder="${CATEGORY?replace('^Templates/', '', 'r')}", displayName="#${TEMPLATENAME}_displayName", description="${TEMPLATENAME}Description.html", iconBase="${PACKAGENAME?replace('.', '/')}/${TEMPLATENAME}.png")
+@TemplateRegistration(folder="${CATEGORY?replace('^Templates/', '', 'r')}", displayName="#${TEMPLATENAME}_displayName", description="${TEMPLATENAME}Description.html", iconBase="${PACKAGENAME?replace('.', '/')}/${TEMPLATENAME}.png", content="${TEMPLATENAME}Project.zip")
 @Messages("${TEMPLATENAME}_displayName=${DISPLAYNAME}")
 </#if>
 public class ${TEMPLATENAME}WizardIterator implements WizardDescriptor./*Progress*/InstantiatingIterator {
