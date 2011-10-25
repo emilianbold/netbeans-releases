@@ -84,6 +84,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.*;
 import javax.lang.model.type.ArrayType;
@@ -536,52 +537,45 @@ public class SourceAnalyser {
             this.state = currState;
             return null;
         }
-        
-        public @Override Void visitClass (final ClassTree node, final Map<Pair<String,String>,Data> p) {
+
+        @Override
+        public Void visitClass (@NonNull final ClassTree node, @NonNull final Map<Pair<String,String>,Data> p) {
             final ClassSymbol sym = ((JCTree.JCClassDecl)node).sym;
             boolean errorInDecl = false;
             boolean errorIgnorSubtree = true;
+            boolean topLevel = false;
+            String className = null;
             Pair<String,String> name = null;
+
             if (sym != null) {
                 errorInDecl = hasErrorName(sym);
                 if (errorInDecl) {
-                    if (activeClass.size()>0) {
-                        activeClass.push (activeClass.get(0));
-                        errorIgnorSubtree = false;
-                    }
-                    else {
-                        final String className = getResourceName (this.cu);
+                    if (!activeClass.isEmpty()) {
+                        name = activeClass.get(0);
+                    } else {
+                        topLevel = true;
+                        className = getResourceName (this.cu);
                         if (className != null) {
                             final String classNameType = className + DocumentUtil.encodeKind(ElementKind.CLASS);
                             name = Pair.<String,String>of(classNameType, null);
-                            if (activeClass.isEmpty()) {
-                                if (topLevels != null) {
-                                    topLevels.add (Pair.<String,String>of(className, null));
-                                }
-                                addAndClearImports(name, p);
-                            }
-                            activeClass.push (name);
-                            errorIgnorSubtree = false;
-                            addUsage (className, name, p, ClassIndexImpl.UsageType.TYPE_REFERENCE);
-                            addIdent(name, className, p, true);
-                            if (newTypes !=null) {
-                                newTypes.add ((ElementHandle<TypeElement>)ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS,className));
-                            }
-                        }
-                        else {
-                            Logger.getLogger(SourceAnalyser.class.getName()).warning(String.format("Cannot resolve %s, ignoring whole subtree.\n",sym.toString()));    //NOI18N
+                        } else {
+                            Logger.getLogger(
+                                SourceAnalyser.class.getName()).log(
+                                Level.WARNING,
+                                "Cannot resolve {0}, ignoring whole subtree.",  //NOI18N
+                                sym);
                         }
                     }
-                }
-                else {
+                } else {
                     final StringBuilder classNameBuilder = new StringBuilder ();
                     ClassFileUtil.encodeClassName(sym, classNameBuilder, '.');  //NOI18N
-                    final String className = classNameBuilder.toString();
+                    className = classNameBuilder.toString();
                     ElementKind kind = sym.getKind();
                     classNameBuilder.append(DocumentUtil.encodeKind(kind));
                     final String classNameType = classNameBuilder.toString();
                     String resourceName = null;
-                    if (activeClass.isEmpty()) {
+                    topLevel = activeClass.isEmpty();
+                    if (topLevel) {
                         if (virtual || !className.equals(sourceName)) {
                             if (signatureFiles && rsList == null) {
                                 rsList = new HashSet<String>();
@@ -593,27 +587,29 @@ public class SourceAnalyser {
                             rnBuilder.append('.');  //NOI18N
                             rnBuilder.append(FileObjects.getExtension(siblingUrl.getPath()));
                             resourceName =  rnBuilder.toString();
-                        }
-                        else {
+                        } else {
                             crossedTopLevel = true;
                         }
-                    }
-                    else {
+                    } else {
                         resourceName = activeClass.peek().second;
                     }
                     name = Pair.<String,String>of(classNameType, resourceName);
-                    if (activeClass.isEmpty()) {
+                }
+            }
+            if (name != null) {
+                activeClass.push(name);
+                errorIgnorSubtree = false;
+                if (className != null) {
+                    if (topLevel) {
                         if (topLevels != null) {
-                            topLevels.add (Pair.<String,String>of(className, resourceName));
+                            topLevels.add (Pair.<String,String>of(className, name.second));
                         }
                         addAndClearImports(name, p);
                     }
-                    activeClass.push (name);
-                    errorIgnorSubtree = false;
                     addUsage (className, name, p, ClassIndexImpl.UsageType.TYPE_REFERENCE);
-                    addIdent(name, node.getSimpleName(), p, true);
+                    addIdent(name, className, p, true);
                     if (newTypes !=null) {
-                        newTypes.add ((ElementHandle<TypeElement>)ElementHandleAccessor.INSTANCE.create(kind, className));
+                        newTypes.add ((ElementHandle<TypeElement>)ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS,className));
                     }
                 }
             }

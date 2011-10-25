@@ -1313,22 +1313,21 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
      * @return true if it's first time of file including
      *          false if file was included before
      */
-    public final FileImpl onFileIncluded(ProjectBase base, CharSequence file, APTPreprocHandler preprocHandler, PostIncludeData postIncludeState, int mode, boolean triggerParsingActivity) throws IOException {
+    public final FileImpl onFileIncluded(ProjectBase startProject, CharSequence file, APTPreprocHandler preprocHandler, PostIncludeData postIncludeState, int mode, boolean triggerParsingActivity) throws IOException {
         assert preprocHandler != null : "null preprocHandler for " + file;
-        FileImpl csmFile = null;
-        if (isDisposing()) {
+        if (isDisposing() || startProject.isDisposing()) {
             return null;
         }
         final CsmModelState modelState = ModelImpl.instance().getState();
         if (modelState == CsmModelState.CLOSING || modelState == CsmModelState.OFF) {
             if (TraceFlags.TRACE_VALIDATION || TraceFlags.TRACE_MODEL_STATE) {
-                System.err.printf("onFileIncluded: %s file [%s] is interrupted on closing model\n", file, base.getName());
+                System.err.printf("onFileIncluded: %s file [%s] is interrupted on closing model\n", file, this.getName());
             }
             return null;
         }
-        csmFile = findFile(file, true, FileImpl.FileType.HEADER_FILE, preprocHandler, false, null, null);
+        FileImpl csmFile = findFile(file, true, FileImpl.FileType.HEADER_FILE, preprocHandler, false, null, null);
 
-        if (isDisposing()) {
+        if (isDisposing() || startProject.isDisposing()) {
             return csmFile;
         }
         APTPreprocHandler.State newState = preprocHandler.getState();
@@ -1366,7 +1365,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             FilePreprocessorConditionState.Builder pcBuilder = new FilePreprocessorConditionState.Builder(csmFile.getAbsolutePath());
             // ask for exclusive entry if absent
             aptCacheEntry = csmFile.getAPTCacheEntry(preprocHandler, Boolean.TRUE);
-            APTParseFileWalker walker = new APTParseFileWalker(base, aptLight, csmFile, preprocHandler, triggerParsingActivity, pcBuilder,aptCacheEntry);
+            APTParseFileWalker walker = new APTParseFileWalker(startProject, aptLight, csmFile, preprocHandler, triggerParsingActivity, pcBuilder,aptCacheEntry);
             walker.visit();
             pcState = pcBuilder.build();
         }
@@ -1382,7 +1381,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
         boolean updateFileContainer = false;
         try {
-            if (isDisposing()) {
+            if (isDisposing() || startProject.isDisposing()) {
                 return csmFile;
             }
             if (triggerParsingActivity) {
@@ -1454,7 +1453,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                     }
                     // TODO: think over, what if we aready changed entry,
                     // but now deny parsing, because base, but not this project, is disposing?!
-                    if (!isDisposing() && !base.isDisposing()) {
+                    if (!isDisposing() && !startProject.isDisposing()) {
                         if (clean) {
                             for (PreprocessorStatePair pair : statesToKeep) {
                                 // if pair has parsing in pair.pcState => it was not valid source file

@@ -75,7 +75,6 @@ import org.netbeans.modules.classfile.ClassFile;
 import org.netbeans.modules.classfile.ClassName;
 import org.netbeans.modules.classfile.Method;
 import org.netbeans.modules.classfile.Variable;
-import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl.UsageType;
 
 /**
@@ -86,7 +85,7 @@ public class CompromiseSATest extends NbTestCase {
     
     private static final String TEST_CLASS = "java.util.ArrayList";	                    //NOI18N
     private static final String TEST_INNER_CLASS = "java.util.Collections$SingletonSet";    //NOI18N
-    private static final String TEST_INNER_CLASS_2 = "java.util.Collections$SingletonMap$ImmutableEntry";	//NOI18N
+    private static final String TEST_INNER_CLASS_2 = "java.util.Collections$UnmodifiableMap$UnmodifiableEntrySet";	//NOI18N
     private static final String TEST_INNER_CLASS_3 = "javax.swing.JTable$AccessibleJTable$AccessibleJTableCell";	//NOI18N
     private static final String TEST_ANNON_CLASS = "java.lang.String$1";	//NOI18N
     
@@ -362,7 +361,7 @@ public class CompromiseSATest extends NbTestCase {
 	StringTokenizer tk = new StringTokenizer (getBootClassPath (), File.pathSeparator);
 	while (tk.hasMoreTokens()) {
 	    String token = tk.nextToken();
-	    if (token.endsWith("rt.jar")) {
+	    if (token.endsWith(File.separator+"rt.jar") || token.endsWith(File.separator+"classes.jar")) {
 		File f = new File (token);
 		assert f.canRead();
 		return f;
