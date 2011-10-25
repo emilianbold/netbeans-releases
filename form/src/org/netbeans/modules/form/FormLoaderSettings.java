@@ -74,8 +74,10 @@ public class FormLoaderSettings implements HelpCtx.Provider   {
     /** Property name of the formDesignerBorderColor property */
     public static final String PROP_FORMDESIGNER_BORDER_COLOR =
         "formDesignerBorderColor"; // NOI18N
-    /** Property name of the gridSize property */
-    public static final String PROP_GRID_SIZE = "gridSize"; // NOI18N
+    /** Property name of the gridX property */
+    public static final String PROP_GRID_X = "gridX"; // NOI18N
+    /** Property name of the gridY property */
+    public static final String PROP_GRID_Y = "gridY"; // NOI18N
     /** Property name of the applyGridToPosition property */
     public static final String PROP_APPLY_GRID_TO_POSITION = "applyGridToPosition"; // NOI18N
     /** Property name of the applyGridToSize property */
@@ -288,7 +290,7 @@ public class FormLoaderSettings implements HelpCtx.Provider   {
      * @return size of horizontal grid.
      */
     public int getGridX() {
-        return getPreferences().getInt(PROP_GRID_SIZE, 10);
+        return getPreferences().getInt(PROP_GRID_X, 10);
     }
 
     /**
@@ -298,7 +300,7 @@ public class FormLoaderSettings implements HelpCtx.Provider   {
      */
     public void setGridX(int value) {
         if (value < MIN_GRID_X) value = MIN_GRID_X;
-        getPreferences().putInt(PROP_GRID_SIZE, value);
+        getPreferences().putInt(PROP_GRID_X, value);
     }
 
     /**
@@ -307,7 +309,7 @@ public class FormLoaderSettings implements HelpCtx.Provider   {
      * @return size of vertical grid.
      */
     public int getGridY() {        
-        return getPreferences().getInt(PROP_GRID_SIZE, 10);
+        return getPreferences().getInt(PROP_GRID_Y, 10);
     }
 
     /**
@@ -317,7 +319,7 @@ public class FormLoaderSettings implements HelpCtx.Provider   {
      */
     public void setGridY(int value) {
         if (value < MIN_GRID_Y) value = MIN_GRID_Y;
-        getPreferences().putInt(PROP_GRID_SIZE, value);
+        getPreferences().putInt(PROP_GRID_Y, value);
     }
 
     /**
