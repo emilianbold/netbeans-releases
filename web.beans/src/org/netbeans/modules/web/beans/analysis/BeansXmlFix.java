@@ -95,7 +95,7 @@ class BeansXmlFix implements Fix {
                 UsageLogger logger = myProject.getLookup().lookup(UsageLogger.class);
                 if ( logger!= null ){
                     logger.log("USG_CDI_BEANS_FIX", BeansXmlFix.class, 
-                            new Object[]{myProject.getClass().getName()});
+                            new Object[]{myProject.getClass().getName()}, true );
                 }
                 if (myFactory != null) {
                     myFactory.restart(myFileObject);
