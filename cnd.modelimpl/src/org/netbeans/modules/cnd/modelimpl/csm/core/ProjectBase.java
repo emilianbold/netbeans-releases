@@ -1315,7 +1315,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
      */
     public final FileImpl onFileIncluded(ProjectBase startProject, CharSequence file, APTPreprocHandler preprocHandler, PostIncludeData postIncludeState, int mode, boolean triggerParsingActivity) throws IOException {
         assert preprocHandler != null : "null preprocHandler for " + file;
-        if (isDisposing()) {
+        if (isDisposing() || startProject.isDisposing()) {
             return null;
         }
         final CsmModelState modelState = ModelImpl.instance().getState();
@@ -1327,7 +1327,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
         FileImpl csmFile = findFile(file, true, FileImpl.FileType.HEADER_FILE, preprocHandler, false, null, null);
 
-        if (isDisposing()) {
+        if (isDisposing() || startProject.isDisposing()) {
             return csmFile;
         }
         APTPreprocHandler.State newState = preprocHandler.getState();
@@ -1381,7 +1381,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
         boolean updateFileContainer = false;
         try {
-            if (isDisposing()) {
+            if (isDisposing() || startProject.isDisposing()) {
                 return csmFile;
             }
             if (triggerParsingActivity) {
