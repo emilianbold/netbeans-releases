@@ -303,6 +303,7 @@
                         <file name="org-netbeans-modules-php-editor-verification-UninitializedVariableHint.instance"/>
                         <file name="org-netbeans-modules-php-editor-verification-WrongOrderOfArgsHint.instance"/>
                         <file name="org-netbeans-modules-php-editor-verification-AccidentalAssignmentHint.instance"/>
+                        <file name="org-netbeans-modules-php-editor-verification-AbstractClassInstantiationHint.instance"/>
                     </folder>
                 </folder>
             </folder>
