@@ -271,13 +271,13 @@ public class ImplementAbstractMethods extends AbstractRule {
 
         FixInfo(ClassScope classScope, LinkedHashSet<String> methodSkeletons, MethodElement lastMethodElement, int newMethodsOffset, int classDeclarationOffset) {
             this.methodSkeletons = new ArrayList<String>(methodSkeletons);
-            className = classScope.getName();
+            className = classScope.getFullyQualifiedName().toString();
             Collections.sort(this.methodSkeletons);
             this.classNameRange = classScope.getNameRange();
             this.classDeclarationOffset = classDeclarationOffset;
             this.newMethodsOffset = newMethodsOffset;
             lastMethodDeclaration = lastMethodElement.asString(PrintAs.NameAndParamsDeclaration);
-            lastMethodOwnerName = lastMethodElement.getType().getFullyQualifiedName().getName();
+            lastMethodOwnerName = lastMethodElement.getType().getFullyQualifiedName().toString();
         }
     }
 }
