@@ -86,6 +86,7 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
     public static final String CONFIG_FILE_NAME = "nb-configuration.xml"; //NOI18N
 
     private static final Logger LOG = Logger.getLogger(M2AuxilaryConfigImpl.class.getName());
+    private static final RequestProcessor RP = new RequestProcessor(M2AuxilaryConfigImpl.class);
     private static final int SAVING_DELAY = 100;
     private final NbMavenProjectImpl project;
     private RequestProcessor.Task savingTask;
@@ -96,7 +97,7 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
 
     public M2AuxilaryConfigImpl(NbMavenProjectImpl proj) {
         this.project = proj;
-        savingTask = RequestProcessor.getDefault().create(new Runnable() {
+        savingTask = RP.create(new Runnable() {
             public @Override void run() {
                 try {
                     project.getProjectDirectory().getFileSystem().runAtomicAction(new AtomicAction() {
