@@ -44,6 +44,8 @@
 
 package org.netbeans.modules.apisupport.project.ui.wizard.project;
 
+import java.awt.Graphics;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -57,6 +59,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+import javax.imageio.ImageIO;
+import javax.swing.Icon;
+import javax.swing.JLabel;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
@@ -225,16 +230,26 @@ public final class NewProjectIterator extends BasicWizardIterator {
         if (useTR) {
             replaceTokens.put("useTR", true);
             fileChanges.add(new CreatedModifiedFiles.AbstractOperation(project) {
-                final String path;
+                final String zipPath;
+                final String iconPath;
                 {
-                    path = getRelativePath(moduleInfo.getResourceDirectoryPath(false), packageName, name, "Project.zip");
-                    addCreatedOrModifiedPath(path, false);
+                    zipPath = getRelativePath(moduleInfo.getResourceDirectoryPath(false), packageName, name, "Project.zip");
+                    iconPath = getRelativePath(moduleInfo.getResourceDirectoryPath(false), packageName, name, ".png");
+                    addCreatedOrModifiedPath(zipPath, false);
+                    addCreatedOrModifiedPath(iconPath, false);
                 }
                 @Override public void run() throws IOException {
-                    FileObject zip = FileUtil.createData(project.getProjectDirectory(), path);
+                    FileObject zip = FileUtil.createData(project.getProjectDirectory(), zipPath);
                     OutputStream os = zip.getOutputStream();
                     try {
                         createProjectZip(os, model.getTemplate());
+                    } finally {
+                        os.close();
+                    }
+                    FileObject icon = FileUtil.createData(project.getProjectDirectory(), iconPath);
+                    os = icon.getOutputStream();
+                    try {
+                        writeIcon(os, model.getTemplate());
                     } finally {
                         os.close();
                     }
@@ -294,6 +309,15 @@ public final class NewProjectIterator extends BasicWizardIterator {
         collectFiles(group.getRootFolder(), files,
                 SharabilityQuery.getSharability(FileUtil.toFile(group.getRootFolder())));
         createZipFile(target, group.getRootFolder(), files);
+    }
+
+    private static void writeIcon(OutputStream target, Project source) throws IOException {
+        Icon icon = ProjectUtils.getInformation(source).getIcon();
+        BufferedImage image = new BufferedImage(icon.getIconWidth(), icon.getIconHeight(), BufferedImage.TYPE_INT_ARGB);
+        Graphics g = image.getGraphics();
+        icon.paintIcon(new JLabel(), g, 0, 0);
+        g.dispose();
+        ImageIO.write(image, "png", target);
     }
     
     private static void collectFiles(FileObject parent, Collection<FileObject> accepted, int parentSharab) {
@@ -377,6 +401,7 @@ public final class NewProjectIterator extends BasicWizardIterator {
             }
             FileObject file = folder.createData(name + "Project", "zip"); // NOI18N
             createProjectZip(file.getOutputStream(), templateProject);
+            // XXX use writeIcon
             String bundlePath = manifestManager.getLocalizingBundle();
             String suffix = ".properties"; // NOI18N
             if (bundlePath != null && bundlePath.endsWith(suffix)) {
