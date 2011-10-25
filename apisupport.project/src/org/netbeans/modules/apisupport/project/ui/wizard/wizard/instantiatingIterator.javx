@@ -7,7 +7,9 @@ package ${PACKAGE_NAME};
 
 import java.awt.Component;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.JComponent;
@@ -25,21 +27,22 @@ import org.openide.util.NbBundle.Messages;
 @TemplateRegistration(folder="${TR_folder}", displayName="#${ITERATOR_CLASS}_displayName", <#if TR_iconBase??>iconBase="${TR_iconBase}", </#if>description="${TR_description}")
 @Messages("${ITERATOR_CLASS}_displayName=${TR_displayName}")
 </#if>
-public final class ${ITERATOR_CLASS} implements WizardDescriptor.InstantiatingIterator {
+public final class ${ITERATOR_CLASS} implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
 
     private int index;
 
     private WizardDescriptor wizard;
-    private WizardDescriptor.Panel[] panels;
+    private List<WizardDescriptor.Panel<WizardDescriptor>> panels;
 
-    private WizardDescriptor.Panel[] getPanels() {
+    private List<WizardDescriptor.Panel<WizardDescriptor>> getPanels() {
         if (panels == null) {
-            panels = new WizardDescriptor.Panel[] {
-                ${PANELS_DEFINITION_BLOCK}
-            };
+            panels = new ArrayList<WizardDescriptor.Panel<WizardDescriptor>>();
+            <#list panelClassNames as c>
+            panels.add(new ${c}());
+            </#list>
             String[] steps = createSteps();
-            for (int i = 0; i < panels.length; i++) {
-                Component c = panels[i].getComponent();
+            for (int i = 0; i < panels.size(); i++) {
+                Component c = panels.get(i).getComponent();
                 if (steps[i] == null) {
                     // Default step name to component name of panel. Mainly
                     // useful for getting the name of the target chooser to
@@ -59,43 +62,43 @@ public final class ${ITERATOR_CLASS} implements WizardDescriptor.InstantiatingIt
         return panels;
     }
 
-    public Set instantiate() throws IOException {
+    @Override public Set<?> instantiate() throws IOException {
         // TODO return set of FileObject (or DataObject) you have created
-        return Collections.EMPTY_SET;
+        return Collections.emptySet();
     }
 
-    public void initialize(WizardDescriptor wizard) {
+    @Override public void initialize(WizardDescriptor wizard) {
         this.wizard = wizard;
     }
 
-    public void uninitialize(WizardDescriptor wizard) {
+    @Override public void uninitialize(WizardDescriptor wizard) {
         panels = null;
     }
 
-    public WizardDescriptor.Panel current() {
-        return getPanels()[index];
+    @Override public WizardDescriptor.Panel<WizardDescriptor> current() {
+        return getPanels().get(index);
     }
 
-    public String name() {
-        return index + 1 + ". from " + getPanels().length;
+    @Override public String name() {
+        return index + 1 + ". from " + getPanels().size();
     }
 
-    public boolean hasNext() {
-        return index < getPanels().length - 1;
+    @Override public boolean hasNext() {
+        return index < getPanels().size() - 1;
     }
 
-    public boolean hasPrevious() {
+    @Override public boolean hasPrevious() {
         return index > 0;
     }
 
-    public void nextPanel() {
+    @Override public void nextPanel() {
         if (!hasNext()) {
             throw new NoSuchElementException();
         }
         index++;
     }
 
-    public void previousPanel() {
+    @Override public void previousPanel() {
         if (!hasPrevious()) {
             throw new NoSuchElementException();
         }
@@ -103,8 +106,8 @@ public final class ${ITERATOR_CLASS} implements WizardDescriptor.InstantiatingIt
     }
 
     // If nothing unusual changes in the middle of the wizard, simply:
-    public void addChangeListener(ChangeListener l) {}
-    public void removeChangeListener(ChangeListener l) {}
+    @Override public void addChangeListener(ChangeListener l) {}
+    @Override public void removeChangeListener(ChangeListener l) {}
     // If something changes dynamically (besides moving between panels), e.g.
     // the number of panels changes in response to user input, then use
     // ChangeSupport to implement add/removeChangeListener and call fireChange
@@ -115,22 +118,14 @@ public final class ${ITERATOR_CLASS} implements WizardDescriptor.InstantiatingIt
     // by NetBeans Wizard API itself rather than needed to be implemented by a
     // client code.
     private String[] createSteps() {
-        String[] beforeSteps = null;
-        Object prop = wizard.getProperty("WizardPanel_contentData");
-        if (prop != null && prop instanceof String[]) {
-            beforeSteps = (String[]) prop;
-        }
-
-        if (beforeSteps == null) {
-            beforeSteps = new String[0];
-        }
-
-        String[] res = new String[(beforeSteps.length - 1) + panels.length];
+        String[] beforeSteps = (String[]) wizard.getProperty("WizardPanel_contentData");
+        assert beforeSteps != null : "This wizard may only be used embedded in the template wizard";
+        String[] res = new String[(beforeSteps.length - 1) + panels.size()];
         for (int i = 0; i < res.length; i++) {
             if (i < (beforeSteps.length - 1)) {
                 res[i] = beforeSteps[i];
             } else {
-                res[i] = panels[i - beforeSteps.length + 1].getComponent().getName();
+                res[i] = panels.get(i - beforeSteps.length + 1).getComponent().getName();
             }
         }
         return res;
