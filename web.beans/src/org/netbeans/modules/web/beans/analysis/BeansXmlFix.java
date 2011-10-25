@@ -48,6 +48,7 @@ import java.util.Iterator;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.common.dd.DDHelper;
+import org.netbeans.modules.web.beans.UsageLogger;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.filesystems.FileObject;
@@ -91,6 +92,11 @@ class BeansXmlFix implements Fix {
                 }
                 DDHelper.createBeansXml(Profile.JAVA_EE_6_FULL, inf,
                         CdiAnalysisResult.BEANS);
+                UsageLogger logger = myProject.getLookup().lookup(UsageLogger.class);
+                if ( logger!= null ){
+                    logger.log("USG_CDI_BEANS_FIX", BeansXmlFix.class, 
+                            new Object[]{myProject.getClass().getName()});
+                }
                 if (myFactory != null) {
                     myFactory.restart(myFileObject);
                 }

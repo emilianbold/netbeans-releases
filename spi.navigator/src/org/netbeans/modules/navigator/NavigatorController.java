@@ -357,8 +357,7 @@ public final class NavigatorController implements LookupListener,
             // #93123: refresh providers list if needed
             if (!oldProviders.equals(providers)) {
                 currentPanels = providers;
-                navigatorTC.setPanels(providers, null);
-                navigatorTC.setSelectedPanel(selPanel);
+                navigatorTC.setPanels(providers, selPanel);
             }
             // #100122: update activated nodes of Navigator TC
             updateActNodesAndTitle();

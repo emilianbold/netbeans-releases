@@ -59,6 +59,7 @@ import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.web.beans.MetaModelSupport;
+import org.netbeans.modules.web.beans.UsageLogger;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
 import org.netbeans.modules.web.beans.navigation.actions.ModelActionStrategy.InspectActionId;
 import org.openide.awt.StatusDisplayer;
@@ -153,6 +154,13 @@ public class InspectCDIAtCaretAction extends AbstractWebBeansAction {
             return;
         }
         
+        UsageLogger logger = project.getLookup().lookup(UsageLogger.class);
+        if (logger != null) {
+            logger.log("USG_CDI_INSPECT_CDI", // NOI18N
+                    InspectCDIAtCaretAction.class, new Object[] { project
+                            .getClass().getName() });
+        }
+
         MetaModelSupport support = new MetaModelSupport(project);
         final MetadataModel<WebBeansModel> metaModel = support.getMetaModel();
         if ( metaModel == null ){
