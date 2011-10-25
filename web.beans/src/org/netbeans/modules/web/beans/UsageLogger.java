@@ -50,6 +50,7 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
 import org.netbeans.api.project.Project;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.util.NbBundle;
 
 
@@ -57,15 +58,18 @@ import org.openide.util.NbBundle;
  * @author ads
  *
  */
+@ProjectServiceProvider(service=UsageLogger.class, projectType = 
+    {"org-netbeans-modules-java-j2seproject",
+    "org-netbeans-modules-j2ee-ejbjarproject", 
+    "org-netbeans-modules-j2ee-clientproject", 
+    "org-netbeans-modules-web-project"})
 public class UsageLogger {
+    private static final Logger LOG = Logger.getLogger("org.netbeans.ui.metrics.cdi");   // NOI18N
     
     public UsageLogger(Project project){
         myProject = new WeakReference<Project>( project );
         myMessages = new CopyOnWriteArraySet<String>();
     }
-    
-    private static final Logger LOG = Logger.getLogger("org.netbeans.ui.metrics.cdi");   // NOI18N
-    
     
     public void log(String message , Class<?> clazz, Object[] params){
         log(message, clazz, params , false );
