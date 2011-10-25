@@ -47,8 +47,10 @@ package org.netbeans.modules.apisupport.project.ui.wizard.wizard;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import org.netbeans.modules.apisupport.project.ui.wizard.common.CreatedModifiedFiles;
@@ -95,9 +97,8 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         Map<String, String> basicTokens = new HashMap<String, String>();
         basicTokens.put("PACKAGE_NAME", getPackageName()); // NOI18N
         basicTokens.put("WIZARD_PREFIX", prefix); // NOI18N
-        
-        StringBuilder panelsDefinitionBlock = new StringBuilder();
-        String newLine = System.getProperty("line.separator") + "                "; // NOI18N
+
+        List<String> panelClassNames = new ArrayList<String>();
         
         // Create wizard and visual panels
         for (int stepNumber = 1; stepNumber < (nOfSteps + 1); stepNumber++) {
@@ -123,22 +124,20 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
             path = getDefaultPackagePath(wizardPanelClass + ".java", false); // NOI18N
             template = CreatedModifiedFiles.getTemplate("wizardPanel.java"); // NOI18N
             cmf.add(cmf.createFileWithSubstitutions(path, template, replaceTokens));
-            
-            panelsDefinitionBlock.append("new ").append(wizardPanelClass).append("()"); // NOI18N
-            if (stepNumber != nOfSteps) {
-                panelsDefinitionBlock.append(',').append(newLine);
-            }
+
+            panelClassNames.add(wizardPanelClass);
         }
 
         cmf.add(cmf.addModuleDependency("org.openide.util")); // NOI18N
         cmf.add(cmf.addModuleDependency("org.openide.dialogs")); // NOI18N
         cmf.add(cmf.addModuleDependency("org.openide.awt")); // NOI18N
         
+        Map<String,Object> replaceTokens = new HashMap<String,Object>(basicTokens);
+        replaceTokens.put("panelClassNames", panelClassNames); // NOI18N
+
         // generate .java for wizard iterator
         if (fileTemplateType || branching) {
             String iteratorClass = prefix + "WizardIterator"; // NOI18N
-            Map<String, String> replaceTokens = new HashMap<String, String>(basicTokens);
-            replaceTokens.put("PANELS_DEFINITION_BLOCK", panelsDefinitionBlock.toString()); // NOI18N
             replaceTokens.put("ITERATOR_CLASS", iteratorClass); // NOI18N
             
             if (fileTemplateType) {
@@ -193,8 +192,6 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
             String path = getDefaultPackagePath(iteratorClass + ".java", false); // NOI18N
             cmf.add(cmf.createFileWithSubstitutions(path, template, replaceTokens));
         } else {
-            Map<String, String> replaceTokens = new HashMap<String, String>(basicTokens);
-            replaceTokens.put("PANELS_DEFINITION_BLOCK", panelsDefinitionBlock.toString()); // NOI18N
             String path = getDefaultPackagePath(prefix + "WizardAction.java", false); // NOI18N
             FileObject template = CreatedModifiedFiles.getTemplate("sampleAction.java"); // NOI18N
             cmf.add(cmf.createFileWithSubstitutions(path, template, replaceTokens));
