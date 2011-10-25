@@ -51,6 +51,7 @@ import org.netbeans.jellytools.EditorWindowOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JLabelOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.test.j2ee.EJBValidation;
@@ -138,6 +139,9 @@ public class AddCMPFieldTest extends AddMethodBase {
         dialog.ok();
         editor.txtEditorPane().waitText(methodName);
         if (saveFile) {
+            editor.waitModified(true);
+            // need to wait because sometimes is save() called sooner than it can take effect
+            new EventTool().waitNoEvent(300);
             editor.save();
         }
 
