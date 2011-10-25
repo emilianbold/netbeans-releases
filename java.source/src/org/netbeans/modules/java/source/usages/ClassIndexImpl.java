@@ -78,24 +78,13 @@ public abstract class ClassIndexImpl {
     }
     
     public static enum UsageType {
-
-        SUPER_CLASS( 0 ),
-        SUPER_INTERFACE( 1 ),
-        FIELD_REFERENCE( 2 ), 
-        METHOD_REFERENCE( 3 ),
-        TYPE_REFERENCE (4);
-
-        private int offset;
-
-        UsageType( final int offset) {
-            this.offset = offset;
-        }
-
-        int getOffset () {
-            return this.offset;
-        }
+        SUPER_CLASS,
+        SUPER_INTERFACE,
+        FIELD_REFERENCE,
+        METHOD_REFERENCE,
+        TYPE_REFERENCE;
     }
-    
+
     public static final ThreadLocal<AtomicBoolean> cancel = new ThreadLocal<AtomicBoolean> ();       
     public static ClassIndexFactory FACTORY;
     private static final Logger LOG = Logger.getLogger(ClassIndexImpl.class.getName());
