@@ -115,16 +115,8 @@ public final class ${ITERATOR_CLASS} implements WizardDescriptor.InstantiatingIt
     // by NetBeans Wizard API itself rather than needed to be implemented by a
     // client code.
     private String[] createSteps() {
-        String[] beforeSteps = null;
-        Object prop = wizard.getProperty("WizardPanel_contentData");
-        if (prop != null && prop instanceof String[]) {
-            beforeSteps = (String[]) prop;
-        }
-
-        if (beforeSteps == null) {
-            beforeSteps = new String[0];
-        }
-
+        String[] beforeSteps = (String[]) wizard.getProperty("WizardPanel_contentData");
+        assert beforeSteps != null : "This wizard may only be used embedded in the template wizard";
         String[] res = new String[(beforeSteps.length - 1) + panels.length];
         for (int i = 0; i < res.length; i++) {
             if (i < (beforeSteps.length - 1)) {
