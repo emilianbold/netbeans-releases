@@ -610,7 +610,6 @@ public class SourceAnalyser {
                     scan(node.getImplementsClause(), p);
                     state = State.OTHER;
                     scan(node.getMembers(), p);
-                    addAndClearUnusedPkgImports(name, p);
                     activeClass.pop();
                 } finally {
                     enclosingElement = old;
@@ -619,6 +618,9 @@ public class SourceAnalyser {
             if (!errorInDecl) {
                 if (this.rsList != null)
                     this.rsList.add (name.first);
+            }
+            if (topLevel) {
+                addAndClearUnusedPkgImports(name, p);
             }
             return null;
         }
