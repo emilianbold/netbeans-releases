@@ -2581,7 +2581,7 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
             }
         }
 
-        private void avoidDoubleBuffering(Component comp) {
+        protected void avoidDoubleBuffering(Component comp) {
             if (comp instanceof JComponent) {
                 ((JComponent)comp).setDoubleBuffered(false);
             }
@@ -3194,6 +3194,16 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
             super.init();
         }
 
+        Boolean doubleBuffered = null;
+        @Override
+        protected void avoidDoubleBuffering(Component comp) {
+            // Issue 204184
+            if (doubleBuffered == null) {
+                doubleBuffered = comp.isDoubleBuffered();
+            }
+            super.avoidDoubleBuffering(comp);
+        }
+
         /** Overrides end(Point,int) in ComponentDrag to support adding new components
          */
         @Override
@@ -3217,6 +3227,10 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
                     else {
                         newLayout = oldLayout = false;
                         constraints = null;
+                    }
+                    if ((doubleBuffered != null) && (showingComponents[0] instanceof JComponent)) {
+                        // Issue 204184
+                        ((JComponent)showingComponents[0]).setDoubleBuffered(doubleBuffered);
                     }
                     addedComponent = movingComponents[0];
                     LayoutComponent layoutComponent = isDraggableLayoutComponent()

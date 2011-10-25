@@ -44,21 +44,18 @@
 
 package org.netbeans.api.java.source;
 
+import com.sun.source.tree.VariableTree;
+import com.sun.source.util.TreePathScanner;
 import java.io.File;
 import java.io.OutputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.source.CancellableTask;
-import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.java.source.SourceUtilsTestUtil;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.source.usages.IndexUtil;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
@@ -205,4 +202,29 @@ public class TypeMirrorHandleTest extends NbTestCase {
         assertTrue(finished[0]);
     }
     
+    public void testTypeMirrorHandleUnion() throws Exception {
+        prepareTest();
+        writeIntoFile(testSource, "package test; public class Test { void t() { try { throw new Exception(); } catch (java.io.IOException | javax.swing.text.BadLocationException e) { } } }");
+        ClassPath empty = ClassPathSupport.createClassPath(new URL[0]);
+        JavaSource js = JavaSource.create(ClasspathInfo.create(ClassPathSupport.createClassPath(SourceUtilsTestUtil.getBootClassPath().toArray(new URL[0])), empty, empty), testSource);
+
+        js.runUserActionTask(new Task<CompilationController>() {
+
+            public void run(final CompilationController info) throws Exception {
+                info.toPhase(Phase.RESOLVED);
+                new TreePathScanner<Void, Void>() {
+                    @Override public Void visitVariable(VariableTree node, Void p) {
+                        if (node.getName().contentEquals("e")) {
+                            TypeMirror tm = info.getTrees().getTypeMirror(getCurrentPath());
+
+                            assertEquals(TypeKind.UNION, tm.getKind());
+
+                            assertTrue(info.getTypes().isSameType(tm, TypeMirrorHandle.create(tm).resolve(info)));
+                        }
+                        return super.visitVariable(node, p);
+                    }
+                }.scan(info.getCompilationUnit(), null);
+            }
+        }, true);
+    }
 }
