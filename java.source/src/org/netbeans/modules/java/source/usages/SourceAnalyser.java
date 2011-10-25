@@ -44,49 +44,27 @@
 
 package org.netbeans.modules.java.source.usages;
 
-import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.ErroneousTree;
-import com.sun.source.tree.IdentifierTree;
-import com.sun.source.tree.ImportTree;
-import com.sun.source.tree.MemberSelectTree;
-import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.NewClassTree;
-import com.sun.source.tree.ParameterizedTypeTree;
-import com.sun.source.tree.Tree;
-import com.sun.source.tree.VariableTree;
+import com.sun.source.tree.*;
 import com.sun.source.util.TreeScanner;
 import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.code.Kinds;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
-import com.sun.tools.javac.code.Types;
-import com.sun.tools.javac.comp.TransTypes;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.util.Name;
 import com.sun.tools.javac.util.Names;
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Stack;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.lang.model.element.*;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
@@ -114,13 +92,13 @@ import org.openide.util.Parameters;
  *
  * @author Tomas Zezula
  */
-public class SourceAnalyser {    
-    
+public class SourceAnalyser {
+
     private final ClassIndexImpl.Writer writer;
     private final List<Pair<Pair<String, String>, Object[]>> references;
     private final Set<Pair<String,String>> toDelete;
     private static final boolean fullIndex = Boolean.getBoolean(SourceAnalyser.class.getName()+".fullIndex");   //NOI18N
-    
+
     /** Creates a new instance of SourceAnalyser */
     SourceAnalyser (final @NonNull ClassIndexImpl.Writer writer) {
         Parameters.notNull("writer", writer);   //NOI18N
@@ -128,8 +106,8 @@ public class SourceAnalyser {
         this.references = new ArrayList<Pair<Pair<String, String>, Object[]>>();
         this.toDelete = new HashSet<Pair<String,String>> ();
     }
-    
-    
+
+
     public void store () throws IOException {
         if (this.references.size() > 0 || this.toDelete.size() > 0) {
             try {
@@ -139,8 +117,8 @@ public class SourceAnalyser {
                 this.toDelete.clear();
             }
         }
-    }    
-    
+    }
+
     public void analyse (final Iterable<? extends CompilationUnitTree> data, JavacTaskImpl jt, JavaFileManager manager,
         final CompileTuple tuple,
         Set<? super ElementHandle<TypeElement>> newTypes, /*out*/boolean[] mainMethod) throws IOException {
@@ -204,7 +182,7 @@ public class SourceAnalyser {
             }
         }
     }
-    
+
     void analyseUnitAndStore (final CompilationUnitTree cu, final JavacTaskImpl jt, final JavaFileManager manager) throws IOException {
         try {
             final Map<Pair<String,String>,Data> usages = new HashMap<Pair<String,String>,Data> ();
@@ -225,11 +203,11 @@ public class SourceAnalyser {
             this.references.clear();
         }
     }
-    
+
     public void delete (final Pair<String,String>name) throws IOException {
         this.toDelete.add(name);
-    }        
-    
+    }
+
     private void addClassReferences (final Pair<String,String> name, final Data data) {
         assert name != null;
         assert data != null;
@@ -255,9 +233,9 @@ public class SourceAnalyser {
         result[1] = fidents.toString();
         result[2] = idents.toString();
         this.references.add(Pair.<Pair<String,String>,Object[]>of(name,result));
-    }    
-    
-    
+    }
+
+
     static class Data {
         final Map<String, Set<ClassIndexImpl.UsageType>> usages = new HashMap<String, Set<ClassIndexImpl.UsageType>>();
         final Set<CharSequence> featuresIdents = new HashSet<CharSequence>();
@@ -265,14 +243,13 @@ public class SourceAnalyser {
     }
 
     static class UsagesVisitor extends TreeScanner<Void,Map<Pair<String,String>,Data>> {
-        
+
         enum State {EXTENDS, IMPLEMENTS, GT, OTHER, IMPORT, PACKAGE_ANN};
-        
+
         private final Stack<Pair<String,String>> activeClass;
         private final Name errorName;
-        private final CompilationUnitTree cu;        
-        private final Types types;
-        private final TransTypes trans;
+        private final Name pkgImportName;
+        private final CompilationUnitTree cu;
         private final URL siblingUrl;
         private final String sourceName;
         private final boolean signatureFiles;
@@ -315,10 +292,10 @@ public class SourceAnalyser {
             this.importIdents = new HashSet<CharSequence>();
             this.packageAnnotationIdents = new HashSet<CharSequence>();
             this.packageAnnotations = new HashSet<Pair<Symbol, ClassIndexImpl.UsageType>>();
-            this.errorName = Names.instance(jt.getContext()).error;
+            final Names names = Names.instance(jt.getContext());
+            this.errorName = names.error;
+            this.pkgImportName = names.asterisk;
             this.state = State.OTHER;
-            this.types = com.sun.tools.javac.code.Types.instance(jt.getContext());
-            this.trans = TransTypes.instance(jt.getContext());
             this.cu = cu;
             this.signatureFiles = true;
             this.virtual = tuple.virtual;
@@ -347,10 +324,10 @@ public class SourceAnalyser {
             this.importIdents = new HashSet<CharSequence>();
             this.packageAnnotationIdents = new HashSet<CharSequence>();
             this.packageAnnotations = new HashSet<Pair<Symbol, ClassIndexImpl.UsageType>>();
-            this.errorName = Names.instance(jt.getContext()).error;
+            final Names names = Names.instance(jt.getContext());
+            this.errorName = names.error;
+            this.pkgImportName = names.asterisk;
             this.state = State.OTHER;
-            this.types = com.sun.tools.javac.code.Types.instance(jt.getContext());
-            this.trans = TransTypes.instance(jt.getContext());
             this.cu = cu;
             this.signatureFiles = false;
             this.siblingUrl = sibling.toUri().toURL();
@@ -360,15 +337,10 @@ public class SourceAnalyser {
             this.virtual = false;
         }
 
-        final Types getTypes() {
-            return types;
-        }
 
-        final TransTypes getTransTypes () {
-            return trans;
-        }
-
-        public @Override Void scan(Tree node, Map<Pair<String,String>, Data> p) {
+        @Override
+        @CheckForNull
+        public Void scan(@NonNull final Tree node, @NonNull final Map<Pair<String,String>, Data> p) {
             if (node == null) {
                 return null;
             }
@@ -377,7 +349,8 @@ public class SourceAnalyser {
         }
 
         @Override
-        public Void visitCompilationUnit(CompilationUnitTree node, Map<Pair<String,String>, Data> p) {
+        @CheckForNull
+        public Void visitCompilationUnit(@NonNull final CompilationUnitTree node, @NonNull final Map<Pair<String,String>, Data> p) {
             State oldState = state;
             try {
                 state = State.PACKAGE_ANN;
@@ -428,7 +401,9 @@ public class SourceAnalyser {
             return null;
         }
 
-        public @Override Void visitMemberSelect(final MemberSelectTree node,  final Map<Pair<String,String>, Data> p) {
+        @Override
+        @CheckForNull
+        public Void visitMemberSelect(@NonNull final MemberSelectTree node,  @NonNull final Map<Pair<String,String>, Data> p) {
             handleVisitIdentSelect (((JCTree.JCFieldAccess)node).sym, node.getIdentifier(), p);
             State oldState = this.state;
             this.state = (this.state == State.IMPORT || state == State.PACKAGE_ANN) ? state : State.OTHER;
@@ -437,21 +412,28 @@ public class SourceAnalyser {
             return ret;
         }
 
-        public @Override Void visitIdentifier(final IdentifierTree node, final Map<Pair<String,String>, Data> p) {
+        @Override
+        @CheckForNull
+        public Void visitIdentifier(@NonNull final IdentifierTree node, @NonNull final Map<Pair<String,String>, Data> p) {
             handleVisitIdentSelect (((JCTree.JCIdent)node).sym, node.getName(), p);
             return super.visitIdentifier(node, p);
         }
-        
-        public @Override Void visitImport (final ImportTree node, final Map<Pair<String,String>, Data> p) {
+
+        @Override
+        @CheckForNull
+        public Void visitImport (@NonNull final ImportTree node, @NonNull final Map<Pair<String,String>, Data> p) {
             this.isStaticImport = node.isStatic();
             final Tree qit = node.getQualifiedIdentifier();
-            isPkgImport = qit.getKind() == Tree.Kind.MEMBER_SELECT && "*".contentEquals(((MemberSelectTree)qit).getIdentifier()); //NOI18N
+            isPkgImport = qit.getKind() == Tree.Kind.MEMBER_SELECT && pkgImportName == (((MemberSelectTree)qit).getIdentifier());
             final Void ret = super.visitImport(node, p);
             isStaticImport = isPkgImport = false;
             return ret;
         }
-                                        
-        private void handleVisitIdentSelect (final Symbol sym, final CharSequence name, final Map<Pair<String,String>, Data> p) {
+
+        private void handleVisitIdentSelect (
+                @NullAllowed final Symbol sym,
+                @NonNull final CharSequence name,
+                @NonNull final Map<Pair<String,String>, Data> p) {
             if (!activeClass.empty()) {
                 addIdent(activeClass.peek(), name, p, false);
                 if (sym != null) {
@@ -525,11 +507,13 @@ public class SourceAnalyser {
                             }
                         }
                     }
-                }                
+                }
             }
         }
-        
-        public @Override Void visitParameterizedType(ParameterizedTypeTree node, final Map<Pair<String,String>, Data> p) {
+
+        @Override
+        @CheckForNull
+        public  Void visitParameterizedType(@NonNull final ParameterizedTypeTree node, @NonNull final Map<Pair<String,String>, Data> p) {
             scan(node.getType(), p);
             State currState = this.state;
             this.state = State.GT;
@@ -539,6 +523,7 @@ public class SourceAnalyser {
         }
 
         @Override
+        @CheckForNull
         public Void visitClass (@NonNull final ClassTree node, @NonNull final Map<Pair<String,String>,Data> p) {
             final ClassSymbol sym = ((JCTree.JCClassDecl)node).sym;
             boolean errorInDecl = false;
@@ -638,7 +623,9 @@ public class SourceAnalyser {
             return null;
         }
 
-        public @Override Void visitNewClass(NewClassTree node, Map<Pair<String,String>,Data> p) {
+        @Override
+        @CheckForNull
+        public Void visitNewClass(@NonNull final NewClassTree node, @NonNull final Map<Pair<String,String>,Data> p) {
             final Symbol sym = ((JCTree.JCNewClass)node).constructor;
             if (sym != null) {
                 final Symbol owner = sym.getEnclosingElement();
@@ -653,7 +640,9 @@ public class SourceAnalyser {
             return super.visitNewClass (node,p);
         }
 
-        public @Override Void visitErroneous(final  ErroneousTree tree, Map<Pair<String,String>,Data> p) {
+        @Override
+        @CheckForNull
+        public Void visitErroneous(@NonNull final ErroneousTree tree, @NonNull final Map<Pair<String,String>,Data> p) {
             List<? extends Tree> trees = tree.getErrorTrees();
             for (Tree t : trees) {
                 this.scan(t,p);
@@ -662,7 +651,8 @@ public class SourceAnalyser {
         }
 
         @Override
-        public Void visitMethod(MethodTree node, Map<Pair<String,String>, Data> p) {
+        @CheckForNull
+        public Void visitMethod(@NonNull final MethodTree node, @NonNull final Map<Pair<String,String>, Data> p) {
             Element old = enclosingElement;
             try {
                 enclosingElement = ((JCMethodDecl) node).sym;
@@ -677,8 +667,8 @@ public class SourceAnalyser {
         }
 
         @Override
-        public Void visitVariable(VariableTree node, Map<Pair<String, String>, Data> p) {
-            
+        @CheckForNull
+        public Void visitVariable(@NonNull final VariableTree node, @NonNull final Map<Pair<String, String>, Data> p) {
             Symbol s = ((JCTree.JCVariableDecl)node).sym;
             if (s != null && s.owner != null && (s.owner.getKind().isClass() || s.owner.getKind().isInterface())) {
                 addIdent(activeClass.peek(), node.getName(), p, true);
@@ -694,9 +684,13 @@ public class SourceAnalyser {
                     addUsage(s, nameOfCU, data, ClassIndexImpl.UsageType.TYPE_REFERENCE);
                 }
                 for (Symbol s : staticImports) {
-                    addUsage(s, nameOfCU, data, ClassIndexImpl.UsageType.TYPE_REFERENCE);
-                    addUsage(s, nameOfCU, data, ClassIndexImpl.UsageType.METHOD_REFERENCE);
-                    addUsage(s, nameOfCU, data, ClassIndexImpl.UsageType.FIELD_REFERENCE);
+                    addUsage(
+                        s,
+                        nameOfCU,
+                        data,
+                        ClassIndexImpl.UsageType.TYPE_REFERENCE,
+                        ClassIndexImpl.UsageType.METHOD_REFERENCE,
+                        ClassIndexImpl.UsageType.FIELD_REFERENCE);
                 }
                 for (CharSequence s : importIdents) {
                     addIdent(nameOfCU, s, data, false);
@@ -728,7 +722,10 @@ public class SourceAnalyser {
          * @return a inferred name
          * @throws IllegalArgumentException when file cannot be inferred.
          */
-        private @NonNull String inferBinaryName(final JavaFileManager jfm, final javax.tools.JavaFileObject jfo) throws IllegalArgumentException {
+        @NonNull
+        private String inferBinaryName(
+                @NonNull final JavaFileManager jfm,
+                @NonNull final javax.tools.JavaFileObject jfo) throws IllegalArgumentException {
             String result = jfm.inferBinaryName(StandardLocation.SOURCE_PATH, jfo);
             if (result != null) {
                 return result;
@@ -761,12 +758,12 @@ public class SourceAnalyser {
                 @NullAllowed final Symbol sym,
                 @NonNull final Pair<String,String>owner,
                 @NonNull final Map<Pair<String,String>,Data> map,
-                @NonNull final ClassIndexImpl.UsageType type) {
+                @NonNull final ClassIndexImpl.UsageType... types) {
             assert map != null;
-            assert type != null;
+            assert types != null;
             if (sym != null) {
                 final String className = encodeClassName(sym);
-                addUsage(className, owner, map, type);
+                addUsage(className, owner, map, types);
                 final Symbol encElm = sym.getEnclosingElement();
                 if (encElm.getKind() == ElementKind.PACKAGE) {
                     unusedPkgImports.remove(encElm);
@@ -778,7 +775,7 @@ public class SourceAnalyser {
             @NullAllowed final String className,
             @NonNull final Pair<String,String>owner,
             @NonNull final Map<Pair<String,String>,Data> map,
-            @NonNull final ClassIndexImpl.UsageType type) {
+            @NonNull final ClassIndexImpl.UsageType... types) {
             if (className != null) {
                 final Data data = getData(owner, map);
                 Set<ClassIndexImpl.UsageType> usageType = data.usages.get (className);
@@ -786,11 +783,17 @@ public class SourceAnalyser {
                     usageType = EnumSet.noneOf(ClassIndexImpl.UsageType.class);
                     data.usages.put (className, usageType);
                 }
-                usageType.add (type);
+                for (ClassIndexImpl.UsageType type : types) {
+                    usageType.add (type);
+                }
             }
         }
 
-        private void addIdent (final Pair<String,String>owner, final CharSequence ident, final Map<Pair<String,String>,Data> map, final boolean feature) {
+        private void addIdent (
+                @NonNull final Pair<String,String>owner,
+                @NonNull final CharSequence ident,
+                @NonNull final Map<Pair<String,String>,Data> map,
+                final boolean feature) {
             assert owner != null;
             assert ident != null;
             assert map != null;
@@ -799,14 +802,14 @@ public class SourceAnalyser {
                 if (fullIndex) {
                     data.idents.add(ident);
                 }
-                if (feature) {                
+                if (feature) {
                     data.featuresIdents.add(ident);
                 }
-            }            
-            
+            }
         }
-        
-        private Data getData (final Pair<String,String>owner, final Map<Pair<String,String>, Data> map) {
+
+        @NonNull
+        private Data getData (@NonNull final Pair<String,String>owner, @NonNull final Map<Pair<String,String>, Data> map) {
             Data data = map.get(owner);
             if (data == null) {
                 data = new Data ();
@@ -814,8 +817,8 @@ public class SourceAnalyser {
             }
             return data;
         }
-        
-        private boolean hasErrorName (Symbol cs) {
+
+        private boolean hasErrorName (@NullAllowed Symbol cs) {
             while (cs != null) {
                 if (cs.name == errorName) {
                     return true;
@@ -823,7 +826,7 @@ public class SourceAnalyser {
                 cs = cs.getEnclosingElement();
             }
             return false;
-        }        
+        }
 
         @CheckForNull
         private static String encodeClassName (@NonNull final Symbol sym) {
@@ -843,8 +846,9 @@ public class SourceAnalyser {
             }
             return toEncode == null ? null : ClassFileUtil.encodeClassName(toEncode);
         }
-        
-        private static String getResourceName (final CompilationUnitTree cu) {
+
+        @CheckForNull
+        private static String getResourceName (@NullAllowed final CompilationUnitTree cu) {
             if (cu instanceof JCTree.JCCompilationUnit) {
                 JavaFileObject jfo = ((JCTree.JCCompilationUnit)cu).sourcefile;
                 if (jfo != null) {
@@ -866,6 +870,5 @@ public class SourceAnalyser {
             }
             return null;
         }
-    }        
-    
+    }
 }
