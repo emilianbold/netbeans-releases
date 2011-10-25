@@ -71,6 +71,14 @@ final class CreateInterceptorBinding extends CreateAnnotationFix {
         return NbBundle.getMessage(CreateQualifierFix.class, 
                 "LBL_FixCreateInterceptor" , getName() , getPackage() );
     }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.hints.CreateAnnotationFix#getUsageLogMessage()
+     */
+    @Override
+    protected String getUsageLogMessage() {
+        return "USG_CDI_CREATE_IBINDING_FIX";      // NOI18N
+    }
 
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.hints.CreateAnnotationFix#getTemplate()
