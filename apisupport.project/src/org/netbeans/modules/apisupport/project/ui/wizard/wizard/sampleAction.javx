@@ -22,30 +22,26 @@ import org.openide.WizardDescriptor;
 // @ActionReference(path="Menu/Tools", position=...)
 public final class ${WIZARD_PREFIX}WizardAction implements ActionListener {
 
-    public @Override void actionPerformed(ActionEvent e) {
-        WizardDescriptor wiz = new WizardDescriptor() {
-            {
-                List<WizardDescriptor.Panel<WizardDescriptor>> panels = new ArrayList<WizardDescriptor.Panel<WizardDescriptor>>();
-                <#list panelClassNames as c>
-                panels.add(new ${c}());
-                </#list>
-                String[] steps = new String[panels.size()];
-                for (int i = 0; i < panels.size(); i++) {
-                    Component c = panels.get(i).getComponent();
-                    // Default step name to component name of panel.
-                    steps[i] = c.getName();
-                    if (c instanceof JComponent) { // assume Swing components
-                        JComponent jc = (JComponent) c;
-                        jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, i);
-                        jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps);
-                        jc.putClientProperty(WizardDescriptor.PROP_AUTO_WIZARD_STYLE, true);
-                        jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DISPLAYED, true);
-                        jc.putClientProperty(WizardDescriptor.PROP_CONTENT_NUMBERED, true);
-                    }
-                }
-                setPanelsAndSettings(new WizardDescriptor.ArrayIterator<WizardDescriptor>(panels), this);
+    @Override public void actionPerformed(ActionEvent e) {
+        List<WizardDescriptor.Panel<WizardDescriptor>> panels = new ArrayList<WizardDescriptor.Panel<WizardDescriptor>>();
+        <#list panelClassNames as c>
+        panels.add(new ${c}());
+        </#list>
+        String[] steps = new String[panels.size()];
+        for (int i = 0; i < panels.size(); i++) {
+            Component c = panels.get(i).getComponent();
+            // Default step name to component name of panel.
+            steps[i] = c.getName();
+            if (c instanceof JComponent) { // assume Swing components
+                JComponent jc = (JComponent) c;
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, i);
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps);
+                jc.putClientProperty(WizardDescriptor.PROP_AUTO_WIZARD_STYLE, true);
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DISPLAYED, true);
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_NUMBERED, true);
             }
-        };
+        }
+        WizardDescriptor wiz = new WizardDescriptor(new WizardDescriptor.ArrayIterator<WizardDescriptor>(panels));
         // {0} will be replaced by WizardDesriptor.Panel.getComponent().getName()
         wiz.setTitleFormat(new MessageFormat("{0}"));
         wiz.setTitle("...dialog title...");
