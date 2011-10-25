@@ -6,7 +6,6 @@
 package ${PACKAGE_NAME};
 
 import java.awt.Component;
-import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.MessageFormat;
@@ -24,23 +23,15 @@ public final class ${WIZARD_PREFIX}WizardAction implements ActionListener {
     private WizardDescriptor.Panel[] panels;
 
     public @Override void actionPerformed(ActionEvent e) {
-        WizardDescriptor wizardDescriptor = new WizardDescriptor(getPanels());
+        WizardDescriptor wiz = new WizardDescriptor(getPanels());
         // {0} will be replaced by WizardDesriptor.Panel.getComponent().getName()
-        wizardDescriptor.setTitleFormat(new MessageFormat("{0}"));
-        wizardDescriptor.setTitle("Your wizard dialog title here");
-        Dialog dialog = DialogDisplayer.getDefault().createDialog(wizardDescriptor);
-        dialog.setVisible(true);
-        dialog.toFront();
-        boolean cancelled = wizardDescriptor.getValue() != WizardDescriptor.FINISH_OPTION;
-        if (!cancelled) {
+        wiz.setTitleFormat(new MessageFormat("{0}"));
+        wiz.setTitle("...dialog title...");
+        if (DialogDisplayer.getDefault().notify(wiz) == WizardDescriptor.FINISH_OPTION) {
             // do something
         }
     }
 
-    /**
-     * Initialize panels representing individual wizard's steps and sets
-     * various properties for them influencing wizard appearance.
-     */
     private WizardDescriptor.Panel[] getPanels() {
         if (panels == null) {
             panels = new WizardDescriptor.Panel[] {
@@ -55,17 +46,11 @@ public final class ${WIZARD_PREFIX}WizardAction implements ActionListener {
                 steps[i] = c.getName();
                 if (c instanceof JComponent) { // assume Swing components
                     JComponent jc = (JComponent) c;
-                    // Sets step number of a component
-                    // TODO if using org.openide.dialogs >= 7.8, can use WizardDescriptor.PROP_*:
-                    jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i));
-                    // Sets steps names for a panel
-                    jc.putClientProperty("WizardPanel_contentData", steps);
-                    // Turn on subtitle creation on each step
-                    jc.putClientProperty("WizardPanel_autoWizardStyle", Boolean.TRUE);
-                    // Show steps on the left side with the image on the background
-                    jc.putClientProperty("WizardPanel_contentDisplayed", Boolean.TRUE);
-                    // Turn on numbering of all steps
-                    jc.putClientProperty("WizardPanel_contentNumbered", Boolean.TRUE);
+                    jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, i);
+                    jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps);
+                    jc.putClientProperty(WizardDescriptor.PROP_AUTO_WIZARD_STYLE, true);
+                    jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DISPLAYED, true);
+                    jc.putClientProperty(WizardDescriptor.PROP_CONTENT_NUMBERED, true);
                 }
             }
         }
