@@ -1009,7 +1009,8 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
     // XXX(ttran) see JDK bug 5092094 for details
     
     private static boolean isModalExcludedSupported() {
-        return Toolkit.getDefaultToolkit().isModalExclusionTypeSupported(Dialog.ModalExclusionType.APPLICATION_EXCLUDE);
+        return Toolkit.getDefaultToolkit().isModalExclusionTypeSupported(Dialog.ModalExclusionType.APPLICATION_EXCLUDE)
+                && !Utilities.isMac(); //#198339 - modal exclusion doesn't seem to work on mac
     }
     
     private static void setModalExcluded(Window window) {
