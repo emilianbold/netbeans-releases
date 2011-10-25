@@ -58,7 +58,9 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
+import javax.swing.JSpinner;
 import javax.swing.LayoutStyle;
+import javax.swing.SpinnerNumberModel;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -84,6 +86,7 @@ public final class FormEditorCustomizer extends JPanel implements  ActionListene
     private JComboBox cbComponentNames = new JComboBox ();
     private JComboBox cbListenerStyle = new JComboBox ();
     private JComboBox cbAutoI18n = new JComboBox();
+    private JSpinner spGridSize = new JSpinner(new SpinnerNumberModel(10, 2, 100, 1));
     private PropertyPanel guideLineColEditor = new PropertyPanel();
     private PropertyPanel selectionBorderColEditor = new PropertyPanel();    
 
@@ -124,6 +127,7 @@ public final class FormEditorCustomizer extends JPanel implements  ActionListene
         JLabel guideLineColLabel = new JLabel();
         JLabel listenerStyleLabel = new JLabel();
         JLabel autoI18nLabel = new JLabel();
+        JLabel gridSizeLabel = new JLabel();
         loc(variableModifierLabel, "Variable_Modifier"); // NOI18N
         loc(layoutStyleLabel, "Layout_Style"); // NOI18N
         loc(componentNamesLabel,"Component_Names"); // NOI18N
@@ -131,6 +135,7 @@ public final class FormEditorCustomizer extends JPanel implements  ActionListene
         loc(autoI18nLabel, "Auto_I18n"); // NOI18N
         loc(selectionBorderColLabel, "Selection_Border_Color"); // NOI18N
         loc(guideLineColLabel, "Guiding_Line_Color"); // NOI18N
+        loc(gridSizeLabel, "Grid_Size"); // NOI18N
 
         generateComponetsLabel.setToolTipText(loc("Generate_Components_Hint")); // NOI18N
         variableModifierLabel.setToolTipText(loc("HINT_VARIABLES_MODIFIER")); // NOI18N
@@ -140,6 +145,7 @@ public final class FormEditorCustomizer extends JPanel implements  ActionListene
         autoI18nLabel.setToolTipText(loc("HINT_AUTO_RESOURCE_GLOBAL")); // NOI18N
         guideLineColLabel.setToolTipText(loc("HINT_GUIDING_LINE_COLOR")); // NOI18N
         selectionBorderColLabel.setToolTipText(loc("HINT_SELECTION_BORDER_COLOR")); // NOI18N
+        gridSizeLabel.setToolTipText(loc("HINT_GRID_SIZE")); // NOI18N
         cbFold.setToolTipText(loc("HINT_FOLD_GENERATED_CODE")); // NOI18N
         cbAssistant.setToolTipText(loc("HINT_ASSISTANT_SHOWN")); // NOI18N
         cbFQN.setToolTipText(loc("HINT_GENERATE_FQN")); // NOI18N
@@ -153,6 +159,7 @@ public final class FormEditorCustomizer extends JPanel implements  ActionListene
         autoI18nLabel.setLabelFor(cbAutoI18n);
         guideLineColLabel.setLabelFor(guideLineColEditor);
         selectionBorderColLabel.setLabelFor(selectionBorderColEditor);
+        gridSizeLabel.setLabelFor(spGridSize);
 
         GroupLayout layout = new GroupLayout(this);
         setLayout(layout);
@@ -167,7 +174,8 @@ public final class FormEditorCustomizer extends JPanel implements  ActionListene
                     .addComponent(listenerStyleLabel)
                     .addComponent(autoI18nLabel)
                     .addComponent(guideLineColLabel)
-                    .addComponent(selectionBorderColLabel))
+                    .addComponent(selectionBorderColLabel)
+                    .addComponent(gridSizeLabel))
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING, false)
                     .addComponent(rbGenerateLocals)
@@ -181,7 +189,8 @@ public final class FormEditorCustomizer extends JPanel implements  ActionListene
                     .addComponent(cbListenerStyle, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(cbAutoI18n, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(guideLineColEditor, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(selectionBorderColEditor, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(selectionBorderColEditor, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(spGridSize, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, 40))
                 .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
@@ -225,6 +234,10 @@ public final class FormEditorCustomizer extends JPanel implements  ActionListene
                     .addComponent(selectionBorderColLabel, GroupLayout.Alignment.CENTER)
                     .addComponent(selectionBorderColEditor, GroupLayout.Alignment.CENTER, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                    .addComponent(gridSizeLabel, GroupLayout.Alignment.CENTER)
+                    .addComponent(spGridSize, GroupLayout.Alignment.CENTER, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addContainerGap()
         );
         setBorder(new TitledBorder(loc("Code_Generation"))); // NOI18N
@@ -239,6 +252,7 @@ public final class FormEditorCustomizer extends JPanel implements  ActionListene
         rbGenerateFields.addActionListener (this);
         rbGenerateLocals.addActionListener (this);
         cbAutoI18n.addActionListener(this);
+        spGridSize.addChangeListener(this);
     }
     
     private static String loc (String key) {
@@ -296,6 +310,7 @@ public final class FormEditorCustomizer extends JPanel implements  ActionListene
         cbLayoutStyle.setSelectedIndex(options.getLayoutCodeTarget());
         cbComponentNames.setSelectedIndex(options.getAutoSetComponentName());
         cbAutoI18n.setSelectedIndex(options.getI18nAutoMode());
+        spGridSize.setValue(options.getGridX());
         listen = true;
         changed = false;
     }
@@ -311,6 +326,8 @@ public final class FormEditorCustomizer extends JPanel implements  ActionListene
         options.setAutoSetComponentName(cbComponentNames.getSelectedIndex());
         options.setI18nAutoMode(cbAutoI18n.getSelectedIndex());
         options.setVariablesLocal (rbGenerateLocals.isSelected ());
+        options.setGridX((Integer) spGridSize.getValue());
+        options.setGridY((Integer) spGridSize.getValue());
         switch (cbModifier.getSelectedIndex ()) {
             case 0: options.setVariablesModifier (Modifier.PUBLIC);
                     break;
