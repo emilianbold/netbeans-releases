@@ -43,6 +43,7 @@ package org.netbeans.modules.dlight.management.api.impl;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -137,16 +138,38 @@ public final class DataStorageManager {
     }
 
     /**
-     *  Returns existing or  new instance of DataStorage
-     *  for requested schema (if it can be found within all available DataStorages)
+     * Returns existing or new instance of DataStorage
+     * for requested schema (if it can be found within all available DataStorages)
+     *
+     * If collector requires several storages and infrastructure cannot provide
+     * *all* of them, then an empty list is returned.
+     * So this method guarantees to return either fully loaded map or nothing.
+     *
      */
-    public synchronized  Map<DataStorageType, DataStorage> getDataStoragesFor(DLightSession session, DataCollector<?> collector) {
-        Map<DataStorageType, DataStorage> result = new HashMap<DataStorageType, DataStorage>();
-        for (DataStorageType type : collector.getRequiredDataStorageTypes()) {
-            result.put(type, getDataStorageFor(session, type, collector.getDataTablesMetadata()));
+    public synchronized Map<DataStorageType, DataStorage> getDataStoragesFor(DLightSession session, DataCollector<?> collector) {
+        if (session == null || collector == null) {
+            return Collections.<DataStorageType, DataStorage>emptyMap();
         }
-        return result;
-    }
+
+        Map<DataStorageType, DataStorage> result = new HashMap<DataStorageType, DataStorage>();
+
+        for (DataStorageType type : collector.getRequiredDataStorageTypes()) {
+            final DataStorage dataStorage = getDataStorageFor(session, type, collector.getDataTablesMetadata());
+
+            if (dataStorage == null) {
+                DLightLogger.getLogger(DataStorageManager.class).log(Level.INFO,
+                        "DataStorageManager.getDataStoragesFor(DLightSession, DataCollector<?>):" // NOI18N
+                        + " cannot find storage of type {0} [session={1}, collector={2}]." // NOI18N
+                        + " NO storages will be returned", // NOI18N
+                        new Object[]{type, session.getDisplayName(), collector.getName()});
+                return Collections.<DataStorageType, DataStorage>emptyMap();
+            }
+
+            result.put(type, dataStorage);
+         }
+
+         return result;
+     }
 
     public synchronized ServiceInfoDataStorage getServiceInfoDataStorageFor(String uniqueKey) {
         if (uniqueKey == null) {
@@ -484,9 +507,16 @@ public final class DataStorageManager {
                 DataStorage newStorage = storage.createStorage();
                 if (newStorage instanceof ProxyDataStorage) {
                     ProxyDataStorage proxyStorage = (ProxyDataStorage) newStorage;
-                    DataStorage backendStorage = getDataStorageFor(session, proxyStorage.getBackendDataStorageType(), proxyStorage.getBackendTablesMetadata());
+                    DataStorageType requiredStorageType = proxyStorage.getBackendDataStorageType();
+                    List<DataTableMetadata> requiredTables = proxyStorage.getBackendTablesMetadata();
+                    DataStorage backendStorage = getDataStorageFor(session, requiredStorageType, requiredTables);
+                    if (backendStorage == null) {
+                        // Means that required (for this proxy) storage cannot be found ...
+                        continue;
+                    }
                     proxyStorage.attachTo(backendStorage);
                 }
+
                 if (newStorage != null) {
                     newStorage.createTables(tableMetadatas);
                     if (activeSessionStorages == null) {
@@ -507,9 +537,15 @@ public final class DataStorageManager {
                     if (newStorage != null) {
                         if (newStorage instanceof ProxyDataStorage) {
                             ProxyDataStorage proxyStorage = (ProxyDataStorage) newStorage;
-                            DataStorage backendStorage = getDataStorageFor(session, proxyStorage.getBackendDataStorageType(), proxyStorage.getBackendTablesMetadata());
+                            DataStorageType requiredStorageType = proxyStorage.getBackendDataStorageType();
+                            List<DataTableMetadata> requiredTables = proxyStorage.getBackendTablesMetadata();
+                            DataStorage backendStorage = getDataStorageFor(session, requiredStorageType, requiredTables);
+                            if (backendStorage == null) {
+                                continue;
+                            }
                             proxyStorage.attachTo(backendStorage);
                         }
+
                         newStorage.createTables(tableMetadatas);
 
                         return newStorage;

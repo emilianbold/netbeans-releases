@@ -62,13 +62,9 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.dlight.spi.SourceFileInfoProvider;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
-import org.netbeans.modules.dlight.management.remote.spi.PathMapper;
-import org.netbeans.modules.dlight.management.remote.spi.PathMapperProvider;
-import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -81,16 +77,6 @@ public final class CodeModelSourceFileInfoProvider implements SourceFileInfoProv
     private WeakReference<Map<String, Set<SourceFileInfo>>> staticFileCache = new WeakReference<Map<String, Set<SourceFileInfo>>>(null);
 
     public CodeModelSourceFileInfoProvider() {
-    }
-
-    private static String getUriScheme(ExecutionEnvironment env, boolean isFullRemote) {
-        if (env.isLocal()) {
-            return "file://";
-        }
-        if (isFullRemote) {
-            return "rfs:" + env.toString();
-        }
-        return "file://";
     }
 
     @Override
@@ -130,26 +116,6 @@ public final class CodeModelSourceFileInfoProvider implements SourceFileInfoProv
                     System.err.println("\tFound: " + res); // NOI18N
                 }
             }
-            if (res != null) {
-                PathMapperProvider provider = Lookup.getDefault().lookup(PathMapperProvider.class);
-                if (provider != null) {
-                    String env = serviceInfo.get(ServiceInfoDataStorage.EXECUTION_ENV_KEY);
-                    if (env != null) {
-                        ExecutionEnvironment execEnv = ExecutionEnvironmentFactory.fromUniqueID(env);                        
-                        boolean isFullRemote = Boolean.valueOf(serviceInfo.get("full.remote"));//NOI18N
-                        String uriScheme = getUriScheme(execEnv, isFullRemote);
-                        String path = res.getFileName();
-                        if (!isFullRemote && execEnv.isRemote()) {
-                            PathMapper pathMapper = provider.getPathMapper(execEnv);
-                            if (pathMapper != null){
-                                String remote = pathMapper.getLocalPath(res.getFileName());
-                                path = remote;
-                            }
-                        }
-                        return new SourceFileInfo(uriScheme + path, res.getLine(), 0);
-                    }
-                }
-            }
             return res;
         } catch (IOException ex) {
             return null;
@@ -163,14 +129,28 @@ public final class CodeModelSourceFileInfoProvider implements SourceFileInfoProv
         if (function == null) {
             return null;
         }
-        String sourceFile = function.getContainingFile().getAbsolutePath().toString();
+        
+        final CsmFile containingFile = function.getContainingFile();
+        
+        if (containingFile == null) {
+            return null;
+        }
+        
+        FileObject fileObj = containingFile.getFileObject();
+        if (fileObj == null) {
+            return null;
+        }
+        
+        CharSequence url = CndFileUtils.fileObjectToUrl(fileObj);
+        
         int startOffset = function.getStartOffset();
         if (lineNumber > 0) {
-            return new SourceFileInfo(sourceFile, lineNumber, 0);
+            return new SourceFileInfo(url, lineNumber, 0);
         }
-        return new SourceFileInfo(sourceFile, startOffset); //) + offset);
+        
+        return new SourceFileInfo(url, startOffset); //) + offset);
     }
-
+    
     private static CsmFunction getFunction(CsmProject project, CharSequence qualifiedName) {
         Iterator<CsmFunction> iter = CsmSelect.getFunctions(project, qualifiedName);
         CsmFunction declaration = null;

@@ -50,6 +50,7 @@ import java.util.Map;
  */
 public interface ServiceInfoDataStorage {
     static final String EXECUTION_ENV_KEY = "service.storage.execution.env.key";//NOI18N
+    static final String FULL_REMOTE_KEY = "full.remote";//NOI18N "true"/"false"
     static final String HOST_NAME = "service.storage.hostname";//NOI18N
     static final String USER_NAME = "service.storage.username";//NOI18N
     static final String PORT = "service.storage.port";//NOI18N

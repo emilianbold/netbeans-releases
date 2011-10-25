@@ -734,6 +734,27 @@ public final class DLightSession implements
                     context.addDLightTargetExecutionEnviromentProvider((DLightTarget.ExecutionEnvVariablesProvider) toolCollector);
                 }
 
+                /*
+                 * DataCollector usually acts as IndicatorDataProvider..
+                 * It could be that infrastructure cannot provide all needed
+                 * storages for the collector. This means that collector will
+                 * not be able to *store* any data, still it *may* be able to
+                 * act as an IndicatorDataProvider (with transient data).
+                 *
+                 * So do unconditional init with serviceInfoDataStorage.
+                 * This will give a chance for collector to at least provide
+                 * some information for Indicators...
+                 *
+                 * Note: It is collector's responsibility to handle the
+                 * situation when it was not initialized with DataStorages!
+                 *
+                 * Note: Collector *will* be notified about session start even
+                 * if it was not initialized with any DataStorage.
+                 *
+                 */
+
+                toolCollector.init(serviceInfoDataStorage);
+
                 if (currentStorages != null && !currentStorages.isEmpty()) {
                     if (storages == null) {
                         storages = new ArrayList<DataStorage>();
@@ -745,9 +766,9 @@ public final class DLightSession implements
                             storages.add(storage);
                         }
                     }
-                    toolCollector.init(serviceInfoDataStorage);
+
                     toolCollector.init(currentStorages, target);
-                    addDataFilterListener(toolCollector);
+
                     if (notAttachableDataCollector == null && !toolCollector.isAttachable()) {
                         notAttachableDataCollector = toolCollector;
                     }
@@ -756,6 +777,8 @@ public final class DLightSession implements
                     log.log(Level.SEVERE, "Cannot find storage for collector {0}", toolCollector); // NOI18N
                 }
 
+                addDataFilterListener(toolCollector);
+                
                 target.addTargetListener(toolCollector);
             }
             for (DataCollector<?> c : collectors) {
@@ -769,9 +792,7 @@ public final class DLightSession implements
                 idp.init(serviceInfoDataStorage);
                 addDataFilterListener(idp);
             }
-
         }
-
 
         // at the end, initialize data filters (_temporarily_ here, as info
         // about filters is stored in target's info...
@@ -792,7 +813,6 @@ public final class DLightSession implements
             ((SubstitutableTarget) target).substitute(notAttachableDataCollector.getCmd(), notAttachableDataCollector.getArgs());
         }
         return true;
-
     }
 
     /**

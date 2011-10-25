@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.dlight.perfan.stack.impl;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -53,6 +52,7 @@ import java.util.regex.Pattern;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
 import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
+import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.dlight.spi.SourceFileInfoProvider.SourceFileInfo;
 
 /**
@@ -181,7 +181,7 @@ public class FunctionCallImpl extends FunctionCallWithMetric {
             int line = sourceInfo.getLine();
 
             sb.append("; "); // NOI18N
-            sb.append(new File(file).getName());
+            sb.append(PathUtilities.getBaseName(file));
 
             if (line > 0) {
                 sb.append(':').append(line);
@@ -226,7 +226,11 @@ public class FunctionCallImpl extends FunctionCallWithMetric {
             }
         }
 
-        FunctionImpl func = new FunctionImpl(m.group(1), m.group(2) != null ? m.group(2).hashCode() : (m.group(1) + lineNumber).hashCode());
+        final long funcRef = m.group(2) != null 
+                ? (m.group(1) + m.group(2)).hashCode() 
+                : (m.group(1) + lineNumber).hashCode();
+        
+        FunctionImpl func = new FunctionImpl(m.group(1), funcRef);
 
         FunctionCallImpl call = new FunctionCallImpl(func, lineNumber, new HashMap<FunctionMetric, Object>());
 

@@ -180,7 +180,7 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
                 }
             } 
         if (isFullRemote){
-            targetConf.putInfo("full.remote", "true");
+            targetConf.putInfo("full.remote", "true"); // NOI18N
         }        
 
         final CompilerSet2Configuration cset = conf.getCompilerSet();

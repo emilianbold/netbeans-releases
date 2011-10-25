@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.dlight.perfan.lineinfo.impl;
 
-import java.io.File;
 import org.netbeans.modules.dlight.management.remote.spi.PathMapper;
 import org.netbeans.modules.dlight.perfan.stack.impl.FunctionCallImpl;
 import org.netbeans.modules.dlight.perfan.storage.impl.FunctionStatistic;
@@ -68,12 +67,12 @@ public final class SSSourceFileInfoSupport {
         return new SSSourceFileInfoSupport(storage);
     }
 
-    public SourceFileInfo getSourceFileInfo(final FunctionCallImpl functionCall, PathMapper pathMapper) {
+    public SourceFileInfo getSourceFileInfo(final FunctionCallImpl functionCall, PathMapper pathMapper, String urlPrefix) {
         SourceFileInfo result = null;
 
         try {
             SourceFileInfoFetchTaskParams params = new SourceFileInfoFetchTaskParams(
-                    functionCall, storage, pathMapper);
+                    functionCall, storage, pathMapper, urlPrefix);
             result = sourceLineInfoCachedProvider.compute(params);
         } catch (Throwable ex) {
         }
@@ -81,16 +80,18 @@ public final class SSSourceFileInfoSupport {
         return result;
     }
 
-    public final static class SourceFileInfoFetchTaskParams {
+    final static class SourceFileInfoFetchTaskParams {
 
         public final FunctionCallImpl functionCall;
         public final PerfanDataStorage storage;
         public final PathMapper pathMapper;
+        public final String urlPrefix;
 
-        SourceFileInfoFetchTaskParams(FunctionCallImpl functionCall, PerfanDataStorage storage, PathMapper pathMapper) {
+        SourceFileInfoFetchTaskParams(FunctionCallImpl functionCall, PerfanDataStorage storage, PathMapper pathMapper, String urlPrefix) {
             this.functionCall = functionCall;
             this.storage = storage;
             this.pathMapper = pathMapper;
+            this.urlPrefix = urlPrefix;
         }
 
         @Override
@@ -114,6 +115,8 @@ public final class SSSourceFileInfoSupport {
                 return false;
             } else if (!this.pathMapper.equals(that.pathMapper)) {
                 return false;
+            } else if (!this.urlPrefix.equals(that.urlPrefix)) {
+                return false;
             }
 
             return true;
@@ -125,6 +128,7 @@ public final class SSSourceFileInfoSupport {
             hash = (int) (17 * hash + this.functionCall.getFunctionRefID());
             hash = 17 * hash + (this.storage != null ? this.storage.hashCode() : 0);
             hash = 17 * hash + (this.pathMapper != null ? this.pathMapper.hashCode() : 0);
+            hash = 17 * hash + this.urlPrefix.hashCode();
             return hash;
         }
     }
@@ -147,11 +151,11 @@ public final class SSSourceFileInfoSupport {
                         sourceFile = fStatistics.getSourceFile();
 
                         line = line < 0 ? fStatistics.getSrcFileLine() : line;
-                        if (sourceFile != null && params.pathMapper != null && !"(unknown)".equals(sourceFile)) { // NOI18N
-                            String localFile = params.pathMapper.getLocalPath(sourceFile);
-                            if (localFile != null) {
-                                File localFileFile = new File(localFile);
-                                sourceFile = localFileFile.exists() ? localFileFile.getAbsolutePath() : null;
+                        if (sourceFile != null && !"(unknown)".equals(sourceFile)) { // NOI18N
+                            if (!params.urlPrefix.isEmpty()) {
+                                sourceFile = params.urlPrefix + sourceFile;
+                            } else if (params.pathMapper != null) {
+                                sourceFile = params.pathMapper.getLocalPath(sourceFile);
                             }
                         }
 

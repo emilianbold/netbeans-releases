@@ -119,7 +119,9 @@
                 <friend>org.netbeans.modules.cnd.remote</friend>
                 <friend>org.netbeans.modules.cnd.tha</friend>
                 <friend>org.netbeans.modules.cnd.toolchain</friend>
+                <friend>org.netbeans.modules.dlight.annotationsupport</friend>
                 <friend>org.netbeans.modules.dlight.discover</friend>
+                <friend>org.netbeans.modules.dlight.perfan</friend>           
                 <friend>org.netbeans.modules.dlight.previse</friend>
                 <friend>org.netbeans.modules.dlight.remote.impl</friend>
                 <friend>org.netbeans.modules.dlight.uncover</friend>

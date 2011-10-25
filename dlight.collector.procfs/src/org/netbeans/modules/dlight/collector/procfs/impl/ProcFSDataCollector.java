@@ -365,27 +365,33 @@ public class ProcFSDataCollector
             private final Object lock = LWPsTracker.class.getName() + "_lock"; // NOI18N
             private final HashMap<Integer, LWPUsage> lastReportedLWPs = new HashMap<Integer, LWPUsage>();
             private final HashMap<Integer, LWPUsage> newReportedLWPs = new HashMap<Integer, LWPUsage>();
-            private PreparedStatement insertStatement = null;
-            private PreparedStatement updateStatement = null;
+            private final PreparedStatement insertStatement;
+            private final PreparedStatement updateStatement;
 
             public LWPsTracker() {
+                PreparedStatement _insertStatement = null;
+                PreparedStatement _updateStatement = null;
                 try {
-                    insertStatement = sqlStorage.prepareStatement(
-                            String.format("insert into %s (%s, %s, %s) values (?, ?, null)", // NOI18N
-                            MSASQLTables.lwps.tableMetadata.getName(),
-                            MSASQLTables.lwps.LWP_ID.getColumnName(),
-                            MSASQLTables.lwps.LWP_START.getColumnName(),
-                            MSASQLTables.lwps.LWP_END.getColumnName()));
-                    updateStatement = sqlStorage.prepareStatement(
-                            String.format("update %s set %s = ? where %s = ?", // NOI18N
-                            MSASQLTables.lwps.tableMetadata.getName(),
-                            MSASQLTables.lwps.LWP_END.getColumnName(),
-                            MSASQLTables.lwps.LWP_ID.getColumnName()));
+                    if (sqlStorage != null) {
+                        _insertStatement = sqlStorage.prepareStatement(
+                                String.format("insert into %s (%s, %s, %s) values (?, ?, null)", // NOI18N
+                                MSASQLTables.lwps.tableMetadata.getName(),
+                                MSASQLTables.lwps.LWP_ID.getColumnName(),
+                                MSASQLTables.lwps.LWP_START.getColumnName(),
+                                MSASQLTables.lwps.LWP_END.getColumnName()));
+                        _updateStatement = sqlStorage.prepareStatement(
+                                String.format("update %s set %s = ? where %s = ?", // NOI18N
+                                MSASQLTables.lwps.tableMetadata.getName(),
+                                MSASQLTables.lwps.LWP_END.getColumnName(),
+                                MSASQLTables.lwps.LWP_ID.getColumnName()));
+                    }
                 } catch (Throwable th) {
                     if (log.isLoggable(Level.FINE)) {
                         log.log(Level.FINE, "will not provide data...", th); // NOI18N
                     }
-
+                } finally {
+                    insertStatement = _insertStatement;
+                    updateStatement = _updateStatement;
                 }
             }
 

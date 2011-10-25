@@ -88,40 +88,40 @@ public class DwarfSourceInfoProvider implements SourceFileInfoProvider {
     public DwarfSourceInfoProvider() {
         cache = new WeakHashMap<String, Map<String, AbstractFunctionToLine>>();
     }
-            
-    private static  String getUriScheme(ExecutionEnvironment env, boolean isFullRemote){
-        if (env.isLocal()){
-            return "file://";
-        }
-        if (isFullRemote){
-            return "rfs:" + env.toString();
-        }
-        return "file://";
-    }    
-    
+
     @Override
     public SourceFileInfo getSourceFileInfo(String functionQName, int lineNumber, long offset, Map<String, String> serviceInfo) {
         SourceFileInfo info = _fileName(functionQName, lineNumber, offset, serviceInfo);
-        if (info != null) {
-            PathMapperProvider provider = Lookup.getDefault().lookup(PathMapperProvider.class);
-            if (provider != null) {
-                String env = serviceInfo.get(ServiceInfoDataStorage.EXECUTION_ENV_KEY);                
-                if (env != null) {
-                    ExecutionEnvironment execEnv = ExecutionEnvironmentFactory.fromUniqueID(env);                    
-                    boolean isFullRemote = Boolean.valueOf(serviceInfo.get("full.remote"));//NOI18N
-                    String uriScheme = getUriScheme(execEnv, isFullRemote);
-                    String path = info.getFileName();
-                    if (!isFullRemote && execEnv.isRemote()) {
-                        PathMapper pathMapper = provider.getPathMapper(execEnv);
-                        if (pathMapper != null){
-                            String remote = pathMapper.getLocalPath(info.getFileName());
-                            path = remote;
+        
+        if (info == null) {
+            return null;
+        }
+
+        final String env = serviceInfo.get(ServiceInfoDataStorage.EXECUTION_ENV_KEY);
+        
+        if (env != null) {
+            boolean isFullRemote = Boolean.valueOf(serviceInfo.get("full.remote")); // NOI18N
+
+            if (isFullRemote) {
+                return new SourceFileInfo("rfs:" + env + info.getFileName(), info.getLine(), 0); // NOI18N
+            }
+
+            ExecutionEnvironment execEnv = ExecutionEnvironmentFactory.fromUniqueID(env);
+            if (execEnv != null && execEnv.isRemote()) {
+                PathMapperProvider provider = Lookup.getDefault().lookup(PathMapperProvider.class);
+
+                if (provider != null) {
+                    PathMapper pathMapper = provider.getPathMapper(execEnv);
+                    if (pathMapper != null) {
+                        String localPath = pathMapper.getLocalPath(info.getFileName());
+                        if (localPath != null) {
+                            return new SourceFileInfo(localPath, info.getLine(), 0);
                         }
                     }
-                    return new SourceFileInfo(uriScheme + path, info.getLine(), 0);
                 }
             }
         }
+
         return info;
     }
 
