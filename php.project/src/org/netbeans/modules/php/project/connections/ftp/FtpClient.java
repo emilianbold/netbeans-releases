@@ -516,6 +516,7 @@ public class FtpClient implements RemoteClient {
         }
         timestampDiff = 0L;
         // try to calculate the time difference between remote and local pc
+        removeProtocolCommandListener();
         try {
             File tmpFile = File.createTempFile("netbeans-timestampdiff-", ".txt"); // NOI18N
             long now = tmpFile.lastModified();
@@ -537,8 +538,9 @@ public class FtpClient implements RemoteClient {
                 }
             }
         } catch (Exception ex) {
-            WindowsJdk7WarningPanel.warn();
             LOGGER.log(Level.INFO, "Unable to calculate time difference", ex);
+        } finally {
+            addProtocolCommandListener();
         }
         return timestampDiff;
     }
