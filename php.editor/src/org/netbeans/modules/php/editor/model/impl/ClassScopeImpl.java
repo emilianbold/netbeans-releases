@@ -105,7 +105,7 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
             this.possibleFQSuperClassNames = Collections.emptyList();
             this.superClass = Union2.<String, List<ClassScopeImpl>>createFirst(null);
         }
-        
+
     }
 
     ClassScopeImpl(IndexScope inScope, ClassElement indexedClass) {
@@ -120,13 +120,13 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
     /**
      * This method returns possible FGNames of the super class that are counted
      * according the same algorithm as in php runtime. Usually it can be one or two
-     * FQN. 
-     * @return possible fully qualified names, that are guess during parsing. 
+     * FQN.
+     * @return possible fully qualified names, that are guess during parsing.
      */
     public Collection<QualifiedName> getPossibleFQSuperClassNames() {
         return this.possibleFQSuperClassNames;
     }
-    
+
     @NonNull
     public Collection<? extends ClassScope> getSuperClasses() {
         List<ClassScope> retval = null;
@@ -219,7 +219,7 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
         ElementQuery.Index index = indexScope.getIndex();
         Set<ClassScope> superClasses = new HashSet<ClassScope>(getSuperClasses());
         for (ClassScope clz : superClasses) {
-            Set<MethodElement> indexedFunctions = 
+            Set<MethodElement> indexedFunctions =
                     org.netbeans.modules.php.editor.api.elements.ElementFilter.forPrivateModifiers(false).filter(index.getAllMethods(clz));
             for (MethodElement classMember : indexedFunctions) {
                 MethodElement indexedFunction = classMember;
