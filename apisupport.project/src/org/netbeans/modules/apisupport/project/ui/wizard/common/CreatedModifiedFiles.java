@@ -78,7 +78,6 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineFactory;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
-import javax.swing.text.PlainDocument;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.JavaSource;
@@ -106,7 +105,6 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.modules.SpecificationVersion;
-import org.openide.text.IndentEngine;
 import org.openide.util.Lookup;
 import org.openide.util.Parameters;
 import org.openide.util.lookup.ServiceProvider;
@@ -1248,12 +1246,6 @@ public final class CreatedModifiedFiles {
         bindings.put("encoding", targetEnc.name());
         Writer w = new OutputStreamWriter(target.getOutputStream(), targetEnc);
         try {
-            IndentEngine format = IndentEngine.find(content.getMIMEType());
-            if (format != null) {
-                PlainDocument doc = new PlainDocument();
-                doc.putProperty(PlainDocument.StreamDescriptionProperty, content);
-                w = format.createWriter(doc, 0, w);
-            }
             engine.getContext().setWriter(w);
             engine.getContext().setAttribute(FileObject.class.getName(), content, ScriptContext.ENGINE_SCOPE);
             engine.getContext().setAttribute(ScriptEngine.FILENAME, content.getNameExt(), ScriptContext.ENGINE_SCOPE);
