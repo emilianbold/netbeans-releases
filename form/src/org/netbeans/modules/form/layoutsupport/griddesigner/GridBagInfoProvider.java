@@ -58,6 +58,7 @@ import java.awt.TexturePaint;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.logging.Level;
+import org.netbeans.modules.form.FormModelEvent;
 import org.netbeans.modules.form.FormUtils;
 import org.netbeans.modules.form.layoutsupport.LayoutSupportManager;
 import org.openide.nodes.Node;
@@ -269,6 +270,17 @@ public class GridBagInfoProvider implements GridInfoProvider {
         return gapYArrayLength >=3 ? gapYArrayLength - 1 : -1;
     }
     
+    @Override
+    public boolean isGapEvent(FormModelEvent event) {
+        if(event.getChangeType() == FormModelEvent.CONTAINER_LAYOUT_CHANGED) {
+            String propName = event.getPropertyName();
+            if( propName.equals("columnWidths") || propName.equals("columnHeights")) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     @Override
     public int getX() {
         return getLayout().getLayoutOrigin().x;
