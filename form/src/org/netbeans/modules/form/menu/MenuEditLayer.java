@@ -791,7 +791,7 @@ public class MenuEditLayer extends JPanel {
     
     // #119217: toggle clicked component's selection status
     void toggleSelectedRADComponent(RADComponent comp) {
-        if (formDesigner.getSelectedComponents().contains(comp)) { // component is already selected so remove it from selection
+        if (selectedComponents.contains(comp)) { // component is already selected so remove it from selection
             selectedComponents.remove(comp);
             List<RADComponent> comps = new ArrayList<RADComponent>();
             comps.addAll(selectedComponents);
