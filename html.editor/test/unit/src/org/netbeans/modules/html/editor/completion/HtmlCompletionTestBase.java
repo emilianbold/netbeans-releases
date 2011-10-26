@@ -208,7 +208,20 @@ public abstract class HtmlCompletionTestBase extends TestBase {
 
         CompletionItem item = null;
         for (CompletionItem htmlci : items) {
-            if (((HtmlCompletionItem) htmlci).getItemText().equals(itemToCompleteName)) {
+            String itemText = ((HtmlCompletionItem) htmlci).getItemText();
+            if(itemToCompleteName.charAt(0) == '/') {
+                //end tag should be completed
+                if(htmlci instanceof HtmlCompletionItem.EndTag) {
+                    if(itemText.equals(itemToCompleteName.substring(1))) {
+                        item = htmlci; //found
+                        break;
+                    }
+                } else {
+                    continue;
+                }
+            } 
+            
+            if (itemText.equals(itemToCompleteName)) {
                 item = htmlci; //found
                 break;
             }
