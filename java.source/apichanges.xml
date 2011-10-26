@@ -108,6 +108,19 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="CompilationInfo-cache">
+             <api name="general"/>
+             <summary>Added <code>CompilationInfo.getCachedValue</code>, <code>CompilationInfo.putCachedValue</code> and <code>CompilationInfo.CacheClearPolicy</code>.</summary>
+             <version major="0" minor="90"/>
+             <date day="26" month="10" year="2011"/>
+             <author login="jlahoda"/>
+            <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
+             <description>
+                 Added <code>CompilationInfo.getCachedValue</code> and <code>CompilationInfo.putCachedValue</code> methods and
+                 <code>CompilationInfo.CacheClearPolicy</code> enum so that tasks can easily store temporary data with predictable termination.
+             </description>
+             <issue number="203890"/>
+        </change>
         <change id="PackageUsages">
              <api name="general"/>
              <summary>Added <code>ClassIndex.getResourcesForPackage</code> and <code>ClassIndex.getElementsForPackage</code>to allow to find package usages.</summary>
