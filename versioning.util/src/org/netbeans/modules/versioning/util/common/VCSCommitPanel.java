@@ -97,6 +97,8 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import static java.awt.Component.CENTER_ALIGNMENT;
 import static java.awt.Component.LEFT_ALIGNMENT;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import static javax.swing.BorderFactory.createEmptyBorder;
 import static javax.swing.BoxLayout.Y_AXIS;
 import static javax.swing.BoxLayout.X_AXIS;
@@ -104,6 +106,7 @@ import static javax.swing.SwingConstants.SOUTH;
 import static javax.swing.SwingConstants.WEST;
 import static javax.swing.SwingConstants.EAST;
 import static javax.swing.LayoutStyle.ComponentPlacement.RELATED;
+import org.openide.awt.TabbedPaneFactory;
 
 /**
  *
@@ -111,7 +114,7 @@ import static javax.swing.LayoutStyle.ComponentPlacement.RELATED;
  * @author  Tomas Stupka
  * @author  Marian Petras
  */
-public abstract class VCSCommitPanel<F extends VCSFileNode> extends AutoResizingPanel implements PreferenceChangeListener, TableModelListener, ChangeListener {
+public abstract class VCSCommitPanel<F extends VCSFileNode> extends AutoResizingPanel implements PreferenceChangeListener, TableModelListener, ChangeListener, PropertyChangeListener {
 
     public static final String PROP_COMMIT_EXCLUSIONS       = "commitExclusions";    // NOI18N
     
@@ -431,7 +434,8 @@ public abstract class VCSCommitPanel<F extends VCSFileNode> extends AutoResizing
         boolean newDiff = false;
         for (VCSFileNode node : nodes) {
             if (tabbedPane == null) {
-                tabbedPane = new JTabbedPane(JTabbedPane.TOP, JTabbedPane.SCROLL_TAB_LAYOUT);
+                tabbedPane = TabbedPaneFactory.createCloseButtonTabbedPane();
+                tabbedPane.addPropertyChangeListener(this);
                  tabbedPane.addTab(modifier.getMessage(VCSCommitPanelModifier.BundleMessage.TABS_MAIN_NAME), basePanel);
                  tabbedPane.setPreferredSize(basePanel.getPreferredSize());
                  add(tabbedPane);
@@ -439,8 +443,10 @@ public abstract class VCSCommitPanel<F extends VCSFileNode> extends AutoResizing
             }
             File file = node.getFile();
             JComponent component = diffProvider.getDiffComponent(file); 
-            if (component != null) {                
-                tabbedPane.addTab(file.getName(), component);
+            if (component != null) {
+                if (tabbedPane.indexOfComponent(component) == -1) {
+                    tabbedPane.addTab(file.getName(), component);
+                }
                 tabbedPane.setSelectedComponent(component);
                 tabbedPane.requestFocusInWindow();
                 newDiff = true;
@@ -449,6 +455,21 @@ public abstract class VCSCommitPanel<F extends VCSFileNode> extends AutoResizing
         if(newDiff) {
             revalidate();
             repaint();
+        }
+    }
+
+    @Override
+    public void propertyChange (PropertyChangeEvent evt) {
+        if (TabbedPaneFactory.PROP_CLOSE.equals(evt.getPropertyName())) {
+            JComponent comp = (JComponent) evt.getNewValue();
+            removeTab(comp);
+        }
+    }
+    
+    private void removeTab (JComponent comp) {
+        if (basePanel != comp && tabbedPane != null && tabbedPane.getTabCount() > 1) {
+            tabbedPane.remove(comp);
+            revalidate();
         }
     }
 

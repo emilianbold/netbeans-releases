@@ -109,19 +109,22 @@ import org.openide.util.ImageUtilities;
 import static java.awt.Component.BOTTOM_ALIGNMENT;
 import static java.awt.Component.CENTER_ALIGNMENT;
 import static java.awt.Component.LEFT_ALIGNMENT;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import static javax.swing.BorderFactory.createEmptyBorder;
 import static javax.swing.BoxLayout.X_AXIS;
 import static javax.swing.BoxLayout.Y_AXIS;
 import static javax.swing.SwingConstants.SOUTH;
 import static javax.swing.SwingConstants.WEST;
 import static javax.swing.LayoutStyle.ComponentPlacement.RELATED;
+import org.openide.awt.TabbedPaneFactory;
 
 /**
  *
  * @author  pk97937
  * @author  Marian Petras
  */
-public class CommitPanel extends AutoResizingPanel implements PreferenceChangeListener, TableModelListener, ChangeListener, ActionListener {
+public class CommitPanel extends AutoResizingPanel implements PreferenceChangeListener, TableModelListener, ChangeListener, ActionListener, PropertyChangeListener {
 
     private final AutoResizingPanel basePanel = new AutoResizingPanel();
     static final Object EVENT_SETTINGS_CHANGED = new Object();
@@ -532,9 +535,12 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
             if (panel == null) {
                 panel = new MultiDiffPanel(file, HgRevision.BASE, HgRevision.CURRENT, false); // switch the last parameter to true if editable diff works poorly
                 displayedDiffs.put(file, panel);
+            }
+            if (tabbedPane.indexOfComponent(panel) == -1) {
                 tabbedPane.addTab(file.getName(), panel);
             }
             tabbedPane.setSelectedComponent(panel);
+            tabbedPane.requestFocusInWindow();
             panel.requestActive();
         }
         revalidate();
@@ -580,11 +586,27 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
     }
 
     private void initializeTabs () {
-         tabbedPane = new JTabbedPane(JTabbedPane.TOP, JTabbedPane.SCROLL_TAB_LAYOUT);
+         tabbedPane = TabbedPaneFactory.createCloseButtonTabbedPane();
+         tabbedPane.addPropertyChangeListener(this);
          tabbedPane.addTab(NbBundle.getMessage(CommitPanel.class, "CTL_CommitDialog_Tab_Commit"), basePanel); //NOI18N
          tabbedPane.setPreferredSize(basePanel.getPreferredSize());
          add(tabbedPane);
          tabbedPane.addChangeListener(this);
+    }
+
+    @Override
+    public void propertyChange (PropertyChangeEvent evt) {
+        if (TabbedPaneFactory.PROP_CLOSE.equals(evt.getPropertyName())) {
+            JComponent comp = (JComponent) evt.getNewValue();
+            removeTab(comp);
+        }
+    }
+    
+    private void removeTab (JComponent comp) {
+        if (basePanel != comp && tabbedPane != null && tabbedPane.getTabCount() > 1) {
+            tabbedPane.remove(comp);
+            revalidate();
+        }
     }
 
     private HashMap<File, SaveCookie> getModifiedFiles () {
