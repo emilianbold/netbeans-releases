@@ -417,8 +417,10 @@ public class WizardDescriptor extends DialogDescriptor {
 
         finishButton.setDefaultCapable(true);
         nextButton.setDefaultCapable(true);
-        previousButton.setDefaultCapable(false);
-        cancelButton.setDefaultCapable(false);
+        previousButton.setDefaultCapable(true);
+        previousButton.putClientProperty( "defaultButton", Boolean.FALSE ); //NOI18N
+        cancelButton.setDefaultCapable(true);
+        cancelButton.putClientProperty( "defaultButton", Boolean.FALSE ); //NOI18N
     }
 
     /** Create a new wizard from a fixed list of panels, passing some settings to the panels.
