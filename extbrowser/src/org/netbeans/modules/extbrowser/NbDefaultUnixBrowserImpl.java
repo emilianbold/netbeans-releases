@@ -64,6 +64,9 @@ class NbDefaultUnixBrowserImpl extends ExtBrowserImpl {
     
     private static final String XDG_COMMAND = "xdg-open"; // NOI18N
     private static final String XBROWSER_COMMAND = "x-www-browser"; // NOI18N
+    
+    private static final RequestProcessor REQUEST_PROCESSOR = 
+        new RequestProcessor( NbDefaultUnixBrowserImpl.class );
 
     private static final boolean XDG_AVAILABLE;
     private static final boolean XBROWSER_AVAILABLE;
@@ -101,7 +104,7 @@ class NbDefaultUnixBrowserImpl extends ExtBrowserImpl {
         ProcessBuilder pb = new ProcessBuilder(new String[] { command, urlArg });
         try {
             Process p = pb.start();
-            RequestProcessor.getDefault().post(new ProcessWatcher(p));
+            REQUEST_PROCESSOR.post(new ProcessWatcher(p));
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
