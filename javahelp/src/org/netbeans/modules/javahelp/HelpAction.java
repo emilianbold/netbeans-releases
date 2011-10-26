@@ -44,41 +44,38 @@
 
 package org.netbeans.modules.javahelp;
 
-import java.awt.*;
-import java.awt.event.*;
-import javax.swing.*;
-
-import org.openide.util.*;
-import org.openide.util.actions.SystemAction;
+import java.awt.AWTEvent;
+import java.awt.Component;
+import java.awt.GraphicsEnvironment;
+import java.awt.Toolkit;
+import java.awt.Window;
+import java.awt.event.AWTEventListener;
+import java.awt.event.ActionEvent;
+import java.awt.event.WindowEvent;
+import javax.swing.AbstractAction;
+import javax.swing.MenuElement;
+import javax.swing.MenuSelectionManager;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.javahelp.Help;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionRegistration;
 import org.openide.awt.StatusDisplayer;
+import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 /**
  * Shows help for the currently focused component
  * @author Jesse Glick
  */
-public class HelpAction extends SystemAction
-{
-    private static final long serialVersionUID = 4658008202517094416L;
+@ActionID(category="Help", id="org.netbeans.modules.javahelp.HelpAction")
+@ActionRegistration(displayName="#LBL_HelpAction", iconBase="org/netbeans/modules/javahelp/resources/show-help.gif")
+public class HelpAction extends AbstractAction {
 
-    public String getName() {
-        return NbBundle.getMessage(HelpAction.class, "LBL_HelpAction");
-    }
-
-    public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
-    }
-
-    protected String iconResource() {
-        return "org/netbeans/modules/javahelp/resources/show-help.gif"; // NOI18N
-    }
-
-    protected void initialize() {
-        super.initialize();
+    public HelpAction() {
         Installer.log.fine("HelpAction.initialize");
-
         // Cf. org.netbeans.core.windows.frames.ShortcutAndMenuKeyEventProcessor
-        putProperty("OpenIDE-Transmodal-Action", Boolean.TRUE); // NOI18N
+        putValue("OpenIDE-Transmodal-Action", true); // NOI18N
     }
 
     static class WindowActivatedDetector implements AWTEventListener {
@@ -128,7 +125,7 @@ public class HelpAction extends SystemAction
         return help;
     }
     
-    public void actionPerformed(ActionEvent ev) {
+    @Override public void actionPerformed(ActionEvent ev) {
         Help h = (Help)Lookup.getDefault().lookup(Help.class);
         if (h == null) {
             Toolkit.getDefaultToolkit().beep();
