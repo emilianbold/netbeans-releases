@@ -154,9 +154,16 @@ public class InspectCDIAtCaretAction extends AbstractWebBeansAction {
             return;
         }
         
+        String msg = null;
+        if ( event == null ){
+            msg ="USG_CDI_INSPECT_CDI_GLYPH";    // NOI18N
+        }
+        else {
+            msg = "USG_CDI_INSPECT_CDI";         // NOI18N
+        }
         UsageLogger logger = project.getLookup().lookup(UsageLogger.class);
         if (logger != null) {
-            logger.log("USG_CDI_INSPECT_CDI", // NOI18N
+            logger.log(msg, 
                     InspectCDIAtCaretAction.class, new Object[] { project
                             .getClass().getName() });
         }
