@@ -80,7 +80,7 @@ public class JSPELPlugin implements ELPlugin {
 
     @Override
     public Collection<ImplicitObject> getImplicitObjects(FileObject file) {
-        if(JspUtils.isJSPOrTagFile(file)) {
+        if (file != null && JspUtils.isJSPOrTagFile(file)) {
             return getImplicitObjects();
         } else {
             return Collections.emptyList();
