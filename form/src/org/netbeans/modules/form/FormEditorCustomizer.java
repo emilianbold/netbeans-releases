@@ -61,7 +61,6 @@ import javax.swing.JRadioButton;
 import javax.swing.JSpinner;
 import javax.swing.LayoutStyle;
 import javax.swing.SpinnerNumberModel;
-import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -240,7 +239,6 @@ public final class FormEditorCustomizer extends JPanel implements  ActionListene
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addContainerGap()
         );
-        setBorder(new TitledBorder(loc("Code_Generation"))); // NOI18N
 
         cbFold.addActionListener (this);
         cbAssistant.addActionListener(this);
