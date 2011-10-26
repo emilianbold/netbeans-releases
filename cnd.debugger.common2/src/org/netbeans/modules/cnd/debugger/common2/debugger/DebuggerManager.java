@@ -1802,8 +1802,8 @@ public final class DebuggerManager extends DebuggerManagerAdapter {
     /*
      * Format a message and put the resulting text into the status area
      */
-    public String formatStatusText(String fmtKey, String[] args) {
-        String msg = Catalog.format(fmtKey, (Object) args);
+    public String formatStatusText(String fmtKey, Object... args) {
+        String msg = Catalog.format(fmtKey, args);
         setStatusText(msg);
         return msg;
     }
