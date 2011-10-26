@@ -45,6 +45,8 @@
 
 package org.netbeans.core.multiview;
 
+import java.awt.Image;
+import java.awt.image.BufferedImage;
 import java.util.Arrays;
 import org.netbeans.core.api.multiview.MultiViewHandler;
 import org.netbeans.core.api.multiview.MultiViews;
@@ -165,5 +167,26 @@ public class MultiViewTopComponentTest extends AbstractMultiViewTopComponentTest
     }
     
     
+    /** Tests that multiple instances of the same class propagate well
+     * into array of actions of enclosing multiview TopComponent
+     */
+    public void testFix_204072_MissingIcon() {
+        final Image img = new BufferedImage( 10, 10, BufferedImage.TYPE_INT_RGB );
+        MVElem elem1 = new MVElem();
+        MVElem elem2 = new MVElem();
+        MultiViewDescription desc1 = new MVDesc("desc1", img, 0, elem1);
+        MultiViewDescription desc2 = new MVDesc("desc2", null, 0, elem2);
+        TopComponent tc = MultiViewFactory.createMultiView(new MultiViewDescription[] { desc1, desc2 }, desc1);
+
+        tc.open();
+        tc.requestActive();
+        
+        assertEquals( img, tc.getIcon() );
+        
+        MultiViewTopComponent mvtc = ( MultiViewTopComponent ) tc;
+        mvtc.getModel().setActiveDescription( desc2 );
+        
+        assertEquals( img, tc.getIcon() );
+    }
 }
 
