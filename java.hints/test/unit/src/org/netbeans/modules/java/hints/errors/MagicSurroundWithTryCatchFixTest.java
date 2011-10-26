@@ -151,6 +151,20 @@ public class MagicSurroundWithTryCatchFixTest extends ErrorHintsTestBase {
                        "package test; import java.io.FileNotFoundException; import java.util.logging.Level; import java.util.logging.Logger; public class Test {public void test() { try { /*zbytek*/ System.out.println(\"\"); /*obycej*/ /*bystry*/ new java.io.FileInputStream(\"\"); /*bylina*/ } catch (FileNotFoundException ex) { Logger.getLogger(Test.class.getName()).log(Level.SEVERE, null, ex); } }}");
     }
 
+    public void test204165a() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test; public class Test { static {\n int h; thr|ow new Exception();} }",
+                       "FixImpl",
+                       "package test; import java.util.logging.Level; import java.util.logging.Logger; public class Test { static { try { int h; throw new Exception(); } catch (Exception ex) { Logger.getLogger(Test.class.getName()).log(Level.SEVERE, null, ex); } } }");
+    }
+
+    public void test204165b() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test; import java.io.*; public class Test { static {\n int h; BufferedReader br = new BufferedReader(n|ew FileReader(\"\"));\n } }",
+                       "FixImpl",
+                       "package test; import java.io.*;import java.util.logging.Level; import java.util.logging.Logger; public class Test { static { BufferedReader br = null; try { int h; br = new BufferedReader(new FileReader(\"\")); } catch (FileNotFoundException ex) { Logger.getLogger(Test.class.getName()).log(Level.SEVERE, null, ex); } finally { try { br.close(); } catch (IOException ex) { Logger.getLogger(Test.class.getName()).log(Level.SEVERE, null, ex); } } } }");
+    }
+
     protected List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) throws Exception {
         return new UncaughtException().run(info, null, pos, path, null);
     }
