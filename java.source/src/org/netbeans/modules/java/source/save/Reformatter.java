@@ -3757,7 +3757,7 @@ public class Reformatter implements ReformatTask {
                             firstLine = false;
                         } else if (currWSPos >= 0) {
                             lastWSPos = currWSPos;
-                            if (currWSPos < i - 1)
+                            if (!noFormat && currWSPos < i - 1)
                                 pendingDiff = new Diff(offset + currWSPos + 1, offset + i, null);
                         } else if (c != '*') {
                             preserveNewLines = false;
