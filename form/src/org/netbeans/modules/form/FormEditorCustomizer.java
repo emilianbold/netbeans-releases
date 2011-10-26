@@ -285,7 +285,7 @@ public final class FormEditorCustomizer extends JPanel implements  ActionListene
     
     // other methods ...........................................................
     
-    void update() {
+    public void update() {
         listen = false;
         FormLoaderSettings options = FormLoaderSettings.getInstance();
         try {
@@ -330,7 +330,7 @@ public final class FormEditorCustomizer extends JPanel implements  ActionListene
         changed = false;
     }
     
-    void applyChanges () {
+    public void applyChanges () {
         FormLoaderSettings options = FormLoaderSettings.getInstance ();
         
         options.setFoldGeneratedCode (cbFold.isSelected ());
