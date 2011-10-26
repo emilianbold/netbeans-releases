@@ -1055,7 +1055,7 @@ public class FormDesigner {
         syncNodesFromComponents();
     }
 
-    void removeComponentFromSelection(RADComponent metacomp) {
+    public void removeComponentFromSelection(RADComponent metacomp) {
         removeComponentFromSelectionImpl(metacomp);
         repaintSelection();
         syncNodesFromComponents();
