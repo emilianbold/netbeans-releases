@@ -58,6 +58,7 @@ import javax.swing.MenuSelectionManager;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.javahelp.Help;
 import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.HelpCtx;
@@ -70,6 +71,7 @@ import org.openide.util.NbBundle;
  */
 @ActionID(category="Help", id="org.netbeans.modules.javahelp.HelpAction")
 @ActionRegistration(displayName="#LBL_HelpAction", iconBase="org/netbeans/modules/javahelp/resources/show-help.gif")
+@ActionReference(path="Shortcuts", name="F1")
 public class HelpAction extends AbstractAction {
 
     public HelpAction() {
