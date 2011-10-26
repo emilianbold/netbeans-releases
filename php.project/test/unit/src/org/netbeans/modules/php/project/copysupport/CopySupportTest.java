@@ -41,12 +41,11 @@
  */
 package org.netbeans.modules.php.project.copysupport;
 
-import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.util.PhpTestCase;
 import org.netbeans.modules.php.project.util.TestUtils;
-import org.openide.util.test.MockLookup;
 
-public class CopySupportTest extends NbTestCase {
+public class CopySupportTest extends PhpTestCase {
 
     public CopySupportTest(String name) {
         super(name);
@@ -54,7 +53,7 @@ public class CopySupportTest extends NbTestCase {
 
     @Override
     protected void setUp() throws Exception {
-        MockLookup.setLayersAndInstances();
+        super.setUp();
         clearWorkDir();
     }
 
@@ -73,6 +72,22 @@ public class CopySupportTest extends NbTestCase {
         // XXX no idea how to reproduce the bug, let try it for several times
         for (int i = 0; i < 100; ++i) {
             createAndOpenAndCloseProject();
+        }
+    }
+
+    public void testLoggingOfIssue192386() throws Exception {
+        final PhpProject project = TestUtils.createPhpProject(getWorkDir());
+        final CopySupport copySupport = project.getCopySupport();
+
+        copySupport.projectOpened();
+        try {
+            copySupport.projectOpened();
+            fail("Should not get here.");
+        } catch (IllegalStateException ise) {
+            assertNotNull("Exception should have cause", ise.getCause());
+            assertEquals("Call stack should contain 2 elements", 2, copySupport.calls.size());
+            assertEquals("Copy support should be opened twice", 2, copySupport.opened.get());
+            assertEquals("Copy support should not be closed at all", 0, copySupport.closed.get());
         }
     }
 
@@ -98,6 +113,7 @@ public class CopySupportTest extends NbTestCase {
         String msg = "Copy support should be opened (opened: " + opened + ", closed: " + closed + ").";
         assertTrue(msg, copySupport.projectOpened);
         assertEquals(msg, 1, opened - closed);
+        assertEquals("Call stack should contain one element", 1, copySupport.calls.size());
     }
 
     private void assertCopySupportClosed(CopySupport copySupport) {
@@ -106,6 +122,7 @@ public class CopySupportTest extends NbTestCase {
         String msg = "Copy support should be closed (opened: " + opened + ", closed: " + closed + ").";
         assertFalse(msg, copySupport.projectOpened);
         assertEquals(msg, opened, closed);
+        assertTrue("Call stack should be empty", copySupport.calls.isEmpty());
     }
 
 }
