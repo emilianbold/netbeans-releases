@@ -1192,7 +1192,9 @@ public class Installer extends ModuleInstall implements Runnable {
             File f = getHeapDump();
             assert (f != null);
             assert (f.exists() && f.canRead());
+            assert f.length() != 0 : "Heapdump has zero size!";
             long progressUnit = f.length() / 1000;
+            if (progressUnit == 0) progressUnit = 1; //prevent #196630
             long alreadyWritten = 0;
             os.println("Content-Disposition: form-data; name=\"heapdump\"; filename=\"" + id + "_heapdump.gz\"");
             os.println("Content-Type: x-application/heap");

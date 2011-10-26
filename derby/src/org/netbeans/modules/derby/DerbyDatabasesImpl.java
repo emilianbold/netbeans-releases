@@ -399,7 +399,12 @@ public final class DerbyDatabasesImpl {
         File databaseFile = new File(systemHome, dbname);
         FileObject fo = FileUtil.toFileObject(databaseFile);
         try {
-            fo.delete();
+            if (fo != null) {
+                fo.delete();
+            } else {
+                Logger.getLogger(DerbyServerNode.class.getName()).log(Level.WARNING, databaseFile + " has no corresponding FileObject.");
+                return false;
+            }
         } catch (IOException ex) {
             Logger.getLogger(DerbyServerNode.class.getName()).log(Level.WARNING, ex.getLocalizedMessage());
             return false;
