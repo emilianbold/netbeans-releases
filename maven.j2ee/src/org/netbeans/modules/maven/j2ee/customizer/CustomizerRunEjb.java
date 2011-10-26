@@ -40,7 +40,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.maven.j2ee.ejb;
+package org.netbeans.modules.maven.j2ee.customizer;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -69,7 +69,7 @@ import org.netbeans.modules.maven.j2ee.Wrapper;
  *
  * @author  mkleint
  */
-public class EjbRunCustomizerPanel extends javax.swing.JPanel {
+public class CustomizerRunEjb extends AbstractCustomizer {
 
     private Project project;
     private ModelHandle handle;
@@ -81,7 +81,7 @@ public class EjbRunCustomizerPanel extends javax.swing.JPanel {
     /**
      * Creates new form EjbRunCustomizerPanel
      */
-    public EjbRunCustomizerPanel(ModelHandle handle, Project project) {
+    public CustomizerRunEjb(ModelHandle handle, Project project) {
         initComponents();
         this.handle = handle;
         this.project = project;
@@ -164,6 +164,7 @@ public class EjbRunCustomizerPanel extends javax.swing.JPanel {
 //        }
     }
 
+    @Override
     void applyChangesInAWT() {
         // USG logging
         Object obj = comServer.getSelectedItem();
@@ -175,7 +176,7 @@ public class EjbRunCustomizerPanel extends javax.swing.JPanel {
         }
     }
 
-
+    @Override
     void applyChanges() {
         //#109507 workaround -
         SessionContent sc = project.getLookup().lookup(SessionContent.class);
@@ -203,15 +204,15 @@ public class EjbRunCustomizerPanel extends javax.swing.JPanel {
         jCheckBoxDeployOnSave = new javax.swing.JCheckBox();
         dosDescription = new javax.swing.JLabel();
 
-        lblServer.setText(org.openide.util.NbBundle.getMessage(EjbRunCustomizerPanel.class, "LBL_Server")); // NOI18N
+        lblServer.setText(org.openide.util.NbBundle.getMessage(CustomizerRunEjb.class, "LBL_Server")); // NOI18N
 
-        lblJ2EEVersion.setText(org.openide.util.NbBundle.getMessage(EjbRunCustomizerPanel.class, "LBL_J2EE_Version")); // NOI18N
+        lblJ2EEVersion.setText(org.openide.util.NbBundle.getMessage(CustomizerRunEjb.class, "LBL_J2EE_Version")); // NOI18N
 
         txtJ2EEVersion.setEditable(false);
 
-        org.openide.awt.Mnemonics.setLocalizedText(jCheckBoxDeployOnSave, org.openide.util.NbBundle.getMessage(EjbRunCustomizerPanel.class, "EjbRunCustomizerPanel.jCheckBoxDeployOnSave.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jCheckBoxDeployOnSave, org.openide.util.NbBundle.getMessage(CustomizerRunEjb.class, "EjbRunCustomizerPanel.jCheckBoxDeployOnSave.text")); // NOI18N
 
-        dosDescription.setText(org.openide.util.NbBundle.getMessage(EjbRunCustomizerPanel.class, "EjbRunCustomizerPanel.dosDescription.text")); // NOI18N
+        dosDescription.setText(org.openide.util.NbBundle.getMessage(CustomizerRunEjb.class, "EjbRunCustomizerPanel.dosDescription.text")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);

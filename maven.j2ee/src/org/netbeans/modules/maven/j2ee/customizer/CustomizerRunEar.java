@@ -40,7 +40,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.maven.j2ee.ear;
+package org.netbeans.modules.maven.j2ee.customizer;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -53,7 +53,7 @@ import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
 import org.netbeans.modules.maven.api.customizer.support.ComboBoxUpdater;
 import org.netbeans.modules.maven.api.customizer.ModelHandle;
-import static org.netbeans.modules.maven.j2ee.web.WebRunCustomizerPanel.PROP_SHOW_IN_BROWSER;
+import static org.netbeans.modules.maven.j2ee.customizer.CustomizerRunWeb.PROP_SHOW_IN_BROWSER;
 import org.netbeans.modules.maven.j2ee.POHImpl;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.Ear;
@@ -72,7 +72,7 @@ import org.openide.util.Exceptions;
  *
  * @author  mkleint
  */
-public class EarRunCustomizerPanel extends javax.swing.JPanel {
+public class CustomizerRunEar extends AbstractCustomizer {
 
     private Project project;
     private ModelHandle handle;
@@ -84,7 +84,7 @@ public class EarRunCustomizerPanel extends javax.swing.JPanel {
     /**
      * Creates new form EjbRunCustomizerPanel
      */
-    public EarRunCustomizerPanel(ModelHandle handle, Project project) {
+    public CustomizerRunEar(ModelHandle handle, Project project) {
         initComponents();
         this.handle = handle;
         this.project = project;
@@ -172,6 +172,7 @@ public class EarRunCustomizerPanel extends javax.swing.JPanel {
 //        }
     }
 
+    @Override
     void applyChangesInAWT() {
         // USG logging
         boolean bool = cbBrowser.isSelected();
@@ -190,6 +191,7 @@ public class EarRunCustomizerPanel extends javax.swing.JPanel {
         }
     }
 
+    @Override
     void applyChanges() {
         //#109507 workaround
         SessionContent sc = project.getLookup().lookup(SessionContent.class);
@@ -218,17 +220,17 @@ public class EarRunCustomizerPanel extends javax.swing.JPanel {
         jCheckBoxDeployOnSave = new javax.swing.JCheckBox();
         dosDescription = new javax.swing.JLabel();
 
-        lblServer.setText(org.openide.util.NbBundle.getMessage(EarRunCustomizerPanel.class, "LBL_Server")); // NOI18N
+        lblServer.setText(org.openide.util.NbBundle.getMessage(CustomizerRunEar.class, "LBL_Server")); // NOI18N
 
-        lblJ2EEVersion.setText(org.openide.util.NbBundle.getMessage(EarRunCustomizerPanel.class, "LBL_J2EE_Version")); // NOI18N
+        lblJ2EEVersion.setText(org.openide.util.NbBundle.getMessage(CustomizerRunEar.class, "LBL_J2EE_Version")); // NOI18N
 
         txtJ2EEVersion.setEditable(false);
 
-        cbBrowser.setText(org.openide.util.NbBundle.getMessage(EarRunCustomizerPanel.class, "LBL_Display_on_Run")); // NOI18N
+        cbBrowser.setText(org.openide.util.NbBundle.getMessage(CustomizerRunEar.class, "LBL_Display_on_Run")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(jCheckBoxDeployOnSave, org.openide.util.NbBundle.getMessage(EarRunCustomizerPanel.class, "EarRunCustomizerPanel.jCheckBoxDeployOnSave.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jCheckBoxDeployOnSave, org.openide.util.NbBundle.getMessage(CustomizerRunEar.class, "EarRunCustomizerPanel.jCheckBoxDeployOnSave.text")); // NOI18N
 
-        dosDescription.setText(org.openide.util.NbBundle.getMessage(EarRunCustomizerPanel.class, "EarRunCustomizerPanel.dosDescription.text")); // NOI18N
+        dosDescription.setText(org.openide.util.NbBundle.getMessage(CustomizerRunEar.class, "EarRunCustomizerPanel.dosDescription.text")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -243,8 +245,8 @@ public class EarRunCustomizerPanel extends javax.swing.JPanel {
                             .addComponent(lblServer))
                         .addGap(14, 14, 14)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(comServer, javax.swing.GroupLayout.Alignment.TRAILING, 0, 277, Short.MAX_VALUE)
-                            .addComponent(txtJ2EEVersion, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 277, Short.MAX_VALUE)))
+                            .addComponent(comServer, javax.swing.GroupLayout.Alignment.TRAILING, 0, 309, Short.MAX_VALUE)
+                            .addComponent(txtJ2EEVersion, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 309, Short.MAX_VALUE)))
                     .addComponent(cbBrowser)
                     .addGroup(layout.createSequentialGroup()
                         .addGap(12, 12, 12)
@@ -272,7 +274,7 @@ public class EarRunCustomizerPanel extends javax.swing.JPanel {
                 .addContainerGap(90, Short.MAX_VALUE))
         );
 
-        cbBrowser.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EarRunCustomizerPanel.class, "EarRunCustomizerPanel.cbBrowser.AccessibleContext.accessibleDescription")); // NOI18N
+        cbBrowser.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerRunEar.class, "EarRunCustomizerPanel.cbBrowser.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

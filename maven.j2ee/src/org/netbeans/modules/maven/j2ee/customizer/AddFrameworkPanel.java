@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.maven.webframeworks;
+package org.netbeans.modules.maven.j2ee.customizer;
 
 import java.awt.Component;
 import java.util.LinkedList;
@@ -123,7 +123,7 @@ public class AddFrameworkPanel extends javax.swing.JPanel {
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 163, Short.MAX_VALUE))
         );
 
-        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/maven/webframeworks/Bundle"); // NOI18N
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/maven/j2ee/customizer/Bundle"); // NOI18N
         getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_AddFramework")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables

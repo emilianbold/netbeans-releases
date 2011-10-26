@@ -40,7 +40,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.maven.webframeworks;
+package org.netbeans.modules.maven.j2ee.customizer;
 import java.awt.Component;
 import java.awt.Font;
 import java.text.MessageFormat;
@@ -63,7 +63,6 @@ import javax.swing.event.ListSelectionListener;
 import org.netbeans.modules.maven.api.customizer.ModelHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.maven.j2ee.LoggingUtils;
 import org.netbeans.modules.web.api.webmodule.ExtenderController;
 import org.netbeans.modules.web.spi.webmodule.WebModuleExtender;
 
@@ -82,7 +81,7 @@ import org.openide.WizardDescriptor;
  * 
  * @author mkleint
  */
-public class WebFrameworksPanel extends javax.swing.JPanel implements ListSelectionListener {
+public class CustomizerFrameworks extends AbstractCustomizer implements ListSelectionListener {
     
     private final ProjectCustomizer.Category category;
     private Project project;
@@ -96,7 +95,7 @@ public class WebFrameworksPanel extends javax.swing.JPanel implements ListSelect
     
     
     /** Creates new form WebFrameworksPanel */
-    public WebFrameworksPanel(ProjectCustomizer.Category category, ModelHandle handle, Project prj) {
+    public CustomizerFrameworks(ProjectCustomizer.Category category, ModelHandle handle, Project prj) {
         this.category = category;
         project = prj;
         initComponents();
@@ -122,6 +121,7 @@ public class WebFrameworksPanel extends javax.swing.JPanel implements ListSelect
         });
     }
 
+    @Override
     void applyChanges() {
         WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
         for (int i = 0; i < newExtenders.size(); i++) {
@@ -141,11 +141,11 @@ public class WebFrameworksPanel extends javax.swing.JPanel implements ListSelect
         if ((addedFrameworks != null) && (addedFrameworks.size() > 0)) {
             LogRecord logRecord = new LogRecord(Level.INFO, "UI_PROJECT_CONFIG_MAVEN_FRAMEWORK_ADDED");  //NOI18N
             logRecord.setLoggerName("org.netbeans.ui.web.project"); //NOI18N
-            logRecord.setResourceBundle(NbBundle.getBundle(WebFrameworksPanel.class));
+            logRecord.setResourceBundle(NbBundle.getBundle(CustomizerFrameworks.class));
             logRecord.setParameters(addedFrameworks.toArray());
             Logger.getLogger("org.netbeans.ui.web.project").log(logRecord);
-            //LoggingUtils.logUI(this.getClass(), "UI_PROJECT_CONFIG_MAVEN_FRAMEWORK_ADDED", addedFrameworks);  //NOI18N
-            //LoggingUtils.logUsage(this.getClass(), "USG_PROJECT_CONFIG_MAVEN_FRAMEWORK_ADDED", addedFrameworks);  //NOI18N
+            //LoggingUtils.logUI(this.getClass(), "UI_WEB_PROJECT_FRAMEWORK_ADDED", addedFrameworks);  //NOI18N
+            //LoggingUtils.logUsage(this.getClass(), "USG_PROJECT_CONFIG_WEB", new Object[] {server, addedFrameworks});  //NOI18N
         }
     }
     
@@ -205,19 +205,19 @@ public class WebFrameworksPanel extends javax.swing.JPanel implements ListSelect
         jLabelConfig = new javax.swing.JLabel();
 
         jLabelFrameworks.setLabelFor(jListFrameworks);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabelFrameworks, org.openide.util.NbBundle.getMessage(WebFrameworksPanel.class, "LBL_UsedFrameworks")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelFrameworks, org.openide.util.NbBundle.getMessage(CustomizerFrameworks.class, "LBL_UsedFrameworks")); // NOI18N
 
         jScrollPane1.setViewportView(jListFrameworks);
         jListFrameworks.getAccessibleContext().setAccessibleDescription("Used Frameworks");
 
-        org.openide.awt.Mnemonics.setLocalizedText(jButtonAdd, org.openide.util.NbBundle.getMessage(WebFrameworksPanel.class, "LBL_AddFramework")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jButtonAdd, org.openide.util.NbBundle.getMessage(CustomizerFrameworks.class, "LBL_AddFramework")); // NOI18N
         jButtonAdd.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButtonAddActionPerformed(evt);
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(btnRemoveAdded, org.openide.util.NbBundle.getMessage(WebFrameworksPanel.class, "BTN_Remove")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(btnRemoveAdded, org.openide.util.NbBundle.getMessage(CustomizerFrameworks.class, "BTN_Remove")); // NOI18N
         btnRemoveAdded.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnRemoveAddedActionPerformed(evt);
@@ -235,7 +235,7 @@ public class WebFrameworksPanel extends javax.swing.JPanel implements ListSelect
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabelFrameworks)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 398, Short.MAX_VALUE))
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 417, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(jButtonAdd)
@@ -289,7 +289,7 @@ public class WebFrameworksPanel extends javax.swing.JPanel implements ListSelect
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 12);
         inner.add(panel, gridBagConstraints);
  
-        DialogDescriptor desc = new DialogDescriptor(inner, NbBundle.getMessage(WebFrameworksPanel.class, "LBL_SelectWebExtension_DialogTitle")); //NOI18N
+        DialogDescriptor desc = new DialogDescriptor(inner, NbBundle.getMessage(CustomizerFrameworks.class, "LBL_SelectWebExtension_DialogTitle")); //NOI18N
         Object res = DialogDisplayer.getDefault().notify(desc);
         if (res.equals(NotifyDescriptor.YES_OPTION)) {
             List<WebFrameworkProvider> newFrameworks = panel.getSelectedFrameworks();
@@ -380,7 +380,7 @@ public class WebFrameworksPanel extends javax.swing.JPanel implements ListSelect
             }
             WebModuleExtender extender = extenders.get(framework);
             if (extender != null) {
-                String message = MessageFormat.format(NbBundle.getMessage(WebFrameworksPanel.class, "LBL_FrameworkConfiguration"), new Object[]{framework.getName()}); //NOI18N
+                String message = MessageFormat.format(NbBundle.getMessage(CustomizerFrameworks.class, "LBL_FrameworkConfiguration"), new Object[]{framework.getName()}); //NOI18N
                 jLabelConfig.setText(message);
                 jPanelConfig.removeAll();
 

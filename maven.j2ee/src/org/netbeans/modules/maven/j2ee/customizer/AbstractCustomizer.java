@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,11 +37,19 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.maven.j2ee.customizer;
 
-package org.netbeans.modules.maven.webframeworks;
+import javax.swing.JPanel;
 
-public class WizardProperties {
-    public static final String EXTENDERS = "extenders"; // NOI18N
+/**
+ *
+ * @author Martin Janicek
+ */
+public abstract class AbstractCustomizer extends JPanel {
+    
+     void applyChanges() {}
+    
+     void applyChangesInAWT() {}
 }

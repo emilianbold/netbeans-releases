@@ -40,7 +40,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.maven.j2ee.web;
+package org.netbeans.modules.maven.j2ee.customizer;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -77,6 +77,8 @@ import static org.netbeans.modules.maven.j2ee.ExecutionChecker.CLIENTURLPART;
 import org.netbeans.modules.maven.j2ee.MavenJavaEEConstants;
 import org.netbeans.modules.maven.j2ee.SessionContent;
 import org.netbeans.modules.maven.j2ee.Wrapper;
+import org.netbeans.modules.maven.j2ee.web.WebModuleImpl;
+import org.netbeans.modules.maven.j2ee.web.WebModuleProviderImpl;
 import org.netbeans.modules.maven.model.pom.Dependency;
 import org.netbeans.modules.maven.model.pom.Properties;
 import org.netbeans.modules.web.api.webmodule.WebModule;
@@ -90,7 +92,7 @@ import org.openide.util.NbBundle;
  *
  * @author  mkleint
  */
-public class WebRunCustomizerPanel extends javax.swing.JPanel {
+public class CustomizerRunWeb extends AbstractCustomizer {
     public static final String PROP_SHOW_IN_BROWSER = "netbeans.deploy.showBrowser"; //NOI18N
     private Project project;
     private ModelHandle handle;
@@ -116,7 +118,7 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
     private CheckBoxUpdater deployOnSaveUpdater;
     
     /** Creates new form WebRunCustomizerPanel */
-    public WebRunCustomizerPanel(final ModelHandle handle, Project project) {
+    public CustomizerRunWeb(final ModelHandle handle, Project project) {
         initComponents();
         this.handle = handle;
         this.project = project;
@@ -323,7 +325,7 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
         dosDescription = new javax.swing.JLabel();
 
         lblServer.setLabelFor(comServer);
-        org.openide.awt.Mnemonics.setLocalizedText(lblServer, org.openide.util.NbBundle.getMessage(WebRunCustomizerPanel.class, "LBL_Server")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(lblServer, org.openide.util.NbBundle.getMessage(CustomizerRunWeb.class, "LBL_Server")); // NOI18N
 
         comServer.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -332,29 +334,29 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
         });
 
         lblJ2EEVersion.setLabelFor(txtJ2EEVersion);
-        org.openide.awt.Mnemonics.setLocalizedText(lblJ2EEVersion, org.openide.util.NbBundle.getMessage(WebRunCustomizerPanel.class, "LBL_J2EE_Version")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(lblJ2EEVersion, org.openide.util.NbBundle.getMessage(CustomizerRunWeb.class, "LBL_J2EE_Version")); // NOI18N
 
         txtJ2EEVersion.setEditable(false);
 
         lblContextPath.setLabelFor(txtContextPath);
-        org.openide.awt.Mnemonics.setLocalizedText(lblContextPath, org.openide.util.NbBundle.getMessage(WebRunCustomizerPanel.class, "LBL_Context_Path")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(lblContextPath, org.openide.util.NbBundle.getMessage(CustomizerRunWeb.class, "LBL_Context_Path")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(cbBrowser, org.openide.util.NbBundle.getMessage(WebRunCustomizerPanel.class, "LBL_Display_on_Run")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(cbBrowser, org.openide.util.NbBundle.getMessage(CustomizerRunWeb.class, "LBL_Display_on_Run")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(lblHint1, org.openide.util.NbBundle.getMessage(WebRunCustomizerPanel.class, "LBL_Hint1")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(lblHint1, org.openide.util.NbBundle.getMessage(CustomizerRunWeb.class, "LBL_Hint1")); // NOI18N
 
         lblRelativeUrl.setLabelFor(txtRelativeUrl);
-        org.openide.awt.Mnemonics.setLocalizedText(lblRelativeUrl, org.openide.util.NbBundle.getMessage(WebRunCustomizerPanel.class, "LBL_Relative_URL")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(lblRelativeUrl, org.openide.util.NbBundle.getMessage(CustomizerRunWeb.class, "LBL_Relative_URL")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(lblHint2, org.openide.util.NbBundle.getMessage(WebRunCustomizerPanel.class, "LBL_Hint2")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(lblHint2, org.openide.util.NbBundle.getMessage(CustomizerRunWeb.class, "LBL_Hint2")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(lblProfile, org.openide.util.NbBundle.getMessage(WebRunCustomizerPanel.class, "WebRunCustomizerPanel.lblProfile.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(lblProfile, org.openide.util.NbBundle.getMessage(CustomizerRunWeb.class, "CustomizerRunWeb.lblProfile.text")); // NOI18N
 
         comProfile.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
-        org.openide.awt.Mnemonics.setLocalizedText(jCheckBoxDeployOnSave, org.openide.util.NbBundle.getMessage(WebRunCustomizerPanel.class, "WebRunCustomizerPanel.jCheckBoxDeployOnSave.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jCheckBoxDeployOnSave, org.openide.util.NbBundle.getMessage(CustomizerRunWeb.class, "CustomizerRunWeb.jCheckBoxDeployOnSave.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(dosDescription, org.openide.util.NbBundle.getMessage(WebRunCustomizerPanel.class, "WebRunCustomizerPanel.dosDescription.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(dosDescription, org.openide.util.NbBundle.getMessage(CustomizerRunWeb.class, "CustomizerRunWeb.dosDescription.text")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -365,7 +367,7 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jCheckBoxDeployOnSave)
-                        .addContainerGap(368, Short.MAX_VALUE))
+                        .addContainerGap(404, Short.MAX_VALUE))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addComponent(cbBrowser, javax.swing.GroupLayout.Alignment.LEADING)
@@ -376,8 +378,8 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                                     .addGroup(layout.createSequentialGroup()
                                         .addComponent(lblHint2)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 243, Short.MAX_VALUE))
-                                    .addComponent(txtRelativeUrl, javax.swing.GroupLayout.DEFAULT_SIZE, 394, Short.MAX_VALUE)))
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 324, Short.MAX_VALUE))
+                                    .addComponent(txtRelativeUrl, javax.swing.GroupLayout.DEFAULT_SIZE, 431, Short.MAX_VALUE)))
                             .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(lblContextPath)
@@ -385,14 +387,14 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
                                     .addComponent(lblServer))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(comServer, javax.swing.GroupLayout.Alignment.TRAILING, 0, 387, Short.MAX_VALUE)
-                                    .addComponent(txtContextPath, javax.swing.GroupLayout.DEFAULT_SIZE, 387, Short.MAX_VALUE)
+                                    .addComponent(comServer, javax.swing.GroupLayout.Alignment.TRAILING, 0, 430, Short.MAX_VALUE)
+                                    .addComponent(txtContextPath, javax.swing.GroupLayout.DEFAULT_SIZE, 430, Short.MAX_VALUE)
                                     .addGroup(layout.createSequentialGroup()
-                                        .addComponent(txtJ2EEVersion, javax.swing.GroupLayout.DEFAULT_SIZE, 150, Short.MAX_VALUE)
+                                        .addComponent(txtJ2EEVersion, javax.swing.GroupLayout.DEFAULT_SIZE, 189, Short.MAX_VALUE)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                         .addComponent(lblProfile)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(comProfile, 0, 160, Short.MAX_VALUE)))))
+                                        .addComponent(comProfile, 0, 199, Short.MAX_VALUE)))))
                         .addGap(0, 0, 0))))
             .addGroup(layout.createSequentialGroup()
                 .addGap(24, 24, 24)
@@ -432,10 +434,10 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        txtJ2EEVersion.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WebRunCustomizerPanel.class, "WebRunCustomizerPanel.txtJ2EEVersion.AccessibleContext.accessibleDescription")); // NOI18N
-        txtContextPath.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WebRunCustomizerPanel.class, "WebRunCustomizerPanel.txtContextPath.AccessibleContext.accessibleDescription")); // NOI18N
-        cbBrowser.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WebRunCustomizerPanel.class, "WebRunCustomizerPanel.cbBrowser.AccessibleContext.accessibleDescription")); // NOI18N
-        txtRelativeUrl.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WebRunCustomizerPanel.class, "WebRunCustomizerPanel.txtRelativeUrl.AccessibleContext.accessibleDescription")); // NOI18N
+        txtJ2EEVersion.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerRunWeb.class, "WebRunCustomizerPanel.txtJ2EEVersion.AccessibleContext.accessibleDescription")); // NOI18N
+        txtContextPath.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerRunWeb.class, "WebRunCustomizerPanel.txtContextPath.AccessibleContext.accessibleDescription")); // NOI18N
+        cbBrowser.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerRunWeb.class, "WebRunCustomizerPanel.cbBrowser.AccessibleContext.accessibleDescription")); // NOI18N
+        txtRelativeUrl.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerRunWeb.class, "WebRunCustomizerPanel.txtRelativeUrl.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void comServerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_comServerActionPerformed
@@ -449,7 +451,7 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
             if (txtContextPath.isEnabled()) {
                 txtContextPath.setEnabled(false);
                 oldContextPath = txtContextPath.getText();
-                txtContextPath.setText(NbBundle.getMessage(WebRunCustomizerPanel.class, "WebRunCustomizerPanel.contextPathDisabled"));
+                txtContextPath.setText(NbBundle.getMessage(CustomizerRunWeb.class, "WebRunCustomizerPanel.contextPathDisabled"));
             }
         } else {
             if (!txtContextPath.isEnabled()) {
@@ -502,6 +504,7 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
         }
     }
 
+    @Override
     void applyChangesInAWT() {
         assert SwingUtilities.isEventDispatchThread();
         boolean bool = cbBrowser.isSelected();
@@ -522,6 +525,7 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
     }
 
     //this megod is called after the model was saved.
+    @Override
     void applyChanges() {
         assert !SwingUtilities.isEventDispatchThread();
 
@@ -532,10 +536,9 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
         }
 
         ProjectManager.mutex().postReadRequest(new Runnable() {
+
             @Override
             public void run() {
-                //TODO - not sure this is necessary since the PoHImpl listens on project changes.
-                //any save of teh project shall effectively caus ethe module server change..
                 POHImpl poh = project.getLookup().lookup(POHImpl.class);
                 poh.hackModuleServerChange(false);
                 moduleProvider = project.getLookup().lookup(WebModuleProviderImpl.class);
