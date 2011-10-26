@@ -780,11 +780,26 @@ public class MenuEditLayer extends JPanel {
     }
     
     void addSelectedRADComponent(RADComponent comp) {
-        List<RADComponent> comps = new ArrayList<RADComponent>();
-        comps.addAll(selectedComponents);
-        comps.add(comp);
-        setSelectedRADComponents(comps);
-        formDesigner.addComponentToSelection(comp);
+        if (!selectedComponents.contains(comp)) {
+            List<RADComponent> comps = new ArrayList<RADComponent>();
+            comps.addAll(selectedComponents);
+            comps.add(comp);
+            setSelectedRADComponents(comps);
+            formDesigner.addComponentToSelection(comp);
+        }
+    }
+    
+    // #119217: toggle clicked component's selection status
+    void toggleSelectedRADComponent(RADComponent comp) {
+        if (formDesigner.getSelectedComponents().contains(comp)) { // component is already selected so remove it from selection
+            selectedComponents.remove(comp);
+            List<RADComponent> comps = new ArrayList<RADComponent>();
+            comps.addAll(selectedComponents);
+            setSelectedRADComponents(comps);
+            formDesigner.removeComponentFromSelection(comp);
+        } else {
+            addSelectedRADComponent(comp);
+        }
     }
     
     void setSelectedRADComponents(List<RADComponent> comps) {
@@ -1449,7 +1464,11 @@ public class MenuEditLayer extends JPanel {
                         openMenu(rad, c);
                         glassLayer.requestFocusInWindow();                        
                         if(DropTargetLayer.isMultiselectPressed(e)) {
-                            addSelectedRADComponent(rad);
+                            if(e.isShiftDown()) {// add component to selection
+                                addSelectedRADComponent(rad);
+                            } else if (e.isControlDown()) {// #119217: toggle component's selection status
+                                toggleSelectedRADComponent(rad);
+                            }
                         } else {
                             setSelectedRADComponent(rad);
                         }
@@ -1579,7 +1598,11 @@ public class MenuEditLayer extends JPanel {
                         RADComponent rad = formDesigner.getMetaComponent(c);
                         //add to selection if shift is down, instead of replacing
                         if(DropTargetLayer.isMultiselectPressed(e)) {
-                            addSelectedRADComponent(rad);
+                            if(e.isShiftDown()) {// add component to selection
+                                addSelectedRADComponent(rad);
+                            } else if (e.isControlDown()) {// #119217: toggle component's selection status
+                                toggleSelectedRADComponent(rad);
+                            }
                         } else {
                             setSelectedRADComponent(rad);
                         }
