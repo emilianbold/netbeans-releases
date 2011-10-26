@@ -70,18 +70,11 @@ public final class TestUtils {
     private static final Logger PHP_PROJECT_LOGGER = Logger.getLogger(PhpProject.class.getName());
     private static final TestLogHandler TEST_LOG_HANDLER = new TestLogHandler();
 
-
     static {
         MockServices.setServices(MockInstalledFileLocator.class);
-        System.setProperty("netbeans.user", System.getProperty("java.io.tmpdir"));
-        System.setProperty("xtest.php.home", System.getProperty("java.io.tmpdir"));
     }
 
     private TestUtils() {
-    }
-
-    public static void init() {
-        // noop
     }
 
     public static PhpProject createPhpProject(File workDir) throws IOException {
