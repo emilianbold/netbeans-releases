@@ -84,6 +84,21 @@ public class MavenCompositePanelProvider implements ProjectCustomizer.CompositeC
     
     @Override
     public Category createCategory(Lookup context) {
+        Project project = context.lookup(Project.class);
+        String projectType = project.getLookup().lookup(NbMavenProject.class).getPackagingType();
+        if (FRAMEWORKS.equals(type)) {
+            if (NbMavenProject.TYPE_WAR.equalsIgnoreCase(projectType) == false) {
+                return null; // We want to create Framework customizer only for Maven Web Project
+            }
+        }
+        if (RUN.equals(type)) {
+            if ((NbMavenProject.TYPE_WAR.equalsIgnoreCase(projectType) == false) &&
+                (NbMavenProject.TYPE_EJB.equalsIgnoreCase(projectType) == false) &&
+                (NbMavenProject.TYPE_EAR.equalsIgnoreCase(projectType) == false)) {
+                return null; // We want to create Run customizer only for Web/Ejb/Ear projects
+            }
+        }
+        
         return ProjectCustomizer.Category.create(type, NbBundle.getMessage(MavenCompositePanelProvider.class,"PNL_" + type), null); // NOI18N
     }
 
