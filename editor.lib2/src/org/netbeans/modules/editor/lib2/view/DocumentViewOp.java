@@ -584,7 +584,7 @@ public final class DocumentViewOp
         return isAnyStatusBit(ACCURATE_SPAN);
     }
 
-    private void updateVisibleDimension() { // Called only with textComponent != null
+    void updateVisibleDimension() { // Called only with textComponent != null
         // Must be called under mutex
         JTextComponent textComponent = docView.getTextComponent();
         Component parent = textComponent.getParent();
@@ -610,11 +610,13 @@ public final class DocumentViewOp
             }
             newRect = viewport.getViewRect();
 
-        } else {
+        } else { // No parent viewport
+            uninstallFromViewport();
             Dimension size = textComponent.getSize();
             newRect = new Rectangle(0, 0, size.width, size.height);
         }
 
+        docView.updateExtraVirtualHeight(listeningOnViewport);
         boolean widthDiffers = (newRect.width != visibleRect.width);
         visibleRect = newRect;
         if (widthDiffers) {
