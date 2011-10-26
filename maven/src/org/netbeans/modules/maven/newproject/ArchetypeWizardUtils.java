@@ -59,6 +59,7 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.repository.RepositorySystem;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -68,7 +69,6 @@ import org.netbeans.modules.maven.api.archetype.Archetype;
 import org.netbeans.modules.maven.api.archetype.ProjectInfo;
 import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.execute.BeanRunConfig;
-import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.pom.Dependency;
 import org.netbeans.modules.maven.model.pom.POMModel;
@@ -112,7 +112,7 @@ public class ArchetypeWizardUtils {
         config.setProperty("archetypeArtifactId", arch.getArtifactId()); //NOI18N
         config.setProperty("archetypeVersion", arch.getVersion()); //NOI18N
         String repo = arch.getRepository();
-        config.setProperty("archetypeRepository", repo != null ? repo : RepositoryPreferences.REPO_CENTRAL); //NOI18N
+        config.setProperty("archetypeRepository", repo != null ? repo : RepositorySystem.DEFAULT_REMOTE_REPO_URL); //NOI18N
         config.setProperty("groupId", vi.groupId); //NOI18N
         config.setProperty("artifactId", vi.artifactId); //NOI18N
         config.setProperty("version", vi.version); //NOI18N

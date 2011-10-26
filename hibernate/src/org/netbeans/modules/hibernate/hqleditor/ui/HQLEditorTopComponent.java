@@ -53,6 +53,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -70,6 +72,7 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
@@ -410,9 +413,10 @@ public final class HQLEditorTopComponent extends TopComponent {
         private void process() {
             if (hqlParserTask != null && !hqlParserTask.isFinished() && (hqlParserTask.getDelay() != 0)) {
                 hqlParserTask.cancel();
+            } else if(!requestProcessor.isShutdown()) {
+                hqlParserTask = requestProcessor.post(new ParseHQL(), 1000);
+                isSqlTranslationProcessDone = false;
             }
-            hqlParserTask = requestProcessor.post(new ParseHQL(), 1000);
-            isSqlTranslationProcessDone = false;
         }
     }
 
@@ -420,7 +424,25 @@ public final class HQLEditorTopComponent extends TopComponent {
         Node node = activatedNodes[0];
         DataObject dO = node.getCookie(DataObject.class);
         if (dO instanceof HibernateCfgDataObject) {
-
+            
+            dO.addPropertyChangeListener(new PropertyChangeListener() {
+                @Override
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if(DataObject.PROP_VALID.equals(evt.getPropertyName()) && Boolean.FALSE.equals(evt.getNewValue())){
+                        if(SwingUtilities.isEventDispatchThread()){
+                            close();//need to close if corresponding dataobject was invalidated (deleted)
+                        } else {
+                            SwingUtilities.invokeLater(new Runnable() {
+                               @Override
+                                public void run() {
+                                    close();//need to close if corresponding dataobject was invalidated (deleted)
+                                }
+                            });
+                        }
+                    }
+                }
+            });
+            
             Project enclosingProject = FileOwnerQuery.getOwner(dO.getPrimaryFile());
             env = enclosingProject.getLookup().lookup(HibernateEnvironment.class);
             if (env == null) {

@@ -52,10 +52,7 @@ import java.lang.reflect.*;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.DefaultListModel;
-import javax.swing.JComponent;
-import javax.swing.ListModel;
+import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.TreeModelListener;
 import javax.swing.plaf.ComponentUI;
@@ -942,7 +939,7 @@ public class FormUtils
 
     public static void setupEditorPane(javax.swing.JEditorPane editor, FileObject srcFile, int ccPosition) {
         FormServices services = Lookup.getDefault().lookup(FormServices.class);
-        services.setupEditorPane(editor, srcFile, ccPosition);
+        services.setupCodeEditorPane(editor, srcFile, ccPosition);
     }
 
     public static void setupTextUndoRedo(javax.swing.text.JTextComponent editor) {
@@ -1841,6 +1838,28 @@ public class FormUtils
             standard = name.startsWith("java.awt.") || name.startsWith("javax.swing."); // NOI18N
         }
         return standard;
+    }
+
+    // Copy of JComponent.getVisibleRect() that is (for some odd reason) not
+    // defined in java.awt.Component
+    static Rectangle getVisibleRect(Component comp) {
+        Rectangle rect = new Rectangle();
+        computeVisibleRect(comp, rect);
+        return rect;
+    }
+    
+    private static void computeVisibleRect(Component c, Rectangle visibleRect) {
+        Container p = c.getParent();
+        Rectangle bounds = c.getBounds();
+
+        if (p == null || p instanceof Window || p instanceof java.applet.Applet) {
+            visibleRect.setBounds(0, 0, bounds.width, bounds.height);
+        } else {
+            computeVisibleRect(p, visibleRect);
+            visibleRect.x -= bounds.x;
+            visibleRect.y -= bounds.y;
+            SwingUtilities.computeIntersection(0,0,bounds.width,bounds.height,visibleRect);
+        }
     }
 
 }

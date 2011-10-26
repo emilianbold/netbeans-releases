@@ -107,7 +107,7 @@ public class StrikeIronSearch {
                 ClassLoader orig = Thread.currentThread().getContextClassLoader();
                 Thread.currentThread().setContextClassLoader(StrikeIronSearch.class.getClassLoader());
                 try {
-                    JAXBContext jc = JAXBContext.newInstance("com.strikeiron.search");
+                    JAXBContext jc = JAXBContext.newInstance("com.strikeiron.search", orig);
                     Unmarshaller unmarshaller = jc.createUnmarshaller();
                     SearchResponse resp = (SearchResponse) unmarshaller.unmarshal(node);
                     return resp.getSearchResult();

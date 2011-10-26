@@ -82,6 +82,8 @@ import org.netbeans.modules.form.FormEditor;
 import org.netbeans.modules.form.FormLAF;
 import org.netbeans.modules.form.FormLoaderSettings;
 import org.netbeans.modules.form.FormModel;
+import org.netbeans.modules.form.FormModelEvent;
+import org.netbeans.modules.form.FormModelListener;
 import org.netbeans.modules.form.FormUtils;
 import org.netbeans.modules.form.RADComponentNode;
 import org.netbeans.modules.form.RADVisualComponent;
@@ -125,6 +127,8 @@ public class GridDesigner extends JPanel {
     private PropertySheet sheet;
     /** Grid customizer (part of the panel on the left side). */
     private GridCustomizer customizer;
+    /** Form model. */
+    private FormModel formModel;
     
     /** Default gap column width */
     private static final int DEFAULT_GAP_WIDTH = 5;
@@ -152,7 +156,7 @@ public class GridDesigner extends JPanel {
      */
     public void setDesignedContainer(RADVisualContainer metaContainer) {
         removeAll();
-        FormModel formModel = metaContainer.getFormModel();
+        formModel = metaContainer.getFormModel();
         setLayout(new BorderLayout());
         JSplitPane splitPane = new JSplitPane();
         innerPane = new JPanel() {
@@ -193,13 +197,7 @@ public class GridDesigner extends JPanel {
         toolBar.add(gapHeightSpinner);
         gapHeightSpinnerBox = Box.createRigidArea(new Dimension(15,10));
         toolBar.add(gapHeightSpinnerBox);
-        support.addUndoRedoListener(new UndoRedoSupport.UndoRedoPerformedListener() {
-            @Override
-            public void UndoRedoPerformed(boolean undo) {
-                boolean gapSupport = gridManager.getGridInfo().hasGaps();
-                updateGapControls(gapSupport);
-            }
-        });
+        addFormModelListener();
         
         JToggleButton padButton = initPaddingButton();
         toolBar.add(padButton);
@@ -656,6 +654,56 @@ public class GridDesigner extends JPanel {
                 }
             }
         }
+    }
+
+    /** Listener for form model property changes. */
+    private FormModelListener formModelListener;
+
+    /**
+     * Returns listener for form model changes.
+     * 
+     * @return listener for form model changes.
+     */
+    private FormModelListener getFormModelListener() {
+        if (formModelListener == null) {
+            formModelListener = createFormModelListener();
+        }
+        return formModelListener;
+    }
+
+    /**
+     * Creates {@code FormModelListener}.
+     * Used here to listen on layout property changes
+     * affecting the state of gap support controls.
+     * 
+     * @return {@code FormModelListener}.
+     */
+    private FormModelListener createFormModelListener() {
+        return new FormModelListener() {
+            @Override
+            public void formChanged(FormModelEvent[] events) {
+                for(FormModelEvent event : events) {
+                    if( gridManager.getGridInfo().isGapEvent(event) ) {
+                        boolean gapSupport = gridManager.getGridInfo().hasGaps();
+                        updateGapControls(gapSupport);
+                    }
+                }
+            }
+        };
+    }
+
+    /**
+     * Adds form model listener.
+     */
+    void addFormModelListener() {
+        formModel.addFormModelListener(getFormModelListener());
+    }
+
+    /**
+     * Removes form model listener.
+     */
+    void removeFormModelListener() {
+        formModel.removeFormModelListener(getFormModelListener());
     }
 
     /**

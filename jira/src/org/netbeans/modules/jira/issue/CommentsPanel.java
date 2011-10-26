@@ -104,7 +104,7 @@ public class CommentsPanel extends JPanel {
     private final static Color GREY_FOREGROUND = new Color(0x999999);
     
     public CommentsPanel() {
-        setBackground(UIManager.getColor("EditorPane.background")); // NOI18N
+        setBackground(UIManager.getColor("TextArea.background")); // NOI18N
         issueFinder = Lookup.getDefault().lookup(JiraIssueFinder.class);
         issueLink = new HyperlinkSupport.Link() {
             @Override

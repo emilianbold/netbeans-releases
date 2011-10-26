@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -492,8 +492,18 @@ public final class DerbyDatabasesImpl {
             stmt.setString(1, "derby.user." + user); // NOI18N
             stmt.setString(2, password); // NOI18N
             stmt.execute();
+            
         } finally {
             stmt.close();
+        }
+        
+        if (! "APP".equalsIgnoreCase(user)) { // NOI18N
+            stmt = conn.prepareStatement("CREATE SCHEMA " + user); // NOI18N
+            try {
+                stmt.execute();
+            } finally {
+                stmt.close();
+            }
         }
     }
 

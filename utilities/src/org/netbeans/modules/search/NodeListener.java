@@ -99,6 +99,8 @@ final class NodeListener implements MouseListener, KeyListener,
     private static final boolean COLLAPSE_FILE_ON_UNSELECTION = true;
     /** */
     private boolean selectionChangeEnabled = true;
+    /** */
+    private int treeHeightWhenLastPressed = 0;
     
     NodeListener() {
     }
@@ -111,6 +113,9 @@ final class NodeListener implements MouseListener, KeyListener,
         // we need a test how to detect where the mouse pointer is
         final JTree tree = (JTree) e.getSource();
 
+        if (tree.getHeight() != treeHeightWhenLastPressed) {
+            return; // tree state was modified between pressing and releasing
+        }
         final int clickCount = e.getClickCount();
         if ((clickCount != 1) && (clickCount != 2)) {
             return;
@@ -841,6 +846,9 @@ final class NodeListener implements MouseListener, KeyListener,
     
     @Override
     public void mousePressed(MouseEvent e) {
+        if (e.getSource() instanceof JTree) {
+            treeHeightWhenLastPressed = ((JTree) e.getSource()).getHeight();
+        }
         if (e.isPopupTrigger()) {
             popupTriggerEventFired(e);
         }

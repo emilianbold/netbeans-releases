@@ -796,6 +796,9 @@ public class InstanceDataObjectTest extends NbTestCase {
         assertTrue("Cutting failed: src: " + names[0] + " dst: " + ename0 +
             ", src: " + names[1] + " dst: " + ename1, !ename0.equals(ename1));
         
+        //#203980 - if the name is too long it may be truncated in the middle of an escaped char
+        assertEquals("MultiView-makefile3DFFC0ADtext#002Ehistory#007C", InstanceDataObject.escapeAndCut("MultiView-makefile.source|text.history|"));
+        assertEquals("MultiView-makefile3DFFC0ADtext.history|", InstanceDataObject.unescape( "MultiView-makefile3DFFC0ADtext#002Ehistory#007C"));
         // Now the fun part: check that the filesystem can actually store the filenames
         // we are making. For best results, try this on different OS's.
         clearWorkDir();

@@ -569,7 +569,7 @@ final public class AppClientProjectProperties {
             projectProperties.put(ProjectProperties.ANNOTATION_PROCESSING_PROCESSORS_LIST, sb.toString());
         } else {
             projectProperties.put(ProjectProperties.ANNOTATION_PROCESSING_RUN_ALL_PROCESSORS, encodeBoolean(true, BOOLEAN_KIND_TF));
-            projectProperties.remove(ProjectProperties.ANNOTATION_PROCESSING_PROCESSORS_LIST);
+            projectProperties.put(ProjectProperties.ANNOTATION_PROCESSING_PROCESSORS_LIST, ""); // NOI18N
         }
 
         

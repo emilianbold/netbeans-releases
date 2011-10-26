@@ -92,6 +92,7 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.JRootPane;
 import javax.swing.JScrollPane;
 import javax.swing.KeyStroke;
 import javax.swing.MenuElement;
@@ -143,12 +144,12 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
     {
         stdYesButton.setDefaultCapable(true);
         stdOKButton.setDefaultCapable(true);
-        stdNoButton.setDefaultCapable(true);
-        stdCancelButton.setDefaultCapable(true);
+        stdNoButton.setDefaultCapable(false);
+        stdCancelButton.setDefaultCapable(false);
         stdCancelButton.setVerifyInputWhenFocusTarget(false);
-        stdClosedButton.setDefaultCapable(true);
-        stdHelpButton.setDefaultCapable(true);
-        stdDetailButton.setDefaultCapable(true);
+        stdClosedButton.setDefaultCapable(false);
+        stdHelpButton.setDefaultCapable(false);
+        stdDetailButton.setDefaultCapable(false);
         Mnemonics.setLocalizedText (stdHelpButton, NbBundle.getBundle(NbPresenter.class).getString("HELP_OPTION_CAPTION")); // NOI18N
         
         /** Initilizes accessible contexts */
@@ -432,9 +433,13 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
         haveCalledInitializeButtons = true;
         
         descriptor.addPropertyChangeListener(this);
+        isDefaultButtonSet = false;
+        getRootPane().addPropertyChangeListener(this);
         addWindowListener(this);
         
         initializeClosingOptions ();
+        
+        KeyboardFocusManager.getCurrentKeyboardFocusManager().addPropertyChangeListener( this );
     }
     
     /** Descriptor can be cached and reused. We need to remove listeners 
@@ -442,9 +447,12 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
      */
     private void uninitializePresenter() {
         descriptor.removePropertyChangeListener(this);
+        getRootPane().removePropertyChangeListener(this);
         uninitializeMessage();
         uninitializeButtons();
         uninitializeClosingOptions ();
+        
+        KeyboardFocusManager.getCurrentKeyboardFocusManager().removePropertyChangeListener( this );
     }
     
     private final HackTypeAhead hack = new HackTypeAhead();
@@ -872,12 +880,28 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
     /** Checks default button and updates it
      */
     private void updateDefaultButton() {
+        Component c = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
+        if( c instanceof JButton ) {
+            //#focused button should always be the default one (unless it doesn't want to)
+            JButton button = ( JButton ) c;
+            boolean makeDefault = button.isDefaultCapable();
+            for( int i=0; null != currentPrimaryButtons && i<currentPrimaryButtons.length && !makeDefault; i++ ) {
+                makeDefault |= button == currentPrimaryButtons[i];
+            }
+            for( int i=0; null != currentSecondaryButtons && i<currentSecondaryButtons.length && !makeDefault; i++ ) {
+                makeDefault |= button == currentSecondaryButtons[i];
+            }
+            if( makeDefault ) {
+                _setDefaultButton( button );
+            }
+            return;
+        }
         // bugfix 37083, respects DialogDescriptor's initial value ?
         if (descriptor.getDefaultValue () != null) {
             if (descriptor.getDefaultValue () instanceof JButton) {
                 JButton b = (JButton)descriptor.getDefaultValue ();
             if (b.isVisible() && b.isEnabled () && b.isDefaultCapable ()) {
-                    getRootPane ().setDefaultButton (b);
+                    _setDefaultButton (b);
                     return ;
                 }
             } else {
@@ -902,7 +926,7 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
                     b = stdClosedButton;
                 }
                 if (b != null && b.isVisible() && b.isEnabled ()) {
-                    getRootPane ().setDefaultButton (b);
+                    _setDefaultButton (b);
                     return ;
                 }
             }
@@ -915,14 +939,50 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
                 if (currentPrimaryButtons[i] instanceof JButton) {
                     JButton b = (JButton)currentPrimaryButtons[i];
                     if (b.isVisible() && b.isEnabled() && b.isDefaultCapable()) {
-                        getRootPane().setDefaultButton(b);
+                        _setDefaultButton(b);
                         return;
                     }
                 }
             }
         }
-        // no default capable button found
-        getRootPane().setDefaultButton(null);
+        // no default capable button found, use whatever button was set as the default one (if any) before showing the dialog
+        _setDefaultButton(null);
+    }
+    
+    private boolean adjustingDefaultButton = false;
+    /**
+     * Adjust the default button
+     * @param button 
+     */
+    private void _setDefaultButton( JButton button ) {
+        try {
+            adjustingDefaultButton = true;
+            getRootPane().setDefaultButton( button );
+        } finally {
+            adjustingDefaultButton = false;
+        }
+    }
+    
+    /**
+     * Invoked when the default button changes in dialog's root pane.
+     */
+    private void onDefaultButtonChange() {
+        if( adjustingDefaultButton )
+            return; //default button is being set through Dialogs API
+        if( null != getRootPane().getClientProperty( "temporaryDefaultButton" ) )
+            return; //a button in the dialog window is focused and becomes the default one
+        
+        //somebody set the default button using Swing instead of Dialogs API
+        isDefaultButtonSet = true;
+    }
+    
+    private boolean isDefaultButtonSet = false;
+    
+    /**
+     * @return True if the default button was set using Swing instead of Dialogs API
+     */
+    private boolean isDefaultButtonSet() {
+        return isDefaultButtonSet;
     }
     
     private void updateNotificationLine (int msgType, Object o) {
@@ -1133,6 +1193,11 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
         } else if (NotifyDescriptor.PROP_ERROR_NOTIFICATION.equals (evt.getPropertyName ())) {
             // XXX: need set update on true?
             updateNotificationLine (MSG_TYPE_ERROR, evt.getNewValue ());
+        } else if( "focusOwner".equals( evt.getPropertyName() ) ) { //NOI18N
+            if( !isDefaultButtonSet() )
+                updateDefaultButton();
+        } else if( "defaultButton".equals( evt.getPropertyName() ) ) { //NOI18N
+            onDefaultButtonChange();
         }
         
         if (update) {

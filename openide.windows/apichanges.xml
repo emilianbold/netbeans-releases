@@ -54,13 +54,14 @@ made subject to such option by the copyright holder.
     <api name="winsys"/>
     <summary>Added optional <code>role</code> parameter to <code>TopComponent</code> <code>Registration</code> annotation.</summary>
     <version major="6" minor="45"/>
-    <date day="22" month="6" year="2011"/>
+    <date day="19" month="10" year="2011"/>
     <author login="saubrecht"/>
     <compatibility addition="yes" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
     <description>
         Since the window system now supports multiple window layouts - roles -
         the annotation for TopComponent registration needs an optional parameter
-        to specify the role the window should belong to.
+        to specify one or more roles the window should belong to. If no roles
+        are specified, the TopComponent is registered in the default layout.
     </description>
     <class package="org.openide.windows" name="TopComponent"/>
     <issue number="199452"/>

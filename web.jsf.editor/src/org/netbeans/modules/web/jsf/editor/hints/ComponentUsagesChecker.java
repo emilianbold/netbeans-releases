@@ -92,6 +92,8 @@ public class ComponentUsagesChecker extends HintsProvider {
         //find all usages of composite components tags for this page
         Map<String, Library> declaredLibraries = LibraryUtils.getDeclaredLibraries(result);
 
+        String documentContent = null;
+        
         //now we have all  declared component libraries
         //lets get their parse trees and check the content
         for (final String declaredLibraryNamespace : declaredLibraries.keySet()) {
@@ -102,21 +104,31 @@ public class ComponentUsagesChecker extends HintsProvider {
                 continue;
             }
 
-            final Document doc = snapshot.getSource().getDocument(true);
-            final AtomicReference<String> docTextRef = new AtomicReference<String>();
-            doc.render(new Runnable() {
-
-                @Override
-                public void run() {
-                    try {
-                        docTextRef.set(doc.getText(0, doc.getLength()));
-                    } catch (BadLocationException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
+            //get the document snapshot content if not created yet
+            if (documentContent == null) {
+                final Document doc = snapshot.getSource().getDocument(true);
+                if (doc == null) {
+                    //should happen only if the underlying FileObject has been invalidated
+                    return;
                 }
 
-            });
-            final String docText = docTextRef.get(); //may be null if BLE happens (which is unlikely)
+                final AtomicReference<String> docTextRef = new AtomicReference<String>();
+                doc.render(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        try {
+                            docTextRef.set(doc.getText(0, doc.getLength()));
+                        } catch (BadLocationException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                });
+                documentContent = docTextRef.get(); //may be null if BLE happens (which is unlikely)
+
+            }
+            
+            final String docText = documentContent;
 
             AstNodeUtils.visitChildren(root, new AstNodeVisitor() {
 

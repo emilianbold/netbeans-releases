@@ -140,6 +140,9 @@ abstract class TransportCommand extends GitCommand {
         if (config != null) {
             transport.applyConfig(config);
         }
+        if (transport.getTimeout() <= 0) {
+            transport.setTimeout(45);
+        }
         transport.setCredentialsProvider(getCredentialsProvider());
         return transport;
     }
@@ -158,7 +161,11 @@ abstract class TransportCommand extends GitCommand {
             String repositoryUrl = message.substring(0, pos);
             throw new GitException.AuthorizationException(repositoryUrl, message, e);
         } else if (e.getCause() instanceof JSchException) {
-            throw new GitException.AuthorizationException(uri.toString(), message, e);
+            if (message.contains("timeout:")) { //NOI18N
+                throw new GitException(message, e);
+            } else {
+                throw new GitException.AuthorizationException(uri.toString(), message, e);
+            }
         } else {
             throw new GitException(message, e);
         }

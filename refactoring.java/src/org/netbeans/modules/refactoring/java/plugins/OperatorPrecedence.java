@@ -172,9 +172,11 @@ public class OperatorPrecedence {
 
         TreePath parentPath = location.getParentPath();
         Tree parent = parentPath.getLeaf();
-        if(parent.getKind().equals(Tree.Kind.PARENTHESIZED) ||
-                parent.getKind().equals(Tree.Kind.METHOD_INVOCATION)){
-            return false;
+        switch (parent.getKind()) {
+            case PARENTHESIZED:
+            case METHOD_INVOCATION:
+            case VARIABLE:
+                return false;
         }
         if(parent.getKind().equals(Tree.Kind.PLUS)) {
             if (((BinaryTree) expression).getLeftOperand().getKind().equals(Tree.Kind.STRING_LITERAL)

@@ -92,6 +92,9 @@ public final class ScannerList <T>  {
         if( null == fileInstance ) {
             fileInstance = new ScannerList<FileTaskScanner>( FileTaskScanner.class );
         }
+        if(fileInstance.scanners == null){
+           fileInstance.init();
+        }
         ArrayList<FileTaskScanner> result = new ArrayList<FileTaskScanner>(fileInstance.scanners.size());
         for( FileTaskScanner scanner : fileInstance.getScanners() ) {
             if( filter.isEnabled(scanner) ) {

@@ -251,7 +251,7 @@ function parse_phpdoc_functions ($phpdocDir, $extensions) {
 					if ($has_object_style) {
 						$function_alias = trim($match[2]);
 					} else {
-						$functionsDoc[$refname]['returntype'] = trim($match[1]);
+						$functionsDoc[$refname]['returntype'] = trim(str_replace('-', '_', $match[1])); // e.g. OCI-Collection -> OCI_Collection
 						$functionsDoc[$refname]['methodname'] = trim($match[2]);
                                                 $parameters = $match[3];
 					}
@@ -914,10 +914,13 @@ function xml_to_phpdoc ($str) {
 	$str = str_replace ("&resource;", "resource", $str);
 	$str = str_replace ("&style.oop;", "Oriented object style", $str);
 	$str = str_replace ("&style.procedural;", "Procedural style", $str);
-    $str = strip_tags_special ($str);
+	$str = str_replace ("&example.outputs.similar;", "The above example will output something similar to:", $str);
+	$str = str_replace ("&gmp.parameter;", "It can be either a GMP number resource, or a numeric string given that it is possible to convert the latter to a number.", $str);
+        $str = strip_tags_special ($str);
 	$str = preg_replace ("/  */", " ", $str);
+	$str = str_replace ("*/", "* /", $str);
 	$str = preg_replace ("/[\r\n][\t ]/", "\n", $str);
-	$str = trim ($str);
+        $str = trim($str);
 	return $str;
 }
 
@@ -992,6 +995,15 @@ function strip_tags_special ($str) {
     $str = str_replace ("</row>", "###(/tr)###", $str);
     $str = preg_replace ("/<(\/?)entry>/", "###($1td)###", $str);
     $str = preg_replace ("/<(\/?)para>/", "###($1p)###", $str);
+    // remove cdata
+    $str = str_replace ("<![CDATA[", "###(pre)###", $str);
+    $str = str_replace ("]]>", "###(/pre)###", $str);
+    // preserve php samples
+    $str = str_replace ("<?php", "###(code)###", $str);
+    $str = str_replace ("?>", "###(/code)###", $str);
+    // handle "<pre><code>"
+    $str = preg_replace ("/###\(pre\)###\s*\n\s*###\(code\)###/", "###(code)###", $str);
+    $str = preg_replace ("/###\(\/code\)###\s*\n\s*###\(\/pre\)###/", "###(/code)###", $str);
     // now strip the remaining tags
     $str = strip_tags ($str);
     // and restore the translated ones

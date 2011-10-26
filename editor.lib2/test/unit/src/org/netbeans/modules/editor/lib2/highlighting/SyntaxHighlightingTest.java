@@ -76,6 +76,13 @@ public class SyntaxHighlightingTest extends NbTestCase {
     public SyntaxHighlightingTest(String name) {
         super(name);
     }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+
+        SyntaxHighlighting.TEST_FALLBACK_COLORING = new SimpleAttributeSet();
+    }
     
     public void testSimple() {
         checkText("+ - / * public", TestTokenId.language());

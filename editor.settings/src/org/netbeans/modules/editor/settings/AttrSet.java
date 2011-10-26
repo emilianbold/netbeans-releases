@@ -157,6 +157,9 @@ public abstract class AttrSet implements AttributeSet, Iterable<Object> {
      * @return non-null merged attribute set.
      */
     public static synchronized AttrSet merge(AttributeSet... sets) {
+        if (sets.length == 0) {
+            return EMPTY;
+        }
         AttrSet attrSet = null;
         for (int i = sets.length - 1; i >= 0; i--) {
             AttributeSet set = sets[i];

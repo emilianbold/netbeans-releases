@@ -99,6 +99,10 @@ class ToDoCustomizer extends javax.swing.JPanel {
     }
     
     void applyChanges() {
+        final TableCellEditor cellEditor = table.getCellEditor();
+        if (cellEditor != null) {
+            cellEditor.stopCellEditing();
+        }
         DefaultTableModel model = (DefaultTableModel)table.getModel();
         ArrayList<String> patterns = new ArrayList<String>( model.getRowCount() );
         for( int i=0; i<model.getRowCount(); i++ ) {

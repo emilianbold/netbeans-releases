@@ -48,19 +48,10 @@ import java.util.List;
  *
  * @author Alexander Simon
  */
-public class RepositoryValidationFinal extends RepositoryValidationBase {
+public abstract class RepositoryValidationFinal extends RepositoryValidationBase {
 
-    public RepositoryValidationFinal(String testName) {
+    protected RepositoryValidationFinal(String testName) {
         super(testName);
-    }
-
-    protected @Override void setUp() throws Exception {
-        System.setProperty("cnd.repository.hardrefs", Boolean.FALSE.toString()); //NOI18N
-        System.setProperty("org.netbeans.modules.cnd.apt.level","OFF"); // NOI18N
-        assertNotNull("This test can only be run from suite", RepositoryValidationGoldens.getGoldenDirectory()); //NOI18N
-        System.setProperty(PROPERTY_GOLDEN_PATH, RepositoryValidationGoldens.getGoldenDirectory());
-        cleanCache = false;
-        super.setUp();
     }
 
     public void testRepository() throws Exception {

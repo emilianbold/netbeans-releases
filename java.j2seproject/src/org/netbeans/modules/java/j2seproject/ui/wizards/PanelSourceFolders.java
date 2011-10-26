@@ -44,13 +44,17 @@
 
 package org.netbeans.modules.java.j2seproject.ui.wizards;
 
+import java.awt.Cursor;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import javax.swing.JButton;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.java.api.common.project.ui.wizards.FolderList;
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -60,9 +64,7 @@ import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.ChangeSupport;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
+import org.openide.util.*;
 
 //XXX There should be a way how to add nonexistent test dir
 
@@ -190,7 +192,22 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
         // test root, not asked in issue 48198
         //searchClassFiles (FileUtil.toFileObject (FileUtil.normalizeFile(new File (tests.getText ()))));
     }
-    
+
+    void prepareValidation() {
+        enablePanels(false);
+    }
+
+    private void enablePanels(final boolean enable) {
+        setCursor(enable ?
+            Cursor.getDefaultCursor() :
+            Utilities.createProgressCursor(this));
+        sourcePanel.setEnabled(enable);
+        testsPanel.setEnabled(enable);
+        jLabel2.setText(enable ?
+                NbBundle.getMessage(PanelSourceFolders.class, "TXT_MoveRootDescription") :
+                NbBundle.getMessage(PanelSourceFolders.class, "TXT_SearchingClassFiles"));
+    }
+
     private static void findClassFiles(File folder, List<File> files) {
         File[] kids = folder.listFiles();
         if (kids == null) {
@@ -205,35 +222,66 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
         }
     }
     private void searchClassFiles (File[] folders) throws WizardValidationException {
-        List<File> classFiles = new ArrayList<File>();
-        for (File folder : folders) {
-            findClassFiles(folder, classFiles);
-        }
-        if (!classFiles.isEmpty()) {
-            JButton DELETE_OPTION = new JButton (NbBundle.getMessage (PanelSourceFolders.class, "TXT_DeleteOption")); // NOI18N
-            JButton KEEP_OPTION = new JButton (NbBundle.getMessage (PanelSourceFolders.class, "TXT_KeepOption")); // NOI18N
-            JButton CANCEL_OPTION = new JButton (NbBundle.getMessage (PanelSourceFolders.class, "TXT_CancelOption")); // NOI18N
-            KEEP_OPTION.setMnemonic(NbBundle.getMessage (PanelSourceFolders.class, "MNE_KeepOption").charAt(0));
-            DELETE_OPTION.getAccessibleContext().setAccessibleDescription (NbBundle.getMessage (PanelSourceFolders.class, "AD_DeleteOption"));
-            KEEP_OPTION.getAccessibleContext().setAccessibleDescription (NbBundle.getMessage (PanelSourceFolders.class, "AD_KeepOption"));
-            CANCEL_OPTION.getAccessibleContext().setAccessibleDescription (NbBundle.getMessage (PanelSourceFolders.class, "AD_CancelOption"));
-            NotifyDescriptor desc = new NotifyDescriptor (
-                    NbBundle.getMessage (PanelSourceFolders.class, "MSG_FoundClassFiles"), // NOI18N
-                    NbBundle.getMessage (PanelSourceFolders.class, "MSG_FoundClassFiles_Title"), // NOI18N
-                    NotifyDescriptor.YES_NO_CANCEL_OPTION,
-                    NotifyDescriptor.QUESTION_MESSAGE,
-                    new Object[] {DELETE_OPTION, KEEP_OPTION, CANCEL_OPTION},
-                    DELETE_OPTION
-                    );
-            Object result = DialogDisplayer.getDefault().notify(desc);
-            if (DELETE_OPTION.equals (result)) {
-                for (File f : classFiles) {
-                    f.delete(); // ignore if fails
-                }
-            } else if (!KEEP_OPTION.equals (result)) {
-                // cancel, back to wizard
-                throw new WizardValidationException (this.sourcePanel, "", ""); // NOI18N
+        try {
+            final List<File> classFiles = new ArrayList<File>();
+            for (File folder : folders) {
+                findClassFiles(folder, classFiles);
             }
+            if (!classFiles.isEmpty()) {
+                final AtomicInteger action = new AtomicInteger(-1);   //0 - cancel, 1 - delete, 2 - keep
+                SwingUtilities.invokeAndWait(new Runnable(){
+                    @Override
+                    public void run() {
+                        JButton DELETE_OPTION = new JButton (NbBundle.getMessage (PanelSourceFolders.class, "TXT_DeleteOption")); // NOI18N
+                        JButton KEEP_OPTION = new JButton (NbBundle.getMessage (PanelSourceFolders.class, "TXT_KeepOption")); // NOI18N
+                        JButton CANCEL_OPTION = new JButton (NbBundle.getMessage (PanelSourceFolders.class, "TXT_CancelOption")); // NOI18N
+                        KEEP_OPTION.setMnemonic(NbBundle.getMessage (PanelSourceFolders.class, "MNE_KeepOption").charAt(0));
+                        DELETE_OPTION.getAccessibleContext().setAccessibleDescription (NbBundle.getMessage (PanelSourceFolders.class, "AD_DeleteOption"));
+                        KEEP_OPTION.getAccessibleContext().setAccessibleDescription (NbBundle.getMessage (PanelSourceFolders.class, "AD_KeepOption"));
+                        CANCEL_OPTION.getAccessibleContext().setAccessibleDescription (NbBundle.getMessage (PanelSourceFolders.class, "AD_CancelOption"));
+                        NotifyDescriptor desc = new NotifyDescriptor (
+                            NbBundle.getMessage (PanelSourceFolders.class, "MSG_FoundClassFiles"), // NOI18N
+                            NbBundle.getMessage (PanelSourceFolders.class, "MSG_FoundClassFiles_Title"), // NOI18N
+                            NotifyDescriptor.YES_NO_CANCEL_OPTION,
+                            NotifyDescriptor.QUESTION_MESSAGE,
+                            new Object[] {DELETE_OPTION, KEEP_OPTION, CANCEL_OPTION},
+                            DELETE_OPTION
+                            );
+                        Object result = DialogDisplayer.getDefault().notify(desc);
+                        if (KEEP_OPTION.equals (result)) {
+                            action.set(2);
+                        } else if (DELETE_OPTION.equals (result)) {
+                            action.set(1);
+                        } else {
+                            action.set(0);
+                        }
+                    }
+                });
+                switch (action.get()) {
+                    case 0: // Canceled
+                        throw new WizardValidationException (this.sourcePanel, "", ""); // NOI18N
+                    case 1: //Delete class files
+                        for (File f : classFiles) {
+                            f.delete(); // ignore if fails
+                        }
+                        break;
+                    case 2: //Keep -> NOP
+                        break;
+                    default:
+                        throw new IllegalStateException();
+                }
+            }
+        } catch (InterruptedException e) {
+            Exceptions.printStackTrace(e);
+        } catch (InvocationTargetException e) {
+            Exceptions.printStackTrace(e);
+        } finally {
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    enablePanels(true);
+                }
+            });
         }
     }
     
@@ -305,20 +353,23 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
     // End of variables declaration//GEN-END:variables
 
     
-    static class Panel implements WizardDescriptor.ValidatingPanel, WizardDescriptor.FinishablePanel {
-        
+    static class Panel implements WizardDescriptor.AsynchronousValidatingPanel, WizardDescriptor.FinishablePanel {
+
         private final ChangeSupport changeSupport = new ChangeSupport(this);
         private PanelSourceFolders component;
         private WizardDescriptor settings;
-        
+
+        @Override
         public void removeChangeListener(ChangeListener l) {
             changeSupport.removeChangeListener(l);
         }
 
+        @Override
         public void addChangeListener(ChangeListener l) {
             changeSupport.addChangeListener(l);
         }
 
+        @Override
         public void readSettings(Object settings) {
             this.settings = (WizardDescriptor) settings;
             this.component.read (this.settings);
@@ -330,18 +381,27 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
             }
         }
 
+        @Override
         public void storeSettings(Object settings) {
             this.component.store (this.settings);
         }
-        
+
+        @Override
         public void validate() throws WizardValidationException {
             this.component.validate(this.settings);
         }
-                
+
+        @Override
+        public void prepareValidation() {
+            this.component.prepareValidation();
+        }
+
+        @Override
         public boolean isValid() {
             return this.component.valid (this.settings);
         }
 
+        @Override
         public synchronized java.awt.Component getComponent() {
             if (this.component == null) {
                 this.component = new PanelSourceFolders (this);
@@ -349,14 +409,16 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
             return this.component;
         }
 
+        @Override
         public HelpCtx getHelp() {
             return new HelpCtx (PanelSourceFolders.class);
-        }        
-        
+        }
+
         private void fireChangeEvent () {
             changeSupport.fireChange();
         }
-                
+
+        @Override
         public boolean isFinishPanel() {
             return true;
         }

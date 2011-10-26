@@ -79,20 +79,14 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
 import org.netbeans.modules.javafx2.platform.api.JavaFXPlatformUtils;
-import org.netbeans.modules.extbrowser.ExtWebBrowser;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ui.StoreGroup;
-import org.openide.cookies.InstanceCookie;
-import org.openide.execution.NbProcessDescriptor;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
@@ -130,10 +124,10 @@ public final class JFXProjectProperties {
     
     // FX config properties (Run panel), replicated from ProjectProperties
     public static final String MAIN_CLASS = "javafx.main.class"; // NOI18N
-    //public static final String APPLICATION_ARGS = "javafx.application.args"; // NOI18N
+    public static final String APPLICATION_ARGS = ProjectProperties.APPLICATION_ARGS;
     public static final String APP_PARAM_PREFIX = "javafx.param."; // NOI18N
     public static final String APP_PARAM_SUFFIXES[] = new String[] { "name", "value" }; // NOI18N
-    public static final String RUN_JVM_ARGS = ProjectProperties.RUN_JVM_ARGS; // NOI18N
+    public static final String RUN_JVM_ARGS = ProjectProperties.RUN_JVM_ARGS;
     public static final String FALLBACK_CLASS = "javafx.fallback.class"; // NOI18N
     public static final String SIGNED_JAR = "dist.signed.jar"; // NOI18N
     
@@ -202,7 +196,8 @@ public final class JFXProjectProperties {
     private Map<String/*|null*/,Map<String,String/*|null*/>/*|null*/> RUN_CONFIGS;
     private Map<String/*|null*/,List<Map<String,String/*|null*/>>/*|null*/> APP_PARAMS;
     private String activeConfig;
-    
+    private Map<String,String> browserPaths = null;
+
     public Map<String/*|null*/,Map<String,String/*|null*/>/*|null*/> getRunConfigs() {
         return RUN_CONFIGS;
     }    
@@ -223,6 +218,15 @@ public final class JFXProjectProperties {
     }
     public void setActiveConfig(String config) {
         this.activeConfig = config;
+    }
+    public Map<String, String> getBrowserPaths() {
+        return browserPaths;
+    }
+    public void resetBrowserPaths() {
+        this.browserPaths = new HashMap<String, String>();
+    }
+    public void setBrowserPaths(Map<String, String> browserPaths) {
+        this.browserPaths = browserPaths;
     }
 
     // CustomizerRun - Preloader source type
@@ -764,6 +768,54 @@ public final class JFXProjectProperties {
     }
 
     /**
+     * Gathers application parameters to one property APPLICATION_ARGS
+     * to be passed to run/debug target in build-impl.xml when Run as Standalone
+     */
+    void storeSingleParamsProperty(List<Map<String,String/*|null*/>> params,
+            EditableProperties projectProperties)
+    {
+        StringBuilder sb = new StringBuilder();
+        if(params != null) {
+            int index = 0;
+            for(Map<String,String> m : params) {
+                String name = null;
+                String value = null;
+                for (Map.Entry<String,String> propSuffix : m.entrySet()) {
+                    if(propSuffix.getKey().equalsIgnoreCase(APP_PARAM_SUFFIXES[0])) {
+                        name = propSuffix.getValue();
+                    }
+                    if(propSuffix.getKey().equalsIgnoreCase(APP_PARAM_SUFFIXES[1])) {
+                        value = propSuffix.getValue();
+                    }
+                }
+                if(name != null && name.length() > 0) {
+                    if(sb.length() > 0) {
+                        sb.append(" "); // NOI18N
+                    }
+                    if(value != null && value.length() > 0) {
+                        sb.append("--"); // NOI18N
+                        sb.append(name);
+                        sb.append("="); // NOI18N
+                        sb.append(value);
+                    } else {
+                        sb.append(name);                        
+                    }
+                }
+                index++;
+            }
+        }
+        String sbs = sb.toString();
+        if (!Utilities.compareObjects(sbs, projectProperties.getProperty(APPLICATION_ARGS))) {
+            if (sbs != null && sbs.length() > 0) {
+                projectProperties.setProperty(APPLICATION_ARGS, sbs);
+                projectProperties.setComment(APPLICATION_ARGS, new String[]{"# " + NbBundle.getMessage(JFXProjectProperties.class, "COMMENT_app_args")}, false); // NOI18N
+            } else {
+                projectProperties.remove(APPLICATION_ARGS);
+            }
+        }
+    }
+    
+    /**
      * A royal mess. (modified from J2SEProjectProperties)
      */
     void storeRunConfigs(Map<String/*|null*/,Map<String,String/*|null*/>/*|null*/> configs,
@@ -791,20 +843,25 @@ public final class JFXProjectProperties {
             }
         }
         int index = 0;
-        for(Map<String,String> m : params.get(null)) {
-            for (Map.Entry<String,String> propSuffix : m.entrySet()) {
-                String prop = APP_PARAM_PREFIX + index + "." + propSuffix.getKey();
-                String v = propSuffix.getValue();
-                if (!Utilities.compareObjects(v, projectProperties.getProperty(prop))) {
-                    if (v != null && v.length() > 0) {
-                        projectProperties.setProperty(prop, v);
-                    } else {
-                        projectProperties.remove(prop);
+        List<Map<String,String/*|null*/>> paramsDefault = params.get(null);
+        if(paramsDefault != null) {
+            for(Map<String,String> m : paramsDefault) {
+                for (Map.Entry<String,String> propSuffix : m.entrySet()) {
+                    String prop = APP_PARAM_PREFIX + index + "." + propSuffix.getKey();
+                    String v = propSuffix.getValue();
+                    if (!Utilities.compareObjects(v, projectProperties.getProperty(prop))) {
+                        if (v != null && v.length() > 0) {
+                            projectProperties.setProperty(prop, v);
+                        } else {
+                            projectProperties.remove(prop);
+                        }
                     }
                 }
+                index++;
             }
-            index++;
         }
+        storeSingleParamsProperty(paramsDefault, privateProperties);
+        
         for (Map.Entry<String,Map<String,String>> entry : configs.entrySet()) {
             String config = entry.getKey();
             if (config == null) {
@@ -867,6 +924,8 @@ public final class JFXProjectProperties {
                     index++;
                 }
             }
+            storeSingleParamsProperty(paramsConfig, privateCfgProps);
+            
             saveToFile(sharedPath, sharedCfgProps);    //Make sure the definition file is always created, even if it is empty.
             if (privatePropsChanged) {                              //Definition file is written, only when changed
                 saveToFile(privatePath, privateCfgProps);
@@ -1262,7 +1321,7 @@ public final class JFXProjectProperties {
     }
     
     private void storeJSCallbacks(final EditableProperties props) {
-        if (jsCallbacksChanged) {
+        if (jsCallbacksChanged && jsCallbacks != null) {
             for (Map.Entry<String,String> entry : jsCallbacks.entrySet()) {
                 if(entry.getValue() != null && !entry.getValue().isEmpty()) {
                     props.setProperty(JAVASCRIPT_CALLBACK_PREFIX + entry.getKey(), entry.getValue());  //NOI18N
@@ -1286,19 +1345,11 @@ public final class JFXProjectProperties {
     }
 
     private String getSelectedBrowserPath() {
-        String selectedName = RUN_CONFIGS.get(activeConfig).get(RUN_IN_BROWSER);
-        if (selectedName == null) {
+        if (browserPaths == null) {
             return null;
         }
-        Lookup.Result<ExtWebBrowser> allBrowsers = Lookup.getDefault().lookupResult(ExtWebBrowser.class);
-        for(Lookup.Item<ExtWebBrowser> browser : allBrowsers.allItems()) {            
-            if(selectedName.equalsIgnoreCase(browser.getDisplayName())) {
-                NbProcessDescriptor proc = browser.getInstance().getBrowserExecutable();
-                String path = proc.getProcessName();
-                return path;
-            }
-        }
-        return null;
+        String selectedName = RUN_CONFIGS.get(activeConfig).get(RUN_IN_BROWSER);
+        return browserPaths.get(selectedName);
     }
     
     public class PreloaderClassComboBoxModel extends DefaultComboBoxModel {
@@ -1432,19 +1483,21 @@ public final class JFXProjectProperties {
         public void updateFile(OutputStream os) {
             final PrintWriter out = new PrintWriter(os); //todo: encoding
             copyReadme(out);
-            for(Map<String,String> m : params) {
-                String name = ""; //NOI18N
-                String value = ""; //NOI18N
-                for (Map.Entry<String,String> param : m.entrySet()) {
-                    if(param.getKey().equals("name")) { //NOI18N
-                        name = param.getValue();
-                    } else {
-                        if(param.getKey().equals("value")) { //NOI18N
-                            value = param.getValue();
+            if(params != null) {
+                for(Map<String,String> m : params) {
+                    String name = ""; //NOI18N
+                    String value = ""; //NOI18N
+                    for (Map.Entry<String,String> param : m.entrySet()) {
+                        if(param.getKey().equals("name")) { //NOI18N
+                            name = param.getValue();
+                        } else {
+                            if(param.getKey().equals("value")) { //NOI18N
+                                value = param.getValue();
+                            }
                         }
                     }
+                    out.println(line(name,value));
                 }
-                out.println(line(name,value));
             }
             out.flush();
         }
@@ -1465,11 +1518,13 @@ public final class JFXProjectProperties {
             //if (jsCallbacksChanged) {
                 final PrintWriter out = new PrintWriter(os); //todo: encoding
                 copyReadme(out);
-                for (Map.Entry<String,String> entry : jsCallbacks.entrySet()) {
-                    if(entry.getValue() != null && !entry.getValue().isEmpty()) {
-                        out.println("<callback name=\"" + entry.getKey() + "\">"); //NOI18N
-                        out.println(entry.getValue());
-                        out.println("</callback>"); //NOI18N
+                if(jsCallbacks != null) {
+                    for (Map.Entry<String,String> entry : jsCallbacks.entrySet()) {
+                        if(entry.getValue() != null && !entry.getValue().isEmpty()) {
+                            out.println("<callback name=\"" + entry.getKey() + "\">"); //NOI18N
+                            out.println(entry.getValue());
+                            out.println("</callback>"); //NOI18N
+                        }
                     }
                 }
                 out.flush();
@@ -1489,12 +1544,14 @@ public final class JFXProjectProperties {
         public void updateFile(OutputStream os) {
             final PrintWriter out = new PrintWriter(os); //todo: encoding
             copyReadme(out);
-            String vmo = props.get(RUN_JVM_ARGS);            
-            if (vmo != null) {
-                StringTokenizer tok = new StringTokenizer(vmo, " ");
-                while(tok.hasMoreElements()) {
-                    String s = tok.nextToken();
-                    out.println("<jvmarg value=\"" + s + "\"/>"); //NOI18N
+            if(props != null) {
+                String vmo = props.get(RUN_JVM_ARGS);            
+                if (vmo != null) {
+                    StringTokenizer tok = new StringTokenizer(vmo, " ");
+                    while(tok.hasMoreElements()) {
+                        String s = tok.nextToken();
+                        out.println("<jvmarg value=\"" + s + "\"/>"); //NOI18N
+                    }
                 }
             }
             out.flush();

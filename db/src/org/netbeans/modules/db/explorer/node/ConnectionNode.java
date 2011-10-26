@@ -59,6 +59,7 @@ import org.netbeans.lib.ddl.impl.Specification;
 import org.netbeans.modules.db.explorer.ConnectionList;
 import org.netbeans.modules.db.explorer.DatabaseConnectionAccessor;
 import org.netbeans.modules.db.explorer.DatabaseMetaDataTransferAccessor;
+import org.netbeans.modules.db.explorer.metadata.MetadataModelManager;
 import org.netbeans.modules.db.metadata.model.api.MetadataModel;
 import org.netbeans.modules.db.metadata.model.api.MetadataModels;
 import org.openide.util.Exceptions;
@@ -111,14 +112,9 @@ public class ConnectionNode extends BaseNode {
             new PropertyChangeListener() {
             @Override
                 public void propertyChange(PropertyChangeEvent evt) {
-                    if (evt.getPropertyName().equals("connectionComplete") || // NOI18N
-                            evt.getPropertyName().equals("disconnected")) { // NOI18N
-                        updateModel();
-                    } else if (evt.getPropertyName().equals(DatabaseConnection.PROP_NAME)) {
                         updateModel();
                     }
                 }
-            }
         );
 
         updateModel();
@@ -126,8 +122,6 @@ public class ConnectionNode extends BaseNode {
 
     @Override
     public void setPropertyValue(Property nps, Object val) {
-        super.setPropertyValue(nps, val);
-
         boolean refreshNode = true;
 
         if (nps.getName().equals(USER)) {
@@ -141,9 +135,16 @@ public class ConnectionNode extends BaseNode {
             connection.setDriver(val.toString());
         } else if (nps.getName().equals(SCHEMA)) {
             connection.setSchema(val.toString());
+            if( connection.getDefaultSchema() != null ) {
+                try {
+                    connection.setDefaultSchema(val.toString());
+                } catch (Exception ex) {
+                    // Seems the underlying database does not support
+                    // setting the default schema - should not happen, as
+                    // in this case getDefaultSchema should return null
+                }
+            }
         } else if (nps.getName().equals(PROP_DEFSCHEMA)) {
-            connection.setSchema(val.toString());
-        } else if (nps.getName().equals(SCHEMA)) {
             connection.setSchema(val.toString());
         } else if (nps.getName().equals(DISPLAYNAME)) {
             connection.setDisplayName(val.toString());
@@ -151,6 +152,8 @@ public class ConnectionNode extends BaseNode {
             refreshNode = false;
         }
 
+        super.setPropertyValue(nps, val);
+        
         if (refreshNode) {
             refresh();
         }
@@ -164,7 +167,7 @@ public class ConnectionNode extends BaseNode {
             addProperty(DISPLAYNAME, DISPLAYNAMEDESC, String.class, true, connection.getDisplayName());
             addProperty(DATABASEURL, DATABASEURLDESC, String.class, !connected, connection.getDatabase());
             addProperty(DRIVER, DRIVERDESC, String.class, !connected, connection.getDriver());
-            addProperty(SCHEMA, SCHEMADESC, String.class, false, connection.getSchema());
+            addProperty(SCHEMA, SCHEMADESC, String.class, !connected, connection.getSchema());
             addProperty(USER, USERDESC, String.class, !connected, connection.getUser());
             addProperty(REMEMBERPW, REMEMBERPWDESC,
                     Boolean.class, !connected, connection.rememberPassword());
@@ -305,6 +308,7 @@ public class ConnectionNode extends BaseNode {
                     if (connected) {
                         MetadataModel model = MetadataModels.createModel(connection.getConnection(), connection.getSchema());
                         connection.setMetadataModel(model);
+                        MetadataModelManager.update(connection.getDatabaseConnection(), model);
                         refresh();
 
                     } else {
@@ -355,8 +359,9 @@ public class ConnectionNode extends BaseNode {
 
     @Override
     public void setName(String name) {
+        String old = getName();
         connection.setDisplayName(name);
-        fireNameChange(null, null);
+        fireNameChange(old, name);
     }
 
     @Override

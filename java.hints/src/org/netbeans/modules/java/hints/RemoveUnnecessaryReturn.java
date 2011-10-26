@@ -44,6 +44,7 @@ import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.SwitchTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.TryTree;
 import com.sun.source.util.TreePath;
 import java.util.List;
 import javax.lang.model.type.TypeKind;
@@ -109,6 +110,8 @@ public class RemoveUnnecessaryReturn {
                 case FOR_LOOP:
                 case WHILE_LOOP:
                     return null;
+                case TRY:
+                    if (((TryTree) tp.getLeaf()).getFinallyBlock() == current) return null;
                 default: continue OUTER;
             }
 

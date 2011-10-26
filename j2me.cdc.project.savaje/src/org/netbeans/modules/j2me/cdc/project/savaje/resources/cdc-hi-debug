@@ -14,8 +14,10 @@
               <arg value="-Xrunjdwp:transport=dt_socket,address=${{active.debug.port}},server=y,suspend=y"/>
               <arg value="-Xdebug"/>
             </exec>
-            <property name="debug.delay" value="500"/>
-            <nb-mobility-debug address="${{active.debug.port}}" name="${{app.codename}}" delay="${{debug.delay}}" timeout="${{debug.timeout}}" period="2000"/>
+            <sequential>
+                <property name="debug.delay" value="500"/>
+                <nb-mobility-debug address="${{active.debug.port}}" name="${{app.codename}}" delay="${{debug.delay}}" timeout="${{debug.timeout}}" period="2000"/>
+            </sequential>
         </parallel>
     </target>
 

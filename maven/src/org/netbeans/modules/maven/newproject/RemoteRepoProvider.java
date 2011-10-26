@@ -42,10 +42,10 @@
 
 package org.netbeans.modules.maven.newproject;
 
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import org.apache.maven.repository.RepositorySystem;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
@@ -58,25 +58,11 @@ public class RemoteRepoProvider implements ArchetypeProvider {
     @Override public List<Archetype> getArchetypes() {
         List<Archetype> lst = new ArrayList<Archetype>();
         List<RepositoryInfo> infos = RepositoryPreferences.getInstance().getRepositoryInfos();
-        boolean searchedSomeRepo = false;
         for (RepositoryInfo info : infos) {
-            if (RepositoryPreferences.LOCAL_REPO_ID.equals(info.getId())) {
+            if (RepositorySystem.DEFAULT_LOCAL_REPO_ID.equals(info.getId())) {
                 continue;
             }
-            searchedSomeRepo = true;
             search(info, lst);
-        }
-        if (!searchedSomeRepo) { // #201821
-            try {
-                RepositoryPreferences.getInstance().addTransientRepository(this, "central", "central", RepositoryPreferences.REPO_CENTRAL);
-                RepositoryInfo info = RepositoryPreferences.getInstance().getRepositoryInfoById("central");
-                assert info != null;
-                search(info, lst);
-            } catch (URISyntaxException x) {
-                assert false : x;
-            } finally {
-                RepositoryPreferences.getInstance().removeTransientRepositories(this);
-            }
         }
         return lst;
     }

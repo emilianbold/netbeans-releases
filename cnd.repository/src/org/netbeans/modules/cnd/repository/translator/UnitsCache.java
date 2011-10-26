@@ -62,6 +62,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
+import javax.swing.JButton;
 import org.netbeans.modules.cnd.repository.disk.StorageAllocator;
 import org.netbeans.modules.cnd.repository.testbench.Stats;
 import org.netbeans.modules.cnd.repository.util.IntToStringCache;
@@ -139,14 +140,16 @@ final class UnitsCache {
                 IOException exception = new IOException(message);
                 if (!(CndUtils.isStandalone() || CndUtils.isUnitTestMode())) {
                     while (masterIndexLock == null) {
+                        JButton reload = new JButton(NbBundle.getMessage(UnitsCache.class, "Yes_Button")); // NOI18N
+                        JButton cancel = new JButton(NbBundle.getMessage(UnitsCache.class, "No_Button")); // NOI18N
                         String question = NbBundle.getMessage(UnitsCache.class, "Retry_Load"); // NOI18N
                         NotifyDescriptor nd = new NotifyDescriptor(question,
                                 message, NotifyDescriptor.YES_NO_OPTION,
                                 NotifyDescriptor.QUESTION_MESSAGE,
-                                null, NotifyDescriptor.YES_OPTION);
+                                new Object[] {reload, cancel},
+                                reload);
                         Object ret = DialogDisplayer.getDefault().notify(nd);
-                        
-                        if (ret == NotifyDescriptor.YES_OPTION) {
+                        if (ret == reload) {
                             masterIndexLock = channel.tryLock();
                         } else {
                             exception.printStackTrace(System.err);

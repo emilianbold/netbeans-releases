@@ -53,7 +53,8 @@ import org.openide.nodes.Node;
  * @author Jan Stola
  */
 public interface FormServices {
-    void setupEditorPane(JEditorPane editor, FileObject srcFile, int ccPosition);
+    JEditorPane createCodeEditorPane();
+    void setupCodeEditorPane(JEditorPane editor, FileObject srcFile, int ccPosition);
     PaletteActions createPaletteActions();
     ClassSource getCopiedBeanClassSource(Transferable transferable);
     Node createFormDataNode(FormDataObject formDataObject);

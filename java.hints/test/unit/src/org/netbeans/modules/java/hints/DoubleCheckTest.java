@@ -43,34 +43,18 @@
  */
 package org.netbeans.modules.java.hints;
 
-import com.sun.source.util.TreePath;
-import java.util.List;
-import java.util.Locale;
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.SourceUtilsTestUtil;
-import org.netbeans.modules.java.hints.infrastructure.TreeRuleTestBase;
-import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.netbeans.spi.editor.hints.Fix;
-import org.openide.util.NbBundle;
+import org.netbeans.modules.java.hints.jackpot.code.spi.TestBase;
 
 /**
  *
  * @author Jaroslav Tulach
  */
-public class DoubleCheckTest extends TreeRuleTestBase {
+public class DoubleCheckTest extends TestBase {
     
     public DoubleCheckTest(String testName) {
-        super(testName);
+        super(testName, DoubleCheck.class);
     }
 
-    @Override
-    protected void setUp() throws Exception {
-        Locale.setDefault(Locale.US);
-        SourceUtilsTestUtil.setLookup(new Object[0], getClass().getClassLoader());
-    }
-    
-    
-    
     public void testClassWithOnlyStaticMethods() throws Exception {
         String before = "package test; public class Test {" +
             "  private static Test INST;" +
@@ -86,7 +70,7 @@ public class DoubleCheckTest extends TreeRuleTestBase {
             "  return INST;" +
             "}";
         
-        performAnalysisTest("test/Test.java", before + after, before.length(), 
+        performAnalysisTest("test/Test.java", before + after, 
             "0:115-0:127:verifier:ERR_DoubleCheck"
         );
     }
@@ -107,7 +91,7 @@ public class DoubleCheckTest extends TreeRuleTestBase {
             "  return INST;" +
             "}";
         // no hint, probably
-        performAnalysisTest("test/Test.java", before + after, before.length());
+        performAnalysisTest("test/Test.java", before + after);
     }
     public void testDifferentVariable() throws Exception {
         String before = "package test; public class Test {" +
@@ -125,7 +109,7 @@ public class DoubleCheckTest extends TreeRuleTestBase {
             "  return INST;" +
             "}";
         // no hint, for sure
-        performAnalysisTest("test/Test.java", before + after, before.length());
+        performAnalysisTest("test/Test.java", before + after);
     }
     public void testNoNPEWhenBrokenCondition() throws Exception {
         String before = "package test; public class Test {" +
@@ -143,7 +127,7 @@ public class DoubleCheckTest extends TreeRuleTestBase {
             "  return INST;" +
             "}";
         // no hint, for sure
-        performAnalysisTest("test/Test.java", before + after, before.length());
+        performAnalysisTest("test/Test.java", before + after);
     }
     public void testApplyClassWithOnlyStaticMethods() throws Exception {
         String before1 = "package test; public class Test {\n" +
@@ -169,9 +153,9 @@ public class DoubleCheckTest extends TreeRuleTestBase {
         String after = after1 + after2 + after3 + after4; 
         
         String golden = (before1 + before3 + after1 + after3).replace("\n", " ");
-        performFixTest("test/Test.java", before + after, before.length(), 
+        performFixTest("test/Test.java", before + after,
             "4:0-4:12:verifier:ERR_DoubleCheck",
-            "FIX_DoubleCheck",
+            "FixImpl",
             golden
         );
     }
@@ -199,7 +183,7 @@ public class DoubleCheckTest extends TreeRuleTestBase {
             "private static volatile Test INST;\n" +
             "public static Test factory() {\n" +
               "if (INST == null) {\n" +
-                "synchro|nized (INST) {\n" +
+                "synchronized (INST) {\n" +
                   "if (INST == null) {\n" +
                     "INST = new test.Test();\n" +
                   "}\n" +
@@ -213,17 +197,4 @@ public class DoubleCheckTest extends TreeRuleTestBase {
                             "4:0-4:12:verifier:ERR_DoubleCheck");
     }
 
-    protected List<ErrorDescription> computeErrors(CompilationInfo info, TreePath path) {
-        return new DoubleCheck().run(info, path);
-    }
-    
-    @Override
-    protected String toDebugString(CompilationInfo info, Fix f) {
-        return f.getText();
-    }
-
-    static {
-        NbBundle.setBranding("test");
-    }
-    
 }

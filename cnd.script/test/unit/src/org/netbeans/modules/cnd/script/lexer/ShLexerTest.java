@@ -85,7 +85,7 @@ public class ShLexerTest extends NbTestCase {
         assertNextTokenEquals(ts, WHITESPACE, " ");
         assertNextTokenEquals(ts, IDENTIFIER, "f");
         assertNextTokenEquals(ts, WHITESPACE, " ");
-        assertNextTokenEquals(ts, IDENTIFIER, "in");
+        assertNextTokenEquals(ts, KEYWORD, "in");
         assertNextTokenEquals(ts, WHITESPACE, " ");
         assertNextTokenEquals(ts, IDENTIFIER, "foo");
         assertNextTokenEquals(ts, OPERATOR, ".");

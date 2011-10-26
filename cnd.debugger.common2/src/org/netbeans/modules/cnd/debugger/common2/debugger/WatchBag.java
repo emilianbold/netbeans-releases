@@ -48,45 +48,23 @@
 
 package org.netbeans.modules.cnd.debugger.common2.debugger;
 
-import org.netbeans.modules.cnd.debugger.common2.utils.UserdirFile;
 import java.util.ArrayList;
+import org.netbeans.api.debugger.Watch;
 
 public class WatchBag {
     private ArrayList<NativeWatch> watches = new ArrayList<NativeWatch>();
-
-    private boolean dirty;
-
-    private boolean initialized;
-    private boolean isRestoring;
 
     private static DebuggerManager manager() {
 	return DebuggerManager.get();
     }
 
     public WatchBag() {
-    }
-
-    // 6600130
-    public boolean isRestoring() {
-	return isRestoring;
-    }
-
-    private void initialize() {
-
-	// Fix for 6589755
-	// We need to call (debuggercores) getWatches() which will
-	// trigger the loading of watches. (DebuggerManager.initWatches()).
-
-	if (initialized)
-	    return;
-	if (Log.Watch.pathway)
-	    System.out.printf("WatchBag.initialize() initializing\n"); // NOI18N
-
-	// 6600130
-	isRestoring = true;
-	manager().getWatches();
-	isRestoring = false;
-	initialized = true;
+        // on creation read all existing watches from debuggercore Watches
+        // see IZ 203606
+        Watch[] existingWatches = manager().getWatches();
+        for (Watch watch : existingWatches) {
+            restore(new NativeWatch(watch));
+        }
     }
 
     ModelChangeDelegator watchUpdater() {
@@ -94,13 +72,11 @@ public class WatchBag {
     }
 
     public NativeWatch[] getWatches() {
-	initialize();
 	NativeWatch[] wa = new NativeWatch[watches.size()];
 	return watches.toArray(wa);
     }
 
     public WatchVariable[] watchesFor(NativeDebugger debugger) {
-	initialize();
 	ArrayList<WatchVariable> ws = new ArrayList<WatchVariable>();
 	for (NativeWatch w : watches) {
 	    WatchVariable dw = w.findByDebugger(debugger);
@@ -134,7 +110,7 @@ public class WatchBag {
      * All such restored watches get re-add'ed later on so only need to put
      * them on the list.
      */
-    public void restore(NativeWatch newWatch) {
+    public final void restore(NativeWatch newWatch) {
 	assert !watches.contains(newWatch) :
 	       "WB.restore(): watch added redundantly"; // NOI18N
 	// LATER newWatch.restored();
@@ -150,8 +126,6 @@ public class WatchBag {
 	// OLD manager().addWatch(newWatch);
 	newWatch.setUpdater(watchUpdater());
 	watchUpdater().treeChanged();      // causes a pull
-
-	dirty = true;
     }
 
     public void remove(NativeWatch oldWatch) {
@@ -166,93 +140,5 @@ public class WatchBag {
 	       "WB.remove(): watch still there after removal"; // NOI18N
 	// OLD manager().removeWatch(oldWatch);
 	watchUpdater().treeChanged();      // causes a pull
-
-	dirty = true;
     }
-
-    private static final String moduleFolderName = "DbxGui";	// NOI18N
-    private static final String folderName = "DbxDebugWatches";	// NOI18N
-    private static final String filename = "Watches";		// NOI18N
-
-    private static final UserdirFile userdirFile =
-	new UserdirFile(moduleFolderName, folderName, filename);
-
-    public void restore() {
-	/*
-	No-op since we're depending on debuggercore Watches
-
-	if (!Log.Watch.wall) {
-	    if (Log.Watch.xml)
-		System.out.printf("WatchBag.restore() skipping\n");
-	    return;
-	}
-
-	if (Log.Watch.xml)
-	    System.out.printf("WatchBag.restore()\n");
-
-	WatchXMLReader xr = new WatchXMLReader(userdirFile, this);
-	try {
-	    xr.read();
-	} catch (Exception x) {
-	    ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, x);
-	}
-	if (Log.Watch.xml)
-	    System.out.printf("WatchBag.restore() DONE\n");
-	watchUpdater().treeChanged();      // causes a pull
-	*/
-    }
-
-    public void save() {
-	/*
-	No-op since we're depending on debuggercore Watches
-
-	if (!Log.Watch.wall) {
-	    if (Log.Watch.xml)
-		System.out.printf("WatchBag.save() skipping\n");
-	    return;
-	}
-
-	if (Log.Watch.xml)
-	    System.out.printf("WatchBag.save()\n");
-
-	if (!isDirty()) {
-	    if (Log.Watch.xml)
-		System.out.printf("\tnot dirty --- nothing to save\n");
-	    return;
-	} else {
-	    if (Log.Watch.xml)
-		System.out.printf("\tdirty --- proceeding\n");
-	}
-
-	WatchXMLWriter xw = new WatchXMLWriter(userdirFile, this);
-	try {
-	    xw.write();
-	    clearDirty();
-	} catch (Exception e) {
-	    ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
-	}
-	if (Log.Watch.xml)
-	    System.out.printf("WatchBag.save() DONE\n");
-	*/
-    }
-
-    public boolean isDirty() {
-	if (dirty)
-	    return true;
-	/* LATER
-	for (Watch w : watches)
-	    if (w.isDirty())
-		return true;
-	*/
-	return false;
-    }
-
-    public void clearDirty() {
-	dirty = false;
-	/* LATER
-	for (Watch w : watches)
-	    w.clearDirty();
-	*/
-    }
-
 }

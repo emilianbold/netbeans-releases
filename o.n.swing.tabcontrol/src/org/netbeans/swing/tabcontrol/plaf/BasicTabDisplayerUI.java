@@ -212,6 +212,16 @@ public abstract class BasicTabDisplayerUI extends AbstractTabDisplayerUI {
      * @return 
      */
     public TabCellRenderer getTabCellRenderer(int tab) {
+        defaultRenderer.setShowCloseButton(displayer.isShowCloseButton());
+        if( tab >=0 && tab < displayer.getModel().size() ) {
+            TabData data = displayer.getModel().getTab(tab);
+            boolean closingEnabled = true;
+            if( data.getComponent() instanceof TopComponent ) {
+                closingEnabled = displayer.getContainerWinsysInfo().isTopComponentClosingEnabled( (TopComponent)data.getComponent() );
+            }
+
+            defaultRenderer.setShowCloseButton(displayer.isShowCloseButton() && closingEnabled);
+        }
         return defaultRenderer;
     }
 
@@ -377,8 +387,6 @@ public abstract class BasicTabDisplayerUI extends AbstractTabDisplayerUI {
         
         ColorUtil.setupAntialiasing(g);
         
-        boolean showClose = displayer.isShowCloseButton();
-        
         paintBackground(g);
         int start = getFirstVisibleTab();
         if (start == -1 || !displayer.isShowing()) {
@@ -419,12 +427,6 @@ public abstract class BasicTabDisplayerUI extends AbstractTabDisplayerUI {
                             TabCellRenderer ren = getTabCellRenderer(i);
                             
                             TabData data = displayer.getModel().getTab(i);
-                            boolean closingEnabled = true;
-                            if( data.getComponent() instanceof TopComponent ) {
-                                closingEnabled = displayer.getContainerWinsysInfo().isTopComponentClosingEnabled( (TopComponent)data.getComponent() );
-                            }
-                            
-                            ren.setShowCloseButton(showClose && closingEnabled);
                             
                             JComponent renderer = ren.getRendererComponent(
                                     data, scratch, state);

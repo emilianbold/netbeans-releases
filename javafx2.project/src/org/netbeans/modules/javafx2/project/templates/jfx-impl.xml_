@@ -578,6 +578,12 @@
         <deploy-deploy-template/>
     </target>
 
+    <!-- Running/Debugging Standalone -->
+
+    <target name="jfxsa-run" depends="run"/>
+
+    <target name="jfxsa-debug" depends="jar,debug"/>
+    
     <!-- Running/Debugging as WebStart -->
     
     <target name="-check-jnlp-file">

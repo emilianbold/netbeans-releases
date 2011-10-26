@@ -231,7 +231,7 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
                         sc.setServerInstanceId(instanceId);
                         WebModuleProviderImpl prv = project.getLookup().lookup(WebModuleProviderImpl.class);
                         POHImpl poh = project.getLookup().lookup(POHImpl.class);
-                        poh.hackModuleServerChange();
+                        poh.hackModuleServerChange(true);
                         //provider instance not relevant from here
                         provider = null;
                     }
@@ -307,11 +307,8 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
             ProjectConfiguration cfg = project.getLookup().lookup(ProjectConfigurationProvider.class).getActiveConfiguration();
             NetbeansActionMapping mapp = ModelHandle.getMapping(actionName, project, cfg);
             if (mapp != null) {
-                java.util.Properties props = mapp.getProperties();
-                if (props != null) {
-                    props.remove(MavenJavaEEConstants.ACTION_PROPERTY_DEPLOY);
-                    ModelHandle.putMapping(mapp, project, cfg);
-                }
+                mapp.getProperties().remove(MavenJavaEEConstants.ACTION_PROPERTY_DEPLOY);
+                ModelHandle.putMapping(mapp, project, cfg);
             }
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
@@ -366,7 +363,7 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
         }
         //#109507 workaround
         POHImpl poh = project.getLookup().lookup(POHImpl.class);
-        poh.hackModuleServerChange();
+        poh.hackModuleServerChange(true);
 
         // refresh all subprojects
         SubprojectProvider spp = targetPrj.getLookup().lookup(SubprojectProvider.class);
