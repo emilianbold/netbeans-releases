@@ -435,7 +435,10 @@ public class HtmlCompletionQuery extends UserTask {
                 result.addAll(translateHtmlTags(offset - 1, possibleOpenTags, allTags));
 
                 if(HtmlPreferences.completionOffersEndTagAfterLt()) {
-                    result.addAll(getPossibleEndTags(htmlResult, node, xmlLeafNode, offset, ""));
+                    //the end tag completion expects the item to be invoked after </ prefix
+                    //which is not true in this case, we need to adjust it by one char
+                    int endTagOffset = offset + 1; 
+                    result.addAll(getPossibleEndTags(htmlResult, node, xmlLeafNode, endTagOffset, ""));
                 }
             }
 
