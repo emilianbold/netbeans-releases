@@ -94,7 +94,7 @@ abstract class AbstractCdiAction extends AbstractWebBeansAction {
             return;
         }
         
-        handleProject( project );
+        handleProject( project , event );
         
         MetaModelSupport support = new MetaModelSupport(project);
         final MetadataModel<WebBeansModel> metaModel = support.getMetaModel();
@@ -133,7 +133,7 @@ abstract class AbstractCdiAction extends AbstractWebBeansAction {
         }
     }
 
-    protected void handleProject( Project project ) {
+    protected void handleProject( Project project , ActionEvent event ) {
     }
 
     protected abstract boolean findContext(final JTextComponent component , 

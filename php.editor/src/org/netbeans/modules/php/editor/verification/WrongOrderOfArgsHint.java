@@ -109,9 +109,10 @@ public class WrongOrderOfArgsHint extends AbstractRule {
             return hints;
         }
 
+        @Messages("WrongOrderOfArgsDesc=Wrong order of arguments")
         private void processWrongFunction(FunctionDeclaration node) {
             RearrangeParametersFix hintFix = new RearrangeParametersFix(doc, node, tokenHierarchy);
-            hints.add(new Hint(WrongOrderOfArgsHint.this, getDisplayName(), fileObject, hintFix.getOffsetRange(), Collections.<HintFix>singletonList(hintFix), 500));
+            hints.add(new Hint(WrongOrderOfArgsHint.this, Bundle.WrongOrderOfArgsDesc(), fileObject, hintFix.getOffsetRange(), Collections.<HintFix>singletonList(hintFix), 500));
         }
 
         @Override
