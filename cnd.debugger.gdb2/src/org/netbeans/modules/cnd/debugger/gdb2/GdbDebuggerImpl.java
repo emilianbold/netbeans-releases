@@ -1319,7 +1319,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
         // OLD overrideOptions();
 
-        manager().formatStatusText("ReadyToRun", null); // NOI18N
+        manager().formatStatusText("ReadyToRun"); // NOI18N
 
         DebuggerManager.get().addRecentDebugTarget(progname, false);
 
