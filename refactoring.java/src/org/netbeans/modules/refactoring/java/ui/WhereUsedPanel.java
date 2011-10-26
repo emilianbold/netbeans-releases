@@ -44,6 +44,9 @@
 package org.netbeans.modules.refactoring.java.ui;
 
 import com.sun.source.tree.ExpressionTree;
+import java.net.MalformedURLException;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.Preferences;
 import org.netbeans.modules.refactoring.java.api.ui.JavaScopeBuilder;
 import org.netbeans.modules.refactoring.api.Scope;
 import com.sun.source.util.TreePath;
@@ -53,6 +56,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.beans.BeanInfo;
 import java.io.IOException;
+import java.net.URL;
 import java.text.MessageFormat;
 import java.util.*;
 import javax.lang.model.element.Element;
@@ -93,12 +97,10 @@ import org.netbeans.api.java.source.ui.ElementHeaders;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.openide.filesystems.*;
-import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.InstanceDataObject;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
-import org.openide.util.lookup.Lookups;
+import org.openide.util.NbPreferences;
 
 
 /**
@@ -381,90 +383,81 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
     }
     
     private void storeScope(Scope customScope) {
-        try {
-            FileObject scopesFolder = FileUtil.getConfigFile(SCOPE_CONFIG);
-            if (scopesFolder == null) {
-                scopesFolder = FileUtil.getConfigRoot().createFolder(CONFIG_ROOT).createFolder("Scope"); // NOI18N
-            } else {
-                for (FileObject fileObject : scopesFolder.getChildren()) {
-                    fileObject.delete();
-                }
-            }
-            FileObject filesFolder = FileUtil.getConfigFile(SCOPE_CONFIG + FILES);
-            if (filesFolder == null) {
-                filesFolder = scopesFolder.createFolder("Files"); // NOI18N
-            }
-            int count = 0;
-            for (FileObject fileObject : customScope.getFiles()) {
-                InstanceDataObject.create(
-                    DataFolder.findFolder(filesFolder),
-                    "file - " + count++, // NOI18N
-                    fileObject, null, true);
-            }
-            FileObject foldersFolder = FileUtil.getConfigFile(SCOPE_CONFIG + FOLDERS);
-            if (foldersFolder == null) {
-                foldersFolder = scopesFolder.createFolder("Folders"); // NOI18N
-            }
-            count = 0;
-            for (NonRecursiveFolder fileObject : customScope.getFolders()) {
-                InstanceDataObject.create(
-                    DataFolder.findFolder(foldersFolder),
-                    "folder - " + count++, // NOI18N
-                    fileObject.getFolder(), null, true);
-            }
-            FileObject srcRootsFolder = FileUtil.getConfigFile(SCOPE_CONFIG + SOURCE_ROOTS);
-            if (srcRootsFolder == null) {
-                srcRootsFolder = scopesFolder.createFolder("SourceRoots"); // NOI18N
-            }
-            count = 0;
-            for (FileObject fileObject : customScope.getSourceRoots()) {
-                InstanceDataObject.create(
-                    DataFolder.findFolder(srcRootsFolder),
-                    "sourceRoot - " + count++, // NOI18N
-                    fileObject, null, true);
-            }
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+        storeFileList(customScope.getSourceRoots(), "sourceRoot" ); //NOI18N
+        storeFileList(customScope.getFolders(), "folder" ); //NOI18N
+        storeFileList(customScope.getFiles(), "file" ); //NOI18N
     }
     
     private Scope readScope() {
-        FileObject scopesConfig = FileUtil.getConfigFile(SCOPE_CONFIG);
-        if (scopesConfig == null) {
-            return null;
-        }
-        Collection<? extends FileObject> files = Lookups.forPath(SCOPE_CONFIG + FILES).lookupAll(FileObject.class);
-        Collection<? extends FileObject> folders = Lookups.forPath(SCOPE_CONFIG + FOLDERS).lookupAll(FileObject.class);
-        Collection<? extends FileObject> srcRoots = Lookups.forPath(SCOPE_CONFIG + SOURCE_ROOTS).lookupAll(FileObject.class);
-        
-        List<FileObject> validFiles = new LinkedList<FileObject>();
-        for (FileObject fileObject : files) {
-            if(fileObject.isValid()) {
-                validFiles.add(fileObject);
+        try {
+            if (NbPreferences.forModule(WhereUsedPanel.class).nodeExists("FindUsages-Scope")) { //NOI18N
+                return Scope.create(
+                        loadFileList("sourceRoot", FileObject.class), //NOI18N
+                        loadFileList("folder", NonRecursiveFolder.class), //NOI18N
+                        loadFileList("file", FileObject.class)); //NOI18N
             }
+        } catch (BackingStoreException ex) {
+            Exceptions.printStackTrace(ex);
         }
-        
-        List<NonRecursiveFolder> validFolders = new LinkedList<NonRecursiveFolder>();
-        for (final FileObject fileObject : folders) {
-            if(fileObject.isValid()) {
-                validFolders.add(new NonRecursiveFolder() {
-                    @Override public FileObject getFolder() {
-                        return fileObject;
-                    }
-                });
-            }
-        }
-        
-        List<FileObject> validSourceRoots = new LinkedList<FileObject>();
-        for (FileObject fileObject : srcRoots) {
-            if(fileObject.isValid()) {
-                validSourceRoots.add(fileObject);
-            }
-        }
-        
-        return Scope.create(validSourceRoots, validFolders, validFiles);
+        return null;
     }
     
+    private <T> List<T> loadFileList(String key, Class<T> type) {
+        Preferences pref = NbPreferences.forModule(WhereUsedPanel.class).node("FindUsages-Scope"); //NOI18N
+        int count = 0;
+        String val = pref.get(key + "." + count, null); //NOI18N
+        List<T> toRet = new ArrayList<T>();
+        while (val != null) {
+            try {
+                final FileObject f = URLMapper.findFileObject(new URL(val));
+                if (f != null && f.isValid()) {
+                    if (type.isAssignableFrom(FileObject.class)) {
+                        toRet.add((T) f);
+                    } else {
+                        toRet.add((T) new NonRecursiveFolder() {
+
+                            public FileObject getFolder() {
+                                return f;
+                            }
+                        });
+                    }
+                }
+            } catch (MalformedURLException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            val = pref.get(key + "." + ++count, null); //NOI18N
+        }
+        return toRet;
+    }
+    
+    private void storeFileList(Set files, String basekey) {
+        Preferences pref = NbPreferences.forModule(WhereUsedPanel.class).node("FindUsages-Scope"); //NOI18N
+        assert files != null;
+        int count = 0;
+        String key = basekey + "." + count; //NOI18N
+        String val = pref.get(key, null);
+        Iterator<Object> it = files.iterator();
+        while (val != null || it.hasNext()) {
+            try {
+                if (it.hasNext()) {
+                    Object next = it.next();
+                    if (next instanceof FileObject) {
+                        pref.put(key, ((FileObject) next).getURL().toExternalForm());
+                    } else {
+                        pref.put(key, ((NonRecursiveFolder) next).getFolder().getURL().toExternalForm());
+                    }
+
+                } else {
+                    pref.remove(key);
+                }
+            } catch (FileStateInvalidException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            key = basekey + "." + ++count; //NOI18N
+            val = pref.get(key, null);
+        }
+    }
+        
     private String getSimpleName(Element clazz) {
         return clazz.getSimpleName().toString();
         //return NbBundle.getMessage(WhereUsedPanel.class, "LBL_AnonymousClass"); // NOI18N
