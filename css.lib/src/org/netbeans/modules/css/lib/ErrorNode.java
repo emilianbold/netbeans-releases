@@ -52,7 +52,6 @@ import org.netbeans.modules.css.lib.api.ProblemDescription;
 public class ErrorNode extends RuleNode {
     
     private ProblemDescription problemDescription;
-    int from, to;
 
     public ErrorNode(int from, int to, ProblemDescription pd, CharSequence source) {
         super(NodeType.error, source);
@@ -64,16 +63,6 @@ public class ErrorNode extends RuleNode {
     @Override
     public NodeType type() {
         return NodeType.error;
-    }
-    
-    @Override
-    public int from() {
-        return from;
-    }
-
-    @Override
-    public int to() {
-        return to;
     }
 
     public ProblemDescription getProblemDescription() {

@@ -53,7 +53,6 @@ public class CssCompletionTest extends CssModuleTestBase {
 
     private static String[] AT_RULES = new String[]{"@charset", "@import", "@media", "@page", "@font-face"};
 
-
     public CssCompletionTest(String test) {
         super(test);
     }
@@ -112,7 +111,6 @@ public class CssCompletionTest extends CssModuleTestBase {
 //    public void testIssue160870() throws ParseException {
 //        checkCC("h1 { display : | }", arr("block"), Match.CONTAINS);
 //    }
-
     public void testHtmlSelectorsCompletion() throws ParseException {
         checkCC("|", arr("html"), Match.CONTAINS);
         checkCC("ht| ", arr("html"), Match.EXACT);
@@ -122,19 +120,19 @@ public class CssCompletionTest extends CssModuleTestBase {
         checkCC("html > bo| ", arr("body"), Match.EXACT);
         checkCC("html tit| { }", arr("title"), Match.CONTAINS);
     }
-    
+
     public void testHtmlSelectorsCompletionAfterClassOrIdSelector() throws ParseException, BadLocationException {
         checkCC("#myid |", arr("html"), Match.CONTAINS);
         checkCC("#myid h|", arr("html"), Match.CONTAINS);
         assertComplete("#myid b| { }", "#myid body| { }", "body");
         assertComplete("#myid | { }", "#myid body| { }", "body");
-        
+
         checkCC(".aclass |", arr("html"), Match.CONTAINS);
         checkCC(".aclass h|", arr("html"), Match.CONTAINS);
         assertComplete(".aclass b| { }", ".aclass body| { }", "body");
         assertComplete(".aclass | { }", ".aclass body| { }", "body");
     }
-    
+
     public void testCompleteSelectors() throws ParseException, BadLocationException {
         assertComplete("html b| { }", "html body| { }", "body");
         assertComplete("html bo| { }", "html body| { }", "body");
@@ -172,35 +170,52 @@ public class CssCompletionTest extends CssModuleTestBase {
 //        
         checkCC("h1 { %| }", arr("-moz-animation"), Match.EMPTY);
         checkCC("h1 { %moz| }", arr("-moz-animation"), Match.EMPTY);
-        
+
         //after a declaration
         checkCC("h1 { color:red;  | }", arr("-moz-animation"), Match.CONTAINS);
         checkCC("h1 { color:red; -| }", arr("-moz-animation"), Match.CONTAINS);
         checkCC("h1 { color:red; -moz-an| }", arr("-moz-animation"), Match.CONTAINS);
         checkCC("h1 { color:red; -moz-an| }", arr("-moz-appearabce"), Match.DOES_NOT_CONTAIN);
-//        
-        checkCC("h1 { color:red; %| }", arr("-moz-animation"), Match.EMPTY);
-        checkCC("h1 { color:red; %moz| }", arr("-moz-animation"), Match.EMPTY);
-        
+
+        //do not offer after garbage
+        checkCC("h1 { color:red; %| }", arr("-moz-animation"), Match.DOES_NOT_CONTAIN);
+        checkCC("h1 { color:red; %moz| }", arr("-moz-animation"), Match.DOES_NOT_CONTAIN);
+
     }
-    
+
     public void testCompletionInMozillaSpecificAtRule() throws ParseException {
         checkCC(" @-moz-document url(http://www.w3.org/) { | }", arr("color"), Match.CONTAINS);
         checkCC(" @-moz-document url(http://www.w3.org/) { p { } | }", arr("color"), Match.CONTAINS);
         checkCC(" @-moz-document url(http://www.w3.org/) { p { } | div { } }", arr("color"), Match.CONTAINS);
     }
-    
+
     //Bug 204128 - CC stops work after # in a color attribute 
     public void testIssue204128() throws ParseException {
         CssCompletion.TEST_USED_COLORS = new String[]{"#aabbcc"};
-        
-        String code =  "#test {\n"
+
+        String code = "#test {\n"
                 + "color: #|\n"
                 + "\n"
                 + "   }\n";
-                
+
         checkCC(code, arr("#aabbcc"), Match.CONTAINS);
     }
 
-    
+    //Bug 204129 - CC doesn't work after *|
+    public void testIssue204129() throws ParseException {
+        //complete name selectors and universal selector in empty file        
+        checkCC("|", arr("h1"), Match.CONTAINS);
+        checkCC("|", arr("*"), Match.CONTAINS);
+        
+        //complete after named selector
+        checkCC("a |", arr("h1"), Match.CONTAINS);
+        checkCC("a |", arr("*"), Match.CONTAINS);
+        
+        //complete after universal selector
+        checkCC("* |", arr("h1"), Match.CONTAINS);
+        checkCC("* |", arr("*"), Match.CONTAINS);
+        checkCC("*|", arr("*"), Match.CONTAINS);
+
+
+    }
 }
