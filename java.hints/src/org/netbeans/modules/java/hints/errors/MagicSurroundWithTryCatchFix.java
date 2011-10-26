@@ -249,6 +249,8 @@ final class MagicSurroundWithTryCatchFix implements Fix {
                 while (currentBlockCandidate.getLeaf() != tt) {
                     currentBlockCandidate = currentBlockCandidate.getParentPath();
                 }
+
+                currentBlockCandidate = currentBlockCandidate.getParentPath();
                 
                 if (currentBlockCandidate.getLeaf().getKind() == Kind.BLOCK) {
                     BlockTree originalTree = (BlockTree) currentBlockCandidate.getLeaf();
@@ -258,7 +260,7 @@ final class MagicSurroundWithTryCatchFix implements Fix {
                     statements.remove(index);
                     statements.add(index, nueTry);
                     statements.add(index, declaration);
-                    info.rewrite(originalTree, make.Block(statements, false));
+                    info.rewrite(originalTree, make.Block(statements, originalTree.isStatic()));
                 } else {
                     BlockTree nueBlock = make.Block(Arrays.asList(declaration, nueTry), false);
                     
