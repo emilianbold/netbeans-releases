@@ -22,6 +22,9 @@ import java.util.zip.ZipInputStream;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.ProjectManager;
+<#if useTR??>
+import org.netbeans.api.templates.TemplateRegistration;
+</#if>
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
@@ -29,13 +32,20 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+<#if useTR??>
+import org.openide.util.NbBundle.Messages;
+</#if>
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
-
+<#if useTR??>
+// TODO define position attribute
+@TemplateRegistration(folder="${CATEGORY?replace('^Templates/', '', 'r')}", displayName="#${TEMPLATENAME}_displayName", description="${TEMPLATENAME}Description.html", iconBase="${PACKAGENAME?replace('.', '/')}/${TEMPLATENAME}.png", content="${TEMPLATENAME}Project.zip")
+@Messages("${TEMPLATENAME}_displayName=${DISPLAYNAME}")
+</#if>
 public class ${TEMPLATENAME}WizardIterator implements WizardDescriptor./*Progress*/InstantiatingIterator {
 
     private int index;
