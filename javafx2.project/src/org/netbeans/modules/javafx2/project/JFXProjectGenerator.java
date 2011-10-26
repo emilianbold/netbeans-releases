@@ -378,6 +378,7 @@ public class JFXProjectGenerator {
         ep.setProperty(ProjectProperties.COMPILE_ON_SAVE, "true"); // NOI18N
         ep.setProperty(ProjectProperties.COMPILE_ON_SAVE_UNSUPPORTED_PREFIX + ".javafx", "true"); // NOI18N
         ep.setProperty(JFXProjectProperties.JAVAFX_BINARY_ENCODE_CSS, "true"); // NOI18N
+        ep.setProperty(JFXProjectProperties.JAVAFX_DEPLOY_INCLUDEDT, "true"); // NOI18N
         
         ep.setProperty(JFXProjectProperties.UPDATE_MODE_BACKGROUND, "true"); // NOI18N
         ep.setComment(JFXProjectProperties.UPDATE_MODE_BACKGROUND, new String[]{"# " + NbBundle.getMessage(JFXProjectGenerator.class, "COMMENT_updatemode")}, false); // NOI18N
