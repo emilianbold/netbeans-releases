@@ -75,6 +75,22 @@ public class CopySupportTest extends PhpTestCase {
         }
     }
 
+    public void testLoggingOfIssue192386() throws Exception {
+        final PhpProject project = TestUtils.createPhpProject(getWorkDir());
+        final CopySupport copySupport = project.getCopySupport();
+
+        copySupport.projectOpened();
+        try {
+            copySupport.projectOpened();
+            fail("Should not get here.");
+        } catch (IllegalStateException ise) {
+            assertNotNull("Exception should have cause", ise.getCause());
+            assertEquals("Call stack should contain 2 elements", 2, copySupport.calls.size());
+            assertEquals("Copy support should be opened twice", 2, copySupport.opened.get());
+            assertEquals("Copy support should not be closed at all", 0, copySupport.closed.get());
+        }
+    }
+
     private PhpProject createAndOpenAndCloseProject() throws Exception {
         return openAndCloseProject(TestUtils.createPhpProject(getWorkDir()));
     }
@@ -97,6 +113,7 @@ public class CopySupportTest extends PhpTestCase {
         String msg = "Copy support should be opened (opened: " + opened + ", closed: " + closed + ").";
         assertTrue(msg, copySupport.projectOpened);
         assertEquals(msg, 1, opened - closed);
+        assertEquals("Call stack should contain one element", 1, copySupport.calls.size());
     }
 
     private void assertCopySupportClosed(CopySupport copySupport) {
@@ -105,6 +122,7 @@ public class CopySupportTest extends PhpTestCase {
         String msg = "Copy support should be closed (opened: " + opened + ", closed: " + closed + ").";
         assertFalse(msg, copySupport.projectOpened);
         assertEquals(msg, opened, closed);
+        assertTrue("Call stack should be empty", copySupport.calls.isEmpty());
     }
 
 }
