@@ -39,23 +39,44 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.project;
+package org.netbeans.modules.php.project.util;
 
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.project.util.PhpTestCase;
-import org.netbeans.modules.php.project.util.TestUtils;
+import java.io.IOException;
+import org.netbeans.junit.NbTestCase;
+import org.openide.util.test.MockLookup;
 
-public class PhpProjectTest extends PhpTestCase {
+/**
+ * Base test case for PHP tests.
+ * <p>
+ * This class always sets these properties:
+ * <ul>
+ *  <li>netbeans.user</li>
+ *  <li>xtest.php.home</li>
+ * </ul>
+ * Also, it {@link MockLookup#setLayersAndInstances(Object[]) sets layers and instances}
+ * in {@link #setUp() test setup}.
+ */
+public abstract class PhpTestCase extends NbTestCase {
 
-    public PhpProjectTest(String name) {
+    public PhpTestCase(String name) {
         super(name);
+        init();
     }
 
-    public void testCreateProject() throws Exception {
-        Project project = TestUtils.createPhpProject(getWorkDir());
-        assertTrue("Not PhpProject but: " + project.getClass().getName(), project instanceof PhpProject);
-        assertNotNull("PhpModule should be found", project.getLookup().lookup(PhpModule.class));
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        MockLookup.setLayersAndInstances();
+    }
+
+    private void init() {
+        try {
+            String workDirPath = getWorkDir().getAbsolutePath();
+            System.setProperty("netbeans.user", workDirPath);
+            System.setProperty("xtest.php.home", workDirPath);
+        } catch (IOException exc) {
+            throw new RuntimeException("Cannot get workDir.", exc);
+        }
     }
 
 }

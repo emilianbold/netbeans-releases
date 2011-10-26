@@ -41,12 +41,11 @@
  */
 package org.netbeans.modules.php.project.copysupport;
 
-import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.util.PhpTestCase;
 import org.netbeans.modules.php.project.util.TestUtils;
-import org.openide.util.test.MockLookup;
 
-public class CopySupportTest extends NbTestCase {
+public class CopySupportTest extends PhpTestCase {
 
     public CopySupportTest(String name) {
         super(name);
@@ -54,7 +53,7 @@ public class CopySupportTest extends NbTestCase {
 
     @Override
     protected void setUp() throws Exception {
-        MockLookup.setLayersAndInstances();
+        super.setUp();
         clearWorkDir();
     }
 
