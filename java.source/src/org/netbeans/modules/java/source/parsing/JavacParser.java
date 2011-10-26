@@ -378,7 +378,7 @@ public class JavacParser extends Parser {
     //@GuardedBy (org.netbeans.modules.parsing.impl.TaskProcessor.parserLock)
     @Override
     public JavacParserResult getResult (final Task task) throws ParseException {
-        assert ciImpl != null;
+        assert ciImpl != null || invalid;
         assert privateParser || Utilities.holdsParserLock();
         LOGGER.log (Level.FINE, "getResult: task:{0}", task.toString());                     //NOI18N
 
