@@ -77,8 +77,7 @@ public class HelpAction extends SystemAction
         super.initialize();
         Installer.log.fine("HelpAction.initialize");
 
-        // Cf. org.netbeans.core.windows.frames.NbFocusManager and
-        // org.netbeans.core.windows.frames.ShortcutAndMenuKeyEventProcessor
+        // Cf. org.netbeans.core.windows.frames.ShortcutAndMenuKeyEventProcessor
         putProperty("OpenIDE-Transmodal-Action", Boolean.TRUE); // NOI18N
     }
 
