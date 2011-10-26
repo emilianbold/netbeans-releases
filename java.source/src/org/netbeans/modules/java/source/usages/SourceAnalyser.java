@@ -615,9 +615,8 @@ public class SourceAnalyser {
                     enclosingElement = old;
                 }
             }
-            if (!errorInDecl) {
-                if (this.rsList != null)
-                    this.rsList.add (name.first);
+            if (!errorInDecl && this.rsList != null) {
+                    this.rsList.add (className);
             }
             if (topLevel) {
                 addAndClearUnusedPkgImports(name, p);

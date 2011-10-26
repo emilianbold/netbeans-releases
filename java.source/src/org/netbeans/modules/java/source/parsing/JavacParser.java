@@ -338,6 +338,7 @@ public class JavacParser extends Parser {
         LOGGER.log(Level.FINE, "parse: task: {0}\n{1}", new Object[]{   //NOI18N
             task.toString(),
             snapshot == null ? "null" : snapshot.getText()});      //NOI18N
+        CompilationInfoImpl oldInfo = ciImpl;
         switch (this.sourceCount) {
             case 0:
                 ClasspathInfo _tmpInfo = null;
@@ -358,6 +359,9 @@ public class JavacParser extends Parser {
                     if (_changedMethod != null && ciImpl != null) {
                         LOGGER.log(Level.FINE, "\t:trying partial reparse:\n{0}", _changedMethod.first.getText());                           //NOI18N
                         needsFullReparse = !reparseMethod(ciImpl, snapshot, _changedMethod.second, _changedMethod.first.getText());
+                        if (!needsFullReparse) {
+                            ciImpl.setChangedMethod(_changedMethod);
+                        }
                     }
                 }
                 if (needsFullReparse) {
@@ -372,13 +376,16 @@ public class JavacParser extends Parser {
                     ciImpl == null ? null : ciImpl.getJavacTask(),
                     ciImpl == null ? null : ciImpl.getDiagnosticListener());
         }
+        if (oldInfo != ciImpl && oldInfo != null) {
+            oldInfo.dispose();
+        }
         cachedSnapShot = snapshot;
     }
 
     //@GuardedBy (org.netbeans.modules.parsing.impl.TaskProcessor.parserLock)
     @Override
     public JavacParserResult getResult (final Task task) throws ParseException {
-        assert ciImpl != null;
+        assert ciImpl != null || invalid;
         assert privateParser || Utilities.holdsParserLock();
         LOGGER.log (Level.FINE, "getResult: task:{0}", task.toString());                     //NOI18N
 

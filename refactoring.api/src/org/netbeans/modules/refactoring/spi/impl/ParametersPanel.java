@@ -721,7 +721,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         containerPanel.add(errorPanel, BorderLayout.CENTER);
         
         next.setEnabled(!problem.isFatal() && !isPreviewRequired()); 
-        dialog.getRootPane().setDefaultButton(next);
+        dialog.getRootPane().setDefaultButton(forcePreview? previewButton : next);
         if (currentState == PRE_CHECK ) {
             //calculatePrefferedSize();
             Mnemonics.setLocalizedText(next, NbBundle.getMessage(ParametersPanel.class,"CTL_Next"));
@@ -773,7 +773,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         currentState = INPUT_PARAMETERS;
         setPanelEnabled(true);
         cancel.setEnabled(true);
-        dialog.getRootPane().setDefaultButton(next);
+        dialog.getRootPane().setDefaultButton(forcePreview? previewButton : next);
         //Initial errors are ignored by on-line error checker
         //stateChanged(null);
         if (customPanel.isEnabled()) 
