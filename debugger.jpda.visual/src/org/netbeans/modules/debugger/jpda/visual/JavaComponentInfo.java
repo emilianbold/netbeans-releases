@@ -72,6 +72,21 @@ import java.util.concurrent.locks.Lock;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.expr.InvocationExceptionTranslated;
+import org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ClassTypeWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.MethodWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.MirrorWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ObjectReferenceWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ReferenceTypeWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.StringReferenceWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.TypeComponentWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.TypeWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.UnsupportedOperationExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ValueWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.VirtualMachineWrapper;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.modules.debugger.jpda.visual.spi.ComponentInfo;
 import org.openide.DialogDisplayer;
@@ -110,7 +125,15 @@ abstract public class JavaComponentInfo implements ComponentInfo {
     public JavaComponentInfo(JPDAThreadImpl t, ObjectReference component, RemoteServices.ServiceType sType) throws RetrievalException {
         this.thread = t;
         this.component = component;
-        this.type = component.referenceType().name();
+        try {
+            this.type = ReferenceTypeWrapper.name(ObjectReferenceWrapper.referenceType(component));
+        } catch (InternalExceptionWrapper ex) {
+            throw new RetrievalException(ex.getLocalizedMessage(), ex);
+        } catch (VMDisconnectedExceptionWrapper ex) {
+            throw RetrievalException.disconnected();
+        } catch (ObjectCollectedExceptionWrapper ex) {
+            throw new RetrievalException(ex.getLocalizedMessage(), ex);
+        }
         this.sType = sType;
         this.uid = component.uniqueID();
     }
@@ -325,19 +348,35 @@ abstract public class JavaComponentInfo implements ComponentInfo {
             }
         });
         // TODO: Try to find out the BeanInfo of the class
-        List<Method> allMethods = component.referenceType().allMethods();
-        //System.err.println("Have "+allMethods.size()+" methods.");
-        Map<String, Method> methodsByName = new HashMap<String, Method>(allMethods.size());
-        for (Method m : allMethods) {
-            String mName = m.name();
-            if ((mName.startsWith("get") || mName.startsWith("set")) && mName.length() > 3 ||
-                 mName.startsWith("is") && mName.length() > 2) {
-                if ((mName.startsWith("get") || mName.startsWith("is")) && m.argumentTypeNames().size() == 0 ||
-                    mName.startsWith("set") && m.argumentTypeNames().size() == 1 && "void".equals(m.returnTypeName())) {
+        List<Method> allMethods;
+        Map<String, Method> methodsByName;
+        try {
+            allMethods = ReferenceTypeWrapper.allMethods(ObjectReferenceWrapper.referenceType(component));
+            //System.err.println("Have "+allMethods.size()+" methods.");
+            methodsByName = new HashMap<String, Method>(allMethods.size());
+            for (Method m : allMethods) {
+                String mName = TypeComponentWrapper.name(m);
+                if ((mName.startsWith("get") || mName.startsWith("set")) && mName.length() > 3 ||
+                     mName.startsWith("is") && mName.length() > 2) {
+                    if ((mName.startsWith("get") || mName.startsWith("is")) && m.argumentTypeNames().size() == 0 ||
+                        mName.startsWith("set") && MethodWrapper.argumentTypeNames(m).size() == 1 && "void".equals(MethodWrapper.returnTypeName(m))) {
 
-                    methodsByName.put(mName, m);
+                        methodsByName.put(mName, m);
+                    }
                 }
             }
+        } catch (ClassNotPreparedExceptionWrapper cnpex) {
+            // no class - no properties
+            return ;
+        } catch (InternalExceptionWrapper iex) {
+            // no go
+            return ;
+        } catch (ObjectCollectedExceptionWrapper ocex) {
+            // gone
+            return ;
+        } catch (VMDisconnectedExceptionWrapper vmdex) {
+            // gone
+            return ;
         }
         Map<String, Property> sortedProperties = new TreeMap<String, Property>();
         //final List<Property> properties = new ArrayList<Property>();
@@ -374,10 +413,12 @@ abstract public class JavaComponentInfo implements ComponentInfo {
         Method getTextMethod = methodsByName.get("getText");    // NOI18N
         if (getTextMethod != null) {
             try {
-                Value theText = component.invokeMethod(getThread().getThreadReference(), getTextMethod, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
+                Value theText = ObjectReferenceWrapper.invokeMethod(component, getThread().getThreadReference(), getTextMethod, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
                 if (theText instanceof StringReference) {
-                    setComponentText(((StringReference) theText).value());
+                    setComponentText(StringReferenceWrapper.value((StringReference) theText));
                 }
+            } catch (VMDisconnectedExceptionWrapper vmdex) {
+                return;
             } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -415,12 +456,19 @@ abstract public class JavaComponentInfo implements ComponentInfo {
         ComponentInfo[] subComponents = ci.getSubComponents();
         ObjectReference component = ci.getComponent();
         for (JavaComponentInfo cp : customParents) {
-            ObjectReference c = cp.getComponent();
-            Map<Field, Value> fieldValues = c.getValues(((ClassType) c.referenceType()).fields());
-            for (Map.Entry<Field, Value> e : fieldValues.entrySet()) {
-                if (component.equals(e.getValue())) {
-                    ci.setFieldInfo(new JavaComponentInfo.FieldInfo(e.getKey(), cp));
+            try {
+                ObjectReference c = cp.getComponent();
+                Map<Field, Value> fieldValues = ObjectReferenceWrapper.getValues(c, ReferenceTypeWrapper.fields(ObjectReferenceWrapper.referenceType(c)));
+                for (Map.Entry<Field, Value> e : fieldValues.entrySet()) {
+                    if (component.equals(e.getValue())) {
+                        ci.setFieldInfo(new JavaComponentInfo.FieldInfo(e.getKey(), cp));
+                    }
                 }
+            } catch (InternalExceptionWrapper ex) {
+            } catch (VMDisconnectedExceptionWrapper ex) {
+                return ;
+            } catch (ObjectCollectedExceptionWrapper ex) {
+            } catch (ClassNotPreparedExceptionWrapper ex) {
             }
         }
         for (ComponentInfo sci : subComponents) {
@@ -511,36 +559,44 @@ abstract public class JavaComponentInfo implements ComponentInfo {
             Lock l = t.accessLock.writeLock();
             l.lock();
             try {
-                Value v = component.invokeMethod(tawt, getter, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
+                Value v = ObjectReferenceWrapper.invokeMethod(component, tawt, getter, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
                 if (v != null) {
-                    typePtr[0] = v.type();
+                    typePtr[0] = ValueWrapper.type(v);
                 }
                 if (v instanceof StringReference) {
                     isEditablePtr[0] = true;
-                    return ((StringReference) v).value();
+                    return StringReferenceWrapper.value((StringReference) v);
                 }
                 if (v instanceof ObjectReference) {
-                    Type t = v.type();
+                    Type t = ValueWrapper.type(v);
                     if (t instanceof ClassType) {
-                        Method toStringMethod = ((ClassType) t).concreteMethodByName("toString", "()Ljava/lang/String;");
-                        v = ((ObjectReference) v).invokeMethod(tawt, toStringMethod, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
+                        Method toStringMethod = ClassTypeWrapper.concreteMethodByName((ClassType) t, "toString", "()Ljava/lang/String;");
+                        v = ObjectReferenceWrapper.invokeMethod((ObjectReference) v, tawt, toStringMethod, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
                         if (v instanceof StringReference) {
-                            return ((StringReference) v).value();
+                            return StringReferenceWrapper.value((StringReference) v);
                         }
                     }
                 } else if (v instanceof PrimitiveValue) {
                     isEditablePtr[0] = true;
                 }
-                return String.valueOf(v);
+                return (v == null) ? "null" : MirrorWrapper.toString(v);
             } catch (InvalidTypeException ex) {
                 Exceptions.printStackTrace(ex);
                 return ex.getMessage();
-            } catch (ClassNotLoadedException ex) {
+            } catch (ClassNotPreparedExceptionWrapper ex) {
                 Exceptions.printStackTrace(ex);
+                return ex.getMessage();
+            } catch (ClassNotLoadedException ex) {
                 return ex.getMessage();
             } catch (IncompatibleThreadStateException ex) {
                 Exceptions.printStackTrace(ex);
                 return ex.getMessage();
+            } catch (InternalExceptionWrapper ex) {
+                return ex.getMessage();
+            } catch (ObjectCollectedExceptionWrapper ocex) {
+                return ocex.getLocalizedMessage();
+            } catch (VMDisconnectedExceptionWrapper vmdex) {
+                return vmdex.getLocalizedMessage();
             } catch (final InvocationException ex) {
                 final InvocationExceptionTranslated iextr = new InvocationExceptionTranslated(ex, debugger);
                 iextr.setPreferredThread(t);
@@ -568,48 +624,58 @@ abstract public class JavaComponentInfo implements ComponentInfo {
        private String setValueLazy(String val, String oldValue, Type type) {
             Value v;
             VirtualMachine vm = type.virtualMachine();
-            if (type instanceof PrimitiveType) {
-                String ts = type.name();
-                try {
-                    if (Boolean.TYPE.getName().equals(ts)) {
-                        v = vm.mirrorOf(Boolean.parseBoolean(val));
-                    } else if (Byte.TYPE.getName().equals(ts)) {
-                        v = vm.mirrorOf(Byte.parseByte(val));
-                    } else if (Character.TYPE.getName().equals(ts)) {
-                        if (val.length() == 0) {
-                            throw new NumberFormatException("Zero length input.");
+            try {
+                if (type instanceof PrimitiveType) {
+                    String ts = TypeWrapper.name(type);
+                    try {
+                        if (Boolean.TYPE.getName().equals(ts)) {
+                            v = VirtualMachineWrapper.mirrorOf(vm, Boolean.parseBoolean(val));
+                        } else if (Byte.TYPE.getName().equals(ts)) {
+                            v = VirtualMachineWrapper.mirrorOf(vm, Byte.parseByte(val));
+                        } else if (Character.TYPE.getName().equals(ts)) {
+                            if (val.length() == 0) {
+                                throw new NumberFormatException("Zero length input.");
+                            }
+                            v = VirtualMachineWrapper.mirrorOf(vm, val.charAt(0));
+                        } else if (Short.TYPE.getName().equals(ts)) {
+                            v = VirtualMachineWrapper.mirrorOf(vm, Short.parseShort(val));
+                        } else if (Integer.TYPE.getName().equals(ts)) {
+                            v = VirtualMachineWrapper.mirrorOf(vm, Integer.parseInt(val));
+                        } else if (Long.TYPE.getName().equals(ts)) {
+                            v = VirtualMachineWrapper.mirrorOf(vm, Long.parseLong(val));
+                        } else if (Float.TYPE.getName().equals(ts)) {
+                            v = VirtualMachineWrapper.mirrorOf(vm, Float.parseFloat(val));
+                        } else if (Double.TYPE.getName().equals(ts)) {
+                            v = VirtualMachineWrapper.mirrorOf(vm, Double.parseDouble(val));
+                        } else {
+                            throw new IllegalArgumentException("Unknown type '"+ts+"'");
                         }
-                        v = vm.mirrorOf(val.charAt(0));
-                    } else if (Short.TYPE.getName().equals(ts)) {
-                        v = vm.mirrorOf(Short.parseShort(val));
-                    } else if (Integer.TYPE.getName().equals(ts)) {
-                        v = vm.mirrorOf(Integer.parseInt(val));
-                    } else if (Long.TYPE.getName().equals(ts)) {
-                        v = vm.mirrorOf(Long.parseLong(val));
-                    } else if (Float.TYPE.getName().equals(ts)) {
-                        v = vm.mirrorOf(Float.parseFloat(val));
-                    } else if (Double.TYPE.getName().equals(ts)) {
-                        v = vm.mirrorOf(Double.parseDouble(val));
-                    } else {
-                        throw new IllegalArgumentException("Unknown type '"+ts+"'");
+                        val = MirrorWrapper.toString(v);
+                    } catch (NumberFormatException nfex) {
+                        NotifyDescriptor msg = new NotifyDescriptor.Message(nfex.getLocalizedMessage(), NotifyDescriptor.WARNING_MESSAGE);
+                        DialogDisplayer.getDefault().notify(msg);
+                        return oldValue;
                     }
-                    val = v.toString();
-                } catch (NumberFormatException nfex) {
-                    NotifyDescriptor msg = new NotifyDescriptor.Message(nfex.getLocalizedMessage(), NotifyDescriptor.WARNING_MESSAGE);
-                    DialogDisplayer.getDefault().notify(msg);
-                    return oldValue;
-                }
-            } else {
-                if ("java.lang.String".equals(type.name())) {
-                    v = vm.mirrorOf(val);
                 } else {
-                    throw new IllegalArgumentException("Unknown type '"+type.name()+"'");
+                    if ("java.lang.String".equals(TypeWrapper.name(type))) {
+                        v = VirtualMachineWrapper.mirrorOf(vm, val);
+                    } else {
+                        throw new IllegalArgumentException("Unknown type '"+type.name()+"'");
+                    }
                 }
+            } catch (InternalExceptionWrapper iex) {
+                return oldValue;
+            } catch (UnsupportedOperationExceptionWrapper uex) {
+                NotifyDescriptor msg = new NotifyDescriptor.Message(uex.getLocalizedMessage(), NotifyDescriptor.WARNING_MESSAGE);
+                DialogDisplayer.getDefault().notify(msg);
+                return oldValue;
+            } catch (VMDisconnectedExceptionWrapper vmd) {
+                return oldValue;
             }
             Lock l = t.accessLock.writeLock();
             l.lock();
             try {
-                component.invokeMethod(tawt, setter, Collections.singletonList(v), ObjectReference.INVOKE_SINGLE_THREADED);
+                ObjectReferenceWrapper.invokeMethod(component, tawt, setter, Collections.singletonList(v), ObjectReference.INVOKE_SINGLE_THREADED);
                 return val;
             } catch (InvalidTypeException ex) {
                 Exceptions.printStackTrace(ex);
@@ -619,6 +685,14 @@ abstract public class JavaComponentInfo implements ComponentInfo {
                 return oldValue;
             } catch (IncompatibleThreadStateException ex) {
                 Exceptions.printStackTrace(ex);
+                return oldValue;
+            } catch (InternalExceptionWrapper iex) {
+                return oldValue;
+            } catch (ObjectCollectedExceptionWrapper ocex) {
+                NotifyDescriptor msg = new NotifyDescriptor.Message(ocex.getLocalizedMessage(), NotifyDescriptor.WARNING_MESSAGE);
+                DialogDisplayer.getDefault().notify(msg);
+                return oldValue;
+            } catch (VMDisconnectedExceptionWrapper vmd) {
                 return oldValue;
             } catch (final InvocationException ex) {
                 final InvocationExceptionTranslated iextr = new InvocationExceptionTranslated(ex, debugger);

@@ -499,7 +499,9 @@ class LineTranslations {
                 }
                 synchronized (this) {
                     // detach
-                    line.removePropertyChangeListener(this);
+                    if (line != null) {
+                        line.removePropertyChangeListener(this);
+                    }
 
                     // update DataObject
                     this.dataObject = newDO;

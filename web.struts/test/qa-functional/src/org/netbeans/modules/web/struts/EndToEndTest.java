@@ -57,6 +57,7 @@ import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.jellytools.modules.web.NewJspFileNameStepOperator;
 import org.netbeans.jellytools.modules.web.nodes.WebPagesNode;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
@@ -147,6 +148,12 @@ public class EndToEndTest extends J2eeTestCase {
         frameworkStep.btFinish().pushNoBlock();
         frameworkStep.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 60000);
         frameworkStep.waitClosed();
+        // wait label of progress bar "Opening Projects" and possibly "Scanning" dismiss
+        JLabelOperator lblOpeningProjects = new JLabelOperator(MainWindowOperator.getDefault(), "Opening Projects");
+        lblOpeningProjects.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 120000);
+        lblOpeningProjects.waitComponentShowing(false);
+        // let project tree generate
+        new EventTool().waitNoEvent(300);
         // Check project contains all needed files.
         WebPagesNode webPages = new WebPagesNode(PROJECT_NAME);
         Node welcomeNode = new Node(webPages, "welcomeStruts.jsp");

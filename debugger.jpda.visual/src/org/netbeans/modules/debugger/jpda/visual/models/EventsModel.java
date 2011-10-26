@@ -66,6 +66,13 @@ import javax.swing.SwingUtilities;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.modules.debugger.jpda.EditorContextBridge;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ObjectReferenceWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ReferenceTypeWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.UnsupportedOperationExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.VirtualMachineWrapper;
 import org.netbeans.modules.debugger.jpda.visual.JavaComponentInfo;
 import org.netbeans.modules.debugger.jpda.visual.RemoteAWTScreenshot.AWTComponentInfo;
 import org.netbeans.modules.debugger.jpda.visual.RemoteServices;
@@ -197,13 +204,18 @@ public class EventsModel implements TreeModel, NodeModel, TableModel, NodeAction
                             continue; // Ignore the logging listener.
                         }
                     }
-                    String type = listener.referenceType().name();
-                    if (JavaComponentInfo.isCustomType(type)) {
-                        //listenerCategories = customListenersMap;
-                        cll.add(rl);
-                    } else {
-                        sll.add(rl);
-                        //listenerCategories = swingListenersMap;
+                    try {
+                        String type = ReferenceTypeWrapper.name(ObjectReferenceWrapper.referenceType(listener));
+                        if (JavaComponentInfo.isCustomType(type)) {
+                            //listenerCategories = customListenersMap;
+                            cll.add(rl);
+                        } else {
+                            sll.add(rl);
+                            //listenerCategories = swingListenersMap;
+                        }
+                    } catch (InternalExceptionWrapper iex) {
+                    } catch (ObjectCollectedExceptionWrapper ocex) {
+                    } catch (VMDisconnectedExceptionWrapper vmdex) {
                     }
                     /*
                     ListenerCategory lc = listenerCategories.get(type);
@@ -381,7 +393,13 @@ public class EventsModel implements TreeModel, NodeModel, TableModel, NodeAction
     public String getShortDescription(Object node) throws UnknownTypeException {
         if (node instanceof RemoteListener) {
             try {
-                return ((RemoteListener) node).getListener().referenceType().sourceName();
+                return ReferenceTypeWrapper.sourceName(ObjectReferenceWrapper.referenceType(((RemoteListener) node).getListener()));
+            } catch (InternalExceptionWrapper ex) {
+                return ex.getLocalizedMessage();
+            } catch (VMDisconnectedExceptionWrapper ex) {
+                return "";
+            } catch (ObjectCollectedExceptionWrapper ex) {
+                return ex.getLocalizedMessage();
             } catch (AbsentInformationException ex) {
                 return "";
             }
@@ -552,8 +570,9 @@ public class EventsModel implements TreeModel, NodeModel, TableModel, NodeAction
                         ObjectReference l;
                         try {
                             LoggingEventListener listener = new LoggingEventListener();
-                            l = RemoteServices.attachLoggingListener(ci, rt.classObject(), listener);
-                            listener.setListenerObject(l, rt.classObject());
+                            ClassObjectReference cor = ReferenceTypeWrapper.classObject(rt);
+                            l = RemoteServices.attachLoggingListener(ci, cor, listener);
+                            listener.setListenerObject(l, cor);
                             synchronized (loggingListeners) {
                                 Set<LoggingEventListener> listeners = loggingListeners.get(ci.getComponent());
                                 if (listeners == null) {
@@ -564,6 +583,16 @@ public class EventsModel implements TreeModel, NodeModel, TableModel, NodeAction
                             }
                         } catch (PropertyVetoException pvex) {
                             Exceptions.printStackTrace(pvex);
+                            return ;
+                        } catch (InternalExceptionWrapper iex) {
+                            return ;
+                        } catch (ObjectCollectedExceptionWrapper ocex) {
+                            Exceptions.printStackTrace(ocex);
+                            return ;
+                        } catch (UnsupportedOperationExceptionWrapper uex) {
+                            Exceptions.printStackTrace(uex);
+                            return ;
+                        } catch (VMDisconnectedExceptionWrapper vmdex) {
                             return ;
                         }
                         if (l != null) {
@@ -592,18 +621,6 @@ public class EventsModel implements TreeModel, NodeModel, TableModel, NodeAction
                     }
                 }
             });
-        }
-        
-        private ReferenceType getReferenceType(VirtualMachine vm, String name) {
-            List<ReferenceType> classList = vm.classesByName(name);
-            ReferenceType clazz = null;
-            for (ReferenceType c : classList) {
-                clazz = c;
-                if (c.classLoader() == null) {
-                    break;
-                }
-            }
-            return clazz;
         }
         
         private ReferenceType[] selectListenerClass(JavaComponentInfo ci, Collection<LoggingEventListener> listenersToRemove) {
@@ -702,14 +719,36 @@ public class EventsModel implements TreeModel, NodeModel, TableModel, NodeAction
                 public void run() {
                     ObjectReference l;
                     try {
-                        l = RemoteServices.attachLoggingListener(ci, rt.classObject(), new LoggingEventListener());
+                        ClassObjectReference cor = ReferenceTypeWrapper.classObject(rt);
+                        l = RemoteServices.attachLoggingListener(ci, cor, new LoggingEventListener());
                     } catch (PropertyVetoException pvex) {
                         Exceptions.printStackTrace(pvex);
+                        return ;
+                    } catch (InternalExceptionWrapper iex) {
+                        return ;
+                    } catch (ObjectCollectedExceptionWrapper ocex) {
+                        Exceptions.printStackTrace(ocex);
+                        return ;
+                    } catch (UnsupportedOperationExceptionWrapper uex) {
+                        Exceptions.printStackTrace(uex);
+                        return ;
+                    } catch (VMDisconnectedExceptionWrapper vmdex) {
                         return ;
                     }
                     if (l != null) {
                         if (lc != null) {
-                            lc.addListener(new RemoteListener(l.referenceType().name(), l));
+                            String name;
+                            try {
+                                name = ReferenceTypeWrapper.name(ObjectReferenceWrapper.referenceType(l));
+                            } catch (InternalExceptionWrapper ex) {
+                                return ;
+                            } catch (VMDisconnectedExceptionWrapper ex) {
+                                return ;
+                            } catch (ObjectCollectedExceptionWrapper ex) {
+                                Exceptions.printStackTrace(ex);
+                                return ;
+                            }
+                            lc.addListener(new RemoteListener(name, l));
                             fireNodeChanged(lc);
                         } else {
                             fireNodeChanged(customListeners);
@@ -721,13 +760,18 @@ public class EventsModel implements TreeModel, NodeModel, TableModel, NodeAction
         }
         
         private ReferenceType getReferenceType(VirtualMachine vm, String name) {
-            List<ReferenceType> classList = vm.classesByName(name);
             ReferenceType clazz = null;
-            for (ReferenceType c : classList) {
-                clazz = c;
-                if (c.classLoader() == null) {
-                    break;
+            try {
+                List<ReferenceType> classList = VirtualMachineWrapper.classesByName(vm, name);
+                for (ReferenceType c : classList) {
+                    clazz = c;
+                    if (ReferenceTypeWrapper.classLoader(c) == null) {
+                        break;
+                    }
                 }
+            } catch (ObjectCollectedExceptionWrapper ocex) {
+            } catch (InternalExceptionWrapper ex) {
+            } catch (VMDisconnectedExceptionWrapper ex) {
             }
             return clazz;
         }
