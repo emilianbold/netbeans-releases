@@ -146,7 +146,8 @@ public class GenericServiceIterator implements TemplateWizard.Iterator, ChangeLi
         webapplicationPanel = null;
         serviceSelectionPanel = null;
         clientOptionsPanel = null;
-        currentStep = -1;
+        // #204130
+//        currentStep = -1;
     }
     
     public Set<DataObject> instantiate( final TemplateWizard templateWizard ) throws IOException {
