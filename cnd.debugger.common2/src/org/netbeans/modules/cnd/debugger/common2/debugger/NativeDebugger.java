@@ -193,6 +193,7 @@ public interface NativeDebugger {
     public void stepOverInst();
     public void stepInst();
     public void runToCursorInst(String addr);
+    public void contAtInst(String addr);
 
     public void registerDisassembly(Disassembly dis);
     public void setCurrentDisLine(Line l);
