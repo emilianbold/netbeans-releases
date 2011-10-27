@@ -118,6 +118,9 @@ public class ItemConfiguration implements ConfigurationAuxObject {
         if (customToolConfiguration != null && customToolConfiguration.getModified()) {
             return false;
         }
+        if (getLanguageFlavor() != null && getLanguageFlavor() != LanguageFlavor.UNKNOWN) {
+            return false;
+        }
         return true;
     }
 
