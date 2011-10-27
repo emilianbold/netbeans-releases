@@ -379,9 +379,13 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
     }
     
     private void storeScope(Scope customScope) {
-        storeFileList(customScope.getSourceRoots(), "sourceRoot" ); //NOI18N
-        storeFileList(customScope.getFolders(), "folder" ); //NOI18N
-        storeFileList(customScope.getFiles(), "file" ); //NOI18N
+        try {
+            storeFileList(customScope.getSourceRoots(), "sourceRoot" ); //NOI18N
+            storeFileList(customScope.getFolders(), "folder" ); //NOI18N
+            storeFileList(customScope.getFiles(), "file" ); //NOI18N
+        } catch (BackingStoreException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
     
     private Scope readScope() {
@@ -398,60 +402,51 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         return null;
     }
     
-    private <T> List<T> loadFileList(String key, Class<T> type) {
-        Preferences pref = NbPreferences.forModule(JavaScopeBuilder.class).node(PREF_SCOPE); //NOI18N
-        int count = 0;
-        String val = pref.get(key + "." + count, null); //NOI18N
-        List<T> toRet = new ArrayList<T>();
-        while (val != null) {
-            try {
-                final FileObject f = URLMapper.findFileObject(new URL(val));
-                if (f != null && f.isValid()) {
-                    if (type.isAssignableFrom(FileObject.class)) {
-                        toRet.add((T) f);
-                    } else {
-                        toRet.add((T) new NonRecursiveFolder() {
+    private <T> List<T> loadFileList(String basekey, Class<T> type) throws BackingStoreException {
+        Preferences pref = NbPreferences.forModule(JavaScopeBuilder.class).node(PREF_SCOPE).node(basekey);
+        List<T> toRet = new LinkedList<T>();
+        for (String key : pref.keys()) {
+            final String url = pref.get(key, null);
+            if (url != null && !url.isEmpty()) {
+                try {
+                    final FileObject f = URLMapper.findFileObject(new URL(url));
+                    if (f != null && f.isValid()) {
+                        if (type.isAssignableFrom(FileObject.class)) {
+                            toRet.add((T) f);
+                        } else {
+                            toRet.add((T) new NonRecursiveFolder() {
 
-                            public FileObject getFolder() {
-                                return f;
-                            }
-                        });
+                                public FileObject getFolder() {
+                                    return f;
+                                }
+                            });
+                        }
                     }
+                } catch (MalformedURLException ex) {
+                    Exceptions.printStackTrace(ex);
                 }
-            } catch (MalformedURLException ex) {
-                Exceptions.printStackTrace(ex);
             }
-            val = pref.get(key + "." + ++count, null); //NOI18N
         }
         return toRet;
     }
     
-    private void storeFileList(Set files, String basekey) {
-        Preferences pref = NbPreferences.forModule(JavaScopeBuilder.class).node(PREF_SCOPE); //NOI18N
+    private void storeFileList(Set files, String basekey) throws BackingStoreException {
+        Preferences pref = NbPreferences.forModule(WhereUsedPanel.class).node(PREF_SCOPE).node(basekey);
         assert files != null;
+        pref.clear();
         int count = 0;
-        String key = basekey + "." + count; //NOI18N
-        String val = pref.get(key, null);
-        Iterator<Object> it = files.iterator();
-        while (val != null || it.hasNext()) {
+        for (Object next : files) {
             try {
-                if (it.hasNext()) {
-                    Object next = it.next();
-                    if (next instanceof FileObject) {
-                        pref.put(key, ((FileObject) next).getURL().toExternalForm());
-                    } else {
-                        pref.put(key, ((NonRecursiveFolder) next).getFolder().getURL().toExternalForm());
-                    }
-
+                if (next instanceof FileObject) {
+                    pref.put(basekey + count++, ((FileObject) next).getURL().toExternalForm());
                 } else {
-                    pref.remove(key);
+                    pref.put(basekey + count++, ((NonRecursiveFolder) next).getFolder().getURL().toExternalForm());
                 }
             } catch (FileStateInvalidException ex) {
                 Exceptions.printStackTrace(ex);
             }
-            key = basekey + "." + ++count; //NOI18N
-            val = pref.get(key, null);
         }
+        pref.flush();
     }
         
     private String getSimpleName(Element clazz) {
