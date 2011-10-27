@@ -809,6 +809,11 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         src = localToRemote("contAt", src); // NOI18N
         sendResumptive("-exec-jump " + src + ':' + line); // NOI18N
     }
+    
+    @Override
+    public void contAtInst(String addr) {
+        sendResumptive("-exec-jump *" + addr); // NOI18N
+    }
 
     @Override
     public void runToCursor(String src, int line) {

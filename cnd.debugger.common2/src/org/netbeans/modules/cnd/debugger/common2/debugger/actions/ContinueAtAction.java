@@ -56,6 +56,8 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.State;
 import org.netbeans.modules.cnd.debugger.common2.debugger.StateListener;
 import org.netbeans.modules.cnd.debugger.common2.debugger.EditorContextBridge;
+import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.Disassembly;
+import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.DisassemblyUtils;
 
 public class ContinueAtAction extends CallableSystemAction implements StateListener {
 
@@ -68,14 +70,27 @@ public class ContinueAtAction extends CallableSystemAction implements StateListe
     }
 
     // interface CallableSystemAction
+    @Override
     public void performAction() {
+        int lineNo = EditorContextBridge.getCurrentLineNumber();
+        if (lineNo < 0) {
+            return;
+        }
         NativeDebugger debugger = DebuggerManager.get().currentDebugger();
-        if (debugger != null) {
-	    String fileName = EditorContextBridge.getCurrentFilePath();
+        if (debugger == null) {
+            return;
+        }
+        if (Disassembly.isInDisasm()) {
+            String address = DisassemblyUtils.getLineAddress(lineNo);
+            if (address == null || address.isEmpty()) {
+                return;
+            }
+            debugger.contAtInst(address);
+        } else {
+            String fileName = EditorContextBridge.getCurrentFilePath();
 	    if (fileName.trim().equals("")) {
 		return;
 	    }
-	    int lineNo = EditorContextBridge.getCurrentLineNumber();
 	    debugger.contAt(fileName, lineNo);
         }
     }
