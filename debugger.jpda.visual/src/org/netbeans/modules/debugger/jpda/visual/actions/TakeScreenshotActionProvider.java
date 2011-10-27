@@ -123,6 +123,7 @@ public class TakeScreenshotActionProvider extends ActionsProviderSupport {
                     });*/
                 }
                 if (screenshots != null && screenshots.length != 0) {
+                    GestureSubmitter.logSnapshotTaken("Swing", debugger);
                     return;
                 }
             } finally {
@@ -139,6 +140,7 @@ public class TakeScreenshotActionProvider extends ActionsProviderSupport {
                 }
                 
                 if (screenshots != null && screenshots.length != 0) {
+                    GestureSubmitter.logSnapshotTaken("JavaFX", debugger);
                     return;
                 }
             } finally {

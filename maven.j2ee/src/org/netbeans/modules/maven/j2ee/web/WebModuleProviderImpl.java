@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.maven.j2ee.web;
 
+import org.netbeans.modules.maven.j2ee.customizer.CustomizerRunWeb;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -150,7 +151,7 @@ public class WebModuleProviderImpl extends J2eeModuleProvider implements WebModu
 
     @Override
     public boolean isOnlyCompileOnSaveEnabled() {
-        return RunUtils.hasApplicationCompileOnSaveEnabled(project) && !WebRunCustomizerPanel.isDeployOnSave(project);
+        return RunUtils.hasApplicationCompileOnSaveEnabled(project) && !CustomizerRunWeb.isDeployOnSave(project);
     }
 
     @Override

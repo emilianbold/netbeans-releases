@@ -43,10 +43,8 @@ import javax.swing.JTextField;
 import junit.framework.Test;
 import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.actions.Action;
-import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JLabelOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.junit.NbModuleSuite;
@@ -121,14 +119,9 @@ public class MavenWebProjectValidation extends WebProjectValidation {
         Node rootNode = new ProjectsTabOperator().getProjectRootNode(PROJECT_NAME);
         new Node(rootNode, "Web Pages|index.jsp").performPopupAction("Open");
         EditorOperator editor = new EditorOperator("index.jsp");
-        editor.replace("<title>JSP Page</title>",
-                "<title>SampleProject Index Page</title>");
+        editor.replace("<title>JSP Page</title>", "<title>SampleProject Index Page</title>");
         editor.insert("Running Project\n", 12, 1);
-        new ActionNoBlock(null, "Run").perform(rootNode);
-        NbDialogOperator dio = new NbDialogOperator("Select deployment server");
-        JComboBoxOperator op = new JComboBoxOperator(dio);
-        op.selectItem(1);
-        dio.ok();
+        new Action(null, "Run").perform(rootNode);
         waitBuildSuccessful();
         assertDisplayerContent("<title>SampleProject Index Page</title>");
         editor.deleteLine(12);

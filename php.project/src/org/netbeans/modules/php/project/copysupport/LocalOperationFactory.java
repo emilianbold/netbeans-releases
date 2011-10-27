@@ -51,6 +51,7 @@ import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.api.util.Pair;
+import org.netbeans.modules.php.project.ui.customizer.CompositePanelProviderImpl;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
@@ -102,7 +103,7 @@ final class LocalOperationFactory extends FileOperationFactory {
             LOGGER.log(Level.INFO, "LOCAL copying disabled for project {0}. Reason: target folder is null", project.getName());
 
             if (askUser(NbBundle.getMessage(LocalOperationFactory.class, "MSG_NoTargetFolder", project.getName()))) {
-                showCustomizer();
+                showCustomizer(CompositePanelProviderImpl.SOURCES);
             }
             invalidate();
             return false;
@@ -118,7 +119,7 @@ final class LocalOperationFactory extends FileOperationFactory {
             LOGGER.log(Level.INFO, "LOCAL copying disabled for project {0}. Reason: target folder {1} is not writable", new Object[] {project.getName(), writableFolder});
 
             if (askUser(NbBundle.getMessage(LocalOperationFactory.class, "MSG_TargetFolderNotWritable", project.getName(), writableFolder))) {
-                showCustomizer();
+                showCustomizer(CompositePanelProviderImpl.SOURCES);
             }
             invalidate();
             return false;

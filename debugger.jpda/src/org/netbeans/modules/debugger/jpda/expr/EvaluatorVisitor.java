@@ -343,6 +343,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         }
         ObjectReference objectReference;
         ReferenceType type;
+        Method method = null;
         if (isStatic == null) {
             if (object instanceof ClassType || object instanceof ArrayType) {
                 type = (ReferenceType) object;
@@ -388,8 +389,10 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                     if (type == null) {
                         type = objectReference.referenceType();
                         if (enclosingClass != null) {
-                            ReferenceType enclType = findEnclosingType(type, enclosingClass);
+                            Method[] methodPtr = new Method[] { null };
+                            ReferenceType enclType = findEnclosingTypeWithMethod(type, enclosingClass, methodName, paramTypes, argTypes, methodPtr);
                             if (enclType != null) {
+                                method = methodPtr[0];
                                 type = enclType;
                             }
                         }
@@ -422,7 +425,9 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         } else {
             cType = (ClassType) type;
         }
-        Method method = getConcreteMethodAndReportProblems(arg0, type, methodName, null, paramTypes, argTypes);
+        if (method == null) {
+            method = getConcreteMethodAndReportProblems(arg0, type, methodName, null, paramTypes, argTypes);
+        }
         return invokeMethod(arg0, method, isStatic, cType, objectReference, argVals, evaluationContext, preferredType != null);
     }
 
@@ -436,6 +441,26 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         }
         return null;
     }*/
+
+    private ReferenceType findEnclosingTypeWithMethod(ReferenceType type, String enclosingClass, String methodName, List<? extends TypeMirror> paramTypes, List<? extends Type> argTypes, Method[] methodPtr) {
+        ReferenceType etype = findEnclosingType(type, enclosingClass);
+        Method method;
+        try {
+            if (paramTypes != null) {
+                method = getConcreteMethod(etype, methodName, null, paramTypes);
+            } else {
+                method = getConcreteMethod2(etype, methodName, argTypes);
+            }
+        } catch (UnsuitableArgumentsException uaex) {
+            method = null;
+        }
+        if (method != null) {
+            methodPtr[0] = method;
+            return etype;
+        } else {
+            return type;
+        }
+    }
 
     private static Method getConcreteMethodAndReportProblems(Tree arg0, ReferenceType type, String methodName, String firstParamSignature, List<? extends TypeMirror> paramTypes, List<? extends Type> argTypes) {
         Method method;

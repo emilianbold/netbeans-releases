@@ -55,7 +55,8 @@ import javax.swing.event.ListSelectionListener;
 class FontPanel extends JPanel {
 
     private final TermOptionsPanel fontPanel;
-
+    static final Color ERROR_COLOR = new Color(235, 0, 0); // IZ#204301
+    
     private static final boolean simulateSlowness = false;
 
     private JDialog containingJDialog;
@@ -780,7 +781,7 @@ class FontPanel extends JPanel {
                      rectangle.x, rectangle.y + height);
         if (errorMsg != null) {
             Color originalColor = g.getColor();
-            g.setColor(Color.RED);
+            g.setColor(ERROR_COLOR);
             g.drawString(errorMsg,
                          rectangle.x, rectangle.y + height + fm.getAscent());
             g.setColor(originalColor);

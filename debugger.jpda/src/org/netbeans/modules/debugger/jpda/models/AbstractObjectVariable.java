@@ -473,6 +473,9 @@ public class AbstractObjectVariable extends AbstractVariable implements ObjectVa
             if (maxLength > 0 && maxLength < Integer.MAX_VALUE) {
                 Method toStringMethod = ClassTypeWrapper.concreteMethodByName(ct,
                      "toString", "()Ljava/lang/String;");  // NOI18N
+                if (toStringMethod == null) {
+                    return NbBundle.getMessage(AbstractObjectVariable.class, "MSG_No_toString");
+                }
                 sr = (StringReference) debugger.invokeMethod (
                     (ObjectReference) v,
                     toStringMethod,
@@ -485,6 +488,9 @@ public class AbstractObjectVariable extends AbstractVariable implements ObjectVa
             } else {
                 Method toStringMethod = ClassTypeWrapper.concreteMethodByName(ct,
                     "toString", "()Ljava/lang/String;");  // NOI18N
+                if (toStringMethod == null) {
+                    return NbBundle.getMessage(AbstractObjectVariable.class, "MSG_No_toString");
+                }
                 sr = (StringReference) debugger.invokeMethod (
                     (ObjectReference) v,
                     toStringMethod,
