@@ -64,6 +64,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.maven.api.ModelUtils;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
 import org.netbeans.modules.maven.j2ee.ExecutionChecker;
+import org.netbeans.modules.maven.j2ee.LoggingUtils;
 import static org.netbeans.modules.maven.j2ee.ExecutionChecker.CLIENTURLPART;
 import org.netbeans.modules.maven.j2ee.MavenJavaEEConstants;
 import org.netbeans.modules.maven.j2ee.SessionContent;
@@ -427,17 +428,12 @@ public class CustomizerRunWeb extends AbstractCustomizer {
             Exceptions.printStackTrace(ex);
         }
         
-        // USG logging
         Object obj = comServer.getSelectedItem();
         if (obj != null) {
-            LogRecord record = new LogRecord(Level.INFO, "USG_PROJECT_CONFIG_MAVEN_SERVER");  //NOI18N
-            record.setLoggerName(POHImpl.USG_LOGGER_NAME);
-            record.setParameters(new Object[] { obj.toString() });
-            POHImpl.USG_LOGGER.log(record);
+            LoggingUtils.logUsage(CustomizerRunWeb.class, "USG_PROJECT_CONFIG_MAVEN_SERVER", new Object[] { obj.toString() }, "maven"); //NOI18N
         }
     }
 
-    //this megod is called after the model was saved.
     @Override
     void applyChanges() {
         assert !SwingUtilities.isEventDispatchThread();

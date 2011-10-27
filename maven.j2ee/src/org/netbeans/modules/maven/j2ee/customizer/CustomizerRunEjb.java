@@ -42,13 +42,12 @@
 
 package org.netbeans.modules.maven.j2ee.customizer;
 
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
 import org.netbeans.modules.maven.api.customizer.ModelHandle;
 import org.netbeans.modules.maven.j2ee.POHImpl;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.maven.j2ee.LoggingUtils;
 import org.netbeans.modules.maven.j2ee.SessionContent;
 
 
@@ -77,13 +76,9 @@ public class CustomizerRunEjb extends AbstractCustomizer {
 
     @Override
     void applyChangesInAWT() {
-        // USG logging
         Object obj = comServer.getSelectedItem();
         if (obj != null) {
-            LogRecord record = new LogRecord(Level.INFO, "USG_PROJECT_CONFIG_MAVEN_SERVER");  //NOI18N
-            record.setLoggerName(POHImpl.USG_LOGGER_NAME);
-            record.setParameters(new Object[] { obj.toString() });
-            POHImpl.USG_LOGGER.log(record);
+            LoggingUtils.logUsage(CustomizerRunEjb.class, "USG_PROJECT_CONFIG_MAVEN_SERVER", new Object[] { obj.toString() }, "maven"); //NOI18N
         }
     }
 

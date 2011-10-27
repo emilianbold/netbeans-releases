@@ -43,14 +43,13 @@
 package org.netbeans.modules.maven.j2ee.customizer;
 
 import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
 import org.netbeans.modules.maven.api.customizer.ModelHandle;
 import static org.netbeans.modules.maven.j2ee.customizer.CustomizerRunWeb.PROP_SHOW_IN_BROWSER;
 import org.netbeans.modules.maven.j2ee.POHImpl;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.Ear;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.maven.j2ee.LoggingUtils;
 import org.netbeans.modules.maven.j2ee.SessionContent;
 import org.openide.util.Exceptions;
 
@@ -87,7 +86,6 @@ public class CustomizerRunEar extends AbstractCustomizer {
 
     @Override
     void applyChangesInAWT() {
-        // USG logging
         boolean browserSelected = cbBrowser.isSelected();
         try {
             project.getProjectDirectory().setAttribute(PROP_SHOW_IN_BROWSER, browserSelected ? null : Boolean.FALSE.toString());
@@ -97,10 +95,7 @@ public class CustomizerRunEar extends AbstractCustomizer {
 
         Object obj = comServer.getSelectedItem();
         if (obj != null) {
-            LogRecord record = new LogRecord(Level.INFO, "USG_PROJECT_CONFIG_MAVEN_SERVER");  //NOI18N
-            record.setLoggerName(POHImpl.USG_LOGGER_NAME);
-            record.setParameters(new Object[] { obj.toString() });
-            POHImpl.USG_LOGGER.log(record);
+            LoggingUtils.logUsage(CustomizerRunEar.class, "USG_PROJECT_CONFIG_MAVEN_SERVER", new Object[] { obj.toString() }, "maven"); //NOI18N
         }
     }
 

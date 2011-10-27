@@ -236,11 +236,7 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
                         provider = null;
                     }
 
-                    // USG logging
-                    LogRecord record = new LogRecord(Level.INFO, "USG_PROJECT_CONFIG_MAVEN_SERVER");  //NOI18N
-                    record.setLoggerName(POHImpl.USG_LOGGER_NAME);
-                    record.setParameters(new Object[] { POHImpl.obtainServerName(project) });
-                    POHImpl.USG_LOGGER.log(record);
+                    LoggingUtils.logUsage(ExecutionChecker.class, "USG_PROJECT_CONFIG_MAVEN_SERVER", new Object[] { POHImpl.obtainServerName(project) }, "maven"); //NOI18N
 
                     return true;
                 } else {
