@@ -95,7 +95,6 @@ public final class FindBar extends JPanel {
     private JTextField findText;
     private JLabel errorLabel;
     private Color originalColor;
-    private final Color errorColor = Color.RED;
 
     /**
      * Callback interface used to communicate to the owner of a {@link FindBar}
@@ -276,7 +275,7 @@ public final class FindBar extends JPanel {
                 break;
             case NOTFOUND:
                 errorLabel.setText(Catalog.get("MSG_NotFound"));// NOI18N
-                findText.setForeground(errorColor);
+                findText.setForeground(FontPanel.ERROR_COLOR);
                 break;
             case WILLWRAP:
                 errorLabel.setText(Catalog.get("MSG_OneMore"));	// NOI18N
