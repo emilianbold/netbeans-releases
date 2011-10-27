@@ -118,6 +118,7 @@
                 </dependency>
             </module-dependencies>
             <friend-packages>
+                <friend>oracle.jdevimpl.profiler.impl</friend>
                 <friend>org.netbeans.modules.profiler</friend>
                 <friend>org.netbeans.modules.profiler.j2ee</friend>
                 <package>org.netbeans.modules.profiler.stp</package>
