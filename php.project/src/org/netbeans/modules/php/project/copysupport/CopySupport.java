@@ -44,6 +44,7 @@ package org.netbeans.modules.php.project.copysupport;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Queue;
+import java.util.Stack;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -103,7 +104,7 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
     // #187060
     final AtomicInteger opened = new AtomicInteger();
     final AtomicInteger closed = new AtomicInteger();
-    final Queue<Exception> calls = new ConcurrentLinkedQueue<Exception>();
+    final Stack<Exception> callStack = new Stack<Exception>();
 
     private final ProxyOperationFactory proxyOperationFactory;
     // @GuardedBy(this)
@@ -181,32 +182,29 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
     // runs only under assertions
     private boolean assertProjectOpened() {
         opened.incrementAndGet();
-        calls.offer(new Exception());
-
         if (projectOpened) {
-            throwProjectOpenedError();
+            throwProjectOpenedClosedError();
         }
+        callStack.push(new Exception());
         return true;
     }
 
     // runs only under assertions
     private boolean assertProjectClosed() {
         closed.incrementAndGet();
-        calls.poll();
-
         if (!projectOpened) {
-            throwProjectOpenedError();
+            throwProjectOpenedClosedError();
         }
+        callStack.pop();
         return true;
     }
 
-    private void throwProjectOpenedError() {
+    private void throwProjectOpenedClosedError() {
         int hooks = project.getLookup().lookupAll(ProjectOpenedHook.class).size();
         LOGGER.log(Level.INFO, "Number of ProjectOpenedHook classes in project lookup: {0}", hooks);
 
-        throw new IllegalStateException(
-                String.format("Copy Support already opened (opened: %d, closed: %d)", opened.get(), closed.get()),
-                calls.element());
+        LOGGER.log(Level.INFO, "Copy Support incorrectly opened/closed (opened: {0}, closed: {1})", new Object[] {opened.get(), closed.get()});
+        throw new IllegalStateException(callStack.peek());
     }
 
     private void prepareOperation(Callable<Boolean> callable) {
