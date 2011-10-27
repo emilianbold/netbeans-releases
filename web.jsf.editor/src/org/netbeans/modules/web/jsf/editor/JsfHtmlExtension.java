@@ -97,6 +97,7 @@ import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibraryMetadata;
 import org.netbeans.modules.web.jsf.editor.hints.HintsRegistry;
 import org.netbeans.modules.web.jsf.editor.index.CompositeComponentModel;
 import org.netbeans.modules.web.jsfapi.api.Attribute;
+import org.netbeans.modules.web.jsfapi.api.Library;
 import org.netbeans.modules.web.jsfapi.api.LibraryComponent;
 import org.netbeans.modules.web.jsfapi.api.Tag;
 import org.netbeans.modules.web.jsfapi.spi.LibraryUtils;
@@ -395,6 +396,82 @@ public class JsfHtmlExtension extends HtmlExtension {
     @Override
     public List<CompletionItem> completeAttributeValue(CompletionContext context) {
         List<CompletionItem> items = new ArrayList<CompletionItem>();
+        
+        //first try to complete using special metadata
+        completeTagLibraryMetadata(context, items);
+        if(!items.isEmpty()) {
+            return items;
+        }
+        
+        //then try to complete according to the attribute type (taken from the library descriptor)
+        completeValueAccordingToType(context, items);
+        
+        //complete xmlns attribute value
+        completeXMLNSAttribute(context, items);
+        if(!items.isEmpty()) {
+            return items;
+        }
+
+        return items;
+    }
+    
+    private void completeValueAccordingToType(CompletionContext context, List<CompletionItem> items) {
+         String ns = context.getCurrentNode().getNamespace();
+         JsfSupportImpl jsfs = JsfSupportImpl.findFor(context.getResult().getSnapshot().getSource());
+         if(jsfs == null) {
+             return ;
+         }
+         
+         Library lib = jsfs.getLibrary(ns);
+         if(lib == null) {
+             return ;
+         }
+         
+         String tagName = context.getCurrentNode().getNameWithoutPrefix();
+         
+         LibraryComponent comp = lib.getComponent(tagName);
+         if(comp == null) {
+             return ;
+         }
+         
+         String attrName = context.getAttributeName();
+         Attribute attr = comp.getTag().getAttribute(attrName);
+         if(attr == null) {
+             return ;
+         }
+         
+         //TODO: Add more types and generalize the code then
+         String aType = attr.getType();
+         if("boolean".equals(aType) || "java.lang.Boolean".equals(aType)) { //NOI18N
+             //boolean type
+             items.add(HtmlCompletionItem.createAttributeValue("true", context.getCCItemStartOffset(), !context.isValueQuoted())); //NOI18N
+             items.add(HtmlCompletionItem.createAttributeValue("false", context.getCCItemStartOffset(), !context.isValueQuoted())); //NOI18N
+         }
+         
+    }
+    
+    private void completeXMLNSAttribute(CompletionContext context, List<CompletionItem> items) {
+        if (context.getAttributeName().toLowerCase(Locale.ENGLISH).startsWith("xmlns")) { //NOI18N
+            //xml namespace completion for facelets namespaces
+            HtmlParserResult result = context.getResult();
+            Source source = result.getSnapshot().getSource();
+            JsfSupportImpl jsfs = JsfSupportImpl.findFor(source);
+            if (jsfs == null) {
+                return ;
+            }
+
+            Collection<String> nss = new ArrayList<String>(jsfs.getLibraries().keySet());
+            //add also xhtml ns to the completion
+            nss.add(LibraryUtils.XHTML_NS);
+            for(String namespace : nss) {
+                if(namespace.startsWith(context.getPrefix())) {
+                    items.add(HtmlCompletionItem.createAttributeValue(namespace, context.getCCItemStartOffset(), !context.isValueQuoted()));
+                }
+            }
+        }
+    }
+    
+    private void completeTagLibraryMetadata(CompletionContext context, List<CompletionItem> items) {
         String ns = context.getCurrentNode().getNamespace();
         if(ns != null) {
             String attrName = context.getAttributeName();
@@ -418,7 +495,8 @@ public class JsfHtmlExtension extends HtmlExtension {
                                     for (String val : possibleVals){
                                         if (val.startsWith(context.getPrefix())){
                                             CompletionItem itm = HtmlCompletionItem.createAttributeValue(val,
-                                                    context.getCCItemStartOffset());
+                                                    context.getCCItemStartOffset(),
+                                                    !context.isValueQuoted());
 
                                             items.add(itm);
                                         }
@@ -431,27 +509,6 @@ public class JsfHtmlExtension extends HtmlExtension {
             }
         }
         
-
-        if (context.getAttributeName().toLowerCase(Locale.ENGLISH).startsWith("xmlns")) {
-            //xml namespace completion for facelets namespaces
-            HtmlParserResult result = context.getResult();
-            Source source = result.getSnapshot().getSource();
-            JsfSupportImpl jsfs = JsfSupportImpl.findFor(source);
-            if (jsfs == null) {
-                return Collections.emptyList();
-            }
-
-            Collection<String> nss = new ArrayList<String>(jsfs.getLibraries().keySet());
-            //add also xhtml ns to the completion
-            nss.add(LibraryUtils.XHTML_NS);
-            for(String namespace : nss) {
-                if(namespace.startsWith(context.getPrefix())) {
-                    items.add(HtmlCompletionItem.createAttributeValue(namespace, context.getCCItemStartOffset(), !context.isValueQuoted()));
-                }
-            }
-        }
-
-        return items;
     }
 
     @Override
