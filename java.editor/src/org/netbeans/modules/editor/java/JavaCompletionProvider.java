@@ -1480,6 +1480,9 @@ public class JavaCompletionProvider implements CompletionProvider {
                 }
                 switch (ts.token().id()) {
                     case DOUBLE_LITERAL:
+                    case FLOAT_LITERAL:
+                    case FLOAT_LITERAL_INVALID:
+                    case ELLIPSIS:
                         if (ts.offset() != expEndPos || ts.token().text().charAt(0) != '.')
                             break;
                     case DOT:
@@ -1688,8 +1691,18 @@ public class JavaCompletionProvider implements CompletionProvider {
                                             results.add(JavaCompletionItem.createTypeItem(env.getController(), (TypeElement)e, (DeclaredType)ex, anchorOffset, true, elements.isDeprecated(e), insideNew, insideNew || env.isInsideClass(), true, true, false, env.getWhiteList()));
                                     }
                             } else {
-                                if (el == null && exp.getKind() == Tree.Kind.PRIMITIVE_TYPE)
-                                    el = controller.getTypes().boxedClass((PrimitiveType)type);
+                                if (el == null) {
+                                    if (exp.getKind() == Tree.Kind.ARRAY_TYPE) {
+                                        TypeMirror tm = type;
+                                        while (tm.getKind() == TypeKind.ARRAY)
+                                            tm = ((ArrayType)tm).getComponentType();
+                                        if (tm.getKind().isPrimitive())
+                                            el = controller.getTypes().boxedClass((PrimitiveType)tm);
+                                        else if (tm.getKind() == TypeKind.DECLARED)
+                                            el = ((DeclaredType)tm).asElement();
+                                    } else if (exp.getKind() == Tree.Kind.PRIMITIVE_TYPE)
+                                        el = controller.getTypes().boxedClass((PrimitiveType)type);
+                                }
                                 addMembers(env, type, el, kinds, baseType, inImport, insideNew, false);
                             }
                             break;
@@ -4838,13 +4851,21 @@ public class JavaCompletionProvider implements CompletionProvider {
                     if (ts.move(offset) == 0 || !ts.moveNext())
                         ts.movePrevious();
                     int len = offset - ts.offset();
-                    if (len > 0 && (ts.token().id() == JavaTokenId.IDENTIFIER ||
+                    if (len > 0 && ts.token().length() >= len) {
+                        if (ts.token().id() == JavaTokenId.IDENTIFIER ||
                             ts.token().id().primaryCategory().startsWith("keyword") || //NOI18N
                             ts.token().id().primaryCategory().startsWith("string") || //NOI18N
                             ts.token().id().primaryCategory().equals("literal")) //NOI18N
-                            && ts.token().length() >= len) { //TODO: Use isKeyword(...) when available
-                        prefix = ts.token().toString().substring(0, len);
-                        offset = ts.offset();
+                        { //TODO: Use isKeyword(...) when available
+                            prefix = ts.token().toString().substring(0, len);
+                            offset = ts.offset();
+                        } else if ((ts.token().id() == JavaTokenId.DOUBLE_LITERAL
+                                || ts.token().id() == JavaTokenId.FLOAT_LITERAL
+                                || ts.token().id() == JavaTokenId.FLOAT_LITERAL_INVALID)
+                                && ts.token().text().charAt(0) == '.') {
+                            prefix = ts.token().toString().substring(1, len);
+                            offset = ts.offset() + 1;
+                        }
                     }
                 } else if (queryType == DOCUMENTATION_QUERY_TYPE) {
                     TokenSequence<JavaTokenId> ts = controller.getTokenHierarchy().tokenSequence(JavaTokenId.language());

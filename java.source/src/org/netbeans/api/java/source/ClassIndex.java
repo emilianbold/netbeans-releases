@@ -61,7 +61,9 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import org.apache.lucene.document.Document;
 import org.netbeans.api.annotations.common.CheckForNull;
@@ -325,8 +327,8 @@ public final class ClassIndex {
     
     
     /**
-     * Returns a set of {@link ElementHandle}s containing reference(s) to given element.
-     * @param element for which usages should be found
+     * Returns a set of {@link ElementHandle}s containing reference(s) to given type element.
+     * @param element the {@link ElementHandle} of a {@link TypeElement} for which usages should be found
      * @param searchKind type of reference, {@see SearchKind}
      * @param scope to search in {@see SearchScope}
      * @return set of {@link ElementHandle}s containing the reference(s)
@@ -337,39 +339,49 @@ public final class ClassIndex {
             final @NonNull ElementHandle<TypeElement> element,
             final @NonNull Set<SearchKind> searchKind,
             final @NonNull Set<? extends SearchScopeType> scope) {
-        assert element != null;
-        assert element.getSignature()[0] != null;
-        assert searchKind != null;
-        final Set<ElementHandle<TypeElement>> result = new HashSet<ElementHandle<TypeElement>> ();
-        final Iterable<? extends ClassIndexImpl> queries = this.getQueries (scope);
-        final Set<ClassIndexImpl.UsageType> ut =  encodeSearchKind(element.getKind(),searchKind);
-        final Convertor<? super Document, ElementHandle<TypeElement>> thConvertor = DocumentUtil.elementHandleConvertor();
-        try {
-            if (!ut.isEmpty()) {
-                for (ClassIndexImpl query : queries) {
-                    try {
-                        query.search(
-                            element,
-                            ut,
-                            scope,
-                            thConvertor,
-                            result);
-                    } catch (Index.IndexClosedException e) {
-                        logClosedIndex (query);
-                    } catch (IOException e) {
-                        Exceptions.printStackTrace(e);
-                    }
+        return searchImpl(
+            element,
+            searchKind,
+            scope,
+            new Convertor<ClassIndexImpl, Convertor<? super Document,ElementHandle<TypeElement>>>(){
+                @NonNull
+                @Override
+                public Convertor<? super Document, ElementHandle<TypeElement>> convert(@NonNull final ClassIndexImpl p) {
+                    return DocumentUtil.elementHandleConvertor();
                 }
-            }
-            return Collections.unmodifiableSet(result);
-        } catch (InterruptedException e) {
-            return null;
-        }
+            });
     }
-    
+
     /**
-     * Returns a set of source files containing reference(s) to given element.
-     * @param element for which usages should be found
+     * Returns a set of {@link ElementHandle}s containing reference(s) to given package element.
+     * @param element the {@link ElementHandle} of a {@link PackageElement} for which usages should be found
+     * @param searchKind type of reference, {@see SearchKind}
+     * @param scope to search in {@see SearchScope}
+     * @return set of {@link ElementHandle}s containing the reference(s)
+     * It may return null when the caller is a CancellableTask&lt;CompilationInfo&gt; and is cancelled
+     * inside call of this method.
+     * @since 0.89
+     */
+    public @NullUnknown Set<ElementHandle<TypeElement>> getElementsForPackage (
+            final @NonNull ElementHandle<PackageElement> element,
+            final @NonNull Set<SearchKind> searchKind,
+            final @NonNull Set<? extends SearchScopeType> scope) {
+        return searchImpl(
+            element,
+            searchKind,
+            scope,
+            new Convertor<ClassIndexImpl, Convertor<? super Document,ElementHandle<TypeElement>>>(){
+                @NonNull
+                @Override
+                public Convertor<? super Document, ElementHandle<TypeElement>> convert(@NonNull final ClassIndexImpl p) {
+                    return DocumentUtil.elementHandleConvertor();
+                }
+            });
+    }
+
+    /**
+     * Returns a set of source files containing reference(s) to given type element.
+     * @param element the {@link ElementHandle} of a {@link TypeElement} for which usages should be found
      * @param searchKind type of reference, {@see SearchKind}
      * @param scope to search in {@see SearchScope}
      * @return set of {@link FileObject}s containing the reference(s)
@@ -380,22 +392,69 @@ public final class ClassIndex {
             final @NonNull ElementHandle<TypeElement> element,
             final @NonNull Set<SearchKind> searchKind,
             final @NonNull Set<? extends SearchScopeType> scope) {
-        assert element != null;
-        assert element.getSignature()[0] != null;
-        assert searchKind != null;
-        final Set<FileObject> result = new HashSet<FileObject> ();
-        final Iterable<? extends ClassIndexImpl> queries = this.getQueries (scope);
+        return searchImpl(
+            element,
+            searchKind,
+            scope,
+            new Convertor<ClassIndexImpl, Convertor<? super Document,FileObject>>() {
+                @NonNull
+                @Override
+                public Convertor<Document, FileObject> convert(@NonNull final ClassIndexImpl p) {
+                    return DocumentUtil.fileObjectConvertor (p.getSourceRoots());
+                }
+            });
+    }
+
+    /**
+     * Returns a set of source files containing reference(s) to given package element.
+     * @param element the {@link ElementHandle} of a {@link PackageElement} for which usages should be found
+     * @param searchKind type of reference, {@see SearchKind}
+     * @param scope to search in {@see SearchScope}
+     * @return set of {@link FileObject}s containing the reference(s)
+     * It may return null when the caller is a CancellableTask&lt;CompilationInfo&gt; and is cancelled
+     * inside call of this method.
+     * @since 0.89
+     */
+    public @NullUnknown Set<FileObject> getResourcesForPackage (
+            final @NonNull ElementHandle<PackageElement> element,
+            final @NonNull Set<SearchKind> searchKind,
+            final @NonNull Set<? extends SearchScopeType> scope) {
+        return searchImpl(
+            element,
+            searchKind,
+            scope,
+            new Convertor<ClassIndexImpl, Convertor<? super Document,FileObject>>() {
+                @NonNull
+                @Override
+                public Convertor<Document, FileObject> convert(@NonNull final ClassIndexImpl p) {
+                    return DocumentUtil.fileObjectConvertor (p.getSourceRoots());
+                }
+            });
+    }
+
+    @NullUnknown
+    private <T> Set<T> searchImpl(
+            @NonNull final ElementHandle<? extends Element> element,
+            @NonNull final Set<SearchKind> searchKind,
+            @NonNull final Set<? extends SearchScopeType> scope,
+            @NonNull final Convertor<? super ClassIndexImpl,Convertor<? super Document, T>> convertor) {
+        Parameters.notNull("element", element); //NOI18N
+        Parameters.notNull("element.signatue", element.getSignature()[0]);  //NOI18N
+        Parameters.notNull("searchKind", searchKind);   //NOI18N
+        Parameters.notNull("scope", scope); //NOI18N
+        Parameters.notNull("convertor", convertor); //NOI18N
+        final Set<T> result = new HashSet<T> ();
         final Set<ClassIndexImpl.UsageType> ut =  encodeSearchKind(element.getKind(),searchKind);
-        try {
-            if (!ut.isEmpty()) {
+        if (!ut.isEmpty()) {
+            try {
+                final Iterable<? extends ClassIndexImpl> queries = this.getQueries (scope);
                 for (ClassIndexImpl query : queries) {
-                    final Convertor<? super Document, FileObject> foConvertor = DocumentUtil.fileObjectConvertor (query.getSourceRoots());
                     try {
                         query.search(
                             element,
                             ut,
                             scope,
-                            foConvertor,
+                            convertor.convert(query),
                             result);
                     } catch (Index.IndexClosedException e) {
                         logClosedIndex (query);
@@ -403,14 +462,12 @@ public final class ClassIndex {
                         Exceptions.printStackTrace(e);
                     }
                 }
+            } catch (InterruptedException e) {
+                return null;
             }
-            return Collections.unmodifiableSet(result);
-        } catch (InterruptedException e) {
-            return null;
         }
+        return Collections.unmodifiableSet(result);
     }
-    
-    
     /**
      * Returns {@link ElementHandle}s for all declared types in given classpath corresponding to the name.
      * @param name case sensitive prefix, case insensitive prefix, exact simple name,
@@ -649,6 +706,7 @@ public final class ClassIndex {
                         case ENUM:	//enum is final
                             break;
                         case OTHER:
+                        case PACKAGE:
                             result.add(ClassIndexImpl.UsageType.SUPER_INTERFACE);
                             result.add(ClassIndexImpl.UsageType.SUPER_CLASS);
                             break;

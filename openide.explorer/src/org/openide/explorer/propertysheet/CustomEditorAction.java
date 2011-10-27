@@ -168,9 +168,10 @@ class CustomEditorAction extends AbstractAction {
         }
 
         final Component curComp = invoker.getCursorChangeComponent();
-
-        Cursor cur = Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR);
-        curComp.setCursor(cur);
+        if (curComp != null) {
+            Cursor cur = Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR);
+            curComp.setCursor(cur);
+        }
         try { //#64007 start - reset cursor in case of a runtime exception
 
         //            customEditing = true;
@@ -283,7 +284,9 @@ class CustomEditorAction extends AbstractAction {
 
                 public void windowOpened(WindowEvent e) {
                     invoker.editorOpened();
-                    curComp.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                    if (curComp != null) {
+                        curComp.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                    }
                 }
 
                 // MCF ISSUE 44366 
@@ -325,7 +328,9 @@ class CustomEditorAction extends AbstractAction {
         }
         
         } finally { //#64007 end - reset cursor in case of a runtime exception
-            curComp.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+            if (curComp != null) {
+                curComp.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+            }
         }
     }
 

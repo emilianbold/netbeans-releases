@@ -57,6 +57,7 @@ import java.util.logging.Logger;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.index.ArtifactInfo;
+import org.apache.maven.repository.RepositorySystem;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
@@ -85,7 +86,7 @@ public class PluginIndexManager {
         for (String groupId : groups) {
             for (String artifactId : RepositoryQueries.filterPluginArtifactIds(groupId, "", null)) {
                 for (NBVersionInfo v : RepositoryQueries.getVersions(groupId, artifactId, null)) {
-                    if (v.getVersion().endsWith("-SNAPSHOT") && !v.getRepoId().equals("local")) {
+                    if (v.getVersion().endsWith("-SNAPSHOT") && !v.getRepoId().equals(RepositorySystem.DEFAULT_LOCAL_REPO_ID)) {
                         continue;
                     }
                     File jar = RepositoryUtil.downloadArtifact(v);
@@ -278,7 +279,7 @@ public class PluginIndexManager {
         for (String groupId : RepositoryQueries.filterPluginGroupIds("", infos)) {
             for (String artifactId : RepositoryQueries.filterPluginArtifactIds(groupId, "", infos)) {
                 for (NBVersionInfo v : RepositoryQueries.getVersions(groupId, artifactId, infos)) {
-                    if (v.getVersion().endsWith("-SNAPSHOT") && !v.getRepoId().equals("local")) {
+                    if (v.getVersion().endsWith("-SNAPSHOT") && !v.getRepoId().equals(RepositorySystem.DEFAULT_LOCAL_REPO_ID)) {
                         continue;
                     }
                     File jar = RepositoryUtil.downloadArtifact(v);

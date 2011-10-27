@@ -473,7 +473,7 @@ public class LayoutUtils implements LayoutConstants {
         while (!candidates.isEmpty() && (!justFirst || intervals.isEmpty())) {
             LayoutInterval candidate = candidates.remove(0);
             if (candidate.isGroup()) {
-                if (candidate.isSequential()) {
+                if (candidate.isSequential() && candidate.getSubIntervalCount() > 0) {
                     int index = edge == LEADING ? 0 : candidate.getSubIntervalCount()-1;
                     LayoutInterval sub = candidate.getSubInterval(index);
                     candidates.add(sub);
@@ -524,6 +524,19 @@ public class LayoutUtils implements LayoutConstants {
         return parent != null && parent.isParallel()
                && LayoutInterval.isAlignedAtBorder(interval1, parent, alignment)
                && LayoutInterval.isAlignedAtBorder(interval2, parent, alignment);
+    }
+
+    static boolean isDefaultGapValidForNeighbor(LayoutInterval neighbor, int neighborEdge) {
+        if (!hasSideComponents(neighbor, neighborEdge, true, false)
+            || (!hasSideComponents(neighbor, neighborEdge, true, true)
+                && hasSideGaps(neighbor, neighborEdge, true))) {
+            // GroupLayout can't compute default gap if the neighbor has
+            // no edge component, or even if it is, none is aligned at
+            // group edge while there is an aligned gap (so the only
+            // aligned interval at the edge facing the default gap is a gap).
+            return false;
+        }
+        return true;
     }
 
     /**

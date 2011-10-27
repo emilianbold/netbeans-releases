@@ -62,6 +62,7 @@ import org.netbeans.modules.php.editor.api.elements.ClassElement;
 import org.netbeans.modules.php.editor.api.elements.FunctionElement;
 import org.netbeans.modules.php.editor.api.elements.MethodElement;
 import org.netbeans.modules.php.editor.api.elements.ParameterElement;
+import org.netbeans.modules.php.editor.api.elements.ParameterElement.OutputType;
 import org.netbeans.modules.php.editor.api.elements.PhpElement;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
@@ -424,7 +425,7 @@ public class ParameterInfoSupport {
         List<String> paramNames = new ArrayList<String>();
         List<? extends ParameterElement> parameters = functionScope.getParameters();
         for (ParameterElement parameter : parameters) {
-            paramNames.add(parameter.asString(true));
+            paramNames.add(parameter.asString(OutputType.SHORTEN_DECLARATION));
         }
         return paramNames;
     }
@@ -433,7 +434,7 @@ public class ParameterInfoSupport {
         List<String> paramNames = new ArrayList<String>();
         List<? extends ParameterElement> parameters = functionElement.getParameters();
         for (ParameterElement parameter : parameters) {
-            paramNames.add(parameter.asString(true));
+            paramNames.add(parameter.asString(OutputType.SHORTEN_DECLARATION));
         }
         return paramNames;
     }
@@ -448,7 +449,7 @@ public class ParameterInfoSupport {
             if (constructor != null) {
                 List<? extends ParameterElement> parameters = constructor.getParameters();
                 for (ParameterElement parameter : parameters) {
-                    paramNames.add(parameter.asString(true));
+                    paramNames.add(parameter.asString(OutputType.SHORTEN_DECLARATION));
                 }
             }
         }

@@ -112,4 +112,30 @@ public abstract class Category implements Visitable<Category> {
             def.processWith(processor);
         }
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Category other = (Category) obj;
+        if ((this.id == null) ? (other.id != null) : !this.id.equals(other.id)) {
+            return false;
+        }
+        if (this.assignedMark != other.assignedMark && (this.assignedMark == null || !this.assignedMark.equals(other.assignedMark))) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 53 * hash + (this.id != null ? this.id.hashCode() : 0);
+        hash = 53 * hash + (this.assignedMark != null ? this.assignedMark.hashCode() : 0);
+        return hash;
+    }
 }

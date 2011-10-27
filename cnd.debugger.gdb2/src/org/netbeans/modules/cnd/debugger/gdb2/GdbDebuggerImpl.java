@@ -1165,6 +1165,9 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
 	    breakStartCmd.chain(runCmd, breakMainCmd);
 	    breakMainCmd.chain(runCmd, runCmd);
+            
+            // need to clear PID, see IZ 203916
+            session().setPid(-1);
 
             // _start does not work on MacOS
             if (getHost().getPlatform() == Platform.MacOSX_x86) {
@@ -1316,7 +1319,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
         // OLD overrideOptions();
 
-        manager().formatStatusText("ReadyToRun", null); // NOI18N
+        manager().formatStatusText("ReadyToRun"); // NOI18N
 
         DebuggerManager.get().addRecentDebugTarget(progname, false);
 

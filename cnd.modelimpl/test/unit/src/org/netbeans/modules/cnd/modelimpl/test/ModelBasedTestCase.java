@@ -77,8 +77,9 @@ public class ModelBasedTestCase extends CndBaseTestCase {
         super.setUp();
         DiagnosticExceptoins.Hook hook = new DiagnosticExceptoins.Hook() {
 
+            @Override
             public void exception(Throwable thr) {
-                thr.printStackTrace();
+                thr.printStackTrace(System.err);
                 exceptions.add(thr);
                 CndUtils.threadsDump();
             }

@@ -70,6 +70,7 @@ import org.netbeans.modules.cnd.makeproject.api.ProjectActionSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.IntNodeProp;
 import org.netbeans.modules.cnd.makeproject.platform.Platforms;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.BooleanNodeProp;
+import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationMakefileWriter;
 import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.CompilerSetNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.DevelopmentHostNodeProp;
@@ -1088,6 +1089,7 @@ public class MakeConfiguration extends Configuration {
         val = CndPathUtilitities.expandMacro(val, "${OUTPUT_PATH}", getOutputValue()); // NOI18N
         val = CndPathUtilitities.expandMacro(val, "${OUTPUT_BASENAME}", CndPathUtilitities.getBaseName(getOutputValue())); // NOI18N
         val = CndPathUtilitities.expandMacro(val, "${PLATFORM}", getVariant()); // Backward compatibility // NOI18N
+        val = CndPathUtilitities.expandMacro(val, MakeConfiguration.OBJECTDIR_MACRO, ConfigurationMakefileWriter.getObjectDir(this)); // NOI18N
         val = CndPathUtilitities.expandMacro(val, MakeConfiguration.CND_PLATFORM_MACRO, getVariant()); // NOI18N
         val = CndPathUtilitities.expandMacro(val, MakeConfiguration.CND_CONF_MACRO, getName()); // NOI18N
         val = CndPathUtilitities.expandMacro(val, MakeConfiguration.CND_DISTDIR_MACRO, MakeConfiguration.DIST_FOLDER); // NOI18N

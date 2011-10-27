@@ -88,9 +88,10 @@ public class DelegatingVCS extends VersioningSystem {
     }
 
     public VersioningSystem getDelegate() {
+        VersioningManager manager = VersioningManager.getInstance();
         synchronized(DELEGATE_LOCK) {
             if(delegate == null) {
-                VersioningManager.getInstance().flushNullOwners();   
+                manager.flushNullOwners();   
                 delegate = (VersioningSystem) map.get("delegate");                  // NOI18N
                 if(delegate != null) {
                     Accessor.IMPL.moveChangeListeners(this, delegate);
@@ -100,26 +101,6 @@ public class DelegatingVCS extends VersioningSystem {
             }
             return delegate;
         }
-    }
-    
-    void registerVersioningManager() {
-        synchronized(DELEGATE_LOCK) {
-            if(isAlive()) {
-                delegate.addPropertyChangeListener(VersioningManager.getInstance());
-            } else {
-                addPropertyChangeListener(VersioningManager.getInstance());
-            }
-        }
-    }
-    
-    void unregisterVersioningManager() {
-        synchronized(DELEGATE_LOCK) {
-            if(isAlive()) {
-                delegate.removePropertyChangeListener(VersioningManager.getInstance());
-            } else {
-                removePropertyChangeListener(VersioningManager.getInstance());
-            }
-        } 
     }
     
     @Override
@@ -250,7 +231,7 @@ public class DelegatingVCS extends VersioningSystem {
         return ret.toArray(new Action[ret.size()]);
     }
 
-    private boolean isAlive() {
+    boolean isAlive() {
         synchronized(DELEGATE_LOCK) {
             return delegate != null;
         }

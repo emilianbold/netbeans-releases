@@ -272,7 +272,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
     public void processKeyEvent(KeyEvent evt) {
         if (evt.getID() == KeyEvent.KEY_TYPED) {
             if ((!Utilities.autoPopupOnJavaIdentifierPart() || !(this instanceof VariableItem) || !((VariableItem)this).newVarName)
-                    && Utilities.getJavaCompletionSelectors().indexOf(evt.getKeyChar()) >= 0) {
+                    && evt.getModifiers() == 0 && Utilities.getJavaCompletionSelectors().indexOf(evt.getKeyChar()) >= 0) {
                 if (evt.getKeyChar() == '(' && !(this instanceof AnnotationItem)
                         && !(this instanceof ConstructorItem)
                         && !(this instanceof DefaultConstructorItem)
@@ -372,14 +372,6 @@ public abstract class JavaCompletionItem implements CompletionItem {
         if (semiPos > -2)
             toAdd = toAdd.length() > 1 ? toAdd.substring(0, toAdd.length() - 1) : null;
         if (toAdd != null && !toAdd.equals("\n")) {//NOI18N
-            char ch;
-            int i = 0;
-            while(i < toAdd.length() && (ch = toAdd.charAt(i)) <= ' ' ) {
-                text.append(ch);
-                i++;
-            }
-            if (i > 0)
-                toAdd = toAdd.substring(i);
             TokenSequence<JavaTokenId> sequence = SourceUtils.getJavaTokenSequence(TokenHierarchy.get(doc), offset + len);
             if (sequence == null || !sequence.moveNext() && !sequence.movePrevious()) {
                 text.append(toAdd);

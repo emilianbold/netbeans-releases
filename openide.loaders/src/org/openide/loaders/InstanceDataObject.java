@@ -962,10 +962,10 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
         String hash = Integer.toHexString(ename.hashCode()).toUpperCase(Locale.ENGLISH);
         maxLen = (maxLen > hash.length()) ? (maxLen-hash.length()) / 2 :1;
         String start = ename.substring(0, maxLen);
-        if (start.endsWith("#")) {
+        if (start.lastIndexOf( '#' ) >= start.length()-5 ) {
             //Strip ending # so that next hexadecimal (hash) sequence is not treated as escape sequence
             //by unescape.
-            start = start.substring(0, start.length() - 1);
+            start = start.substring(0, start.lastIndexOf( '#' ));
         }
         String end = ename.substring(ename.length() - maxLen);
 

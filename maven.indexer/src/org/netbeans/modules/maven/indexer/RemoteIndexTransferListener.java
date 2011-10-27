@@ -45,6 +45,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.maven.wagon.events.TransferEvent;
 import org.apache.maven.wagon.events.TransferListener;
 import org.netbeans.api.annotations.common.NonNull;
@@ -113,7 +115,8 @@ public class RemoteIndexTransferListener implements TransferListener, Cancellabl
         handle.switchToIndeterminate();
     }
 
-    public @Override void transferError(TransferEvent arg0) {
+    public @Override void transferError(TransferEvent e) {
+        Logger.getLogger(RemoteIndexTransferListener.class.getName()).log(Level.FINE, "error transferring " + info.getIndexUpdateUrl(), e.getException());
         handle.switchToIndeterminate();
     }
 

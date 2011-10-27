@@ -252,7 +252,7 @@ public class TraceModelTestBase extends ModelImplBaseTestCase {
         File goldenErrFileCopy = null;
         File diffErrorFile = null;
         // first of all check err, because if not failed (often) => dat diff will be created
-        if (goldenErrFileName != null) {
+        if (goldenErrFileName != null && !Boolean.getBoolean("cnd.skip.err.check")) {
             goldenErrFile = getGoldenFile(goldenErrFileName);
             if (goldenErrFile.exists()) {
                 if (CndCoreTestUtils.diff(error, goldenErrFile, null)) {

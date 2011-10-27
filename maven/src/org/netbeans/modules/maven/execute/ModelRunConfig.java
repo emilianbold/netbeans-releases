@@ -65,8 +65,8 @@ public final class ModelRunConfig extends BeanRunConfig {
         String label = ProjectUtils.getInformation(proj).getDisplayName();
         setExecutionName(label);
         setTaskDisplayName(label);
-        for (Map.Entry<?,?> entry : model.getProperties().entrySet()) {
-            setProperty((String) entry.getKey(), (String) entry.getValue());
+        for (Map.Entry<String,String> entry : model.getProperties().entrySet()) {
+            setProperty(entry.getKey(), entry.getValue());
         }
         setGoals(model.getGoals());
         setExecutionDirectory(ActionToGoalUtils.resolveProjectExecutionBasedir(mod, proj));

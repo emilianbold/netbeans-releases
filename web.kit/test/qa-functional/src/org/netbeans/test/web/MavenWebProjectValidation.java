@@ -39,7 +39,6 @@ package org.netbeans.test.web;
 
 import java.awt.Component;
 import java.io.IOException;
-import javax.swing.JComboBox;
 import javax.swing.JTextField;
 import junit.framework.Test;
 import org.netbeans.jellytools.*;
@@ -58,6 +57,7 @@ import org.netbeans.junit.NbModuleSuite;
  */
 public class MavenWebProjectValidation extends WebProjectValidation {
 
+    @SuppressWarnings("hiding")
     public static final String[] TESTS = {
         "testNewMavenWebProject",
         "testNewJSP", "testNewJSP2", "testNewServlet", "testNewServlet2",
@@ -98,11 +98,11 @@ public class MavenWebProjectValidation extends WebProjectValidation {
         Component plComp = new JLabelOperator(mavenWebAppWizardOperator, "Project Location").getLabelFor();
         JTextFieldOperator projectLocation = new JTextFieldOperator((JTextField) plComp);
         projectLocation.setText(PROJECT_LOCATION);
-
-        Component javaee = new JLabelOperator(mavenWebAppWizardOperator, "Java EE Version:").getLabelFor();
-        JComboBoxOperator javaeeOp = new JComboBoxOperator((JComboBox) javaee);
-        javaeeOp.selectItem(getEEVersion());
-        mavenWebAppWizardOperator.finish();
+        mavenWebAppWizardOperator.next();
+        NewWebProjectServerSettingsStepOperator serverStep = new NewWebProjectServerSettingsStepOperator();
+        // uncomment when bug 204278 fixed
+        //serverStep.selectJavaEEVersion(getEEVersion());
+        serverStep.finish();
         verifyWebPagesNode("index.jsp");
         waitScanFinished();
     }

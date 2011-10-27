@@ -110,5 +110,16 @@ public class ConnectionSettings {
     public void setSaveCredentials (boolean saveCredentials) {
         this.saveCredentials = saveCredentials;
     }
+
+    ConnectionSettings copy () {
+        ConnectionSettings copy = new ConnectionSettings(getUri().setUser(null).setPass(null));
+        copy.setIdentityFile(getIdentityFile());
+        copy.setPassphrase(getPassphrase());
+        copy.setPassword(getPassword());
+        copy.setPrivateKeyAuth(isPrivateKeyAuth());
+        copy.setSaveCredentials(isSaveCredentials());
+        copy.setUser(getUser());
+        return copy;
+    }
     
 }

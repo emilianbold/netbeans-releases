@@ -77,7 +77,7 @@ public class ConfigurationRenderer extends JLabel implements ListCellRenderer, U
             }
         }
         
-        if (index == list.getModel().getSize()-5) {
+        if (index == list.getModel().getSize()-5 && ((ConfigurationsComboModel) list.getModel()).canModify() ) {
             setBorder(new Separator(list.getForeground()));
         } else {
             setBorder(null);

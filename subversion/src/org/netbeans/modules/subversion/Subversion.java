@@ -649,5 +649,13 @@ public class Subversion {
         List<VCSHyperlinkProvider> providersList = new ArrayList<VCSHyperlinkProvider>(providersCol.size());
         providersList.addAll(providersCol);
         return Collections.unmodifiableList(providersList);
-    }    
+    }
+
+    /**
+     * DO NOT call the method unless you really know what you're doing.
+     */
+    public void svnClientChanged () {
+        LOG.log(Level.INFO, "svnClientChanged: Flushing cached shared clients"); //NOI18N
+        noUrlClientWithListeners = noUrlClientWithoutListeners = null;
+    }
 }

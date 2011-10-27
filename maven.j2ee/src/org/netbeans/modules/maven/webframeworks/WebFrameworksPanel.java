@@ -63,6 +63,7 @@ import javax.swing.event.ListSelectionListener;
 import org.netbeans.modules.maven.api.customizer.ModelHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.maven.j2ee.LoggingUtils;
 import org.netbeans.modules.web.api.webmodule.ExtenderController;
 import org.netbeans.modules.web.spi.webmodule.WebModuleExtender;
 
@@ -92,17 +93,12 @@ public class WebFrameworksPanel extends javax.swing.JPanel implements ListSelect
     List<WebFrameworkProvider> addedFrameworks = new LinkedList<WebFrameworkProvider>();
 
     private ExtenderController controller = ExtenderController.create();
-    private ModelHandle handle;
-    // ui logging
-    static final String UI_LOGGER_NAME = "org.netbeans.ui.web.project"; //NOI18N
-    static final Logger UI_LOGGER = Logger.getLogger(UI_LOGGER_NAME);
     
     
     /** Creates new form WebFrameworksPanel */
     public WebFrameworksPanel(ProjectCustomizer.Category category, ModelHandle handle, Project prj) {
         this.category = category;
         project = prj;
-        this.handle = handle;
         initComponents();
         btnRemoveAdded.setEnabled(false);
         
@@ -131,16 +127,7 @@ public class WebFrameworksPanel extends javax.swing.JPanel implements ListSelect
         for (int i = 0; i < newExtenders.size(); i++) {
             newExtenders.get(i).extend(webModule);
         }
-
-        // ui logging of the added frameworks
-        if ((addedFrameworks != null) && (addedFrameworks.size() > 0)) {
-            LogRecord logRecord = new LogRecord(Level.INFO, "UI_WEB_PROJECT_FRAMEWORK_ADDED");  //NOI18N
-            logRecord.setLoggerName(UI_LOGGER_NAME); //NOI18N
-            logRecord.setResourceBundle(NbBundle.getBundle(WebFrameworksPanel.class));
-
-            logRecord.setParameters(addedFrameworks.toArray());
-            UI_LOGGER.log(logRecord);
-        }
+        doUIandUsageLogging();
 
         for (WebModuleExtender webModuleExtender : existingExtenders) {
             if (webModuleExtender instanceof WebModuleExtender.Savable) {
@@ -148,6 +135,18 @@ public class WebFrameworksPanel extends javax.swing.JPanel implements ListSelect
             }
         }
         existingExtenders.clear();
+    }
+    
+    private void doUIandUsageLogging() {
+        if ((addedFrameworks != null) && (addedFrameworks.size() > 0)) {
+            LogRecord logRecord = new LogRecord(Level.INFO, "UI_PROJECT_CONFIG_MAVEN_FRAMEWORK_ADDED");  //NOI18N
+            logRecord.setLoggerName("org.netbeans.ui.web.project"); //NOI18N
+            logRecord.setResourceBundle(NbBundle.getBundle(WebFrameworksPanel.class));
+            logRecord.setParameters(addedFrameworks.toArray());
+            Logger.getLogger("org.netbeans.ui.web.project").log(logRecord);
+            //LoggingUtils.logUI(this.getClass(), "UI_PROJECT_CONFIG_MAVEN_FRAMEWORK_ADDED", addedFrameworks);  //NOI18N
+            //LoggingUtils.logUsage(this.getClass(), "USG_PROJECT_CONFIG_MAVEN_FRAMEWORK_ADDED", addedFrameworks);  //NOI18N
+        }
     }
     
     private void initFrameworksList() {

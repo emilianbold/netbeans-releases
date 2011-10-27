@@ -70,11 +70,6 @@ public class FolderConfiguration implements ConfigurationAuxObject {
         ccCompilerConfiguration = new CCCompilerConfiguration(((MakeConfiguration) configuration).getBaseDir(), parentCCCompilerConfiguration, (MakeConfiguration) configuration);
         if (folder.isTest() || folder.isTestLogicalFolder() || folder.isTestRootFolder()) {
             linkerConfiguration = new LinkerConfiguration((MakeConfiguration) configuration);
-            if (folder.isTest()) {
-                linkerConfiguration.getOutput().setValue("${TESTDIR}/" + folder.getPath()); // NOI18N
-                cCompilerConfiguration.getIncludeDirectories().add("."); // NOI18N
-                ccCompilerConfiguration.getIncludeDirectories().add("."); // NOI18N
-            }
         }
         clearChanged();
     }

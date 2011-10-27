@@ -61,6 +61,7 @@ import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.apache.maven.repository.RepositorySystem;
 import org.netbeans.modules.maven.model.settings.Mirror;
 import org.netbeans.modules.maven.model.settings.SettingsModel;
 import org.openide.DialogDescriptor;
@@ -78,14 +79,13 @@ public class NewMirrorPanel extends javax.swing.JPanel {
     private SettingsModel model;
     private NotificationLineSupport nls;
 
-    private final static String CENTRAL = "central"; //NOI18N
     private final static String ALL = "*"; //2.0.5+ //NOI18N
     private final static String ALL_NON_LOCAL = "external:*"; //2.0.9+ //NOI18N
     private final static String ALL_BUT_FOO = "*,!foo"; //2.0.9+ //NOI18N
     private final static String LIST = "foo,bar"; //2.0.9+ //NOI18N
 
     private final String[] MIRROROFS = new String[] {
-        CENTRAL,
+        RepositorySystem.DEFAULT_REMOTE_REPO_ID,
         ALL,
         ALL_NON_LOCAL,
         ALL_BUT_FOO,
@@ -116,7 +116,7 @@ public class NewMirrorPanel extends javax.swing.JPanel {
                 Component toRet = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
                 if (toRet instanceof JLabel) {
                     JLabel label = (JLabel)toRet;
-                    if (CENTRAL.equals(value)) {
+                    if (RepositorySystem.DEFAULT_REMOTE_REPO_ID.equals(value)) {
                         label.setText(org.openide.util.NbBundle.getMessage(NewMirrorPanel.class, "LBL_Central"));
                     } else if (ALL.equals(value)) {
                         label.setText(org.openide.util.NbBundle.getMessage(NewMirrorPanel.class, "LBL_All"));
@@ -194,7 +194,7 @@ public class NewMirrorPanel extends javax.swing.JPanel {
     private void checkCentral() {
         String sel = (String)comMirrorOf.getSelectedItem();
         urlmodel.removeAllElements();
-        if (CENTRAL.equals(sel)) {
+        if (RepositorySystem.DEFAULT_REMOTE_REPO_ID.equals(sel)) {
             //see http://docs.codehaus.org/display/MAVENUSER/Mirrors+Repositories
             // for a list of central mirrors.
             //TODO might be worth to externalize somehow.

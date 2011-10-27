@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2007-2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2007-2011 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.java.hints;
@@ -45,66 +45,36 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.SynchronizedTree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.java.hints.spi.AbstractHint;
+import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
+import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerTreeKind;
+import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
+import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author Jan Lahoda
  */
-public class SyncOnNonFinal extends AbstractHint {
+@Hint(id="org.netbeans.modules.java.hints.SyncOnNonFinal", category="thread")
+public class SyncOnNonFinal {
 
-    public SyncOnNonFinal() {
-        super(true, true, HintSeverity.WARNING);
-    }
-
-    @Override
-    public String getDescription() {
-        return NbBundle.getMessage(SyncOnNonFinal.class, "DSC_SynchronizationOnNonFinalField");
-    }
-
-    public Set<Kind> getTreeKinds() {
-        return EnumSet.of(Kind.SYNCHRONIZED);
-    }
-
-    public List<ErrorDescription> run(CompilationInfo compilationInfo, TreePath treePath) {
-        if (!getTreeKinds().contains(treePath.getLeaf().getKind()))
-            return null;
+    @TriggerTreeKind(Kind.SYNCHRONIZED)
+    public static ErrorDescription run(HintContext ctx) {
+        ExpressionTree expression = ((SynchronizedTree) ctx.getPath().getLeaf()).getExpression();
         
-        ExpressionTree expression = ((SynchronizedTree) treePath.getLeaf()).getExpression();
-        
-        Element e = compilationInfo.getTrees().getElement(new TreePath(treePath,expression));
+        Element e = ctx.getInfo().getTrees().getElement(new TreePath(ctx.getPath(), expression));
         
         if (e == null || e.getKind() != ElementKind.FIELD || e.getModifiers().contains(Modifier.FINAL)) {
             return null;
         }
         
-        int start = (int) compilationInfo.getTrees().getSourcePositions().getStartPosition(compilationInfo.getCompilationUnit(), expression);
-        int end   = (int) compilationInfo.getTrees().getSourcePositions().getEndPosition(compilationInfo.getCompilationUnit(), expression);
         String displayName = NbBundle.getMessage(SyncOnNonFinal.class, "ERR_SynchronizationOnNonFinalField");
         
-        return Collections.singletonList(ErrorDescriptionFactory.createErrorDescription(getSeverity().toEditorSeverity(), displayName, compilationInfo.getFileObject(), start, end));
-    }
-
-    public String getId() {
-        return SyncOnNonFinal.class.getName();
-    }
-
-    public String getDisplayName() {
-        return NbBundle.getMessage(SyncOnNonFinal.class, "DN_SynchronizationOnNonFinalField");
-    }
-
-    public void cancel() {
+        return ErrorDescriptionFactory.forTree(ctx, expression, displayName);
     }
 
 }

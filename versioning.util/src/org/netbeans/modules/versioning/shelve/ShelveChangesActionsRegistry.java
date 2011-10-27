@@ -49,7 +49,7 @@ import org.netbeans.modules.versioning.spi.VersioningSystem;
 public final class ShelveChangesActionsRegistry {
 
     private static ShelveChangesActionsRegistry instance;
-    private final Map<VersioningSystem, Action> actions;
+    private final Map<VersioningSystem, ShelveChangesActionProvider> actionProviders;
     
     public static synchronized ShelveChangesActionsRegistry getInstance () {
         if (instance == null) {
@@ -59,18 +59,24 @@ public final class ShelveChangesActionsRegistry {
     }
     
     private ShelveChangesActionsRegistry () {
-        actions = new WeakHashMap<VersioningSystem, Action>();
+        actionProviders = new WeakHashMap<VersioningSystem, ShelveChangesActionProvider>();
     }
 
-    public void registerAction (VersioningSystem vs, Action action) {
-        synchronized (actions) {
-            actions.put(vs, action);
+    public void registerAction (VersioningSystem vs, ShelveChangesActionProvider prov) {
+        synchronized (actionProviders) {
+            actionProviders.put(vs, prov);
         }
     }
 
-    public Action getAction (VersioningSystem owner) {
-        synchronized(actions) {
-            return actions.get(owner);
+    public ShelveChangesActionProvider getActionProvider (VersioningSystem owner) {
+        synchronized(actionProviders) {
+            return actionProviders.get(owner);
         }
+    }
+    
+    public static abstract class ShelveChangesActionProvider {
+        
+        public abstract Action getAction ();
+        
     }
 }

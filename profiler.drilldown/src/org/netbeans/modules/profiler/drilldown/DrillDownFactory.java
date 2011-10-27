@@ -47,11 +47,12 @@ import java.lang.ref.WeakReference;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 import org.netbeans.lib.profiler.ProfilerClient;
 import org.netbeans.lib.profiler.marker.Mark;
 import org.netbeans.lib.profiler.results.cpu.cct.CCTResultsFilter;
 import org.netbeans.lib.profiler.results.cpu.cct.CCTResultsFilter.Evaluator;
-import org.netbeans.modules.profiler.categorization.api.Categorization;
+import org.netbeans.modules.profiler.categorization.api.ProjectCategorization;
 import org.openide.util.Lookup;
 
 /**
@@ -74,7 +75,7 @@ public class DrillDownFactory implements CCTResultsFilter.EvaluatorProvider {
             return eval != null ? eval.evaluate(mark) : true;
         }
     }
-    final private Set<WeakEvaluator> drillDownEvaluators = Collections.synchronizedSet(new HashSet<WeakEvaluator>());
+    final private Set<WeakEvaluator> drillDownEvaluators = new CopyOnWriteArraySet<WeakEvaluator>();
     
     public DrillDown createDrillDown(Lookup.Provider project, ProfilerClient client) {
         /*
@@ -84,8 +85,8 @@ public class DrillDownFactory implements CCTResultsFilter.EvaluatorProvider {
             return null;
         }
         
-        if (Categorization.isAvailable(project)) {
-            DrillDown dd = new DrillDown(new Categorization(project), client);
+        if (ProjectCategorization.isAvailable(project)) {
+            DrillDown dd = new DrillDown(new ProjectCategorization(project), client);
             drillDownEvaluators.add(new WeakEvaluator(dd));
             return dd;
         } else {

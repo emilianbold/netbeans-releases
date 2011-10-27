@@ -49,6 +49,7 @@ import java.lang.ref.WeakReference;
 import java.util.Map;
 import java.util.WeakHashMap;
 import javax.swing.JComponent;
+import org.netbeans.core.options.keymap.api.ShortcutsFinder;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -75,7 +76,7 @@ public final class MacrosPanelController extends OptionsPanelController {
     }
 
     public void applyChanges() {
-        lastPanel.getModel().save();
+        lastPanel.save();
     }
 
     public void cancel() {

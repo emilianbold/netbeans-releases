@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.profiler.nbimpl.javac;
 
+import java.util.Set;
 import org.netbeans.modules.profiler.api.java.ProfilerTypeUtils;
 import org.netbeans.modules.profiler.api.java.SourceClassInfo;
 import org.netbeans.modules.profiler.api.java.SourceMethodInfo;
@@ -50,9 +51,7 @@ import org.netbeans.modules.profiler.nbimpl.BaseProjectTest;
  *
  * @author Jaroslav Bachorik
  */
-public class JavacClassInfoTest extends BaseProjectTest {
-    private SourceClassInfo ci;
-    
+public class JavacClassInfoTest extends BaseProjectTest {    
     public JavacClassInfoTest(String name) {
         super(name);
     }
@@ -60,26 +59,60 @@ public class JavacClassInfoTest extends BaseProjectTest {
     @Override
     public void setUp() throws Exception{
         super.setUp(); 
-        ci = ProfilerTypeUtils.resolveClass("classinfo.ClassInfoTest", getProject());
     }
     
     @Override
     public void tearDown() throws Exception {
         super.tearDown();
-        ci = null;
     }
 
     public void testInnerClasses() {
         System.out.println("testInnerClasses");
-        for(SourceClassInfo sci : ci.getInnerClases()) {
-            System.out.println(sci);
-        }
+        Set<SourceClassInfo> cs = ProfilerTypeUtils.resolveClass("classinfo.ClassInfoTest", getProject()).getInnerClases();
+        assertNotNull(cs);
+        assertEquals(4, cs.size());
     }
     
     public void testMethods() {
         System.out.println("testMethods");
-        for(SourceMethodInfo sci : ci.getMethods(true)) {
-            System.out.println(sci);
-        }
+        Set<SourceMethodInfo> ms = ProfilerTypeUtils.resolveClass("classinfo.ClassInfoTest", getProject()).getMethods(true);
+        assertNotNull(ms);
+        assertEquals(3, ms.size());
+    }
+
+    public void testMethodsNoSource() {
+        System.out.println("testMethods /no source/");
+        Set<SourceMethodInfo> ms = ProfilerTypeUtils.resolveClass("sun.org.mozilla.javascript.Callable", getProject()).getMethods(true);
+        assertNotNull(ms);
+        assertEquals(1, ms.size());
+    }
+    
+    public void testSubclassesNoSource() {
+        System.out.println("testSubclasses /no source/");
+        Set<SourceClassInfo> cs = ProfilerTypeUtils.resolveClass("sun.org.mozilla.javascript.Callable", getProject()).getSubclasses();
+        assertNotNull(cs);
+        assertEquals(1, cs.size());
+    }
+    
+    public void testSubclasses() {
+        System.out.println("testSubclasses");
+        Set<SourceClassInfo> cs = ProfilerTypeUtils.resolveClass("classinfo.ClassInfoTest", getProject()).getSubclasses();
+        assertNotNull(cs);
+        assertEquals(1, cs.size());
+    }
+    
+    public void testInterfaces() {
+        System.out.println("testInterfaces");
+        Set<SourceClassInfo> cs = ProfilerTypeUtils.resolveClass("classinfo.ClassInfoTest", getProject()).getInterfaces();
+        assertNotNull(cs);
+        assertEquals(2, cs.size());
+    }
+    
+    public void testSupertype() {
+        System.out.println("testSupertype");
+        SourceClassInfo superType = ProfilerTypeUtils.resolveClass("classinfo.ClassInfoTest", getProject());
+        SourceClassInfo sci = ProfilerTypeUtils.resolveClass("classinfo.ClassInfoTest$StaticInner", getProject()).getSuperType();
+        assertNotNull(sci);
+        assertEquals(superType, sci);
     }
 }

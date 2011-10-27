@@ -1,0 +1,9 @@
+$p.getLookup().lookup(org.netbeans.api.project.ProjectInformation.class) :: $p instanceof org.netbeans.api.project.Project
+=>
+org.netbeans.api.project.ProjectUtils.getInformation($p)
+;;
+
+$p.getLookup().lookup(org.netbeans.api.project.Sources.class) :: $p instanceof org.netbeans.api.project.Project
+=>
+org.netbeans.api.project.ProjectUtils.getSources($p)
+;;

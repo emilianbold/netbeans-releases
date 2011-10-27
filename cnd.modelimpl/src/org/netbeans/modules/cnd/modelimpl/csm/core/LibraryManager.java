@@ -178,8 +178,9 @@ public final class LibraryManager {
                 trace("Projects roots", curFile, resolvedPath, res, baseProject);//NOI18N
             }
             return res;
-        }
-        res = searchInProjectFilesArtificial(baseProject, resolvedPath, antiLoop);
+        }   
+        List<CsmProject> libraries = baseProject.getLibraries();        
+        res = searchInProjectFilesArtificial(libraries, resolvedPath, antiLoop);
         if (res != null) {
             if (TraceFlags.TRACE_RESOLVED_LIBRARY) {
                 trace("Libraries", curFile, resolvedPath, res, baseProject);//NOI18N
@@ -188,7 +189,7 @@ public final class LibraryManager {
         }
         synchronized (lock) {
             antiLoop.clear();
-            res = searchInProjectRootsArtificial(baseProject, resolvedPath.getFileSystem(), getPathToFolder(folder, absPath), antiLoop);
+            res = searchInProjectRootsArtificial(libraries, resolvedPath.getFileSystem(), getPathToFolder(folder, absPath), antiLoop);
             if (res == null) {
                 if (resolvedPath.isDefaultSearchPath()) {
                     res = curFile.getProjectImpl(true);
@@ -265,8 +266,7 @@ public final class LibraryManager {
         return null;
     }
 
-    private ProjectBase searchInProjectFilesArtificial(ProjectBase baseProject, ResolvedPath searchFor, Set<ProjectBase> antiLoop) {
-        List<CsmProject> libraries = baseProject.getLibraries();
+    private ProjectBase searchInProjectFilesArtificial(List<CsmProject> libraries, ResolvedPath searchFor, Set<ProjectBase> antiLoop) {
         for (CsmProject prj : libraries) {
             if (prj.isArtificial()) {
                 antiLoop.clear();
@@ -304,8 +304,7 @@ public final class LibraryManager {
         return null;
     }
 
-    private ProjectBase searchInProjectRootsArtificial(ProjectBase baseProject, FileSystem fs, List<String> folders, Set<ProjectBase> set) {
-        List<CsmProject> libraries = baseProject.getLibraries();
+    private ProjectBase searchInProjectRootsArtificial(List<CsmProject> libraries, FileSystem fs, List<String> folders, Set<ProjectBase> set) {
         ProjectBase candidate = null;
         for (CsmProject prj : libraries) {
             if (prj.isArtificial()) {

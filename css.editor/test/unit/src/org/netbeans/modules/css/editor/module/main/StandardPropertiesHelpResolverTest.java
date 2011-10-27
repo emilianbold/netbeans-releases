@@ -49,6 +49,7 @@ import org.netbeans.modules.css.editor.module.CssModuleSupport;
 import org.netbeans.modules.css.editor.module.spi.CssModule;
 import org.netbeans.modules.css.editor.module.spi.Property;
 import org.netbeans.modules.css.editor.module.spi.Utilities;
+import org.netbeans.modules.css.editor.properties.parser.GrammarParser;
 
 /**
  *
@@ -69,7 +70,6 @@ public class StandardPropertiesHelpResolverTest extends NbTestCase {
 
     public void testPropertyHelp() {
         assertPropertyHelp("animation");
-        assertPropertyHelp("vertical-position");
     }
     
     //Bug 202493 - java.io.FileNotFoundException: JAR entry www.w3.org/TR/css3-lists//index.html not found in /home/tester/netbeans-7.1beta/ide/docs/css3-spec.zip
@@ -77,9 +77,26 @@ public class StandardPropertiesHelpResolverTest extends NbTestCase {
         assertPropertyHelp("fallback");
     }
     
+    public void testProperty_direction() {
+        //not whole page but just stripped part
+        assertPropertyHelpSnipped("direction");
+    }
+    
+    public void testPropertiesWithExceptionInAnchorName() {
+        assertPropertyHelpSnipped("transform");
+    }
+    
+    public void testRubyProperties() {
+        //ruby specification doesn't use "dfn" tag for property refs but "a" tag 
+        assertPropertyHelpSnipped("ruby-overhang");
+        assertPropertyHelpSnipped("ruby-align");
+    }
+    
     public void testGetHelpForAllCSS3StandardProperties() {
         for(Property prop : CssModuleSupport.getProperties()) {
-            if(!Css3Utils.isVendorSpecificProperty(prop.getName())) {
+            if(!Css3Utils.isVendorSpecificProperty(prop.getName()) 
+                    && !GrammarParser.isArtificialElementName(prop.getName())) {
+                
                 CssModule module = prop.getCssModule();
                 if(module == null) {
                     continue;
@@ -95,7 +112,13 @@ public class StandardPropertiesHelpResolverTest extends NbTestCase {
         }
     }
     
-    private void assertPropertyHelp(String propertyName) {
+    private String assertPropertyHelpSnipped(String propertyName) {
+        String content = assertPropertyHelp(propertyName);
+        assertTrue(content.startsWith("<h"));
+        return content;
+    }
+    
+    private String assertPropertyHelp(String propertyName) {
         StandardPropertiesHelpResolver instance = new StandardPropertiesHelpResolver();
         Property property = CssModuleSupport.getProperty(propertyName);
         assertNotNull(property);
@@ -103,7 +126,8 @@ public class StandardPropertiesHelpResolverTest extends NbTestCase {
 //        System.out.println(helpContent);
         
         assertNotNull(String.format("Null help for property %s from module %s", propertyName, property.getCssModule().getDisplayName()), helpContent);
-//        assertTrue(helpContent.startsWith("<h"));
+        
+        return helpContent;
         
     }
 

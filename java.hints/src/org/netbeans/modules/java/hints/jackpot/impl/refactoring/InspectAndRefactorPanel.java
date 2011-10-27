@@ -247,6 +247,8 @@ public class InspectAndRefactorPanel extends javax.swing.JPanel implements Popup
         manageSingleRefactoring = new JButton();
         customScopeButton = new JButton();
 
+        inspectLabel.setLabelFor(scopeCombo);
+
         Mnemonics.setLocalizedText(inspectLabel, NbBundle.getMessage(InspectAndRefactorPanel.class, "InspectAndRefactorPanel.inspectLabel.text")); // NOI18N
         Mnemonics.setLocalizedText(refactorUsingLabel, NbBundle.getMessage(InspectAndRefactorPanel.class, "InspectAndRefactorPanel.refactorUsingLabel.text"));
 
