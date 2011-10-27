@@ -75,7 +75,9 @@ public class DeleteProjectAction extends AbstractAction {
                 WindowManager.getDefault().getMainWindow(),
                 NbBundle.getMessage(ProjectAccessorImpl.class, "LBL_ReallyDelete"),
                 NbBundle.getMessage(ProjectAccessorImpl.class, "LBL_ReallyDeleteTitle", project.getDisplayName()),
-                JOptionPane.YES_NO_OPTION)) {
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.WARNING_MESSAGE)
+        ) {
             return;
         }
         DashboardImpl.getInstance().deletingStarted();
