@@ -117,7 +117,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                     final Progress jdkProgress = new Progress();
                     final Progress jreProgress = new Progress();
                     final Progress javadbProgress = new Progress();
-                    final boolean isFullSilentInstaller = isJDK6U15orLater() && !isJDK7(); //workaround for restart issue
+                    final boolean isFullSilentInstaller = isJDK6U15orLater() && !isJDK7(); //workaround for restart issue in jdk installer #7100937
                     //TODO: JavaDB feature is turned off for 64-bit OS
                     final boolean javadbBundled =
                             getProduct().getVersion().newerOrEquals(Version.getVersion("1.6.0"));
@@ -161,7 +161,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                                 if(results.getErrorCode() == 3010) {                                    
                                     jreInstallationFailed = false;
                                     LogManager.log("The system Restart is required to complete the configuration of JRE");
-                                    //TODO add RESTART_PROPERTY and check it in postinstall panel?
+                                    getProduct().setProperty(RESTART_IS_REQUIRED_PROPERTY, "" + true);
                                 }
                             } else {
                                 LogManager.log("... jre " + getProduct().getVersion() +
@@ -1298,4 +1298,6 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             "$E{ProgramFiles}\\Sun\\JavaDB";
     public static final String NO_REGISTER_JDK_OPTION =
             "-noregister";
+    public static final String RESTART_IS_REQUIRED_PROPERTY =
+            "restart.required";
 }

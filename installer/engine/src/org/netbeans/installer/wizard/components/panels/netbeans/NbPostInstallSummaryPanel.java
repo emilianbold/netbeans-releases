@@ -155,13 +155,14 @@ public class NbPostInstallSummaryPanel extends WizardPanel {
         
         private NbiTextPane messagePaneInstall;
         private NbiTextPane messagePaneUninstall;
+        private NbiTextPane messagePaneRestart;
         private NbiTextPane messagePaneNetBeans;
         private NbiTextPane messagePaneRegistration;                                 
         private NbiCheckBox checkBoxRegistration;                                    
         private NbiPanel registrationPanel;
         private NbiPanel spacer;
         private NbiTextPane messagePaneMySQL;
-
+        
         private NbiCheckBox metricsCheckbox;
         private NbiTextPane metricsInfo;
         private NbiTextPane metricsList;
@@ -208,15 +209,15 @@ public class NbPostInstallSummaryPanel extends WizardPanel {
             final List <Product>  successfulInstall = registry.getProducts(INSTALLED_SUCCESSFULLY);
             final List <Product>     warningInstall = registry.getProducts(INSTALLED_WITH_WARNINGS);
             final List <Product>       errorInstall = registry.getProducts(FAILED_TO_INSTALL);
-            
+
             final List<Product> successfulUninstall = registry.getProducts(UNINSTALLED_SUCCESSFULLY);
             final List<Product>    warningUninstall = registry.getProducts(UNINSTALLED_WITH_WARNINGS);
             final List<Product>      errorUninstall = registry.getProducts(FAILED_TO_UNINSTALL);
-            
+
             if (errorInstall.size() > 0) {
                 messagePaneInstall.setContentType(component.getProperty(MESSAGE_CONTENT_TYPE_ERRORS_PROPERTY));
                 messagePaneInstall.setText(StringUtils.format(
-                        component.getProperty(MESSAGE_TEXT_ERRORS_PROPERTY), 
+                        component.getProperty(MESSAGE_TEXT_ERRORS_PROPERTY),
                         LogManager.getLogFile(),
                         StringUtils.asString(errorInstall)));
             } else if (warningInstall.size() > 0) {
@@ -228,7 +229,7 @@ public class NbPostInstallSummaryPanel extends WizardPanel {
             } else if (successfulInstall.size() > 0) {
                 messagePaneInstall.setContentType(component.getProperty(MESSAGE_CONTENT_TYPE_SUCCESS_PROPERTY));
                 messagePaneInstall.setText(StringUtils.format(
-                        component.getProperty(MESSAGE_TEXT_SUCCESS_PROPERTY), 
+                        component.getProperty(MESSAGE_TEXT_SUCCESS_PROPERTY),
                         LogManager.getLogFile(),
                         StringUtils.asString(successfulInstall)));
             } else {
@@ -278,9 +279,21 @@ public class NbPostInstallSummaryPanel extends WizardPanel {
                 }
             }
             
-            
-            
-            
+            messagePaneRestart.setContentType(DEFAULT_MESSAGE_RESTART_CONTENT_TYPE);
+            messagePaneRestart.setText("");
+            messagePaneRestart.setVisible(false);
+            for (Product product : products) {
+                if (product.getUid().equals("jdk")) {
+                    final String restartRequired = product.getProperty(RESTART_IS_REQUIRED_PROPERTY);
+                    LogManager.log("... restart is required property: " + restartRequired);
+                    if(Boolean.parseBoolean(restartRequired)) {
+                        messagePaneRestart.setText(DEFAULT_MESSAGE_RESTART_TEXT);
+                        messagePaneRestart.setVisible(true);
+                    }
+                    break;
+                }
+            }
+                                   
             messagePaneNetBeans.setContentType(DEFAULT_MESSAGE_NETBEANS_CONTENT_TYPE);
             messagePaneNetBeans.setText("");
             boolean nbInstalled = false;
@@ -385,6 +398,9 @@ public class NbPostInstallSummaryPanel extends WizardPanel {
             
             // messagePaneUninstall /////////////////////////////////////////////////
             messagePaneUninstall = new NbiTextPane();
+
+            // messagePaneRestart ///////////////////////////////////////////////////
+            messagePaneRestart = new NbiTextPane();
             
             // messagePaneNetBeans ///////////////////////////////////////////////////
             messagePaneNetBeans = new NbiTextPane();
@@ -504,9 +520,18 @@ public class NbPostInstallSummaryPanel extends WizardPanel {
                     GridBagConstraints.HORIZONTAL,          // fill
                     new Insets(11, 11, 0, 11),        // padding
                     0, 0));                           // padx, pady - ???
+            
+            add(messagePaneRestart, new GridBagConstraints(
+                    0, 3,                             // x, y
+                    1, 1,                             // width, height
+                    1.0, 0.0,                         // weight-x, weight-y
+                    GridBagConstraints.PAGE_START,    // anchor
+                    GridBagConstraints.HORIZONTAL,          // fill
+                    new Insets(11, 11, 0, 11),        // padding
+                    0, 0));                           // padx, pady - ???
 
             add(messagePaneNetBeans, new GridBagConstraints(
-                    0, 3,                             // x, y
+                    0, 4,                             // x, y
                     1, 1,                             // width, height
                     1.0, 0.0,                         // weight-x, weight-y
                     GridBagConstraints.PAGE_START,    // anchor
@@ -515,7 +540,7 @@ public class NbPostInstallSummaryPanel extends WizardPanel {
                     0, 0));                           // padx, pady - ???
             
             add(metricsPanel, new GridBagConstraints(
-                    0, 4,                             // x, y
+                    0, 5,                             // x, y
                     1, 1,                             // width, height
                     1.0, 0.0,                         // weight-x, weight-y
                     GridBagConstraints.PAGE_START,    // anchor
@@ -525,7 +550,7 @@ public class NbPostInstallSummaryPanel extends WizardPanel {
             
             
             add(registrationPanel, new GridBagConstraints(
-                    0, 5,                             // x, y
+                    0, 6,                             // x, y
                     1, 1,                             // width, height
                     1.0, 0.0,                         // weight-x, weight-y
                     GridBagConstraints.PAGE_START,    // anchor
@@ -534,7 +559,7 @@ public class NbPostInstallSummaryPanel extends WizardPanel {
                     0, 0));  
             
             add(spacer, new GridBagConstraints(
-                    0, 6, // x, y
+                    0, 7, // x, y
                     1, 1, // width, height
                     1.0, 10.0, // weight-x, weight-y
                     GridBagConstraints.CENTER, // anchor
@@ -592,6 +617,8 @@ public class NbPostInstallSummaryPanel extends WizardPanel {
             "message.content.type.errors.uninstall"; // NOI18N
     public static final String MESSAGE_FILES_REMAINING_PROPERTY =
             "message.files.remaining"; // NOI18N
+    public static final String RESTART_IS_REQUIRED_PROPERTY =
+            "restart.required";//NOI18N
     
     public static final String DEFAULT_MESSAGE_TEXT_SUCCESS =
             ResourceUtils.getString(NbPostInstallSummaryPanel.class,
@@ -632,7 +659,13 @@ public class NbPostInstallSummaryPanel extends WizardPanel {
     public static final String DEFAULT_MESSAGE_FILES_REMAINING =
             ResourceUtils.getString(NbPostInstallSummaryPanel.class,
             "NPoISP.message.files.remaining"); // NOI18N
-    
+
+    public static final String DEFAULT_MESSAGE_RESTART_TEXT =
+            ResourceUtils.getString(NbPostInstallSummaryPanel.class,
+            "NPoISP.message.restart.text"); // NOI18N
+    public static final String DEFAULT_MESSAGE_RESTART_CONTENT_TYPE =
+            ResourceUtils.getString(NbPostInstallSummaryPanel.class,
+            "NPoISP.message.restart.content.type"); // NOI18N
     public static final String DEFAULT_MESSAGE_NETBEANS_TEXT_WINDOWS = 
             ResourceUtils.getString(NbPostInstallSummaryPanel.class,
             "NPoISP.message.netbeans.text.windows"); // NOI18N
