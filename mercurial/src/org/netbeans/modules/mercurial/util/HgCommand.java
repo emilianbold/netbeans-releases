@@ -3283,7 +3283,7 @@ public class HgCommand {
                     try {
                         String line;
                         while ((line = errorReader.readLine()) != null) {
-                            if (!line.startsWith("warning:")) { //NOI18N
+                            if (!skipErrorLine(line)) {
                                 errorOutput.add(line);
                             }
                         }
@@ -3490,6 +3490,23 @@ public class HgCommand {
             int len = commandArg.length();
             result.add((len == 0 ? commandArg : commandArg.delete(len - 1, len)).toString());
         }
+    }
+    
+    private static boolean skipErrorLine (String errorLine) {
+        boolean skip = false;
+        if (errorLine.startsWith("warning:")) { //NOI18N
+            skip = true;
+        } else {
+            for (String s : new String[] {
+                "is deprecated:" //NOI18N
+            }) {
+                if (errorLine.contains(s)) {
+                    skip = true;
+                    break;
+                }
+            }
+        }
+        return skip;
     }
 
     /**

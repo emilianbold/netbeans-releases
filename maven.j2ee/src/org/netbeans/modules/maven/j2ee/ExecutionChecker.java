@@ -68,7 +68,7 @@ import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
 import org.netbeans.modules.maven.j2ee.web.WebModuleProviderImpl;
 import org.netbeans.modules.maven.spi.debug.MavenDebugger;
-import org.netbeans.modules.maven.j2ee.web.WebRunCustomizerPanel;
+import org.netbeans.modules.maven.j2ee.customizer.CustomizerRunWeb;
 import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.POMModel;
@@ -179,7 +179,7 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
                 FileObject fo = project.getProjectDirectory();
                 boolean show = showInBrowser;
                 if (fo != null && show ) {
-                    String browser = (String) fo.getAttribute(WebRunCustomizerPanel.PROP_SHOW_IN_BROWSER);
+                    String browser = (String) fo.getAttribute(CustomizerRunWeb.PROP_SHOW_IN_BROWSER);
                     show = browser != null ? Boolean.parseBoolean(browser) : true;
                 }
                 if (show) {
@@ -236,11 +236,7 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
                         provider = null;
                     }
 
-                    // USG logging
-                    LogRecord record = new LogRecord(Level.INFO, "USG_PROJECT_CONFIG_MAVEN_SERVER");  //NOI18N
-                    record.setLoggerName(POHImpl.USG_LOGGER_NAME);
-                    record.setParameters(new Object[] { POHImpl.obtainServerName(project) });
-                    POHImpl.USG_LOGGER.log(record);
+                    LoggingUtils.logUsage(ExecutionChecker.class, "USG_PROJECT_CONFIG_MAVEN_SERVER", new Object[] { POHImpl.obtainServerName(project) }, "maven"); //NOI18N
 
                     return true;
                 } else {

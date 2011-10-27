@@ -49,16 +49,24 @@ public interface Attribute {
     public String getDescription();
 
     public boolean isRequired();
+    
+    public String getType();
 
     public static class DefaultAttribute implements Attribute {
 
         private String name;
         private String description;
+        private String type;
         private boolean required;
 
         public DefaultAttribute(String name, String description, boolean required) {
+            this(name, description, null, required);
+        }
+        
+        public DefaultAttribute(String name, String description, String type, boolean required) {
             this.name = name;
             this.description = description;
+            this.type = type;
             this.required = required;
         }
 
@@ -70,6 +78,11 @@ public interface Attribute {
         @Override
         public String getName() {
             return name;
+        }
+
+        @Override
+        public String getType() {
+            return type;
         }
 
         @Override

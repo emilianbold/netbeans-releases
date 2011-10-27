@@ -1203,10 +1203,14 @@ public class Installer extends ModuleInstall implements Runnable {
             BufferedInputStream bis = new BufferedInputStream(new FileInputStream(f));
             byte[] heapDumpData = new byte[8192];
             int read = 0;
+            int workunit = 0;
             while ((read = bis.read(heapDumpData)) != -1){
                 gzip.write(heapDumpData, 0, read);
                 alreadyWritten += read;
-                h.progress(70 + (int)(alreadyWritten / progressUnit));
+                workunit = (int)(alreadyWritten / progressUnit);
+                if(workunit < 1000) {
+                    h.progress(70 + workunit);
+                }
             }
             bis.close();
             gzip.finish();
@@ -1214,7 +1218,7 @@ public class Installer extends ModuleInstall implements Runnable {
             os.println("\n----------konec<>bloku");
 
             h.progress(1070);
-        }
+            }
 
         os.println("Content-Disposition: form-data; name=\"logs\"; filename=\"" + id + "\"");
         os.println("Content-Type: x-application/gzip");

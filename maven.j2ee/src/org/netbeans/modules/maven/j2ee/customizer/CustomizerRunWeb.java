@@ -40,17 +40,13 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.maven.j2ee.web;
+package org.netbeans.modules.maven.j2ee.customizer;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import javax.swing.JList;
-import javax.swing.event.AncestorEvent;
 import org.netbeans.modules.maven.j2ee.POHImpl;
 import java.util.Iterator;
 import java.util.logging.Level;
@@ -58,25 +54,23 @@ import java.util.logging.LogRecord;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.SwingUtilities;
-import javax.swing.event.AncestorListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.j2ee.core.Profile;
-import org.netbeans.modules.maven.api.customizer.support.ComboBoxUpdater;
 import org.netbeans.modules.maven.api.customizer.ModelHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.ModelUtils;
-import org.netbeans.modules.maven.api.customizer.support.CheckBoxUpdater;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
 import org.netbeans.modules.maven.j2ee.ExecutionChecker;
+import org.netbeans.modules.maven.j2ee.LoggingUtils;
 import static org.netbeans.modules.maven.j2ee.ExecutionChecker.CLIENTURLPART;
 import org.netbeans.modules.maven.j2ee.MavenJavaEEConstants;
 import org.netbeans.modules.maven.j2ee.SessionContent;
 import org.netbeans.modules.maven.j2ee.Wrapper;
+import org.netbeans.modules.maven.j2ee.web.WebModuleImpl;
+import org.netbeans.modules.maven.j2ee.web.WebModuleProviderImpl;
 import org.netbeans.modules.maven.model.pom.Dependency;
 import org.netbeans.modules.maven.model.pom.Properties;
 import org.netbeans.modules.web.api.webmodule.WebModule;
@@ -90,41 +84,32 @@ import org.openide.util.NbBundle;
  *
  * @author  mkleint
  */
-public class WebRunCustomizerPanel extends javax.swing.JPanel {
+public class CustomizerRunWeb extends AbstractCustomizer {
     public static final String PROP_SHOW_IN_BROWSER = "netbeans.deploy.showBrowser"; //NOI18N
-    private Project project;
-    private ModelHandle handle;
+    
     private WebModule module;
     private WebModuleProviderImpl moduleProvider;
 
     private NetbeansActionMapping run;
-
     private NetbeansActionMapping debug;
-
     private NetbeansActionMapping profile;
 
     private boolean isRunCompatible;
-
     private boolean isDebugCompatible;
-
     private boolean isProfileCompatible;
 
     private String oldUrl;
     private String oldContextPath;
-    private ComboBoxUpdater<Wrapper> listener;
     
-    private CheckBoxUpdater deployOnSaveUpdater;
-    
-    /** Creates new form WebRunCustomizerPanel */
-    public WebRunCustomizerPanel(final ModelHandle handle, Project project) {
+
+    public CustomizerRunWeb(final ModelHandle handle, Project project) {
+        super(handle, project);
         initComponents();
-        this.handle = handle;
-        this.project = project;
         module = WebModule.getWebModule(project.getProjectDirectory());
         moduleProvider = project.getLookup().lookup(WebModuleProviderImpl.class);
         assert moduleProvider != null;
         assert module != null;
-        loadComboModel();
+        loadServerModel(comServer, J2eeModule.Type.WAR, module.getJ2eeProfile());
         comProfile.setRenderer(new DefaultListCellRenderer() {
             @Override
             public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
@@ -187,11 +172,11 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
 
         txtContextPath.setText(impl.getContextPath());
         initValues();
+        initDeployOnSaveComponent(jCheckBoxDeployOnSave, dosDescription);
+        initServerComponent(comServer, lblServer);
     }
     
     private void initValues() {
-        listener = Wrapper.createComboBoxUpdater(handle, comServer, lblServer);
-        
         run = ModelHandle.getDefaultMapping(ActionProvider.COMMAND_RUN, project);
         debug = ModelHandle.getDefaultMapping(ActionProvider.COMMAND_DEBUG, project);
         profile = ModelHandle.getDefaultMapping("profile", project); // NOI18N
@@ -222,81 +207,12 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
             }
         });
 
-        deployOnSaveUpdater = new CheckBoxUpdater(jCheckBoxDeployOnSave) {
-            @Override
-            public Boolean getValue() {
-                String s = handle.getRawAuxiliaryProperty(MavenJavaEEConstants.HINT_DEPLOY_ON_SAVE, true);
-                if (s != null) {
-                    return Boolean.valueOf(s);
-                } else {
-                    return null;
-                }
-            }
-
-            @Override
-            public void setValue(Boolean value) {
-                handle.setRawAuxiliaryProperty(MavenJavaEEConstants.HINT_DEPLOY_ON_SAVE, 
-                        value == null ? null : Boolean.toString(value), true);
-            }
-
-            @Override
-            public boolean getDefaultValue() {
-                return true;
-            }
-        };
         
         String browser = (String)project.getProjectDirectory().getAttribute(PROP_SHOW_IN_BROWSER);
         boolean bool = browser != null ? Boolean.parseBoolean(browser) : true;
         cbBrowser.setSelected(bool);
         updateContextPathEnablement();
-        addAncestorListener(new AncestorListener() {
-
-            @Override
-            public void ancestorAdded(AncestorEvent event) {
-                updateDoSEnablement();
-            }
-
-            @Override
-            public void ancestorRemoved(AncestorEvent event) {
-            }
-
-            @Override
-            public void ancestorMoved(AncestorEvent event) {
-            }
-        });
     }
-    
-    private void updateDoSEnablement() {
-        String cos = handle.getRawAuxiliaryProperty(Constants.HINT_COMPILE_ON_SAVE, true);
-        boolean enabled = cos != null && ("all".equalsIgnoreCase(cos) || "app".equalsIgnoreCase(cos)); // NOI18N
-        jCheckBoxDeployOnSave.setEnabled(enabled);
-        dosDescription.setEnabled(enabled);
-    }
-    
-    private void loadComboModel() {
-        String[] ids = Deployment.getDefault().getServerInstanceIDs(Collections.singletonList(J2eeModule.Type.WAR), module.getJ2eeProfile());
-        Collection<Wrapper> col = new ArrayList<Wrapper>();
-//        Wrapper selected = null;
-        SessionContent sc = project.getLookup().lookup(SessionContent.class);
-        if (sc != null && sc.getServerInstanceId() != null) {
-            col.add(new Wrapper(ExecutionChecker.DEV_NULL, sc.getServerInstanceId()));
-        } else {
-            col.add(new Wrapper(ExecutionChecker.DEV_NULL));
-        }
-        for (int i = 0; i < ids.length; i++) {
-            Wrapper wr = new Wrapper(ids[i]);
-            col.add(wr);
-//            if (selectedId.equals(ids[i])) {
-//                selected = wr;
-//            }
-            
-        }
-        comServer.setModel(new DefaultComboBoxModel(col.toArray()));
-//        if (selected != null) {
-//            comServer.setSelectedItem(selected);
-//        }
-    }
-    
     
     /** This method is called from within the constructor to
      * initialize the form.
@@ -323,7 +239,7 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
         dosDescription = new javax.swing.JLabel();
 
         lblServer.setLabelFor(comServer);
-        org.openide.awt.Mnemonics.setLocalizedText(lblServer, org.openide.util.NbBundle.getMessage(WebRunCustomizerPanel.class, "LBL_Server")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(lblServer, org.openide.util.NbBundle.getMessage(CustomizerRunWeb.class, "LBL_Server")); // NOI18N
 
         comServer.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -332,29 +248,29 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
         });
 
         lblJ2EEVersion.setLabelFor(txtJ2EEVersion);
-        org.openide.awt.Mnemonics.setLocalizedText(lblJ2EEVersion, org.openide.util.NbBundle.getMessage(WebRunCustomizerPanel.class, "LBL_J2EE_Version")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(lblJ2EEVersion, org.openide.util.NbBundle.getMessage(CustomizerRunWeb.class, "LBL_J2EE_Version")); // NOI18N
 
         txtJ2EEVersion.setEditable(false);
 
         lblContextPath.setLabelFor(txtContextPath);
-        org.openide.awt.Mnemonics.setLocalizedText(lblContextPath, org.openide.util.NbBundle.getMessage(WebRunCustomizerPanel.class, "LBL_Context_Path")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(lblContextPath, org.openide.util.NbBundle.getMessage(CustomizerRunWeb.class, "LBL_Context_Path")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(cbBrowser, org.openide.util.NbBundle.getMessage(WebRunCustomizerPanel.class, "LBL_Display_on_Run")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(cbBrowser, org.openide.util.NbBundle.getMessage(CustomizerRunWeb.class, "LBL_Display_on_Run")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(lblHint1, org.openide.util.NbBundle.getMessage(WebRunCustomizerPanel.class, "LBL_Hint1")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(lblHint1, org.openide.util.NbBundle.getMessage(CustomizerRunWeb.class, "LBL_Hint1")); // NOI18N
 
         lblRelativeUrl.setLabelFor(txtRelativeUrl);
-        org.openide.awt.Mnemonics.setLocalizedText(lblRelativeUrl, org.openide.util.NbBundle.getMessage(WebRunCustomizerPanel.class, "LBL_Relative_URL")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(lblRelativeUrl, org.openide.util.NbBundle.getMessage(CustomizerRunWeb.class, "LBL_Relative_URL")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(lblHint2, org.openide.util.NbBundle.getMessage(WebRunCustomizerPanel.class, "LBL_Hint2")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(lblHint2, org.openide.util.NbBundle.getMessage(CustomizerRunWeb.class, "LBL_Hint2")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(lblProfile, org.openide.util.NbBundle.getMessage(WebRunCustomizerPanel.class, "WebRunCustomizerPanel.lblProfile.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(lblProfile, org.openide.util.NbBundle.getMessage(CustomizerRunWeb.class, "CustomizerRunWeb.lblProfile.text")); // NOI18N
 
         comProfile.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
-        org.openide.awt.Mnemonics.setLocalizedText(jCheckBoxDeployOnSave, org.openide.util.NbBundle.getMessage(WebRunCustomizerPanel.class, "WebRunCustomizerPanel.jCheckBoxDeployOnSave.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jCheckBoxDeployOnSave, org.openide.util.NbBundle.getMessage(CustomizerRunWeb.class, "CustomizerRunWeb.jCheckBoxDeployOnSave.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(dosDescription, org.openide.util.NbBundle.getMessage(WebRunCustomizerPanel.class, "WebRunCustomizerPanel.dosDescription.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(dosDescription, org.openide.util.NbBundle.getMessage(CustomizerRunWeb.class, "CustomizerRunWeb.dosDescription.text")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -365,7 +281,7 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jCheckBoxDeployOnSave)
-                        .addContainerGap(368, Short.MAX_VALUE))
+                        .addContainerGap(404, Short.MAX_VALUE))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addComponent(cbBrowser, javax.swing.GroupLayout.Alignment.LEADING)
@@ -376,8 +292,8 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                                     .addGroup(layout.createSequentialGroup()
                                         .addComponent(lblHint2)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 243, Short.MAX_VALUE))
-                                    .addComponent(txtRelativeUrl, javax.swing.GroupLayout.DEFAULT_SIZE, 394, Short.MAX_VALUE)))
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 324, Short.MAX_VALUE))
+                                    .addComponent(txtRelativeUrl, javax.swing.GroupLayout.DEFAULT_SIZE, 431, Short.MAX_VALUE)))
                             .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(lblContextPath)
@@ -385,14 +301,14 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
                                     .addComponent(lblServer))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(comServer, javax.swing.GroupLayout.Alignment.TRAILING, 0, 387, Short.MAX_VALUE)
-                                    .addComponent(txtContextPath, javax.swing.GroupLayout.DEFAULT_SIZE, 387, Short.MAX_VALUE)
+                                    .addComponent(comServer, javax.swing.GroupLayout.Alignment.TRAILING, 0, 430, Short.MAX_VALUE)
+                                    .addComponent(txtContextPath, javax.swing.GroupLayout.DEFAULT_SIZE, 430, Short.MAX_VALUE)
                                     .addGroup(layout.createSequentialGroup()
-                                        .addComponent(txtJ2EEVersion, javax.swing.GroupLayout.DEFAULT_SIZE, 150, Short.MAX_VALUE)
+                                        .addComponent(txtJ2EEVersion, javax.swing.GroupLayout.DEFAULT_SIZE, 189, Short.MAX_VALUE)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                         .addComponent(lblProfile)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(comProfile, 0, 160, Short.MAX_VALUE)))))
+                                        .addComponent(comProfile, 0, 199, Short.MAX_VALUE)))))
                         .addGap(0, 0, 0))))
             .addGroup(layout.createSequentialGroup()
                 .addGap(24, 24, 24)
@@ -432,10 +348,10 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        txtJ2EEVersion.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WebRunCustomizerPanel.class, "WebRunCustomizerPanel.txtJ2EEVersion.AccessibleContext.accessibleDescription")); // NOI18N
-        txtContextPath.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WebRunCustomizerPanel.class, "WebRunCustomizerPanel.txtContextPath.AccessibleContext.accessibleDescription")); // NOI18N
-        cbBrowser.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WebRunCustomizerPanel.class, "WebRunCustomizerPanel.cbBrowser.AccessibleContext.accessibleDescription")); // NOI18N
-        txtRelativeUrl.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WebRunCustomizerPanel.class, "WebRunCustomizerPanel.txtRelativeUrl.AccessibleContext.accessibleDescription")); // NOI18N
+        txtJ2EEVersion.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerRunWeb.class, "WebRunCustomizerPanel.txtJ2EEVersion.AccessibleContext.accessibleDescription")); // NOI18N
+        txtContextPath.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerRunWeb.class, "WebRunCustomizerPanel.txtContextPath.AccessibleContext.accessibleDescription")); // NOI18N
+        cbBrowser.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerRunWeb.class, "WebRunCustomizerPanel.cbBrowser.AccessibleContext.accessibleDescription")); // NOI18N
+        txtRelativeUrl.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerRunWeb.class, "WebRunCustomizerPanel.txtRelativeUrl.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void comServerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_comServerActionPerformed
@@ -449,7 +365,7 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
             if (txtContextPath.isEnabled()) {
                 txtContextPath.setEnabled(false);
                 oldContextPath = txtContextPath.getText();
-                txtContextPath.setText(NbBundle.getMessage(WebRunCustomizerPanel.class, "WebRunCustomizerPanel.contextPathDisabled"));
+                txtContextPath.setText(NbBundle.getMessage(CustomizerRunWeb.class, "WebRunCustomizerPanel.contextPathDisabled"));
             }
         } else {
             if (!txtContextPath.isEnabled()) {
@@ -502,6 +418,7 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
         }
     }
 
+    @Override
     void applyChangesInAWT() {
         assert SwingUtilities.isEventDispatchThread();
         boolean bool = cbBrowser.isSelected();
@@ -511,17 +428,13 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
             Exceptions.printStackTrace(ex);
         }
         
-        // USG logging
         Object obj = comServer.getSelectedItem();
         if (obj != null) {
-            LogRecord record = new LogRecord(Level.INFO, "USG_PROJECT_CONFIG_MAVEN_SERVER");  //NOI18N
-            record.setLoggerName(POHImpl.USG_LOGGER_NAME);
-            record.setParameters(new Object[] { obj.toString() });
-            POHImpl.USG_LOGGER.log(record);
+            LoggingUtils.logUsage(CustomizerRunWeb.class, "USG_PROJECT_CONFIG_MAVEN_SERVER", new Object[] { obj.toString() }, "maven"); //NOI18N
         }
     }
 
-    //this megod is called after the model was saved.
+    @Override
     void applyChanges() {
         assert !SwingUtilities.isEventDispatchThread();
 
@@ -532,10 +445,9 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
         }
 
         ProjectManager.mutex().postReadRequest(new Runnable() {
+
             @Override
             public void run() {
-                //TODO - not sure this is necessary since the PoHImpl listens on project changes.
-                //any save of teh project shall effectively caus ethe module server change..
                 POHImpl poh = project.getLookup().lookup(POHImpl.class);
                 poh.hackModuleServerChange(false);
                 moduleProvider = project.getLookup().lookup(WebModuleProviderImpl.class);

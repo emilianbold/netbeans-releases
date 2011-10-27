@@ -46,12 +46,14 @@ package org.netbeans.modules.javahelp;
 
 import java.awt.AWTEvent;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.GraphicsEnvironment;
 import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.event.AWTEventListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.WindowEvent;
+import java.util.logging.Level;
 import javax.swing.AbstractAction;
 import javax.swing.MenuElement;
 import javax.swing.MenuSelectionManager;
@@ -64,6 +66,7 @@ import org.openide.awt.StatusDisplayer;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.windows.TopComponent;
 
 /**
  * Shows help for the currently focused component
@@ -119,12 +122,24 @@ public class HelpAction extends AbstractAction {
     }
     
     private static HelpCtx findHelpCtx() {
-        Window w = WindowActivatedDetector.getCurrentActivatedWindow();
-        Component focused = (w != null) ? SwingUtilities.findFocusOwner(w) : null;
-        HelpCtx help = (focused == null) ? HelpCtx.DEFAULT_HELP : HelpCtx.findHelp(focused);
 
-        Installer.log.fine("HelpCtx " + help + " from " + focused);
-        return help;
+        final TopComponent activeTC = TopComponent.getRegistry().getActivated();
+        final Window win = WindowActivatedDetector.getCurrentActivatedWindow();
+        final Container cont;
+        if (activeTC != null && win != null && win.isAncestorOf(activeTC)) {
+            cont = activeTC;
+        } else {
+            cont = win;
+        }
+        if (cont == null) {
+            return HelpCtx.DEFAULT_HELP;
+        } else {
+            Component focused = SwingUtilities.findFocusOwner(cont);
+            HelpCtx help = HelpCtx.findHelp(focused == null ? cont : focused);
+            Installer.log.log(Level.FINE, "HelpCtx {0} from {1}",
+                    new Object[]{help, focused});
+            return help;
+        }
     }
     
     @Override public void actionPerformed(ActionEvent ev) {

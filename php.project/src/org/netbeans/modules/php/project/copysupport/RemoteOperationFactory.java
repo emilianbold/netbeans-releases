@@ -57,8 +57,10 @@ import org.netbeans.modules.php.project.connections.transfer.TransferInfo;
 import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
 import org.netbeans.modules.php.project.connections.transfer.TransferFile;
 import org.netbeans.modules.php.project.ui.actions.RemoteCommand;
+import org.netbeans.modules.php.project.ui.customizer.CompositePanelProviderImpl;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAsType;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.UploadFiles;
+import org.netbeans.modules.php.project.ui.customizer.RunAsValidator;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
@@ -197,40 +199,21 @@ final class RemoteOperationFactory extends FileOperationFactory {
             LOGGER.log(Level.WARNING, "REMOTE copying disabled for project {0}. Reason: source root is null", project.getName());
             return false;
         }
+        String error = null;
         if (getRemoteConfiguration() == null) {
             LOGGER.log(Level.INFO, "REMOTE copying disabled for project {0}. Reason: remote config not found", project.getName());
-
-            if (askUser(NbBundle.getMessage(RemoteOperationFactory.class, "MSG_RemoteConfigNotFound", project.getName()))) {
-                showCustomizer();
+            error = NbBundle.getMessage(RemoteOperationFactory.class, "MSG_RemoteConfigNotFound", project.getName());
+        } else if (RunAsValidator.validateUploadDirectory(ProjectPropertiesSupport.getRemoteDirectory(project), true) != null) {
+            LOGGER.log(Level.INFO, "REMOTE copying disabled for project {0}. Reason: invalid upload directory", project.getName());
+            error = NbBundle.getMessage(RemoteOperationFactory.class, "MSG_InvalidUploadDirectory", project.getName());
+        }
+        if (error != null) {
+            if (askUser(error)) {
+                showCustomizer(CompositePanelProviderImpl.RUN);
             }
             invalidate();
             return false;
         }
-        // XXX validate remote config, see below
-        // XXX no UI I supposed to be called from  ConfigAction.isValid(false)
-        /*
-        java.lang.IllegalStateException: Should not acquire Children.MUTEX while holding ProjectManager.mutex()
-        at org.openide.nodes.Children$ProjectManagerDeadlockDetector.execute(Children.java:1805)
-        at org.openide.util.Mutex.doWrapperAccess(Mutex.java:1320)
-        at org.openide.util.Mutex.readAccess(Mutex.java:351)
-        at org.openide.explorer.ExplorerManager.setRootContext(ExplorerManager.java:499)
-        at org.netbeans.modules.project.uiapi.CategoryView.<init>(CategoryView.java:91)
-        at org.netbeans.spi.project.ui.support.ProjectCustomizer.createCustomizerPane(ProjectCustomizer.java:250)
-        at org.netbeans.spi.project.ui.support.ProjectCustomizer.createCustomizerDialog(ProjectCustomizer.java:156)
-        at org.netbeans.spi.project.ui.support.ProjectCustomizer.createCustomizerDialog(ProjectCustomizer.java:236)
-        at org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl$1.run(CustomizerProviderImpl.java:96)
-        at org.openide.util.Mutex.doEvent(Mutex.java:1335)
-        at org.openide.util.Mutex.readAccess(Mutex.java:345)
-        at org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl.showCustomizer(CustomizerProviderImpl.java:82)
-        at org.netbeans.modules.php.project.ui.actions.support.ConfigAction.showCustomizer(ConfigAction.java:138)
-        at org.netbeans.modules.php.project.ui.actions.support.ConfigActionRemote.isValid(ConfigActionRemote.java:75)
-        at org.netbeans.modules.php.project.util.RemoteOperationFactory.isValidRemoteConfig(RemoteOperationFactory.java:126)
-        at org.netbeans.modules.php.project.util.RemoteOperationFactory.isEnabled(RemoteOperationFactory.java:69)
-        at org.netbeans.modules.php.project.util.CopySupport$CopyImpl.prepareOperation(CopySupport.java:233)
-        at org.netbeans.modules.php.project.util.CopySupport$CopyImpl.fileChanged(CopySupport.java:162)
-         */
-        //ConfigAction action = ConfigAction.get(Type.REMOTE, project);
-        //return action.isValid(false);
         return true;
     }
 
