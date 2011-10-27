@@ -80,8 +80,10 @@ public class ImageDataLoader extends UniFileLoader {
     }
     
     protected FileObject findPrimaryFile(FileObject fo){
+        if (fo == null){
+            return null;
+        }
         FileObject primFile = super.findPrimaryFile(fo);
-        
         if ((primFile == null)
                 && !bmpSupportStatusKnown 
                 && !fo.isFolder()
