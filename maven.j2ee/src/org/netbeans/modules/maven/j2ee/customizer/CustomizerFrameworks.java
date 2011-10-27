@@ -49,9 +49,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
-import java.util.logging.Logger;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.JLabel;
@@ -60,15 +57,20 @@ import javax.swing.ListSelectionModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionListener;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.maven.api.customizer.ModelHandle;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.maven.j2ee.LoggingUtils;
 import org.netbeans.modules.web.api.webmodule.ExtenderController;
 import org.netbeans.modules.web.spi.webmodule.WebModuleExtender;
 
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 import org.netbeans.modules.web.api.webmodule.WebModule;
@@ -93,7 +95,6 @@ public class CustomizerFrameworks extends AbstractCustomizer implements ListSele
     private ExtenderController controller = ExtenderController.create();
     
     
-    /** Creates new form WebFrameworksPanel */
     public CustomizerFrameworks(ProjectCustomizer.Category category, ModelHandle handle, Project project) {
         super(handle, project);
         this.category = category;
@@ -138,14 +139,23 @@ public class CustomizerFrameworks extends AbstractCustomizer implements ListSele
     
     private void doUIandUsageLogging() {
         if ((addedFrameworks != null) && (addedFrameworks.size() > 0)) {
-            LogRecord logRecord = new LogRecord(Level.INFO, "UI_PROJECT_CONFIG_MAVEN_FRAMEWORK_ADDED");  //NOI18N
-            logRecord.setLoggerName("org.netbeans.ui.web.project"); //NOI18N
-            logRecord.setResourceBundle(NbBundle.getBundle(CustomizerFrameworks.class));
-            logRecord.setParameters(addedFrameworks.toArray());
-            Logger.getLogger("org.netbeans.ui.web.project").log(logRecord);
-            //LoggingUtils.logUI(this.getClass(), "UI_WEB_PROJECT_FRAMEWORK_ADDED", addedFrameworks);  //NOI18N
-            //LoggingUtils.logUsage(this.getClass(), "USG_PROJECT_CONFIG_WEB", new Object[] {server, addedFrameworks});  //NOI18N
+            LoggingUtils.logUI(this.getClass(), "UI_PROJECT_CONFIG_MAVEN_FRAMEWORK_ADDED", addedFrameworks.toArray(), "web.project");  //NOI18N
+            LoggingUtils.logUsage(this.getClass(), "USG_PROJECT_CONFIG_WEB", new Object[] { findServerName(), addedFrameworks.toArray()}, "web.project");  //NOI18N
         }
+    }
+    
+    private String findServerName() {
+        J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
+        
+        if (provider != null) {
+            ServerInstance si = Deployment.getDefault().getServerInstance(provider.getServerInstanceID());
+            try {
+                return si.getDisplayName();
+            } catch (InstanceRemovedException ex) {
+                return null;
+            }
+        }
+        return null;
     }
     
     private void initFrameworksList() {

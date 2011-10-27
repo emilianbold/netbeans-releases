@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,51 +37,70 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.web.jsf.editor;
 
-package org.netbeans.modules.html.editor.completion;
-
-import java.io.IOException;
 import javax.swing.text.BadLocationException;
-import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
+import javax.swing.text.Document;
+import org.netbeans.modules.html.editor.completion.HtmlCompletionTestSupport;
 import org.netbeans.modules.html.editor.completion.HtmlCompletionTestSupport.Match;
 import org.netbeans.modules.parsing.spi.ParseException;
+import org.openide.filesystems.FileObject;
+
 
 /**
  *
  * @author marekfukala
  */
-public class XhtmlCompletionQueryTest extends HtmlCompletionQueryTest {
-
-    public XhtmlCompletionQueryTest() throws IOException, BadLocationException {
-        super(XhtmlCompletionQueryTest.class.getName());
+public class JsfHtmlExtensionTest extends TestBaseForTestProject {
+    
+    public JsfHtmlExtensionTest(String name) {
+        super(name);
     }
 
     @Override
-    protected String getPublicID() {
-        return "-//W3C//DTD XHTML 1.0 Strict//EN";
+    protected void setUp() throws Exception {
+        super.setUp();
+        JsfHtmlExtension.activate();
     }
+    
 
-    //xhtml end tag completion is not context avare
-    public void testIssue168491() throws BadLocationException, ParseException {
-        assertItems("<table><tr><td>|", arr("td"), Match.CONTAINS);
+    public void testAttributeValueCompletion() throws BadLocationException, ParseException {
+        testCC("<h:selectManyCheckbox layout=\"|\"/>", new String[]{"pageDirection", "lineDirection"}, Match.EXACT);
+        testCC("<f:ajax immediate=\"|\"/>", new String[]{"true", "false"}, Match.EXACT);
     }
-
-    /*
-     * todo: fix the tests: 
-     junit.framework.ComparisonFailure: null expected:<[div[]]> but was:<[div[, div]]>
+    
+    protected void testCC(String testText, String[] expected, Match matchType) throws BadLocationException, ParseException {
+        testCC(testText, expected, matchType, -1);
+    }
+    
+    /**
+     * The testText will be inserted into the body of testWebProject/web/cctest.xhtml and then the completion will be called.
+     * In the case you need more imports, modify the template or make the support generic (no template based)
      */
-    @Override
-    public void testTags() throws BadLocationException, ParseException {
-    }
-
-    /*
-     * todo: fix the tests:
-     junit.framework.ComparisonFailure: null expected:<[div[]]> but was:<[div[, div]]>
-     */
-    @Override
-    public void testTagsBeforeText() throws BadLocationException, ParseException {
+    protected void testCC(String testText, String[] expected, Match matchType, int expectedAnchor) throws BadLocationException, ParseException {
+        //load the testing template
+        FileObject file = getTestFile("testWebProject/web/cctest.xhtml");
+        Document doc = getDocument(file);
+        
+        StringBuilder content = new StringBuilder(doc.getText(0, doc.getLength()));
+        final int documentPipeIndex = content.indexOf("|");
+        assertFalse(documentPipeIndex < 0);
+        
+        //remove the pipe
+        content.deleteCharAt(documentPipeIndex);
+        
+        //insert test text, extract the pipe first
+        content.insert(documentPipeIndex, testText);
+        
+        Document testdoc = getDocument(content.toString(), "text/xhtml");
+        
+        HtmlCompletionTestSupport.assertItems(
+                testdoc, 
+                expected, 
+                matchType, 
+                expectedAnchor);
     }
     
 }
