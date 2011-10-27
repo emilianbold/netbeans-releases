@@ -345,8 +345,10 @@ public class NavigatorContent extends AbstractXMLNavigatorContent   {
             tree.getActionMap().put("open", new AbstractAction() { // NOI18N
                 public void actionPerformed(ActionEvent e) {
                     TreePath selPath = selectionModel.getLeadSelectionPath();
-                    TreeNodeAdapter tna = (TreeNodeAdapter)selPath.getLastPathComponent();
-                    openAndFocusElement(tna, false);
+                    if (selPath != null) {
+                        TreeNodeAdapter tna = (TreeNodeAdapter)selPath.getLastPathComponent();
+                        openAndFocusElement(tna, false);
+                    }
                 }
             });
             
