@@ -801,6 +801,30 @@ public class PHPNewLineIndenterTest extends PHPTestBase {
         testIndentInFile("testfiles/indent/issue202151.php");
     }
 
+    public void testIssue178024_01() throws Exception {
+        testIndentInFile("testfiles/indent/issue178024_01.php");
+    }
+
+    public void testIssue178024_02() throws Exception {
+        testIndentInFile("testfiles/indent/issue178024_02.php");
+    }
+
+    public void testIssue178024_03() throws Exception {
+        testIndentInFile("testfiles/indent/issue178024_03.php");
+    }
+
+    public void testIssue178024_04() throws Exception {
+        testIndentInFile("testfiles/indent/issue178024_04.php");
+    }
+
+    public void testIssue178024_05() throws Exception {
+        testIndentInFile("testfiles/indent/issue178024_05.php");
+    }
+
+    public void testIssue178024_06() throws Exception {
+        testIndentInFile("testfiles/indent/issue178024_06.php");
+    }
+
     @Override
     protected boolean runInEQ() {
         return true;
