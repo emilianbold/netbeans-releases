@@ -48,6 +48,7 @@ import javax.swing.text.AttributeSet;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.spi.editor.highlighting.HighlightsLayer;
 import org.netbeans.spi.editor.highlighting.HighlightsLayerFactory;
@@ -56,6 +57,7 @@ import org.netbeans.spi.editor.highlighting.ZOrder;
 /**
  * Highlights Ant property values.
  */
+@MimeRegistration(service=HighlightsLayerFactory.class, mimeType="text/x-ant+xml")
 public class AntHighlightsLayerFactory implements HighlightsLayerFactory {
 
     public @Override HighlightsLayer[] createLayers(final Context context) {
