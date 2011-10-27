@@ -804,24 +804,20 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         gdb.sendCommand(cmd);
     }
 
+    @Override
     public void contAt(String src, int line) {
-	/* (GDB) Version 7.2.50.20101202.
-	src = localToRemote("runToCursor", src); // NOI18N
-        String cmdString = "-exec-jump " + src + ":" + line; // NOI18N
-        MICommand cmd = new MIResumptiveCommand(cmdString);
-        gdb.sendCommand(cmd);
-	 *
-	 */
-	notImplemented("-exec-jump");// NOI18N
+        src = localToRemote("contAt", src); // NOI18N
+        sendResumptive("-exec-jump " + src + ':' + line); // NOI18N
     }
 
+    @Override
     public void runToCursor(String src, int line) {
 	src = localToRemote("runToCursor", src); // NOI18N
-        String cmdString = "-exec-until " + src + ":" + line; // NOI18N
-        sendResumptive(cmdString);
+        sendResumptive("-exec-until " + src + ':' + line); // NOI18N
     }
     
     // interface NativeDebugger
+    @Override
     public void runToCursorInst(String addr) {
         sendResumptive("-exec-until *" + addr); //NOI18N
     }
