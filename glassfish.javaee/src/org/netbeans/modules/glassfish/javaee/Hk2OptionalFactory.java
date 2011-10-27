@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -286,48 +286,5 @@ public class Hk2OptionalFactory extends OptionalDeploymentManagerFactory {
             delegate.initialize(wizard);
         }
         
-    }
-
-
-    @Override
-    public void finishServerInitialization() throws ServerInitializationException {
-        try {
-            // remove any invalid server definitions...
-            String[] urls = InstanceProperties.getInstanceList();
-            if (null != urls) {
-                List<String> needToRemove = new ArrayList<String>();
-                for (String url : urls) {
-                    if (df.handlesURI(url)) {
-                        InstanceProperties ip = InstanceProperties.getInstanceProperties(url);
-                        String domainsDirName = ip.getProperty(GlassfishModule.DOMAINS_FOLDER_ATTR);
-                        if (null != domainsDirName) {
-                            String installDirName = ip.getProperty(GlassfishModule.GLASSFISH_FOLDER_ATTR);
-                            String domainDirName = domainsDirName +File.separator +
-                                    ip.getProperty(GlassfishModule.DOMAIN_NAME_ATTR);
-                            File instDir = new File(installDirName);
-                            File domainDir = new File(domainDirName);
-                            // TODO -- more complete test here...
-                            // TODO -- need to account for remote domain here?
-                            if (!instDir.exists() || !instDir.isDirectory() ||
-                                    !domainDir.exists() || !domainDir.isDirectory() ||
-                                    !domainDir.canWrite()) {
-                                needToRemove.add(url);
-                            }
-                        }
-                    }
-                }
-                for (String url : needToRemove) {
-                    InstanceProperties.removeInstance(url);
-                }
-            }
-            //
-//            final boolean needToRegisterDefaultServer =
-//                    !NbPreferences.forModule(this.getClass()).getBoolean(ServerUtilities.PROP_FIRST_RUN, false);
-//            if (needToRegisterDefaultServer) {
-//                commonUtilities.getServerProvider();
-//            }
-        } catch (Exception ex) {
-            throw new ServerInitializationException("failed to init default instance", ex);
-        }
     }
 }
