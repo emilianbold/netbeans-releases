@@ -631,7 +631,7 @@ class RfsLocalController extends NamedRunnable {
         // the real cycling check is inside checkLinks(List,List) logic
         int cnt = 0;
         final int max = 16;
-        Collection<FileGatheringInfo> filesToCheck = filesToFeed;
+        Collection<FileGatheringInfo> filesToCheck = new ArrayList<FileGatheringInfo>(filesToFeed);
         do {
             filesToCheck = checkLinks(filesToCheck, filesToFeed);
         } while (!filesToCheck.isEmpty() && cnt++ < max);
