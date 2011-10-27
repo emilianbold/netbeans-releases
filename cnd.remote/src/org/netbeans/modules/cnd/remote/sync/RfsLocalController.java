@@ -633,7 +633,7 @@ class RfsLocalController extends NamedRunnable {
         final int max = 16;
         Collection<FileGatheringInfo> filesToCheck = filesToFeed;
         do {
-            filesToCheck = checkLinks(filesToFeed, filesToFeed);
+            filesToCheck = checkLinks(filesToCheck, filesToFeed);
         } while (!filesToCheck.isEmpty() && cnt++ < max);
         logger.log(Level.FINE, "checkLinks done in %d passes", cnt);
         if (!filesToCheck.isEmpty()) {
@@ -641,7 +641,7 @@ class RfsLocalController extends NamedRunnable {
         }
     }
 
-    private Collection<FileGatheringInfo> checkLinks(final List<FileGatheringInfo> filesToCheck, final List<FileGatheringInfo> filesToAdd) {
+    private Collection<FileGatheringInfo> checkLinks(final Collection<FileGatheringInfo> filesToCheck, final List<FileGatheringInfo> filesToAdd) {
         Set<FileGatheringInfo> addedInfos = new HashSet<FileGatheringInfo>();
         NativeProcessBuilder pb = NativeProcessBuilder.newLocalProcessBuilder();
         pb.setExecutable("sh"); //NOI18N
