@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.cnd.debugger.gdb2.mi;
 
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import org.netbeans.modules.cnd.debugger.gdb2.GdbLogger;
@@ -114,6 +115,25 @@ class MICommandManager {
 	    injector.log(String.format("\n\r")); // NOI18N
 	}
     }
+    
+    // check for async error like
+    // "Cannot execute command ... while target running"
+    // see IZ 200046
+    private boolean processAsyncError(MIRecord record) {
+        if ("error".equals(record.cls) && !record.isEmpty()) { //NOI18N
+            MIValue msgVal = record.results().valueOf("msg"); //NOI18N
+            if (msgVal != null && msgVal.asConst().value().endsWith("while target running")) { //NOI18N
+                for (Iterator<MICommand> iter = pendingCommands.iterator(); iter.hasNext();) {
+                    if (iter.next().getToken() == record.token) {
+                        iter.remove();
+                        break;
+                    }
+                }
+                return true;
+            }
+        }
+        return false;
+    }
 
     /**
      * To be called from specialization of MIProxy.
@@ -122,6 +142,10 @@ class MICommandManager {
     public void dispatch(MIRecord record) {
         int token = record.token();
 	MICommand cmd = pendingCommands.peek();
+
+        if (processAsyncError(record)) {
+            return;
+        }
         
         while (cmd != null && cmd.getToken() < token) {
             // an error happened somewhere
