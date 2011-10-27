@@ -51,6 +51,7 @@ import org.netbeans.modules.xml.api.model.GrammarQuery;
 import org.netbeans.modules.xml.api.model.GrammarQueryManager;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Enumerations;
+import org.openide.util.lookup.ServiceProvider;
 import org.w3c.dom.Node;
 import org.w3c.dom.Element;
 
@@ -59,6 +60,7 @@ import org.w3c.dom.Element;
  * See also ant/src/.../resources/mime-resolver.xml.
  * @author Petr Kuzel, Jesse Glick
  */
+@ServiceProvider(service=GrammarQueryManager.class, path=/* XXX GrammarQueryManager.DefaultQueryManager.FOLDER*/ "Plugins/XML/GrammarQueryManagers")
 public final class AntGrammarQueryProvider extends GrammarQueryManager {
     
     public Enumeration enabled(GrammarEnvironment ctx) {
