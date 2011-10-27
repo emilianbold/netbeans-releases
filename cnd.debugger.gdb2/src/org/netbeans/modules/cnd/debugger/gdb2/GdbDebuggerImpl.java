@@ -127,7 +127,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     private Gdb gdb;				// gdb proxy
     private GdbVersionPeculiarity peculiarity;  // gdb version differences
     
-    private static final Logger LOG = Logger.getLogger(GdbDebuggerImpl.class.toString());
+    static final Logger LOG = Logger.getLogger(GdbDebuggerImpl.class.toString());
 
     private final GdbHandlerExpert handlerExpert;
     private MILocation homeLoc;
@@ -709,13 +709,13 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     public final void stepInto() {
         sendResumptive("-exec-step"); // NOI18N
     }
+    
+    private static final String STEP_INTO_ID = "STEP_INTO"; //NOI18N
 
     private void stepIntoMain() {
         send("-break-insert -t main"); //NOI18N
+        firstBreakpointId = STEP_INTO_ID; // to force pid request but avoid continue
         sendResumptive("-exec-run"); // NOI18N
-	
-	// IZ 189550
-        sendPidCommand(false);
     }
 
     public final void stepOver() {
@@ -3106,13 +3106,15 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         };
         gdb.sendCommand(cmd);
          */
-
+        
         final MITList results = stopRecord.results();
+        
+        state().isRunning = false;
         
         // detect first stop (in _start or main)
         if (firstBreakpointId != null) {
             MIValue bkptnoValue = results.valueOf("bkptno"); // NOI18N
-            boolean cont = (bkptnoValue == null) ||
+            boolean cont = (bkptnoValue == null && !STEP_INTO_ID.equals(firstBreakpointId)) ||
                (bkptnoValue != null && (firstBreakpointId.equals(bkptnoValue.asConst().value())));
             firstBreakpointId = null;
             sendPidCommand(cont);
@@ -4579,7 +4581,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     
     private void sendResumptive(String commandStr) {
         MICommand cmd = new MIResumptiveCommand(commandStr);
-        gdb.sendCommand(cmd);
+        gdb.sendCommand(cmd, true);
     }
     
     private void sendCommandInt(MICommand cmd) {
