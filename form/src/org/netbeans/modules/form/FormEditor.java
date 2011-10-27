@@ -232,6 +232,7 @@ public class FormEditor {
             if (provider != null) {
                 bindingSupport = provider.create(formModel);
             }
+            bindingSupportInitialized = true;
         }
         return bindingSupport;
     }

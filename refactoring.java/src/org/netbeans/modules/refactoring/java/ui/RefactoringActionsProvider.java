@@ -125,7 +125,12 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                     }
                     if (selected.getKind() == ElementKind.CONSTRUCTOR) {
                         selected = selected.getEnclosingElement();
-                        selectedElement = TreePathHandle.create(info.getTrees().getPath(selected), info);
+                        TreePath path = info.getTrees().getPath(selected);
+                        if (path==null) {
+                            logger().log(Level.INFO, "doRename: " + selected, new NullPointerException("selected")); // NOI18N
+                            return null;
+                        }
+                        selectedElement = TreePathHandle.create(path, info);
                     } 
                     if (selected.getKind() == ElementKind.PACKAGE) {
                         final FileObject pkg = info.getClasspathInfo().getClassPath(PathKind.SOURCE).findResource(selected.toString().replace('.','/'));
