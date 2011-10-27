@@ -43,7 +43,7 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<!DOCTYPE MIME-resolver PUBLIC '-//NetBeans//DTD MIME Resolver 1.1//EN' 'null'>
+<!DOCTYPE MIME-resolver PUBLIC '-//NetBeans//DTD MIME Resolver 1.1//EN'  "http://www.netbeans.org/dtds/mime-resolver-1_0.dtd">
 <MIME-resolver>
     <file>
         <ext name="xjb"/>
