@@ -84,7 +84,6 @@ import org.openide.WizardDescriptor;
 public class CustomizerFrameworks extends AbstractCustomizer implements ListSelectionListener {
     
     private final ProjectCustomizer.Category category;
-    private Project project;
     private List<WebModuleExtender> newExtenders = new LinkedList<WebModuleExtender>();
     private List<WebModuleExtender> existingExtenders = new LinkedList<WebModuleExtender>();
     private List<WebFrameworkProvider> usedFrameworks = new LinkedList<WebFrameworkProvider>();
@@ -95,14 +94,14 @@ public class CustomizerFrameworks extends AbstractCustomizer implements ListSele
     
     
     /** Creates new form WebFrameworksPanel */
-    public CustomizerFrameworks(ProjectCustomizer.Category category, ModelHandle handle, Project prj) {
+    public CustomizerFrameworks(ProjectCustomizer.Category category, ModelHandle handle, Project project) {
+        super(handle, project);
         this.category = category;
-        project = prj;
-        initComponents();
-        btnRemoveAdded.setEnabled(false);
         
+        initComponents();
         initFrameworksList();
-
+        
+        btnRemoveAdded.setEnabled(false);
         jListFrameworks.setCellRenderer(new DefaultListCellRenderer() {
             @Override
             public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {

@@ -42,27 +42,14 @@
 
 package org.netbeans.modules.maven.j2ee.customizer;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.event.AncestorEvent;
-import javax.swing.event.AncestorListener;
-import org.netbeans.modules.maven.api.customizer.support.ComboBoxUpdater;
 import org.netbeans.modules.maven.api.customizer.ModelHandle;
 import org.netbeans.modules.maven.j2ee.POHImpl;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-import org.netbeans.modules.maven.api.Constants;
-import org.netbeans.modules.maven.api.customizer.support.CheckBoxUpdater;
-import org.netbeans.modules.maven.j2ee.ExecutionChecker;
-import org.netbeans.modules.maven.j2ee.MavenJavaEEConstants;
 import org.netbeans.modules.maven.j2ee.SessionContent;
-import org.netbeans.modules.maven.j2ee.Wrapper;
 
 
 /**
@@ -71,97 +58,21 @@ import org.netbeans.modules.maven.j2ee.Wrapper;
  */
 public class CustomizerRunEjb extends AbstractCustomizer {
 
-    private Project project;
-    private ModelHandle handle;
     private EjbJar module;
-    private ComboBoxUpdater<Wrapper> listener;
 
-    private CheckBoxUpdater deployOnSaveUpdater;
-    
-    /**
-     * Creates new form EjbRunCustomizerPanel
-     */
+
     public CustomizerRunEjb(ModelHandle handle, Project project) {
+        super(handle, project);
         initComponents();
-        this.handle = handle;
-        this.project = project;
+
         module = EjbJar.getEjbJar(project.getProjectDirectory());
-        loadComboModel();
+        loadServerModel(comServer, J2eeModule.Type.EJB, module.getJ2eeProfile());
         if (module != null) {
             txtJ2EEVersion.setText(module.getJ2eePlatformVersion());
         }
-        initValues();
-    }
-
-    private void initValues() {
-        listener = Wrapper.createComboBoxUpdater(handle, comServer, lblServer);
-        deployOnSaveUpdater = new CheckBoxUpdater(jCheckBoxDeployOnSave) {
-            @Override
-            public Boolean getValue() {
-                String s = handle.getRawAuxiliaryProperty(MavenJavaEEConstants.HINT_DEPLOY_ON_SAVE, true);
-                if (s != null) {
-                    return Boolean.valueOf(s);
-                } else {
-                    return null;
-                }
-            }
-
-            @Override
-            public void setValue(Boolean value) {
-                handle.setRawAuxiliaryProperty(MavenJavaEEConstants.HINT_DEPLOY_ON_SAVE, 
-                        value == null ? null : Boolean.toString(value), true);
-            }
-
-            @Override
-            public boolean getDefaultValue() {
-                return true;
-            }
-        };
-        addAncestorListener(new AncestorListener() {
-
-            @Override
-            public void ancestorAdded(AncestorEvent event) {
-                updateDoSEnablement();
-            }
-
-            @Override
-            public void ancestorRemoved(AncestorEvent event) {
-            }
-
-            @Override
-            public void ancestorMoved(AncestorEvent event) {
-            }
-        });
-    }
-
-    private void updateDoSEnablement() {
-        String cos = handle.getRawAuxiliaryProperty(Constants.HINT_COMPILE_ON_SAVE, true);
-        boolean enabled = cos != null && ("all".equalsIgnoreCase(cos) || "app".equalsIgnoreCase(cos)); // NOI18N
-        jCheckBoxDeployOnSave.setEnabled(enabled);
-        dosDescription.setEnabled(enabled);
-    }
-    
-    private void loadComboModel() {
-        String[] ids = Deployment.getDefault().getServerInstanceIDs(Collections.singleton(J2eeModule.Type.EJB), module.getJ2eeProfile());
-        Collection<Wrapper> col = new ArrayList<Wrapper>();
-//        Wrapper selected = null;
-        SessionContent sc = project.getLookup().lookup(SessionContent.class);
-        if (sc != null && sc.getServerInstanceId() != null) {
-            col.add(new Wrapper(ExecutionChecker.DEV_NULL, sc.getServerInstanceId()));
-        } else {
-            col.add(new Wrapper(ExecutionChecker.DEV_NULL));
-        }
-        for (int i = 0; i < ids.length; i++) {
-            Wrapper wr = new Wrapper(ids[i]);
-            col.add(wr);
-//            if (selectedId.equals(ids[i])) {
-//                selected = wr;
-//            }
-        }
-        comServer.setModel(new DefaultComboBoxModel(col.toArray()));
-//        if (selected != null) {
-//            comServer.setSelectedItem(selected);
-//        }
+        
+        initDeployOnSaveComponent(jCheckBoxDeployOnSave, dosDescription);
+        initServerComponent(comServer, lblServer);
     }
 
     @Override

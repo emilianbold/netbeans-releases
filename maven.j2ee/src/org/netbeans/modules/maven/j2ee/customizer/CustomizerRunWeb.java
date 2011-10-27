@@ -46,11 +46,7 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import javax.swing.JList;
-import javax.swing.event.AncestorEvent;
 import org.netbeans.modules.maven.j2ee.POHImpl;
 import java.util.Iterator;
 import java.util.logging.Level;
@@ -58,19 +54,14 @@ import java.util.logging.LogRecord;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.SwingUtilities;
-import javax.swing.event.AncestorListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.j2ee.core.Profile;
-import org.netbeans.modules.maven.api.customizer.support.ComboBoxUpdater;
 import org.netbeans.modules.maven.api.customizer.ModelHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.ModelUtils;
-import org.netbeans.modules.maven.api.customizer.support.CheckBoxUpdater;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
 import org.netbeans.modules.maven.j2ee.ExecutionChecker;
 import static org.netbeans.modules.maven.j2ee.ExecutionChecker.CLIENTURLPART;
@@ -94,39 +85,30 @@ import org.openide.util.NbBundle;
  */
 public class CustomizerRunWeb extends AbstractCustomizer {
     public static final String PROP_SHOW_IN_BROWSER = "netbeans.deploy.showBrowser"; //NOI18N
-    private Project project;
-    private ModelHandle handle;
+    
     private WebModule module;
     private WebModuleProviderImpl moduleProvider;
 
     private NetbeansActionMapping run;
-
     private NetbeansActionMapping debug;
-
     private NetbeansActionMapping profile;
 
     private boolean isRunCompatible;
-
     private boolean isDebugCompatible;
-
     private boolean isProfileCompatible;
 
     private String oldUrl;
     private String oldContextPath;
-    private ComboBoxUpdater<Wrapper> listener;
     
-    private CheckBoxUpdater deployOnSaveUpdater;
-    
-    /** Creates new form WebRunCustomizerPanel */
+
     public CustomizerRunWeb(final ModelHandle handle, Project project) {
+        super(handle, project);
         initComponents();
-        this.handle = handle;
-        this.project = project;
         module = WebModule.getWebModule(project.getProjectDirectory());
         moduleProvider = project.getLookup().lookup(WebModuleProviderImpl.class);
         assert moduleProvider != null;
         assert module != null;
-        loadComboModel();
+        loadServerModel(comServer, J2eeModule.Type.WAR, module.getJ2eeProfile());
         comProfile.setRenderer(new DefaultListCellRenderer() {
             @Override
             public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
@@ -189,11 +171,11 @@ public class CustomizerRunWeb extends AbstractCustomizer {
 
         txtContextPath.setText(impl.getContextPath());
         initValues();
+        initDeployOnSaveComponent(jCheckBoxDeployOnSave, dosDescription);
+        initServerComponent(comServer, lblServer);
     }
     
     private void initValues() {
-        listener = Wrapper.createComboBoxUpdater(handle, comServer, lblServer);
-        
         run = ModelHandle.getDefaultMapping(ActionProvider.COMMAND_RUN, project);
         debug = ModelHandle.getDefaultMapping(ActionProvider.COMMAND_DEBUG, project);
         profile = ModelHandle.getDefaultMapping("profile", project); // NOI18N
@@ -224,81 +206,12 @@ public class CustomizerRunWeb extends AbstractCustomizer {
             }
         });
 
-        deployOnSaveUpdater = new CheckBoxUpdater(jCheckBoxDeployOnSave) {
-            @Override
-            public Boolean getValue() {
-                String s = handle.getRawAuxiliaryProperty(MavenJavaEEConstants.HINT_DEPLOY_ON_SAVE, true);
-                if (s != null) {
-                    return Boolean.valueOf(s);
-                } else {
-                    return null;
-                }
-            }
-
-            @Override
-            public void setValue(Boolean value) {
-                handle.setRawAuxiliaryProperty(MavenJavaEEConstants.HINT_DEPLOY_ON_SAVE, 
-                        value == null ? null : Boolean.toString(value), true);
-            }
-
-            @Override
-            public boolean getDefaultValue() {
-                return true;
-            }
-        };
         
         String browser = (String)project.getProjectDirectory().getAttribute(PROP_SHOW_IN_BROWSER);
         boolean bool = browser != null ? Boolean.parseBoolean(browser) : true;
         cbBrowser.setSelected(bool);
         updateContextPathEnablement();
-        addAncestorListener(new AncestorListener() {
-
-            @Override
-            public void ancestorAdded(AncestorEvent event) {
-                updateDoSEnablement();
-            }
-
-            @Override
-            public void ancestorRemoved(AncestorEvent event) {
-            }
-
-            @Override
-            public void ancestorMoved(AncestorEvent event) {
-            }
-        });
     }
-    
-    private void updateDoSEnablement() {
-        String cos = handle.getRawAuxiliaryProperty(Constants.HINT_COMPILE_ON_SAVE, true);
-        boolean enabled = cos != null && ("all".equalsIgnoreCase(cos) || "app".equalsIgnoreCase(cos)); // NOI18N
-        jCheckBoxDeployOnSave.setEnabled(enabled);
-        dosDescription.setEnabled(enabled);
-    }
-    
-    private void loadComboModel() {
-        String[] ids = Deployment.getDefault().getServerInstanceIDs(Collections.singletonList(J2eeModule.Type.WAR), module.getJ2eeProfile());
-        Collection<Wrapper> col = new ArrayList<Wrapper>();
-//        Wrapper selected = null;
-        SessionContent sc = project.getLookup().lookup(SessionContent.class);
-        if (sc != null && sc.getServerInstanceId() != null) {
-            col.add(new Wrapper(ExecutionChecker.DEV_NULL, sc.getServerInstanceId()));
-        } else {
-            col.add(new Wrapper(ExecutionChecker.DEV_NULL));
-        }
-        for (int i = 0; i < ids.length; i++) {
-            Wrapper wr = new Wrapper(ids[i]);
-            col.add(wr);
-//            if (selectedId.equals(ids[i])) {
-//                selected = wr;
-//            }
-            
-        }
-        comServer.setModel(new DefaultComboBoxModel(col.toArray()));
-//        if (selected != null) {
-//            comServer.setSelectedItem(selected);
-//        }
-    }
-    
     
     /** This method is called from within the constructor to
      * initialize the form.

@@ -41,7 +41,28 @@
  */
 package org.netbeans.modules.maven.j2ee.customizer;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.event.AncestorEvent;
+import javax.swing.event.AncestorListener;
+import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.maven.api.Constants;
+import org.netbeans.modules.maven.api.customizer.ModelHandle;
+import org.netbeans.modules.maven.api.customizer.support.CheckBoxUpdater;
+import org.netbeans.modules.maven.api.customizer.support.ComboBoxUpdater;
+import org.netbeans.modules.maven.j2ee.ExecutionChecker;
+import org.netbeans.modules.maven.j2ee.MavenJavaEEConstants;
+import org.netbeans.modules.maven.j2ee.SessionContent;
+import org.netbeans.modules.maven.j2ee.Wrapper;
 
 /**
  *
@@ -49,7 +70,87 @@ import javax.swing.JPanel;
  */
 public abstract class AbstractCustomizer extends JPanel {
     
-     void applyChanges() {}
+    protected Project project;
+    protected ModelHandle handle;
+    protected CheckBoxUpdater deployOnSaveUpdater;
+    protected ComboBoxUpdater<Wrapper> listener;
     
-     void applyChangesInAWT() {}
+
+    public AbstractCustomizer(ModelHandle handle, Project project) {
+        this.handle = handle;
+        this.project = project;
+    }
+    
+    void applyChanges() {}
+    
+    void applyChangesInAWT() {}
+    
+    
+    protected void initDeployOnSaveComponent(final JCheckBox dosCheckBox, final JLabel dosDescription) {
+        deployOnSaveUpdater = new CheckBoxUpdater(dosCheckBox) {
+            @Override
+            public Boolean getValue() {
+                String s = handle.getRawAuxiliaryProperty(MavenJavaEEConstants.HINT_DEPLOY_ON_SAVE, true);
+                if (s != null) {
+                    return Boolean.valueOf(s);
+                } else {
+                    return null;
+                }
+            }
+
+            @Override
+            public void setValue(Boolean value) {
+                handle.setRawAuxiliaryProperty(MavenJavaEEConstants.HINT_DEPLOY_ON_SAVE, 
+                        value == null ? null : Boolean.toString(value), true);
+            }
+
+            @Override
+            public boolean getDefaultValue() {
+                return true;
+            }
+        };
+        
+        addAncestorListener(new AncestorListener() {
+
+            @Override
+            public void ancestorAdded(AncestorEvent event) {
+                updateDoSEnablement(dosCheckBox, dosDescription);
+            }
+
+            @Override
+            public void ancestorRemoved(AncestorEvent event) {
+            }
+
+            @Override
+            public void ancestorMoved(AncestorEvent event) {
+            }
+        });
+    }
+    
+    protected void initServerComponent(JComboBox serverComboBox, JLabel serverLabel) {
+        listener = Wrapper.createComboBoxUpdater(handle, serverComboBox, serverLabel);
+    }
+    
+    private void updateDoSEnablement(JCheckBox dosCheckBox, JLabel dosDescription) {
+        String cos = handle.getRawAuxiliaryProperty(Constants.HINT_COMPILE_ON_SAVE, true);
+        boolean enabled = cos != null && ("all".equalsIgnoreCase(cos) || "app".equalsIgnoreCase(cos)); // NOI18N
+        dosCheckBox.setEnabled(enabled);
+        dosDescription.setEnabled(enabled);
+    }
+    
+    protected void loadServerModel(JComboBox serverModel, J2eeModule.Type type, Profile profile) {
+        String[] ids = Deployment.getDefault().getServerInstanceIDs(Collections.singleton(type), profile);
+        Collection<Wrapper> col = new ArrayList<Wrapper>();
+
+        SessionContent sc = project.getLookup().lookup(SessionContent.class);
+        if (sc != null && sc.getServerInstanceId() != null) {
+            col.add(new Wrapper(ExecutionChecker.DEV_NULL, sc.getServerInstanceId()));
+        } else {
+            col.add(new Wrapper(ExecutionChecker.DEV_NULL));
+        }
+        for (String id : ids) {
+            col.add(new Wrapper(id));
+        }
+        serverModel.setModel(new DefaultComboBoxModel(col.toArray()));
+    }
 }
