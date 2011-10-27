@@ -110,7 +110,7 @@ public final class FileUtils {
      * @see #PHP_MIME_TYPE
      */
     public static boolean isPhpFile(FileObject file) {
-        Parameters.notNull("file", file);
+        Parameters.notNull("file", file); // NOI18N
         return PHP_MIME_TYPE.equals(FileUtil.getMIMEType(file, PHP_MIME_TYPE));
     }
 
@@ -136,7 +136,7 @@ public final class FileUtils {
      * @since 1.33
      */
     public static List<String> findFileOnUsersPath(String... filename) {
-        Parameters.notNull("filename", filename);
+        Parameters.notNull("filename", filename); // NOI18N
 
         String path = System.getenv("PATH"); // NOI18N
         LOGGER.log(Level.FINE, "PATH: [{0}]", path);
@@ -384,7 +384,7 @@ public final class FileUtils {
      * @since 1.46
      */
     public static boolean isDirectoryLink(File directory) {
-        Parameters.notNull("directory", directory);
+        Parameters.notNull("directory", directory); // NOI18N
         if (!IS_UNIX && !IS_MAC) {
             return false;
         }
@@ -411,8 +411,8 @@ public final class FileUtils {
      * @since 1.53
      */
     public static void unzip(String zipPath, File targetDirectory, ZipEntryFilter zipEntryFilter) throws IOException {
-        Parameters.notEmpty("zipPath", zipPath);
-        Parameters.notNull("targetDirectory", targetDirectory);
+        Parameters.notEmpty("zipPath", zipPath); // NOI18N
+        Parameters.notNull("targetDirectory", targetDirectory); // NOI18N
 
         if (zipEntryFilter == null) {
             zipEntryFilter = DUMMY_ZIP_ENTRY_FILTER;
@@ -438,7 +438,7 @@ public final class FileUtils {
         File parent = file.getParentFile();
         if (!parent.isDirectory()) {
             if (!parent.mkdirs()) {
-                throw new IOException("Cannot create parent directories.");
+                throw new IOException("Cannot create parent directories for " + file.getAbsolutePath());
             }
         }
     }

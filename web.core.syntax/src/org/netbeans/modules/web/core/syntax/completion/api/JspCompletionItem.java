@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.web.core.syntax.completion.api;
 
+import java.net.URISyntaxException;
 import org.netbeans.modules.web.core.syntax.completion.*;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -69,14 +70,18 @@ import org.netbeans.modules.web.core.syntax.AutoTagImporterProvider;
 import org.netbeans.spi.editor.completion.*;
 import java.awt.Color;
 import java.awt.event.KeyEvent;
+import java.io.File;
+import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
 import org.netbeans.spi.editor.completion.support.CompletionUtilities;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.JarFileSystem;
 import org.openide.util.Exceptions;
-import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.xml.XMLUtil;
@@ -801,7 +806,11 @@ public class JspCompletionItem implements CompletionItem {
             return null;
         }
         try {
-            InputStream is = url.openStream();
+            InputStream is = getInputStreamForUrl(url);
+            if (is == null) {
+                logger.log(Level.INFO, "Cannot read: {0}", url.toString());
+                return null;
+            }
             byte buffer[] = new byte[1000];
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             int count = 0;
@@ -819,6 +828,34 @@ public class JspCompletionItem implements CompletionItem {
         } catch (java.io.IOException e) {
             logger.log(Level.INFO, url.toString(), e);
             return null;
+        }
+    }
+
+    protected static InputStream getInputStreamForUrl(URL url) throws IOException {
+        URL archiveUrl = FileUtil.getArchiveFile(url);
+        FileObject resource = null;
+
+        if (archiveUrl == null) {
+            return url.openStream();
+        } else {
+            String path = url.getPath();
+            String filePath = path.substring(path.indexOf("!/") + 2); //NOI18N
+            File f = getFileForUrl(archiveUrl);
+            JarFileSystem jfs = new JarFileSystem(f);
+            resource = jfs.findResource(filePath);
+        }
+
+        if (resource == null) {
+            return null;
+        }
+        return resource.getInputStream();
+    }
+
+    private static File getFileForUrl(URL url) throws IOException {
+        try {
+            return new File(url.toURI());
+        } catch (URISyntaxException e) {
+            return new File(url.getPath());
         }
     }
 

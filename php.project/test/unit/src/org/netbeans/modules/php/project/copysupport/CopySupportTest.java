@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.php.project.copysupport;
 
+import java.util.EmptyStackException;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.util.PhpTestCase;
 import org.netbeans.modules.php.project.util.TestUtils;
@@ -75,19 +76,42 @@ public class CopySupportTest extends PhpTestCase {
         }
     }
 
-    public void testLoggingOfIssue192386() throws Exception {
+    public void testIssue192386LoggingOpen() throws Exception {
         final PhpProject project = TestUtils.createPhpProject(getWorkDir());
         final CopySupport copySupport = project.getCopySupport();
 
-        copySupport.projectOpened();
+        dummyMethod(new Runnable() {
+            @Override
+            public void run() {
+                copySupport.projectOpened();
+            }
+        });
         try {
             copySupport.projectOpened();
             fail("Should not get here.");
         } catch (IllegalStateException ise) {
-            assertNotNull("Exception should have cause", ise.getCause());
-            assertEquals("Call stack should contain 2 elements", 2, copySupport.calls.size());
+            Throwable cause = ise.getCause();
+            assertNotNull("Exception should have cause", cause);
+            checkStackTrace(cause, CopySupportTest.class.getName(), "dummyMethod");
+            assertEquals("Call stack should contain 1 element", 1, copySupport.callStack.size());
             assertEquals("Copy support should be opened twice", 2, copySupport.opened.get());
             assertEquals("Copy support should not be closed at all", 0, copySupport.closed.get());
+        }
+    }
+
+    public void testIssue192386LoggingClose() throws Exception {
+        final PhpProject project = TestUtils.createPhpProject(getWorkDir());
+        final CopySupport copySupport = project.getCopySupport();
+
+        copySupport.projectOpened();
+        copySupport.projectClosed();
+        try {
+            copySupport.projectClosed();
+            fail("Should not get here.");
+        } catch (EmptyStackException ese) {
+            assertTrue("Call stack should be empty", copySupport.callStack.empty());
+            assertEquals("Copy support should be opened once", 1, copySupport.opened.get());
+            assertEquals("Copy support should be closed twice", 2, copySupport.closed.get());
         }
     }
 
@@ -113,7 +137,7 @@ public class CopySupportTest extends PhpTestCase {
         String msg = "Copy support should be opened (opened: " + opened + ", closed: " + closed + ").";
         assertTrue(msg, copySupport.projectOpened);
         assertEquals(msg, 1, opened - closed);
-        assertEquals("Call stack should contain one element", 1, copySupport.calls.size());
+        assertEquals("Call stack should contain one element", 1, copySupport.callStack.size());
     }
 
     private void assertCopySupportClosed(CopySupport copySupport) {
@@ -122,7 +146,23 @@ public class CopySupportTest extends PhpTestCase {
         String msg = "Copy support should be closed (opened: " + opened + ", closed: " + closed + ").";
         assertFalse(msg, copySupport.projectOpened);
         assertEquals(msg, opened, closed);
-        assertTrue("Call stack should be empty", copySupport.calls.isEmpty());
+        assertTrue("Call stack should be empty", copySupport.callStack.empty());
+    }
+
+    private void dummyMethod(Runnable action) {
+        action.run();
+    }
+
+    private void checkStackTrace(Throwable throwable, String className, String methodName) {
+        boolean found = false;
+        for (StackTraceElement element : throwable.getStackTrace()) {
+            if (element.getMethodName().equals(element.getMethodName())
+                    && element.getClassName().equals(className)) {
+                found = true;
+                break;
+            }
+        }
+        assertTrue(className + "::" + methodName + " should be found", found);
     }
 
 }

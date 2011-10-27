@@ -168,11 +168,11 @@ abstract class FileOperationFactory {
         return openProperties.equals(JOptionPane.YES_OPTION);
     }
 
-    protected void showCustomizer() {
+    protected void showCustomizer(final String category) {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                project.getLookup().lookup(CustomizerProviderImpl.class).showCustomizer(CompositePanelProviderImpl.SOURCES);
+                project.getLookup().lookup(CustomizerProviderImpl.class).showCustomizer(category);
             }
         });
     }
