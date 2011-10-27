@@ -64,23 +64,23 @@ import org.w3c.dom.NodeList;
 public class FelixPluginGrammarExtension implements GrammarExtensionProvider {
 
     private static final String[] txtInstructions = new String[] {
-                OSGIConstants.EXPORT_PACKAGE, OSGIConstants.PRIVATE_PACKAGE,
-                OSGIConstants.BUNDLE_ACTIVATOR, OSGIConstants.BUNDLE_SYMBOLIC_NAME,
-                OSGIConstants.IMPORT_PACKAGE, OSGIConstants.INCLUDE_RESOURCE,
-                OSGIConstants.EMBED_DEPENDENCY, OSGIConstants.EMBED_DIRECTORY,
-                OSGIConstants.EMBED_STRIP_GROUP, OSGIConstants.EMBED_STRIP_VERSION,
-                OSGIConstants.EMBED_TRANSITIVE
+                OSGiConstants.EXPORT_PACKAGE, OSGiConstants.PRIVATE_PACKAGE,
+                OSGiConstants.BUNDLE_ACTIVATOR, OSGiConstants.BUNDLE_SYMBOLIC_NAME,
+                OSGiConstants.IMPORT_PACKAGE, OSGiConstants.INCLUDE_RESOURCE,
+                OSGiConstants.EMBED_DEPENDENCY, OSGiConstants.EMBED_DIRECTORY,
+                OSGiConstants.EMBED_STRIP_GROUP, OSGiConstants.EMBED_STRIP_VERSION,
+                OSGiConstants.EMBED_TRANSITIVE
             };
 
     @Override
     public List<GrammarResult> getDynamicCompletion(String path, HintContext hintCtx, Element parent) {
         if (path.endsWith("plugins/plugin/configuration") && isFelixPlugin(hintCtx.getParentNode())) { //NOI18N
             List<GrammarResult> result = new ArrayList<GrammarResult>();
-            result.add(new AbstractSchemaBasedGrammar.MyTextElement(OSGIConstants.PARAM_INSTRUCTIONS, hintCtx.getCurrentPrefix()));
+            result.add(new AbstractSchemaBasedGrammar.MyTextElement(OSGiConstants.PARAM_INSTRUCTIONS, hintCtx.getCurrentPrefix()));
             return result;
         }
 
-        if (path.endsWith("plugins/plugin/configuration/" + OSGIConstants.PARAM_INSTRUCTIONS) &&
+        if (path.endsWith("plugins/plugin/configuration/" + OSGiConstants.PARAM_INSTRUCTIONS) &&
                 isFelixPlugin(hintCtx.getParentNode().getParentNode())) { //NOI18N
             List<GrammarResult> result = new ArrayList<GrammarResult>();
             for (String curInst : txtInstructions) {
@@ -110,7 +110,7 @@ public class FelixPluginGrammarExtension implements GrammarExtensionProvider {
             if ("groupId".equals(curNode.getNodeName())) {
                 NodeList children = curNode.getChildNodes();
                 if (children.getLength() > 0 && 
-                        OSGIConstants.GROUPID_FELIX.equals(children.item(0).getNodeValue())) {
+                        OSGiConstants.GROUPID_FELIX.equals(children.item(0).getNodeValue())) {
                     felixGroupId = true;
                 } else {
                     return false;
@@ -119,7 +119,7 @@ public class FelixPluginGrammarExtension implements GrammarExtensionProvider {
             if ("artifactId".equals(curNode.getNodeName())) {
                 NodeList children = curNode.getChildNodes();
                 if (children.getLength() > 0 && 
-                        OSGIConstants.ARTIFACTID_BUNDLE_PLUGIN.equals(children.item(0).getNodeValue())) {
+                        OSGiConstants.ARTIFACTID_BUNDLE_PLUGIN.equals(children.item(0).getNodeValue())) {
                     felixArtifactId = true;
                 } else {
                     return false;
