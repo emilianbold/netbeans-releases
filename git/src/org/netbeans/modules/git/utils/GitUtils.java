@@ -705,6 +705,22 @@ public final class GitUtils {
             }
         }
     }
+
+    public static Map<File, Set<File>> sortByRepository (Collection<File> files) {
+        Map<File, Set<File>> sorted = new HashMap<File, Set<File>>(5);
+        for (File f : files) {
+            File repository = Git.getInstance().getRepositoryRoot(f);
+            if (repository != null) {
+                Set<File> repoFiles = sorted.get(repository);
+                if (repoFiles == null) {
+                    repoFiles = new HashSet<File>();
+                    sorted.put(repository, repoFiles);
+                }
+                repoFiles.add(f);
+            }
+        }
+        return sorted;
+    }
     
     private GitUtils() {
     }
