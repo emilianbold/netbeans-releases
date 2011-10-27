@@ -1941,7 +1941,7 @@ class LayoutFeeder implements LayoutConstants {
                     closeAlign2 = getExtractCloseAlign(iDesc2);
                 }
                 LayoutInterval subgroup = extractParallelSequence(
-                        parent, space, closeAlign1, closeAlign2, iDesc1.alignment);
+                        parent, space, closeAlign1, closeAlign2, iDesc1.alignment, null);
                 if (subgroup != null) {
                     seq = new LayoutInterval(SEQUENTIAL);
                     parent = subgroup;
@@ -2479,13 +2479,16 @@ class LayoutFeeder implements LayoutConstants {
                                                    LayoutRegion space,
                                                    int closeAlign1,
                                                    int closeAlign2,
-                                                   int refPoint)
+                                                   int refPoint,
+                                                   int[] visualBoundary)
     {
         int count = seq.getSubIntervalCount();
         int startIndex = 0;
         int endIndex = count - 1;
         int startPos = seq.getCurrentSpace().positions[dimension][LEADING];
         int endPos = seq.getCurrentSpace().positions[dimension][TRAILING];
+        int startPosBoundary = visualBoundary != null ? visualBoundary[LEADING] : LayoutRegion.UNKNOWN;
+        int endPosBoundary = visualBoundary != null ? visualBoundary[TRAILING] : LayoutRegion.UNKNOWN;
         boolean closeStart = closeAlign1 == LEADING || closeAlign2 == LEADING;
         boolean closeEnd = closeAlign1 == TRAILING || closeAlign2 == TRAILING;
         if (refPoint < 0) {
@@ -2511,6 +2514,15 @@ class LayoutFeeder implements LayoutConstants {
                     startIndex = i + 1;
                     startPos = subSpace.positions[dimension][TRAILING];
                 }
+            } else if (startPosBoundary != LayoutRegion.UNKNOWN && subSpace.positions[dimension][LEADING] < startPosBoundary) {
+                // this interval is positioned before allowed visual boundary
+                startIndex = i + 1;
+                startPos = subSpace.positions[dimension][TRAILING];
+            } else if (endPosBoundary != LayoutRegion.UNKNOWN && subSpace.positions[dimension][TRAILING] > endPosBoundary) {
+                // this interval is positioned after allowed visual boundary
+                endIndex = i - 1;
+                endPos = subSpace.positions[dimension][LEADING];
+                break;
             } else if (closeStart || closeEnd) { // go for smallest parallel part possible
                 int[] detPos = space.positions[dimension];
                 int[] subPos = subSpace.positions[dimension];
@@ -2625,6 +2637,9 @@ class LayoutFeeder implements LayoutConstants {
     }
 
     private static void setCurrentPositionToParent(LayoutInterval interval, LayoutInterval parent, int dimension, int alignment) {
+        if (!parent.isParentOf(interval)) {
+            return;
+        }
         int parentPos = parent.getCurrentSpace().positions[dimension][alignment];
         if (!LayoutRegion.isValidCoordinate(parentPos)) {
             return;
@@ -4380,10 +4395,10 @@ class LayoutFeeder implements LayoutConstants {
                         if (sub.isEmptySpace()) {
                             continue;
                         }
-                        LayoutRegion subSapce = sub.getCurrentSpace();
+                        LayoutRegion subSpace = sub.getCurrentSpace();
                         if (LayoutUtils.contentOverlap(addingSpace, sub, dimension^1)
-                                && LayoutRegion.overlap(addingSpace, subSapce, dimension, 0)
-                                   != LayoutRegion.overlap(origClosedSpace, subSapce, dimension, 0)) {
+                                && LayoutRegion.overlap(addingSpace, subSpace, dimension, 0)
+                                   != LayoutRegion.overlap(origClosedSpace, subSpace, dimension, 0)) {
                             sameNeighbors = false;
                             break;
                         }
@@ -4543,7 +4558,8 @@ class LayoutFeeder implements LayoutConstants {
         for (Iterator it=inclusions.iterator(); it.hasNext(); ) {
             IncludeDesc iDesc = (IncludeDesc) it.next();
             if (iDesc.parent.isSequential() && iDesc.newSubGroup) {
-                LayoutInterval parSeq = extractParallelSequence(iDesc.parent, addingSpace, -1, -1, iDesc.alignment);
+                LayoutInterval parSeq = extractParallelSequence(iDesc.parent, addingSpace, -1, -1, iDesc.alignment,
+                        collectNeighborPositions(inclusions, iDesc, addingSpace, dimension));
                 if (parSeq != null) {
                     assert parSeq.isParallel(); // parallel group with part of the original sequence
                     if (subGroup == null) {
@@ -4558,7 +4574,14 @@ class LayoutFeeder implements LayoutConstants {
                     layoutModel.removeInterval(parSeq);
                     layoutModel.removeInterval(iDesc.parent);
                 } else {
-                    iDesc.newSubGroup = false;
+                    it.remove();
+                    if (inclusions.size() == 1) {
+                        if (separatedLeading.isEmpty() && separatedTrailing.isEmpty()) {
+                            return;
+                        } else {
+                            break;
+                        }
+                    }
                 }
             }
         }
@@ -4853,6 +4876,89 @@ class LayoutFeeder implements LayoutConstants {
             }
             correctOriginalInclusion(iDesc, LayoutInterval.getRoot(iDesc.neighbor));
         }
+    }
+
+    private static int[] collectNeighborPositions(List<IncludeDesc> inclusions, IncludeDesc exclude,
+                                                  LayoutRegion space, int dimension) {
+        int minPos = Integer.MIN_VALUE;
+        int maxPos = Integer.MAX_VALUE;
+        LayoutInterval[] neighbors = new LayoutInterval[2];
+        for (Iterator<IncludeDesc> it=inclusions.iterator(); it.hasNext(); ) {
+            IncludeDesc iDesc = it.next();
+            LayoutInterval parent = iDesc.parent;
+            if (iDesc != exclude) {
+                neighbors[LEADING] = null;
+                neighbors[TRAILING] = null;
+                if (parent.isParallel()) {
+                    if (iDesc.neighbor != null) {
+                        LayoutRegion nSpace = iDesc.neighbor.getCurrentSpace();
+                        if (nSpace.isSet(dimension)) {
+                            int dir = getAddDirection(space, nSpace, dimension, CENTER);
+                            neighbors[dir^1] = iDesc.neighbor;
+                        }
+                    }
+                } else if (!iDesc.newSubGroup) {
+                    int i = iDesc.index;
+                    if (i < 0) {
+                        i = parent.getSubIntervalCount() - 1;
+                    }
+                    if (i >= 0 && i < parent.getSubIntervalCount()) {
+                        LayoutInterval neighbor = parent.getSubInterval(i);
+                        if (!neighbor.isEmptySpace()) {
+                            neighbors[TRAILING] = neighbor;
+                            i--; // now possibly on empty space
+                        }
+                    }
+                    if (i > 0) {
+                        LayoutInterval neighbor = parent.getSubInterval(i-1);
+                        if (!neighbor.isEmptySpace()) {
+                            neighbors[LEADING] = neighbor;
+                        }
+                    }
+                    if (neighbors[TRAILING] == null && i+1 < parent.getSubIntervalCount()) {
+                        LayoutInterval neighbor = parent.getSubInterval(i+1);
+                        if (!neighbor.isEmptySpace()) {
+                            neighbors[TRAILING] = neighbor;
+                        }
+                    }
+                } else {
+                    for (int i=0; i < parent.getSubIntervalCount(); i++) {
+                        LayoutInterval li = parent.getSubInterval(i);
+                        if (li.isEmptySpace()) {
+                            continue;
+                        }
+                        LayoutRegion subSpace = li.getCurrentSpace();
+                        if (LayoutRegion.overlap(space, subSpace, dimension^1, 0)) {
+                            if (subSpace.positions[dimension][TRAILING] <= space.positions[dimension][LEADING]) {
+                                neighbors[LEADING] = li;
+                            } else if (subSpace.positions[dimension][LEADING] >= space.positions[dimension][TRAILING]) {
+                                neighbors[TRAILING] = li;
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (neighbors[LEADING] != null) {
+                    int pos = neighbors[LEADING].getCurrentSpace().positions[dimension][TRAILING];
+                    if (pos != LayoutRegion.UNKNOWN && pos > minPos) {
+                        minPos = pos;
+                    }
+                }
+                if (neighbors[TRAILING] != null) {
+                    int pos = neighbors[TRAILING].getCurrentSpace().positions[dimension][LEADING];
+                    if (pos != LayoutRegion.UNKNOWN && pos < maxPos) {
+                        maxPos = pos;
+                    }
+                }
+            }
+        }
+        if (maxPos == Integer.MAX_VALUE) {
+            maxPos = LayoutRegion.UNKNOWN;
+        }
+        if (minPos == Integer.MIN_VALUE) {
+            minPos = LayoutRegion.UNKNOWN;
+        }
+        return new int[] { minPos, maxPos };
     }
 
     /**
