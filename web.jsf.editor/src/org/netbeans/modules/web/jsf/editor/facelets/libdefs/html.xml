@@ -106,5 +106,12 @@
     <tag name="selectManyMenu"/>
     <tag name="selectOneListbox"/>
     <tag name="selectOneMenu"/>
-    <tag name="selectOneRadio"/>
+    <tag name="selectOneRadio">
+        <attr name="layout">
+            <type name="enum">
+                <val>pageDirection</val>
+                <val>lineDirection</val>
+            </type>
+        </attr>
+    </tag>
 </library>

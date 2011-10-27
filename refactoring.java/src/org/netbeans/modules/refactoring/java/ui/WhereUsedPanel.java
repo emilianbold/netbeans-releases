@@ -108,12 +108,8 @@ import org.openide.util.NbPreferences;
  * @author  Ralph Ruijs
  */
 public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
-    private static final String CONFIG_ROOT = "org-netbeans-java-refactoring-whereused"; // NOI18N
-    private static final String SCOPE_CONFIG = CONFIG_ROOT + "/Scope"; // NOI18N
-    private static final String FILES = "/Files"; // NOI18N
-    private static final String FOLDERS = "/Folders"; // NOI18N
-    private static final String SOURCE_ROOTS = "/SourceRoots"; // NOI18N
     
+    private static final String PREF_SCOPE = "FindUsages-Scope";
     private static final String PACKAGE = "org/netbeans/spi/java/project/support/ui/package.gif"; // NOI18N
     private final transient TreePathHandle element;
     private  TreePathHandle newElement;
@@ -390,7 +386,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
     
     private Scope readScope() {
         try {
-            if (NbPreferences.forModule(WhereUsedPanel.class).nodeExists("FindUsages-Scope")) { //NOI18N
+            if (NbPreferences.forModule(JavaScopeBuilder.class).nodeExists(PREF_SCOPE)) { //NOI18N
                 return Scope.create(
                         loadFileList("sourceRoot", FileObject.class), //NOI18N
                         loadFileList("folder", NonRecursiveFolder.class), //NOI18N
@@ -403,7 +399,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
     }
     
     private <T> List<T> loadFileList(String key, Class<T> type) {
-        Preferences pref = NbPreferences.forModule(WhereUsedPanel.class).node("FindUsages-Scope"); //NOI18N
+        Preferences pref = NbPreferences.forModule(JavaScopeBuilder.class).node(PREF_SCOPE); //NOI18N
         int count = 0;
         String val = pref.get(key + "." + count, null); //NOI18N
         List<T> toRet = new ArrayList<T>();
@@ -431,7 +427,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
     }
     
     private void storeFileList(Set files, String basekey) {
-        Preferences pref = NbPreferences.forModule(WhereUsedPanel.class).node("FindUsages-Scope"); //NOI18N
+        Preferences pref = NbPreferences.forModule(JavaScopeBuilder.class).node(PREF_SCOPE); //NOI18N
         assert files != null;
         int count = 0;
         String key = basekey + "." + count; //NOI18N

@@ -232,6 +232,7 @@ public class OutputDocument implements Document, Element, ChangeListener {
             Logger.getAnonymousLogger().log(Level.WARNING,
                 "OOME while reading output.  Cleaning up.", //NOI18N
             error);
+            System.gc();
         }
     }
     public void insertString(int offset, String str, AttributeSet attributeSet) throws BadLocationException {

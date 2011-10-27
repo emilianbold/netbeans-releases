@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.maven.j2ee;
 
-import java.util.List;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -50,14 +49,20 @@ import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 
 /**
- * Helper class used for UI and Usage logging. Could be used in Maven J2ee modules
+ * Helper class for UI and Usage logging.
  * 
  * @author Martin Janicek
  */
 public class LoggingUtils {
     
-    private static final Logger UI_LOGGER = Logger.getLogger("org.netbeans.ui.maven.j2ee"); // NOI18N
-    private static final Logger USG_LOGGER = Logger.getLogger("org.netbeans.ui.metrics.maven.j2ee"); // NOI18N
+    private static final String UI_LOGGER_NAME = "org.netbeans.ui";
+    private static final String USG_LOGGER_NAME = "org.netbeans.ui.metrics";
+    private static final Logger UI_LOGGER = Logger.getLogger(UI_LOGGER_NAME);
+    private static final Logger USG_LOGGER = Logger.getLogger(USG_LOGGER_NAME);
+    
+    
+    private LoggingUtils() {
+    }
     
     /**
      * Logs the UI gesture using ResourceBundle.
@@ -70,8 +75,8 @@ public class LoggingUtils {
         logUsingResourceBundle(UI_LOGGER, bundle, message, params);
     }
     
-    public static void logUI(ResourceBundle bundle, String message, List<? extends Object> params) {
-        logUsingResourceBundle(UI_LOGGER, bundle, message, params.toArray());
+    public static void logUI(ResourceBundle bundle, String message, Object[] params, String moduleName) {
+        logUsingResourceBundle(createUiLogger(moduleName), bundle, message, params);
     }
     
     /**
@@ -85,9 +90,10 @@ public class LoggingUtils {
         logUsingSourceClass(UI_LOGGER, srcClass, message, params);
     }
     
-    public static void logUI(Class srcClass, String message, List<? extends Object> params) {
-        logUsingSourceClass(UI_LOGGER, srcClass, message, params.toArray());
+    public static void logUI(Class srcClass, String message, Object[] params, String moduleName) {
+        logUsingSourceClass(createUiLogger(moduleName), srcClass, message, params);
     }
+    
 
     /**
      * Logs usage data using ResourceBundle.
@@ -100,8 +106,8 @@ public class LoggingUtils {
         logUsingResourceBundle(USG_LOGGER, bundle, message, params);
     }
     
-    public static void logUsage(ResourceBundle bundle, String message, List<? extends Object> params) {
-        logUsingResourceBundle(USG_LOGGER, bundle, message, params.toArray());
+    public static void logUsage(ResourceBundle bundle, String message, Object[] params, String moduleName) {
+        logUsingResourceBundle(createUsageLogger(moduleName), bundle, message, params);
     }
 
     /**
@@ -115,8 +121,8 @@ public class LoggingUtils {
         logUsingSourceClass(USG_LOGGER, srcClass, message, params);
     }
     
-    public static void logUsage(Class srcClass, String message, List<? extends Object> params) {
-        logUsingSourceClass(USG_LOGGER, srcClass, message, params.toArray());
+    public static void logUsage(Class srcClass, String message, Object[] params, String moduleName) {
+        logUsingSourceClass(createUsageLogger(moduleName), srcClass, message, params);
     }
     
     private static void logUsingSourceClass(Logger logger, Class srcClass, String message, Object[] params) {
@@ -134,6 +140,22 @@ public class LoggingUtils {
         logRecord.setResourceBundle(bundle);
         
         logger.log(logRecord);
+    }
+    
+    static Logger createUiLogger(String moduleName) {
+        if (moduleName != null && "".equals(moduleName.trim()) == false) {
+            return Logger.getLogger(UI_LOGGER_NAME + "." + moduleName);
+        }
+        
+        return UI_LOGGER;
+    }
+    
+    static Logger createUsageLogger(String moduleName) {
+        if (moduleName != null && "".equals(moduleName.trim()) == false) {
+            return Logger.getLogger(USG_LOGGER_NAME + "." + moduleName);
+        }
+        
+        return USG_LOGGER;
     }
     
     private static LogRecord createLogRecord(Logger logger, String message, Object[] params) {
