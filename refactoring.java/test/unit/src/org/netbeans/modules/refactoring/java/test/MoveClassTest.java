@@ -57,6 +57,18 @@ public class MoveClassTest extends RefactoringTestBase {
         super(name);
     }
     
+    public void test204285() throws Exception { // #204285 - [71cat] ClassCastException: com.sun.tools.javac.code.Symbol$ClassSymbol cannot be cast to javax.lang.model.element.PackageElement
+        writeFilesAndWaitForScan(test,
+                                 new File("t/package-info.java", "package t;"),
+                                 new File("v/A.java", "package v; import static u.B.*; public class A { public void foo() { int d = B.c; } }"),
+                                 new File("u/B.java", "package u; public class B { public static int c = 5; }"));
+        performMoveClass(Lookups.singleton(test.getFileObject("u")), new URL(test.getURL(), "t/"));
+        verifyContent(test,
+                      new File("t/package-info.java", "package t;"),
+                      new File("v/A.java", "package v; import static t.u.B.*; public class A { public void foo() { int d = B.c; } }"),
+                      new File("t/u/B.java", "package t.u; public class B { public static int c = 5; }"));
+    }
+    
     public void test168923() throws Exception { // #168923 - [Move] refactoring a package doesn't update star imports [68cat]
         writeFilesAndWaitForScan(src,
                                  new File("t/package-info.java", "package t;"),

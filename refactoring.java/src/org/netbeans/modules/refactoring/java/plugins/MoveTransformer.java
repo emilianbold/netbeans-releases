@@ -49,7 +49,6 @@ import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.util.*;
 import javax.lang.model.element.*;
-import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.refactoring.api.Problem;
@@ -416,7 +415,7 @@ public class MoveTransformer extends RefactoringVisitor {
                 }
             } else if(qualifiedIdentifier.getKind() == Tree.Kind.MEMBER_SELECT) {
                 MemberSelectTree memberSelect = (MemberSelectTree) qualifiedIdentifier;
-                if(memberSelect.getIdentifier().contentEquals("*")) {
+                if(memberSelect.getIdentifier().contentEquals("*") && !node.isStatic()) {
                     PackageElement pakketje = (PackageElement) workingCopy.getTrees().getElement(new TreePath(getCurrentPath(), memberSelect.getExpression()));
                     if(isThisPackageMoving(pakketje)) {
                         importToRemove.add(node);
