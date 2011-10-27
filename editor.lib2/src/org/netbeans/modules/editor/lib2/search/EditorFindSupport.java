@@ -515,8 +515,14 @@ public final class EditorFindSupport {
                 Object dp = props.get(FIND_BACKWARD_SEARCH);
                 boolean direction = (dp != null) ? ((Boolean)dp).booleanValue() : false;
 
-                if (dotPos == (oppositeDir ^ direction ? c.getSelectionEnd() : c.getSelectionStart()))
+                if (dotPos == (oppositeDir ^ direction ? c.getSelectionEnd() : c.getSelectionStart())) 
                     dotPos += (oppositeDir ^ direction ? -1 : 1);
+                
+                if (replaceExp != null) 
+                    if (oppositeDir ^ direction)
+                        dotPos = c.getSelectionEnd();
+                    else
+                        dotPos = c.getSelectionStart();
             }
             
             Boolean b = (Boolean)props.get(FIND_BLOCK_SEARCH);
