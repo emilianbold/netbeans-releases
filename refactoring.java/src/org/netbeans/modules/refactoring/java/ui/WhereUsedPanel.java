@@ -386,7 +386,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
     
     private Scope readScope() {
         try {
-            if (NbPreferences.forModule(WhereUsedPanel.class).nodeExists(PREF_SCOPE)) { //NOI18N
+            if (NbPreferences.forModule(JavaScopeBuilder.class).nodeExists(PREF_SCOPE)) { //NOI18N
                 return Scope.create(
                         loadFileList("sourceRoot", FileObject.class), //NOI18N
                         loadFileList("folder", NonRecursiveFolder.class), //NOI18N
@@ -399,7 +399,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
     }
     
     private <T> List<T> loadFileList(String key, Class<T> type) {
-        Preferences pref = NbPreferences.forModule(WhereUsedPanel.class).node(PREF_SCOPE); //NOI18N
+        Preferences pref = NbPreferences.forModule(JavaScopeBuilder.class).node(PREF_SCOPE); //NOI18N
         int count = 0;
         String val = pref.get(key + "." + count, null); //NOI18N
         List<T> toRet = new ArrayList<T>();
@@ -427,7 +427,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
     }
     
     private void storeFileList(Set files, String basekey) {
-        Preferences pref = NbPreferences.forModule(WhereUsedPanel.class).node(PREF_SCOPE); //NOI18N
+        Preferences pref = NbPreferences.forModule(JavaScopeBuilder.class).node(PREF_SCOPE); //NOI18N
         assert files != null;
         int count = 0;
         String key = basekey + "." + count; //NOI18N
