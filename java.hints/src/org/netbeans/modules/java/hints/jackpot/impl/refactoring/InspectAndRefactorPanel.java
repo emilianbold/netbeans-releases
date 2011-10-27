@@ -57,14 +57,18 @@ import java.awt.event.ItemListener;
 import java.beans.BeanInfo;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import javax.accessibility.AccessibleContext;
 import javax.swing.ButtonGroup;
@@ -115,7 +119,10 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -139,6 +146,7 @@ public class InspectAndRefactorPanel extends javax.swing.JPanel implements Popup
     private JLabel currentProject = null;
     private JLabel allProjects = null;
     private Project project;
+    private String PREF_SCOPE = "InspectAndTransform-Scope";
     
     /** Creates new form InspectAndRefactorPanel */
     public InspectAndRefactorPanel(Lookup context, ChangeListener parent, boolean query) {
@@ -426,12 +434,15 @@ public class InspectAndRefactorPanel extends javax.swing.JPanel implements Popup
                 customScope = org.netbeans.modules.refactoring.api.Scope.create(Collections.EMPTY_LIST, Collections.EMPTY_LIST, Collections.singleton(fileObject));
         } else {
             //custom
-            customScope = org.netbeans.modules.refactoring.api.Scope.create(Collections.EMPTY_LIST, Collections.EMPTY_LIST, Collections.EMPTY_LIST);
+            customScope = readScope();
+            if (customScope==null)
+                customScope = org.netbeans.modules.refactoring.api.Scope.create(Collections.EMPTY_LIST, Collections.EMPTY_LIST, Collections.EMPTY_LIST);
         }
         org.netbeans.modules.refactoring.api.Scope s = JavaScopeBuilder.open(NbBundle.getMessage(InspectAndRefactorPanel.class, "CTL_CustomScope"), customScope);
         if (s != null) {
             customScope = s;
             scopeCombo.setSelectedIndex(scopeCombo.getItemCount() - 1);
+            storeScope(customScope);
         }
     }//GEN-LAST:event_customScopeButtonActionPerformed
 
@@ -505,7 +516,84 @@ public class InspectAndRefactorPanel extends javax.swing.JPanel implements Popup
         return Scopes.specifiedFoldersScope(Folder.convert(list));
     }
     
+    //TODO: Copy/Paste from WhereUsedPanel
+    private void storeScope(org.netbeans.modules.refactoring.api.Scope customScope) {
+        storeFileList(customScope.getSourceRoots(), "sourceRoot"); //NOI18N
+        storeFileList(customScope.getFolders(), "folder"); //NOI18N
+        storeFileList(customScope.getFiles(), "file"); //NOI18N
+    }
 
+    private org.netbeans.modules.refactoring.api.Scope readScope() {
+        try {
+            if (NbPreferences.forModule(JavaScopeBuilder.class).nodeExists(PREF_SCOPE)) { //NOI18N
+                return org.netbeans.modules.refactoring.api.Scope.create(
+                        loadFileList("sourceRoot", FileObject.class), //NOI18N
+                        loadFileList("folder", NonRecursiveFolder.class), //NOI18N
+                        loadFileList("file", FileObject.class)); //NOI18N
+            }
+        } catch (BackingStoreException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return null;
+    }
+
+    private <T> List<T> loadFileList(String key, Class<T> type) {
+        Preferences pref = NbPreferences.forModule(JavaScopeBuilder.class).node(PREF_SCOPE); //NOI18N
+        int count = 0;
+        String val = pref.get(key + "." + count, null); //NOI18N
+        List<T> toRet = new ArrayList<T>();
+        while (val != null) {
+            try {
+                final FileObject f = URLMapper.findFileObject(new URL(val));
+                if (f != null && f.isValid()) {
+                    if (type.isAssignableFrom(FileObject.class)) {
+                        toRet.add((T) f);
+                    } else {
+                        toRet.add((T) new NonRecursiveFolder() {
+
+                            public FileObject getFolder() {
+                                return f;
+                            }
+                        });
+                    }
+                }
+            } catch (MalformedURLException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            val = pref.get(key + "." + ++count, null); //NOI18N
+        }
+        return toRet;
+    }
+
+    private void storeFileList(Set files, String basekey) {
+        Preferences pref = NbPreferences.forModule(JavaScopeBuilder.class).node(PREF_SCOPE); //NOI18N
+        assert files != null;
+        int count = 0;
+        String key = basekey + "." + count; //NOI18N
+        String val = pref.get(key, null);
+        Iterator<Object> it = files.iterator();
+        while (val != null || it.hasNext()) {
+            try {
+                if (it.hasNext()) {
+                    Object next = it.next();
+                    if (next instanceof FileObject) {
+                        pref.put(key, ((FileObject) next).getURL().toExternalForm());
+                    } else {
+                        pref.put(key, ((NonRecursiveFolder) next).getFolder().getURL().toExternalForm());
+                    }
+
+                } else {
+                    pref.remove(key);
+                }
+            } catch (FileStateInvalidException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            key = basekey + "." + ++count; //NOI18N
+            val = pref.get(key, null);
+        }
+    }
+    //End of copy/paste
+    
     private Scope getThisProjectScope() {
         List<FileObject> roots = new ArrayList<FileObject>();
 
