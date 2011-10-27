@@ -48,7 +48,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.net.URI;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -76,6 +79,8 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.ant.AntArtifact;
+import org.netbeans.api.project.ant.AntArtifactQuery;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
 import org.netbeans.modules.javafx2.platform.api.JavaFXPlatformUtils;
@@ -933,30 +938,69 @@ public final class JFXProjectProperties {
             }
         }
     }
+
+    private FileObject getSrcRoot(Project project)
+    {
+        FileObject srcRoot = null;
+        for (SourceGroup sg : ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
+            if (!isTest(sg.getRootFolder(),project)) {
+                srcRoot = sg.getRootFolder();
+                break;
+            }
+        }
+        return srcRoot;
+    }
     
     private void updatePreloaderDependencies(Map<String/*|null*/,Map<String,String/*|null*/>/*|null*/> configs) throws IOException {
         // depeding on the currently (de)selected preloader update project dependencies,
-        // i.e., remove deselected preloader project dependency and add selected preloader project dependency        
-        Map<String,String> active = Collections.unmodifiableMap(configs.get(activeConfig));
-        String projDir = active.get(PRELOADER_PROJECT);
-        if (projDir == null) {
-            return;
-        }
-        
-        File projDirF = new File(projDir);
-        if( isTrue(active.get(PRELOADER_ENABLED)) && projDirF.exists() ) {
-            FileObject srcRoot = null;
-            for (SourceGroup sg : ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
-                if (!isTest(sg.getRootFolder(),project)) {
-                    srcRoot = sg.getRootFolder();
-                    break;
-                }
+        // i.e., remove deselected preloader project dependency and add selected preloader project dependency
+        Map<String,Map<String,String>> configsCopy = Collections.unmodifiableMap(configs);
+        for(Map.Entry<String,Map<String,String>> config : configsCopy.entrySet()) {
+            
+            Map<String,String> configCopy = Collections.unmodifiableMap(config.getValue());
+            if(!isTrue( configCopy.get(PRELOADER_ENABLED))) {
+                continue;
             }
-            if(srcRoot != null) {
-                projDirF = FileUtil.normalizeFile(projDirF);
-                FileObject prelFO = FileUtil.toFileObject(projDirF);
-                final Project[] p = new Project[] {ProjectManager.getDefault().findProject(prelFO)};
-                ProjectClassPathModifier.addProjects(p, srcRoot, ClassPath.COMPILE);
+            String prelTypeString = configCopy.get(PRELOADER_TYPE);
+            
+            String prelProjDir = configCopy.get(PRELOADER_PROJECT);
+            if (prelProjDir != null && isEqualIgnoreCase(prelTypeString, PreloaderSourceType.PROJECT.getString())) {
+                File prelProjDirF = new File(prelProjDir);
+                if( isTrue(configCopy.get(PRELOADER_ENABLED)) && prelProjDirF.exists() ) {
+                    FileObject srcRoot = getSrcRoot(project);
+                    if(srcRoot != null) {
+                        prelProjDirF = FileUtil.normalizeFile(prelProjDirF);
+                        FileObject prelProjFO = FileUtil.toFileObject(prelProjDirF);
+                        //final Project[] p = new Project[] {ProjectManager.getDefault().findProject(prelProjFO)};
+                        final Project proj = ProjectManager.getDefault().findProject(prelProjFO);
+
+                        AntArtifact[] artifacts = AntArtifactQuery.findArtifactsByType(proj, JavaProjectConstants.ARTIFACT_TYPE_JAR);
+                        List<URI> allURI = new ArrayList<URI>();
+                        for(AntArtifact artifact : artifacts) {
+                            allURI.addAll(Arrays.asList(artifact.getArtifactLocations()));
+                        }
+                        if(!allURI.isEmpty()) {
+                            URI[] arrayURI = allURI.toArray(new URI[0]);
+                            boolean added = ProjectClassPathModifier.addAntArtifacts(artifacts, arrayURI, srcRoot, ClassPath.COMPILE);
+
+                            //ProjectClassPathModifier.addProjects(p, srcRoot, ClassPath.COMPILE);
+                        }
+                    }
+                }
+                continue;
+            }
+            String prelJar = configCopy.get(PRELOADER_JAR_PATH);
+            if(prelJar != null && isEqualIgnoreCase(prelTypeString, PreloaderSourceType.JAR.getString())) {
+                File prelJarF = new File(prelJar);
+                if( prelJarF.exists() ) {
+                    FileObject srcRoot = getSrcRoot(project);
+                    if(srcRoot != null) {
+                        String prelJarFS = "file:/" + prelJarF.getAbsolutePath() + "!/"; //NOI18N
+                        URL[] urls = new URL[1];
+                        urls[0] = new URL(prelJarFS);
+                        boolean added = ProjectClassPathModifier.addRoots(urls, srcRoot, ClassPath.COMPILE);
+                    }
+                }
             }
         }
     }
