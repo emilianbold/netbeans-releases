@@ -837,7 +837,8 @@ public class CommonServerSupport implements GlassfishModule2, RefreshModulesCook
         GetPropertyCommand gpc = null;
         if (Util.isDefaultOrServerTarget(properties)) {
             gpc = new GetPropertyCommand("*.server-config.*.http-listener-1.port"); // NOI18N
-            setEnvironmentProperty(GlassfishModule.HTTPHOST_ATTR, "localhost", true); // NOI18N
+            setEnvironmentProperty(GlassfishModule.HTTPHOST_ATTR, 
+                    properties.get(GlassfishModule.HOSTNAME_ATTR), true); // NOI18N
         } else {
             String server = getServerFromTarget(target);
             String adminHost = properties.get(GlassfishModule.HOSTNAME_ATTR);
