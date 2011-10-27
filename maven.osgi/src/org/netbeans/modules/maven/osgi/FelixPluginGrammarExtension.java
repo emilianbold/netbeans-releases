@@ -47,7 +47,7 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
 import org.jdom.Element;
-import org.netbeans.modules.maven.grammar.AbstractSchemaBasedGrammar;
+import org.netbeans.modules.maven.grammar.spi.AbstractSchemaBasedGrammar;
 import org.netbeans.modules.maven.grammar.spi.GrammarExtensionProvider;
 import org.netbeans.modules.xml.api.model.GrammarResult;
 import org.netbeans.modules.xml.api.model.HintContext;
