@@ -50,13 +50,13 @@
     xmlns:xsd="http://www.w3.org/2001/XMLSchema"             
     xsi:schemaLocation='http://xml.netbeans.org/websvc/saas/services/1.0 
                     ../../../../../../../../../../websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/SaasServices.xsd'
-    url="http://wsparam.strikeiron.com/relauto/iplookup?WSDL"
+    url="http://wsparam.strikeiron.com/IPLookup2?WSDL"
     type="http://schemas.xmlsoap.org/wsdl/"
-    api-doc="http://www.strikeiron.com/ProductDocumentation.aspx?p=149">
+    api-doc="http://www.strikeiron.com/Catalog/ProductDetail.aspx?pv=2.0.0&amp;pn=IP+Address+Lookup">
     
     <description>Delivers the IP address when given the name of a Web server</description>
     
-    <display-name>IPAddressLookup</display-name>
+    <display-name>IPAddress Lookup v2</display-name>
 
     <saas-metadata>
         <localizing-bundle>org.netbeans.modules.websvc.saas.services.strikeiron.resources.Bundle</localizing-bundle>
@@ -71,14 +71,6 @@
         </authentication>
     </saas-metadata>
 
-    <!--
-    <methods>
-        <method name="DNSLookup" serviceName="DNS"
-                portName="DNSSoap" operationName="DNSLookup">
-            <documentation>Delivers the IP address when given the name of a Web server</documentation>
-        </method>
-    </methods>
-    -->
     
     <methods/>
 </saas-services>
