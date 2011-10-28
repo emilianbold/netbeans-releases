@@ -70,8 +70,22 @@ class HtmlRenameHandler implements InstantRenamer {
         HtmlParserResult result = (HtmlParserResult) info;
         AstNode node = result.findLeafTag(astCaretOffset, true, true);
 
-        return node != null
-                && (node.type() == AstNode.NodeType.OPEN_TAG || node.type() == AstNode.NodeType.ENDTAG);
+        if(node == null) {
+            return false;
+        }
+        
+        switch(node.type()) {
+            case OPEN_TAG:
+                //enable only if the caret is in the tag name
+                int from = node.startOffset();
+                int to = node.startOffset() + 1 + node.name().length(); //"<" + "body" length
+                return astCaretOffset >= from && astCaretOffset <=to;
+            case ENDTAG:
+                return true;
+        }
+        
+        return false;
+        
     }
 
     @Override
