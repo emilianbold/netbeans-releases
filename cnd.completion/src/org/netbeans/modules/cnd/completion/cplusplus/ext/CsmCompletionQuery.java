@@ -3163,7 +3163,7 @@ abstract public class CsmCompletionQuery {
         }
 
         @Override
-        public String toString() {
+        public String getStringPresentation() {
             return "TemplateBasedReferencedObjectResultItem for " + getAssociatedObject(); // NOI18N
         }
     }
