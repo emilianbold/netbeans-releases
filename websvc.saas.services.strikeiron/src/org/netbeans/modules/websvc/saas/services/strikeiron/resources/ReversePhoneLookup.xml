@@ -50,13 +50,13 @@
     xmlns:xsd="http://www.w3.org/2001/XMLSchema"             
     xsi:schemaLocation='http://xml.netbeans.org/websvc/saas/services/1.0 
                     ../../../../../../../../../../websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/SaasServices.xsd'
-    url="http://wsparam.strikeiron.com/RealEDA/reversephone90day?WSDL"
+    url="http://wsparam.strikeiron.com/ReversePhoneAddressLookup?WSDL"
     type="http://schemas.xmlsoap.org/wsdl/"
-    api-doc="http://www.strikeiron.com/WebServiceDetail.aspx?p=103">
+    api-doc="http://www.strikeiron.com/Catalog/ProductDetail.aspx?pv=1.0.0&amp;pn=Reverse+Phone+and+Address+Lookup">
     
     <description>90-Day accuracy service provides a interface to name and address data associated to any telephone number</description>
     
-    <display-name>ReversePhoneLookup</display-name>
+    <display-name>Reverse PhoneLookup v1</display-name>
 
     <saas-metadata>
         <localizing-bundle>org.netbeans.modules.websvc.saas.services.strikeiron.resources.Bundle</localizing-bundle>
@@ -71,14 +71,5 @@
         </authentication>
     </saas-metadata>
 
-    <!--
-    <methods>
-        <method name="StandardReverseLookup" serviceName="StandardReverseLookup"
-                portName="StandardReverseLookupSoap" operationName="Lookup">
-            <documentation>Delivers the IP address when given the name of a Web server</documentation>
-        </method>
-    </methods>
-    -->
-    
     <methods/>
 </saas-services>
