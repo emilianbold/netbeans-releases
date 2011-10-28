@@ -258,11 +258,15 @@ public abstract class CsmResultItem implements CompletionItem {
      * @return a string representation of the object.
      */
     @Override
-    public String toString() {
+    public final String toString() {
+        return getStringPresentation();
+    }
+
+    public String getStringPresentation() {
         Component comp = getPaintComponent(false);
         return comp != null ? comp.toString() : ""; //NOI18N
     }
-
+    
     protected int convertCsmModifiers(CsmObject obj) {
         return CsmUtilities.getModifiers(obj);
     }
