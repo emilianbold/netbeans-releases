@@ -50,13 +50,14 @@
     xmlns:xsd="http://www.w3.org/2001/XMLSchema"             
     xsi:schemaLocation='http://xml.netbeans.org/websvc/saas/services/1.0 
                     ../../../../../../../../../../websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/SaasServices.xsd'
-    url="http://wsparam.strikeiron.com/TaxDataComplete4?WSDL"
+    url="http://ws.strikeiron.com/SMSAlerts4?WSDL"
     type="http://schemas.xmlsoap.org/wsdl/"
-    api-doc="http://www.strikeiron.com/WebServiceDetail.aspx?p=350">
+    api-doc="http://www.strikeiron.com/Catalog/ProductDetail.aspx?pv=4.0.0&amp;pn=SMS+Alerts+and+Notifications">
     
-    <description>Current city, state, and county tax rates in the United States based on a given ZIP code, and Canadian provinces based on a province name</description>
+    <!-- This is the description for this SaaS component. It is not localized. -->
+    <description>Enables an SMS (text) message to be sent to virtually any mobile phone instantly.</description>
     
-    <display-name>SalesandUseTaxComplete40</display-name>
+    <display-name>SMS Text Message Alerts v4</display-name>
 
     <saas-metadata>
         <localizing-bundle>org.netbeans.modules.websvc.saas.services.strikeiron.resources.Bundle</localizing-bundle>
@@ -71,14 +72,5 @@
         </authentication>
     </saas-metadata>
 
-    <!--
-    <methods>
-        <method name="TaxDataComplete" serviceName="TaxDataComplete"
-                portName="TaxDataCompleteSoap" operationName="GetUSATaxRatesByZipCode">
-            <documentation>Delivers the IP address when given the name of a Web server</documentation>
-        </method>
-    </methods>
-    -->
-    
     <methods/>
 </saas-services>
