@@ -46,7 +46,7 @@ package org.netbeans.modules.maven.osgi;
  *
  * @author mkleint
  */
-public interface OSGIConstants {
+public interface OSGiConstants {
     public static final String ARTIFACTID_BUNDLE_PLUGIN = "maven-bundle-plugin"; //NOI18N
     public static final String GROUPID_FELIX = "org.apache.felix"; //NOI18N
 
