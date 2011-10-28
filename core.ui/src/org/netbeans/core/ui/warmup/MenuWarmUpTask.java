@@ -52,7 +52,6 @@ import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.File;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -69,6 +68,7 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.windows.WindowManager;
 import org.openide.util.RequestProcessor;
 import org.openide.filesystems.FileUtil;
+import org.openide.modules.Places;
 import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -271,8 +271,7 @@ public final class MenuWarmUpTask implements Runnable {
             handleBridge.run();
 
             try {
-                File userDir = new File(System.getProperty("netbeans.user")); // NOI18N
-                FileObject udFo = FileUtil.toFileObject(userDir);
+                FileObject udFo = FileUtil.toFileObject(Places.getUserDirectory());
                 if (udFo != null) {
                     udFo = udFo.getFileSystem().getRoot();
                 }

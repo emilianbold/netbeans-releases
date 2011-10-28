@@ -281,7 +281,7 @@ public class TopSecurityManager extends SecurityManager {
                     String n = c.getName();
                     synchronized (warnedClassesNH) {
                         if (warnedClassesNH.add(n)) {
-                            LOG.log(Level.WARNING, "use of system property netbeans.home has been obsoleted in favor of InstalledFileLocator at {0}", findCallStackLine(n)); // NOI18N
+                            LOG.log(Level.WARNING, "use of system property {0} has been obsoleted in favor of InstalledFileLocator at {1}", new Object[] {x, findCallStackLine(n)});
                         }
                     }
                     break;
@@ -302,8 +302,11 @@ public class TopSecurityManager extends SecurityManager {
     static {
         warnedClassesNH.add("org.openide.modules.Places");
         warnedClassesNH.add("org.netbeans.MainImpl"); // NOI18N
+        warnedClassesNH.add("org.netbeans.MainImpl$BootClassLoader");
+        warnedClassesNH.add("org.netbeans.org.netbeans.CLIHandler");
         warnedClassesNH.add("org.netbeans.Stamps"); // NOI18N
         warnedClassesNH.add("org.netbeans.core.startup.InstalledFileLocatorImpl"); // NOI18N
+        warnedClassesNH.add("org.netbeans.core.startup.CLIOptions");
         warnedClassesNH.add("org.netbeans.updater.UpdateTracking"); // NOI18N
         warnedClassesNH.add("org.netbeans.core.ui.ProductInformationPanel"); // #47429; NOI18N
         warnedClassesNH.add("org.netbeans.lib.uihandler.LogFormatter");
