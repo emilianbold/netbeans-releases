@@ -40,7 +40,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.maven.grammar;
+package org.netbeans.modules.maven.grammar.spi;
 
 import java.awt.Component;
 import java.io.InputStream;
@@ -468,11 +468,11 @@ public abstract class AbstractSchemaBasedGrammar implements GrammarQuery {
     }
 
     
-    protected static class MyElement extends AbstractResultNode implements Element {
+    public static class MyElement extends AbstractResultNode implements Element {
         
         private String name;
         
-        MyElement(String name) {
+        public MyElement(String name) {
             this.name = name;
             setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/maven/grammar/element.png", false)); //NOI18N
         }

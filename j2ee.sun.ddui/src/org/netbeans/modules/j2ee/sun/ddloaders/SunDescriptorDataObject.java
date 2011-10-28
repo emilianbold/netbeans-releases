@@ -107,6 +107,11 @@ import org.xml.sax.SAXParseException;
 public class SunDescriptorDataObject extends DDMultiViewDataObject
 {
 
+    @Override
+    protected int getXMLMultiViewIndex() {
+        return xmlIndex; // 6; //super.getXMLMultiViewIndex();
+    }
+
     /**
      * Property name for documentDTD property
      */
@@ -120,6 +125,7 @@ public class SunDescriptorDataObject extends DDMultiViewDataObject
     private volatile RootInterfaceImpl ddRootProxy;
     private PropertyChangeListener ddRootChangeListener;
     private DDType descriptorType;
+    private final int xmlIndex;
     
     public SunDescriptorDataObject(FileObject pf, SunDescriptorDataLoader loader) throws DataObjectExistsException {
         super(pf, loader);
@@ -133,6 +139,23 @@ public class SunDescriptorDataObject extends DDMultiViewDataObject
         ValidateXMLCookie validateCookie = new ValidateXMLSupport(in);
         CookieSet set = getCookieSet();
         set.add(validateCookie);
+        if (null == descriptorType) {
+            xmlIndex = 0;
+        } else if (descriptorType.equals(DDType.DD_GF_WEB_APP) || 
+                descriptorType.equals(DDType.DD_SUN_WEB_APP)) {
+            xmlIndex = 6;
+        } else if (descriptorType.equals(DDType.DD_GF_APPLICATION) || 
+                descriptorType.equals(DDType.DD_SUN_APPLICATION)) {
+            xmlIndex = 1;
+        } else if (descriptorType.equals(DDType.DD_GF_EJB_JAR) || 
+                descriptorType.equals(DDType.DD_SUN_EJB_JAR)) {
+            xmlIndex = 5;
+        } else if (descriptorType.equals(DDType.DD_GF_APP_CLIENT) || 
+                descriptorType.equals(DDType.DD_SUN_APP_CLIENT)) {
+            xmlIndex = 4;
+        } else {
+            xmlIndex = 0;
+        }
     }
     
     /** Returns what the module type ought to be for this particular descriptor 

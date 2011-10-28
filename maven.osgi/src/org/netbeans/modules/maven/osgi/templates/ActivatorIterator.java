@@ -68,7 +68,7 @@ import org.netbeans.modules.maven.model.pom.POMExtensibilityElement;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.POMQName;
 import org.netbeans.modules.maven.model.pom.Plugin;
-import org.netbeans.modules.maven.osgi.OSGIConstants;
+import org.netbeans.modules.maven.osgi.OSGiConstants;
 import static org.netbeans.modules.maven.osgi.templates.Bundle.*;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -153,7 +153,7 @@ public class ActivatorIterator implements TemplateWizard.AsynchronousInstantiati
         Plugin plugin;
         Build bld = mdl.getProject().getBuild();
         if (bld != null) {
-            old = bld.findPluginById(OSGIConstants.GROUPID_FELIX, OSGIConstants.ARTIFACTID_BUNDLE_PLUGIN);
+            old = bld.findPluginById(OSGiConstants.GROUPID_FELIX, OSGiConstants.ARTIFACTID_BUNDLE_PLUGIN);
         } else {
             mdl.getProject().setBuild(mdl.getFactory().createBuild());
         }
@@ -161,10 +161,10 @@ public class ActivatorIterator implements TemplateWizard.AsynchronousInstantiati
             plugin = old;
         } else {
             plugin = mdl.getFactory().createPlugin();
-            plugin.setGroupId(OSGIConstants.GROUPID_FELIX);
-            plugin.setArtifactId(OSGIConstants.ARTIFACTID_BUNDLE_PLUGIN);
+            plugin.setGroupId(OSGiConstants.GROUPID_FELIX);
+            plugin.setArtifactId(OSGiConstants.ARTIFACTID_BUNDLE_PLUGIN);
             String ver = PluginPropertyUtils.getPluginVersion(prj.getMavenProject(), 
-                    OSGIConstants.GROUPID_FELIX, OSGIConstants.ARTIFACTID_BUNDLE_PLUGIN);
+                    OSGiConstants.GROUPID_FELIX, OSGiConstants.ARTIFACTID_BUNDLE_PLUGIN);
             if (ver == null) {
                 //not defined in resolved project, set version.
 //                plugin.setVersion(MavenVersionSettings.getDefault().getVersion(MavenVersionSettings.VERSION_FELIX));
@@ -180,25 +180,25 @@ public class ActivatorIterator implements TemplateWizard.AsynchronousInstantiati
         List<POMExtensibilityElement> elems = conf.getConfigurationElements();
         POMExtensibilityElement instructions = null;
         for (POMExtensibilityElement el : elems) {
-            if (OSGIConstants.PARAM_INSTRUCTIONS.equals(el.getQName().getLocalPart())) {
+            if (OSGiConstants.PARAM_INSTRUCTIONS.equals(el.getQName().getLocalPart())) {
                 instructions = el;
                 break;
             }
         }
         if (instructions == null) {
-            instructions = mdl.getFactory().createPOMExtensibilityElement(POMQName.createQName(OSGIConstants.PARAM_INSTRUCTIONS, mdl.getPOMQNames().isNSAware()));
+            instructions = mdl.getFactory().createPOMExtensibilityElement(POMQName.createQName(OSGiConstants.PARAM_INSTRUCTIONS, mdl.getPOMQNames().isNSAware()));
             conf.addExtensibilityElement(instructions);
         }
         elems = instructions.getExtensibilityElements();
         POMExtensibilityElement activator = null;
         for (POMExtensibilityElement el : elems) {
-            if (OSGIConstants.BUNDLE_ACTIVATOR.equals(el.getQName().getLocalPart())) {
+            if (OSGiConstants.BUNDLE_ACTIVATOR.equals(el.getQName().getLocalPart())) {
                 activator = el;
                 break;
             }
         }
         if (activator == null) {
-            activator = mdl.getFactory().createPOMExtensibilityElement(POMQName.createQName(OSGIConstants.BUNDLE_ACTIVATOR, mdl.getPOMQNames().isNSAware()));
+            activator = mdl.getFactory().createPOMExtensibilityElement(POMQName.createQName(OSGiConstants.BUNDLE_ACTIVATOR, mdl.getPOMQNames().isNSAware()));
             instructions.addExtensibilityElement(activator);
         }
         activator.setElementText(path);
