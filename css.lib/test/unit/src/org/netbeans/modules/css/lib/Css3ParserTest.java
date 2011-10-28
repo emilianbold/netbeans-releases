@@ -727,6 +727,31 @@ public class Css3ParserTest extends CslTestBase {
 
 
     }
+    
+    public void testPagedMediaWithoutPseudoClass() throws ParseException, BadLocationException {
+        String content = "@page test {"
+                + "color: green;"
+                + "}";
+
+        CssParserResult result = TestUtil.parse(content);
+//        TestUtil.dumpTokens(result);
+//        TestUtil.dumpResult(result);
+
+        assertResultOK(result);
+
+        //test page node
+        Node page = NodeUtil.query(result.getParseTree(),
+                TestUtil.bodysetPath
+                + "page");
+        assertNotNull(page);
+
+        //declaration
+        Node declaration = NodeUtil.query(page,
+                "declaration");
+        assertNotNull(declaration);
+        assertEquals("color: green", declaration.image().toString());
+
+    }
 
     public void testCounterStyle() throws ParseException, BadLocationException {
         String content = "@counter-style cool { glyph: '|'; }";
