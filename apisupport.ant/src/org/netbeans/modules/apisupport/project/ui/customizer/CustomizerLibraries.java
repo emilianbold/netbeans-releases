@@ -60,6 +60,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.jar.JarFile;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.BorderFactory;
@@ -827,7 +829,7 @@ public final class CustomizerLibraries extends NbPropertyPanel.Single {
                             path = entry[1];
                         }
                     } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
+                        Logger.getLogger(CustomizerLibraries.class.getName()).log(Level.INFO, "could not copy " + fl + " to " + prjDir, ex);
                         continue;
                     }
                 }
