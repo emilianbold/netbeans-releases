@@ -53,11 +53,11 @@ import java.util.Stack;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import org.antlr.runtime.NoViableAltException;
 import org.netbeans.modules.css.lib.api.CssTokenId;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.NodeType;
-import org.netbeans.modules.css.lib.api.NodeUtil;
 import org.netbeans.modules.css.lib.api.ProblemDescription;
 import org.openide.util.NbBundle;
 
@@ -367,7 +367,7 @@ public class NbParseTreeBuilder extends BlankDebugEventListener {
     }
 
     public Collection<ProblemDescription> getProblems() {
-        Collection<ProblemDescription> problems = new ArrayList<ProblemDescription>();
+        Collection<ProblemDescription> problems = new LinkedHashSet<ProblemDescription>();
         for (ErrorNode errorNode : errorNodes) {
             problems.add(errorNode.getProblemDescription());
         }

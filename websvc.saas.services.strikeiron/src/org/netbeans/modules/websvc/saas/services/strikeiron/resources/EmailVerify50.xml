@@ -50,14 +50,13 @@
     xmlns:xsd="http://www.w3.org/2001/XMLSchema"             
     xsi:schemaLocation='http://xml.netbeans.org/websvc/saas/services/1.0 
                     ../../../../../../../../../../websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/SaasServices.xsd'
-    url="http://wsparam.strikeiron.com/USAddressVerification4_0?WSDL"
+    url="http://wsparam.strikeiron.com/EmailVerify5?WSDL"
     type="http://schemas.xmlsoap.org/wsdl/"
-    api-doc="http://www.strikeiron.com/ProductDetail.aspx?p=198">
+    api-doc="http://www.strikeiron.com/Catalog/ProductDetail.aspx?pv=5.0.0&amp;pn=Email+Verification">
     
-    <!-- This is the description for this SaaS component. It is not localized. -->
-    <description>Inspects every element of an US address to ensure its validity</description>
+    <description>Determines the validity of an email address or domain</description>
     
-    <display-name>USAddressVerification</display-name>
+    <display-name>Email Verification v5</display-name>
 
     <saas-metadata>
         <localizing-bundle>org.netbeans.modules.websvc.saas.services.strikeiron.resources.Bundle</localizing-bundle>
@@ -72,15 +71,6 @@
         </authentication>
     </saas-metadata>
 
-    <!--
-    <methods>
-        <method name="VerifyAddressUSA" serviceName="USAddressVerification"
-                portName="USAddressVerificationSoap" operationName="VerifyAddressUSA">
-            <documentation>
-                Allows a developer to generate ad code snippets to include in a publisher's web pages to start serving and displaying contextual advertising. When an end-user clicks through an ad, Google credits a payment.
-            </documentation>
-        </method>
-    </methods>
-    -->
     <methods/>
+    
 </saas-services>

@@ -44,24 +44,33 @@
  made subject to such option by the copyright holder.
 -->
 
-<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
-<filesystem>
+<saas-services
+    xmlns="http://xml.netbeans.org/websvc/saas/services/1.0"
+    xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'    
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"             
+    xsi:schemaLocation='http://xml.netbeans.org/websvc/saas/services/1.0 
+                    ../../../../../../../../../../websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/SaasServices.xsd'
+    url="http://wsparam.strikeiron.com/NAAddressVerification6?WSDL"
+    type="http://schemas.xmlsoap.org/wsdl/"
+    api-doc="http://www.strikeiron.com/Catalog/ProductDetail.aspx?pv=6.0.0&amp;pn=North%20American%20Address%20Verification">
     
-    <folder name="SaaSServices">
-        <folder name="StrikeIron">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.saas.services.strikeiron.Bundle"/>
-            <attr name="icon16" stringvalue="org/netbeans/modules/websvc/saas/services/strikeiron/resources/strikeiron16.png"/>
-            <attr name="icon32" stringvalue="org/netbeans/modules/websvc/saas/services/strikeiron/resources/strikeiron32.png"/>
-            <file name="profile.properties" url="/org/netbeans/modules/websvc/saas/services/strikeiron/resources/profile.properties"/>
-            <file name="AddressVerification60.xml" url="/org/netbeans/modules/websvc/saas/services/strikeiron/resources/AddressVerification60.xml" />
-            <file name="EmailVerify50.xml" url="/org/netbeans/modules/websvc/saas/services/strikeiron/resources/EmailVerify50.xml" />
-            <file name="IPAddressLookup.xml" url="/org/netbeans/modules/websvc/saas/services/strikeiron/resources/IPAddressLookup.xml" />
-            <file name="ReversePhoneLookup.xml" url="/org/netbeans/modules/websvc/saas/services/strikeiron/resources/ReversePhoneLookup.xml" />
-            <file name="TaxComplete50.xml" url="/org/netbeans/modules/websvc/saas/services/strikeiron/resources/TaxComplete50.xml" />
-            <file name="SmsTextMessageAlerts.xml" url="/org/netbeans/modules/websvc/saas/services/strikeiron/resources/SmsTextMessageAlerts.xml" />
-            <file name="GlobalAddressVerification.xml" url="/org/netbeans/modules/websvc/saas/services/strikeiron/resources/GlobalAddressVerification.xml" />
-            <file name="ForeignCurrencyExchangeRates.xml" url="/org/netbeans/modules/websvc/saas/services/strikeiron/resources/ForeignCurrencyExchangeRates.xml" />
-        </folder>
-    </folder>
+    <!-- This is the description for this SaaS component. It is not localized. -->
+    <description>Inspects every element of an US address to ensure its validity</description>
     
-</filesystem>
+    <display-name>North American Address Verification v6</display-name>
+
+    <saas-metadata>
+        <localizing-bundle>org.netbeans.modules.websvc.saas.services.strikeiron.resources.Bundle</localizing-bundle>
+        <group name="StrikeIron"/>
+        <code-gen>
+            <artifacts targets="java,servlet,resource,jsp"/>
+            <artifacts targets="php"/>
+        </code-gen>
+        <!-- http-basic, api-key, custom -->
+        <authentication profile="SaaSServices/StrikeIron/profile.properties">
+            <api-key id="zwsid"/>
+        </authentication>
+    </saas-metadata>
+
+    <methods/>
+</saas-services>
