@@ -910,6 +910,18 @@ public class Css3ParserTest extends CslTestBase {
         assertFalse(foundEmptyRuleNode.get());
     }
 
+    public void testDuplicatedErrors() throws BadLocationException, ParseException {
+        CssParserResult result = TestUtil.parse(
+                  "head{\n"
+                + "    background-image: uri();\n"
+                + "}");
+        
+//        TestUtil.dumpResult(result);
+        
+        assertResult(result, 1);
+        
+    }
+    
     private CssParserResult assertResultOK(CssParserResult result) {
         return assertResult(result, 0);
     }
