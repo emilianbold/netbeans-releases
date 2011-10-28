@@ -59,6 +59,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.border.EmptyBorder;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -145,6 +146,7 @@ public final class CssPreviewTopComponent extends TopComponent {
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
             refreshCssPreviewComponent();
+            CssTCController.refreshOpenedWindowGroups();
         }
     };
     
@@ -193,11 +195,17 @@ public final class CssPreviewTopComponent extends TopComponent {
 
     }
     
+    public boolean isPreviewPanelRegistered() {
+        return previewPanel != null;
+    }
+
+
     private JPanel makeMsgPanel(String message) {
         JPanel p = new JPanel();
         p.setBackground(Color.WHITE);
         p.setLayout(new BorderLayout());
         JLabel msgLabel = new JLabel(message);
+        msgLabel.setBorder(new EmptyBorder(8, 8, 8, 8));
         p.add(msgLabel, BorderLayout.CENTER);
         msgLabel.setHorizontalAlignment(SwingConstants.CENTER);
         return p;
