@@ -215,8 +215,20 @@ public class HibernateMappingWizard implements WizardDescriptor.InstantiatingIte
             HibernateCfgDataObject hco = (HibernateCfgDataObject) confDataObject;
             SessionFactory sf = hco.getHibernateConfiguration().getSessionFactory();
             int mappingIndex = sf.addMapping(true);
-            sf.setAttributeValue(SessionFactory.MAPPING, mappingIndex, resourceAttr,
-                    HibernateUtil.getRelativeSourcePath(newOne.getPrimaryFile(), hibernateEnv.getSourceLocation()));
+            //check for duplicates
+            boolean exist = false;
+            String relPath = HibernateUtil.getRelativeSourcePath(newOne.getPrimaryFile(), hibernateEnv.getSourceLocation());
+            for(int i=0;i<mappingIndex;i++){
+                String tmpPath = sf.getAttributeValue(SessionFactory.MAPPING, i, resourceAttr);
+                if(tmpPath == null ? relPath == null : tmpPath.equals(relPath)){
+                    exist = true;
+                    break;
+                }
+            }
+            if(!exist){
+                sf.setAttributeValue(SessionFactory.MAPPING, mappingIndex, resourceAttr,
+                        relPath);
+            }
             hco.modelUpdatedFromUI();
             hco.save();
         }
