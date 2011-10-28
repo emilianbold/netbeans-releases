@@ -128,15 +128,19 @@ public class MagicCache {
                         res = new byte[BUF_LENGTH];
                         pos = 0;
                     } else if (line.startsWith("000")){ // NOI18N
-                        String[] split = line.split(" "); // NOI18N
+                        String[] split = line.split(" +"); // NOI18N
                         if (split.length > 1) {
                             for(int i = 1; i< split.length; i++) {
                                 String s = split[i];
-                                long L = Long.parseLong(s, 16);
-                                res[pos++] = (byte) (L & 0xFF);
-                                res[pos++] = (byte) (L>>8 & 0xFF);
-                                res[pos++] = (byte) (L>>16 & 0xFF);
-                                res[pos++] = (byte) (L>>24 & 0xFF);
+                                try {
+                                    long L = Long.parseLong(s, 16);
+                                    res[pos++] = (byte) (L & 0xFF);
+                                    res[pos++] = (byte) (L>>8 & 0xFF);
+                                    res[pos++] = (byte) (L>>16 & 0xFF);
+                                    res[pos++] = (byte) (L>>24 & 0xFF);
+                                } catch (NumberFormatException ex) {
+                                    break;
+                                }
                             }
                         }
                     }
