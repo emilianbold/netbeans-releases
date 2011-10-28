@@ -59,8 +59,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.jar.JarFile;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.BorderFactory;
@@ -116,7 +116,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author mkrauskopf
  */
-public class CustomizerLibraries extends NbPropertyPanel.Single {
+public final class CustomizerLibraries extends NbPropertyPanel.Single {
     private ListComponent emListComp;
     private Map<File, Boolean> isJarExportedMap = Collections.synchronizedMap(new HashMap<File, Boolean>());
     private ProjectXMLManager pxml;
@@ -156,7 +156,7 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
         pxml = new ProjectXMLManager((NbModuleProject) getProperties().getProject());
     }
 
-    protected void refresh() {
+    @Override protected void refresh() {
         refreshJavaPlatforms();
         refreshPlatforms();
         platformValue.setEnabled(getProperties().isStandalone());
@@ -168,15 +168,15 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
         updateJarExportedMap();
         runDependenciesListModelRefresh();
         dependencyList.getModel().addListDataListener(new ListDataListener() {
-            public void contentsChanged(ListDataEvent e) { updateEnabled(); }
-            public void intervalAdded(ListDataEvent e) { updateEnabled(); }
-            public void intervalRemoved(ListDataEvent e) { updateEnabled(); }
+            @Override public void contentsChanged(ListDataEvent e) { updateEnabled(); }
+            @Override public void intervalAdded(ListDataEvent e) { updateEnabled(); }
+            @Override public void intervalRemoved(ListDataEvent e) { updateEnabled(); }
         });
     }
     
     private void attachListeners() {
         platformValue.addItemListener(new ItemListener() {
-            public void itemStateChanged(ItemEvent e) {
+            @Override public void itemStateChanged(ItemEvent e) {
                 if (e.getStateChange() == ItemEvent.SELECTED) {
                     // set new platform
                     getProperties().setActivePlatform((NbPlatform) platformValue.getSelectedItem());
@@ -185,14 +185,14 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
             }
         });
         dependencyList.addListSelectionListener(new ListSelectionListener() {
-            public void valueChanged(javax.swing.event.ListSelectionEvent e) {
+            @Override public void valueChanged(javax.swing.event.ListSelectionEvent e) {
                 if (!e.getValueIsAdjusting()) {
                     updateEnabled();
                 }
             }
         });
         javaPlatformCombo.addItemListener(new ItemListener() {
-            public void itemStateChanged(ItemEvent e) {
+            @Override public void itemStateChanged(ItemEvent e) {
                 if (e.getStateChange() == ItemEvent.SELECTED) {
                     // set new platform
                     getProperties().setActiveJavaPlatform((JavaPlatform) javaPlatformCombo.getSelectedItem());
@@ -200,14 +200,14 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
             }
         });
         reqTokenList.addListSelectionListener(new ListSelectionListener() {
-            public void valueChanged(javax.swing.event.ListSelectionEvent e) {
+            @Override public void valueChanged(javax.swing.event.ListSelectionEvent e) {
                 if (!e.getValueIsAdjusting()) {
                     removeTokenButton.setEnabled(reqTokenList.getSelectedIndex() != -1);
                 }
             }
         });
         getProperties().getPublicPackagesModel().addTableModelListener(new TableModelListener() {
-            public void tableChanged(TableModelEvent e) {
+            @Override public void tableChanged(TableModelEvent e) {
                 if (e.getType() == TableModelEvent.UPDATE && e.getColumn() == 0) {
                     updateJarExportedMap();
                 }
@@ -215,11 +215,9 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
         });
     }
 
-    private Logger LOG = Logger.getLogger(CustomizerLibraries.class.getName());
-    
     private void runDependenciesListModelRefresh() {
         dependencyList.setModel(getProperties().getDependenciesListModelInBg(new Runnable() {
-            public void run() {
+            @Override public void run() {
                 updateEnabled();
             }
         }));
@@ -263,8 +261,9 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
                 final Boolean value = isJarExportedMap.get(item.getResolvedFile());
                 // value == null means not yet refreshed map, we can just allow export in such case
                 exportEnabled |= (value == null || ! value.booleanValue());
-                if (exportEnabled)
+                if (exportEnabled) {
                     break;
+                }
             }
         }
         exportButton.setEnabled(exportEnabled);
@@ -746,7 +745,6 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
         }
         chooser.enableVariableBasedSelection(true);
         chooser.setFileHidingEnabled(false);
-        FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
         chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         chooser.setMultiSelectionEnabled( true );
         chooser.setDialogTitle( NbBundle.getMessage( EditMediator.class, "LBL_AddJar_DialogTitle" ) ); // NOI18N
@@ -778,9 +776,9 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
                 if (fo == null) {
                     continue;
                 }
-                if (FileUtil.isArchiveFile (fo))
+                if (FileUtil.isArchiveFile (fo)) {
                     try {
-                        new JarFile (fl);
+                        new JarFile(fl).close();
                     } catch (IOException ex) {
                         JOptionPane.showMessageDialog (
                             SwingUtilities.getWindowAncestor (emListComp.getComponent ()),
@@ -790,6 +788,7 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
                         );
                         continue;
                     }
+                }
 
                 // if not in release/modules/ext, copy the JAR there
                 Matcher m = checkWrappedJarPat.matcher(fl.getAbsolutePath());
@@ -900,32 +899,32 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
         platform.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_PlatformLbl"));
     }
 
-    private RequestProcessor RP = new RequestProcessor(CustomizerLibraries.class.getName(), 1);
+    private static final RequestProcessor RP = new RequestProcessor(CustomizerLibraries.class.getName(), 1);
     private RequestProcessor.Task updateMapTask;
-    private final Set[] selPkgsRef = new Set[1];
-    private final File[][] jarsRef = new File[1][];
+    private final AtomicReference<Set<String>> selectedPackages = new AtomicReference<Set<String>>();
+    private final AtomicReference<File[]> wrappedJars = new AtomicReference<File[]>();
 
     private void updateJarExportedMap() {
-        selPkgsRef[0] = getProperties().getPublicPackagesModel().getSelectedPackages();
+        selectedPackages.set(getProperties().getPublicPackagesModel().getSelectedPackages());
         Object[] items = getProperties().getWrappedJarsListModel().toArray();
-        jarsRef[0] = new File[items.length];
+        File[] jars = new File[items.length];
         for (int i = 0; i < items.length; i++) {
             Item item = (Item) items[i];
-            jarsRef[0][i] = item.getResolvedFile();
+            jars[i] = item.getResolvedFile();
         }
+        wrappedJars.set(jars);
         if (updateMapTask == null) {
             updateMapTask = RP.create(new Runnable() {
-                public void run() {
-                    File[] jars = jarsRef[0];
-                    for (File jar : jars) {
+                @Override public void run() {
+                    for (File jar : wrappedJars.get()) {
                         final Set<String> pkgs = new HashSet<String>();
                         ApisupportAntUtils.scanJarForPackageNames(pkgs, jar);
-                        pkgs.removeAll(selPkgsRef[0]);
+                        pkgs.removeAll(selectedPackages.get());
                         // when pkgs - selPkgs is empty, all packages are already exported
                         isJarExportedMap.put(jar, Boolean.valueOf(pkgs.isEmpty()));
                     }
                     SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
+                        @Override public void run() {
                             updateEnabled();
                         }
                     });
