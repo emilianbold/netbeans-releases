@@ -1024,21 +1024,8 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
             }
         }
 
-	// Fix for bug #172494 and CR 4983422
-	// Similar to DbxDebuggerSettingsBridge.applyRunDirectory()
-	String runDirectory = profileBridge().getCurrentSettings().runProfile().getRunDirectory();
-	runDirectory = localToRemote("applyRunDirectory1", runDirectory); // NOI18N
-	// CR 6983742, 7009459, 7024153
-	boolean found = runDirectory.startsWith("//~") || runDirectory.startsWith("//."); // NOI18N
-	if (found)
-	    runDirectory = runDirectory.substring(2); // skip "//"
-	if (runDirectory != null) {
-	    // CR 7024148, 6767862
-	    // quote run dir
-	    runDirectory = "\"" + runDirectory; //NOI18N
-	    runDirectory += "\""; //NOI18N
-	    dbx.sendCommand(0, 0, "cd " + runDirectory); //NOI18N
-	}
+        // Fix for bug #172494 and CRs 4983422, 7105028
+        //((DbxDebuggerSettingsBridge)profileBridge()).noteReady();
 
 	if (program != null && !program.isEmpty()) {
 	    program = "\"" + program; //NOI18N

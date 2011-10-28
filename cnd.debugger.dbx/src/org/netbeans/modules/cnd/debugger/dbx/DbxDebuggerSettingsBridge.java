@@ -247,13 +247,13 @@ public final class DbxDebuggerSettingsBridge extends DebuggerSettingsBridge {
 
 	// NOTE: getRunDirectory() will attempt to cobble up something 
 	// based on config baseDir if no rundirectory was gven.
-        RunProfile mainRunProfile = getMainSettings().runProfile();
-	if (mainRunProfile.getRunDirectory() != null) {
+        RunProfile runProfile = getCurrentSettings().runProfile();
+	if (runProfile.getRunDirectory() != null) {
 	    /* DEBUG
 	    String baseDir = mainRunProfile.getBaseDir();
 	    dbx().sendCommand(0, 0, "# baseDir " + baseDir); //NOI18N
 	    */
-	    String runDirectory = mainRunProfile.getRunDirectory();
+	    String runDirectory = runProfile.getRunDirectory();
 	    runDirectory = dbxDebugger().localToRemote("applyRunDirectory", runDirectory); // NOI18N
 	    // CR 6983742, 7009459, 7024153
 	    boolean found = runDirectory.startsWith("//~") || runDirectory.startsWith("//."); // NOI18N
@@ -295,10 +295,21 @@ public final class DbxDebuggerSettingsBridge extends DebuggerSettingsBridge {
 	    dbx().sendCommand(0, 0, "export JAVASRCPATH=\"$CLASSPATH\""); // NOI18N
 	}
     }
+    
+    // LATER: implement it in the base class as: initialApply(DIRTY_DIR | DIRTY_ENVVARS);
+    public void noteReady() {
+        debugger.postRestoring(true);
+	try {
+	    applyRunDirectory();
+            applyEnvvars();
+	} catch (Exception x) {
+	}
+	debugger.postRestoring(false);
+    }
 
     protected void applyEnvvars() {
 	// Iterate over the environment variable list
-	dbx().postEnvvars(getMainSettings().runProfile().getEnvironment().getenv(), null);
+	dbx().postEnvvars(getCurrentSettings().runProfile().getEnvironment().getenv(), null);
     }
 
     // CR 4887794
