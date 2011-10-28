@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010-2011 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.java.hints.jackpot.code;
@@ -51,11 +51,12 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
 
 /**
  *
@@ -230,8 +231,13 @@ public class FSWrapper {
                 result = Enum.valueOf(enumClass, fqn.substring(lastDot + 1));
             } else if (returnType == Class.class) {
                 String fqn = (String) result;
-                
-                result = loader.loadClass(fqn);
+
+                try {
+                    result = loader.loadClass(fqn);
+                } catch (ClassNotFoundException ex) {
+                    Logger.getLogger(FSWrapper.class.getName()).log(Level.FINE, null, ex);
+                    result = CodeHintProviderImpl.findLoader().loadClass(fqn);
+                }
             }
         }
 
