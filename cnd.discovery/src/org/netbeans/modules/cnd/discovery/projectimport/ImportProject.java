@@ -843,19 +843,17 @@ public class ImportProject implements PropertyChangeListener {
             makeLog = createTempFile("make"); // NOI18N
         }
         if(BuildTraceSupport.useBuildTrace()) {
-            try {
-                HostInfo hostInfo = HostInfoUtils.getHostInfo(executionEnvironment);
-                switch (hostInfo.getOSFamily()) {
-                case SUNOS:
-                case LINUX:
+            if (BuildTraceSupport.supportedPlatforms(executionEnvironment)) {
+                try {
+                    HostInfo hostInfo = HostInfoUtils.getHostInfo(executionEnvironment);
                     execLog = createTempFile("exec"); // NOI18N
                     execLog.deleteOnExit();
                     if (executionEnvironment.isRemote()) {
-                        remoteExecLog = hostInfo.getTempDir()+"/"+execLog.getName(); // NOI18N
+                          remoteExecLog = hostInfo.getTempDir()+"/"+execLog.getName(); // NOI18N
                     }
+                } catch (IOException ex) {
+                } catch (CancellationException ex) {
                 }
-            } catch (IOException ex) {
-            } catch (CancellationException ex) {
             }
         }
 

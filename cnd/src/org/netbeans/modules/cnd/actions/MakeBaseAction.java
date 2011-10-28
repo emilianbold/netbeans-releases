@@ -193,8 +193,21 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
         
         if (envMap.containsKey("__CND_TOOLS__")) { // NOI18N
             try {
-                mm.prependPathVariable("LD_PRELOAD",BuildTraceHelper.INSTANCE.getLibraryName(execEnv)); // NOI18N
-                mm.prependPathVariable("LD_LIBRARY_PATH", BuildTraceHelper.INSTANCE.getLDPaths(execEnv)); // NOI18N
+                if (BuildTraceHelper.isMac(execEnv)) {
+                    String what = BuildTraceHelper.INSTANCE.getLibraryName(execEnv);
+                    if (what.indexOf(':') > 0) {
+                        what = what.substring(0,what.indexOf(':'));
+                    }
+                    String where = BuildTraceHelper.INSTANCE.getLDPaths(execEnv);
+                    if (where.indexOf(':') > 0) {
+                        where = where.substring(0,where.indexOf(':'));
+                    }
+                    String lib = where+'/'+what;
+                    mm.prependPathVariable(BuildTraceHelper.getLDPreloadEnvName(execEnv),lib);
+                } else {
+                    mm.prependPathVariable(BuildTraceHelper.getLDPreloadEnvName(execEnv), BuildTraceHelper.INSTANCE.getLibraryName(execEnv)); // NOI18N
+                    mm.prependPathVariable(BuildTraceHelper.getLDPathEnvName(execEnv), BuildTraceHelper.INSTANCE.getLDPaths(execEnv)); // NOI18N
+                }
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -244,7 +257,8 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
     private static final class BuildTraceHelper extends HelperLibraryUtility {
         private static final BuildTraceHelper INSTANCE = new BuildTraceHelper();
         private BuildTraceHelper() {
-            super("org.netbeans.modules.cnd.actions", "bin/${osname}-${platform}${_isa}/libBuildTrace.so"); // NOI18N
+            super("org.netbeans.modules.cnd.actions", "bin/${osname}-${platform}${_isa}/libBuildTrace.${soext}"); // NOI18N
         }
     }
+
 }
