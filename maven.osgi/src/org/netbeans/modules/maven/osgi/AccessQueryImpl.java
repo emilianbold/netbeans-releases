@@ -90,13 +90,13 @@ public class AccessQueryImpl implements AccessibilityQueryImplementation {
     
     private Boolean check(String value) {
         String[] exps = PluginPropertyUtils.getPluginPropertyList(mavenProject.getMavenProject(),
-                OSGIConstants.GROUPID_FELIX, OSGIConstants.ARTIFACTID_BUNDLE_PLUGIN, 
-                OSGIConstants.PARAM_INSTRUCTIONS, OSGIConstants.EXPORT_PACKAGE,
-                OSGIConstants.GOAL_MANIFEST);
+                OSGiConstants.GROUPID_FELIX, OSGiConstants.ARTIFACTID_BUNDLE_PLUGIN,
+                OSGiConstants.PARAM_INSTRUCTIONS, OSGiConstants.EXPORT_PACKAGE,
+                OSGiConstants.GOAL_MANIFEST);
         String[] imps = PluginPropertyUtils.getPluginPropertyList(mavenProject.getMavenProject(),
-                OSGIConstants.GROUPID_FELIX, OSGIConstants.ARTIFACTID_BUNDLE_PLUGIN, 
-                OSGIConstants.PARAM_INSTRUCTIONS, OSGIConstants.PRIVATE_PACKAGE,
-                OSGIConstants.GOAL_MANIFEST);
+                OSGiConstants.GROUPID_FELIX, OSGiConstants.ARTIFACTID_BUNDLE_PLUGIN,
+                OSGiConstants.PARAM_INSTRUCTIONS, OSGiConstants.PRIVATE_PACKAGE,
+                OSGiConstants.GOAL_MANIFEST);
         String exp = null;
         if (exps != null && exps.length == 1) {
             exp = exps[0];
