@@ -303,9 +303,9 @@ public final class RtcProfile implements ConfigurationAuxObject, OptionSetOwner 
 
 	if (!DebuggerManager.isStandalone()) {
 	    set = new Sheet.Set();
-	    set.setName("Experiment"); // NOI18N
-	    set.setDisplayName("Experiment"); // FIXUP I18N // NOI18N
-	    set.setShortDescription("Experiment"); // FIXUP I18N // NOI18N
+	    set.setName(Catalog.get("Experiment"));
+	    set.setDisplayName(Catalog.get("Experiment"));
+	    set.setShortDescription(Catalog.get("Experiment"));
 	    set.put(RtcOption.RTC_EXPERIMENT_NAME.createNodeProp(this));
 	    set.put(RtcOption.RTC_EXPERIMENT_DIR.createBasedNodeProp(this,baseDir));
 	    sheet.put(set);
@@ -318,10 +318,10 @@ public final class RtcProfile implements ConfigurationAuxObject, OptionSetOwner 
 	}
 
 	set = new Sheet.Set();
-	set.setName("Access Checking"); // NOI18N
-	set.setDisplayName("Access Checking"); // FIXUP I18N // NOI18N
+	set.setName(Catalog.get("AccessChecking"));
+	set.setDisplayName(Catalog.get("AccessChecking"));
+	set.setShortDescription(Catalog.get("AccessChecking"));
 	set.put(RtcOption.RTC_ACCESS_ENABLE.createNodeProp(this));
-	set.setShortDescription("Access Checking"); // FIXUP I18N // NOI18N
 	set.put(RtcOption.RTC_AUTO_CONTINUE.createNodeProp(this));
 	set.put(RtcOption.RTC_AUTO_SUPPRESS.createNodeProp(this));
 	set.put(RtcOption.RTC_INHERIT.createNodeProp(this));
@@ -331,9 +331,9 @@ public final class RtcProfile implements ConfigurationAuxObject, OptionSetOwner 
 	sheet.put(set);
 
 	set = new Sheet.Set();
-	set.setName("Memory Usage and Leak Checking"); // NOI18N
-	set.setDisplayName("Memory Usage and Leak Checking"); // FIXUP I18N // NOI18N
-	set.setShortDescription("Memory Usage and Leak Checking"); // FIXUP I18N // NOI18N
+	set.setName(Catalog.get("MemoryUsage"));
+	set.setDisplayName(Catalog.get("MemoryUsage"));
+	set.setShortDescription(Catalog.get("MemoryUsage"));
 	/* OLD
 	set.put(RtcOption.RTC_MEMUSE_ENABLE.createNodeProp(this));
 	set.put(RtcOption.RTC_LEAKS_ENABLE.createNodeProp(this));
