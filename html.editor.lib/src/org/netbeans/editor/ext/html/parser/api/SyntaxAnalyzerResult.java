@@ -519,7 +519,7 @@ public class SyntaxAnalyzerResult {
 
     public String getHtmlTagDefaultNamespace() {
         //typically the html root element is at the beginning of the file
-        int limitCountdown = 20;
+        int limitCountdown = 100;
         Iterator<SyntaxElement> elementsIterator = analyzer.elementsIterator();
         while (elementsIterator.hasNext()) {
             if (limitCountdown-- == 0) {
@@ -527,14 +527,10 @@ public class SyntaxAnalyzerResult {
             }
             SyntaxElement se = elementsIterator.next();
             if (se.type() == SyntaxElement.TYPE_TAG) {
+                //look for the xmlns attribute only in the first tag
                 SyntaxElement.Tag tag = (SyntaxElement.Tag) se;
-                if (tag.getName().equalsIgnoreCase("html")) { //NOI18N
-                    SyntaxElement.TagAttribute xmlns = tag.getAttribute("xmlns");
-                    return xmlns != null ? dequote(xmlns.getValue()) : null;
-                } else {
-                    //break -- first tag must be the 'html' one
-                    return null;
-                }
+                SyntaxElement.TagAttribute xmlns = tag.getAttribute("xmlns");
+                return xmlns != null ? dequote(xmlns.getValue()) : null;
             }
         }
         return null;

@@ -44,8 +44,11 @@ package org.netbeans.modules.html.editor.indent;
 
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import org.netbeans.editor.ext.html.parser.api.HtmlParserFactory;
 import org.netbeans.editor.ext.html.parser.api.HtmlSource;
+import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
 import org.netbeans.editor.ext.html.parser.spi.HtmlModel;
+import org.netbeans.editor.ext.html.parser.spi.HtmlParser;
 import org.netbeans.editor.ext.html.parser.spi.HtmlTag;
 import org.netbeans.modules.web.indent.api.support.MarkupAbstractIndenter;
 import java.util.Set;
@@ -75,6 +78,14 @@ public class HtmlIndenter extends MarkupAbstractIndenter<HTMLTokenId> {
             HtmlSource source = new HtmlSource(code, null, file);
             SyntaxAnalyzerResult result = SyntaxAnalyzer.create(source).analyze();
             model = result.getHtmlModel();
+            HtmlVersion version = result.getHtmlVersion();            
+            //workaround for [Bug 204163] [71cat] wrong formatting
+            if(version == HtmlVersion.XHTML5) {
+                //we do not have a special model for xhtml5, just html5 model => 
+                //use xhtml1.0 model for formatting
+                HtmlParser parser = HtmlParserFactory.findParser(HtmlVersion.XHTML10_TRANSATIONAL);
+                model = parser.getModel(HtmlVersion.XHTML10_TRANSATIONAL);
+            }
         } catch (BadLocationException ex) {
             Exceptions.printStackTrace(ex);
         }
