@@ -363,10 +363,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
             if (context != null) {
                 toRet.add(context);
             } else {
-                if (info.isLocal() || info.isRemoteDownloadable()) {
-                    LOGGER.log(Level.WARNING, "The context ''{0}'' is not loaded.", info.getId());
-                }
-                //else ignore, is not a real nexus repo, is missing any indexing properties..
+                LOGGER.log(Level.WARNING, "The context ''{0}'' is not loaded.", info.getId());
             }
         }
         return toRet;
@@ -688,7 +685,6 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 getRepoMutex(repo).writeAccess(new Mutex.ExceptionAction<Void>() {
                     public @Override Void run() throws Exception {
                         loadIndexingContext(repo);
-                        if (repo.isLocal() || repo.isRemoteDownloadable()) {
                             IndexingContext context = indexer.getIndexingContexts().get(repo.getId());
                             if (context == null) {
                                 return null;
@@ -713,7 +709,6 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                             } else {
                                 slowCheck.add(repo);
                             }
-                        }
                         return null;
                     }
                 });
