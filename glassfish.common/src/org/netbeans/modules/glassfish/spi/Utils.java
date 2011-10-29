@@ -56,6 +56,7 @@ import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import org.netbeans.modules.glassfish.common.GlassfishInstanceProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -412,4 +413,29 @@ public class Utils {
             }
         }
     }
+
+    /** 
+     * Use the server instance id for a project to decide whether the server specific DD/resource
+     * file should use the glassfish- prefix.
+     * 
+     * @param serverInstanceID
+     * @return
+     */
+    public static boolean useGlassfishPrefix(String serverInstanceID) {
+        if (null == serverInstanceID) {
+            return true;
+        }
+        if (serverInstanceID.contains(GlassfishInstanceProvider.EE6WC_DEPLOYER_FRAGMENT)) {
+            return true;
+        }
+        // this check must happen AFTER the EE6WC check...
+        if (serverInstanceID.contains(GlassfishInstanceProvider.EE6_DEPLOYER_FRAGMENT)) {
+            return false;
+        }
+        if (serverInstanceID.contains("deployer:Sun:A")) { // NOI18N
+            return false;
+        }
+        return true;
+    }
+    
 }

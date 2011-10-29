@@ -171,12 +171,14 @@
                 </test-type>
             </test-dependencies>
             <friend-packages>
+                <friend>org.netbeans.modules.glassfish.eecommon</friend>
                 <friend>org.netbeans.modules.glassfish.grails</friend>
                 <friend>org.netbeans.modules.glassfish.javaee</friend>
                 <friend>org.netbeans.modules.glassfish.jruby</friend>
                 <friend>org.netbeans.modules.glassfish.phobos</friend>
+                <friend>org.netbeans.modules.j2ee.sun.appsrv</friend>
                 <friend>org.netbeans.modules.j2ee.sun.appsrv81</friend>
-                <friend>org.netbeans.modules.glassfish.eecommon</friend>
+                <friend>org.netbeans.modules.j2ee.sun.ddui</friend>
                 <friend>org.netbeans.modules.jbi.fuji.server.gfsupport</friend>
                 <friend>org.netbeans.modules.jbi.fuji.server.plugin</friend>
                 <package>org.netbeans.modules.glassfish.spi</package>

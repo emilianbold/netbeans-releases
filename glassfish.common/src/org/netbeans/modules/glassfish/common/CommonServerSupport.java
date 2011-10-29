@@ -790,7 +790,7 @@ public class CommonServerSupport implements GlassfishModule2, RefreshModulesCook
 
     @Override
     public String getResourcesXmlName() {
-        return getDeployerUri().contains(GlassfishInstanceProvider.EE6WC_DEPLOYER_FRAGMENT) ?
+        return Utils.useGlassfishPrefix(getDeployerUri()) ?
                 "glassfish-resources" : "sun-resources"; // NOI18N
     }
 
