@@ -41,6 +41,7 @@
  */
 package org.openide.util;
 
+import java.net.Authenticator;
 import java.net.URI;
 import java.util.concurrent.Callable;
 import java.util.logging.Logger;
@@ -105,7 +106,7 @@ public final class NetworkSettings {
     }
 
     /** Returns the <code>key</code> for reading password for Proxy Authentication.
-     * Use {@link org.netbeans.api.Keyring} for reading the password from the ring.
+     * Use <a href="@org-netbeans-modules-keyring@/org/netbeans/api/keyring/Keyring.html"><code>org.netbeans.api.keyring.Keyring</code></a> for reading the password from the ring.
      * Returns <code>null</code> if no authentication required.
      * 
      * @param u The URI that a connection is required to
@@ -124,7 +125,7 @@ public final class NetworkSettings {
 
     /** Suppress asking user a question about the authentication credentials while
      * running <code>blockOfCode</code>. It's a contract with NetBeans implementation
-     * of <a href="http://download.oracle.com/javase/6/docs/api/java/net/Authenticator.html">Authenticator</a>.
+     * of {@link Authenticator}.
      * In case a system is using other Authenticator implementation, it must call {@link #isAuthenticationDialogSuppressed} method. 
      * 
      * @param blockOfCode {@link Callable} containing code which will be executed while authentication is suppressed
@@ -142,7 +143,7 @@ public final class NetworkSettings {
         }
     }
 
-    /** A utility method for implementations of <a href="http://download.oracle.com/javase/6/docs/api/java/net/Authenticator.html">Authenticator</a>
+    /** A utility method for implementations of {@link Authenticator}
      * to suppress asking users a authentication question while running code posted
      * in {@link #authenticationDialogSuppressed}.
      * 
@@ -154,7 +155,7 @@ public final class NetworkSettings {
         return Boolean.TRUE.equals(authenticationDialogSuppressed.get());
     }
 
-    /** A SPI abstract class {@link NetworkSettings.ProxyCredentialsProvider} allows
+    /** Allows
      * NetBeans Platform users to provide own proxy and network credentials separately.
      * 
      * @see <a href="http://wiki.netbeans.org/Authenticator">http://wiki.netbeans.org/Authenticator</a>
