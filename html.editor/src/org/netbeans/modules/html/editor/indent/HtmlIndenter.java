@@ -42,6 +42,10 @@
 
 package org.netbeans.modules.html.editor.indent;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Locale;
+import java.util.Map;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.editor.ext.html.parser.api.HtmlParserFactory;
@@ -68,6 +72,8 @@ import org.openide.util.Exceptions;
 public class HtmlIndenter extends MarkupAbstractIndenter<HTMLTokenId> {
 
     private HtmlModel model;
+    
+    private Map<String, Set<String>> tagsChildren = new HashMap<String, Set<String>>();
 
     public HtmlIndenter(Context context) {
         super(HTMLTokenId.language(), context);
@@ -189,15 +195,23 @@ public class HtmlIndenter extends MarkupAbstractIndenter<HTMLTokenId> {
 
     @Override
     protected Set<String> getTagChildren(CharSequence tagName) {
-        HtmlTag tag = model.getTag(tagName.toString());
+        String tagNameS = tagName.toString();
+        Set<String> cache = tagsChildren.get(tagNameS);
+        if(cache != null) {
+            return cache;
+        }
+        
+        HtmlTag tag = model.getTag(tagNameS);
         if(tag == null) {
             return null;
         }
-        Set<String> set = new TreeSet<String>();
+        Set<String> set = new HashSet<String>();
         for(HtmlTag child : tag.getChildren()) {
-            String name = child.getName().toUpperCase(); //the MarkupAbstractIndenter needs the names to be uppercase
+            String name = child.getName().toUpperCase(Locale.ENGLISH); //the MarkupAbstractIndenter needs the names to be uppercase
             set.add(name);
         }
+        tagsChildren.put(tagNameS, set);
+        
         return set;
     }
 
