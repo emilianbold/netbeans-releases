@@ -74,8 +74,14 @@ public class JsfIndex {
         
         //#179930 - merge compile and execute classpath, remove once #180183 resolved
         Collection<FileObject> roots = new HashSet<FileObject>();
-        roots.addAll(Arrays.asList(ClassPath.getClassPath(wm.getDocumentBase(), ClassPath.COMPILE).getRoots()));
-        roots.addAll(Arrays.asList(ClassPath.getClassPath(wm.getDocumentBase(), ClassPath.EXECUTE).getRoots()));
+        ClassPath compileCp = ClassPath.getClassPath(wm.getDocumentBase(), ClassPath.COMPILE);
+        if(compileCp != null) {
+            roots.addAll(Arrays.asList(compileCp.getRoots()));
+        }
+        ClassPath executeCp = ClassPath.getClassPath(wm.getDocumentBase(), ClassPath.EXECUTE);
+        if(executeCp != null) {
+            roots.addAll(Arrays.asList(executeCp.getRoots()));
+        }
         binaryRoots = roots.toArray(new FileObject[]{});
 
         Collection<FileObject> croots = QuerySupport.findRoots(base, null, null, null);
