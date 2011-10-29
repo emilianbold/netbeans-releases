@@ -178,7 +178,7 @@ class ClassDependencyIndexCreator extends AbstractIndexCreator {
         doc.add(FLD_NB_DEPENDENCY_CLASS.toField(b.toString()));
     }
 
-    static void search(String className, NexusIndexer indexer, Collection<IndexingContext> contexts, List<? super ClassUsageResult> results) throws Exception {
+    static void search(String className, NexusIndexer indexer, Collection<IndexingContext> contexts, List<? super ClassUsageResult> results) throws IOException {
         String searchString = crc32base64(className.replace('.', '/'));
         Query refClassQuery = indexer.constructQuery(ClassDependencyIndexCreator.FLD_NB_DEPENDENCY_CLASS.getOntology(), new StringSearchExpression(searchString));
         TopScoreDocCollector collector = TopScoreDocCollector.create(NexusRepositoryIndexerImpl.MAX_RESULT_COUNT, true);
