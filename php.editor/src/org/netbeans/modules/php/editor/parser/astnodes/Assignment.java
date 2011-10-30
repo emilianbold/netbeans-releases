@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,9 +34,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.editor.parser.astnodes;
@@ -50,20 +50,31 @@ package org.netbeans.modules.php.editor.parser.astnodes;
 public class Assignment extends Expression {
 
     public enum Type {
-        EQUAL, // '='
-        PLUS_EQUAL, // '+='
-        MINUS_EQUAL, // '-='
-    	MUL_EQUAL, // '*='
-    	DIV_EQUAL, // '/='
-    	CONCAT_EQUAL, // '.='
-    	MOD_EQUAL, // '%='
-    	AND_EQUAL, // '&='
-    	OR_EQUAL, // '|='
-    	XOR_EQUAL, // '^='
-    	SL_EQUAL, // '<<='
-    	SR_EQUAL // '>>='
+        EQUAL("="), //NOI18N
+        PLUS_EQUAL("+="), //NOI18N
+        MINUS_EQUAL("-="), //NOI18N
+        MUL_EQUAL("*="), //NOI18N
+        DIV_EQUAL("/="), //NOI18N
+        CONCAT_EQUAL(".="), //NOI18N
+        MOD_EQUAL("%="), //NOI18N
+        AND_EQUAL("&="), //NOI18N
+        OR_EQUAL("|="), //NOI18N
+        XOR_EQUAL("^="), //NOI18N
+        SL_EQUAL("<<="), //NOI18N
+        SR_EQUAL(">>="); //NOI18N
+
+        private String operator;
+
+        private Type(String operator) {
+            this.operator = operator;
+        }
+
+        @Override
+        public String toString() {
+            return operator;
+        }
     }
-    
+
     private VariableBase leftHandSide;
     private Assignment.Type operator;
     private Expression rightHandSide;
@@ -82,7 +93,7 @@ public class Assignment extends Expression {
 
     /**
      * Returns the operator of this assignment expression.
-     * 
+     *
      * @return the assignment operator
      */
     public Assignment.Type getOperator() {
@@ -91,7 +102,7 @@ public class Assignment extends Expression {
 
     /**
      * Returns the left hand side of this assignment expression.
-     * 
+     *
      * @return the left hand side node
      */
     public VariableBase getLeftHandSide() {
@@ -100,13 +111,13 @@ public class Assignment extends Expression {
 
     /**
      * Returns the right hand side of this assignment expression.
-     * 
+     *
      * @return the right hand side node
      */
     public Expression getRightHandSide() {
         return this.rightHandSide;
     }
-    
+
     @Override
     public void accept(Visitor visitor) {
         visitor.visit(this);

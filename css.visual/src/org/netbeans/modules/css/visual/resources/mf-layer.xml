@@ -97,6 +97,10 @@ made subject to such option by the copyright holder.
                 <file name="CssPreviewTC.wstcgrp" url="CssPreviewTCWstcgrp.xml"/>
                 <file name="StyleBuilderTC.wstcgrp" url="StyleBuilderTCwstcgrp.xml"/>
             </folder>
+            <file name="CssSBwsgrp.wsgrp" url="CssSBwsgrp.xml"/>
+            <folder name="CssSBwsgrp">
+                <file name="StyleBuilderTC.wstcgrp" url="StyleBuilderTCwstcgrp.xml"/>
+            </folder>
         </folder>
     </folder>
     

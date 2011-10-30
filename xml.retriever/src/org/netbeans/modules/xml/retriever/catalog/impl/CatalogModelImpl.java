@@ -749,9 +749,12 @@ public class CatalogModelImpl implements CatalogModel {
         if(depRez == null)
             return null;
         ModelSource baseMS = null;
-        try {
-            baseMS = createModelSource(baseFO, false);
-        } catch (CatalogModelException ex) {
+        
+        if (baseFO != null) {
+            try {
+                baseMS = createModelSource(baseFO, false);
+            } catch (CatalogModelException ex) {
+            }
         }
         //get the model source from it
         ModelSource resultMS = null;

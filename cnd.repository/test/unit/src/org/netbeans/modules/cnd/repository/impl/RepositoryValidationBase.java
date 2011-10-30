@@ -74,7 +74,7 @@ public class RepositoryValidationBase extends TraceModelTestBase {
 
     @Override
     protected File getTestCaseDataDir() {
-        String dataPath = getDataDir().getAbsolutePath().replaceAll("repository", "modelimpl"); //NOI18N
+        String dataPath = getDataDir().getAbsolutePath().replaceAll("/repository/", "/modelimpl/").replaceAll("\\\\repository\\\\", "\\modelimpl\\"); //NOI18N
         String filePath = "common";
         return Manager.normalizeFile(new File(dataPath, filePath));
     }
@@ -117,6 +117,7 @@ public class RepositoryValidationBase extends TraceModelTestBase {
                 if (returnOnShutdown()) {
                     return;
                 }
+                System.err.printf("not parsed on closing: %s\n", f.toString());
                 CndUtils.threadsDump();
             }
         }

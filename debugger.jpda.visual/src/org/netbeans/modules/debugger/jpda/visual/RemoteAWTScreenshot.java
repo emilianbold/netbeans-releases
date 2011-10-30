@@ -78,6 +78,16 @@ import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.expr.EvaluatorVisitor;
 import org.netbeans.modules.debugger.jpda.expr.InvocationExceptionTranslated;
+import org.netbeans.modules.debugger.jpda.jdi.ArrayReferenceWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ClassObjectReferenceWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ClassTypeWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ObjectReferenceWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ReferenceTypeWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.StringReferenceWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.modules.debugger.jpda.visual.RemoteServices.ServiceType;
 import org.netbeans.modules.debugger.jpda.visual.actions.ComponentBreakpointActionProvider;
@@ -95,6 +105,7 @@ import org.openide.nodes.Node;
 import org.openide.nodes.Node.Property;
 import org.openide.nodes.Node.PropertySet;
 import org.openide.nodes.PropertySupport.ReadOnly;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
@@ -202,7 +213,16 @@ public class RemoteAWTScreenshot {
         //RemoteScreenshot[] screenshots = NO_SCREENSHOTS;
         final ThreadReference tawt = ((JPDAThreadImpl) t).getThreadReference();
         final VirtualMachine vm = tawt.virtualMachine();
-        final ClassType windowClass = RemoteServices.getClass(vm, "java.awt.Window");
+        final ClassType windowClass;
+        try {
+            windowClass = RemoteServices.getClass(vm, "java.awt.Window");
+        } catch (InternalExceptionWrapper ex) {
+            return NO_SCREENSHOTS;
+        } catch (VMDisconnectedExceptionWrapper ex) {
+            return NO_SCREENSHOTS;
+        } catch (ObjectCollectedExceptionWrapper ex) {
+            return NO_SCREENSHOTS;
+        }
         if (windowClass == null) {
             logger.fine("No Window");
             return NO_SCREENSHOTS;
@@ -233,18 +253,18 @@ public class RemoteAWTScreenshot {
                     try {
                         if (FAST_SNAPSHOT_RETRIEVAL) {
                             ClassObjectReference serviceClassObject = RemoteServices.getServiceClass(((JPDAThreadImpl) t).getDebugger());
-                            ClassType serviceClass = (ClassType) serviceClassObject.reflectedType();
-                            final Method getGUISnapshots = serviceClass.concreteMethodByName("getGUISnapshots", "()[Lorg/netbeans/modules/debugger/jpda/visual/remote/RemoteAWTService$Snapshot;");
-                            ArrayReference snapshotsArray = (ArrayReference) serviceClass.invokeMethod(tawt, getGUISnapshots, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
-                            List<Value> snapshots = snapshotsArray.getValues();
+                            ClassType serviceClass = (ClassType) ClassObjectReferenceWrapper.reflectedType(serviceClassObject);
+                            final Method getGUISnapshots = ClassTypeWrapper.concreteMethodByName(serviceClass, "getGUISnapshots", "()[Lorg/netbeans/modules/debugger/jpda/visual/remote/RemoteAWTService$Snapshot;");
+                            ArrayReference snapshotsArray = (ArrayReference) ClassTypeWrapper.invokeMethod(serviceClass, tawt, getGUISnapshots, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
+                            List<Value> snapshots = ArrayReferenceWrapper.getValues(snapshotsArray);
                             for (Value snapshot : snapshots) {
                                 ObjectReference snapshotObj = (ObjectReference) snapshot;
-                                ReferenceType rt = snapshotObj.referenceType();
-                                StringReference allIntDataString = (StringReference) snapshotObj.getValue(rt.fieldByName("allIntDataString"));
-                                int[] allIntData = createIntArrayFromString(allIntDataString.value());
-                                StringReference allNamesString = (StringReference) snapshotObj.getValue(rt.fieldByName("allNamesString"));
-                                ArrayReference allComponentsArray = (ArrayReference) snapshotObj.getValue(rt.fieldByName("allComponentsArray"));
-                                String allNames = allNamesString.value();
+                                ReferenceType rt = ObjectReferenceWrapper.referenceType(snapshotObj);
+                                StringReference allIntDataString = (StringReference) ObjectReferenceWrapper.getValue(snapshotObj, ReferenceTypeWrapper.fieldByName(rt, "allIntDataString"));
+                                int[] allIntData = createIntArrayFromString(StringReferenceWrapper.value(allIntDataString));
+                                StringReference allNamesString = (StringReference) ObjectReferenceWrapper.getValue(snapshotObj, ReferenceTypeWrapper.fieldByName(rt, "allNamesString"));
+                                ArrayReference allComponentsArray = (ArrayReference) ObjectReferenceWrapper.getValue(snapshotObj, ReferenceTypeWrapper.fieldByName(rt, "allComponentsArray"));
+                                String allNames = StringReferenceWrapper.value(allNamesString);
                                 int ititle = allNames.indexOf(STRING_DELIMITER);
                                 String title = allNames.substring(0, ititle);
                                 if (title.length() == 1 && title.charAt(0) == 0) {
@@ -263,7 +283,7 @@ public class RemoteAWTScreenshot {
                                                                           dataArray, componentInfo));
                             }
                             // Clear the snapshots reference to enable GC.
-                            serviceClass.setValue(serviceClass.fieldByName("lastGUISnapshots"), null);
+                            ClassTypeWrapper.setValue(serviceClass, ReferenceTypeWrapper.fieldByName(serviceClass, "lastGUISnapshots"), null);
                             return;
                         }
                         
@@ -423,6 +443,15 @@ public class RemoteAWTScreenshot {
                         return ;//NO_SCREENSHOTS;
                     } catch (IncompatibleThreadStateException itsex) {
                         retrievalExceptionPtr[0] =  new RetrievalException(itsex.getMessage(), itsex);
+                    } catch (ClassNotPreparedExceptionWrapper cnpex) {
+                        return ;//NO_SCREENSHOTS;
+                    } catch (InternalExceptionWrapper iex) {
+                        return ;//NO_SCREENSHOTS;
+                    } catch (ObjectCollectedExceptionWrapper ocex) {
+                        Exceptions.printStackTrace(ocex);
+                        return ;
+                    } catch (VMDisconnectedExceptionWrapper vmdex) {
+                        return ;
                     }
                 }
 
@@ -448,7 +477,16 @@ public class RemoteAWTScreenshot {
         
         ThreadReference tawt = t.getThreadReference();
         ObjectReference rectangle = (ObjectReference) component.invokeMethod(tawt, getBounds, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
-        ClassType rectangleClass = RemoteServices.getClass(vm, "java.awt.Rectangle");
+        ClassType rectangleClass;
+        try {
+            rectangleClass = RemoteServices.getClass(vm, "java.awt.Rectangle");
+        } catch (InternalExceptionWrapper ex) {
+            return ;
+        } catch (VMDisconnectedExceptionWrapper ex) {
+            return ;
+        } catch (ObjectCollectedExceptionWrapper ex) {
+            return ;
+        }
         Field fx = rectangleClass.fieldByName("x");
         Field fy = rectangleClass.fieldByName("y");
         Field fwidth = rectangleClass.fieldByName("width");
@@ -608,10 +646,18 @@ public class RemoteAWTScreenshot {
             
             vm = getThread().getDebugger().getVirtualMachine();
             if (vm == null) {
-                throw new RetrievalException(NbBundle.getMessage(RemoteAWTScreenshot.class, "MSG_ScreenshotNotTaken_NoDebugger"));
+                throw RetrievalException.disconnected();
             }
-            containerClass = RemoteServices.getClass(vm, "java.awt.Container");
-            componentClass = RemoteServices.getClass(vm, "java.awt.Component");
+            try {
+                containerClass = RemoteServices.getClass(vm, "java.awt.Container");
+                componentClass = RemoteServices.getClass(vm, "java.awt.Component");
+            } catch (InternalExceptionWrapper ex) {
+                throw new RetrievalException(ex.getLocalizedMessage(), ex);
+            } catch (VMDisconnectedExceptionWrapper ex) {
+                throw new RetrievalException(ex.getLocalizedMessage(), ex);
+            } catch (ObjectCollectedExceptionWrapper ex) {
+                throw new RetrievalException(ex.getLocalizedMessage(), ex);
+            }
             getBounds = componentClass.concreteMethodByName("getBounds", "()Ljava/awt/Rectangle;");
             getComponents = containerClass.concreteMethodByName("getComponents", "()[Ljava/awt/Component;");
             if (getComponents == null) {

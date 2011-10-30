@@ -231,7 +231,10 @@ class CopySupport {
                     if (sourceComponents == null) {
                         sourceComponents = new LinkedList<RADComponent>();
                     }
-                    sourceComponents.add(getComponentToCopy(transComp, targetComponent, cut));
+                    RADComponent componentToCopy = getComponentToCopy(transComp, targetComponent, cut);
+                    if (!sourceComponents.contains(componentToCopy)) { // Issue 203382
+                        sourceComponents.add(componentToCopy);
+                    }
                     canPaste = true;
                 }
             } else { // java node (compiled class) could be copied

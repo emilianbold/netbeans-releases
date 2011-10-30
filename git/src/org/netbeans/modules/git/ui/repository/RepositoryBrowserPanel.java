@@ -369,7 +369,18 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
             setComparator(new Comparator<Node>() {
                 @Override
                 public int compare (Node o1, Node o2) {
-                    return o1.toString().compareTo(o2.toString());
+                    int result;
+                    if (o1 instanceof RepositoryNode && o2 instanceof RepositoryNode) {
+                        File repo1 = ((RepositoryNode) o1).getRepository();
+                        File repo2 = ((RepositoryNode) o2).getRepository();
+                        result = repo1.getName().compareTo(repo2.getName());
+                        if (result == 0 && !repo1.equals(repo2)) {
+                            result = repo1.getAbsolutePath().compareTo(repo2.getAbsolutePath());
+                        }
+                    } else {
+                        result = o1.toString().compareTo(o2.toString());
+                    }
+                    return result;
                 }
             });
             GitRepositories.getInstance().addPropertyChangeListener(WeakListeners.propertyChange(list = new PropertyChangeListener() {
@@ -498,6 +509,11 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
             return new Action[] {
                 SystemAction.get(FetchAction.class)
             };
+        }
+
+        @Override
+        public String getShortDescription () {
+            return repository.getAbsolutePath();
         }
     }
 
@@ -774,15 +790,19 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
             branchId = branch.getId();
             setIconBaseWithExtension("org/netbeans/modules/git/resources/icons/branch.png"); //NOI18N
             RepositoryInfo info = RepositoryInfo.getInstance(repository);
-            info.addPropertyChangeListener(WeakListeners.propertyChange(list = new PropertyChangeListener() {
-                @Override
-                public void propertyChange (PropertyChangeEvent evt) {
-                    if (RepositoryInfo.PROPERTY_ACTIVE_BRANCH.equals(evt.getPropertyName()) || RepositoryInfo.PROPERTY_HEAD.equals(evt.getPropertyName())) {
-                        refreshActiveBranch((GitBranch) evt.getNewValue());
+            if (info == null) {
+                LOG.log(Level.INFO, "BranchNode() : Null info for {0}", repository); //NOI18N
+            } else {
+                info.addPropertyChangeListener(WeakListeners.propertyChange(list = new PropertyChangeListener() {
+                    @Override
+                    public void propertyChange (PropertyChangeEvent evt) {
+                        if (RepositoryInfo.PROPERTY_ACTIVE_BRANCH.equals(evt.getPropertyName()) || RepositoryInfo.PROPERTY_HEAD.equals(evt.getPropertyName())) {
+                            refreshActiveBranch((GitBranch) evt.getNewValue());
+                        }
                     }
-                }
-            }, info));
-            refreshActiveBranch(info.getActiveBranch());
+                }, info));
+                refreshActiveBranch(info.getActiveBranch());
+            }
         }
 
         @Override
@@ -939,7 +959,11 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
         private TagChildren (File repository) {
             this.repository = repository;
             RepositoryInfo info = RepositoryInfo.getInstance(repository);
-            info.addPropertyChangeListener(WeakListeners.propertyChange(this, info));
+            if (info == null) {
+                LOG.log(Level.INFO, "TagChildren() : Null info for {0}", repository); //NOI18N
+            } else {
+                info.addPropertyChangeListener(WeakListeners.propertyChange(this, info));
+            }
         }
 
         
@@ -1023,15 +1047,20 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
             revisionId = tag.getTaggedObjectId();
             setIconBaseWithExtension("org/netbeans/modules/git/resources/icons/tag.png"); //NOI18N
             RepositoryInfo info = RepositoryInfo.getInstance(repository);
-            info.addPropertyChangeListener(WeakListeners.propertyChange(list = new PropertyChangeListener() {
-                @Override
-                public void propertyChange (PropertyChangeEvent evt) {
-                    if (RepositoryInfo.PROPERTY_ACTIVE_BRANCH.equals(evt.getPropertyName()) || RepositoryInfo.PROPERTY_HEAD.equals(evt.getPropertyName())) {
-                        refreshActiveBranch((GitBranch) evt.getNewValue());
+            if (info == null) {
+                LOG.log(Level.INFO, "TagNode() : Null info for {0}", repository); //NOI18N
+                list = null;
+            } else {
+                info.addPropertyChangeListener(WeakListeners.propertyChange(list = new PropertyChangeListener() {
+                    @Override
+                    public void propertyChange (PropertyChangeEvent evt) {
+                        if (RepositoryInfo.PROPERTY_ACTIVE_BRANCH.equals(evt.getPropertyName()) || RepositoryInfo.PROPERTY_HEAD.equals(evt.getPropertyName())) {
+                            refreshActiveBranch((GitBranch) evt.getNewValue());
+                        }
                     }
-                }
-            }, info));
-            refreshActiveBranch(info.getActiveBranch());
+                }, info));
+                refreshActiveBranch(info.getActiveBranch());
+            }
         }
 
         @Override
@@ -1168,7 +1197,11 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
         private AllRemotesChildren (File repository) {
             this.repository = repository;
             RepositoryInfo info = RepositoryInfo.getInstance(repository);
-            info.addPropertyChangeListener(WeakListeners.propertyChange(this, info));
+            if (info == null) {
+                LOG.log(Level.INFO, "AllRemotesChildren() : Null info for {0}", repository); //NOI18N
+            } else {
+                info.addPropertyChangeListener(WeakListeners.propertyChange(this, info));
+            }
         }
 
         @Override

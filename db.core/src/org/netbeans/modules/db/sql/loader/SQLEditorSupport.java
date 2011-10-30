@@ -76,6 +76,7 @@ import org.openide.cookies.PrintCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node.Cookie;
+import org.openide.text.CloneableEditor;
 import org.openide.text.DataEditorSupport;
 import org.openide.util.Cancellable;
 import org.openide.util.MutexException;
@@ -168,8 +169,15 @@ public class SQLEditorSupport extends DataEditorSupport
     }
 
     @Override
+    protected void initializeCloneableEditor(CloneableEditor editor) {
+        ((SQLCloneableEditor) editor).initialize();
+    }
+    
+    @Override
     protected Pane createPane() {
-        return (CloneableEditorSupport.Pane) MultiViews.createCloneableMultiView(SQLDataLoader.SQL_MIME_TYPE, getDataObject());
+        Pane pane = (CloneableEditorSupport.Pane) MultiViews.createCloneableMultiView(SQLDataLoader.SQL_MIME_TYPE, getDataObject());
+        CloneableTopComponent tc = pane.getComponent();
+        return pane;
     }
     
     @Override

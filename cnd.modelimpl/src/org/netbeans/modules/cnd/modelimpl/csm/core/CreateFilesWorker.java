@@ -42,19 +42,18 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
+import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmModelState;
+import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.platform.ModelSupport;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
@@ -87,8 +86,9 @@ final class CreateFilesWorker {
     void createProjectFilesIfNeed(List<NativeFileItem> items, boolean sources,
             Set<NativeFileItem> removedFiles, ProjectSettingsValidator validator) {
 
-        List<FileImpl> reparseOnEdit = new ArrayList<FileImpl>();
+        List<FileImpl> reparseOnEdit = Collections.synchronizedList(new ArrayList<FileImpl>());
         List<NativeFileItem> reparseOnPropertyChanged = Collections.synchronizedList(new ArrayList<NativeFileItem>());
+        Set<CsmUID<CsmFile>> handledFiles = Collections.synchronizedSet(new HashSet<CsmUID<CsmFile>>(items.size()));
         AtomicBoolean enougth = new AtomicBoolean(false);
         int size = items.size();
         int threads = CndUtils.getNumberCndWorkerThreads()*3;
@@ -105,12 +105,58 @@ final class CreateFilesWorker {
                 }
             }
             CreateFileRunnable r = new CreateFileRunnable(countDownLatch, list, sources, removedFiles,
-                    validator, project, reparseOnEdit, reparseOnPropertyChanged, enougth);
+                    validator, project, handledFiles, reparseOnEdit, reparseOnPropertyChanged, enougth);
             PROJECT_FILES_WORKER.post(r);
         }
         try {
             countDownLatch.await();
         } catch (InterruptedException ex) {
+        }
+        if (!enougth.get()) {
+            // no issues with repository was found so far
+            if (validator != null && !sources) {
+                final Set<CsmUID<CsmFile>> allFilesUID = new HashSet<CsmUID<CsmFile>>(project.getHeaderFilesUID());
+                allFilesUID.removeAll(handledFiles);
+                if (TraceFlags.TRACE_VALIDATION) {
+                    for (CsmUID<CsmFile> csmUID : handledFiles) {
+                        System.err.printf("Hanlded %s - %d\n", csmUID, System.identityHashCode(csmUID));
+                    }
+                    for (CsmUID<CsmFile> csmUID : allFilesUID) {
+                        System.err.printf("To handle %s - %d\n", csmUID, System.identityHashCode(csmUID));
+                    }
+                }
+                // check that all headers are checked as well even if they are not part
+                // of underlying NativeProject associated with CsmProject
+                for (CsmUID<CsmFile> csmUID : allFilesUID) {
+                    if (csmUID == null || RepositoryUtils.getRepositoryErrorCount(project) > 0) {
+                        enougth.set(true);
+                        break;
+                    }
+                    CsmFile file = UIDCsmConverter.UIDtoFile(csmUID);
+                    if (file instanceof FileImpl) {
+                        FileImpl fileImpl = (FileImpl) file;
+                        if (fileImpl.getState() == FileImpl.State.INITIAL || !fileImpl.validate()) {
+                            if (TraceFlags.TRACE_VALIDATION) {
+                                System.err.printf("Validation: %s file [%d %s] to be parsed, because of state %s\n", fileImpl.getAbsolutePath(), System.identityHashCode(csmUID), fileImpl.getFileType(), fileImpl.getState()); //NOI18N
+                            }
+                            reparseOnEdit.add(fileImpl);
+                        } else {
+                            if (TraceFlags.TRACE_VALIDATION) {
+                                System.err.printf("Validation: skip %s file [%d %s], because of state %s\n", fileImpl.getAbsolutePath(), System.identityHashCode(csmUID), fileImpl.getFileType(), fileImpl.getState()); //NOI18N
+                            }
+                        }
+                    } else {
+                        enougth.set(true);
+                        RepositoryUtils.registerRepositoryError(project, new Exception("Validation: file was not restored from " + csmUID)); // NOI18N
+                        System.err.printf("Validation: file was not restored from %s\n", csmUID); //NOI18N
+                        break;
+                    }
+                }
+                if (TraceFlags.DEBUG_BROKEN_REPOSITORY) {
+                    enougth.set(true);
+                    RepositoryUtils.registerRepositoryError(project, new Exception("Validation: INTENTIONAL interrupt")); // NOI18N
+                }
+            }
         }
         //for (NativeFileItem nativeFileItem : items) {
         //    if (!createProjectFilesIfNeedRun(nativeFileItem, sources, removedFiles, validator,
@@ -118,11 +164,13 @@ final class CreateFilesWorker {
         //        return;
         //    }
         //}
-        if (!reparseOnEdit.isEmpty()) {
-            DeepReparsingUtils.reparseOnEdit(reparseOnEdit, project, true);
-        }
-        if (!reparseOnPropertyChanged.isEmpty()) {
-            DeepReparsingUtils.reparseOnPropertyChanged(reparseOnPropertyChanged, project);
+        if (!enougth.get()) {
+            if (!reparseOnEdit.isEmpty()) {
+                DeepReparsingUtils.reparseOnEdit(reparseOnEdit, project, true);
+            }
+            if (!reparseOnPropertyChanged.isEmpty()) {
+                DeepReparsingUtils.reparseOnPropertyChanged(reparseOnPropertyChanged, project);
+            }
         }
     }
 
@@ -136,9 +184,11 @@ final class CreateFilesWorker {
         private final List<FileImpl> reparseOnEdit;
         private final List<NativeFileItem> reparseOnPropertyChanged;
         private final AtomicBoolean enougth;
+        private final Set<CsmUID<CsmFile>> handledFiles;
 
         private CreateFileRunnable(CountDownLatch countDownLatch, List<NativeFileItem> nativeFileItems, boolean sources,
             Set<NativeFileItem> removedFiles, ProjectSettingsValidator validator, ProjectBase project,
+            Set<CsmUID<CsmFile>> handledFiles,
             List<FileImpl> reparseOnEdit, List<NativeFileItem> reparseOnPropertyChanged, AtomicBoolean enougth){
             this.countDownLatch = countDownLatch;
             this.nativeFileItems = nativeFileItems;
@@ -149,8 +199,9 @@ final class CreateFilesWorker {
             this.reparseOnEdit = reparseOnEdit;
             this.reparseOnPropertyChanged = reparseOnPropertyChanged;
             this.enougth = enougth;
+            this.handledFiles = handledFiles;
         }
-
+        
         @Override
         public void run() {
             try {
@@ -172,6 +223,9 @@ final class CreateFilesWorker {
             }
             final CsmModelState modelState = ModelImpl.instance().getState();
             if (modelState == CsmModelState.CLOSING || modelState == CsmModelState.OFF) {
+                if (TraceFlags.TRACE_VALIDATION || TraceFlags.TRACE_MODEL_STATE) {
+                    System.err.printf("createProjectFilesIfNeedRun: %s file [%s] is interrupted on closing model\n", nativeFileItem.getAbsolutePath(), project.getName());
+                }                
                 return false;
             }            
             if (project.isDisposing()) {
@@ -184,6 +238,7 @@ final class CreateFilesWorker {
                 FileImpl file = project.getFile(nativeFileItem.getAbsolutePath(), true);
                 if (file != null) {
                     project.removeFile(nativeFileItem.getAbsolutePath());
+                    this.handledFiles.add(UIDCsmConverter.fileToUID(file));
                 }
                 return true;
             }
@@ -192,7 +247,8 @@ final class CreateFilesWorker {
                 ModelSupport.trace(nativeFileItem);
             }
             try {
-                project.createIfNeed(nativeFileItem, sources, CreateFilesWorker.this.getLWM(), validator, reparseOnEdit, reparseOnPropertyChanged);
+                FileImpl fileImpl = project.createIfNeed(nativeFileItem, sources, CreateFilesWorker.this.getLWM(), validator, reparseOnEdit, reparseOnPropertyChanged);
+                this.handledFiles.add(UIDCsmConverter.fileToUID(fileImpl));
                 if (project.isValidating() && RepositoryUtils.getRepositoryErrorCount(project) > 0) {
                     enougth.set(true);
                     return false;

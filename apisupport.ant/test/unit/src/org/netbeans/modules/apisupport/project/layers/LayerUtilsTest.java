@@ -536,19 +536,19 @@ public class LayerUtilsTest extends LayerTestBase {
         NbModuleProject module2 = (NbModuleProject) ProjectManager.getDefault().findProject(FileUtil.toFileObject(module2Dir));
         cmf = new CreatedModifiedFiles(module2);
         cmf.add(cmf.createLayerEntry("bar", null, null, "Bar", null));
-        cmf.add(cmf.createLayerEntry("baz", null, null, null, Collections.<String,Object>singletonMap("displayName", "Display Label of Baz")));  // #173220 displayName as stringvalue
+        cmf.add(cmf.createLayerEntry("baz", null, null, null, Collections.singletonMap("displayName", "Display Label of Baz")));  // #173220 displayName as stringvalue
         cmf.add(cmf.createLayerEntry("test-module2-MyAction.instance", null, null, null, null));
-        cmf.add(cmf.createLayerEntry("test-module2-some-action.instance", null, null, null, Collections.<String,Object>singletonMap("instanceClass", "test.module2.SomeAction")));
-        cmf.add(cmf.createLayerEntry("test-module2-another-action.instance", null, null, null, Collections.<String,Object>singletonMap("instanceCreate", "newvalue:test.module2.AnotherAction")));
-        cmf.add(cmf.createLayerEntry("test-module2-factory-action.instance", null, null, null, Collections.<String,Object>singletonMap("instanceCreate", "methodvalue:test.module2.FactoryAction.create")));
-        cmf.add(cmf.createLayerEntry("test-module2-localized-action.instance", null, null, "Localized Action", Collections.<String,Object>singletonMap("instanceCreate", "methodvalue:test.module2.LocalizedAction.create")));
-        cmf.add(cmf.createLayerEntry("sep-42.instance", null, null, null, Collections.<String,Object>singletonMap("instanceClass", "javax.swing.JSeparator")));
-        cmf.add(cmf.createLayerEntry("link-to-standard.shadow", null, null, null, Collections.<String,Object>singletonMap("originalFile", "Actions/System/org-openide-actions-OpenAction.instance")));
-        cmf.add(cmf.createLayerEntry("link-to-custom.shadow", null, null, null, Collections.<String,Object>singletonMap("originalFile", "test-module2-MyAction.instance")));
-        cmf.add(cmf.createLayerEntry("link-to-localized.shadow", null, null, null, Collections.<String,Object>singletonMap("originalFile", "test-module2-localized-action.instance")));
+        cmf.add(cmf.createLayerEntry("test-module2-some-action.instance", null, null, null, Collections.singletonMap("instanceClass", "test.module2.SomeAction")));
+        cmf.add(cmf.createLayerEntry("test-module2-another-action.instance", null, null, null, Collections.singletonMap("instanceCreate", "newvalue:test.module2.AnotherAction")));
+        cmf.add(cmf.createLayerEntry("test-module2-factory-action.instance", null, null, null, Collections.singletonMap("instanceCreate", "methodvalue:test.module2.FactoryAction.create")));
+        cmf.add(cmf.createLayerEntry("test-module2-localized-action.instance", null, null, "Localized Action", Collections.singletonMap("instanceCreate", "methodvalue:test.module2.LocalizedAction.create")));
+        cmf.add(cmf.createLayerEntry("sep-42.instance", null, null, null, Collections.singletonMap("instanceClass", "javax.swing.JSeparator")));
+        cmf.add(cmf.createLayerEntry("link-to-standard.shadow", null, null, null, Collections.singletonMap("originalFile", "Actions/System/org-openide-actions-OpenAction.instance")));
+        cmf.add(cmf.createLayerEntry("link-to-custom.shadow", null, null, null, Collections.singletonMap("originalFile", "test-module2-MyAction.instance")));
+        cmf.add(cmf.createLayerEntry("link-to-localized.shadow", null, null, null, Collections.singletonMap("originalFile", "test-module2-localized-action.instance")));
         File dummyDir = new File(getWorkDir(), "dummy");
         dummyDir.mkdir();
-        cmf.add(cmf.createLayerEntry("link-to-url.shadow", null, null, null, Collections.<String,Object>singletonMap("originalFile", dummyDir.toURI().toURL())));
+        cmf.add(cmf.createLayerEntry("link-to-url.shadow", null, null, null, Collections.singletonMap("originalFile", dummyDir.toURI().toURL())));
         cmf.run();
         FileSystem fs = LayerUtils.getEffectiveSystemFilesystem(module2);
 

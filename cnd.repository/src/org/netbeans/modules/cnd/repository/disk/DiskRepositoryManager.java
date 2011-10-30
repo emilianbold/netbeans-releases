@@ -148,7 +148,7 @@ public class DiskRepositoryManager implements Repository, RepositoryWriter {
                 unit = units.get(unitId);
                 if (unit == null) {
                     if (RepositoryListenersManager.getInstance().fireUnitOpenedEvent(unitName)) {
-                        RepositoryTranslatorImpl.loadUnitIndex(unitName);
+                        ((RepositoryTranslatorImpl)translator).loadUnitIndex(unitName);
                         unit = new UnitImpl(unitId, unitName);
                         units.put(unitId, unit);
                     }
@@ -257,7 +257,7 @@ public class DiskRepositoryManager implements Repository, RepositoryWriter {
         } finally {
             queueLock.writeLock().unlock();
         }
-        RepositoryTranslatorImpl.shutdown();
+        ((RepositoryTranslatorImpl)translator).shutdown();
         if (LOG.isLoggable(Level.FINE)) {
             LOG.log(Level.INFO, "Repository shutdown done.");
         }
@@ -359,7 +359,7 @@ public class DiskRepositoryManager implements Repository, RepositoryWriter {
         }
         allocator.closeUnit(unitName);
 
-        RepositoryTranslatorImpl.closeUnit(unitName, requiredUnits);
+        ((RepositoryTranslatorImpl)translator).closeUnit(unitName, requiredUnits);
         RepositoryListenersManager.getInstance().fireUnitClosedEvent(unitName);
     }
 
@@ -368,7 +368,7 @@ public class DiskRepositoryManager implements Repository, RepositoryWriter {
         int unitId = translator.getUnitId(CharSequences.create(unitName));
         synchronized (getUnitLock(unitId)) {
             closeUnit(unitName, true, Collections.<CharSequence>emptySet());
-            RepositoryTranslatorImpl.removeUnit(unitName);
+            ((RepositoryTranslatorImpl)translator).removeUnit(unitName);
         }
     }
 

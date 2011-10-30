@@ -143,12 +143,17 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
     {
         stdYesButton.setDefaultCapable(true);
         stdOKButton.setDefaultCapable(true);
-        stdNoButton.setDefaultCapable(false);
-        stdCancelButton.setDefaultCapable(false);
+        stdNoButton.setDefaultCapable(true);
+        stdNoButton.putClientProperty( "defaultButton", Boolean.FALSE ); //NOI18N
+        stdCancelButton.setDefaultCapable(true);
+        stdCancelButton.putClientProperty( "defaultButton", Boolean.FALSE ); //NOI18N
         stdCancelButton.setVerifyInputWhenFocusTarget(false);
-        stdClosedButton.setDefaultCapable(false);
-        stdHelpButton.setDefaultCapable(false);
-        stdDetailButton.setDefaultCapable(false);
+        stdClosedButton.setDefaultCapable(true);
+        stdClosedButton.putClientProperty( "defaultButton", Boolean.FALSE ); //NOI18N
+        stdHelpButton.setDefaultCapable(true);
+        stdHelpButton.putClientProperty( "defaultButton", Boolean.FALSE ); //NOI18N
+        stdDetailButton.setDefaultCapable(true);
+        stdDetailButton.putClientProperty( "defaultButton", Boolean.FALSE ); //NOI18N
         Mnemonics.setLocalizedText (stdHelpButton, NbBundle.getBundle(NbPresenter.class).getString("HELP_OPTION_CAPTION")); // NOI18N
         
         /** Initilizes accessible contexts */
@@ -183,6 +188,8 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
     static final Logger LOG = Logger.getLogger(NbPresenter.class.getName());
     
     static final long serialVersionUID =-4508637164126678997L;
+    
+    private JButton initialDefaultButton;
     
     /** Creates a new Dialog from specified NotifyDescriptor,
      * with given frame owner.
@@ -424,6 +431,7 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
         if (currentMessage != null) 
             return;
             
+        initialDefaultButton = getRootPane().getDefaultButton();
         initializeMessage();
         
         updateHelp();
@@ -445,6 +453,7 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
         uninitializeMessage();
         uninitializeButtons();
         uninitializeClosingOptions ();
+        initialDefaultButton = null;
     }
     
     private final HackTypeAhead hack = new HackTypeAhead();
@@ -671,12 +680,12 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
                 } else if (primaryOptions [i] instanceof Icon) {
                     JButton button = new JButton((Icon)primaryOptions [i]);
                     // ??? Why cannot be default capable ?
-                    button.setDefaultCapable(false);
+                    button.putClientProperty( "defaultButton", Boolean.FALSE ); //NOI18N
                     currentPrimaryButtons[i] = button;
                 } else {
                     JButton button = new JButton();
                     Mnemonics.setLocalizedText (button, primaryOptions [i].toString ());
-                    button.setDefaultCapable(primaryOptions[i].equals(descriptor.getDefaultValue ()));
+                    button.putClientProperty( "defaultButton", Boolean.valueOf( primaryOptions[i].equals(descriptor.getDefaultValue ()) ) ); //NOI18N
                     currentPrimaryButtons[i] = button;
                 }
             }
@@ -876,7 +885,8 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
         if (descriptor.getDefaultValue () != null) {
             if (descriptor.getDefaultValue () instanceof JButton) {
                 JButton b = (JButton)descriptor.getDefaultValue ();
-            if (b.isVisible() && b.isEnabled () && b.isDefaultCapable ()) {
+            if (b.isVisible() && b.isEnabled () && b.isDefaultCapable () 
+                    && !Boolean.FALSE.equals(b.getClientProperty("defaultButton")) ) { //NOI18N
                     getRootPane ().setDefaultButton (b);
                     return ;
                 }
@@ -914,7 +924,8 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
             for (int i = 0; i < currentPrimaryButtons.length; i++) {
                 if (currentPrimaryButtons[i] instanceof JButton) {
                     JButton b = (JButton)currentPrimaryButtons[i];
-                    if (b.isVisible() && b.isEnabled() && b.isDefaultCapable()) {
+                    if (b.isVisible() && b.isEnabled() && b.isDefaultCapable()
+                            && !Boolean.FALSE.equals(b.getClientProperty("defaultButton"))) { //NOI18N
                         getRootPane().setDefaultButton(b);
                         return;
                     }
@@ -922,7 +933,10 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
             }
         }
         // no default capable button found
-        getRootPane().setDefaultButton(null);
+        if( null != initialDefaultButton && initialDefaultButton.isEnabled() && initialDefaultButton.isDefaultCapable() )
+            getRootPane().setDefaultButton( initialDefaultButton );
+        else
+            getRootPane().setDefaultButton(null);
     }
     
     private void updateNotificationLine (int msgType, Object o) {

@@ -60,7 +60,7 @@ import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.j2ee.ExecutionChecker;
 import org.netbeans.modules.maven.j2ee.POHImpl;
 import org.netbeans.modules.maven.j2ee.CopyOnSave;
-import org.netbeans.modules.maven.j2ee.web.WebRunCustomizerPanel;
+import org.netbeans.modules.maven.j2ee.customizer.CustomizerRunWeb;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -96,7 +96,7 @@ public class AppClientModuleProviderImpl extends J2eeModuleProvider   {
 
     @Override
     public boolean isOnlyCompileOnSaveEnabled() {
-        return RunUtils.hasApplicationCompileOnSaveEnabled(project) && !WebRunCustomizerPanel.isDeployOnSave(project);
+        return RunUtils.hasApplicationCompileOnSaveEnabled(project) && !CustomizerRunWeb.isDeployOnSave(project);
     }
 
     public AppClientImpl getModuleImpl() {

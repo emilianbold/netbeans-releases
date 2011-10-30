@@ -43,8 +43,11 @@
 package org.netbeans.modules.bugzilla.query;
 
 import java.awt.Component;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Level;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
@@ -54,6 +57,7 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JTextField;
 import javax.swing.ListModel;
+import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.BugzillaConfig;
 
 /**
@@ -79,7 +83,7 @@ public abstract class QueryParameter {
     static final ParameterValue PV_CONTAINS_ALL_WORDS = new ParameterValue("contains all of the words", "allwords"); // NOI18N
     static final ParameterValue PV_CONTAINS_ANY_WORDS = new ParameterValue("contains any of the words", "anywords"); // NOI18N
 
-    static final ParameterValue PV_FIELD_BUG_CREATION = new ParameterValue("[Bug+creation]", "[Bug+creation]"); // NOI18N
+    static final ParameterValue PV_FIELD_BUG_CREATION = new ParameterValue("[Bug creation]", "[Bug+creation]"); // NOI18N
     static final ParameterValue PV_FIELD_ALIAS = new ParameterValue("alias", "alias"); // NOI18N
     static final ParameterValue PV_FIELD_ASSIGNED_TO = new ParameterValue("assigned_to", "assigned_to"); // NOI18N
     static final ParameterValue PV_FIELD_LIST_ACCESSIBLE = new ParameterValue("cclist_accessible", "cclist_accessible"); // NOI18N
@@ -157,9 +161,11 @@ public abstract class QueryParameter {
     };
 
     private final String parameter;
+    private final String encoding;
     protected boolean alwaysDisabled = false;
-    public QueryParameter(String parameter) {
+    public QueryParameter(String parameter, String encoding) {
         this.parameter = parameter;
+        this.encoding = encoding;
     }
     public String getParameter() {
         return parameter;
@@ -179,7 +185,22 @@ public abstract class QueryParameter {
             sb.append("&"); // NOI18N
             sb.append(getParameter());
             sb.append("="); // NOI18N
-            sb.append(pv.getValue());
+            try {
+                String value = pv.getValue();
+                if(value.equals("[Bug+creation]")) {                            // NOI18N
+                    // workaround: while encoding '+' in a products name works fine,
+                    // encoding it in in [Bug+creation] causes an error
+                    sb.append(URLEncoder.encode("[", encoding));                // NOI18N
+                    sb.append("Bug+creation");                                  // NOI18N
+                    sb.append(URLEncoder.encode("]", encoding));                // NOI18N
+                } else {
+                    // use URLEncoder as it is used also by other clients of the bugzilla connector
+                    sb.append(URLEncoder.encode(value, encoding));
+                }
+            } catch (UnsupportedEncodingException ex) {
+                sb.append(URLEncoder.encode(pv.getValue()));
+                Bugzilla.LOG.log(Level.WARNING, null, ex);
+            }
         }
         return sb;
     }
@@ -195,8 +216,8 @@ public abstract class QueryParameter {
 
     static class ComboParameter extends QueryParameter {
         private final JComboBox combo;
-        public ComboParameter(JComboBox combo, String parameter) {
-            super(parameter);
+        public ComboParameter(JComboBox combo, String parameter, String encoding) {
+            super(parameter, encoding);
             this.combo = combo;
             combo.setModel(new DefaultComboBoxModel());
         }
@@ -228,8 +249,8 @@ public abstract class QueryParameter {
 
     static class ListParameter extends QueryParameter {
         private final JList list;
-        public ListParameter(JList list, String parameter) {
-            super(parameter);
+        public ListParameter(JList list, String parameter, String encoding) {
+            super(parameter, encoding);
             this.list = list;
             list.setModel(new DefaultListModel());
         }
@@ -290,8 +311,8 @@ public abstract class QueryParameter {
 
     static class TextFieldParameter extends QueryParameter {
         private final JTextField txt;
-        public TextFieldParameter(JTextField txt, String parameter) {
-            super(parameter);
+        public TextFieldParameter(JTextField txt, String parameter, String encoding) {
+            super(parameter, encoding);
             this.txt = txt;
         }
         @Override
@@ -327,8 +348,8 @@ public abstract class QueryParameter {
     static class CheckBoxParameter extends QueryParameter {
         private ParameterValue[] selected = new ParameterValue[] {new ParameterValue("1")}; // NOI18N
         private final JCheckBox chk;
-        public CheckBoxParameter(JCheckBox chk, String parameter) {
-            super(parameter);
+        public CheckBoxParameter(JCheckBox chk, String parameter, String encoding) {
+            super(parameter, encoding);
             this.chk = chk;
         }
         @Override
@@ -419,8 +440,8 @@ public abstract class QueryParameter {
     public static class SimpleQueryParameter extends QueryParameter {
         private final String[] values;
 
-        public SimpleQueryParameter(String parameter, String[] values) {
-            super(parameter);
+        public SimpleQueryParameter(String parameter, String[] values, String encoding) {
+            super(parameter, encoding);
             this.values = values;
         }
 

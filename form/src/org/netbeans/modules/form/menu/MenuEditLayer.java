@@ -57,6 +57,7 @@ import java.awt.dnd.DropTargetDragEvent;
 import java.awt.dnd.DropTargetDropEvent;
 import java.awt.dnd.DropTargetEvent;
 import java.awt.dnd.DropTargetListener;
+import java.awt.event.ActionEvent;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.KeyAdapter;
@@ -172,6 +173,16 @@ public class MenuEditLayer extends JPanel {
         MouseInputAdapter mia = new GlassLayerMouseListener();
         glassLayer.addMouseListener(mia);
         glassLayer.addMouseMotionListener(mia);
+        glassLayer.addKeyListener(new KeyAdapter() {
+
+            @Override
+            public void keyPressed(KeyEvent e) {
+                // #133628: user wants to cancel the action so deselect menu-related component in the palette
+                if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+                    dragop.fastEnd();
+                }
+            }
+        });
         configureSelectionListener();
     }
     
@@ -323,14 +334,6 @@ public class MenuEditLayer extends JPanel {
         if(keyboardMenuNavigator == null) {
             keyboardMenuNavigator = new KeyboardMenuNavigator(this);
             glassLayer.addKeyListener(keyboardMenuNavigator);
-            glassLayer.addKeyListener(new KeyAdapter() {
-                @Override
-                public void keyPressed(KeyEvent e) {
-                    if(e.getKeyCode() == KeyEvent.VK_ESCAPE) {
-                        dragop.fastEnd();
-                    }
-                }                
-            });
         }
     }
     
@@ -777,11 +780,26 @@ public class MenuEditLayer extends JPanel {
     }
     
     void addSelectedRADComponent(RADComponent comp) {
-        List<RADComponent> comps = new ArrayList<RADComponent>();
-        comps.addAll(selectedComponents);
-        comps.add(comp);
-        setSelectedRADComponents(comps);
-        formDesigner.addComponentToSelection(comp);
+        if (!selectedComponents.contains(comp)) {
+            List<RADComponent> comps = new ArrayList<RADComponent>();
+            comps.addAll(selectedComponents);
+            comps.add(comp);
+            setSelectedRADComponents(comps);
+            formDesigner.addComponentToSelection(comp);
+        }
+    }
+    
+    // #119217: toggle clicked component's selection status
+    void toggleSelectedRADComponent(RADComponent comp) {
+        if (selectedComponents.contains(comp)) { // component is already selected so remove it from selection
+            selectedComponents.remove(comp);
+            List<RADComponent> comps = new ArrayList<RADComponent>();
+            comps.addAll(selectedComponents);
+            setSelectedRADComponents(comps);
+            formDesigner.removeComponentFromSelection(comp);
+        } else {
+            addSelectedRADComponent(comp);
+        }
     }
     
     void setSelectedRADComponents(List<RADComponent> comps) {
@@ -1399,6 +1417,8 @@ public class MenuEditLayer extends JPanel {
         Point pressPoint = null;
         JComponent pressComp = null;
         private boolean isEditing = false;
+        // #116961: Point of last left click (getting point on mouseRelease)
+        private Point prevLeftMousePoint;
         
         @Override
         public void mousePressed(MouseEvent e) {
@@ -1406,11 +1426,11 @@ public class MenuEditLayer extends JPanel {
             if(dragop.isStarted() && dragop.getTargetComponent() != null &&
                     isMenuRelatedComponentClass(dragop.getTargetComponent().getClass())) {
                 if(e.isShiftDown()) {
-                    dragop.end(e.getPoint(), false);
+                    dragop.end(e, false);
                     PaletteItem item = PaletteUtils.getSelectedItem();
                     dragop.start(item, e.getPoint());
                 } else {
-                    dragop.end(e.getPoint(), true);                    
+                    dragop.end(e, true);
                 }
                 return;
             }
@@ -1421,7 +1441,12 @@ public class MenuEditLayer extends JPanel {
             }
             // drag drag ops
             if(dragop.isStarted()) {
-                dragop.end(e.getPoint());
+                if (SwingUtilities.isRightMouseButton(e)) {
+                    // #133628: user wants to cancel the drop so deselect menu-related component in the palette
+                    dragop.fastEnd();
+                } else if (SwingUtilities.isLeftMouseButton(e)) {
+                    dragop.end(e);
+                }
                 return;
             }
 
@@ -1434,18 +1459,31 @@ public class MenuEditLayer extends JPanel {
                     if(e.getClickCount() > 1) {
                         isEditing = true;
                         configureEditedComponent(c);
-                        formDesigner.startInPlaceEditing(rad);
+                        formDesigner.startInPlaceEditing(rad);            
                     } else {
                         openMenu(rad, c);
                         glassLayer.requestFocusInWindow();                        
                         if(DropTargetLayer.isMultiselectPressed(e)) {
-                            addSelectedRADComponent(rad);
+                            if(e.isShiftDown()) {// add component to selection
+                                addSelectedRADComponent(rad);
+                            } else if (e.isControlDown()) {// #119217: toggle component's selection status
+                                toggleSelectedRADComponent(rad);
+                            }
                         } else {
                             setSelectedRADComponent(rad);
                         }
                         if(e.isPopupTrigger()) {
                             showContextMenu(e.getPoint());
                             return;
+                        }
+                        // #116961: check if inplace editing should start due to second click on a menu
+                        boolean modifier = e.isControlDown() || e.isAltDown() || e.isShiftDown();
+                        if (prevLeftMousePoint != null
+                                && prevLeftMousePoint.distance(e.getPoint()) <= 3
+                                && !modifier) {   // second click on the same place in a component
+                            isEditing = true;
+                            configureEditedComponent(c);
+                            formDesigner.startInPlaceEditing(rad);
                         }
                         if(!dragop.isStarted()) {
                             pressPoint = e.getPoint();
@@ -1488,8 +1526,33 @@ public class MenuEditLayer extends JPanel {
                     } else if (portion == SelectedPortion.Accelerator) {
                         showAcceleratorEditor(radcomp);
                     } else {
-                        isEditing = true;
-                        formDesigner.startInPlaceEditing(radcomp);
+                        // #116961: check if inplace editing should start or an action listener should be assigned
+                        Node node = radcomp.getNodeReference();
+                        if (node != null) {
+                            Action action = node.getPreferredAction();
+                            if (action != null) {// action listener should be assigned (JMenuItem was double-clicked)
+                                action.actionPerformed(new ActionEvent(
+                                        node, ActionEvent.ACTION_PERFORMED, "")); // NOI18N
+                                prevLeftMousePoint = null; // to prevent inplace editing on mouse release
+                            } else {// inplace editing should start (JMenu was double-clicked)
+                                isEditing = true;
+                                formDesigner.startInPlaceEditing(radcomp);
+                            }
+                        }
+                    }
+                }
+            } else {// #116961: check if inplace editing should start due to second click on a menu
+                if (c instanceof JMenuItem) {
+                    JMenuItem item = (JMenuItem) c;
+                    boolean modifier = e.isControlDown() || e.isAltDown() || e.isShiftDown();
+                    if (prevLeftMousePoint != null
+                            && prevLeftMousePoint.distance(e.getPoint()) <= 3
+                            && !modifier) {   // second click on the same place in a component
+                        RADComponent metacomp = formDesigner.getMetaComponent(item);
+                        if (metacomp != null) {
+                            isEditing = true;
+                            formDesigner.startInPlaceEditing(metacomp);
+                        }
                     }
                 }
             }
@@ -1510,13 +1573,16 @@ public class MenuEditLayer extends JPanel {
         
         @Override
         public void mouseReleased(MouseEvent e) {
+            if (SwingUtilities.isLeftMouseButton(e)) {
+                prevLeftMousePoint = e.getPoint();
+            }
             if(e.isPopupTrigger()) {
                 showContextMenu(e.getPoint());
                 return;
             }
             
             if(dragop.isStarted() && !e.isShiftDown()) {
-                dragop.end(e.getPoint());
+                dragop.end(e);
             } else {
                 if(!isEditing) {
                     JComponent c = dragop.getDeepestComponentInPopups(e.getPoint());
@@ -1532,14 +1598,18 @@ public class MenuEditLayer extends JPanel {
                         RADComponent rad = formDesigner.getMetaComponent(c);
                         //add to selection if shift is down, instead of replacing
                         if(DropTargetLayer.isMultiselectPressed(e)) {
-                            addSelectedRADComponent(rad);
+                            if(e.isShiftDown()) {// add component to selection
+                                addSelectedRADComponent(rad);
+                            } else if (e.isControlDown()) {// #119217: toggle component's selection status
+                                toggleSelectedRADComponent(rad);
+                            }
                         } else {
                             setSelectedRADComponent(rad);
                         }
                     }
                 }
                 isEditing = false;
-            }
+            } 
         }
         
         private void showIconEditor(RADComponent comp) {
@@ -1728,7 +1798,7 @@ public class MenuEditLayer extends JPanel {
                 return;
             }
             if(dragop.isStarted()) {
-                dragop.end(dtde.getLocation());
+                dragop.end(dtde);
                 dragProxying = false;
                 return;
             }

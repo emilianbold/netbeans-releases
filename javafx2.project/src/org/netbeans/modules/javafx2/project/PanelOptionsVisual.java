@@ -112,8 +112,8 @@ public class PanelOptionsVisual extends SettingsPanel implements TaskListener, P
     }
     
     private void preInitComponents() {
-        platformsModel = PlatformUiSupport.createPlatformComboBoxModel("default_platform"); // NOI18N
-        platformsCellRenderer = PlatformUiSupport.createPlatformListCellRenderer();
+        platformsModel = JavaFXProjectUtils.createPlatformComboBoxModel();
+        platformsCellRenderer = JavaFXProjectUtils.createPlatformListCellRenderer();
     }
     
     private void postInitComponents() {

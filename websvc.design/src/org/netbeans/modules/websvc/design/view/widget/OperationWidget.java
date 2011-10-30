@@ -65,6 +65,7 @@ import org.netbeans.modules.websvc.design.javamodel.MethodModel;
 import org.netbeans.modules.websvc.design.javamodel.ServiceModel;
 import org.netbeans.modules.websvc.design.view.DesignView;
 import org.netbeans.modules.websvc.design.view.DesignViewPopupProvider;
+import org.netbeans.modules.websvc.design.view.Flushable;
 import org.netbeans.modules.websvc.design.view.actions.GotoSourceAction;
 import org.netbeans.modules.websvc.design.view.actions.RemoveOperationAction;
 import org.openide.util.ImageUtilities;
@@ -74,7 +75,7 @@ import org.openide.util.NbBundle;
  *
  * @author Ajit Bhate
  */
-public class OperationWidget extends AbstractTitledWidget {
+public class OperationWidget extends AbstractTitledWidget implements Flushable {
     
     private static final String IMAGE_ONE_WAY  = 
             "org/netbeans/modules/websvc/design/view/resources/oneway_operation.png"; // NOI18N   
@@ -128,18 +129,28 @@ public class OperationWidget extends AbstractTitledWidget {
      public MethodModel getMethodModel(){
          return operation;
      }
+     
+     /* (non-Javadoc)
+     * @see org.netbeans.modules.websvc.design.view.Flushable#flushContent()
+     */
+    @Override
+    public void flushContent() {
+        if ( descriptionWidget != null ){
+            descriptionWidget.flushContent();
+        }
+    }
     
     private void createContent() {
         String typeOfOperation ="";
         Image image = null;
         if(operation.isOneWay()) {
-            typeOfOperation = NbBundle.getMessage(OperationWidget.class, "LBL_OneWay");
+            typeOfOperation = NbBundle.getMessage(OperationWidget.class, "LBL_OneWay");  //NOI18N
             image = ImageUtilities.loadImage(IMAGE_ONE_WAY);
         } else if (!operation.getParams().isEmpty()) {
-            typeOfOperation = NbBundle.getMessage(OperationWidget.class, "LBL_RequestResponse");
+            typeOfOperation = NbBundle.getMessage(OperationWidget.class, "LBL_RequestResponse"); //NOI18N
             image = ImageUtilities.loadImage(IMAGE_REQUEST_RESPONSE);
         } else {
-            typeOfOperation = NbBundle.getMessage(OperationWidget.class, "LBL_Notification");
+            typeOfOperation = NbBundle.getMessage(OperationWidget.class, "LBL_Notification"); //NOI18N
             image = ImageUtilities.loadImage(IMAGE_NOTIFICATION);
         }
         headerLabelWidget = new ImageLabelWidget(getScene(), image, operation.getOperationName()) {

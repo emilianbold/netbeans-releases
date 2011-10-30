@@ -261,7 +261,7 @@ public class ClipboardHandler {
     private static boolean runQuickly(final JavaSource js, final Task<CompilationController> task) {
         final CountDownLatch started = new CountDownLatch(1);
         final AtomicBoolean cancel = new AtomicBoolean();
-        
+
         RequestProcessor.Task t = WORKER.post(new Runnable() {
             @Override public void run() {
                 try {
@@ -278,8 +278,6 @@ public class ClipboardHandler {
                 }
             }
         });
-
-        t.schedule(0);
 
         boolean finished;
 

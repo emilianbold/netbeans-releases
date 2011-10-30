@@ -55,6 +55,7 @@ import org.apache.maven.model.Profile;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectBuilder;
 import org.apache.maven.project.ProjectBuildingException;
+import org.apache.maven.repository.RepositorySystem;
 import org.apache.maven.shared.dependency.tree.DependencyNode;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
@@ -152,9 +153,9 @@ public final class ArtifactMultiViewFactory implements ArtifactViewerFactory {
                         }
                         if (repos.size() == 0) {
                             //add central repo
-                            repos.add(EmbedderFactory.createRemoteRepository(embedder, RepositoryPreferences.REPO_CENTRAL, "central")); //NOI18N
+                            repos.add(EmbedderFactory.createRemoteRepository(embedder, RepositorySystem.DEFAULT_REMOTE_REPO_URL, RepositorySystem.DEFAULT_REMOTE_REPO_ID));
                             //add repository form info
-                            if (info != null && !"central".equals(info.getRepoId())) { //NOI18N
+                            if (info != null && !RepositorySystem.DEFAULT_REMOTE_REPO_ID.equals(info.getRepoId())) {
                                 RepositoryInfo rinfo = RepositoryPreferences.getInstance().getRepositoryInfoById(info.getRepoId());
                                 String url = rinfo.getRepositoryUrl();
                                 if (url != null) {

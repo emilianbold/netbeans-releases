@@ -178,10 +178,19 @@ public final class ParagraphView extends EditorView implements EditorView.Parent
      */
     @Override
     public View getView(int index) {
-        return (children != null) ? children.get(index) : null;
+        View v;
+        if (children != null) {
+            v = getEditorView(index);
+        } else {
+            v = null;
+        }
+        return v;
     }
 
     public final EditorView getEditorView(int index) {
+        if (index >= getViewCount()) {
+            throw new IndexOutOfBoundsException("View index=" + index + " >= " + getViewCount()); // NOI18N
+        }
         return children.get(index);
     }
 

@@ -581,10 +581,11 @@ public final class LayoutInterval implements LayoutConstants {
      * @return common parent of the given intervals.
      */
     static LayoutInterval getCommonParent(LayoutInterval[] intervals) {
-        assert (intervals != null) && (intervals.length > 0);
         LayoutInterval parent = intervals[0].getParent();
-        for (int i=1; i<intervals.length; i++) {
-            parent = getCommonParent(parent, intervals[i]);
+        if (parent != null) {
+            for (int i=1; i<intervals.length; i++) {
+                parent = getCommonParent(parent, intervals[i]);
+            }
         }
         return parent;
     }
@@ -1130,7 +1131,7 @@ public final class LayoutInterval implements LayoutConstants {
      * @return effective alignment within parent, or DEFAULT in case of
      *         ambiguous alignment in sequential parent
      */
-    static int getEffectiveAlignment(LayoutInterval interval, int edge) {
+    static int getEffectiveAlignment(LayoutInterval interval, int edge, boolean considerParentSequenceAlignment) {
         assert edge == LEADING || edge == TRAILING;
 
         boolean wantResize = LayoutInterval.wantResize(interval);
@@ -1149,8 +1150,10 @@ public final class LayoutInterval implements LayoutConstants {
             LayoutInterval li = parent.getSubInterval(i);
             if (li == interval) {
                 before = false;
-            }
-            else if (LayoutInterval.wantResize(li)) {
+                if (wantResize) {
+                    afterFixed = false;
+                }
+            } else if (LayoutInterval.wantResize(li)) {
                 if (before)
                     beforeFixed = false;
                 else
@@ -1164,13 +1167,13 @@ public final class LayoutInterval implements LayoutConstants {
         if (!beforeFixed && afterFixed)
             return edge^1;
         if (beforeFixed && afterFixed) {
-            if (wantResize) {
-                return edge;
-            } else {
+            if (considerParentSequenceAlignment) {
                 int parentAlignment = parent.getAlignment();
                 if (parentAlignment == LEADING || parentAlignment == TRAILING) {
                     return parentAlignment;
                 }
+            } else {
+                return edge;
             }
         }
 
@@ -1187,7 +1190,7 @@ public final class LayoutInterval implements LayoutConstants {
         assert parent.isParentOf(interval);
         int alignment = edge;
         do {
-            alignment = getEffectiveAlignment(interval, alignment);
+            alignment = getEffectiveAlignment(interval, alignment, true);
             interval = interval.getParent();
             if (alignment != LEADING && alignment != TRAILING) {
                 while (interval != parent) {
@@ -1199,6 +1202,22 @@ public final class LayoutInterval implements LayoutConstants {
         }
         while (interval != parent);
         return alignment;
+    }
+
+    static boolean hasAnyResizingNeighbor(LayoutInterval interval, int alignment) {
+        assert alignment == LEADING || alignment == TRAILING;
+        LayoutInterval parent = interval.getParent();
+        if (parent.isSequential()) {
+            int d = alignment==LEADING ? -1:1;
+            int index = parent.indexOf(interval) + d;
+            while (index >= 0 && index < parent.getSubIntervalCount()) {
+                if (LayoutInterval.wantResize(parent.getSubInterval(index))) {
+                    return true;
+                }
+                index += d;
+            }
+        }
+        return false;
     }
 
     static int getIndexInParent(LayoutInterval interval, LayoutInterval parent) {

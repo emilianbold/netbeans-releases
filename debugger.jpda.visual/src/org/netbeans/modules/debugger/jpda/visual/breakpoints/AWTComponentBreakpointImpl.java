@@ -56,6 +56,13 @@ import org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointListener;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.expr.JDIVariable;
+import org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ObjectReferenceWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ReferenceTypeWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.TypeComponentWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
 
 /**
  *
@@ -100,7 +107,7 @@ public class AWTComponentBreakpointImpl extends BaseComponentBreakpointImpl {
             if (variableComponent instanceof JDIVariable) {
                 Value value = ((JDIVariable) variableComponent).getJDIValue();
                 if (value instanceof ObjectReference) {
-                    componentClassName = findClassWithMethod(((ObjectReference) value).referenceType(), "repaint", "(JIIII)V");
+                    componentClassName = findClassWithMethod((ObjectReference) value, "repaint", "(JIIII)V");
                 }
             }
             if (componentClassName == null) {
@@ -122,10 +129,17 @@ public class AWTComponentBreakpointImpl extends BaseComponentBreakpointImpl {
         }
     }
 
-    private String findClassWithMethod(ReferenceType referenceType, String name, String signature) {
-        List<Method> methods = referenceType.methodsByName(name, signature);
-        if (!methods.isEmpty()) {
-            return methods.get(0).declaringType().name();
+    private String findClassWithMethod(ObjectReference value, String name, String signature) {
+        try {
+            ReferenceType referenceType = ObjectReferenceWrapper.referenceType(value);
+            List<Method> methods = ReferenceTypeWrapper.methodsByName(referenceType, name, signature);
+            if (!methods.isEmpty()) {
+                return ReferenceTypeWrapper.name(TypeComponentWrapper.declaringType(methods.get(0)));
+            }
+        } catch (ClassNotPreparedExceptionWrapper ex) {
+        } catch (InternalExceptionWrapper iex) {
+        } catch (ObjectCollectedExceptionWrapper ocex) {
+        } catch (VMDisconnectedExceptionWrapper vmdex) {
         }
         return null;
     }

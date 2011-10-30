@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.debugger.jpda.visual;
 
+import org.openide.util.NbBundle;
+
 /**
  *
  * @author jbachorik
@@ -53,6 +55,10 @@ public class RetrievalException extends Exception {
 
     public RetrievalException(String message, Throwable cause) {
         super(message, cause);
+    }
+    
+    public static RetrievalException disconnected() {
+        return new RetrievalException(NbBundle.getMessage(RetrievalException.class, "MSG_ScreenshotNotTaken_NoDebugger"));
     }
     
 }

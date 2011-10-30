@@ -52,35 +52,31 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 import java.util.WeakHashMap;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FSException;
 
-public final class MutualExclusionSupport {
-    private static final MutualExclusionSupport DEFAULT = new MutualExclusionSupport();
-    private static final Map exclusive = Collections.synchronizedMap(new WeakHashMap());
-    private static final Map shared = Collections.synchronizedMap(new WeakHashMap());
+public final class MutualExclusionSupport<K> {
+    private final Map<K,Set<Closeable>> exclusive = Collections.synchronizedMap(new WeakHashMap<K,Set<Closeable>>());
+    private final Map<K,Set<Closeable>> shared = Collections.synchronizedMap(new WeakHashMap<K,Set<Closeable>>());
 
-    public static MutualExclusionSupport getDefault() {
-        return MutualExclusionSupport.DEFAULT;
+    public MutualExclusionSupport() {
     }
 
-    private MutualExclusionSupport() {
-    }
-
-    public synchronized Closeable addResource(final Object key, final boolean isShared) throws IOException {
+    public synchronized Closeable addResource(final K key, final boolean isShared) throws IOException {
         boolean isInUse = true;        
-        final Map unexpected = (isShared) ? MutualExclusionSupport.exclusive : MutualExclusionSupport.shared;
-        final Map expected = (isShared) ? MutualExclusionSupport.shared : MutualExclusionSupport.exclusive;
+        final Map<K,Set<Closeable>> unexpected = (isShared) ? exclusive : shared;
+        final Map<K,Set<Closeable>> expected = (isShared) ? shared : exclusive;
 
-        final WeakSet unexpectedCounter = (WeakSet) unexpected.get(key);
-        WeakSet expectedCounter = (WeakSet) expected.get(key);;
+        final Set<Closeable> unexpectedCounter = unexpected.get(key);
+        Set<Closeable> expectedCounter = expected.get(key);
 
         for (int i = 0; i < 10 && isInUse; i++) {
             isInUse = unexpectedCounter != null && unexpectedCounter.size() > 0;
 
             if (!isInUse) {            
                 if (expectedCounter == null) {
-                    expectedCounter = new WeakSet();
+                    expectedCounter = new WeakSet<Closeable>();
                     expected.put(key, expectedCounter);
                 }
                 isInUse = !isShared && expectedCounter.size() > 0;            
@@ -96,10 +92,11 @@ public final class MutualExclusionSupport {
         }
 
         if (isInUse) {
-            if (isShared) {
-                FSException.io("EXC_CannotGetSharedAccess", key.toString()); // NOI18N        
-            } else {
-                FSException.io("EXC_CannotGetExclusiveAccess", key.toString()); // NOI18N        
+            try {
+                FSException.io(isShared ? "EXC_CannotGetSharedAccess" : "EXC_CannotGetExclusiveAccess", key.toString()); // NOI18N
+            } catch (IOException x) {
+                assert addStack(x, unexpectedCounter, expectedCounter);
+                throw x;
             }
         }
 
@@ -108,44 +105,69 @@ public final class MutualExclusionSupport {
         expectedCounter.add(retVal);
         return retVal;
     }
+    private boolean addStack(IOException x, Set<Closeable> unexpectedCounter, Set<Closeable> expectedCounter) {
+        addStack(x, unexpectedCounter);
+        addStack(x, expectedCounter);
+        return true;
+    }
+    private void addStack(IOException x, Set<Closeable> cs) {
+        if (cs != null) {
+            for (Closeable c : cs) {
+                Throwable stack = c.stack;
+                if (stack != null) {
+                    Throwable t = x;
+                    while (t.getCause() != null) {
+                        t = t.getCause();
+                    }
+                    t.initCause(stack);
+                }
+            }
+        }
+    }
 
-    private synchronized void removeResource(final Object key, final Object value, final boolean isShared) {
-        final Map expected = (isShared) ? MutualExclusionSupport.shared : MutualExclusionSupport.exclusive;
+    private synchronized void removeResource(final K key, final Closeable value, final boolean isShared) {
+        final Map<K,Set<Closeable>> expected = isShared ? shared : exclusive;
 
-        final WeakSet expectedCounter = (WeakSet) expected.get(key);
+        final Set<Closeable> expectedCounter = expected.get(key);
         if (expectedCounter != null) {
             expectedCounter.remove(value);
         }
     }
 
-    synchronized boolean isBeingWritten(FileObj file) {
-        final WeakSet counter = (WeakSet) exclusive.get(file);
+    synchronized boolean isBeingWritten(K file) {
+        final Set<Closeable> counter = exclusive.get(file);
         return counter != null && !counter.isEmpty();
     }
 
 
     public final class Closeable {
         private final boolean isShared;
-        private final Reference keyRef;
+        private final Reference<K> keyRef;
         private boolean isClosed = false;
+        Throwable stack;
 
-        private Closeable(final Object key, final boolean isShared) {
+        private Closeable(final K key, final boolean isShared) {
             this.isShared = isShared;
-            this.keyRef = new WeakReference(key);
+            this.keyRef = new WeakReference<K>(key);
+            assert populateStack();
         }
 
+        private boolean populateStack() {
+            stack = new Throwable("opened stream here");
+            return true;
+        }
 
-        public final void close() {
+        public void close() {
             if (!isClosed()) {
                 isClosed = true;
-                final Object key = keyRef.get();
+                final K key = keyRef.get();
                 if (key != null) {
                     removeResource(key, this, isShared);
                 }
             }
         }
 
-        public final boolean isClosed() {
+        public boolean isClosed() {
             return isClosed;
         }
     }

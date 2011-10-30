@@ -316,7 +316,7 @@ abstract public class CsmCompletionQuery {
             if (tp == null) {
                 // find last separator position
                 final int lastSepOffset = sup.getLastCommandSeparator(offset);
-                tp = new CsmCompletionTokenProcessor(offset, lastSepOffset, tooltip);
+                tp = new CsmCompletionTokenProcessor(offset, lastSepOffset);
                 final CndTokenProcessor<Token<TokenId>> etp = CsmExpandedTokenProcessor.create(getCsmFile(), doc, tp, offset);
                 if(etp instanceof CsmExpandedTokenProcessor) {
                     tp.setMacroCallback((CsmExpandedTokenProcessor)etp);
@@ -369,8 +369,20 @@ abstract public class CsmCompletionQuery {
             }
 
             if (!errState) {
-
-                CsmCompletionExpression exp = tp.getResultExp();
+                CsmCompletionExpression exp = null;
+                if(!tooltip) {
+                    exp = tp.getResultExp();
+                } else {
+                    List<CsmCompletionExpression> stack = tp.getStack();
+                    for (int i = stack.size() - 1; i >= 0; i--) {
+                        CsmCompletionExpression e = stack.get(i);
+                        if(e.getExpID() == CsmCompletionExpression.METHOD_OPEN) {
+                            exp = e;
+                            break;
+                        }
+                    }
+                    exp = (exp != null) ? exp : tp.getResultExp();
+                }
                 if (TRACE_COMPLETION) {
                     System.err.println("expression " + exp);
                 }
@@ -935,7 +947,7 @@ abstract public class CsmCompletionQuery {
                     }
                 }
                 if(cppts != null) {
-                    CsmCompletionTokenProcessor tp = new CsmCompletionTokenProcessor(initialValue.getEndOffset(), initialValue.getStartOffset(), false);
+                    CsmCompletionTokenProcessor tp = new CsmCompletionTokenProcessor(initialValue.getEndOffset(), initialValue.getStartOffset());
                     tp.enableTemplateSupport(true);
                     CndTokenUtilities.processTokens(tp, getBaseDocument(), initialValue.getStartOffset(), initialValue.getEndOffset());
                     CsmCompletionExpression exp = tp.getResultExp();
@@ -3239,7 +3251,7 @@ abstract public class CsmCompletionQuery {
         }
 
         @Override
-        public String toString() {
+        public String getStringPresentation() {
             return "TemplateBasedReferencedObjectResultItem for " + getAssociatedObject(); // NOI18N
         }
     }

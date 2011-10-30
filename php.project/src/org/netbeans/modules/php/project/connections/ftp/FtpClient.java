@@ -53,6 +53,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.net.ProtocolCommandEvent;
@@ -63,11 +64,11 @@ import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPReply;
 import org.apache.commons.net.ftp.FTPSClient;
 import org.netbeans.modules.php.project.connections.RemoteException;
+import org.netbeans.modules.php.project.connections.common.PasswordPanel;
+import org.netbeans.modules.php.project.connections.common.RemoteUtils;
 import org.netbeans.modules.php.project.connections.ftp.FtpConfiguration.Encryption;
 import org.netbeans.modules.php.project.connections.spi.RemoteClient;
 import org.netbeans.modules.php.project.connections.spi.RemoteFile;
-import org.netbeans.modules.php.project.connections.common.PasswordPanel;
-import org.netbeans.modules.php.project.connections.common.RemoteUtils;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.InputOutput;
@@ -93,6 +94,7 @@ public class FtpClient implements RemoteClient {
     private final ProtocolCommandListener protocolCommandListener;
     private final int keepAliveInterval;
     private final RequestProcessor.Task keepAliveTask;
+    private final AtomicInteger keepAliveCounter = new AtomicInteger();
 
     // @GuardedBy(this)
     private Long timestampDiff = null;
@@ -514,6 +516,7 @@ public class FtpClient implements RemoteClient {
         }
         timestampDiff = 0L;
         // try to calculate the time difference between remote and local pc
+        removeProtocolCommandListener();
         try {
             File tmpFile = File.createTempFile("netbeans-timestampdiff-", ".txt"); // NOI18N
             long now = tmpFile.lastModified();
@@ -535,8 +538,9 @@ public class FtpClient implements RemoteClient {
                 }
             }
         } catch (Exception ex) {
-            WindowsJdk7WarningPanel.warn();
             LOGGER.log(Level.INFO, "Unable to calculate time difference", ex);
+        } finally {
+            addProtocolCommandListener();
         }
         return timestampDiff;
     }
@@ -549,17 +553,32 @@ public class FtpClient implements RemoteClient {
         }
         try {
             LOGGER.log(Level.FINE, "Keep-alive (NOOP) for {0}", configuration.getHost());
-            removeProtocolCommandListener();
             ftpClient.noop();
             ftpClient.getReplyString();
-            addProtocolCommandListener();
+            preventNoOperationTimeout();
             scheduleKeepAlive();
         } catch (IOException ex) {
             WindowsJdk7WarningPanel.warn();
-            LOGGER.log(Level.FINE, "Keep-alive (NOOP) error for " + configuration.getHost(), ex);
+            LOGGER.log(Level.FINE, "Keep-alive (NOOP/PWD) error for " + configuration.getHost(), ex);
             // #201828
             RemoteException exc = new RemoteException(NbBundle.getMessage(FtpClient.class, "MSG_FtpCannotKeepAlive", configuration.getHost()), ex, getReplyString());
             RemoteUtils.processRemoteException(exc);
+        }
+    }
+
+    // #203987
+    private void preventNoOperationTimeout() throws IOException {
+        long counter = keepAliveCounter.incrementAndGet();
+        if (counter == 10) {
+            keepAliveCounter.set(0);
+            LOGGER.log(Level.FINE, "Keep-alive (PWD) for {0}", configuration.getHost());
+            removeProtocolCommandListener();
+            try {
+                ftpClient.pwd();
+                ftpClient.getReplyString();
+            } finally {
+                addProtocolCommandListener();
+            }
         }
     }
 

@@ -75,6 +75,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.locks.Lock;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -86,6 +87,26 @@ import org.netbeans.api.debugger.jpda.MethodBreakpoint;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointListener;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+import org.netbeans.modules.debugger.jpda.jdi.ArrayReferenceWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ArrayTypeWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ClassObjectReferenceWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ClassTypeWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.IllegalThreadStateExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.MethodWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ObjectReferenceWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ReferenceTypeWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.StackFrameWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.StringReferenceWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ThreadReferenceWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.TypeComponentWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.TypeWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.UnsupportedOperationExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.VirtualMachineWrapper;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
@@ -129,77 +150,93 @@ public class RemoteServices {
         }
     }
     
-    public static ClassObjectReference uploadBasicClasses(JPDAThreadImpl t, ServiceType sType) throws InvalidTypeException, ClassNotLoadedException, IncompatibleThreadStateException, InvocationException, IOException, PropertyVetoException {
+    public static ClassObjectReference uploadBasicClasses(JPDAThreadImpl t, ServiceType sType) throws InvalidTypeException, ClassNotLoadedException, IncompatibleThreadStateException, InvocationException, IOException, PropertyVetoException, InternalExceptionWrapper, VMDisconnectedExceptionWrapper, ObjectCollectedExceptionWrapper, UnsupportedOperationExceptionWrapper, ClassNotPreparedExceptionWrapper {
         ThreadReference tawt = t.getThreadReference();
         VirtualMachine vm = tawt.virtualMachine();
         
         ReferenceType threadType = tawt.referenceType();
-        Method getContextCl = ((ClassType)threadType).concreteMethodByName("getContextClassLoader", "()Ljava/lang/ClassLoader;");
-        
-        ObjectReference cl = (ObjectReference)tawt.invokeMethod(tawt, getContextCl, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
+        Method getContextCl = ClassTypeWrapper.concreteMethodByName((ClassType) threadType, "getContextClassLoader", "()Ljava/lang/ClassLoader;");
         t.notifyMethodInvoking();
         try {
-            ClassType classLoaderClass = null;
-            if (cl != null) {
-                classLoaderClass = (ClassType)cl.referenceType();
-            } else {
-                classLoaderClass = getClass(vm, ClassLoader.class.getName());
-                Method getSystemClassLoader = classLoaderClass.concreteMethodByName("getSystemClassLoader", "()Ljava/lang/ClassLoader;");
-                cl = (ObjectReference) classLoaderClass.invokeMethod(tawt, getSystemClassLoader, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
-            }
-
+            ObjectReference cl = (ObjectReference) ObjectReferenceWrapper.invokeMethod(tawt, tawt, getContextCl, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
             List<RemoteClass> remoteClasses = getRemoteClasses();
             ClassObjectReference basicClass = null;
             for (RemoteClass rc : remoteClasses) {
-                if ((sType == ServiceType.AWT && rc.name.contains("AWT")) ||
-                    (sType == ServiceType.FX && rc.name.contains("FX"))) {
-                    ClassObjectReference theUploadedClass = null;
-                    ArrayReference byteArray = createTargetBytes(vm, rc.bytes);
-                    StringReference nameMirror = null;
-                    try {
-                        Method defineClass = classLoaderClass.concreteMethodByName("defineClass", "(Ljava/lang/String;[BII)Ljava/lang/Class;");
-                        boolean uploaded = false;
-                        while (!uploaded) {
-                            nameMirror = vm.mirrorOf(rc.name);
-                            try {
-                                nameMirror.disableCollection();
-                                uploaded = true;
-                            } catch (ObjectCollectedException ocex) {
-                                // Just collected, try again...
-                            }
-                        }
-                        uploaded = false;
-                        while (!uploaded) {
-                            theUploadedClass = (ClassObjectReference) cl.invokeMethod(tawt, defineClass, Arrays.asList(nameMirror, byteArray, vm.mirrorOf(0), vm.mirrorOf(rc.bytes.length)), ObjectReference.INVOKE_SINGLE_THREADED);
-                            if (basicClass == null && rc.name.indexOf('$') < 0) {
-                                try {
-                                    // Disable collection only of the basic class
-                                    theUploadedClass.disableCollection();
-                                    basicClass = theUploadedClass;
-                                    uploaded = true;
-                                } catch (ObjectCollectedException ocex) {
-                                    // Just collected, try again...
-                                }
-                            } else {
-                                uploaded = true;
-                            }
-                        }
-                    } finally {
-                        byteArray.enableCollection(); // We can dispose it now
-                        if (nameMirror != null) {
-                            nameMirror.enableCollection();
+                String className = rc.name;
+                if (basicClass == null && className.indexOf('$') < 0) {
+                    if ((sType == ServiceType.AWT && className.contains("AWT")) ||
+                        (sType == ServiceType.FX && className.contains("FX"))) {
+                        List<ReferenceType> classesByName = VirtualMachineWrapper.classesByName(vm, className);
+                        if (!classesByName.isEmpty()) {
+                            basicClass = ReferenceTypeWrapper.classObject(classesByName.get(0));
                         }
                     }
+                    break;
                 }
-                //Method resolveClass = classLoaderClass.concreteMethodByName("resolveClass", "(Ljava/lang/Class;)V");
-                //systemClassLoader.invokeMethod(tawt, resolveClass, Arrays.asList(theUploadedClass), ObjectReference.INVOKE_SINGLE_THREADED);
+            }
+            // Suppose that when there's the basic class loaded, there are all.
+            if (basicClass == null) {  // Load the classes only if there's not the basic one.
+                ClassType classLoaderClass = null;
+                if (cl != null) {
+                    classLoaderClass = (ClassType) ObjectReferenceWrapper.referenceType(cl);
+                } else {
+                    classLoaderClass = getClass(vm, ClassLoader.class.getName());
+                    Method getSystemClassLoader = ClassTypeWrapper.concreteMethodByName(classLoaderClass, "getSystemClassLoader", "()Ljava/lang/ClassLoader;");
+                    cl = (ObjectReference) ClassTypeWrapper.invokeMethod(classLoaderClass, tawt, getSystemClassLoader, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
+                }
+
+                for (RemoteClass rc : remoteClasses) {
+                    String className = rc.name;
+                    if ((sType == ServiceType.AWT && className.contains("AWT")) ||
+                        (sType == ServiceType.FX && className.contains("FX"))) {
+                        ClassObjectReference theUploadedClass = null;
+                        ArrayReference byteArray = createTargetBytes(vm, rc.bytes);
+                        StringReference nameMirror = null;
+                        try {
+                            Method defineClass = ClassTypeWrapper.concreteMethodByName(classLoaderClass, "defineClass", "(Ljava/lang/String;[BII)Ljava/lang/Class;");
+                            boolean uploaded = false;
+                            while (!uploaded) {
+                                nameMirror = VirtualMachineWrapper.mirrorOf(vm, className);
+                                try {
+                                    ObjectReferenceWrapper.disableCollection(nameMirror);
+                                    uploaded = true;
+                                } catch (ObjectCollectedExceptionWrapper ocex) {
+                                    // Just collected, try again...
+                                }
+                            }
+                            uploaded = false;
+                            while (!uploaded) {
+                                theUploadedClass = (ClassObjectReference) ObjectReferenceWrapper.invokeMethod(cl, tawt, defineClass, Arrays.asList(nameMirror, byteArray, vm.mirrorOf(0), vm.mirrorOf(rc.bytes.length)), ObjectReference.INVOKE_SINGLE_THREADED);
+                                if (basicClass == null && rc.name.indexOf('$') < 0) {
+                                    try {
+                                        // Disable collection only of the basic class
+                                        ObjectReferenceWrapper.disableCollection(theUploadedClass);
+                                        basicClass = theUploadedClass;
+                                        uploaded = true;
+                                    } catch (ObjectCollectedExceptionWrapper ocex) {
+                                        // Just collected, try again...
+                                    }
+                                } else {
+                                    uploaded = true;
+                                }
+                            }
+                        } finally {
+                            ObjectReferenceWrapper.enableCollection(byteArray); // We can dispose it now
+                            if (nameMirror != null) {
+                                ObjectReferenceWrapper.enableCollection(nameMirror);
+                            }
+                        }
+                    }
+                    //Method resolveClass = classLoaderClass.concreteMethodByName("resolveClass", "(Ljava/lang/Class;)V");
+                    //systemClassLoader.invokeMethod(tawt, resolveClass, Arrays.asList(theUploadedClass), ObjectReference.INVOKE_SINGLE_THREADED);
+                }
             }
             if (basicClass != null) {
                 // Initialize the class:
                 ClassType theClass = getClass(vm, Class.class.getName());
                 // Perhaps it's not 100% correct, we should be calling the new class' newInstance() method, not Class.newInstance() method.
-                Method newInstance = theClass.concreteMethodByName("newInstance", "()Ljava/lang/Object;");
-                ObjectReference newInstanceOfBasicClass = (ObjectReference) basicClass.invokeMethod(tawt, newInstance, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
+                Method newInstance = ClassTypeWrapper.concreteMethodByName(theClass, "newInstance", "()Ljava/lang/Object;");
+                ObjectReference newInstanceOfBasicClass = (ObjectReference) ObjectReferenceWrapper.invokeMethod(basicClass, tawt, newInstance, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
                 synchronized (remoteServiceClasses) {
                     remoteServiceClasses.put(t.getDebugger(), basicClass);
                 }
@@ -208,24 +245,6 @@ public class RemoteServices {
             return basicClass;
         } finally {
             t.notifyMethodInvokeDone();
-        }
-    }
-    
-    public static void uploadAllClasses(JPDAThreadImpl t) throws InvalidTypeException, ClassNotLoadedException, IncompatibleThreadStateException, InvocationException, IOException {
-        ThreadReference tawt = t.getThreadReference();
-        VirtualMachine vm = tawt.virtualMachine();
-        ClassType classLoaderClass = getClass(vm, ClassLoader.class.getName());
-        Method getSystemClassLoader = classLoaderClass.concreteMethodByName("getSystemClassLoader", "()Ljava/lang/ClassLoader;");
-        ObjectReference systemClassLoader = (ObjectReference) classLoaderClass.invokeMethod(tawt, getSystemClassLoader, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
-        List<RemoteClass> remoteClasses = getRemoteClasses();
-        for (RemoteClass rc : remoteClasses) {
-            ArrayReference byteArray = createTargetBytes(vm, rc.bytes);
-            try {
-                Method defineClass = classLoaderClass.concreteMethodByName("defineClass", "(Ljava/lang/String;[BII)Ljava/lang/Class;");
-                systemClassLoader.invokeMethod(tawt, defineClass, Arrays.asList(vm.mirrorOf(rc.name), byteArray, vm.mirrorOf(0), vm.mirrorOf(rc.bytes.length)), ObjectReference.INVOKE_SINGLE_THREADED);
-            } finally {
-                byteArray.enableCollection(); // We can dispose it now
-            }
         }
     }
     
@@ -301,7 +320,8 @@ public class RemoteServices {
         final JPDAThreadImpl t = (JPDAThreadImpl) thread;
         boolean wasSuspended = true;
         
-        t.accessLock.writeLock().lock();
+        Lock lock = t.accessLock.writeLock();
+        lock.lock();
         try {
             ThreadReference threadReference = t.getThreadReference();
             wasSuspended = t.isSuspended();
@@ -311,7 +331,8 @@ public class RemoteServices {
             }
             if (!t.isSuspended()) {
                 final CountDownLatch latch = new CountDownLatch(1);
-                t.accessLock.writeLock().unlock();
+                lock.unlock();
+                lock = null;
                 switch(sType) {
                     case AWT: {
                         runOnBreakpoint(
@@ -326,10 +347,12 @@ public class RemoteServices {
                         synchronized (remoteServiceClasses) {
                             serviceClassObject = remoteServiceClasses.get(((JPDAThreadImpl) thread).getDebugger());
                         }
-                        ClassType serviceClass = (ClassType) serviceClassObject.reflectedType();//getClass(vm, "org.netbeans.modules.debugger.jpda.visual.remote.RemoteService");
-                        Field awtAccess = serviceClass.fieldByName("awtAccess"); // NOI18N
                         try {
-                            serviceClass.setValue(awtAccess, vm.mirrorOf(true));
+                            ClassType serviceClass = (ClassType) ClassObjectReferenceWrapper.reflectedType(serviceClassObject);//getClass(vm, "org.netbeans.modules.debugger.jpda.visual.remote.RemoteService");
+                            Field awtAccess = ReferenceTypeWrapper.fieldByName(serviceClass, "awtAccess"); // NOI18N
+                            ClassTypeWrapper.setValue(serviceClass, awtAccess, VirtualMachineWrapper.mirrorOf(vm, true));
+                        } catch (InternalExceptionWrapper iex) {
+                        } catch (VMDisconnectedExceptionWrapper vmdex) {
                         } catch (Exception ex) {
                             Exceptions.printStackTrace(ex);
                         }
@@ -349,7 +372,6 @@ public class RemoteServices {
                 try {
                     // wait for the async operation to finish
                     latch.await();
-                    t.accessLock.writeLock().lock();
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                 }
@@ -380,7 +402,9 @@ public class RemoteServices {
                 }
             }
         } finally {
-            t.accessLock.writeLock().unlock();
+            if (lock != null) {
+                lock.unlock();
+            }
         }
     }
     
@@ -407,145 +431,175 @@ public class RemoteServices {
                                                   List<RemoteListener> rlisteners,
                                                   boolean combineAllTypes) {
         ThreadReference t = thread.getThreadReference();
-        ReferenceType clazz = component.referenceType();
-        List<Method> visibleMethods = clazz.visibleMethods();
-        Map<ObjectReference, RemoteListener> listenersByInstance = null;
-        if (combineAllTypes) {
-            listenersByInstance = new HashMap<ObjectReference, RemoteListener>();
-        }
-        for (Method m : visibleMethods) {
-            String name = m.name();
-            if (!name.startsWith("get") || !name.endsWith("Listeners")) {
-                continue;
+        try {
+            ReferenceType clazz = ObjectReferenceWrapper.referenceType(component);
+            List<Method> visibleMethods = ReferenceTypeWrapper.visibleMethods(clazz);
+            Map<ObjectReference, RemoteListener> listenersByInstance = null;
+            if (combineAllTypes) {
+                listenersByInstance = new HashMap<ObjectReference, RemoteListener>();
             }
-            if (m.argumentTypeNames().size() > 0) {
-                continue;
-            }
-            Value result;
-            try {
-                result = component.invokeMethod(t, m, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
-            } catch (Exception ex) {
-                Exceptions.printStackTrace(ex);
-                continue;
-            }
-            String listenerType = null;
-            try {
-                Type returnType = m.returnType();
-                if (returnType instanceof ArrayType) {
-                    ArrayType art = (ArrayType) returnType;
-                    listenerType = art.componentTypeName();
+            for (Method m : visibleMethods) {
+                String name = TypeComponentWrapper.name(m);
+                if (!name.startsWith("get") || !name.endsWith("Listeners")) {
+                    continue;
                 }
-            } catch (ClassNotLoadedException ex) {
-                continue;
-            }
-            if (listenerType == null) {
-                continue;
-            }
-            ArrayReference array = (ArrayReference) result;
-            List<Value> listeners = array.getValues();
-            for (Value v : listeners) {
-                if (combineAllTypes) {
-                    RemoteListener rl = listenersByInstance.get((ObjectReference) v);
-                    if (rl != null) {
-                        rl.addType(listenerType);
-                        continue;
+                if (MethodWrapper.argumentTypeNames(m).size() > 0) {
+                    continue;
+                }
+                Value result;
+                try {
+                    result = ObjectReferenceWrapper.invokeMethod(component, t, m, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
+                } catch (ClassNotLoadedException cnlex) {
+                    continue;
+                } catch (InvocationException iex) {
+                    Exceptions.printStackTrace(iex);
+                    continue;
+                }
+                String listenerType = null;
+                try {
+                    Type returnType = MethodWrapper.returnType(m);
+                    if (returnType instanceof ArrayType) {
+                        ArrayType art = (ArrayType) returnType;
+                        listenerType = ArrayTypeWrapper.componentTypeName(art);
                     }
+                } catch (ClassNotLoadedException ex) {
+                    continue;
                 }
-                RemoteListener rl = new RemoteListener(listenerType, (ObjectReference) v);
-                if (combineAllTypes) {
-                    listenersByInstance.put((ObjectReference) v, rl);
+                if (listenerType == null) {
+                    continue;
                 }
-                rlisteners.add(rl);
+                ArrayReference array = (ArrayReference) result;
+                List<Value> listeners = ArrayReferenceWrapper.getValues(array);
+                for (Value v : listeners) {
+                    if (combineAllTypes) {
+                        RemoteListener rl = listenersByInstance.get((ObjectReference) v);
+                        if (rl != null) {
+                            rl.addType(listenerType);
+                            continue;
+                        }
+                    }
+                    RemoteListener rl = new RemoteListener(listenerType, (ObjectReference) v);
+                    if (combineAllTypes) {
+                        listenersByInstance.put((ObjectReference) v, rl);
+                    }
+                    rlisteners.add(rl);
+                }
             }
+        } catch (ClassNotPreparedExceptionWrapper cnpex) {
+        } catch (ObjectCollectedExceptionWrapper ocex) {
+        } catch (InternalExceptionWrapper iex) {
+        } catch (VMDisconnectedExceptionWrapper vdex) {
+        } catch (IncompatibleThreadStateException itsex) {
+            Exceptions.printStackTrace(itsex);
+        } catch (InvalidTypeException itex) {
+            Exceptions.printStackTrace(itex);
         }
     }
     
     private static void retrieveAttachedFXListeners(JPDAThreadImpl thread, ObjectReference component, List<RemoteListener> rlisteners) {
         ThreadReference t = thread.getThreadReference();
-        ReferenceType clazz = component.referenceType();
-        List<Method> visibleMethods = clazz.visibleMethods();
-        for (Method m : visibleMethods) {
-            String name = m.name();
-            if (!name.startsWith("getOn")) {
-                continue;
-            }
-            if (m.argumentTypeNames().size() > 0) {
-                continue;
-            }
-            Value result;
-            try {
-                result = component.invokeMethod(t, m, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
-                if (result == null) {
+        try {
+            ReferenceType clazz = ObjectReferenceWrapper.referenceType(component);
+            List<Method> visibleMethods = ReferenceTypeWrapper.visibleMethods(clazz);
+            for (Method m : visibleMethods) {
+                String name = TypeComponentWrapper.name(m);
+                if (!name.startsWith("getOn")) {
                     continue;
                 }
-            } catch (Exception ex) {
-                Exceptions.printStackTrace(ex);
-                continue;
-            }
-            String listenerType = null;
-            try {
-                Type returnType = m.returnType();
-                if (returnType.name().equals("javafx.event.EventHandler")) {
-                    listenerType = name.substring(5);
+                if (MethodWrapper.argumentTypeNames(m).size() > 0) {
+                    continue;
                 }
+                Value result;
+                try {
+                    result = ObjectReferenceWrapper.invokeMethod(component, t, m, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
+                    if (result == null) {
+                        continue;
+                    }
+                } catch (ClassNotLoadedException cnlex) {
+                    continue;
+                } catch (InvocationException iex) {
+                    Exceptions.printStackTrace(iex);
+                    continue;
+                }
+                String listenerType = null;
+                try {
+                    Type returnType = MethodWrapper.returnType(m);
+                    if (TypeWrapper.name(returnType).equals("javafx.event.EventHandler")) {
+                        listenerType = name.substring(5);
+                    }
 //                if (returnType instanceof ArrayType) {
 //                    ArrayType art = (ArrayType) returnType;
 //                    listenerType = art.componentTypeName();
 //                }
-            } catch (ClassNotLoadedException ex) {
-                continue;
-            }
-            if (listenerType == null) {
-                continue;
-            }
-            RemoteListener rl = new RemoteListener(listenerType, (ObjectReference)result);
-            rlisteners.add(rl);
+                } catch (ClassNotLoadedException ex) {
+                    continue;
+                }
+                if (listenerType == null) {
+                    continue;
+                }
+                RemoteListener rl = new RemoteListener(listenerType, (ObjectReference)result);
+                rlisteners.add(rl);
 //            ArrayReference array = (ArrayReference) result;
 //            List<Value> listeners = array.getValues();
 //            for (Value v : listeners) {
 //                RemoteListener rl = new RemoteListener(listenerType, (ObjectReference) v);
 //                rlisteners.add(rl);
 //            }
+            }
+        } catch (ClassNotPreparedExceptionWrapper cnpex) {
+        } catch (ObjectCollectedExceptionWrapper ocex) {
+        } catch (InternalExceptionWrapper iex) {
+        } catch (VMDisconnectedExceptionWrapper vdex) {
+        } catch (IncompatibleThreadStateException itsex) {
+            Exceptions.printStackTrace(itsex);
+        } catch (InvalidTypeException itex) {
+            Exceptions.printStackTrace(itex);
         }
     }
     
     public static List<ReferenceType> getAttachableListeners(JavaComponentInfo ci) {
         ObjectReference component = ci.getComponent();
-        ReferenceType clazz = component.referenceType();
-        List<Method> visibleMethods = clazz.visibleMethods();
         List<ReferenceType> listenerClasses = new ArrayList<ReferenceType>();
-        for (Method m : visibleMethods) {
-            String name = m.name();
-            if (!name.startsWith("add") || !name.endsWith("Listener")) {
-                continue;
+        try {
+            ReferenceType clazz = ObjectReferenceWrapper.referenceType(component);
+            List<Method> visibleMethods = ReferenceTypeWrapper.visibleMethods(clazz);
+            for (Method m : visibleMethods) {
+                String name = TypeComponentWrapper.name(m);
+                if (!name.startsWith("add") || !name.endsWith("Listener")) {
+                    continue;
+                }
+                List<Type> argTypes;
+                try {
+                    argTypes = MethodWrapper.argumentTypes(m);
+                } catch (ClassNotLoadedException ex) {
+                    continue;
+                }
+                if (argTypes.size() != 1) {
+                    continue;
+                }
+                Type t = argTypes.get(0);
+                if (!(t instanceof ReferenceType)) {
+                    continue;
+                }
+                ReferenceType rt = (ReferenceType) t;
+                String lname = ReferenceTypeWrapper.name(rt);
+                int i = lname.lastIndexOf('.');
+                if (i < 0) i = 0;
+                else i++;
+                int ii = lname.lastIndexOf('$', i);
+                if (ii > i) i = ii + 1;
+                System.err.println("  getAttachableListeners() '"+name.substring(3)+"' should equal to '"+lname.substring(i)+"', lname = "+lname+", i = "+i);
+                if (!name.substring(3).equals(lname.substring(i))) {
+                    // addXXXListener() method name does not match XXXListener simple class name.
+                    // TODO: Perhaps check removeXXXListener method instead of this.
+                    continue;
+                }
+                listenerClasses.add(rt);
             }
-            List<Type> argTypes;
-            try {
-                argTypes = m.argumentTypes();
-            } catch (ClassNotLoadedException ex) {
-                continue;
-            }
-            if (argTypes.size() != 1) {
-                continue;
-            }
-            Type t = argTypes.get(0);
-            if (!(t instanceof ReferenceType)) {
-                continue;
-            }
-            ReferenceType rt = (ReferenceType) t;
-            String lname = rt.name();
-            int i = lname.lastIndexOf('.');
-            if (i < 0) i = 0;
-            else i++;
-            int ii = lname.lastIndexOf('$', i);
-            if (ii > i) i = ii + 1;
-            System.err.println("  getAttachableListeners() '"+name.substring(3)+"' should equal to '"+lname.substring(i)+"', lname = "+lname+", i = "+i);
-            if (!name.substring(3).equals(lname.substring(i))) {
-                // addXXXListener() method name does not match XXXListener simple class name.
-                // TODO: Perhaps check removeXXXListener method instead of this.
-                continue;
-            }
-            listenerClasses.add(rt);
+        } catch (ClassNotPreparedExceptionWrapper cnpex) {
+        } catch (ObjectCollectedExceptionWrapper ocex) {
+        } catch (InternalExceptionWrapper iex) {
+        } catch (VMDisconnectedExceptionWrapper vdex) {
         }
         return listenerClasses;
     }
@@ -573,15 +627,29 @@ public class RemoteServices {
                         try {
                             ThreadReference tr = ((JPDAThreadImpl) event.getThread()).getThreadReference();
                             StackFrame topFrame;
+                            List<Value> argumentValues;
                             try {
-                                topFrame = tr.frame(0);
+                                topFrame = ThreadReferenceWrapper.frame(tr, 0);
+                                argumentValues = StackFrameWrapper.getArgumentValues(topFrame);
+                            } catch (InternalExceptionWrapper ex) {
+                                return ;
+                            } catch (VMDisconnectedExceptionWrapper ex) {
+                                return ;
+                            } catch (ObjectCollectedExceptionWrapper ex) {
+                                return ;
+                            } catch (IllegalThreadStateExceptionWrapper ex) {
+                                Exceptions.printStackTrace(ex);
+                                return ;
                             } catch (IncompatibleThreadStateException ex) {
                                 Exceptions.printStackTrace(ex);
                                 return;
+                            } catch (InvalidStackFrameExceptionWrapper isfex) {
+                                Exceptions.printStackTrace(isfex);
+                                return;
                             }
-                            List<Value> argumentValues = topFrame.getArgumentValues();
                             //System.err.println("LoggingListener breakpoint reached: argumentValues = "+argumentValues);
-                            if (argumentValues.size() < 2) {  // ERROR: BP is hit somehere else
+                            if (argumentValues.size() < 2) {  // ERROR: BP is hit somewhere else
+                                logger.info("Warning: attachLoggingListener().breakpointReached(): argumentValues.size() = "+argumentValues.size());
                                 return;
                             }
                             if (!ci.getComponent().equals(argumentValues.get(0))) {
@@ -589,27 +657,41 @@ public class RemoteServices {
                                 return;
                             }
                             ArrayReference allDataArray = (ArrayReference) argumentValues.get(1);
-                            int totalLength = allDataArray.length();
-                            List<Value> dataValues = allDataArray.getValues();
-                            String[] eventProps = null;
-                            for (int i = 0; i < totalLength; ) {
-                                StringReference sr = (StringReference) dataValues.get(i);
-                                String dataLengthStr = sr.value();
-                                //System.err.println("  data["+i+"] = "+dataLengthStr);
-                                int dataLength = Integer.parseInt(dataLengthStr);
-                                String[] data = new String[dataLength];
-                                i++;
-                                for (int j = 0; j < dataLength; j++, i++) {
-                                    sr = (StringReference) dataValues.get(i);
-                                    data[j] = sr.value();
-                                    //System.err.println("  data["+i+"] = "+data[j]);
+                            try {
+                                int totalLength = ArrayReferenceWrapper.length(allDataArray);
+                                List<Value> dataValues = ArrayReferenceWrapper.getValues(allDataArray);
+                                String[] eventProps = null;
+                                for (int i = 0; i < totalLength; ) {
+                                    StringReference sr = (StringReference) dataValues.get(i);
+                                    String dataLengthStr = StringReferenceWrapper.value(sr);
+                                    //System.err.println("  data["+i+"] = "+dataLengthStr);
+                                    int dataLength;
+                                    try {
+                                        dataLength = Integer.parseInt(dataLengthStr);
+                                    } catch (NumberFormatException nfex) {
+                                        Exceptions.printStackTrace(Exceptions.attachMessage(nfex, "Data length string = '"+dataLengthStr+"'"));
+                                        return;
+                                    }
+                                    String[] data = new String[dataLength];
+                                    i++;
+                                    for (int j = 0; j < dataLength; j++, i++) {
+                                        sr = (StringReference) dataValues.get(i);
+                                        data[j] = StringReferenceWrapper.value(sr);
+                                        //System.err.println("  data["+i+"] = "+data[j]);
+                                    }
+                                    if (eventProps == null) {
+                                        eventProps = data;
+                                    } else {
+                                        listener.eventsData(ci, eventProps, data/*stack*/);
+                                        eventProps = null;
+                                    }
                                 }
-                                if (eventProps == null) {
-                                    eventProps = data;
-                                } else {
-                                    listener.eventsData(ci, eventProps, data/*stack*/);
-                                    eventProps = null;
-                                }
+                            } catch (InternalExceptionWrapper iex) {
+                            } catch (NumberFormatException nfex) {
+                                Exceptions.printStackTrace(nfex);
+                            } catch (ObjectCollectedExceptionWrapper ocex) {
+                                Exceptions.printStackTrace(ocex);
+                            } catch (VMDisconnectedExceptionWrapper vmdex) {
                             }
                         } finally {
                             event.resume();
@@ -617,16 +699,15 @@ public class RemoteServices {
                     }
                 });
                 DebuggerManager.getDebuggerManager().addBreakpoint(mb);
-                VirtualMachine vm = t.virtualMachine();
                 ClassObjectReference serviceClassObject;
                 synchronized (remoteServiceClasses) {
                     serviceClassObject = remoteServiceClasses.get(thread.getDebugger());
                 }
-                ClassType serviceClass = (ClassType) serviceClassObject.reflectedType();//getClass(vm, "org.netbeans.modules.debugger.jpda.visual.remote.RemoteService");
-                Method addLoggingListener = serviceClass.concreteMethodByName("addLoggingListener", "(Ljava/awt/Component;Ljava/lang/Class;)Ljava/lang/Object;");
                 try {
+                    ClassType serviceClass = (ClassType) ClassObjectReferenceWrapper.reflectedType(serviceClassObject);//getClass(vm, "org.netbeans.modules.debugger.jpda.visual.remote.RemoteService");
+                    Method addLoggingListener = ClassTypeWrapper.concreteMethodByName(serviceClass, "addLoggingListener", "(Ljava/awt/Component;Ljava/lang/Class;)Ljava/lang/Object;");
                     ObjectReference theListener = (ObjectReference)
-                            serviceClass.invokeMethod(t, addLoggingListener, Arrays.asList(component, listenerClass), ObjectReference.INVOKE_SINGLE_THREADED);
+                            ClassTypeWrapper.invokeMethod(serviceClass, t, addLoggingListener, Arrays.asList(component, listenerClass), ObjectReference.INVOKE_SINGLE_THREADED);
                     listenerPtr[0] = theListener;
                 } catch (InvalidTypeException ex) {
                     Exceptions.printStackTrace(ex);
@@ -636,6 +717,12 @@ public class RemoteServices {
                     Exceptions.printStackTrace(ex);
                 } catch (InvocationException ex) {
                     Exceptions.printStackTrace(ex);
+                } catch (ClassNotPreparedExceptionWrapper cnpex) {
+                    Exceptions.printStackTrace(cnpex);
+                } catch (InternalExceptionWrapper iex) {
+                } catch (ObjectCollectedExceptionWrapper ocex) {
+                    Exceptions.printStackTrace(ocex);
+                } catch (VMDisconnectedExceptionWrapper vmdex) {
                 }
             }
         }, ServiceType.AWT);
@@ -656,11 +743,11 @@ public class RemoteServices {
                 synchronized (remoteServiceClasses) {
                     serviceClassObject = remoteServiceClasses.get(thread.getDebugger());
                 }
-                ClassType serviceClass = (ClassType) serviceClassObject.reflectedType();
-                Method removeLoggingListener = serviceClass.concreteMethodByName("removeLoggingListener", "(Ljava/awt/Component;Ljava/lang/Class;Ljava/lang/Object;)Z");
                 try {
+                    ClassType serviceClass = (ClassType) ClassObjectReferenceWrapper.reflectedType(serviceClassObject);
+                    Method removeLoggingListener = ClassTypeWrapper.concreteMethodByName(serviceClass, "removeLoggingListener", "(Ljava/awt/Component;Ljava/lang/Class;Ljava/lang/Object;)Z");
                     BooleanValue success = (BooleanValue)
-                            serviceClass.invokeMethod(t, removeLoggingListener, Arrays.asList(component, listenerClass, listener), ObjectReference.INVOKE_SINGLE_THREADED);
+                            ClassTypeWrapper.invokeMethod(serviceClass, t, removeLoggingListener, Arrays.asList(component, listenerClass, listener), ObjectReference.INVOKE_SINGLE_THREADED);
                     retPtr[0] = success.value();
                 } catch (InvalidTypeException ex) {
                     Exceptions.printStackTrace(ex);
@@ -670,6 +757,12 @@ public class RemoteServices {
                     Exceptions.printStackTrace(ex);
                 } catch (InvocationException ex) {
                     Exceptions.printStackTrace(ex);
+                } catch (ClassNotPreparedExceptionWrapper cnpex) {
+                    Exceptions.printStackTrace(cnpex);
+                } catch (InternalExceptionWrapper iex) {
+                } catch (ObjectCollectedExceptionWrapper ocex) {
+                    Exceptions.printStackTrace(ocex);
+                } catch (VMDisconnectedExceptionWrapper vmdex) {
                 }
             }
         }, ServiceType.AWT);
@@ -683,11 +776,11 @@ public class RemoteServices {
         
     }
     
-    static ClassType getClass(VirtualMachine vm, String name) {
-        List<ReferenceType> classList = vm.classesByName(name);
+    static ClassType getClass(VirtualMachine vm, String name) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper, ObjectCollectedExceptionWrapper {
+        List<ReferenceType> classList = VirtualMachineWrapper.classesByName(vm, name);
         ReferenceType clazz = null;
         for (ReferenceType c : classList) {
-            if (c.classLoader() == null) {
+            if (ReferenceTypeWrapper.classLoader(c) == null) {
                 clazz = c;
                 break;
             }
@@ -695,11 +788,11 @@ public class RemoteServices {
         return (ClassType) clazz;
     }
     
-    static ArrayType getArrayClass(VirtualMachine vm, String name) {
-        List<ReferenceType> classList = vm.classesByName(name);
+    static ArrayType getArrayClass(VirtualMachine vm, String name) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper, ObjectCollectedExceptionWrapper {
+        List<ReferenceType> classList = VirtualMachineWrapper.classesByName(vm, name);
         ReferenceType clazz = null;
         for (ReferenceType c : classList) {
-            if (c.classLoader() == null) {
+            if (ReferenceTypeWrapper.classLoader(c) == null) {
                 clazz = c;
                 break;
             }
@@ -746,21 +839,21 @@ public class RemoteServices {
         }
     }
     
-    private static ArrayReference createTargetBytes(VirtualMachine vm, byte[] bytes) throws InvalidTypeException, ClassNotLoadedException {
+    private static ArrayReference createTargetBytes(VirtualMachine vm, byte[] bytes) throws InvalidTypeException, ClassNotLoadedException, InternalExceptionWrapper, VMDisconnectedExceptionWrapper, ObjectCollectedExceptionWrapper, UnsupportedOperationExceptionWrapper {
         ArrayType bytesArrayClass = getArrayClass(vm, "byte[]");
         ArrayReference array = null;
         boolean disabledCollection = false;
         while (!disabledCollection) {
-            array = bytesArrayClass.newInstance(bytes.length);
+            array = ArrayTypeWrapper.newInstance(bytesArrayClass, bytes.length);
             try {
-                array.disableCollection();
+                ObjectReferenceWrapper.disableCollection(array);
                 disabledCollection = true;
-            } catch (ObjectCollectedException ocex) {
+            } catch (ObjectCollectedExceptionWrapper ocex) {
                 // Collected too soon, try again...
             }
         }
         for (int i = 0; i < bytes.length; i++) {
-            array.setValue(i, vm.mirrorOf(bytes[i]));
+            ArrayReferenceWrapper.setValue(array, i, VirtualMachineWrapper.mirrorOf(vm, bytes[i]));
         }
         return array;
     }

@@ -154,7 +154,7 @@ public class CndFileSystemProviderImpl extends CndFileSystemProvider {
             FileObject[] children = dirFO.getChildren();
             FileInfo[] result = new FileInfo[children.length];
             for (int i = 0; i < children.length; i++) {
-                result[i] = new FileInfo(path.toString() + '/' + children[i].getNameExt(), children[i].isFolder());
+                result[i] = new FileInfo(path.toString() + '/' + children[i].getNameExt(), children[i].isFolder(), children[i].isData());
             }
             return result;
         }

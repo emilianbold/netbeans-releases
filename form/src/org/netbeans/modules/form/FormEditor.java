@@ -172,7 +172,7 @@ public class FormEditor {
         return formDataObject;
     }
 
-    private EditorSupport getEditorSupport() {
+    EditorSupport getEditorSupport() {
         return editorSupport;
     }
 
@@ -232,6 +232,7 @@ public class FormEditor {
             if (provider != null) {
                 bindingSupport = provider.create(formModel);
             }
+            bindingSupportInitialized = true;
         }
         return bindingSupport;
     }

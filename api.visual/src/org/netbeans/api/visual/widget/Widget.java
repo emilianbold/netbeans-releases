@@ -61,6 +61,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.*;
 import java.util.List;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 
 /**
  * A scene is a tree of small building blocks called widgets and represented by this class.
@@ -1167,7 +1169,7 @@ public class Widget implements Accessible {
      * @param localRectangle the local rectangle
      * @return the scene rectangle
      */
-    public final Rectangle convertLocalToScene (Rectangle localRectangle) {
+    public final @NonNull Rectangle convertLocalToScene(@NonNull Rectangle localRectangle) {
         Rectangle sceneRectangle = new Rectangle (localRectangle);
         Widget widget = this;
         while (widget != null) {
@@ -1241,7 +1243,7 @@ public class Widget implements Accessible {
      * See <strong>Layout</strong> section in documentation.
      * @return the bounds in local coordination system
      */
-    public final Rectangle getBounds () {
+    public final @CheckForNull Rectangle getBounds() {
         return bounds != null ? new Rectangle (bounds) : null;
     }
 

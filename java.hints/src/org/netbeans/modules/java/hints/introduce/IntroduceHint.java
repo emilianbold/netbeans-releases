@@ -318,7 +318,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         for (StatementTree s : statements) {
             long sStart = ci.getTrees().getSourcePositions().getStartPosition(ci.getCompilationUnit(), s);
 
-            if (sStart == start) {
+            if (sStart == start && from == (-1)) {
                 from = index;
             }
 
@@ -420,10 +420,9 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         if (resolved != null) {
             TreePathHandle h = TreePathHandle.create(resolved, info);
             TreePath method   = findMethod(resolved);
-            boolean expressionStatement = resolved.getParentPath().getLeaf().getKind() == Kind.EXPRESSION_STATEMENT;
             boolean variableRewrite = resolved.getLeaf().getKind() == Kind.VARIABLE;
             TreePath value = !variableRewrite ? resolved : new TreePath(resolved, ((VariableTree) resolved.getLeaf()).getInitializer());
-            boolean isConstant = checkConstantExpression(info, value) && !expressionStatement;
+            boolean isConstant = checkConstantExpression(info, value);
             boolean isVariable = findStatement(resolved) != null && method != null && !variableRewrite;
             Set<TreePath> duplicatesForVariable = isVariable ? SourceUtils.computeDuplicates(info, resolved, method, cancel) : null;
             Set<TreePath> duplicatesForConstant = /*isConstant ? */SourceUtils.computeDuplicates(info, resolved, new TreePath(info.getCompilationUnit()), cancel);// : null;
@@ -438,7 +437,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
             Fix field = null;
             Fix methodFix = null;
 
-            if (method != null && !isInAnnotationType(info, method) && !expressionStatement) {
+            if (method != null && !isInAnnotationType(info, method)) {
                 int[] initilizeIn = computeInitializeIn(info, resolved, duplicatesForConstant);
 
                 if (statik) {
@@ -651,7 +650,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         Set<VariableElement> paramsVariables = new LinkedHashSet<VariableElement>();
 
         for (Entry<VariableElement, Boolean> e : mergedVariableUse.entrySet()) {
-            if (e.getValue()) {
+            if (e.getValue() == null || e.getValue()) {
                 additionalLocalVariables.add(e.getKey());
             } else {
                 paramsVariables.add(e.getKey());
@@ -752,75 +751,35 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         return false;
     }
 
-
-    static boolean checkConstantExpression(CompilationInfo info, TreePath path) {
-        Tree expr = path.getLeaf();
-
-        if (expr.getKind().asInterface() == BinaryTree.class) {
-            BinaryTree bt = (BinaryTree) expr;
-
-            return    checkConstantExpression(info, new TreePath(path, bt.getLeftOperand()))
-                   && checkConstantExpression(info, new TreePath(path, bt.getRightOperand()));
-        }
-
-        if (UNARY_OPERATORS_FOR_CONSTANTS.contains(expr.getKind())) {
-            return checkConstantExpression(info, new TreePath(path, ((UnaryTree) expr).getExpression()));
-        }
-
-        if (expr.getKind() == Kind.PARENTHESIZED) {
-            return checkConstantExpression(info, new TreePath(path, ((ParenthesizedTree) expr).getExpression()));
-        }
-
-        if (expr.getKind() == Kind.IDENTIFIER || expr.getKind() == Kind.MEMBER_SELECT || expr.getKind() == Kind.METHOD_INVOCATION) {
-            Element e = info.getTrees().getElement(path);
-
-            if (e == null)
-                return false;
-
-            if (e.getKind() == ElementKind.METHOD && expr.getKind() == Kind.METHOD_INVOCATION) {
-                List<? extends ExpressionTree> arguments = ((MethodInvocationTree) expr).getArguments();
-                for (ExpressionTree et : arguments) {
-                    Element element = info.getTrees().getElement(new TreePath(path, et));
-                    if (element != null && element.getKind() == ElementKind.FIELD && !info.getTrees().getElement(new TreePath(path, et)).getModifiers().contains(Modifier.STATIC)) {
-                        return false;
-                    }
-                }
-
-                if (e.getModifiers().contains(Modifier.STATIC)) {
-                    return true;
-                } else {
-                    return false;
-                }
+    static boolean checkConstantExpression(final CompilationInfo info, TreePath path) {
+        class NotConstant extends Error {}
+        try {
+        new TreePathScanner<Void, Void>() {
+            private final Set<Element> definedIn = new HashSet<Element>();
+            @Override public Void visitIdentifier(IdentifierTree node, Void p) {
+                Element el = info.getTrees().getElement(getCurrentPath());
+                if (el == null) throw new NotConstant();
+                if (definedIn.contains(el)) return null;
+                if (el.getKind().isClass() || el.getKind().isInterface()) return null;
+                if (!el.getModifiers().contains(Modifier.STATIC)) throw new NotConstant();
+                if (el.getKind() == ElementKind.FIELD && !el.getModifiers().contains(Modifier.FINAL)) throw new NotConstant();
+                return super.visitIdentifier(node, p);
             }
-
-            if (e.getKind() != ElementKind.FIELD)
-                return false;
-
-            if (!e.getModifiers().contains(Modifier.STATIC))
-                return false;
-
-            if (!e.getModifiers().contains(Modifier.FINAL))
-                return false;
-
-            TypeMirror type = e.asType();
-
-            if (type.getKind().isPrimitive())
-                return true;
-
-            if (type.getKind() == TypeKind.DECLARED) {
-                TypeElement te = (TypeElement) ((DeclaredType) type).asElement();
-
-                return "java.lang.String".equals(te.getQualifiedName().toString()); // NOI18N
+            @Override public Void visitVariable(VariableTree node, Void p) {
+                definedIn.add(info.getTrees().getElement(getCurrentPath()));
+                return super.visitVariable(node, p);
             }
-
+            @Override public Void visitMethod(MethodTree node, Void p) {
+                definedIn.add(info.getTrees().getElement(getCurrentPath()));
+                return super.visitMethod(node, p);
+            }
+        }.scan(path, null);
+        } catch (NotConstant n) {
             return false;
         }
-
-        return LITERALS.contains(expr.getKind());
+        return true;
     }
 
-    private static final Set<Kind> UNARY_OPERATORS_FOR_CONSTANTS = EnumSet.of(Kind.UNARY_MINUS, Kind.UNARY_PLUS, Kind.BITWISE_COMPLEMENT, Kind.LOGICAL_COMPLEMENT);
-    private static final Set<Kind> LITERALS = EnumSet.of(Kind.STRING_LITERAL, Kind.CHAR_LITERAL, Kind.INT_LITERAL, Kind.LONG_LITERAL, Kind.FLOAT_LITERAL, Kind.DOUBLE_LITERAL);
     private static final Set<ElementKind> LOCAL_VARIABLES = EnumSet.of(ElementKind.EXCEPTION_PARAMETER, ElementKind.LOCAL_VARIABLE, ElementKind.PARAMETER);
 
     private static TreePath findStatement(TreePath statementPath) {
@@ -1175,17 +1134,6 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         }
 
         @Override
-        public Void visitAssignment(AssignmentTree node, Void p) {
-            //make sure the variable on the left side is not considered to be read
-            //#162163: but dereferencing array is a read
-            if (node.getVariable() != null && node.getVariable().getKind() != Kind.IDENTIFIER) {
-                scan(node.getVariable(), p);
-            }
-            
-            return scan(node.getExpression(), p);
-        }
-
-        @Override
         public Void visitIdentifier(IdentifierTree node, Void p) {
             Element e = info.getTrees().getElement(getCurrentPath());
 
@@ -1193,9 +1141,9 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                 if (LOCAL_VARIABLES.contains(e.getKind())) {
                     switch (phase) {
                         case PHASE_INSIDE_SELECTION:
-                            if (localVariables.contains(e) && !usedLocalVariables.containsKey(e)) {
+                            if (localVariables.contains(e) && usedLocalVariables.get(e) == null) {
                                 Iterable<? extends TreePath> writes = assignmentsForUse.get(getCurrentPath().getLeaf());
-                                boolean definitellyAssignedInSelection = true;
+                                Boolean definitellyAssignedInSelection = true;
 
                                 if (writes != null) {
                                     for (TreePath w : writes) {
@@ -1204,6 +1152,8 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                                             break;
                                         }
                                     }
+                                } else if (getCurrentPath().getParentPath().getLeaf().getKind() == Kind.ASSIGNMENT) {
+                                    definitellyAssignedInSelection = null;
                                 } else {
                                     definitellyAssignedInSelection = false;
                                 }
@@ -1512,6 +1462,9 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
 
                             if (!variableRewrite) {
                                 constant = make.Variable(mods, name, make.Type(tm), expression);
+                                if (expressionStatement) {
+                                    removeFromParent(parameter, resolved.getParentPath());
+                                }
                             } else {
                                 VariableTree originalVar = (VariableTree) original;
                                 constant = make.Variable(mods, originalVar.getName(), originalVar.getType(), originalVar.getInitializer());
@@ -1692,20 +1645,25 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                     ModifiersTree modsTree = make.Modifiers(mods);
                     Tree parentTree = resolved.getParentPath().getLeaf();
                     VariableTree field;
-                    boolean mustRemoveFromParent;
+                    TreePath toRemoveFromParent;
+                    boolean expressionStatementRewrite = parentTree.getKind() == Kind.EXPRESSION_STATEMENT;
 
                     if (!variableRewrite) {
                         field = make.Variable(modsTree, name, make.Type(tm), initializeIn == IntroduceFieldPanel.INIT_FIELD ? expression : null);
 
-                        Tree nueParent = parameter.getTreeUtilities().translate(parentTree, Collections.singletonMap(resolved.getLeaf(), make.Identifier(name)));
-                        parameter.rewrite(parentTree, nueParent);
-                        mustRemoveFromParent = false;
+                        if (!expressionStatementRewrite) {
+                            Tree nueParent = parameter.getTreeUtilities().translate(parentTree, Collections.singletonMap(resolved.getLeaf(), make.Identifier(name)));
+                            parameter.rewrite(parentTree, nueParent);
+                            toRemoveFromParent = null;
+                        } else {
+                            toRemoveFromParent = resolved.getParentPath();
+                        }
                     } else {
                         VariableTree originalVar = (VariableTree) original;
 
                         field = make.Variable(modsTree, name, originalVar.getType(), initializeIn == IntroduceFieldPanel.INIT_FIELD ? expression : null);
 
-                        mustRemoveFromParent = true;
+                        toRemoveFromParent = resolved;
                     }
                     
                     ClassTree nueClass = GeneratorUtils.insertClassMember(parameter, pathToClass, field);
@@ -1728,7 +1686,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
 
                         ExpressionStatementTree assignment = make.ExpressionStatement(make.Assignment(make.Identifier(name), expression));
 
-                        if (!variableRewrite) {
+                        if (!variableRewrite && !expressionStatementRewrite) {
                             BlockTree statements = (BlockTree) statementPath.getParentPath().getLeaf();
                             StatementTree statement = (StatementTree) statementPath.getLeaf();
 
@@ -1752,8 +1710,8 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
 
                             parameter.rewrite(statements, nueBlock);
                         } else {
-                            parameter.rewrite(original, assignment);
-                            mustRemoveFromParent = false;
+                            parameter.rewrite(toRemoveFromParent.getLeaf(), assignment);
+                            toRemoveFromParent = null;
                         }
                     }
 
@@ -1790,7 +1748,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                             ExpressionTree reference = hasParameterOfTheSameName ? make.MemberSelect(make.Identifier("this"), name) : make.Identifier(name); // NOI18N
                             ExpressionStatementTree assignment = make.ExpressionStatement(make.Assignment(reference, expression));
                             
-                            if (!variableRewrite || method.getLeaf() != constr) {
+                            if ((!variableRewrite && !expressionStatementRewrite) || method.getLeaf() != constr) {
                                 BlockTree origBody = constr.getBody();
                                 List<StatementTree> nueStatements = new LinkedList<StatementTree>();
 
@@ -1806,14 +1764,14 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
 
                                 parameter.rewrite(origBody, nueBlock);
                             } else {
-                                parameter.rewrite(original, assignment);
-                                mustRemoveFromParent = false;
+                                parameter.rewrite(toRemoveFromParent.getLeaf(), assignment);
+                                toRemoveFromParent = null;
                             }
                         }
                     }
 
-                    if (mustRemoveFromParent) {
-                        removeFromParent(parameter, resolved);
+                    if (toRemoveFromParent != null) {
+                        removeFromParent(parameter, toRemoveFromParent);
                     }
 
                     parameter.rewrite(pathToClass.getLeaf(), nueClass);

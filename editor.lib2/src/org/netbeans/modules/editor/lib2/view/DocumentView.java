@@ -53,9 +53,7 @@ import java.awt.font.FontRenderContext;
 import java.awt.geom.Rectangle2D;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JComponent;
-import javax.swing.JViewport;
-import javax.swing.SwingConstants;
+import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.plaf.TextUI;
 import javax.swing.text.Document;
@@ -153,7 +151,7 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
         EditorViewFactory.registerFactory(new HighlightsViewFactory.HighlightsFactory());
     }
     
-    DocumentViewOp op;
+    final DocumentViewOp op;
 
     private PriorityMutex pMutex;
     
@@ -182,6 +180,11 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
      * Current allocation of document view.
      */
     private Rectangle2D.Float allocation = new Rectangle2D.Float();
+    
+    /**
+     * Extra height of 1/3 of viewport's window height added to the real views' allocation.
+     */
+    private float extraVirtualHeight;
 
     private final TabExpander tabExpander;
     
@@ -242,16 +245,7 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
                 if (axis == View.X_AXIS) {
                     span = allocation.width;
                 } else { // Y_AXIS
-                    span = allocation.height;
-                    if (!DISABLE_END_VIRTUAL_SPACE) {
-                        // Add extra span when component in viewport
-                        Component parent;
-                        if (textComponent != null && ((parent = textComponent.getParent()) instanceof JViewport)) {
-                            JViewport viewport = (JViewport) parent;
-                            int viewportHeight = viewport.getExtentSize().height;
-                            span += viewportHeight / 3;
-                        }
-                    }
+                    span = allocation.height + extraVirtualHeight;
                 }
                 return span;
             } finally {
@@ -318,6 +312,10 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
         return children.get(index);
     }
 
+    Shape getChildAllocation(int index) {
+        return getChildAllocation(index, getAllocation());
+    }
+
     @Override
     public Shape getChildAllocation(int index, Shape alloc) {
         return children.getChildAllocation(this, index, alloc);
@@ -335,6 +333,14 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
         return children.viewIndexFirstByStartOffset(offset, 0);
     }
     
+    public int getViewIndex(double y) {
+        if (op.isActive()) {
+            Shape alloc = getAllocation();
+            return children.viewIndexAtY(y, alloc);
+        }
+        return -1;
+    }
+
     public double getY(int pViewIndex) {
         return children.startVisualOffset(pViewIndex);
     }
@@ -429,7 +435,30 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
     public Rectangle2D.Double getAllocationMutable() {
         return new Rectangle2D.Double(0d, 0d, allocation.getWidth(), allocation.getHeight());
     }
-    
+
+    void updateExtraVirtualHeight(JViewport viewport) {
+        float extraHeight;
+        if (!DISABLE_END_VIRTUAL_SPACE && viewport != null) {
+            // Compute same value regardless whether there's a horizontal scrollbar visible or not.
+            // This is important to avoid flickering caused by vertical shrinking of the text component
+            // so that vertical scrollbar appears and then appearing of a horizontal scrollbar
+            // (in case there was a line nearly wide as viewport's width without Vscrollbar)\
+            // which in turn causes viewport's height to decrease and triggers recomputation again etc.
+            extraHeight = viewport.getExtentSize().height;
+            Component parent;
+            if ((parent = viewport.getParent()) instanceof JScrollPane) {
+                JScrollBar hScrollBar = ((JScrollPane)parent).getHorizontalScrollBar();
+                if (hScrollBar != null && hScrollBar.isVisible()) {
+                    extraHeight += hScrollBar.getHeight();
+                }
+            }
+            extraHeight /= 3; // One third of viewport's extent height
+        } else {
+            extraHeight = 0f;
+        }
+        this.extraVirtualHeight = extraHeight;
+    }
+
     /**
      * Get paint highlights for the given view.
      *
@@ -502,7 +531,8 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
     void recomputeChildrenWidths() {
         if (children != null) {
             if (ViewHierarchyImpl.SPAN_LOG.isLoggable(Level.FINE)) {
-                ViewHierarchyImpl.SPAN_LOG.fine("Component width differs => children.recomputeChildrenWidths()\n"); // NOI18N
+                ViewUtils.log(ViewHierarchyImpl.SPAN_LOG,
+                        "Component width differs => children.recomputeChildrenWidths()\n"); // NOI18N
             }
             children.recomputeChildrenWidths();
         }
@@ -709,17 +739,23 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
     }
 
     public double modelToY(int offset) {
-        double retY = 0d;
         if (lock()) {
             try {
                 checkDocumentLockedIfLogging();
-                op.checkViewsInited();
-                if (op.isActive()) {
-                    retY = modelToYUnlocked(offset);
-                }
+                return modelToYUnlocked(offset);
             } finally {
                 unlock();
             }
+        }
+        return 0d;
+    }
+    
+    public double modelToYUnlocked(int offset) {
+        double retY = 0d;
+        op.checkViewsInited();
+        if (op.isActive()) {
+            int index = getViewIndex(offset);
+            retY = getY(index);
         }
         if (ViewHierarchyImpl.OP_LOG.isLoggable(Level.FINE)) {
             ViewUtils.log(ViewHierarchyImpl.OP_LOG, "modelToY(" + offset + ")=" + retY + "\n"); // NOI18N
@@ -727,30 +763,28 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
         return retY;
     }
     
-    public double modelToYUnlocked(int offset) {
-        int index = getViewIndex(offset);
-        return getY(index);
-    }
-    
     public double[] modelToYUnlocked(int[] offsets) {
         double[] retYs = new double[offsets.length];
-        if (offsets.length > 0) {
-            // Can in fact assume lastOffset == 0 corresponds to retY == 0d even if the view hierarchy
-            // covers only portion of document since offset == 0 should be covered and it falls into first pView.
-            int lastOffset = 0;
-            int lastIndex = 0;
-            double lastY = 0d;
-            for (int i = 0; i < offsets.length; i++) {
-                int offset = offsets[i];
-                double y;
-                if (offset == lastOffset) {
-                    y = lastY;
-                } else {
-                    int startIndex = (offset > lastOffset) ? lastIndex : 0;
-                    int index = children.viewIndexFirstByStartOffset(offset, startIndex);
-                    y = getY(index);
+        op.checkViewsInited();
+        if (op.isActive()) { // Otherwise leave 0d for all retYs
+            if (offsets.length > 0) {
+                // Can in fact assume lastOffset == 0 corresponds to retY == 0d even if the view hierarchy
+                // covers only portion of document since offset == 0 should be covered and it falls into first pView.
+                int lastOffset = 0;
+                int lastIndex = 0;
+                double lastY = 0d;
+                for (int i = 0; i < offsets.length; i++) {
+                    int offset = offsets[i];
+                    double y;
+                    if (offset == lastOffset) {
+                        y = lastY;
+                    } else {
+                        int startIndex = (offset > lastOffset) ? lastIndex : 0;
+                        int index = children.viewIndexFirstByStartOffset(offset, startIndex);
+                        y = getY(index);
+                    }
+                    retYs[i] = y;
                 }
-                retYs[i] = y;
             }
         }
         return retYs;

@@ -56,7 +56,8 @@
  <!--CSH for PHP source editor-->
     <mapID target="text.x-php5" url="csh/about_source_editor.html" />
         <!-- CSH for PHP Options -->
-    <mapID target="org.netbeans.modules.php.project.ui.options.PhpOptions" url="options-csh/general.html" />
+    <mapID target="org.netbeans.modules.php.project.ui.options.PhpOptionsPanelController" url="options-csh/general.html" />
+    <mapID target="org.netbeans.modules.php.project.ui.options.PhpDebuggerPanelController" url="options-csh/debugging.html" />
     <mapID target="org.netbeans.modules.php.project.phpunit.PhpUnit" url="options-csh/unit-testing.html" />
     <mapID target="org.netbeans.modules.php.phpdoc.ui.options.PhpDocOptions" url="options-csh/phpdoc.html" />
     <mapID target="org.netbeans.modules.php.symfony.ui.options.SymfonyOptions" url="options-csh/symfony.html" />

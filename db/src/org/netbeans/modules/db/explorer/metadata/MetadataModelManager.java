@@ -87,6 +87,10 @@ public class MetadataModelManager {
         }
     }
 
+    public static void update(final DatabaseConnection dbconn, MetadataModel model) {
+        conn2Model.put(dbconn, model);
+    }
+    
     private static Connection checkAndGetConnection(final DatabaseConnection dbconn) {
         Connection conn = dbconn.getJDBCConnection();
 

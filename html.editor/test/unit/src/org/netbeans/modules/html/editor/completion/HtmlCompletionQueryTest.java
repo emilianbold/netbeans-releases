@@ -55,12 +55,13 @@ import junit.framework.TestSuite;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.editor.ext.html.parser.api.HtmlSource;
 import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
-import org.netbeans.editor.ext.html.parser.spi.HtmlTagAttribute;
 import org.netbeans.editor.ext.html.parser.spi.UndeclaredContentResolver;
 import org.netbeans.junit.MockServices;
+import org.netbeans.modules.html.editor.HtmlPreferences;
 import org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem;
 import org.netbeans.modules.html.editor.api.gsf.HtmlExtension;
 import org.netbeans.modules.html.editor.api.gsf.HtmlExtension.CompletionContext;
+import org.netbeans.modules.html.editor.completion.HtmlCompletionTestSupport.Match;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.spi.editor.completion.CompletionItem;
 
@@ -468,6 +469,26 @@ public class HtmlCompletionQueryTest extends HtmlCompletionTestBase {
         
         
     }
+    
+    public void testInputTagTypeAttributeCompletion() throws BadLocationException, ParseException {
+        assertItems("<input type=\"|\">", arr("text", "password", "reset"), Match.CONTAINS);
+    }
+    
+    
+    public void testLinkTypeAttributeCompletion() throws BadLocationException, ParseException {
+        assertItems("<link rel=\"|\">", arr("stylesheet", "chapter"), Match.CONTAINS);
+        assertItems("<link rel=\"|\">", arr("foo"), Match.DOES_NOT_CONTAIN);
+    }
+    
+    //Bug 204227 - When HTML Completion Offers End Tags After Less Than Character option is enabled and used the previous character gets deleted
+    public void testIssue204227() throws BadLocationException, ParseException {
+        assertCompletedText("<p>abc</|", "p", "<p>abc</p>|");
+
+        HtmlPreferences.completionOffersEndTagAfterLt(); //load
+        HtmlPreferences.completionOffersEndTagAfterLt = true; //reset the value
+        assertCompletedText("<p>abc<|", "/p", "<p>abc</p>|");
+    }
+    
     //helper methods ------------
 
     @Override

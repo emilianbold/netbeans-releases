@@ -46,6 +46,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -81,17 +82,19 @@ public class MavenPlatformJarProvider implements PlatformJarProvider {
         if (nbmp == null) {
             return Collections.emptySet();
         }
+        NbMavenProject app;
         if (nbmp.getPackagingType().equals(NbMavenProject.TYPE_NBM)) {
             Project parent = MavenNbModuleImpl.findAppProject(project);
-            if (parent != null) {
-                nbmp = parent.getLookup().lookup(NbMavenProject.class);
-                if (nbmp == null) {
-                    return Collections.emptySet();
-                }
+            app = parent != null ? parent.getLookup().lookup(NbMavenProject.class) : null;
+            if (app == null) { // #202946: standalone or suite component
+                File ide = MavenNbModuleImpl.findIDEInstallation(nbmp);
+                return ide != null ? allModulesIn(ide) : Collections.<File>emptySet();
             }
+        } else {
+            app = nbmp;
         }
         MavenEmbedder online = EmbedderFactory.getOnlineEmbedder();
-        MavenProject mp = nbmp.getMavenProject();
+        MavenProject mp = app.getMavenProject();
         List<Artifact> arts = new ArrayList<Artifact>();
         for (Artifact dep : mp.getArtifacts()) {
             String type = dep.getType();
@@ -152,6 +155,24 @@ public class MavenPlatformJarProvider implements PlatformJarProvider {
                 h.finish();
             }
         }
+    }
+
+    private Set<File> allModulesIn(File ide) {
+        Set<File> jars = new HashSet<File>();
+        File[] clusters = ide.listFiles();
+        if (clusters != null) {
+            for (File cluster : clusters) {
+                File[] modules = new File(cluster, "modules").listFiles();
+                if (modules != null) {
+                    for (File module : modules) {
+                        if (module.getName().endsWith(".jar")) {
+                            jars.add(module);
+                        }
+                    }
+                }
+            }
+        }
+        return jars;
     }
 
 }

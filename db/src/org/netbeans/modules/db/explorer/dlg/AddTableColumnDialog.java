@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -95,7 +95,8 @@ public class AddTableColumnDialog extends JPanel {
     JComboBox coltypecombo;
     JCheckBox pkcheckbox, ixcheckbox, checkcheckbox, nullcheckbox, uniquecheckbox;
     DataModel dmodel = new DataModel();
-    private Collection<String> sizelesstypes;
+    private final Collection<String> sizelesstypes;
+    private final Collection<String> charactertypes;
 
     @SuppressWarnings("unchecked")
     public AddTableColumnDialog(final Specification spe) {
@@ -157,6 +158,7 @@ public class AddTableColumnDialog extends JPanel {
         // Column type
 
         sizelesstypes = (Collection<String>) spe.getProperties().get("SizelessTypes"); // NOI18N
+        charactertypes = (Collection<String>) spe.getProperties().get("CharacterTypes"); // NOI18N
 
         Map<String, String> tmap = spe.getTypeMap();
         List<TypeElement> ttab = new ArrayList<TypeElement>(tmap.size());
@@ -489,15 +491,21 @@ public class AddTableColumnDialog extends JPanel {
         String columnType = selectedItem == null ? null : selectedItem.toString();
         if (sizelesstypes.contains(columnType)) {
             if (colsizefield.isEditable()) {
-                colsizefield.setEditable(false);
-                colscalefield.setEditable(false);
                 colsizefield.setText(null);
                 colscalefield.setText(null);
             }
+            colsizefield.setEditable(false);
+            colscalefield.setEditable(false);
+            colsizefield.setEnabled(false);
+            colscalefield.setEnabled(false);
         } else {
-            if (!colsizefield.isEditable()) {
-                colsizefield.setEditable(true);
-                colscalefield.setEditable(true);
+            boolean disableScale = charactertypes.contains(columnType);
+            colsizefield.setEditable(true);
+            colscalefield.setEditable(! disableScale);
+            colsizefield.setEnabled(true);
+            colscalefield.setEnabled(! disableScale);
+            if (disableScale) {
+                colscalefield.setText(null);
             }
         }
 

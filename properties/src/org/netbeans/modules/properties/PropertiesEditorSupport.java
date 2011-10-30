@@ -1383,6 +1383,8 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
         @Override
         public void setMultiViewCallback(MultiViewElementCallback callback) {
             this.callback = callback;
+            PropertiesEditorSupport editor = (PropertiesEditorSupport) cloneableEditorSupport();
+            editor.attachStatusListener();
         }
 
         @Messages({

@@ -58,6 +58,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -774,6 +775,10 @@ final class ExplorerActionsImpl {
             pasteActionPerformer.toEnabled(false);
             EventQueue.invokeLater(this);
             timer.schedule(0);
+        }
+
+        final void waitFinished() {
+            timer.waitFinished();
         }
 
         final void waitFinished() {

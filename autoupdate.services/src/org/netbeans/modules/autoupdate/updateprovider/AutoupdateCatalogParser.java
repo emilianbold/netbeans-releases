@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -52,6 +52,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -168,6 +169,7 @@ public class AutoupdateCatalogParser extends DefaultHandler {
     private static final String L10N_ATTR_LOCALIZED_MODULE_DESCRIPTION = "OpenIDE-Module-Long-Description"; // NOI18N
     
     private static String GZIP_EXTENSION = ".gz"; // NOI18N
+    private static String GZIP_MIME_TYPE = "application/x-gzip"; // NOI18N
     
     public synchronized static Map<String, UpdateItem> getUpdateItems (URL url, AutoupdateCatalogProvider provider) throws IOException {
         Map<String, UpdateItem> items = new HashMap<String, UpdateItem> ();
@@ -207,6 +209,15 @@ public class AutoupdateCatalogParser extends DefaultHandler {
             URL url = p.getUpdateCenterURL ();
             if (url != null) {
                 res = url.getPath ().toLowerCase ().endsWith (GZIP_EXTENSION);
+                if (! res) {
+                    try {
+                        URLConnection conn = url.openConnection();
+                        String contentType = conn.getContentType();
+                        res = GZIP_MIME_TYPE.equals(contentType);
+                    } catch (IOException ex) {
+                        ERR.log (Level.INFO, "Cannot read Content-Type HTTP header, using file extension, cause: ", ex);
+                    }
+                }
                 ERR.log (Level.FINER, "Is GZIP " + url + " ? " + res);
             } else {
                 ERR.log (Level.WARNING, "AutoupdateCatalogProvider has not URL.");

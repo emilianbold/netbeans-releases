@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.apisupport.project.layers;
 
+import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import java.net.URI;
 import java.util.ArrayList;
@@ -60,6 +61,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.tools.JavaFileObject;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.openide.filesystems.FileObject;
@@ -121,7 +123,15 @@ public final class PathCompletions implements Processor {
         }
         try {
             LOG.log(Level.FINE, "userText: {0}", userText);
-            URI u = Trees.instance(processingEnv).getPath(member).getCompilationUnit().getSourceFile().toUri();
+            TreePath path = Trees.instance(processingEnv).getPath(member);
+            if (path == null) {
+                return Collections.emptySet();
+            }
+            JavaFileObject sourceFile = path.getCompilationUnit().getSourceFile();
+            if (sourceFile == null) {
+                return Collections.emptySet();
+            }
+            URI u = sourceFile.toUri();
             LOG.log(Level.FINE, "uri: {0}", u);
             Project p = FileOwnerQuery.getOwner(u);
             LOG.log(Level.FINE, "project: {0}", p);

@@ -259,6 +259,7 @@ public final class SearchBar extends JPanel {
         expandButton = createExpandButton();
         expandPopup = createExpandPopup(expandButton);
         add(expandButton);
+        expandButton.setVisible(true);
 
         // padding at the end of the toolbar
         padding = new JPanel();
@@ -484,6 +485,7 @@ public final class SearchBar extends JPanel {
             }
         });
         regExpCheckBox.setMargin(BUTTON_INSETS);
+        regExpCheckBox.setFocusable(false);
         return regExpCheckBox;
     }
 
@@ -500,6 +502,7 @@ public final class SearchBar extends JPanel {
             }
         });
         checkBox.setMargin(BUTTON_INSETS);
+        checkBox.setFocusable(false);
         return checkBox;
     }
 
@@ -548,6 +551,7 @@ public final class SearchBar extends JPanel {
     private JButton createExpandButton() throws MissingResourceException {
         JButton expButton = new JButton(ImageUtilities.loadImageIcon("org/netbeans/modules/editor/resources/find_expand.png", false)); // NOI18N
         expButton.setMnemonic(NbBundle.getMessage(SearchBar.class, "CTL_ExpandButton_Mnemonic").charAt(0)); // NOI18N
+        expButton.setToolTipText(NbBundle.getMessage(ReplaceBar.class, "TOOLTIP_ExpandButton")); // NOI18N
         expButton.setMargin(BUTTON_INSETS);
         expButton.addActionListener(new ActionListener() {
 
@@ -670,6 +674,7 @@ public final class SearchBar extends JPanel {
         inBar.add(wrapAroundCheckBox);
         barOrder.addAll(Arrays.asList(this.getComponents()));
         remove(expandButton);
+        expandButton.setVisible(false);
     }
 
     @Override
@@ -717,8 +722,10 @@ public final class SearchBar extends JPanel {
         if (change) {
             if (inPopup.isEmpty()) {
                 remove(expandButton);
+                expandButton.setVisible(false);
             } else if (getComponentIndex(expandButton) < 0) {
                 add(expandButton, getComponentIndex(padding));
+                expandButton.setVisible(true);
             }
             this.revalidate();
             expandPopup.invalidate();
@@ -786,6 +793,9 @@ public final class SearchBar extends JPanel {
             MultiKeymap multiKeymap = (MultiKeymap) keymap;
 
             KeyStroke[] keyStrokesForReplaceAction = multiKeymap.getKeyStrokesForAction(lastFocusedComponent.getActionMap().get(SearchAndReplaceBarHandler.REPLACE_ACTION));
+            if (keyStrokesForReplaceAction == null) {
+                return;
+            }
             for (KeyStroke ks : keyStrokesForReplaceAction) {
                 component.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(ks.getKeyCode(), ks.getModifiers(), true), "replace-from-component"); // NOI18N
             }
@@ -1129,6 +1139,10 @@ public final class SearchBar extends JPanel {
 
     void setSearched(boolean searched) {
         this.searched = searched;
+    }
+
+    JComponent getExpandButton() {
+        return expandButton;
     }
 
     

@@ -148,6 +148,7 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
     private void doQuery(final SQLCompletionEnv newEnv) {
         try {
             DBConnMetadataModelManager.get(dbconn).runReadAction(new Action<Metadata>() {
+                @Override
                 public void run(Metadata metadata) {
                     Connection conn = dbconn.getJDBCConnection();
                     if (conn == null) {
@@ -979,7 +980,7 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
             if (!incomplete) {
                 lastPrefix = parts.remove(parts.size() - 1);
                 String quoteString = quoter.getQuoteString();
-                if (lastPrefix.startsWith(quoteString)) {
+                if (quoteString.length() > 0 && lastPrefix.startsWith(quoteString)) {
                     if (lastPrefix.endsWith(quoteString) && lastPrefix.length() > quoteString.length()) {
                         // User typed '"foo"."bar"|', can't complete that.
                         return null;
@@ -988,7 +989,7 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
                     lastPrefix = quoter.unquote(lastPrefix);
                     lastPrefixOffset = lastPrefixOffset + (lastPrefixLength - lastPrefix.length());
                     quoted = true;
-                } else if (lastPrefix.endsWith(quoteString)) {
+                } else if (quoteString.length() > 0 && lastPrefix.endsWith(quoteString)) {
                     // User typed '"foo".bar"|', can't complete.
                     return null;
                 }

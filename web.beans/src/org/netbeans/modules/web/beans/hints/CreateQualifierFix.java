@@ -43,6 +43,7 @@
 package org.netbeans.modules.web.beans.hints;
 
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.modules.web.beans.UsageLogger;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
@@ -66,10 +67,18 @@ final class CreateQualifierFix extends CreateAnnotationFix {
     public String getText() {
         if ( getPackage() == null || getPackage().length() == 0 ){
             return NbBundle.getMessage(CreateQualifierFix.class, 
-                    "LBL_FixCreateQualifierDefaultPackage");
+                    "LBL_FixCreateQualifierDefaultPackage");            // NOI18N
         }
         return NbBundle.getMessage(CreateQualifierFix.class, 
-                "LBL_FixCreateQualifier" , getName() , getPackage() );
+                "LBL_FixCreateQualifier" , getName() , getPackage() ); // NOI18N
+    }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.hints.CreateAnnotationFix#getUsageLogMessage()
+     */
+    @Override
+    protected String getUsageLogMessage() {
+        return "USG_CDI_CREATE_QUALIFIER_FIX";      // NOI18N
     }
     
     /* (non-Javadoc)

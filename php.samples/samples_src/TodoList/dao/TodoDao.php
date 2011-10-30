@@ -63,7 +63,7 @@ final class TodoDao {
      */
     public function find(TodoSearchCriteria $search = null) {
         $result = array();
-        foreach ($this->getDb()->query($this->getFindSql($search), PDO::FETCH_ASSOC) as $row) {
+        foreach ($this->query($this->getFindSql($search)) as $row) {
             $todo = new Todo();
             TodoMapper::map($todo, $row);
             $result[$todo->getId()] = $todo;
@@ -76,7 +76,7 @@ final class TodoDao {
      * @return Todo Todo or <i>null</i> if not found
      */
     public function findById($id) {
-        $row = $this->getDb()->query('SELECT * FROM todo WHERE deleted = 0 and id = ' . (int) $id, PDO::FETCH_ASSOC)->fetch();
+        $row = $this->query('SELECT * FROM todo WHERE deleted = 0 and id = ' . (int) $id)->fetch();
         if (!$row) {
             return null;
         }
@@ -87,15 +87,14 @@ final class TodoDao {
 
     /**
      * Save {@link Todo}.
-     * @param int $id ID to be updated, <i>null</i> for new TODO
      * @param ToDo $todo {@link Todo} to be saved
      * @return Todo saved {@link Todo} instance
      */
-    public function save($id, ToDo $todo) {
-        if ($id === null) {
+    public function save(ToDo $todo) {
+        if ($todo->getId() === null) {
             return $this->insert($todo);
         }
-        return $this->update($id, $todo);
+        return $this->update($todo);
     }
 
     /**
@@ -178,8 +177,7 @@ final class TodoDao {
      * @return Todo
      * @throws Exception
      */
-    private function update($id, Todo $todo) {
-        $todo->setId($id);
+    private function update(Todo $todo) {
         $todo->setLastModifiedOn(new DateTime());
         $sql = '
             UPDATE todo SET
@@ -206,6 +204,9 @@ final class TodoDao {
         if (!$todo->getId()) {
             return $this->findById($this->getDb()->lastInsertId());
         }
+        if (!$statement->rowCount()) {
+            throw new NotFoundException('TODO with ID "' . $todo->getId() . '" does not exist.');
+        }
         return $todo;
     }
 
@@ -231,9 +232,24 @@ final class TodoDao {
 
     private function executeStatement(PDOStatement $statement, array $params) {
         if (!$statement->execute($params)) {
-            // TODO log error, send email, etc.
-            throw new Exception('DB error: ' . $this->getDb()->errorInfo());
+            self::throwDbError($this->getDb()->errorInfo());
         }
+    }
+
+    /**
+     * @return PDOStatement
+     */
+    private function query($sql) {
+        $statement = $this->getDb()->query($sql, PDO::FETCH_ASSOC);
+        if ($statement === false) {
+            self::throwDbError($this->getDb()->errorInfo());
+        }
+        return $statement;
+    }
+
+    private static function throwDbError(array $errorInfo) {
+        // TODO log error, send email, etc.
+        throw new Exception('DB error [' . $errorInfo[0] . ', ' . $errorInfo[1] . ']: ' . $errorInfo[2]);
     }
 
     private static function formatDateTime(DateTime $date) {

@@ -698,6 +698,9 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
 
         if (folder != null) {
             FolderConfiguration folderConfiguration = folder.getFolderConfiguration(makeConfiguration);
+            if (folderConfiguration == null) {
+                return;
+            }
             cIncludeDirectories = folderConfiguration.getCCompilerConfiguration().getIncludeDirectories();
             cInheritIncludes = folderConfiguration.getCCompilerConfiguration().getInheritIncludes();
             cPpreprocessorOption = folderConfiguration.getCCompilerConfiguration().getPreprocessorConfiguration();
@@ -709,6 +712,9 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             items = folder.getAllItemsAsArray();
         } else if (item != null) {
             ItemConfiguration itemConfiguration = item.getItemConfiguration(makeConfiguration);
+            if (itemConfiguration == null) {
+                return;
+            }
             if (itemConfiguration.getTool() == PredefinedToolKind.CCompiler) {
                 cIncludeDirectories = itemConfiguration.getCCompilerConfiguration().getIncludeDirectories();
                 cInheritIncludes = itemConfiguration.getCCompilerConfiguration().getInheritIncludes();

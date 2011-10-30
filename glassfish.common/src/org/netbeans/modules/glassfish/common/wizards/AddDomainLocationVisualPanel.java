@@ -60,6 +60,8 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.modules.glassfish.common.GlassfishInstance;
 import org.netbeans.modules.glassfish.common.ServerDetails;
 import org.netbeans.modules.glassfish.spi.Utils;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 /**
@@ -97,6 +99,12 @@ public class AddDomainLocationVisualPanel extends javax.swing.JPanel {
             for (File f : candidates) {
                 model.addElement(f.getName());
             }
+        } 
+        if (model.getSize() == 0) {
+            FileObject userHome = FileUtil.toFileObject(
+                    FileUtil.normalizeFile(new File(System.getProperty("user.home"))));
+            String defaultItem = FileUtil.findFreeFolderName(userHome, "personal_domain");
+            model.addElement(System.getProperty("user.home")+File.separator+defaultItem);
         }
         domainField.setModel(model);
         KeyListener kl = new MyKeyListener();

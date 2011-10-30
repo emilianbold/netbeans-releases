@@ -475,6 +475,14 @@ public final class ProjectImpl extends ProjectBase {
                 }
                 return;
             }
+            
+            // markReparseNeeded have to be called synchroniously 
+            // otherwise it will be delayed till DeepReparsingUtils.reparseOnEditingFile is called from task
+            // but task is delayed (or even turned off), so this could never happen and client 
+            // using CsmFile.scheduleParsing(true) get file without wait for reparsing, because 
+            // file is still in state PARSED if delayed till task starts execution
+            // see #203526 - Code completion is empty if typing too fast
+            file.markReparseNeeded(false);
             task = pair.getTask();
             if (task == null) {
                 if (TraceFlags.TRACE_182342_BUG || TraceFlags.TRACE_191307_BUG) {

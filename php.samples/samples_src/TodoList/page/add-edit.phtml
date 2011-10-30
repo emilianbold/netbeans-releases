@@ -47,12 +47,22 @@
 //  $todo - submitted TODO
 //  $edit - true for EDIT, false for ADD
 
+function error_field($title, array $errors) {
+    foreach ($errors as $error) {
+        /* @var $error Error */
+        if ($error->getSource() == $title) {
+            return ' error-field';
+        }
+    }
+    return '';
+}
+
 /* @var $todo Todo */
 ?>
 
 <h1>
     <?php if ($edit): ?>
-        <?php echo $todo->getTitle(); ?>
+        <?php echo Utils::escape($todo->getTitle()); ?>
     <?php else: ?>
         Add new TODO
     <?php endif; ?>
@@ -71,11 +81,13 @@
     <fieldset>
         <div class="field">
             <label>Title:</label>
-            <input type="text" name="todo[title]" value="<?php echo htmlspecialchars($todo->getTitle()); ?>" class="text"/>
+            <input type="text" name="todo[title]" value="<?php echo Utils::escape($todo->getTitle()); ?>"
+                   class="text<?php echo error_field('title', $errors); ?>"/>
         </div>
         <div class="field">
             <label>Due On:</label>
-            <input type="text" name="todo[due_on_date]" value="<?php echo htmlspecialchars($todo->getDueOn()->format('Y-n-j')); ?>" class="text datepicker" />
+            <input type="text" name="todo[due_on_date]" value="<?php echo Utils::escape($todo->getDueOn()->format('Y-n-j')); ?>"
+                   class="text datepicker<?php echo error_field('due_on', $errors); ?>" />
             &nbsp;
             <select name="todo[due_on_hour]">
             <?php for ($i = 0; $i < 24; ++$i): ?>
@@ -88,7 +100,7 @@
             </select>
             :
             <select name="todo[due_on_minute]">
-            <?php for ($i = 0; $i < 60; ++$i): ?>
+            <?php for ($i = 0; $i < 60; $i = $i + 15): ?>
                 <option value="<?php echo $i; ?>"
                         <?php if ($todo->getDueOn() && $i == $todo->getDueOn()->format('i')): ?>
                             selected="selected"
@@ -105,17 +117,19 @@
                         <?php if ($priority == $todo->getPriority()): ?>
                             selected="selected"
                         <?php endif; ?>
-                        ><?php echo ProjectUtil::capitalize($priority); ?></option>
+                        ><?php echo $priority; ?></option>
             <?php endforeach; ?>
             </select>
         </div>
         <div class="field">
             <label>Description:</label>
-            <textarea name="todo[description]" cols="1" rows="1"><?php echo htmlspecialchars($todo->getDescription()); ?></textarea>
+            <textarea name="todo[description]" cols="1" rows="1"
+                      class="<?php echo error_field('description', $errors); ?>"><?php echo Utils::escape($todo->getDescription()); ?></textarea>
         </div>
         <div class="field">
             <label>Comment:</label>
-            <textarea name="todo[comment]" cols="1" rows="1"><?php echo htmlspecialchars($todo->getComment()); ?></textarea>
+            <textarea name="todo[comment]" cols="1" rows="1"
+                      class="<?php echo error_field('comment', $errors); ?>"><?php echo Utils::escape($todo->getComment()); ?></textarea>
         </div>
         <div class="wrapper">
             <input type="submit" name="cancel" value="CANCEL" class="submit" />

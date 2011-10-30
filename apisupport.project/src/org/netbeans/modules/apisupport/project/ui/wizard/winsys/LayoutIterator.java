@@ -253,15 +253,13 @@ public final class LayoutIterator extends BasicWizardIterator {
             }
 
             {
-                Map<String,Object> attrs = new HashMap<String,Object>();
-                attrs.put("originalFile", path); // NOI18N
                 fileChanges.add(
                     fileChanges.createLayerEntry(
                         "Menu/Window/" + name + "Action.shadow", // NOI18N
                         null,
                         null,
                         null,
-                        attrs
+                        Collections.singletonMap("originalFile", path)
                     )
                 );
             }

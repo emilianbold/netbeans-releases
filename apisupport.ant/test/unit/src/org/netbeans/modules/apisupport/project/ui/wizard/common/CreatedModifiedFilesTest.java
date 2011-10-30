@@ -390,7 +390,7 @@ public class CreatedModifiedFilesTest extends LayerTestBase {
                 null,
                 null,
                 null, 
-                Collections.<String,Object>singletonMap("position", 400));
+                Collections.singletonMap("position", 400));
         layerOp.run();
         
         layerOp = cmf.createLayerEntry(
@@ -415,7 +415,7 @@ public class CreatedModifiedFilesTest extends LayerTestBase {
                 null,
                 null,
                 null, 
-                Collections.<String,Object>singletonMap("position", 405));
+                Collections.singletonMap("position", 405));
         cmf.add(layerOp);
         
         layerOp = cmf.orderLayerEntry("Menu/Tools",

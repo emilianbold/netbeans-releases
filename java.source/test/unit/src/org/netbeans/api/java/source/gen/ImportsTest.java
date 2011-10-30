@@ -592,6 +592,45 @@ public class ImportsTest extends GeneratorTestMDRCompat {
         System.err.println(res);
         assertEquals(golden, res);
     }
+    
+    public void testRemoveImportsNoEOL() throws Exception {
+        testFile = new File(getWorkDir(), "MoveClass.java");
+        TestUtilities.copyStringToFile(testFile,
+                "package movepkg;"
+                + " "
+                + "import movepkg.*;"
+                + " "
+                + "public class MoveClass {"
+                + "    "
+                + "    public MoveClass() {"
+                + "        super();"
+                + "    }"
+                + "}");
+        String golden = "package movepkg;"
+                + ""
+                + "public class MoveClass {"
+                + "    "
+                + "    public MoveClass() {"
+                + "        super();"
+                + "    }"
+                + "}";
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                CompilationUnitTree node = workingCopy.getCompilationUnit();
+                CompilationUnitTree copy = make.CompilationUnit(node.getPackageAnnotations(), node.getPackageName(), new java.util.LinkedList<ImportTree>(), node.getTypeDecls(), node.getSourceFile());
+                workingCopy.rewrite(node, copy);
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
 
     public void testRemoveAllImports() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");

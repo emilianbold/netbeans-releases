@@ -145,6 +145,24 @@ public class JoinCatchesTest extends TestBase {
                             "}\n");
     }
 
+    public void test203139() throws Exception {
+        setSourceLevel("1.7");
+        performAnalysisTest("test/Test.java",
+                            "package test;\n" +
+                            "import java.io.*;\n" +
+                            "public class Test {\n" +
+                            "    void t() throws Exception {\n" +
+                            "        try {\n" +
+                            "            throw new Exception();\n" +
+                            "        } catch (InterruptedException e) {\n" +
+                            "            System.err.println(e);\n" +
+                            "        } catch (java.util.concurrent.ExecutionException e) {\n" +
+                            "            System.err.println(e.getCause());\n" +
+                            "        }\n" +
+                            "    }\n" +
+                            "}\n");
+    }
+
     @Override
     protected String toDebugString(CompilationInfo info, Fix f) {
         return f.getText();

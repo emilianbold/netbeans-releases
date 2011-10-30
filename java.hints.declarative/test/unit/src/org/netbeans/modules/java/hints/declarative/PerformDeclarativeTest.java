@@ -40,7 +40,7 @@
 package org.netbeans.modules.java.hints.declarative;
 
 import junit.framework.TestSuite;
-import org.netbeans.modules.java.hints.declarative.test.spi.DeclarativeHintsTestBase;
+import org.netbeans.modules.java.hints.declarative.test.api.DeclarativeHintsTestBase;
 
 /**
  *

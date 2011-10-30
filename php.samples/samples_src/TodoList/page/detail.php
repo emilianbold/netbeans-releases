@@ -42,7 +42,7 @@
  */
 
 // data for template
-$todo = ProjectUtil::getTodoByGetId();
+$todo = Utils::getTodoByGetId();
 $tooLate = $todo->getStatus() == Todo::STATUS_PENDING && $todo->getDueOn() < new DateTime();
 
 ?>

@@ -209,9 +209,9 @@ public class EmbeddableEJBContainerHint extends AbstractHint {
                     try {
                         URL pomUrl;
                         if (serId.indexOf("gfv3ee6wc") != -1) {
-                            pomUrl = new URL("http://download.java.net/maven/glassfish/org/glassfish/extras/glassfish-embedded-static-shell/3.1.1/glassfish-embedded-static-shell-3.1.1.pom");
+                            pomUrl = new URL("http://repo2.maven.org/maven2/org/glassfish/extras/glassfish-embedded-static-shell/3.1.1/glassfish-embedded-static-shell-3.1.1.pom");
                         } else {
-                            pomUrl = new URL("http://download.java.net/maven/glassfish/org/glassfish/extras/glassfish-embedded-static-shell/3.0.1/glassfish-embedded-static-shell-3.0.1.pom");
+                            pomUrl = new URL("http://repo2.maven.org/maven2/org/glassfish/extras/glassfish-embedded-static-shell/3.0.1/glassfish-embedded-static-shell-3.0.1.pom");
                         }
                         if (serId.equals(usedServer)) {
                             fixes.clear();
@@ -269,20 +269,9 @@ public class EmbeddableEJBContainerHint extends AbstractHint {
                     }
                     dep.setSystemPath("${"+PROP_GF_EMBEDDED_JAR+ "}");
                 }
-                //set repository
-                NbMavenProject mavenPrj = prj.getLookup().lookup(NbMavenProject.class);
-                if (mavenPrj != null) {
-                    Repository repo = ModelUtils.addModelRepository(mavenPrj.getMavenProject(), model, result.getRepoRoot());
-                    if (repo != null) {
-                        repo.setId("java.net"); //NOI18N
-                        repo.setLayout(result.getRepoType());
-                        repo.setName("GlassFish Maven Repository"); //NOI18N
-                    }
-                }
                 return true;
-            } else {
-                return false;
             }
+            return false;
         }
 
         @Override

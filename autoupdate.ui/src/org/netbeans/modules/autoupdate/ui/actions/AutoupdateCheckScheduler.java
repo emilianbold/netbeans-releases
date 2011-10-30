@@ -104,6 +104,10 @@ public class AutoupdateCheckScheduler {
     }
     
     public static void signOn () {
+        // temprorary to investigate #203326
+        NotificationDisplayer.getDefault();
+        // end of investigation #203326
+        
         AutoupdateSettings.generateIdentity ();
         
         if (timeToCheck ()) {

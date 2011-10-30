@@ -341,12 +341,26 @@ bodyset
         | page
         | counterStyle
         | fontFace
+        | moz_document
       )
       WS*
     ;
     
+moz_document
+	: 
+	MOZ_DOCUMENT_SYM WS* ( moz_document_function WS*) ( COMMA WS* moz_document_function WS* )*
+	LBRACE WS*
+	 ( ( ruleSet | page ) WS*)*
+	RBRACE
+	;
+
+moz_document_function
+	:
+	URI | MOZ_URL_PREFIX | MOZ_DOMAIN | MOZ_REGEXP
+	;
+    
 page
-    : PAGE_SYM WS? IDENT? (pseudoPage WS*)?
+    : PAGE_SYM WS* ( IDENT WS* )? (pseudoPage WS*)?
         LBRACE WS*
             //the grammar in the http://www.w3.org/TR/css3-page/ says the declaration/margins should be delimited by the semicolon,
             //but there's no such char in the examples => making it arbitrary
@@ -491,9 +505,9 @@ namespace_wildcard_prefix
   	:	
   	STAR
   	;
-        
+       
 esPred
-    : HASH | DOT | LBRACKET | COLON | DCOLON
+    : '#' | HASH | DOT | LBRACKET | COLON | DCOLON
     ;
     
 elementSubsequent
@@ -507,13 +521,22 @@ elementSubsequent
     WS*
     ;
     
+//Error Recovery: Allow the parser to enter the cssId rule even if there's just hash char.
 cssId
-    : HASH
+    : HASH | ( '#' NAME )
     ;
+    catch[ RecognitionException rce] {
+        reportError(rce);
+        consumeUntil(input, BitSet.of(WS, IDENT, LBRACE)); 
+    }
 
 cssClass
     : DOT ( IDENT | GEN  )
     ;
+    catch[ RecognitionException rce] {
+        reportError(rce);
+        consumeUntil(input, BitSet.of(WS, IDENT, LBRACE)); 
+    }
     
 //using typeSelector even for the universal selector since the lookahead would have to be 3 (IDENT PIPE (IDENT|STAR) :-(
 elementName
@@ -665,7 +688,7 @@ attribute
 	;
     
 attrname
-	: IDENT
+	: IDENT (DOT IDENT)*
 	;
 	
 attrvalue
@@ -1069,6 +1092,7 @@ RIGHTTOP_SYM          :'@right-top';
 RIGHTMIDDLE_SYM       :'@right-middle';
 RIGHTBOTTOM_SYM       :'@right-bottom';
 
+MOZ_DOCUMENT_SYM      : '@-moz-document';
 
 //I cannot figure out how to use the fragment tokens to generate the following tokens.
 //the parser generator cycles itself indefinitely.
@@ -1186,6 +1210,32 @@ URI :   U R L
             ((WS)=>WS)? (URL|STRING) WS?
         ')'
     ;
+    
+MOZ_URL_PREFIX
+	:
+	'url-prefix('
+            ((WS)=>WS)? (URL|STRING) WS?
+        ')'
+    
+    	;
+
+MOZ_DOMAIN
+	:
+	'domain('
+            ((WS)=>WS)? (URL|STRING) WS?
+        ')'
+    
+    	;
+
+MOZ_REGEXP
+	:
+	'regexp('
+            ((WS)=>WS)? STRING WS?
+        ')'
+    
+    	;
+
+
 
 // -------------
 // Whitespace.  Though the W3 standard shows a Yacc/Lex style parser and lexer

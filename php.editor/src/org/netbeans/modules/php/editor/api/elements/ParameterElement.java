@@ -51,7 +51,7 @@ import org.netbeans.modules.csl.api.OffsetRange;
  */
 public interface ParameterElement {
     String getName();
-    public String asString(boolean forDeclaration);
+    public String asString(OutputType outputType);
     boolean isReference();
     Set<TypeResolver> getTypes();
     @CheckForNull
@@ -63,4 +63,21 @@ public interface ParameterElement {
     boolean isMandatory();
     int  getOffset();
     OffsetRange  getOffsetRange();
+
+    enum OutputType {
+        /**
+         * Represents: <code>array &$foo = VERY_SUPER_LONG_DEFAULT_VALUE</code>
+         */
+        COMPLETE_DECLARATION,
+
+        /**
+         * Represents: <code>array &$foo = ...</code>
+         */
+        SHORTEN_DECLARATION,
+
+        /**
+         * Represents: <code>$foo</code>
+         */
+        SIMPLE_NAME
+    }
 }

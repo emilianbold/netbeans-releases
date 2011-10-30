@@ -45,6 +45,7 @@ package org.netbeans.modules.html.editor.completion;
 import java.io.IOException;
 import javax.swing.text.BadLocationException;
 import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
+import org.netbeans.modules.html.editor.completion.HtmlCompletionTestSupport.Match;
 import org.netbeans.modules.parsing.spi.ParseException;
 
 /**

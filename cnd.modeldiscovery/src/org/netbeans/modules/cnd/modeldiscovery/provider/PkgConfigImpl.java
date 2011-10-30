@@ -66,6 +66,8 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -101,9 +103,18 @@ public class PkgConfigImpl implements PkgConfig {
     }
 
     private List<String> envPaths(String folder){
-        String additionalPaths = pi.getEnv().get("PKG_CONFIG_PATH"); // NOI18N
+        ExitStatus status = ProcessUtils.execute(pi.getExecutionEnvironment(),
+                pi.isWindows()?"pkg-config.exe":"pkg-config", new String[]{"--variable", "pc_path", "pkg-config"}); // NOI18N
         List<String> res = new ArrayList<String>();
+        if (status.isOK()) {
+            addPaths(res, status.output);
+        }
         res.add(folder);
+        addPaths(res, pi.getEnv().get("PKG_CONFIG_PATH")); // NOI18N
+        return res;
+    }
+
+    private void addPaths(List<String> res, String additionalPaths) {
         if (additionalPaths != null && additionalPaths.length() > 0) {
             StringTokenizer st;
             if (pi.isWindows()){
@@ -115,9 +126,8 @@ public class PkgConfigImpl implements PkgConfig {
                 res.add(st.nextToken());
             }
         }
-        return res;
     }
-
+    
     private void initPackagesFromSet(CompilerSet set) {
         if (pi.isWindows()){
             // at first find pkg-config.exe in paths

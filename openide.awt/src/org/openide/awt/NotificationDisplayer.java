@@ -43,6 +43,8 @@
 package org.openide.awt;
 
 import java.awt.event.ActionListener;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.JComponent;
 import org.openide.awt.StatusDisplayer.Message;
@@ -71,6 +73,9 @@ public abstract class NotificationDisplayer {
         SILENT
     }
 
+    private static Integer ndID = null;
+    private static final Logger LOG = Logger.getLogger(NotificationDisplayer.class.getName());
+
     /**
      * Looks for an implementation in global Lookup, if none is found then it falls
      * back to a primitive implementation which displays the notifications in main 
@@ -80,8 +85,14 @@ public abstract class NotificationDisplayer {
     public static NotificationDisplayer getDefault() {
         NotificationDisplayer res = Lookup.getDefault().lookup(NotificationDisplayer.class);
         if( null == res ) {
+            Logger.getLogger( NotificationDisplayer.class.getName()).log( Level.INFO, "No NotificationDisplayer implementation available."); //NOI18N
             res = new SimpleNotificationDisplayer();
         }
+        if (ndID == null) {
+            ndID = System.identityHashCode(res);
+        }
+        LOG.finest("ID of NotificationDisplayer is " + System.identityHashCode(res));
+        assert System.identityHashCode(res) == ndID : "Lookup.lookup(NotificationDisplayer.class) has to return the same instance NotificationDisplayer.";
         return res;
     }
 

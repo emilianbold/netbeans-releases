@@ -1497,4 +1497,14 @@ public final class Utils {
             }
         }
     }
+    
+    public static Action getAcceleratedAction(String path) {
+        Action a = FileUtil.getConfigObject(path, Action.class);
+        FileObject fo = FileUtil.getConfigFile(path);
+        if(fo != null) {
+            AcceleratorBinding.setAccelerator(a, fo);
+        }
+        return a;
+    }
+
 }

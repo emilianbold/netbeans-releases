@@ -17,7 +17,11 @@
         <p>The panel contains the following deployment settings:</p>
         <ul>
             <li><strong>Check for Application Updates in Background</strong>.  Java Web Start and browser-embedded applications automatically check for updates to the application at the original location where the application was loaded. By default the application checks for updates in the background and applies updates only on application restart ("lazy" mode). Uncheck this box and the application checks for and applies updates at start time, before running ("eager" mode). In the JNLP file, unchecking this box changes <tt>&lt;update check="lazy"/&gt;</tt> to <tt>&lt;update check="eager"/&gt;</tt></li>
-            <li><strong>Install permanently.</strong> Permanently install the application on the client machine.</li>
+            <li><strong>Install permanently.</strong> Permanently install the application on the client machine. See <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                    <param name="content" value="http://javaweb.us.oracle.com/~in81039/ant-docs/">
+                    <param name="text" value="<html><u>JavaFX Ant Tasks</u></html>">
+                    <param name="textFontSize" value="medium">
+                    <param name="textColor" value="blue"></object></li>
             <li><strong>Add desktop shortcut.</strong> Add desktop shortcut to the client machine.</li>
             <li><strong>Add Start Menu shortcut.</strong> Add a start menu shortcut to the client machine.</li>
             <li><strong>Request unrestricted access.</strong> By default, Java Web Start applications run in a restricted environment where they have limited access to local computing resources. Tick this box if you want the application to request unrestricted access to the local file system. When you tick this box, the IDE inserts the <tt>&lt;all-permissions&gt;</tt> element into the <tt>security</tt> section of the JNLP file. The application must be signed in order to request unrestricted access.

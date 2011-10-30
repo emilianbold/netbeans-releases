@@ -54,7 +54,6 @@ import org.netbeans.junit.NbTestCase;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.test.TestFileUtils;
 import static org.netbeans.modules.openide.util.Bundle.*;
-import org.openide.util.Exceptions;
 
 @Messages("k3=value #3")
 public class NbBundleProcessorTest extends NbTestCase {
@@ -213,6 +212,7 @@ public class NbBundleProcessorTest extends NbTestCase {
 
     public void testIncrementalCompilation() throws Exception {
         if (isJDK7EarlyBuild()) {
+            System.err.println("Running on buggy JDK, skipping testIncrementalCompilation...");
             return;
         }
         AnnotationProcessorTestUtils.makeSource(src, "p.C1", "@org.openide.util.NbBundle.Messages(\"k1=v1\")", "public class C1 {public @Override String toString() {return Bundle.k1();}}");
@@ -272,6 +272,7 @@ public class NbBundleProcessorTest extends NbTestCase {
             // builds up until
             // java.runtime.version=1.7.0-b147
             // are known to fail testIncrementalCompilation
+            // target release 7u2; 8-ea-b09 should also have fix; cf. #7068451
             Pattern buildNumber = Pattern.compile("1\\.7\\.0-b([0-9]+)");
             Matcher m = buildNumber.matcher(run);
             if (m.matches()) {

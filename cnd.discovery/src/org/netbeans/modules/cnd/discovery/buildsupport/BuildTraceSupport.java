@@ -41,7 +41,12 @@
  */
 package org.netbeans.modules.cnd.discovery.buildsupport;
 
+import java.io.IOException;
 import org.netbeans.modules.cnd.makeproject.api.wizards.CommonUtilities;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 
 /**
  *
@@ -54,5 +59,21 @@ public class BuildTraceSupport {
     
     public static boolean useBuildTrace() {
         return CommonUtilities.isUseBuildTrace();
+    }
+    
+    public static boolean supportedPlatforms(ExecutionEnvironment execEnv) {
+        try {
+            HostInfo hostInfo = HostInfoUtils.getHostInfo(execEnv);
+            switch(hostInfo.getOSFamily()) {
+                // inperposer does not work yet
+                //case MACOSX:
+                case LINUX:
+                case SUNOS:
+                    return true;
+            }
+        } catch (IOException ex) {
+        } catch (CancellationException ex) {
+        }
+        return false;
     }
 }

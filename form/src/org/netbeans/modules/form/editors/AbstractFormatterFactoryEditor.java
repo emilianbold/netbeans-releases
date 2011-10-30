@@ -487,6 +487,11 @@ public class AbstractFormatterFactoryEditor extends PropertyEditorSupport
             }
             return new DefaultFormatterFactory(value);
         }
+        
+        @Override
+        public Object copy(FormProperty targetFormProperty) {
+            return new FormFormatter(format);
+        }
 
     }
 

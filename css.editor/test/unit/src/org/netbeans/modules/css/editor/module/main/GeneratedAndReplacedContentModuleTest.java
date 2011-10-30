@@ -63,19 +63,17 @@ public class GeneratedAndReplacedContentModuleTest extends CssModuleTestBase {
         assertPropertyDeclaration("content: url(\"link\"), counter(anid, anotherid)");
         
     }
-    
-    public void testCrop() {
-        assertPropertyValues("crop", "auto");
-        assertPropertyValues("crop", "rect(10px,20px,10px,20px)");
-        assertPropertyValues("crop", "inter-rect(10px,20px,10px,20px)");
-        assertPropertyValues("crop", "inter-rect(10%,20%,10%,20px)");
-    }
-    
+        
     public void testCounter() {
         assertPropertyDeclaration("counter-increment: chapter;");
         assertPropertyDeclaration("counter-increment: chapter 10;");
         assertPropertyDeclaration("counter-reset: chapter;");
         assertPropertyDeclaration("counter-reset: chapter 2;");
+    }
+    
+    public void testQuotes() {
+        assertPropertyDeclaration("quotes: 'arg1' 'arg2'");
+        assertPropertyDeclaration("quotes: \"arg1\" 'arg2' 'arg3' 'arg4'");
     }
     
 }

@@ -136,6 +136,23 @@ public class WizardDescTest extends NbTestCase {
         assertEquals ("Closed with cancel option.", WizardDescriptor.CANCEL_OPTION, wd.getValue ());
     }
 
+    public void testPerPanelHelpCtx () throws Exception {
+        assertEquals( new HelpCtx("first panel"), wd.getHelpCtx() );
+        log ("Do click Next button.");
+        wd.doNextClick ();
+
+        assertEquals( new HelpCtx("second panel"), wd.getHelpCtx() );
+    }
+
+    public void testWizarWideHelpCtx () throws Exception {
+        wd.setHelpCtx( new HelpCtx("all panels") );
+        assertEquals( new HelpCtx("all panels"), wd.getHelpCtx() );
+        log ("Do click Next button.");
+        wd.doNextClick ();
+
+        assertEquals( new HelpCtx("all panels"), wd.getHelpCtx() );
+    }
+
     public void testNextOptionWhenLazyValidationFails () throws Exception {
         Panel panels[] = new Panel[3];
         
@@ -373,7 +390,7 @@ public class WizardDescTest extends NbTestCase {
         }
         
         public HelpCtx getHelp() {
-            return null;
+            return new HelpCtx(text);
         }
         
         public boolean isValid() {

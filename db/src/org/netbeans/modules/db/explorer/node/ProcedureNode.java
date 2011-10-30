@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -175,6 +175,9 @@ public class ProcedureNode extends BaseNode {
 
     @Override
     public String getIconBase() {
+        if (getType() == null) {
+            return null;
+        }
         switch (getType()) {
             case Function:
                 return ICON_VALID_F;

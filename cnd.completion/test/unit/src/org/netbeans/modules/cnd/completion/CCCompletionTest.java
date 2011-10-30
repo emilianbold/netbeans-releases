@@ -74,6 +74,8 @@ public class CCCompletionTest extends CndBaseTestSuite {
         this.addTestSuite(AutosTestCase.class);
         this.addTestSuite(FunctionCallsTestCase.class);
         this.addTestSuite(NonGlobalCompletionTestCase.class);
+        
+        this.addTestSuite(TooltipTestCase.class);        
     }
 
     public static Test suite() {

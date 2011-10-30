@@ -150,8 +150,15 @@ public class TldProxyLibraryDescriptor implements LibraryDescriptor {
                     String aName = getTextContent(attrNode, "name"); //NOI18N
                     String aDescription = getTextContent(attrNode, "description"); //NOI18N
                     boolean aRequired = Boolean.parseBoolean(getTextContent(attrNode, "required")); //NOI18N
+                    
+                    String aType = null;
+                    //type
+                    Node aDeferredValueNode = FaceletsLibraryDescriptor.getNodeByName(attrNode, "deferred-value"); //NOI18N
+                    if(aDeferredValueNode != null) {
+                        aType = FaceletsLibraryDescriptor.getTextContent(aDeferredValueNode, "type");
+                    }
 
-                    attrs.put(aName, new Attribute.DefaultAttribute(aName, aDescription, aRequired));
+                    attrs.put(aName, new Attribute.DefaultAttribute(aName, aDescription, aType, aRequired));
                 }
 
                 tags.put(tagName, new TagImpl(tagName, tagDescription, attrs));

@@ -99,6 +99,7 @@ import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.openide.ErrorManager;
+import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
@@ -577,7 +578,11 @@ public final class OpenProjectList {
             OPENING_RP.post(new Runnable() {
                 @Override public void run() {
                     cancellation.t = Thread.currentThread();
-                    doOpen(projects, openSubprojects, handle, cancellation);
+                    try {
+                        doOpen(projects, openSubprojects, handle, cancellation);
+                    } finally {
+                        handle.finish();
+                    }
                     if (mainProject != null && Arrays.asList(projects).contains(mainProject) && openProjects.contains(mainProject)) {
                         setMainProject(mainProject);
                     }
@@ -597,7 +602,10 @@ public final class OpenProjectList {
         }
     }
 
-    @Messages({"# {0} - project display name", "OpenProjectList.finding_subprojects=Finding required projects of {0}"})
+    @Messages({
+        "# {0} - project display name", "OpenProjectList.finding_subprojects=Finding required projects of {0}",
+        "# {0} - project path", "OpenProjectList.deleted_project={0} seems to have been deleted."
+    })
     private void doOpen(Project[] projects, boolean openSubprojects, ProgressHandle handle, AtomicBoolean canceled) {
         assert !Arrays.asList(projects).contains(null) : "Projects can't be null";
         LOAD.waitFinished();
@@ -627,6 +635,10 @@ public final class OpenProjectList {
 
             Project p = toHandle.remove(0);
             assert p != null;
+            if (!p.getProjectDirectory().isValid()) {
+                StatusDisplayer.getDefault().setStatusText(OpenProjectList_deleted_project(FileUtil.getFileDisplayName(p.getProjectDirectory())));
+                continue;
+            }
             Set<? extends Project> subprojects = openSubprojects ? subprojectsCache.get(p) : Collections.<Project>emptySet();
             
             if (subprojects == null) {
@@ -659,6 +671,10 @@ public final class OpenProjectList {
             if (handle != null && lastState < (int) currentWork) {
                 handle.progress((int) currentWork);
             }
+        }
+
+        if (projectsToOpen.isEmpty()) {
+            return;
         }
         
         double workPerProject = (maxWork - workForSubprojects) / projectsToOpen.size();
@@ -704,10 +720,6 @@ public final class OpenProjectList {
                 return null;
             }
         });
-        
-	if (handle != null) {
-	    handle.finish();
-	}
         
         final boolean recentProjectsChangedCopy = recentProjectsChanged;
         

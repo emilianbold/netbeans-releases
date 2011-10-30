@@ -47,7 +47,7 @@ import org.netbeans.modules.csl.api.HintsProvider.HintsManager;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.spi.options.AdvancedOption;
 import org.netbeans.spi.options.OptionsPanelController;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
@@ -58,13 +58,15 @@ public class HintsAdvancedOption extends AdvancedOption {
     OptionsPanelController panelController;
 
     @Override
+    @Messages("CTL_Hints_DisplayName=Hints")
     public String getDisplayName() {
-        return NbBundle.getMessage(HintsAdvancedOption.class, "CTL_Hints_DisplayName"); // NOI18N
+        return Bundle.CTL_Hints_DisplayName();
     }
 
     @Override
+    @Messages("CTL_Hints_ToolTip=Static code verification for PHP")
     public String getTooltip() {
-        return NbBundle.getMessage(HintsAdvancedOption.class, "CTL_Hints_ToolTip"); // NOI18N
+        return Bundle.CTL_Hints_ToolTip();
     }
 
     @Override

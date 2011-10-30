@@ -43,7 +43,12 @@ class, application parameters, working directory for program execution, and VM o
   <h3>Web Start and Browser Application Settings</h3>
   <ul>
       <li><strong>Width/Height.</strong> Enter preferred dimensions of the application scene.</li>
-      <li><strong>Web page.</strong> Type the path or browse to a local HTML file to use as the application's web page. If you leave this field blank, the IDE generates a web page.</li>
+      <li><strong>Web page.</strong> Enter a path to your own prepared HTML page, which may contain predefined special replacement tags. See section 4.8 of <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="content" value="http://download.oracle.com/javafx/2.0/deployment/packaging.htm#BABCDFAJ">
+    <param name="text" value="<html><u>Packaging JavaFX Applications</u></html>">
+    <param name="textFontSize" value="medium">
+    <param name="textColor" value="blue"></object>.
+    <p>This HTML page is processed at the time of deployment and is copied to the <tt>/dist</tt> sub-directory. If you leave this field blank, the IDE generates a default web page.</p></li>
       <li><strong>Web Browser.</strong> Select the web browser in which the IDE opens the application. Click Manage to open the IDE Options, where you can define additional browsers.</li>
   </ul>
 

@@ -44,6 +44,7 @@ package org.netbeans.modules.php.project.copysupport;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Queue;
+import java.util.Stack;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -60,6 +61,7 @@ import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.connections.RemoteConnections;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
+import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileAttributeEvent;
@@ -100,8 +102,9 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
 
     volatile boolean projectOpened = false;
     // #187060
-    private final AtomicInteger opened = new AtomicInteger();
-    private final AtomicInteger closed = new AtomicInteger();
+    final AtomicInteger opened = new AtomicInteger();
+    final AtomicInteger closed = new AtomicInteger();
+    final Stack<Exception> callStack = new Stack<Exception>();
 
     private final ProxyOperationFactory proxyOperationFactory;
     // @GuardedBy(this)
@@ -155,11 +158,9 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
     }
 
     public void projectOpened() {
+        assert assertProjectOpened();
+
         LOGGER.log(Level.FINE, "Opening Copy support for project {0}", project.getName());
-
-        opened.incrementAndGet();
-
-        assert !projectOpened : String.format("Copy Support already opened for project %s (opened: %d, closed: %d)", project.getName(), opened.get(), closed.get());
 
         projectOpened = true;
         proxyOperationFactory.reset();
@@ -168,16 +169,42 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
     }
 
     public void projectClosed() {
+        assert assertProjectClosed();
+
         LOGGER.log(Level.FINE, "Closing Copy support for project {0}", project.getName());
-
-        closed.incrementAndGet();
-
-        assert projectOpened : String.format("Copy Support already closed for project %s (opened: %d, closed: %d)", project.getName(), opened.get(), closed.get());
 
         projectOpened = false;
         proxyOperationFactory.reset();
 
         unregisterFileChangeListener();
+    }
+
+    // runs only under assertions
+    private boolean assertProjectOpened() {
+        opened.incrementAndGet();
+        if (projectOpened) {
+            throwProjectOpenedClosedError();
+        }
+        callStack.push(new Exception());
+        return true;
+    }
+
+    // runs only under assertions
+    private boolean assertProjectClosed() {
+        closed.incrementAndGet();
+        if (!projectOpened) {
+            throwProjectOpenedClosedError();
+        }
+        callStack.pop();
+        return true;
+    }
+
+    private void throwProjectOpenedClosedError() {
+        int hooks = project.getLookup().lookupAll(ProjectOpenedHook.class).size();
+        LOGGER.log(Level.INFO, "Number of ProjectOpenedHook classes in project lookup: {0}", hooks);
+
+        LOGGER.log(Level.INFO, "Copy Support incorrectly opened/closed (opened: {0}, closed: {1})", new Object[] {opened.get(), closed.get()});
+        throw new IllegalStateException(callStack.peek());
     }
 
     private void prepareOperation(Callable<Boolean> callable) {

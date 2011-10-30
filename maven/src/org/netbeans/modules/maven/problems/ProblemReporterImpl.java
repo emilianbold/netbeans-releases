@@ -284,15 +284,15 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
     }
     
     @Messages({
-        "ERR_MissingJ2eeModule=Maven J2EE support module missing",
-        "MSG_MissingJ2eeModule=You are missing the Maven J2EE support module in your installation. "
-            + "This means that all J2EE related functionality (for example, Deployment, File templates) is missing. "
-            + "The most probable cause is that part of the general J2EE support is missing as well. "
-            + "Please go to Tools/Plugins and install the plugins related to J2EE.",
-        "ERR_MissingApisupportModule=Maven NetBeans Development support module missing",
-        "MSG_MissingApisupportModule=You are missing the Maven APIsupport module in your installation. "
-            + "This means that all NetBeans development related functionality (for example, File templates, running platform application) is missing. "
-            + "The most probable cause is that part of the general API support is missing as well. "
+        "ERR_MissingJ2eeModule=Maven Java EE support missing",
+        "MSG_MissingJ2eeModule=You are missing the Maven Java EE support module in your installation. "
+            + "This means that all EE-related functionality (for example, Deployment, File templates) is missing. "
+            + "The most probable cause is that part of the general Java EE support is missing as well. "
+            + "Please go to Tools/Plugins and install the plugins related to Java EE.",
+        "ERR_MissingApisupportModule=Maven NetBeans Module Projects support missing",
+        "MSG_MissingApisupportModule=You are missing the Maven NetBeans Module Projects module in your installation. "
+            + "This means that all NetBeans Platform functionality (for example, API wizards, running Platform applications) is missing. "
+            + "The most probable cause is that part of the general Platform development support is missing as well. "
             + "Please go to Tools/Plugins and install the plugins related to NetBeans development."
     })
     public void doBaseProblemChecks(@NonNull MavenProject project) {

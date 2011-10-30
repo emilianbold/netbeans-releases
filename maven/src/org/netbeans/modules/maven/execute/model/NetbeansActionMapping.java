@@ -8,7 +8,8 @@ package org.netbeans.modules.maven.execute.model;
  //- Imported classes and packages -/
 //---------------------------------/
 
-import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * Class NetbeansActionMapping.
@@ -50,7 +51,7 @@ public class NetbeansActionMapping implements java.io.Serializable {
     /**
      * Field properties.
      */
-    private java.util.Properties properties;
+    private Map<String,String> properties;
 
     /**
      * Field activatedProfiles.
@@ -198,20 +199,15 @@ public class NetbeansActionMapping implements java.io.Serializable {
         return this.packagings;
     } //-- java.util.List getPackagings() 
 
-    /**
-     * Method getProperties.
-     * 
-     * @return java.util.Properties
-     */
-    public java.util.Properties getProperties()
+    public Map<String,String> getProperties()
     {
         if ( this.properties == null )
         {
-            this.properties = new java.util.Properties();
+            this.properties = new LinkedHashMap<String,String>();
         }
         
         return this.properties;
-    } //-- java.util.Properties getProperties() 
+    }
 
     /**
      * Get the recursive field.
@@ -304,15 +300,10 @@ public class NetbeansActionMapping implements java.io.Serializable {
         this.packagings = packagings;
     } //-- void setPackagings(java.util.List) 
 
-    /**
-     * Set the properties field.
-     * 
-     * @param properties
-     */
-    public void setProperties(java.util.Properties properties)
+    public void setProperties(Map<String,String> properties)
     {
         this.properties = properties;
-    } //-- void setProperties(java.util.Properties) 
+    }
 
     /**
      * Set the recursive field.

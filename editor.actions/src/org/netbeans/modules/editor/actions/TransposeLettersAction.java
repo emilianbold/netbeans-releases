@@ -42,6 +42,7 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorActionNames;
 import org.netbeans.api.editor.EditorActionRegistration;
+import org.netbeans.editor.BaseAction;
 import org.netbeans.modules.editor.lib2.DocUtils;
 import org.netbeans.spi.editor.AbstractEditorAction;
 
@@ -51,7 +52,7 @@ import org.netbeans.spi.editor.AbstractEditorAction;
  * @since 1.12
  */
 @EditorActionRegistration(name = EditorActionNames.transposeLetters)
-public class TransposeLettersAction extends AbstractEditorAction {
+public class TransposeLettersAction extends BaseAction {
     
     private static final long serialVersionUID = 1L;
 

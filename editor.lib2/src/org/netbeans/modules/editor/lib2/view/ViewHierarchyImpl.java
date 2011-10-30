@@ -154,22 +154,8 @@ public final class ViewHierarchyImpl {
     /**
      * Lockable document view.
      */
-    private DocumentView docView;
+    private DocumentView currentDocView;
     
-    /**
-     * Document view to be assigned to docView in case it's lockable.
-     */
-    private DocumentView docViewToAssign;
-    
-    private LockedViewHierarchy lock;
-    
-    private Thread lockThread;
-    
-    private int extraLockDepth;
-    
-    private Exception lockStack;
-    
-
     public static synchronized ViewHierarchyImpl get(JTextComponent component) {
         ViewHierarchyImpl ViewHierarchyImpl = (ViewHierarchyImpl) component.getClientProperty(ViewHierarchyImpl.class);
         if (ViewHierarchyImpl == null) {
@@ -193,58 +179,31 @@ public final class ViewHierarchyImpl {
         return viewHierarchy;
     }
 
-    public void setDocumentView(DocumentView docView) {
-        this.docViewToAssign = docView;
-    }
-    
-    public synchronized LockedViewHierarchy lock() {
-        try {
-            Thread curThread = Thread.currentThread();
-            while (lock != null) {
-                if (lockThread == curThread) {
-                    extraLockDepth++; // Allow nested locking
-                    return lock;
-                }
-                wait();
-            }
-            lock = ViewApiPackageAccessor.get().createLockedViewHierarchy(this);
-            lockThread = curThread;
-            DocumentView dv = docViewToAssign;
-            assert (this.docView == null);
-            if (dv != null && dv.lock()) {
-                this.docView = dv;
-            }
-            if (LOG.isLoggable(Level.FINER)) {
-                lockStack = new Exception("ViewHierarchy.lock() caller stack"); // NOI18Ns
-                if (LOG.isLoggable(Level.FINEST)) {
-                    LOG.log(Level.INFO, lockStack.getMessage(), lockStack);
-                }
-            }
-        } catch (InterruptedException e) {
-            throw new Error("Interrupted attempt to aquire lock");
-        }
-        return lock;
-    }
-    
-    public synchronized void unlock(LockedViewHierarchy lock) {
-        if (lock != this.lock) {
-            throw new IllegalStateException("Invalid LockedViewHierarchy.unlock(): Not a locker"); // NOI18N
-        }
-        if (extraLockDepth > 0) {
-            extraLockDepth--;
-            return;
-        }
-        this.lock = null;
-        this.lockThread = null;
-        if (docView != null) {
-            docView.unlock();
-            docView = null;
-        }
-        notifyAll();
+    /**
+     * Set the docView that is lockable (its setParent() was called and so its mutex is set).
+     *
+     * @param docView 
+     */
+    public synchronized void setDocumentView(DocumentView docView) {
+        this.currentDocView = docView;
     }
 
-    public double modelToY(LockedViewHierarchy lock, int offset) {
-        ensureLocker(lock);
+    /**
+     * Get document view in synchronized section so that a possible setDocumentView() gets
+     * picked by this method.
+     *
+     * @return current document view.
+     */
+    public synchronized DocumentView getDocumentView() {
+        return currentDocView;
+    }
+    
+    public LockedViewHierarchy lock() {
+        LockedViewHierarchy lvh = ViewApiPackageAccessor.get().createLockedViewHierarchy(this);
+        return lvh;
+    }
+
+    public double modelToY(DocumentView docView, int offset) {
         if (docView != null) {
             return docView.modelToYUnlocked(offset);
         } else { // Fallback behavior
@@ -268,8 +227,7 @@ public final class ViewHierarchyImpl {
         }
     }
     
-    public double[] modelToY(LockedViewHierarchy lock, int[] offsets) {
-        ensureLocker(lock);
+    public double[] modelToY(DocumentView docView, int[] offsets) {
         if (docView != null) {
             return docView.modelToYUnlocked(offsets);
         } else { // Fallback behavior
@@ -281,8 +239,7 @@ public final class ViewHierarchyImpl {
         }
     }
 
-    public Shape modelToView(LockedViewHierarchy lock, int offset, Position.Bias bias) {
-        ensureLocker(lock);
+    public Shape modelToView(DocumentView docView, int offset, Position.Bias bias) {
         if (docView != null) {
             return docView.modelToViewUnlocked(offset, docView.getAllocation(), bias);
         } else {
@@ -295,20 +252,7 @@ public final class ViewHierarchyImpl {
         }
     }
 
-    public Shape modelToParagraphView(LockedViewHierarchy lock, int offset) {
-        ensureLocker(lock);
-        Shape ret = null;
-        if (docView != null && docView.op.isActive()) {
-            int index = docView.getViewIndex(offset);
-            if (index >= 0) {
-                ret = docView.getChildAllocation(index, docView.getAllocation());
-            }
-        } // else: Do not know how to emulate
-        return ret;
-    }
-
-    public int viewToModel(LockedViewHierarchy lock, double x, double y, Position.Bias[] biasReturn) {
-        ensureLocker(lock);
+    public int viewToModel(DocumentView docView, double x, double y, Position.Bias[] biasReturn) {
         if (docView != null) {
             return docView.viewToModelUnlocked(x, y, docView.getAllocation(), biasReturn);
         } else {
@@ -317,14 +261,51 @@ public final class ViewHierarchyImpl {
         }
     }
 
-    public float getDefaultRowHeight(LockedViewHierarchy lock) {
-        ensureLocker(lock);
+    public int modelToParagraphViewIndex(DocumentView docView, int offset) {
+        int pViewIndex;
+        if (docView != null && docView.op.isActive()) {
+            pViewIndex = docView.getViewIndex(offset);
+        } else {
+            pViewIndex = -1;
+        }
+        return pViewIndex;
+    }
+    
+    public int yToParagraphViewIndex(DocumentView docView, double y) {
+        int pViewIndex;
+        if (docView != null && docView.op.isActive()) {
+            pViewIndex = docView.getViewIndex(y);
+        } else {
+            pViewIndex = -1;
+        }
+        return pViewIndex;
+    }
+    
+    public boolean verifyParagraphViewIndexValid(DocumentView docView, int paragraphViewIndex) {
+        return docView.op.isActive() && (paragraphViewIndex >= 0 &&
+                paragraphViewIndex < docView.getViewCount());
+    }
+
+    public int getParagraphViewCount(DocumentView docView) {
+        int pViewCount;
+        if (docView != null && docView.op.isActive()) {
+            pViewCount = docView.getViewCount();
+        } else {
+            pViewCount = -1; // Special value to mark non-NB (or inactive view hierarchy)
+        }
+        return pViewCount;
+    }
+
+    public float getDefaultRowHeight(DocumentView docView) {
         return docView.op.getDefaultRowHeight();
     }
 
-    public float getDefaultCharWidth(LockedViewHierarchy lock) {
-        ensureLocker(lock);
+    public float getDefaultCharWidth(DocumentView docView) {
         return docView.op.getDefaultCharWidth();
+    }
+    
+    public boolean isActive(DocumentView docView) {
+        return (docView != null && docView.op.isActive());
     }
 
     public void addViewHierarchyListener(ViewHierarchyListener l) {
@@ -345,16 +326,10 @@ public final class ViewHierarchyImpl {
         }
     }
 
-    private void ensureLocker(LockedViewHierarchy lock) {
-        if (lock != this.lock) {
-            throw new IllegalStateException("Not locker of view hierarchy for component:\n" + textComponent); // NOI18N
-        }
-    }
-
     @Override
     public String toString() {
-        // Use toStringUnlocked() otherwise stack overflow
-        return (docView != null) ? docView.getDumpId() : "<NULL-docView>"; // NOI18N
+        // Use currentDocView.toStringUnlocked() otherwise stack overflow
+        return (currentDocView != null) ? currentDocView.getDumpId() : "<NULL-docView>"; // NOI18N
     }
 
 }

@@ -1,0 +1,4 @@
+org.openide.util.NbBundle.getBundle($c).getString($k) :: $c instanceof java.lang.Class
+=>
+org.openide.util.NbBundle.getMessage($c, $k)
+;;

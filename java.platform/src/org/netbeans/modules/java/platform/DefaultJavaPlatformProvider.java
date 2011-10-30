@@ -43,16 +43,17 @@
  */
 package org.netbeans.modules.java.platform;
 
-import org.netbeans.api.java.platform.JavaPlatform;
-import org.openide.filesystems.*;
-import org.openide.cookies.InstanceCookie;
-import org.openide.loaders.DataObject;
-
-import java.util.*;
-import java.io.IOException;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.java.platform.JavaPlatform;
+import org.openide.cookies.InstanceCookie;
+import org.openide.filesystems.*;
+import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.java.platform.JavaPlatformProvider.class)
@@ -62,51 +63,48 @@ public class DefaultJavaPlatformProvider implements JavaPlatformProvider, FileCh
     private static final String DEFAULT_PLATFORM_ATTR = "default-platform"; //NOI18N
 
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
-    private FileObject storage;
+    //@GuardedBy("this")
+    private FileObject storageCache;
     private JavaPlatform defaultPlatform;
 
     private static final Logger LOG = Logger.getLogger(DefaultJavaPlatformProvider.class.getName());
 
     public DefaultJavaPlatformProvider () {
-        storage = FileUtil.getConfigFile(PLATFORM_STORAGE);
-        if (storage == null) {
-            // Turn this off since it can confuse unit tests running w/o layer merging.
-            //assert false : "Cannot find platforms storage";
-        }
-        else {
-            storage.addFileChangeListener (this);
-        }
     }
 
+    @Override
     public JavaPlatform[] getInstalledPlatforms() {
-        List<JavaPlatform> platforms = new ArrayList<JavaPlatform>();
+        final List<JavaPlatform> platforms = new ArrayList<JavaPlatform>();
+        final FileObject storage = getStorage();
         if (storage != null) {
             try {
                 for (FileObject platformDefinition : storage.getChildren()) {
                     DataObject dobj = DataObject.find(platformDefinition);
                     InstanceCookie ic = dobj.getCookie(InstanceCookie.class);
                     if (ic == null) {
-                        LOG.warning("DefaultPlatformStorage: The file: "+    //NOI18N
-                            platformDefinition.getNameExt() + " has no InstanceCookie");                           //NOI18N
+                        LOG.log(
+                            Level.WARNING,
+                            "The file: {0} has no InstanceCookie",  //NOI18N
+                            platformDefinition.getNameExt());
                         continue;
-                    }
-                    else  if (ic instanceof InstanceCookie.Of) {
+                    } else  if (ic instanceof InstanceCookie.Of) {
                         if (((InstanceCookie.Of)ic).instanceOf(JavaPlatform.class)) {
                             platforms.add((JavaPlatform) ic.instanceCreate());
+                        } else {
+                            LOG.log(
+                                Level.WARNING,
+                                "The file: {0} is not an instance of JavaPlatform", //NOI18N
+                                platformDefinition.getNameExt());
                         }
-                        else {
-                            LOG.warning("DefaultPlatformStorage: The file: "+    //NOI18N
-                                platformDefinition.getNameExt() + " is not an instance of JavaPlatform");                  //NOI18N
-                        }
-                    }
-                    else {
+                    } else {
                         Object instance = ic.instanceCreate();
                         if (instance instanceof JavaPlatform) {
                             platforms.add((JavaPlatform) instance);
-                        }
-                        else {
-                            LOG.warning("DefaultPlatformStorage: The file: "+    //NOI18N
-                                platformDefinition.getNameExt() + " is not an instance of JavaPlatform");                  //NOI18N
+                        } else {
+                            LOG.log(
+                                Level.WARNING,
+                                "The file: {0} is not an instance of JavaPlatform", //NOI18N
+                                platformDefinition.getNameExt());
                         }
                     }
                 }
@@ -119,7 +117,8 @@ public class DefaultJavaPlatformProvider implements JavaPlatformProvider, FileCh
         }
         return platforms.toArray(new JavaPlatform[platforms.size()]);
     }
-    
+
+    @Override
     public JavaPlatform getDefaultPlatform() {
         if (this.defaultPlatform == null) {
             defaultPlatform = getDefaultPlatformByHint();
@@ -136,36 +135,43 @@ public class DefaultJavaPlatformProvider implements JavaPlatformProvider, FileCh
         }
         return this.defaultPlatform;
     }
-    
 
+    @Override
     public void addPropertyChangeListener(PropertyChangeListener listener) {
         pcs.addPropertyChangeListener(listener);
     }
 
+    @Override
     public void removePropertyChangeListener(PropertyChangeListener listener) {
         pcs.removePropertyChangeListener(listener);
     }
 
 
+    @Override
     public void fileFolderCreated(FileEvent fe) {
     }
 
+    @Override
     public void fileDataCreated(FileEvent fe) {
         firePropertyChange ();
     }
 
+    @Override
     public void fileChanged(FileEvent fe) {
         firePropertyChange ();
     }
 
+    @Override
     public void fileDeleted(FileEvent fe) {
         firePropertyChange ();
     }
 
+    @Override
     public void fileRenamed(FileRenameEvent fe) {
         firePropertyChange ();
     }
 
+    @Override
     public void fileAttributeChanged(FileAttributeEvent fe) {
     }
 
@@ -173,33 +179,44 @@ public class DefaultJavaPlatformProvider implements JavaPlatformProvider, FileCh
         pcs.firePropertyChange(PROP_INSTALLED_PLATFORMS, null, null);
     }
 
-    private final boolean isDefaultPlatform(final JavaPlatform platform) {
+    private boolean isDefaultPlatform(final JavaPlatform platform) {
         return "default_platform".equals(platform.getProperties().get("platform.ant.name"));    //NOI18N
     }
 
-    private final JavaPlatform getDefaultPlatformByHint() {
-        if (storage == null) return null;
-        for (final FileObject defFile : storage.getChildren()) {
-            if (defFile.getAttribute(DEFAULT_PLATFORM_ATTR) == Boolean.TRUE) {
-                try {
-                    DataObject dobj = DataObject.find(defFile);
-                    //xxx: Using old good DO.getCookie as Lookup does not work.
-                    final InstanceCookie ic = dobj.getCookie(InstanceCookie.class);
-                    if (ic != null) {
-                        final Object instance = ic.instanceCreate();
-                        if (instance instanceof JavaPlatform && isDefaultPlatform((JavaPlatform)instance)) {
-                            return (JavaPlatform) instance;
+    private JavaPlatform getDefaultPlatformByHint() {
+        final FileObject storage = getStorage();
+        if (storage != null) {
+            for (final FileObject defFile : storage.getChildren()) {
+                if (defFile.getAttribute(DEFAULT_PLATFORM_ATTR) == Boolean.TRUE) {
+                    try {
+                        DataObject dobj = DataObject.find(defFile);
+                        //xxx: Using old good DO.getCookie as Lookup does not work.
+                        final InstanceCookie ic = dobj.getCookie(InstanceCookie.class);
+                        if (ic != null) {
+                            final Object instance = ic.instanceCreate();
+                            if (instance instanceof JavaPlatform && isDefaultPlatform((JavaPlatform)instance)) {
+                                return (JavaPlatform) instance;
+                            }
                         }
+                    } catch (IOException e) {
+                        //pass -> return null
+                    } catch (ClassNotFoundException e) {
+                        //pass -> return null
                     }
-                } catch (IOException e) {
-                    //pass -> return null
-                } catch (ClassNotFoundException e) {
-                    //pass -> return null
+                    return null;
                 }
-                return null;
             }
         }
         return null;
     }
-    
+
+    private synchronized FileObject getStorage() {
+        if (storageCache == null) {
+            storageCache = FileUtil.getConfigFile(PLATFORM_STORAGE);
+            if (storageCache != null) {
+                storageCache.addFileChangeListener (this);
+            }
+        }
+        return storageCache;
+    }
 }

@@ -51,6 +51,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.jsch.JSchConnectionTask.Problem;
 import org.netbeans.modules.nativeexecution.support.Authentication;
@@ -58,6 +60,7 @@ import org.netbeans.modules.nativeexecution.support.Logger;
 import org.netbeans.modules.nativeexecution.support.NativeTaskExecutorService;
 import org.netbeans.modules.nativeexecution.support.ui.AuthTypeSelectorDlg;
 import org.openide.util.Cancellable;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -98,7 +101,14 @@ public final class JSchConnectionTask implements Cancellable {
     }
 
     private JSchConnectionTask.Result connect() throws Exception {
+        final ProgressHandle ph = ProgressHandleFactory.createHandle(
+                NbBundle.getMessage(JSchConnectionTask.class, "JSchConnectionTask.Connecting", // NOI18N
+                env.toString()), this);
+
         try {
+            ph.setInitialDelay(1000);
+            ph.start();
+
             try {
                 env.prepareForConnection();
             } catch (Throwable th) {
@@ -143,10 +153,10 @@ public final class JSchConnectionTask implements Cancellable {
         } catch (java.util.concurrent.CancellationException ex) {
             log.log(Level.FINE, "CancellationException", ex); // NOI18N
             return new Result(null, new Problem(ProblemType.CONNECTION_CANCELLED));
-
-
         } catch (Throwable th) {
             return new Result(null, new Problem(ProblemType.CONNECTION_FAILED, th));
+        } finally {
+            ph.finish();
         }
     }
 

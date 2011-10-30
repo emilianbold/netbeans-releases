@@ -64,7 +64,7 @@ public class HtmlPreferences {
 
     private static boolean autocompleQuotesAfterEQS;
     private static boolean autocompleQuotes;
-    private static boolean completionOffersEndTagAfterLt;
+    public static boolean completionOffersEndTagAfterLt;
     private static boolean autoPopupCompletionWindow;
 
     //extract inlined style panel preferences
@@ -152,7 +152,7 @@ public class HtmlPreferences {
         lazyIntialize();
         return completionOffersEndTagAfterLt;
     }
-
+    
     public static boolean autoPopupCompletionWindow() {
         lazyIntialize();
         return autoPopupCompletionWindow;

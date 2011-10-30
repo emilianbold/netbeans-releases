@@ -101,6 +101,11 @@ import org.w3c.dom.NodeList;
  */
 public class JFXProjectGenerator {
 
+    static final String METRICS_LOGGER = "org.netbeans.ui.metrics.jfx"; //NOI18N
+    static final String PROJECT_CREATE = "USG_PROJECT_CREATE_JFX";      //NOI18N
+    static final String PROJECT_OPEN = "USG_PROJECT_OPEN_JFX";          //NOI18N
+    static final String PROJECT_CLOSE = "USG_PROJECT_CLOSE_JFX";        //NOI18N
+
     private JFXProjectGenerator() {
     }
 
@@ -143,9 +148,7 @@ public class JFXProjectGenerator {
                 }
                 FileObject srcFolder = dirFO.createFolder("src"); // NOI18N
                 dirFO.createFolder("test"); // NOI18N
-                if (mainClass != null) {
-                    createFiles(mainClass, srcFolder, type);
-                }
+                createFiles(mainClass, srcFolder, type);
             }
         });
 
@@ -375,6 +378,7 @@ public class JFXProjectGenerator {
         ep.setProperty(ProjectProperties.COMPILE_ON_SAVE, "true"); // NOI18N
         ep.setProperty(ProjectProperties.COMPILE_ON_SAVE_UNSUPPORTED_PREFIX + ".javafx", "true"); // NOI18N
         ep.setProperty(JFXProjectProperties.JAVAFX_BINARY_ENCODE_CSS, "true"); // NOI18N
+        ep.setProperty(JFXProjectProperties.JAVAFX_DEPLOY_INCLUDEDT, "true"); // NOI18N
         
         ep.setProperty(JFXProjectProperties.UPDATE_MODE_BACKGROUND, "true"); // NOI18N
         ep.setComment(JFXProjectProperties.UPDATE_MODE_BACKGROUND, new String[]{"# " + NbBundle.getMessage(JFXProjectGenerator.class, "COMMENT_updatemode")}, false); // NOI18N
@@ -522,15 +526,17 @@ public class JFXProjectGenerator {
         logUsage();
         return h;
     }
-    private static final String loggerName = "org.netbeans.ui.metrics.j2se"; // NOI18N
-    private static final String loggerKey = "USG_PROJECT_CREATE_J2SE"; // NOI18N
 
-    // http://wiki.netbeans.org/UsageLoggingSpecification
+    /**
+     * Logs project specific usage.
+     * See: http://wiki.netbeans.org/UsageLoggingSpecification
+     * Todo: Should log also J2SE project usage? The JFX project is de facto J2SE project,
+     * most of this class should be replaced by J2SEProjectBuider.
+     */
     private static void logUsage() {
-        LogRecord logRecord = new LogRecord(Level.INFO, loggerKey);
-        logRecord.setLoggerName(loggerName);
-        //logRecord.setParameters(new Object[] {""}); // NOI18N
-        Logger.getLogger(loggerName).log(logRecord);
+        final LogRecord logRecord = new LogRecord(Level.INFO, PROJECT_CREATE);
+        logRecord.setLoggerName(METRICS_LOGGER);
+        Logger.getLogger(METRICS_LOGGER).log(logRecord);
     }
 
     private static void copyRequiredLibraries(AntProjectHelper h, ReferenceHelper rh) throws IOException {
@@ -647,58 +653,64 @@ public class JFXProjectGenerator {
     }
 
     private static void createFiles(String mainClassName, FileObject srcFolder, WizardType type) throws IOException {
-        int lastDotIdx = mainClassName.lastIndexOf('.'); // NOI18N
-        String mName, pName;
-        if (lastDotIdx == -1) {
-            mName = mainClassName.trim();
-            pName = null;
-        } else {
-            mName = mainClassName.substring(lastDotIdx + 1).trim();
-            pName = mainClassName.substring(0, lastDotIdx).trim();
-        }
+        DataFolder pDf = DataFolder.findFolder(srcFolder);
+        if(mainClassName != null && mainClassName.length() > 0)
+        {
+            int lastDotIdx = mainClassName.lastIndexOf('.'); // NOI18N
+            String mName, pName;
+            if (lastDotIdx == -1) {
+                mName = mainClassName.trim();
+                pName = null;
+            } else {
+                mName = mainClassName.substring(lastDotIdx + 1).trim();
+                pName = mainClassName.substring(0, lastDotIdx).trim();
+            }
 
-        if (mName.length() == 0) {
-            return;
-        }
+            if (mName.length() > 0) {
+                Map<String, String> params = null;
+                FileObject template = null;
+                switch (type) {
+                    case APPLICATION:
+                        template = FileUtil.getConfigFile("Templates/javafx/FXMain.java"); // NOI18N
+                        break;
+                    case PRELOADER:
+                        template = FileUtil.getConfigFile("Templates/javafx/FXPreloader.java"); // NOI18N
+                        break;
+                    case FXML:
+                        template = FileUtil.getConfigFile("Templates/javafx/FXML.java"); // NOI18N
+                        params = new HashMap<String, String>(1);
+                        params.put("fxmlname", JavaFXProjectWizardIterator.GENERATED_FXML_CLASS_NAME); // NOI18N
+                }
 
-        Map<String, String> params = null;
-        FileObject template = null;
-        switch (type) {
-            case APPLICATION:
-                template = FileUtil.getConfigFile("Templates/javafx/FXMain.java"); // NOI18N
-                break;
-            case PRELOADER:
-                template = FileUtil.getConfigFile("Templates/javafx/FXPreloader.java"); // NOI18N
-                break;
-            case FXML:
-                template = FileUtil.getConfigFile("Templates/javafx/FXML.java"); // NOI18N
-                params = new HashMap<String, String>(1);
-                params.put("fxmlname", JavaFXProjectWizardIterator.GENERATED_FXML_CLASS_NAME); // NOI18N
-        }
-        
-        if (template == null) {
-            return; // Don't know the template
-        }
+                if (template == null) {
+                    return; // Don't know the template
+                }
 
-        DataObject mt = DataObject.find(template);
-        FileObject pkgFolder = srcFolder;
-        if (pName != null) {
-            String fName = pName.replace('.', '/'); // NOI18N
-            pkgFolder = FileUtil.createFolder(srcFolder, fName);
+                DataObject mt = DataObject.find(template);
+                if (pName != null) {
+                    String fName = pName.replace('.', '/'); // NOI18N
+                    FileObject pkgFolder = FileUtil.createFolder(srcFolder, fName);
+                    pDf = DataFolder.findFolder(pkgFolder);
+                }
+                if (params != null) {
+                    mt.createFromTemplate(pDf, mName, params);
+                } else {
+                    mt.createFromTemplate(pDf, mName);
+                }
+            }
         }
-        DataFolder pDf = DataFolder.findFolder(pkgFolder);
-        if (params != null) {
-            mt.createFromTemplate(pDf, mName, params);
-        } else {
-            mt.createFromTemplate(pDf, mName);
-        }
-        
         if (type == WizardType.FXML) {
             FileObject xmlTemplate = FileUtil.getConfigFile("Templates/javafx/FXML.fxml"); // NOI18N
+            if (xmlTemplate == null) {
+                return; // Don't know the template
+            }
             DataObject dXMLTemplate = DataObject.find(xmlTemplate);
             dXMLTemplate.createFromTemplate(pDf, JavaFXProjectWizardIterator.GENERATED_FXML_CLASS_NAME);
 
             FileObject javaTemplate = FileUtil.getConfigFile("Templates/javafx/FXML2.java"); // NOI18N
+            if (javaTemplate == null) {
+                return; // Don't know the template
+            }
             DataObject dJavaTemplate = DataObject.find(javaTemplate);
             dJavaTemplate.createFromTemplate(pDf, JavaFXProjectWizardIterator.GENERATED_FXML_CLASS_NAME);
         }
@@ -745,7 +757,8 @@ public class JFXProjectGenerator {
             SpecificationVersion v = defaultPlatform.getSpecification().getVersion();
             if (v.equals(new SpecificationVersion("1.6")) || v.equals(new SpecificationVersion("1.7"))) { // NOI18N
                 // #89131: these levels are not actually distinct from 1.5. - xxx not true, but may be acceptable to have 1.5 as default
-                return new SpecificationVersion("1.5"); // NOI18N
+                // since NB7.1 return 1.6 as default
+                return new SpecificationVersion("1.6"); // NOI18N
             } else {
                 return v;
             }

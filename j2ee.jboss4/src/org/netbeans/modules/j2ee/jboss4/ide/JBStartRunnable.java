@@ -144,7 +144,7 @@ class JBStartRunnable implements Runnable {
         }
 
         JBOutputSupport outputSupport = JBOutputSupport.getInstance(ip, true);
-        outputSupport.start(openConsole(), serverProcess);
+        outputSupport.start(openConsole(), serverProcess, startServer.getMode() == JBStartServer.MODE.PROFILE);
         
         waitForServerToStart(outputSupport);
     }

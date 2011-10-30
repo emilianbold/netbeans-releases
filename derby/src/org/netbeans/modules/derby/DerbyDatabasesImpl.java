@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -399,7 +399,12 @@ public final class DerbyDatabasesImpl {
         File databaseFile = new File(systemHome, dbname);
         FileObject fo = FileUtil.toFileObject(databaseFile);
         try {
-            fo.delete();
+            if (fo != null) {
+                fo.delete();
+            } else {
+                Logger.getLogger(DerbyServerNode.class.getName()).log(Level.WARNING, databaseFile + " has no corresponding FileObject.");
+                return false;
+            }
         } catch (IOException ex) {
             Logger.getLogger(DerbyServerNode.class.getName()).log(Level.WARNING, ex.getLocalizedMessage());
             return false;
@@ -492,8 +497,18 @@ public final class DerbyDatabasesImpl {
             stmt.setString(1, "derby.user." + user); // NOI18N
             stmt.setString(2, password); // NOI18N
             stmt.execute();
+            
         } finally {
             stmt.close();
+        }
+        
+        if (! "APP".equalsIgnoreCase(user)) { // NOI18N
+            stmt = conn.prepareStatement("CREATE SCHEMA " + user); // NOI18N
+            try {
+                stmt.execute();
+            } finally {
+                stmt.close();
+            }
         }
     }
 

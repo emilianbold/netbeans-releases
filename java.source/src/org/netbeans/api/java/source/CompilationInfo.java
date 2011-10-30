@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2011 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -66,6 +66,7 @@ import javax.tools.Diagnostic;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.CheckReturnValue;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.annotations.common.NullUnknown;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.modules.java.preprocessorbridge.spi.WrapperFactory;
@@ -77,8 +78,10 @@ import org.netbeans.modules.java.source.parsing.JavacParserResult;
 import org.netbeans.modules.java.source.usages.Pair;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.Parser;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 import org.openide.util.Parameters;
 
 /** Assorted information about the JavaSource.
@@ -412,12 +415,40 @@ public class CompilationInfo {
         return Source.toSourceVersion(Source.instance(impl.getJavacTask().getContext()));
     }
 
+    /**Retrieve a value cached under the given key using the
+     * {@link #putCachedValue(java.lang.Object, java.lang.Object, org.netbeans.api.java.source.CompilationInfo.CacheClearPolicy)} method.
+     *
+     * @param key for which the cached value should be retrieved
+     * @return value originally passed to {@link #putCachedValue(java.lang.Object, java.lang.Object, org.netbeans.api.java.source.CompilationInfo.CacheClearPolicy)}, or null if none
+     * @since 0.90
+     */
+    public @CheckForNull Object getCachedValue(@NonNull Object key) {
+        Parameters.notNull("key", key);
+        return impl.getCachedValue(key);
+    }
+
+    /**Put a value into a cache under the given key. The {@link #clearPolicy} parameter specifies the latest time the
+     * references to the key and value should be cleared. The infrastructure is free to clear the references at any earlier time.
+     * The clients should not depend on this cache for correctness, only to improve performance.
+     *
+     * @param key a unique key under which the value should be stored
+     * @param value the value to store - any value previously set under the same key will be erased from the cache
+     * @param clearPolicy the latest time when the mapping should be cleared from the cache
+     * @since 0.90
+     */
+    public void putCachedValue(@NonNull Object key, @NullAllowed Object value, @NonNull CacheClearPolicy clearPolicy) {
+        Parameters.notNull("key", key);
+        Parameters.notNull("clearPolicy", clearPolicy);
+        impl.putCachedValue(key, value, clearPolicy);
+    }
+
     /**
      * Marks this {@link CompilationInfo} as invalid, may be used to
      * verify confinement.
      */
     final void invalidate () {
         this.invalid = true;
+        this.impl.taskFinished();
         doInvalidate();
     }
     
@@ -438,5 +469,19 @@ public class CompilationInfo {
         if (VERIFY_CONFINEMENT && this.invalid) {
             throw new IllegalStateException (String.format("Access to the shared %s outside a guarded run method.", this.getClass().getSimpleName()));
         }
+    }
+
+    /**Constants to specify when a valued cached by {@link #putCachedValue(java.lang.Object, java.lang.Object, org.netbeans.api.java.source.CompilationInfo.CacheClearPolicy)}
+     * should be evicted from the cache.
+     *
+     * @since 0.90
+     */
+    public enum CacheClearPolicy {
+        /** The cached value will be cleared at the end of the current parsing.api's task. */
+        ON_TASK_END,
+        /** The cached value will be cleared on any change in the source document. */
+        ON_CHANGE,
+        /** The cached value will be cleared when a method/field/class is added, removed or its signature changes. */
+        ON_SIGNATURE_CHANGE;
     }
 }

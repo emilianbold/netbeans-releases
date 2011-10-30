@@ -94,6 +94,16 @@ import org.netbeans.api.debugger.jpda.event.JPDABreakpointListener;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.expr.InvocationExceptionTranslated;
 import org.netbeans.modules.debugger.jpda.expr.JDIVariable;
+import org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ClassObjectReferenceWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ClassTypeWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ObjectReferenceWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ReferenceTypeWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.UnsupportedOperationExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.VirtualMachineWrapper;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.modules.debugger.jpda.visual.JavaComponentInfo.Stack;
 import org.netbeans.modules.debugger.jpda.visual.ui.ScreenshotComponent;
@@ -235,25 +245,37 @@ public class VisualDebuggerListener extends DebuggerManagerAdapter {
                 setFxDebug(tr.virtualMachine(), tr);
             }
             
-            ClassType serviceClass = (ClassType) cor.reflectedType();//RemoteServices.getClass(vm, "org.netbeans.modules.debugger.jpda.visual.remote.RemoteService");
+            ClassType serviceClass = (ClassType) ClassObjectReferenceWrapper.reflectedType(cor);//RemoteServices.getClass(vm, "org.netbeans.modules.debugger.jpda.visual.remote.RemoteService");
 
-            Method startMethod = serviceClass.concreteMethodByName("startAccessLoop", "()V");
+            Method startMethod = ClassTypeWrapper.concreteMethodByName(serviceClass, "startAccessLoop", "()V");
             try {
                 t.notifyMethodInvoking();
-                serviceClass.invokeMethod(tr, startMethod, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
+                ClassTypeWrapper.invokeMethod(serviceClass, tr, startMethod, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
+            } catch (VMDisconnectedExceptionWrapper vmd) {                
             } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);
             } finally {
                 t.notifyMethodInvokeDone();
-                cor.enableCollection(); // While AWTAccessLoop is running, it should not be collected.
+                ObjectReferenceWrapper.enableCollection(cor); // While AWTAccessLoop is running, it should not be collected.
             }
+        } catch (InternalExceptionWrapper iex) {
+        } catch (ClassNotPreparedExceptionWrapper cnpex) {
+            Exceptions.printStackTrace(cnpex);
+        } catch (ObjectCollectedExceptionWrapper collex) {
+        } catch (UnsupportedOperationExceptionWrapper uex) {
+            logger.log(Level.INFO, uex.getLocalizedMessage(), uex);
+        } catch (VMDisconnectedExceptionWrapper vmd) {
         } finally {
             writeLock.unlock();
         }
         if (logger.isLoggable(Level.FINE)) {
-            logger.fine("The RemoteServiceClass is there: "+
-                            RemoteServices.getClass(t.getThreadReference().virtualMachine(),
-                        "org.netbeans.modules.debugger.jpda.visual.remote.RemoteService"));
+            try {
+                logger.fine("The RemoteServiceClass is there: "+
+                                RemoteServices.getClass(t.getThreadReference().virtualMachine(),
+                            "org.netbeans.modules.debugger.jpda.visual.remote.RemoteService"));
+            } catch (Exception ex) {
+                logger.log(Level.FINE, "", ex);
+            }
         }
     }
     
@@ -343,9 +365,11 @@ public class VisualDebuggerListener extends DebuggerManagerAdapter {
      */
     private static void setFxDebug(VirtualMachine vm, ThreadReference tr) {
         ClassType sysPropClass = getClass(vm, tr, "com.sun.javafx.runtime.SystemProperties");
-        Field debugFld = sysPropClass.fieldByName("isDebug"); // NOI18N
         try {
-            sysPropClass.setValue(debugFld, vm.mirrorOf(true));
+            Field debugFld = ReferenceTypeWrapper.fieldByName(sysPropClass, "isDebug"); // NOI18N
+            sysPropClass.setValue(debugFld, VirtualMachineWrapper.mirrorOf(vm, true));
+        } catch (VMDisconnectedExceptionWrapper vmdex) {
+        } catch (InternalExceptionWrapper iex) {
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -361,32 +385,39 @@ public class VisualDebuggerListener extends DebuggerManagerAdapter {
     }
     
     private static ReferenceType getType(VirtualMachine vm, ThreadReference tr, String name) {
-        List<ReferenceType> classList = vm.classesByName(name);
-        if (!classList.isEmpty()) {
-            return classList.iterator().next();
-        }
-        List<ReferenceType> classClassList = vm.classesByName("java.lang.Class"); // NOI18N
-        if (classClassList.isEmpty()) {
-            throw new IllegalStateException("Cannot load class Class"); // NOI18N
-        }
-
-        ClassType cls = (ClassType) classClassList.iterator().next();
-        Method m = cls.concreteMethodByName("forName", "(Ljava/lang/String;)Ljava/lang/Class;"); // NOI18N
-        StringReference mirrorOfName = vm.mirrorOf(name);
         try {
-            cls.invokeMethod(tr, m, Collections.singletonList(mirrorOfName), ObjectReference.INVOKE_SINGLE_THREADED);
-            List<ReferenceType> classList2 = vm.classesByName(name);
-            if (!classList2.isEmpty()) {
-                return classList2.iterator().next();
+            List<ReferenceType> classList = VirtualMachineWrapper.classesByName(vm, name);
+            if (!classList.isEmpty()) {
+                return classList.iterator().next();
             }
-        } catch (InvalidTypeException ex) {
-            logger.log(Level.FINE, "Cannot load class " + name, ex); // NOI18N
-        } catch (ClassNotLoadedException ex) {
-            logger.log(Level.FINE, "Cannot load class " + name, ex); // NOI18N
-        } catch (IncompatibleThreadStateException ex) {
-            logger.log(Level.FINE, "Cannot load class " + name, ex); // NOI18N
-        } catch (InvocationException ex) {
-            logger.log(Level.FINE, "Cannot load class " + name, ex); // NOI18N
+            List<ReferenceType> classClassList = VirtualMachineWrapper.classesByName(vm, "java.lang.Class"); // NOI18N
+            if (classClassList.isEmpty()) {
+                throw new IllegalStateException("Cannot load class Class"); // NOI18N
+            }
+
+            ClassType cls = (ClassType) classClassList.iterator().next();
+            Method m = ClassTypeWrapper.concreteMethodByName(cls, "forName", "(Ljava/lang/String;)Ljava/lang/Class;"); // NOI18N
+            StringReference mirrorOfName = VirtualMachineWrapper.mirrorOf(vm, name);
+            try {
+                cls.invokeMethod(tr, m, Collections.singletonList(mirrorOfName), ObjectReference.INVOKE_SINGLE_THREADED);
+                List<ReferenceType> classList2 = VirtualMachineWrapper.classesByName(vm, name);
+                if (!classList2.isEmpty()) {
+                    return classList2.iterator().next();
+                }
+            } catch (InvalidTypeException ex) {
+                logger.log(Level.FINE, "Cannot load class " + name, ex); // NOI18N
+            } catch (ClassNotLoadedException ex) {
+                logger.log(Level.FINE, "Cannot load class " + name, ex); // NOI18N
+            } catch (IncompatibleThreadStateException ex) {
+                logger.log(Level.FINE, "Cannot load class " + name, ex); // NOI18N
+            } catch (InvocationException ex) {
+                logger.log(Level.FINE, "Cannot load class " + name, ex); // NOI18N
+            }
+        } catch (ClassNotPreparedExceptionWrapper ex) {
+            logger.log(Level.FINE, "Not prepared class ", ex); // NOI18N
+        } catch (UnsupportedOperationExceptionWrapper uoex) {
+        } catch (InternalExceptionWrapper iex) {
+        } catch (VMDisconnectedExceptionWrapper vmdex) {
         }
         
         return null;

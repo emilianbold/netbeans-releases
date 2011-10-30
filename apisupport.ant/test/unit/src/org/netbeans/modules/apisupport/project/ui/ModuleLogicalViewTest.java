@@ -48,6 +48,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.filesystems.FileObject;
@@ -66,7 +67,8 @@ public class ModuleLogicalViewTest extends TestBase {
     public ModuleLogicalViewTest(String name) {
         super(name);
     }
-    
+
+    @RandomlyFails // NB-Core-Build #7306: same result for DataObject as for FileObject expected:<null> but was:<FilterNode[Name=FreeformProjectTest...]>
     public void testFindPath() throws Exception {
         Project freeform = ProjectManager.getDefault().findProject(FileUtil.toFileObject(file("ant.freeform")));
         assertNotNull("have project in ant.freeform", freeform);

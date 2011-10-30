@@ -1928,16 +1928,122 @@ public class RepositoryUpdaterTest extends NbTestCase {
         perfLogger.addHandler(h);
         try {
             perfLogger.setLevel(Level.FINE);
-            h.expect("reportScanOfFile:","reportIndexerStatistics:");   //NOI18N
+            h.expect("reportScanOfFile:","INDEXING_FINISHED");   //NOI18N
             globalPathRegistry_register(SOURCES, new ClassPath[]{cp});
             final PerfLoghandler.R r = h.await(5000);
             assertNotNull(r);
             assertEquals(rootFo.getURL(), r.getParams("reportScanOfFile:")[0]);     //NOI18N
-            final Map<String,int[]> istat = (Map<String,int[]>)r.getParams("reportIndexerStatistics:")[0];  //NOI18N
-            assertEquals(1,istat.get("emb")[0]);    //NOI18N
-            assertEquals(1,istat.get("foo")[0]);    //NOI18N
+            final Object[] data = r.getParams("INDEXING_FINISHED"); //NOI18N
+            assertEquals(7, data.length);
+            assertTrue((Long)data[0] >= 0);
+            assertTrue("emb".equals(data[1]) || "foo".equals(data[1])); //NOI18N
+            assertTrue((Integer)data[2] == 1);
+            assertTrue((Integer)data[3] >= 0);
+            assertTrue("emb".equals(data[4]) || "foo".equals(data[4])); //NOI18N
+            assertTrue((Integer)data[5] == 1);
+            assertTrue((Integer)data[6] >= 0);
         } finally {
             perfLogger.removeHandler(h);
+        }
+    }
+
+    public void testUILogger() throws Exception {
+        final File workdDir  =  getWorkDir();
+        final File root = new File (workdDir,"loggerTest");             //NOI18N
+        final FileObject rootFo = FileUtil.createFolder(root);
+        final FileObject afoo = FileUtil.createData(rootFo, "a.foo");   //NOI18N
+        final FileObject aemb = FileUtil.createData(rootFo, "a.emb");   //NOI18N
+        final ClassPath cp = ClassPathSupport.createClassPath(rootFo);
+        class PerfLoghandler extends Handler {
+
+            class R {
+                private final Queue<String> toExpect;
+                private final Map<String,Object[]> values;
+
+                private R(final String... toExpect) {
+                    this.toExpect = new LinkedList<String>(Arrays.asList(toExpect));
+                    this.values = new HashMap<String, Object[]>();
+                }
+
+                Object[] getParams(String expectedKey) {
+                    return values.get(expectedKey);
+                }
+            }
+
+            private R r;
+
+            public synchronized void expect(final String... expect) {
+                r = new R(expect);
+            }
+
+            public synchronized R await(long timeOut) throws InterruptedException {
+                final long st = System.currentTimeMillis();
+                while (!r.toExpect.isEmpty()) {
+                    if (System.currentTimeMillis()-st > timeOut) {
+                        return null;
+                    }
+                    wait(timeOut);
+                }
+                return r;
+            }
+
+
+            @Override
+            public synchronized void publish(LogRecord record) {
+                if (record.getMessage() != null && record.getMessage().startsWith(r.toExpect.peek())) {
+                    r.values.put(r.toExpect.peek(),record.getParameters());
+                    r.toExpect.poll();
+                }
+                if (r.toExpect.isEmpty()) {
+                    notifyAll();
+                }
+            }
+
+            @Override
+            public void flush() {
+            }
+
+            @Override
+            public void close() throws SecurityException {
+            }
+        }
+        final PerfLoghandler h = new PerfLoghandler();
+        final Logger uiLogger = Logger.getLogger("org.netbeans.ui.indexing");    //NOI18N
+        uiLogger.addHandler(h);
+        final Class<?> c = Class.forName("org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater$Work"); //NOI18N
+        final Field f = c.getDeclaredField("lastScanEnded");
+        f.setAccessible(true);
+        f.setLong(null, -1L);
+        try {
+            uiLogger.setLevel(Level.FINE);
+            h.expect("INDEXING_STARTED","INDEXING_FINISHED");   //NOI18N
+            globalPathRegistry_register(SOURCES, new ClassPath[]{cp});
+            PerfLoghandler.R r = h.await(5000);
+            assertNotNull(r);
+            assertEquals(0L, r.getParams("INDEXING_STARTED")[0]);     //NOI18N
+            Object[] data = r.getParams("INDEXING_FINISHED"); //NOI18N
+            assertEquals(7, data.length);
+            assertTrue((Long)data[0] >= 0);
+            assertTrue("emb".equals(data[1]) || "foo".equals(data[1])); //NOI18N
+            assertTrue((Integer)data[2] == 1);
+            assertTrue((Integer)data[3] >= 0);
+            assertTrue("emb".equals(data[4]) || "foo".equals(data[4])); //NOI18N
+            assertTrue((Integer)data[5] == 1);
+            assertTrue((Integer)data[6] >= 0);
+            Thread.sleep(1000);
+            h.expect("INDEXING_STARTED","INDEXING_FINISHED");   //NOI18N
+            touch(afoo.getURL());
+            r = h.await(5000);
+            assertNotNull(r);
+            assertTrue(1000L <= (Long)r.getParams("INDEXING_STARTED")[0]);     //NOI18N
+            data = r.getParams("INDEXING_FINISHED"); //NOI18N
+            assertEquals(4, data.length);
+            assertTrue((Long)data[0] >= 0);
+            assertTrue("foo".equals(data[1])); //NOI18N
+            assertTrue((Integer)data[2] == 1);
+            assertTrue((Integer)data[3] >= 0);
+        } finally {
+            uiLogger.removeHandler(h);
         }
     }
 

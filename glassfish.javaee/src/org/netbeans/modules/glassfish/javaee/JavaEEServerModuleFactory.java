@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -119,7 +119,7 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
                 String password = props.get(InstanceProperties.PASSWORD_ATTR);
                 String displayName = props.get(InstanceProperties.DISPLAY_NAME_ATTR);
                     try {
-                        ip = InstanceProperties.createInstancePropertiesWithoutUI(
+                        ip = InstanceProperties.createInstancePropertiesNonPersistent(
                                 url, username, password, displayName, props);
                     } catch (InstanceCreationException ex) {
                         // the initialization delay of the ServerRegistry may have triggered a ignorable

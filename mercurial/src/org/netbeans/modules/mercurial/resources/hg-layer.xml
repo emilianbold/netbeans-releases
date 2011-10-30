@@ -48,6 +48,9 @@ made subject to such option by the copyright holder.
 <filesystem>
     <folder name="Actions">
         <folder name="Mercurial">
+            <file name="org-netbeans-modules-mercurial-ui-add-AddAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.mercurial.ui.add.AddAction"/>
+            </file>
             <file name="org-netbeans-modules-mercurial-ui-status-StatusAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.mercurial.ui.status.StatusAction"/>
             </file>

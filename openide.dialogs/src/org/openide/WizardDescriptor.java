@@ -398,6 +398,12 @@ public class WizardDescriptor extends DialogDescriptor {
     private static final String PROGRESS_BAR_DISPLAY_NAME = NbBundle.getMessage (WizardDescriptor.class, "CTL_InstantiateProgress_Title"); // NOI18N
 
     private ActionListener escapeActionListener;
+    
+    /**
+     * If non-null and non-default HelpCtx is set on the WizardDescriptor instance (true) 
+     * then help context provided by individual wizard panels is ignored.
+     */
+    private boolean isWizardWideHelpSet = false;
 
     {
         // button init
@@ -411,8 +417,10 @@ public class WizardDescriptor extends DialogDescriptor {
 
         finishButton.setDefaultCapable(true);
         nextButton.setDefaultCapable(true);
-        previousButton.setDefaultCapable(false);
-        cancelButton.setDefaultCapable(false);
+        previousButton.setDefaultCapable(true);
+        previousButton.putClientProperty( "defaultButton", Boolean.FALSE ); //NOI18N
+        cancelButton.setDefaultCapable(true);
+        cancelButton.putClientProperty( "defaultButton", Boolean.FALSE ); //NOI18N
     }
 
     /** Create a new wizard from a fixed list of panels, passing some settings to the panels.
@@ -447,8 +455,7 @@ public class WizardDescriptor extends DialogDescriptor {
     /** Constructor for subclasses. The expected use is to call this
      * constructor and then call {@link #setPanelsAndSettings} to provide
      * the right iterator, panels and data the wizard should use. This
-     * allows to eliminate unchecked warnings as described in
-     * <a href="http://www.netbeans.org/issues/show_bug.cgi?id=102261">issue 102261</a>.
+     * allows to eliminate unchecked warnings as described in bug #102261.
      * @since 7.4
      */
     protected WizardDescriptor() {
@@ -771,6 +778,11 @@ public class WizardDescriptor extends DialogDescriptor {
 
     @Override
     public void setHelpCtx(final HelpCtx helpCtx) {
+        isWizardWideHelpSet = null != helpCtx && !HelpCtx.DEFAULT_HELP.equals( helpCtx );
+        doSetHelpCtx( helpCtx );
+    }
+    
+    private void doSetHelpCtx(final HelpCtx helpCtx ) {
         if ((wizardPanel != null) && (helpCtx != null)) {
             HelpCtx.setHelpIDString(wizardPanel, helpCtx.getHelpID());
         }
@@ -906,7 +918,8 @@ public class WizardDescriptor extends DialogDescriptor {
                 (!next || (data.current instanceof FinishPanel))
             );
         }
-        setHelpCtx(p.getHelp());
+        if( !isWizardWideHelpSet )
+            doSetHelpCtx(p.getHelp());
 
         assert SwingUtilities.isEventDispatchThread () : "getComponent() must be called in EQ only.";
         java.awt.Component c = p.getComponent();

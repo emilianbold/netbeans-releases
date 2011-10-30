@@ -272,9 +272,6 @@ public class Templates {
     public static SimpleTargetChooserBuilder buildSimpleTargetChooser(Project project, SourceGroup[] folders) {
         Parameters.notNull("project", project);
         Parameters.notNull("folders", folders);
-        if (folders.length == 0) {
-            throw new IllegalArgumentException("Attempting to create panel with an empty folders list");
-        }
         return new SimpleTargetChooserBuilder(project, folders);
     }
 

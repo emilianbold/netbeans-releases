@@ -111,9 +111,10 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
         highlightingManager = HighlightingManager.getInstance(textComponent());
         highlightingManager.addChangeListener(new ChangeListener() {
             @Override
-            public void stateChanged(ChangeEvent e) {
+            public void stateChanged(ChangeEvent e) { // Layers in highlighting manager changed
                 notifyStaleCreation();
                 updateHighlightsContainer();
+                fireEvent(createSingleChange(0, document().getLength() + 1));
             }
         });
         updateHighlightsContainer();

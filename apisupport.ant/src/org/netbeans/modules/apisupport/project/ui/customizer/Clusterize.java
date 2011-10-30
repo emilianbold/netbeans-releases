@@ -51,6 +51,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.apache.tools.ant.module.api.AntProjectCookie;
 import org.apache.tools.ant.module.api.AntTargetExecutor;
@@ -66,7 +68,6 @@ import org.openide.WizardDescriptor.Panel;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 public final class Clusterize implements WizardDescriptor.ProgressInstantiatingIterator<Clusterize> {
@@ -126,7 +127,7 @@ public final class Clusterize implements WizardDescriptor.ProgressInstantiatingI
         try {
             scanForJars(modules);
         } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
+            Logger.getLogger(Clusterize.class.getName()).log(Level.FINE, null, ex);
         }
     }
 
