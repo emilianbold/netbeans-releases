@@ -165,11 +165,11 @@ public abstract class ProfilingPointFactory {
         return safeCustomizer;
     }
 
-    ProfilingPoint[] loadProfilingPoints(Lookup.Provider project)
+    ProfilingPoint[] loadProfilingPoints(Lookup.Provider project, FileObject projectSettingsFolder)
                                   throws IOException, InvalidPropertiesFormatException {
         List<ProfilingPoint> profilingPoints = new LinkedList();
         Properties properties = new Properties();
-        final FileObject profilingPointsStorage = getProfilingPointsStorage(project);
+        final FileObject profilingPointsStorage = getProfilingPointsStorage(projectSettingsFolder);
 
         if (profilingPointsStorage != null) {
             final InputStream is = profilingPointsStorage.getInputStream();
@@ -179,7 +179,7 @@ public abstract class ProfilingPointFactory {
 
             int index = 0;
 
-            while (properties.getProperty(index + "_" + ProfilingPoint.PROPERTY_NAME) != null) {
+            while (properties.getProperty(index + "_" + ProfilingPoint.PROPERTY_NAME) != null) { // NOI18N
                 ProfilingPoint profilingPoint = loadProfilingPoint(project, properties, index);
 
                 if (profilingPoint != null) {
@@ -207,10 +207,8 @@ public abstract class ProfilingPointFactory {
                                                                      .toArray(new ProfilingPoint[0]), project);
     }
 
-    private FileObject getProfilingPointsStorage(Lookup.Provider project)
-                                          throws IOException {
-        FileObject projectSettingsFolder = ProjectStorage.getSettingsFolder(project, false);
-
+    private FileObject getProfilingPointsStorage(FileObject projectSettingsFolder)
+                                                 throws IOException {
         if (projectSettingsFolder == null) {
             return null;
         }
@@ -235,7 +233,8 @@ public abstract class ProfilingPointFactory {
 
     private void deleteProfilingPointsStorage(Lookup.Provider project)
                                        throws IOException {
-        FileObject profilingPointsStorage = getProfilingPointsStorage(project);
+        FileObject settingsFolder = ProjectStorage.getSettingsFolder(project, false);
+        FileObject profilingPointsStorage = getProfilingPointsStorage(settingsFolder);
 
         if (profilingPointsStorage != null) {
             FileLock lock = null;
@@ -255,7 +254,8 @@ public abstract class ProfilingPointFactory {
     private void saveProfilingPoints(ProfilingPoint[] profilingPoints, Lookup.Provider project)
                               throws IOException {
         if (profilingPoints.length > 0) {
-            FileObject profilingPointsStorage = getProfilingPointsStorage(project);
+            FileObject settingsFolder = ProjectStorage.getSettingsFolder(project, false);
+            FileObject profilingPointsStorage = getProfilingPointsStorage(settingsFolder);
 
             if (profilingPointsStorage == null) {
                 profilingPointsStorage = createProfilingPointsStorage(project);

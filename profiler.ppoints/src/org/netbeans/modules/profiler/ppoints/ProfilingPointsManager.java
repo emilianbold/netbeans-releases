@@ -82,6 +82,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -101,13 +102,15 @@ import javax.swing.JSeparator;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.lib.profiler.ProfilerLogger;
 import org.netbeans.lib.profiler.common.CommonUtils;
 import org.netbeans.lib.profiler.TargetAppRunner;
 import org.netbeans.modules.profiler.api.ProjectUtilities;
-import org.netbeans.modules.profiler.utilities.ProfilerUtils;
+import org.netbeans.modules.profiler.api.project.ProjectStorage;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileChangeListener;
+import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.WindowManager;
 
@@ -118,10 +121,10 @@ import org.openide.windows.WindowManager;
  * @author Jiri Sedlacek
  */
 @ServiceProvider(service=ProfilingPointsProcessor.class)
-public class ProfilingPointsManager extends ProfilingPointsProcessor 
-                                    implements ChangeListener,
-                                               PropertyChangeListener, 
-                                               ProfilingStateListener {
+public final class ProfilingPointsManager extends ProfilingPointsProcessor 
+                                          implements ChangeListener,
+                                                     PropertyChangeListener, 
+                                                     ProfilingStateListener {
     //~ Inner Classes ------------------------------------------------------------------------------------------------------------
 
     private static class ProfilingPointsComparator implements Comparator {
@@ -256,19 +259,19 @@ public class ProfilingPointsManager extends ProfilingPointsProcessor
         public LocationFileListener(File file) { this.file = file; }
 
         public void fileDeleted(final FileEvent fe) {
-            Runnable processor = new Runnable() {
+            Runnable worker = new Runnable() {
                 public void run() { deleteProfilingPointsForFile(file); }
             };
             
             if (SwingUtilities.isEventDispatchThread()) {
-                ProfilerUtils.runInProfilerRequestProcessor(processor);
+                processor().post(worker);
             } else {
-                processor.run();
+                worker.run();
             }
         }
 
         public void fileRenamed(final FileRenameEvent fe) {
-            Runnable processor = new Runnable() {
+            Runnable worker = new Runnable() {
                 public void run() { 
                     FileObject renamedFileO = fe.getFile();
                     File renamedFile = FileUtil.toFile(renamedFileO);
@@ -281,9 +284,9 @@ public class ProfilingPointsManager extends ProfilingPointsProcessor
             };
             
             if (SwingUtilities.isEventDispatchThread()) {
-                ProfilerUtils.runInProfilerRequestProcessor(processor);
+                processor().post(worker);
             } else {
-                processor.run();
+                worker.run();
             }
         }
         
@@ -345,16 +348,19 @@ public class ProfilingPointsManager extends ProfilingPointsProcessor
     final private Object pointsLock = new Object();
     // @GuardedBy pointsLock
     private RuntimeProfilingPoint[] points = null;
+    
+    private WeakReference<RequestProcessor> _processorRef;
+    private final Object _processorLock = new Object();
 
     //~ Constructors -------------------------------------------------------------------------------------------------------------
 
     public ProfilingPointsManager() {
         refreshProfilingPointFactories();
-        ProfilerUtils.runInProfilerRequestProcessor(new Runnable() {
+        processor().post(new Runnable() {
                 public void run() {
+                    ProjectUtilities.addOpenProjectsListener(ProfilingPointsManager.this);
                     processOpenedProjectsChanged(); // will subsequently invoke projectOpened on all open projects
                     Profiler.getDefault().addProfilingStateListener(ProfilingPointsManager.this);
-                    ProjectUtilities.addOpenProjectsListener(ProfilingPointsManager.this);
                 }
             });
     }
@@ -420,7 +426,8 @@ public class ProfilingPointsManager extends ProfilingPointsProcessor
 
         ArrayList<T> filteredProfilingPoints = new ArrayList();
         Iterator<ProfilingPoint> iterator = profilingPoints.iterator();
-
+        
+        Set<FileObject> projectsLoc = locations(projects);
         while (iterator.hasNext()) {
             ProfilingPoint profilingPoint = iterator.next();
             ProfilingPointFactory factory = profilingPoint.getFactory();
@@ -428,7 +435,7 @@ public class ProfilingPointsManager extends ProfilingPointsProcessor
             // Bugfix #162132, the factory may already be unloaded
             if (factory != null) {
                 if (ppClass.isInstance(profilingPoint)) {
-                    if (containsProject(projects, profilingPoint.getProject())) {
+                    if (containsProject(projectsLoc, profilingPoint.getProject())) {
                         if (inclUnavailable || factory.isAvailable()) {
                             filteredProfilingPoints.add((T) profilingPoint);
                         }
@@ -527,7 +534,11 @@ public class ProfilingPointsManager extends ProfilingPointsProcessor
 
     public void ideClosing() {
         // TODO: dirty profiling points should be persisted on document save!
-        storeDirtyProfilingPoints();
+        processor().post(new Runnable() {
+            public void run() {
+                storeDirtyProfilingPoints();
+            }
+        });
     }
 
     public void instrumentationChanged(int i, int i0) {
@@ -584,7 +595,7 @@ public class ProfilingPointsManager extends ProfilingPointsProcessor
     }
 
     public void profilingStateChanged(final ProfilingStateEvent profilingStateEvent) {
-        ProfilerUtils.runInProfilerRequestProcessor(new Runnable() {
+        processor().post(new Runnable() {
             public void run() {
                 boolean wasProfilingInProgress = profilingInProgress;
                 boolean wasProfilingSessionInProgres = profilingSessionInProgress;
@@ -652,7 +663,7 @@ public class ProfilingPointsManager extends ProfilingPointsProcessor
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt.getSource() instanceof Line && Line.PROP_LINE_NUMBER.equals(evt.getPropertyName())) {
             final Line line = (Line) evt.getSource();
-            ProfilerUtils.runInProfilerRequestProcessor(new Runnable() {
+            processor().post(new Runnable() {
                     public void run() {
                         for (ProfilingPoint pp : profilingPoints) {
                             if (pp instanceof CodeProfilingPoint) {
@@ -695,7 +706,7 @@ public class ProfilingPointsManager extends ProfilingPointsProcessor
                 firePropertyChanged(PROPERTY_PROFILING_POINTS_CHANGED);
             }
 //        } else if (OpenProjects.PROPERTY_OPEN_PROJECTS.equals(evt.getPropertyName())) {
-//            ProfilerUtils.runInProfilerRequestProcessor(new Runnable() {
+//            processor().post(new Runnable() {
 //                    public void run() {
 //                        processOpenedProjectsChanged();
 //                    }
@@ -709,7 +720,7 @@ public class ProfilingPointsManager extends ProfilingPointsProcessor
     }
     
     public void stateChanged(ChangeEvent e) {
-        ProfilerUtils.runInProfilerRequestProcessor(new Runnable() {
+        processor().post(new Runnable() {
             public void run() {
                 processOpenedProjectsChanged();
             }
@@ -911,16 +922,19 @@ public class ProfilingPointsManager extends ProfilingPointsProcessor
         return propertyName.equals(ProfilingPoint.PROPERTY_NAME) || propertyName.equals(ProfilingPoint.PROPERTY_ENABLED)
                || propertyName.equals(ProfilingPoint.PROPERTY_PROJECT) || propertyName.equals(ProfilingPoint.PROPERTY_RESULTS);
     }
+    
+    private static Set<FileObject> locations(Collection<Lookup.Provider> projects) {
+        if (projects == null || projects.isEmpty()) return Collections.EMPTY_SET;
+        Set<FileObject> locations = new HashSet();
+        for (Lookup.Provider project : projects)
+            locations.add(ProjectUtilities.getProjectDirectory(project));
+        return locations;
+    }
 
-    private static boolean containsProject(Collection<Lookup.Provider> c, Lookup.Provider p) {
-        if (p != null) {
+    private static boolean containsProject(Set<FileObject> locations, Lookup.Provider p) {
+        if (p != null && !locations.isEmpty()) {
             FileObject projectDir = ProjectUtilities.getProjectDirectory(p);
-            
-            for (Lookup.Provider in : c) {
-                if (ProjectUtilities.getProjectDirectory(in).equals(projectDir)) {
-                    return true;
-                }
-            }
+            return locations.contains(projectDir);
         }
         return false;
     }
@@ -932,9 +946,10 @@ public class ProfilingPointsManager extends ProfilingPointsProcessor
         if (subprojects.isEmpty()) return subprojects;
 
         Set<Lookup.Provider> openSubprojects = new HashSet();
+        Set<FileObject> subprojectsLoc = locations(subprojects);
         synchronized(openedProjects) {
             for (Lookup.Provider openProject : openedProjects)
-                if (containsProject(subprojects, openProject))
+                if (containsProject(subprojectsLoc, openProject))
                     openSubprojects.add(openProject);
         }
 
@@ -1087,29 +1102,46 @@ public class ProfilingPointsManager extends ProfilingPointsProcessor
     }
 
     private void loadProfilingPoints(Lookup.Provider project) {
+        FileObject projectSettingsFolder = null;
+        try {
+            projectSettingsFolder = ProjectStorage.getSettingsFolder(project, false);
+        } catch (IOException ex) {
+            ErrorManager.getDefault().log(ErrorManager.ERROR, ex.getMessage());
+            return;
+        }
         for (ProfilingPointFactory factory : profilingPointFactories) {
             try {
-                addProfilingPoints(factory.loadProfilingPoints(project), true);
+                ignoreStoreProfilingPoints = true;
+                addProfilingPoints(factory.loadProfilingPoints(project, projectSettingsFolder), true);
             } catch (Exception e) {
                 ErrorManager.getDefault().log(ErrorManager.ERROR, e.getMessage());
+            } finally {
+                ignoreStoreProfilingPoints = false;
             }
         }
     }
 
-    private synchronized void processOpenedProjectsChanged() {
+    private void processOpenedProjectsChanged() {
         Collection<Lookup.Provider> lastOpenedProjects = new ArrayList();
-        synchronized (openedProjects) { lastOpenedProjects.addAll(openedProjects); }
-        refreshOpenedProjects();
+        synchronized (openedProjects) {
+            lastOpenedProjects.addAll(openedProjects);
+            openedProjects.clear();
 
-        for (Lookup.Provider project : lastOpenedProjects) {
-            if (!containsProject(openedProjects, project)) {
-                projectClosed(project);
+            Lookup.Provider[] openProjects = ProjectUtilities.getOpenedProjects();
+            openedProjects.addAll(Arrays.asList(openProjects));
+
+            Set<FileObject> openedProjectsLoc = locations(openedProjects);
+            for (Lookup.Provider project : lastOpenedProjects) {
+                if (!containsProject(openedProjectsLoc, project)) {
+                    projectClosed(project);
+                }
             }
-        }
-
-        for (Lookup.Provider openProject : openedProjects) {
-            if (!containsProject(lastOpenedProjects, openProject)) {
-                projectOpened(openProject);
+            
+            Set<FileObject> lastOpenedProjectsLoc = locations(lastOpenedProjects);
+            for (Lookup.Provider openProject : openedProjects) {
+                if (!containsProject(lastOpenedProjectsLoc, openProject)) {
+                    projectOpened(openProject);
+                }
             }
         }
 
@@ -1122,13 +1154,6 @@ public class ProfilingPointsManager extends ProfilingPointsProcessor
 
     private void projectOpened(Lookup.Provider project) {
         loadProfilingPoints(project);
-    }
-
-    private void refreshOpenedProjects() {
-        openedProjects.clear();
-
-        Lookup.Provider[] openProjects = ProjectUtilities.getOpenedProjects();
-        openedProjects.addAll(Arrays.asList(openProjects));
     }
 
     private void refreshProfilingPointFactories() {
@@ -1169,6 +1194,7 @@ public class ProfilingPointsManager extends ProfilingPointsProcessor
     }
 
     private void storeDirtyProfilingPoints() {
+        if (dirtyProfilingPoints.isEmpty()) return;
         ProfilingPoint[] dirtyProfilingPointsArr = new ProfilingPoint[dirtyProfilingPoints.size()];
         dirtyProfilingPoints.toArray(dirtyProfilingPointsArr);
         storeProfilingPoints(dirtyProfilingPointsArr);
@@ -1234,6 +1260,18 @@ public class ProfilingPointsManager extends ProfilingPointsProcessor
     private CustomizerButton getCustomizerButton() {
         if (customizerButton == null) customizerButton = new CustomizerButton();
         return customizerButton;
+    }
+    
+    private RequestProcessor processor() {
+        RequestProcessor processor;
+        synchronized(_processorLock) {
+            processor = _processorRef == null ? null : _processorRef.get();
+            if (processor == null) {
+                processor = new RequestProcessor("ProfilingPoints RequestProcessor"); // NOI18N
+                _processorRef = new WeakReference(processor);
+            }
+        }
+        return processor;
     }
 
 }
