@@ -742,6 +742,39 @@ public class Flow {
             return null;
         }
 
+        public Boolean visitContinue(ContinueTree node, Void p) {
+            StatementTree loop = info.getTreeUtilities().getBreakContinueTarget(getCurrentPath());
+            Tree resumePoint;
+
+            switch (loop.getKind()) {
+                case WHILE_LOOP:
+                    resumePoint = ((WhileLoopTree) loop).getCondition();
+                    break;
+                case FOR_LOOP:
+                    resumePoint = ((ForLoopTree) loop).getCondition();
+                    break;
+                case DO_WHILE_LOOP:
+                    resumePoint = ((DoWhileLoopTree) loop).getCondition();
+                    break;
+                default:
+                    boolean ae = false;
+                    assert ae = true;
+                    if (ae)
+                        throw new IllegalStateException(loop.getKind().name());
+                    resumePoint = null;
+                    break;
+            }
+
+            if (resumePoint != null) {
+                recordResume(resumeBefore, resumePoint, variable2State);
+            }
+
+            variable2State = new HashMap<VariableElement, State>();
+
+            super.visitContinue(node, p);
+            return null;
+        }
+
         private void resumeAfter(Tree target, Map<VariableElement, State> state) {
             for (TreePath tp : pendingFinally) {
                 boolean shouldBeRun = false;
@@ -870,11 +903,6 @@ public class Flow {
 
         public Boolean visitEmptyStatement(EmptyStatementTree node, Void p) {
             super.visitEmptyStatement(node, p);
-            return null;
-        }
-
-        public Boolean visitContinue(ContinueTree node, Void p) {
-            super.visitContinue(node, p);
             return null;
         }
 
