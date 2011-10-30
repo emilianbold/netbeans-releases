@@ -523,6 +523,24 @@ public class FlowTest extends NbTestCase {
                     "null");
     }
 
+    public void testEnhancedForLoop() throws Exception {
+        performTest("package test;\n" +
+                    "public class Test {\n" +
+                    "    static void t(String[] args) {\n" +
+                    "        String tp = \"\";\n" +
+                    "        for (String i : args) {\n" +
+                    "            if (t`p != null) {\n" +
+                    "                tp = null;\n" +
+                    "                continue;\n" +
+                    "            }\n" +
+                    "            return ;\n" +
+                    "        }\n" +
+                    "    }\n" +
+                    "}\n",
+                    "\"\"",
+                    "null");
+    }
+
     public void testDoWhileLoop() throws Exception {
         performTest("package test;\n" +
                     "public class Test {\n" +
@@ -537,6 +555,24 @@ public class FlowTest extends NbTestCase {
                     "        } while (t`p != null);\n" +
                     "    }\n" +
                     "}\n",
+                    "null");
+    }
+
+    public void testLabeledLoop() throws Exception {
+        performTest("package test;\n" +
+                    "public class Test {\n" +
+                    "    static void t() {\n" +
+                    "        String tp = \"\";\n" +
+                    "        LOOP: while (t`p != null) {\n" +
+                    "            if (tp.length() == 0) {\n" +
+                    "                tp = null;\n" +
+                    "                continue LOOP;\n" +
+                    "            }\n" +
+                    "            return ;\n" +
+                    "        }\n" +
+                    "    }\n" +
+                    "}\n",
+                    "\"\"",
                     "null");
     }
 

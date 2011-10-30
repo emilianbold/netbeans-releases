@@ -746,6 +746,10 @@ public class Flow {
             StatementTree loop = info.getTreeUtilities().getBreakContinueTarget(getCurrentPath());
             Tree resumePoint;
 
+            if (loop.getKind() == Kind.LABELED_STATEMENT) {
+                loop = ((LabeledStatementTree) loop).getStatement();
+            }
+            
             switch (loop.getKind()) {
                 case WHILE_LOOP:
                     resumePoint = ((WhileLoopTree) loop).getCondition();
@@ -755,6 +759,9 @@ public class Flow {
                     break;
                 case DO_WHILE_LOOP:
                     resumePoint = ((DoWhileLoopTree) loop).getCondition();
+                    break;
+                case ENHANCED_FOR_LOOP:
+                    resumePoint = ((EnhancedForLoopTree) loop).getStatement();
                     break;
                 default:
                     boolean ae = false;
