@@ -126,8 +126,8 @@ public class ComponentChooserEditor implements PropertyEditor,
     public String[] getTags() {
         List compList = getComponents();
 
-        int extraValues = 0;        
-        int count = 0;
+        int extraValues;        
+        int count;
         String[] names;                                    
 
         boolean includeNone = shouldIncludeNone();
