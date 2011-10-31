@@ -44,6 +44,7 @@
 package org.netbeans.modules.git.ui.blame;
 
 import java.io.File;
+import java.util.logging.Level;
 import org.netbeans.libs.git.GitLineDetails;
 import org.netbeans.libs.git.GitRevisionInfo;
 import org.netbeans.libs.git.GitUser;
@@ -84,7 +85,11 @@ public class AnnotateLine {
             author = lineDetails.getAuthor() == null ? lineDetails.getCommitter() : lineDetails.getAuthor();
             authorShort = getAuthorShort(author);
             committer = lineDetails.getCommitter();
-            content = lineDetails.getContent();
+            String cont = lineDetails.getContent().replace("\r", "").replace("\n", ""); //NOI18N
+            if (cont.length() != lineDetails.getContent().length()) {
+                AnnotationBar.LOG.log(Level.FINE, "AnnotateLine: line content contains '\\r' or '\\n': {0}:{1}", new Object[] { lineDetails.getSourceFile(), lineNumber }); //NOI18N
+            }
+            content = cont;
             file = lineDetails.getSourceFile();
         }
         lineNum = lineNumber;
