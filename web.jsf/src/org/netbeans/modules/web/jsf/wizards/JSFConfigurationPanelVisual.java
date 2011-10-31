@@ -171,7 +171,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
         jsfComponentsTable.setDefaultRenderer(JsfComponentImplementation.class, renderer);
         jsfComponentsTable.setDefaultRenderer(Boolean.class, renderer);
         jsfComponentsTable.setDefaultRenderer(JButton.class, renderer);
-        jsfComponentsTable.addMouseListener(new JTableButtonMouseListener(jsfComponentsTable));
+        jsfComponentsTable.addMouseListener(new JsfComponentsMouseListener());
         jsfComponentsTableModel.addTableModelListener(new JsfComponentsTableModelListener());
         initJsfComponentTableVisualProperties(jsfComponentsTable);
 
@@ -1557,20 +1557,18 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
         }
     }
 
-    private class JTableButtonMouseListener extends MouseAdapter {
+    private class JsfComponentsMouseListener extends MouseAdapter {
 
-        private final JTable table;
-
-        public JTableButtonMouseListener(JTable table) {
-            this.table = table;
-        }
-
+        @Override
         public void mouseClicked(MouseEvent e) {
-                int column = table.getColumnModel().getColumnIndexAtX(e.getX());
-            int row = e.getY()/table.getRowHeight();
+                int column = jsfComponentsTable.getColumnModel().getColumnIndexAtX(e.getX());
+            int row = e.getY()/jsfComponentsTable.getRowHeight();
 
-            if (row < table.getRowCount() && row >= 0 && column < table.getColumnCount() && column >= 0) {
-                Object value = table.getValueAt(row, column);
+            if (row < jsfComponentsTable.getRowCount()
+                    && row >= 0
+                    && column < jsfComponentsTable.getColumnCount()
+                    && column >= 0) {
+                Object value = jsfComponentsTable.getValueAt(row, column);
                 if (value instanceof JButton) {
                     ((JButton)value).doClick();
                 } else if (value instanceof Boolean) {
