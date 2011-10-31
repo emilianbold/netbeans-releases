@@ -260,7 +260,7 @@ public abstract class BasicCompilerConfiguration implements AllOptionsProvider, 
         if (item.hasHeaderOrSourceExtension(false, false)) {
             suffix = ".pch"; // NOI18N
             ItemConfiguration itemConf = item.getItemConfiguration(conf);
-            if (conf.getCompilerSet().getCompilerSet() != null) {
+            if (conf.getCompilerSet().getCompilerSet() != null && itemConf != null) {
                 AbstractCompiler compiler = (AbstractCompiler) conf.getCompilerSet().getCompilerSet().getTool(itemConf.getTool());
                 if (compiler != null) {
                     suffix = compiler.getDescriptor().getPrecompiledHeaderSuffix();
