@@ -224,7 +224,8 @@ final public class FormPropertyEditorManager {
             prEd = createEditorFromCache(type, cacheKey);
         } else {
             String typeName = type.getSimpleName();
-            if (!typeName.contains("[")) { // not an array type // NOI18N
+            if (!typeName.contains("[") // not an array type // NOI18N
+                    && !type.equals(Object.class)) { // Issue 204469
                 Class editorClass = null;
                 for (String path : DEFAULT_EDITOR_SEARCH_PATH) {
                     String name = path + "." + typeName + "Editor"; // NOI18N
