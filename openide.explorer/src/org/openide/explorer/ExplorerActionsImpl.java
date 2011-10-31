@@ -780,10 +780,5 @@ final class ExplorerActionsImpl {
         final void waitFinished() {
             timer.waitFinished();
         }
-
-        final void waitFinished() {
-            timer.waitFinished();
-        }
-
     }
 }
