@@ -200,22 +200,26 @@ public class UserOptionsProviderImpl implements UserOptionsProvider {
             return null;
         }
         MakeConfigurationDescriptor make = pdp.getConfigurationDescriptor();
-        MakeConfiguration conf = make.getActiveConfiguration();
-        if (conf != null){
-            final PkgConfig pkg = getPkgConfig(conf);
-            return new NativeFileSearch() {
-                @Override
-                public Collection<CharSequence> searchFile(NativeProject project, String fileName) {
-                    Collection<ResolvedPath> resolvedPath = pkg.getResolvedPath(fileName);
-                    ArrayList<CharSequence> res = new ArrayList<CharSequence>(1);
-                    if (resolvedPath != null) {
-                        for(ResolvedPath path : resolvedPath) {
-                            res.add(CharSequences.create(path.getIncludePath()+File.separator+fileName));
+        if (make != null) {
+            MakeConfiguration conf = make.getActiveConfiguration();
+            if (conf != null){
+                final PkgConfig pkg = getPkgConfig(conf);
+                if (pkg != null) {
+                    return new NativeFileSearch() {
+                        @Override
+                        public Collection<CharSequence> searchFile(NativeProject project, String fileName) {
+                            Collection<ResolvedPath> resolvedPath = pkg.getResolvedPath(fileName);
+                            ArrayList<CharSequence> res = new ArrayList<CharSequence>(1);
+                            if (resolvedPath != null) {
+                                for(ResolvedPath path : resolvedPath) {
+                                    res.add(CharSequences.create(path.getIncludePath()+File.separator+fileName));
+                                }
+                            }
+                            return res;
                         }
-                    }
-                    return res;
+                    };
                 }
-            };
+            }
         }
         return null;
     }
