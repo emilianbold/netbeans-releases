@@ -544,7 +544,10 @@ public class HtmlCompletionQuery extends UserTask {
 
                 HtmlTag tag = model.getTag(node.name());
                 HtmlTagAttribute attribute = tag != null ? tag.getAttribute(argName) : null;
-                result = new ArrayList<CompletionItem>();
+                
+                //use set instead of list since the AttrValuesCompletion may return identical values as
+                //HtmlTagAttribute.getPossibleValues()
+                result = new LinkedHashSet<CompletionItem> ();
 
                 if (id != HTMLTokenId.VALUE) {
                     //after the equal sign
