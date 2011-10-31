@@ -44,49 +44,6 @@
           <linkerNorunpath>false</linkerNorunpath>
         </linkerTool>
       </compileType>
-      <packaging>
-        <packType>Zip</packType>
-        <output>${CND_DISTDIR}/package/cnd-build-trace-1.0.zip</output>
-        <packTopDir></packTopDir>
-        <packFileList>
-          <packFileListElem type="File"
-                            to="${PACKAGE_TOP_DIR}Linux-x86/libBuildTrace.so"
-                            from="dist/Linux-x86/libBuildTrace.so"
-                            perm="755"
-                            owner="root"
-                            group="bin"/>
-          <packFileListElem type="File"
-                            to="${PACKAGE_TOP_DIR}Linux-x86_64/libBuildTrace.so"
-                            from="dist/Linux-x86_64/libBuildTrace.so"
-                            perm="755"
-                            owner="root"
-                            group="bin"/>
-          <packFileListElem type="File"
-                            to="${PACKAGE_TOP_DIR}SunOS-sparc/libBuildTrace.so"
-                            from="dist/SunOS-sparc/libBuildTrace.so"
-                            perm="755"
-                            owner="root"
-                            group="bin"/>
-          <packFileListElem type="File"
-                            to="${PACKAGE_TOP_DIR}SunOS-sparc_64/libBuildTrace.so"
-                            from="dist/SunOS-sparc_64/libBuildTrace.so"
-                            perm="755"
-                            owner="root"
-                            group="bin"/>
-          <packFileListElem type="File"
-                            to="${PACKAGE_TOP_DIR}SunOS-x86/libBuildTrace.so"
-                            from="dist/SunOS-x86/libBuildTrace.so"
-                            perm="755"
-                            owner="root"
-                            group="bin"/>
-          <packFileListElem type="File"
-                            to="${PACKAGE_TOP_DIR}SunOS-x86_64/libBuildTrace.so"
-                            from="dist/SunOS-x86_64/libBuildTrace.so"
-                            perm="755"
-                            owner="root"
-                            group="bin"/>
-        </packFileList>
-      </packaging>
     </conf>
     <conf name="SunOS-x86_64" type="2">
       <toolsSet>
@@ -176,6 +133,40 @@
           <linkerLibItems>
             <linkerLibStdlibItem>DynamicLinking</linkerLibStdlibItem>
           </linkerLibItems>
+        </linkerTool>
+      </compileType>
+    </conf>
+    <conf name="MacOSX-x86" type="2">
+      <toolsSet>
+        <remote-sources-mode>LOCAL_SOURCES</remote-sources-mode>
+        <compilerSet>default</compilerSet>
+        <dependencyChecking>false</dependencyChecking>
+      </toolsSet>
+      <compileType>
+        <cTool>
+          <developmentMode>0</developmentMode>
+          <stripSymbols>true</stripSymbols>
+          <commandLine>-arch i386 -arch x86_64</commandLine>
+        </cTool>
+        <linkerTool>
+          <stripSymbols>true</stripSymbols>
+          <commandLine>-arch i386 -arch x86_64</commandLine>
+        </linkerTool>
+      </compileType>
+    </conf>
+    <conf name="MacOSX-x86_64" type="2">
+      <toolsSet>
+        <remote-sources-mode>LOCAL_SOURCES</remote-sources-mode>
+        <compilerSet>default</compilerSet>
+      </toolsSet>
+      <compileType>
+        <cTool>
+          <developmentMode>0</developmentMode>
+          <stripSymbols>true</stripSymbols>
+          <architecture>2</architecture>
+        </cTool>
+        <linkerTool>
+          <stripSymbols>true</stripSymbols>
         </linkerTool>
       </compileType>
     </conf>
