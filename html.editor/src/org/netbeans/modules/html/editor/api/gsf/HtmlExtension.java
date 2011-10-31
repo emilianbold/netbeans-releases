@@ -69,7 +69,7 @@ import org.netbeans.spi.editor.completion.CompletionItem;
  */
 public class HtmlExtension {
 
-    private static final Map<String, Collection<HtmlExtension>> EXTENSIONS = new HashMap<String, Collection<HtmlExtension>>();
+    static final Map<String, Collection<HtmlExtension>> EXTENSIONS = new HashMap<String, Collection<HtmlExtension>>();
 
     /** register a new extension to the html support. The mimeType applies to source mimetype, not embedded mimetype!
      * TODO use mimelookup
