@@ -2,6 +2,20 @@
 
 #include whitelist_bug_195029.txt
 
+#204448
+org.netbeans.api.whitelist.index.WhiteListIndex
+org.netbeans.api.whitelist.index.WhiteListIndex$WhiteListIndexAccessorImpl
+org.netbeans.api.whitelist.index.WhiteListIndexListener
+org.netbeans.modules.java.editor.whitelist.Bundle
+org.netbeans.modules.java.editor.whitelist.WhiteListTaskProvider
+org.netbeans.modules.java.editor.whitelist.WhiteListTaskProvider$Work
+org.netbeans.modules.whitelist.index.WhiteListIndexAccessor
+org.netbeans.modules.whitelist.index.WhiteListIndexerPlugin
+org.netbeans.modules.whitelist.project.WhiteListCategoryPanel
+org.netbeans.modules.whitelist.project.WhiteListCategoryPanel$WhiteListLookup
+org.netbeans.modules.whitelist.project.WhiteListLookupProvider
+org.netbeans.spi.whitelist.WhiteListQueryImplementation
+
 #204446
 org.netbeans.modules.php.smarty.editor.embedding.TplEmbeddingProvider$Factory
 org.netbeans.modules.php.smarty.editor.gsf.TplLanguage
