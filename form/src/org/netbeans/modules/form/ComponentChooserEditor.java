@@ -119,7 +119,7 @@ public class ComponentChooserEditor implements PropertyEditor,
         if (value != null && INVALID_REF.equals(value.getDescription()))
             return BeanSupport.NO_VALUE; // special - invalid value was loaded
         
-        return isDefaultValue() ? defaultValue : value; 
+        return isDefaultValue() ? FormProperty.DEFAULT_VALUE : value; 
     }
 
     @Override
