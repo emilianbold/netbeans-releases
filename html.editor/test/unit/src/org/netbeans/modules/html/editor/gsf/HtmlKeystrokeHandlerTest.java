@@ -43,6 +43,7 @@
 package org.netbeans.modules.html.editor.gsf;
 
 import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
+import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import java.util.Collections;
 import java.util.List;
@@ -97,6 +98,19 @@ public class HtmlKeystrokeHandlerTest extends TestBase {
 
     }
 
+    
+    public void testRangesOfUndeclaredContent() throws ParseException {
+        assertLogicalRanges("<div><h:button><a>te|xt</a></h:button></div>", new int[][]{{18,22},{15,26},{5,37},{0,43}});
+        //                   01234567890123456789 012345678901234567890123
+        //                   0         1          2         3         4
+    }
+    
+    public void testRangesOfDeclaredContent() throws ParseException {
+        assertLogicalRanges("<html xmlns:h=\"http://my.org/myns\"><head><title>x</title></head><body><div><h:button><a>te|xt</a></h:button></div></body></html>", 
+        //                   01234567890123 4567890123456789012 345678901234567890123456789012345678901234567890123456789 0123456789012345678901234567890123456789
+        //                   0         1          2         3         4        5          6         7         8         9         10        11        12
+                new int[][]{{88, 92}, {85, 96}, {75, 107}, {70, 113}, {64, 120}, {0, 127}});
+    }
 
     private void assertLogicalRanges(String sourceText, int[][] expectedRangesLeaveToRoot) throws ParseException {
          //find caret position in the source text
@@ -126,7 +140,15 @@ public class HtmlKeystrokeHandlerTest extends TestBase {
 
         HtmlParserResult htmlResult = (HtmlParserResult)result;
         assertNotNull(htmlResult.root());
-        assertEquals(0, htmlResult.getDiagnostics().size()); //no errors
+        if(!htmlResult.getDiagnostics().isEmpty()) {
+            StringBuilder msg = new StringBuilder();
+            msg.append("Unexpected parse errors found:\n");
+            for(Error e : htmlResult.getDiagnostics()) {
+                msg.append(e);
+                msg.append('\n');
+            }
+            assertEquals(msg.toString(), 0, htmlResult.getDiagnostics().size()); //no errors
+        }
 
         KeystrokeHandler handler = getPreferredLanguage().getKeystrokeHandler();
         assertNotNull(handler);
