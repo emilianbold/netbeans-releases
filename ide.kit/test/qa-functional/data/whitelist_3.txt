@@ -2,6 +2,11 @@
 
 #include whitelist_bug_195029.txt
 
+#204446
+org.netbeans.modules.php.smarty.editor.embedding.TplEmbeddingProvider$Factory
+org.netbeans.modules.php.smarty.editor.gsf.TplLanguage
+org.netbeans.modules.php.api.util.FileUtils$ZipEntryFilter
+
 #204445
 org.netbeans.modules.j2ee.api.ejbjar.Car
 org.netbeans.modules.j2ee.api.ejbjar.EjbJar
