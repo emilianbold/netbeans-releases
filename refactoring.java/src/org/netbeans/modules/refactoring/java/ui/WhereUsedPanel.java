@@ -303,7 +303,14 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
                             scope.setModel(new DefaultComboBoxModel(new Object[]{allProjects, currentProject, currentPackage, currentFile, customScope }));
                             int defaultItem = (Integer) RefactoringModule.getOption("whereUsed.scope", 0); // NOI18N
                             WhereUsedPanel.this.customScope = readScope();
-                            scope.setSelectedIndex(defaultItem);
+                            if(defaultItem == 4 &&
+                                    WhereUsedPanel.this.customScope.getFiles().isEmpty() &&
+                                    WhereUsedPanel.this.customScope.getFolders().isEmpty() &&
+                                    WhereUsedPanel.this.customScope.getSourceRoots().isEmpty()) {
+                                scope.setSelectedIndex(0);
+                            } else {
+                                scope.setSelectedIndex(defaultItem);
+                            }
                             scope.setRenderer(new JLabelRenderer());
                         } else {
                             scopePanel.setVisible(false);
