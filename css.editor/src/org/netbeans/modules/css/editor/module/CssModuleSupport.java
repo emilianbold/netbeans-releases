@@ -190,17 +190,27 @@ public class CssModuleSupport {
 
     }
 
-    public static Pair<OffsetRange, FutureParamTask<DeclarationLocation, EditorFeatureContext>> getDeclarationLocation(Document document, int caretOffset, FeatureCancel cancel) {
-        for (CssEditorModule module : getModules()) {
-            if (cancel.isCancelled()) {
-                return null;
+    public static Pair<OffsetRange, FutureParamTask<DeclarationLocation, EditorFeatureContext>> getDeclarationLocation(final Document document, final int caretOffset, final FeatureCancel cancel) {
+        final AtomicReference<Pair<OffsetRange, FutureParamTask<DeclarationLocation, EditorFeatureContext>>> result =
+                new AtomicReference<Pair<OffsetRange, FutureParamTask<DeclarationLocation, EditorFeatureContext>>>();
+        document.render(new Runnable() {
+
+            @Override
+            public void run() {
+                for (CssEditorModule module : getModules()) {
+                    if (cancel.isCancelled()) {
+                        return ;
+                    }
+                    Pair<OffsetRange, FutureParamTask<DeclarationLocation, EditorFeatureContext>> declarationLocation = module.getDeclaration(document, caretOffset);
+                    if (declarationLocation != null) {
+                        result.set(declarationLocation);
+                        return ;
+                    }
+                }
             }
-            Pair<OffsetRange, FutureParamTask<DeclarationLocation, EditorFeatureContext>> declarationLocation = module.getDeclaration(document, caretOffset);
-            if (declarationLocation != null) {
-                return declarationLocation;
-            }
-        }
-        return null;
+            
+        });
+        return result.get();
     }
 
     public static List<StructureItem> getStructureItems(FeatureContext context, FeatureCancel cancel) {
