@@ -2,6 +2,16 @@
 
 #include whitelist_bug_195029.txt
 
+#204445
+org.netbeans.modules.j2ee.api.ejbjar.Car
+org.netbeans.modules.j2ee.api.ejbjar.EjbJar
+org.netbeans.modules.j2ee.ejbjar.CarAccessor
+org.netbeans.modules.j2ee.ejbjar.EjbJarAccessor
+org.netbeans.modules.j2ee.spi.ejbjar.CarProvider
+org.netbeans.modules.j2ee.spi.ejbjar.CarsInProject
+org.netbeans.modules.j2ee.spi.ejbjar.EjbJarProvider
+org.netbeans.modules.j2ee.spi.ejbjar.EjbJarsInProject
+
 #204439
 org.netbeans.modules.javafx2.project.JFXActionProvider
 org.netbeans.modules.javafx2.project.JFXProjectIconAnnotator
