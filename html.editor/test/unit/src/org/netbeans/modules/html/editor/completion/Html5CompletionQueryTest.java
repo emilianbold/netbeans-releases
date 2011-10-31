@@ -123,7 +123,7 @@ public class Html5CompletionQueryTest extends HtmlCompletionQueryTest {
         TestSource sap = getTestSource("issue193268.html", false);
         assertItems(sap.getCode(), new String[]{"id", "href"} , Match.CONTAINS);
     }
-
+    
     @Override
     protected void assertItems(String documentText, final String[] expectedItemsNames, final Match type, int expectedAnchor) throws BadLocationException, ParseException {
         super.assertItems(HTML5_DOCTYPE + documentText,

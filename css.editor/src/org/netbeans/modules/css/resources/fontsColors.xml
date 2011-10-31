@@ -86,11 +86,7 @@ made subject to such option by the copyright holder.
         <font style="italic" />
     </fontcolor>
     
-    <!-- namespace prefix -->
-    <fontcolor name="mod-custom3" foreColor="red"> 
-        <font style="bold" />
-    </fontcolor>
-    
+    <!-- element, class, id selectors -->
     <fontcolor name="mod-method" foreColor="007c00" >
         <font style="bold" />
     </fontcolor>
@@ -100,6 +96,7 @@ made subject to such option by the copyright holder.
         <font style="bold" />
     </fontcolor>
 
+    <!-- pseudo class -->
     <fontcolor name="mod-class" >
         <font style="italic" />
     </fontcolor>

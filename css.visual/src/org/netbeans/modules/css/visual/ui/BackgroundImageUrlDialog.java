@@ -113,12 +113,15 @@ public class BackgroundImageUrlDialog {
                 if(webRoot == null) {
                     //no web root, use project's root
                     Project project = FileOwnerQuery.getOwner(edited);
-                    webRoot = project.getProjectDirectory();
+                    if(project != null) {
+                        //no project, no web root
+                        webRoot = project.getProjectDirectory();
+                    }
                 }
 
                 //check if the selected file is under the web root
                 boolean copied = false;
-                if(!FileUtil.isParentOf(webRoot, imageFO)) {
+                if(webRoot != null && !FileUtil.isParentOf(webRoot, imageFO)) {
                     //copy the file to the web root
                     FileObject folder = edited.getParent();
                     String freeName = FileUtil.findFreeFileName(folder, imageFO.getName(), imageFO.getExt());
