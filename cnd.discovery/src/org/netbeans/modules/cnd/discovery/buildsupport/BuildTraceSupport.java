@@ -65,8 +65,7 @@ public class BuildTraceSupport {
         try {
             HostInfo hostInfo = HostInfoUtils.getHostInfo(execEnv);
             switch(hostInfo.getOSFamily()) {
-                // inperposer does not work yet
-                //case MACOSX:
+                case MACOSX:
                 case LINUX:
                 case SUNOS:
                     return true;

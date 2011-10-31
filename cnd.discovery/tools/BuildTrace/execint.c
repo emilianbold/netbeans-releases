@@ -55,7 +55,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-//#include <unistd.h>
+#ifdef __APPLE__
+#include <unistd.h>
+#endif
 #include <errno.h>
 #include <sys/stat.h>
 
@@ -147,8 +149,27 @@ static void __logprint(const char* fname, char *const argv[], ...) {
 #define ARG , arg
 #define ENV , arg, env
 
+#ifdef __APPLE__
+#define INSTRUMENT(func, param, actual) \
+__attribute__ ((visibility ("hidden"))) \
+int my_##func (const char * p_original param) { \
+    LOG("BuildTrace: func1\n");\
+    int prev_errno = errno; \
+    char * p = strdup(p_original); \
+    LOG("BuildTrace: %s called. PATH=%s\n", QUOTE(func), p); \
+    __logprint(p actual); \
+    errno = prev_errno; \
+    int ret = func(p actual); \
+    prev_errno = errno; \
+    LOG("BuildTrace: %s returned\n", QUOTE(func)); \
+    free(p); \
+    errno = prev_errno; \
+    return ret; \
+}
+#else
 #define INSTRUMENT(func, param, actual) \
 int func (const char * p_original param) { \
+    LOG("BuildTrace: func1\n");\
     int prev_errno = errno; \
     char * p = strdup(p_original); \
     static int (* ORIG(func))(const char* p param) = NULL; \
@@ -163,6 +184,7 @@ int func (const char * p_original param) { \
     errno = prev_errno; \
     return ret; \
 }
+#endif
 
 #define INIT(func) \
     if(!ORIG(func)) { \
@@ -180,9 +202,30 @@ INSTRUMENT(execve, PENV, ENV)
 INSTRUMENT(execvp, PARG, ARG)
 
 #define RETURN(f) return f(name, (char **)argv)
-
+#ifdef __APPLE__
+#define CONVERT(from_func, to_func) \
+__attribute__ ((visibility ("hidden"))) \
+int my_##from_func(char *name, const char *first, ...) { \
+    LOG("BuildTrace: func2\n");\
+    va_list args; \
+    char* argv[128]; \
+    char**  p; \
+    char**  env; \
+    va_start(args, first); \
+    p = (char**)argv; \
+    *p++ = (char*) first; \
+    do { \
+        *p = va_arg(args, char*); \
+    } while(*p++); \
+    GETENV; \
+    va_end(args); \
+    LOG("BuildTrace: %s converted to %s\n", QUOTE(from_func), QUOTE(to_func)); \
+    RETURN(my_##to_func); \
+}
+#else
 #define CONVERT(from_func, to_func) \
 int from_func(char *name, const char *first, ...) { \
+    LOG("BuildTrace: func2\n");\
     va_list args; \
     char* argv[128]; \
     char**  p; \
@@ -198,7 +241,7 @@ int from_func(char *name, const char *first, ...) { \
     LOG("BuildTrace: %s converted to %s\n", QUOTE(from_func), QUOTE(to_func)); \
     RETURN(to_func); \
 }
-
+#endif
 CONVERT(execl, execv)
 CONVERT(execlp, execvp)
 
@@ -208,6 +251,22 @@ CONVERT(execlp, execvp)
 #define RETURN(f) return f(name, (char **)argv, (const char**)env)
 
 CONVERT(execle, execve)
+
+#ifdef __APPLE__
+typedef struct interpose_s {
+    void *new_func;
+    void *orig_func;
+} interpose_t;
+static const interpose_t interposers[] 
+        __attribute__ ((section("__DATA, __interpose"))) = {
+            {(void*)my_execv, (void*)execv},
+            {(void*)my_execve, (void*)execve},
+            {(void*)my_execvp, (void*)execvp},
+            {(void*)my_execl, (void*)execl},
+            {(void*)my_execlp, (void*)execlp},
+            {(void*)my_execle, (void*)execle}
+        };
+#endif        
 
 static void
 __attribute((constructor))

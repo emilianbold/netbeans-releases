@@ -87,7 +87,12 @@ public class BlameCommand extends GitCommand {
 
     @Override
     protected String getCommandDescription () {
-        return new StringBuilder("git blame -l -f ").append(revision).append(" ").append(file).toString(); //NOI18N
+        StringBuilder sb = new StringBuilder("git blame -l -f "); //NOI18N
+        if (revision != null) {
+            sb.append(revision).append(" "); //NOI18N
+        }
+        sb.append(file);
+        return sb.toString();
     }
 
     public GitBlameResult getResult () {

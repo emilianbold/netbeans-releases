@@ -228,9 +228,9 @@ public class QtUiDataLoader extends UniFileLoader {
                         while ((current = r.readLine()) != null) {
                             w.write(frm.format(current));
                             if (remoteFS) {
-                                w.newLine();
-                            } else {
                                 w.write("\n"); //NOI18N
+                            } else {
+                                w.newLine();
                             }
                         }
                     } finally {
