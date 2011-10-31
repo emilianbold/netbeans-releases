@@ -524,7 +524,6 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
                     return classifier;
                 }
             }
-            _setClassifier(null);
 
             if (qname != null) {
                 classifier = renderClassifier(qname);
@@ -773,16 +772,15 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
     }
 
     final void _setClassifier(final CsmClassifier classifier) {
-        if (classifier == null) {
-            FileImpl file = (FileImpl) getContainingFile();
-            file.removeResolvedReference(new CsmTypeReferenceImpl(this));
-        }
+        // remove old cached value
+        FileImpl file = (FileImpl) getContainingFile();
+        file.removeResolvedReference(new CsmTypeReferenceImpl(this));
         this.classifierUID = UIDCsmConverter.declarationToUID(classifier);
+        // register new cached value
         if (classifierUID != null && classifier != null && !CsmKindUtilities.isBuiltIn(classifier) && CsmBaseUtilities.isValid(classifier) && !CsmKindUtilities.isTypedef(classifier)
             //&& !CsmKindUtilities.isTemplate(classifier) && !isInstantiation()
            ) {
-            final FileImpl file = (FileImpl) getContainingFile();
-            file.addResolvedReference(new CsmTypeReferenceImpl(this), classifier);
+           file.addResolvedReference(new CsmTypeReferenceImpl(this), classifier);
         }
         assert (classifierUID != null || classifier == null);
     }
