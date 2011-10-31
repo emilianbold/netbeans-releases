@@ -2,6 +2,15 @@
 
 #include whitelist_bug_195029.txt
 
+#204449
+org.netbeans.modules.web.api.webmodule.WebModule
+org.netbeans.modules.web.beans.CdiOpenHook
+org.netbeans.modules.web.beans.analysis.CdiAnalysisResult
+org.netbeans.modules.web.beans.analysis.CdiEditorAwareJavaSourceTaskFactory
+org.netbeans.modules.web.spi.webmodule.WebModuleProvider
+org.netbeans.modules.web.webmodule.ProjectWebModuleProvider
+org.netbeans.modules.web.webmodule.WebModuleAccessor
+
 #204448
 org.netbeans.api.whitelist.index.WhiteListIndex
 org.netbeans.api.whitelist.index.WhiteListIndex$WhiteListIndexAccessorImpl
