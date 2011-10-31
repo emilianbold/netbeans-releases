@@ -11,9 +11,9 @@ CND_PLATFORM_SunOS-x86=OracleSolarisStudio-Solaris-x86
 CND_ARTIFACT_DIR_SunOS-x86=dist/SunOS-x86/OracleSolarisStudio-Solaris-x86
 CND_ARTIFACT_NAME_SunOS-x86=libBuildTrace.so
 CND_ARTIFACT_PATH_SunOS-x86=dist/SunOS-x86/OracleSolarisStudio-Solaris-x86/libBuildTrace.so
-CND_PACKAGE_DIR_SunOS-x86=dist/package
-CND_PACKAGE_NAME_SunOS-x86=cnd-build-trace-1.0.zip
-CND_PACKAGE_PATH_SunOS-x86=dist/package/cnd-build-trace-1.0.zip
+CND_PACKAGE_DIR_SunOS-x86=dist/SunOS-x86/OracleSolarisStudio-Solaris-x86/package
+CND_PACKAGE_NAME_SunOS-x86=libBuildTrace.so.tar
+CND_PACKAGE_PATH_SunOS-x86=dist/SunOS-x86/OracleSolarisStudio-Solaris-x86/package/libBuildTrace.so.tar
 # SunOS-x86_64 configuration
 CND_PLATFORM_SunOS-x86_64=OracleSolarisStudio-Solaris-x86
 CND_ARTIFACT_DIR_SunOS-x86_64=dist/SunOS-x86_64/OracleSolarisStudio-Solaris-x86
@@ -54,6 +54,22 @@ CND_ARTIFACT_PATH_Linux-x86_64=dist/Linux-x86_64/OracleSolarisStudio-Linux-x86/l
 CND_PACKAGE_DIR_Linux-x86_64=dist/Linux-x86_64/OracleSolarisStudio-Linux-x86/package
 CND_PACKAGE_NAME_Linux-x86_64=libBuildTrace.so.tar
 CND_PACKAGE_PATH_Linux-x86_64=dist/Linux-x86_64/OracleSolarisStudio-Linux-x86/package/libBuildTrace.so.tar
+# MacOSX-x86 configuration
+CND_PLATFORM_MacOSX-x86=GNU-MacOSX
+CND_ARTIFACT_DIR_MacOSX-x86=dist/MacOSX-x86/GNU-MacOSX
+CND_ARTIFACT_NAME_MacOSX-x86=libBuildTrace.dylib
+CND_ARTIFACT_PATH_MacOSX-x86=dist/MacOSX-x86/GNU-MacOSX/libBuildTrace.dylib
+CND_PACKAGE_DIR_MacOSX-x86=dist/MacOSX-x86/GNU-MacOSX/package
+CND_PACKAGE_NAME_MacOSX-x86=libBuildTrace.dylib.tar
+CND_PACKAGE_PATH_MacOSX-x86=dist/MacOSX-x86/GNU-MacOSX/package/libBuildTrace.dylib.tar
+# MacOSX-x86_64 configuration
+CND_PLATFORM_MacOSX-x86_64=GNU-MacOSX
+CND_ARTIFACT_DIR_MacOSX-x86_64=dist/MacOSX-x86_64/GNU-MacOSX
+CND_ARTIFACT_NAME_MacOSX-x86_64=libBuildTrace.dylib
+CND_ARTIFACT_PATH_MacOSX-x86_64=dist/MacOSX-x86_64/GNU-MacOSX/libBuildTrace.dylib
+CND_PACKAGE_DIR_MacOSX-x86_64=dist/MacOSX-x86_64/GNU-MacOSX/package
+CND_PACKAGE_NAME_MacOSX-x86_64=libBuildTrace.dylib.tar
+CND_PACKAGE_PATH_MacOSX-x86_64=dist/MacOSX-x86_64/GNU-MacOSX/package/libBuildTrace.dylib.tar
 #
 # include compiler specific variables
 #
