@@ -1783,9 +1783,7 @@ class OccurenceBuilder {
         
         QualifiedName qualifiedName = null;
         if (nodeInfo != null) {
-            System.out.println("nodeInfo: " + nodeInfo.getKind());
             qualifiedName = nodeInfo.getQualifiedName();
-            System.out.println("Jmeno: " + qualifiedName.getKind());
             if(qualifiedName.getKind() != QualifiedNameKind.FULLYQUALIFIED) {
                 
                 while (inScope != null && !(inScope instanceof NamespaceScope)) {
@@ -1825,7 +1823,6 @@ class OccurenceBuilder {
                 }
             }
         }
-        System.out.println("resutl: "+ qualifiedName);
         return qualifiedName;
     }
 
