@@ -435,6 +435,12 @@ public class JFXProjectGenerator {
                 ep.setProperty(JFXProjectProperties.PRELOADER_JAR_PATH, ""); // NOI18N
                 ep.setProperty(JFXProjectProperties.PRELOADER_JAR_FILENAME, ""); // NOI18N
             }
+            
+            if (type == WizardType.FXML) {
+                // Workaround of JavaFX 2.0 issue causing FXML apps crash when signing is disabled
+                ep.setProperty(JFXProjectProperties.JAVAFX_SIGNING_ENABLED, "true"); // NOI18N
+                ep.setProperty(JFXProjectProperties.JAVAFX_SIGNING_TYPE, JFXProjectProperties.SigningType.SELF.getString());
+            }
         }
 
         // TODO select from UI
