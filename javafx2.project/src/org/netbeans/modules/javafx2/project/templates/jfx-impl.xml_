@@ -391,6 +391,17 @@
 
     <macrodef name="deploy-deploy-template">
         <sequential>
+            <echo message="javafx.run.htmltemplate = ${javafx.run.htmltemplate}" level="verbose"/>
+            <pathconvert property="javafx.run.htmltemplate.processed">
+                <path path="${javafx.run.htmltemplate}"/>
+                <mapper>
+                     <chainedmapper>
+                          <flattenmapper/>
+                          <regexpmapper from="(.*)(\.html?)$" to="\1-processed\2"/>
+                          <globmapper from="*" to="${jfx.deployment.dir}${file.separator}*" casesensitive="no"/>
+                     </chainedmapper>
+                </mapper>
+            </pathconvert>
             <fx:deploy width="${javafx.width}" height="${javafx.height}"
                       outdir="${jfx.deployment.dir}" embedjnlp="true" updatemode="${update-mode}"
                       outfile="${application.title}" includeDT="${javafx.deploy.includeDT}">
