@@ -32,7 +32,7 @@
                       <EmptySpace min="-2" pref="19" max="-2" attributes="0"/>
                       <Component id="smartyVersionComboBox" min="-2" pref="126" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="jSeparator1" alignment="0" pref="586" max="32767" attributes="0"/>
+                  <Component id="jSeparator1" alignment="0" pref="592" max="32767" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="depthOfScanningLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
@@ -55,7 +55,6 @@
                       </Group>
                   </Group>
               </Group>
-              <EmptySpace min="-2" pref="215" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
