@@ -690,7 +690,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
         // System.err.printf("tokenOffset = %d, tokenLen = %d, tokenID = %s\n", tokenOffset, tokenLen, tokenID == null ? "null" : tokenID.toString());
         CharSequence txt = token.text();
         if (!isMacroExpansion() && tokenOffset + tokenLen > endScanOffset) {
-            assert (endScanOffset > tokenOffset) : "end - " + endScanOffset + " start - " + tokenOffset;
+            assert (endScanOffset > tokenOffset) : "end - " + endScanOffset + " start - " + tokenOffset + " tokenLen - " + tokenLen + "tokenID - " + tokenID + " txt = \n" + txt;
             txt = txt.subSequence(0, endScanOffset - tokenOffset);
         }
         StringBuilder buf = new StringBuilder(txt);

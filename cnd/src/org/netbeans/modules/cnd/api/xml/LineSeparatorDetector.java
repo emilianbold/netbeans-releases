@@ -44,10 +44,6 @@ package org.netbeans.modules.cnd.api.xml;
 import java.io.IOException;
 import java.io.InputStream;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.HostInfo;
-import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
-import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
-import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileObject;
 
@@ -78,26 +74,7 @@ public final class LineSeparatorDetector {
     public LineSeparatorDetector(FileObject fo, FileObject projectDir) {
         ExecutionEnvironment executionEnvironment = FileSystemProvider.getExecutionEnvironment(projectDir);
         if (executionEnvironment.isRemote()) {
-            try {
-                HostInfo hostInfo = HostInfoUtils.getHostInfo(executionEnvironment);
-                OSFamily oSFamily = hostInfo.getOSFamily();
-                switch(oSFamily) {
-                    case WINDOWS:
-                        defaultSeparator = "\r\n"; // NOI18N
-                        break;
-                    case MACOSX:
-                        defaultSeparator = "\r";// NOI18N
-                        break;
-                    case SUNOS:
-                    case LINUX:
-                    case UNKNOWN:
-                    default:
-                        defaultSeparator = "\n";// NOI18N
-                        break;
-                }
-            } catch (IOException ex) {
-            } catch (CancellationException ex) {
-            }
+            defaultSeparator = "\n";// NOI18N
         }
         if (fo != null && fo.isValid()) {
             InputStream stream = null;
