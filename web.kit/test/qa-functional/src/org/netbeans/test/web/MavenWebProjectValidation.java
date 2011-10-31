@@ -100,6 +100,9 @@ public class MavenWebProjectValidation extends WebProjectValidation {
         NewWebProjectServerSettingsStepOperator serverStep = new NewWebProjectServerSettingsStepOperator();
         // uncomment when bug 204278 fixed
         //serverStep.selectJavaEEVersion(getEEVersion());
+        if (JAVA_EE_5.equals(getEEVersion())) {
+            serverStep.cboJavaEEVersion().selectItem("1.5");
+        }
         serverStep.finish();
         verifyWebPagesNode("index.jsp");
         waitScanFinished();

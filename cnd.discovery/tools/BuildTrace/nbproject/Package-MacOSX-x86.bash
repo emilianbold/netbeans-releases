@@ -6,15 +6,15 @@
 
 # Macros
 TOP=`pwd`
-CND_PLATFORM=OracleSolarisStudio-Solaris-x86
-CND_CONF=SunOS-x86
+CND_PLATFORM=GNU-MacOSX
+CND_CONF=MacOSX-x86
 CND_DISTDIR=dist
 CND_BUILDDIR=build
 NBTMPDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}/tmp-packaging
 TMPDIRNAME=tmp-packaging
-OUTPUT_PATH=${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libBuildTrace.so
-OUTPUT_BASENAME=libBuildTrace.so
-PACKAGE_TOP_DIR=libBuildTrace.so/
+OUTPUT_PATH=${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libBuildTrace.dylib
+OUTPUT_BASENAME=libBuildTrace.dylib
+PACKAGE_TOP_DIR=libBuildTrace.dylib/
 
 # Functions
 function checkReturnCode
@@ -59,15 +59,15 @@ mkdir -p ${NBTMPDIR}
 
 # Copy files and create directories and links
 cd "${TOP}"
-makeDirectory "${NBTMPDIR}/libBuildTrace.so/lib"
+makeDirectory "${NBTMPDIR}/libBuildTrace.dylib/lib"
 copyFileToTmpDir "${OUTPUT_PATH}" "${NBTMPDIR}/${PACKAGE_TOP_DIR}lib/${OUTPUT_BASENAME}" 0644
 
 
 # Generate tar file
 cd "${TOP}"
-rm -f ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/package/libBuildTrace.so.tar
+rm -f ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/package/libBuildTrace.dylib.tar
 cd ${NBTMPDIR}
-tar -vcf ../../../../${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/package/libBuildTrace.so.tar *
+tar -vcf ../../../../${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/package/libBuildTrace.dylib.tar *
 checkReturnCode
 
 # Cleanup

@@ -326,9 +326,9 @@ ${cursor}]]></code></codetemplate>
      ${cursor}]]></code></codetemplate>
      <codetemplate abbreviation="csort"><code><![CDATA[${collsType type="java.util.Collections" default="Collections" editable="false"}.sort(${var instanceof="java.util.List"});
          ${cursor}]]></code></codetemplate>
-     <codetemplate abbreviation="form"><code><![CDATA[for (Map.Entry<${KeyType}, ${ValType}> en : ${map instanceof="java.util.Map" default="m"}.entrySet()) {
-            ${KeyType} key = en.getKey();
-            ${ValType} val = en.getValue();
+     <codetemplate abbreviation="form"><code><![CDATA[for (${entryType iterableElementType default="Map.Entry" editable=false} ${entry newVarName default="en"} : ${map instanceof="java.util.Map" default="m"}.entrySet()) {
+            ${KeyType rightSideType default="Object"} ${key newVarName default="key"} = ${entry}.getKey();
+            ${ValType rightSidetype default="Object"} ${val newVarName default="val"} = ${entry}.getValue();
             ${cursor}
         }]]></code></codetemplate>
 

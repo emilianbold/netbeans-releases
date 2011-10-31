@@ -121,6 +121,12 @@ public class HibernateCodeGenWizardDescriptor implements WizardDescriptor.Panel,
         SourceGroup sourceGroup = getComponent().getLocationValue();
 
         DataObject cfgDataObject = null;
+
+        if (getComponent().getConfigurationFile() == null) {
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(HibernateCodeGenWizardDescriptor.class, "ERR_ConfFileChooser")); // NOI18N
+            return false;
+        }
+        
         try {
             cfgDataObject = DataObject.find(getComponent().getConfigurationFile());
         } catch (DataObjectNotFoundException ex) {
@@ -145,10 +151,6 @@ public class HibernateCodeGenWizardDescriptor implements WizardDescriptor.Panel,
         }
 
 
-        if (getComponent().getConfigurationFile() == null) {
-            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(HibernateCodeGenWizardDescriptor.class, "ERR_ConfFileChooser")); // NOI18N
-            return false;
-        }
 
         if (getComponent().getRevengFile() == null) {
             wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(HibernateCodeGenWizardDescriptor.class, "ERR_RevengFileChooser")); // NOI18N

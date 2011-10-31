@@ -61,6 +61,7 @@ import org.netbeans.modules.html.editor.HtmlPreferences;
 import org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem;
 import org.netbeans.modules.html.editor.api.gsf.HtmlExtension;
 import org.netbeans.modules.html.editor.api.gsf.HtmlExtension.CompletionContext;
+import org.netbeans.modules.html.editor.api.gsf.HtmlExtensionTestSupport;
 import org.netbeans.modules.html.editor.completion.HtmlCompletionTestSupport.Match;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.spi.editor.completion.CompletionItem;
@@ -436,7 +437,7 @@ public class HtmlCompletionQueryTest extends HtmlCompletionTestBase {
         
         assertItems("<my:tag att|", arr("fake"), Match.CONTAINS);
         
-        
+        HtmlExtensionTestSupport.EXTENSIONS.clear();
     }
     
     public void testHtmlExtensionCompletionOfTagAttributeValue() throws BadLocationException, ParseException {
@@ -467,7 +468,7 @@ public class HtmlCompletionQueryTest extends HtmlCompletionTestBase {
         assertItems("<my:tag attr=\"|\"", arr("fake"), Match.CONTAINS);
         assertItems("<my:tag attr=\"fa|\"", arr("fake"), Match.CONTAINS);
         
-        
+        HtmlExtensionTestSupport.EXTENSIONS.clear();
     }
     
     public void testInputTagTypeAttributeCompletion() throws BadLocationException, ParseException {
@@ -489,6 +490,9 @@ public class HtmlCompletionQueryTest extends HtmlCompletionTestBase {
         assertCompletedText("<p>abc<|", "/p", "<p>abc</p>|");
     }
     
+    public void testDirAttribute() throws BadLocationException, ParseException {
+        assertItems("<div dir=\"|\">", arr("ltr", "rtl"), Match.EXACT);
+    }
     //helper methods ------------
 
     @Override

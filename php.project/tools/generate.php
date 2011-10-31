@@ -167,6 +167,12 @@ function clean_php_identifier ($name) {
 	return $name;
 }
 
+function clean_php_value($type) {
+    $type = trim($type);
+    $type = strip_tags($type);
+    return $type;
+}
+
 /**
  * Makes generic key from given function reference
  * @param name ReflectionMethod function reference
@@ -270,7 +276,7 @@ function parse_phpdoc_functions ($phpdocDir, $extensions) {
 								$parameter['isreference'] = true;
 							}
 							if (@strlen(trim($match[5][$i]))) {
-								$parameter['defaultvalue'] = trim($match[5][$i]);
+								$parameter['defaultvalue'] = clean_php_value($match[5][$i]);
                                                                 $parameter['isoptional'] = true;
 							}
 							$functionsDoc[$refname]['parameters'][] = $parameter;
@@ -820,11 +826,15 @@ function print_doccomment ($ref, $tabs = 0) {
 	}
 	else if ($ref instanceof ReflectionFunctionAbstract) {
 		$funckey = make_funckey_from_ref ($ref);
-		$returntype = @$functionsDoc[$funckey]['returntype'];
                 $id = @$functionsDoc[$funckey]['id'];
                 $ver_info = findVerInfo($id);
                 $desc = @$functionsDoc[$funckey]['quickref'];
-		$returndoc = newline_to_phpdoc (@$functionsDoc[$funckey]['returndoc'], $tabs);
+		$returntype = "";
+                $returndoc = "";
+                if (strpos($funckey, "::__construct") === false) {
+                    $returntype = @$functionsDoc[$funckey]['returntype'];
+                    $returndoc = newline_to_phpdoc (@$functionsDoc[$funckey]['returndoc'], $tabs);
+                }
 
 		$paramsRef = $ref->getParameters();
 		$parameters = @$functionsDoc[$funckey]['parameters'];
@@ -878,7 +888,10 @@ function print_doccomment ($ref, $tabs = 0) {
                                 print "\n";
                             }
                         }
-			if ($returntype) {
+			if ($returntype || $returndoc) {
+                            if (!$returntype) {
+                                $returntype = 'mixed';
+                            }
 				print_tabs ($tabs);
 				print " * @return " . trim("{$returntype} {$returndoc}") . "\n";
 			}
@@ -907,6 +920,7 @@ function print_doccomment ($ref, $tabs = 0) {
  */
 function xml_to_phpdoc ($str) {
 	$str = str_replace ("&return.success;", "Returns true on success or false on failure.", $str);
+	$str = str_replace ("&return.falseforfailure;", " or &false; on failure", $str);
 	$str = str_replace ("&return.void;", "", $str);
 	$str = str_replace ("&true;", "true", $str);
 	$str = str_replace ("&null;", "null", $str);
@@ -916,6 +930,13 @@ function xml_to_phpdoc ($str) {
 	$str = str_replace ("&style.procedural;", "Procedural style", $str);
 	$str = str_replace ("&example.outputs.similar;", "The above example will output something similar to:", $str);
 	$str = str_replace ("&gmp.parameter;", "It can be either a GMP number resource, or a numeric string given that it is possible to convert the latter to a number.", $str);
+	$str = str_replace ("&oci.parameter.connection;", "An Oracle connection identifier, returned by <function>oci_connect</function>, <function>oci_pconnect</function>, or <function>oci_new_connect</function>.", $str);
+	$str = str_replace ("&oci.arg.statement.id;", "A valid OCI8 statement identifier created by <function>oci_parse</function> and executed by <function>oci_execute</function>, or a <literal>REF CURSOR</literal> statement identifier.", $str);
+	$str = str_replace ("&oci.db;", '<p>Contains the <literal>Oracle instance</literal> to connect to. It can be an Easy Connect string, or a Connect Name from the <filename>tnsnames.ora</filename> file, or the name of a local Oracle instance.</p><p>If not specified, PHP uses environment variables such as <constant>TWO_TASK</constant> (on Linux) or <constant>LOCAL</constant> (on Windows) and <constant>ORACLE_SID</constant> to determine the <literal>Oracle instance</literal> to connect to. </p><p>To use the Easy Connect naming method, PHP must be linked with Oracle 10g or greater Client libraries. The Easy Connect string for Oracle 10g is of the form: <emphasis>[//]host_name[:port][/service_name]</emphasis>. With Oracle 11g, the syntax is: <emphasis>[//]host_name[:port][/service_name][:server_type][/instance_name]</emphasis>. Service names can be found by running the Oracle utility <literal>lsnrctl status</literal> on the database server machine.</p><p>The <filename>tnsnames.ora</filename> file can be in the Oracle Net search path, which includes <filename>$ORACLE_HOME/network/admin</filename> and <filename>/etc</filename>.  Alternatively set <literal>TNS_ADMIN</literal> so that <filename>$TNS_ADMIN/tnsnames.ora</filename> is read.  Make sure the web daemon has read access to the file.</p>', $str);
+	$str = str_replace ("&oci.charset;", "Determines the character set used by the Oracle Client libraries.  The character set does not need to match the character set used by the database.  If it doesn't match, Oracle will do its best to convert data to and from the database character set.  Depending on the character sets this may not give usable results.  Conversion also adds some time overhead.", $str);
+        $str = str_replace ("&oci.sessionmode;", 'This parameter is available since version PHP 5 (PECL OCI8 1.1) and accepts the following values: <constant>OCI_DEFAULT</constant>, <constant>OCI_SYSOPER</constant> and <constant>OCI_SYSDBA</constant>. If either <constant>OCI_SYSOPER</constant> or <constant>OCI_SYSDBA</constant> were specified, this function will try to establish privileged connection using external credentials. Privileged connections are disabled by default. To enable them you need to set <link linkend="ini.oci8.privileged-connect">oci8.privileged_connect</link> to <literal>On</literal>.', $str);
+	$str = str_replace ("&Alias;", "Alias of", $str);
+	$str = str_replace ("&Description;", "Description", $str);
         $str = strip_tags_special ($str);
 	$str = preg_replace ("/  */", " ", $str);
 	$str = str_replace ("*/", "* /", $str);
@@ -1004,6 +1025,9 @@ function strip_tags_special ($str) {
     // handle "<pre><code>"
     $str = preg_replace ("/###\(pre\)###\s*\n\s*###\(code\)###/", "###(code)###", $str);
     $str = preg_replace ("/###\(\/code\)###\s*\n\s*###\(\/pre\)###/", "###(/code)###", $str);
+    // constant & function
+    $str = str_replace (array("<constant>", "<function>"), "###(b)###", $str);
+    $str = str_replace (array("</constant>", "</function>"), "###(/b)###", $str);
     // now strip the remaining tags
     $str = strip_tags ($str);
     // and restore the translated ones
