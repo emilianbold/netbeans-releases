@@ -86,8 +86,8 @@ public final class LineSeparatorDetector {
                         defaultSeparator = "\r\n"; // NOI18N
                         break;
                     case MACOSX:
-                        defaultSeparator = "\r";// NOI18N
-                        break;
+                        //defaultSeparator = "\r";// NOI18N
+                        //break;
                     case SUNOS:
                     case LINUX:
                     case UNKNOWN:
