@@ -39,40 +39,18 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.discovery.buildsupport;
+package org.netbeans.modules.html.editor.api.gsf;
 
-import java.io.IOException;
-import org.netbeans.modules.cnd.makeproject.api.wizards.CommonUtilities;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.HostInfo;
-import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
-import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import java.util.Collection;
+import java.util.Map;
 
 /**
  *
- * @author Alexander Simon
+ * @author marekfukala
  */
-public class BuildTraceSupport {
-    public static final String CND_TOOLS = "__CND_TOOLS__"; //NOI18N
-    public static final String CND_TOOLS_VALUE = System.getProperty("cnd.buildtrace.tools", "gcc:c++:g++:gfortran:g77:g90:g95:cc:CC:ffortran:f77:f90:f95"); //NOI18N
-    public static final String CND_BUILD_LOG = "__CND_BUILD_LOG__"; //NOI18N
+public class HtmlExtensionTestSupport {
     
-    public static boolean useBuildTrace() {
-        return CommonUtilities.isUseBuildTrace();
-    }
+    //allow a cleanup after a registration of a test extension
+    public static final Map<String, Collection<HtmlExtension>> EXTENSIONS = HtmlExtension.EXTENSIONS;
     
-    public static boolean supportedPlatforms(ExecutionEnvironment execEnv) {
-        try {
-            HostInfo hostInfo = HostInfoUtils.getHostInfo(execEnv);
-            switch(hostInfo.getOSFamily()) {
-                case MACOSX:
-                case LINUX:
-                case SUNOS:
-                    return true;
-            }
-        } catch (IOException ex) {
-        } catch (CancellationException ex) {
-        }
-        return false;
-    }
 }

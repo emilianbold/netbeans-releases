@@ -43,34 +43,29 @@
  */
 package org.netbeans.modules.refactoring.java.plugins;
 
-import java.net.URL;
-import org.netbeans.api.java.source.ClassIndex.SearchScopeType;
-import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.Map;
-import java.util.Set;
-import javax.lang.model.element.*;
+import java.net.URL;
+import java.util.*;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.source.ClassIndex.SearchScopeType;
 import org.netbeans.api.java.source.*;
-import org.netbeans.modules.refactoring.java.WhereUsedElement;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.ProgressEvent;
+import org.netbeans.modules.refactoring.api.Scope;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.java.SourceUtilsEx;
+import org.netbeans.modules.refactoring.java.WhereUsedElement;
 import org.netbeans.modules.refactoring.java.api.WhereUsedQueryConstants;
-import org.netbeans.modules.refactoring.api.Scope;
+import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.ErrorManager;
@@ -118,6 +113,44 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
     
     private Set<FileObject> getRelevantFiles(final TreePathHandle tph) {
         Set<FileObject> fileSet;
+        if(cp == null) {
+            cp = getClasspathInfo(refactoring);
+        }
+        if(isSearchFromBaseClass()) {
+            JavaSource source;
+            source = createSource(tph.getFileObject(), cp, tph);
+            try {
+                source.runWhenScanFinished(new Task<CompilationController>() {
+
+                    @Override
+                    public void run(CompilationController info) throws Exception {
+                        info.toPhase(JavaSource.Phase.RESOLVED);
+                        final Element element = tph.resolveElement(info);
+                        if (element == null) {
+                            throw new NullPointerException(String.format("#145291: Cannot resolve handle: %s\n%s", tph, info.getClasspathInfo())); // NOI18N
+                        }
+                        ElementKind kind = element.getKind();
+                        if (kind == ElementKind.METHOD && isSearchFromBaseClass()) {
+                            Collection<ExecutableElement> overridens = RetoucheUtils.getOverridenMethods((ExecutableElement)element, info);
+                            if(!overridens.isEmpty()) {
+                                ExecutableElement el = (ExecutableElement) overridens.iterator().next();
+                                assert el!=null;
+                                basem = TreePathHandle.create(el, info);
+                                refactoring.setRefactoringSource(Lookups.fixed(basem));
+                            }
+                            if (basem != null && (basem.getFileObject() == null || basem.getFileObject().getNameExt().endsWith("class"))) { //NOI18N
+                                cp = RetoucheUtils.getClasspathInfoFor(tph, basem);
+                            } else {
+                                cp = RetoucheUtils.getClasspathInfoFor(basem!=null?basem:tph);
+                            }
+                        }
+                    }
+                }, true);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        
         Scope customScope = refactoring.getContext().lookup(Scope.class);
         if (customScope != null) {
             fileSet = new HashSet<FileObject>();
@@ -136,8 +169,8 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
             
             for(NonRecursiveFolder nonRecursiveFolder : customScope.getFolders()) {
                 FileObject folder = nonRecursiveFolder.getFolder();
-                ClassPath cp = ClassPath.getClassPath(folder, ClassPath.SOURCE);
-                final FileObject sourceRoot = cp.findOwnerRoot(folder);
+                ClassPath classPath = ClassPath.getClassPath(folder, ClassPath.SOURCE);
+                final FileObject sourceRoot = classPath.findOwnerRoot(folder);
                 Set<NonRecursiveFolder> packages = folders.get(sourceRoot);
                 if(packages == null) {
                     packages = new HashSet<NonRecursiveFolder>();
@@ -160,36 +193,6 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
             }
             return fileSet;
         } else {
-            JavaSource source = JavaSource.forFileObject(tph.getFileObject());
-            try {
-                source.runWhenScanFinished(new Task<CompilationController>() {
-
-                    @Override
-                    public void run(CompilationController info) throws Exception {
-                        Element element = tph.resolveElement(info);
-                        ElementKind kind = element.getKind();
-                        if (kind == ElementKind.METHOD && isSearchFromBaseClass()) {
-                            Collection<ExecutableElement> overridens = RetoucheUtils.getOverridenMethods((ExecutableElement)element, info);
-                            if(!overridens.isEmpty()) {
-                                ExecutableElement el = (ExecutableElement) overridens.iterator().next();                        
-                                assert el!=null;
-                                basem = TreePathHandle.create(el, info);
-                                refactoring.setRefactoringSource(Lookups.fixed(basem));
-                            }
-                            if (basem != null && (basem.getFileObject() == null || basem.getFileObject().getNameExt().endsWith("class"))) { //NOI18N
-                                cp = RetoucheUtils.getClasspathInfoFor(tph, basem);
-                            } else {
-                                cp = RetoucheUtils.getClasspathInfoFor(basem!=null?basem:tph);
-                            }
-                        }
-                    }
-                }, true);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-            if(cp == null) {
-                cp = getClasspathInfo(refactoring);
-            }
             fileSet = getRelevantFiles(
                     basem!=null?basem:tph,
                     cp,
@@ -213,15 +216,7 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
         
         final FileObject file = tph.getFileObject();
         JavaSource source;
-        if (file!=null) {
-           final ClassPath mergedPlatformPath = merge(cpInfo.getClassPath(ClasspathInfo.PathKind.BOOT),ClassPath.getClassPath(file, ClassPath.BOOT));
-           final ClassPath mergedCompilePath  = merge(cpInfo.getClassPath(ClasspathInfo.PathKind.COMPILE),ClassPath.getClassPath(file, ClassPath.COMPILE));
-           final ClassPath mergedSourcePath   = merge(cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE),ClassPath.getClassPath(file, ClassPath.SOURCE));
-           final ClasspathInfo mergedInfo = ClasspathInfo.create(mergedPlatformPath, mergedCompilePath, mergedSourcePath);
-           source = JavaSource.create(mergedInfo, new FileObject[]{tph.getFileObject()});
-        } else {
-            source = JavaSource.create(cpInfo);
-        }
+        source = createSource(file, cpInfo, tph);
         //XXX: This is slow!
         CancellableTask<CompilationController> task = new CancellableTask<CompilationController>() {
             public void cancel() {
@@ -388,6 +383,20 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
         return refactoring.getBooleanValue(WhereUsedQueryConstants.SEARCH_FROM_BASECLASS);
     }
 
+    private static JavaSource createSource(final FileObject file, final ClasspathInfo cpInfo, final TreePathHandle tph) throws IllegalArgumentException {
+        JavaSource source;
+        if (file != null) {
+            final ClassPath mergedPlatformPath = merge(cpInfo.getClassPath(ClasspathInfo.PathKind.BOOT), ClassPath.getClassPath(file, ClassPath.BOOT));
+            final ClassPath mergedCompilePath = merge(cpInfo.getClassPath(ClasspathInfo.PathKind.COMPILE), ClassPath.getClassPath(file, ClassPath.COMPILE));
+            final ClassPath mergedSourcePath = merge(cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE), ClassPath.getClassPath(file, ClassPath.SOURCE));
+            final ClasspathInfo mergedInfo = ClasspathInfo.create(mergedPlatformPath, mergedCompilePath, mergedSourcePath);
+            source = JavaSource.create(mergedInfo, new FileObject[]{tph.getFileObject()});
+        } else {
+            source = JavaSource.create(cpInfo);
+        }
+        return source;
+    }
+    
     private static ClassPath merge (final ClassPath... cps) {
         final Set<URL> roots = new LinkedHashSet<URL>();
         for (final ClassPath cp : cps) {

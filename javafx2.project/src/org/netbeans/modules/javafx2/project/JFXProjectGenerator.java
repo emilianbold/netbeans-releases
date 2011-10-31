@@ -129,7 +129,9 @@ public class JFXProjectGenerator {
         dirFO.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
             @Override
             public void run() throws IOException {
-                h[0] = createProject(dirFO, name, "src", "test", mainClass, manifestFile, //NOI18N
+//                h[0] = createProject(dirFO, name, "src", "test", mainClass, manifestFile, //NOI18N
+//                        librariesDefinition, platformName, preloader, type);
+                h[0] = createProject(dirFO, name, "src", null, mainClass, manifestFile, //NOI18N
                         librariesDefinition, platformName, preloader, type);
                 final Project p = ProjectManager.getDefault().findProject(dirFO);
                 createJfxExtension(p, dirFO);
@@ -147,7 +149,7 @@ public class JFXProjectGenerator {
                     Exceptions.printStackTrace(ex.getException());
                 }
                 FileObject srcFolder = dirFO.createFolder("src"); // NOI18N
-                dirFO.createFolder("test"); // NOI18N
+//                dirFO.createFolder("test"); // NOI18N
                 createFiles(mainClass, srcFolder, type);
             }
         });
@@ -163,7 +165,7 @@ public class JFXProjectGenerator {
         }
     }
 
-    public static AntProjectHelper createProject(final File dir, final String name,
+    static AntProjectHelper createProject(final File dir, final String name,
             final File[] sourceFolders, final File[] testFolders,
             final String manifestFile, final String librariesDefinition,
             final String buildXmlName, final String platformName,
@@ -277,7 +279,10 @@ public class JFXProjectGenerator {
         dirFO.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
             @Override
             public void run() throws IOException {
-                h[0] = createProject(dirFO, name, "src", "test", preloaderClassName, // NOI18N
+//                h[0] = createProject(dirFO, name, "src", "test", preloaderClassName, // NOI18N
+//                        JavaFXProjectWizardIterator.MANIFEST_FILE, librariesDefinition,
+//                        platformName, null, WizardType.PRELOADER);
+                h[0] = createProject(dirFO, name, "src", null, preloaderClassName, // NOI18N
                         JavaFXProjectWizardIterator.MANIFEST_FILE, librariesDefinition,
                         platformName, null, WizardType.PRELOADER);
                 
@@ -298,7 +303,7 @@ public class JFXProjectGenerator {
                 }
                 
                 FileObject srcFolder = dirFO.createFolder("src"); // NOI18N
-                dirFO.createFolder("test"); // NOI18N
+//                dirFO.createFolder("test"); // NOI18N
                 createPreloaderClass(preloaderClassName, srcFolder);
             }
         });
