@@ -78,6 +78,8 @@ import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentListener;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
@@ -170,6 +172,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
         jsfComponentsTable.setDefaultRenderer(Boolean.class, renderer);
         jsfComponentsTable.setDefaultRenderer(JButton.class, renderer);
         jsfComponentsTable.addMouseListener(new JTableButtonMouseListener(jsfComponentsTable));
+        jsfComponentsTableModel.addTableModelListener(new JsfComponentsTableModelListener());
         initJsfComponentTableVisualProperties(jsfComponentsTable);
 
         
@@ -1541,6 +1544,17 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
                 }
                 return button;
             }
+    }
+
+    private class JsfComponentsTableModelListener implements TableModelListener {
+
+        @Override
+        public void tableChanged(TableModelEvent e) {
+            if (jsfComponentsTable.getSelectedRow() == -1) {
+                return;
+            }
+            panel.fireChangeEvent();
+        }
     }
 
     private class JTableButtonMouseListener extends MouseAdapter {
