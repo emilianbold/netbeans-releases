@@ -70,6 +70,8 @@ import org.openide.util.RequestProcessor;
 @Messages("NbmWizardPanelVisual.wait=Searching...")
 public class NbmWizardPanelVisual extends javax.swing.JPanel {
 
+    private static final RequestProcessor RP = new RequestProcessor(NbmWizardPanelVisual.class);
+
     private static final String SEARCHING = NbmWizardPanelVisual_wait();
     private final NbmWizardPanel panel;
     private ValidationGroup vg = ValidationGroup.create();
@@ -105,7 +107,7 @@ public class NbmWizardPanelVisual extends javax.swing.JPanel {
         if (info != null) {
             final List<RepositoryInfo> infos = Collections.singletonList(info);
             versionCombo.setModel(new DefaultComboBoxModel(new Object[] {SEARCHING}));
-            RequestProcessor.getDefault().post(new Runnable() {
+            RP.post(new Runnable() {
                 public @Override void run() {
                     final List<String> versions = new ArrayList<String>();
                     for (NBVersionInfo version : RepositoryQueries.getVersions("org.netbeans.cluster", "platform", infos)) { // NOI18N
