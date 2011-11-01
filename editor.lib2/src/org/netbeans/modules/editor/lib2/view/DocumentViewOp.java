@@ -543,7 +543,7 @@ public final class DocumentViewOp
                 assert (graphics instanceof Graphics2D) : "Not Graphics2D";
                 // Use rendering hints (antialiasing etc.)
                 if (renderingHints != null) {
-                    ((Graphics2D) graphics).setRenderingHints(renderingHints);
+                    ((Graphics2D) graphics).addRenderingHints(renderingHints);
                 }
                 fontRenderContext = ((Graphics2D) graphics).getFontRenderContext();
                 if (fontRenderContext != null) {

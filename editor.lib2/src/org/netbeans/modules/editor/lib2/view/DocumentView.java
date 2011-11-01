@@ -683,7 +683,7 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
                 if (op.isActive()) {
                     // Use rendering hints (antialiasing etc.)
                     if (g != null && op.renderingHints != null) {
-                        g.setRenderingHints(op.renderingHints);
+                        g.addRenderingHints(op.renderingHints);
                     }
                     children.paint(this, g, alloc, clipBounds);
                 }
