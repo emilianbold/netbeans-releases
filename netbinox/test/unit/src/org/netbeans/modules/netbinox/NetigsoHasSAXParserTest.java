@@ -37,54 +37,55 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Oracle
  */
-package org.netbeans.modules.css.editor.module.main;
+package org.netbeans.modules.netbinox;
 
-import org.netbeans.modules.parsing.spi.ParseException;
+import java.util.Locale;
+import java.util.logging.Level;
+import javax.xml.parsers.SAXParserFactory;
+import junit.framework.Test;
+import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.junit.NbTestCase;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.ServiceReference;
+import org.osgi.framework.launch.Framework;
 
 /**
+ * Is SAXParser service provided?
  *
- * @author mfukala@netbeans.org
+ * @author Jaroslav Tulach
  */
-public class SelectorsModuleTest extends CssModuleTestBase {
-    
-    public SelectorsModuleTest(String name) {
+public class NetigsoHasSAXParserTest extends NbTestCase {
+    public NetigsoHasSAXParserTest(String name) {
         super(name);
     }
+    
+    public static Test suite() {
+        return NbModuleSuite.create(
+            NbModuleSuite.emptyConfiguration().addTest(
+                NetigsoHasSAXParserTest.class
+            ).honorAutoloadEager(true).clusters(
+                ".*"
+            ).failOnException(Level.WARNING)/*.failOnMessage(Level.WARNING)*/
+            .gui(false)
+        );
+    }
+    
 
-    //Bug 204504 - Code completion for pseudo-classes doesn't work properly
-    public void testIssue204504() throws ParseException  {
-        checkCC("p { } \ndiv:|\n", arr("enabled"), Match.CONTAINS);
-        checkCC("p { } \ndiv:|", arr("enabled"), Match.CONTAINS);
+    protected @Override void setUp() throws Exception {
+        Locale.setDefault(Locale.US);
+        clearWorkDir();
     }
-    
-    public void testPseudoClassesCompletionDoesnOfferSelector() throws ParseException  {
-        checkCC("div:|", arr("body"), Match.DOES_NOT_CONTAIN);
-    }
-    
-    public void testPseudoClassesCompletion() throws ParseException  {
-        checkCC("div:| ", arr("enabled"), Match.CONTAINS);
-        checkCC("div:| \n h1 { } ", arr("enabled"), Match.CONTAINS);
-        checkCC("div:ena|", arr("enabled"), Match.CONTAINS);
-        checkCC("div:ena| h1 { }", arr("enabled"), Match.CONTAINS);
-        checkCC("div:enabled| h1 { }", arr("enabled"), Match.CONTAINS);
-    }
-    
-    public void testPseudoElementsCompletion() throws ParseException  {
-        checkCC("div::| ", arr("after"), Match.CONTAINS);
-        checkCC("div::|  h1 { } ", arr("after"), Match.CONTAINS);
-        checkCC("div::af|", arr("after"), Match.CONTAINS);
-        checkCC("div::af| h1 { }", arr("after"), Match.CONTAINS);
-        checkCC("div::after| h1 { }", arr("after"), Match.CONTAINS);
-    }
-    
-    public void testPseudoClassAfterClassSelector() throws ParseException {
-        checkCC(".aclass:| ", arr("active"), Match.CONTAINS);
-        checkCC(".aclass:ac| ", arr("active"), Match.CONTAINS);
+
+    public void testSAXParserAvailable() throws Exception {
+        Framework f = IntegrationTest.findFramework();
+        BundleContext bc = f.getBundleContext();
         
-        checkCC("div.aclass:| ", arr("active"), Match.CONTAINS);
-        checkCC("div.aclass:ac| ", arr("active"), Match.CONTAINS);
-        
+        ServiceReference sr = bc.getServiceReference(SAXParserFactory.class.getName());
+        assertNotNull("SAX Service found", sr);
+        Object srvc = bc.getService(sr);
+        assertTrue("Instance of the right type: " + srvc, srvc instanceof SAXParserFactory);
+            
     }
 }
