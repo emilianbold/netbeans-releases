@@ -114,12 +114,16 @@ public class FtpClient implements RemoteClient {
             protocolCommandListener = null;
         }
         keepAliveInterval = configuration.getKeepAliveInterval() * 1000;
-        keepAliveTask = KEEP_ALIVE_RP.create(new Runnable() {
-            @Override
-            public void run() {
-                keepAlive();
-            }
-        });
+        if (keepAliveInterval <= 0) {
+            keepAliveTask = null;
+        } else {
+            keepAliveTask = KEEP_ALIVE_RP.create(new Runnable() {
+                @Override
+                public void run() {
+                    keepAlive();
+                }
+            });
+        }
     }
 
     private FTPClient createFtpClient(FtpConfiguration configuration) {
@@ -238,7 +242,9 @@ public class FtpClient implements RemoteClient {
     @Override
     public synchronized void disconnect() throws RemoteException {
         LOGGER.log(Level.FINE, "Remote client trying to disconnect");
-        keepAliveTask.cancel();
+        if (keepAliveTask != null) {
+            keepAliveTask.cancel();
+        }
         if (ftpClient.isConnected()) {
             LOGGER.log(Level.FINE, "Remote client connected -> disconnecting");
             try {
@@ -583,7 +589,9 @@ public class FtpClient implements RemoteClient {
     }
 
     private void scheduleKeepAlive() {
-        keepAliveTask.schedule(keepAliveInterval);
+        if (keepAliveTask != null) {
+            keepAliveTask.schedule(keepAliveInterval);
+        }
     }
 
     private static final class PrintCommandListener implements ProtocolCommandListener {
