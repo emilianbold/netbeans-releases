@@ -478,7 +478,7 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
         FontColorSettings fcs = MimeLookup.getLookup(mimeType).lookup(FontColorSettings.class);
         Map hints = (Map) fcs.getFontColors(FontColorNames.DEFAULT_COLORING).getAttribute(EditorStyleConstants.RenderingHints);
         if (!hints.isEmpty()) {
-            ((java.awt.Graphics2D)g).setRenderingHints(hints);
+            ((java.awt.Graphics2D)g).addRenderingHints(hints);
         }
         
         // if the gutter was not initialized yet, skip the painting        

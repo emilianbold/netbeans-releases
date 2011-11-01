@@ -130,7 +130,7 @@ public class FoldingToolTip extends JPanel {
 
             // Possibly apply the rendering hints
             if (renderingHints != null) {
-                ((java.awt.Graphics2D)g).setRenderingHints(renderingHints);
+                ((java.awt.Graphics2D)g).addRenderingHints(renderingHints);
             }
         }
     }
