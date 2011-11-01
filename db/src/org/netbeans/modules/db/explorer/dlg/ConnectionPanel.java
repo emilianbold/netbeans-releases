@@ -105,7 +105,7 @@ public class ConnectionPanel implements AddConnectionWizard.Panel, WizardDescrip
             try {
                 databaseConnection.setDefaultSchema(pw.getUser());
             } catch (Exception x) {
-                Logger.getLogger(ConnectionPanel.class.getName()).log(Level.INFO, x.getLocalizedMessage(), x.getCause());
+                Logger.getLogger(ConnectionPanel.class.getName()).log(Level.FINE, x.getLocalizedMessage(), x);
             }
             databaseConnection.setRememberPassword(databaseConnection.getPassword() != null && ! databaseConnection.getPassword().isEmpty());
             component = new NewConnectionPanel(pw, this, drv.getClassName(), databaseConnection);
@@ -118,6 +118,7 @@ public class ConnectionPanel implements AddConnectionWizard.Panel, WizardDescrip
             jc.putClientProperty(WizardDescriptor.PROP_CONTENT_NUMBERED, Boolean.FALSE);
             component.setName(pw.getSteps()[1]);
             fireChangeEvent();
+            component.checkValid();
         }
         return component;
     }
