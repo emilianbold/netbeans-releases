@@ -189,6 +189,9 @@ public class WSITModelSupport {
     
     public static WSDLModel getModelFromFO(FileObject wsdlFO, boolean editable) {
         WSDLModel model = null;
+        if ( wsdlFO == null ){
+            return null;
+        }
         ModelSource ms = org.netbeans.modules.xml.retriever.catalog.Utilities.getModelSource(wsdlFO, editable);
         try {
             model = WSDLModelFactory.getDefault().getModel(ms);
