@@ -101,9 +101,6 @@ public class CssCommentHandler extends CommentHandler.DefaultCommentHandler {
                     if(lastCommentStartIndex < range.getStart()) {
                         lastCommentStartIndex = -1;
                     }
-                    if(lastCommentEndIndex < range.getEnd()) {
-                        lastCommentEndIndex = -1;
-                    }
                 }
                 
                 int searchFrom = from;
