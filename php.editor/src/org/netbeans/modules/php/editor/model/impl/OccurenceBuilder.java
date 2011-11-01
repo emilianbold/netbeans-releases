@@ -51,6 +51,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.StringTokenizer;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.api.AliasedName;
 import org.netbeans.modules.php.editor.api.ElementQuery;
@@ -1789,37 +1790,48 @@ class OccurenceBuilder {
                 while (inScope != null && !(inScope instanceof NamespaceScope)) {
                     inScope = inScope.getInScope();
                 }
-                if (inScope != null && !((NamespaceScope)inScope).isDefaultNamespace()) { 
-                    NamespaceScope namespace = (NamespaceScope)inScope;
-                    if (qualifiedName.getKind() == QualifiedNameKind.UNQUALIFIED) {            
-                        qualifiedName = inScope.getNamespaceName().append(qualifiedName);
-                    } else {
-                        // needs to count 
-                        String firstSegmentName = qualifiedName.getSegments().getFirst();
-                        UseElement matchedUseElement = null;
-                        for(UseElement useElement : namespace.getDeclaredUses()) {
+                if (inScope != null) {
+                    NamespaceScope namespace = (NamespaceScope) inScope;
+                    // needs to count 
+                    String firstSegmentName = qualifiedName.getSegments().getFirst();
+                    UseElement matchedUseElement = null;
+                    int lastOffset = -1; // remember offset of the last use declaration, that fits
+                    for (UseElement useElement : namespace.getDeclaredUses()) {
+                        if (useElement.getOffset() < nodeInfo.getRange().getStart()) {
                             AliasedName aliasName = useElement.getAliasedName();
                             if (aliasName != null) {
-                                if (firstSegmentName.equals(aliasName.getAliasName())){
+                                //if it's allisased name
+                                if (firstSegmentName.equals(aliasName.getAliasName())) {
                                     matchedUseElement = useElement;
                                     continue;
                                 }
                             } else {
-                                if (firstSegmentName.equals(useElement.getNamespaceName().getSegments().getLast())) {
+                                // no alias
+                                if (lastOffset < useElement.getOffset() && useElement.getName().endsWith(firstSegmentName)) {
                                     matchedUseElement = useElement;
-                                    continue;
+                                    // we need to check all use elements that can fit the name
+                                    lastOffset = useElement.getOffset();
                                 }
                             }
                         }
-                        if (matchedUseElement != null) {
-                            ArrayList<String> segments = new ArrayList(matchedUseElement.getNamespaceName().getSegments());
-                            List<String> origName = qualifiedName.getSegments();
-                            for (int i = 1; i < origName.size(); i++) {
-                                segments.add(origName.get(i));
-                            }
-                            qualifiedName = QualifiedName.create(true, segments);
+                    }
+                    if (matchedUseElement != null) {
+                        ArrayList<String> segments = new ArrayList();
+                        // create segmens from the usage
+                        for (StringTokenizer st = new StringTokenizer(matchedUseElement.getName(), "\\"); st.hasMoreTokens();) {
+                            String token = st.nextToken();
+                            segments.add(token);
                         }
-                    } 
+                        // and add all segments from the name except the first one.
+                        // the first one mathces the name of the usage or alias. 
+                        List<String> origName = qualifiedName.getSegments();
+                        for (int i = 1; i < origName.size(); i++) {
+                            segments.add(origName.get(i));
+                        }
+                        qualifiedName = QualifiedName.create(true, segments);
+                    } else if (qualifiedName.getKind() == QualifiedNameKind.UNQUALIFIED) {
+                        qualifiedName = inScope.getNamespaceName().append(qualifiedName);
+                    }
                 }
             }
         }
