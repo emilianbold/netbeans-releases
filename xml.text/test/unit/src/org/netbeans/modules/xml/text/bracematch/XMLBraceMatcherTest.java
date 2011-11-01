@@ -108,7 +108,7 @@ public class XMLBraceMatcherTest extends AbstractTestCase {
         match = instance.doFindMatches();
         
         //in declaration end i.e. ">"
-        instance = new XMLBraceMatcher(doc, 78);
+        instance = new XMLBraceMatcher(doc, 79);
         origin = instance.doFindOrigin();
         assert(origin[0] == 78 && origin[1] == 79);
         match = instance.doFindMatches();
@@ -150,7 +150,7 @@ public class XMLBraceMatcherTest extends AbstractTestCase {
         //somewhere between "<root" and ">"
         instance = new XMLBraceMatcher(doc, 120);
         origin = instance.doFindOrigin();
-        assert(origin == null);
+        assert(origin[0] == 107 && origin[1] == 126);
         match = instance.doFindMatches();
         
         //inside "</root>"
@@ -158,7 +158,8 @@ public class XMLBraceMatcherTest extends AbstractTestCase {
         origin = instance.doFindOrigin();
         assert(origin[0] == 204 && origin[1] == 211);
         match = instance.doFindMatches();
-        assert(match[0] == 107 && match[1] == 126);
+        assert(match[0] == 107 && match[1] == 112);
+        assert(match[2] == 125 && match[3] == 126);
     }
     
     public void testTag2() throws Exception {
@@ -175,6 +176,7 @@ public class XMLBraceMatcherTest extends AbstractTestCase {
         origin = instance.doFindOrigin();
         assert(origin[0] == 204 && origin[1] == 211);
         match = instance.doFindMatches();
-        assert(match[0] == 107 && match[1] == 126);
+        assert(match[0] == 107 && match[1] == 112);
+        assert(match[2] == 125 && match[3] == 126);
     }
 }
