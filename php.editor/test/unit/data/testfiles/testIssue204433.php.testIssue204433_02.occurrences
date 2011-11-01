@@ -1,0 +1,3 @@
+class |>MARK_OCCURRENCES:EditForm<| extends \Zend_Form {
+            $form = new |>MARK_OCCURRENCES:EditForm<|();
+            $form = new |>MARK_OCCURRENCES:E^F<|();

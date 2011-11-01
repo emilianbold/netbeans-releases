@@ -46,10 +46,12 @@ import java.util.LinkedList;
 import java.util.List;
 import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
+import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
+import org.netbeans.modules.java.hints.declarative.DeclarativeHintTokenId;
 import org.netbeans.modules.java.hints.declarative.DeclarativeHintsParser;
 import org.netbeans.modules.java.hints.declarative.DeclarativeHintsParser.HintTextDescription;
 import org.netbeans.modules.java.hints.jackpot.impl.Utilities;
@@ -119,6 +121,7 @@ public class HintsTask extends ParserResultTask<Result> {
     public void cancel() {
     }
 
+    @MimeRegistration(mimeType=DeclarativeHintTokenId.MIME_TYPE, service=TaskFactory.class)
     public static final class FactoryImpl extends TaskFactory {
 
         @Override

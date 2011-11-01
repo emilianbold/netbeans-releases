@@ -137,7 +137,7 @@ public class CompletionJList extends JList {
         if (renderingHints != null && g instanceof Graphics2D) {
             Graphics2D g2d = (Graphics2D) g;
             RenderingHints oldHints = g2d.getRenderingHints();
-            g2d.setRenderingHints(renderingHints);
+            g2d.addRenderingHints(renderingHints);
             try {
                 super.paint(g2d);
             } finally {

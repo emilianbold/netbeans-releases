@@ -326,10 +326,10 @@ ${cursor}]]></code></codetemplate>
      ${cursor}]]></code></codetemplate>
      <codetemplate abbreviation="csort"><code><![CDATA[${collsType type="java.util.Collections" default="Collections" editable="false"}.sort(${var instanceof="java.util.List"});
          ${cursor}]]></code></codetemplate>
-     <codetemplate abbreviation="form"><code><![CDATA[for (${entryType iterableElementType default="Map.Entry" editable=false} ${entry newVarName default="en"} : ${map instanceof="java.util.Map" default="m"}.entrySet()) {
+     <codetemplate abbreviation="form" contexts="BLOCK,CASE,LABELED_STATEMENT" descriptionId="CT_form"><code><![CDATA[for (${entryType iterableElementType default="Map.Entry<Object, Object>" editable=false} ${entry newVarName default="en"} : ${map instanceof="java.util.Map" default="m"}.entrySet()) {
             ${KeyType rightSideType default="Object"} ${key newVarName default="key"} = ${entry}.getKey();
-            ${ValType rightSidetype default="Object"} ${val newVarName default="val"} = ${entry}.getValue();
-            ${cursor}
+            ${ValType rightSideType default="Object"} ${val newVarName default="val"} = ${entry}.getValue();
+            ${selection}${cursor}
         }]]></code></codetemplate>
 
      <!-- Instantiating common classes -->

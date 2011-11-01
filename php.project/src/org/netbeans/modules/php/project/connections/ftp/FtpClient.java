@@ -114,12 +114,16 @@ public class FtpClient implements RemoteClient {
             protocolCommandListener = null;
         }
         keepAliveInterval = configuration.getKeepAliveInterval() * 1000;
-        keepAliveTask = KEEP_ALIVE_RP.create(new Runnable() {
-            @Override
-            public void run() {
-                keepAlive();
-            }
-        });
+        if (keepAliveInterval <= 0) {
+            keepAliveTask = null;
+        } else {
+            keepAliveTask = KEEP_ALIVE_RP.create(new Runnable() {
+                @Override
+                public void run() {
+                    keepAlive();
+                }
+            });
+        }
     }
 
     private FTPClient createFtpClient(FtpConfiguration configuration) {
@@ -238,7 +242,9 @@ public class FtpClient implements RemoteClient {
     @Override
     public synchronized void disconnect() throws RemoteException {
         LOGGER.log(Level.FINE, "Remote client trying to disconnect");
-        keepAliveTask.cancel();
+        if (keepAliveTask != null) {
+            keepAliveTask.cancel();
+        }
         if (ftpClient.isConnected()) {
             LOGGER.log(Level.FINE, "Remote client connected -> disconnecting");
             try {
@@ -558,11 +564,20 @@ public class FtpClient implements RemoteClient {
             preventNoOperationTimeout();
             scheduleKeepAlive();
         } catch (IOException ex) {
+            silentDisconnect();
             WindowsJdk7WarningPanel.warn();
             LOGGER.log(Level.FINE, "Keep-alive (NOOP/PWD) error for " + configuration.getHost(), ex);
             // #201828
             RemoteException exc = new RemoteException(NbBundle.getMessage(FtpClient.class, "MSG_FtpCannotKeepAlive", configuration.getHost()), ex, getReplyString());
             RemoteUtils.processRemoteException(exc);
+        }
+    }
+
+    void silentDisconnect() {
+        try {
+            disconnect();
+        } catch (RemoteException ex) {
+            LOGGER.log(Level.FINE, "Error while silently disconnecting", ex);
         }
     }
 
@@ -583,7 +598,9 @@ public class FtpClient implements RemoteClient {
     }
 
     private void scheduleKeepAlive() {
-        keepAliveTask.schedule(keepAliveInterval);
+        if (keepAliveTask != null) {
+            keepAliveTask.schedule(keepAliveInterval);
+        }
     }
 
     private static final class PrintCommandListener implements ProtocolCommandListener {

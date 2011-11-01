@@ -527,6 +527,9 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
                     if (askUser(NbBundle.getMessage(CopySupport.class, "LBL_Copy_Support_Fail", project.getName()))) {
                         localFactory.invalidate();
                         LOGGER.log(Level.INFO, String.format("LOCAL copying for project %s disabled by user", project.getName()), localExc);
+                    } else {
+                        LOGGER.log(Level.INFO, String.format("LOCAL copying for project %s failed but not disabled by user => resetting", project.getName()), localExc);
+                        localFactory.reset();
                     }
                 }
                 return localRetval;
@@ -555,6 +558,10 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
                         if (askUser(NbBundle.getMessage(CopySupport.class, "LBL_Remote_On_Save_Fail", project.getName()))) {
                             remoteFactory.invalidate();
                             LOGGER.log(Level.INFO, String.format("REMOTE copying for project %s disabled by user", project.getName()), remoteExc);
+                        } else {
+                            // disconnect remote client
+                            LOGGER.log(Level.INFO, String.format("REMOTE copying for project %s failed but not disabled by user => resetting", project.getName()), remoteExc);
+                            remoteFactory.reset();
                         }
                     }
                 }
