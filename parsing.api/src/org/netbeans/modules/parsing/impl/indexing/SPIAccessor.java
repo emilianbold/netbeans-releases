@@ -44,6 +44,7 @@ package org.netbeans.modules.parsing.impl.indexing;
 
 import java.io.IOException;
 import java.net.URL;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.indexing.BinaryIndexer;
 import org.netbeans.modules.parsing.spi.indexing.Context;
@@ -81,10 +82,35 @@ public abstract class SPIAccessor {
 
     public abstract Indexable create (final IndexableImpl delegate);
 
-    public abstract  Context createContext (final FileObject indexFolder, final URL rootURL,
+    public abstract Context createContext(
+            FileObject indexFolder,
+            URL rootURL,
+            String indexerName,
+            int indexerVersion,
+            IndexFactoryImpl factory,
+            boolean followUpJob,
+            boolean checkForEditorModifications,
+            boolean sourceForBinaryRoot,
+            CancelRequest cancelRequest,
+            @NullAllowed final LogContext logContext) throws IOException;
+
+    public final Context createContext (
+            final FileObject indexFolder, final URL rootURL,
             String indexerName, int indexerVersion, IndexFactoryImpl factory,
             boolean followUpJob, boolean checkForEditorModifications,
-            boolean sourceForBinaryRoot, CancelRequest cancelRequest) throws IOException;
+            boolean sourceForBinaryRoot, CancelRequest cancelRequest) throws IOException {
+        return createContext(
+            indexFolder,
+            rootURL,
+            indexerName,
+            indexerVersion,
+            factory,
+            followUpJob,
+            checkForEditorModifications,
+            sourceForBinaryRoot,
+            cancelRequest,
+            null);
+    }
 
     public abstract void context_attachIndexingSupport(Context context, IndexingSupport support);
 
