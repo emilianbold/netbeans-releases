@@ -77,6 +77,8 @@ public enum DeclarativeHintTokenId implements TokenId {
     OPTIONS("options"),
     ERROR("error");
 
+    public static final String MIME_TYPE = "text/x-javahints";
+
     private final String cat;
 
     DeclarativeHintTokenId(String cat) {
@@ -105,7 +107,7 @@ public enum DeclarativeHintTokenId implements TokenId {
 
         @Override
         protected String mimeType() {
-            return "text/x-javahints";
+            return MIME_TYPE;
         }
 
         @Override

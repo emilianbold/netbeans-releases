@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.java.hints.declarative.test;
 
+import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.spi.editor.highlighting.HighlightsLayer;
 import org.netbeans.spi.editor.highlighting.HighlightsLayerFactory;
 import org.netbeans.spi.editor.highlighting.ZOrder;
@@ -47,6 +48,7 @@ import org.netbeans.spi.editor.highlighting.ZOrder;
  *
  * @author lahvac
  */
+@MimeRegistration(mimeType=TestTokenId.MIME_TYPE, service=HighlightsLayerFactory.class)
 public class HighlightsLayerFactoryImpl implements HighlightsLayerFactory {
 
     public HighlightsLayer[] createLayers(Context context) {

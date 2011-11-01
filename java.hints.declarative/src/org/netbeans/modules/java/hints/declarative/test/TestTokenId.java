@@ -60,6 +60,8 @@ public enum TestTokenId implements TokenId {
     METADATA("metadata"),
     JAVA_CODE("snippet");
 
+    public static final String MIME_TYPE = "text/x-javahintstest";
+    
     private final String category;
 
     private TestTokenId(String category) {
@@ -83,7 +85,7 @@ public enum TestTokenId implements TokenId {
 
         @Override
         protected String mimeType() {
-            return "text/x-javahintstest";
+            return MIME_TYPE;
         }
 
         @Override

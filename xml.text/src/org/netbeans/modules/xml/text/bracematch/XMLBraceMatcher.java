@@ -107,18 +107,21 @@ public class XMLBraceMatcher implements BracesMatcher {
         defaultMatcher = BracesMatcherSupport.defaultMatcher(context, -1, -1);
         return defaultMatcher.findOrigin();
     }
-
+    
     public int[] doFindOrigin() throws InterruptedException, BadLocationException {
         AbstractDocument doc = (AbstractDocument)document;
         doc.readLock();
         try {
             TokenHierarchy th = TokenHierarchy.get(doc);
             TokenSequence ts = th.tokenSequence();
-            Token token = findTokenAtContext(ts, searchOffset);
+            Token token = atOffset(ts, searchOffset);
+            token = ts.token();
             int start = ts.offset();
             if(token == null)
                 return null;
             XMLTokenId id = (XMLTokenId)token.id();
+            String tokenText = token.text().toString();
+
             switch(id) {
                 case PI_START:
                 case PI_END: {
@@ -126,32 +129,35 @@ public class XMLBraceMatcher implements BracesMatcher {
                 }
                 case TAG: {
                     //for ">" move back till the start tag
-                    if(">".equals(ts.token().text().toString())) {
-                        while(ts.movePrevious()) {
+                    if(">".equals(tokenText)) {
+                        while(move(ts)) {
                             if(ts.token().id() == XMLTokenId.TAG)
                                 break;
                         }
                     }                    
-                    return findTagPosition(ts);
+                    return findTagPosition(ts, false);
                 }
                 case BLOCK_COMMENT: {
-                    if(!token.text().toString().startsWith(COMMENT_START) &&
-                       !token.text().toString().endsWith(COMMENT_END))
+                    if(!tokenText.startsWith(COMMENT_START) &&
+                       !tokenText.endsWith(COMMENT_END))
                        return null;
                     return findGenericOrigin(ts, COMMENT_START, COMMENT_END);
                 }
                 case CDATA_SECTION: {
-                    if(!token.text().toString().startsWith(CDATA_START) &&
-                       !token.text().toString().endsWith(CDATA_END))
+                    if(!tokenText.startsWith(CDATA_START) &&
+                       !tokenText.endsWith(CDATA_END))
                         return null;
                     return findGenericOrigin(ts, CDATA_START, CDATA_END);
                 }
                 case DECLARATION: {
-                    if(!token.text().toString().startsWith(DECLARATION_START) &&
-                       !token.text().toString().endsWith(DECLARATION_END))
+                    if(!tokenText.startsWith(DECLARATION_START) &&
+                       !tokenText.endsWith(DECLARATION_END))
                         return null;
                     return findGenericOrigin(ts, DECLARATION_START, DECLARATION_END);
                 }
+
+                default:
+                    break;
             }
         } finally {
             doc.readUnlock();
@@ -172,13 +178,24 @@ public class XMLBraceMatcher implements BracesMatcher {
         return doFindMatches();
     }
     
+    /**
+     * Moves the token sequence in the search direction
+     */
+    private boolean move(TokenSequence s) {
+        if (context == null || context.isSearchingBackward()) {
+            return s.movePrevious();
+        } else {
+            return s.moveNext();
+        }
+    }
+    
     public int[] doFindMatches() throws InterruptedException, BadLocationException {
         AbstractDocument doc = (AbstractDocument)document;
         doc.readLock();
         try {
             TokenHierarchy th = TokenHierarchy.get(doc);
             TokenSequence ts = th.tokenSequence();
-            Token token = findTokenAtContext(ts, searchOffset);
+            Token token = atOffset(ts, searchOffset);
             if(token == null) return null;
             XMLTokenId id = (XMLTokenId)token.id();
             switch(id) {
@@ -220,6 +237,47 @@ public class XMLBraceMatcher implements BracesMatcher {
         return null;
     }
     
+    /**
+     * Finds the starting tag token for the specified offset. It respects the 
+     * search direction in the search context. May return {@code null} in the
+     * case of an error or when tag could not be found.
+     * 
+     * @return starting tag Token
+     */
+    private Token atOffset(TokenSequence ts, int offset) {
+        int diff = ts.move(offset);
+        if (diff == 0 && (context == null || context.isSearchingBackward())) {
+            if (!ts.movePrevious()) {
+                return null;
+            }
+        } else {
+            if (!ts.moveNext()) {
+                return null;
+            }
+        }
+        if (diff == ts.token().text().length() - 1 && (context != null && !context.isSearchingBackward())) {
+            if (!ts.moveNext()) {
+                return null;
+            }
+        }
+        
+        do {
+            Token t = ts.token();
+            XMLTokenId id = (XMLTokenId)t.id();
+            switch (id) {
+                case ARGUMENT:
+                case OPERATOR:
+                case VALUE:
+                case WS:
+                    // continue the cycle
+                    break;
+                default:
+                    return t;
+            }
+        } while (ts.movePrevious());
+        return ts.token();
+    }
+    
     private static Token findTokenAtContext(TokenSequence ts, int offset) {
         ts.move(offset);
         Token token = ts.token();
@@ -238,12 +296,14 @@ public class XMLBraceMatcher implements BracesMatcher {
      * 
      * For end tag such as "</tag>, return start position at '<' and end at '>'
      */
-    private int[] findTagPosition(TokenSequence ts) {
+    private int[] findTagPosition(TokenSequence ts, boolean tagNameOnly) {
         //no brace matching for />
         if("/>".equals(ts.token().text().toString()))
             return null;        
         Token token = ts.token();
         int start = ts.offset();
+        int tagNameEnd = start + token.length();
+        
         int end = start+token.length();
         while(ts.moveNext()) {
             Token t = ts.token();
@@ -252,8 +312,13 @@ public class XMLBraceMatcher implements BracesMatcher {
                 //no match for tag which ends without an end tag e.g. <hello/>
                 if("/>".equals(t.text().toString()))
                     return null;
-                if(">".equals(t.text().toString()))
-                    return new int[]{start, end};
+                if(">".equals(t.text().toString())) {
+                    if (tagNameOnly) {
+                        return new int[]{start, tagNameEnd, end -1, end};
+                    } else {
+                        return new int[]{start, end, start, tagNameEnd, end -1, end};
+                    }
+                }
                 return new int[]{start, start+token.length()};
             }            
         }
@@ -288,16 +353,18 @@ public class XMLBraceMatcher implements BracesMatcher {
             String tag = t.text().toString();
             if(">".equals(tag))
                 continue;
-            if(stack.empty()) {
-                if(("</"+tagToMatch).equals(tag))
-                    return findTagPosition(ts);            
-            } else {                
-                if(tag.equals("/>") || ("</"+stack.peek()).equals(tag)) {
-                    stack.pop();
-                    continue;
+            if (tag.startsWith("</")) {
+                if (stack.empty()) {
+                    if (tag.length() == 3 || tag.equals("</" + tagToMatch)) {
+                        return findTagPosition(ts, false);
+                    } else {
+                        return null;
+                    }
                 }
+                stack.pop();
+            } else {
+                stack.push(tag.substring(1));
             }
-            stack.push(tag.substring(1));
         }
         
         return null;
@@ -314,7 +381,7 @@ public class XMLBraceMatcher implements BracesMatcher {
                 continue;
             if(stack.empty()) {
                 if(("<"+tagToMatch).equals(tag))
-                    return findTagPosition(ts);
+                    return findTagPosition(ts, true);
             } else {
                 if(tag.startsWith("<") && ("<"+stack.peek()).equals(tag))
                     stack.pop();
@@ -332,18 +399,19 @@ public class XMLBraceMatcher implements BracesMatcher {
      */
     private int[] findGenericOrigin(TokenSequence ts, String startTag, String endTag) {
         Token token = ts.token();
+        String text = token.text().toString();
         int start = ts.offset();
         int end = start+startTag.length();
         
         //if context.getSearchOffset() is inside start tag such as "<!--"
-        if(token.text().toString().startsWith(startTag) &&
+        if(text.startsWith(startTag) &&
            start <= searchOffset && end > searchOffset)
             return new int[] {start, end};
         
         //if context.getSearchOffset() is inside end tag such as "-->"
         start = ts.offset() + token.length()-endTag.length();
         end = start+endTag.length();
-        if(token.text().toString().endsWith(endTag) &&
+        if(text.toString().endsWith(endTag) &&
            start <= searchOffset && end >= searchOffset)
             return new int[] {start, end};
         
