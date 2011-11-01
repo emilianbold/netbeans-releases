@@ -73,9 +73,11 @@ public class ParserTest {
         performTest("    \"http://www.netbeans.org/\"", 5, 29);
         performTest("    http://some.where/some-thing.html#section\n", 4, 45);
         performTest("    http://netbeans.org/bugzilla/buglist.cgi?bug_id=181772,172312\n", 4, 65);
-        performTest("    http://some.where/some-thing.html#section?cow=moo's\n", 4, 55);
+        // stop at the apostrophe - see defect #187840
+        performTest("    http://some.where/some-thing.html#section?cow=moo's\n", 4, 53);
         performTest("    h", null);
-        performTest("    http://some.where:1234/some-thing.html#section?cow=moo's\n", 4, 60);
+        // accept URLencoded apostrophe
+        performTest("    http://some.where:1234/some-thing.html#section?cow=moo%27s\n", 4, 62);
         performTest("    https://www.netbeans.org/\n", 4, 29);
         performTest("    https://www.netbeans.org/~s?d=3_\n", 4, 36);
         performTest("    https://www.test-test.test/\n", 4, 31);
@@ -86,10 +88,10 @@ public class ParserTest {
         performTest("    \"https://www.netbeans.org/\"", 5, 30);
         performTest("    https://some.where/some-thing.html#section\n", 4, 46);
         performTest("    https://netbeans.org/bugzilla/buglist.cgi?bug_id=181772,172312\n", 4, 66);
-        performTest("    https://some.where/some-thing.html#section?cow=moo's\n", 4, 56);
+        performTest("    https://some.where/some-thing.html#section?cow=moos\n", 4, 55);
         performTest("    h", null);
-        performTest("    https://some.where:1234/some-thing.html#section?cow=moo's\n", 4, 61);
-        performTest("    https://some.where:1234/some-thing.html#section?cow=moo's\n", 4, 61);
+        performTest("    https://some.where:1234/some-thing.html#section?cow=moos\n", 4, 60);
+        performTest("    https://some.where:1234/some-thing.html#section?cow=moos\n", 4, 60);
         performTest("    httpss://some.where:1234/some-thing.html#section?cow=moo's\n", null);
         performTest("    httpps://some.where:1234/some-thing.html#section?cow=moo's\n", null);
         performTest("    https//some.where:1234/some-thing.html#section?cow=moo's\n", null);
