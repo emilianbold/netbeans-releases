@@ -194,7 +194,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
      * This can happen e.g. when showing annotations for file in a certain past revision - the displayed file is in fact a temporary file.
      */
     private FileObject referencedFileObject;
-    private static final Logger LOG = Logger.getLogger(AnnotationBar.class.getName());
+    static final Logger LOG = Logger.getLogger(AnnotationBar.class.getName());
 
     /**
      * Creates new instance initializing final fields.

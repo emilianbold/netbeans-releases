@@ -1611,10 +1611,10 @@ public final class JFXProjectProperties {
         }
 
         private String line(String name, String value) {
-            if(value == null) {
-                return "<param name=\"" + name + "\"/>"; //NOI18N
+            if(value == null || value.length() == 0) {
+                return "<fx:param name=\"" + name + "\"/>"; //NOI18N
             } else {
-                return "<param name=\"" + name + "\" value=\"" + value + "\"/>"; //NOI18N
+                return "<fx:param name=\"" + name + "\" value=\"" + value + "\"/>"; //NOI18N
             }
         }        
     }
@@ -1629,9 +1629,9 @@ public final class JFXProjectProperties {
                 if(jsCallbacks != null) {
                     for (Map.Entry<String,String> entry : jsCallbacks.entrySet()) {
                         if(entry.getValue() != null && !entry.getValue().isEmpty()) {
-                            out.println("<callback name=\"" + entry.getKey() + "\">"); //NOI18N
+                            out.println("<fx:callback name=\"" + entry.getKey() + "\">"); //NOI18N
                             out.println(entry.getValue());
-                            out.println("</callback>"); //NOI18N
+                            out.println("</fx:callback>"); //NOI18N
                         }
                     }
                 }
@@ -1658,7 +1658,7 @@ public final class JFXProjectProperties {
                     StringTokenizer tok = new StringTokenizer(vmo, " ");
                     while(tok.hasMoreElements()) {
                         String s = tok.nextToken();
-                        out.println("<jvmarg value=\"" + s + "\"/>"); //NOI18N
+                        out.println("<fx:jvmarg value=\"" + s + "\"/>"); //NOI18N
                     }
                 }
             }
