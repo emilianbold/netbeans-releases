@@ -41,86 +41,51 @@
  */
 package org.netbeans.modules.netbinox;
 
-import java.io.File;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import java.util.Locale;
 import java.util.logging.Level;
+import javax.xml.parsers.SAXParserFactory;
 import junit.framework.Test;
-import org.netbeans.Module;
-import org.netbeans.ModuleManager;
-import org.netbeans.NetigsoFramework;
-import org.netbeans.SetupHid;
-import org.netbeans.core.startup.Main;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
-import org.openide.util.Lookup;
-import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.ServiceReference;
 import org.osgi.framework.launch.Framework;
 
 /**
+ * Is SAXParser service provided?
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach
  */
-public class IntegrationTest extends NbTestCase {
-    private File j1;
-
-    public IntegrationTest(String name) {
+public class NetigsoHasSAXParserTest extends NbTestCase {
+    public NetigsoHasSAXParserTest(String name) {
         super(name);
     }
-
+    
     public static Test suite() {
         return NbModuleSuite.create(
             NbModuleSuite.emptyConfiguration().addTest(
-                IntegrationTest.class
+                NetigsoHasSAXParserTest.class
             ).honorAutoloadEager(true).clusters(
                 ".*"
             ).failOnException(Level.WARNING)/*.failOnMessage(Level.WARNING)*/
             .gui(false)
         );
     }
+    
 
-    @Override
-    protected void setUp() throws Exception {
-        File jars = new File(getWorkDir(), "jars");
-        jars.mkdirs();
-
-        j1 = SetupHid.createTestJAR(getDataDir(), jars, "simple-module.jar", null);
+    protected @Override void setUp() throws Exception {
+        Locale.setDefault(Locale.US);
+        clearWorkDir();
     }
 
-
-    public void testCheckWhichContainerIsRunning() throws Exception {
-        ModuleManager mgr = Main.getModuleSystem().getManager();
-        mgr.mutexPrivileged().enterWriteAccess();
-        Module m1;
-        String mf = "Bundle-SymbolicName: org.foo\n" +
-            "Bundle-Version: 1.1.0\n" +
-            "Bundle-ManifestVersion: 2\n" +
-            "Export-Package: org.foo";
-
-        File jj1 = NetigsoHid.changeManifest(getWorkDir(), j1, mf);
-        m1 = mgr.create(jj1, null, false, false, false);
-        mgr.enable(m1);
-
-        assertTrue("OSGi module is now enabled", m1.isEnabled());
-        mgr.mutexPrivileged().exitWriteAccess();
-        Framework w = findFramework();
-        assertNotNull("Framework found", w);
-        assertEquals("Felix is not in its name", -1, w.getClass().getName().indexOf("felix"));
-        StringBuilder sb = new StringBuilder();
-        for (Bundle b : w.getBundleContext().getBundles()) {
-            sb.append("\n").append(b.getSymbolicName());
-            if (b.getSymbolicName().equals("org.eclipse.osgi")) {
-                return;
-            }
-        }
-        fail("Expecting equinox among list of enabled bundles:" + sb);
-    }
-
-    static Framework findFramework() throws Exception {
-        Object obj = Lookup.getDefault().lookup(NetigsoFramework.class);
-        final Method m = obj.getClass().getDeclaredMethod("getFramework");
-        m.setAccessible(true);
-        Framework w = (Framework) m.invoke(obj);
-        return w;
+    public void testSAXParserAvailable() throws Exception {
+        Framework f = IntegrationTest.findFramework();
+        BundleContext bc = f.getBundleContext();
+        
+        ServiceReference sr = bc.getServiceReference(SAXParserFactory.class.getName());
+        assertNotNull("SAX Service found", sr);
+        Object srvc = bc.getService(sr);
+        assertTrue("Instance of the right type: " + srvc, srvc instanceof SAXParserFactory);
+            
     }
 }

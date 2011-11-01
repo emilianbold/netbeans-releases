@@ -40,6 +40,7 @@ package org.netbeans.modules.java.hints.declarative.idebinding;
 
 import java.util.Collection;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.modules.java.hints.declarative.DeclarativeHintTokenId;
 import org.netbeans.modules.java.hints.declarative.DeclarativeHintsParser;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -99,6 +100,7 @@ public class ParserImpl extends Parser {
 
     }
 
+    @MimeRegistration(mimeType=DeclarativeHintTokenId.MIME_TYPE, service=ParserFactory.class)
     public static final class FactoryImpl extends ParserFactory {
         @Override
         public Parser createParser(Collection<Snapshot> snapshots) {

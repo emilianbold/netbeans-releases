@@ -57,6 +57,8 @@ import java.util.Set;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.Document;
 import javax.swing.text.StyleConstants;
+import org.netbeans.api.editor.mimelookup.MimeRegistration;
+import org.netbeans.api.editor.mimelookup.MimeRegistrations;
 import org.netbeans.api.editor.settings.AttributesUtilities;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.ClasspathInfo;
@@ -312,6 +314,10 @@ public class EvaluationSpanTask extends JavaParserResultTask<Result> {
         return Scheduler.CURSOR_SENSITIVE_TASK_SCHEDULER;
     }
 
+    @MimeRegistrations({
+        @MimeRegistration(mimeType=TestTokenId.MIME_TYPE, service=TaskFactory.class),
+        @MimeRegistration(mimeType="text/x-java", service=TaskFactory.class)
+    })
     public static final class FactoryImpl extends TaskFactory {
         @Override
         public Collection<? extends SchedulerTask> create(Snapshot snapshot) {
