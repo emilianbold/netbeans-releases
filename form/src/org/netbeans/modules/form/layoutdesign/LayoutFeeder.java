@@ -2111,10 +2111,14 @@ class LayoutFeeder implements LayoutConstants {
                 {   // the padding is outside of the parent already
                     continue;
                 }
-                if (iiDesc.snappedParallel != null
-                    && (!seq.isParentOf(iiDesc.snappedParallel) || originalGap == null))
-                {   // starting/ending edge aligned in parallel - does not need a gap
-                    continue;
+                if (iiDesc.snappedParallel != null) {
+                    if (seq.isParentOf(iiDesc.snappedParallel)) {
+                        if (originalGap == null) {
+                            continue;
+                        }
+                    } else if (canAlignWith(iiDesc.snappedParallel, parent, i)) {
+                        continue;
+                    }
                 }
             }
 
@@ -5653,8 +5657,17 @@ class LayoutFeeder implements LayoutConstants {
         if (parent == group)
             return true;
         // otherwise parent.isParentOf(group)
-        return LayoutInterval.isAlignedAtBorder(group, parent, alignment);
         // we silently assume that addingInterval will end up aligned in 'group'
+        if (LayoutInterval.isAlignedAtBorder(group, parent, alignment)) {
+            return true;
+        }
+        if (LayoutInterval.isAlignedAtBorder(interval, parent, alignment)) {
+            LayoutInterval neighbor = LayoutInterval.getNeighbor(group, alignment, false, true, false);
+            if (neighbor == null || !parent.isParentOf(neighbor)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static boolean canSubstAlignWithParent(LayoutInterval interval, int dimension, int alignment, boolean placedAtBorderEnough) {
