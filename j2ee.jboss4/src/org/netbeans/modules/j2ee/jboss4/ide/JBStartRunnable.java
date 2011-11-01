@@ -215,14 +215,17 @@ class JBStartRunnable implements Runnable {
             javaOptsBuilder.append(" -Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,address="). // NOI18N
                             append(dm.getDebuggingPort()).
                             append(",server=y,suspend=n"); // NOI18N
-        } 
-        else
-        if (startServer.getMode() == JBStartServer.MODE.PROFILE) {
+
+        } else if (startServer.getMode() == JBStartServer.MODE.PROFILE) {
 
             // get JVM arguments used for starting the server
             String[] profJvmArgs = profilerSettings.getJvmArgs();
             for (int i = 0; i < profJvmArgs.length; i++) {
                 javaOptsBuilder.append(" ").append(profJvmArgs[i]); // NOI18N
+            }
+            if (properties.isVersion(JBPluginUtils.JBOSS_6_0_0)) {
+                javaOptsBuilder.append(" ").append("-Djboss.platform.mbeanserver")
+                        .append(" ").append("-Djavax.management.builder.initial=org.jboss.system.server.jmx.MBeanServerBuilderImpl");
             }
         }
 

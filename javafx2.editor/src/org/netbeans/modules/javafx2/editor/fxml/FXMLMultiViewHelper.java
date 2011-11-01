@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,48 +34,39 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.javafx2.editor.fxml;
 
-package org.netbeans.modules.javafx2.project.ui;
-
-import java.util.Map;
-
-import javax.swing.JComponent;
-
-import org.netbeans.api.project.Project;
-
-import org.netbeans.modules.java.j2seproject.api.J2SECategoryExtensionProvider;
-import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
-import org.netbeans.modules.javafx2.project.JFXProjectProperties;
-import org.netbeans.spi.project.ProjectServiceProvider;
+import org.netbeans.core.spi.multiview.MultiViewElement;
+import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
+import org.openide.util.Lookup;
+import org.openide.windows.TopComponent;
 
 /**
  *
- * @author Petr Somol
- * @author Milan Kubec
+ * @author Anton Chechel
  */
-@ProjectServiceProvider(service=J2SECategoryExtensionProvider.class, projectType="org-netbeans-modules-java-j2seproject")
-public class J2SEJarConfigProviderImpl implements J2SECategoryExtensionProvider {
+public final class FXMLMultiViewHelper {
     
-    public J2SEJarConfigProviderImpl() {}
-    
-    @Override
-    public ExtensibleCategory getCategory() {
-        return ExtensibleCategory.PACKAGING;
-    }
+    public static final String MIME_TYPE = "text/fxml+xml"; // NOI18N
 
-    @Override
-    public JComponent createComponent(Project p, ConfigChangeListener listener) {
-        boolean fxDisabled = false;
-        if (p != null) {
-            final J2SEPropertyEvaluator j2sepe = p.getLookup().lookup(J2SEPropertyEvaluator.class);
-            fxDisabled = !JFXProjectProperties.isTrue(j2sepe.evaluator().getProperty("javafx.enabled"));
-        }
-        return fxDisabled ? null : JFXProjectProperties.getInstance(p.getLookup()).getCustomizerJarComponent();
+    private FXMLMultiViewHelper() {
     }
     
-    @Override
-    public void configUpdated(Map<String,String> m) {
+    @MultiViewElement.Registration(
+        displayName="org.netbeans.modules.javafx2.editor.Bundle#CTL_SourceTabCaption", // NOI18N
+        iconBase="org/netbeans/modules/javafx2/editor/resources/fxmlObject.gif", // NOI18N
+        persistenceType=TopComponent.PERSISTENCE_ONLY_OPENED,
+        preferredID="xml.text", // NOI18N
+        mimeType=MIME_TYPE,
+        position=1
+    )
+    public static MultiViewEditorElement createMultiViewEditorElement(Lookup context) {
+        return new MultiViewEditorElement(context);
     }
     
 }

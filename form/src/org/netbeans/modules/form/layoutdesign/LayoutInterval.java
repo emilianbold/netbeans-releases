@@ -399,7 +399,7 @@ public final class LayoutInterval implements LayoutConstants {
     void unsetAttribute(int attr) {
         attributes &= ~attr;
     }
-    
+
     /**
      * Sets attributes of the layout interval. Should be used by persistence manager only!
      *
@@ -475,7 +475,7 @@ public final class LayoutInterval implements LayoutConstants {
         return interval;
     }
 
-    LayoutInterval getSubInterval(int index) {
+    public LayoutInterval getSubInterval(int index) {
         return subIntervals != null ? subIntervals.get(index) : null;
     }
 
@@ -687,11 +687,11 @@ public final class LayoutInterval implements LayoutConstants {
      * @param aligned true if the indirect neighbor must be in contact with the
      *                     given interval
      */
-    static LayoutInterval getNeighbor(LayoutInterval interval,
-                                      int alignment,
-                                      boolean nonEmpty,
-                                      boolean outOfParent,
-                                      boolean aligned)
+    public static LayoutInterval getNeighbor(LayoutInterval interval,
+                                             int alignment,
+                                             boolean nonEmpty,
+                                             boolean outOfParent,
+                                             boolean aligned)
     {
         assert alignment == LEADING || alignment == TRAILING;
 
@@ -747,7 +747,7 @@ public final class LayoutInterval implements LayoutConstants {
      * For parallel parent the interval must have the given alignment in the
      * group, or be resizing.
      */
-    static boolean isAlignedAtBorder(LayoutInterval interval, int alignment) {
+    public static boolean isAlignedAtBorder(LayoutInterval interval, int alignment) {
         if (alignment != LEADING && alignment != TRAILING) {
             return false;
         }

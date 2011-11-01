@@ -114,6 +114,12 @@
                 <equals arg1="${javafx.deploy.permissionselevated}" arg2="true" trim="true"/>
             </and>
         </condition>
+        <condition property="binary-encode-css">
+            <and>
+                <isset property="javafx.binarycss"/>
+                <equals arg1="${javafx.binarycss}" arg2="true" trim="true"/>
+            </and>
+        </condition>
 
         <echo message="main-class-available = ${main-class-available}" level="verbose"/>
         <echo message="preloader-available = ${preloader-available}" level="verbose"/>
@@ -127,6 +133,7 @@
         <echo message="update-mode-background = ${update-mode-background}" level="verbose"/>
         <echo message="offline-allowed = ${offline-allowed}" level="verbose"/>
         <echo message="permissions-elevated = ${permissions-elevated}" level="verbose"/>
+        <echo message="binary-encode-css = ${binary-encode-css}" level="verbose"/>
     </target>
 
     <target name="-icon-warning" depends="-check-project" if="icon-available">
@@ -164,13 +171,32 @@
         <copy file="${javafx.preloader.jar.path}" todir="${dist.dir}${file.separator}lib"/>
     </target>
 
+    <target name="-set-binary-css" depends="-check-project" if="binary-encode-css">
+        <property name="css-include-ext" value="bss"/>
+        <property name="css-exclude-ext" value="css"/>
+    </target>
+    <target name="-unset-binary-css" depends="-check-project" unless="binary-encode-css">
+        <property name="css-include-ext" value="css"/>
+        <property name="css-exclude-ext" value="bss"/>
+    </target>
+    <target name="-copy-binary-css" depends="-check-project" if="binary-encode-css">
+        <fileset id="cssfiles" dir="${basedir}${file.separator}${build.classes.dir}">
+            <include name="**${file.separator}*.css"/>
+        </fileset>
+        <property name="cssfileslist" refid="cssfiles"/>
+        <echo message="css files to binary convert: " level="verbose">${cssfileslist}</echo>
+        <fx:csstobin outdir="${basedir}${file.separator}${build.classes.dir}">
+            <fileset refid="cssfiles"/>
+        </fx:csstobin>
+    </target>
+
 
     <!-- Main Target -->
 
     <target name="jfx-deployment" depends="-check-jfx-deployment,-check-project,-icon-warning,
         -set-dimensions,-reset-dimensions,-set-update-mode-background,-set-update-mode-eager,
         -offline-allowed-warning,-set-permissions-elevated,-reset-permissions-elevated,
-        -copy-external-preloader-jar,
+        -copy-external-preloader-jar,-set-binary-css,-unset-binary-css,-copy-binary-css,
         -deploy-app-sign-nopreloader-notemplate,
         -deploy-app-sign-preloader-notemplate,
         -deploy-app-sign-nopreloader-template,
@@ -312,7 +338,9 @@
             <fx:jar destfile="${jfx.deployment.dir}${file.separator}${jfx.deployment.jar}">
                 <fx:application refid="fxApp"/>
                 <fx:resources refid="appRes"/>
-                <fileset dir="${build.classes.dir}"/>
+                <fileset dir="${build.classes.dir}">
+                    <exclude name="**${file.separator}*.${css-exclude-ext}"/>
+                </fileset>
                 <manifest>
                     <attribute name="Implementation-Vendor" value="${application.vendor}"/>
                     <attribute name="Implementation-Title" value="${application.title}"/>
@@ -660,8 +688,12 @@
     
 
     <!-- Running/Debugging in Browser -->
-    
-    <target name="-check-html-file">
+
+    <target name="-check-html-processed-template-file" if="html-template-available">
+        <property name="jfx.deployment.html" location="${javafx.run.htmltemplate.processed}"/>
+    </target>
+
+    <target name="-check-html-file" depends="-check-html-processed-template-file">
         <basename property="jfx.deployment.base" file="${jfx.deployment.jar}" suffix=".jar"/>
         <property name="jfx.deployment.html" location="${jfx.deployment.dir}${file.separator}${jfx.deployment.base}.html"/>
         <condition property="html-file-exists">
