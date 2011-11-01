@@ -158,7 +158,11 @@ public class CMakeAction extends AbstractExecutorRunAction {
             argsFlat.append(" "); // NOI18N
             argsFlat.append(arguments[i]);
         }
-        String relativePathToScript = CndPathUtilitities.toRelativePath(buildDir, fileObject.getParent().getPath());
+        String scriptPath = fileObject.getParent().getPath();
+        if (FileSystemProvider.getExecutionEnvironment(buildDirFileObject).isLocal()) {
+            scriptPath = convertToRemoteIfNeeded(execEnv, scriptPath, project);
+        }
+        String relativePathToScript = CndPathUtilitities.toRelativePath(buildDir, scriptPath);
         if (relativePathToScript.length()>1) {
             argsFlat.append(" "); // NOI18N
             argsFlat.append(relativePathToScript);
