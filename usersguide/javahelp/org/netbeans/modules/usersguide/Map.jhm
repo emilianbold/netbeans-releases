@@ -417,7 +417,7 @@ Other names may be trademarks of their respective owners.
 <mapID target="org.netbeans.modules.xml.catalog.CatalogRootNode" url="xml/catalog/xmlcatalog_mount.html" />
 <mapID target="org.netbeans.modules.xml.catalog.CatalogNode"     url="xml/catalog/xmlcatalog_mount.html" />    
 <mapID target="org.netbeans.modules.xml.catalog.CatalogEntryNode"     url="xml/catalog/xmlcatalog_mount.html" />
-<mapID target="org.netbeans.modules.xml.catalog.CatalogRootNode$CatalogMounter" url="xml/catalog/csh/add-catalog.html" />
+<mapID target="org.netbeans.modules.xml.catalog.CatalogMounterPanel" url="xml/catalog/csh/add-catalog.html" />
 <mapID target="org.netbeans.modules.xml.text.syntax.XMLOptions"     url="xml/xml_editor-props.html" />
 <mapID target="org.netbeans.modules.css.text.syntax.CSSEditorOptions"     url="xml/xml_editor-props.html" />
 <mapID target="org.netbeans.modules.xml.text.syntax.DTDOptions"     url="xml/xml_editor-props.html" />
