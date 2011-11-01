@@ -117,34 +117,40 @@ public class SelectorsModule extends CssEditorModule {
     public List<CompletionProposal> getCompletionProposals(CompletionContext context) {
         List<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
         Node activeNode = context.getActiveNode();
-        boolean isError = activeNode.type() == NodeType.error;
-        if (isError) {
+        Node errorNode = null;
+        if(activeNode.type() == NodeType.recovery) {
+            activeNode = activeNode.parent();
+        }
+        if(activeNode.type() == NodeType.error) {
+            errorNode = activeNode;
             activeNode = activeNode.parent();
         }
 
         switch (activeNode.type()) {
             case simpleSelectorSequence:
-                //test if the previous node is typeSelector:  html:|
-                Node siblingBefore = context.getActiveNode();
-                //possibly skip all elementSubsequent nodes 
-                for(;;) {
-                    siblingBefore = NodeUtil.getSibling(siblingBefore, true);
-                    if(siblingBefore == null) {
-                        break;
-                    }
-                    if(siblingBefore.type() != NodeType.elementSubsequent) {
-                        break;
-                    }
-                }
-                
-                if (siblingBefore != null && siblingBefore.type() == NodeType.typeSelector) {
-                    switch (context.getTokenSequence().token().id()) {
-                        case COLON:
-                            proposals.addAll(getPseudoClasses(context));
+                if(errorNode != null) {
+                    //test if the previous node is typeSelector:  html:|
+                    Node siblingBefore = errorNode;
+                    //possibly skip all elementSubsequent nodes 
+                    for(;;) {
+                        siblingBefore = NodeUtil.getSibling(siblingBefore, true);
+                        if(siblingBefore == null) {
                             break;
-                        case DCOLON:
-                            proposals.addAll(getPseudoElements(context));
+                        }
+                        if(siblingBefore.type() != NodeType.elementSubsequent) {
                             break;
+                        }
+                    }
+
+                    if (siblingBefore != null && siblingBefore.type() == NodeType.typeSelector) {
+                        switch (context.getTokenSequence().token().id()) {
+                            case COLON:
+                                proposals.addAll(getPseudoClasses(context));
+                                break;
+                            case DCOLON:
+                                proposals.addAll(getPseudoElements(context));
+                                break;
+                        }
                     }
                 }
                 break;
