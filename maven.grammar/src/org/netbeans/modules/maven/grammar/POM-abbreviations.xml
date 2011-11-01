@@ -77,7 +77,7 @@ made subject to such option by the copyright holder.
     </goals>
     <configuration>
         ${cursor}
-    <configuration>
+    </configuration>
 </execution>]]></code>
     </codetemplate>
     <codetemplate abbreviation="prof" xml:space="preserve">
