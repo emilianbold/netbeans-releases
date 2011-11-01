@@ -53,7 +53,6 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
@@ -62,16 +61,7 @@ import org.openide.util.NbBundle;
  */
 public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Provider {
 
-    private static CustomizerJarComponent jarComponent = null;
     private File lastImageFolder = null;
-    
-    public static CustomizerJarComponent getCustomizerJarComponent(Lookup context) {
-        if(jarComponent == null) {
-            jarComponent = new CustomizerJarComponent(context);
-        }
-        return jarComponent;
-    }
-
     private JFXProjectProperties jfxProps;
     
     /**
