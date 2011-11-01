@@ -863,7 +863,7 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
         checkValid();
     }
 
-    private void checkValid() {
+    void checkValid() {
         JdbcUrl url = getSelectedJdbcUrl();
 
         boolean requiredFieldMissing = false;
