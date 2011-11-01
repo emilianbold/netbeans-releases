@@ -1541,8 +1541,12 @@ public class MenuEditLayer extends JPanel {
                         }
                     }
                 }
-            } else {// #116961: check if inplace editing should start due to second click on a menu
-                if (c instanceof JMenuItem) {
+            } else {
+                if (c instanceof JMenu) {// #115152: make all parts of JMenuItem (icon, text, accelerator) appear, when JMenuItem is moved under JMenu
+                    openMenu(rad, c);
+                    glassLayer.requestFocusInWindow();
+                }
+                if (c instanceof JMenuItem) {// #116961: check if inplace editing should start due to second click on a menu
                     JMenuItem item = (JMenuItem) c;
                     boolean modifier = e.isControlDown() || e.isAltDown() || e.isShiftDown();
                     if (prevLeftMousePoint != null
