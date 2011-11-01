@@ -404,4 +404,9 @@ public class FileModel2Test extends TraceModelTestBase {
         performTest("bug198460.cpp");
     }
     
+    public void testBug204497() throws Exception {
+        // Bug 204497 - Inaccuracy tests: latest configured dbx project has parser error
+        performTest("bug204497.cpp");
+    }
+    
 }
