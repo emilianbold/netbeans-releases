@@ -74,6 +74,8 @@ import org.hibernate.cfg.reveng.ReverseEngineeringSettings;
 import org.hibernate.cfg.reveng.ReverseEngineeringStrategy;
 import org.hibernate.tool.hbm2x.HibernateMappingExporter;
 import org.hibernate.tool.hbm2x.POJOExporter;
+import org.netbeans.api.db.explorer.DatabaseConnection;
+import org.netbeans.modules.hibernate.cfg.model.HibernateConfiguration;
 import org.netbeans.modules.hibernate.loaders.cfg.HibernateCfgDataObject;
 import org.netbeans.modules.hibernate.loaders.mapping.HibernateMappingDataLoader;
 import org.netbeans.modules.hibernate.service.api.HibernateEnvironment;
@@ -324,7 +326,15 @@ public class HibernateCodeGenWizard implements WizardDescriptor.ProgressInstanti
                 revStrategy.setSettings(settings);
 
                 cfg.setReverseEngineeringStrategy(or.getReverseEngineeringStrategy(revStrategy));
-
+                
+                DataObject confDataObject = DataObject.find(helper.getConfigurationFile());
+                HibernateCfgDataObject hco = (HibernateCfgDataObject) confDataObject;
+                HibernateConfiguration hibConf = hco.getHibernateConfiguration();
+                DatabaseConnection dbconn = HibernateUtil.getDBConnection(hibConf);
+                if (dbconn != null) {
+                    dbconn.getJDBCConnection();
+                }
+                
                 cfg.readFromJDBC();
                 cfg.buildMappings();                
             } catch (Exception e) {
