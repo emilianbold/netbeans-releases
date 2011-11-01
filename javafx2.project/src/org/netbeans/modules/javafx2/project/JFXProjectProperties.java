@@ -86,6 +86,7 @@ import org.netbeans.api.project.ant.AntArtifactQuery;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
 import org.netbeans.modules.javafx2.platform.api.JavaFXPlatformUtils;
+import org.netbeans.modules.javafx2.project.ui.CustomizerJarComponent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -198,6 +199,14 @@ public final class JFXProjectProperties {
     JToggleButton.ToggleButtonModel binaryEncodeCSS;
     public JToggleButton.ToggleButtonModel getBinaryEncodeCSSModel() {
         return binaryEncodeCSS;
+    }
+
+    private CustomizerJarComponent jarComponent = null;
+    public CustomizerJarComponent getCustomizerJarComponent() {
+        if(jarComponent == null) {
+            jarComponent = new CustomizerJarComponent(this);
+        }
+        return jarComponent;
     }
 
     // CustomizerRun
