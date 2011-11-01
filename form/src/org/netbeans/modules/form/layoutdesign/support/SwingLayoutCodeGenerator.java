@@ -48,13 +48,7 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.io.IOException;
 import java.io.Writer;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import org.netbeans.modules.form.layoutdesign.LayoutComponent;
 import org.netbeans.modules.form.layoutdesign.LayoutConstants;
 import org.netbeans.modules.form.layoutdesign.LayoutInterval;
@@ -74,6 +68,12 @@ public class SwingLayoutCodeGenerator {
      * Maps from component ID to <code>ComponentInfo</code>.
      */
     private Map<String,ComponentInfo> componentIDMap;
+
+    /**
+     * To workaround some cases of default ending container gaps
+     * GroupLayout does not like.
+     */
+    private Set<LayoutInterval> unsupportedContResGaps;
 
     /**
      * Creates new <code>SwingLayoutCodeGenerator</code>.
@@ -108,6 +108,7 @@ public class SwingLayoutCodeGenerator {
             layoutVarName = contVarName + Character.toUpperCase(LAYOUT_VAR_NAME.charAt(0))
                 + LAYOUT_VAR_NAME.substring(1);
         }
+        unsupportedContResGaps = null;
         fillMap(infos);
         generateInstantiation(writer, contExprStr);
 
@@ -138,6 +139,7 @@ public class SwingLayoutCodeGenerator {
             composeLinks(sb, container, layoutVarName, dim);
             writer.write(sb.toString());
         }
+        unsupportedContResGaps = null;
     }                                       
 
     /**
@@ -219,6 +221,13 @@ public class SwingLayoutCodeGenerator {
         if (interval.isGroup()) {
             layout.append(getAddGroupStr());
             int alignment = interval.getAlignment();
+            if (interval.isSequential() && last) {
+                LayoutInterval contResGap = SwingLayoutUtils.getUnsupportedResizingContainerGap(interval);
+                if (contResGap != null) { // GroupLayout bug workaround - will use fixed gap instead
+                    addUnsupportedContResGap(contResGap);
+                    alignment = LayoutConstants.LEADING;
+                }
+            }
             if ((alignment != LayoutConstants.DEFAULT) && interval.getParent().isParallel() && alignment != groupAlignment
                     && alignment != LayoutConstants.BASELINE && groupAlignment != LayoutConstants.BASELINE) {
                 String alignmentStr = convertAlignment(alignment);
@@ -310,13 +319,10 @@ public class SwingLayoutCodeGenerator {
                         }
                         layout.append(getPaddingTypeStr(gapType));
                     }
-                    // workaround GroupLayout bug - default container gap as last
-                    // should not be resizing (may cause problems), luckily it
-                    // makes no difference if it is fixed
                     if ((pref != LayoutConstants.NOT_EXPLICITLY_DEFINED)
-                        || (!last && (max != LayoutConstants.NOT_EXPLICITLY_DEFINED)
-                            // NOT_EXPLICITLY_DEFINED is the same as USE_PREFERRED_SIZE in this case
-                            && (max != LayoutConstants.USE_PREFERRED_SIZE))) {
+                        || (max != LayoutConstants.NOT_EXPLICITLY_DEFINED // NOT_EXPLICITLY_DEFINED is the same as USE_PREFERRED_SIZE in this case
+                            && max != LayoutConstants.USE_PREFERRED_SIZE
+                            && (!last || !isUnsupportedContResGap(interval)))) { // workaround GroupLayout bug
                         if (!first && !last) {
                             layout.append(',').append(' ');
                         }
@@ -513,5 +519,16 @@ public class SwingLayoutCodeGenerator {
         
         return getLayoutStyleName() + (useLayoutLibrary ? "" : ".ComponentPlacement") // NOI18N
                 + str;
+    }
+
+    private void addUnsupportedContResGap(LayoutInterval gap) {
+        if (unsupportedContResGaps == null) {
+            unsupportedContResGaps = new HashSet<LayoutInterval>();
+        }
+        unsupportedContResGaps.add(gap);
+    }
+
+    private boolean isUnsupportedContResGap(LayoutInterval gap) {
+        return unsupportedContResGaps != null && unsupportedContResGaps.contains(gap);
     }
 }
