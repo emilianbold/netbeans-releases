@@ -2070,12 +2070,15 @@ outer:  do {
             return true;
         }
 
-        /** @see "#20467" */
+        /** See #20467. */
         private static void doNotify(RequestProcessor.Task todo, Throwable ex) {
-            if (SLOW && todo.item != null && todo.item.message == null) {
-                todo.item.message = "task failed due to: " + ex;
-                todo.item.initCause(ex);
-                ex = todo.item;
+            if (SLOW) {
+                Item item = todo.item;
+                if (item != null && item.message == null) {
+                    item.message = "task failed due to: " + ex;
+                    item.initCause(ex);
+                    ex = item;
+                }
             }
             logger().log(Level.SEVERE, "Error in RequestProcessor " + todo.debug(), ex);
         }
