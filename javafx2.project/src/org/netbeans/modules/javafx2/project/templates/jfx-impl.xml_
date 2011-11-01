@@ -688,8 +688,12 @@
     
 
     <!-- Running/Debugging in Browser -->
-    
-    <target name="-check-html-file">
+
+    <target name="-check-html-processed-template-file" if="html-template-available">
+        <property name="jfx.deployment.html" location="${javafx.run.htmltemplate.processed}"/>
+    </target>
+
+    <target name="-check-html-file" depends="-check-html-processed-template-file">
         <basename property="jfx.deployment.base" file="${jfx.deployment.jar}" suffix=".jar"/>
         <property name="jfx.deployment.html" location="${jfx.deployment.dir}${file.separator}${jfx.deployment.base}.html"/>
         <condition property="html-file-exists">
