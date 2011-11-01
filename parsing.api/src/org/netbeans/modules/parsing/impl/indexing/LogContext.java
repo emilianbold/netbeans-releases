@@ -125,7 +125,7 @@ public class LogContext {
         this.parent = parent;
     }
 
-    private void createLogMessage(@NonNull final StringBuilder sb) {
+    private synchronized void createLogMessage(@NonNull final StringBuilder sb) {
         sb.append("Type:").append(eventType);   //NOI18N
         if (message != null) {
             sb.append(" Description:").append(message); //NOI18N

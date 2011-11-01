@@ -179,7 +179,13 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                 IndexerCache.getEifCache().addPropertyChangeListener(this);
                 VisibilityQuery.getDefault().addChangeListener(this);
                 if (force) {
-                    work = new InitialRootsWork(scannedRoots2Dependencies, scannedBinaries2InvDependencies, scannedRoots2Peers, sourcesForBinaryRoots, false);
+                    work = new InitialRootsWork(
+                        scannedRoots2Dependencies,
+                        scannedBinaries2InvDependencies,
+                        scannedRoots2Peers,
+                        sourcesForBinaryRoots,
+                        false,
+                        LogContext.create(LogContext.EventType.PATH, null));
                 }
             }
         }
@@ -1288,7 +1294,13 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         }
 
         if (scheduleExtraWork) {
-            getWorker().schedule(new InitialRootsWork(scannedRoots2Dependencies, scannedBinaries2InvDependencies, scannedRoots2Peers, sourcesForBinaryRoots, true), false);
+            getWorker().schedule(new InitialRootsWork(
+                scannedRoots2Dependencies,
+                scannedBinaries2InvDependencies,
+                scannedRoots2Peers,
+                sourcesForBinaryRoots,
+                true,
+                work.getLogContext()), false);
 
             if (work instanceof RootsWork) {
                 // if the work is the initial RootsWork it's superseeded
@@ -4109,13 +4121,14 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                 Map<URL,List<URL>>  scannedBinaries2InvDependencies,
                 Map<URL,List<URL>>  scannedRoots2Peers,
                 Set<URL> sourcesForBinaryRoots,
-                boolean waitForProjects) {
+                boolean waitForProjects,
+                @NullAllowed final LogContext logCtx) {
             super(scannedRoots2Depencencies,
                 scannedBinaries2InvDependencies,
                 scannedRoots2Peers,
                 sourcesForBinaryRoots,
                 true,
-                null);
+                logCtx);
             this.waitForProjects = waitForProjects;
         }
         
