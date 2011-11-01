@@ -244,7 +244,15 @@ public class AutoUpdate extends Task {
                     continue;
                 }
 
-                File whereTo = dir != null ? new File(dir, uu.targetcluster) : cluster;
+                File whereTo;
+                if (dir != null) {
+                    if (uu.targetcluster == null) {
+                        throw new BuildException("Specify todir, not installdir, since " + dash + ".nbm does not define target cluster", getLocation());
+                    }
+                    whereTo = new File(dir, uu.targetcluster);
+                } else {
+                    whereTo = cluster;
+                }
                 whereTo.mkdirs();
                 lastM = new File(whereTo, ".lastModified");
                 lastM.createNewFile();
