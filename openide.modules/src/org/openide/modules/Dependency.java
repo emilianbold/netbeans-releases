@@ -246,17 +246,17 @@ public final class Dependency implements Serializable {
                 } else if (compthing.equals("=")) { // NOI18N
                     comparison = Dependency.COMPARE_IMPL;
                 } else {
-                    throw new IllegalArgumentException("Strange comparison string: " + compthing); // NOI18N
+                    throw new IllegalArgumentException("Strange comparison string: " + compthing + " in " + body); // NOI18N
                 }
 
                 if (!tok2.hasMoreTokens()) {
-                    throw new IllegalArgumentException("Comparison string without version: " + onedep); // NOI18N
+                    throw new IllegalArgumentException("Comparison string without version: " + onedep + " in " + body); // NOI18N
                 }
 
                 version = tok2.nextToken();
 
                 if (tok2.hasMoreTokens()) {
-                    throw new IllegalArgumentException("Trailing garbage in dependency: " + onedep); // NOI18N
+                    throw new IllegalArgumentException("Trailing garbage in dependency: " + onedep + " in " + body); // NOI18N
                 }
 
                 if (comparison == Dependency.COMPARE_SPEC) {
