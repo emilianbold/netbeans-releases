@@ -52,6 +52,7 @@ import com.sun.jna.ToNativeContext;
 import com.sun.jna.TypeConverter;
 import java.io.File;
 import java.util.Collections;
+import java.util.Map;
 
 /**
  * JNA wrapper for certain functions from GNOME Keyring API.
@@ -63,16 +64,21 @@ public interface GnomeKeyringLibrary extends Library {
     class LibFinder { // #203735
         private static final String GENERIC = "gnome-keyring";
         private static final String EXPLICIT = "/usr/lib/libgnome-keyring.so.0";
-        static String name() {
-            if (new File(EXPLICIT).isFile()) {
-                return EXPLICIT;
+        private static Object load(Map<?,?> options) {
+            try {
+                return Native.loadLibrary(GENERIC, GnomeKeyringLibrary.class, options);
+            } catch (UnsatisfiedLinkError x) {
+                if (new File(EXPLICIT).isFile()) {
+                    return Native.loadLibrary(EXPLICIT, GnomeKeyringLibrary.class, options);
+                } else {
+                    throw x;
+                }
             }
-            return GENERIC;
         }
         private LibFinder() {}
     }
 
-    GnomeKeyringLibrary LIBRARY = (GnomeKeyringLibrary) Native.loadLibrary(LibFinder.name(), GnomeKeyringLibrary.class, Collections.singletonMap(OPTION_TYPE_MAPPER, new DefaultTypeMapper() {
+    GnomeKeyringLibrary LIBRARY = (GnomeKeyringLibrary) LibFinder.load(Collections.singletonMap(OPTION_TYPE_MAPPER, new DefaultTypeMapper() {
         {
             addTypeConverter(Boolean.TYPE, new TypeConverter() { // #198921
                 @Override public Object toNative(Object value, ToNativeContext context) {
