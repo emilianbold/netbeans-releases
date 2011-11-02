@@ -78,7 +78,7 @@ import org.openide.util.NbBundle.Messages;
 /**
  * @author Radek Matous
  */
-public class ImplementAbstractMethods extends AbstractRule {
+public class ImplementAbstractMethodsHint extends AbstractRule {
 
     private static final String HINT_ID = "Implement.Abstract.Methods"; //NOI18N
     private static final String ABSTRACT_PREFIX = "abstract "; //NOI18N
@@ -111,7 +111,7 @@ public class ImplementAbstractMethods extends AbstractRule {
         Collection<? extends ClassScope> allClasses = ModelUtils.getDeclaredClasses(context.fileScope);
         FileObject fileObject = context.parserResult.getSnapshot().getSource().getFileObject();
         for (FixInfo fixInfo : checkHints(allClasses, context)) {
-            hints.add(new Hint(ImplementAbstractMethods.this, Bundle.ImplementAbstractMethodsHintDesc(fixInfo.className, fixInfo.lastMethodDeclaration, fixInfo.lastMethodOwnerName), fileObject, fixInfo.classNameRange, createHintFixes(context.doc, fixInfo), 500));
+            hints.add(new Hint(ImplementAbstractMethodsHint.this, Bundle.ImplementAbstractMethodsHintDesc(fixInfo.className, fixInfo.lastMethodDeclaration, fixInfo.lastMethodOwnerName), fileObject, fixInfo.classNameRange, createHintFixes(context.doc, fixInfo), 500));
         }
     }
 
@@ -199,7 +199,7 @@ public class ImplementAbstractMethods extends AbstractRule {
 
         @Override
         public String getDescription() {
-            return ImplementAbstractMethods.this.getDescription();
+            return ImplementAbstractMethodsHint.this.getDescription();
         }
 
         @Override

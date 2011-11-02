@@ -62,7 +62,7 @@ import org.openide.util.NbBundle.Messages;
 /**
  * @author Radek Matous
  */
-public class TypeRedeclaration extends AbstractRule {
+public class TypeRedeclarationHint extends AbstractRule {
     @Override
     void computeHintsImpl(PHPRuleContext context, List<Hint> hints, Kind kind) throws BadLocationException {
         PHPParseResult phpParseResult = (PHPParseResult) context.parserResult;
