@@ -299,6 +299,51 @@ public class FindUsagesTest extends NbTestCase {
         wuq[0].getContext().add(customScope);
         doRefactoring("test204305", wuq, 0);
     }
+    
+        
+    public void test204519() throws Exception {
+        Utilities.openProject("SimpleJ2SEAppChild", getDataDir());
+        SourceUtils.waitScanFinished();
+        FileObject testFile = projectDir.getFileObject("/src/simplej2seapp/D.java");
+        JavaSource src = JavaSource.forFileObject(testFile);
+        final WhereUsedQuery[] wuq = new WhereUsedQuery[1];
+        src.runWhenScanFinished(new Task<CompilationController>() {
+
+            @Override
+            public void run(CompilationController controller) throws Exception {
+                controller.toPhase(JavaSource.Phase.RESOLVED);
+                ClassTree klass = (ClassTree) controller.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree runTree = (MethodTree) klass.getMembers().get(2);
+                TreePath path = controller.getTrees().getPath(controller.getCompilationUnit(), runTree);
+                TreePathHandle element = TreePathHandle.create(path, controller);
+                wuq[0] = new WhereUsedQuery(Lookups.singleton(element));
+            }
+        }, false).get();
+        setParameters(wuq, false, false, false, false, true, true);
+        
+        doRefactoring("test204305", wuq, 1);
+        
+        final NonRecursiveFolder simplej2seapp = new NonRecursiveFolder() {
+            public FileObject getFolder() {
+                return projectDir.getFileObject("/src/simplej2seapp");
+            }
+        };
+        Scope customScope = Scope.create(Arrays.asList(projectDir.getFileObject("/src")), null, null);
+        wuq[0].getContext().add(customScope);
+        doRefactoring("test204519", wuq, 1);
+        
+        customScope = Scope.create(null, Arrays.asList(simplej2seapp), null);
+        wuq[0].getContext().add(customScope);
+        doRefactoring("test204519", wuq, 1);
+        
+        customScope = Scope.create(null, null, Arrays.asList(projectDir.getFileObject("/src/simplej2seapp/D.java")));
+        wuq[0].getContext().add(customScope);
+        doRefactoring("test204519", wuq, 1);
+        
+        customScope = Scope.create(null, null, null);
+        wuq[0].getContext().add(customScope);
+        doRefactoring("test204519", wuq, 0);
+    }
 
     public void test202412() throws IOException, InterruptedException, ExecutionException { // #202412 NullPointerException at org.netbeans.modules.refactoring.java.RetoucheUtils.getFileObject
         Utilities.openProject("SimpleJ2SEAppChild", getDataDir());

@@ -82,6 +82,7 @@ import org.openide.util.lookup.Lookups;
  * @author  Ralph Ruijs
  */
 public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
+    private boolean fromLibrary;
     private WhereUsedQuery refactoring;
     private ClasspathInfo cp;
     private TreePathHandle basem;
@@ -116,11 +117,12 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
         if(cp == null) {
             cp = getClasspathInfo(refactoring);
         }
+        fromLibrary = false;
         if(isSearchFromBaseClass()) {
             JavaSource source;
             source = createSource(tph.getFileObject(), cp, tph);
             try {
-                source.runWhenScanFinished(new Task<CompilationController>() {
+                source.runUserActionTask(new Task<CompilationController>() {
 
                     @Override
                     public void run(CompilationController info) throws Exception {
@@ -136,9 +138,9 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
                                 ExecutableElement el = (ExecutableElement) overridens.iterator().next();
                                 assert el!=null;
                                 basem = TreePathHandle.create(el, info);
-                                refactoring.setRefactoringSource(Lookups.fixed(basem));
+                                refactoring.setRefactoringSource(Lookups.fixed(basem)); // TODO: This is wrong! Should not change instance from a plugin
                             }
-                            if (basem != null && (basem.getFileObject() == null || basem.getFileObject().getNameExt().endsWith("class"))) { //NOI18N
+                            if ((fromLibrary = basem != null && (basem.getFileObject() == null || basem.getFileObject().getNameExt().endsWith("class")))) { //NOI18N
                                 cp = RetoucheUtils.getClasspathInfoFor(tph, basem);
                             } else {
                                 cp = RetoucheUtils.getClasspathInfoFor(basem!=null?basem:tph);
@@ -152,13 +154,27 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
         }
         
         Scope customScope = refactoring.getContext().lookup(Scope.class);
+        ClasspathInfo cpath;
         if (customScope != null) {
             fileSet = new HashSet<FileObject>();
             fileSet.addAll(customScope.getFiles());
+            FileObject fo = null;
+            if(fromLibrary) {
+                fo = RetoucheUtils.getFileObject(basem);
+                if (fo == null) {
+                    fo = basem.getFileObject();
+                }
+            }
             if (!customScope.getSourceRoots().isEmpty()) {
-                ClassPath cpath = ClassPathSupport.createClassPath(customScope.getSourceRoots().toArray(new FileObject[0]));
-                fileSet.addAll(getRelevantFiles(tph,
-                        ClasspathInfo.create(ClassPath.EMPTY, ClassPath.EMPTY, cpath),
+                if(isSearchFromBaseClass() && fo != null) {
+                    HashSet<FileObject> fileobjects = new HashSet(customScope.getSourceRoots());
+                    fileobjects.add(fo);
+                    cpath = RetoucheUtils.getClasspathInfoFor(false, fileobjects.toArray(new FileObject[0]));
+                } else {
+                    cpath = RetoucheUtils.getClasspathInfoFor(false, customScope.getSourceRoots().toArray(new FileObject[0]));
+                }
+                fileSet.addAll(getRelevantFiles(basem!=null?basem:tph,
+                        cpath,
                         isFindSubclasses(),
                         isFindDirectSubclassesOnly(),
                         isFindOverridingMethods(),
@@ -182,9 +198,13 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
             for (FileObject sourceRoot : folders.keySet()) {
                 Set<NonRecursiveFolder> packages = folders.get(sourceRoot);
                 if (packages != null && !packages.isEmpty()) {
-                    ClassPath cpath = ClassPathSupport.createClassPath(sourceRoot);
-                    fileSet.addAll(getRelevantFiles(tph,
-                            ClasspathInfo.create(ClassPath.EMPTY, ClassPath.EMPTY, cpath),
+                    if(isSearchFromBaseClass() && fo != null) {
+                        cpath = RetoucheUtils.getClasspathInfoFor(false, sourceRoot, fo);
+                    } else {
+                        cpath = RetoucheUtils.getClasspathInfoFor(false, sourceRoot);
+                    }
+                    fileSet.addAll(getRelevantFiles(basem!=null?basem:tph,
+                            cpath,
                             isFindSubclasses(),
                             isFindDirectSubclassesOnly(),
                             isFindOverridingMethods(),
