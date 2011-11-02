@@ -100,6 +100,7 @@ public class SchemaRootChildren extends Children.Keys {
   private Object parseLock = new Object();
   
   private org.netbeans.modules.dbschema.jdbcimpl.DBschemaDataObject obj;
+  private RequestProcessor RP = new RequestProcessor(SchemaRootChildren.class);
   
   /** Create a children list.
   * @param factory a factory for creating children
@@ -162,7 +163,7 @@ public class SchemaRootChildren extends Children.Keys {
         if (element == null && !parseStatus) {
             refreshKeys2();
           
-            RequestProcessor.getDefault().post(new Runnable() {
+            RP.post(new Runnable() {
                 public void run () {
                     synchronized (parseLock) {
                         if (!parseStatus) {
