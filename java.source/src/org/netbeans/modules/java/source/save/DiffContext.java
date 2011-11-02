@@ -43,10 +43,13 @@
 package org.netbeans.modules.java.source.save;
 
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.util.Context;
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 import javax.swing.text.Document;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CodeStyle;
@@ -71,8 +74,13 @@ public class DiffContext {
     public final Document doc;
     public final PositionConverter positionConverter;
     public final FileObject file;
+    public final Set<Tree> notSyntheticTrees;
 
     public DiffContext(CompilationInfo copy) {
+        this(copy, new HashSet<Tree>());
+    }
+
+    public DiffContext(CompilationInfo copy, Set<Tree> notSyntheticTrees) {
         this.tokenSequence = copy.getTokenHierarchy().tokenSequence(JavaTokenId.language());
         this.origText = copy.getText();
         this.style = getCodeStyle(copy);
@@ -82,9 +90,10 @@ public class DiffContext {
         this.doc = copy.getSnapshot().getSource().getDocument(false); //TODO: true or false?
         this.positionConverter = copy.getPositionConverter();
         this.file = copy.getFileObject();
+        this.notSyntheticTrees = notSyntheticTrees;
     }
 
-    public DiffContext(CompilationInfo copy, CompilationUnitTree cut, String code, PositionConverter positionConverter, FileObject file) {
+    public DiffContext(CompilationInfo copy, CompilationUnitTree cut, String code, PositionConverter positionConverter, FileObject file, Set<Tree> notSyntheticTrees) {
         this.tokenSequence = TokenHierarchy.create(code, JavaTokenId.language()).tokenSequence(JavaTokenId.language());
         this.origText = code;
         this.style = getCodeStyle(copy);
@@ -94,6 +103,7 @@ public class DiffContext {
         this.doc = null;
         this.positionConverter = positionConverter;
         this.file = file;
+        this.notSyntheticTrees = notSyntheticTrees;
     }
 
     public static CodeStyle getCodeStyle(CompilationInfo info) {

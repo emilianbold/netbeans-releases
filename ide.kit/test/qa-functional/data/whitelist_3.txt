@@ -48,14 +48,6 @@ org.netbeans.modules.javafx2.project.JFXProjectUtils
 
 #204438
 org.netbeans.modules.java.hints.declarative.ClassPathProviderImpl
-org.netbeans.modules.java.hints.declarative.EmbeddingProviderImpl$FactoryImpl
-org.netbeans.modules.java.hints.declarative.debugging.DebuggingHighlightsLayerFactory
-org.netbeans.modules.java.hints.declarative.debugging.EvaluationSpanTask$FactoryImpl
-org.netbeans.modules.java.hints.declarative.idebinding.HintsTask$FactoryImpl
-org.netbeans.modules.java.hints.declarative.idebinding.ParserImpl$FactoryImpl
-org.netbeans.modules.java.hints.declarative.test.EditorTestPerformer$FactoryImpl
-org.netbeans.modules.java.hints.declarative.test.HighlightsLayerFactoryImpl
-org.netbeans.modules.java.hints.declarative.test.TestParser$FactoryImpl
 org.netbeans.modules.java.hints.declarative.test.TestPerformer$TestClassPathProvider
 
 #202133

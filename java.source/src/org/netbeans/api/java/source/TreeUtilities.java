@@ -163,7 +163,7 @@ public final class TreeUtilities {
         return false;
     }
     
-    private boolean isSynthetic(CompilationUnitTree cut, Tree leaf) throws NullPointerException {
+    boolean isSynthetic(CompilationUnitTree cut, Tree leaf) throws NullPointerException {
         JCTree tree = (JCTree) leaf;
         
         if (tree.pos == (-1))

@@ -51,6 +51,7 @@ import org.netbeans.api.java.source.TestUtilities;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.modules.java.source.save.CasualDiff;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -855,6 +856,105 @@ public class CompilationUnitTest extends GeneratorTestMDRCompat {
         ModificationResult result = javaSource.runModificationTask(task);
         result.commit();
         String res = TestUtilities.copyFileToString(new File(getDataDir().getAbsolutePath() + "/zoo/Krtek.java"));
+        System.err.println(res);
+        assertEquals(res, golden1);
+    }
+
+    public void test197097a() throws Exception {
+        boolean origKeep = CasualDiff.OLD_TREES_VERBATIM;
+
+        CasualDiff.OLD_TREES_VERBATIM = true;
+
+        try {
+            doTest197097();
+        } finally {
+            CasualDiff.OLD_TREES_VERBATIM = origKeep;
+        }
+    }
+
+    public void test197097b() throws Exception {
+        boolean origKeep = CasualDiff.OLD_TREES_VERBATIM;
+
+        CasualDiff.OLD_TREES_VERBATIM = false;
+
+        try {
+            doTest197097();
+        } finally {
+            CasualDiff.OLD_TREES_VERBATIM = origKeep;
+        }
+    }
+
+    public void doTest197097() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package zoo;\n" +
+            "\n" +
+            "public class A {\n" +
+            "    public class I extends java.util.ArrayList {\n" +
+            "        public I(java.util.Collection c) {\n" +
+            "            super(c);\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n"
+        );
+
+        FileObject emptyJava = FileUtil.createData(FileUtil.getConfigRoot(), "Templates/Classes/Empty.java");
+        emptyJava.setAttribute("template", Boolean.TRUE);
+        FileObject classJava = FileUtil.createData(FileUtil.getConfigRoot(), "Templates/Classes/Class.java");
+        classJava.setAttribute("template", Boolean.TRUE);
+        Writer w = new OutputStreamWriter(classJava.getOutputStream(), "UTF-8");
+        w.write("package zoo;\npublic class Template {\n  \n}");
+        w.close();
+        FileObject testSourceFO = FileUtil.toFileObject(testFile);
+        assertNotNull(testSourceFO);
+        ClassPath sourcePath = ClassPath.getClassPath(testSourceFO, ClassPath.SOURCE);
+        assertNotNull(sourcePath);
+        FileObject[] roots = sourcePath.getRoots();
+        assertEquals(1, roots.length);
+        final FileObject sourceRoot = roots[0];
+        assertNotNull(sourceRoot);
+        ClassPath compilePath = ClassPath.getClassPath(testSourceFO, ClassPath.COMPILE);
+        assertNotNull(compilePath);
+        ClassPath bootPath = ClassPath.getClassPath(testSourceFO, ClassPath.BOOT);
+        assertNotNull(bootPath);
+        ClasspathInfo cpInfo = ClasspathInfo.create(bootPath, compilePath, sourcePath);
+
+        String golden1 =
+            "package zoo;\n" +
+            "\n" +
+            "\n" + //XXX
+            "public class I extends java.util.ArrayList {\n\n" +
+            "    public I(java.util.Collection c) {\n" +
+            "        super(c);\n" +
+            "    }\n" +
+            "  \n" +//XXX
+            "}\n";
+
+        JavaSource javaSource = JavaSource.create(cpInfo, FileUtil.toFileObject(testFile));
+
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void cancel() {
+            }
+
+            public void run(WorkingCopy workingCopy) throws Exception {
+                workingCopy.toPhase(JavaSource.Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                Tree classDecl = ((ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0)).getMembers().get(1);
+                CompilationUnitTree newTree = make.CompilationUnit(
+                        sourceRoot,
+                        "zoo/I.java",
+                        Collections.<ImportTree>emptyList(),
+                        Collections.<Tree>singletonList(classDecl)
+                );
+                workingCopy.rewrite(null, newTree);
+                MethodTree constructor = (MethodTree) ((ClassTree) classDecl).getMembers().get(0);
+                workingCopy.rewrite(constructor, make.setLabel(constructor, "I"));
+            }
+        };
+        ModificationResult result = javaSource.runModificationTask(task);
+        result.commit();
+        String res = TestUtilities.copyFileToString(new File(getDataDir().getAbsolutePath() + "/zoo/I.java"));
         System.err.println(res);
         assertEquals(res, golden1);
     }

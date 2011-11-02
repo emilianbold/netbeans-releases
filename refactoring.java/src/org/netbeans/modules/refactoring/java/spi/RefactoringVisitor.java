@@ -99,8 +99,10 @@ public class RefactoringVisitor extends TreePathScanner<Tree, Element> {
         if (current.getLeaf() == oldTree) {
             JavaRefactoringUtils.cacheTreePathInfo(current, workingCopy);
         } else {
-            TreePath tp = workingCopy.getTrees().getPath(current.getCompilationUnit(), oldTree);
-            JavaRefactoringUtils.cacheTreePathInfo(current, workingCopy);
+            if (oldTree!=null) {
+                TreePath tp = workingCopy.getTrees().getPath(current.getCompilationUnit(), oldTree);
+                JavaRefactoringUtils.cacheTreePathInfo(current, workingCopy);
+            }
         }
     }
     
