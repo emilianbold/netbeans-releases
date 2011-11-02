@@ -142,7 +142,7 @@ public class ProjectSettingsValidator {
             LOG.log(Level.INFO, "Model state {0}", csmProject.getModel().getState()); // NOI18N
         }
         if (csmProject.getModel().getState() == CsmModelState.OFF) {
-            assert false : "Cannot store CRC for project "+csmProject.getName();
+            LOG.log(Level.INFO, "Cannot store CRC for project {0}", csmProject.getName());// NOI18N
         }
     }
     
