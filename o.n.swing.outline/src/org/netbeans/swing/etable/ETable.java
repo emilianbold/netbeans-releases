@@ -101,6 +101,7 @@ import javax.swing.JTextField;
 import javax.swing.JViewport;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
+import javax.swing.RowSorter;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
@@ -162,6 +163,8 @@ public class ETable extends JTable {
      * FULLY_EDITABLE.
      */
     private int editing = DEFAULT;
+    
+    private boolean sortable = true;    // ETable is sortable by default.
     
     /** 
      * Array with size exactly same as the number of rows in the data model
@@ -601,7 +604,7 @@ public class ETable extends JTable {
                     }
                     hiddenColumnIndexes[hci] = index;
                 }
-                List<TableColumn> sortedColumns = etcm.getSortedColumns();
+                List<TableColumn> sortedColumns = (sortable) ? etcm.getSortedColumns() : Collections.EMPTY_LIST;
                 int ns = sortedColumns.size();
                 if (ns > 0) {
                     sortedColumnIndexes = new int[ns];
@@ -643,7 +646,7 @@ public class ETable extends JTable {
                     TableColumn tc = colModel.getColumn(oi++);
                     newColumns[i].setPreferredWidth(tc.getPreferredWidth());
                     newColumns[i].setWidth(tc.getWidth());
-                    if (tc instanceof ETableColumn && newColumns[i] instanceof ETableColumn) {
+                    if (sortable && tc instanceof ETableColumn && newColumns[i] instanceof ETableColumn) {
                         ETableColumn etc = (ETableColumn) tc;
                         ETableColumn enc = (ETableColumn) newColumns[i];
                         if (enc.isSortingAllowed()) {
@@ -992,6 +995,7 @@ public class ETable extends JTable {
         if (ii < 0) {
             return;
         }
+        sortable = true;
         TableColumnModel tcm = getColumnModel();
         if (tcm instanceof ETableColumnModel) {
             ETableColumnModel etcm = (ETableColumnModel)tcm;
@@ -1001,13 +1005,21 @@ public class ETable extends JTable {
                 if (! etc.isSortingAllowed()) {
                     return;
                 }
-                SelectedRows selectedRows = getSelectedRowsInModel();
-                int wasSelectedColumn = getSelectedColumn();
+                SelectedRows selectedRows;
+                int wasSelectedColumn;
+                if (getUpdateSelectionOnSort()) {
+                    selectedRows = getSelectedRowsInModel();
+                    wasSelectedColumn = getSelectedColumn();
+                } else {
+                    selectedRows = null;
+                    wasSelectedColumn = -1;
+                }
                 etcm.setColumnSorted(etc, ascending, rank);
                 resetPermutation ();
                 ETable.super.tableChanged(new TableModelEvent(getModel(), -1, getRowCount()));
-                changeSelectionInModel(selectedRows, wasSelectedColumn);
-
+                if (selectedRows != null) {
+                    changeSelectionInModel(selectedRows, wasSelectedColumn);
+                }
             }
         }
     }
@@ -1412,6 +1424,10 @@ public class ETable extends JTable {
      */
     @Override
     public int convertRowIndexToModel(int row) {
+        if (!(getColumnModel() instanceof ETableColumnModel)) {
+            // Use JDK 6 sorting and filtering with custom column models.
+            return super.convertRowIndexToModel(row);
+        }
         if (sortingPermutation == null) {
             sortAndFilter();
         }
@@ -1430,6 +1446,10 @@ public class ETable extends JTable {
      */
     @Override
     public int convertRowIndexToView(int row) {
+        if (!(getColumnModel() instanceof ETableColumnModel)) {
+            // Use JDK 6 sorting and filtering with custom column models.
+            return super.convertRowIndexToView(row);
+        }
         if (inverseSortingPermutation == null) {
             sortAndFilter();
         }
@@ -2271,7 +2291,7 @@ public class ETable extends JTable {
                 return;
             }
             TableColumn resColumn = getResizingColumn(me.getPoint());
-            if ((resColumn == null) && (me.getClickCount() == 1)) {
+            if (sortable && (resColumn == null) && (me.getClickCount() == 1)) {
                 // ok, do the sorting
                 int column = columnAtPoint(me.getPoint());
                 if (column < 0) return ;
@@ -2284,13 +2304,22 @@ public class ETable extends JTable {
                         if (! etc.isSortingAllowed()) {
                             return;
                         }
-                        SelectedRows selectedRows = getSelectedRowsInModel();
-                        int wasSelectedColumn = getSelectedColumn();
+                        SelectedRows selectedRows;
+                        int wasSelectedColumn;
+                        if (getUpdateSelectionOnSort()) {
+                            selectedRows = getSelectedRowsInModel();
+                            wasSelectedColumn = getSelectedColumn();
+                        } else {
+                            selectedRows = null;
+                            wasSelectedColumn = -1;
+                        }
                         boolean clear = ((me.getModifiers() & InputEvent.SHIFT_MASK) != InputEvent.SHIFT_MASK);
                         etcm.toggleSortedColumn(etc, clear);
                         resetPermutation ();
                         ETable.super.tableChanged(new TableModelEvent(getModel(), 0, getRowCount()));
-                        changeSelectionInModel(selectedRows, wasSelectedColumn);
+                        if (selectedRows != null) {
+                            changeSelectionInModel(selectedRows, wasSelectedColumn);
+                        }
                         getTableHeader().resizeAndRepaint();
                     }
                 }
@@ -2708,4 +2737,66 @@ public class ETable extends JTable {
         int[] rowsInView;
         int[] rowsInModel;
     }
+    
+    // JDK 6 methods added to JTable:
+
+    @Override
+    public void setAutoCreateRowSorter(boolean autoCreateRowSorter) {
+        if (getColumnModel() instanceof ETableColumnModel) {
+            if (autoCreateRowSorter) {
+                throw new UnsupportedOperationException("ETable with ETableColumnModel has it's own sorting mechanism. JTable's RowSorter can not be used.");
+            }
+        }
+        super.setAutoCreateRowSorter(autoCreateRowSorter);
+    }
+
+    /* Added and not needed to be overidden.
+    @Override
+    public void setUpdateSelectionOnSort(boolean update) {
+        super.setUpdateSelectionOnSort(update);
+    }
+
+    @Override
+    public boolean getUpdateSelectionOnSort() {
+        return super.getUpdateSelectionOnSort();
+    }
+     */
+
+    /**
+     * When ETable has ETableColumnModel set, only <code>null</code> sorter
+     * is accepted, which turns off sorting. Otherwise UnsupportedOperationException is thrown.
+     * RowSorter can be used when a different TableColumnModel is set.
+     * 
+     * @param sorter {@inheritDoc}
+     */
+    @Override
+    public void setRowSorter(RowSorter<? extends TableModel> sorter) {
+        if (getColumnModel() instanceof ETableColumnModel) {
+            if (sorter == null) {
+                sortable = false;
+                ((ETableColumnModel) getColumnModel()).clearSortedColumns();
+            } else {
+                throw new UnsupportedOperationException(
+                        "ETable with ETableColumnModel has it's own sorting mechanism. Use ETableColumnModel to define sorting, or set a different TableColumnModel.");
+            }
+        } else {
+            super.setRowSorter(sorter);
+        }
+    }
+
+    /**
+     * Get the RowSorter in case that the ETable does not have ETableColumnModel set.
+     * @return {@inheritDoc}
+     */
+    @Override
+    public RowSorter<? extends TableModel> getRowSorter() {
+        if (getColumnModel() instanceof ETableColumnModel) {
+            return null;
+        } else {
+            return getRowSorter();
+        }
+    }
+    
+    
+    
 }
