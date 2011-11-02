@@ -151,7 +151,8 @@ public class HtmlKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
             new HtmlNextWordAction(nextWordAction),
             new HtmlPreviousWordAction(previousWordAction),
             CslActions.createGoToMarkOccurrencesAction(false),
-            CslActions.createGoToMarkOccurrencesAction(true)
+            CslActions.createGoToMarkOccurrencesAction(true),
+            CslActions.createGoToDeclarationAction()
         };
         return TextAction.augmentList(super.createActions(), HtmlActions);
     }
