@@ -59,6 +59,7 @@ import org.netbeans.modules.php.smarty.editor.lexer.TplTopTokenId;
  */
 public class TplEmbeddingProvider extends EmbeddingProvider {
 
+    private static final String MIME_TYPE_PHP = "text/x-php5"; //NOI18N
     public static final String GENERATED_CODE = "@@@"; //NOI18N
     private boolean isPhpEnabled;
 
@@ -89,7 +90,7 @@ public class TplEmbeddingProvider extends EmbeddingProvider {
             if (t.id().getClass() == TplTopTokenId.class && isSmartyToken((TplTopTokenId) t.id())) {
                 if (isPhpEnabled) {
                     isPhpEnabled = false;
-                    embeddings.add(snapshot.create(";?>", "text/x-php5"));
+                    embeddings.add(snapshot.create(";?>", MIME_TYPE_PHP)); //NOI18N
                 }
                 if (from < 0) {
                     from = sequence.offset();
@@ -108,17 +109,17 @@ public class TplEmbeddingProvider extends EmbeddingProvider {
                     if (t.id() == TplTopTokenId.T_PHP) {
                         if (!isPhpEnabled) {
                             isPhpEnabled = true;
-                            embeddings.add(snapshot.create("<?", "text/x-php5"));
+                            embeddings.add(snapshot.create("<?", MIME_TYPE_PHP)); //NOI18N
                         }
-                        embeddings.add(snapshot.create(from, len, "text/x-php5")); //NOI18N
+                        embeddings.add(snapshot.create(from, len, MIME_TYPE_PHP));
                     } else {
                         if (isPhpEnabled) {
                             isPhpEnabled = false;
-                            embeddings.add(snapshot.create(";?>", "text/x-php5"));
+                            embeddings.add(snapshot.create(";?>", MIME_TYPE_PHP)); //NOI18N
                         }
-//                        embeddings.add(snapshot.create(GENERATED_CODE, "text/x-php5"));
-                        embeddings.add(snapshot.create(from, len, "text/x-php5")); //NOI18N
-//                        embeddings.add(snapshot.create(GENERATED_CODE, "text/x-php5"));
+                        embeddings.add(snapshot.create(GENERATED_CODE, MIME_TYPE_PHP));
+                        embeddings.add(snapshot.create(from, len, MIME_TYPE_PHP));
+                        embeddings.add(snapshot.create(GENERATED_CODE, MIME_TYPE_PHP));
                     }
                 }
 
@@ -127,9 +128,9 @@ public class TplEmbeddingProvider extends EmbeddingProvider {
             }
         }
         if (from >= 0) {
-//            embeddings.add(snapshot.create(GENERATED_CODE, "text/x-php5"));
-            embeddings.add(snapshot.create(from, len, "text/x-php5")); //NOI18N
-//            embeddings.add(snapshot.create(GENERATED_CODE, "text/x-php5"));
+            embeddings.add(snapshot.create(GENERATED_CODE, MIME_TYPE_PHP));
+            embeddings.add(snapshot.create(from, len, MIME_TYPE_PHP));
+            embeddings.add(snapshot.create(GENERATED_CODE, MIME_TYPE_PHP));
         }
         if (embeddings.isEmpty()) {
             return Collections.emptyList();
