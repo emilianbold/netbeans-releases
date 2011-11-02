@@ -114,7 +114,7 @@ public enum TplTopTokenId implements TokenId {
                         LanguagePath languagePath, InputAttributes inputAttributes) {
                     TplTopTokenId id = token.id();
                     if (id == T_HTML) {
-                        return LanguageEmbedding.create(PHPTokenId.language(), 0, 0, true);
+                        return LanguageEmbedding.create(HTMLTokenId.language(), 0, 0, true);
                     } else if (id == T_SMARTY) {
                         return LanguageEmbedding.create(TplTokenId.language(), 0, 0, false);
                     } else if (id == T_PHP) {
