@@ -44,6 +44,7 @@ package org.netbeans.modules.php.editor.verification;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
@@ -140,7 +141,7 @@ public class AccidentalAssignmentHint extends AbstractRule implements PHPRuleWit
                 int end = assignment.getEndOffset();
                 retval = doc.getText(start, end - start);
             } catch (BadLocationException ex) {
-                LOGGER.warning("Can't obtain assignment text.");
+                LOGGER.log(Level.WARNING, "Can't obtain assignment text.", ex);
             } finally {
                 return retval;
             }
@@ -322,7 +323,7 @@ public class AccidentalAssignmentHint extends AbstractRule implements PHPRuleWit
                 sb.append(getExpressionText(assignment.getRightHandSide()));
                 return sb.toString();
             } catch (BadLocationException ex) {
-                LOGGER.warning("Can't obtain corrected assignment text.");
+                LOGGER.log(Level.WARNING, "Can't obtain corrected assignment text.", ex);
             } finally {
                 return sb.toString();
             }

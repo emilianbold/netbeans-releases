@@ -307,7 +307,7 @@ ${selection}${cursor}
     <!-- Added in 6.9 -->
 
     <!-- Arrays and List conversion and sorting -->
-    <codetemplate abbreviation="2ar" contexts="BLOCK,CASE,LABELED_STATEMENT" descriptionId="CT_fori">
+    <codetemplate abbreviation="2ar" contexts="BLOCK,CASE,LABELED_STATEMENT">
          <code>
  <![CDATA[${clazz}[] ${var newVarName default="arr"} = (${clazz}[]) ${coll instanceof="java.util.Collection"}.toArray(new ${clazz}[${coll}.size()]);
  ]]>

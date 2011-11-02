@@ -39,66 +39,55 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.debugger.jpda.visual.models;
+package org.netbeans.modules.php.editor.verification;
 
-import org.netbeans.api.debugger.Properties;
-import org.netbeans.spi.debugger.ui.ColumnModelRegistration;
-import org.netbeans.spi.viewmodel.ColumnModel;
-import org.openide.util.NbBundle;
+import java.util.prefs.Preferences;
 
 /**
- * Column model representing event types.
- * 
- * @author Martin Entlicher
+ *
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-@ColumnModelRegistration(path="netbeans-JPDASession/EventsView")
-public class EventTypesColumnModel extends ColumnModel {
-    
-    static final String ID = "EventsViewTypeColumn";    // NOI18N
+public class PHPAccidentalAssignmentHintTest extends PHPHintsTestBase {
 
-    private Properties properties = Properties.getDefault ().
-            getProperties ("debugger").getProperties ("views"); // NOI18N
-    
-    @Override
-    public String getID() {
-        return ID;
+    public PHPAccidentalAssignmentHintTest(String testName) {
+        super(testName);
     }
 
-    @Override
-    public String getDisplayName() {
-        return NbBundle.getMessage(EventTypesColumnModel.class, "LBL_EventTypesColumnName");
+    public void testInSubAndInWhile() throws Exception {
+        checkHintsInStartEndFile(new AccidentalAssignmentHintStub(true, true), "testAccidentalAssignmentHint.php");
     }
 
-    @Override
-    public String getShortDescription() {
-        return NbBundle.getMessage(EventTypesColumnModel.class, "LBL_EventTypesColumnDescr");
-    }
-    
-    @Override
-    public Class getType() {
-        return String.class;
+    public void testInSubAndNotInWhile() throws Exception {
+        checkHintsInStartEndFile(new AccidentalAssignmentHintStub(true, false), "testAccidentalAssignmentHint.php");
     }
 
-    @Override
-    public boolean isVisible() {
-        return properties.getBoolean (getID () + ".visible", false);    // NOI18N
-    }
-    
-    @Override
-    public void setVisible (boolean visible) {
-        properties.setBoolean (getID () + ".visible", visible);         // NOI18N
+    public void testNotInSubAndNotInWhile() throws Exception {
+        checkHintsInStartEndFile(new AccidentalAssignmentHintStub(false, false), "testAccidentalAssignmentHint.php");
     }
 
-    @Override
-    public int getCurrentOrderNumber() {
-        int cn = properties.getInt(getID() + ".currentOrderNumber", -1);
-        return cn;
+    public void testNotInSubAndInWhile() throws Exception {
+        checkHintsInStartEndFile(new AccidentalAssignmentHintStub(false, true), "testAccidentalAssignmentHint.php");
     }
 
-    @Override
-    public void setCurrentOrderNumber(int newOrderNumber) {
-        properties.setInt(getID() + ".currentOrderNumber", newOrderNumber);
-    }
+    private class AccidentalAssignmentHintStub extends AccidentalAssignmentHint {
+        private final boolean assignmentsInSubStatements;
+        private final boolean assignmentsInWhileStatements;
 
+        public AccidentalAssignmentHintStub(boolean assignmentsInSubStatements, boolean assignmentsInWhileStatements) {
+            this.assignmentsInSubStatements = assignmentsInSubStatements;
+            this.assignmentsInWhileStatements = assignmentsInWhileStatements;
+        }
+
+        @Override
+        public boolean checkAssignmentsInSubStatements(Preferences preferences) {
+            return assignmentsInSubStatements;
+        }
+
+        @Override
+        public boolean checkAssignmentsInWhileStatements(Preferences preferences) {
+            return assignmentsInWhileStatements;
+        }
+
+    }
 
 }
