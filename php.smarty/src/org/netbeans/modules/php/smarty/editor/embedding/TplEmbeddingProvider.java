@@ -60,6 +60,7 @@ import org.netbeans.modules.php.smarty.editor.lexer.TplTopTokenId;
 public class TplEmbeddingProvider extends EmbeddingProvider {
 
     private static final String MIME_TYPE_PHP = "text/x-php5"; //NOI18N
+    private static final String MIME_TYPE_HTML = "text/html"; //NOI18N
     public static final String GENERATED_CODE = "@@@"; //NOI18N
     private boolean isPhpEnabled;
 
@@ -117,9 +118,8 @@ public class TplEmbeddingProvider extends EmbeddingProvider {
                             isPhpEnabled = false;
                             embeddings.add(snapshot.create(";?>", MIME_TYPE_PHP)); //NOI18N
                         }
-                        embeddings.add(snapshot.create(GENERATED_CODE, MIME_TYPE_PHP));
-                        embeddings.add(snapshot.create(from, len, MIME_TYPE_PHP));
-                        embeddings.add(snapshot.create(GENERATED_CODE, MIME_TYPE_PHP));
+                        embeddings.add(snapshot.create(from, len, MIME_TYPE_HTML));
+                        embeddings.add(snapshot.create(GENERATED_CODE, MIME_TYPE_HTML));
                     }
                 }
 
@@ -128,16 +128,33 @@ public class TplEmbeddingProvider extends EmbeddingProvider {
             }
         }
         if (from >= 0) {
-            embeddings.add(snapshot.create(GENERATED_CODE, MIME_TYPE_PHP));
-            embeddings.add(snapshot.create(from, len, MIME_TYPE_PHP));
-            embeddings.add(snapshot.create(GENERATED_CODE, MIME_TYPE_PHP));
+            embeddings.add(snapshot.create(from, len, MIME_TYPE_HTML));
+            embeddings.add(snapshot.create(GENERATED_CODE, MIME_TYPE_HTML));
         }
         if (embeddings.isEmpty()) {
-            return Collections.emptyList();
+            return Collections.singletonList(snapshot.create("", "text/html")); 
         } else {
             return Collections.singletonList(Embedding.create(embeddings));
         }
     }
+
+//    private boolean farFromSmartyDelimiter(TokenSequence<TplTopTokenId> sequence) {
+//        if (sequence.moveNext()) {
+//            TplTopTokenId token = sequence.token().id();
+//            sequence.movePrevious();
+//            if (token == TplTopTokenId.T_SMARTY_OPEN_DELIMITER) {
+//                return false;
+//            }
+//        }
+//        if (sequence.movePrevious()) {
+//            TplTopTokenId token = sequence.token().id();
+//            sequence.moveNext();
+//            if (token == TplTopTokenId.T_SMARTY_OPEN_DELIMITER) {
+//                return false;
+//            }
+//        }
+//        return true;
+//    }
 
     @Override
     public int getPriority() {
