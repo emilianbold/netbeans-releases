@@ -77,7 +77,6 @@ import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
-import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 
 /**
@@ -130,20 +129,10 @@ public class NavigationSideBar extends JPanel implements Accessible {
 
         updatePreferredSize();
 
-        setPleaseWaitUI();
     }
 
     private void change(Result info, SchedulerEvent event) {
         if (event == null) {
-            //just clean the "please wait..." text
-            SwingUtilities.invokeLater(new Runnable() {
-
-                @Override
-                public void run() {
-                    removePleaseWaitUI();
-                }
-            });
-            
             return ;
         }
 
@@ -228,29 +217,6 @@ public class NavigationSideBar extends JPanel implements Accessible {
             add(label);
         }
 
-        revalidate();
-        repaint();
-    }
-
-    //shows please wait text until the document is parsed
-    private void setPleaseWaitUI() {
-        removeAll();
-
-        JLabel label = new javax.swing.JLabel();
-        label.setForeground(Color.DARK_GRAY);
-        label.setFont(new Font("Monospaced", Font.PLAIN, (int) (getColoring().getFont().getSize() * .9))); // NOI18N
-        label.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        label.setText(getDrawText(NbBundle.getMessage(NavigationSideBar.class, "MSG_NAVIGATION_BAR_PLEASE_WAIT")));
-
-        add(label);
-
-        revalidate();
-        repaint();
-    }
-
-    //removes please wait text until the document is parsed
-    private void removePleaseWaitUI() {
-        removeAll();
         revalidate();
         repaint();
     }
