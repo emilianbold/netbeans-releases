@@ -298,6 +298,9 @@ ExplorerManager.Provider, PropertyChangeListener {
 
     private void setColumnOrder(Node.Property column, int order) {
         column.setValue(Column.PROP_ORDER_NUMBER, order);
+        if (order != getColumnOrder(column)) {
+            Exceptions.printStackTrace(new IllegalStateException("The order "+order+" could not be set to column "+column));
+        }
     }
 
     private int getColumnIndex(int visibleIndex) {

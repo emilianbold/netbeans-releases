@@ -42,6 +42,7 @@
 package org.netbeans.modules.debugger.jpda.visual.models;
 
 //import org.netbeans.modules.debugger.jpda.ui.models.SourcesModel.AbstractColumn;
+import org.netbeans.api.debugger.Properties;
 import org.netbeans.spi.debugger.ui.ColumnModelRegistration;
 import org.netbeans.spi.viewmodel.ColumnModel;
 import org.openide.util.NbBundle;
@@ -53,6 +54,9 @@ import org.openide.util.NbBundle;
 @ColumnModelRegistration(path="netbeans-JPDASession/EventsView")
 public class EventsColumnModel extends ColumnModel {
 
+    private Properties properties = Properties.getDefault ().
+            getProperties ("debugger").getProperties ("views"); // NOI18N
+    
     @Override
     public String getID() {
         return "EventsViewNameColumn";
@@ -68,4 +72,15 @@ public class EventsColumnModel extends ColumnModel {
         return null;
     }
     
+    @Override
+    public int getCurrentOrderNumber() {
+        int cn = properties.getInt(getID() + ".currentOrderNumber", -1);
+        return cn;
+    }
+
+    @Override
+    public void setCurrentOrderNumber(int newOrderNumber) {
+        properties.setInt(getID() + ".currentOrderNumber", newOrderNumber);
+    }
+
 }
