@@ -46,7 +46,10 @@ package org.netbeans.modules.cnd.refactoring.ui;
 import java.io.IOException;
 import java.text.MessageFormat;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
@@ -57,6 +60,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 
@@ -66,20 +70,34 @@ import org.openide.util.lookup.Lookups;
  */
 public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
     private final AbstractRefactoring refactoring;
-    private String oldName = null;
-    private String dispOldName;
+    private final String oldName;
+    private final String dispOldName;
     private String newName;
     private RenamePanel panel;
-    private boolean fromListener = false;
+    private final boolean fromListener;
 //    private TreePathHandle handle;
     private final CsmObject origObject;
     private FileObject byPassFolder;
     private boolean byPassPakageRename;
     
-    public RenameRefactoringUI(CsmObject csmObject) {
+    public RenameRefactoringUI(CsmObject csmObject, String newName) {
         this.origObject = csmObject;
-        this.dispOldName = this.oldName = CsmRefactoringUtils.getSimpleText(this.origObject);  
-        this.refactoring = new RenameRefactoring(Lookups.singleton(csmObject));
+        this.dispOldName = this.oldName = CsmRefactoringUtils.getSimpleText(this.origObject);
+        this.newName = newName;
+        this.fromListener = (newName != null);
+        Lookup lkp = null;
+        if (CsmKindUtilities.isFile(csmObject)) {
+            // name is without extension, because later it will be passed to usual rename
+            // refactoring as well which make real file rename and has ability to undo it
+            FileObject fo = CsmUtilities.getFileObject(((CsmFile)csmObject));
+            if (fo != null) {
+                lkp = Lookups.fixed(csmObject, fo);
+            }
+        }
+        if (lkp == null) {
+           lkp = Lookups.singleton(csmObject);
+        }
+        this.refactoring = new RenameRefactoring(lkp);
     }
      
 //    public RenameRefactoringUI(TreePathHandle handle, CompilationInfo info) {
@@ -148,7 +166,7 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
 
     public CustomRefactoringPanel getPanel(ChangeListener parent) {
         if (panel == null) {
-            String name = oldName;
+            String name = fromListener ? newName : oldName;
             String title = NbBundle.getMessage(RenamePanel.class, "LBL_RenamePanelTitle", "", oldName); // NOI18N
             panel = new RenamePanel(this.origObject, name, parent, title, !fromListener, fromListener && !byPassPakageRename);
         }
@@ -160,6 +178,9 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
     }
 
     public org.netbeans.modules.refactoring.api.Problem setParameters() {
+        if (!panel.isUpdateReferences()) {
+            return null;
+        }
         newName = panel.getNameValue();
         if (refactoring instanceof RenameRefactoring) {
             ((RenameRefactoring) refactoring).setNewName(newName);
@@ -169,8 +190,9 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
     }
     
     public org.netbeans.modules.refactoring.api.Problem checkParameters() {
-        if (!panel.isUpdateReferences()) 
+        if (!panel.isUpdateReferences()) {
             return null;
+        }
         newName = panel.getNameValue();
         if (refactoring instanceof RenameRefactoring) {
             ((RenameRefactoring) refactoring).setNewName(newName);
@@ -189,7 +211,11 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
     }
 
     public String getName() {
-        return NbBundle.getMessage(RenamePanel.class, "LBL_Rename");
+        if (CsmKindUtilities.isFile(origObject)) {
+            return NbBundle.getMessage(RenamePanel.class, "LBL_RenameFile");
+        } else {
+            return NbBundle.getMessage(RenamePanel.class, "LBL_Rename");
+        }
     }
 
     public boolean hasParameters() {

@@ -50,29 +50,23 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.text.Position.Bias;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
-import org.netbeans.modules.cnd.api.model.CsmClass;
-import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmFunction;
-import org.netbeans.modules.cnd.api.model.CsmMember;
-import org.netbeans.modules.cnd.api.model.CsmMethod;
-import org.netbeans.modules.cnd.api.model.CsmObject;
-import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.services.CsmVirtualInfoQuery;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import org.netbeans.modules.cnd.api.model.xref.CsmReference;
-import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
-import org.netbeans.modules.cnd.api.model.xref.CsmReferenceRepository;
-import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
+import org.netbeans.modules.cnd.api.model.xref.*;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
 import org.netbeans.modules.cnd.refactoring.support.ModificationResult;
 import org.netbeans.modules.cnd.refactoring.support.ModificationResult.Difference;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.PositionRef;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -103,22 +97,32 @@ public class CsmRenameRefactoringPlugin extends CsmModificationRefactoringPlugin
     public Problem fastCheckParameters() {
         Problem fastCheckProblem = null;
         String newName = refactoring.getNewName();
-        String oldName = CsmRefactoringUtils.getSimpleText(getStartReferenceObject());
+        final CsmObject refObj = getStartReferenceObject();
+        String oldName = CsmRefactoringUtils.getSimpleText(refObj);
         
         if (oldName.equals(newName)) {
             fastCheckProblem = createProblem(fastCheckProblem, true, getString("ERR_NameNotChanged")); // NOI18N
             return fastCheckProblem;
         }
         
-        if (!CndLexerUtilities.isCppIdentifier(newName)) {
-            String s = getString("ERR_InvalidIdentifier"); //NOI18N
-            String msg = new MessageFormat(s).format(
-                    new Object[] {newName}
-            );
+        String errorFmtStr = null;
+        if (CsmKindUtilities.isFile(refObj)) {
+            if (!checkFileName(newName)) {
+                errorFmtStr = getString("ERR_InvalidFileName"); //NOI18N
+            }
+        } else if (!CndLexerUtilities.isCppIdentifier(newName)) {
+            errorFmtStr = getString("ERR_InvalidIdentifier"); //NOI18N
+        }
+        if (errorFmtStr != null) {
+            String msg = new MessageFormat(errorFmtStr).format(new Object[]{newName});
             fastCheckProblem = createProblem(fastCheckProblem, true, msg);
             return fastCheckProblem;
-        }        
+        }
         return fastCheckProblem;
+    }
+    
+    private boolean checkFileName(String str) {
+        return !str.contains("\\") && !str.contains("/"); // NOI18N
     }
     
     @Override
@@ -138,7 +142,7 @@ public class CsmRenameRefactoringPlugin extends CsmModificationRefactoringPlugin
         preCheckProblem = checkIfModificationPossible(preCheckProblem, directReferencedObject, getString("ERR_Overrides_Fatal"), getString("ERR_OverridesOrOverriden"));
         fireProgressListenerStop();
         return preCheckProblem;
-    }   
+    }
 
     private static String getString(String key) {
         return NbBundle.getMessage(CsmRenameRefactoringPlugin.class, key);
@@ -164,6 +168,19 @@ public class CsmRenameRefactoringPlugin extends CsmModificationRefactoringPlugin
                 if (CsmVirtualInfoQuery.getDefault().isVirtual(method)) {
                     this.referencedObjects.addAll(CsmVirtualInfoQuery.getDefault().getOverriddenMethods(method, true));
                     assert !this.referencedObjects.isEmpty() : "must be at least start object " + method;
+                }
+            } else if (CsmKindUtilities.isFile(referencedObject)) {
+                // use all csm files associated with file object
+                CsmFile file = (CsmFile) referencedObject;
+                FileObject fileObject = file.getFileObject();
+                try {
+                    DataObject dob = DataObject.find(fileObject);
+                    if (dob != null) {
+                        CsmFile[] csmFiles = CsmUtilities.getCsmFiles(dob, true, false);
+                        this.referencedObjects.addAll(Arrays.asList(csmFiles));
+                    }
+                } catch (DataObjectNotFoundException ex) {
+                    Exceptions.printStackTrace(ex);
                 }
             } else {
                 this.referencedObjects.add(referencedObject);
@@ -223,10 +240,21 @@ public class CsmRenameRefactoringPlugin extends CsmModificationRefactoringPlugin
         assert refObjects != null && refObjects.size() > 0 : "method must be called for resolved element";
         FileObject fo = CsmUtilities.getFileObject(csmFile);
         Collection<CsmReference> refs = new LinkedHashSet<CsmReference>();
+        // do not interrupt refactoring
         for (CsmObject obj : refObjects) {
-            // do not interrupt refactoring
-            Collection<CsmReference> curRefs = CsmReferenceRepository.getDefault().getReferences(obj, csmFile, CsmReferenceKind.ALL, null);
-            refs.addAll(curRefs);
+            // if we rename file, check include directives
+            if (CsmKindUtilities.isFile(obj)) {
+                CsmFile includedFile = (CsmFile) obj;
+                Collection<CsmInclude> includes = csmFile.getIncludes();
+                for (CsmInclude csmInclude : includes) {
+                    if (includedFile.equals(csmInclude.getIncludeFile())) {
+                        refs.add(CsmReferenceSupport.createObjectReference(includedFile, csmInclude));
+                    }
+                }
+            } else {
+                Collection<CsmReference> curRefs = CsmReferenceRepository.getDefault().getReferences(obj, csmFile, CsmReferenceKind.ALL, null);
+                refs.addAll(curRefs);
+            }
         }
         if (refs.size() > 0) {
             List<CsmReference> sortedRefs = new ArrayList<CsmReference>(refs);
@@ -244,11 +272,31 @@ public class CsmRenameRefactoringPlugin extends CsmModificationRefactoringPlugin
     private void processRefactoredReferences(List<CsmReference> sortedRefs, FileObject fo, CloneableEditorSupport ces, ModificationResult mr) {
         String newName = refactoring.getNewName();
         for (CsmReference ref : sortedRefs) {
-            String oldName = ref.getText().toString();
-            String descr = getDescription(ref, oldName);
-            Difference diff = rename(ref, ces, oldName, newName, descr);
-            assert diff != null;
-            mr.addDifference(fo, diff);
+            String oldText = ref.getText().toString();
+            final CsmObject referencedObject = ref.getReferencedObject();
+            if (CsmKindUtilities.isFile(referencedObject)) {
+                final CsmObject owner = ref.getOwner();
+                assert CsmKindUtilities.isInclude(owner) : "include directive is expected " + owner;
+                FileObject file = CsmUtilities.getFileObject((CsmFile)referencedObject);
+                if (file != null) {
+                    // check if include directive really contains file name and not macro expression
+                    String fileNameExt = file.getNameExt();
+                    final int lastIndexOf = oldText.lastIndexOf(fileNameExt);
+                    if (lastIndexOf > 0) {
+                        String fileName = file.getName();
+                        String descr = NbBundle.getMessage(CsmRenameRefactoringPlugin.class, "UpdateInclude", oldText);
+                        String inclString = oldText.substring(0, lastIndexOf) + newName + oldText.substring(lastIndexOf + fileName.length());
+                        Difference diff = rename(ref, ces, oldText, inclString, descr);
+                        assert diff != null;
+                        mr.addDifference(fo, diff);                    
+                    }
+                }
+            } else {
+                String descr = getDescription(ref, oldText);
+                Difference diff = rename(ref, ces, oldText, newName, descr);
+                assert diff != null;
+                mr.addDifference(fo, diff);
+            }
         }
     }
 
