@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -58,7 +58,6 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 
 import org.netbeans.modules.dbschema.*;
-import org.netbeans.modules.dbschema.jdbcimpl.*;
 
 /** Normal implementation of children for source element nodes.
 * <P>
@@ -97,7 +96,7 @@ public class SchemaRootChildren extends Children.Keys {
 
 
   private boolean parseStatus = false;
-  private Object parseLock = new Object();
+  private final Object parseLock = new Object();
   
   private org.netbeans.modules.dbschema.jdbcimpl.DBschemaDataObject obj;
   private RequestProcessor RP = new RequestProcessor(SchemaRootChildren.class);
@@ -117,6 +116,7 @@ public class SchemaRootChildren extends Children.Keys {
     /* Overrides initNodes to run the preparation task of the
     * source element, call refreshKeys and start to
     * listen to the changes in the element too. */
+    @Override
     protected void addNotify () {
         SchemaElement el = getElement();
 
@@ -132,6 +132,8 @@ public class SchemaRootChildren extends Children.Keys {
         refreshKeys ();
     }
 
+    @Override
+    @SuppressWarnings("unchecked")
     protected void removeNotify () {
         setKeys (java.util.Collections.EMPTY_SET);
         nodesInited = false;
@@ -140,6 +142,7 @@ public class SchemaRootChildren extends Children.Keys {
     /* Create nodes for given key.
     * The node is created using node factory.
     */
+    @Override
     protected Node[] createNodes (final Object key) {
         if (key instanceof SchemaElement)
             return new Node[] { factory.createSchemaNode((SchemaElement) key) };
@@ -164,6 +167,7 @@ public class SchemaRootChildren extends Children.Keys {
             refreshKeys2();
           
             RP.post(new Runnable() {
+                @Override
                 public void run () {
                     synchronized (parseLock) {
                         if (!parseStatus) {
@@ -216,6 +220,7 @@ public class SchemaRootChildren extends Children.Keys {
     * @param evt the event describing changed property (or null to signalize
     * that all keys should be refreshed)
     */
+    @SuppressWarnings("unchecked")
     public void refreshKeys () {
         int status;
 
@@ -240,6 +245,7 @@ public class SchemaRootChildren extends Children.Keys {
         }
     }
   
+    @SuppressWarnings("unchecked")
     private void refreshKeys2() {
         setKeys(new Object[] {NOT_KEY});
     }
@@ -256,6 +262,7 @@ public class SchemaRootChildren extends Children.Keys {
 
         // set new keys
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 // #55249 - first reset to empty set, so the old keys are eliminated. 
                 // Due to the way equals() is implemented on schema elements, this needs 
@@ -270,12 +277,14 @@ public class SchemaRootChildren extends Children.Keys {
     /** Filters and adds the keys of specified type to the given
     * key collection.
     */
+    @SuppressWarnings("unchecked")
     private void addKeysOfType (Collection keys, final int elementType) {
         SchemaElement schemaElement = (SchemaElement) getElement();
         if (elementType != 0)
             keys.add (schemaElement);
     }
 
+    @SuppressWarnings("unchecked")
     private void setKeys2(Collection c) {
       setKeys(c);
     }
@@ -287,6 +296,7 @@ public class SchemaRootChildren extends Children.Keys {
     private final class DBElementListener implements PropertyChangeListener {
         public DBElementListener () {} 
         
+        @Override
         public void propertyChange (PropertyChangeEvent evt) {
             boolean refresh = DBElementProperties.PROP_SCHEMA.equals(evt.getPropertyName());
             if (!refresh && DBElementProperties.PROP_STATUS.equals(evt.getPropertyName())) {
@@ -296,6 +306,7 @@ public class SchemaRootChildren extends Children.Keys {
             
             if (refresh)
                 javax.swing.SwingUtilities.invokeLater(new Runnable() {
+                @Override
                     public void run() {
                         refreshKeys();
                     }
