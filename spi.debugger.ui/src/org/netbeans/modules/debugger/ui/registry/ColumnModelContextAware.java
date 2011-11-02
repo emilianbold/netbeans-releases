@@ -179,8 +179,12 @@ public class ColumnModelContextAware extends ColumnModel implements ContextAware
         getDelegate().setVisible(visible);
     }
 
-    
+    @Override
+    public String toString() {
+        return super.toString() + " with service = "+serviceName+" and delegate = "+delegate;
+    }
 
+    
     /**
      * Creates instance of <code>ContextAwareService</code> based on layer.xml
      * attribute values

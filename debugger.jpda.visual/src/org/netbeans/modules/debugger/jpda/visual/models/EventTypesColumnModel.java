@@ -89,4 +89,16 @@ public class EventTypesColumnModel extends ColumnModel {
         properties.setBoolean (getID () + ".visible", visible);         // NOI18N
     }
 
+    @Override
+    public int getCurrentOrderNumber() {
+        int cn = properties.getInt(getID() + ".currentOrderNumber", -1);
+        return cn;
+    }
+
+    @Override
+    public void setCurrentOrderNumber(int newOrderNumber) {
+        properties.setInt(getID() + ".currentOrderNumber", newOrderNumber);
+    }
+
+
 }
