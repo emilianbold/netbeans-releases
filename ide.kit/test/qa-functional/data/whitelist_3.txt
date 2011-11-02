@@ -26,7 +26,6 @@ org.netbeans.modules.whitelist.project.WhiteListLookupProvider
 org.netbeans.spi.whitelist.WhiteListQueryImplementation
 
 #204446
-org.netbeans.modules.php.smarty.editor.embedding.TplEmbeddingProvider$Factory
 org.netbeans.modules.php.smarty.editor.gsf.TplLanguage
 org.netbeans.modules.php.api.util.FileUtils$ZipEntryFilter
 
