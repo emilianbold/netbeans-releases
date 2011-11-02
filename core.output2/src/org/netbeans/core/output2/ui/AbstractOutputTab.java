@@ -161,10 +161,6 @@ public abstract class AbstractOutputTab extends JComponent implements Accessible
             actions = new Action[0];
             return;
         }
-        if (a.length > 5) {
-            throw new IllegalArgumentException("No more than 5 actions allowed" //NOI18N
-                    + "in the output window toolbar"); //NOI18N
-        }
         actions = new Action[a.length];
         for (int i = 0; i < a.length; i++) {
             actions[i] = a[i];

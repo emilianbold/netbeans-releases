@@ -608,7 +608,15 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
                 }
                 return;
             } else if (tempSession.getRefactoringElements().isEmpty()) {
-                JOptionPane.showMessageDialog(parametersPanel, NbBundle.getMessage(ParametersPanel.class, "MSG_NoPatternsFound"), ui.getName(), JOptionPane.INFORMATION_MESSAGE);
+                DialogDescriptor nd = new DialogDescriptor(NbBundle.getMessage(ParametersPanel.class, "MSG_NoPatternsFound"),
+                                        ui.getName(),
+                                        true,
+                                        new Object[] {DialogDescriptor.OK_OPTION},
+                                        DialogDescriptor.OK_OPTION,
+                                        DialogDescriptor.DEFAULT_ALIGN,
+                                        ui.getHelpCtx(),
+                                        null);
+                                DialogDisplayer.getDefault().notifyLater(nd);
                 return;
             }
             

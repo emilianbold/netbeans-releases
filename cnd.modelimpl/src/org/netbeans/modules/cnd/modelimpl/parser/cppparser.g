@@ -767,7 +767,7 @@ template_explicit_specialization
 // it's a caller's responsibility to check isCPlusPlus
 //
 protected
-external_declaration_template { String s; K_and_R = false; boolean ctrName=false; boolean definition;}
+external_declaration_template { String s; K_and_R = false; boolean ctrName=false; boolean definition; boolean friend = false;}
 	:      
 		((LITERAL___extension__)? LITERAL_template LESSTHAN GREATERTHAN) => template_explicit_specialization
 	|
@@ -804,7 +804,7 @@ external_declaration_template { String s; K_and_R = false; boolean ctrName=false
                                         LT(1).getLine());
                         }
                         (template_head)?   // :)
-                        ctor_decl_spec
+                        friend = ctor_decl_spec
                         {ctrName = qualifiedItemIsOneOf(qiCtor);}
                         ctor_declarator[false]
                         (EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
@@ -813,7 +813,7 @@ external_declaration_template { String s; K_and_R = false; boolean ctrName=false
                             // below is a workaround for know infinite loop bug in ANTLR 
                             // see http://www.jguru.com/faq/view.jsp?EID=271922
                             //if( #cds1 != null ) { #cds1.setNextSibling(null); }; 
-                            if (ctrName) {
+                            if (ctrName && !friend) {
                                 #external_declaration_template= #(#[CSM_CTOR_TEMPLATE_DECLARATION, "CSM_CTOR_TEMPLATE_DECLARATION"],  #external_declaration_template); //end_of_stmt();
                             } else {
                                 #external_declaration_template= #(#[CSM_FUNCTION_TEMPLATE_DECLARATION, "CSM_FUNCTION_TEMPLATE_DECLARATION"],  #external_declaration_template); //end_of_stmt();
@@ -1174,7 +1174,7 @@ namespace_alias_definition
 // it's a caller's responsibility to check isCPlusPlus
 //
 member_declaration_template
-	{String q; boolean definition=false;}
+	{String q; boolean definition=false; boolean friend = false;}
 	:
 		{beginTemplateDefinition();}
 		template_head
@@ -1200,7 +1200,7 @@ member_declaration_template
                                 printf("member_declaration_13[%d]: Constructor declarator\n",
                                         LT(1).getLine());
                         }
-                        ctor_decl_spec
+                        friend = ctor_decl_spec
                         ctor_declarator[false] 	
                         ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
                         | SEMICOLON ) // Constructor declarator
@@ -1273,7 +1273,7 @@ member_declaration_template
 	;
 
 member_declaration
-	{String q; boolean definition;boolean ctrName=false;StorageClass sc = scInvalid;int ts = 0;}
+	{String q; boolean definition;boolean ctrName=false;StorageClass sc = scInvalid;int ts = 0;boolean friend = false;}
 	:
 	(
 		// Class definition
@@ -1318,14 +1318,14 @@ member_declaration
 			printf("member_declaration_3[%d]: Constructor or no-ret type fun declarator\n",
 				LT(1).getLine());
 		}
-		cds:ctor_decl_spec
+		friend = cds:ctor_decl_spec
                 {ctrName = qualifiedItemIsOneOf(qiCtor);}
 		cd:ctor_declarator[false] 	(EOF!|SEMICOLON) // Constructor declarator
 		{
                     // below is a workaround for know infinite loop bug in ANTLR 
                     // see http://www.jguru.com/faq/view.jsp?EID=271922
                     if( #cds != null ) { #cds.setNextSibling(null); }; 
-                    if (ctrName) {
+                    if (ctrName && !friend) {
                         #member_declaration = #(#[CSM_CTOR_DECLARATION, "CSM_CTOR_DECLARATION"], #cds, #cd); //end_of_stmt();
                     } else {
                         #member_declaration = #(#[CSM_FUNCTION_DECLARATION, "CSM_FUNCTION_DECLARATION"], #cds, #cd); //end_of_stmt();
@@ -1345,11 +1345,11 @@ member_declaration
             )
         )=>
         {if (statementTrace>=1) printf("member_declaration_4[%d]: Constructor or no-ret type fun definition\n", LT(1).getLine());}
-        ctor_decl_spec
+        friend = ctor_decl_spec
         {ctrName = qualifiedItemIsOneOf(qiCtor);}
         ctor_declarator[true]
         ctor_body
-        {if (ctrName) { #member_declaration = #(#[CSM_CTOR_DEFINITION, "CSM_CTOR_DEFINITION"], #member_declaration);}
+        {if (ctrName && !friend) { #member_declaration = #(#[CSM_CTOR_DEFINITION, "CSM_CTOR_DEFINITION"], #member_declaration);}
          else { #member_declaration = #(#[CSM_FUNCTION_DEFINITION, "CSM_FUNCTION_DEFINITION"], #member_declaration);}}
     |
 		// No template_head allowed for dtor member
@@ -2350,14 +2350,15 @@ ctor_definition
 	;
 
 ctor_head 
+{boolean friend = false;}
 	:
-	ctor_decl_spec
+	friend = ctor_decl_spec
 	ctor_declarator[true]
 	;
 
-ctor_decl_spec
+ctor_decl_spec returns [boolean friend = false]
 	:
-    ((options {greedy=true;} :function_attribute_specification)|literal_inline|LITERAL_explicit)*
+    ((options {greedy=true;} :function_attribute_specification)|literal_inline|LITERAL_explicit|LITERAL_friend {friend = true;} )*
 	;
 
 ctor_declarator[boolean definition]

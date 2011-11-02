@@ -43,10 +43,8 @@ import java.awt.Component;
 import java.awt.Container;
 import java.io.File;
 import java.io.IOException;
-import java.net.ConnectException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLConnection;
 import javax.swing.JComboBox;
 import javax.swing.JTextField;
 import javax.swing.tree.TreeModel;
@@ -177,10 +175,8 @@ public class WebProjectValidation extends J2eeTestCase {
         projectWizard.next();
         NewWebProjectNameLocationStepOperator nameStep =
                 new NewWebProjectNameLocationStepOperator();
-        nameStep.txtProjectName().setText("");
-        nameStep.txtProjectName().typeText(PROJECT_NAME);
-        nameStep.txtProjectLocation().setText("");
-        nameStep.txtProjectLocation().typeText(PROJECT_LOCATION);
+        nameStep.txtProjectLocation().setText(PROJECT_LOCATION);
+        nameStep.txtProjectName().setText(PROJECT_NAME);
         nameStep.next();
         NewWebProjectServerSettingsStepOperator serverStep = new NewWebProjectServerSettingsStepOperator();
         serverStep.cboServer().selectItem(0);
@@ -581,7 +577,7 @@ public class WebProjectValidation extends J2eeTestCase {
     public void testNewHTML() throws IOException {
         WebPagesNode webPagesNode = new WebPagesNode(PROJECT_NAME);
         webPagesNode.newFile("HTML");
-        NewJavaFileNameLocationStepOperator wizard = new NewJavaFileNameLocationStepOperator("New HTML File");
+        NewJavaFileNameLocationStepOperator wizard = new NewJavaFileNameLocationStepOperator("New HTML");
         wizard.setObjectName("HTML");
         wizard.finish();
         // check class is opened in Editor and then close it
@@ -699,10 +695,10 @@ public class WebProjectValidation extends J2eeTestCase {
     public void testNewSegment() throws IOException {
         WebPagesNode webPagesNode = new WebPagesNode(PROJECT_NAME);
         webPagesNode.newFile("JSP");
-        WizardOperator newFileWizard = new WizardOperator("New JSP File");
-        new JTextFieldOperator(newFileWizard).typeText("segment");
-        new JCheckBoxOperator(newFileWizard).changeSelection(true);
-        newFileWizard.finish();
+        NewJspFileNameStepOperator nameStep = new NewJspFileNameStepOperator();
+        nameStep.setJSPFileName("segment");
+        new JCheckBoxOperator(nameStep).changeSelection(true);
+        nameStep.finish();
         // check class is opened in Editor and then close all documents
         new EditorOperator("segment.jspf").close();
         Node node = new Node(webPagesNode, "segment.jspf");
@@ -711,10 +707,10 @@ public class WebProjectValidation extends J2eeTestCase {
     public void testNewDocument() throws IOException {
         WebPagesNode webPagesNode = new WebPagesNode(PROJECT_NAME);
         webPagesNode.newFile("JSP");
-        WizardOperator newFileWizard = new WizardOperator("New JSP File");
-        new JTextFieldOperator(newFileWizard).typeText("document");
-        new JRadioButtonOperator(newFileWizard, 1).changeSelection(true);
-        newFileWizard.finish();
+        NewJspFileNameStepOperator nameStep = new NewJspFileNameStepOperator();
+        nameStep.setJSPFileName("document");
+        new JRadioButtonOperator(nameStep, 1).changeSelection(true);
+        nameStep.finish();
         // check class is opened in Editor and then close all documents
         new EditorOperator("document.jspx").close();
         Node node = new Node(webPagesNode, "document.jspx");

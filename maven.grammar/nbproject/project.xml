@@ -293,7 +293,6 @@ made subject to such option by the copyright holder.
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.maven.osgi</friend>
-                <package>org.netbeans.modules.maven.grammar</package>
                 <package>org.netbeans.modules.maven.grammar.spi</package>
             </friend-packages>
         </data>

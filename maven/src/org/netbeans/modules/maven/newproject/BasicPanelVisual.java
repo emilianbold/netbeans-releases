@@ -67,6 +67,7 @@ import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
 import org.apache.maven.artifact.resolver.ArtifactResolutionException;
 import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
+import org.apache.maven.repository.RepositorySystem;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.progress.aggregate.AggregateProgressFactory;
 import org.netbeans.api.progress.aggregate.AggregateProgressHandle;
@@ -677,7 +678,7 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
         });
         List<ArtifactRepository> repos;
         if (arch.getRepository() == null) {
-            repos = Collections.<ArtifactRepository>singletonList(EmbedderFactory.createRemoteRepository(online, RepositoryPreferences.REPO_CENTRAL, "central"));//NOI18N
+            repos = Collections.<ArtifactRepository>singletonList(EmbedderFactory.createRemoteRepository(online, RepositorySystem.DEFAULT_REMOTE_REPO_URL, RepositorySystem.DEFAULT_REMOTE_REPO_ID));
         } else {
             
             repos = Collections.<ArtifactRepository>singletonList(EmbedderFactory.createRemoteRepository(online, arch.getRepository(), "custom-repo"));//NOI18N

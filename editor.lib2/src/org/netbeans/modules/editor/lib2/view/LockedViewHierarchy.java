@@ -73,7 +73,7 @@ public final class LockedViewHierarchy {
      * Unlock this view hierarchy which causes all methods in it to no longer work.
      */
     public void unlock() {
-        checkActive();
+        checkValid();
         if (docView != null) {
             docView.unlock();
         }
@@ -87,7 +87,7 @@ public final class LockedViewHierarchy {
      * @return non-null text component.
      */
     public @NonNull JTextComponent getTextComponent() {
-        checkActive();
+        checkValid();
         return impl.textComponent();
     }
     
@@ -104,7 +104,7 @@ public final class LockedViewHierarchy {
      * @return y
      */
     public double modelToY(int offset) {
-        checkActive();
+        checkValid();
         return impl.modelToY(docView, offset);
     }
     
@@ -116,7 +116,7 @@ public final class LockedViewHierarchy {
      * @return array of y-coordinates (with the same cardinality as offsets array).
      */
     public double[] modelToY(int[] offsets) {
-        checkActive();
+        checkValid();
         return impl.modelToY(docView, offsets);
     }
     
@@ -128,19 +128,8 @@ public final class LockedViewHierarchy {
      * @return shape corresponding to given offset.
      */
     public Shape modelToView(int offset, Position.Bias bias) {
-        checkActive();
+        checkValid();
         return impl.modelToView(docView, offset, bias);
-    }
-
-    /**
-     * Return mapping of an offset to visual boundaries of a paragraph view in view hierarchy.
-     *
-     * @param offset
-     * @return shape corresponding to paragraph view containing the given offset.
-     */
-    public Shape modelToParagraphView(int offset) {
-        checkActive();
-        return impl.modelToParagraphView(docView, offset);
     }
 
     /**
@@ -152,10 +141,60 @@ public final class LockedViewHierarchy {
      * @return offset corresponding to given visual point.
      */
     public int viewToModel(double x, double y, Position.Bias[] biasReturn) {
-        checkActive();
+        checkValid();
         return impl.viewToModel(docView, x, y, biasReturn);
     }
     
+    /**
+     * Get index of a paragraph view corresponding to given offset.
+     *
+     * @param offset
+     * @return index of a paragraph view containing the given offset
+     *  or -1 if the view hierarchy contains no paragraph views
+     *  or when the view hierarchy is not active.
+     */
+    public int modelToParagraphViewIndex(int offset) {
+        checkValid();
+        return impl.modelToParagraphViewIndex(docView, offset);
+    }
+    
+    /**
+     * Map y to index of paragraph view.
+     *
+     * @param y
+     * @return offset corresponding to given visual point.
+     */
+    public int yToParagraphViewIndex(double y) {
+        checkValid();
+        return impl.yToParagraphViewIndex(docView, y);
+    }
+    
+    /**
+     * Get descriptor of a paragraph views contained in view hierarchy
+     * at the given index.
+     *
+     * @param paragraphViewIndex index obtained by {@link #modelToParagraphViewIndex(int)}
+     *  or {@link #yToParagraphViewIndex(double)}.
+     * @return descriptor of paragraph view or null if the view hierarchy is not active.
+     */
+    public ParagraphViewDescriptor getParagraphViewDescriptor(int paragraphViewIndex) {
+        checkValid();
+        return (impl.verifyParagraphViewIndexValid(docView, paragraphViewIndex))
+                ? new ParagraphViewDescriptor(docView, paragraphViewIndex)
+                : null;
+    }
+
+    /**
+     * Get total count of paragraph views contained in view hierarchy.
+     *
+     * @return count of paragraph view contained in view hierarchy
+     *  or -1 if the view hierarchy is not active.
+     */
+    public int getParagraphViewCount() {
+        checkValid();
+        return impl.getParagraphViewCount(docView);
+    }
+
     /**
      * Get height of a visual row of text.
      * <br/>
@@ -166,7 +205,7 @@ public final class LockedViewHierarchy {
      * @return height of a visual row.
      */
     public float getDefaultRowHeight() {
-        checkActive();
+        checkValid();
         return impl.getDefaultRowHeight(docView);
     }
     
@@ -174,14 +213,32 @@ public final class LockedViewHierarchy {
      * Get width of a typical character of a default font used by view hierarchy.
      * <br/>
      * In case mixed fonts (non-monospaced) are used this gives a little value
-     * but certain tools such as retangular selection may use this value.
+     * but certain tools such as rectangular selection may use this value.
      */
     public float getDefaultCharWidth() {
-        checkActive();
+        checkValid();
         return impl.getDefaultCharWidth(docView);
     }
+    
+    /**
+     * Return true if the view hierarchy is actively managing its contained views.
+     * <br/>
+     * Infrastructure may turn the view hierarchy inactive in case there are many
+     * edits performed in the document (mainly during code reformatting).
+     * <br/>
+     * Also the view hierarchy is not active when a document modification was performed
+     * but the view hierarchy did not update itself accordingly yet (its DocumentListener
+     * was not called yet).
+     *
+     * @return true if the editor view hierarchy is active or false otherwise
+     *  (when Editor's view hierarchy is not installed in the component's TextUI this method returns false).
+     */
+    public boolean isActive() {
+        checkValid();
+        return impl.isActive(docView);
+    }
 
-    private void checkActive() {
+    private void checkValid() {
         if (impl == null) {
             throw new IllegalStateException("Inactive LockedViewHierarchy: unlock() already called.");
         }

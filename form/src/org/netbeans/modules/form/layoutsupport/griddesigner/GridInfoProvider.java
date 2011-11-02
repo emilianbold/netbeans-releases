@@ -44,6 +44,7 @@ package org.netbeans.modules.form.layoutsupport.griddesigner;
 
 import java.awt.Component;
 import java.awt.Graphics;
+import org.netbeans.modules.form.FormModelEvent;
 
 /**
  * Provider of information about a specific grid.
@@ -196,6 +197,15 @@ public interface GridInfoProvider {
      */
     int getLastGapRow();
     
+    /**
+     * Returns true if {@code event} represents a change in gap support
+     * (gaps turned on/off, gap layout resized, etc.).
+     *
+     * @param event - form model event
+     * @returns true if {@code event} represents a change of gap support state.
+     */
+    boolean isGapEvent(FormModelEvent event);
+
     /**
      * Paints additional information about component constraints.
      * The origin of the graphics coordinate system is at the top left

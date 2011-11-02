@@ -14,7 +14,7 @@ NBTMPDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}/tmp-packaging
 TMPDIRNAME=tmp-packaging
 OUTPUT_PATH=${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libBuildTrace.so
 OUTPUT_BASENAME=libBuildTrace.so
-PACKAGE_TOP_DIR=
+PACKAGE_TOP_DIR=libBuildTrace.so/
 
 # Functions
 function checkReturnCode
@@ -53,41 +53,21 @@ function copyFileToTmpDir
 
 # Setup
 cd "${TOP}"
-mkdir -p ${CND_DISTDIR}/package
+mkdir -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/package
 rm -rf ${NBTMPDIR}
 mkdir -p ${NBTMPDIR}
 
 # Copy files and create directories and links
 cd "${TOP}"
-makeDirectory "${NBTMPDIR}/Linux-x86"
-copyFileToTmpDir "dist/Linux-x86/libBuildTrace.so" "${NBTMPDIR}/${PACKAGE_TOP_DIR}Linux-x86/libBuildTrace.so" 0755
+makeDirectory "${NBTMPDIR}/libBuildTrace.so/lib"
+copyFileToTmpDir "${OUTPUT_PATH}" "${NBTMPDIR}/${PACKAGE_TOP_DIR}lib/${OUTPUT_BASENAME}" 0644
 
+
+# Generate tar file
 cd "${TOP}"
-makeDirectory "${NBTMPDIR}/Linux-x86_64"
-copyFileToTmpDir "dist/Linux-x86_64/libBuildTrace.so" "${NBTMPDIR}/${PACKAGE_TOP_DIR}Linux-x86_64/libBuildTrace.so" 0755
-
-cd "${TOP}"
-makeDirectory "${NBTMPDIR}/SunOS-sparc"
-copyFileToTmpDir "dist/SunOS-sparc/libBuildTrace.so" "${NBTMPDIR}/${PACKAGE_TOP_DIR}SunOS-sparc/libBuildTrace.so" 0755
-
-cd "${TOP}"
-makeDirectory "${NBTMPDIR}/SunOS-sparc_64"
-copyFileToTmpDir "dist/SunOS-sparc_64/libBuildTrace.so" "${NBTMPDIR}/${PACKAGE_TOP_DIR}SunOS-sparc_64/libBuildTrace.so" 0755
-
-cd "${TOP}"
-makeDirectory "${NBTMPDIR}/SunOS-x86"
-copyFileToTmpDir "dist/SunOS-x86/libBuildTrace.so" "${NBTMPDIR}/${PACKAGE_TOP_DIR}SunOS-x86/libBuildTrace.so" 0755
-
-cd "${TOP}"
-makeDirectory "${NBTMPDIR}/SunOS-x86_64"
-copyFileToTmpDir "dist/SunOS-x86_64/libBuildTrace.so" "${NBTMPDIR}/${PACKAGE_TOP_DIR}SunOS-x86_64/libBuildTrace.so" 0755
-
-
-# Generate zip file
-cd "${TOP}"
-rm -f ${CND_DISTDIR}/package/cnd-build-trace-1.0.zip
+rm -f ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/package/libBuildTrace.so.tar
 cd ${NBTMPDIR}
-zip -r  ../../../../${CND_DISTDIR}/package/cnd-build-trace-1.0.zip *
+tar -vcf ../../../../${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/package/libBuildTrace.so.tar *
 checkReturnCode
 
 # Cleanup

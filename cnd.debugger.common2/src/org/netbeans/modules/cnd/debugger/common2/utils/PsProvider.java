@@ -385,7 +385,7 @@ public abstract class PsProvider {
 		// OLD return "LANG=C /bin/ps -www -o pid,tty,time,cmd";
 		return "/bin/ps -ef";	// NOI18N
 	    } else {
-		return "/bin/ps -fu " + uid + " --width 160";		// NOI18N
+		return "/bin/ps -fu " + uid + " --width 1024";		// NOI18N
 	    }
 	}
     }

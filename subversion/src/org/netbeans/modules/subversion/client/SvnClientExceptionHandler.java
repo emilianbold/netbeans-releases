@@ -66,6 +66,8 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
@@ -92,7 +94,9 @@ import org.netbeans.modules.versioning.util.Utils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.Mnemonics;
 import org.openide.util.HelpCtx;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.NetworkSettings;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
@@ -856,8 +860,9 @@ public class SvnClientExceptionHandler {
     
     public static boolean isPartOf17OrGreater (String message) {
         message = message.toLowerCase();
-        return message.contains("the path") && message.contains("appears to be part of subversion 1.7") //NOI18N
-                || message.contains("please upgrade your SVN client to 1.7.0 or higher"); //NOI18N
+        return message.contains("the path")  //NOI18N
+                && (message.contains("appears to be part of a subversion 1.7") || message.contains("appears to be part of subversion 1.7")) //NOI18N
+                || message.contains("please upgrade your svn client to 1.7.0 or higher"); //NOI18N
     }
 
     public static boolean isTooOldWorkingCopy (String message) {
@@ -867,24 +872,30 @@ public class SvnClientExceptionHandler {
     }
 
     public static void notifyException(Exception ex, boolean annotate, boolean isUI) {
-        if(isNoCliSvnClient(ex.getMessage())) {
+        String message = ex.getMessage();
+        if (isUI && isPartOf17OrGreater(message)) {
+            if (switchToCommandlineClient(message)) {
+                return;
+            }
+        }
+        if(isNoCliSvnClient(message)) {
             if(isUI) {
                 notifyNoClient();
             }
             return;
         }
-        if(isCancelledAction(ex.getMessage())) {
+        if(isCancelledAction(message)) {
             cancelledAction();
             return;
         }                   
-        Subversion.LOG.log(Level.INFO, ex.getMessage(), ex);
+        Subversion.LOG.log(Level.INFO, message, ex);
         if( annotate ) {
             String msg = getCustomizedMessage(ex);  
             if(msg == null) {
                 if(ex instanceof SVNClientException) {
                     msg = parseExceptionMessage((SVNClientException) ex);
                 } else {
-                    msg = ex.getMessage();                        
+                    msg = message;                        
                 }                
             }        
             annotate(msg);
@@ -971,5 +982,57 @@ public class SvnClientExceptionHandler {
         message = message.toLowerCase();
         return message.contains("received fatal alert")                 //NOI18N
                 && message.contains("bad_record_mac");                  //NOI18N
+    }
+
+    private static boolean WARNING_WC17_DISPLAYED;
+    private static boolean switchToCommandlineClient (final String exMessage) {
+        boolean retval = false;
+        if (!SvnClientFactory.isCLI()) {
+            retval = Mutex.EVENT.readAccess(new Mutex.Action<Boolean>() {
+                @Override
+                public Boolean run () {
+                    if (WARNING_WC17_DISPLAYED) {
+                        return false;
+                    }                    
+                    WARNING_WC17_DISPLAYED = true;
+                    JButton okButton = new JButton();
+                    Mnemonics.setLocalizedText(okButton, NbBundle.getMessage(SvnClientExceptionHandler.class, "CTL_WC17SwitchToCmd")); //NOI18N
+                    NotifyDescriptor descriptor = new NotifyDescriptor(
+                            format17WCMessage(exMessage), 
+                            NbBundle.getMessage(SvnClientExceptionHandler.class, "LBL_Error_WCUnsupportedFormat"), //NOI18N
+                            NotifyDescriptor.OK_CANCEL_OPTION,
+                            NotifyDescriptor.QUESTION_MESSAGE,
+                            new Object [] { okButton, NotifyDescriptor.CANCEL_OPTION },
+                            okButton);
+                    if (okButton == DialogDisplayer.getDefault().notify(descriptor)) {
+                        SvnClientFactory.switchToCLI();
+                        return true;
+                    } else {
+                        return false;
+                    }
+                }
+            });
+        }
+        return retval;
+    }
+
+    private static String format17WCMessage (String msg) {
+        String location = null; //NOI18N
+        msg = msg.toLowerCase();
+        for (String s : new String[] { ".*working copy rooted at \'([^\']+)\'.*", ".*the path \'([^\']+)\' appears to be .*" }) { //NOI18N
+            Pattern p = Pattern.compile(s, Pattern.DOTALL);
+            Matcher m = p.matcher(msg);
+            if (m.matches()) {
+                location = m.group(1);
+                break;
+            }
+        }
+        String formatted;
+        if (location == null) {
+            formatted = NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_WC1.7Format", SvnClientFactory.isJavaHl() ? "Javahl" : "Svnkit"); //NOI18N
+        } else {
+            formatted = NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_WC1.7Format.path", SvnClientFactory.isJavaHl() ? "Javahl" : "Svnkit", location); //NOI18N
+        }
+        return formatted;
     }
 }

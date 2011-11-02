@@ -44,7 +44,6 @@ package org.netbeans.modules.form.layoutsupport.griddesigner;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -71,7 +70,6 @@ public class UndoRedoSupport {
     int undoableEdits;
     int redoableEdits;
     FormModel.UndoRedoManager manager;
-    private ArrayList<UndoRedoPerformedListener> listeners;
     
     private UndoRedoSupport(FormModel model) {
         manager = (FormModel.UndoRedoManager)model.getUndoRedoManager();
@@ -153,10 +151,6 @@ public class UndoRedoSupport {
         @Override
         public void actionPerformed(ActionEvent e) {
             performer.performAction(new DelegateGridAction(delegate));
-            for (int i=0; i < listeners.size(); i++) {
-                UndoRedoPerformedListener l = listeners.get(i);
-                l.UndoRedoPerformed(true);
-            }
         }
         
         final void updateEnabled() {
@@ -175,10 +169,6 @@ public class UndoRedoSupport {
         @Override
         public void actionPerformed(ActionEvent e) {
             performer.performAction(new DelegateGridAction(delegate));
-            for (int i=0; i < listeners.size(); i++) {
-                UndoRedoPerformedListener l = listeners.get(i);
-                l.UndoRedoPerformed(false);
-            }
         }
         
         final void updateEnabled() {
@@ -227,22 +217,4 @@ public class UndoRedoSupport {
         
     }
     
-    public synchronized void addUndoRedoListener(UndoRedoPerformedListener l) {
-        if (listeners == null)
-            listeners = new ArrayList<UndoRedoPerformedListener>();
-        listeners.add(l);
-    }
-
-    public synchronized void removeUndoRedoListener(UndoRedoPerformedListener l) {
-        if (listeners != null)
-            listeners.remove(l);
-    }
-
-    public interface UndoRedoPerformedListener extends java.util.EventListener {
-        /** Notification about performed Undo/Redo.
-         * @param undo - true for Undo, false for Redo
-         */
-        public void UndoRedoPerformed(boolean undo);
-    }
-
 }

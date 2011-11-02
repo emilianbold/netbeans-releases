@@ -141,19 +141,19 @@ public final class Tracer {
                 set.put(((CsmOffsetableDeclaration)uidt.getObject()).getContainingFile().getAbsolutePath(), uidt.getObject());
             }
             for(Map.Entry<CharSequence, CsmDeclaration> f : set.entrySet()){
-                printStream.print("\t\t"+f.getValue());
+                printStream.println("\t\t" + f.getValue() + " from " + f.getKey()); //NOI18N
             }
         }
         printStream.println("\n========== Dumping Project friends");
         for(Map.Entry<CharSequence, Set<CsmUID<CsmFriend>>> entry : container.testFriends().entrySet()){
-            printStream.print("\t"+entry.getKey().toString()+" ");
+            printStream.println("\t"+entry.getKey().toString());
             TreeMap<CharSequence, CsmFriend> set = new TreeMap<CharSequence, CsmFriend>();
             for(CsmUID<? extends CsmFriend> uid : entry.getValue()) {
                 CsmFriend f = uid.getObject();
                 set.put(f.getQualifiedName(), f);
             }
             for(Map.Entry<CharSequence, CsmFriend> f : set.entrySet()){
-                printStream.print("\t\t"+f.getKey().toString()+" "+f.getValue());
+                printStream.println("\t\t"+f.getKey().toString()+" "+f.getValue());
             }
         }
     }

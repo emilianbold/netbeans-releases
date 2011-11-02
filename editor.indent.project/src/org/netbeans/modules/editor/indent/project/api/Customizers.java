@@ -67,6 +67,17 @@ public final class Customizers {
      * not specified all registered customizers are shown. If the attribute specifies
      * an empty list only the 'All Languages' customizer is shown.
      *
+     * <p>May also be used from an annotation on a method in any class in your module, e.g.:
+     * <pre>
+    &#64;ProjectCustomizer.CompositeCategoryProvider.Registration(
+        projectType="...", position=1000,
+        category="Formatting", categoryLabel="#LBL_CategoryFormatting")
+    &#64;NbBundle.Messages("LBL_CategoryFormatting=Formatting")
+    public static ProjectCustomizer.CompositeCategoryProvider formatting() {
+        return Customizers.createFormattingCategoryProvider(Collections.emptyMap());
+    }
+     * </pre>
+     *
      * @param attrs The map of <code>FileObject</code> attributes
      *
      * @return A new 'Formatting' category provider.

@@ -161,7 +161,6 @@ public class CdiGlyphAction extends AbstractAction {
     private void doAction( JTextComponent comp ,  String annotationType , 
             final Line.Part part , BaseDocument doc  ) 
     {
-        // TODO: extend for other context
         if ( annotationType.equals( CDIAnnotation.CDIAnnotaitonType.
                 INJECTION_POINT.toString()) || annotationType.equals( 
                         CDIAnnotation.CDIAnnotaitonType.DELEGATE_POINT.toString()))

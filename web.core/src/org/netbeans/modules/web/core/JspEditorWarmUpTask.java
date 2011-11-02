@@ -205,10 +205,12 @@ public class JspEditorWarmUpTask implements Runnable{
                 // Switch between empty doc and long several times
                 // to force view hierarchy creation
                 for (int i = 0; i < VIEW_HIERARCHY_CREATION_COUNT; i++) {
-                    pane.setDocument(emptyDoc);
+                    if (SwingUtilities.isEventDispatchThread()) {
+                        pane.setDocument(emptyDoc);
 
-                    // Set long doc - causes view hierarchy to be rebuilt
-                    pane.setDocument(longDoc);
+                        // Set long doc - causes view hierarchy to be rebuilt
+                        pane.setDocument(longDoc);
+                    }
                 }
                 
                 status = STATUS_TRAVERSE_VIEWS;

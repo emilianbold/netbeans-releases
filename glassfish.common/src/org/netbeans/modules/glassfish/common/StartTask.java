@@ -71,6 +71,7 @@ import org.netbeans.modules.glassfish.spi.Recognizer;
 import org.netbeans.modules.glassfish.spi.ServerUtilities;
 import org.netbeans.modules.glassfish.spi.TreeParser;
 import org.netbeans.modules.glassfish.spi.Utils;
+import org.netbeans.modules.glassfish.spi.VMIntrospector;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -96,6 +97,7 @@ public class StartTask extends BasicTask<OperationState> {
     private FileObject jdkHome = null;
     private List<String> jvmArgs = null;
     static final private int LOWEST_USER_PORT = org.openide.util.Utilities.isWindows() ? 1 : 1025;
+    private final VMIntrospector vmi;
 
     /**
      *
@@ -104,8 +106,9 @@ public class StartTask extends BasicTask<OperationState> {
      * @param stateListener state monitor to track start progress
      */
     public StartTask(CommonServerSupport support, List<Recognizer> recognizers,
+            VMIntrospector vmi,
             OperationStateListener... stateListener) {
-        this(support, recognizers, null, null, stateListener);
+        this(support, recognizers, vmi, null, null, stateListener);
     }
 
     /**
@@ -117,6 +120,7 @@ public class StartTask extends BasicTask<OperationState> {
      * @param stateListener state monitor to track start progress
      */
     public StartTask(final CommonServerSupport support, List<Recognizer> recognizers,
+            VMIntrospector vmi,
             FileObject jdkRoot, String[] jvmArgs, OperationStateListener... stateListener) {
         super(support.getInstanceProperties(), stateListener);
         List<OperationStateListener> listeners = new ArrayList<OperationStateListener>();
@@ -136,6 +140,8 @@ public class StartTask extends BasicTask<OperationState> {
         this.recognizers = recognizers;
         this.jdkHome = jdkRoot;
         this.jvmArgs = (jvmArgs != null) ? Arrays.asList(removeEscapes(jvmArgs)) : null;
+        this.vmi = vmi;
+        Logger.getLogger("glassfish").log(Level.FINE, "VMI == {0}",vmi);
     }
 
     private static String [] removeEscapes(String [] args) {
@@ -321,6 +327,7 @@ public class StartTask extends BasicTask<OperationState> {
         // create a logger to the server's output stream so that a user
         // can observe the progress
         LogViewMgr logger = LogViewMgr.getInstance(ip.get(GlassfishModule.URL_ATTR));
+        String debugPort = ip.get(GlassfishModule.DEBUG_PORT);
         logger.readInputStreams(recognizers, false, null, serverProcess.getInputStream(), serverProcess.getErrorStream());
 
         // Waiting for server to start
@@ -379,6 +386,11 @@ public class StartTask extends BasicTask<OperationState> {
                 });
                 return fireOperationStateChanged(OperationState.COMPLETED,
                         "MSG_SERVER_STARTED", instanceName); // NOI18N
+            }
+            // if the user is at a bp somewhere in the startup process we may 
+            //   not be finished with the start but 'not dead yet' all the same.
+            if (null != vmi && null != debugPort && vmi.isSuspended(adminHost, debugPort)) {
+                start = System.currentTimeMillis();
             }
         }
 

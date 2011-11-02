@@ -81,6 +81,12 @@ public class SwingLayoutBuilder {
      */
     private Map<String,Component> componentIDMap;
 
+    /**
+     * To workaround some cases of default ending container gaps
+     * GroupLayout does not like.
+     */
+    private Set<LayoutInterval> unsupportedContResGaps;
+
     public SwingLayoutBuilder(LayoutModel layoutModel,
                               Container container, String containerId) {
         componentIDMap = new HashMap<String,Component>();
@@ -155,6 +161,7 @@ public class SwingLayoutBuilder {
         Throwable th = null;
         boolean reset = true;
         container.removeAll();
+        unsupportedContResGaps = null;
         try {
             GroupLayout layout = new GroupLayout(container);
             container.setLayout(layout);
@@ -191,6 +198,7 @@ public class SwingLayoutBuilder {
             // Try to create the layout (to be able to reset it in case of some problem)
             layout.layoutContainer(container);
             layout.invalidateLayout(container);
+            unsupportedContResGaps = null;
             reset = false;
         } finally {
             if (reset) {
@@ -248,6 +256,13 @@ public class SwingLayoutBuilder {
             if (group instanceof GroupLayout.SequentialGroup) {
                 ((GroupLayout.SequentialGroup)group).addGroup(composeGroup(layout, interval, first, last));
             } else {
+                if (interval.isSequential() && last) {
+                    LayoutInterval contResGap = SwingLayoutUtils.getUnsupportedResizingContainerGap(interval);
+                    if (contResGap != null) { // GroupLayout bug workaround - will use fixed gap instead
+                        addUnsupportedContResGap(contResGap);
+                        alignment = LayoutConstants.LEADING;
+                    }
+                }
                 ((GroupLayout.ParallelGroup)group).addGroup(
                         convertAlignment(alignment),
                         composeGroup(layout, interval, first, last));
@@ -293,12 +308,9 @@ public class SwingLayoutBuilder {
                     assert (group instanceof GroupLayout.SequentialGroup);
                     GroupLayout.SequentialGroup seqGroup = (GroupLayout.SequentialGroup)group;
                     if (first || last) {
-                        if (last && preferred == LayoutConstants.NOT_EXPLICITLY_DEFINED
-                                && maximum != LayoutConstants.NOT_EXPLICITLY_DEFINED
-                                && maximum != LayoutConstants.USE_PREFERRED_SIZE) {
-                            // workaround GroupLayout bug - default container gap as last
-                            // should not be resizing (may cause problems), luckily it
-                            // makes no difference if it is fixed
+                        if (last && isUnsupportedContResGap(interval)) {
+                            // workaround GroupLayout bug - default container gap
+                            // should not be resizing
                             seqGroup.addContainerGap();
                         } else {
                             seqGroup.addContainerGap(pref, max);
@@ -438,4 +450,14 @@ public class SwingLayoutBuilder {
         }
     }
 
+    private void addUnsupportedContResGap(LayoutInterval gap) {
+        if (unsupportedContResGaps == null) {
+            unsupportedContResGaps = new HashSet<LayoutInterval>();
+        }
+        unsupportedContResGaps.add(gap);
+    }
+
+    private boolean isUnsupportedContResGap(LayoutInterval gap) {
+        return unsupportedContResGaps != null && unsupportedContResGaps.contains(gap);
+    }
 }

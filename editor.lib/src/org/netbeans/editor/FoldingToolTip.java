@@ -130,7 +130,7 @@ public class FoldingToolTip extends JPanel {
 
             // Possibly apply the rendering hints
             if (renderingHints != null) {
-                ((java.awt.Graphics2D)g).setRenderingHints(renderingHints);
+                ((java.awt.Graphics2D)g).addRenderingHints(renderingHints);
             }
         }
     }
@@ -161,6 +161,7 @@ public class FoldingToolTip extends JPanel {
         if (component == null) return;
         int sideBarWidth = editorUI.getSideBarWidth();
 
+        /*
         GlyphGutter gg = editorUI.getGlyphGutter();
         if (gg!=null){
             View docView = null;
@@ -199,6 +200,7 @@ public class FoldingToolTip extends JPanel {
         if (gg!=null){
             g.translate(-sideBarWidth,0);
         }
+        */
 
         g.translate(-BORDER_WIDTH, -BORDER_WIDTH);
 

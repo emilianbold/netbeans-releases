@@ -352,8 +352,9 @@ public class CompletionContextImpl extends CompletionContext {
             switch (id) {
                 //user enters < character
                 case XMLDefaultTokenContext.TEXT_ID:
-                    String chars = token.getImage().trim(),
-                           previousTokenText = token.getPrevious().getImage().trim();
+                    String chars = token.getImage().trim();
+                    String previousTokenText = token.getPrevious() == null ? 
+                            "" :token.getPrevious().getImage().trim();
                     if(chars != null && chars.startsWith("&")) {
                         completionType = CompletionType.COMPLETION_TYPE_UNKNOWN;
                         break;
@@ -489,18 +490,11 @@ public class CompletionContextImpl extends CompletionContext {
                                 typedChars = "";
                         }
                     }
-                    attribute = element.getPrevious().toString();                    
-                    completionType = CompletionType.COMPLETION_TYPE_ATTRIBUTE_VALUE;
+                    attribute = findAttributeName();
+                    completionType = attribute == null ?
+                            CompletionType.COMPLETION_TYPE_UNKNOWN : 
+                            CompletionType.COMPLETION_TYPE_ATTRIBUTE_VALUE;
                     pathFromRoot = getPathFromRoot(element);
-                    TokenItem t = token;
-                    while(t != null) {
-                        int nId = t.getTokenID().getNumericID();
-                        if(nId == XMLDefaultTokenContext.ARGUMENT_ID) {
-                            attribute = t.getImage();
-                            break;
-                        }
-                        t = t.getPrevious();
-                    }
                     break;
                 }
 
@@ -531,6 +525,33 @@ public class CompletionContextImpl extends CompletionContext {
             return false;
         }
         return true;        
+    }
+    
+    /**
+     * Assumes that the current token is at the attribute name, operator or
+     * somewhere in the attribute value. In all cases, attempt to return the
+     * context attribute name.
+     * 
+     * @return attribute name, or <code>null</code> in unexpected situations
+     */
+    private String findAttributeName() {
+        TokenItem item = token;
+        while (item != null) {
+            int tid = item.getTokenID().getNumericID();
+            switch (tid) {
+                case XMLDefaultTokenContext.VALUE_ID:
+                case XMLDefaultTokenContext.OPERATOR_ID:
+                case XMLDefaultTokenContext.WS_ID:
+                case XMLDefaultTokenContext.TEXT_ID:
+                    item = item.getPrevious();
+                    break;
+                case XMLDefaultTokenContext.ARGUMENT_ID:
+                    return item.getImage();
+                default:
+                    return null;
+            }
+        }
+        return null;
     }
 
     public List<DocRootAttribute> getDocRootAttributes() {

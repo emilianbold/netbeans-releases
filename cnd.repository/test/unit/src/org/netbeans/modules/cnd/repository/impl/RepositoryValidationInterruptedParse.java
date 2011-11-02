@@ -58,7 +58,7 @@ public class RepositoryValidationInterruptedParse extends RepositoryValidationBa
         super.setUp();
     }
 
-    public void testRepository() throws Exception {
+    public void testInterrupt() throws Exception {
         List<String> args = find();
         assert args.size() > 0;
         //args.add("-fq"); //NOI18N

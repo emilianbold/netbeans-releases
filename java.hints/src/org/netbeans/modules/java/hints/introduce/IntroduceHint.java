@@ -318,7 +318,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         for (StatementTree s : statements) {
             long sStart = ci.getTrees().getSourcePositions().getStartPosition(ci.getCompilationUnit(), s);
 
-            if (sStart == start) {
+            if (sStart == start && from == (-1)) {
                 from = index;
             }
 
@@ -650,7 +650,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         Set<VariableElement> paramsVariables = new LinkedHashSet<VariableElement>();
 
         for (Entry<VariableElement, Boolean> e : mergedVariableUse.entrySet()) {
-            if (e.getValue()) {
+            if (e.getValue() == null || e.getValue()) {
                 additionalLocalVariables.add(e.getKey());
             } else {
                 paramsVariables.add(e.getKey());
@@ -1134,17 +1134,6 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         }
 
         @Override
-        public Void visitAssignment(AssignmentTree node, Void p) {
-            //make sure the variable on the left side is not considered to be read
-            //#162163: but dereferencing array is a read
-            if (node.getVariable() != null && node.getVariable().getKind() != Kind.IDENTIFIER) {
-                scan(node.getVariable(), p);
-            }
-            
-            return scan(node.getExpression(), p);
-        }
-
-        @Override
         public Void visitIdentifier(IdentifierTree node, Void p) {
             Element e = info.getTrees().getElement(getCurrentPath());
 
@@ -1152,9 +1141,9 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                 if (LOCAL_VARIABLES.contains(e.getKind())) {
                     switch (phase) {
                         case PHASE_INSIDE_SELECTION:
-                            if (localVariables.contains(e) && !usedLocalVariables.containsKey(e)) {
+                            if (localVariables.contains(e) && usedLocalVariables.get(e) == null) {
                                 Iterable<? extends TreePath> writes = assignmentsForUse.get(getCurrentPath().getLeaf());
-                                boolean definitellyAssignedInSelection = true;
+                                Boolean definitellyAssignedInSelection = true;
 
                                 if (writes != null) {
                                     for (TreePath w : writes) {
@@ -1163,6 +1152,8 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                                             break;
                                         }
                                     }
+                                } else if (getCurrentPath().getParentPath().getLeaf().getKind() == Kind.ASSIGNMENT) {
+                                    definitellyAssignedInSelection = null;
                                 } else {
                                     definitellyAssignedInSelection = false;
                                 }

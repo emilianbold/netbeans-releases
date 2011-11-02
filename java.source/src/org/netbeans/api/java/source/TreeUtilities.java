@@ -68,6 +68,7 @@ import javax.lang.model.SourceVersion;
 import javax.lang.model.element.*;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.UnionType;
 import javax.lang.model.util.Types;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
@@ -340,11 +341,16 @@ public final class TreeUtilities {
                         case METHOD:
                         case FOR_LOOP:
                         case ENHANCED_FOR_LOOP:
-                        case IF:
                         case SYNCHRONIZED:
                         case WHILE_LOOP:
                         case TRY:
                             path = path.getParentPath();
+                            break;
+                        case IF:
+                            do {
+                                path = path.getParentPath();
+                            } while (path != null && path.getLeaf().getKind() == Tree.Kind.IF);
+                            break;
                     }
                     break;
             }
@@ -1068,22 +1074,38 @@ public final class TreeUtilities {
         public Void visitThrow(ThrowTree node, Set<TypeMirror> p) {
             super.visitThrow(node, p);
             TypeMirror tm = info.getTrees().getTypeMirror(new TreePath(getCurrentPath(), node.getExpression()));
-            if (tm != null && tm.getKind() == TypeKind.DECLARED)
-                p.add(tm);
+            if (tm != null) {
+                if (tm.getKind() == TypeKind.DECLARED)
+                    p.add(tm);
+                else if (tm.getKind() == TypeKind.UNION)
+                    p.addAll(((UnionType)tm).getAlternatives());
+            }
             return null;
         }
 
         public Void visitTry(TryTree node, Set<TypeMirror> p) {
             Set<TypeMirror> s = new LinkedHashSet<TypeMirror>();
             scan(node.getBlock(), s);
+            Set<TypeMirror> c = new LinkedHashSet<TypeMirror>();
             for (CatchTree ct : node.getCatches()) {
                 TypeMirror t = info.getTrees().getTypeMirror(new TreePath(getCurrentPath(), ct.getParameter().getType()));
-                if (t != null && t.getKind() != TypeKind.ERROR) {
-                    for (Iterator<TypeMirror> it = s.iterator(); it.hasNext();)
-                        if (info.getTypes().isSubtype(it.next(), t))
-                            it.remove();
+                if (t != null) {
+                    if (t.getKind() == TypeKind.UNION) {
+                        for (TypeMirror tm : ((UnionType)t).getAlternatives()) {
+                            if (tm != null && tm.getKind() != TypeKind.ERROR)
+                                c.add(tm);
+                        }
+                    } else if (t.getKind() != TypeKind.ERROR) {
+                        c.add(t);
+                    }
                 }
             }
+            for (TypeMirror t : c) {
+                for (Iterator<TypeMirror> it = s.iterator(); it.hasNext();) {
+                    if (info.getTypes().isSubtype(it.next(), t))
+                        it.remove();
+                }
+           }
             p.addAll(s);
             scan(node.getCatches(), p);
             scan(node.getFinallyBlock(), p);

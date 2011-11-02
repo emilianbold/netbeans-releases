@@ -105,7 +105,7 @@ public class ErrorHighlightingBaseTestCase extends ProjectBasedTestCase {
     }
 
     protected final void performStaticTest(String sourceFileName) throws Exception {
-        String datafileName = sourceFileName + ".dat";
+        String datafileName = sourceFileName.replace('/', '_').replace('\\', '_') + ".dat";
         File testSourceFile = getDataFile(sourceFileName);
         File workDir = getWorkDir();
         File output = new File(workDir, datafileName);

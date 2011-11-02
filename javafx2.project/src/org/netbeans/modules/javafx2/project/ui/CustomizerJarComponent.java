@@ -39,7 +39,6 @@
 package org.netbeans.modules.javafx2.project.ui;
 
 import org.netbeans.modules.javafx2.project.JFXProjectProperties;
-import org.openide.util.Lookup;
 
 /**
  *
@@ -52,9 +51,9 @@ public class CustomizerJarComponent extends javax.swing.JPanel {
     /**
      * Creates new form CustomizerJarComponent
      */
-    public CustomizerJarComponent(Lookup context) {
+    public CustomizerJarComponent(JFXProjectProperties properties) {
         initComponents();
-        jfxProps = JFXProjectProperties.getInstance(context);
+        jfxProps = properties;
         binaryCSSCheckBox.setModel(jfxProps.getBinaryEncodeCSSModel());
     }
 

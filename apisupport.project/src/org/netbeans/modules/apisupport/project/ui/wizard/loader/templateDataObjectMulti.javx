@@ -13,6 +13,7 @@ import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.MultiFileLoader;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle.Messages;
 import org.openide.windows.TopComponent;
 
 public class ${PREFIX}DataObject extends MultiDataObject {
@@ -35,6 +36,7 @@ public class ${PREFIX}DataObject extends MultiDataObject {
         preferredID = "${PREFIX}",
         position = 1000
     )
+    @Messages("LBL_${PREFIX}_EDITOR=Source")
     public static MultiViewEditorElement createEditor(Lookup lkp) {
         return new MultiViewEditorElement(lkp);
     }

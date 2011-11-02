@@ -880,15 +880,18 @@ public class CommitAction extends ContextAction {
         try {
             rev = SVNRevision.getRevision(String.valueOf(revision));
         } catch (ParseException ex) {
-            Subversion.LOG.log(Level.INFO, null, ex);
+            Subversion.LOG.log(Level.WARNING, "" + revision, ex);
         }
         if (Subversion.LOG.isLoggable(Level.FINER)) {
             Subversion.LOG.log(Level.FINER, "{0}: getting last commit message for svn hooks", CommitAction.class.getName());
         }
         // log has to be called directly on the file
-        ISVNLogMessage[] ls = client.getLogMessages(SvnUtils.getRepositoryUrl(file), rev, rev);
+        final SVNUrl fileRepositoryUrl = SvnUtils.getRepositoryUrl(file);
+        ISVNLogMessage[] ls = client.getLogMessages(fileRepositoryUrl, rev, rev);
         if (ls.length > 0) {
             log = ls[0];
+        } else {
+            Subversion.LOG.log(Level.WARNING, "no logs available for file {0} with repo url {1}", new Object[]{file, fileRepositoryUrl});
         }
         return log;
     }

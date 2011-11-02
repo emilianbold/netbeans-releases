@@ -542,9 +542,10 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
     /**
      * Delegate prints and writes to a Term via TermWriter.
      */
+    static final Color ERROR_COLOR = new Color(235, 0, 0); // IZ#204301
     private final class TermErrWriter extends OutputWriter {
 	private final Terminal owner;
-
+	
 	TermErrWriter(Terminal owner, Writer writer) {
 	    super(writer);
 	    this.owner = owner;
@@ -552,17 +553,17 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
 
 	@Override
 	public void println(String s, OutputListener l) throws IOException {
-	    TerminalInputOutput.this.println(s, l, false, Color.red);
+	    TerminalInputOutput.this.println(s, l, false, ERROR_COLOR);
 	}
 
 	@Override
 	public void println(String s, OutputListener l, boolean important) throws IOException {
-	    TerminalInputOutput.this.println(s, l, important, Color.red);
+	    TerminalInputOutput.this.println(s, l, important, ERROR_COLOR);
 	}
 
 	@Override
 	public void println(String x) {
-	    TerminalInputOutput.this.println(x, Color.red);
+	    TerminalInputOutput.this.println(x, ERROR_COLOR);
 	}
 
 	@Override

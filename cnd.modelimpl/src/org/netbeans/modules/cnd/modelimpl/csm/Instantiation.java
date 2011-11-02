@@ -860,11 +860,7 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> exte
             if(CsmKindUtilities.isTemplate(containingClass)) {
                 CsmInstantiationProvider p = CsmInstantiationProvider.getDefault();
                 if (p instanceof InstantiationProviderImpl) {
-                    List<CsmSpecializationParameter> params = new ArrayList<CsmSpecializationParameter>();
-                    for (CsmTemplateParameter ip : instantiation.getMapping().keySet()) {
-                        params.add(instantiation.getMapping().get(ip));
-                    }
-                    CsmObject inst = ((InstantiationProviderImpl) p).instantiate((CsmTemplate)containingClass, params);
+                    CsmObject inst = ((InstantiationProviderImpl) p).instantiate((CsmTemplate)containingClass, instantiation);
                     if (inst instanceof CsmClass) {
                         return (CsmClass) inst;
                     }

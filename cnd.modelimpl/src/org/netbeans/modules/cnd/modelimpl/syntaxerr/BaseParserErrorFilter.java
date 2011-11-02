@@ -46,8 +46,10 @@ import org.netbeans.modules.cnd.modelimpl.syntaxerr.spi.ParserErrorFilter;
 import org.netbeans.modules.cnd.antlr.RecognitionException;
 import java.util.ArrayList;
 import java.util.Collection;
+import org.netbeans.modules.cnd.antlr.NoViableAltException;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
+import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.openide.util.NbBundle;
 
 /**
@@ -66,6 +68,8 @@ public abstract class BaseParserErrorFilter extends ParserErrorFilter {
             RecognitionException prev = null;
             ContextCache prevLine = new ContextCache();
             for (RecognitionException e : exceptions) {
+                // IZ#204205 - unexpected token: <no text>
+                e = convertIfNeeded(e);
                 // Fix for IZ#143082: some syntax errors are reported twice.
                 // We assume that equal recognition exceptions are next to each other.
                 if (!equal(prev, e)) {
@@ -129,15 +133,29 @@ public abstract class BaseParserErrorFilter extends ParserErrorFilter {
         return new SimpleErrorInfo(start, end, message, getDefaultSeverity());
     }
 
-    private String getMessage(RecognitionException e) {
+    private String getMessage(RecognitionException e) {        
         String tokenText = e.getTokenText();
         if (tokenText == null) {
             return NbBundle.getMessage(BaseParserErrorFilter.class, "MSG_PARSER_ERROR"); // NOI18N
         } else {
+            if (e instanceof NoViableAltException) {
+                if (APTUtils.isEOF(((NoViableAltException)e).token)) {
+                    return NbBundle.getMessage(BaseParserErrorFilter.class, "MSG_UNEXPECTED_EOF"); // NOI18N
+                }
+            }
             return NbBundle.getMessage(BaseParserErrorFilter.class, "MSG_UNEXPECTED_TOKEN", tokenText); // NOI18N
         }
     }
 
+    private RecognitionException convertIfNeeded(RecognitionException e) {
+        if (e instanceof NoViableAltException) {
+            NoViableAltException nvae = (NoViableAltException) e;
+            if (APTUtils.isEOF(nvae.token)) {
+                return new NoViableAltException(APTUtils.EOF_TOKEN, nvae.fileName);
+            }
+        }
+        return e;
+    }
     protected CsmErrorInfo.Severity getDefaultSeverity() {
         return CsmErrorInfo.Severity.ERROR;
     }

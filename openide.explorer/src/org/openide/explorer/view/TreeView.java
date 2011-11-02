@@ -173,11 +173,6 @@ public abstract class TreeView extends JScrollPane {
     /** Minimum height of this component. */
     private static final int MIN_TREEVIEW_HEIGHT = 400;
 
-    //GTK Look and feel hack
-    private static boolean isSynth = UIManager.getLookAndFeel().getClass().getName().indexOf(
-            "com.sun.java.swing.plaf.gtk"
-        ) != -1;
-
     //
     // components
     //

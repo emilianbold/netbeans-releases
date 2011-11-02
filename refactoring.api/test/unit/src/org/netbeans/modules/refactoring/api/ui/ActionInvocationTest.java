@@ -46,43 +46,133 @@ package org.netbeans.modules.refactoring.api.ui;
 
 import java.awt.Component;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
 import javax.swing.Action;
 import javax.swing.JDialog;
+import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
-import junit.framework.TestCase;
-import org.netbeans.api.java.source.SourceUtils;
+import javax.swing.event.ChangeListener;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.MoveRefactoring;
+import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
-import org.netbeans.modules.refactoring.java.LogTestCase;
 import org.netbeans.modules.refactoring.spi.impl.ParametersPanel;
+import org.netbeans.modules.refactoring.spi.ui.ActionsImplementationProvider;
+import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
+import org.netbeans.modules.refactoring.spi.ui.UI;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
+import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
  * @author Jan Becicka
  */
-public class ActionInvocationTest extends LogTestCase {
-    
+public class ActionInvocationTest extends NbTestCase {
+
+    private static class DummyUI implements RefactoringUI {
+        
+        public enum Kind {
+            MOVE,
+            RENAME
+        }
+        
+        private Lookup l;
+        private Kind kind;
+
+        public DummyUI(Lookup lookup, Kind kind) {
+            Node node = lookup.lookup(Node.class);
+            this.l = Lookups.singleton(node.getLookup().lookup(FileObject.class));
+            this.kind = kind;
+        }
+
+        @Override
+        public String getName() {
+            return "dummy";
+        }
+
+        @Override
+        public String getDescription() {
+            return "dummy";
+        }
+
+        @Override
+        public boolean isQuery() {
+            return true;
+        }
+
+        @Override
+        public CustomRefactoringPanel getPanel(ChangeListener parent) {
+            return new CustomRefactoringPanel() {
+
+                @Override
+                public void initialize() {
+                }
+
+                @Override
+                public Component getComponent() {
+                    return new JPanel();
+                }
+            };
+        }
+
+        @Override
+        public Problem setParameters() {
+            return null;
+        }
+
+        @Override
+        public Problem checkParameters() {
+            return null;
+        }
+
+        @Override
+        public boolean hasParameters() {
+            return false;
+        }
+
+        @Override
+        public AbstractRefactoring getRefactoring() {
+            switch (kind) {
+                case MOVE: return new MoveRefactoring(l);
+                case RENAME: return new RenameRefactoring(l);
+            }
+            return null;
+        }
+
+        @Override
+        public HelpCtx getHelpCtx() {
+            return new HelpCtx(DummyUI.class);
+        }
+    }
+    private FileObject f;
 
     /** Creates a new instance of ActionInstantiationTest */
     public ActionInvocationTest(String name) {
         super(name);
     }
     
-    protected void setUp() throws IOException {
+    protected void setUp() throws IOException, Exception {
         try {
             super.setUp();
-            SourceUtils.waitScanFinished();
+            f = FileUtil.createData(FileUtil.toFileObject(getWorkDir()), "test.txt");
+
+            OutputStream outputStream = f.getOutputStream();
+            outputStream.write("test".getBytes());
+            outputStream.close();
+            
             assertEquals(DD.class, Lookup.getDefault().lookup(DialogDisplayer.class).getClass());
         } catch (InterruptedException ex) {
             Exceptions.printStackTrace(ex);
@@ -90,8 +180,7 @@ public class ActionInvocationTest extends LogTestCase {
     }
     
     public void testRenameAction() throws InterruptedException, InvocationTargetException, IOException {
-        final FileObject test = getFileInProject("default","src/defaultpkg/Main.java" );
-        DataObject testdo = DataObject.find(test);
+        DataObject testdo = DataObject.find(f);
         final Node node = testdo.getNodeDelegate();
         
         InstanceContent ic = new InstanceContent();
@@ -102,7 +191,7 @@ public class ActionInvocationTest extends LogTestCase {
             public void run() {
                 if (rename.isEnabled()) {
                     rename.actionPerformed(RefactoringActionsFactory.DEFAULT_EVENT);
-                    if (!((RenameRefactoring) DD.rui.getRefactoring()).getRefactoringSource().lookup(FileObject.class).equals(test))
+                    if (!((RenameRefactoring) DD.rui.getRefactoring()).getRefactoringSource().lookup(FileObject.class).equals(f))
                         fail("Rename dialog was opened with wrong data");
                 } else {
                     fail("Action is not enabled.");
@@ -112,8 +201,7 @@ public class ActionInvocationTest extends LogTestCase {
     }
     
     public void testMoveAction() throws InterruptedException, InvocationTargetException, DataObjectNotFoundException, IOException {
-        final FileObject test = getFileInProject("default","src/defaultpkg/Main.java" );
-        DataObject testdo = DataObject.find(test);
+        DataObject testdo = DataObject.find(f);
         final Node node = testdo.getNodeDelegate();
 
         InstanceContent ic = new InstanceContent();
@@ -124,7 +212,7 @@ public class ActionInvocationTest extends LogTestCase {
             public void run() {
                 if (move.isEnabled()) {
                     move.actionPerformed(RefactoringActionsFactory.DEFAULT_EVENT);
-                    if (!((MoveRefactoring) DD.rui.getRefactoring()).getRefactoringSource().lookup(FileObject.class).equals(test))
+                    if (!((MoveRefactoring) DD.rui.getRefactoring()).getRefactoringSource().lookup(FileObject.class).equals(f))
                         fail("MoveClass was opened with wrong data");
                 } else {
                     fail("Action is not enabled.");
@@ -132,7 +220,7 @@ public class ActionInvocationTest extends LogTestCase {
             }
         });
     }
-    
+
     public static final class Lkp extends org.openide.util.lookup.AbstractLookup {
         public Lkp () {
             this (new org.openide.util.lookup.InstanceContent ());
@@ -142,6 +230,34 @@ public class ActionInvocationTest extends LogTestCase {
             super (ic);
             ic.add (new DD ());
         }
+    }
+    
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.refactoring.spi.ui.ActionsImplementationProvider.class)
+    public static class DefaultActionsProvider extends ActionsImplementationProvider {
+        
+        public DefaultActionsProvider() {
+        }
+
+        @Override
+        public boolean canMove(Lookup lookup) {
+            return true;
+        }
+
+        @Override
+        public boolean canRename(Lookup lookup) {
+            return true;
+        }
+
+        @Override
+        public void doMove(Lookup lookup) {
+            UI.openRefactoringUI(new DummyUI(lookup, DummyUI.Kind.MOVE));
+        }
+
+        @Override
+        public void doRename(Lookup lookup) {
+            UI.openRefactoringUI(new DummyUI(lookup, DummyUI.Kind.RENAME));
+        }
+        
     }
 
     /** Our own dialog displayer.

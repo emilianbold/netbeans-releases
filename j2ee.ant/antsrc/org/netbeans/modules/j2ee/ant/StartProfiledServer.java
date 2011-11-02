@@ -59,6 +59,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
+import org.netbeans.modules.j2ee.deployment.profiler.api.ProfilerSupport;
 import org.openide.util.NbBundle;
 
 /**
@@ -121,7 +122,7 @@ public class StartProfiledServer extends Task implements Deployment.Logger {
         log(NbBundle.getMessage(StartProfiledServer.class, "MSG_ProfilerAttached"));
         // wait for the server to finish its startup
         long timeout = System.currentTimeMillis() + startupTimeout;
-        while (true) {
+        while (profiler.getState() != ProfilerSupport.STATE_INACTIVE) {
             if (si.isRunning()) {
                 log(NbBundle.getMessage(StartProfiledServer.class, "MSG_ServerUp"));
                 si.refresh(); // update the server status
@@ -136,6 +137,7 @@ public class StartProfiledServer extends Task implements Deployment.Logger {
                 Thread.sleep(1000);  // take a nap before next retry
             } catch (Exception ex) {};
         }
+        throw new BuildException(NbBundle.getMessage(StartProfiledServer.class, "MSG_StartupFailed")); // NOI18N
     }
     
     public void setForceRestart(boolean forceRestart) {

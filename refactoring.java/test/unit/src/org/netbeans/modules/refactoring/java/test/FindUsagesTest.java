@@ -53,19 +53,15 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import junit.framework.Test;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.SourceUtils;
-import org.netbeans.api.java.source.Task;
-import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.api.java.source.*;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.refactoring.api.RefactoringElement;
 import org.netbeans.modules.refactoring.api.RefactoringSession;
-import org.netbeans.modules.refactoring.api.WhereUsedQuery;
-import org.netbeans.modules.refactoring.java.api.WhereUsedQueryConstants;
 import org.netbeans.modules.refactoring.api.Scope;
+import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.java.api.WhereUsedQueryConstants;
 import org.openide.filesystems.FileObject;
 import org.openide.util.lookup.Lookups;
 
@@ -108,7 +104,7 @@ public class FindUsagesTest extends NbTestCase {
                 wuq[0] = new WhereUsedQuery(Lookups.singleton(element));
             }
         }, false).get();
-        setScope(wuq, true, true, false, false, false, false);
+        setParameters(wuq, true, true, false, false, false, false);
         
         doRefactoring("FindUsagesTest", wuq, 7);
     }
@@ -128,7 +124,7 @@ public class FindUsagesTest extends NbTestCase {
                 wuq[0] = new WhereUsedQuery(Lookups.singleton(element));
             }
         }, false).get();
-        setScope(wuq, true, true, false, false, false, false);
+        setParameters(wuq, true, true, false, false, false, false);
         final NonRecursiveFolder package1 = new NonRecursiveFolder() {
             public FileObject getFolder() {
                 return projectDir.getFileObject("/src/package1");
@@ -157,7 +153,7 @@ public class FindUsagesTest extends NbTestCase {
             }
         }, false).get();
 
-        setScope(wuq, true, true, false, false, false, false);
+        setParameters(wuq, true, true, false, false, false, false);
         
         Scope customScope = Scope.create(Arrays.asList(projectDir.getFileObject("/test")), null, null);
         wuq[0].getContext().add(customScope);
@@ -181,7 +177,7 @@ public class FindUsagesTest extends NbTestCase {
             }
         }, false).get();
 
-        setScope(wuq, true, true, false, false, false, false);
+        setParameters(wuq, true, true, false, false, false, false);
         final NonRecursiveFolder package1 = new NonRecursiveFolder() {
             public FileObject getFolder() {
                 return projectDir.getFileObject("/src/package1");
@@ -211,7 +207,7 @@ public class FindUsagesTest extends NbTestCase {
             }
         }, false).get();
         
-        setScope(wuq, false, false, true, false, false, false);
+        setParameters(wuq, false, false, true, false, false, false);
 
         doRefactoring("FindSubClassesTest", wuq, 3);
     }
@@ -234,7 +230,7 @@ public class FindUsagesTest extends NbTestCase {
                 wuq[0].getContext().add(RetoucheUtils.getClasspathInfoFor(element));
             }
         }, false).get();
-        setScope(wuq, true, true, false, false, false, false);
+        setParameters(wuq, true, true, false, false, false, false);
 
         doRefactoring("test200230", wuq, 9);
     }
@@ -257,9 +253,51 @@ public class FindUsagesTest extends NbTestCase {
                 wuq[0] = new WhereUsedQuery(Lookups.singleton(element));
             }
         }, false).get();
-        setScope(wuq, true, false, false, false, false, true);
+        setParameters(wuq, true, false, false, false, false, true);
 
         doRefactoring("test200843", wuq, 1);
+    }
+    
+    public void test204305() throws Exception { // #204305 - Find Usages: Search from Base doesn´t work 
+        Utilities.openProject("SimpleJ2SEAppChild", getDataDir());
+        SourceUtils.waitScanFinished();
+        FileObject testFile = projectDir.getFileObject("/src/simplej2seapp/D.java");
+        JavaSource src = JavaSource.forFileObject(testFile);
+        final WhereUsedQuery[] wuq = new WhereUsedQuery[1];
+        src.runWhenScanFinished(new Task<CompilationController>() {
+
+            @Override
+            public void run(CompilationController controller) throws Exception {
+                controller.toPhase(JavaSource.Phase.RESOLVED);
+                ClassTree klass = (ClassTree) controller.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree runTree = (MethodTree) klass.getMembers().get(1);
+                TreePath path = controller.getTrees().getPath(controller.getCompilationUnit(), runTree);
+                TreePathHandle element = TreePathHandle.create(path, controller);
+                wuq[0] = new WhereUsedQuery(Lookups.singleton(element));
+            }
+        }, false).get();
+        setParameters(wuq, true, false, false, false, false, true);
+        
+        final NonRecursiveFolder simplej2seapp = new NonRecursiveFolder() {
+            public FileObject getFolder() {
+                return projectDir.getFileObject("/src/simplej2seapp");
+            }
+        };
+        Scope customScope = Scope.create(Arrays.asList(projectDir.getFileObject("/src")), null, null);
+        wuq[0].getContext().add(customScope);
+        doRefactoring("test204305", wuq, 1);
+        
+        customScope = Scope.create(null, Arrays.asList(simplej2seapp), null);
+        wuq[0].getContext().add(customScope);
+        doRefactoring("test204305", wuq, 1);
+        
+        customScope = Scope.create(null, null, Arrays.asList(projectDir.getFileObject("/src/simplej2seapp/Main.java")));
+        wuq[0].getContext().add(customScope);
+        doRefactoring("test204305", wuq, 1);
+        
+        customScope = Scope.create(null, null, null);
+        wuq[0].getContext().add(customScope);
+        doRefactoring("test204305", wuq, 0);
     }
 
     public void test202412() throws IOException, InterruptedException, ExecutionException { // #202412 NullPointerException at org.netbeans.modules.refactoring.java.RetoucheUtils.getFileObject
@@ -280,7 +318,7 @@ public class FindUsagesTest extends NbTestCase {
                 wuq[0] = new WhereUsedQuery(Lookups.singleton(element));
             }
         }, false).get();
-        setScope(wuq, true, false, false, false, false, true);
+        setParameters(wuq, true, false, false, false, false, true);
 
         doRefactoring("test200843", wuq, 1);
     }
@@ -304,7 +342,7 @@ public class FindUsagesTest extends NbTestCase {
         assertEquals("Number of usages", amount, elems.size());
     }
     
-    private void setScope(final org.netbeans.modules.refactoring.api.WhereUsedQuery[] wuq,
+    private void setParameters(final org.netbeans.modules.refactoring.api.WhereUsedQuery[] wuq,
             boolean references, boolean comments, boolean subclasses,
             boolean directSubclasses, boolean overriding, boolean fromBaseclass) {
         wuq[0].putValue(WhereUsedQuery.FIND_REFERENCES, references);

@@ -994,6 +994,7 @@ final class ModuleList implements Stamps.Updater {
 
     final void init() {
         weakListener = FileUtil.weakFileChangeListener(listener, folder);
+        folder.getChildren();
         folder.addFileChangeListener(weakListener);
     }
 

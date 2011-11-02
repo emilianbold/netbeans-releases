@@ -489,7 +489,7 @@ public class FmtImports extends javax.swing.JPanel implements Runnable, ListSele
     private void setStarImportPackagesTableColumnsWidth() {
         int tableWidth = starImportPackagesTable.getPreferredSize().width;
         TableColumn column = starImportPackagesTable.getColumnModel().getColumn(1);
-        int colWidth = starImportPackagesTable.getTableHeader().getDefaultRenderer().getTableCellRendererComponent(null, column.getHeaderValue(), false, false, 0, 0).getPreferredSize().width;
+        int colWidth = starImportPackagesTable.getTableHeader().getDefaultRenderer().getTableCellRendererComponent(starImportPackagesTable, column.getHeaderValue(), false, false, 0, 0).getPreferredSize().width;
         column.setPreferredWidth(colWidth);
         starImportPackagesTable.getColumnModel().getColumn(0).setPreferredWidth(tableWidth - colWidth);        
     }
@@ -498,7 +498,7 @@ public class FmtImports extends javax.swing.JPanel implements Runnable, ListSele
         if (importLayoutTable.getColumnCount() > 1) {
             int tableWidth = importLayoutTable.getPreferredSize().width;
             TableColumn column = importLayoutTable.getColumnModel().getColumn(0);
-            int colWidth = importLayoutTable.getTableHeader().getDefaultRenderer().getTableCellRendererComponent(null, column.getHeaderValue(), false, false, 0, 0).getPreferredSize().width;
+            int colWidth = importLayoutTable.getTableHeader().getDefaultRenderer().getTableCellRendererComponent(importLayoutTable, column.getHeaderValue(), false, false, 0, 0).getPreferredSize().width;
             column.setPreferredWidth(colWidth);
             importLayoutTable.getColumnModel().getColumn(1).setPreferredWidth(tableWidth - colWidth);            
         }

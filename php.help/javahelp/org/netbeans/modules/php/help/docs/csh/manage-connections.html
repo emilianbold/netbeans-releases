@@ -68,7 +68,8 @@
                     <param name="textFontSize" value="medium">
                     <param name="textColor" value="blue"></object>
             </li>
-            <li><strong>Ignore Disconnect Errors. (FTP only)</strong> IDE ignores errors during <tt>disconnect()</tt> calls.</li>
+            <li><strong>Ignore Disconnect Errors. (FTP only)</strong> IDE ignores errors during <tt>disconnect()</tt> and <tt>logout()</tt> calls. Useful when <a href="runconfig-remote.html">upload-on-save</a> is enabled, where in some cases every file change otherwise ends with an error dialog.
+</li>
             <li><b>Add...</b> Click to add a remote connection. The 
                 <a href="#create-new-connection">Create New Connection panel</a>
             opens.</li>       

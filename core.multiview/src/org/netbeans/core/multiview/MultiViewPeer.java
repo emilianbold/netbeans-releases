@@ -46,6 +46,7 @@ package org.netbeans.core.multiview;
 
 import java.awt.BorderLayout;
 import java.awt.EventQueue;
+import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -338,7 +339,14 @@ public final class MultiViewPeer implements PropertyChangeListener {
         //. eg. property sheet uses same component and only changes model.
         // in this case we probably should not remove and add the component from awt hierarchy
         tabs.switchToCard(el, desc.getDisplayName());
-        peer.setIcon(desc.getIcon());
+        Image icon = desc.getIcon();
+        if( null == icon ) {
+            //#204072
+            MultiViewDescription[] descriptions = model.getDescriptions();
+            if( null != descriptions && descriptions.length > 0 )
+                icon = descriptions[0].getIcon();
+        }
+        peer.setIcon(icon);
         // the first time the component is shown, we need to call componentOpened() on it to be in synch with current
         // TopComponent behaviour?
         if (peer.isOpened() || calledFromComponentOpened) {

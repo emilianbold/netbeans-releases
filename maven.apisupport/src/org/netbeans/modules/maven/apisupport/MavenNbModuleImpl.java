@@ -49,7 +49,6 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import org.apache.maven.artifact.Artifact;
@@ -72,6 +71,7 @@ import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.handler.DefaultArtifactHandler;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.apisupport.project.api.LayerHandle;
@@ -115,7 +115,7 @@ public class MavenNbModuleImpl implements NbModuleProvider {
      * the property defined by nbm-maven-plugin's run-ide goal.
      * can help finding the defined netbeans platform.
      */ 
-    public static final String PROP_NETBEANS_INSTALL = "netbeans.installation"; //NOI18N
+    private static final String PROP_NETBEANS_INSTALL = "netbeans.installation"; //NOI18N
 
     public static final String GROUPID_MOJO = "org.codehaus.mojo";
     public static final String NBM_PLUGIN = "nbm-maven-plugin";
@@ -175,8 +175,9 @@ public class MavenNbModuleImpl implements NbModuleProvider {
                 Xpp3Dom cnb = dom.getChild("codeNameBase"); //NOI18N
                 if (cnb != null) {
                     String val = cnb.getValue();
-                    if (val.indexOf( "/") > -1) { //NOI18N
-                        val = val.substring(0, val.indexOf("/")); //NOI18N
+                    int slash = val.indexOf('/');
+                    if (slash > -1) {
+                        val = val.substring(0, slash);
                     }
                     return val;
                 }
@@ -274,14 +275,9 @@ public class MavenNbModuleImpl implements NbModuleProvider {
                 dep.setVersion(version.toString());
             } else {
                 //try guessing the version according to the rest of netbeans dependencies..
-                List deps = watch.getMavenProject().getModel().getDependencies();
-                if (deps != null) {
-                    Iterator it = deps.iterator();
-                    while (it.hasNext()) {
-                        Dependency d = (Dependency)it.next();
-                        if ("org.netbeans.api".equals(d.getGroupId())) { //NOI18N
-                            dep.setVersion(d.getVersion());
-                        }
+                for (Dependency d : watch.getMavenProject().getModel().getDependencies()) {
+                    if ("org.netbeans.api".equals(d.getGroupId())) { // NOI18N
+                        dep.setVersion(d.getVersion());
                     }
                 }
             }
@@ -318,11 +314,9 @@ public class MavenNbModuleImpl implements NbModuleProvider {
     public @Override boolean hasDependency(String codeNameBase) throws IOException {
         String artifactId = codeNameBase.replaceAll("\\.", "-"); //NOI18N
         NbMavenProject watch = project.getLookup().lookup(NbMavenProject.class);
-        Set<?> set = watch.getMavenProject().getDependencyArtifacts();
+        Set<Artifact> set = watch.getMavenProject().getDependencyArtifacts();
         if (set != null) {
-            Iterator<?> it = set.iterator();
-            while (it.hasNext()) {
-                Artifact art = (Artifact) it.next();
+            for (Artifact art : set) {
                 if (art.getGroupId().startsWith("org.netbeans") && art.getArtifactId().equals(artifactId)) { // NOI18N
                     return true;
                 }
@@ -501,22 +495,29 @@ public class MavenNbModuleImpl implements NbModuleProvider {
      */
     private File getActivePlatformLocation() {
         File platformDir = findPlatformFolder();
-        if( null != platformDir && platformDir.exists() && platformDir.isDirectory() )
+        if (platformDir != null && platformDir.isDirectory()) {
             return platformDir;
-        Project suitProject = project;
-        NbMavenProject watch = suitProject.getLookup().lookup(NbMavenProject.class);
-        String installProp = watch.getMavenProject().getProperties().getProperty(PROP_NETBEANS_INSTALL);
-        if (installProp == null) {
-            installProp = PluginPropertyUtils.getPluginProperty(watch.getMavenProject(), 
-                    GROUPID_MOJO, NBM_PLUGIN, "netbeansInstallation", "run-ide"); //NOI18N
         }
-        if (installProp != null) {
-            File fil = FileUtilities.convertStringToFile(installProp);
-            if (fil.exists()) {
-                return fil;
-            }
+        platformDir = findIDEInstallation(project.getLookup().lookup(NbMavenProject.class));
+        if (platformDir != null && platformDir.isDirectory()) {
+            return platformDir;
         }
         return null;
+    }
+
+    /**
+     * Looks for the configured location of the IDE installation for a standalone or suite module.
+     */
+    static @CheckForNull File findIDEInstallation(NbMavenProject project) {
+        String installProp = project.getMavenProject().getProperties().getProperty(PROP_NETBEANS_INSTALL);
+        if (installProp == null) {
+            installProp = PluginPropertyUtils.getPluginProperty(project.getMavenProject(), GROUPID_MOJO, NBM_PLUGIN, "netbeansInstallation", "run-ide");
+        }
+        if (installProp != null) {
+            return FileUtilities.convertStringToFile(installProp);
+        } else {
+            return null;
+        }
     }
 
     static Project findAppProject(Project nbmProject) {

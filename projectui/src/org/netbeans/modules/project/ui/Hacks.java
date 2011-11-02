@@ -52,6 +52,8 @@ import java.lang.reflect.Method;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.MissingResourceException;
+import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
@@ -88,11 +90,18 @@ public class Hacks {
     static void keepCurrentProjectNameUpdated() {
         final TopComponent.Registry r = TopComponent.getRegistry();
         final AtomicReference<PropertyChangeListener> displayNameListener = new AtomicReference<PropertyChangeListener>();
+        ResourceBundle bundle;
+        try {
+            bundle = NbBundle.getBundle("org.netbeans.core.windows.view.ui.Bundle");
+        } catch (MissingResourceException x) {
+            LOG.log(Level.FINE, "Running from a unit test?", x);
+            return;
+        }
+        final String BUILD_NUMBER = System.getProperty("netbeans.buildnumber"); // NOI18N
+        final String NO_PROJECT_TITLE = MessageFormat.format(bundle.getString("CTL_MainWindow_Title_No_Project"), BUILD_NUMBER);
+        final String PROJECT_TITLE_FORMAT = bundle.getString("CTL_MainWindow_Title");
         final RequestProcessor.Task task = RP.create(new Runnable() {
             String lastKnownTitle; // #134802
-            final String BUILD_NUMBER = System.getProperty("netbeans.buildnumber"); // NOI18N
-            final String NO_PROJECT_TITLE = MessageFormat.format(NbBundle.getBundle("org.netbeans.core.windows.view.ui.Bundle").getString("CTL_MainWindow_Title_No_Project"), BUILD_NUMBER);
-            final String PROJECT_TITLE_FORMAT = NbBundle.getBundle("org.netbeans.core.windows.view.ui.Bundle").getString("CTL_MainWindow_Title");
             public @Override void run() {
                 Node[] sel = r.getActivatedNodes();
                 Set<Project> projects = new HashSet<Project>();

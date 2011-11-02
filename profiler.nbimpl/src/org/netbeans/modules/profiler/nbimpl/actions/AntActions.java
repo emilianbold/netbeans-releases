@@ -689,6 +689,12 @@ public final class AntActions {
                                                                                      ss.getSystemArchitecture())
                             );
                             activateOOMProtection(gps, props, project);
+                        } else if (javaVersion.equals(CommonConstants.JDK_18_STRING)) {
+                            props.setProperty("profiler.info.jvmargs.agent", // NOI18N
+                                              IDEUtils.getAntProfilerStartArgument18(ss.getPortNo(),
+                                                                                     ss.getSystemArchitecture())
+                            );
+                            activateOOMProtection(gps, props, project);
                         } else {
                             throw new IllegalArgumentException("Unsupported JDK " + javaVersion); // NOI18N
                         }

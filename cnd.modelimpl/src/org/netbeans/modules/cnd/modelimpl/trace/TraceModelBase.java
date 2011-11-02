@@ -182,7 +182,11 @@ public class TraceModelBase {
     public ProjectBase getProject() {
         synchronized (this) {
             if (projectUID == null) {
-                projectUID = createProject().getUID();
+                try {
+                    projectUID = createProject().getUID();
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
         }
         return (projectUID == null) ? null : (ProjectBase) projectUID.getObject();
@@ -210,7 +214,7 @@ public class TraceModelBase {
     //getProject();
     }
 
-    private ProjectBase createProject() {
+    private ProjectBase createProject() throws IOException {
         NativeProject np = null;
         if (files.size() == 1 && files.get(0).getName().equals("project.xml")) { // NOI18N
             try {

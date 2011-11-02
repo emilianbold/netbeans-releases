@@ -61,6 +61,7 @@ public class FileModel2Test extends TraceModelTestBase {
 
     @Override
     protected void setUp() throws Exception {
+        System.setProperty("cnd.modelimpl.tracemodel.project.name", "DummyProject"); // NOI18N
         System.setProperty("parser.report.errors", "true");
         System.setProperty("antlr.exceptions.hideExpectedTokens", "true");
         super.setUp();
@@ -401,6 +402,11 @@ public class FileModel2Test extends TraceModelTestBase {
     public void testBug198460() throws Exception {
         // Bug 198460 - add support for gcc keyword __extension__
         performTest("bug198460.cpp");
+    }
+    
+    public void testBug204497() throws Exception {
+        // Bug 204497 - Inaccuracy tests: latest configured dbx project has parser error
+        performTest("bug204497.cpp");
     }
     
 }

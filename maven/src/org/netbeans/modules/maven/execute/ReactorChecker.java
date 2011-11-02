@@ -116,7 +116,12 @@ public class ReactorChecker implements PrerequisitesChecker {
         MavenProject prj = module.getMavenProject();
         File moduleDir = prj.getBasedir();
         if (moduleDir != null) {
-            MavenProject parent = prj.getParent();
+            MavenProject parent;
+            try {
+                parent = prj.getParent();
+            } catch (IllegalStateException x) { // #203346
+                parent = null;
+            }
             if (parent != null) {
                 File parentDir = parent.getBasedir();
                 if (parentDir != null && listsModule(parentDir, moduleDir, parent.getModules())) {

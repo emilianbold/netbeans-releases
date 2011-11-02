@@ -192,4 +192,16 @@ public abstract class TopLevelStructureItem implements StructureItem {
             return NbBundle.getMessage(TopLevelStructureItem.class, "Namespaces"); //NOI18N
         }
     }
+    
+    public static class AtRules extends ChildrenListStructureItem {
+        
+        public AtRules(List<StructureItem> children) {
+            super(children);
+        }
+        
+        @Override
+        public String getName() {
+            return NbBundle.getMessage(TopLevelStructureItem.class, "AtRules"); //NOI18N
+        }
+    }
 }

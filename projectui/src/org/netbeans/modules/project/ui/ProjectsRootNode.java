@@ -779,7 +779,10 @@ public class ProjectsRootNode extends AbstractNode {
                     FileSystem.Status stat = files.iterator().next().getFileSystem().getStatus();
                     if (stat instanceof FileSystem.HtmlStatus) {
                         FileSystem.HtmlStatus hstat = (FileSystem.HtmlStatus) stat;
-                        htmlName = hstat.annotateNameHtml(MAGIC, files).replace(MAGIC, htmlName);
+                        String annotatedMagic = hstat.annotateNameHtml(MAGIC, files);
+                        if (annotatedMagic != null) {
+                            htmlName = annotatedMagic.replace(MAGIC, htmlName);
+                        }
                     }
                 } catch (FileStateInvalidException e) {
                     LOG.log(Level.INFO, null, e);

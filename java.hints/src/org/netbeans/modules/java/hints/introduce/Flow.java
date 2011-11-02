@@ -96,7 +96,6 @@ import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.tree.WildcardTree;
 import com.sun.source.util.TreePath;
-import com.sun.source.util.TreePathScanner;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -127,12 +126,16 @@ public class Flow {
     }
 
     public static FlowResult assignmentsForUse(CompilationInfo info, TreePath from, AtomicBoolean cancel) {
+        return assignmentsForUse(info, from, new AtomicBooleanCancel(cancel));
+    }
+
+    public static FlowResult assignmentsForUse(CompilationInfo info, TreePath from, Cancel cancel) {
         Map<Tree, Iterable<? extends TreePath>> result = new HashMap<Tree, Iterable<? extends TreePath>>();
         VisitorImpl v = new VisitorImpl(info, cancel);
 
         v.scan(from, null);
 
-        if (cancel.get()) return null;
+        if (cancel.isCanceled()) return null;
 
         for (Entry<Tree, State> e : v.use2Values.entrySet()) {
             result.put(e.getKey(), e.getValue() != null ? e.getValue().assignments : Collections.<TreePath>emptyList());
@@ -158,13 +161,36 @@ public class Flow {
         }
     }
 
+    public interface Cancel {
+        public boolean isCanceled();
+    }
+
+    public static final class AtomicBooleanCancel implements Cancel {
+
+        private final AtomicBoolean cancel;
+
+        public AtomicBooleanCancel(AtomicBoolean cancel) {
+            this.cancel = cancel;
+        }
+
+        @Override
+        public boolean isCanceled() {
+            return cancel.get();
+        }
+
+    }
+
     public static boolean definitellyAssigned(CompilationInfo info, VariableElement var, Iterable<? extends TreePath> trees, AtomicBoolean cancel) {
+        return definitellyAssigned(info, var, trees, new AtomicBooleanCancel(cancel));
+    }
+
+    public static boolean definitellyAssigned(CompilationInfo info, VariableElement var, Iterable<? extends TreePath> trees, Cancel cancel) {
         VisitorImpl v = new VisitorImpl(info, cancel);
 
         v.variable2State.put(var, State.create(null));
 
         for (TreePath tp : trees) {
-            if (cancel.get()) return false;
+            if (cancel.isCanceled()) return false;
             
             v.scan(tp, null);
 
@@ -187,10 +213,17 @@ public class Flow {
         private Set<VariableElement> currentMethodVariables = Collections.newSetFromMap(new IdentityHashMap<VariableElement, Boolean>());
         private final Set<Tree> deadBranches = new HashSet<Tree>();
         private final List<TreePath> pendingFinally = new LinkedList<TreePath>();
+        private final Cancel cancel;
 
-        public VisitorImpl(CompilationInfo info, AtomicBoolean cancel) {
-            super(cancel);
+        public VisitorImpl(CompilationInfo info, Cancel cancel) {
+            super();
             this.info = info;
+            this.cancel = cancel;
+        }
+
+        @Override
+        protected boolean isCanceled() {
+            return cancel.isCanceled();
         }
 
         @Override
@@ -709,6 +742,46 @@ public class Flow {
             return null;
         }
 
+        public Boolean visitContinue(ContinueTree node, Void p) {
+            StatementTree loop = info.getTreeUtilities().getBreakContinueTarget(getCurrentPath());
+            Tree resumePoint;
+
+            if (loop.getKind() == Kind.LABELED_STATEMENT) {
+                loop = ((LabeledStatementTree) loop).getStatement();
+            }
+            
+            switch (loop.getKind()) {
+                case WHILE_LOOP:
+                    resumePoint = ((WhileLoopTree) loop).getCondition();
+                    break;
+                case FOR_LOOP:
+                    resumePoint = ((ForLoopTree) loop).getCondition();
+                    break;
+                case DO_WHILE_LOOP:
+                    resumePoint = ((DoWhileLoopTree) loop).getCondition();
+                    break;
+                case ENHANCED_FOR_LOOP:
+                    resumePoint = ((EnhancedForLoopTree) loop).getStatement();
+                    break;
+                default:
+                    boolean ae = false;
+                    assert ae = true;
+                    if (ae)
+                        throw new IllegalStateException(loop.getKind().name());
+                    resumePoint = null;
+                    break;
+            }
+
+            if (resumePoint != null) {
+                recordResume(resumeBefore, resumePoint, variable2State);
+            }
+
+            variable2State = new HashMap<VariableElement, State>();
+
+            super.visitContinue(node, p);
+            return null;
+        }
+
         private void resumeAfter(Tree target, Map<VariableElement, State> state) {
             for (TreePath tp : pendingFinally) {
                 boolean shouldBeRun = false;
@@ -837,11 +910,6 @@ public class Flow {
 
         public Boolean visitEmptyStatement(EmptyStatementTree node, Void p) {
             super.visitEmptyStatement(node, p);
-            return null;
-        }
-
-        public Boolean visitContinue(ContinueTree node, Void p) {
-            super.visitContinue(node, p);
             return null;
         }
 

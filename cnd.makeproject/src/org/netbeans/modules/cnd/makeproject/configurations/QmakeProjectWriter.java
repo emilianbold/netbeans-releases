@@ -244,6 +244,9 @@ public class QmakeProjectWriter {
         List<String> list = new ArrayList<String>();
         for (Item item : items) {
             ItemConfiguration itemConf = item.getItemConfiguration(configuration);
+            if (itemConf == null) {
+                continue;
+            }
             if (itemConf.getExcluded().getValue()) {
                 continue;
             }

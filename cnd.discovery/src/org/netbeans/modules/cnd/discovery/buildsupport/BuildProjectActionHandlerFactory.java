@@ -42,8 +42,6 @@
 
 package org.netbeans.modules.cnd.discovery.buildsupport;
 
-import java.io.IOException;
-import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.PredefinedType;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.Type;
@@ -53,8 +51,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.HostInfo;
-import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
@@ -81,15 +77,8 @@ public class BuildProjectActionHandlerFactory implements ProjectActionHandlerFac
                 final ExecutionEnvironment executionEnvironment = conf.getDevelopmentHost().getExecutionEnvironment();
                 if (conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_MAKEFILE) {
                     if (BuildTraceSupport.useBuildTrace()) {
-                        try {
-                            HostInfo hostInfo = HostInfoUtils.getHostInfo(executionEnvironment);
-                            switch (hostInfo.getOSFamily()) {
-                            case SUNOS:
-                            case LINUX:
-                                return true;
-                            }
-                        } catch (IOException ex) {
-                        } catch (CancellationException ex) {
+                        if (BuildTraceSupport.supportedPlatforms(executionEnvironment)) {
+                            return true;
                         }
                     }
                 }

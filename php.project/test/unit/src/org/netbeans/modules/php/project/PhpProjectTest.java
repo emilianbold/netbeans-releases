@@ -42,20 +42,14 @@
 package org.netbeans.modules.php.project;
 
 import org.netbeans.api.project.Project;
-import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
+import org.netbeans.modules.php.project.util.PhpTestCase;
 import org.netbeans.modules.php.project.util.TestUtils;
-import org.openide.util.test.MockLookup;
 
-public class PhpProjectTest extends NbTestCase {
+public class PhpProjectTest extends PhpTestCase {
 
     public PhpProjectTest(String name) {
         super(name);
-    }
-
-    @Override
-    protected void setUp() throws Exception {
-        MockLookup.setLayersAndInstances();
     }
 
     public void testCreateProject() throws Exception {

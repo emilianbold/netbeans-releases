@@ -54,6 +54,14 @@ public class LexerUtilsTest extends CslTestBase {
     public LexerUtilsTest(String testName) {
         super(testName);
     }
+    
+    //Bug 199420 - Last rule in css file has no fold
+    public void testGetLineOffset_Issue199420() throws BadLocationException {
+        String text = "div { \n }";
+        //             0123456 78
+        assertEquals(0, LexerUtils.getLineOffset(text, 4));
+        assertEquals(1, LexerUtils.getLineOffset(text, 9));
+    }
 
     public void testGetLineOffset() throws BadLocationException {
         String text = "one\ntwo\nthree\n";

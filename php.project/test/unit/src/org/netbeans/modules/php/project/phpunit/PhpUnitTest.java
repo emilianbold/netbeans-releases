@@ -45,23 +45,15 @@ package org.netbeans.modules.php.project.phpunit;
 import java.io.File;
 import java.util.Arrays;
 import java.util.regex.Matcher;
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.php.project.util.TestUtils;
-import static org.junit.Assert.*;
+import org.netbeans.modules.php.project.util.PhpTestCase;
 
 /**
  * @author Tomas Mysik
  */
-public class PhpUnitTest extends NbTestCase {
+public class PhpUnitTest extends PhpTestCase {
 
     public PhpUnitTest(String name) {
         super(name);
-    }
-
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        TestUtils.init();
     }
 
     public void testVersion() {

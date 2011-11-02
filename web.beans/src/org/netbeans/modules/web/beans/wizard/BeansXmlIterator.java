@@ -65,6 +65,7 @@ import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.common.dd.DDHelper;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
+import org.netbeans.modules.web.beans.UsageLogger;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.netbeans.spi.project.ui.templates.support.Templates.SimpleTargetChooserBuilder;
 import org.openide.WizardDescriptor;
@@ -103,8 +104,17 @@ public class BeansXmlIterator implements TemplateWizard.Iterator {
 
         FileObject fo = DDHelper.createBeansXml(Profile.JAVA_EE_6_FULL, targetDir, targetName);
         if (fo != null) {
+            Project project = Templates.getProject(wizard);
+            if ( project != null ){
+                UsageLogger logger = project.getLookup().lookup( UsageLogger.class );
+                if (logger != null){
+                    logger.log("USG_CDI_BEANS_WIZARD", BeansXmlIterator.class, 
+                            new Object[]{project.getClass().getName()}, true);
+                }
+            }
             return Collections.singleton(DataObject.find(fo));
-        } else {
+        } 
+        else {
             return Collections.EMPTY_SET;
         }
     }

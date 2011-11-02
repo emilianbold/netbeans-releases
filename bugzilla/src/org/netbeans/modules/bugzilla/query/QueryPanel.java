@@ -299,7 +299,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
                         .addComponent(changedBlaBlaLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(newValueTextField, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
         byLastChangePanelLayout.setVerticalGroup(
             byLastChangePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -365,7 +365,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
                         .addGap(7, 7, 7)
                         .addComponent(peopleTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(reporterCheckBox))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
         byPeoplePanelLayout.setVerticalGroup(
             byPeoplePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -384,7 +384,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
                 .addComponent(ccCheckBox)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(commenterCheckBox)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
 
         bugAssigneeCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.bugAssigneeCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
@@ -581,7 +581,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
                 .addGroup(byDetailsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(tmLabel)
                     .addComponent(tmScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
         byDetailsPanelLayout.setVerticalGroup(
             byDetailsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -713,7 +713,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
                     .addComponent(keywordsComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(keywordsTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(keywordsButton))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
 
         summaryComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.summaryComboBox.AccessibleContext.accessibleDescription")); // NOI18N
@@ -729,14 +729,14 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
 
         setBackground(javax.swing.UIManager.getDefaults().getColor("TextArea.background"));
 
-        tableFieldsPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("EditorPane.background"));
+        tableFieldsPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("TextArea.background"));
 
         tablePanel.setBackground(new java.awt.Color(224, 224, 224));
         tablePanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         tablePanel.setMinimumSize(new java.awt.Dimension(100, 350));
         tablePanel.setLayout(new java.awt.BorderLayout());
 
-        tableHeaderPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("EditorPane.background"));
+        tableHeaderPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("TextArea.background"));
 
         org.openide.awt.Mnemonics.setLocalizedText(tableSummaryLabel, org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.tableSummaryLabel.text_1")); // NOI18N
 
@@ -785,7 +785,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
                 .addContainerGap())
         );
 
-        searchPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("EditorPane.background"));
+        searchPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("TextArea.background"));
 
         org.openide.awt.Mnemonics.setLocalizedText(webButton, org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.webButton.text")); // NOI18N
         webButton.addActionListener(new java.awt.event.ActionListener() {
@@ -859,20 +859,15 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
             .addComponent(byLastChangeContainer, javax.swing.GroupLayout.DEFAULT_SIZE, 1024, Short.MAX_VALUE)
             .addComponent(urlPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addComponent(byTextContainer, javax.swing.GroupLayout.DEFAULT_SIZE, 1024, Short.MAX_VALUE)
-            .addGroup(criteriaPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(byTextLabel))
-            .addGroup(criteriaPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(byDetailsLabel))
             .addComponent(byDetailsContainer, javax.swing.GroupLayout.DEFAULT_SIZE, 1024, Short.MAX_VALUE)
-            .addGroup(criteriaPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(byPeopleLabel))
             .addComponent(byPeopleContainer, javax.swing.GroupLayout.DEFAULT_SIZE, 1024, Short.MAX_VALUE)
             .addGroup(criteriaPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(byLastChangeLabel))
+                .addGroup(criteriaPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(byTextLabel)
+                    .addComponent(byDetailsLabel)
+                    .addComponent(byPeopleLabel)
+                    .addComponent(byLastChangeLabel)))
         );
         criteriaPanelLayout.setVerticalGroup(
             criteriaPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1018,7 +1013,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
         saveButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.saveButton.AccessibleContext.accessibleDescription")); // NOI18N
         refreshConfigurationButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.refreshConfigurationButton.AccessibleContext.accessibleDescription")); // NOI18N
 
-        queryHeaderPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("EditorPane.background"));
+        queryHeaderPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("TextArea.background"));
 
         org.openide.awt.Mnemonics.setLocalizedText(seenButton, org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.seenButton.text")); // NOI18N
         seenButton.addActionListener(new java.awt.event.ActionListener() {
@@ -1161,7 +1156,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
         modifyButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.modifyButton.AccessibleContext.accessibleDescription")); // NOI18N
         refreshCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.refreshCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
 
-        noContentPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("EditorPane.background"));
+        noContentPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("TextArea.background"));
         noContentPanel.setLayout(new java.awt.GridBagLayout());
 
         org.openide.awt.Mnemonics.setLocalizedText(noContentLabel, org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.noContentLabel.text")); // NOI18N

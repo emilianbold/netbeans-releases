@@ -57,6 +57,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
@@ -103,6 +104,11 @@ public class SendJmsMessagePanel extends javax.swing.JPanel {
                 verifyAndFire();
             }
         });
+
+        // show warning if the project is missing any app server
+        if (!Util.isValidServerInstance(provider)) {
+            warningLabel.setText(NbBundle.getMessage(SendJmsMessagePanel.class, "ERR_MissingServer")); //NOI18N
+        }
     }
     
     /**
@@ -351,15 +357,14 @@ public class SendJmsMessagePanel extends javax.swing.JPanel {
         destinationText = new javax.swing.JTextField();
         jLabel1 = new javax.swing.JLabel();
         connectionFactoryTextField = new javax.swing.JTextField();
+        warningLabel = new javax.swing.JLabel();
 
         destinationGroup.add(projectDestinationsRadio);
         projectDestinationsRadio.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(projectDestinationsRadio, org.openide.util.NbBundle.getMessage(SendJmsMessagePanel.class, "LBL_ProjectDestinations")); // NOI18N
-        projectDestinationsRadio.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         destinationGroup.add(serverDestinationsRadio);
         org.openide.awt.Mnemonics.setLocalizedText(serverDestinationsRadio, org.openide.util.NbBundle.getMessage(SendJmsMessagePanel.class, "LBL_ServerDestinations")); // NOI18N
-        serverDestinationsRadio.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         org.openide.awt.Mnemonics.setLocalizedText(addButton, org.openide.util.NbBundle.getMessage(SendJmsMessagePanel.class, "LBL_Add")); // NOI18N
         addButton.addActionListener(new java.awt.event.ActionListener() {
@@ -370,7 +375,6 @@ public class SendJmsMessagePanel extends javax.swing.JPanel {
 
         destinationGroup.add(mdbRadio);
         org.openide.awt.Mnemonics.setLocalizedText(mdbRadio, org.openide.util.NbBundle.getMessage(SendJmsMessagePanel.class, "LBL_MessageDrivenBean")); // NOI18N
-        mdbRadio.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         serviceLocatorPanel.setLayout(new java.awt.BorderLayout());
 
@@ -379,6 +383,8 @@ public class SendJmsMessagePanel extends javax.swing.JPanel {
         destinationText.setEditable(false);
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(SendJmsMessagePanel.class, "LBL_ConnectionFactory")); // NOI18N
+
+        warningLabel.setForeground(new java.awt.Color(221, 119, 0));
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -398,15 +404,18 @@ public class SendJmsMessagePanel extends javax.swing.JPanel {
                             .addComponent(destinationLabel, javax.swing.GroupLayout.Alignment.TRAILING))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(destinationText, javax.swing.GroupLayout.DEFAULT_SIZE, 360, Short.MAX_VALUE)
-                            .addComponent(mdbCombo, javax.swing.GroupLayout.Alignment.TRAILING, 0, 360, Short.MAX_VALUE)
-                            .addComponent(serverDestinationsCombo, javax.swing.GroupLayout.Alignment.TRAILING, 0, 360, Short.MAX_VALUE)
-                            .addComponent(projectDestinationsCombo, javax.swing.GroupLayout.Alignment.TRAILING, 0, 360, Short.MAX_VALUE)
-                            .addComponent(connectionFactoryTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 360, Short.MAX_VALUE))
+                            .addComponent(destinationText, javax.swing.GroupLayout.DEFAULT_SIZE, 392, Short.MAX_VALUE)
+                            .addComponent(mdbCombo, javax.swing.GroupLayout.Alignment.TRAILING, 0, 392, Short.MAX_VALUE)
+                            .addComponent(serverDestinationsCombo, javax.swing.GroupLayout.Alignment.TRAILING, 0, 392, Short.MAX_VALUE)
+                            .addComponent(projectDestinationsCombo, javax.swing.GroupLayout.Alignment.TRAILING, 0, 392, Short.MAX_VALUE)
+                            .addComponent(connectionFactoryTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 392, Short.MAX_VALUE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(addButton)
                         .addContainerGap())
-                    .addComponent(jLabel1)))
+                    .addComponent(jLabel1)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(warningLabel)
+                        .addContainerGap(643, Short.MAX_VALUE))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -434,7 +443,8 @@ public class SendJmsMessagePanel extends javax.swing.JPanel {
                     .addComponent(connectionFactoryTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(serviceLocatorPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 24, Short.MAX_VALUE)
+                .addComponent(warningLabel))
         );
 
         projectDestinationsRadio.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SendJmsMessagePanel.class, "ACSD_JMSProjectDestination")); // NOI18N
@@ -469,6 +479,7 @@ public class SendJmsMessagePanel extends javax.swing.JPanel {
     private javax.swing.JComboBox serverDestinationsCombo;
     private javax.swing.JRadioButton serverDestinationsRadio;
     private javax.swing.JPanel serviceLocatorPanel;
+    private javax.swing.JLabel warningLabel;
     // End of variables declaration//GEN-END:variables
     
 }

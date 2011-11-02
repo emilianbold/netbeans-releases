@@ -64,6 +64,7 @@ import org.netbeans.api.extexecution.input.InputReaderTask;
 import org.netbeans.api.extexecution.input.InputReaders;
 import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
+import org.netbeans.modules.j2ee.deployment.profiler.api.ProfilerSupport;
 import org.openide.windows.InputOutput;
 
 /**
@@ -80,6 +81,8 @@ public final class JBOutputSupport {
     private static final Map<InstanceProperties, JBOutputSupport> INSTANCE_CACHE
             = new HashMap<InstanceProperties, JBOutputSupport>();
 
+    private static final ExecutorService PROFILER_SERVICE = Executors.newCachedThreadPool();
+
     private static final ExecutorService LOG_FILE_SERVICE = Executors.newCachedThreadPool();
 
     private final InstanceProperties props;
@@ -92,6 +95,9 @@ public final class JBOutputSupport {
 
     /** GuardedBy("this") */
     private Future<Integer> processTask;
+
+    /** GuardedBy("this") */
+    private Future<?> profileCheckTask;
 
     /** GuardedBy("this") */
     private InputReaderTask fileTask;
@@ -109,7 +115,7 @@ public final class JBOutputSupport {
         return instance;
     }
 
-    public void start(InputOutput io, final Process serverProcess) {
+    public void start(InputOutput io, final Process serverProcess, final boolean profiler) {
         reset();
 
         ExecutionDescriptor descriptor = DESCRIPTOR.inputOutput(io);
@@ -117,9 +123,17 @@ public final class JBOutputSupport {
 
             @Override
             public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
-                return InputProcessors.proxy(defaultProcessor, InputProcessors.bridge(new StartLineProcessor()));
+                return InputProcessors.proxy(defaultProcessor, InputProcessors.bridge(new StartLineProcessor(profiler)));
             }
         });
+        descriptor = descriptor.errProcessorFactory(new ExecutionDescriptor.InputProcessorFactory() {
+
+            @Override
+            public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
+                return InputProcessors.proxy(defaultProcessor, InputProcessors.bridge(new StartLineProcessor(profiler)));
+            }
+        });
+
         descriptor = descriptor.postExecution(new Runnable() {
 
             @Override
@@ -127,7 +141,7 @@ public final class JBOutputSupport {
                 synchronized (JBOutputSupport.class) {
                     INSTANCE_CACHE.remove(JBOutputSupport.this.props);
                 }
-                
+
             }
         });
 
@@ -139,7 +153,12 @@ public final class JBOutputSupport {
             }
         }, descriptor, props.getProperty(InstanceProperties.DISPLAY_NAME_ATTR));
         Future<Integer> localProcessTask = service.run();
+
         synchronized (this) {
+            if (profiler) {
+                profileCheckTask = PROFILER_SERVICE.submit(new ProfilerCheckTask());
+            }
+
             processTask = localProcessTask;
         }
     }
@@ -164,10 +183,14 @@ public final class JBOutputSupport {
                 } else if (fileTask != null) {
                     fileTask.cancel();
                 }
+                if (profileCheckTask != null) {
+                    profileCheckTask.cancel(true);
+                }
 
                 started = false;
                 failed = false;
                 processTask = null;
+                profileCheckTask = null;
                 fileTask = null;
             }
         } finally {
@@ -194,6 +217,11 @@ public final class JBOutputSupport {
                 return true;
             } else if (failed) {
                 return false;
+            }
+
+            // timeouted block
+            if (profileCheckTask != null) {
+                profileCheckTask.cancel(true);
             }
             throw new TimeoutException("Expired timeout " + timeout + " ms"); // NOI18N
         }
@@ -223,19 +251,59 @@ public final class JBOutputSupport {
             started = false;
             failed = false;
             processTask = null;
+            profileCheckTask = null;
             fileTask = null;
         }
     }
 
+    private static boolean isProfilerReady() {
+        int state = ProfilerSupport.getState();
+        return state == ProfilerSupport.STATE_BLOCKING || state == ProfilerSupport.STATE_RUNNING
+                || state == ProfilerSupport.STATE_PROFILING;
+    }
+
+    private static boolean isProfilerInactive() {
+        return ProfilerSupport.getState() == ProfilerSupport.STATE_INACTIVE;
+    }
+
     private class StartLineProcessor implements LineProcessor {
 
+        private final boolean profiler;
+
         private boolean check = true;
+
+        public StartLineProcessor(boolean profiler) {
+            this.profiler = profiler;
+        }
 
         @Override
         public void processLine(String line) {
             if (!check) {
                 return;
             }
+            synchronized (JBOutputSupport.this) {
+                if (started) {
+                   check = false;
+                   return;
+                }
+            }
+
+            if (profiler) {
+                if (isProfilerReady()) {
+                    synchronized (JBOutputSupport.this) {
+                        started = true;
+                        JBOutputSupport.this.notifyAll();
+                    }
+                    check = false;
+                } else if (isProfilerInactive()) {
+                    synchronized (JBOutputSupport.this) {
+                        failed = true;
+                        JBOutputSupport.this.notifyAll();
+                    }
+                    check = false;
+                }
+            }
+
             if (line.indexOf("Starting JBoss (MX MicroKernel)") > -1 // JBoss 4.x message // NOI18N
                     || line.indexOf("Starting JBoss (Microcontainer)") > -1 // JBoss 5.0 message // NOI18N
                     || line.indexOf("Starting JBossAS") > -1) { // JBoss 6.0 message // NOI18N
@@ -270,5 +338,34 @@ public final class JBOutputSupport {
         public void close() {
             // noop
         }
+    }
+
+    private class ProfilerCheckTask implements Runnable {
+
+        @Override
+        public void run() {
+            for (;;) {
+                if (isProfilerReady()) {
+                    synchronized (JBOutputSupport.this) {
+                        started = true;
+                        JBOutputSupport.this.notifyAll();
+                    }
+                    break;
+                } else if (isProfilerInactive()) {
+                    synchronized (JBOutputSupport.this) {
+                        failed = true;
+                        JBOutputSupport.this.notifyAll();
+                    }
+                    break;
+                }
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException ex) {
+                    LOGGER.log(Level.INFO, null, ex);
+                    break;
+                }
+            }
+        }
+
     }
 }

@@ -306,7 +306,7 @@ public abstract class ArtifactCopyOnSaveSupport implements FileChangeSupportList
         synchronized (this) {
             sourceFile = FileUtil.normalizeFile(event.getPath());
             desc = listeningTo.get(event.getPath());
-            if (desc.getPathInDeployment() == null) {
+            if (desc == null || desc.getPathInDeployment() == null) {
                 return;
             }
         }

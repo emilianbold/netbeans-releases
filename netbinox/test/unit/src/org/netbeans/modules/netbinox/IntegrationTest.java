@@ -42,6 +42,7 @@
 package org.netbeans.modules.netbinox;
 
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.logging.Level;
 import junit.framework.Test;
@@ -102,11 +103,7 @@ public class IntegrationTest extends NbTestCase {
 
         assertTrue("OSGi module is now enabled", m1.isEnabled());
         mgr.mutexPrivileged().exitWriteAccess();
-
-        Object obj = Lookup.getDefault().lookup(NetigsoFramework.class);
-        final Method m = obj.getClass().getDeclaredMethod("getFramework");
-        m.setAccessible(true);
-        Framework w = (Framework) m.invoke(obj);
+        Framework w = findFramework();
         assertNotNull("Framework found", w);
         assertEquals("Felix is not in its name", -1, w.getClass().getName().indexOf("felix"));
         StringBuilder sb = new StringBuilder();
@@ -117,5 +114,13 @@ public class IntegrationTest extends NbTestCase {
             }
         }
         fail("Expecting equinox among list of enabled bundles:" + sb);
+    }
+
+    static Framework findFramework() throws Exception {
+        Object obj = Lookup.getDefault().lookup(NetigsoFramework.class);
+        final Method m = obj.getClass().getDeclaredMethod("getFramework");
+        m.setAccessible(true);
+        Framework w = (Framework) m.invoke(obj);
+        return w;
     }
 }

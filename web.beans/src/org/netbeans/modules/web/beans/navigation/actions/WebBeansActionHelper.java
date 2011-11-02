@@ -169,6 +169,17 @@ public class WebBeansActionHelper {
         }
         final FileObject fileObject = NbEditorUtilities.getFileObject( 
                 EditorRegistry.lastFocusedComponent().getDocument());
+        return isEnabled( fileObject );
+        /*WebModule webModule = WebModule.getWebModule(fileObject);
+        if ( webModule == null ){
+            return false;
+        }
+        Profile profile = webModule.getJ2eeProfile();
+        return Profile.JAVA_EE_6_WEB.equals( profile) || 
+            Profile.JAVA_EE_6_FULL.equals( profile );*/
+    }
+    
+    public static boolean isEnabled(FileObject fileObject){
         if ( fileObject == null ){
             return false;
         }
@@ -184,13 +195,6 @@ public class WebBeansActionHelper {
             return false;
         }
         return true;
-        /*WebModule webModule = WebModule.getWebModule(fileObject);
-        if ( webModule == null ){
-            return false;
-        }
-        Profile profile = webModule.getJ2eeProfile();
-        return Profile.JAVA_EE_6_WEB.equals( profile) || 
-            Profile.JAVA_EE_6_FULL.equals( profile );*/
     }
     
     public static boolean hasJsr330( Project project ){

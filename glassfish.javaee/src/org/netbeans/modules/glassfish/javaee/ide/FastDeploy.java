@@ -474,7 +474,12 @@ public class FastDeploy extends IncrementalDeployment implements IncrementalDepl
      */
     @Override
     public File getDirectoryForModule(TargetModuleID targetModuleID) {
-        return new File(((Hk2TargetModuleID) targetModuleID).getLocation());
+        File retVal = new File(((Hk2TargetModuleID) targetModuleID).getLocation());
+        if (null != retVal && retVal.getPath().contains("${")) {
+            throw new IllegalStateException(NbBundle.getMessage(FastDeploy.class,
+                    "ERR_UndeployAndRedeploy"));
+        }
+        return retVal;
     }
 
     @Override

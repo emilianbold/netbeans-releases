@@ -48,6 +48,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
+import javax.swing.Action;
 import org.netbeans.modules.subversion.FileInformation;
 import org.netbeans.modules.subversion.OutputLogger;
 import org.netbeans.modules.subversion.Subversion;
@@ -59,7 +60,10 @@ import org.netbeans.modules.subversion.ui.diff.Setup;
 import org.netbeans.modules.subversion.ui.update.RevertModificationsAction;
 import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.util.SvnUtils;
+import org.netbeans.modules.versioning.shelve.ShelveChangesActionsRegistry;
+import org.netbeans.modules.versioning.shelve.ShelveChangesActionsRegistry.ShelveChangesActionProvider;
 import org.netbeans.modules.versioning.shelve.ShelveChangesSupport;
+import org.netbeans.modules.versioning.util.Utils;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionRegistration;
 import org.openide.nodes.Node;
@@ -84,6 +88,7 @@ public class ShelveChangesAction extends ContextAction {
             FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY |
             FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY |
             FileInformation.STATUS_VERSIONED_ADDEDLOCALLY;
+    private static ShelveChangesActionProvider ACTION_PROVIDER;
     
     @Override
     public boolean enable(Node[] nodes) {
@@ -186,4 +191,18 @@ public class ShelveChangesAction extends ContextAction {
             support.start(rp, repositoryUrl, NbBundle.getMessage(ShelveChangesAction.class, "LBL_ShelveChanges_Progress")); //NOI18N
         }
     };
+
+    public static ShelveChangesActionsRegistry.ShelveChangesActionProvider getProvider () {
+        if (ACTION_PROVIDER == null) {
+            ACTION_PROVIDER = new ShelveChangesActionsRegistry.ShelveChangesActionProvider() {
+                @Override
+                public Action getAction () {
+                    Action a = SystemAction.get(ShelveChangesAction.class);
+                    Utils.setAcceleratorBindings("Actions/Subversion", a); //NOI18N
+                    return a;
+                }
+            };
+        };
+        return ACTION_PROVIDER;
+    }
 }

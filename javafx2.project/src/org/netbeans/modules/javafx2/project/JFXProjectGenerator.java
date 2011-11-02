@@ -101,6 +101,11 @@ import org.w3c.dom.NodeList;
  */
 public class JFXProjectGenerator {
 
+    static final String METRICS_LOGGER = "org.netbeans.ui.metrics.jfx"; //NOI18N
+    static final String PROJECT_CREATE = "USG_PROJECT_CREATE_JFX";      //NOI18N
+    static final String PROJECT_OPEN = "USG_PROJECT_OPEN_JFX";          //NOI18N
+    static final String PROJECT_CLOSE = "USG_PROJECT_CLOSE_JFX";        //NOI18N
+
     private JFXProjectGenerator() {
     }
 
@@ -124,7 +129,9 @@ public class JFXProjectGenerator {
         dirFO.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
             @Override
             public void run() throws IOException {
-                h[0] = createProject(dirFO, name, "src", "test", mainClass, manifestFile, //NOI18N
+//                h[0] = createProject(dirFO, name, "src", "test", mainClass, manifestFile, //NOI18N
+//                        librariesDefinition, platformName, preloader, type);
+                h[0] = createProject(dirFO, name, "src", null, mainClass, manifestFile, //NOI18N
                         librariesDefinition, platformName, preloader, type);
                 final Project p = ProjectManager.getDefault().findProject(dirFO);
                 createJfxExtension(p, dirFO);
@@ -142,7 +149,7 @@ public class JFXProjectGenerator {
                     Exceptions.printStackTrace(ex.getException());
                 }
                 FileObject srcFolder = dirFO.createFolder("src"); // NOI18N
-                dirFO.createFolder("test"); // NOI18N
+//                dirFO.createFolder("test"); // NOI18N
                 createFiles(mainClass, srcFolder, type);
             }
         });
@@ -158,7 +165,7 @@ public class JFXProjectGenerator {
         }
     }
 
-    public static AntProjectHelper createProject(final File dir, final String name,
+    static AntProjectHelper createProject(final File dir, final String name,
             final File[] sourceFolders, final File[] testFolders,
             final String manifestFile, final String librariesDefinition,
             final String buildXmlName, final String platformName,
@@ -272,7 +279,10 @@ public class JFXProjectGenerator {
         dirFO.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
             @Override
             public void run() throws IOException {
-                h[0] = createProject(dirFO, name, "src", "test", preloaderClassName, // NOI18N
+//                h[0] = createProject(dirFO, name, "src", "test", preloaderClassName, // NOI18N
+//                        JavaFXProjectWizardIterator.MANIFEST_FILE, librariesDefinition,
+//                        platformName, null, WizardType.PRELOADER);
+                h[0] = createProject(dirFO, name, "src", null, preloaderClassName, // NOI18N
                         JavaFXProjectWizardIterator.MANIFEST_FILE, librariesDefinition,
                         platformName, null, WizardType.PRELOADER);
                 
@@ -293,7 +303,7 @@ public class JFXProjectGenerator {
                 }
                 
                 FileObject srcFolder = dirFO.createFolder("src"); // NOI18N
-                dirFO.createFolder("test"); // NOI18N
+//                dirFO.createFolder("test"); // NOI18N
                 createPreloaderClass(preloaderClassName, srcFolder);
             }
         });
@@ -373,6 +383,7 @@ public class JFXProjectGenerator {
         ep.setProperty(ProjectProperties.COMPILE_ON_SAVE, "true"); // NOI18N
         ep.setProperty(ProjectProperties.COMPILE_ON_SAVE_UNSUPPORTED_PREFIX + ".javafx", "true"); // NOI18N
         ep.setProperty(JFXProjectProperties.JAVAFX_BINARY_ENCODE_CSS, "true"); // NOI18N
+        ep.setProperty(JFXProjectProperties.JAVAFX_DEPLOY_INCLUDEDT, "true"); // NOI18N
         
         ep.setProperty(JFXProjectProperties.UPDATE_MODE_BACKGROUND, "true"); // NOI18N
         ep.setComment(JFXProjectProperties.UPDATE_MODE_BACKGROUND, new String[]{"# " + NbBundle.getMessage(JFXProjectGenerator.class, "COMMENT_updatemode")}, false); // NOI18N
@@ -423,6 +434,12 @@ public class JFXProjectGenerator {
                 ep.setProperty(JFXProjectProperties.PRELOADER_CLASS, ""); // NOI18N
                 ep.setProperty(JFXProjectProperties.PRELOADER_JAR_PATH, ""); // NOI18N
                 ep.setProperty(JFXProjectProperties.PRELOADER_JAR_FILENAME, ""); // NOI18N
+            }
+            
+            if (type == WizardType.FXML) {
+                // Workaround of JavaFX 2.0 issue causing FXML apps crash when signing is disabled
+                ep.setProperty(JFXProjectProperties.JAVAFX_SIGNING_ENABLED, "true"); // NOI18N
+                ep.setProperty(JFXProjectProperties.JAVAFX_SIGNING_TYPE, JFXProjectProperties.SigningType.SELF.getString());
             }
         }
 
@@ -520,15 +537,17 @@ public class JFXProjectGenerator {
         logUsage();
         return h;
     }
-    private static final String loggerName = "org.netbeans.ui.metrics.j2se"; // NOI18N
-    private static final String loggerKey = "USG_PROJECT_CREATE_J2SE"; // NOI18N
 
-    // http://wiki.netbeans.org/UsageLoggingSpecification
+    /**
+     * Logs project specific usage.
+     * See: http://wiki.netbeans.org/UsageLoggingSpecification
+     * Todo: Should log also J2SE project usage? The JFX project is de facto J2SE project,
+     * most of this class should be replaced by J2SEProjectBuider.
+     */
     private static void logUsage() {
-        LogRecord logRecord = new LogRecord(Level.INFO, loggerKey);
-        logRecord.setLoggerName(loggerName);
-        //logRecord.setParameters(new Object[] {""}); // NOI18N
-        Logger.getLogger(loggerName).log(logRecord);
+        final LogRecord logRecord = new LogRecord(Level.INFO, PROJECT_CREATE);
+        logRecord.setLoggerName(METRICS_LOGGER);
+        Logger.getLogger(METRICS_LOGGER).log(logRecord);
     }
 
     private static void copyRequiredLibraries(AntProjectHelper h, ReferenceHelper rh) throws IOException {

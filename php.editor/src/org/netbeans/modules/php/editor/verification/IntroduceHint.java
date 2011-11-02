@@ -98,7 +98,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 
 /**
  * @author Radek Matous
@@ -111,13 +111,15 @@ public class IntroduceHint extends AbstractRule {
     }
 
     @Override
+    @Messages("IntroduceHintDesc=Introduce Hint")
     public String getDescription() {
-        return NbBundle.getMessage(IntroduceHint.class, "IntroduceHintDesc");//NOI18N
+        return Bundle.IntroduceHintDesc();
     }
 
     @Override
+    @Messages("IntroduceHintDispName=Introduce Hint")
     public String getDisplayName() {
-        return NbBundle.getMessage(IntroduceHint.class, "IntroduceHintDispName");//NOI18N
+        return Bundle.IntroduceHintDispName();
     }
 
     @Override
@@ -417,6 +419,7 @@ public class IntroduceHint extends AbstractRule {
         }
 
         @Override
+        @Messages("IntroduceHintClassDesc=Create Class \"{0}\" in {1}")
         public String getDescription() {
             String fileName = FileUtil.getFileDisplayName(folder);
             int length = fileName.length();
@@ -428,8 +431,7 @@ public class IntroduceHint extends AbstractRule {
                 }
                 fileName = String.format("...%s/%s.php", fileName, clsName);//NOI18N
             }
-            return NbBundle.getMessage(IntroduceHint.class, "IntroduceHintClassDesc",
-                    clsName, fileName);//NOI18N
+            return Bundle.IntroduceHintClassDesc(clsName, fileName);
         }
     }
 
@@ -455,11 +457,11 @@ public class IntroduceHint extends AbstractRule {
         }
 
         @Override
+        @Messages("IntroduceHintMethodDesc=Create Method \"{0}\" in Class \"{1}\" ({2})")
         public String getDescription() {
             String clsName = type.getName();
             String fileName = type.getFileObject().getNameExt();
-            return NbBundle.getMessage(IntroduceHint.class, "IntroduceHintMethodDesc",
-                    item.getMethod().asString(PrintAs.NameAndParamsDeclaration), clsName, fileName);//NOI18N
+            return Bundle.IntroduceHintMethodDesc(item.getMethod().asString(PrintAs.NameAndParamsDeclaration), clsName, fileName);
 
         }
 
@@ -490,11 +492,11 @@ public class IntroduceHint extends AbstractRule {
         }
 
         @Override
+        @Messages("IntroduceHintStaticMethodDesc=Create Method \"{0}\" in Class \"{1}\" ({2})")
         public String getDescription() {
             String clsName = type.getName();
             String fileName = type.getFileObject().getNameExt();
-            return NbBundle.getMessage(IntroduceHint.class, "IntroduceHintStaticMethodDesc",
-                    item.getMethod().asString(PrintAs.NameAndParamsDeclaration), clsName, fileName);//NOI18N
+            return Bundle.IntroduceHintStaticMethodDesc(item.getMethod().asString(PrintAs.NameAndParamsDeclaration), clsName, fileName);
         }
 
         int getOffset() throws BadLocationException {
@@ -525,11 +527,11 @@ public class IntroduceHint extends AbstractRule {
         }
 
         @Override
+        @Messages("IntroduceHintFieldDesc=Create Field \"{0}\" in Class \"{1}\" ({2})")
         public String getDescription() {
             String clsName = clz.getName();
             String fileName = clz.getFileObject().getNameExt();
-            return NbBundle.getMessage(IntroduceHint.class, "IntroduceHintFieldDesc",
-                    templ, clsName, fileName);//NOI18N
+            return Bundle.IntroduceHintFieldDesc(templ, clsName, fileName);
         }
 
         int getOffset() throws BadLocationException {
@@ -569,11 +571,11 @@ public class IntroduceHint extends AbstractRule {
         }
 
         @Override
+        @Messages("IntroduceHintStaticFieldDesc=Create Field \"{0}\" in Class \"{1}\" ({2})")
         public String getDescription() {
             String clsName = clz.getName();
             String fileName = clz.getFileObject().getNameExt();
-            return NbBundle.getMessage(IntroduceHint.class, "IntroduceHintStaticFieldDesc",
-                    fieldName, clsName, fileName);//NOI18N
+            return Bundle.IntroduceHintStaticFieldDesc(fieldName, clsName, fileName);
 
         }
 
@@ -615,11 +617,11 @@ public class IntroduceHint extends AbstractRule {
         }
 
         @Override
+        @Messages("IntroduceHintClassConstDesc=Create Constant \"{0}\" in Class \"{1}\" ({2})")
         public String getDescription() {
             String clsName = type.getName();
             String fileName = type.getFileObject().getNameExt();
-            return NbBundle.getMessage(IntroduceHint.class, "IntroduceHintClassConstDesc",
-                    constantName, clsName, fileName);//NOI18N
+            return Bundle.IntroduceHintClassConstDesc(constantName, clsName, fileName);
         }
 
         int getOffset() throws BadLocationException {

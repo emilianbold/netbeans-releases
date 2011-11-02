@@ -108,7 +108,7 @@ public class POMDataObject extends MultiDataObject {
         displayName="#CTL_SourceTabCaption",
         iconBase="org/netbeans/modules/xml/resources/xmlObject.gif",
         persistenceType=TopComponent.PERSISTENCE_ONLY_OPENED,
-        preferredID="maven.settings",
+        preferredID="xml.text",
         mimeType=SETTINGS_MIME_TYPE,
         position=1
     )

@@ -43,15 +43,20 @@
 package org.netbeans.modules.php.api.util;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParserFactory;
 import org.openide.filesystems.FileObject;
@@ -69,12 +74,8 @@ import org.xml.sax.XMLReader;
  * @author Tomas Mysik
  */
 public final class FileUtils {
+
     private static final Logger LOGGER = Logger.getLogger(FileUtils.class.getName());
-
-    private static final boolean IS_UNIX = Utilities.isUnix();
-    private static final boolean IS_MAC = Utilities.isMac();
-    private static final boolean IS_WINDOWS = Utilities.isWindows();
-
 
     /**
      * Constant for PHP MIME type.
@@ -82,6 +83,21 @@ public final class FileUtils {
      * @see #isPhpFile(FileObject)
      */
     public static final String  PHP_MIME_TYPE = "text/x-php5"; // NOI18N
+
+    private static final boolean IS_UNIX = Utilities.isUnix();
+    private static final boolean IS_MAC = Utilities.isMac();
+    private static final boolean IS_WINDOWS = Utilities.isWindows();
+    private static final ZipEntryFilter DUMMY_ZIP_ENTRY_FILTER = new ZipEntryFilter() {
+        @Override
+        public boolean accept(ZipEntry zipEntry) {
+            return true;
+        }
+        @Override
+        public String getName(ZipEntry zipEntry) {
+            return zipEntry.getName();
+        }
+    };
+
 
     private FileUtils() {
     }
@@ -94,7 +110,7 @@ public final class FileUtils {
      * @see #PHP_MIME_TYPE
      */
     public static boolean isPhpFile(FileObject file) {
-        Parameters.notNull("file", file);
+        Parameters.notNull("file", file); // NOI18N
         return PHP_MIME_TYPE.equals(FileUtil.getMIMEType(file, PHP_MIME_TYPE));
     }
 
@@ -120,7 +136,7 @@ public final class FileUtils {
      * @since 1.33
      */
     public static List<String> findFileOnUsersPath(String... filename) {
-        Parameters.notNull("filename", filename);
+        Parameters.notNull("filename", filename); // NOI18N
 
         String path = System.getenv("PATH"); // NOI18N
         LOGGER.log(Level.FINE, "PATH: [{0}]", path);
@@ -212,12 +228,17 @@ public final class FileUtils {
      * <p>
      * A valid script means that the <tt>filePath</tt> represents a valid, readable file
      * with absolute file path.
+     * <p>
+     * <b>This method will be removed after 7.1!</b>
      * @param filePath a file path to validate
      * @param scriptName the display name of the script
      * @return {@code null} if it is valid, otherwise an error
-     * @see #validateDirectory(String)
+     * @see #validateFile(java.lang.String, boolean)
+     * @see #validateDirectory(String, boolean)
      * @since 1.35
+     * @deprecated use {@link #validateFile(String, boolean)} instead
      */
+    @Deprecated
     public static String validateScript(String filePath, String scriptName) {
         if (!StringUtils.hasText(filePath)) {
             return NbBundle.getMessage(FileUtils.class, "MSG_NoScript", scriptName);
@@ -237,17 +258,66 @@ public final class FileUtils {
     }
 
     /**
+     * Validate a file path and return {@code null} if it is valid, otherwise an error.
+     * <p>
+     * A valid file means that the <tt>filePath</tt> represents a valid, readable file
+     * with absolute file path.
+     * @param filePath a file path to validate
+     * @param writable {@code true} if the file must be writable, {@code false} otherwise
+     * @return {@code null} if it is valid, otherwise an error
+     * @see #validateDirectory(String, boolean)
+     * @since 1.53
+     */
+    public static String validateFile(String filePath, boolean writable) {
+        if (!StringUtils.hasText(filePath)) {
+            return NbBundle.getMessage(FileUtils.class, "MSG_FileEmpty");
+        }
+
+        File file = new File(filePath);
+        if (!file.isAbsolute()) {
+            return NbBundle.getMessage(FileUtils.class, "MSG_FileNotAbsolute");
+        } else if (!file.isFile()) {
+            return NbBundle.getMessage(FileUtils.class, "MSG_NotFile");
+        } else if (!file.canRead()) {
+            return NbBundle.getMessage(FileUtils.class, "MSG_FileCannotRead");
+        } else if (writable && !file.canWrite()) {
+            return NbBundle.getMessage(FileUtils.class, "MSG_FileNotWritable");
+        }
+        return null;
+    }
+
+    /**
      * Validate a directory path and return {@code null} if it is valid, otherwise an error.
      * <p>
-     * A valid directory means that the <tt>dirPath</tt> represents a valid, writable directory
-     * with absolute file path.
+     * A valid directory means that the <tt>dirPath</tt> represents an existing, readable,
+     * writable directory with absolute file path.
+     * <p>
+     * <b>This method will be removed after 7.1!</b>
      * @param dirPath a file path to validate
      * @return {@code null} if it is valid, otherwise an error
      * @see #validateScript(String, String)
      * @see #isDirectoryWritable(File)
      * @since 1.35
+     * @deprecated use {@link #validateDirectory(String, boolean)} instead
      */
+    @Deprecated
     public static String validateDirectory(String dirPath) {
+        return validateDirectory(dirPath, true);
+    }
+
+    /**
+     * Validate a directory path and return {@code null} if it is valid, otherwise an error.
+     * <p>
+     * A valid directory means that the <tt>dirPath</tt> represents an existing, readable, optionally
+     * writable directory with absolute file path.
+     * @param dirPath a file path to validate
+     * @param writable {@code true} if the directory must be writable, {@code false} otherwise
+     * @return {@code null} if it is valid, otherwise an error
+     * @see #validateScript(String, String)
+     * @see #isDirectoryWritable(File)
+     * @since 1.53
+     */
+    public static String validateDirectory(String dirPath, boolean writable) {
         if (!StringUtils.hasText(dirPath)) {
             return NbBundle.getMessage(FileUtils.class, "MSG_DirEmpty");
         }
@@ -257,7 +327,9 @@ public final class FileUtils {
             return NbBundle.getMessage(FileUtils.class, "MSG_DirNotAbsolute");
         } else if (!dir.isDirectory()) {
             return NbBundle.getMessage(FileUtils.class, "MSG_NotDir");
-        } else if (!isDirectoryWritable(dir)) {
+        } else if (!dir.canRead()) {
+            return NbBundle.getMessage(FileUtils.class, "MSG_DirNotReadable");
+        } else if (writable && !isDirectoryWritable(dir)) {
             return NbBundle.getMessage(FileUtils.class, "MSG_DirNotWritable");
         }
         return null;
@@ -312,7 +384,7 @@ public final class FileUtils {
      * @since 1.46
      */
     public static boolean isDirectoryLink(File directory) {
-        Parameters.notNull("directory", directory);
+        Parameters.notNull("directory", directory); // NOI18N
         if (!IS_UNIX && !IS_MAC) {
             return false;
         }
@@ -328,6 +400,96 @@ public final class FileUtils {
         final String dirPath = directory.getAbsolutePath();
         final String canDirPath = canDirectory.getAbsolutePath();
         return IS_MAC ? !dirPath.equalsIgnoreCase(canDirPath) : !dirPath.equals(canDirPath);
+    }
+
+    /**
+     * Recursively unzip the given ZIP archive to the given target directory.
+     * @param zipPath path of ZIP archive to be extracted
+     * @param targetDirectory target directory
+     * @param zipEntryFilter {@link ZipEntryFilter}, can be {@code null} (in such case, all entries are accepted with their original names)
+     * @throws IOException if any error occurs
+     * @since 1.53
+     */
+    public static void unzip(String zipPath, File targetDirectory, ZipEntryFilter zipEntryFilter) throws IOException {
+        Parameters.notEmpty("zipPath", zipPath); // NOI18N
+        Parameters.notNull("targetDirectory", targetDirectory); // NOI18N
+
+        if (zipEntryFilter == null) {
+            zipEntryFilter = DUMMY_ZIP_ENTRY_FILTER;
+        }
+        ZipFile zipFile = new ZipFile(zipPath);
+        try {
+            Enumeration<? extends ZipEntry> entries = zipFile.entries();
+            while (entries.hasMoreElements()) {
+                ZipEntry zipEntry = entries.nextElement();
+                if (!zipEntryFilter.accept(zipEntry)) {
+                    continue;
+                }
+                File destinationFile = new File(targetDirectory, zipEntryFilter.getName(zipEntry));
+                ensureParentExists(destinationFile);
+                copyZipEntry(zipFile, zipEntry, destinationFile);
+            }
+        } finally {
+            zipFile.close();
+        }
+    }
+
+    private static void ensureParentExists(File file) throws IOException {
+        File parent = file.getParentFile();
+        if (!parent.isDirectory()) {
+            if (!parent.mkdirs()) {
+                throw new IOException("Cannot create parent directories for " + file.getAbsolutePath());
+            }
+        }
+    }
+
+    private static void copyZipEntry(ZipFile zipFile, ZipEntry zipEntry, File destinationFile) throws IOException {
+        if (zipEntry.isDirectory()) {
+            return;
+        }
+        InputStream inputStream = zipFile.getInputStream(zipEntry);
+        try {
+            FileOutputStream outputStream = new FileOutputStream(destinationFile);
+            try {
+                FileUtil.copy(inputStream, outputStream);
+            } finally {
+                outputStream.close();
+            }
+        } finally {
+            inputStream.close();
+        }
+    }
+
+    //~ Inner classes
+
+    /**
+     * Filter for {@link ZipEntry}s.
+     * <p>
+     * Instances of this interface may be passed to the {@link #unzip(String, File, ZipEntryFilter)}code> method.
+     * @see #unzip(String, File, ZipEntryFilter)
+     * @since 1.53
+     */
+    public interface ZipEntryFilter {
+
+        /**
+         * Test whether or not the specified {@link ZipEntry} should be
+         * included in a list.
+         *
+         * @param zipEntry the {@link ZipEntry} to be tested
+         * @return {@ code true} if {@link ZipEntry} should be included, {@code false} otherwise
+         */
+        boolean accept(ZipEntry zipEntry);
+
+        /**
+         * Get the name of the specified {@link ZipEntry}; in other words, this method allows
+         * to rename the specified {@link ZipEntry}.
+         * <p>
+         * Typical implementation simply returns {@link ZipEntry#getName() original name}.
+         * @param zipEntry the {@link ZipEntry} to be got name of
+         * @return the name of the specified {@link ZipEntry}
+         */
+        String getName(ZipEntry zipEntry);
+
     }
 
 }
