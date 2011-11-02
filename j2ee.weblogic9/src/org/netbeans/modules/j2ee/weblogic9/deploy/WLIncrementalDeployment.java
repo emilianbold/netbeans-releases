@@ -289,9 +289,9 @@ public class WLIncrementalDeployment extends IncrementalDeployment implements In
                         Thread.sleep(FAST_SWAP_POLLING);
                         str = (String) connection.getAttribute(redef, "Status"); // NOI18N
                     }
-                    
+
+                    Integer candidates = (Integer) connection.getAttribute(redef, "CandidateClassesCount"); // NOI18N
                     if (LOGGER.isLoggable(Level.FINE)) {
-                        Integer candidates = (Integer) connection.getAttribute(redef, "CandidateClassesCount"); // NOI18N
                         Integer processed = (Integer) connection.getAttribute(redef, "ProcessedClassesCount"); // NOI18N
                         LOGGER.log(Level.FINE, "Processed {0} from {1} candidate classes", // NOI18N
                                 new Object[] {processed, candidates});
@@ -302,7 +302,8 @@ public class WLIncrementalDeployment extends IncrementalDeployment implements In
                         return false;
                     }
 
-                    if (!("FINISHED".equals(str))) { // NOI18N
+                    if (!("FINISHED".equals(str)) // NOI18N
+                            || (candidates != null && candidates.intValue() == 0)) {
                         return false;
                     }
                     return true;
