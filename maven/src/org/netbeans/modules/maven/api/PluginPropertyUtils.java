@@ -60,6 +60,7 @@ import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.embedder.NBPluginParameterExpressionEvaluator;
 import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluationException;
+import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluator;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
@@ -94,7 +95,7 @@ public class PluginPropertyUtils {
     public static @CheckForNull String getPluginProperty(@NonNull Project prj, @NonNull String groupId, @NonNull String artifactId, @NonNull String property, @NullAllowed String goal) {
         NbMavenProjectImpl project = prj.getLookup().lookup(NbMavenProjectImpl.class);
         assert project != null : "Requires a maven project instance"; //NOI18N
-        return getPluginPropertyImpl(project.getOriginalMavenProject(), createEvaluator(project), groupId, artifactId, property, goal);
+        return getPluginPropertyImpl(project.getOriginalMavenProject(), createEvaluatorFromSourceProject(project), groupId, artifactId, property, goal);
     }
 
     /**
@@ -105,7 +106,7 @@ public class PluginPropertyUtils {
         return getPluginPropertyImpl(prj, createEvaluator(prj), groupId, artifactId, property, goal);
     }
 
-    private static @CheckForNull String getPluginPropertyImpl(@NonNull MavenProject prj, @NonNull NBPluginParameterExpressionEvaluator eval, @NonNull String groupId, @NonNull String artifactId, @NonNull String property, @NullAllowed String goal) {
+    private static @CheckForNull String getPluginPropertyImpl(@NonNull MavenProject prj, @NonNull ExpressionEvaluator eval, @NonNull String groupId, @NonNull String artifactId, @NonNull String property, @NullAllowed String goal) {
         String toRet = null;
         if (prj.getBuildPlugins() == null) {
             return toRet;
@@ -148,7 +149,7 @@ public class PluginPropertyUtils {
     public static @CheckForNull String getReportPluginProperty(@NonNull Project prj, @NonNull String groupId, @NonNull String artifactId, @NonNull String property, @NullAllowed String report) {
         NbMavenProjectImpl project = prj.getLookup().lookup(NbMavenProjectImpl.class);
         assert project != null : "Requires a maven project instance"; //NOI18N
-        return getReportPluginPropertyImpl(project.getOriginalMavenProject(), createEvaluator(project), groupId, artifactId, property, report);
+        return getReportPluginPropertyImpl(project.getOriginalMavenProject(), createEvaluatorFromSourceProject(project), groupId, artifactId, property, report);
     }
 
     /**
@@ -159,10 +160,9 @@ public class PluginPropertyUtils {
         return getReportPluginPropertyImpl(prj, createEvaluator(prj), groupId, artifactId, property, report);
     }
 
-    @SuppressWarnings("deprecation")
-    private static @CheckForNull String getReportPluginPropertyImpl(@NonNull MavenProject prj, @NonNull NBPluginParameterExpressionEvaluator eval, @NonNull String groupId, @NonNull String artifactId, @NonNull String property, @NullAllowed String report) {
+    private static @CheckForNull String getReportPluginPropertyImpl(@NonNull MavenProject prj, @NonNull ExpressionEvaluator eval, @NonNull String groupId, @NonNull String artifactId, @NonNull String property, @NullAllowed String report) {
         String toRet = null;
-        for (ReportPlugin plug : prj.getReportPlugins()) {
+        for (ReportPlugin plug : getEffectiveReportPlugins(prj)) {
             if (artifactId.equals(plug.getArtifactId()) &&
                    groupId.equals(plug.getGroupId())) {
                 if (plug.getReportSets() != null) {
@@ -217,8 +217,20 @@ public class PluginPropertyUtils {
         return toRet;
     }
 
+    /**
+     * Like {@link #getPluginVersion} but for report plugins.
+     * @since 2.32
+     */
+    public static @CheckForNull String getReportPluginVersion(@NonNull MavenProject prj, @NonNull String groupId, @NonNull String artifactId) {
+        for (ReportPlugin plug : getEffectiveReportPlugins(prj)) {
+            if (groupId.equals(plug.getGroupId()) && artifactId.equals(plug.getArtifactId())) {
+                return plug.getVersion();
+            }
+        }
+        return null;
+    }
     
-    private static @CheckForNull String checkConfiguration(@NonNull NBPluginParameterExpressionEvaluator eval, @NullAllowed Object conf, @NonNull String property) {
+    private static @CheckForNull String checkConfiguration(@NonNull ExpressionEvaluator eval, @NullAllowed Object conf, @NonNull String property) {
         if (conf != null) {
             Xpp3Dom dom = (Xpp3Dom) conf; // MNG-4862
             Xpp3Dom source = dom.getChild(property);
@@ -244,7 +256,7 @@ public class PluginPropertyUtils {
     public static @CheckForNull String[] getPluginPropertyList(@NonNull Project prj, @NonNull String groupId, @NonNull String artifactId, @NonNull String multiproperty, @NonNull String singleproperty, @NullAllowed String goal) {
         NbMavenProjectImpl project = prj.getLookup().lookup(NbMavenProjectImpl.class);
         assert project != null : "Requires a maven project instance"; //NOI18N
-        return getPluginPropertyListImpl(project.getOriginalMavenProject(), createEvaluator(project), groupId, artifactId, multiproperty, singleproperty, goal);
+        return getPluginPropertyListImpl(project.getOriginalMavenProject(), createEvaluatorFromSourceProject(project), groupId, artifactId, multiproperty, singleproperty, goal);
     }
 
     /**
@@ -256,7 +268,7 @@ public class PluginPropertyUtils {
         return getPluginPropertyListImpl(prj, createEvaluator(prj), groupId, artifactId, multiproperty, singleproperty, goal);
     }
 
-    private static @CheckForNull String[] getPluginPropertyListImpl(@NonNull MavenProject prj, @NonNull NBPluginParameterExpressionEvaluator eval, @NonNull String groupId, @NonNull String artifactId, @NonNull String multiproperty, @NonNull String singleproperty, @NullAllowed String goal) {
+    private static @CheckForNull String[] getPluginPropertyListImpl(@NonNull MavenProject prj, @NonNull ExpressionEvaluator eval, @NonNull String groupId, @NonNull String artifactId, @NonNull String multiproperty, @NonNull String singleproperty, @NullAllowed String goal) {
         String[] toRet = null;
         if (prj.getBuildPlugins() == null) {
             return toRet;
@@ -300,7 +312,7 @@ public class PluginPropertyUtils {
     public static @CheckForNull String[] getReportPluginPropertyList(@NonNull Project prj, @NonNull String groupId, @NonNull String artifactId, @NonNull String multiproperty, @NonNull String singleproperty, @NullAllowed String goal) {
         NbMavenProjectImpl project = prj.getLookup().lookup(NbMavenProjectImpl.class);
         assert project != null : "Requires a maven project instance"; //NOI18N
-        return getReportPluginPropertyListImpl(project.getOriginalMavenProject(), createEvaluator(project), groupId, artifactId, multiproperty, singleproperty, goal);
+        return getReportPluginPropertyListImpl(project.getOriginalMavenProject(), createEvaluatorFromSourceProject(project), groupId, artifactId, multiproperty, singleproperty, goal);
     }
 
     /**
@@ -312,10 +324,9 @@ public class PluginPropertyUtils {
         return getReportPluginPropertyListImpl(prj, createEvaluator(prj), groupId, artifactId, multiproperty, singleproperty, goal);
     }
 
-    @SuppressWarnings("deprecation")
-    private static @CheckForNull String[] getReportPluginPropertyListImpl(@NonNull MavenProject prj, @NonNull NBPluginParameterExpressionEvaluator eval, @NonNull String groupId, @NonNull String artifactId, @NonNull String multiproperty, @NonNull String singleproperty, @NullAllowed String goal) {
+    private static @CheckForNull String[] getReportPluginPropertyListImpl(@NonNull MavenProject prj, @NonNull ExpressionEvaluator eval, @NonNull String groupId, @NonNull String artifactId, @NonNull String multiproperty, @NonNull String singleproperty, @NullAllowed String goal) {
         String[] toRet = null;
-        for (ReportPlugin plug : prj.getReportPlugins()) {
+        for (ReportPlugin plug : getEffectiveReportPlugins(prj)) {
             if (artifactId.equals(plug.getArtifactId()) &&
                    groupId.equals(plug.getGroupId())) {
                 if (plug.getReportSets() != null) {
@@ -348,7 +359,7 @@ public class PluginPropertyUtils {
     }
 
 
-    private static @CheckForNull String[] checkListConfiguration(NBPluginParameterExpressionEvaluator eval, @NullAllowed Object conf, @NonNull String multiproperty, @NonNull String singleproperty) {
+    private static @CheckForNull String[] checkListConfiguration(ExpressionEvaluator eval, @NullAllowed Object conf, @NonNull String multiproperty, @NonNull String singleproperty) {
         if (conf != null) {
             Xpp3Dom dom = (Xpp3Dom) conf; // MNG-4862
             Xpp3Dom source = dom.getChild(multiproperty);
@@ -375,14 +386,14 @@ public class PluginPropertyUtils {
     public static @CheckForNull Properties getPluginPropertyParameter(@NonNull Project prj, @NonNull String groupId, @NonNull String artifactId, @NonNull String propertyParameter, @NullAllowed String goal) {
         NbMavenProjectImpl project = prj.getLookup().lookup(NbMavenProjectImpl.class);
         assert project != null : "Requires a maven project instance"; //NOI18N
-        return getPluginPropertyParameterImpl(project.getOriginalMavenProject(), createEvaluator(project), groupId, artifactId, propertyParameter, goal);
+        return getPluginPropertyParameterImpl(project.getOriginalMavenProject(), createEvaluatorFromSourceProject(project), groupId, artifactId, propertyParameter, goal);
     }
     
     public static @CheckForNull Properties getPluginPropertyParameter(@NonNull MavenProject prj, @NonNull String groupId, @NonNull String artifactId, @NonNull String propertyParameter, @NullAllowed String goal) {
         return getPluginPropertyParameterImpl(prj, createEvaluator(prj), groupId, artifactId, propertyParameter, goal);
     }
 
-    private static @CheckForNull Properties getPluginPropertyParameterImpl(@NonNull MavenProject prj, @NonNull NBPluginParameterExpressionEvaluator eval, @NonNull String groupId, @NonNull String artifactId, @NonNull String propertyParameter, @NullAllowed String goal) {
+    private static @CheckForNull Properties getPluginPropertyParameterImpl(@NonNull MavenProject prj, @NonNull ExpressionEvaluator eval, @NonNull String groupId, @NonNull String artifactId, @NonNull String propertyParameter, @NullAllowed String goal) {
         //TODO we might need to merge the props from various locations..
         Properties toRet = null;
         if (prj.getBuildPlugins() == null) {
@@ -419,7 +430,7 @@ public class PluginPropertyUtils {
         return toRet;
     }
     
-    private static @CheckForNull Properties checkPropertiesConfiguration(@NonNull NBPluginParameterExpressionEvaluator eval, @NullAllowed Object conf, @NonNull String propertyParameter) {
+    private static @CheckForNull Properties checkPropertiesConfiguration(@NonNull ExpressionEvaluator eval, @NullAllowed Object conf, @NonNull String propertyParameter) {
         if (conf != null) {
             Xpp3Dom dom = (Xpp3Dom) conf; // MNG-4862
             Xpp3Dom source = dom.getChild(propertyParameter);
@@ -459,7 +470,49 @@ public class PluginPropertyUtils {
         return null;
     }
 
-    private static @NonNull NBPluginParameterExpressionEvaluator createEvaluator(@NonNull NbMavenProjectImpl prj) {
+    /**
+     * Should handle both deprecated 2.x-style report section, and 3.x-style Site Plugin config.
+     * https://jira.codehaus.org/browse/MSITE-484 and https://jira.codehaus.org/browse/MSITE-443 if and when implemented may require updates.
+     */
+    private static @NonNull Iterable<ReportPlugin> getEffectiveReportPlugins(@NonNull MavenProject prj) {
+        List<ReportPlugin> plugins = new ArrayList<ReportPlugin>();
+        for (Plugin plug : prj.getBuildPlugins()) {
+            if (Constants.GROUP_APACHE_PLUGINS.equals(plug.getGroupId()) && Constants.PLUGIN_SITE.equals(plug.getArtifactId())) {
+                Xpp3Dom cfg = (Xpp3Dom) plug.getConfiguration(); // MNG-4862
+                if (cfg == null) {
+                    continue;
+                }
+                Xpp3Dom reportPlugins = cfg.getChild("reportPlugins");
+                if (reportPlugins == null) {
+                    continue;
+                }
+                for (Xpp3Dom plugin : reportPlugins.getChildren("plugin")) {
+                    ReportPlugin p = new ReportPlugin();
+                    Xpp3Dom groupId = plugin.getChild("groupId");
+                    if (groupId != null) {
+                        p.setGroupId(groupId.getValue());
+                    }
+                    Xpp3Dom artifactId = plugin.getChild("artifactId");
+                    if (artifactId != null) {
+                        p.setArtifactId(artifactId.getValue());
+                    }
+                    Xpp3Dom version = plugin.getChild("version");
+                    if (version != null) {
+                        p.setVersion(version.getValue());
+                    }
+                    p.setConfiguration(plugin.getChild("configuration"));
+                    // XXX reportSets
+                    // maven-site-plugin does not appear to apply defaults from plugin.xml (unlike 2.x?)
+                    plugins.add(p);
+                }
+            }
+        }
+        @SuppressWarnings("deprecation") List<ReportPlugin> m2Plugins = prj.getReportPlugins();
+        plugins.addAll(m2Plugins);
+        return plugins;
+    }
+
+    private static @NonNull ExpressionEvaluator createEvaluatorFromSourceProject(@NonNull NbMavenProjectImpl prj) {
         //ugly
         Settings ss = EmbedderFactory.getProjectEmbedder().getSettings();
         ss.setLocalRepository(EmbedderFactory.getProjectEmbedder().getLocalRepository().getBasedir());
@@ -470,7 +523,11 @@ public class PluginPropertyUtils {
                 prj.createSystemPropsForPropertyExpressions());
     }
 
-    private static @NonNull NBPluginParameterExpressionEvaluator createEvaluator(@NonNull MavenProject prj) {
+    /**
+     * Evaluator usable for interpolating variables in plugin properties.
+     * @since 2.32
+     */
+    public static @NonNull ExpressionEvaluator createEvaluator(@NonNull MavenProject prj) {
         Map<? extends String,? extends String> props = Collections.emptyMap();
         File basedir = prj.getBasedir();
         if (basedir != null) {
