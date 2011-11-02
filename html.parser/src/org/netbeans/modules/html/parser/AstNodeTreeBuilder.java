@@ -71,6 +71,7 @@ import org.xml.sax.SAXException;
  */
 public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implements TransitionHandler {
 
+    //use AstNodeTreeBuilder.setLoggerLevel(Level.FINE);
     static final Logger LOGGER = Logger.getLogger(AstNodeTreeBuilder.class.getName());
     static boolean LOG, LOG_FINER;
 
@@ -265,13 +266,17 @@ public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implement
                     tag_lt_offset = offset - 1; //-1 is here because we are already at the tag name just after the &lt; char
                 }
                 break;
-
+                
             case RAWTEXT:
                 //strange transition happening at the closing > char at the tag end:
                 //<style type=\"text/css\"> 
-                if(from == AFTER_ATTRIBUTE_VALUE_QUOTED) {
-                    tag_gt_offset = offset;
-                }
+                switch(from) {
+                    case AFTER_ATTRIBUTE_VALUE_QUOTED:
+                    case BEFORE_ATTRIBUTE_NAME:
+                    case TAG_NAME:
+                        tag_gt_offset = offset + 1;
+                        break;
+                }                
                 break;
 
             case RCDATA:
