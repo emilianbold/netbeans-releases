@@ -39,66 +39,24 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.debugger.jpda.visual.models;
-
-import org.netbeans.api.debugger.Properties;
-import org.netbeans.spi.debugger.ui.ColumnModelRegistration;
-import org.netbeans.spi.viewmodel.ColumnModel;
-import org.openide.util.NbBundle;
+package org.netbeans.modules.php.editor.verification;
 
 /**
- * Column model representing event types.
- * 
- * @author Martin Entlicher
+ *
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-@ColumnModelRegistration(path="netbeans-JPDASession/EventsView")
-public class EventTypesColumnModel extends ColumnModel {
-    
-    static final String ID = "EventsViewTypeColumn";    // NOI18N
+public class PHPHintsTest extends PHPHintsTestBase {
 
-    private Properties properties = Properties.getDefault ().
-            getProperties ("debugger").getProperties ("views"); // NOI18N
-    
-    @Override
-    public String getID() {
-        return ID;
+    public PHPHintsTest(String testName) {
+        super(testName);
     }
 
-    @Override
-    public String getDisplayName() {
-        return NbBundle.getMessage(EventTypesColumnModel.class, "LBL_EventTypesColumnName");
+    public void testModifiersCheckHint() throws Exception {
+        checkHintsInStartEndFile(new ModifiersCheckHint(), "testModifiersCheckHint.php");
     }
 
-    @Override
-    public String getShortDescription() {
-        return NbBundle.getMessage(EventTypesColumnModel.class, "LBL_EventTypesColumnDescr");
+    public void testAbstractClassInstantiationHint() throws Exception {
+        checkHintsInStartEndFile(new AbstractClassInstantiationHint(), "testAbstractClassInstantiationHint.php");
     }
-    
-    @Override
-    public Class getType() {
-        return String.class;
-    }
-
-    @Override
-    public boolean isVisible() {
-        return properties.getBoolean (getID () + ".visible", false);    // NOI18N
-    }
-    
-    @Override
-    public void setVisible (boolean visible) {
-        properties.setBoolean (getID () + ".visible", visible);         // NOI18N
-    }
-
-    @Override
-    public int getCurrentOrderNumber() {
-        int cn = properties.getInt(getID() + ".currentOrderNumber", -1);
-        return cn;
-    }
-
-    @Override
-    public void setCurrentOrderNumber(int newOrderNumber) {
-        properties.setInt(getID() + ".currentOrderNumber", newOrderNumber);
-    }
-
 
 }

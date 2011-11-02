@@ -624,6 +624,7 @@ public class CommitAction extends ContextAction {
 
             List<SvnFileNode> addCandidates = new ArrayList<SvnFileNode>();
             List<File> removeCandidates = new ArrayList<File>();
+            List<File> missingFiles = new ArrayList<File>();
             Set<File> commitCandidates = new LinkedHashSet<File>();
             Set<File> binnaryCandidates = new HashSet<File>();
 
@@ -674,6 +675,9 @@ public class CommitAction extends ContextAction {
                 } else if (CommitOptions.COMMIT_REMOVE == option) {
                     removeCandidates.add(node.getFile());
                     commitCandidates.add(node.getFile());
+                    if ((node.getInformation().getStatus() & FileInformation.STATUS_VERSIONED_DELETEDLOCALLY) != 0) {
+                        missingFiles.add(node.getFile());
+                    }
                 } else if (CommitOptions.COMMIT == option) {
                     commitCandidates.add(node.getFile());
                 }
@@ -723,6 +727,13 @@ public class CommitAction extends ContextAction {
                     } catch (IOException ex) {
                         // XXX handle veto
                     }
+                }
+            }
+            if (!missingFiles.isEmpty()) {
+                // we need to correct metadata for externally deleted files and folders
+                deleteMissingFiles(missingFiles, client);
+                if (support.isCanceled()) {
+                    return;
                 }
             }
             // finally commit
@@ -1133,5 +1144,9 @@ public class CommitAction extends ContextAction {
             SvnClientExceptionHandler.notifyException(ex, true, true); // should not hapen
             return null;
         }
+    }
+
+    private static void deleteMissingFiles (List<File> removeCandidates, SvnClient client) throws SVNClientException {
+        client.remove(removeCandidates.toArray(new File[removeCandidates.size()]), true);
     }
 }
