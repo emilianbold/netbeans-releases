@@ -45,6 +45,7 @@
 package org.netbeans;
 
 import java.awt.AWTEvent;
+import java.awt.EventQueue;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.ClipboardOwner;
@@ -153,8 +154,8 @@ implements LookupListener, Runnable, FlavorListener, AWTEventListener
     // the thread will wait for the system clipboard forever but not the whole
     // IDE
 
-    private RequestProcessor.Task syncTask =
-        new RequestProcessor("System clipboard synchronizer").create(this, true); // NOI18N
+    private static final RequestProcessor RP = new RequestProcessor("System clipboard synchronizer"); // NOI18N
+    private RequestProcessor.Task syncTask = RP.create(this, true);
 
     private Transferable data;
     private ClipboardOwner dataOwner;
@@ -175,7 +176,25 @@ implements LookupListener, Runnable, FlavorListener, AWTEventListener
             }
 
             if (slowSystemClipboard) {
-                super.setContents(contents, owner);
+                if (this.contents != null) {
+                    transferableOwnershipLost(this.contents);
+                }
+
+                final ClipboardOwner oldOwner = this.owner;
+                final Transferable oldContents = this.contents;
+
+                this.owner = owner;
+                this.contents = contents;
+
+                if (oldOwner != null && oldOwner != owner) {
+                    EventQueue.invokeLater(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            oldOwner.lostOwnership(NbClipboard.this, oldContents);
+                        }
+                    });
+                }
             } else {
                 if (last != null) transferableOwnershipLost(last);
                 last = contents;
@@ -185,7 +204,7 @@ implements LookupListener, Runnable, FlavorListener, AWTEventListener
             dataOwner = owner;
             syncTask.schedule(0);
         }
-        fireClipboardChange();
+        fireChange();
     }
 
     @Override
@@ -194,7 +213,7 @@ implements LookupListener, Runnable, FlavorListener, AWTEventListener
 
         try {
             log.log(Level.FINE, "getContents, slowSystemClipboard: {0}", slowSystemClipboard); // NOI18N
-            if (slowSystemClipboard) {
+            if (slowSystemClipboard && !RP.isRequestProcessorThread()) {
                 // The purpose of lastWindowActivated+100 is to ignore calls
                 // which immediatelly follow WINDOW_ACTIVATED event.
                 // This is workaround of JDK bug described in issue 41098.
@@ -254,6 +273,12 @@ implements LookupListener, Runnable, FlavorListener, AWTEventListener
         }
     }
 
+    @Override
+    public  FlavorListener[] getFlavorListeners() {
+        return new FlavorListener[0];
+    }
+    
+    @Override
     public void run() {
         Transferable cnts = null;
         ClipboardOwner ownr = null;
@@ -293,7 +318,7 @@ implements LookupListener, Runnable, FlavorListener, AWTEventListener
                 log.log (Level.FINE, "internal clipboard updated:"); // NOI18N
                 logFlavors (transferable, Level.FINE, log.isLoggable(Level.FINEST));
             }
-            fireClipboardChange();
+            fireChange();
         }
         catch (ThreadDeath ex) {
             throw ex;
@@ -343,8 +368,13 @@ implements LookupListener, Runnable, FlavorListener, AWTEventListener
 
     @Override
     public void flavorsChanged(FlavorEvent e) {
+        fireChange();
+    }
+
+    private void fireChange() {
+        FlavorEvent e = new FlavorEvent(this);
         fireClipboardChange();
-        for (FlavorListener l : getFlavorListeners()) {
+        for (FlavorListener l : super.getFlavorListeners()) {
             l.flavorsChanged(e);
         }
     }
