@@ -43,8 +43,6 @@ package org.netbeans.modules.xml.text.indent;
 
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
-import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.lexer.Token;
@@ -53,8 +51,6 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.xml.lexer.XMLTokenId;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.modules.csl.api.KeystrokeHandler;
-import org.netbeans.modules.csl.api.UiUtils;
 import org.netbeans.spi.editor.typinghooks.TypedBreakInterceptor;
 import org.openide.util.Exceptions;
 
@@ -88,6 +84,9 @@ public class LineBreakHook implements TypedBreakInterceptor {
      * @throws BadLocationException programmer's error :)
      */
     private void repositionCaret(Context context) throws BadLocationException {
+        if (!(context.getDocument() instanceof BaseDocument)) {
+            return;
+        }
         BaseDocument doc = (BaseDocument)context.getDocument();
 
         int insertPos = context.getCaretOffset();
