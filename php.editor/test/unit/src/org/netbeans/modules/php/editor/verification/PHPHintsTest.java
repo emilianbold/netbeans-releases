@@ -41,8 +41,16 @@
  */
 package org.netbeans.modules.php.editor.verification;
 
+import java.io.File;
+import java.util.Collections;
+import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.csl.api.Rule;
 import org.netbeans.modules.php.editor.PHPTestBase;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -67,6 +75,16 @@ public class PHPHintsTest extends PHPTestBase {
      */
     private void checkHintsInStartEndFile(Rule hint, String fileName) throws Exception {
         checkHints(hint, "testfiles/verification/" + fileName, "<?php\n//START^", "^//END\n?>");
+    }
+
+    @Override
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        return Collections.singletonMap(
+            PhpSourcePath.SOURCE_CP,
+            ClassPathSupport.createClassPath(new FileObject[] {
+                FileUtil.toFileObject(new File(getDataDir(), "/testfiles/verification"))
+            })
+        );
     }
 
 }
