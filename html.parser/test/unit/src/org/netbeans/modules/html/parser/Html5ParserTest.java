@@ -232,7 +232,7 @@ public class Html5ParserTest extends NbTestCase {
 
         assertNotNull(styleOpenTag);
         assertEquals(16, styleOpenTag.startOffset());
-        assertEquals(38, styleOpenTag.endOffset());
+        assertEquals(39, styleOpenTag.endOffset());
 
         AstNode styleEndTag = head.children().get(1);
         assertNotNull(styleEndTag);
@@ -812,6 +812,59 @@ public class Html5ParserTest extends NbTestCase {
         attr = a.getAttribute("onclick");
         assertNotNull(attr);
         assertFalse(attr.isValueQuoted());
+
+    }
+    
+    //Bug 196479 - Problem with finding end tag for style element
+    public void testStyleTag() throws ParseException {
+        AstNodeTreeBuilder.setLoggerLevel(Level.FINER);
+        
+        String code = "<!doctype html>"
+                + "<html>"
+                + "<head>"
+                + "<title></title>"
+                + "<style> div { } </style>"
+                // 2345678901234        890123456
+                + "</head>"
+                + "<body>"
+                + "</body>"
+                + "</html>";
+
+        HtmlParseResult result = parse(code);
+        AstNode root = result.root();
+
+        assertNotNull(root);
+        AstNodeUtils.dumpTree(root);
+
+        AstNode style = AstNodeUtils.query(root, "html/head/style");
+        assertNotNull(style);
+
+        assertEquals(42, style.startOffset());
+        assertEquals(49, style.endOffset());
+    
+        //space after the style tag name
+        code = "<!doctype html>"
+                + "<html>"
+                + "<head>"
+                + "<title></title>"
+                + "<style  > div { } </style>"
+                // 2345678901234        890123456
+                + "</head>"
+                + "<body>"
+                + "</body>"
+                + "</html>";
+
+        result = parse(code);
+        root = result.root();
+
+        assertNotNull(root);
+        AstNodeUtils.dumpTree(root);
+
+        style = AstNodeUtils.query(root, "html/head/style");
+        assertNotNull(style);
+
+        assertEquals(42, style.startOffset());
+        assertEquals(51, style.endOffset());
 
     }
     //fails

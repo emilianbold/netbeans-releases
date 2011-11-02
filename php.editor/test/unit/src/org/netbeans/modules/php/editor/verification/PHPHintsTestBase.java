@@ -39,66 +39,48 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.debugger.jpda.visual.models;
+package org.netbeans.modules.php.editor.verification;
 
-import org.netbeans.api.debugger.Properties;
-import org.netbeans.spi.debugger.ui.ColumnModelRegistration;
-import org.netbeans.spi.viewmodel.ColumnModel;
-import org.openide.util.NbBundle;
+import java.io.File;
+import java.util.Collections;
+import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.csl.api.Rule;
+import org.netbeans.modules.php.editor.PHPTestBase;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
- * Column model representing event types.
- * 
- * @author Martin Entlicher
+ *
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-@ColumnModelRegistration(path="netbeans-JPDASession/EventsView")
-public class EventTypesColumnModel extends ColumnModel {
-    
-    static final String ID = "EventsViewTypeColumn";    // NOI18N
+public class PHPHintsTestBase extends PHPTestBase {
 
-    private Properties properties = Properties.getDefault ().
-            getProperties ("debugger").getProperties ("views"); // NOI18N
-    
-    @Override
-    public String getID() {
-        return ID;
+    public PHPHintsTestBase(String testName) {
+        super(testName);
     }
 
-    @Override
-    public String getDisplayName() {
-        return NbBundle.getMessage(EventTypesColumnModel.class, "LBL_EventTypesColumnName");
-    }
-
-    @Override
-    public String getShortDescription() {
-        return NbBundle.getMessage(EventTypesColumnModel.class, "LBL_EventTypesColumnDescr");
-    }
-    
-    @Override
-    public Class getType() {
-        return String.class;
+    /**
+     * Checks hints in a whole file which starts with "<code>&lt;?php\n//START</code>" and ends with "<code>//END\n?&gt;</code>".
+     *
+     * @param hint Instantion of hint to test.
+     * @param fileName Name of the file which is in "<tt>testfiles/verification/</tt>" directory.
+     * @throws Exception
+     */
+    protected void checkHintsInStartEndFile(Rule hint, String fileName) throws Exception {
+        checkHints(hint, "testfiles/verification/" + fileName, "<?php\n//START^", "^//END\n?>");
     }
 
     @Override
-    public boolean isVisible() {
-        return properties.getBoolean (getID () + ".visible", false);    // NOI18N
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        return Collections.singletonMap(
+            PhpSourcePath.SOURCE_CP,
+            ClassPathSupport.createClassPath(new FileObject[] {
+                FileUtil.toFileObject(new File(getDataDir(), "/testfiles/verification"))
+            })
+        );
     }
-    
-    @Override
-    public void setVisible (boolean visible) {
-        properties.setBoolean (getID () + ".visible", visible);         // NOI18N
-    }
-
-    @Override
-    public int getCurrentOrderNumber() {
-        int cn = properties.getInt(getID() + ".currentOrderNumber", -1);
-        return cn;
-    }
-
-    @Override
-    public void setCurrentOrderNumber(int newOrderNumber) {
-        properties.setInt(getID() + ".currentOrderNumber", newOrderNumber);
-    }
-
 
 }

@@ -205,5 +205,10 @@ public class Column extends PropertySupport.ReadWrite {
         return null;
     }
 
+    @Override
+    public String toString() {
+        return super.toString() + " with ColumnModel "+columnModel;
+    }
+    
 }
 
