@@ -43,13 +43,13 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
+import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.EmbeddingProvider;
-import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.netbeans.modules.parsing.spi.TaskFactory;
 import org.netbeans.modules.php.smarty.editor.lexer.TplTopTokenId;
 
@@ -168,11 +168,12 @@ public class TplEmbeddingProvider extends EmbeddingProvider {
         //do nothing
     }
 
+    @MimeRegistration(service=TaskFactory.class, mimeType="text/x-tpl")
     public static final class Factory extends TaskFactory {
 
         @Override
-        public Collection<SchedulerTask> create(final Snapshot snapshot) {
-            return Collections.<SchedulerTask>singletonList(new TplEmbeddingProvider());
+        public Collection create(final Snapshot snapshot) {
+            return Collections.singletonList(new TplEmbeddingProvider());
         }
     }
 
