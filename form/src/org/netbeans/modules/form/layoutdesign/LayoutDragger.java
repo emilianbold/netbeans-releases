@@ -247,14 +247,14 @@ class LayoutDragger implements LayoutConstants {
                     if (resGap != null) {
                         sizeDef.adjustingGap = resGap;
                         sizeDef.originalGapSize = LayoutInterval.getCurrentSize(resGap, i);
-                        sizeDef.preferredGapSize = LayoutUtils.getSizeOfDefaultGap(resGap, visualMapper);
+                        sizeDef.defaultGapSize = LayoutUtils.getSizeOfDefaultGap(resGap, visualMapper);
                         if (LayoutInterval.canResize(resGap)) {
-                            sizeDef.minSizeWithPrefGap = sizeDef.minSize;
+                            sizeDef.minSizeWithDefaultGap = sizeDef.minSize;
                             if (isZeroResizingGap(resGap)) {
                                 sizeDef.minSizeWithZeroGap = sizeDef.originalSize - sizeDef.originalGapSize;
                             }
                         } else {
-                            sizeDef.minSizeWithPrefGap = sizeDef.minSize - sizeDef.originalGapSize + sizeDef.preferredGapSize;
+                            sizeDef.minSizeWithDefaultGap = sizeDef.minSize - sizeDef.originalGapSize + sizeDef.defaultGapSize;
                             if (isZeroResizingGap(resGap)) {
                                 sizeDef.minSizeWithZeroGap = sizeDef.minSize - sizeDef.originalGapSize;
                             }
@@ -354,7 +354,7 @@ class LayoutDragger implements LayoutConstants {
             int size = movingSpace.size(dimension);
             SizeDef sizeDef = sizing[dimension];
             return size == sizeDef.minSize || size == sizeDef.contPrefSize
-                    || size == sizeDef.minSizeWithPrefGap || size == sizeDef.minSizeWithZeroGap;
+                    || size == sizeDef.minSizeWithDefaultGap || size == sizeDef.minSizeWithZeroGap;
         }
         return false;
     }
@@ -724,7 +724,7 @@ class LayoutDragger implements LayoutConstants {
                 if (Math.abs(diff2) < Math.abs(sizeDiff)) {
                     sizeDiff = diff2;
                 }
-                diff2 = size - sd.minSizeWithPrefGap;
+                diff2 = size - sd.minSizeWithDefaultGap;
                 if (Math.abs(diff2) < Math.abs(sizeDiff)) {
                     sizeDiff = diff2;
                 }
@@ -1741,11 +1741,11 @@ class LayoutDragger implements LayoutConstants {
         private int originalSize;
         private int minSize;
         private int contPrefSize = Short.MIN_VALUE;
-        private int minSizeWithPrefGap = Short.MIN_VALUE;
+        private int minSizeWithDefaultGap = Short.MIN_VALUE;
         private int minSizeWithZeroGap = Short.MIN_VALUE;
         private LayoutInterval adjustingGap; // inside resizing container
         private int originalGapSize;
-        private int preferredGapSize;
+        private int defaultGapSize;
 
         LayoutInterval getResizingGap() {
             return adjustingGap;
@@ -1758,20 +1758,34 @@ class LayoutDragger implements LayoutConstants {
             if (currentSize == minSizeWithZeroGap) {
                 return 0;
             }
-            if (currentSize == minSizeWithPrefGap) {
+            if (currentSize == minSizeWithDefaultGap) {
                 return NOT_EXPLICITLY_DEFINED;
             }
             int gapSize;
             if (LayoutInterval.canResize(adjustingGap)) {
                 gapSize = originalGapSize - originalSize + currentSize;
+                if (gapSize == 0) {
+                    if (minSizeWithZeroGap < 0 && adjustingGap.getMinimumSize() != 0) {
+                        gapSize = NOT_EXPLICITLY_DEFINED;
+                    }
+                } else {
+                    int minGapSize = defaultGapSize < 0 || adjustingGap.getMinimumSize() == 0 ?
+                                     0 : defaultGapSize;
+                    if (gapSize <= minGapSize) {
+                        gapSize = NOT_EXPLICITLY_DEFINED;
+                    }
+                }
             } else {
                 if (currentSize < minSize) {
                     gapSize = originalGapSize - minSize + currentSize;
+                    if (gapSize < 0) {
+                        gapSize = NOT_EXPLICITLY_DEFINED;
+                    }
                 } else {
                     return LayoutRegion.UNKNOWN;
                 }
             }
-            return gapSize < 0 ? NOT_EXPLICITLY_DEFINED : gapSize;
+            return gapSize;
         }
     }
 }

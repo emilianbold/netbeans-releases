@@ -3971,10 +3971,10 @@ public final class LayoutDesigner implements LayoutModel.RemoveHandler, LayoutMo
             assert resGap.getParent().isSequential();
             LayoutInterval seqRoot = LayoutInterval.getRoot(resGap, SEQUENTIAL);
             int size = resizingDef.getResizingGapSize(currentSize);
-            if (size == 0) { // remove the gap
-                LayoutInterval gapParent = resGap.getParent();
-                int index = layoutModel.removeInterval(resGap);
-                assert index == 0 || index == gapParent.getSubIntervalCount();
+            LayoutInterval gapParent = resGap.getParent();
+            int index = gapParent.indexOf(resGap);
+            if (size == 0 && (index == 0 || index == gapParent.getSubIntervalCount()-1)) { // remove the gap
+                layoutModel.removeInterval(resGap);
                 if (gapParent.getSubIntervalCount() == 1) {
                     LayoutInterval last = layoutModel.removeInterval(gapParent, 0);
                     operations.addContent(last, gapParent.getParent(), layoutModel.removeInterval(gapParent));

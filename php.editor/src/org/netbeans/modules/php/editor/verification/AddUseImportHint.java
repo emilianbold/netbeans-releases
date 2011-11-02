@@ -89,9 +89,9 @@ import org.openide.util.NbBundle.Messages;
  *
  * @author Radek Matous
  */
-public class AddUseImportRule extends AbstractRule {
+public class AddUseImportHint extends AbstractRule {
 
-    public AddUseImportRule() {
+    public AddUseImportHint() {
         super();
     }
 
@@ -258,7 +258,7 @@ public class AddUseImportRule extends AbstractRule {
                     if (suitableUses.isEmpty()) {
                         if (idxElement instanceof ClassElement || !nodeName.getKind().isUnqualified()) {
                             AddImportFix importFix = new AddImportFix(doc, currentScope, importName);
-                            hints.add(new Hint(AddUseImportRule.this,
+                            hints.add(new Hint(AddUseImportHint.this,
                                     importFix.getDescription(),
                                     context.parserResult.getSnapshot().getSource().getFileObject(),
                                     new OffsetRange(node.getStartOffset(), node.getEndOffset()),
@@ -268,7 +268,7 @@ public class AddUseImportRule extends AbstractRule {
                         QualifiedName name = VariousUtils.getPreferredName(indexedName, currentScope);
                         if (name != null) {
                             ChangeNameFix changeNameFix = new ChangeNameFix(doc, node, currentScope, name, nodeName);
-                            hints.add(new Hint(AddUseImportRule.this,
+                            hints.add(new Hint(AddUseImportHint.this,
                                     changeNameFix.getDescription(),
                                     context.parserResult.getSnapshot().getSource().getFileObject(),
                                     new OffsetRange(node.getStartOffset(), node.getEndOffset()),
