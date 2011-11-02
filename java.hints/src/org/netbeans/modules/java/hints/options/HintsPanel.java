@@ -721,6 +721,7 @@ public final class HintsPanel extends javax.swing.JPanel   {
         errorTree.setModel(errorTreeModel);
         select(getHintByName(selectedHintId));
         cancelEditActionPerformed(evt);
+        hasNewHints = true;
     }//GEN-LAST:event_saveButtonActionPerformed
 
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
@@ -952,6 +953,7 @@ public final class HintsPanel extends javax.swing.JPanel   {
                         errorTreeModel = constructTM(Utilities.getBatchSupportedHints(), false);
                         errorTree.setModel(errorTreeModel);
                         select(getHintByName((String) newValue));
+                        hasNewHints = true;
                     } catch (IOException ex) {
                         JOptionPane.showMessageDialog(errorTree, NbBundle.getMessage(HintsPanel.class, "ERR_CannotRename", newValue));
                         errorTree.startEditingAtPath(path);
@@ -1085,6 +1087,7 @@ public final class HintsPanel extends javax.swing.JPanel   {
                     //errorTreeModel.removeNodeFromParent(node);
                     errorTreeModel = constructTM(Utilities.getBatchSupportedHints(), false);
                     errorTree.setModel(errorTreeModel);
+                    hasNewHints = true;
                 }
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
