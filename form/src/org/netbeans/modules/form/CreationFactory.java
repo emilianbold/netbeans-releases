@@ -161,6 +161,7 @@ public class CreationFactory {
     {
         CreationDescriptor cd = getDescriptor(cls);
         Object cl = UIManager.get("ClassLoader"); // NOI18N
+        Object cl2 = UIManager.getLookAndFeelDefaults().get("ClassLoader"); // NOI18N
         ClassLoader uiCl = (cl instanceof ClassLoader) ? (ClassLoader)cl : null;
         ClassLoader systemCl = org.openide.util.Lookup.getDefault().lookup(ClassLoader.class);
         ClassLoader beanCl = cls.getClassLoader();
@@ -177,7 +178,15 @@ public class CreationFactory {
         Object instance = cd != null ?
                               cd.createDefaultInstance() :
                               cls.newInstance();
-        UIManager.put("ClassLoader", cl); // NOI18N
+        if (cl == cl2) {
+            // The original classloader (i.e., cl) was in look and feel defaults.
+            // It remains there, we just have to remove the value that
+            // we set in user defaults (see the structure of MultiUIDefaults).
+            UIManager.getDefaults().remove("ClassLoader"); // NOI18N
+        } else {
+            // The original classloader was in user defaults => return it back
+            UIManager.put("ClassLoader", cl); // NOI18N
+        }
         initAfterCreation(instance);
         return instance;
     }
