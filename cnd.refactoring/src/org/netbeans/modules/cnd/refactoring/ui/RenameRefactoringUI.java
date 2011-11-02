@@ -211,11 +211,7 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
     }
 
     public String getName() {
-        if (CsmKindUtilities.isFile(origObject)) {
-            return NbBundle.getMessage(RenamePanel.class, "LBL_RenameFile");
-        } else {
-            return NbBundle.getMessage(RenamePanel.class, "LBL_Rename");
-        }
+        return NbBundle.getMessage(RenamePanel.class, "LBL_RefactoringRenameName", oldName, newName);
     }
 
     public boolean hasParameters() {
