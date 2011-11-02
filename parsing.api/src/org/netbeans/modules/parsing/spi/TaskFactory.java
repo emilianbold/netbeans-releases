@@ -43,18 +43,14 @@
 package org.netbeans.modules.parsing.spi;
 
 import java.util.Collection;
+import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.modules.parsing.api.Snapshot;
 
 
 /**
  * Creates a list of tasks ({@link EmbeddingProvider}, 
  * {@link ParserBasedEmbeddingProvider} or {@link ParserResultTask}) for given source. 
- * TaskFactory must be registered in your manifest.xml file for 
- * some specific mime type, or for all types. So it can be registered 
- * in manifest.xml in <code>"Editors/" + mimeType</code> folder, or directly in
- * <code>"Editors"</code>.
- * 
- * 
+ * @see MimeRegistration
  * @author Jan Jancura
  */
 public abstract class TaskFactory {
