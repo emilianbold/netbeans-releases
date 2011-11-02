@@ -47,6 +47,10 @@ package org.netbeans.modules.form.actions;
 import java.awt.EventQueue;
 import java.util.ArrayList;
 import java.awt.event.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import javax.swing.*;
 import javax.swing.undo.UndoableEdit;
@@ -67,6 +71,8 @@ import org.openide.util.actions.NodeAction;
  * @author Tomas Pavek, Jan Stola
  */
 public class EncloseAction extends NodeAction {
+    
+    private static HashMap<Node, ArrayList<String>> map = new HashMap<Node, ArrayList<String>>();
 
     @Override
     public String getName() {
@@ -128,8 +134,17 @@ public class EncloseAction extends NodeAction {
         return commonParent;
     }
 
-    private static PaletteItem[] getAllContainers() {
+    private static PaletteItem[] getAllContainers(Node subMenuNode) {
         List<PaletteItem> list = new ArrayList<PaletteItem>();
+        // using the map in order to speed up the process and not search all candidates each time
+        if(!map.containsKey(subMenuNode)) {
+            ArrayList<String> listt = new ArrayList<String>();
+            List<Node> nodes = Arrays.asList(subMenuNode.getChildren().getNodes());
+            for (Node nod : nodes) {
+                listt.add(nod.getName());
+            }
+            map.put(subMenuNode, listt);            
+        }
         for (PaletteItem item : PaletteUtils.getAllItems()) {
             if (PaletteItem.TYPE_CHOOSE_BEAN.equals(item.getExplicitComponentType())) {
                 continue;
@@ -139,9 +154,19 @@ public class EncloseAction extends NodeAction {
                   && JComponent.class.isAssignableFrom(cls)
                   && !MenuElement.class.isAssignableFrom(cls)
                   && FormUtils.isContainer(cls)) {
-                list.add(item);
+                if(map.get(subMenuNode).contains(cls.getSimpleName())) {
+                    list.add(item);
+                }
             }
         }
+        // sort the PaletteItems alphabetically
+        Collections.sort(list, new Comparator<PaletteItem>() {
+
+            @Override
+            public int compare(PaletteItem o1, PaletteItem o2) {
+                return o1.getNode().getDisplayName().compareTo(o2.getNode().getDisplayName());
+            }
+        });
         return list.toArray(new PaletteItem[list.size()]);
     }
 
@@ -167,17 +192,12 @@ public class EncloseAction extends NodeAction {
                 FormUtils.getRequestProcessor().post(new Runnable() {
                     @Override
                     public void run() {
-                        final PaletteItem[] items = getAllContainers();
                         EventQueue.invokeLater(new Runnable() {
                             @Override
                             public void run() {
                                 popup.removeAll();
-                                for (PaletteItem item : items) {
-                                    JMenuItem mi = new JMenuItem(item.getNode().getDisplayName());
-                                    HelpCtx.setHelpIDString(mi, EncloseAction.class.getName());                    
-                                    addSortedMenuItem(popup, mi);
-                                    mi.addActionListener(new EncloseActionListener(item));
-                                }
+                                // #204458: group PaletteItems that are Containers by palette category
+                                fillPaletteCategoriesSubMenu();
                                 popup.pack();
                             }
                         });
@@ -187,19 +207,28 @@ public class EncloseAction extends NodeAction {
             }
             return popup;
         }
-        
-        private static void addSortedMenuItem(JPopupMenu menu, JMenuItem menuItem) {
-            String text = menuItem.getText();
-            for (int i = 0; i < menu.getComponentCount(); i++) {
-                if(menu.getComponent(i) instanceof JMenuItem){
-                    String tx = ((JMenuItem)menu.getComponent(i)).getText();
-                    if (text.compareTo(tx) < 0) {
-                        menu.add(menuItem, i);
-                        return;
+
+        private void fillPaletteCategoriesSubMenu() {
+            Node[] nodes = PaletteUtils.getCategoryNodes(PaletteUtils.getPaletteNode(), true);
+            // for each palette category find the PaletteItems that are Containers
+            if (nodes.length > 0) {
+                for (int i = 0; i < nodes.length; i++) {
+                    JMenu item;
+                    if (!nodes[i].isLeaf()) {
+                        item = new JMenu(nodes[i].getDisplayName());
+                        PaletteItem[] items = getAllContainers(nodes[i]);
+                        if (items.length > 0) {
+                            for (PaletteItem item2 : items) {
+                                JMenuItem mi = new JMenuItem(item2.getNode().getDisplayName());
+                                HelpCtx.setHelpIDString(mi, EncloseAction.class.getName());
+                                item.add(mi);
+                                mi.addActionListener(new EncloseActionListener(item2));
+                            }
+                            add(item);
+                        }
                     }
                 }
             }
-            menu.add(menuItem);
         }
 
         private class EncloseActionListener implements ActionListener {
