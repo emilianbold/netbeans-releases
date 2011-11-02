@@ -41,22 +41,46 @@
  */
 package org.netbeans.modules.php.editor.verification;
 
+import java.io.File;
+import java.util.Collections;
+import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.csl.api.Rule;
+import org.netbeans.modules.php.editor.PHPTestBase;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class PHPHintsTest extends PHPHintsTestBase {
+public class PHPHintsTestBase extends PHPTestBase {
 
-    public PHPHintsTest(String testName) {
+    public PHPHintsTestBase(String testName) {
         super(testName);
     }
 
-    public void testModifiersCheckHint() throws Exception {
-        checkHintsInStartEndFile(new ModifiersCheckHint(), "testModifiersCheckHint.php");
+    /**
+     * Checks hints in a whole file which starts with "<code>&lt;?php\n//START</code>" and ends with "<code>//END\n?&gt;</code>".
+     *
+     * @param hint Instantion of hint to test.
+     * @param fileName Name of the file which is in "<tt>testfiles/verification/</tt>" directory.
+     * @throws Exception
+     */
+    protected void checkHintsInStartEndFile(Rule hint, String fileName) throws Exception {
+        checkHints(hint, "testfiles/verification/" + fileName, "<?php\n//START^", "^//END\n?>");
     }
 
-    public void testAbstractClassInstantiationHint() throws Exception {
-        checkHintsInStartEndFile(new AbstractClassInstantiationHint(), "testAbstractClassInstantiationHint.php");
+    @Override
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        return Collections.singletonMap(
+            PhpSourcePath.SOURCE_CP,
+            ClassPathSupport.createClassPath(new FileObject[] {
+                FileUtil.toFileObject(new File(getDataDir(), "/testfiles/verification"))
+            })
+        );
     }
 
 }
