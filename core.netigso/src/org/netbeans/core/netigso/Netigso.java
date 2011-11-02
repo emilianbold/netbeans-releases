@@ -272,10 +272,19 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
             }
             pcl.append(new ClassLoader[]{ l });
             try {
-                LOG.log(Level.FINE, "Starting bundle {0}", m.getCodeNameBase());
-                b.start();
-                if (b.getState() == Bundle.INSTALLED && isRealBundle(b)) {
-                    throw new IOException("Cannot start " + m.getCodeName() + " state remains INSTALLED after start()"); // NOI18N
+                String msl = NbBundle.getMessage(Netigso.class, "MODULE_START_LEVEL"); // NOI18N
+                boolean start = true;
+                if (!msl.isEmpty()) {
+                    int moduleStartLevel = Integer.parseInt(msl);
+                    int level = getBundleStartLevel(b, framework.getBundleContext());
+                    start = moduleStartLevel >= level;
+                }
+                LOG.log(Level.FINE, "Starting bundle {0}: {1}", new Object[] { m.getCodeNameBase(), start });
+                if (start) {
+                    b.start();
+                    if (b.getState() == Bundle.INSTALLED && isRealBundle(b)) {
+                        throw new IOException("Cannot start " + m.getCodeName() + " state remains INSTALLED after start()"); // NOI18N
+                    }
                 }
             } catch (BundleException possible) {
                 if (isRealBundle(b)) {
@@ -450,6 +459,19 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
         );
     }
     
+    private int getBundleStartLevel(Bundle b, BundleContext bc) {
+        ServiceReference sr = bc.getServiceReference("org.osgi.service.startlevel.StartLevel"); // NOI18N
+        StartLevel level = null;
+        if (sr != null) {
+            level = (StartLevel) bc.getService(sr);
+            if (level != null) {
+                return level.getBundleStartLevel(b);
+            }
+        }
+        return 0;
+    }
+
+    
     private static String threeDotsWithMajor(String version, String withMajor) {
         int indx = withMajor.indexOf('/');
         int major = 0;
@@ -583,5 +605,4 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
         }
         return new VFile().toURI().toString();
     }
-
 }

@@ -58,18 +58,18 @@ import org.netbeans.core.startup.ModuleSystem;
  *
  * @author Jaroslav Tulach
  */
-public class NetigsoDefaultStartLevelTest extends SetupHid {
+public class NetigsoModuleStartLevelTest extends SetupHid {
     private static Module m1;
     private static ModuleManager mgr;
     private int cnt;
     private File simpleModule;
 
-    public NetigsoDefaultStartLevelTest(String name) {
+    public NetigsoModuleStartLevelTest(String name) {
         super(name);
     }
 
     protected @Override void setUp() throws Exception {
-        Locale.setDefault(new Locale("te", "ST"));
+        Locale.setDefault(new Locale("t2", "ST"));
         clearWorkDir();
         File ud = new File(getWorkDir(), "ud");
         ud.mkdirs();
@@ -86,18 +86,15 @@ public class NetigsoDefaultStartLevelTest extends SetupHid {
         mgr = ms.getManager();
         mgr.mutexPrivileged().enterWriteAccess();
         try {
-            m1 = mgr.createBundle(simpleModule, null, false, false, false, 10);
+            m1 = mgr.createBundle(simpleModule, null, false, false, false, 20);
             mgr.enable(m1);
 
             Class<?> main = m1.getClassLoader().loadClass("org.activate.Main");
             Object s = main.getField("start").get(null);
             s = main.getField("start").get(null);
-            assertNotNull("Bundle started as default start level is 20, its context provided", s);
+            assertNull("Bundle is not started, only modules with start level lower than 1   0 are", s);
 
             mgr.disable(m1);
-
-            Object e = main.getField("stop").get(null);
-            assertNotNull("Bundle stopped, its context provided", e);
         } finally {
             mgr.mutexPrivileged().exitWriteAccess();
         }
