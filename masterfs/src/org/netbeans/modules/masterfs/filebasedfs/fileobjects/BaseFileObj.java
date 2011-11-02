@@ -1027,13 +1027,11 @@ public abstract class BaseFileObj extends FileObject {
         
         public FileEventImpl(FileObject src, FileObject file, boolean expected) {
             super(src, file, expected);
-            Watcher.lock(src);
         }
         
         public FileEventImpl(FileObject src, FileEventImpl next) {
             super(src, next.getFile(), next.isExpected());
             this.next = next;
-            Watcher.lock(src);
         }
     }
         

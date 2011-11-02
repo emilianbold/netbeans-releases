@@ -48,6 +48,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
@@ -73,7 +74,7 @@ import org.openide.util.lookup.ServiceProviders;
 })
 public final class Watcher extends AnnotationProvider {
     static final Logger LOG = Logger.getLogger(Watcher.class.getName());
-    private static final Map<FileObject,int[]> MODIFIED = new HashMap<FileObject, int[]>();
+    private static final Map<FileObject,int[]> MODIFIED = new WeakHashMap<FileObject, int[]>();
     
     private Ext<?> ext;
     
@@ -459,7 +460,6 @@ public final class Watcher extends AnnotationProvider {
     public static synchronized void unlock(FileObject fo) {
         int[] arr = MODIFIED.get(fo);
         if (arr == null) {
-            System.err.println("null: " + fo);
             return;
         }
         if (--arr[0] == 0) {
