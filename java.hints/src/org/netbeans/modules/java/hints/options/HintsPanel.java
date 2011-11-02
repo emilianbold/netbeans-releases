@@ -645,7 +645,7 @@ public final class HintsPanel extends javax.swing.JPanel   {
             }
             DataFolder folder = (DataFolder) DataObject.find(folderFO);
             DataObject template = DataObject.find(tempFO);
-            DataObject newIfcDO = template.createFromTemplate(folder);
+            DataObject newIfcDO = template.createFromTemplate(folder, "Inspection");
             RulesManager.getInstance().reload();
             errorTreeModel = constructTM(Utilities.getBatchSupportedHints(), false);
             errorTree.setModel(errorTreeModel);
