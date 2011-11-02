@@ -1,0 +1,59 @@
+    private static final $finalStaticField;
+                          ----------------
+HINT:Field "$finalStaticField" can not be declared final
+FIX:Remove modifier: final
+    private static abstract $abstractStaticField;
+                             -------------------
+HINT:Field "$abstractStaticField" can not be declared abstract
+FIX:Remove modifier: abstract
+    private final $finalField;
+                   ----------
+HINT:Field "$finalField" can not be declared final
+FIX:Remove modifier: final
+    private abstract $abstractField;
+                      -------------
+HINT:Field "$abstractField" can not be declared abstract
+FIX:Remove modifier: abstract
+class ClassMethods {
+      ------------
+HINT:Class "ClassMethods" contains abstract methods and must be declared abstract
+FIX:Add modifier: abstract
+    public abstract final function classAbstractAndFinal() {
+                                   ---------------------
+HINT:Method "classAbstractAndFinal" can not be declared abstract and final
+FIX:Remove modifier: abstract
+FIX:Remove modifier: final
+    public abstract function classWithBody() {
+                             -------------
+HINT:Abstract method "classWithBody" can not contain body
+FIX:Remove body of the method: classWithBody
+    abstract private function classAbstractPrivate();
+                              --------------------
+HINT:Abstract method "classAbstractPrivate" can not be declared private
+FIX:Remove modifier: private
+    private function ifacePrivateMethod();
+                     ------------------
+HINT:Interface method "ifacePrivateMethod" can not be declared private
+FIX:Remove modifier: private
+    protected function ifaceProtectedMethod();
+                       --------------------
+HINT:Interface method "ifaceProtectedMethod" can not be declared protected
+FIX:Remove modifier: protected
+    public final function ifaceFinalMethod();
+                          ----------------
+HINT:Interface method "ifaceFinalMethod" can not be declared final
+FIX:Remove modifier: final
+    public function ifaceWithBody() {
+                    -------------
+HINT:Interface method "ifaceWithBody" can not contain body
+FIX:Remove body of the method: ifaceWithBody
+class PossibleAbstract {
+      ----------------
+HINT:Class "PossibleAbstract" contains abstract methods and must be declared abstract
+FIX:Add modifier: abstract
+final class FinalAbstract {
+            -------------
+HINT:Class "FinalAbstract" contains abstract methods and can not be declared final
+FIX:Remove modifier: final
+HINT:Class "FinalAbstract" contains abstract methods and must be declared abstract
+FIX:Add modifier: abstract

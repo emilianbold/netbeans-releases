@@ -26,6 +26,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import javax.swing.event.ChangeEvent;
@@ -190,7 +191,7 @@ public class TemplateClientPanelVisual extends javax.swing.JPanel implements Hel
                     FileObject fo = FileUtil.toFileObject(file);
                     Source source = Source.create(fo);
                     final int startOffset = 0;
-                    templateData = new ArrayList<String>();
+                    templateData = new LinkedHashSet<String>();
                     try {
                         ParserManager.parse(Collections.singleton(source), new UserTask() {
 

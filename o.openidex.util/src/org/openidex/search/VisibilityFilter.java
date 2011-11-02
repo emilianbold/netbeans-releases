@@ -87,8 +87,8 @@ final class VisibilityFilter implements FileObjectFilter {
         } catch (DataObjectNotFoundException ex) {
             String msg = "DataObject not found for file:" + file;       //NOI18N
             Logger logger = Logger.getLogger(VisibilityFilter.class.getName());
-            logger.log(Level.WARNING, msg, ex);
-            return false;
+            logger.log(Level.INFO, msg, ex);
+            return true;
         }
     }
     
