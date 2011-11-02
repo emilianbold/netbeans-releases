@@ -203,13 +203,14 @@ implements ActionListener, Runnable, Callable<JButton> {
     }
 
     private boolean shouldReportScanCancel() {
+        final JButton sendOption = new JButton(NbBundle.getMessage(UIHandler.class, "LBL_SendReport"));
         final NotifyDescriptor nd = new NotifyDescriptor(
             NbBundle.getMessage(UIHandler.class, "MSG_SCAN_CANCELLED"),
             NbBundle.getMessage(UIHandler.class, "TITLE_SCAN_CANCELLED"),
             NotifyDescriptor.YES_NO_CANCEL_OPTION,
             NotifyDescriptor.QUESTION_MESSAGE,
-            new Object[] {DialogDescriptor.YES_OPTION, DialogDescriptor.NO_OPTION},
-            DialogDescriptor.YES_OPTION);
-        return DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.YES_OPTION;
+            new Object[] {sendOption, DialogDescriptor.CANCEL_OPTION},
+            sendOption);
+        return DialogDisplayer.getDefault().notify(nd) == sendOption;
     }
 }
