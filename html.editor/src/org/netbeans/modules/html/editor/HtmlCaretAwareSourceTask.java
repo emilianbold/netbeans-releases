@@ -43,9 +43,9 @@
  */
 package org.netbeans.modules.html.editor;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.Document;
@@ -108,13 +108,6 @@ public final class HtmlCaretAwareSourceTask extends ParserResultTask<HtmlParserR
 
     @Override
     public void run(HtmlParserResult result, SchedulerEvent event) {
-        if(event == null) {
-            if(LOG) {
-                LOGGER.log(Level.INFO, "ParserResultTask.run(...) called with null SchedulerEvent argument."); //NOI18N
-            }
-            return ;
-        }
-
         Document doc = result.getSnapshot().getSource().getDocument(false);
         if(doc != null) {
             forDocument(doc).parsed(result, event);
@@ -123,7 +116,7 @@ public final class HtmlCaretAwareSourceTask extends ParserResultTask<HtmlParserR
 
     public static class Source {
 
-        private Vector<SourceListener> listeners = new Vector<SourceListener>();
+        private Collection<SourceListener> listeners = new ArrayList<SourceListener>();
 
         protected void parsed(Result ci, SchedulerEvent event) {
             //distribute to clients

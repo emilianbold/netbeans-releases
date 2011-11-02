@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -42,67 +42,25 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.core.netigso;
+package org.netbeans.modules.cnd.source.spi;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Locale;
-import org.netbeans.Module;
-import org.netbeans.ModuleManager;
-import org.netbeans.SetupHid;
-import org.netbeans.core.startup.Main;
-import org.netbeans.core.startup.ModuleSystem;
+import org.openide.nodes.Node;
 
 /**
- * Do we correctly call the BundleActivators?
+ * This handler is used by JavaNode.setName() method. JavaNode.setName() uses
+ * Lookup.getDefault() to lookup for instances of RenameHandler. If there is one
+ * instance found, it's handleRename(...) method is called to handle rename
+ * request. More than one instance of RenameHandler is not allowed.
  *
- * @author Jaroslav Tulach
+ * @author Jan Becicka, Vladimir Voskresensky
+ * @since 1.8.0
  */
-public class NetigsoDefaultStartLevelTest extends SetupHid {
-    private static Module m1;
-    private static ModuleManager mgr;
-    private int cnt;
-    private File simpleModule;
-
-    public NetigsoDefaultStartLevelTest(String name) {
-        super(name);
-    }
-
-    protected @Override void setUp() throws Exception {
-        Locale.setDefault(new Locale("te", "ST"));
-        clearWorkDir();
-        File ud = new File(getWorkDir(), "ud");
-        ud.mkdirs();
-        System.setProperty("netbeans.user", ud.getPath());
-        
-        data = new File(getDataDir(), "jars");
-        jars = new File(getWorkDir(), "space in path");
-        jars.mkdirs();
-        simpleModule = createTestJAR("activate", null);
-    }
-
-    public void testActivation() throws Exception {
-        ModuleSystem ms = Main.getModuleSystem();
-        mgr = ms.getManager();
-        mgr.mutexPrivileged().enterWriteAccess();
-        try {
-            m1 = mgr.createBundle(simpleModule, null, false, false, false, 10);
-            mgr.enable(m1);
-
-            Class<?> main = m1.getClassLoader().loadClass("org.activate.Main");
-            Object s = main.getField("start").get(null);
-            s = main.getField("start").get(null);
-            assertNotNull("Bundle started as default start level is 20, its context provided", s);
-
-            mgr.disable(m1);
-
-            Object e = main.getField("stop").get(null);
-            assertNotNull("Bundle stopped, its context provided", e);
-        } finally {
-            mgr.mutexPrivileged().exitWriteAccess();
-        }
-    }
-    private File createTestJAR(String name, String srcdir, File... classpath) throws IOException {
-        return createTestJAR(data, jars, name, srcdir, classpath);
-    }
+public interface RenameHandler {
+    /**
+     * @param node on this node rename was requested
+     * @param newName new name of node
+     * @param newNameExt new of file (with extension if any)
+     * @throws java.lang.IllegalArgumentException thrown if rename cannot be performed
+     */
+    void handleRename(Node node, String newName) throws IllegalArgumentException;
 }

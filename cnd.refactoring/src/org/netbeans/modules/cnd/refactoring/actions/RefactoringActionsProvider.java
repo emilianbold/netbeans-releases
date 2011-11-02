@@ -44,17 +44,22 @@
 package org.netbeans.modules.cnd.refactoring.actions;
 
 import java.awt.Toolkit;
+import java.util.Collection;
 import org.netbeans.modules.cnd.refactoring.ui.*;
 import java.util.HashSet;
 import java.util.Set;
 import javax.swing.JOptionPane;
+import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmModelState;
 import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.api.model.xref.CsmIncludeHierarchyResolver;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.refactoring.support.CsmContext;
 import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
 import org.netbeans.modules.cnd.utils.ui.UIGesturesSupport;
+import org.netbeans.modules.refactoring.api.ui.ExplorerContext;
 import org.netbeans.modules.refactoring.spi.ui.UI;
 import org.netbeans.modules.refactoring.spi.ui.ActionsImplementationProvider;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
@@ -125,6 +130,20 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
         if (nodes.size() == 1) {
             CsmObject ctx = CsmRefactoringUtils.findContextObject(lookup);
             if (CsmRefactoringUtils.isSupportedReference(ctx)) {
+                if (CsmKindUtilities.isFile(ctx)) {
+                    // propose refactoring only for files included somewhere,
+                    // so sources will do usual rename without extra dialogs
+                    Collection<? extends CsmFile> allFiles = lookup.lookupAll(CsmFile.class);
+                    boolean included = false;
+                    for (CsmFile csmFile : allFiles) {
+                        Collection<CsmFile> includers = CsmIncludeHierarchyResolver.getDefault().getFiles(csmFile);
+                        included |= !includers.isEmpty();
+                        if (included) {
+                            break;
+                        }
+                    }
+                    return included;
+                }
                 return true;
             }
         }
@@ -140,7 +159,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
                 @Override
                 protected RefactoringUI createRefactoringUI(CsmObject selectedElement, CsmContext editorContext) {
                     UIGesturesSupport.submit(CsmRefactoringUtils.USG_CND_REFACTORING, RENAME_TRACKING, CsmRefactoringUtils.FROM_EDITOR_TRACKING);
-                    return new RenameRefactoringUI(selectedElement);
+                    return new RenameRefactoringUI(selectedElement, null);
                 }
             };
         } else {
@@ -149,7 +168,8 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
                 @Override
                 protected RefactoringUI createRefactoringUI(CsmObject selectedElement) {
                     UIGesturesSupport.submit(CsmRefactoringUtils.USG_CND_REFACTORING, RENAME_TRACKING);
-                    return new RenameRefactoringUI(selectedElement);
+                    String newName = getName(lookup);
+                    return new RenameRefactoringUI(selectedElement, newName);
                 }
             };
         }
@@ -221,5 +241,15 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
     static boolean isFromEditor(Lookup lookup) {
         EditorCookie ec = lookup.lookup(EditorCookie.class);
         return ec != null && CsmUtilities.findRecentEditorPaneInEQ(ec) != null;
+    }
+    
+    static String getName(Lookup look) {
+        ExplorerContext ren = look.lookup(ExplorerContext.class);
+        if (ren == null) {
+            return null;
+        }
+        // this name is without extension, because later on it is passed to 
+        // general rename refactoring which will rename file
+        return ren.getNewName(); //NOI18N
     }
 }
