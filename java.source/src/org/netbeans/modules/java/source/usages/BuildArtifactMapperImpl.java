@@ -252,13 +252,17 @@ public class BuildArtifactMapperImpl {
         }
         
         File tagFile = new File(targetFolder, TAG_FILE_NAME);
-
-        if (tagFile.exists()) {
+        File tagUpdateResourcesFile = new File(targetFolder, TAG_UPDATE_RESOURCES);
+        final boolean forceResourceCopy = copyResources && keepResourceUpToDate && !tagUpdateResourcesFile.exists();
+        final boolean cosActive = tagFile.exists();
+        if (cosActive && !forceResourceCopy) {
             return true;
         }
-        
-        delete(targetFolder, false/*#161085: cleanCompletely*/);
-        
+
+        if (!cosActive) {
+            delete(targetFolder, false/*#161085: cleanCompletely*/);
+        }
+
         if (!targetFolder.exists() && !targetFolder.mkdirs()) {
             throw new IOException("Cannot create destination folder: " + targetFolder.getAbsolutePath());
         }
@@ -266,19 +270,21 @@ public class BuildArtifactMapperImpl {
         sources(targetFolder, sources);
 
         for (FileObject sr : sources[0]) {
-            URL srURL = sr.getURL();
-            File index = JavaIndex.getClassFolder(srURL, true);
+            if (!cosActive) {
+                URL srURL = sr.getURL();
+                File index = JavaIndex.getClassFolder(srURL, true);
 
-            if (index == null) {
-                //#181992: (not nice) ignore the annotation processing target directory:
-                if (srURL.equals(AnnotationProcessingQuery.getAnnotationProcessingOptions(sr).sourceOutputDirectory())) {
-                    continue;
+                if (index == null) {
+                    //#181992: (not nice) ignore the annotation processing target directory:
+                    if (srURL.equals(AnnotationProcessingQuery.getAnnotationProcessingOptions(sr).sourceOutputDirectory())) {
+                        continue;
+                    }
+
+                    return null;
                 }
-                
-                return null;
-            }
 
-            copyRecursively(index, targetFolder);
+                copyRecursively(index, targetFolder);
+            }
 
             if (copyResources) {
                 Set<String> javaMimeTypes = COSSynchronizingIndexer.gatherJavaMimeTypes();
@@ -287,11 +293,13 @@ public class BuildArtifactMapperImpl {
                 copyRecursively(sr, targetFolder, javaMimeTypes, javaMimeTypesArr);
             }
         }
-        
-        new FileOutputStream(tagFile).close();
+
+        if (!cosActive) {
+            new FileOutputStream(tagFile).close();
+        }
 
         if (keepResourceUpToDate)
-            new FileOutputStream(new File(targetFolder, TAG_UPDATE_RESOURCES)).close();
+            new FileOutputStream(tagUpdateResourcesFile).close();
         
         return true;
     }
