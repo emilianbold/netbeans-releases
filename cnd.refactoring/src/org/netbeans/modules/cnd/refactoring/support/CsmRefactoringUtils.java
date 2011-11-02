@@ -223,7 +223,9 @@ public final class CsmRefactoringUtils {
     public static String getSimpleText(CsmObject element) {
         String text = "";
         if (element != null) {
-            if (CsmKindUtilities.isNamedElement(element)) {
+            if (CsmKindUtilities.isFile(element)) {
+                text = CsmUtilities.getFileObject(((CsmFile)element)).getName();
+            } else if (CsmKindUtilities.isNamedElement(element)) {
                 text = ((CsmNamedElement) element).getName().toString();
             } else if (CsmKindUtilities.isStatement(element)) {
                 text = ((CsmStatement)element).getText().toString();

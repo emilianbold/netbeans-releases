@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -41,72 +41,56 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.cnd.source;
 
-import java.util.Collection;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+package org.netbeans.modules.cnd.refactoring.support;
+
+import java.io.IOException;
 import javax.swing.Action;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.source.spi.RenameHandler;
-import org.openide.actions.OpenAction;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataNode;
+import org.netbeans.modules.refactoring.api.ui.ExplorerContext;
+import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
+import org.openide.ErrorManager;
 import org.openide.loaders.DataObject;
-import org.openide.nodes.Children;
-import org.openide.util.HelpCtx;
+import org.openide.nodes.Node;
 import org.openide.util.Lookup;
-import org.openide.util.actions.SystemAction;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 
 /**
- *  A base class for C/C++/Fortran (C-C-F) nodes.
+ * based on RenameHandlerImpl from refactoring.java
+ * @author Vladimir Voskresensky
  */
-public class SourceDataNode extends DataNode {
-
-    /** Constructor for this class */
-    public SourceDataNode(DataObject obj, Lookup lookup, String icon) {
-        super(obj, Children.LEAF, lookup);
-        setIconBaseWithExtension(icon);
-    }
-
-    /**
-     *  Overrides default action from DataNode.
-     *  Instantiate a template, if isTemplate() returns true.
-     *  Opens otherwise.
-     */
-    @Override
-    public Action getPreferredAction() {
-        Action result = super.getPreferredAction();
-        return result == null ? SystemAction.get(OpenAction.class) : result;
-    }
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.source.spi.RenameHandler.class)
+public class RenameHandlerImpl implements RenameHandler {
 
     @Override
-    public HelpCtx getHelpCtx() {
-        return new HelpCtx("Welcome_cpp_home"); // NOI18N
-    }
-    
-    @Override
-    public void setName(String name) {
-        RenameHandler handler = getRenameHandler();
-        if (handler == null) {
-            super.setName(name);
-        } else {
-            try {
-                handler.handleRename(SourceDataNode.this, name);
-            } catch (IllegalArgumentException ioe) {
-                super.setName(name);
+    public void handleRename(Node node, String newName) {
+        DataObject dob = node.getCookie(DataObject.class);
+        CsmFile[] csmFiles = CsmUtilities.getCsmFiles(dob, false, false);
+        if (csmFiles != null && csmFiles.length > 0) {
+            InstanceContent ic = new InstanceContent();
+            // node is needed, because isApplicable depends on one node instance in lookup
+            ic.add(node);
+            // pass new name (without extension as needed by dob.rename)
+            ExplorerContext explorerContext = new ExplorerContext();
+            explorerContext.setNewName(newName);
+            ic.add(explorerContext);
+            for (CsmFile file : csmFiles) {
+                ic.add(file);
+            }
+            Lookup l = new AbstractLookup(ic);
+            Action a = RefactoringActionsFactory.renameAction().createContextAwareInstance(l);
+            if (Boolean.TRUE.equals(a.getValue("applicable"))) {//NOI18N
+                a.actionPerformed(RefactoringActionsFactory.DEFAULT_EVENT);
+                return;
             }
         }
-    }
-
-    private static synchronized RenameHandler getRenameHandler() {
-        Collection<? extends RenameHandler> handlers = (Lookup.getDefault().lookupAll(RenameHandler.class));
-        if (handlers.isEmpty()) {
-            return null;
+        try {
+            dob.rename(newName);
+        } catch (IOException ioe) {
+            ErrorManager.getDefault().notify(ioe);
         }
-        if (handlers.size() > 1) {
-            LOG.log(Level.WARNING, "Multiple instances of RenameHandler found in Lookup; only using first one: {0}", handlers); //NOI18N
-        }
-        return handlers.iterator().next();
     }
-    private static final Logger LOG = Logger.getLogger(SourceDataNode.class.getName());
 }

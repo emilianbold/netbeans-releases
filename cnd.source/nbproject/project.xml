@@ -165,6 +165,7 @@
                 <friend>org.netbeans.modules.cnd.api.project</friend>
                 <friend>org.netbeans.modules.cnd.editor</friend>
                 <friend>org.netbeans.modules.cnd.kit</friend>
+                <friend>org.netbeans.modules.cnd.refactoring</friend>
                 <package>org.netbeans.modules.cnd.source.spi</package>
             </friend-packages>
         </data>
