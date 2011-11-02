@@ -140,7 +140,11 @@ public class SymfonyScript extends PhpProgram {
 
     @Override
     public String validate() {
-        return FileUtils.validateScript(getProgram(), NbBundle.getMessage(SymfonyScript.class, "LBL_SymfonyScript"));
+        String error = FileUtils.validateFile(getProgram(), false);
+        if (error == null) {
+            return null;
+        }
+        return NbBundle.getMessage(SymfonyScript.class, "LBL_SymfonyScriptPrefix", error);
     }
 
     public static String validate(String command) {

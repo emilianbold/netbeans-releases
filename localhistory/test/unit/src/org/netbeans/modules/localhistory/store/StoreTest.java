@@ -77,6 +77,7 @@ public class StoreTest extends LHTestCase {
     @Override
     protected void setUp() throws Exception {        
         super.setUp();
+        System.setProperty("netbeans.localhistory.storeChangesAsynchronously", "true");
         cleanUpDataFolder();
         LocalHistoryTestStore store = createStore();
         store.cleanUp(1);

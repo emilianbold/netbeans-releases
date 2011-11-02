@@ -56,6 +56,14 @@ public final class CslActions {
     }
 
     /**
+     * Creates an action for navigating to element declaration
+     * @return the action; never {@code null}.
+     */
+    public static Action createGoToDeclarationAction() {
+        return new GoToDeclarationAction();
+    }
+    
+    /**
      * Creates an action for navigating to next/previous occurrences.
      * @param nextOccurrence  - {@code true} for navigating to next occurrence; {@code false}
      *  for previous.

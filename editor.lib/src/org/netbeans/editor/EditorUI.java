@@ -852,7 +852,7 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
     protected void update(Graphics g) {
         // Possibly apply the rendering hints
         if (renderingHints != null) {
-            ((Graphics2D)g).setRenderingHints(renderingHints);
+            ((Graphics2D)g).addRenderingHints(renderingHints);
         }
     }
 

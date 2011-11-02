@@ -417,8 +417,10 @@ public class WizardDescriptor extends DialogDescriptor {
 
         finishButton.setDefaultCapable(true);
         nextButton.setDefaultCapable(true);
-        previousButton.setDefaultCapable(false);
-        cancelButton.setDefaultCapable(false);
+        previousButton.setDefaultCapable(true);
+        previousButton.putClientProperty( "defaultButton", Boolean.FALSE ); //NOI18N
+        cancelButton.setDefaultCapable(true);
+        cancelButton.putClientProperty( "defaultButton", Boolean.FALSE ); //NOI18N
     }
 
     /** Create a new wizard from a fixed list of panels, passing some settings to the panels.
@@ -453,8 +455,7 @@ public class WizardDescriptor extends DialogDescriptor {
     /** Constructor for subclasses. The expected use is to call this
      * constructor and then call {@link #setPanelsAndSettings} to provide
      * the right iterator, panels and data the wizard should use. This
-     * allows to eliminate unchecked warnings as described in
-     * <a href="http://www.netbeans.org/issues/show_bug.cgi?id=102261">issue 102261</a>.
+     * allows to eliminate unchecked warnings as described in bug #102261.
      * @since 7.4
      */
     protected WizardDescriptor() {

@@ -373,11 +373,11 @@ public final class Utilities {
             return true;
         switch(ts.token().id()) {
             case DOUBLE_LITERAL:
+            case FLOAT_LITERAL:
+            case FLOAT_LITERAL_INVALID:
                 if (ts.token().text().charAt(0) == '.')
                     break;
             case CHAR_LITERAL:
-            case FLOAT_LITERAL:
-            case FLOAT_LITERAL_INVALID:
             case INT_LITERAL:
             case INVALID_COMMENT_END:
             case JAVADOC_COMMENT:

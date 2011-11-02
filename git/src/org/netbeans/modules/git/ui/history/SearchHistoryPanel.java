@@ -286,6 +286,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         this.results = newResults;
         this.searchInProgress = searching;
         summaryView = null;
+        releaseDiff();
         diffView = null;
         refreshComponents(true);
     }
@@ -566,5 +567,11 @@ private void fileInfoCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//
 
     File getRepository () {
         return repository;
+    }
+
+    void releaseDiff () {
+        if (diffView != null) {
+            diffView.cancelBackgroundTasks();
+        }
     }
 }

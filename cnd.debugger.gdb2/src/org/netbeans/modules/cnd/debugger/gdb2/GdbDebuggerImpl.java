@@ -127,7 +127,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     private Gdb gdb;				// gdb proxy
     private GdbVersionPeculiarity peculiarity;  // gdb version differences
     
-    private static final Logger LOG = Logger.getLogger(GdbDebuggerImpl.class.toString());
+    static final Logger LOG = Logger.getLogger(GdbDebuggerImpl.class.toString());
 
     private final GdbHandlerExpert handlerExpert;
     private MILocation homeLoc;
@@ -709,13 +709,13 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     public final void stepInto() {
         sendResumptive("-exec-step"); // NOI18N
     }
+    
+    private static final String STEP_INTO_ID = "STEP_INTO"; //NOI18N
 
     private void stepIntoMain() {
         send("-break-insert -t main"); //NOI18N
+        firstBreakpointId = STEP_INTO_ID; // to force pid request but avoid continue
         sendResumptive("-exec-run"); // NOI18N
-	
-	// IZ 189550
-        sendPidCommand(false);
     }
 
     public final void stepOver() {
@@ -804,24 +804,25 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         gdb.sendCommand(cmd);
     }
 
+    @Override
     public void contAt(String src, int line) {
-	/* (GDB) Version 7.2.50.20101202.
-	src = localToRemote("runToCursor", src); // NOI18N
-        String cmdString = "-exec-jump " + src + ":" + line; // NOI18N
-        MICommand cmd = new MIResumptiveCommand(cmdString);
-        gdb.sendCommand(cmd);
-	 *
-	 */
-	notImplemented("-exec-jump");// NOI18N
+        src = localToRemote("contAt", src); // NOI18N
+        sendResumptive("-exec-jump " + src + ':' + line); // NOI18N
+    }
+    
+    @Override
+    public void contAtInst(String addr) {
+        sendResumptive("-exec-jump *" + addr); // NOI18N
     }
 
+    @Override
     public void runToCursor(String src, int line) {
 	src = localToRemote("runToCursor", src); // NOI18N
-        String cmdString = "-exec-until " + src + ":" + line; // NOI18N
-        sendResumptive(cmdString);
+        sendResumptive("-exec-until " + src + ':' + line); // NOI18N
     }
     
     // interface NativeDebugger
+    @Override
     public void runToCursorInst(String addr) {
         sendResumptive("-exec-until *" + addr); //NOI18N
     }
@@ -1165,6 +1166,9 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
 	    breakStartCmd.chain(runCmd, breakMainCmd);
 	    breakMainCmd.chain(runCmd, runCmd);
+            
+            // need to clear PID, see IZ 203916
+            session().setPid(-1);
 
             // _start does not work on MacOS
             if (getHost().getPlatform() == Platform.MacOSX_x86) {
@@ -1316,7 +1320,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
         // OLD overrideOptions();
 
-        manager().formatStatusText("ReadyToRun", null); // NOI18N
+        manager().formatStatusText("ReadyToRun"); // NOI18N
 
         DebuggerManager.get().addRecentDebugTarget(progname, false);
 
@@ -3103,13 +3107,15 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         };
         gdb.sendCommand(cmd);
          */
-
+        
         final MITList results = stopRecord.results();
+        
+        state().isRunning = false;
         
         // detect first stop (in _start or main)
         if (firstBreakpointId != null) {
             MIValue bkptnoValue = results.valueOf("bkptno"); // NOI18N
-            boolean cont = (bkptnoValue == null) ||
+            boolean cont = (bkptnoValue == null && !STEP_INTO_ID.equals(firstBreakpointId)) ||
                (bkptnoValue != null && (firstBreakpointId.equals(bkptnoValue.asConst().value())));
             firstBreakpointId = null;
             sendPidCommand(cont);
@@ -4576,7 +4582,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     
     private void sendResumptive(String commandStr) {
         MICommand cmd = new MIResumptiveCommand(commandStr);
-        gdb.sendCommand(cmd);
+        gdb.sendCommand(cmd, true);
     }
     
     private void sendCommandInt(MICommand cmd) {

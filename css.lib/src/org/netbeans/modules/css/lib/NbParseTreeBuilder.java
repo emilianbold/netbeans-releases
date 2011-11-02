@@ -43,6 +43,7 @@ package org.netbeans.modules.css.lib;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.RecognitionException;
 import org.antlr.runtime.Token;
@@ -51,8 +52,11 @@ import org.antlr.runtime.debug.BlankDebugEventListener;
 import java.util.Stack;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
 import org.antlr.runtime.NoViableAltException;
 import org.netbeans.modules.css.lib.api.CssTokenId;
+import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.NodeType;
 import org.netbeans.modules.css.lib.api.ProblemDescription;
 import org.openide.util.NbBundle;
@@ -79,6 +83,9 @@ public class NbParseTreeBuilder extends BlankDebugEventListener {
     private boolean resync;
     private CommonToken unexpectedToken;
 
+    private Map<CommonToken, Pair<Node>> noViableAltNodes = new HashMap<CommonToken, Pair<Node>>();
+    private Collection<RuleNode> leafRuleNodes = new ArrayList<RuleNode>();
+    
     public NbParseTreeBuilder(CharSequence source) {
         this.source = source;
         callStack.push(new RootNode(source));
@@ -128,16 +135,17 @@ public class NbParseTreeBuilder extends BlankDebugEventListener {
         }
 
         RuleNode ruleNode = callStack.pop();
-        if (ruleNode.getChildCount() == 0) {
-            RuleNode parent = (RuleNode) ruleNode.getParent();
-            if (parent != null) {
-                parent.deleteChild(ruleNode);
-            }
-        } else {
+        if (ruleNode.getChildCount() > 0) {
             //set the rule end offset
             if (lastConsumedToken != null) {
                 ruleNode.setLastToken(lastConsumedToken);
             }
+        } else {
+            //empty node - we cannot remove it right now since an error node
+            //may be attached to it later.
+            //all the nodes from possiblyEmptyRuleNodes list are checked after
+            //the parsing finishes and removed from the parse tree if still empty
+            leafRuleNodes.add(ruleNode);
         }
     }
 
@@ -223,11 +231,6 @@ public class NbParseTreeBuilder extends BlankDebugEventListener {
             return;
         }
         
-//        System.err.println(e);
-//        System.err.println("index:"+e.input.index());
-//        System.err.println("token:"+e.token);
-        
-        
         RuleNode ruleNode = callStack.peek();
 
         String message;
@@ -242,32 +245,21 @@ public class NbParseTreeBuilder extends BlankDebugEventListener {
 
         assert unexpectedTokenId != null : "No CssTokenId for " + unexpectedToken;
 
-        //let the error range be the area between last consumed token end and the error token end
-        from = lastConsumedToken != null
-                ? CommonTokenUtil.getCommonTokenOffsetRange(lastConsumedToken)[1]
-                : 0;
-
-        to = CommonTokenUtil.getCommonTokenOffsetRange(unexpectedToken)[0]; //beginning of the unexpected token
-
-        
-        boolean tokenMayNotBeMatchedLater = 
-                unexpectedTokenId != CssTokenId.EOF 
-                &&
-                (unexpectedTokenId == CssTokenId.ERROR || (!(e instanceof NoViableAltException)));
-        
-        if (tokenMayNotBeMatchedLater) {
-            //for error tokens always include them to the error node range,
-            //they won't be matched by any other rule. Otherwise 
-            //limit the error node to the beginning of the unexpected token
-            //since the token may be matched later
-            to = CommonTokenUtil.getCommonTokenOffsetRange(unexpectedToken)[1]; //end of the unexpected token
-        } 
-
+        //special handling for EOF token - it has lenght == 1 !
+        if(unexpectedTokenId == CssTokenId.EOF) {
+            from = to = CommonTokenUtil.getCommonTokenOffsetRange(unexpectedToken)[0]; 
+        } else {
+            //normal tokens
+            from = CommonTokenUtil.getCommonTokenOffsetRange(unexpectedToken)[0]; 
+            to = CommonTokenUtil.getCommonTokenOffsetRange(unexpectedToken)[1];
+        }
+      
         if (unexpectedTokenId == CssTokenId.EOF) {
             message = NbBundle.getMessage(NbParseTreeBuilder.class, "MSG_Error_Premature_EOF");
         } else {
             message = NbBundle.getMessage(NbParseTreeBuilder.class, "MSG_Error_Unexpected_Token", unexpectedTokenId.name());
         }
+        
         //create a ParsingProblem
         ProblemDescription problemDescription = new ProblemDescription(
                 from,
@@ -278,50 +270,104 @@ public class NbParseTreeBuilder extends BlankDebugEventListener {
 
         //create an error node and add it to the parse tree
         ErrorNode errorNode = new ErrorNode(from, to, problemDescription, source);
-        addNodeChild(ruleNode, errorNode);
 
-        if (tokenMayNotBeMatchedLater) {
-            //if the unexpected token is error token, add the token as a child of the error node
-            TokenNode tokenNode = new TokenNode(unexpectedToken);
-            addNodeChild(errorNode, tokenNode);
+        //add the unexpected token as a child of the error node
+        TokenNode tokenNode = new TokenNode(unexpectedToken);
+        addNodeChild(errorNode, tokenNode);
+        
+        if(e instanceof NoViableAltException) {
+            //error during predicate - the unexpected token may or may not be
+            //reported later as an error. To handle this,
+            //store the error node and the ruleNode where the error node should be added
+            noViableAltNodes.put(unexpectedToken, new Pair<Node>(ruleNode, errorNode));
+            errorNodes.push(errorNode);
+        } else {
+            //possibly remove the unexpectedToken from the noViableAltNodes map
+            
+            //NOTICE:
+            //Uncomment the following line if you want the parse tree not to produce
+            //multiple error nodes for the same token. If the line is active, there 
+            //wont be error nodes for semantic predicates if the unexpected token
+            //is matched by another error rule later.
+//            noViableAltNodes.remove(unexpectedToken);
+            
+            addNodeChild(ruleNode, errorNode);
+            errorNodes.push(errorNode);
+
+            //create and artificial error token so the rules on stack can properly set their ranges
+            lastConsumedToken = new CommonToken(Token.INVALID_TOKEN_TYPE);
+            lastConsumedToken.setStartIndex(from);
+            lastConsumedToken.setStopIndex(to - 1); // ... ( -1 => last *char* index )
         }
 
-        //create and artificial error token so the rules on stack can properly set their ranges
-        lastConsumedToken = new CommonToken(Token.INVALID_TOKEN_TYPE);
-        lastConsumedToken.setStartIndex(from);
-        lastConsumedToken.setStopIndex(to - 1); // ... ( -1 => last *char* index )
-
-        errorNodes.push(errorNode);
 
     }
 
     @Override
     public void terminate() {
+        super.terminate();
+
+        //process unreported errors from NoViableAltException
+        for(Pair<Node> pair : noViableAltNodes.values()) {
+            RuleNode ruleNode = (RuleNode)pair.n1;
+            ErrorNode errorNode = (ErrorNode)pair.n2;
+            
+            ruleNode.addChild(errorNode);
+            errorNode.setParent(ruleNode);
+        }
+        
         //Finally after the parsing is done fix the error nodes and their predecessors.
         //This fixes the problem with rules where RecognitionException happened
         //but the errorneous or missing token has been matched in somewhere further
-        super.terminate();
-
         for (ErrorNode en : errorNodes) {
-            RuleNode n = en;
+            synchronizeAncestorsBoundaries(en);
+        }
+        
+        //clean parse tree from empty rule nodes 
+        //empty rule node == rule node without a single _token node_ child
+        for(RuleNode node : leafRuleNodes) {
+            removeLeafRuleNodes(node);
+        }
+
+    }
+    
+    //removes all empty rule nodes in the tree path from the given node to the parse tree root
+    private void removeLeafRuleNodes(RuleNode node) {
+        for(;;) {
+            if(node.children().isEmpty()) {
+                RuleNode parent = (RuleNode)node.parent();
+                if(parent == null) {
+                    return ;
+                }
+                parent.deleteChild(node);
+                node = parent;
+            } else {
+                break;
+            }
+        }
+    }
+    
+    private void synchronizeAncestorsBoundaries(RuleNode en) {
+        RuleNode n = en;
             for (;;) {
                 if (n == null) {
                     break;
                 }
-                if (n.from() == -1 || n.to() == -1) {
-                    //set the node range to the same range as the error node
+                
+                //adjust the parent nodes ranges to the errorNode
+                if (n.from() == -1 || n.from() > en.from()) {
                     n.from = en.from();
+                }
+                if(n.to() == -1 || n.to() < en.to()) {                    
                     n.to = en.to();
                 }
+                
                 n = (RuleNode) n.parent();
             }
-
-        }
-
     }
 
     public Collection<ProblemDescription> getProblems() {
-        Collection<ProblemDescription> problems = new ArrayList<ProblemDescription>();
+        Collection<ProblemDescription> problems = new LinkedHashSet<ProblemDescription>();
         for (ErrorNode errorNode : errorNodes) {
             problems.add(errorNode.getProblemDescription());
         }
@@ -359,35 +405,56 @@ public class NbParseTreeBuilder extends BlankDebugEventListener {
         }
         
         //find last error which triggered this recovery and add the skipped tokens to it
-        ErrorNode errorNode = errorNodes.peek();
+//        ErrorNode errorNode = errorNodes.peek();
+//        RuleNode peek = callStack.peek();
+//        if(!(peek instanceof ErrorNode)) {
+        
+        RuleNode peek = errorNodes.peek();
+        
+            RuleNode node = new RuleNode(NodeType.recovery, source);
+            peek.addChild(node);
+            node.setParent(peek);
+            peek = node;
+            
+//        }
+            
         
         //set first and last token
-        errorNode.setFirstToken(first);
-        errorNode.setLastToken(last);
+        peek.setFirstToken(first);
+        peek.setLastToken(last);
+        
+        synchronizeAncestorsBoundaries(peek);
         
         //set range
-        errorNode.from = CommonTokenUtil.getCommonTokenOffsetRange(first)[0]; 
-        errorNode.to = CommonTokenUtil.getCommonTokenOffsetRange(last)[1]; 
+        peek.from = CommonTokenUtil.getCommonTokenOffsetRange(first)[0]; 
+        peek.to = CommonTokenUtil.getCommonTokenOffsetRange(last)[1]; 
         
         //set the error tokens as children of the error node
         for(int i = (ignoreFirstToken ? 1 : 0); i < tokens.size(); i++) {
             CommonToken token = (CommonToken)tokens.get(i);
             TokenNode tokenNode = new TokenNode(token);
-            addNodeChild(errorNode, tokenNode);
+            addNodeChild(peek, tokenNode);
         }
         
         //create and artificial error token so the rules on stack can properly set their ranges
         lastConsumedToken = new CommonToken(Token.INVALID_TOKEN_TYPE);
         lastConsumedToken.setStartIndex(first.getStartIndex());
         lastConsumedToken.setStopIndex(last.getStopIndex()); 
-        
-        
+                
     }
     
     
     private void addNodeChild(AbstractParseTreeNode parent, AbstractParseTreeNode child) {
         parent.addChild(child);
         child.setParent(parent);
+    }
+    
+    private static class Pair<T> {
+        T n1, n2;
+        public Pair(T n1, T n2) {
+            this.n1 = n1;
+            this.n2 = n2;
+        }
     }
     
 }

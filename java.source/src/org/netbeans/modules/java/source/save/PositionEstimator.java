@@ -416,7 +416,7 @@ public abstract class PositionEstimator {
                     if (indexOf > -1) {
                         sectionEnd = seq.offset() + indexOf + 1;
                     } else {
-                        sectionEnd += seq.offset() + token.text().length();
+                        sectionEnd = seq.offset() + token.text().length();
                     }
                 }
             }

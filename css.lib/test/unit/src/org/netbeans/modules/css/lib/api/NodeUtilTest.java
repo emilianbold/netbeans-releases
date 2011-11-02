@@ -115,7 +115,7 @@ public class NodeUtilTest extends NbTestCase {
         //             01234567890123456789
         CssParserResult result = TestUtil.parse(code);
         
-        TestUtil.dumpResult(result);
+//        TestUtil.dumpResult(result);
         
         Node tokenNode = NodeUtil.findNodeAtOffset(result.getParseTree(), 1);
         assertNotNull(tokenNode);
@@ -136,7 +136,7 @@ public class NodeUtilTest extends NbTestCase {
         //             01234567890123456789
         CssParserResult result = TestUtil.parse(code);
         
-        TestUtil.dumpResult(result);
+//        TestUtil.dumpResult(result);
         
         Node tokenNode = NodeUtil.findNodeAtOffset(result.getParseTree(), 1);
         assertNotNull(tokenNode);

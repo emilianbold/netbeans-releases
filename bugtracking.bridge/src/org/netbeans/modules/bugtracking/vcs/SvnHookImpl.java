@@ -45,6 +45,7 @@ package org.netbeans.modules.bugtracking.vcs;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import javax.swing.JPanel;
 import org.netbeans.modules.versioning.hooks.SvnHook;
 import org.netbeans.modules.versioning.hooks.SvnHookContext;
@@ -77,10 +78,15 @@ public class SvnHookImpl extends SvnHook {
 
     @Override
     public void afterCommit(SvnHookContext context) {
-        String author = context.getLogEntries().get(0).getAuthor();
-        long revision = context.getLogEntries().get(0).getRevision();
-        Date date = context.getLogEntries().get(0).getDate();
-        String message = context.getLogEntries().get(0).getMessage();
+        final List<LogEntry> logEntries = context.getLogEntries();
+        if(logEntries == null || logEntries.isEmpty()) {
+            return; 
+        }    
+        LogEntry logEntry = logEntries.get(0);
+        String author = logEntry.getAuthor();
+        long revision = logEntry.getRevision();
+        Date date = logEntry.getDate();
+        String message = logEntry.getMessage();
         delegate.afterCommit(context.getFiles(), author, Long.toString(revision), date, message, "SVN", false);        
     }    
 

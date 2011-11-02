@@ -309,7 +309,7 @@ public class VersionsCache {
      */
     private File createContent (String fileName, InputStream in) throws IOException {
         // keep original extension so MIME can be guessed by the extension
-        File tmp = new File(Utils.getTempFolder(), "nb-svn-" + fileName);  // NOI18N
+        File tmp = new File(Utils.getTempFolder(), fileName);  // NOI18N
         tmp = FileUtil.normalizeFile(tmp);
         tmp.deleteOnExit();  // hard to track actual lifetime
         FileUtils.copyStreamToFile(new BufferedInputStream(in), tmp);

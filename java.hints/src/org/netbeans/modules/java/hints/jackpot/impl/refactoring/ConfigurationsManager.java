@@ -143,6 +143,29 @@ public class ConfigurationsManager {
         return config;
     }
     
+    public Configuration duplicate(Configuration orig, String id, String displayName) {
+        assert !id.startsWith(RULE_PREFIX);
+        Configuration config = new Configuration(RULE_PREFIX + id, displayName);
+        configs.add(config);
+        
+        Preferences oldOne = NbPreferences.forModule(this.getClass()).node(orig.id());
+        Preferences newOne = NbPreferences.forModule(this.getClass()).node(config.id());
+        try {
+            for (String name:oldOne.childrenNames()) {
+                Preferences node = oldOne.node(name);
+                for (String key: node.keys()) {
+                    String old = node.get(key, null);
+                    newOne.node(name).put(key, old);
+                }
+            }
+        } catch (BackingStoreException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        
+        changeSupport.fireChange();
+        return config;
+    }
+    
     public void remove(Configuration config) {
         configs.remove(config);
         Preferences prefs = NbPreferences.forModule(this.getClass()).node(config.id());

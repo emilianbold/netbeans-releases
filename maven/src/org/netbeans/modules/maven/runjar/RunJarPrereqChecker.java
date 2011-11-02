@@ -47,7 +47,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import javax.swing.JButton;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -191,13 +190,11 @@ public class RunJarPrereqChecker implements PrerequisitesChecker {
                 mapp = ModelHandle.getDefaultMapping(actionName, project);
             }
             // XXX should this rather run on _all_ actions that reference ${packageClassName}?
-            Set<Map.Entry<Object, Object>> entries = mapp.getProperties().entrySet();
-            for (Map.Entry<Object, Object> str : entries) {
-                String val = (String) str.getValue();
+            for (Map.Entry<String,String> e : mapp.getProperties().entrySet()) {
+                String val = e.getValue();
                 if (val.contains("${packageClassName}")) { //NOI18N
                     //show dialog to choose main class.
-                    val = val.replace("${packageClassName}", clazz); //NOI18N
-                    str.setValue(val);
+                    e.setValue(val.replace("${packageClassName}", clazz)); // NOI18N
                 }
             }
             //TODO we should definitely write to the mappings of active configuration here..

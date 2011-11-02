@@ -49,6 +49,9 @@ import com.sun.source.tree.MethodTree;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Collections;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.GeneratorUtilities;
@@ -80,18 +83,26 @@ import org.netbeans.modules.j2ee.ejbcore._RetoucheUtil;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entries.ServiceLocatorStrategy;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
+import org.openide.util.NbBundle.Messages;
+import static org.netbeans.modules.j2ee.ejbcore.action.Bundle.*;
 
 /**
  *
  * @author Martin Adamek
  */
 public final class UseDatabaseGenerator {
-    
+
+    private final static Logger LOGGER = Logger.getLogger(UseDatabaseGenerator.class.getName());
+
     public UseDatabaseGenerator() {
     }
 
+    @Messages({
+        "server.resource.exists.message=Data Source in project for JNDI name \"{0}\" already exists."
+    })
     public void generate(final FileObject fileObject, String className,
                          final J2eeModuleProvider j2eeModuleProvider, final String datasourceReferenceName, 
                          final Datasource datasource, final boolean createServerResources, String serviceLocator) 
@@ -115,16 +126,22 @@ public final class UseDatabaseGenerator {
         }
         
         if (createServerResources) {
-            try {            
-                j2eeModuleProvider.getConfigSupport().createDatasource(
-                    datasource.getJndiName(),
-                    datasource.getUrl(),
-                    datasource.getUsername(),
-                    datasource.getPassword(),
-                    datasource.getDriverClassName()
-                    );
+            try {
+                if (findProjectDatasource(j2eeModuleProvider, datasource.getJndiName()) != null) {
+                    NotifyDescriptor descriptor = new NotifyDescriptor.Message(
+                            server_resource_exists_message(datasource.getJndiName()));
+                    DialogDisplayer.getDefault().notify(descriptor);
+                } else {
+                    j2eeModuleProvider.getConfigSupport().createDatasource(
+                        datasource.getJndiName(),
+                        datasource.getUrl(),
+                        datasource.getUsername(),
+                        datasource.getPassword(),
+                        datasource.getDriverClassName()
+                        );
+                }
             } catch (DatasourceAlreadyExistsException daee) {
-                Exceptions.printStackTrace(daee);
+                LOGGER.log(Level.WARNING, null, daee);
             }
         }
 
@@ -139,6 +156,16 @@ public final class UseDatabaseGenerator {
         if (serviceLocator != null) {
             erc.setServiceLocatorName(serviceLocator);
         }
+    }
+
+    private Datasource findProjectDatasource(J2eeModuleProvider j2eeModuleProvider, String jndiName) throws ConfigurationException {
+        Set<Datasource> datasources = j2eeModuleProvider.getConfigSupport().getDatasources();
+        for (Datasource ds : datasources) {
+            if (ds.getJndiName().equals(jndiName)) {
+                return ds;
+            }
+        }
+        return null;
     }
     
     private void bindDataSourceReference(J2eeModuleProvider j2eeModuleProvider, String dsRefName, Datasource datasource) 

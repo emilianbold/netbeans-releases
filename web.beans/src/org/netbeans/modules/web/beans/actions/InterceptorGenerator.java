@@ -65,6 +65,9 @@ import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.web.beans.UsageLogger;
 import org.netbeans.spi.editor.codegen.CodeGenerator;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -153,6 +156,16 @@ class InterceptorGenerator implements CodeGenerator {
                     Collections.<String, Object> emptyMap());
             modifyClass( createdDataObject.getPrimaryFile() , 
                     getType(myBindingFileObject, ElementKind.ANNOTATION_TYPE));
+            
+            Project project = FileOwnerQuery.getOwner(myBindingFileObject);
+            if ( project != null ){
+                UsageLogger logger = project.getLookup().lookup(UsageLogger.class);
+                if ( logger != null ){
+                    logger.log("USG_CDI_GENERATE_INTERCEPTOR",      // NOI18N
+                            InterceptorGenerator.class, 
+                            new Object[]{project.getClass().getName()});
+                }
+            }
         }
         catch (IOException e) {
             LOG.log(Level.WARNING , null , e );

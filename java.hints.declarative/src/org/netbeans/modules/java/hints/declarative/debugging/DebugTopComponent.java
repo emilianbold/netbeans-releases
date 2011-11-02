@@ -78,7 +78,9 @@ public final class DebugTopComponent extends TopComponent {
 //        setIcon(ImageUtilities.loadImage(ICON_PATH, true));
         
         code.setEditorKit(MimeLookup.getLookup("text/x-javahints").lookup(EditorKit.class));
-        code.getDocument().putProperty("mimeType", "text/x-javahints");
+        Document doc = code.getEditorKit().createDefaultDocument();
+        doc.putProperty("mimeType", "text/x-javahints");
+        code.setDocument(doc);
     }
 
     /** This method is called from within the constructor to

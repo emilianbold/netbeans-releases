@@ -520,7 +520,7 @@ private void btnRemoveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
                 return f.isFile() ? f.toURI().toURL() : null;
             }
             protected @Override String repository() {
-                return RepositoryPreferences.LOCAL_REPO_ID;
+                return RepositorySystem.DEFAULT_LOCAL_REPO_ID;
             }
         }));
         nd.setName("local-catalog-content"); //NOI18N

@@ -25,9 +25,7 @@ import org.openide.windows.TopComponent;
     preferredID = "${PREFIX}Visual",
     position = 2000
 )
-@Messages({
-    "LBL_${PREFIX}_VISUAL=Visual"
-})
+@Messages("LBL_${PREFIX}_VISUAL=Visual")
 public final class ${PREFIX}VisualElement extends JPanel implements MultiViewElement {
     private ${PREFIX}DataObject obj;
     private JToolBar toolbar = new JToolBar();

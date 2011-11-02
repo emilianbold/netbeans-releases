@@ -187,7 +187,7 @@ public final class DrawEngine {
         if (ctx.graphics != null) {
             Map<?, ?> hints = accessor.getRenderingHints(eui);
             if (hints != null) {
-                ((Graphics2D)ctx.graphics).setRenderingHints(hints);
+                ((Graphics2D)ctx.graphics).addRenderingHints(hints);
             }
         }
 

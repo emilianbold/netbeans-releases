@@ -91,6 +91,7 @@ import org.netbeans.api.editor.settings.FontColorNames;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.modules.editor.lib.ColoringMap;
 import org.netbeans.modules.editor.lib2.view.LockedViewHierarchy;
+import org.netbeans.modules.editor.lib2.view.ParagraphViewDescriptor;
 import org.netbeans.modules.editor.lib2.view.ViewHierarchy;
 import org.openide.ErrorManager;
 import org.openide.util.ImageUtilities;
@@ -132,8 +133,6 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
     
     /** Font used for drawing line numbers */
     private Font font;
-    
-    private int fontAscent;
     
     /** Flag whether the gutter was initialized or not. The painting is disabled till the
      * gutter is not initialized */
@@ -342,7 +341,6 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
             if (textZoom != null && textZoom != 0) {
                 font = new Font(font.getFamily(), font.getStyle(), Math.max(font.getSize() + textZoom, 2));
             }
-            fontAscent = tc.getFontMetrics(font).getAscent();
         }
 
         showLineNumbers = eui.lineNumberVisibleSetting;
@@ -466,79 +464,10 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
         return (int)comp.getSize().getHeight(); // + highestLineNumber * eui.getLineHeight()
     }
     
-
-    void paintGutterForView(Graphics g, View view, int y) {
-        EditorUI eui = editorUI;
-        if (eui == null)
-            return ;
-        JTextComponent component = eui.getComponent();
-        if (component == null) return;
-        BaseTextUI textUI = (BaseTextUI)component.getUI();
-
-        g.setFont(font); 
-        g.setColor(foreColor);
-
-        FontMetrics fm = FontMetricsCache.getFontMetrics(font, this);
-        Element rootElem = textUI.getRootView(component).getElement();
-        int line = rootElem.getElementIndex(view.getStartOffset());
-        // find the nearest visible line with an annotation
-        int lineWithAnno = annos.getNextLineWithAnnotation(line);
-
-        int lineNumberWidth = fm.stringWidth(String.valueOf(line + 1));
-
-        int count = annos.getNumberOfAnnotations(line);
-        AnnotationDesc anno = annos.getActiveAnnotation(line);
-        Image annoGlyph = anno != null ? anno.getGlyph() : null;
-        
-        if (showLineNumbers){
-            boolean glyphHasIcon = false;
-            if (line == lineWithAnno){
-                if (anno != null && !(anno.isDefaultGlyph() && count == 1) && annoGlyph != null){
-                    glyphHasIcon = true;
-                }
-            }
-            if ((!glyphHasIcon) ||
-                    (!drawOverLineNumbers) || 
-                    (drawOverLineNumbers && line != lineWithAnno) ) {
-                g.drawString(String.valueOf(line + 1), glyphGutterWidth - lineNumberWidth - rightGap, y + fontAscent);
-            }
-        }
-
-        // draw anotation if we get to the line with some annotation
-        if (line == lineWithAnno) {
-            int xPos = (showLineNumbers) ? getLineNumberWidth() : 0;
-            if (drawOverLineNumbers) {
-                xPos = getWidth() - glyphWidth;
-                if (count > 1) {
-                    xPos -= glyphButtonWidth;
-                }
-            }
-
-            if (annoGlyph != null) {
-                int lineHeight = eui.getLineHeight();
-                int glyphHeight = annoGlyph.getHeight(null);
-
-                // draw the glyph only when the annotation type has its own icon (no the default one)
-                // or in case there is more than one annotations on the line
-                if ( ! (count == 1 && anno.isDefaultGlyph()) ) {
-                    g.drawImage(annoGlyph, xPos, y + (lineHeight - glyphHeight) / 2 + 1, null);
-                }
-
-                // draw cycling button if there is more than one annotations on the line
-                if (count > 1) {
-                    g.drawImage(gutterButton, xPos + glyphWidth - 1, y + (lineHeight - glyphHeight) / 2, null);
-                }
-            }
-
-            // update the value with next line with some anntoation
-            lineWithAnno = annos.getNextLineWithAnnotation(line + 1);
-        }
-    }
-    
     private static final Color DEFAULT_GUTTER_LINE = new Color(184, 184, 184);
     
     /** Paint the gutter itself */
-    public @Override void paintComponent(Graphics g) {
+    public @Override void paintComponent(final Graphics g) {
         super.paintComponent(g);
         EditorUI eui = editorUI;
         if (eui == null)
@@ -549,15 +478,15 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
         FontColorSettings fcs = MimeLookup.getLookup(mimeType).lookup(FontColorSettings.class);
         Map hints = (Map) fcs.getFontColors(FontColorNames.DEFAULT_COLORING).getAttribute(EditorStyleConstants.RenderingHints);
         if (!hints.isEmpty()) {
-            ((java.awt.Graphics2D)g).setRenderingHints(hints);
+            ((java.awt.Graphics2D)g).addRenderingHints(hints);
         }
         
         // if the gutter was not initialized yet, skip the painting        
         if (!init) return;
         
-        Rectangle clip = g.getClipBounds();   
+        final Rectangle clip = g.getClipBounds();   
 
-        JTextComponent component = eui.getComponent();
+        final JTextComponent component = eui.getComponent();
         if (component == null) return;
         
         BaseTextUI textUI = (BaseTextUI)component.getUI();
@@ -571,38 +500,134 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
         g.setColor(DEFAULT_GUTTER_LINE);
         g.drawLine(glyphGutterWidth-1, clip.y, glyphGutterWidth-1, clip.height + clip.y);
 
-        AbstractDocument dd = (AbstractDocument)component.getDocument();
-        dd.readLock();
-        try{
-            foldHierarchy.lock();
-            try{
-                int startPos = textUI.getPosFromY(clip.y);
-                int startViewIndex = rootView.getViewIndex(startPos,Position.Bias.Forward);
-                int rootViewCount = rootView.getViewCount();
+        final Document doc = component.getDocument();
+        doc.render(new Runnable() {
+            @Override
+            public void run() {
+                ViewHierarchy vh = ViewHierarchy.get(component);
+                LockedViewHierarchy lockedVH = vh.lock();
+                try {
+                    int pViewIndex = lockedVH.yToParagraphViewIndex(clip.y);
+                    if (pViewIndex >= 0) {
+                        int pViewCount = lockedVH.getParagraphViewCount();
+                        int repaintWidth = (int) getSize().getWidth();
+                        int endRepaintY = clip.y + clip.height;
+                        Element lineElementRoot = doc.getDefaultRootElement();
+                        ParagraphViewDescriptor pViewDesc = lockedVH.getParagraphViewDescriptor(pViewIndex);
+                        int pViewStartOffset = pViewDesc.getStartOffset();
+                        int lineIndex = lineElementRoot.getElementIndex(pViewStartOffset);;
+                        int lineEndOffset = lineElementRoot.getElement(lineIndex).getEndOffset();
+                        int lineWithAnno = -1;
+                        float rowHeight = lockedVH.getDefaultRowHeight();
+                        int lineNumberMaxWidth = getLineNumberWidth();
+                        g.setFont(font);
+                        g.setColor(foreColor);
+                        FontMetrics fm = FontMetricsCache.getFontMetrics(font, g);
 
-                if (startViewIndex >= 0 && startViewIndex < rootViewCount) {
-                    // find the nearest visible line with an annotation
+                        while (true) {
+                            Shape pViewAlloc = pViewDesc.getAllocation();
+                            Rectangle pViewRect = pViewAlloc.getBounds();
+                            pViewRect.width = repaintWidth;
+                            if (pViewRect.y >= endRepaintY) {
+                                break;
+                            }
+                            while (pViewStartOffset >= lineEndOffset) {
+                                lineIndex++;
+                                lineEndOffset = lineElementRoot.getElement(lineIndex).getEndOffset();
+                                lineWithAnno = -1;
+                            }
+                            String lineNumberString = String.valueOf(lineIndex + 1);
+                            int lineNumberWidth = fm.stringWidth(lineNumberString);
+                            if (lineWithAnno == -1) {
+                                lineWithAnno = annos.getNextLineWithAnnotation(lineIndex);
+                            }
+                            int annoCount;
+                            AnnotationDesc annoDesc;
+                            Image annoGlyph;
+                            if (lineWithAnno == lineIndex) {
+                                annoCount = annos.getNumberOfAnnotations(lineIndex);
+                                annoDesc = annos.getActiveAnnotation(lineIndex);
+                                annoGlyph = annoDesc != null ? annoDesc.getGlyph() : null;
+                            } else {
+                                annoCount = 0;
+                                annoDesc = null;
+                                annoGlyph = null;
+                            }
 
-                    int clipEndY = clip.y + clip.height;
-                    for (int i = startViewIndex; i < rootViewCount; i++){
-                        View view = rootView.getView(i);                
-                        int y = textUI.getYFromPos(view.getStartOffset());
-                        if (y >= clipEndY) {
-                            break;
+                            if (showLineNumbers) {
+                                boolean glyphHasIcon = false;
+                                if (lineIndex == lineWithAnno) {
+                                    if (annoDesc != null && !(annoDesc.isDefaultGlyph() &&
+                                            annoCount == 1) && annoGlyph != null)
+                                    {
+                                        glyphHasIcon = true;
+                                    }
+                                }
+                                if ((!glyphHasIcon)
+                                        || (!drawOverLineNumbers)
+                                        || (drawOverLineNumbers && lineIndex != lineWithAnno))
+                                {
+                                    // Use simplified painting (non-TextLayout) since TextLayout creation
+                                    // is rather expensive and with line numbers there is no RTL issue
+                                    // or other complexities where TextLayout would be useful.
+                                    g.drawString(lineNumberString,
+                                            glyphGutterWidth - lineNumberWidth - rightGap,
+                                            (int) Math.round(pViewRect.y + pViewDesc.getAscent())
+                                    );
+                                }
+                            }
+
+                            // draw anotation if we get to the line with some annotation
+                            if (lineIndex == lineWithAnno) {
+                                int xPos = (showLineNumbers) ? lineNumberMaxWidth : 0;
+                                if (drawOverLineNumbers) {
+                                    xPos = getWidth() - glyphWidth;
+                                    if (annoCount > 1) {
+                                        xPos -= glyphButtonWidth;
+                                    }
+                                }
+
+                                if (annoGlyph != null) {
+                                    int glyphHeight = annoGlyph.getHeight(null);
+                                    // draw the glyph only when the annotation type has its own icon (no the default one)
+                                    // or in case there is more than one annotations on the line
+                                    if (!(annoCount == 1 && annoDesc.isDefaultGlyph())) {
+                                        g.drawImage(
+                                                annoGlyph,
+                                                xPos,
+                                                (int) Math.round(pViewRect.y + (rowHeight - glyphHeight) / 2 + 1),
+                                                null
+                                        );
+                                    }
+
+                                    // draw cycling button if there is more than one annotations on the line
+                                    if (annoCount > 1) {
+                                        g.drawImage(
+                                                gutterButton,
+                                                xPos + glyphWidth - 1,
+                                                (int) Math.round(pViewRect.y + (rowHeight - glyphHeight) / 2),
+                                                null
+                                        );
+                                    }
+                                }
+                                lineWithAnno = -1;
+                            }
+
+                            // Go to next paragraph view
+                            pViewIndex++;
+                            if (pViewIndex >= pViewCount) {
+                                break;
+                            }
+                            pViewDesc = lockedVH.getParagraphViewDescriptor(pViewIndex);
+                            pViewStartOffset = pViewDesc.getStartOffset();
+
                         }
-
-                        paintGutterForView(g, view, y);
                     }
+                } finally {
+                    lockedVH.unlock();
                 }
-                
-            }finally{
-                foldHierarchy.unlock();
             }
-        }catch(BadLocationException ble){
-            ErrorManager.getDefault().notify(ble);
-        }finally{
-            dd.readUnlock();
-        }
+        });
     }
 
     private Rectangle toRepaint = null;
@@ -652,9 +677,11 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
                     ViewHierarchy vh = ViewHierarchy.get(component);
                     LockedViewHierarchy lvh = vh.lock();
                     try {
-                        Shape pViewShape = lvh.modelToParagraphView(lineElem.getStartOffset());
-                        if (pViewShape != null) {
-                            Rectangle repaintRect = pViewShape.getBounds();
+                        int pViewIndex = lvh.modelToParagraphViewIndex(lineElem.getStartOffset());
+                        if (pViewIndex >= 0) {
+                            ParagraphViewDescriptor pViewDesc = lvh.getParagraphViewDescriptor(pViewIndex);
+                            Shape pViewAlloc = pViewDesc.getAllocation();
+                            Rectangle repaintRect = pViewAlloc.getBounds();
                             repaintRect.width = (int) getSize().getWidth();
                             if (LOG.isLoggable(Level.FINE)) {
                                 LOG.fine("GlyphGutter.changedLine() lineIndex=" + lineIndex + // NOI18N

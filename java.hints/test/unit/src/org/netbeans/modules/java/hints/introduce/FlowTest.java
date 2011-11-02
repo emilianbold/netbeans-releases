@@ -487,6 +487,95 @@ public class FlowTest extends NbTestCase {
                     "ii--");
     }
 
+    public void testWhileLoop() throws Exception {
+        performTest("package test;\n" +
+                    "public class Test {\n" +
+                    "    static void t() {\n" +
+                    "        String tp = \"\";\n" +
+                    "        while (t`p != null) {\n" +
+                    "            if (tp.length() == 0) {\n" +
+                    "                tp = null;\n" +
+                    "                continue;\n" +
+                    "            }\n" +
+                    "            return ;\n" +
+                    "        }\n" +
+                    "    }\n" +
+                    "}\n",
+                    "\"\"",
+                    "null");
+    }
+
+    public void testForLoop() throws Exception {
+        performTest("package test;\n" +
+                    "public class Test {\n" +
+                    "    static void t() {\n" +
+                    "        String tp = \"\";\n" +
+                    "        for (String i = null; i != t`p; ) {\n" +
+                    "            if (tp.length() == 0) {\n" +
+                    "                tp = null;\n" +
+                    "                continue;\n" +
+                    "            }\n" +
+                    "            return ;\n" +
+                    "        }\n" +
+                    "    }\n" +
+                    "}\n",
+                    "\"\"",
+                    "null");
+    }
+
+    public void testEnhancedForLoop() throws Exception {
+        performTest("package test;\n" +
+                    "public class Test {\n" +
+                    "    static void t(String[] args) {\n" +
+                    "        String tp = \"\";\n" +
+                    "        for (String i : args) {\n" +
+                    "            if (t`p != null) {\n" +
+                    "                tp = null;\n" +
+                    "                continue;\n" +
+                    "            }\n" +
+                    "            return ;\n" +
+                    "        }\n" +
+                    "    }\n" +
+                    "}\n",
+                    "\"\"",
+                    "null");
+    }
+
+    public void testDoWhileLoop() throws Exception {
+        performTest("package test;\n" +
+                    "public class Test {\n" +
+                    "    static void t() {\n" +
+                    "        String tp = \"\";\n" +
+                    "        do {\n" +
+                    "            if (tp.length() == 0) {\n" +
+                    "                tp = null;\n" +
+                    "                continue;\n" +
+                    "            }\n" +
+                    "            return ;\n" +
+                    "        } while (t`p != null);\n" +
+                    "    }\n" +
+                    "}\n",
+                    "null");
+    }
+
+    public void testLabeledLoop() throws Exception {
+        performTest("package test;\n" +
+                    "public class Test {\n" +
+                    "    static void t() {\n" +
+                    "        String tp = \"\";\n" +
+                    "        LOOP: while (t`p != null) {\n" +
+                    "            if (tp.length() == 0) {\n" +
+                    "                tp = null;\n" +
+                    "                continue LOOP;\n" +
+                    "            }\n" +
+                    "            return ;\n" +
+                    "        }\n" +
+                    "    }\n" +
+                    "}\n",
+                    "\"\"",
+                    "null");
+    }
+
     private void prepareTest(String code, boolean allowErrors) throws Exception {
         clearWorkDir();
 

@@ -45,8 +45,15 @@
 package org.netbeans.modules.websvc.editor.hints.fixes;
 
 import java.io.IOException;
+import java.util.List;
+
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
+
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
@@ -63,14 +70,18 @@ import org.openide.util.NbBundle;
 public class RemoveAnnotation implements Fix {
     private FileObject fileObject;
     private Element element;
-    private AnnotationMirror annMirror;
+    private String annotation;
+    private String simpleName;
     
     /** Creates a new instance of RemoveAnnotation */
     public RemoveAnnotation(FileObject fileObject, Element element,
             AnnotationMirror annMirror) {
         this.element = element;
         this.fileObject = fileObject;
-        this.annMirror = annMirror;
+        Element annotationElement = annMirror.getAnnotationType().asElement();
+        assert annotationElement instanceof TypeElement;
+        annotation = ((TypeElement)annotationElement).getQualifiedName().toString();
+        simpleName = annotationElement.getSimpleName().toString();
     }
     
     public ChangeInfo implement(){
@@ -78,8 +89,28 @@ public class RemoveAnnotation implements Fix {
             public void cancel() {}
             
             public void run(WorkingCopy workingCopy) throws Exception {
-                Utilities.removeAnnotation(workingCopy, ElementHandle.create(element), 
-                        annMirror);
+                if (element.getKind() == ElementKind.PARAMETER){
+                    Element method = element.getEnclosingElement();
+                    ElementHandle<Element> methodHandle = ElementHandle.create(method);
+                    if ( method instanceof ExecutableElement ){
+                        ExecutableElement methodElement = (ExecutableElement)method;
+                        List<? extends VariableElement> parameters = methodElement.getParameters();
+                        int index = parameters.indexOf( element );
+                        if ( index == -1 ){
+                            return;
+                        }
+                        Utilities.removeAnnotation(workingCopy, 
+                                ElementHandle.create(methodElement), index, 
+                                annotation );
+                    }
+                    else {
+                        return;
+                    }
+                }
+                else {
+                    Utilities.removeAnnotation(workingCopy, ElementHandle.create(element), 
+                        annotation);
+                }
             }
         };
         
@@ -102,7 +133,7 @@ public class RemoveAnnotation implements Fix {
     }
     
     public String getText(){
-        String annotationLabel = annMirror.getAnnotationType().asElement().getSimpleName().toString();
+        String annotationLabel = simpleName;
         return NbBundle.getMessage(RemoveAnnotation.class, "LBL_RemoveAnnotation",annotationLabel);
     }
 }

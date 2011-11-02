@@ -348,6 +348,38 @@ public class HtmlCompletionItem implements CompletionItem {
         return help;
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final HtmlCompletionItem other = (HtmlCompletionItem) obj;
+        if (this.substitutionOffset != other.substitutionOffset) {
+            return false;
+        }
+        if ((this.text == null) ? (other.text != null) : !this.text.equals(other.text)) {
+            return false;
+        }
+        if ((this.helpId == null) ? (other.helpId != null) : !this.helpId.equals(other.helpId)) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 97 * hash + this.substitutionOffset;
+        hash = 97 * hash + (this.text != null ? this.text.hashCode() : 0);
+        hash = 97 * hash + (this.helpId != null ? this.helpId.hashCode() : 0);
+        return hash;
+    }
+    
+    
+
     //------------------------------------------------------------------------------
     /** 
      * Completion item representing a JSP tag including its prefix eg. <jsp:useBean />

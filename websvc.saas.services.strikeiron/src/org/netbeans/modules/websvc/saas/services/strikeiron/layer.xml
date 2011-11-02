@@ -53,11 +53,14 @@
             <attr name="icon16" stringvalue="org/netbeans/modules/websvc/saas/services/strikeiron/resources/strikeiron16.png"/>
             <attr name="icon32" stringvalue="org/netbeans/modules/websvc/saas/services/strikeiron/resources/strikeiron32.png"/>
             <file name="profile.properties" url="/org/netbeans/modules/websvc/saas/services/strikeiron/resources/profile.properties"/>
-            <file name="AddressVerification40.xml" url="/org/netbeans/modules/websvc/saas/services/strikeiron/resources/AddressVerification40.xml" />
-            <file name="EmailVerify30.xml" url="/org/netbeans/modules/websvc/saas/services/strikeiron/resources/EmailVerify30.xml" />
+            <file name="AddressVerification60.xml" url="/org/netbeans/modules/websvc/saas/services/strikeiron/resources/AddressVerification60.xml" />
+            <file name="EmailVerify50.xml" url="/org/netbeans/modules/websvc/saas/services/strikeiron/resources/EmailVerify50.xml" />
             <file name="IPAddressLookup.xml" url="/org/netbeans/modules/websvc/saas/services/strikeiron/resources/IPAddressLookup.xml" />
             <file name="ReversePhoneLookup.xml" url="/org/netbeans/modules/websvc/saas/services/strikeiron/resources/ReversePhoneLookup.xml" />
-            <file name="TaxComplete40.xml" url="/org/netbeans/modules/websvc/saas/services/strikeiron/resources/TaxComplete40.xml" />
+            <file name="TaxComplete50.xml" url="/org/netbeans/modules/websvc/saas/services/strikeiron/resources/TaxComplete50.xml" />
+            <file name="SmsTextMessageAlerts.xml" url="/org/netbeans/modules/websvc/saas/services/strikeiron/resources/SmsTextMessageAlerts.xml" />
+            <file name="GlobalAddressVerification.xml" url="/org/netbeans/modules/websvc/saas/services/strikeiron/resources/GlobalAddressVerification.xml" />
+            <file name="ForeignCurrencyExchangeRates.xml" url="/org/netbeans/modules/websvc/saas/services/strikeiron/resources/ForeignCurrencyExchangeRates.xml" />
         </folder>
     </folder>
     

@@ -38,7 +38,7 @@
 
 package org.netbeans.modules.maven.api.customizer;
 
-import java.util.Properties;
+import java.util.Map;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
@@ -77,7 +77,7 @@ public class ModelHandleTest extends NbTestCase {
         NetbeansActionMapping mapp = ModelHandle.getMapping("run", project, cp.getActiveConfiguration());
         assertNotNull(mapp);
         assertEquals("Jetty", mapp.getDisplayName());
-        Properties props = mapp.getProperties();
+        Map<String,String> props = mapp.getProperties();
         assertNotNull(props);
         assertEquals("{someprop=v}", props.toString());
         props.remove("someprop");

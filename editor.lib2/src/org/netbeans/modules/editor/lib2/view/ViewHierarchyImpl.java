@@ -252,17 +252,6 @@ public final class ViewHierarchyImpl {
         }
     }
 
-    public Shape modelToParagraphView(DocumentView docView, int offset) {
-        Shape ret = null;
-        if (docView != null && docView.op.isActive()) {
-            int index = docView.getViewIndex(offset);
-            if (index >= 0) {
-                ret = docView.getChildAllocation(index, docView.getAllocation());
-            }
-        } // else: Do not know how to emulate
-        return ret;
-    }
-
     public int viewToModel(DocumentView docView, double x, double y, Position.Bias[] biasReturn) {
         if (docView != null) {
             return docView.viewToModelUnlocked(x, y, docView.getAllocation(), biasReturn);
@@ -272,12 +261,51 @@ public final class ViewHierarchyImpl {
         }
     }
 
+    public int modelToParagraphViewIndex(DocumentView docView, int offset) {
+        int pViewIndex;
+        if (docView != null && docView.op.isActive()) {
+            pViewIndex = docView.getViewIndex(offset);
+        } else {
+            pViewIndex = -1;
+        }
+        return pViewIndex;
+    }
+    
+    public int yToParagraphViewIndex(DocumentView docView, double y) {
+        int pViewIndex;
+        if (docView != null && docView.op.isActive()) {
+            pViewIndex = docView.getViewIndex(y);
+        } else {
+            pViewIndex = -1;
+        }
+        return pViewIndex;
+    }
+    
+    public boolean verifyParagraphViewIndexValid(DocumentView docView, int paragraphViewIndex) {
+        return docView.op.isActive() && (paragraphViewIndex >= 0 &&
+                paragraphViewIndex < docView.getViewCount());
+    }
+
+    public int getParagraphViewCount(DocumentView docView) {
+        int pViewCount;
+        if (docView != null && docView.op.isActive()) {
+            pViewCount = docView.getViewCount();
+        } else {
+            pViewCount = -1; // Special value to mark non-NB (or inactive view hierarchy)
+        }
+        return pViewCount;
+    }
+
     public float getDefaultRowHeight(DocumentView docView) {
         return docView.op.getDefaultRowHeight();
     }
 
     public float getDefaultCharWidth(DocumentView docView) {
         return docView.op.getDefaultCharWidth();
+    }
+    
+    public boolean isActive(DocumentView docView) {
+        return (docView != null && docView.op.isActive());
     }
 
     public void addViewHierarchyListener(ViewHierarchyListener l) {

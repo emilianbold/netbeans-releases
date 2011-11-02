@@ -77,7 +77,8 @@ public class LoggerNotStaticFinal {
     public static ErrorDescription checkLoggerDeclaration(HintContext ctx) {
         Element e = ctx.getInfo().getTrees().getElement(ctx.getPath());
         if (e.getEnclosingElement().getKind() == ElementKind.CLASS &&
-            (!e.getModifiers().contains(Modifier.STATIC) || !e.getModifiers().contains(Modifier.FINAL))
+            (!e.getModifiers().contains(Modifier.STATIC) || !e.getModifiers().contains(Modifier.FINAL)) &&
+            ctx.getInfo().getElementUtilities().outermostTypeElement(e) == e.getEnclosingElement()
         ) {
             return ErrorDescriptionFactory.forName(
                     ctx,

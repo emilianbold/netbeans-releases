@@ -375,7 +375,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
                     .addComponent(jLabel14, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel16)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
 
         javax.swing.GroupLayout byOtherPanelLayout = new javax.swing.GroupLayout(byOtherPanel);
@@ -400,7 +400,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
                     .addGroup(byOtherPanelLayout.createSequentialGroup()
                         .addComponent(jLabel20)
                         .addGap(0, 0, 0)))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
         byOtherPanelLayout.setVerticalGroup(
             byOtherPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -505,7 +505,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
                 .addGroup(byAttributesPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(projectLabel3)
                     .addComponent(jScrollPane10, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
         byAttributesPanelLayout.setVerticalGroup(
             byAttributesPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -716,19 +716,19 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
                         .addComponent(descriptionCheckBox)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(environmentCheckBox)))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
 
         setBackground(javax.swing.UIManager.getDefaults().getColor("TextArea.background"));
 
-        tableFieldsPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("EditorPane.background"));
+        tableFieldsPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("TextArea.background"));
 
         tablePanel.setBackground(new java.awt.Color(224, 224, 224));
         tablePanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         tablePanel.setMinimumSize(new java.awt.Dimension(100, 350));
         tablePanel.setLayout(new java.awt.BorderLayout());
 
-        tableHeaderPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("EditorPane.background"));
+        tableHeaderPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("TextArea.background"));
 
         org.openide.awt.Mnemonics.setLocalizedText(tableSummaryLabel, org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.tableSummaryLabel.text_1")); // NOI18N
 
@@ -775,7 +775,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
                 .addContainerGap())
         );
 
-        searchPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("EditorPane.background"));
+        searchPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("TextArea.background"));
 
         org.openide.awt.Mnemonics.setLocalizedText(webButton, org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.webButton.text")); // NOI18N
         webButton.addActionListener(new java.awt.event.ActionListener() {
@@ -813,22 +813,17 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
         criteriaPanel.setLayout(criteriaPanelLayout);
         criteriaPanelLayout.setHorizontalGroup(
             criteriaPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(criteriaPanelLayout.createSequentialGroup()
-                .addComponent(byTextLabel)
-                .addContainerGap())
-            .addGroup(criteriaPanelLayout.createSequentialGroup()
-                .addComponent(byOtherLabel)
-                .addContainerGap())
             .addComponent(byTextContainer, javax.swing.GroupLayout.DEFAULT_SIZE, 849, Short.MAX_VALUE)
             .addComponent(byOtherContainer, javax.swing.GroupLayout.DEFAULT_SIZE, 849, Short.MAX_VALUE)
-            .addGroup(criteriaPanelLayout.createSequentialGroup()
-                .addComponent(byDetailsLabel)
-                .addContainerGap())
             .addComponent(byDetailsContainer, javax.swing.GroupLayout.DEFAULT_SIZE, 849, Short.MAX_VALUE)
-            .addGroup(criteriaPanelLayout.createSequentialGroup()
-                .addComponent(byPeopleLabel)
-                .addContainerGap())
             .addComponent(byPeopleContainer, javax.swing.GroupLayout.DEFAULT_SIZE, 849, Short.MAX_VALUE)
+            .addGroup(criteriaPanelLayout.createSequentialGroup()
+                .addGroup(criteriaPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(byTextLabel)
+                    .addComponent(byOtherLabel)
+                    .addComponent(byDetailsLabel)
+                    .addComponent(byPeopleLabel))
+                .addContainerGap())
         );
         criteriaPanelLayout.setVerticalGroup(
             criteriaPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -917,7 +912,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
         searchPanel.setLayout(searchPanelLayout);
         searchPanelLayout.setHorizontalGroup(
             searchPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(gotoPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 875, Short.MAX_VALUE)
+            .addComponent(gotoPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, searchPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(searchPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
@@ -965,7 +960,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
 
         searchPanelLayout.linkSize(javax.swing.SwingConstants.VERTICAL, new java.awt.Component[] {saveButton, separatorLabel1, separatorLabel2, webButton});
 
-        queryHeaderPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("EditorPane.background"));
+        queryHeaderPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("TextArea.background"));
 
         org.openide.awt.Mnemonics.setLocalizedText(refreshButton, org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.refreshButton.text")); // NOI18N
         refreshButton.addActionListener(new java.awt.event.ActionListener() {
@@ -1108,7 +1103,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
 
         queryHeaderPanelLayout.linkSize(javax.swing.SwingConstants.VERTICAL, new java.awt.Component[] {jLabel4, jLabel5, jLabel6, modifyButton, removeButton, seenButton});
 
-        noContentPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("EditorPane.background"));
+        noContentPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("TextArea.background"));
         noContentPanel.setLayout(new java.awt.GridBagLayout());
 
         org.openide.awt.Mnemonics.setLocalizedText(noContentLabel, org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.noContentLabel.text")); // NOI18N

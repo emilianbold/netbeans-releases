@@ -197,6 +197,7 @@ made subject to such option by the copyright holder.
                 <package>org.apache.maven.repository.legacy</package>
                 <package>org.apache.maven.settings</package>
                 <package>org.apache.maven.settings.building</package>
+                <package>org.apache.maven.settings.crypto</package>
                 <package>org.apache.maven.settings.io.xpp3</package>
                 <package>org.apache.maven.shared.dependency.tree</package>
                 <package>org.apache.maven.shared.dependency.tree.traversal</package>
@@ -240,6 +241,8 @@ made subject to such option by the copyright holder.
                 <package>org.sonatype.aether.util.repository</package>
                 <package>org.sonatype.aether.util.version</package>
                 <package>org.sonatype.aether.version</package>
+                <package>org.sonatype.plexus.components.cipher</package>
+                <package>org.sonatype.plexus.components.sec.dispatcher</package>
             </friend-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/maven/maven-dependency-tree-1.2.jar</runtime-relative-path>

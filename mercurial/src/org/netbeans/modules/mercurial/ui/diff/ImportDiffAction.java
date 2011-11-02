@@ -109,13 +109,7 @@ public class ImportDiffAction extends ContextAction {
         final JFileChooser fileChooser = new AccessibleJFileChooser(NbBundle.getMessage(ImportDiffAction.class, "ACSD_ImportBrowseFolder"), null);   // NO I18N
         fileChooser.setDialogTitle(NbBundle.getMessage(ImportDiffAction.class, "ImportBrowse_title"));                                            // NO I18N
         fileChooser.setMultiSelectionEnabled(false);
-        FileFilter[] old = fileChooser.getChoosableFileFilters();
-        for (int i = 0; i < old.length; i++) {
-            FileFilter fileFilter = old[i];
-            fileChooser.removeChoosableFileFilter(fileFilter);
-
-        }
-        fileChooser.setDialogType(JFileChooser.SAVE_DIALOG);
+        fileChooser.setDialogType(JFileChooser.OPEN_DIALOG);
         fileChooser.setApproveButtonMnemonic(NbBundle.getMessage(ImportDiffAction.class, "Import").charAt(0));                      // NO I18N
         fileChooser.setApproveButtonText(NbBundle.getMessage(ImportDiffAction.class, "Import"));                                        // NO I18N
         fileChooser.setCurrentDirectory(new File(HgModuleConfig.getDefault().getImportFolder()));

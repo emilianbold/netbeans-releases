@@ -78,7 +78,7 @@ public class ArchiveURLMapper extends URLMapper {
 
     private static final String JAR_PROTOCOL = "jar";   //NOI18N
 
-    private static Map<File,SoftReference<JarFileSystem>> mountRoots = new ConcurrentHashMap<File,SoftReference<JarFileSystem>>();
+    private static final Map<File,SoftReference<JarFileSystem>> mountRoots = new ConcurrentHashMap<File,SoftReference<JarFileSystem>>();
 
     public @Override URL getURL(FileObject fo, int type) {
         assert fo != null;
@@ -157,18 +157,20 @@ public class ArchiveURLMapper extends URLMapper {
         return mountRoots.containsKey(file);
     }
 
-    private static synchronized JarFileSystem getFileSystem (File file) throws IOException {
-        Reference<JarFileSystem> reference = mountRoots.get(file);
-        JarFileSystem jfs = null;
-        if (reference == null || (jfs = reference.get()) == null) {
-            jfs = findJarFileSystemInRepository(file);
-            if (jfs == null) {
-                File aRoot = FileUtil.normalizeFile(file);
-                jfs = new JarFileSystem(aRoot);
+    private static JarFileSystem getFileSystem (File file) throws IOException {
+        synchronized (mountRoots) {
+            Reference<JarFileSystem> reference = mountRoots.get(file);
+            JarFileSystem jfs = null;
+            if (reference == null || (jfs = reference.get()) == null) {
+                jfs = findJarFileSystemInRepository(file);
+                if (jfs == null) {
+                    File aRoot = FileUtil.normalizeFile(file);
+                    jfs = new JarFileSystem(aRoot);
+                }
+                mountRoots.put(file, new JFSReference(jfs));
             }
-            mountRoots.put(file, new JFSReference(jfs));
+            return jfs;
         }
-        return jfs;
     }
 
     // More or less copied from URLMapper:
@@ -243,7 +245,7 @@ public class ArchiveURLMapper extends URLMapper {
         void releaseMe (final File root) {
             JarFileSystem jfs = get();
             if (jfs != null) {
-                synchronized (ArchiveURLMapper.class) {
+                synchronized (mountRoots) {
                     File keyToRemove = (root != null) ? root : jfs.getJarFile();
                     mountRoots.remove(keyToRemove);                    
                 }

@@ -53,6 +53,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.concurrent.ConcurrentHashMap;
 import javax.swing.JComponent;
 import javax.swing.JRadioButton;
 import org.netbeans.modules.vmd.api.model.ComponentProducer;
@@ -179,7 +180,9 @@ public abstract class PropertyEditorResourceLazyInit extends PropertyEditorUserC
         this.newComponentAsText = newComponentAsText;
         this.noneComponentAsText = noneComponentAsText;
 
-        createdComponents = new HashMap<String, DesignComponent>();
+        // #203960
+//        createdComponents = new HashMap<String, DesignComponent>();
+        createdComponents = new ConcurrentHashMap<String, DesignComponent>();
     }
 
     protected abstract PropertyEditorResourceElement createElement();

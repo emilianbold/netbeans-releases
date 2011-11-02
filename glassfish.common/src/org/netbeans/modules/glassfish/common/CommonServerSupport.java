@@ -79,6 +79,7 @@ import org.netbeans.modules.glassfish.spi.ServerCommand.GetPropertyCommand;
 import org.netbeans.modules.glassfish.spi.CommandFactory;
 import org.netbeans.modules.glassfish.spi.GlassfishModule2;
 import org.netbeans.modules.glassfish.spi.Utils;
+import org.netbeans.modules.glassfish.spi.VMIntrospector;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -88,6 +89,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.lookup.Lookups;
 
 
 /**
@@ -348,8 +350,9 @@ public class CommonServerSupport implements GlassfishModule2, RefreshModulesCook
     public Future<OperationState> startServer(final OperationStateListener stateListener) {
         Logger.getLogger("glassfish").log(Level.FINEST, "CSS.startServer called on thread \"{0}\"", Thread.currentThread().getName()); // NOI18N
         OperationStateListener startServerListener = new StartOperationStateListener(GlassfishModule.ServerState.RUNNING);
+        VMIntrospector vmi = Lookups.forPath(Util.GF_LOOKUP_PATH).lookup(VMIntrospector.class);
         FutureTask<OperationState> task = new FutureTask<OperationState>(
-                new StartTask(this, getRecognizers(), startServerListener, stateListener));
+                new StartTask(this, getRecognizers(), vmi, startServerListener, stateListener));
         RP.post(task);
         return task;
     }
@@ -358,8 +361,9 @@ public class CommonServerSupport implements GlassfishModule2, RefreshModulesCook
     public Future<OperationState> startServer(final OperationStateListener stateListener, FileObject jdkRoot, String[] jvmArgs) {
         Logger.getLogger("glassfish").log(Level.FINEST, "CSS.startServer called on thread \"{0}\"", Thread.currentThread().getName()); // NOI18N
         OperationStateListener startServerListener = new StartOperationStateListener(GlassfishModule.ServerState.STOPPED_JVM_PROFILER);
+        VMIntrospector vmi = Lookups.forPath(Util.GF_LOOKUP_PATH).lookup(VMIntrospector.class);
         FutureTask<OperationState> task = new FutureTask<OperationState>(
-                new StartTask(this, getRecognizers(), jdkRoot, jvmArgs, startServerListener, stateListener));
+                new StartTask(this, getRecognizers(), vmi, jdkRoot, jvmArgs, startServerListener, stateListener));
         RP.post(task);
         return task;
     }
@@ -712,8 +716,13 @@ public class CommonServerSupport implements GlassfishModule2, RefreshModulesCook
                 } else {
                     // keep trying for 10 minutes if the server is stuck between
                     // httpLive and server ready state. We have to give up sometime, though.
-                    if (maxtries < 20)
+                    VMIntrospector vmi = Lookups.forPath(Util.GF_LOOKUP_PATH).lookup(VMIntrospector.class);
+                    boolean suspended = null == vmi ? false : vmi.isSuspended(getHostName(), (String) properties.get(GlassfishModule.DEBUG_PORT));
+                    if (suspended) {
+                        tries--;
+                    } else if (maxtries < 20) {
                         maxtries++;
+                    }
                     long end = System.nanoTime();
                     Logger.getLogger("glassfish").log(Level.INFO, "{0} returned from server after {1}ms. The server is still getting ready", new Object[]{command.getCommand(), (end - start) / 1000000}); // NOI18N
                 }
@@ -781,7 +790,7 @@ public class CommonServerSupport implements GlassfishModule2, RefreshModulesCook
 
     @Override
     public String getResourcesXmlName() {
-        return getDeployerUri().contains(GlassfishInstanceProvider.EE6WC_DEPLOYER_FRAGMENT) ?
+        return Utils.useGlassfishPrefix(getDeployerUri()) ?
                 "glassfish-resources" : "sun-resources"; // NOI18N
     }
 
@@ -828,7 +837,8 @@ public class CommonServerSupport implements GlassfishModule2, RefreshModulesCook
         GetPropertyCommand gpc = null;
         if (Util.isDefaultOrServerTarget(properties)) {
             gpc = new GetPropertyCommand("*.server-config.*.http-listener-1.port"); // NOI18N
-            setEnvironmentProperty(GlassfishModule.HTTPHOST_ATTR, "localhost", true); // NOI18N
+            setEnvironmentProperty(GlassfishModule.HTTPHOST_ATTR, 
+                    properties.get(GlassfishModule.HOSTNAME_ATTR), true); // NOI18N
         } else {
             String server = getServerFromTarget(target);
             String adminHost = properties.get(GlassfishModule.HOSTNAME_ATTR);

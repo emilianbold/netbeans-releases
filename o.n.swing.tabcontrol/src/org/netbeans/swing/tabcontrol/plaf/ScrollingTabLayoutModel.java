@@ -485,6 +485,7 @@ public final class ScrollingTabLayoutModel implements TabLayoutModel {
             int off = setOffset(-1);
             return off != -1;
         }
+        int cachedWidthOfRequestedTab = getW( index );
         int widthForRequestedTab = getWrapped().getW(index);
 
         //Special case a single tab which is wider than the entire
@@ -497,7 +498,7 @@ public final class ScrollingTabLayoutModel implements TabLayoutModel {
 
         //If it's the last tab and it's already not clipped, don't
         //do anything
-        if (index == mdl.size() - 1 && !isLastTabClipped() && !resized) {
+        if (index == mdl.size() - 1 && !isLastTabClipped() && !resized && cachedWidthOfRequestedTab == width) {
             return false;
         }
 

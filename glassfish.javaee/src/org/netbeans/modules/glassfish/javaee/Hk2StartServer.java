@@ -100,8 +100,10 @@ public class Hk2StartServer extends StartServer implements ProgressObject {
             throw new IllegalArgumentException("Only GlassFish v3 is supported"); //NOI18N
         }
         this.dm = (Hk2DeploymentManager) jdm;
-        this.ip = dm.getProperties().getInstanceProperties();
-        this.serverName = ip.getProperty(GlassfishModule.DISPLAY_NAME_ATTR);
+        this.ip = dm.getInstanceProperties();
+        if (null != ip) {
+            this.serverName = ip.getProperty(GlassfishModule.DISPLAY_NAME_ATTR);
+        }
     }
     
     public InstanceProperties getInstanceProperties() {

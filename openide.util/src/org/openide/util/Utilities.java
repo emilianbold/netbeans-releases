@@ -121,7 +121,7 @@ public final class Utilities {
     private static final Logger LOG = Logger.getLogger(Utilities.class.getName());
 
     /** Operating system is Windows NT. */
-    public static final int OS_WINNT = 1 << 0;
+    public static final int OS_WINNT = 1/* << 0*/;
 
     /** Operating system is Windows 95. */
     public static final int OS_WIN95 = OS_WINNT << 1;
@@ -237,7 +237,7 @@ public final class Utilities {
     private static final int ALT_WILDCARD_MASK = CTRL_WILDCARD_MASK * 2;
 
     // Package retranslation ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    private static final String TRANS_LOCK = "TRANS_LOCK";
+    private static final Object TRANS_LOCK = /* FB complains about both "TRANS_LOCK" and new String("TRANS_LOCK") */new Object();
 
     /** last used classloader or if run in test mode the TRANS_LOCK */
     private static Object transLoader;
@@ -302,7 +302,7 @@ public final class Utilities {
     /** Get the operating system on which NetBeans is running.
     * @return one of the <code>OS_*</code> constants (such as {@link #OS_WINNT})
     */
-    public static final int getOperatingSystem() {
+    public static int getOperatingSystem() {
         if (operatingSystem == -1) {
             String osName = System.getProperty("os.name");
 
@@ -361,7 +361,7 @@ public final class Utilities {
     /** Test whether NetBeans is running on some variant of Windows.
     * @return <code>true</code> if Windows, <code>false</code> if some other manner of operating system
     */
-    public static final boolean isWindows() {
+    public static boolean isWindows() {
         return (getOperatingSystem() & OS_WINDOWS_MASK) != 0;
     }
 
@@ -369,7 +369,7 @@ public final class Utilities {
      * @since 7.7
     * @return <code>true</code> if Mac, <code>false</code> if some other manner of operating system
     */
-    public static final boolean isMac() {
+    public static boolean isMac() {
         return (getOperatingSystem() & OS_MAC) != 0;
     }
 
@@ -377,12 +377,12 @@ public final class Utilities {
     * Linux is included as well as the commercial vendors and Mac OS X.
     * @return <code>true</code> some sort of Unix, <code>false</code> if some other manner of operating system
     */
-    public static final boolean isUnix() {
+    public static boolean isUnix() {
         return (getOperatingSystem() & OS_UNIX_MASK) != 0;
     }
 
     // only for UtilitiesTest purposes
-    final static void resetOperatingSystem() {
+    static void resetOperatingSystem() {
         operatingSystem = -1;
     }
 
@@ -390,12 +390,12 @@ public final class Utilities {
     * @param id string which should be checked
     * @return <code>true</code> if a valid identifier
     */
-    public static final boolean isJavaIdentifier(String id) {
+    public static boolean isJavaIdentifier(String id) {
         if (id == null) {
             return false;
         }
 
-        if (id.equals("")) {
+        if (id.isEmpty()) {
             return false;
         }
 
@@ -418,7 +418,7 @@ public final class Utilities {
     * @throws java.beans.IntrospectionException for the usual reasons
     * @see java.beans.Introspector#getBeanInfo(Class)
     */
-    public static java.beans.BeanInfo getBeanInfo(Class clazz)
+    public static java.beans.BeanInfo getBeanInfo(Class<?> clazz)
     throws java.beans.IntrospectionException {
         java.beans.BeanInfo bi;
 
@@ -444,8 +444,8 @@ public final class Utilities {
                 if (pds[i].getName().equals("cursor")) { // NOI18N
 
                     try {
-                        Method getter = Component.class.getDeclaredMethod("getCursor", new Class[0]); // NOI18N
-                        Method setter = Component.class.getDeclaredMethod("setCursor", new Class[] { Cursor.class }); // NOI18N
+                        Method getter = Component.class.getDeclaredMethod("getCursor"); // NOI18N
+                        Method setter = Component.class.getDeclaredMethod("setCursor", Cursor.class); // NOI18N
                         pds[i] = new java.beans.PropertyDescriptor("cursor", getter, setter); // NOI18N
                     } catch (NoSuchMethodException e) {
                         e.printStackTrace();
@@ -460,7 +460,7 @@ public final class Utilities {
         if (bi != null) {
             if (clearIntrospector == null) {
                 doClear = new ActionListener() {
-                            public void actionPerformed(ActionEvent ev) {
+                            @Override public void actionPerformed(ActionEvent ev) {
                                 java.beans.Introspector.flushCaches();
                             }
                         };
@@ -481,7 +481,7 @@ public final class Utilities {
     * @throws java.beans.IntrospectionException for the usual reasons
     * @see java.beans.Introspector#getBeanInfo(Class, Class)
     */
-    public static java.beans.BeanInfo getBeanInfo(Class clazz, Class stopClass)
+    public static java.beans.BeanInfo getBeanInfo(Class<?> clazz, Class<?> stopClass)
     throws java.beans.IntrospectionException {
         return java.beans.Introspector.getBeanInfo(clazz, stopClass);
     }
@@ -638,7 +638,7 @@ widthcheck:  {
     */
     public static String wrapString(String original, int width, BreakIterator breakIterator, boolean removeNewLines) {
         String[] sarray = wrapStringToArray(original, width, breakIterator, removeNewLines);
-        StringBuffer retBuf = new StringBuffer();
+        StringBuilder retBuf = new StringBuilder();
 
         for (int i = 0; i < sarray.length; i++) {
             retBuf.append(sarray[i]);
@@ -662,13 +662,13 @@ widthcheck:  {
         // substitute original newlines with spaces,
         // remove newlines from head and tail
         if (removeNewLines) {
-            while (original.startsWith("\n")) // NOI18N
-
+            while (original.startsWith("\n")) {
                 original = original.substring(1);
+            }
 
-            while (original.endsWith("\n")) // NOI18N
-
+            while (original.endsWith("\n")) {
                 original = original.substring(0, original.length() - 1);
+            }
 
             original = original.replace('\n', ' ');
         }
@@ -725,10 +725,10 @@ widthcheck:  {
             }
         }
 
-        StringBuffer retBuf = new StringBuffer();
+        StringBuilder retBuf = new StringBuilder();
 
-        for (java.util.Enumeration e = lines.elements(); e.hasMoreElements();) {
-            retBuf.append((String) e.nextElement());
+        for (java.util.Enumeration<String> e = lines.elements(); e.hasMoreElements();) {
+            retBuf.append(e.nextElement());
             retBuf.append('\n');
         }
 
@@ -750,7 +750,7 @@ widthcheck:  {
             return original; // NOI18N
         }
 
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
 
         while (true) {
             int pos = original.indexOf(replaceFrom, index);
@@ -775,7 +775,7 @@ widthcheck:  {
     * @param fullName e.g. <code>some.pkg.SomeClass$Inner</code>
     * @return e.g. <code>Inner</code>
     */
-    public static final String pureClassName(final String fullName) {
+    public static String pureClassName(final String fullName) {
         final int index = fullName.indexOf('$');
 
         if ((index >= 0) && (index < fullName.length())) {
@@ -789,7 +789,7 @@ widthcheck:  {
     * @return <code>true</code> if it does <em>not</em>
     * @deprecated Obsolete, useless method, no replacement.
     */
-    @Deprecated public static final boolean isLargeFrameIcons() {
+    @Deprecated public static boolean isLargeFrameIcons() {
         return (getOperatingSystem() == OS_SOLARIS) || (getOperatingSystem() == OS_HP);
     }
 
@@ -876,10 +876,11 @@ widthcheck:  {
                     return false;
                 }
 
-                for (int i = 0; i < l1; i++)
+                for (int i = 0; i < l1; i++) {
                     if (o1a[i] != o2a[i]) {
                         return false;
                     }
+                }
 
                 return true;
             } else if ((o1 instanceof short[]) && (o2 instanceof short[])) {
@@ -892,10 +893,11 @@ widthcheck:  {
                     return false;
                 }
 
-                for (int i = 0; i < l1; i++)
+                for (int i = 0; i < l1; i++) {
                     if (o1a[i] != o2a[i]) {
                         return false;
                     }
+                }
 
                 return true;
             } else if ((o1 instanceof int[]) && (o2 instanceof int[])) {
@@ -908,10 +910,11 @@ widthcheck:  {
                     return false;
                 }
 
-                for (int i = 0; i < l1; i++)
+                for (int i = 0; i < l1; i++) {
                     if (o1a[i] != o2a[i]) {
                         return false;
                     }
+                }
 
                 return true;
             } else if ((o1 instanceof long[]) && (o2 instanceof long[])) {
@@ -924,10 +927,11 @@ widthcheck:  {
                     return false;
                 }
 
-                for (int i = 0; i < l1; i++)
+                for (int i = 0; i < l1; i++) {
                     if (o1a[i] != o2a[i]) {
                         return false;
                     }
+                }
 
                 return true;
             } else if ((o1 instanceof float[]) && (o2 instanceof float[])) {
@@ -940,10 +944,11 @@ widthcheck:  {
                     return false;
                 }
 
-                for (int i = 0; i < l1; i++)
+                for (int i = 0; i < l1; i++) {
                     if (o1a[i] != o2a[i]) {
                         return false;
                     }
+                }
 
                 return true;
             } else if ((o1 instanceof double[]) && (o2 instanceof double[])) {
@@ -956,10 +961,11 @@ widthcheck:  {
                     return false;
                 }
 
-                for (int i = 0; i < l1; i++)
+                for (int i = 0; i < l1; i++) {
                     if (o1a[i] != o2a[i]) {
                         return false;
                     }
+                }
 
                 return true;
             } else if ((o1 instanceof char[]) && (o2 instanceof char[])) {
@@ -972,10 +978,11 @@ widthcheck:  {
                     return false;
                 }
 
-                for (int i = 0; i < l1; i++)
+                for (int i = 0; i < l1; i++) {
                     if (o1a[i] != o2a[i]) {
                         return false;
                     }
+                }
 
                 return true;
             } else if ((o1 instanceof boolean[]) && (o2 instanceof boolean[])) {
@@ -988,10 +995,11 @@ widthcheck:  {
                     return false;
                 }
 
-                for (int i = 0; i < l1; i++)
+                for (int i = 0; i < l1; i++) {
                     if (o1a[i] != o2a[i]) {
                         return false;
                     }
+                }
 
                 return true;
             }
@@ -1008,7 +1016,7 @@ widthcheck:  {
     * @param clazz the class to name
     * @return the human-presentable name
     */
-    public static String getClassName(Class clazz) {
+    public static String getClassName(Class<?> clazz) {
         // if it is an array, get short name of element type and append []
         if (clazz.isArray()) {
             return getClassName(clazz.getComponentType()) + "[]"; // NOI18N
@@ -1022,7 +1030,7 @@ widthcheck:  {
     * @param clazz the class to name
     * @return the human-presentable name
     */
-    public static String getShortClassName(Class clazz) {
+    public static String getShortClassName(Class<?> clazz) {
         // if it is an array, get short name of element type and append []
         if (clazz.isArray()) {
             return getShortClassName(clazz.getComponentType()) + "[]"; // NOI18N
@@ -1030,7 +1038,7 @@ widthcheck:  {
 
         String name = clazz.getName().replace('$', '.');
 
-        return name.substring(name.lastIndexOf(".") + 1, name.length()); // NOI18N
+        return name.substring(name.lastIndexOf('.') + 1, name.length()); // NOI18N
     }
 
     /**
@@ -1046,8 +1054,9 @@ widthcheck:  {
             int i;
             int k = array.length;
 
-            for (i = 0; i < k; i++)
-                r[i] = (((Integer) array[i]) == null) ? 0 : ((Integer) array[i]).intValue();
+            for (i = 0; i < k; i++) {
+                r[i] = (((Integer) array[i]) == null) ? 0 : (Integer) array[i];
+            }
 
             return r;
         }
@@ -1057,8 +1066,9 @@ widthcheck:  {
             int i;
             int k = array.length;
 
-            for (i = 0; i < k; i++)
-                r[i] = (((Boolean) array[i]) == null) ? false : ((Boolean) array[i]).booleanValue();
+            for (i = 0; i < k; i++) {
+                r[i] = (((Boolean) array[i]) == null) ? false : (Boolean) array[i];
+            }
 
             return r;
         }
@@ -1068,8 +1078,9 @@ widthcheck:  {
             int i;
             int k = array.length;
 
-            for (i = 0; i < k; i++)
-                r[i] = (((Byte) array[i]) == null) ? 0 : ((Byte) array[i]).byteValue();
+            for (i = 0; i < k; i++) {
+                r[i] = (((Byte) array[i]) == null) ? 0 : (Byte) array[i];
+            }
 
             return r;
         }
@@ -1079,8 +1090,9 @@ widthcheck:  {
             int i;
             int k = array.length;
 
-            for (i = 0; i < k; i++)
-                r[i] = (((Character) array[i]) == null) ? 0 : ((Character) array[i]).charValue();
+            for (i = 0; i < k; i++) {
+                r[i] = (((Character) array[i]) == null) ? 0 : (Character) array[i];
+            }
 
             return r;
         }
@@ -1090,8 +1102,9 @@ widthcheck:  {
             int i;
             int k = array.length;
 
-            for (i = 0; i < k; i++)
-                r[i] = (((Double) array[i]) == null) ? 0 : ((Double) array[i]).doubleValue();
+            for (i = 0; i < k; i++) {
+                r[i] = (((Double) array[i]) == null) ? 0 : (Double) array[i];
+            }
 
             return r;
         }
@@ -1101,8 +1114,9 @@ widthcheck:  {
             int i;
             int k = array.length;
 
-            for (i = 0; i < k; i++)
-                r[i] = (((Float) array[i]) == null) ? 0 : ((Float) array[i]).floatValue();
+            for (i = 0; i < k; i++) {
+                r[i] = (((Float) array[i]) == null) ? 0 : (Float) array[i];
+            }
 
             return r;
         }
@@ -1112,8 +1126,9 @@ widthcheck:  {
             int i;
             int k = array.length;
 
-            for (i = 0; i < k; i++)
-                r[i] = (((Long) array[i]) == null) ? 0 : ((Long) array[i]).longValue();
+            for (i = 0; i < k; i++) {
+                r[i] = (((Long) array[i]) == null) ? 0 : (Long) array[i];
+            }
 
             return r;
         }
@@ -1123,8 +1138,9 @@ widthcheck:  {
             int i;
             int k = array.length;
 
-            for (i = 0; i < k; i++)
-                r[i] = (((Short) array[i]) == null) ? 0 : ((Short) array[i]).shortValue();
+            for (i = 0; i < k; i++) {
+                r[i] = (((Short) array[i]) == null) ? 0 : (Short) array[i];
+            }
 
             return r;
         }
@@ -1149,8 +1165,9 @@ widthcheck:  {
             int k = ((int[]) array).length;
             Integer[] r = new Integer[k];
 
-            for (i = 0; i < k; i++)
-                r[i] = new Integer(((int[]) array)[i]);
+            for (i = 0; i < k; i++) {
+                r[i] = ((int[]) array)[i];
+            }
 
             return r;
         }
@@ -1160,8 +1177,9 @@ widthcheck:  {
             int k = ((boolean[]) array).length;
             Boolean[] r = new Boolean[k];
 
-            for (i = 0; i < k; i++)
-                r[i] = ((boolean[]) array)[i] ? Boolean.TRUE : Boolean.FALSE;
+            for (i = 0; i < k; i++) {
+                r[i] = ((boolean[]) array)[i];
+            }
 
             return r;
         }
@@ -1171,8 +1189,9 @@ widthcheck:  {
             int k = ((byte[]) array).length;
             Byte[] r = new Byte[k];
 
-            for (i = 0; i < k; i++)
-                r[i] = new Byte(((byte[]) array)[i]);
+            for (i = 0; i < k; i++) {
+                r[i] = ((byte[]) array)[i];
+            }
 
             return r;
         }
@@ -1182,8 +1201,9 @@ widthcheck:  {
             int k = ((char[]) array).length;
             Character[] r = new Character[k];
 
-            for (i = 0; i < k; i++)
-                r[i] = new Character(((char[]) array)[i]);
+            for (i = 0; i < k; i++) {
+                r[i] = ((char[]) array)[i];
+            }
 
             return r;
         }
@@ -1193,8 +1213,9 @@ widthcheck:  {
             int k = ((double[]) array).length;
             Double[] r = new Double[k];
 
-            for (i = 0; i < k; i++)
-                r[i] = new Double(((double[]) array)[i]);
+            for (i = 0; i < k; i++) {
+                r[i] = ((double[]) array)[i];
+            }
 
             return r;
         }
@@ -1204,8 +1225,9 @@ widthcheck:  {
             int k = ((float[]) array).length;
             Float[] r = new Float[k];
 
-            for (i = 0; i < k; i++)
-                r[i] = new Float(((float[]) array)[i]);
+            for (i = 0; i < k; i++) {
+                r[i] = ((float[]) array)[i];
+            }
 
             return r;
         }
@@ -1215,8 +1237,9 @@ widthcheck:  {
             int k = ((long[]) array).length;
             Long[] r = new Long[k];
 
-            for (i = 0; i < k; i++)
-                r[i] = new Long(((long[]) array)[i]);
+            for (i = 0; i < k; i++) {
+                r[i] = ((long[]) array)[i];
+            }
 
             return r;
         }
@@ -1226,8 +1249,9 @@ widthcheck:  {
             int k = ((short[]) array).length;
             Short[] r = new Short[k];
 
-            for (i = 0; i < k; i++)
-                r[i] = new Short(((short[]) array)[i]);
+            for (i = 0; i < k; i++) {
+                r[i] = ((short[]) array)[i];
+            }
 
             return r;
         }
@@ -1241,7 +1265,7 @@ widthcheck:  {
     * @param c primitive type (e.g. <code>int</code>)
     * @return object type (e.g. <code>Integer</code>)
     */
-    public static Class getObjectType(Class c) {
+    public static Class<?> getObjectType(Class<?> c) {
         if (!c.isPrimitive()) {
             return c;
         }
@@ -1287,7 +1311,7 @@ widthcheck:  {
     * @param c object type (e.g. <code>Integer</code>)
     * @return primitive type (e.g. <code>int</code>)
     */
-    public static Class getPrimitiveType(Class c) {
+    public static Class<?> getPrimitiveType(Class<?> c) {
         if (!c.isPrimitive()) {
             return c;
         }
@@ -1394,7 +1418,7 @@ widthcheck:  {
         char c;
 
         int state = NULL;
-        StringBuffer buff = new StringBuffer(20);
+        StringBuilder buff = new StringBuilder(20);
         int slength = s.length();
 
         for (int i = 0; i < slength; i++) {
@@ -1800,7 +1824,7 @@ widthcheck:  {
         }
     }
 
-    private static final boolean usableKeyOnMac(int key, int mask) {
+    private static boolean usableKeyOnMac(int key, int mask) {
         //All permutations fail for Q except ctrl
         if (key == KeyEvent.VK_Q) {
             return false;
@@ -1827,7 +1851,7 @@ widthcheck:  {
         return true;
     }
 
-    private static final int getMenuShortcutKeyMask() {
+    private static int getMenuShortcutKeyMask() {
         // #152050 - work in headless environment too
         try {
             if (!GraphicsEnvironment.isHeadless()) {
@@ -2116,7 +2140,7 @@ widthcheck:  {
      * @see #findCenterBounds(Dimension)
      */
     @Deprecated
-    public static final Dimension getScreenSize() {
+    public static Dimension getScreenSize() {
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 
         if (isWindows() && !Boolean.getBoolean("netbeans.no.taskbar")) {
@@ -2135,7 +2159,7 @@ widthcheck:  {
      * @see <a href="@org-openide-filesystems@/org/openide/filesystems/FileChooserBuilder.html"><code>FileChooserBuilder</code></a>
      */
     @Deprecated
-    public static final int showJFileChooser(
+    public static int showJFileChooser(
         javax.swing.JFileChooser chooser, java.awt.Component parent, java.lang.String approveButtonText
     ) {
         if (approveButtonText != null) {
@@ -2183,7 +2207,7 @@ widthcheck:  {
         final int[] retValue = {javax.swing.JFileChooser.CANCEL_OPTION};
 
         java.awt.event.ActionListener l = new java.awt.event.ActionListener() {
-                public void actionPerformed(java.awt.event.ActionEvent ev) {
+                @Override public void actionPerformed(java.awt.event.ActionEvent ev) {
                     if (javax.swing.JFileChooser.APPROVE_SELECTION.equals(ev.getActionCommand())) {
                         retValue[0] = javax.swing.JFileChooser.APPROVE_OPTION;
                     }
@@ -2213,7 +2237,7 @@ widthcheck:  {
     * @throws UnorderableException if the specified partial order is inconsistent on this list
     * @deprecated Deprecated in favor of the potentially much faster (and possibly more correct) {@link #topologicalSort}.
     */
-    @SuppressWarnings("unchecked") // do not bother, it is deprecated anyway
+    @SuppressWarnings({"unchecked", "rawtypes"}) // do not bother, it is deprecated anyway
     @Deprecated
     public static List partialSort(List l, Comparator c, boolean stable)
     throws UnorderableException {
@@ -2253,7 +2277,7 @@ widthcheck:  {
                 Object elt = it.next();
                 Set eltDeps = (Set) deps.get(elt);
 
-                if ((eltDeps == null) || (eltDeps.size() == 0)) {
+                if ((eltDeps == null) || (eltDeps.isEmpty())) {
                     // This one is OK to add to the result now.
                     it.remove();
                     stillGoing = true;
@@ -2537,7 +2561,7 @@ widthcheck:  {
             set = TRANS_LOCK;
         }
 
-        Enumeration en;
+        Enumeration<URL> en;
 
         try {
             en = current.getResources("META-INF/netbeans/translate.names");
@@ -2579,7 +2603,7 @@ widthcheck:  {
         //        }
         TreeSet<String[]> list = new TreeSet<String[]>(
                 new Comparator<String[]>() {
-                    public int compare(String[] o1, String[] o2) {
+                    @Override public int compare(String[] o1, String[] o2) {
                         String s1 = o1[0];
                         String s2 = o2[0];
 
@@ -2596,7 +2620,7 @@ widthcheck:  {
             );
 
         while (en.hasMoreElements()) {
-            URL u = (URL) en.nextElement();
+            URL u = en.nextElement();
 
             try {
                 BufferedReader reader = new BufferedReader(
@@ -2605,7 +2629,7 @@ widthcheck:  {
                 loadTranslationFile(re, reader, list);
                 reader.close();
             } catch (IOException ex) {
-                LOG.log(Level.WARNING, "Problematic file: " + u);
+                LOG.log(Level.WARNING, "Problematic file: {0}", u);
                 LOG.log(Level.WARNING, null, ex);
             }
         }
@@ -2618,10 +2642,7 @@ widthcheck:  {
         String[] pattern = new String[arr.length];
 
         int i = 0;
-        Iterator it = list.iterator();
-
-        while (it.hasNext()) {
-            String[] pair = (String[]) it.next();
+        for (String[] pair : list) {
             arr[i] = pair[1].intern(); // name of the track
             pattern[i] = pair[0]; // original object
             i++;
@@ -2681,7 +2702,7 @@ widthcheck:  {
      * @deprecated Use {@link ImageUtilities#mergeImages}.
      */
     @Deprecated
-    public static final Image mergeImages(Image image1, Image image2, int x, int y) {
+    public static Image mergeImages(Image image1, Image image2, int x, int y) {
         return ImageUtilities.mergeImages(image1, image2, x, y);
     }
     
@@ -2693,7 +2714,7 @@ widthcheck:  {
      * @deprecated Use {@link ImageUtilities#loadImage(java.lang.String)}.
      */
     @Deprecated
-    public static final Image loadImage(String resourceID) {
+    public static Image loadImage(String resourceID) {
         return ImageUtilities.loadImage(resourceID);
     }
 
@@ -2705,7 +2726,7 @@ widthcheck:  {
      * @deprecated Use {@link ImageUtilities#icon2Image}.
      */
     @Deprecated
-    public static final Image icon2Image(Icon icon) {
+    public static Image icon2Image(Icon icon) {
         return ImageUtilities.icon2Image(icon);
     }
 
@@ -2735,9 +2756,7 @@ widthcheck:  {
                 if (action instanceof ContextAwareAction) {
                     Action contextAwareAction = ((ContextAwareAction) action).createContextAwareInstance(context);
                     if (contextAwareAction == null) {
-                        Logger.getLogger(Utilities.class.getName()).warning(
-                                "ContextAwareAction.createContextAwareInstance(context) returns null. That is illegal!" // NOI18N
-                                        + " action=" + action + ", context=" + context); // NOI18N
+                        Logger.getLogger(Utilities.class.getName()).log(Level.WARNING,"ContextAwareAction.createContextAwareInstance(context) returns null. That is illegal!" + " action={0}, context={1}", new Object[] {action, context});
                     } else {
                         action = contextAwareAction;
                     }                    
@@ -2747,8 +2766,7 @@ widthcheck:  {
                 if (action instanceof Presenter.Popup) {
                     item = ((Presenter.Popup) action).getPopupPresenter();
                     if (item == null) {
-                        Logger.getLogger(Utilities.class.getName()).warning(
-                                "findContextMenuImpl, getPopupPresenter returning null for " + action); // NOI18N
+                        Logger.getLogger(Utilities.class.getName()).log(Level.WARNING, "findContextMenuImpl, getPopupPresenter returning null for {0}", action);
                         continue;
                     }
                 } else {
@@ -2786,8 +2804,9 @@ widthcheck:  {
                 }
             } catch (RuntimeException ex) {
                 Exceptions.attachMessage(ex, "Current component: " + c); // NOI18N
-                Exceptions.attachMessage(ex, "List of components: " + Arrays.asList(components)); // NOI18N
+                Exceptions.attachMessage(ex, "List of components: " + components); // NOI18N
                 Exceptions.attachMessage(ex, "List of actions: " + Arrays.asList(actions)); // NOI18N
+                Exceptions.printStackTrace(ex);
             }
         }
         return menu;
@@ -2854,7 +2873,7 @@ widthcheck:  {
             } else if (JSeparator.class.isAssignableFrom(item.getType())) {
                 actions.add(null);
             } else {
-                Logger.getLogger(Utilities.class.getName()).warning("Unrecognized object of " + item.getType() + " found in actions path " + path);
+                Logger.getLogger(Utilities.class.getName()).log(Level.WARNING, "Unrecognized object of {0} found in actions path {1}", new Object[] {item.getType(), path});
             }
         }
         return actions;
@@ -2907,7 +2926,7 @@ widthcheck:  {
      * @deprecated Use {@link ImageUtilities#loadImage(java.lang.String, boolean)}.
      */
     @Deprecated
-    public static final Image loadImage(String resource, boolean localized) {
+    public static Image loadImage(String resource, boolean localized) {
         return ImageUtilities.loadImage(resource, localized);
     }
 
@@ -2941,7 +2960,7 @@ widthcheck:  {
      *
      * @since 3.23
      */
-    public static final Cursor createProgressCursor(Component component) {
+    public static Cursor createProgressCursor(Component component) {
         // refuse null component
         if (component == null) {
             throw new NullPointerException("Given component is null"); //NOI18N
@@ -3001,7 +3020,8 @@ widthcheck:  {
      *
      * @since 3.36
      */
-    public static final void attachInitJob(Component comp4Init, AsyncGUIJob initJob) {
+    @SuppressWarnings("ResultOfObjectAllocationIgnored")
+    public static void attachInitJob(Component comp4Init, AsyncGUIJob initJob) {
         new AsyncInitSupport(comp4Init, initJob);
     }
 
@@ -3087,6 +3107,7 @@ widthcheck:  {
     * @deprecated Used only by the deprecated partialSort
     */
     @Deprecated
+    @SuppressWarnings("rawtypes")
     public static class UnorderableException extends RuntimeException {
         static final long serialVersionUID = 6749951134051806661L;
         private Collection unorderable;

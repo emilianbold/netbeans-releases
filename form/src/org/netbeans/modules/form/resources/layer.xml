@@ -456,10 +456,12 @@ made subject to such option by the copyright holder.
                 <attr name="SystemFileSystem.icon32" urlvalue="nbresloc:/javax/swing/beaninfo/images/JAppletColor32.gif"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.java.source.queries.api.TemplateWizardFactory.create"/>
                 <attr name="templateCategory" stringvalue="java-forms"/>
+                <attr name="weight" intvalue="100"/>
             </file>
             <file name="JApplet.form" url="templates/SwingForms/JApplet_form">
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateCategory" stringvalue="java-forms"/>
+                <attr name="weight" intvalue="100"/>
             </file>
 
             <file name="JDialog.java" url="templates/SwingForms/JDialog_java">
@@ -472,6 +474,7 @@ made subject to such option by the copyright holder.
                 <attr name="SystemFileSystem.icon32" urlvalue="nbresloc:/org/netbeans/modules/form/resources/palette/dialog_32.png"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.java.source.queries.api.TemplateWizardFactory.create"/>
                 <attr name="templateCategory" stringvalue="java-forms"/>
+                <attr name="weight" intvalue="100"/>
             </file>
             <file name="JDialog.form" url="templates/SwingForms/JDialog_form">
                 <attr name="template" boolvalue="true"/>                
@@ -488,6 +491,7 @@ made subject to such option by the copyright holder.
                 <attr name="SystemFileSystem.icon32" urlvalue="nbresloc:/org/netbeans/modules/form/resources/palette/frame_32.png"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.java.source.queries.api.TemplateWizardFactory.create"/>
                 <attr name="templateCategory" stringvalue="java-forms"/>
+                <attr name="weight" intvalue="100"/>
             </file>
             <file name="JFrame.form" url="templates/SwingForms/JFrame_form">
                 <attr name="template" boolvalue="true"/>
@@ -504,6 +508,7 @@ made subject to such option by the copyright holder.
                 <attr name="SystemFileSystem.icon32" urlvalue="nbresloc:/org/netbeans/modules/form/resources/palette/internal_frame_32.png"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.java.source.queries.api.TemplateWizardFactory.create"/>
                 <attr name="templateCategory" stringvalue="java-forms"/>
+                <attr name="weight" intvalue="100"/>
             </file>
             <file name="JInternalFrame.form" url="templates/SwingForms/JInternalFrame_form">
                 <attr name="template" boolvalue="true"/>
@@ -520,6 +525,7 @@ made subject to such option by the copyright holder.
                 <attr name="SystemFileSystem.icon32" urlvalue="nbresloc:/org/netbeans/modules/form/resources/palette/panel_32.png"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.java.source.queries.api.TemplateWizardFactory.create"/>
                 <attr name="templateCategory" stringvalue="java-forms"/>
+                <attr name="weight" intvalue="100"/>
             </file>
             <file name="JPanel.form" url="templates/SwingForms/JPanel_form">
                 <attr name="template" boolvalue="true"/>
@@ -536,6 +542,7 @@ made subject to such option by the copyright holder.
                 <attr name="SystemFileSystem.icon32" urlvalue="nbresloc:/org/netbeans/modules/form/resources/palette/panel_32.png"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.java.source.queries.api.TemplateWizardFactory.createForSuperClass"/>
                 <attr name="templateCategory" stringvalue="java-forms"/>
+                <attr name="weight" intvalue="100"/>
             </file>
             <file name="BeanForm.form" url="templates/SwingForms/BeanForm_form">
                 <attr name="template" boolvalue="true"/>
@@ -552,6 +559,7 @@ made subject to such option by the copyright holder.
                 <attr name="SystemFileSystem.icon32" urlvalue="nbresloc:/org/netbeans/modules/form/resources/palette/frame_32.png"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.java.source.queries.api.TemplateWizardFactory.create"/>
                 <attr name="templateCategory" stringvalue="gui-java-application,java-forms"/>
+                <attr name="weight" intvalue="100"/>
             </file>
             <file name="Application.form" url="templates/Dialogs/Application_form">
                 <attr name="template" boolvalue="true"/>
@@ -568,6 +576,7 @@ made subject to such option by the copyright holder.
                 <attr name="SystemFileSystem.icon32" urlvalue="nbresloc:/org/netbeans/modules/form/resources/palette/frame_32.png"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.java.source.queries.api.TemplateWizardFactory.create"/>
                 <attr name="templateCategory" stringvalue="gui-java-application,java-forms"/>
+                <attr name="weight" intvalue="100"/>
             </file>
             <file name="MDIApplication.form" url="templates/Dialogs/MDIApplication_form">
                 <attr name="template" boolvalue="true"/>
@@ -584,6 +593,7 @@ made subject to such option by the copyright holder.
                 <attr name="SystemFileSystem.icon32" urlvalue="nbresloc:/org/netbeans/modules/form/resources/palette/dialog_32.png"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.java.source.queries.api.TemplateWizardFactory.create"/>
                 <attr name="templateCategory" stringvalue="gui-java-application,java-forms"/>
+                <attr name="weight" intvalue="100"/>
             </file>
             <file name="OkCancelDialog.form" url="templates/Dialogs/OkCancelDialog_form">
                 <attr name="template" boolvalue="true"/>
@@ -610,6 +620,7 @@ made subject to such option by the copyright holder.
                 <attr name="SystemFileSystem.icon32" urlvalue="nbresloc:/javax/swing/beaninfo/images/JAppletColor32.gif"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.java.source.queries.api.TemplateWizardFactory.create"/>
                 <attr name="templateCategory" stringvalue="java-forms,java-awt-forms"/>
+                <attr name="weight" intvalue="100"/>
             </file>
             <file name="Applet.form" url="templates/AWTForms/Applet_form">
                 <attr name="template" boolvalue="true"/>
@@ -626,6 +637,7 @@ made subject to such option by the copyright holder.
                 <attr name="SystemFileSystem.icon32" urlvalue="nbresloc:/org/netbeans/modules/form/resources/palette/dialog_32.png"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.java.source.queries.api.TemplateWizardFactory.create"/>
                 <attr name="templateCategory" stringvalue="java-forms,java-awt-forms"/>
+                <attr name="weight" intvalue="100"/>
             </file>
             <file name="Dialog.form" url="templates/AWTForms/Dialog_form">
                 <attr name="template" boolvalue="true"/>
@@ -642,6 +654,7 @@ made subject to such option by the copyright holder.
                 <attr name="SystemFileSystem.icon32" urlvalue="nbresloc:/org/netbeans/modules/form/resources/palette/frame_32.png"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.java.source.queries.api.TemplateWizardFactory.create"/>
                 <attr name="templateCategory" stringvalue="java-forms,java-awt-forms"/>
+                <attr name="weight" intvalue="100"/>
             </file>
             <file name="Frame.form" url="templates/AWTForms/Frame_form">
                 <attr name="template" boolvalue="true"/>
@@ -657,6 +670,7 @@ made subject to such option by the copyright holder.
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/form/beaninfo/awt/panel.gif"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.java.source.queries.api.TemplateWizardFactory.create"/>
                 <attr name="templateCategory" stringvalue="java-forms,java-awt-forms"/>
+                <attr name="weight" intvalue="100"/>
             </file>
             <file name="Panel.form" url="templates/AWTForms/Panel_form">
                 <attr name="template" boolvalue="true"/>

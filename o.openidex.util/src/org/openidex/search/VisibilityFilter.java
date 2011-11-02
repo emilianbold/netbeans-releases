@@ -44,6 +44,8 @@
 
 package org.openidex.search;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -74,8 +76,7 @@ final class VisibilityFilter implements FileObjectFilter {
     }
     
     /** Test that a file is the primary file of its DataObject. */
-    private boolean isPrimaryFile(FileObject file) 
-            throws IllegalArgumentException {
+    private boolean isPrimaryFile(FileObject file) {
         try {
             DataObject dob = DataObject.find(file);
             if (dob.getPrimaryFile().equals(file)) {
@@ -84,7 +85,10 @@ final class VisibilityFilter implements FileObjectFilter {
                 return false;
             }
         } catch (DataObjectNotFoundException ex) {
-            throw new IllegalArgumentException("File not found:" + file, ex);
+            String msg = "DataObject not found for file:" + file;       //NOI18N
+            Logger logger = Logger.getLogger(VisibilityFilter.class.getName());
+            logger.log(Level.WARNING, msg, ex);
+            return false;
         }
     }
     

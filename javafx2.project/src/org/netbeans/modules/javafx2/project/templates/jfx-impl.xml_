@@ -12,12 +12,12 @@
     <target name="-init-javafx">
         <taskdef resource="com/sun/javafx/tools/ant/antlib.xml"
             uri="javafx:com.sun.javafx.tools.ant"
-            classpath="${javafx.sdk}/tools/ant-javafx.jar"/>
+            classpath="${javafx.sdk}${file.separator}tools${file.separator}ant-javafx.jar"/>
     </target>
 
     <target name="-check-jfx-deployment" depends="-init-javafx">
         <condition property="jfx-deployment-available">
-            <available file="${javafx.sdk}/tools/ant-javafx.jar"/>
+            <available file="${javafx.sdk}${file.separator}tools${file.separator}ant-javafx.jar"/>
         </condition>
         <echo message="jfx-deployment-available = ${jfx-deployment-available}" level="verbose"/>
     </target>
@@ -25,8 +25,8 @@
     <target name="-check-jfx-webstart">
         <condition property="jfx-webstart-available">
             <or>
-                <available file="${javafx.runtime}/bin/javaws.exe"/>
-                <available file="${javafx.runtime}/bin/javaws"/>
+                <available file="${javafx.runtime}${file.separator}bin${file.separator}javaws.exe"/>
+                <available file="${javafx.runtime}${file.separator}bin${file.separator}javaws"/>
             </or>
         </condition>
         <echo message="jfx-deployment-available = ${jfx-deployment-available}" level="verbose"/>
@@ -114,6 +114,12 @@
                 <equals arg1="${javafx.deploy.permissionselevated}" arg2="true" trim="true"/>
             </and>
         </condition>
+        <condition property="binary-encode-css">
+            <and>
+                <isset property="javafx.binarycss"/>
+                <equals arg1="${javafx.binarycss}" arg2="true" trim="true"/>
+            </and>
+        </condition>
 
         <echo message="main-class-available = ${main-class-available}" level="verbose"/>
         <echo message="preloader-available = ${preloader-available}" level="verbose"/>
@@ -127,6 +133,7 @@
         <echo message="update-mode-background = ${update-mode-background}" level="verbose"/>
         <echo message="offline-allowed = ${offline-allowed}" level="verbose"/>
         <echo message="permissions-elevated = ${permissions-elevated}" level="verbose"/>
+        <echo message="binary-encode-css = ${binary-encode-css}" level="verbose"/>
     </target>
 
     <target name="-icon-warning" depends="-check-project" if="icon-available">
@@ -161,7 +168,26 @@
     </target>
 
     <target name="-copy-external-preloader-jar" depends="-check-project" if="app-with-external-preloader-jar">
-        <copy file="${javafx.preloader.jar.path}" todir="${dist.dir}/lib"/>
+        <copy file="${javafx.preloader.jar.path}" todir="${dist.dir}${file.separator}lib"/>
+    </target>
+
+    <target name="-set-binary-css" depends="-check-project" if="binary-encode-css">
+        <property name="css-include-ext" value="bss"/>
+        <property name="css-exclude-ext" value="css"/>
+    </target>
+    <target name="-unset-binary-css" depends="-check-project" unless="binary-encode-css">
+        <property name="css-include-ext" value="css"/>
+        <property name="css-exclude-ext" value="bss"/>
+    </target>
+    <target name="-copy-binary-css" depends="-check-project" if="binary-encode-css">
+        <fileset id="cssfiles" dir="${basedir}${file.separator}${build.classes.dir}">
+            <include name="**${file.separator}*.css"/>
+        </fileset>
+        <property name="cssfileslist" refid="cssfiles"/>
+        <echo message="css files to binary convert: " level="verbose">${cssfileslist}</echo>
+        <fx:csstobin outdir="${basedir}${file.separator}${build.classes.dir}">
+            <fileset refid="cssfiles"/>
+        </fx:csstobin>
     </target>
 
 
@@ -170,7 +196,7 @@
     <target name="jfx-deployment" depends="-check-jfx-deployment,-check-project,-icon-warning,
         -set-dimensions,-reset-dimensions,-set-update-mode-background,-set-update-mode-eager,
         -offline-allowed-warning,-set-permissions-elevated,-reset-permissions-elevated,
-        -copy-external-preloader-jar,
+        -copy-external-preloader-jar,-set-binary-css,-unset-binary-css,-copy-binary-css,
         -deploy-app-sign-nopreloader-notemplate,
         -deploy-app-sign-preloader-notemplate,
         -deploy-app-sign-nopreloader-template,
@@ -222,7 +248,7 @@
     </target>
 
     <target name="-javafx-init-keystore1" depends="-javafx-init-signing" if="generated.key.signing">
-        <property name="javafx.signjar.keystore" value="${basedir}/build/nb-jfx.jks" />
+        <property name="javafx.signjar.keystore" value="${basedir}${file.separator}build${file.separator}nb-jfx.jks" />
         <property name="javafx.signjar.storepass" value="storepass"/>
         <property name="javafx.signjar.keypass" value="keypass"/>
         <property name="javafx.signjar.alias" value="nb-jfx"/>
@@ -248,8 +274,8 @@
     <macrodef name="deploy-preprocess">
         <sequential>
             <!-- hack for beta: remove the just generated standard non-fx deployment files to be replaced by the fx ones -->
-            <delete file="${jfx.deployment.dir}/${jfx.deployment.jar}"/>
-            <delete file="${jfx.deployment.dir}/README.TXT"/>
+            <delete file="${jfx.deployment.dir}${file.separator}${jfx.deployment.jar}"/>
+            <delete file="${jfx.deployment.dir}${file.separator}README.TXT"/>
             <!-- hack end -->
         </sequential>
     </macrodef>
@@ -284,8 +310,8 @@
             <fx:resources id="appRes">
                 <fx:fileset requiredFor="startup" dir="${jfx.deployment.dir}">
                     <include name="${jfx.deployment.jar}"/>
-                    <include name="lib/*.jar"/>
-                    <exclude name="lib/${jfx.deployment.jar}"/>
+                    <include name="lib${file.separator}*.jar"/>
+                    <exclude name="lib${file.separator}${jfx.deployment.jar}"/>
                 </fx:fileset>
             </fx:resources>
         </sequential>
@@ -295,13 +321,13 @@
         <sequential>
             <fx:resources id="appRes">
                 <fx:fileset requiredFor="preloader" dir="${jfx.deployment.dir}">
-                    <include name="lib/${javafx.preloader.jar.filename}"/>
+                    <include name="lib${file.separator}${javafx.preloader.jar.filename}"/>
                 </fx:fileset>
                 <fx:fileset requiredFor="startup" dir="${jfx.deployment.dir}">
                     <include name="${jfx.deployment.jar}"/>
-                    <include name="lib/*.jar"/>
-                    <exclude name="lib/${javafx.preloader.jar.filename}"/>
-                    <exclude name="lib/${jfx.deployment.jar}"/>
+                    <include name="lib${file.separator}*.jar"/>
+                    <exclude name="lib${file.separator}${javafx.preloader.jar.filename}"/>
+                    <exclude name="lib${file.separator}${jfx.deployment.jar}"/>
                 </fx:fileset>
             </fx:resources>
         </sequential>
@@ -309,10 +335,12 @@
 
     <macrodef name="deploy-jar">
         <sequential>
-            <fx:jar destfile="${jfx.deployment.dir}/${jfx.deployment.jar}">
+            <fx:jar destfile="${jfx.deployment.dir}${file.separator}${jfx.deployment.jar}">
                 <fx:application refid="fxApp"/>
                 <fx:resources refid="appRes"/>
-                <fileset dir="${build.classes.dir}"/>
+                <fileset dir="${build.classes.dir}">
+                    <exclude name="**${file.separator}*.${css-exclude-ext}"/>
+                </fileset>
                 <manifest>
                     <attribute name="Implementation-Vendor" value="${application.vendor}"/>
                     <attribute name="Implementation-Title" value="${application.title}"/>
@@ -334,7 +362,7 @@
                 keypass="${javafx.signjar.keypass}">
                 <fileset dir="${jfx.deployment.dir}">
                     <include name="${jfx.deployment.jar}"/>
-                    <include name="lib/*.jar"/>
+                    <include name="lib${file.separator}*.jar"/>
                 </fileset>
             </signjar>
         </sequential>
@@ -351,7 +379,7 @@
                 alias="${javafx.signjar.alias}"
                 keypass="${javafx.signjar.keypass}">
                 <fileset dir="${jfx.deployment.dir}">
-                    <include name="lib/${javafx.preloader.jar.filename}"/>
+                    <include name="lib${file.separator}${javafx.preloader.jar.filename}"/>
                 </fileset>
             </signjar>
             <signjar keystore="${javafx.signjar.keystore}"
@@ -360,8 +388,8 @@
                 keypass="${javafx.signjar.keypass}">
                 <fileset dir="${jfx.deployment.dir}">
                     <include name="${jfx.deployment.jar}"/>
-                    <include name="lib/*.jar"/>
-                    <exclude name="lib/${javafx.preloader.jar.filename}"/>
+                    <include name="lib${file.separator}*.jar"/>
+                    <exclude name="lib${file.separator}${javafx.preloader.jar.filename}"/>
                 </fileset>
             </signjar>
         </sequential>
@@ -371,43 +399,54 @@
         <sequential>
             <fx:deploy width="${javafx.width}" height="${javafx.height}"
                       outdir="${jfx.deployment.dir}" embedjnlp="true" updatemode="${update-mode}"
-                      outfile="${application.title}" includeDT="true">
+                      outfile="${application.title}" includeDT="${javafx.deploy.includeDT}">
                 <fx:application refid="fxApp"/>
                 <fx:resources refid="appRes"/>
-                <info title="${application.title}" vendor="${application.vendor}"/>
-                <permissions elevated="${permissions.elevated}"/>
+                <fx:info title="${application.title}" vendor="${application.vendor}"/>
+                <fx:permissions elevated="${permissions.elevated}"/>
                 <fx:preferences shortcut="${javafx.deploy.adddesktopshortcut}" install="${javafx.deploy.installpermanently}" menu="${javafx.deploy.addstartmenushortcut}"/>
                 <!-- PLATFORM -->
                 <fx:platform javafx="2.0+">
                     &platform-impl;
                 </fx:platform>
                 <!-- CALLBACKS -->
-                <callbacks>
+                <fx:callbacks>
                     &callbacks-impl;
-                </callbacks>
+                </fx:callbacks>
             </fx:deploy>
         </sequential>
     </macrodef>
 
     <macrodef name="deploy-deploy-template">
         <sequential>
+            <echo message="javafx.run.htmltemplate = ${javafx.run.htmltemplate}" level="verbose"/>
+            <pathconvert property="javafx.run.htmltemplate.processed">
+                <path path="${javafx.run.htmltemplate}"/>
+                <mapper>
+                     <chainedmapper>
+                          <flattenmapper/>
+                          <regexpmapper from="(.*)(\.html?)$" to="\1-processed\2"/>
+                          <globmapper from="*" to="${jfx.deployment.dir}${file.separator}*" casesensitive="no"/>
+                     </chainedmapper>
+                </mapper>
+            </pathconvert>
             <fx:deploy width="${javafx.width}" height="${javafx.height}"
                       outdir="${jfx.deployment.dir}" embedjnlp="true" updatemode="${update-mode}"
-                      outfile="${application.title}" includeDT="true">
+                      outfile="${application.title}" includeDT="${javafx.deploy.includeDT}">
                 <fx:application refid="fxApp"/>
                 <fx:resources refid="appRes"/>
-                <info title="${application.title}" vendor="${application.vendor}"/>
-                <permissions elevated="${permissions.elevated}"/>
+                <fx:info title="${application.title}" vendor="${application.vendor}"/>
+                <fx:permissions elevated="${permissions.elevated}"/>
                 <fx:preferences shortcut="${javafx.deploy.adddesktopshortcut}" install="${javafx.deploy.installpermanently}" menu="${javafx.deploy.addstartmenushortcut}"/>
-                <template file="${javafx.run.htmltemplate}" tofile="${javafx.run.htmltemplate.processed}"/>
+                <fx:template file="${javafx.run.htmltemplate}" tofile="${javafx.run.htmltemplate.processed}"/>
                 <!-- PLATFORM -->
                 <fx:platform javafx="2.0+">
                     &platform-impl;
                 </fx:platform>
                 <!-- CALLBACKS -->
-                <callbacks>
+                <fx:callbacks>
                     &callbacks-impl;
-                </callbacks>
+                </fx:callbacks>
             </fx:deploy>
         </sequential>
     </macrodef>
@@ -578,11 +617,19 @@
         <deploy-deploy-template/>
     </target>
 
+
+    <!-- Running/Debugging Standalone -->
+
+    <target name="jfxsa-run" depends="run"/>
+
+    <target name="jfxsa-debug" depends="jar,debug"/>
+
+
     <!-- Running/Debugging as WebStart -->
     
     <target name="-check-jnlp-file">
         <basename property="jfx.deployment.base" file="${jfx.deployment.jar}" suffix=".jar"/>
-        <property name="jfx.deployment.jnlp" location="${jfx.deployment.dir}/${jfx.deployment.base}.jnlp"/>
+        <property name="jfx.deployment.jnlp" location="${jfx.deployment.dir}${file.separator}${jfx.deployment.base}.jnlp"/>
         <condition property="jnlp-file-exists">
             <available file="${jfx.deployment.jnlp}"/>
         </condition>
@@ -600,8 +647,8 @@
     </target>
 
     <target name="jfxws-run" depends="jar,-check-jfx-webstart,-resolve-jnlp-file" if="jnlp-file-exists" description="Start fx javaws execution">
-        <echo message="Executing ${jfx.deployment.jnlp} using ${javafx.runtime}/bin/javaws"/>
-        <exec executable="${javafx.runtime}/bin/javaws">
+        <echo message="Executing ${jfx.deployment.jnlp} using ${javafx.runtime}${file.separator}bin${file.separator}javaws"/>
+        <exec executable="${javafx.runtime}${file.separator}bin${file.separator}javaws">
             <arg file="${jfx.deployment.jnlp}"/>
         </exec>
     </target>
@@ -631,8 +678,8 @@
     </target>
 
     <target name="-debug-javaws-debuggee" depends="-init-debug-args">
-        <echo message="Executing ${jfx.deployment.jnlp} in debug mode using ${javafx.runtime}/bin/javaws"/>
-        <exec executable="${javafx.runtime}/bin/javaws">
+        <echo message="Executing ${jfx.deployment.jnlp} in debug mode using ${javafx.runtime}${file.separator}bin${file.separator}javaws"/>
+        <exec executable="${javafx.runtime}${file.separator}bin${file.separator}javaws">
             <env key="JAVAWS_VM_ARGS" value="${debug-args-line} -Xrunjdwp:transport=${debug-transport},address=${jpda.address}"/>
             <arg value="-wait"/>
             <arg file="${jfx.deployment.jnlp}"/>
@@ -641,10 +688,14 @@
     
 
     <!-- Running/Debugging in Browser -->
-    
-    <target name="-check-html-file">
+
+    <target name="-check-html-processed-template-file" if="html-template-available">
+        <property name="jfx.deployment.html" location="${javafx.run.htmltemplate.processed}"/>
+    </target>
+
+    <target name="-check-html-file" depends="-check-html-processed-template-file">
         <basename property="jfx.deployment.base" file="${jfx.deployment.jar}" suffix=".jar"/>
-        <property name="jfx.deployment.html" location="${jfx.deployment.dir}/${jfx.deployment.base}.html"/>
+        <property name="jfx.deployment.html" location="${jfx.deployment.dir}${file.separator}${jfx.deployment.base}.html"/>
         <condition property="html-file-exists">
             <available file="${jfx.deployment.html}"/>
         </condition>
@@ -669,7 +720,7 @@
     </target>
     
     <target name="jfxbe-debug" if="html-file-exists+netbeans.home" depends="jar,-resolve-html-file,-debug-start-debugger,-debug-jfxbe-debuggee" 
-        description="Debug fx project in browser"/>
+        description="Debug JavaFX project in browser"/>
         
     <target name="-init-debug-args">
         <property name="version-output" value="java version &quot;${ant.java.version}"/>

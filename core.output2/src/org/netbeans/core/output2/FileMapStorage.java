@@ -51,6 +51,10 @@ import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
@@ -72,6 +76,10 @@ class FileMapStorage implements Storage {
      * Own request processor
      */
     private static final RequestProcessor RP = new RequestProcessor("FileMapStorage"); //NOI18N
+    /**
+     * List of storages that have not been disposed yet.
+     */
+    private static final Set<FileMapStorage> undisposed;
     /**
      * The byte getWriteBuffer that write operations write into.  Actual buffers are
      * provided for writing by calling master.slice(); this getWriteBuffer simply
@@ -97,6 +105,10 @@ class FileMapStorage implements Storage {
      */
     private ByteBuffer buffer = null;
     /**
+     * All mapped file buffers.
+     */
+    private List<MappedByteBuffer> mappedBuffers = null;
+    /**
      * The number of bytes that have been written.
      */
     protected int bytesWritten = 0;
@@ -108,6 +120,33 @@ class FileMapStorage implements Storage {
     private int outstandingBufferCount = 0;
     
     private boolean closed;
+
+    static {
+        undisposed = new HashSet<FileMapStorage>();
+
+        // Remove all remaining temporary files before exit.
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+
+            @Override
+            public void run() {
+                for (FileMapStorage fms : undisposed) {
+                    for (MappedByteBuffer mbb : fms.mappedBuffers) {
+                        unmap(mbb);
+                    }
+                    if (fms.fileChannel != null && fms.fileChannel.isOpen()) {
+                        try {
+                            fms.fileChannel.close();
+                        } catch (IOException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                    if (fms.outfile != null) {
+                        fms.outfile.delete();
+                    }
+                }
+            }
+        });
+    }
 
     FileMapStorage() {
         init();
@@ -122,6 +161,8 @@ class FileMapStorage implements Storage {
         buffer = null;
         bytesWritten = 0;
         closed = true;
+        mappedBuffers = new LinkedList<MappedByteBuffer>();
+        addUndisposed(this);
     }
 
     /**
@@ -243,18 +284,20 @@ class FileMapStorage implements Storage {
         }
         final FileChannel oldChannel = fileChannel;
         final File oldFile = outfile;
-        final MappedByteBuffer mbb = contents instanceof MappedByteBuffer ? (MappedByteBuffer) contents : null;
+        final List<MappedByteBuffer> oldMappedBuffers = mappedBuffers;
         fileChannel = null;
         closed = true;
         outfile = null;
         buffer = null;
         contents = null;
+        mappedBuffers = null;
+
         if (oldChannel != null || oldFile != null) {
             RP.post(new Runnable() {
 
                 public void run() {
                     try {
-                        if (mbb != null) {
+                        for (MappedByteBuffer mbb : oldMappedBuffers) {
                             unmap(mbb);
                         }
                         if (oldChannel != null && oldChannel.isOpen()) {
@@ -269,6 +312,7 @@ class FileMapStorage implements Storage {
                 }
             });
         }
+        removeUndisposed(this);
     }
 
     File getOutputFile() {
@@ -278,7 +322,7 @@ class FileMapStorage implements Storage {
     /**
      * Workaround for JDK issue #4715154 (http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4715154)
      */
-    private void unmap(Object buffer) {
+    private static void unmap(Object buffer) {
         try {
             Method getCleanerMethod = buffer.getClass().getMethod("cleaner");
             getCleanerMethod.setAccessible(true);
@@ -306,6 +350,7 @@ class FileMapStorage implements Storage {
                 try {
                     try {
                         cont = ch.map(FileChannel.MapMode.READ_ONLY, mappedStart, mappedRange - mappedStart);
+                        addMappedBuffer((MappedByteBuffer) cont);
                         this.contents = cont;
                     } catch (IOException ioe) {
                         Logger.getAnonymousLogger().info("Failed to memory map output file for reading. Trying to read it normally."); //NOI18N
@@ -361,5 +406,17 @@ class FileMapStorage implements Storage {
 
     public boolean isClosed() {
         return fileChannel == null || closed;
+    }
+
+    private synchronized void addMappedBuffer(MappedByteBuffer mappedBuffer) {
+        this.mappedBuffers.add(mappedBuffer);
+    }
+
+    private static synchronized void addUndisposed(FileMapStorage fms) {
+        undisposed.add(fms);
+    }
+
+    private static synchronized void removeUndisposed(FileMapStorage fms) {
+        undisposed.remove(fms);
     }
 }

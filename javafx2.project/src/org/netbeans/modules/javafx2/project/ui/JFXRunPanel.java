@@ -79,6 +79,7 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.extbrowser.ExtWebBrowser;
 import org.netbeans.modules.javafx2.project.JFXProjectProperties;
 import org.netbeans.modules.javafx2.project.JFXProjectProperties.PropertiesTableModel;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -87,6 +88,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.MouseUtils;
 import org.openide.cookies.InstanceCookie;
+import org.openide.execution.NbProcessDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
@@ -109,7 +111,7 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
     private static final String EA_HIDDEN = "hidden"; // NOI18N    
     private static final String BROWSERS_FOLDER = "Services/Browsers"; // NOI18N
     
-    private Lookup.Result<org.openide.awt.HtmlBrowser.Factory> lookupResult = null;
+    private Lookup.Result<ExtWebBrowser> allBrowsers = null;
 
     private Project project;
     private PropertyEvaluator evaluator;
@@ -1277,8 +1279,12 @@ private void comboBoxWebBrowserActionPerformed(java.awt.event.ActionEvent evt) {
     @Override
     public void resultChanged(LookupEvent ev) {
         final ArrayList<String> list = new ArrayList<String> (6);
-        for (Lookup.Item<org.openide.awt.HtmlBrowser.Factory> i: lookupResult.allItems()) {
-            list.add(i.getDisplayName());
+        jfxProps.resetBrowserPaths();
+        for(Lookup.Item<ExtWebBrowser> browser : allBrowsers.allItems()) {
+            list.add(browser.getDisplayName());
+            NbProcessDescriptor proc = browser.getInstance().getBrowserExecutable();
+            String path = proc.getProcessName();
+            jfxProps.getBrowserPaths().put(browser.getDisplayName(), path);
         }
         final String config = jfxProps.getActiveConfig();
         final String sel = configs.get(config).get(JFXProjectProperties.RUN_IN_BROWSER);
@@ -1424,9 +1430,9 @@ private void comboBoxWebBrowserActionPerformed(java.awt.event.ActionEvent evt) {
     }
 
     private void setupWebBrowsersCombo() {
-        lookupResult = Lookup.getDefault().lookupResult(org.openide.awt.HtmlBrowser.Factory.class);
+        allBrowsers = Lookup.getDefault().lookupResult(ExtWebBrowser.class);
         resultChanged(null);
-        lookupResult.addLookupListener(this);
+        allBrowsers.addLookupListener(this);
     }
 
     private void fillWebBrowsersCombo(List<String> list, String select) {

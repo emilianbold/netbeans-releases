@@ -54,11 +54,6 @@ import org.netbeans.modules.java.j2seproject.api.J2SECategoryExtensionProvider;
 import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
 import org.netbeans.modules.javafx2.project.JFXProjectProperties;
 import org.netbeans.spi.project.ProjectServiceProvider;
-//import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
-
-//import org.netbeans.modules.javawebstart.ui.customizer.JWSCustomizerPanel;
-
-//import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 
 /**
  *
@@ -82,7 +77,7 @@ public class J2SEJarConfigProviderImpl implements J2SECategoryExtensionProvider 
             final J2SEPropertyEvaluator j2sepe = p.getLookup().lookup(J2SEPropertyEvaluator.class);
             fxDisabled = !JFXProjectProperties.isTrue(j2sepe.evaluator().getProperty("javafx.enabled"));
         }
-        return fxDisabled ? null : JFXDeploymentPanel.getCustomizerJarComponent(p.getLookup());
+        return fxDisabled ? null : JFXProjectProperties.getInstance(p.getLookup()).getCustomizerJarComponent();
     }
     
     @Override

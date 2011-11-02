@@ -46,16 +46,20 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import javax.swing.text.BadLocationException;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.EditList;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintFix;
+import org.netbeans.modules.csl.api.HintSeverity;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.php.editor.api.ElementQuery.Index;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.api.elements.BaseFunctionElement.PrintAs;
@@ -63,75 +67,86 @@ import org.netbeans.modules.php.editor.api.elements.ElementFilter;
 import org.netbeans.modules.php.editor.api.elements.MethodElement;
 import org.netbeans.modules.php.editor.api.elements.PhpElement;
 import org.netbeans.modules.php.editor.api.elements.TypeElement;
+import org.netbeans.modules.php.editor.lexer.LexUtilities;
+import org.netbeans.modules.php.editor.lexer.PHPTokenId;
+import org.netbeans.modules.php.editor.model.ClassScope;
 import org.netbeans.modules.php.editor.model.MethodScope;
 import org.netbeans.modules.php.editor.model.ModelUtils;
-import org.netbeans.modules.php.editor.model.TypeScope;
-import org.openide.util.NbBundle;
+import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle.Messages;
 
 /**
  * @author Radek Matous
  */
 public class ImplementAbstractMethods extends AbstractRule {
+
+    private static final String HINT_ID = "Implement.Abstract.Methods"; //NOI18N
+    private static final String ABSTRACT_PREFIX = "abstract "; //NOI18N
+
     @Override
     public String getId() {
-        return "Implement.Abstract.Methods";//NOI18N
+        return HINT_ID;
     }
 
     @Override
+    @Messages("ImplementAbstractMethodsDesc=Implement All Abstract Methods")
     public String getDescription() {
-        return NbBundle.getMessage(ImplementAbstractMethods.class, "ImplementAbstractMethodsDesc");//NOI18N
+        return Bundle.ImplementAbstractMethodsDesc();
     }
 
     @Override
+    @Messages("ImplementAbstractMethodsDispName=Implement All Abstract Methods")
     public String getDisplayName() {
-        return NbBundle.getMessage(ImplementAbstractMethods.class, "ImplementAbstractMethodsDispName");//NOI18N
+        return Bundle.ImplementAbstractMethodsDispName();
     }
 
     @Override
+    public HintSeverity getDefaultSeverity() {
+        return HintSeverity.ERROR;
+    }
+
+    @Override
+    @Messages("ImplementAbstractMethodsHintDesc={0} is not abstract and does not override abstract method {1} in {2}")
     void computeHintsImpl(PHPRuleContext context, List<Hint> hints, PHPHintsProvider.Kind kind) throws BadLocationException {
-        final BaseDocument doc = context.doc;
-        final int caretOffset = context.caretOffset;
-        int lineBegin = -1;
-        int lineEnd = -1;
-        lineBegin = caretOffset > 0 ? Utilities.getRowStart(doc, caretOffset) : -1;
-        lineEnd = (lineBegin != -1) ? Utilities.getRowEnd(doc, caretOffset) : -1;
-        if (lineBegin != -1 && lineEnd != -1 && caretOffset > lineBegin) {
-            Collection<? extends TypeScope> allTypes = ModelUtils.getDeclaredTypes(context.fileScope);
-            for (FixInfo fixInfo : checkHints(allTypes, lineBegin, lineEnd, context)) {
-                hints.add(new Hint(ImplementAbstractMethods.this, getDisplayName(),
-                        context.parserResult.getSnapshot().getSource().getFileObject(), fixInfo.classNameRange,
-                        Collections.<HintFix>singletonList(new Fix(context,
-                        fixInfo)), 500));
-            }
+        Collection<? extends ClassScope> allClasses = ModelUtils.getDeclaredClasses(context.fileScope);
+        FileObject fileObject = context.parserResult.getSnapshot().getSource().getFileObject();
+        for (FixInfo fixInfo : checkHints(allClasses, context)) {
+            hints.add(new Hint(ImplementAbstractMethods.this, Bundle.ImplementAbstractMethodsHintDesc(fixInfo.className, fixInfo.lastMethodDeclaration, fixInfo.lastMethodOwnerName), fileObject, fixInfo.classNameRange, createHintFixes(context.doc, fixInfo), 500));
         }
     }
 
-
-    private static boolean isInside(int carret, int left, int right) {
-        return carret >= left && carret <= right;
+    private List<HintFix> createHintFixes(BaseDocument doc, FixInfo fixInfo) {
+        List<HintFix> hintFixes = new LinkedList<HintFix>();
+        hintFixes.add(new ImplementAllFix(doc, fixInfo));
+        hintFixes.add(new AbstractClassFix(doc, fixInfo));
+        return Collections.unmodifiableList(hintFixes);
     }
 
-    private Collection<FixInfo> checkHints(Collection<? extends TypeScope> allTypes, int lineBegin, int lineEnd, PHPRuleContext context) throws BadLocationException{
+    private Collection<FixInfo> checkHints(Collection<? extends ClassScope> allClasses, PHPRuleContext context) throws BadLocationException{
         List<FixInfo> retval = new ArrayList<FixInfo>();
-        for (TypeScope typeScope : allTypes) {
-            if (!isInside(typeScope.getOffset(), lineBegin, lineEnd)) continue;
-            Index index = context.getIndex();
-            ElementFilter declaredMethods = ElementFilter.forExcludedNames(toNames(index.getDeclaredMethods(typeScope)), PhpElementKind.METHOD);
-            Set<MethodElement> accessibleMethods = declaredMethods.filter(index.getAccessibleMethods(typeScope, typeScope));
-            LinkedHashSet<String> methodSkeletons = new LinkedHashSet<String>();
+        for (ClassScope classScope : allClasses) {
+            if (!classScope.isAbstract()) {
+                Index index = context.getIndex();
+                ElementFilter declaredMethods = ElementFilter.forExcludedNames(toNames(index.getDeclaredMethods(classScope)), PhpElementKind.METHOD);
+                Set<MethodElement> accessibleMethods = declaredMethods.filter(index.getAccessibleMethods(classScope, classScope));
+                LinkedHashSet<String> methodSkeletons = new LinkedHashSet<String>();
+                MethodElement lastMethodElement = null;
 
-            for (MethodElement methodElement : accessibleMethods) {
-                final TypeElement type = methodElement.getType();
-                if ((type.isInterface() || methodElement.isAbstract()) && !methodElement.isFinal()) {
-                    String skeleton = methodElement.asString(PrintAs.DeclarationWithEmptyBody);
-                    skeleton = skeleton.replace("abstract ", ""); //NOI18N
-                    methodSkeletons.add(skeleton);
+                for (MethodElement methodElement : accessibleMethods) {
+                    final TypeElement type = methodElement.getType();
+                    if ((type.isInterface() || methodElement.isAbstract()) && !methodElement.isFinal()) {
+                        String skeleton = methodElement.asString(PrintAs.DeclarationWithEmptyBody);
+                        skeleton = skeleton.replace(ABSTRACT_PREFIX, ""); //NOI18N
+                        methodSkeletons.add(skeleton);
+                        lastMethodElement = methodElement;
+                    }
                 }
-            }
-            if (!methodSkeletons.isEmpty()) {
-                int offset = getOffset(typeScope, context);
-                if (offset != -1) {
-                    retval.add(new FixInfo(typeScope, methodSkeletons, offset));
+                if (!methodSkeletons.isEmpty() && lastMethodElement != null) {
+                    int newMethodsOffset = getNewMethodsOffset(classScope, context.doc);
+                    int classDeclarationOffset = getClassDeclarationOffset(context.parserResult.getSnapshot().getTokenHierarchy(), classScope.getOffset());
+                    if (newMethodsOffset != -1 && classDeclarationOffset != -1) {
+                        retval.add(new FixInfo(classScope, methodSkeletons, lastMethodElement, newMethodsOffset, classDeclarationOffset));
+                    }
                 }
             }
         }
@@ -146,31 +161,39 @@ public class ImplementAbstractMethods extends AbstractRule {
         return names;
     }
 
-    private static int getOffset(TypeScope typeScope, PHPRuleContext context) throws BadLocationException {
+    private static int getClassDeclarationOffset(TokenHierarchy<?> th, int classNameOffset) {
+        TokenSequence<PHPTokenId> ts = LexUtilities.getPHPTokenSequence(th, classNameOffset);
+        ts.move(classNameOffset);
+        ts.movePrevious();
+        Token<? extends PHPTokenId> previousToken = LexUtilities.findPreviousToken(ts, Collections.<PHPTokenId>singletonList(PHPTokenId.PHP_CLASS));
+        return previousToken.offset(th);
+    }
+
+    private static int getNewMethodsOffset(ClassScope classScope, BaseDocument doc) throws BadLocationException {
         int offset = -1;
-        Collection<? extends MethodScope> declaredMethods = typeScope.getDeclaredMethods();
+        Collection<? extends MethodScope> declaredMethods = classScope.getDeclaredMethods();
         for (MethodScope methodScope : declaredMethods) {
             OffsetRange blockRange = methodScope.getBlockRange();
             if (blockRange != null && blockRange.getEnd() > offset) {
                 offset = blockRange.getEnd();
             }
         }
-        if (offset == -1 && typeScope.getBlockRange() != null) {
-            offset = Utilities.getRowStart(context.doc, typeScope.getBlockRange().getEnd()) - 1;
+        if (offset == -1 && classScope.getBlockRange() != null) {
+            offset = Utilities.getRowStart(doc, classScope.getBlockRange().getEnd()) - 1;
         }
         if (offset != -1) {
-            offset = Utilities.getRowEnd(context.doc, offset);
+            offset = Utilities.getRowEnd(doc, offset);
         }
         return offset;
     }
 
-    private class Fix implements HintFix {
+    private class ImplementAllFix implements HintFix {
 
-        private RuleContext context;
+        private BaseDocument doc;
         private final FixInfo fixInfo;
 
-        Fix(RuleContext context, FixInfo fixInfo) {
-            this.context = context;
+        ImplementAllFix(BaseDocument doc, FixInfo fixInfo) {
+            this.doc = doc;
             this.fixInfo = fixInfo;
         }
 
@@ -195,25 +218,66 @@ public class ImplementAbstractMethods extends AbstractRule {
         }
 
         EditList getEditList() throws Exception {
-            BaseDocument doc = context.doc;
             EditList edits = new EditList(doc);
             for (String methodScope : fixInfo.methodSkeletons) {
-                edits.replace(fixInfo.offset, 0, "\n"+methodScope, true, 0);
+                edits.replace(fixInfo.newMethodsOffset, 0, "\n" + methodScope, true, 0);
             }
             return edits;
         }
     }
 
+    private class AbstractClassFix implements HintFix {
+        private final BaseDocument doc;
+        private final FixInfo fixInfo;
+
+        public AbstractClassFix(BaseDocument doc, FixInfo fixInfo) {
+            this.doc = doc;
+            this.fixInfo = fixInfo;
+        }
+
+        @Override
+        @Messages("AbstractClassFixDesc=Declare Abstract Class")
+        public String getDescription() {
+            return Bundle.AbstractClassFixDesc();
+        }
+
+        @Override
+        public void implement() throws Exception {
+            EditList edits = new EditList(doc);
+            edits.replace(fixInfo.classDeclarationOffset, 0, ABSTRACT_PREFIX, true, 0);
+            edits.apply();
+        }
+
+        @Override
+        public boolean isSafe() {
+            return true;
+        }
+
+        @Override
+        public boolean isInteractive() {
+            return false;
+        }
+
+    }
+
     private static class FixInfo {
         private List<String> methodSkeletons;
-        private int offset;
+        private String className;
+        private int newMethodsOffset;
         private OffsetRange classNameRange;
+        private final String lastMethodDeclaration;
+        private final String lastMethodOwnerName;
+        private final int classDeclarationOffset;
 
-        FixInfo(TypeScope typeScope, LinkedHashSet<String> methodSkeletons, int offset) {
+        FixInfo(ClassScope classScope, LinkedHashSet<String> methodSkeletons, MethodElement lastMethodElement, int newMethodsOffset, int classDeclarationOffset) {
             this.methodSkeletons = new ArrayList<String>(methodSkeletons);
+            className = classScope.getFullyQualifiedName().toString();
             Collections.sort(this.methodSkeletons);
-            this.classNameRange = typeScope.getNameRange();
-            this.offset = offset;
+            this.classNameRange = classScope.getNameRange();
+            this.classDeclarationOffset = classDeclarationOffset;
+            this.newMethodsOffset = newMethodsOffset;
+            lastMethodDeclaration = lastMethodElement.asString(PrintAs.NameAndParamsDeclaration);
+            lastMethodOwnerName = lastMethodElement.getType().getFullyQualifiedName().toString();
         }
     }
 }

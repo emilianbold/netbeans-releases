@@ -194,4 +194,39 @@ public class RemoveUnnecessaryReturnTest extends TestBase {
                             "}\n");
     }
     
+    public void testNegFinally203576() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test;\n" +
+                            "public class Test {\n" +
+                            "    public static void main(String[] args) {\n" +
+                            "        try {\n" +
+                            "            throw new NullPointerException(\"NullPointerException 1\");\n" +
+                            "        } catch (NullPointerException e) {\n" +
+                            "            throw new NullPointerException(\"NullPointerException 2\");\n" +
+                            "        } finally {\n" +
+                            "            System.out.println(\"Do I ever get printed?\");\n" +
+                            "            return;\n" +
+                            "        }\n" +
+                            "    }\n" +
+                            "}\n");
+    }
+
+    public void TODOtestPosFinally203576() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test;\n" +
+                            "public class Test {\n" +
+                            "    public static void main(String[] args) {\n" +
+                            "        try {\n" +
+                            "            throw new NullPointerException(\"NullPointerException 1\");\n" +
+                            "        } catch (NullPointerException e) {\n" +
+                            "            throw new NullPointerException(\"NullPointerException 2\");\n" +
+                            "        } finally {\n" +
+                            "            if (args.length == 0) { return ; }\n" +
+                            "            return;\n" +
+                            "        }\n" +
+                            "    }\n" +
+                            "}\n",
+                            "<missing>");
+    }
+
 }

@@ -152,6 +152,7 @@ public class GridDesignerWindow extends JDialog implements Customizer {
     private void formWindowClosed(WindowEvent evt) {//GEN-FIRST:event_formWindowClosed
         // Unregister listeners
         designer.setSelectedNodes(Collections.EMPTY_LIST);
+        designer.removeFormModelListener();
     }//GEN-LAST:event_formWindowClosed
 
     private void closeButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_closeButtonActionPerformed

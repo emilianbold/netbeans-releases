@@ -1055,7 +1055,7 @@ public class FormDesigner {
         syncNodesFromComponents();
     }
 
-    void removeComponentFromSelection(RADComponent metacomp) {
+    public void removeComponentFromSelection(RADComponent metacomp) {
         removeComponentFromSelectionImpl(metacomp);
         repaintSelection();
         syncNodesFromComponents();
@@ -2207,7 +2207,16 @@ public class FormDesigner {
         public void setComponentVisibility(String componentId, boolean visible) {
             Object comp = getComponent(componentId);
             if (comp instanceof Component) {
-                ((Component)comp).setVisible(visible);
+                Component component = ((Component)comp);
+                Rectangle bounds = null;
+                Rectangle visibleBounds = null;
+                if (!visible) {
+                    bounds = component.getBounds();
+                    visibleBounds = FormUtils.getVisibleRect(component);
+                }
+                component.setVisible(visible);
+                RADComponent metacomp = getMetaComponent(componentId);
+                handleLayer.updateHiddentComponent(metacomp, bounds, visibleBounds);
             }
         }
 
@@ -2470,11 +2479,10 @@ public class FormDesigner {
             for (FormModelEvent event : events) {
                 l.add(event);
                 if (event.getContainer() instanceof RADVisualContainer) {
-                    for (int i=0; i < l.size(); i++) {
+                    int i = 0;
+                    int n = l.size() - 1;
+                    while (n > 0) {
                         FormModelEvent e = l.get(i);
-                        if (e == event){
-                            break;
-                        }
                         if (e.getContainer() instanceof RADVisualContainer
                                 && eventsOrder(e, event) == 0) {
                             // we want subcontainers updated before parent's
@@ -2485,6 +2493,7 @@ public class FormDesigner {
                         } else {
                             i++;
                         }
+                        n--;
                     }
                 }
             }

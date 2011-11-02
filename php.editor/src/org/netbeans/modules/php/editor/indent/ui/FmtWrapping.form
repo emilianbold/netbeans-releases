@@ -28,7 +28,7 @@
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="2"/>
-    <AuxValue name="designerSize" type="java.awt.Dimension" value="-84,-19,0,5,115,114,0,18,106,97,118,97,46,97,119,116,46,68,105,109,101,110,115,105,111,110,65,-114,-39,-41,-84,95,68,20,2,0,2,73,0,6,104,101,105,103,104,116,73,0,5,119,105,100,116,104,120,112,0,0,1,45,0,0,1,44"/>
+    <AuxValue name="designerSize" type="java.awt.Dimension" value="-84,-19,0,5,115,114,0,18,106,97,118,97,46,97,119,116,46,68,105,109,101,110,115,105,111,110,65,-114,-39,-41,-84,95,68,20,2,0,2,73,0,6,104,101,105,103,104,116,73,0,5,119,105,100,116,104,120,112,0,0,2,-63,0,0,1,44"/>
   </AuxValues>
 
   <Layout class="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout"/>
@@ -63,6 +63,10 @@
       <SubComponents>
         <Container class="javax.swing.JPanel" name="panel1">
           <Properties>
+            <Property name="focusCycleRoot" type="boolean" value="true"/>
+            <Property name="focusTraversalPolicy" type="java.awt.FocusTraversalPolicy" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+              <Connection code="new java.awt.FocusTraversalPolicy() {&#xa;            public java.awt.Component getDefaultComponent(java.awt.Container focusCycleRoot){&#xa;                return cbStatements;&#xa;            }//end getDefaultComponent&#xa;&#xa;            public java.awt.Component getFirstComponent(java.awt.Container focusCycleRoot){&#xa;                return cbStatements;&#xa;            }//end getFirstComponent&#xa;&#xa;            public java.awt.Component getLastComponent(java.awt.Container focusCycleRoot){&#xa;                return cbStatements;&#xa;            }//end getLastComponent&#xa;&#xa;            public java.awt.Component getComponentAfter(java.awt.Container focusCycleRoot, java.awt.Component aComponent){&#xa;                if(aComponent ==  cbOpenCloseBlockBrace){&#xa;                    return cbStatements;&#xa;                }&#xa;                if(aComponent ==  assignOpsCombo){&#xa;                    return cbOpenCloseBlockBrace;&#xa;                }&#xa;                if(aComponent ==  chainedMethodCallsCombo){&#xa;                    return arrayInitCombo;&#xa;                }&#xa;                if(aComponent ==  methodCallArgsCombo){&#xa;                    return chainedMethodCallsCombo;&#xa;                }&#xa;                if(aComponent ==  methodParamsCombo){&#xa;                    return methodCallArgsCombo;&#xa;                }&#xa;                if(aComponent ==  extendsImplementsListCombo){&#xa;                    return methodParamsCombo;&#xa;                }&#xa;                if(aComponent ==  doWhileStatementCombo){&#xa;                    return binaryOpsCombo;&#xa;                }&#xa;                if(aComponent ==  extendsImplementsKeywordCombo){&#xa;                    return extendsImplementsListCombo;&#xa;                }&#xa;                if(aComponent ==  ternaryOpsCombo){&#xa;                    return assignOpsCombo;&#xa;                }&#xa;                if(aComponent ==  binaryOpsCombo){&#xa;                    return ternaryOpsCombo;&#xa;                }&#xa;                if(aComponent ==  whileStatementComboBox){&#xa;                    return doWhileStatementCombo;&#xa;                }&#xa;                if(aComponent ==  forStatementCombo){&#xa;                    return ifStatementCombo;&#xa;                }&#xa;                if(aComponent ==  ifStatementCombo){&#xa;                    return whileStatementComboBox;&#xa;                }&#xa;                if(aComponent ==  arrayInitCombo){&#xa;                    return forCombo;&#xa;                }&#xa;                if(aComponent ==  forCombo){&#xa;                    return forStatementCombo;&#xa;                }&#xa;                return cbStatements;//end getComponentAfter&#xa;            }&#xa;            public java.awt.Component getComponentBefore(java.awt.Container focusCycleRoot, java.awt.Component aComponent){&#xa;                if(aComponent ==  cbStatements){&#xa;                    return cbOpenCloseBlockBrace;&#xa;                }&#xa;                if(aComponent ==  cbOpenCloseBlockBrace){&#xa;                    return assignOpsCombo;&#xa;                }&#xa;                if(aComponent ==  arrayInitCombo){&#xa;                    return chainedMethodCallsCombo;&#xa;                }&#xa;                if(aComponent ==  chainedMethodCallsCombo){&#xa;                    return methodCallArgsCombo;&#xa;                }&#xa;                if(aComponent ==  methodCallArgsCombo){&#xa;                    return methodParamsCombo;&#xa;                }&#xa;                if(aComponent ==  methodParamsCombo){&#xa;                    return extendsImplementsListCombo;&#xa;                }&#xa;                if(aComponent ==  binaryOpsCombo){&#xa;                    return doWhileStatementCombo;&#xa;                }&#xa;                if(aComponent ==  extendsImplementsListCombo){&#xa;                    return extendsImplementsKeywordCombo;&#xa;                }&#xa;                if(aComponent ==  assignOpsCombo){&#xa;                    return ternaryOpsCombo;&#xa;                }&#xa;                if(aComponent ==  ternaryOpsCombo){&#xa;                    return binaryOpsCombo;&#xa;                }&#xa;                if(aComponent ==  doWhileStatementCombo){&#xa;                    return whileStatementComboBox;&#xa;                }&#xa;                if(aComponent ==  ifStatementCombo){&#xa;                    return forStatementCombo;&#xa;                }&#xa;                if(aComponent ==  whileStatementComboBox){&#xa;                    return ifStatementCombo;&#xa;                }&#xa;                if(aComponent ==  forCombo){&#xa;                    return arrayInitCombo;&#xa;                }&#xa;                if(aComponent ==  forStatementCombo){&#xa;                    return forCombo;&#xa;                }&#xa;                return cbStatements;//end getComponentBefore&#xa;&#xa;            }}" type="code"/>
+            </Property>
             <Property name="opaque" type="boolean" value="false"/>
           </Properties>
           <AccessibilityProperties>
@@ -78,82 +82,87 @@
             <DimensionLayout dim="0">
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" attributes="0">
-                      <EmptySpace min="8" pref="8" max="-2" attributes="0"/>
+                      <EmptySpace min="12" pref="12" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" attributes="0">
                               <Component id="extendsImplemetsKeywordLabel" min="-2" max="-2" attributes="0"/>
                               <EmptySpace min="6" pref="6" max="6" attributes="0"/>
                               <Component id="extendsImplementsKeywordCombo" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
                           </Group>
-                          <Group type="102" attributes="0">
-                              <Component id="extendsImplementsListLabel" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace min="37" pref="37" max="37" attributes="0"/>
-                              <Component id="extendsImplementsListCombo" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <Group type="102" attributes="0">
-                              <Component id="methodParamsLabel" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace min="67" pref="67" max="67" attributes="0"/>
-                              <Component id="methodParamsCombo" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <Group type="102" attributes="0">
-                              <Component id="methodCallArgsLabel" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace min="44" pref="44" max="44" attributes="0"/>
-                              <Component id="methodCallArgsCombo" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <Group type="102" attributes="0">
-                              <Component id="chainedMethodCallsLabel" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace min="56" pref="56" max="56" attributes="0"/>
-                              <Component id="chainedMethodCallsCombo" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <Group type="102" attributes="0">
-                              <Component id="arrayInitLabel" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace min="100" pref="100" max="100" attributes="0"/>
-                              <Component id="arrayInitCombo" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <Group type="102" attributes="0">
-                              <Component id="forLabel" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace min="174" pref="174" max="174" attributes="0"/>
-                              <Component id="forCombo" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <Group type="102" attributes="0">
-                              <Component id="forStatementLabel" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace min="101" pref="101" max="101" attributes="0"/>
-                              <Component id="forStatementCombo" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <Group type="102" attributes="0">
-                              <Component id="ifStatementLabel" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace min="114" pref="114" max="114" attributes="0"/>
-                              <Component id="ifStatementCombo" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <Group type="102" attributes="0">
-                              <Component id="whileStatementLabel" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace min="88" pref="88" max="88" attributes="0"/>
-                              <Component id="whileStatementComboBox" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <Group type="102" attributes="0">
-                              <Component id="doWhileStatementLabel" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace min="54" pref="54" max="54" attributes="0"/>
-                              <Component id="doWhileStatementCombo" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <Group type="102" attributes="0">
-                              <Component id="binaryOpsLabel" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace min="86" pref="86" max="86" attributes="0"/>
-                              <Component id="binaryOpsCombo" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <Group type="102" attributes="0">
-                              <Component id="ternaryOpsLabel" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace min="78" pref="78" max="78" attributes="0"/>
-                              <Component id="ternaryOpsCombo" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <Component id="cbStatements" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="cbOpenCloseBlockBrace" min="-2" max="-2" attributes="0"/>
-                          <Group type="102" alignment="0" attributes="0">
-                              <Component id="assignOpsLabel" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace min="50" pref="50" max="50" attributes="0"/>
-                              <Component id="assignOpsCombo" min="-2" max="-2" attributes="0"/>
+                          <Group type="102" alignment="1" attributes="0">
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Group type="102" alignment="0" attributes="1">
+                                      <Component id="extendsImplementsListLabel" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace pref="44" max="32767" attributes="0"/>
+                                      <Component id="extendsImplementsListCombo" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <Component id="methodParamsLabel" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace pref="77" max="32767" attributes="0"/>
+                                      <Component id="methodParamsCombo" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <Component id="methodCallArgsLabel" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace pref="52" max="32767" attributes="0"/>
+                                      <Component id="methodCallArgsCombo" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <Component id="chainedMethodCallsLabel" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace pref="65" max="32767" attributes="0"/>
+                                      <Component id="chainedMethodCallsCombo" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <Component id="arrayInitLabel" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace pref="116" max="32767" attributes="0"/>
+                                      <Component id="arrayInitCombo" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <Component id="forLabel" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace pref="193" max="32767" attributes="0"/>
+                                      <Component id="forCombo" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <Component id="forStatementLabel" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace pref="116" max="32767" attributes="0"/>
+                                      <Component id="forStatementCombo" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <Component id="ifStatementLabel" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace pref="130" max="32767" attributes="0"/>
+                                      <Component id="ifStatementCombo" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <Component id="whileStatementLabel" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace pref="101" max="32767" attributes="0"/>
+                                      <Component id="whileStatementComboBox" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <Component id="doWhileStatementLabel" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace pref="67" max="32767" attributes="0"/>
+                                      <Component id="doWhileStatementCombo" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <Component id="binaryOpsLabel" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace pref="98" max="32767" attributes="0"/>
+                                      <Component id="binaryOpsCombo" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <Component id="ternaryOpsLabel" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace pref="87" max="32767" attributes="0"/>
+                                      <Component id="ternaryOpsCombo" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                                  <Component id="cbStatements" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="cbOpenCloseBlockBrace" min="-2" max="-2" attributes="0"/>
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <Component id="assignOpsLabel" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace pref="60" max="32767" attributes="0"/>
+                                      <Component id="assignOpsCombo" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                              </Group>
+                              <EmptySpace max="-2" attributes="0"/>
                           </Group>
                       </Group>
-                      <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -168,115 +177,76 @@
                           </Group>
                           <Component id="extendsImplementsKeywordCombo" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace min="4" pref="4" max="4" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" attributes="0">
-                              <EmptySpace min="5" pref="5" max="5" attributes="0"/>
-                              <Component id="extendsImplementsListLabel" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <Component id="extendsImplementsListCombo" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="extendsImplementsListLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="extendsImplementsListCombo" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace min="4" pref="4" max="4" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" attributes="0">
-                              <EmptySpace min="5" pref="5" max="5" attributes="0"/>
-                              <Component id="methodParamsLabel" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <Component id="methodParamsCombo" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" pref="14" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="methodParamsLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="methodParamsCombo" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace min="4" pref="4" max="4" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" attributes="0">
-                              <EmptySpace min="5" pref="5" max="5" attributes="0"/>
-                              <Component id="methodCallArgsLabel" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <Component id="methodCallArgsCombo" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" pref="14" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="methodCallArgsLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="methodCallArgsCombo" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace min="4" pref="4" max="4" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" attributes="0">
-                              <EmptySpace min="5" pref="5" max="5" attributes="0"/>
-                              <Component id="chainedMethodCallsLabel" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <Component id="chainedMethodCallsCombo" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" pref="14" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="chainedMethodCallsLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="chainedMethodCallsCombo" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace min="4" pref="4" max="4" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" attributes="0">
-                              <EmptySpace min="5" pref="5" max="5" attributes="0"/>
-                              <Component id="arrayInitLabel" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <Component id="arrayInitCombo" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" pref="14" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="arrayInitLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="arrayInitCombo" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace min="4" pref="4" max="4" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" attributes="0">
-                              <EmptySpace min="5" pref="5" max="5" attributes="0"/>
-                              <Component id="forLabel" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <Component id="forCombo" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" pref="14" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="forLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="forCombo" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace min="4" pref="4" max="4" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" attributes="0">
-                              <EmptySpace min="5" pref="5" max="5" attributes="0"/>
-                              <Component id="forStatementLabel" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <Component id="forStatementCombo" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" pref="14" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="forStatementLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="forStatementCombo" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace min="4" pref="4" max="4" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" attributes="0">
-                              <EmptySpace min="5" pref="5" max="5" attributes="0"/>
-                              <Component id="ifStatementLabel" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <Component id="ifStatementCombo" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" pref="14" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="ifStatementLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="ifStatementCombo" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace min="4" pref="4" max="4" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" attributes="0">
-                              <EmptySpace min="5" pref="5" max="5" attributes="0"/>
-                              <Component id="whileStatementLabel" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <Component id="whileStatementComboBox" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" pref="14" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="whileStatementLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="whileStatementComboBox" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace min="4" pref="4" max="4" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" attributes="0">
-                              <EmptySpace min="5" pref="5" max="5" attributes="0"/>
-                              <Component id="doWhileStatementLabel" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <Component id="doWhileStatementCombo" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" pref="14" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="doWhileStatementLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="doWhileStatementCombo" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace min="4" pref="4" max="4" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" attributes="0">
-                              <EmptySpace min="5" pref="5" max="5" attributes="0"/>
-                              <Component id="binaryOpsLabel" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <Component id="binaryOpsCombo" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" pref="14" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="binaryOpsLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="binaryOpsCombo" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace min="4" pref="4" max="4" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" attributes="0">
-                              <EmptySpace min="5" pref="5" max="5" attributes="0"/>
-                              <Component id="ternaryOpsLabel" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <Component id="ternaryOpsCombo" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" pref="14" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="ternaryOpsLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="ternaryOpsCombo" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace min="4" pref="4" max="4" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" attributes="0">
-                              <EmptySpace min="5" pref="5" max="5" attributes="0"/>
-                              <Component id="assignOpsLabel" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <Component id="assignOpsCombo" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" pref="14" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="assignOpsLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="assignOpsCombo" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace max="-2" attributes="0"/>
+                      <EmptySpace min="-2" pref="11" max="-2" attributes="0"/>
                       <Component id="cbOpenCloseBlockBrace" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="cbStatements" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="39" max="32767" attributes="0"/>
+                      <EmptySpace pref="42" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>

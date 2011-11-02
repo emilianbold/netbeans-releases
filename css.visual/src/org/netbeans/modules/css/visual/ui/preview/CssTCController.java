@@ -46,9 +46,9 @@ package org.netbeans.modules.css.visual.ui.preview;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
+import javax.swing.SwingUtilities;
 import org.openide.filesystems.FileObject;
 import org.netbeans.modules.css.visual.api.StyleBuilderTopComponent;
-import org.openide.text.CloneableEditor;
 import org.openide.util.WeakListeners;
 import org.openide.windows.TopComponent;
 import org.openide.windows.TopComponent.Registry;
@@ -65,7 +65,7 @@ public class CssTCController implements PropertyChangeListener {
     //allow GCize the shared class instance if noone needs it anymore
     public static WeakReference<CssTCController> instance;
     private TopComponent lastCSSTC = null;
-    
+
     /** Clients (CSSPreviewable TopComponent-s) should hold a strong reference to the
      * instance obtained by this method call during its livecycle.
      */
@@ -87,8 +87,19 @@ public class CssTCController implements PropertyChangeListener {
         Registry reg = WindowManager.getDefault().getRegistry();
         reg.addPropertyChangeListener(
                 WeakListeners.propertyChange(this, reg));
+
+        //update opened windows groups
+        SwingUtilities.invokeLater(new Runnable() {
+
+            @Override
+            public void run() {
+                refreshOpenedWindowGroups();
+            }
+            
+        });
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (TopComponent.Registry.PROP_ACTIVATED.equals(evt.getPropertyName())) {
             //a TC activated -
@@ -115,7 +126,7 @@ public class CssTCController implements PropertyChangeListener {
             //check if the activated nodes
             TopComponent closedTC = (TopComponent) evt.getNewValue();
 //            if (isCSSTC(closedTC)) {
-            if(closedTC == lastCSSTC) {
+            if (closedTC == lastCSSTC) {
                 //close the CSS windows
                 //FIXME side effect is that the windows are close
                 //and reopened again if another css previewable gets active
@@ -125,7 +136,7 @@ public class CssTCController implements PropertyChangeListener {
     }
 
     private boolean isCssFileBound(TopComponent tc) {
-        if(tc == null) {
+        if (tc == null) {
             return false;
         }
         FileObject fob = tc.getLookup().lookup(FileObject.class);
@@ -136,19 +147,47 @@ public class CssTCController implements PropertyChangeListener {
         }
         return false;
     }
+    private static final String SB_AND_PREVIEW_GROUP_NAME = "Csswsgrp"; //NOI18N
+    private static final String SB_ONLY_GROUP_NAME = "CssSBwsgrp"; //NOI18N
+
+    private String getActiveGroupName() {
+        return CssPreviewTopComponent.getDefault().isPreviewPanelRegistered()
+                ? SB_AND_PREVIEW_GROUP_NAME
+                : SB_ONLY_GROUP_NAME;
+    }
+    
+    //When one adds/removes an implementation of the css preview
+    //the corresponding css window group needs to be used and the old ones removed
+    static void refreshOpenedWindowGroups() {
+        if (CssPreviewTopComponent.getDefault().isPreviewPanelRegistered()) {
+            closeGroup(SB_ONLY_GROUP_NAME);
+            openGroup(SB_AND_PREVIEW_GROUP_NAME);
+        } else {
+            closeGroup(SB_AND_PREVIEW_GROUP_NAME);
+            openGroup(SB_ONLY_GROUP_NAME);
+        }
+    }
 
     private void previewableActivated(TopComponent tc) {
         this.lastCSSTC = tc;
-        TopComponentGroup tcg = WindowManager.getDefault().findTopComponentGroup("Csswsgrp"); //NOI18N
-        if(tcg != null) {
-            tcg.open();
-        }
+        openGroup(getActiveGroupName());
     }
 
     private void notPreviewableActivated() {
         this.lastCSSTC = null;
-        TopComponentGroup tcg = WindowManager.getDefault().findTopComponentGroup("Csswsgrp"); //NOI18N
-        if(tcg != null) {
+        closeGroup(getActiveGroupName());
+    }
+
+    static void openGroup(String name) {
+        TopComponentGroup tcg = WindowManager.getDefault().findTopComponentGroup(name); //NOI18N
+        if (tcg != null) {
+            tcg.open();
+        }
+    }
+
+    static void closeGroup(String name) {
+        TopComponentGroup tcg = WindowManager.getDefault().findTopComponentGroup(name); //NOI18N
+        if (tcg != null) {
             tcg.close();
         }
     }

@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.cnd.simpleunit.editor.filecreation;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -55,14 +54,21 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.makeproject.api.configurations.CCCompilerConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.CCompilerConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
+import org.netbeans.modules.cnd.makeproject.api.configurations.FolderConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.LibrariesConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
+import org.netbeans.modules.cnd.makeproject.api.configurations.LinkerConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.simpleunit.codegeneration.CodeGenerator;
 import org.netbeans.modules.cnd.simpleunit.spi.wizard.AbstractUnitTestIterator;
 import org.netbeans.modules.cnd.simpleunit.utils.MakefileUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.modules.cnd.utils.MIMENames;
-import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.ui.UIGesturesSupport;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
@@ -136,6 +142,8 @@ public class TestSimpleIterator extends AbstractUnitTestIterator {
         if(folder == null) {
             return dataObjects;
         }
+        
+        setOptions(project, folder);
 
         addItemToLogicalFolder(project, folder, dataObject);
 
@@ -195,6 +203,18 @@ public class TestSimpleIterator extends AbstractUnitTestIterator {
 
     private FileObject getRootFolder() {
         return ((NewTestSimplePanelGUI)targetChooserDescriptorPanel.getComponent()).getTargetGroup().getRootFolder();
+    }
+    
+    private void setOptions(Project project, Folder testFolder) {
+        ConfigurationDescriptorProvider cdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
+        MakeConfigurationDescriptor projectDescriptor = cdp.getConfigurationDescriptor();
+        FolderConfiguration folderConfiguration = testFolder.getFolderConfiguration(projectDescriptor.getActiveConfiguration());
+        LinkerConfiguration linkerConfiguration = folderConfiguration.getLinkerConfiguration();
+        linkerConfiguration.getOutput().setValue("${TESTDIR}/" + testFolder.getPath()); // NOI18N
+        CCompilerConfiguration cCompilerConfiguration = folderConfiguration.getCCompilerConfiguration();
+        CCCompilerConfiguration ccCompilerConfiguration = folderConfiguration.getCCCompilerConfiguration();
+        cCompilerConfiguration.getIncludeDirectories().add("."); // NOI18N
+        ccCompilerConfiguration.getIncludeDirectories().add("."); // NOI18N
     }
     
 }

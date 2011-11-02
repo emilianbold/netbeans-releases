@@ -712,13 +712,15 @@ public final class NbModuleProject implements Project {
             }
             // XXX could discard caches, etc.
             // unregister project's classpaths to GlobalClassPathRegistry
-            assert boot != null && source != null && compile != null : "#46802: project being closed which was never opened?? " + NbModuleProject.this;
-            GlobalPathRegistry.getDefault().unregister(ClassPath.BOOT, boot);
-            GlobalPathRegistry.getDefault().unregister(ClassPath.SOURCE, source);
-            GlobalPathRegistry.getDefault().unregister(ClassPath.COMPILE, compile);
-            boot = null;
-            source = null;
-            compile = null;
+            if (boot != null) {
+                assert source != null && compile != null : "#46802 / #201230";
+                GlobalPathRegistry.getDefault().unregister(ClassPath.BOOT, boot);
+                GlobalPathRegistry.getDefault().unregister(ClassPath.SOURCE, source);
+                GlobalPathRegistry.getDefault().unregister(ClassPath.COMPILE, compile);
+                boot = null;
+                source = null;
+                compile = null;
+            }
         }
     }
     /**

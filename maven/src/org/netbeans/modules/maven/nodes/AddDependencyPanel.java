@@ -754,7 +754,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
 
     }
 
-    private static List<Dependency> getDepencenciesFromDM (MavenProject project) {
+    private static List<Dependency> getDependenciesFromDM(MavenProject project) {
         MavenProject localProj = project;
         DependencyManagement curDM;
         List<Dependency> result = new ArrayList<Dependency>();
@@ -1351,7 +1351,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
         /** Loads dependencies outside EQ thread, updates tab state in EQ */
         public void run() {
             synchronized (DM_DEPS_LOCK) {
-                dmDeps = getDepencenciesFromDM(project);
+                dmDeps = getDependenciesFromDM(project);
             }
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {

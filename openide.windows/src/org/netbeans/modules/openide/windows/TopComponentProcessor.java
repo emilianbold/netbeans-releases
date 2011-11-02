@@ -42,7 +42,9 @@
 
 package org.netbeans.modules.openide.windows;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
@@ -59,6 +61,7 @@ import org.openide.filesystems.annotations.LayerGenerationException;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.TopComponent;
 import org.openide.windows.TopComponent.Description;
+import org.openide.windows.TopComponent.Registration;
 
 @SupportedSourceVersion(SourceVersion.RELEASE_6)
 @ServiceProvider(service=Processor.class)
@@ -86,20 +89,25 @@ public final class TopComponentProcessor extends LayerGeneratingProcessor {
                 throw new LayerGenerationException("Cannot find TopComponent.Description for this element", e, processingEnv, reg);
             }
             String id = info.preferredID().replace('.', '-');
-            
-            String role = reg.role();
-            String rootFolder = role.isEmpty() ? "Windows2" : "Windows2/Roles/" + role;
 
-            File settingsFile = layer(e).
-                file(rootFolder+"/Components/" + id + ".settings").
-                contents(settingsFile(e));
-            settingsFile.write();
-            
-            File modeFile = layer(e).
-                file(rootFolder+"/Modes/" + reg.mode() + "/" + id + ".wstcref").
-                position(reg.position()).
-                contents(modeFile(info.preferredID(), reg.openAtStartup()));
-            modeFile.write();
+            String rootFolder;
+            String[] roles = reg.roles();
+            if (roles.length == 0) {
+                rootFolder = "Windows2";
+                generateSettingsAndWstcref(e, rootFolder, id, reg, info);
+            } else {
+                Set<String> uniqueRoles = new HashSet<String>();
+                for (String role : roles) {
+                    if (!uniqueRoles.add(role)) {
+                        throw new LayerGenerationException("Duplicate role name found", e, processingEnv, reg);
+                    }
+                    if (role.isEmpty()) {
+                        throw new LayerGenerationException("Unnamed role found", e, processingEnv, reg);
+                    }
+                    rootFolder = "Windows2/Roles/" + role;
+                    generateSettingsAndWstcref(e, rootFolder, id, reg, info);
+                }
+            }
         }
         
         for (Element e : roundEnv.getElementsAnnotatedWith(TopComponent.OpenActionRegistration.class)) {
@@ -124,6 +132,19 @@ public final class TopComponentProcessor extends LayerGeneratingProcessor {
             }
         }
         return true;
+    }
+
+    private void generateSettingsAndWstcref(Element e, String rootFolder, String id, Registration reg, Description info) throws LayerGenerationException {
+        File settingsFile = layer(e).
+                file(rootFolder + "/Components/" + id + ".settings").
+                contents(settingsFile(e));
+        settingsFile.write();
+
+        File modeFile = layer(e).
+                file(rootFolder + "/Modes/" + reg.mode() + "/" + id + ".wstcref").
+                position(reg.position()).
+                contents(modeFile(info.preferredID(), reg.openAtStartup()));
+        modeFile.write();
     }
 
     private Description findInfo(Element e) throws LayerGenerationException {

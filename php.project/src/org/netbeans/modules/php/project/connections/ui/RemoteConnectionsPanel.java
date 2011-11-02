@@ -503,8 +503,6 @@ public final class RemoteConnectionsPanel extends JPanel implements ChangeListen
         configurationPanelHolder = new javax.swing.JPanel();
         testConnectionButton = new javax.swing.JButton();
 
-        setFocusTraversalPolicy(null);
-
         configList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         configScrollPane.setViewportView(configList);
         configList.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "RemoteConnectionsPanel.configList.AccessibleContext.accessibleName")); // NOI18N
@@ -544,16 +542,16 @@ public final class RemoteConnectionsPanel extends JPanel implements ChangeListen
                         .addComponent(addButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(removeButton))
-                    .addComponent(configScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 184, Short.MAX_VALUE))
+                    .addComponent(configScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(separator, javax.swing.GroupLayout.DEFAULT_SIZE, 507, Short.MAX_VALUE)
+                    .addComponent(separator, javax.swing.GroupLayout.DEFAULT_SIZE, 506, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(nameLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(nameTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 450, Short.MAX_VALUE))
+                        .addComponent(nameTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 449, Short.MAX_VALUE))
                     .addComponent(testConnectionButton)
-                    .addComponent(configurationPanelScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 507, Short.MAX_VALUE))
+                    .addComponent(configurationPanelScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 506, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
@@ -564,7 +562,7 @@ public final class RemoteConnectionsPanel extends JPanel implements ChangeListen
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(configScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 318, Short.MAX_VALUE)
+                    .addComponent(configScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 362, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(nameLabel)
@@ -572,7 +570,7 @@ public final class RemoteConnectionsPanel extends JPanel implements ChangeListen
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(separator, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(6, 6, 6)
-                        .addComponent(configurationPanelScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 271, Short.MAX_VALUE)))
+                        .addComponent(configurationPanelScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 315, Short.MAX_VALUE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(addButton)

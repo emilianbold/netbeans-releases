@@ -41,13 +41,17 @@
  */
 
 package org.netbeans.modules.maven.customizer;
+
+import java.util.Collections;
 import org.netbeans.modules.maven.api.customizer.ModelHandle;
 import javax.swing.JComponent;
+import org.netbeans.modules.editor.indent.project.api.Customizers;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
@@ -67,6 +71,12 @@ public class SourcesPanelProvider implements ProjectCustomizer.CompositeCategory
         ModelHandle handle = context.lookup(ModelHandle.class);
         NbMavenProjectImpl project = context.lookup(NbMavenProjectImpl.class);
         return new SourcesPanel(handle, project);
+    }
+
+    @ProjectCustomizer.CompositeCategoryProvider.Registration(projectType="org-netbeans-modules-maven", position=1000, category="Formatting", categoryLabel="#LBL_CategoryFormatting")
+    @Messages("LBL_CategoryFormatting=Formatting")
+    public static ProjectCustomizer.CompositeCategoryProvider formatting() {
+        return Customizers.createFormattingCategoryProvider(Collections.emptyMap());
     }
     
 }

@@ -120,7 +120,7 @@ public class NbLexerCharStream implements CharStream {
 
     @Override
     public int index() {
-        return li.readLength();
+        return li.readLengthEOF();
     }
 
     @Override

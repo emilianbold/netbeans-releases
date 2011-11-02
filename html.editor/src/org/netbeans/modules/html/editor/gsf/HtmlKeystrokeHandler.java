@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.html.editor.gsf;
 
+import java.util.Collection;
+import java.util.TreeSet;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -141,7 +143,8 @@ public class HtmlKeystrokeHandler implements KeystrokeHandler {
     public List<OffsetRange> findLogicalRanges(ParserResult info, int caretOffset) {
         HtmlParserResult result = (HtmlParserResult)info;
 
-        ArrayList<OffsetRange> ranges = new ArrayList<OffsetRange>(2);
+        //OffsetRange implements Comparable
+        Collection<OffsetRange> ranges = new TreeSet<OffsetRange>();
 
         //include the text under the carat to the ranges.
         //I need to do it this lexical way since we do not
@@ -197,10 +200,11 @@ public class HtmlKeystrokeHandler implements KeystrokeHandler {
             }
         }
 
-        AstNode root = result.root();
         Snapshot snapshot = result.getSnapshot();
-
-        if(root != null) {
+        Collection<AstNode> roots = new ArrayList<AstNode>(result.roots().values()); //all declared namespaces
+        roots.add(result.rootOfUndeclaredTagsParseTree()); //undeclared content
+        
+        for(AstNode root : roots) {
             //find leaf at the position
             AstNode node = AstNodeUtils.findNode(root, snapshot.getEmbeddedOffset(caretOffset), false, false);
             if(node != null) {
@@ -214,17 +218,15 @@ public class HtmlKeystrokeHandler implements KeystrokeHandler {
                     if(from == -1 || to == -1 || from == to) {
                         continue;
                     }
-
-                    OffsetRange last = ranges.isEmpty() ? null : ranges.get(ranges.size() - 1);
-                    //skip duplicated ranges
-                    if(last == null || !(last.getStart() == from && last.getEnd() == to)) {
-                        ranges.add(new OffsetRange(from, to));
-                    }
+                    ranges.add(new OffsetRange(from, to));
                 } while ((node = node.parent()) != null);
             }
         }
 
-        return ranges;
+        //leaf to root order, the OffsetRange compareTo orders in the opposite manner
+        List<OffsetRange> ret = new ArrayList<OffsetRange>(ranges);
+        Collections.reverse(ret);
+        return ret;
     }
 
     //TODO implement

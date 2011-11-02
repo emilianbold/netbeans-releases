@@ -165,7 +165,7 @@ public class BeanTreeView extends TreeView {
     private void showPathWithoutExpansion(TreePath path) {
         Rectangle rect = tree.getPathBounds(path);
 
-        if (rect != null) { //PENDING
+        if (rect != null && rect.y >= 0) { //#197514 - do not scroll to negative y values
             tree.scrollRectToVisible(rect);
         }
     }

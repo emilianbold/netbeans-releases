@@ -564,7 +564,17 @@ public class KeymapViewModel extends DefaultTableModel implements ShortcutsFinde
         model.refreshActions ();
     }
     
+    /**
+     * Simple guard against scheduling multiple tasks in advance. Also guards
+     * against reentrancy.
+     */
+    private volatile boolean applyInProgress = false;
+    
     public void apply () {
+        if (applyInProgress) {
+            return;
+        }
+        applyInProgress = true;
         RequestProcessor.getDefault ().post (new Runnable () {
             public void run () {
                 for (String profile: modifiedProfiles.keySet()) {
@@ -583,6 +593,7 @@ public class KeymapViewModel extends DefaultTableModel implements ShortcutsFinde
                 deletedProfiles = new HashSet<String> ();
                 shortcutsCache = new HashMap<String, Map<ShortcutAction, Set<String>>> ();
                 model = new KeymapModel ();
+                applyInProgress = false;
     }
         });
     }

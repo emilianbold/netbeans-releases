@@ -56,6 +56,7 @@ import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import javax.swing.event.ChangeListener;
+import org.apache.maven.repository.RepositorySystem;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
@@ -73,13 +74,6 @@ public final class RepositoryPreferences {
     private static final Logger LOG = Logger.getLogger(RepositoryPreferences.class.getName());
 
     private static RepositoryPreferences instance;
-    /**
-     * index of local repository
-     */
-    public static final String LOCAL_REPO_ID = "local";//NOI18N
-
-    /** location of Maven Central */
-    public static final String REPO_CENTRAL = "http://repo1.maven.org/maven2/"; // NOI18N
 
     //TODO - move elsewhere, implementation detail??
     public static final String TYPE_NEXUS = "nexus"; //NOI18N
@@ -100,12 +94,14 @@ public final class RepositoryPreferences {
     private final Map<String,RepositoryInfo> infoCache = new HashMap<String,RepositoryInfo>();
     private final Map<Object,List<RepositoryInfo>> transients = new LinkedHashMap<Object,List<RepositoryInfo>>();
     private final RepositoryInfo local;
+    private final RepositoryInfo central;
     private final ChangeSupport cs = new ChangeSupport(this);
 
     @Messages("local=Local")
     private RepositoryPreferences() {
         try {
-            local = new RepositoryInfo(LOCAL_REPO_ID, TYPE_NEXUS, local(), EmbedderFactory.getProjectEmbedder().getLocalRepository().getBasedir(), null);
+            local = new RepositoryInfo(RepositorySystem.DEFAULT_LOCAL_REPO_ID, TYPE_NEXUS, local(), EmbedderFactory.getProjectEmbedder().getLocalRepository().getBasedir(), null);
+            central = new RepositoryInfo(RepositorySystem.DEFAULT_REMOTE_REPO_ID, TYPE_NEXUS, /* XXX pull display name from superpom? */RepositorySystem.DEFAULT_REMOTE_REPO_ID, null, RepositorySystem.DEFAULT_REMOTE_REPO_URL);
         } catch (URISyntaxException x) {
             throw new AssertionError(x);
         }
@@ -157,7 +153,7 @@ public final class RepositoryPreferences {
         List<RepositoryInfo> toRet = new ArrayList<RepositoryInfo>();
         toRet.add(local);
         Set<String> ids = new HashSet<String>();
-        ids.add(LOCAL_REPO_ID);
+        ids.add(RepositorySystem.DEFAULT_LOCAL_REPO_ID);
         Set<String> urls = new HashSet<String>();
         synchronized (infoCache) {
             Preferences storage = storage();
@@ -194,10 +190,16 @@ public final class RepositoryPreferences {
             } catch (BackingStoreException x) {
                 LOG.log(Level.INFO, null, x);
             }
-            for (List<RepositoryInfo> infos : transients.values()) {
-                for (RepositoryInfo info : infos) {
-                    if (ids.add(info.getId()) && urls.add(info.getRepositoryUrl())) {
-                        toRet.add(info);
+            if (transients.isEmpty()) {
+                if (ids.add(central.getId()) && urls.add(central.getRepositoryUrl())) {
+                    toRet.add(central);
+                }
+            } else {
+                for (List<RepositoryInfo> infos : transients.values()) {
+                    for (RepositoryInfo info : infos) {
+                        if (ids.add(info.getId()) && urls.add(info.getRepositoryUrl())) {
+                            toRet.add(info);
+                        }
                     }
                 }
             }
