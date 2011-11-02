@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,7 +23,13 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,38 +40,27 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
- * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.parsing.spi;
+package org.netbeans.modules.cnd.source.spi;
 
-import java.util.Collection;
-import org.netbeans.api.editor.mimelookup.MimeRegistration;
-import org.netbeans.modules.parsing.api.Snapshot;
-
+import org.openide.nodes.Node;
 
 /**
- * Creates a list of tasks ({@link EmbeddingProvider}, 
- * {@link ParserBasedEmbeddingProvider} or {@link ParserResultTask}) for given source. 
- * @see MimeRegistration
- * @author Jan Jancura
+ * This handler is used by JavaNode.setName() method. JavaNode.setName() uses
+ * Lookup.getDefault() to lookup for instances of RenameHandler. If there is one
+ * instance found, it's handleRename(...) method is called to handle rename
+ * request. More than one instance of RenameHandler is not allowed.
+ *
+ * @author Jan Becicka, Vladimir Voskresensky
+ * @since 1.8.0
  */
-public abstract class TaskFactory {
-    
+public interface RenameHandler {
     /**
-     * Creates new <code>SchedulerTask</code>s for a <code>Snapshot</code>.
-     * 
-     * @param snapshot The {@link Snapshot} to create tasks for.
-     *
-     * @return New {@link SchedulerTask}s for the given {@link Snapshot}.
+     * @param node on this node rename was requested
+     * @param newName new name of node
+     * @param newNameExt new of file (with extension if any)
+     * @throws java.lang.IllegalArgumentException thrown if rename cannot be performed
      */
-    public abstract Collection<? extends SchedulerTask> create (Snapshot snapshot);
-
+    void handleRename(Node node, String newName) throws IllegalArgumentException;
 }
-
-
-
-

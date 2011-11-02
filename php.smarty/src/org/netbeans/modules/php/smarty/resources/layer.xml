@@ -55,10 +55,6 @@
                     </file>
                 </folder>
 
-                <file name="org-netbeans-modules-php-smarty-editor-embedding-TplEmbeddingProvider$Factory.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.TaskFactory"/>
-                </file>
-
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.smarty.resources.Bundle"/>
                 <folder name="FontsColors">
                     <folder name="NetBeans">

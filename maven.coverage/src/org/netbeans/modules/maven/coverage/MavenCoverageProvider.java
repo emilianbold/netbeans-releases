@@ -51,9 +51,8 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.Document;
-import org.apache.maven.model.Plugin;
-import org.apache.maven.model.ReportPlugin;
-import org.codehaus.plexus.util.xml.Xpp3Dom;
+import org.apache.maven.project.MavenProject;
+import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluationException;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
@@ -82,8 +81,6 @@ public final class MavenCoverageProvider implements CoverageProvider {
 
     private static final String GROUP_COBERTURA = "org.codehaus.mojo"; // NOI18N
     private static final String ARTIFACT_COBERTURA = "cobertura-maven-plugin"; // NOI18N
-    private static final String GROUP_SITE = "org.apache.maven.plugins"; // NOI18N
-    private static final String ARTIFACT_SITE = "maven-site-plugin"; // NOI18N
 
     private static final Logger LOG = Logger.getLogger(MavenCoverageProvider.class.getName());
 
@@ -101,47 +98,18 @@ public final class MavenCoverageProvider implements CoverageProvider {
         return false;
     }
 
-    @SuppressWarnings("deprecation")
     public @Override boolean isEnabled() {
         NbMavenProject prj = p.getLookup().lookup(NbMavenProject.class);
         if (prj == null) {
             return false;
         }
-        if (PluginPropertyUtils.getPluginVersion(prj.getMavenProject(), GROUP_COBERTURA, ARTIFACT_COBERTURA) != null) {
-            // For whatever reason, was configured as a direct build plugin... fine.
+        MavenProject mp = prj.getMavenProject();
+        if (PluginPropertyUtils.getReportPluginVersion(mp, GROUP_COBERTURA, ARTIFACT_COBERTURA) != null) {
             return true;
         }
-        // Maven 3.x configuration:
-        for (Plugin plug : prj.getMavenProject().getBuildPlugins()) {
-            if (GROUP_SITE.equals(plug.getGroupId()) && ARTIFACT_SITE.equals(plug.getArtifactId())) {
-                Xpp3Dom cfg = (Xpp3Dom) plug.getConfiguration(); // MNG-4862
-                if (cfg == null) {
-                    continue;
-                }
-                Xpp3Dom reportPlugins = cfg.getChild("reportPlugins"); // NOI18N
-                if (reportPlugins == null) {
-                    continue;
-                }
-                for (Xpp3Dom plugin : reportPlugins.getChildren("plugin")) { // NOI18N
-                    Xpp3Dom groupId = plugin.getChild("groupId"); // NOI18N
-                    if (groupId == null) {
-                        continue;
-                    }
-                    Xpp3Dom artifactId = plugin.getChild("artifactId"); // NOI18N
-                    if (artifactId == null) {
-                        continue;
-                    }
-                    if (GROUP_COBERTURA.equals(groupId.getValue()) && ARTIFACT_COBERTURA.equals(artifactId.getValue())) {
-                        return true;
-                    }
-                }
-            }
-        }
-        // Maven 2.x configuration:
-        for (ReportPlugin plug : prj.getMavenProject().getReportPlugins()) {
-            if (GROUP_COBERTURA.equals(plug.getGroupId()) && ARTIFACT_COBERTURA.equals(plug.getArtifactId())) {
-                return true;
-            }
+        if (PluginPropertyUtils.getPluginVersion(mp, GROUP_COBERTURA, ARTIFACT_COBERTURA) != null) {
+            // For whatever reason, was configured as a direct build plugin... fine.
+            return true;
         }
         // In fact you _could_ just run the plugin directly here... but perhaps the user did not want to do so.
         return false;
@@ -163,16 +131,27 @@ public final class MavenCoverageProvider implements CoverageProvider {
         // XXX add plugin configuration here if not already present
     }
 
-    private File report() {
-        // XXX read overridden location acc. to http://mojo.codehaus.org/cobertura-maven-plugin/cobertura-mojo.html#outputDirectory
-        return new File(FileUtil.toFile(p.getProjectDirectory()), "target/site/cobertura/coverage.xml"); // NOI18N
+    private @CheckForNull File report() {
+        String outputDirectory = PluginPropertyUtils.getReportPluginProperty(p, GROUP_COBERTURA, ARTIFACT_COBERTURA, "outputDirectory", null);
+        if (outputDirectory == null) {
+            outputDirectory = PluginPropertyUtils.getPluginProperty(p, GROUP_COBERTURA, ARTIFACT_COBERTURA, "outputDirectory", null);
+        }
+        if (outputDirectory == null) {
+            try {
+                outputDirectory = (String) PluginPropertyUtils.createEvaluator(p.getLookup().lookup(NbMavenProject.class).getMavenProject()).evaluate("${project.reporting.outputDirectory}/cobertura");
+            } catch (ExpressionEvaluationException x) {
+                LOG.log(Level.WARNING, null, x);
+                return null;
+            }
+        }
+        return FileUtil.normalizeFile(new File(outputDirectory, "coverage.xml"));
     }
 
     private @NullAllowed org.w3c.dom.Document report;
 
     public @Override synchronized void clear() {
         File r = report();
-        if (r.isFile() && r.delete()) {
+        if (r != null && r.isFile() && r.delete()) {
             report = null;
             CoverageManager.INSTANCE.resultsUpdated(p, MavenCoverageProvider.this);
         }
@@ -182,9 +161,14 @@ public final class MavenCoverageProvider implements CoverageProvider {
 
     private @CheckForNull synchronized org.w3c.dom.Document parse() {
         if (report != null) {
+            LOG.fine("cached report");
             return (org.w3c.dom.Document) report.cloneNode(true);
         }
         File r = report();
+        if (r == null) {
+            LOG.fine("undefined report location");
+            return null;
+        }
         CoverageManager.INSTANCE.setEnabled(p, true); // XXX otherwise it defaults to disabled?? not clear where to call this
         if (listener == null) {
             listener = new FileChangeAdapter() {
@@ -205,10 +189,12 @@ public final class MavenCoverageProvider implements CoverageProvider {
             FileUtil.addFileChangeListener(listener, r);
         }
         if (!r.isFile()) {
+            LOG.log(Level.FINE, "missing {0}", r);
             return null;
         }
         if (r.length() == 0) {
             // When not previously existent, seems to get created first and written later; file event picks it up when empty.
+            LOG.log(Level.FINE, "empty {0}", r);
             return null;
         }
         try {
@@ -221,6 +207,7 @@ public final class MavenCoverageProvider implements CoverageProvider {
                     }
                 }
             });
+            LOG.log(Level.FINE, "parsed {0}", r);
             return (org.w3c.dom.Document) report.cloneNode(true);
         } catch (/*IO,SAX*/Exception x) {
             LOG.log(Level.INFO, "Could not parse " + r, x);
@@ -276,7 +263,8 @@ public final class MavenCoverageProvider implements CoverageProvider {
                 return true;
             }
             public @Override long lastUpdated() {
-                return report().lastModified();
+                File r = report();
+                return r != null ? r.lastModified() : 0;
             }
             public @Override FileCoverageSummary getSummary() {
                 return summaryOf(fo, _name, lines);
