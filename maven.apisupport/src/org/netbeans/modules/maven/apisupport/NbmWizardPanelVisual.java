@@ -43,7 +43,6 @@
 package org.netbeans.modules.maven.apisupport;
 
 import java.awt.EventQueue;
-import java.io.File;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -71,13 +70,15 @@ import org.openide.util.RequestProcessor;
 @Messages("NbmWizardPanelVisual.wait=Searching...")
 public class NbmWizardPanelVisual extends javax.swing.JPanel {
 
+    private static final RequestProcessor RP = new RequestProcessor(NbmWizardPanelVisual.class);
+
     private static final String SEARCHING = NbmWizardPanelVisual_wait();
     private final NbmWizardPanel panel;
     private ValidationGroup vg = ValidationGroup.create();
     boolean isApp = false;
     boolean isSuite = false;
 
-    /** Creates new form NbmWizardPanelVisual */
+    @SuppressWarnings("unchecked") // SIMPLEVALIDATION-48
     public NbmWizardPanelVisual(NbmWizardPanel panel) {
         this.panel = panel;
         initComponents();
@@ -94,9 +95,10 @@ public class NbmWizardPanelVisual extends javax.swing.JPanel {
             txtAddModule.setVisible(false);
         }
         RepositoryInfo info = MavenNbModuleImpl.netbeansRepo();
+        final Object key = this;
         if (info == null) {
             try {
-                RepositoryPreferences.getInstance().addTransientRepository(this, MavenNbModuleImpl.NETBEANS_REPO_ID, MavenNbModuleImpl.NETBEANS_REPO_ID, "http://bits.netbeans.org/maven2/");
+                RepositoryPreferences.getInstance().addTransientRepository(key, MavenNbModuleImpl.NETBEANS_REPO_ID, MavenNbModuleImpl.NETBEANS_REPO_ID, "http://bits.netbeans.org/maven2/");
                 info = MavenNbModuleImpl.netbeansRepo();
             } catch (URISyntaxException x) {
                 assert false : x;
@@ -105,14 +107,14 @@ public class NbmWizardPanelVisual extends javax.swing.JPanel {
         if (info != null) {
             final List<RepositoryInfo> infos = Collections.singletonList(info);
             versionCombo.setModel(new DefaultComboBoxModel(new Object[] {SEARCHING}));
-            RequestProcessor.getDefault().post(new Runnable() {
+            RP.post(new Runnable() {
                 public @Override void run() {
                     final List<String> versions = new ArrayList<String>();
                     for (NBVersionInfo version : RepositoryQueries.getVersions("org.netbeans.cluster", "platform", infos)) { // NOI18N
                         versions.add(version.getVersion());
                     }
                     versions.add("SNAPSHOT"); // NOI18N
-                    RepositoryPreferences.getInstance().removeTransientRepositories(NbmWizardPanelVisual.this);
+                    RepositoryPreferences.getInstance().removeTransientRepositories(key);
                     EventQueue.invokeLater(new Runnable()  {
                         public @Override void run() {
                             versionCombo.setModel(new DefaultComboBoxModel(versions.toArray()));
@@ -236,7 +238,6 @@ public class NbmWizardPanelVisual extends javax.swing.JPanel {
 
      void store(WizardDescriptor d) {
         d.putProperty(NbmWizardIterator.OSGIDEPENDENCIES, Boolean.valueOf(cbOsgiDeps.isSelected()));
-         File parent = (File) d.getProperty("projdir");
          if (isApp || isSuite) {
              if (cbAddModule.isSelected()) {
                  d.putProperty(NbmWizardIterator.NBM_ARTIFACTID, txtAddModule.getText().trim());

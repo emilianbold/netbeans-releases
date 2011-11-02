@@ -482,6 +482,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                     }
                     // MINDEXER-42: cannot use WagonHelper.getWagonResourceFetcher
                     ResourceFetcher fetcher = new WagonHelper.WagonFetcher(embedder.lookup(Wagon.class, protocol), listener, wagonAuth, wagonProxy);
+                    listener.setFetcher(fetcher);
                     IndexUpdateRequest iur = new IndexUpdateRequest(indexingContext, fetcher);
                     NotifyingIndexCreator nic = null;
                     for (IndexCreator ic : indexingContext.getIndexCreators()) {
