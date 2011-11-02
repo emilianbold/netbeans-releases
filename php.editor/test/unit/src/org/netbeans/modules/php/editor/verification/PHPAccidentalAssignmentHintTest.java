@@ -41,22 +41,53 @@
  */
 package org.netbeans.modules.php.editor.verification;
 
+import java.util.prefs.Preferences;
+
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class PHPHintsTest extends PHPHintsTestBase {
+public class PHPAccidentalAssignmentHintTest extends PHPHintsTestBase {
 
-    public PHPHintsTest(String testName) {
+    public PHPAccidentalAssignmentHintTest(String testName) {
         super(testName);
     }
 
-    public void testModifiersCheckHint() throws Exception {
-        checkHintsInStartEndFile(new ModifiersCheckHint(), "testModifiersCheckHint.php");
+    public void testInSubAndInWhile() throws Exception {
+        checkHintsInStartEndFile(new AccidentalAssignmentHintStub(true, true), "testAccidentalAssignmentHint.php");
     }
 
-    public void testAbstractClassInstantiationHint() throws Exception {
-        checkHintsInStartEndFile(new AbstractClassInstantiationHint(), "testAbstractClassInstantiationHint.php");
+    public void testInSubAndNotInWhile() throws Exception {
+        checkHintsInStartEndFile(new AccidentalAssignmentHintStub(true, false), "testAccidentalAssignmentHint.php");
+    }
+
+    public void testNotInSubAndNotInWhile() throws Exception {
+        checkHintsInStartEndFile(new AccidentalAssignmentHintStub(false, false), "testAccidentalAssignmentHint.php");
+    }
+
+    public void testNotInSubAndInWhile() throws Exception {
+        checkHintsInStartEndFile(new AccidentalAssignmentHintStub(false, true), "testAccidentalAssignmentHint.php");
+    }
+
+    private class AccidentalAssignmentHintStub extends AccidentalAssignmentHint {
+        private final boolean assignmentsInSubStatements;
+        private final boolean assignmentsInWhileStatements;
+
+        public AccidentalAssignmentHintStub(boolean assignmentsInSubStatements, boolean assignmentsInWhileStatements) {
+            this.assignmentsInSubStatements = assignmentsInSubStatements;
+            this.assignmentsInWhileStatements = assignmentsInWhileStatements;
+        }
+
+        @Override
+        public boolean checkAssignmentsInSubStatements(Preferences preferences) {
+            return assignmentsInSubStatements;
+        }
+
+        @Override
+        public boolean checkAssignmentsInWhileStatements(Preferences preferences) {
+            return assignmentsInWhileStatements;
+        }
+
     }
 
 }
