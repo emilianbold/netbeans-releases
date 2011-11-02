@@ -66,6 +66,10 @@ public class PHPHintsTest extends PHPTestBase {
         checkHintsInStartEndFile(new ModifiersCheckHint(), "testModifiersCheckHint.php");
     }
 
+    public void testAbstractClassInstantiationHint() throws Exception {
+        checkHintsInStartEndFile(new AbstractClassInstantiationHint(), "testAbstractClassInstantiationHint.php");
+    }
+
     /**
      * Checks hints in a whole file which starts with "<code>&lt;?php\n//START</code>" and ends with "<code>//END\n?&gt;</code>".
      *
