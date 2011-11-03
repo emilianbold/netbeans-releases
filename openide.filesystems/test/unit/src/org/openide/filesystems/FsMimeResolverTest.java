@@ -108,6 +108,26 @@ public class FsMimeResolverTest extends NbTestCase {
         ps.println("</MIME-resolver>");
         os.close();
     }
+    
+    public void testNeverEndingRecognition() throws Exception {
+        String txt = "<?xml version='1.0'?>"
+        + "<#assign licenseFirst = '<!--'>"
+        + "<#assign licensePrefix = ''>"
+        + "<#assign licenseLast = '-->'>"
+        + "<#include '../Licenses/license-${project.license}.txt'>"
+        + "<!-- see http://www.phpunit.de/wiki/Documentation -->"
+        + "<!--phpunit bootstrap='/path/to/bootstrap.php'"
+        + "      colors='false'"
+        + "      convertErrorsToExceptions='true'"
+        + "      convertNoticesToExceptions='true'"
+        + "      convertWarningsToExceptions='true'"
+        + "      stopOnFailure='true'>"
+        + "</phpunit-->"
+        + "<phpunit colors='false' />"
+        + "\n";
+        FileObject fo = createXmlFile(txt);
+        assertEquals("text/xml", fo.getMIMEType());
+    }
 
     private FileObject createXmlFile(String content) throws Exception {
         FileObject file = FileUtil.createMemoryFileSystem().getRoot().createData("file.xml");
