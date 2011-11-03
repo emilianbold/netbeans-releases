@@ -113,12 +113,14 @@ public class Imports {
         }
         List<ErrorDescription> result = new ArrayList<ErrorDescription>(violatingImports.size());
         for (TreePathHandle it : violatingImports) {
+            TreePath resolvedIt = it.resolve(ctx.getInfo());
+            if (resolvedIt == null) continue; //#204580
             List<Fix> fixes = new ArrayList<Fix>();
             fixes.add(JavaFix.toEditorFix(new ImportsFix(Collections.singletonList(it), kind)));
             if (allFix != null) {
                 fixes.add(allFix);
             }
-            result.add(ErrorDescriptionFactory.forTree(ctx, it.resolve(ctx.getInfo()), NbBundle.getMessage(Imports.class, "DN_Imports_" + kind.toString()), fixes.toArray(new Fix[0])));
+            result.add(ErrorDescriptionFactory.forTree(ctx, resolvedIt, NbBundle.getMessage(Imports.class, "DN_Imports_" + kind.toString()), fixes.toArray(new Fix[0])));
         }
 
         return result;

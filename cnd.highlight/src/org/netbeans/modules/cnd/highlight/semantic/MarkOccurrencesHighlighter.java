@@ -209,7 +209,7 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
             }
 
             Collection<CsmReference> out = getOccurrences(doc, file, lastPosition, interruptor);
-            if (out.isEmpty()) {
+            if (out.isEmpty() || interruptor.cancelled()) {
                 if (!SemanticHighlightingOptions.instance().getKeepMarks()) {
                     clean();
                 }
@@ -218,6 +218,12 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
                 obag.clear();
                 String mimeType = fo.getMIMEType();
                 for (CsmReference csmReference : out) {
+                    if (interruptor.cancelled()) {
+                        // document changed
+                        // all alreagy added marks is valid
+                        // other references can be invalid, so skip them
+                        break;
+                    }
                     int usages[][] = CsmMacroExpansion.getUsages(doc, csmReference.getStartOffset());
                     if (usages != null) {
                         for (int i = 0; i < usages.length; i++) {

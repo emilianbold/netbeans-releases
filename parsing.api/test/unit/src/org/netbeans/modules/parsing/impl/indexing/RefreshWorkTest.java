@@ -129,7 +129,8 @@ public class RefreshWorkTest  extends NbTestCase {
             false, // fullRescan
             false, // logStatistics
             Collections.singleton(outerFolder1), // suspectFilesOrFolders
-            new RepositoryUpdater.FSRefreshInterceptor());
+            new RepositoryUpdater.FSRefreshInterceptor(),
+            null);
 
         Indexer indexer = new Indexer();
         MockMimeLookup.setInstances(MimePath.EMPTY, new IndexerFactory(indexer));
@@ -153,7 +154,8 @@ public class RefreshWorkTest  extends NbTestCase {
             false, // fullRescan
             false, // logStatistics
             Collections.singleton(ff), // suspectFilesOrFolders
-            new RepositoryUpdater.FSRefreshInterceptor());
+            new RepositoryUpdater.FSRefreshInterceptor(),
+            null);
 
         Indexer indexer = new Indexer();
         MockMimeLookup.setInstances(MimePath.EMPTY, new IndexerFactory(indexer));
@@ -173,7 +175,8 @@ public class RefreshWorkTest  extends NbTestCase {
             false, // fullRescan
             false, // logStatistics
             Collections.singleton(innerFolder), // suspectFilesOrFolders
-            new RepositoryUpdater.FSRefreshInterceptor());
+            new RepositoryUpdater.FSRefreshInterceptor(),
+            null);
 
         Indexer indexer = new Indexer();
         MockMimeLookup.setInstances(MimePath.EMPTY, new IndexerFactory(indexer));
@@ -202,7 +205,8 @@ public class RefreshWorkTest  extends NbTestCase {
             false, // fullRescan
             false, // logStatistics
             Collections.singleton(innerFile), // suspectFilesOrFolders
-            new RepositoryUpdater.FSRefreshInterceptor());
+            new RepositoryUpdater.FSRefreshInterceptor(),
+            null);
 
         Indexer indexer = new Indexer();
         MockMimeLookup.setInstances(MimePath.EMPTY, new IndexerFactory(indexer));

@@ -755,7 +755,9 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
         op.checkViewsInited();
         if (op.isActive()) {
             int index = getViewIndex(offset);
-            retY = getY(index);
+            if (index >= 0) {
+                retY = getY(index);
+            }
         }
         if (ViewHierarchyImpl.OP_LOG.isLoggable(Level.FINE)) {
             ViewUtils.log(ViewHierarchyImpl.OP_LOG, "modelToY(" + offset + ")=" + retY + "\n"); // NOI18N

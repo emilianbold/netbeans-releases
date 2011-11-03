@@ -179,6 +179,7 @@ public class AddBreakpointAction extends AbstractAction {
             if (e.getPropertyName () == AddBreakpointPanel.PROP_TYPE) {
                 stopListening ();
                 setValid ();
+                notificationSupport.clearMessages();
                 startListening ();
                 
             } else

@@ -58,7 +58,11 @@ public final class ScanForExternalChanges extends AbstractAction {
     }
 
     public void actionPerformed(ActionEvent e) {
-        RepositoryUpdater.getDefault().refreshAll(false, false, true);
+        RepositoryUpdater.getDefault().refreshAll(
+                false,
+                false,
+                true,
+                LogContext.create(LogContext.EventType.UI, null));
     }
 
     @Override
