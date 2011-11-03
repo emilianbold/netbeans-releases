@@ -70,6 +70,7 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.NameAcceptor;
+import org.netbeans.modules.cnd.api.model.services.CsmVisibilityQuery;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.utils.CndUtils;
@@ -226,7 +227,10 @@ public class CppSymbolProvider implements SymbolProvider {
             // macros
             Iterator<CsmMacro> macros = CsmSelect.getMacros(csmFile, nameFilter);
             while (macros.hasNext() && !cancelled) {
-                symbols.add(new CppSymbolDescriptor(macros.next()));
+                CsmMacro macro = macros.next();
+                if(CsmVisibilityQuery.isVisible(macro)) {
+                    symbols.add(new CppSymbolDescriptor(macro));
+                }
             }
             if (cancelled) {
                 break;
@@ -236,13 +240,17 @@ public class CppSymbolProvider implements SymbolProvider {
             while (funcs.hasNext() && !cancelled) {
                 CsmFunction func = funcs.next();
                 if (CsmKindUtilities.isFunctionDefinition(func)) { // which is unlikely, but just in case
-                    symbols.add(new CppSymbolDescriptor(func));
+                    if(CsmVisibilityQuery.isVisible(func)) {
+                        symbols.add(new CppSymbolDescriptor(func));
+                    }
                 } else {
                     // static functions definitions are not returned by Select;
                     // neither do they reside in namespace
                     CsmFunctionDefinition definition = func.getDefinition();
                     if (definition != null ) {
-                        symbols.add(new CppSymbolDescriptor(definition));
+                        if(CsmVisibilityQuery.isVisible(definition)) {
+                            symbols.add(new CppSymbolDescriptor(definition));
+                        }
                     }
                 }
             }
@@ -256,7 +264,9 @@ public class CppSymbolProvider implements SymbolProvider {
                 if (CsmKindUtilities.isFunctionDefinition(decl) && ((CsmFunction)decl).isStatic()) {
                     CsmFunction func = (CsmFunction) decl;
                     if (func.equals(func.getDeclaration()) && CsmKindUtilities.isFile(func.getScope())) {
-                        symbols.add(new CppSymbolDescriptor(func));
+                        if(CsmVisibilityQuery.isVisible(func)) {
+                            symbols.add(new CppSymbolDescriptor(func));
+                        }
                     }
                 }
             }
@@ -266,7 +276,10 @@ public class CppSymbolProvider implements SymbolProvider {
             // static variables
             Iterator<CsmVariable> vars = CsmSelect.getStaticVariables(csmFile, nameFilter);
             while (vars.hasNext() && !cancelled) {
-                symbols.add(new CppSymbolDescriptor(vars.next()));
+                CsmVariable var = vars.next();
+                if(CsmVisibilityQuery.isVisible(var)) {
+                    symbols.add(new CppSymbolDescriptor(var));
+                }
             }
             if (cancelled) {
                 break;
@@ -298,15 +311,21 @@ public class CppSymbolProvider implements SymbolProvider {
             if (CsmKindUtilities.isFunction(decl)) {
                 // do not add declarations if their definitions exist
                 if (CsmKindUtilities.isFunctionDefinition(decl)) {
-                    symbols.add(new CppSymbolDescriptor(decl));
+                    if(CsmVisibilityQuery.isVisible(decl)) {
+                        symbols.add(new CppSymbolDescriptor(decl));
+                    }
                 } else {
                     CsmFunctionDefinition definition = ((CsmFunction) decl).getDefinition();
                     if (definition == null || definition == decl) {
-                        symbols.add(new CppSymbolDescriptor(decl));
+                        if(CsmVisibilityQuery.isVisible(decl)) {
+                            symbols.add(new CppSymbolDescriptor(decl));
+                        }
                     }
                 }
             } else {
-                symbols.add(new CppSymbolDescriptor(decl));
+                if(CsmVisibilityQuery.isVisible(decl)) {
+                    symbols.add(new CppSymbolDescriptor(decl));
+                }
             }
         }
 
@@ -338,7 +357,9 @@ public class CppSymbolProvider implements SymbolProvider {
      */
     private void addDeclarationIfNeed(CsmOffsetableDeclaration decl, CsmSelect.NameAcceptor nameAcceptor, List<CppSymbolDescriptor> symbols) {
         if (nameAcceptor.accept(decl.getName())) {
-            symbols.add(new CppSymbolDescriptor(decl));
+            if(CsmVisibilityQuery.isVisible(decl)) {
+                symbols.add(new CppSymbolDescriptor(decl));
+            }
         }
         if (CsmKindUtilities.isClass(decl)) {
             for (CsmMember member : ((CsmClass) decl).getMembers()) {
@@ -347,7 +368,9 @@ public class CppSymbolProvider implements SymbolProvider {
         } else if (CsmKindUtilities.isEnum(decl)) {
             for (CsmEnumerator enumerator : ((CsmEnum) decl).getEnumerators()) {
                 if (nameAcceptor.accept(enumerator.getName())) {
-                    symbols.add(new CppSymbolDescriptor(enumerator));
+                    if(CsmVisibilityQuery.isVisible(enumerator)) {
+                        symbols.add(new CppSymbolDescriptor(enumerator));
+                    }
                 }
             }
         }
