@@ -215,7 +215,7 @@ public class HtmlTagProvider {
             header.append("<h2>");
             header.append(NbBundle.getMessage(HtmlTagProvider.class, "MSG_ElementPrefix"));//NOI18N
             header.append(" '");//NOI18N
-            header.append(descriptor.getName());
+            header.append(isPureHtmlTag() ? descriptor.getName() : elementName);
             header.append("'</h2>");//NOI18N
 
             return isPureHtmlTag() && descriptor.getHelpLink() != null
@@ -256,7 +256,7 @@ public class HtmlTagProvider {
         public HelpItem getHelp() {
             StringBuilder header = new StringBuilder();
             header.append("<h2>");//NOI18N
-            header.append(NbBundle.getMessage(HtmlTagProvider.class, "MSG_ElementPrefix"));//NOI18N
+            header.append(NbBundle.getMessage(HtmlTagProvider.class, "MSG_AttributePrefix"));//NOI18N
             header.append(" '");//NOI18N
             header.append(attr.getName());
             header.append("'</h2>");//NOI18N
