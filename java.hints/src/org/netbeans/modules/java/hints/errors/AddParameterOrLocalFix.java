@@ -246,7 +246,7 @@ public class AddParameterOrLocalFix implements Fix {
         wc.rewrite(block, wc.getTreeMaker().insertBlockStatement(block, index, vt));
     }
 
-    private static final Set<Kind> CAN_HOLD_VARIABLE = EnumSet.of(Kind.BLOCK, Kind.CATCH);
+    private static final Set<Kind> CAN_HOLD_VARIABLE = EnumSet.of(Kind.BLOCK, Kind.CASE);
     
     private void resolveLocalVariable(final WorkingCopy wc, TreePath tp, TreeMaker make, TypeMirror proposedType) {
         final String name = ((IdentifierTree) tp.getLeaf()).getName().toString();
