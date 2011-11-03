@@ -133,6 +133,7 @@ public class BufferedCharSequence implements CharSequence {
     private final CharsetDecoder decoder;
     private CoderResult coderResult;
     private boolean isClosed = false;
+    private volatile boolean isTerminated = false;
     private int position = 0; // Invariants: position <= length
 
     /**
@@ -245,6 +246,15 @@ public class BufferedCharSequence implements CharSequence {
     }
 
     /**
+     * Terminate this sequence.
+     *
+     * Subsequent invocations of charAt will raise TerminatedException.
+     */
+    void terminate() {
+        this.isTerminated = true;
+    }
+
+    /**
      * Creates a new {@code BufferedCharSequence} that shares this char
      * sequence's content.
      * 
@@ -269,6 +279,9 @@ public class BufferedCharSequence implements CharSequence {
 
     @Override
     public char charAt(int index) throws IndexOutOfBoundsException {
+        if (isTerminated) {
+            throw new TerminatedException();
+        }
         checkState();
         String errMsg = check(index);
         if(errMsg != null) {
@@ -777,4 +790,13 @@ public class BufferedCharSequence implements CharSequence {
 
     } // SourceIOException
 
+    /**
+     * Exception thrown when reading characters from an already terminated
+     * character sequence.
+     */
+    static class TerminatedException extends RuntimeException {
+
+        public TerminatedException() {
+        }
+    }
 } // BufferedCharSequence
