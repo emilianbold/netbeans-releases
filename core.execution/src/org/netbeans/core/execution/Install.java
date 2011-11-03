@@ -62,6 +62,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.Icon;
@@ -109,6 +112,8 @@ public class Install extends ModuleInstall {
             = "org.netbeans.core.execution.beaninfo"; // NOI18N
     private static final String EDITOR_PATH
             = "org.netbeans.core.execution.beaninfo.editors"; // NOI18N
+
+    private static final Logger LOG = Logger.getLogger(Install.class.getName());
     
     public @Override void restored() {
         TopSecurityManager.register(SecMan.DEFAULT);
@@ -387,7 +392,9 @@ public class Install extends ModuleInstall {
     /** Ends penidng tasks. */
     private static void killPendingTasks() {
         // no way to kill actions
-
+        final LogRecord r = new LogRecord(Level.INFO, "KILL_PENDING_TASKS"); //NOI18N
+        r.setLoggerName(LOG.getName());
+        LOG.log(r);
         for (InternalHandle h : Controller.getDefault().getModel().getHandles()) {
             h.requestCancel();
         }

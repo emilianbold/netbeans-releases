@@ -71,6 +71,7 @@ import org.openide.util.Task;
 public class UIHandler extends Handler 
 implements ActionListener, Runnable, Callable<JButton> {
     private final boolean exceptionOnly;
+    private volatile boolean exiting;
     public static final PropertyChangeSupport SUPPORT = new PropertyChangeSupport(Controller.getDefault());
     static final int MAX_LOGS = 1000;
     /** Maximum allowed size of log file 20MB */
@@ -102,7 +103,10 @@ implements ActionListener, Runnable, Callable<JButton> {
             return;
         }
 
-        if ("SCAN_CANCELLED".equals(record.getMessage())) { //NOI18N
+        if ("KILL_PENDING_TASKS".equals(record.getMessage())) { //NOI18N
+            exiting = true;
+        }
+        if (!exiting && "SCAN_CANCELLED".equals(record.getMessage())) { //NOI18N
             if (shouldReportScanCancel()) {
                 class WriteOut implements Runnable {
                     public LogRecord r;
