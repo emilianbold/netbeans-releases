@@ -625,7 +625,7 @@ public class ProxyLookup extends Lookup {
                 }
 
                 if (oldItems != null) {
-                    Collection newItems = allItems();
+                    Collection<? extends Item<T>> newItems = allItems();
                     if (oldItems.equals(newItems)) {
                         modified = false;
                     }
@@ -641,6 +641,10 @@ public class ProxyLookup extends Lookup {
                                 // we have to initialize the cache
                                 // to show that the result has been initialized
                                 setCache(new Collection[3]);
+                            }
+                            Collection<? extends Item<T>> newItems = allItems();
+                            if (newItems.isEmpty()) {
+                                modified = false;
                             }
                         }
                     }
