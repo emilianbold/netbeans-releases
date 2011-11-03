@@ -96,7 +96,7 @@ import org.openide.util.WeakListeners;
 public final class EventSupport {
     
     private static final Logger LOGGER = Logger.getLogger(EventSupport.class.getName());
-    private static final RequestProcessor RP = new RequestProcessor ("parsing-event-collector",1);       //NOI18N
+    private static final RequestProcessor RP = new RequestProcessor ("parsing-event-collector",1, false, false);       //NOI18N
     /** Default reparse - sliding window for editor events*/
     private static final int DEFAULT_REPARSE_DELAY = 500;
     /** Default reparse - sliding window for focus events*/

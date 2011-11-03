@@ -56,6 +56,9 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.uihandler.api.Controller;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -68,6 +71,7 @@ import org.openide.util.Task;
 public class UIHandler extends Handler 
 implements ActionListener, Runnable, Callable<JButton> {
     private final boolean exceptionOnly;
+    private volatile boolean exiting;
     public static final PropertyChangeSupport SUPPORT = new PropertyChangeSupport(Controller.getDefault());
     static final int MAX_LOGS = 1000;
     /** Maximum allowed size of log file 20MB */
@@ -96,6 +100,28 @@ implements ActionListener, Runnable, Callable<JButton> {
         if ((record.getLevel().equals(Level.CONFIG)) &&
                 (record.getMessage().startsWith("NotifyExcPanel: "))) {//NOI18N
             Installer.setSelectedExcParams(record.getParameters());
+            return;
+        }
+
+        if ("KILL_PENDING_TASKS".equals(record.getMessage())) { //NOI18N
+            exiting = true;
+        }
+        if (!exiting && "SCAN_CANCELLED".equals(record.getMessage())) { //NOI18N
+            if (shouldReportScanCancel()) {
+                class WriteOut implements Runnable {
+                    public LogRecord r;
+                    public void run() {
+                        Installer.writeOut(r);
+                        SUPPORT.firePropertyChange(null, null, null);
+                        r = null;
+                        TimeToFailure.logAction();
+                        Installer.displaySummary("ERROR_URL", true, false, true); //NOI18N
+                    }
+                }
+                WriteOut wo = new WriteOut();
+                wo.r = record;
+                lastRecord = FLUSH.post(wo);
+            }
             return;
         }
 
@@ -178,5 +204,17 @@ implements ActionListener, Runnable, Callable<JButton> {
             w.dispose();
         } 
         Installer.RP.post(this);
+    }
+
+    private boolean shouldReportScanCancel() {
+        final JButton sendOption = new JButton(NbBundle.getMessage(UIHandler.class, "LBL_SendReport"));
+        final NotifyDescriptor nd = new NotifyDescriptor(
+            NbBundle.getMessage(UIHandler.class, "MSG_SCAN_CANCELLED"),
+            NbBundle.getMessage(UIHandler.class, "TITLE_SCAN_CANCELLED"),
+            NotifyDescriptor.YES_NO_CANCEL_OPTION,
+            NotifyDescriptor.QUESTION_MESSAGE,
+            new Object[] {sendOption, DialogDescriptor.CANCEL_OPTION},
+            sendOption);
+        return DialogDisplayer.getDefault().notify(nd) == sendOption;
     }
 }

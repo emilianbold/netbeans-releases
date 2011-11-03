@@ -44,6 +44,9 @@ package org.netbeans.modules.parsing.impl.indexing;
 
 import java.util.EventObject;
 import java.util.Set;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
 
 /**
@@ -91,16 +94,26 @@ public final class PathRegistryEvent extends EventObject {
 
 
     private final Iterable<? extends Change> changes;
+    private final LogContext logCtx;
 
-    public PathRegistryEvent (final PathRegistry regs, final Iterable<? extends Change> changes) {
+    public PathRegistryEvent (
+            @NonNull final PathRegistry regs,
+            @NonNull final Iterable<? extends Change> changes,
+            @NullAllowed final LogContext logCtx) {
         super (regs);
         assert changes != null;
         this.changes = changes;
+        this.logCtx = logCtx;
     }
 
+    @NonNull
     public Iterable<? extends Change> getChanges () {
         return this.changes;
     }
-    
+
+    @CheckForNull
+    public LogContext getLogContext() {
+        return logCtx;
+    }
 
 }

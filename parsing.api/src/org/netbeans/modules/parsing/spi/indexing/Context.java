@@ -47,9 +47,11 @@ import java.net.URL;
 import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.parsing.impl.indexing.CancelRequest;
 import org.netbeans.modules.parsing.impl.indexing.IndexFactoryImpl;
+import org.netbeans.modules.parsing.impl.indexing.LogContext;
 import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
 import org.netbeans.modules.parsing.impl.indexing.lucene.LuceneIndexFactory;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
@@ -73,6 +75,7 @@ public final class Context {
     private final boolean checkForEditorModifications;
     private final boolean sourceForBinaryRoot;
     private final CancelRequest cancelRequest;
+    private final LogContext logContext;
     private FileObject indexFolder;
     private boolean allFilesJob;
 
@@ -86,7 +89,8 @@ public final class Context {
              final IndexFactoryImpl factory, boolean followUpJob,
              final boolean checkForEditorModifications,
              final boolean sourceForBinaryRoot,
-             final CancelRequest cancelRequest
+             final CancelRequest cancelRequest,
+             @NullAllowed final LogContext logContext
     ) throws IOException {
         assert indexBaseFolder != null;
         assert rootURL != null;
@@ -100,6 +104,7 @@ public final class Context {
         this.checkForEditorModifications = checkForEditorModifications;
         this.sourceForBinaryRoot = sourceForBinaryRoot;
         this.cancelRequest = cancelRequest;
+        this.logContext = logContext;
     }
 
     // -----------------------------------------------------------------------
@@ -167,7 +172,15 @@ public final class Context {
         if (repouLogger.isLoggable(Level.FINE)) {
             repouLogger.fine("addSupplementaryFiles: root=" + root + ", files=" + files); //NOI18N
         }
-        RepositoryUpdater.getDefault().addIndexingJob(root, files, true, false, false, true, true);
+        RepositoryUpdater.getDefault().addIndexingJob(
+                root,
+                files,
+                true,
+                false,
+                false,
+                true,
+                true,
+                LogContext.create(LogContext.EventType.INDEXER, null, logContext));
     }
 
     /**

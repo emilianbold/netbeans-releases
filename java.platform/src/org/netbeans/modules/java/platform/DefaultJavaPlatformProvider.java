@@ -65,6 +65,10 @@ public class DefaultJavaPlatformProvider implements JavaPlatformProvider, FileCh
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     //@GuardedBy("this")
     private FileObject storageCache;
+    //@GuardedBy("this")
+    private FileObject lastFound;
+    //@GuardedBy("this")
+    private FileChangeListener pathListener;
     private JavaPlatform defaultPlatform;
 
     private static final Logger LOG = Logger.getLogger(DefaultJavaPlatformProvider.class.getName());
@@ -215,8 +219,48 @@ public class DefaultJavaPlatformProvider implements JavaPlatformProvider, FileCh
             storageCache = FileUtil.getConfigFile(PLATFORM_STORAGE);
             if (storageCache != null) {
                 storageCache.addFileChangeListener (this);
+                removePathListener();
+            } else {
+                final String[] path = PLATFORM_STORAGE.split("/");  //NOI18N
+                FileObject lastExist = FileUtil.getConfigRoot();
+                String expected = null;
+                for (String pathElement : path) {
+                    expected = pathElement;
+                    FileObject current = lastExist.getFileObject(expected);
+                    if (current == null) {
+                        break;
+                    }
+                    lastExist = current;
+                }
+                assert lastExist != null;
+                assert expected != null;
+                removePathListener();
+                final String expectedFin = expected;
+                pathListener = new FileChangeAdapter(){
+                    @Override
+                    public void fileFolderCreated(FileEvent fe) {
+                        if (expectedFin.equals(fe.getFile().getName())) {
+                            firePropertyChange();
+                        }
+                    }
+                };
+                lastFound = lastExist;
+                lastFound.addFileChangeListener(pathListener);
             }
         }
         return storageCache;
+    }
+
+    /**
+     * Removes pathListener from lastFound FileObject
+     * threading: caller has to own DefaultJavaPlatformProvider monitor
+     */
+    private void removePathListener() {
+        if (pathListener != null) {
+            assert lastFound != null;
+            lastFound.removeFileChangeListener(pathListener);
+            pathListener = null;
+            lastFound = null;
+        }
     }
 }

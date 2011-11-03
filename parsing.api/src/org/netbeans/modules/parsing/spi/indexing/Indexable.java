@@ -46,9 +46,11 @@ import java.io.IOException;
 import java.net.URL;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.parsing.impl.indexing.CancelRequest;
 import org.netbeans.modules.parsing.impl.indexing.IndexFactoryImpl;
 import org.netbeans.modules.parsing.impl.indexing.IndexableImpl;
+import org.netbeans.modules.parsing.impl.indexing.LogContext;
 import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
 import org.netbeans.modules.parsing.impl.indexing.SPIAccessor;
 import org.netbeans.modules.parsing.spi.Parser.Result;
@@ -156,11 +158,28 @@ public final class Indexable {
         }
 
         @Override
-        public Context createContext(FileObject indexFolder, URL rootURL, 
-                String indexerName, int indexerVersion, IndexFactoryImpl factory,
-                boolean followUpJob, boolean checkForEditorModifications,
-                boolean sourceForBinaryRoot, CancelRequest cancelRequest) throws IOException {
-            return new Context(indexFolder, rootURL, indexerName, indexerVersion, factory, followUpJob, checkForEditorModifications, sourceForBinaryRoot, cancelRequest);
+        public Context createContext(
+                FileObject indexFolder,
+                URL rootURL,
+                String indexerName,
+                int indexerVersion,
+                IndexFactoryImpl factory,
+                boolean followUpJob,
+                boolean checkForEditorModifications,
+                boolean sourceForBinaryRoot,
+                CancelRequest cancelRequest,
+                @NullAllowed final LogContext logContext) throws IOException {
+            return new Context(
+                    indexFolder,
+                    rootURL,
+                    indexerName,
+                    indexerVersion,
+                    factory,
+                    followUpJob,
+                    checkForEditorModifications,
+                    sourceForBinaryRoot,
+                    cancelRequest,
+                    logContext);
         }
 
         @Override
