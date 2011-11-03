@@ -1776,4 +1776,23 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
         </checklicense>
     </target>
 
+    <target name="refresh-update_tracking-ml" depends="init-tasks">
+
+        <basename property="code.name.base.dashes" file="${nbm.filename}" suffix=".nbm"/>
+
+        <patternset id="module.files">
+            <!-- include name="${module.jar}"/ -->
+            <include name="**/*.jar"/>
+            <include name="config/Modules/${code.name.base.dashes}.xml"/>
+        </patternset>
+
+
+        <genlist outputfiledir="newbuild" module="tmp/netbeans/modules/${code.name.base.dashes}.jar">
+            <fileset dir="newbuild/tmp/netbeans">
+                <patternset refid="module.files"/>
+            </fileset>
+        </genlist>
+
+    </target>
+
 </project>
