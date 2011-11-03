@@ -46,12 +46,12 @@ import java.io.File;
 import java.net.URL;
 import java.util.Collection;
 import java.util.concurrent.Callable;
-import javax.swing.SwingUtilities;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.parsing.impl.Utilities;
 import org.netbeans.modules.parsing.impl.event.EventSupport;
 import org.netbeans.modules.parsing.impl.indexing.IndexingManagerAccessor;
+import org.netbeans.modules.parsing.impl.indexing.LogContext;
 import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
 import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexingController;
 import org.openide.filesystems.FileObject;
@@ -175,7 +175,7 @@ public final class IndexingManager {
      * @since 1.37
      */
     public void refreshIndex(@NonNull URL root, @NullAllowed Collection<? extends URL> files, boolean fullRescan, boolean checkEditor) {
-        RepositoryUpdater.getDefault().addIndexingJob(root, files, false, checkEditor, false, fullRescan, true);
+        addIndexingJob(root, files, false, checkEditor, false, fullRescan, true);
     }
 
     /**
@@ -251,7 +251,7 @@ public final class IndexingManager {
                 EventSupport.releaseCompletionCondition();
             }
             if (!RepositoryUpdater.getDefault().isIndexer()) {
-                RepositoryUpdater.getDefault().addIndexingJob(root, files, false, checkEditor, true, fullRescan, false);
+                addIndexingJob(root, files, false, checkEditor, true, fullRescan, false);
             }
         } finally {
             inRefreshIndexAndWait.remove();
@@ -276,9 +276,11 @@ public final class IndexingManager {
      */
     public void refreshAllIndices(String indexerName) {
         if (indexerName != null) {
-            RepositoryUpdater.getDefault().addIndexingJob(indexerName);
+            RepositoryUpdater.getDefault().addIndexingJob(
+                    indexerName,
+                    LogContext.create(LogContext.EventType.MANAGER, null));
         } else {
-            RepositoryUpdater.getDefault().refreshAll(true, false, false);
+            refreshAll(true, false, false);
         }
     }
 
@@ -331,7 +333,7 @@ public final class IndexingManager {
      * @since 1.23
      */
     public void refreshAllIndices(boolean fullRescan, boolean wait, FileObject... filesOrFolders) {
-        RepositoryUpdater.getDefault().refreshAll(fullRescan, wait, false, (Object []) filesOrFolders);
+        refreshAll(fullRescan, wait, false, (Object []) filesOrFolders);
     }
 
     /**
@@ -368,7 +370,7 @@ public final class IndexingManager {
                 assert file.equals(FileUtil.normalizeFile(file)) : String.format("File: %s is not normalized.", file.toString());   //NOI18N
             }
         }
-        RepositoryUpdater.getDefault().refreshAll(fullRescan, wait, false, (Object []) filesOrFolders);
+        refreshAll(fullRescan, wait, false, (Object []) filesOrFolders);
     }
 
     /**
@@ -403,7 +405,39 @@ public final class IndexingManager {
         // Start ReporistoryUpdater if it has not been already started
         RepositoryUpdater.getDefault().start(false);
     }
-    
+
+    private void refreshAll(
+            final boolean fullRescan,
+            final boolean wait,
+            final boolean logStatistics,
+            @NullAllowed Object... filesOrFileObjects) {
+        RepositoryUpdater.getDefault().refreshAll(
+            fullRescan,
+            wait,
+            logStatistics,
+            LogContext.create(LogContext.EventType.MANAGER, null),
+            filesOrFileObjects);
+    }
+
+    private void addIndexingJob(
+            @NonNull final URL rootUrl,
+            @NullAllowed final Collection<? extends URL> fileUrls,
+            final boolean followUpJob,
+            final boolean checkEditor,
+            final boolean wait,
+            final boolean forceRefresh,
+            final boolean steady){
+        RepositoryUpdater.getDefault().addIndexingJob(
+            rootUrl,
+            fileUrls,
+            followUpJob,
+            checkEditor,
+            wait,
+            forceRefresh,
+            steady,
+            LogContext.create(LogContext.EventType.MANAGER, null));
+    }
+
     static {
         IndexingManagerAccessor.setInstance(new MyAccessor());
     }

@@ -95,14 +95,16 @@ public class PHPLanguage extends DefaultLanguageConfig {
         preferredID="php.source",
         mimeType="text/x-php5",
         position=1
-    )
+    )    
     public static MultiViewEditorElement createMultiViewEditorElement(Lookup context) {
         return new MultiViewEditorElement(context);
     }
     
+    public static String LINE_COMMENT_PREFIX = "//"; // NOI18N
+   
     @Override
     public String getLineCommentPrefix() {
-        return "//";    //NOI18N
+        return LINE_COMMENT_PREFIX;
     }
 
     @Override

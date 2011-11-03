@@ -268,11 +268,15 @@ public abstract class SourceAbstractDataLoader extends UniFileLoader {
                         } finally {
                             reformat.unlock();
                         }
-                        for(String s : doc.getText(0, doc.getLength()).split("\n")) { //NOI18N
-                            w.write(s);
-                            w.write(lsType);
+                        String text = doc.getText(0, doc.getLength());
+                        for(int i = 0; i < text.length(); i++) {
+                            char c = text.charAt(i);
+                            if (c == '\n') {
+                                w.write(lsType);
+                            } else {
+                                w.write(c);
+                            }
                         }
-                        w.write(lsType);
                     } catch (BadLocationException ex) {
                         Exceptions.printStackTrace(ex);
                     } finally {

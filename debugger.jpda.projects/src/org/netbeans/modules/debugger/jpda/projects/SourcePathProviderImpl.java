@@ -72,6 +72,7 @@ import java.util.regex.Matcher;
 
 import org.netbeans.api.debugger.Properties;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
+import org.netbeans.api.java.classpath.ClassPath.Entry;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 
 import org.netbeans.spi.debugger.jpda.SourcePathProvider;
@@ -1338,6 +1339,24 @@ public class SourcePathProviderImpl extends SourcePathProvider {
         return ClassPathSupport.createClassPath(pris);
     }
     
+    private static ClassPath createClassPath(URL[] urls) {
+        List<PathResourceImplementation> pris = new ArrayList<PathResourceImplementation> ();
+        for (URL url : urls) {
+            FileObject fo = URLMapper.findFileObject(url);
+            if (fo != null && fo.canRead()) {
+                try {
+                    pris.add(ClassPathSupport.createResource(url));
+                } catch (IllegalArgumentException iaex) {
+                    // Can be thrown from ClassPathSupport.createResource()
+                    // Ignore - bad source root
+                    //logger.log(Level.INFO, "Invalid source root = "+fo, iaex);
+                    logger.warning(iaex.getLocalizedMessage());
+                }
+            }
+        }
+        return ClassPathSupport.createClassPath(pris);
+    }
+    
     private ArtifactsUpdatedImpl addArtifactsUpdateListenerFor(JPDADebugger debugger, FileObject src) throws FileStateInvalidException {
         URL url = src.getURL();
         ArtifactsUpdatedImpl l = new ArtifactsUpdatedImpl(debugger, url, src);
@@ -1420,88 +1439,110 @@ public class SourcePathProviderImpl extends SourcePathProvider {
     private class PathRegistryListener implements GlobalPathRegistryListener, PropertyChangeListener {
 
         private RequestProcessor rp;
+        private RequestProcessor.Task task;
+        private List<URL> addedRoots = null;
+        private List<URL> removedRoots = null;
+        private final Object rootsLock = new Object();
 
         public PathRegistryListener(RequestProcessor rp) {
             this.rp = rp;
+            task = rp.create(new Runnable() {
+                @Override
+                public void run() {
+                    rootsChanged();
+                }
+            });
         }
         
         public void pathsAdded(final GlobalPathRegistryEvent event) {
-            // Work with class path is expensive. Move it off AWT.
-            if (EventQueue.isDispatchThread()) {
-                rp.post(new Runnable() {
-                    public void run() {
-                        pathsAdded(event);
-                    }
-                });
-                return ;
-            }
-            List<FileObject> addedRoots = new ArrayList<FileObject>();
-            for (ClassPath cp : event.getChangedPaths()) {
-                for (FileObject fo : cp.getRoots()) {
-                    addedRoots.add(fo);
+            List<URL> changedPaths = getChangedPaths(event);
+            synchronized (rootsLock) {
+                if (addedRoots == null) {
+                    addedRoots = changedPaths;
+                } else {
+                    addedRoots.addAll(changedPaths);
                 }
             }
-            if (addedRoots.size() > 0) {
-                synchronized (SourcePathProviderImpl.this) {
-                    if (originalSourcePath == null) return ;
-                    List<FileObject> sourcePaths = new ArrayList<FileObject>(
-                            Arrays.asList(originalSourcePath.getRoots()));
-                    sourcePaths.addAll(addedRoots);
-                    originalSourcePath =
-                            SourcePathProviderImpl.createClassPath(
-                                sourcePaths.toArray(new FileObject[0]));
-
-                    sourcePaths = new ArrayList<FileObject>(
-                            Arrays.asList(smartSteppingSourcePath.getRoots()));
-                    sourcePaths.addAll(addedRoots);
-                    smartSteppingSourcePath =
-                            SourcePathProviderImpl.createClassPath(
-                                sourcePaths.toArray(new FileObject[0]));
-                }
-                // Clear caches so that the new source roots are taken into account
-                synchronized (urlCache) {
-                    urlCache.clear();
-                }
-                synchronized (urlCacheGlobal) {
-                    urlCacheGlobal.clear();
-                }
-                pcs.firePropertyChange (PROP_SOURCE_ROOTS, null, null);
-            }
+            task.schedule(1000);    // Work with class path is expensive.
         }
         
         public void pathsRemoved(final GlobalPathRegistryEvent event) {
-            // Work with class path is expensive. Move it off AWT.
-            if (EventQueue.isDispatchThread()) {
-                rp.post(new Runnable() {
-                    public void run() {
-                        pathsRemoved(event);
-                    }
-                });
-                return ;
-            }
-            List<FileObject> removedRoots = new ArrayList<FileObject>();
-            for (ClassPath cp : event.getChangedPaths()) {
-                for (FileObject fo : cp.getRoots()) {
-                    removedRoots.add(fo);
+            List<URL> changedPaths = getChangedPaths(event);
+            synchronized (rootsLock) {
+                if (removedRoots == null) {
+                    removedRoots = changedPaths;
+                } else {
+                    removedRoots.addAll(changedPaths);
                 }
             }
-            if (removedRoots.size() > 0) {
+            task.schedule(1000);    // Work with class path is expensive.
+        }
+        
+        private List<URL> getChangedPaths(final GlobalPathRegistryEvent event) {
+            List<URL> urls = new ArrayList<URL>();
+            for (ClassPath cp : event.getChangedPaths()) {
+                for (Entry entry : cp.entries()) {
+                    URL url = entry.getURL();
+                    urls.add(url);
+                }
+            }
+            return urls;
+        }
+        
+        private List<URL> getURLRoots(ClassPath cp) {
+            List<URL> urls = new ArrayList<URL>();
+            for (Entry entry : cp.entries()) {
+                URL url = entry.getURL();
+                urls.add(url);
+            }
+            return urls;
+        }
+        
+        private void rootsChanged() {
+            List<URL> added;
+            List<URL> removed;
+            synchronized (rootsLock) {
+                added = addedRoots;
+                removed = removedRoots;
+                addedRoots = null;
+                removedRoots = null;
+            }
+            boolean changed = false;
+            if (added != null && added.size() > 0) {
                 synchronized (SourcePathProviderImpl.this) {
                     if (originalSourcePath == null) return ;
-                    List<FileObject> sourcePaths = new ArrayList<FileObject>(
-                            Arrays.asList(originalSourcePath.getRoots()));
-                    sourcePaths.removeAll(removedRoots);
+                    List<URL> sourcePaths = getURLRoots(originalSourcePath);
+                    sourcePaths.addAll(added);
                     originalSourcePath =
                             SourcePathProviderImpl.createClassPath(
-                                sourcePaths.toArray(new FileObject[0]));
+                                sourcePaths.toArray(new URL[0]));
 
-                    sourcePaths = new ArrayList<FileObject>(
-                            Arrays.asList(smartSteppingSourcePath.getRoots()));
-                    sourcePaths.removeAll(removedRoots);
+                    sourcePaths = getURLRoots(smartSteppingSourcePath);
+                    sourcePaths.addAll(added);
                     smartSteppingSourcePath =
                             SourcePathProviderImpl.createClassPath(
-                                sourcePaths.toArray(new FileObject[0]));
+                                sourcePaths.toArray(new URL[0]));
                 }
+                changed = true;
+            }
+            if (removed != null && removed.size() > 0) {
+                synchronized (SourcePathProviderImpl.this) {
+                    if (originalSourcePath == null) return ;
+                    List<URL> sourcePaths = getURLRoots(originalSourcePath);
+                    sourcePaths.removeAll(removed);
+                    originalSourcePath =
+                            SourcePathProviderImpl.createClassPath(
+                                sourcePaths.toArray(new URL[0]));
+
+                    sourcePaths = getURLRoots(smartSteppingSourcePath);
+                    sourcePaths.removeAll(removed);
+                    smartSteppingSourcePath =
+                            SourcePathProviderImpl.createClassPath(
+                                sourcePaths.toArray(new URL[0]));
+                }
+                changed = true;
+            }
+            if (changed) {
                 // Clear caches so that the new source roots are taken into account
                 synchronized (urlCache) {
                     urlCache.clear();
