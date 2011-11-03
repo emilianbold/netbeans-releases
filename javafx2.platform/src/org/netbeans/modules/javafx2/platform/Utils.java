@@ -59,6 +59,7 @@ import org.netbeans.modules.java.j2seplatform.api.J2SEPlatformCreator;
 import org.netbeans.modules.javafx2.platform.api.JavaFXPlatformUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 
 /**
@@ -70,10 +71,10 @@ public final class Utils {
     /**
      * Default name for automatically registered JavaFX platform
      */
-    public static final String DEFAULT_FX_PLATFORM_NAME = "Default JavaFX Platform"; // NOI18N
+    public static final String DEFAULT_FX_PLATFORM_NAME = NbBundle.getMessage(Utils.class, "Default_JavaFX_Platform"); // NOI18N
     
     /**
-     * Property for not checking matching JavaFX and running JVM architechture
+     * Property for not checking matching JavaFX and running JVM architecture
      */
     public static final String NO_PLATFORM_CHECK_PROPERTY = "org.netbeans.modules.javafx2.platform.NoPlatformCheck"; // NOI18N
 

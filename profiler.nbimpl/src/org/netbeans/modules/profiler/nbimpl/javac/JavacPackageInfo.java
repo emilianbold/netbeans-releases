@@ -42,11 +42,7 @@
 package org.netbeans.modules.profiler.nbimpl.javac;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.ElementKind;
@@ -76,15 +72,17 @@ public class JavacPackageInfo extends SourcePackageInfo {
         super(simpleName, fqn, scope);
         this.cpInfo = cpInfo;
         
-        sScope = new HashSet<ClassIndex.SearchScope>();
         switch (scope) {
             case SOURCE: {
-                sScope.add(ClassIndex.SearchScope.SOURCE);
+                sScope= EnumSet.of(ClassIndex.SearchScope.SOURCE);
                 break;
             }
             case DEPENDENCIES: {
-                sScope.add(ClassIndex.SearchScope.DEPENDENCIES);
+                sScope = EnumSet.of(ClassIndex.SearchScope.DEPENDENCIES);
                 break;
+            }
+            default: {
+                sScope = Collections.EMPTY_SET;
             }
         }
         
