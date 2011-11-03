@@ -410,6 +410,29 @@ public class AddParameterOrLocalFixTest extends ErrorHintsTestBase {
                  "}\n").replaceAll("[ \t\n]+", " "));
     }
 
+    public void test204584c() throws Exception {
+        parameter = false;
+        performFixTest("test/Test.java",
+                "package test;\n" +
+                "import java.util.*;\n" +
+                "public class Test {\n" +
+                "    public void method(int i) {\n" +
+                "        if (i == 0)\n" +
+                "            v|ar = \"\";\n" +
+                "    }\n" +
+                "}\n",
+                "AddParameterOrLocalFix:var:java.lang.String:false",
+                ("package test;\n" +
+                 "import java.util.*;\n" +
+                 "public class Test {\n" +
+                "    public void method(int i) {\n" +
+                "        String var;\n" +
+                "        if (i == 0)\n" +
+                "            var = \"\";\n" +
+                "    }\n" +
+                 "}\n").replaceAll("[ \t\n]+", " "));
+    }
+
     protected List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) throws IOException {
         List<Fix> fixes = CreateElement.analyze(info, pos);
         List<Fix> result=  new LinkedList<Fix>();

@@ -59,6 +59,7 @@ import com.sun.source.util.TreePathScanner;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.EnumSet;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Element;
@@ -244,6 +245,8 @@ public class AddParameterOrLocalFix implements Fix {
         
         wc.rewrite(block, wc.getTreeMaker().insertBlockStatement(block, index, vt));
     }
+
+    private static final Set<Kind> CAN_HOLD_VARIABLE = EnumSet.of(Kind.BLOCK, Kind.CATCH);
     
     private void resolveLocalVariable(final WorkingCopy wc, TreePath tp, TreeMaker make, TypeMirror proposedType) {
         final String name = ((IdentifierTree) tp.getLeaf()).getName().toString();
@@ -300,7 +303,16 @@ public class AddParameterOrLocalFix implements Fix {
             Logger.getLogger("global").log(Level.WARNING, "Add local variable - cannot find a statement."); // NOI18N
             return;
         }
-        
+
+        while (firstUse.getParentPath() != null && !CAN_HOLD_VARIABLE.contains(firstUse.getParentPath().getLeaf().getKind())) {
+            firstUse = firstUse.getParentPath();
+        }
+
+        if (firstUse.getParentPath() == null) {
+            Logger.getLogger("global").log(Level.WARNING, "Add local variable - cannot find a statement."); // NOI18N
+            return;
+        }
+
         StatementTree statement = (StatementTree) firstUse.getLeaf();
 
         if (statement.getKind() == Kind.EXPRESSION_STATEMENT) {
