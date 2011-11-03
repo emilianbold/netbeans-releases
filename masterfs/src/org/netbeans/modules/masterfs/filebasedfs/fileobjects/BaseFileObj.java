@@ -1007,11 +1007,17 @@ public abstract class BaseFileObj extends FileObject {
     }
     
     private static class FileEventImpl extends FileEvent implements Enumeration<FileEvent> {
+        static {
+            FileBasedFileSystem.getInstance().addFileChangeListener(new Delivered());
+        }
         private FileEventImpl next;
+        
+        @Override
         public boolean hasMoreElements() {
             return next != null;
         }
 
+        @Override
         public FileEvent nextElement() {
             if (next == null) {
                 throw new NoSuchElementException(); 
@@ -1026,9 +1032,9 @@ public abstract class BaseFileObj extends FileObject {
         public FileEventImpl(FileObject src, FileEventImpl next) {
             super(src, next.getFile(), next.isExpected());
             this.next = next;
-        }        
-    }  
-    
+        }
+    }
+        
     /*private static class FileRenameEventImpl extends FileRenameEvent implements Enumeration<FileEvent> {
         private FileRenameEventImpl next;
         public boolean hasMoreElements() {
@@ -1055,4 +1061,40 @@ public abstract class BaseFileObj extends FileObject {
             super(src, file, name, ext, false);
         }
     }*/
+    
+    private static final class Delivered implements FileChangeListener {
+        private void unlock(FileEvent fe) {
+            Watcher.unlock((FileObject)fe.getSource());
+        }
+        
+        @Override
+        public void fileFolderCreated(FileEvent fe) {
+            unlock(fe);
+        }
+
+        @Override
+        public void fileDataCreated(FileEvent fe) {
+            unlock(fe);
+        }
+
+        @Override
+        public void fileChanged(FileEvent fe) {
+            unlock(fe);
+        }
+
+        @Override
+        public void fileDeleted(FileEvent fe) {
+            unlock(fe);
+        }
+
+        @Override
+        public void fileRenamed(FileRenameEvent fe) {
+            unlock(fe);
+        }
+
+        @Override
+        public void fileAttributeChanged(FileAttributeEvent fe) {
+            unlock(fe);
+        }
+    } // end Delivered
 }
