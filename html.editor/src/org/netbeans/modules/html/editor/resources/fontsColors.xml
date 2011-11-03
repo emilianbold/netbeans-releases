@@ -59,11 +59,15 @@ made subject to such option by the copyright holder.
     <fontcolor name="ws" default="whitespace"/>
     <fontcolor name="css-embedded" bgColor="FFE3F2E1" default="default"/>
     <fontcolor name="javascript-embedded" bgColor="FFE3F2E1" default="default"/>
-    
-     <!--"semantic" highlighting:-->
-    <fontcolor name="mod-method"> <!-- used for JSF tags in xhtml -->
+
+    <!--"semantic" highlighting:-->
+
+    <!-- used for foreign tags ( <h:button ... /> ) -->
+    <fontcolor name="mod-method"> 
         <font style="bold" />
     </fontcolor>
-    <fontcolor name="mod-class" waveUnderlined="red"/> <!-- undeclared JSF tags -->
+    
+    <!-- undeclared foreign tags -->
+    <fontcolor name="mod-class" waveUnderlined="red"/> 
 
 </fontscolors>
