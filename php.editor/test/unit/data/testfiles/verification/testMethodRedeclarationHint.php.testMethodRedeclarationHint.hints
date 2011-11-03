@@ -1,0 +1,6 @@
+    function functionNameSame($param) {
+             ----------------
+HINT:Method "functionNameSame" has been already declared
+    function ifaceFunctionNameSame($param);
+             ---------------------
+HINT:Method "ifaceFunctionNameSame" has been already declared
