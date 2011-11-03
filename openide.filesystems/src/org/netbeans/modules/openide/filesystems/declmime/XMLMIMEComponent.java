@@ -286,7 +286,8 @@ final class XMLMIMEComponent extends DefaultParser implements MIMEComponent {
             return parser;
         }
         
-        protected boolean isStopException(Exception e) {
+        @Override
+        protected boolean isStopException(Throwable e) {
             return STOP.getMessage().equals(e.getMessage());
         }        
         
@@ -344,9 +345,8 @@ final class XMLMIMEComponent extends DefaultParser implements MIMEComponent {
             if (emgr.isLoggable(Level.FINE)) {
                 emgr.fine("[while parsing " + fo + "] " + exception.getSystemId() + ":" + exception.getLineNumber() + ":" + exception.getColumnNumber() + ": " + exception.getMessage()); // NOI18N
             }
-
-            this.state = ERROR;
-            throw STOP;
+            
+            // go on anyway, needed to fix 203959
         }
         
         
