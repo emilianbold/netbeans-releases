@@ -222,18 +222,20 @@ public class PersistenceToolBarMVElement extends ToolBarMultiViewElement impleme
                 SectionContainerNode sn = (SectionContainerNode) sc.getNode();
                 Children ch=sn.getChildren();
                 NodeSectionPanel nsp = null;
+                Node mainPUNode = null;
                 for(Node n:ch.getNodes()) {
                     PersistenceUnitNode pun = (PersistenceUnitNode) n;
                     String pusecname = pun.getDisplayName();
                     if(pusecname.equals(pu.getName()))
                     {
-                        nsp = sc.getSection(n);
+                        mainPUNode = pun.getChildren().getNodes()[0];
                         break;
                     }
                 }
-                if(nsp == null){
+                if(mainPUNode == null){
                     needInit = true;
                 } else {
+                    nsp = sc.getSection(mainPUNode);
                     SectionPanel sp = nsp!=null && nsp instanceof SectionPanel ? ((SectionPanel)nsp) : null;
                     PersistenceUnitPanel up = (PersistenceUnitPanel) (sp.getInnerPanel() != null && sp.getInnerPanel() instanceof PersistenceUnitPanel ? sp.getInnerPanel() : null);
                     if(up != null) {
