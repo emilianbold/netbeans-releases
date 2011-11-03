@@ -66,10 +66,12 @@ abstract public class BaseProfilerTypeUtilsImpl extends ProfilerTypeUtilsProvide
     final public Collection<SourcePackageInfo> getPackages(boolean subprojects, Scope scope) {
         Collection<SourcePackageInfo> pkgs = new ArrayList<SourcePackageInfo>();
         
-        ClasspathInfo cpInfo = getClasspathInfo(subprojects, scope == SourcePackageInfo.Scope.SOURCE, scope == SourcePackageInfo.Scope.DEPENDENCIES);
+        ClasspathInfo indexCpInfo = getClasspathInfo(subprojects, scope == SourcePackageInfo.Scope.SOURCE, scope == SourcePackageInfo.Scope.DEPENDENCIES);
+        ClasspathInfo packageCpInfo = getClasspathInfo(subprojects, true, true);
+        
         // #170201: A misconfigured(?) project can have no source roots defined, returning NULL as its ClasspathInfo
         // ignore such a project
-        if (cpInfo != null) {
+        if (indexCpInfo != null) {
             Set<ClassIndex.SearchScope> sScope = new HashSet<ClassIndex.SearchScope>();
             if (scope == SourcePackageInfo.Scope.SOURCE) {
                 sScope.add(ClassIndex.SearchScope.SOURCE);
@@ -77,8 +79,8 @@ abstract public class BaseProfilerTypeUtilsImpl extends ProfilerTypeUtilsProvide
             if (scope == SourcePackageInfo.Scope.DEPENDENCIES) {
                 sScope.add(ClassIndex.SearchScope.DEPENDENCIES);
             }
-            for (String pkgName : cpInfo.getClassIndex().getPackageNames("", true, sScope)) { // NOI18N
-                pkgs.add(new JavacPackageInfo(cpInfo, pkgName, pkgName, scope));
+            for (String pkgName : indexCpInfo.getClassIndex().getPackageNames("", true, sScope)) { // NOI18N
+                pkgs.add(new JavacPackageInfo(packageCpInfo, pkgName, pkgName, scope));
             }
         }        
         return pkgs;
