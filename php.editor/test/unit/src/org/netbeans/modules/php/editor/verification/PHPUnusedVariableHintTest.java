@@ -41,38 +41,38 @@
  */
 package org.netbeans.modules.php.editor.verification;
 
+import java.util.prefs.Preferences;
+
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class PHPHintsTest extends PHPHintsTestBase {
+public class PHPUnusedVariableHintTest extends PHPHintsTestBase {
 
-    public PHPHintsTest(String testName) {
+    public PHPUnusedVariableHintTest(String testName) {
         super(testName);
     }
 
-    public void testModifiersCheckHint() throws Exception {
-        checkHintsInStartEndFile(new ModifiersCheckHint(), "testModifiersCheckHint.php");
+    public void testWithParams() throws Exception {
+        checkHintsInStartEndFile(new UnusedVariableHintStub(true), "testUnusedVariableHint.php");
     }
 
-    public void testAbstractClassInstantiationHint() throws Exception {
-        checkHintsInStartEndFile(new AbstractClassInstantiationHint(), "testAbstractClassInstantiationHint.php");
+    public void testWithoutParams() throws Exception {
+        checkHintsInStartEndFile(new UnusedVariableHintStub(false), "testUnusedVariableHint.php");
     }
 
-    public void testImplementAbstractMethodsHint() throws Exception {
-        checkHintsInStartEndFile(new ImplementAbstractMethodsHint(), "testImplementAbstractMethodsHint.php");
+    private class UnusedVariableHintStub extends UnusedVariableHint {
+        private final boolean unusedFormalParameters;
+
+        public UnusedVariableHintStub(boolean unusedFormalParameters) {
+            this.unusedFormalParameters = unusedFormalParameters;
+        }
+
+        @Override
+        public boolean checkUnusedFormalParameters(Preferences preferences) {
+            return unusedFormalParameters;
+        }
+
     }
 
-    public void testMethodRedeclarationHint() throws Exception {
-        checkHintsInStartEndFile(new MethodRedeclarationHint(), "testMethodRedeclarationHint.php");
-    }
-
-    public void testTypeRedeclarationHint() throws Exception {
-        checkHintsInStartEndFile(new TypeRedeclarationHint(), "testTypeRedeclarationHint.php");
-    }
-
-    public void testUninitializedVariableHint() throws Exception {
-        checkHintsInStartEndFile(new UninitializedVariableHint(), "testUninitializedVariableHint.php");
-    }
-    
 }
