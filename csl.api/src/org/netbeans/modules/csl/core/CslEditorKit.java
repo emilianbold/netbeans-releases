@@ -164,7 +164,15 @@ public final class CslEditorKit extends NbEditorKit {
         actions.add(new GsfDefaultKeyTypedAction());
         actions.add(new GsfInsertBreakAction());
         actions.add(new GsfDeleteCharAction(deletePrevCharAction, false));
-        actions.add(new ToggleBlockCommentAction());
+        
+        // The php needs to handle special cases of toggle comment. There has to be 
+        // registered ToggleBlockCommentAction in PHP that handles these special cases,
+        // but the current way, how the actions are registered, doesn't allow to overwrite the action
+        // registered here.
+        // See issue #204616. This hack can be removed, when issue #204616 will be done.
+        if (!mimeType.equals("text/x-php5")) {
+            actions.add(new ToggleBlockCommentAction());
+        }
         actions.add(new InstantRenameAction());
         actions.add(CslActions.createGoToDeclarationAction());
         actions.add(new GenericGenerateGoToPopupAction());
