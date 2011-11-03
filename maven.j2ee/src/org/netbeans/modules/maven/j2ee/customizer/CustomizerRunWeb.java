@@ -49,8 +49,7 @@ import java.io.IOException;
 import javax.swing.JList;
 import org.netbeans.modules.maven.j2ee.POHImpl;
 import java.util.Iterator;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
+import java.util.List;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.SwingUtilities;
@@ -177,9 +176,26 @@ public class CustomizerRunWeb extends AbstractCustomizer {
     }
     
     private void initValues() {
-        run = ModelHandle.getDefaultMapping(ActionProvider.COMMAND_RUN, project);
-        debug = ModelHandle.getDefaultMapping(ActionProvider.COMMAND_DEBUG, project);
-        profile = ModelHandle.getDefaultMapping("profile", project); // NOI18N
+        List<NetbeansActionMapping> actionMappings = handle.getActionMappings(handle.getActiveConfiguration()).getActions();
+        for (NetbeansActionMapping actionMapping : actionMappings) {
+            String actionName = actionMapping.getActionName();
+            
+            if (ActionProvider.COMMAND_RUN.equals(actionName)) {
+                run = actionMapping;
+            }
+            if (ActionProvider.COMMAND_DEBUG.equals(actionName)) {
+                debug = actionMapping;
+            }
+            if ("profile".equals(actionName)) { // NOI18N
+                profile = actionMapping;
+            }
+        }
+        
+        if (actionMappings == null || actionMappings.isEmpty()) {
+            run = ModelHandle.getDefaultMapping(ActionProvider.COMMAND_RUN, project);
+            debug = ModelHandle.getDefaultMapping(ActionProvider.COMMAND_DEBUG, project);
+            profile = ModelHandle.getDefaultMapping("profile", project); // NOI18N
+        }
 
         isRunCompatible = checkMapping(run);
         isDebugCompatible = checkMapping(debug);

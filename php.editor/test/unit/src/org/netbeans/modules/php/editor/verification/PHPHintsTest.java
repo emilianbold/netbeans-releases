@@ -71,4 +71,8 @@ public class PHPHintsTest extends PHPHintsTestBase {
         checkHintsInStartEndFile(new TypeRedeclarationHint(), "testTypeRedeclarationHint.php");
     }
 
+    public void testUninitializedVariableHint() throws Exception {
+        checkHintsInStartEndFile(new UninitializedVariableHint(), "testUninitializedVariableHint.php");
+    }
+    
 }
