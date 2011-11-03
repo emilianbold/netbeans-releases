@@ -114,6 +114,7 @@ public class ElementJavadoc {
     private final ElementHandle<? extends Element> handle;
     //private Doc doc;
     private volatile Future<String> content;
+    private final Callable<Boolean> cancel;
     private Hashtable<String, ElementHandle<? extends Element>> links = new Hashtable<String, ElementHandle<? extends Element>>();
     private int linkCounter = 0;
     private URL docURL = null;
@@ -215,7 +216,7 @@ public class ElementJavadoc {
                     latch.await();
                     return success.get() ?
                         resolveElement(handle, link):
-                        new ElementJavadoc(NbBundle.getMessage(ElementJavadoc.class, "javadoc_attaching_failed"));
+                        new ElementJavadoc(NbBundle.getMessage(ElementJavadoc.class, "javadoc_attaching_failed"), cancel);
                 }
             } catch (MalformedURLException ex) {
                 Exceptions.printStackTrace(ex);
@@ -241,7 +242,7 @@ public class ElementJavadoc {
                 //link cannot be resolved by this element
                 try {
                     URL u = docURL != null ? new URL(docURL, link) : new URL(link);
-                    ret[0] = new ElementJavadoc(u);
+                    ret[0] = new ElementJavadoc(u, cancel);
                 } catch (MalformedURLException ex) {
                     // ignore
                 }
@@ -253,7 +254,7 @@ public class ElementJavadoc {
                     public void run(CompilationController controller) throws IOException {
                         controller.toPhase(Phase.ELEMENTS_RESOLVED);
                         if (handle != null) {
-                            ret[0] = new ElementJavadoc(controller, handle.resolve(controller), null, null);
+                            ret[0] = new ElementJavadoc(controller, handle.resolve(controller), null, cancel);
                         } else {
                             int idx = link.indexOf('#'); //NOI18N
                             URI uri = null;
@@ -283,14 +284,14 @@ public class ElementJavadoc {
                                             }
                                         }
                                     }
-                                    ret[0] = new ElementJavadoc(controller, e, new URL(docURL, link), null);
+                                    ret[0] = new ElementJavadoc(controller, e, new URL(docURL, link), cancel);
                                 } else {
                                     //external URL
                                     if( uri.isAbsolute() ) {
-                                        ret[0] = new ElementJavadoc( uri.toURL() );
+                                        ret[0] = new ElementJavadoc( uri.toURL(), cancel );
                                     } else if (docURL != null) {
                                         try {
-                                            ret[0] = new ElementJavadoc(new URL(docURL, link));
+                                            ret[0] = new ElementJavadoc(new URL(docURL, link), cancel);
                                         } catch (MalformedURLException ex) {
                                             // ignore
                                         }
@@ -303,6 +304,16 @@ public class ElementJavadoc {
             }
         } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);
+        }
+        if (ret[0] != null) {
+            try {
+                while (cancel != null && !cancel.call()) {
+                    try {
+                        ret[0].getTextAsync().get(250, TimeUnit.MILLISECONDS);
+                        break;
+                    } catch (TimeoutException timeOut) {/*retry*/}
+                }
+            } catch (Exception ex) {}
         }
         return ret[0];
     }
@@ -320,6 +331,7 @@ public class ElementJavadoc {
         Pair<Trees,ElementUtilities> context = Pair.of(compilationInfo.getTrees(), compilationInfo.getElementUtilities());
         this.cpInfo = compilationInfo.getClasspathInfo();
         this.handle = element == null ? null : ElementHandle.create(element);
+        this.cancel = cancel;
         Doc doc = context.second.javaDocFor(element);
         boolean localized = false;
         StringBuilder content = new StringBuilder();
@@ -387,20 +399,22 @@ public class ElementJavadoc {
         }
     }
     
-    private ElementJavadoc(URL url) {
+    private ElementJavadoc(URL url, final Callable<Boolean> cancel) {
         assert url != null;
         this.content = null;
         this.docURL = url;
         this.handle = null;
         this.cpInfo = null;
+        this.cancel = cancel;
     }
 
-    private ElementJavadoc(final String message) {
+    private ElementJavadoc(final String message, final Callable<Boolean> cancel) {
         assert message != null;
         this.content = new Now(message);
         this.docURL = null;
         this.handle = null;
         this.cpInfo = null;
+        this.cancel = cancel;
     }
 
     // Private section ---------------------------------------------------------

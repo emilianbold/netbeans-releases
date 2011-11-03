@@ -294,15 +294,6 @@
         </sequential>
     </macrodef>
 
-    <macrodef name="deploy-preprocess">
-        <sequential>
-            <!-- hack for beta: remove the just generated standard non-fx deployment files to be replaced by the fx ones -->
-            <delete file="${jfx.deployment.dir}${file.separator}${jfx.deployment.jar}"/>
-            <delete file="${jfx.deployment.dir}${file.separator}README.TXT"/>
-            <!-- hack end -->
-        </sequential>
-    </macrodef>
-
     <macrodef name="deploy-application-def">
         <sequential>
             <fx:application id="fxApp"
@@ -542,7 +533,6 @@
     <target name="-deploy-app-sign-nopreloader-notemplate" depends="-check-sign" if="sign-nopreloader-notemplate" unless="preloader-app">
         <echo message="-deploy-app-sign-nopreloader-notemplate" level="verbose"/>
         <deploy-defines/>
-        <deploy-preprocess/>
         <deploy-application-def/>
         <deploy-resources/>
         <deploy-jar/>
@@ -555,7 +545,6 @@
     <target name="-deploy-app-sign-preloader-notemplate" depends="-check-sign" if="sign-preloader-notemplate" unless="preloader-app">
         <echo message="-deploy-app-sign-preloader-notemplate" level="verbose"/>
         <deploy-defines/>
-        <deploy-preprocess/>
         <deploy-application-def-preloader/>
         <deploy-resources-preloader/>
         <deploy-jar/>
@@ -568,7 +557,6 @@
     <target name="-deploy-app-sign-nopreloader-template" depends="-check-sign" if="sign-nopreloader-template" unless="preloader-app">
         <echo message="-deploy-app-sign-nopreloader-template" level="verbose"/>
         <deploy-defines/>
-        <deploy-preprocess/>
         <deploy-application-def/>
         <deploy-resources/>
         <deploy-jar/>
@@ -581,7 +569,6 @@
     <target name="-deploy-app-sign-preloader-template" depends="-check-sign" if="sign-preloader-template" unless="preloader-app">
         <echo message="-deploy-app-sign-preloader-template" level="verbose"/>
         <deploy-defines/>
-        <deploy-preprocess/>
         <deploy-application-def-preloader/>
         <deploy-resources-preloader/>
         <deploy-jar/>
@@ -597,7 +584,6 @@
     <target name="-deploy-app-nosign-nopreloader-notemplate" depends="-check-nosign" if="nosign-nopreloader-notemplate" unless="preloader-app">
         <echo message="-deploy-app-nosign-nopreloader-notemplate" level="verbose"/>
         <deploy-defines/>
-        <deploy-preprocess/>
         <deploy-application-def/>
         <deploy-resources/>
         <deploy-jar/>
@@ -609,7 +595,6 @@
     <target name="-deploy-app-nosign-preloader-notemplate" depends="-check-nosign" if="nosign-preloader-notemplate" unless="preloader-app">
         <echo message="-deploy-app-nosign-preloader-notemplate" level="verbose"/>
         <deploy-defines/>
-        <deploy-preprocess/>
         <deploy-application-def-preloader/>
         <deploy-resources-preloader/>
         <deploy-jar/>
@@ -621,7 +606,6 @@
     <target name="-deploy-app-nosign-nopreloader-template" depends="-check-nosign" if="nosign-nopreloader-template" unless="preloader-app">
         <echo message="-deploy-app-nosign-nopreloader-template" level="verbose"/>
         <deploy-defines/>
-        <deploy-preprocess/>
         <deploy-application-def/>
         <deploy-resources/>
         <deploy-jar/>
@@ -633,7 +617,6 @@
     <target name="-deploy-app-nosign-preloader-template" depends="-check-nosign" if="nosign-preloader-template" unless="preloader-app">
         <echo message="-deploy-app-nosign-preloader-template" level="verbose"/>
         <deploy-defines/>
-        <deploy-preprocess/>
         <deploy-application-def-preloader/>
         <deploy-resources-preloader/>
         <deploy-jar/>
