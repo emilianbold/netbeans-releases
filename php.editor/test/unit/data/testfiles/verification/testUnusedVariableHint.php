@@ -3,9 +3,18 @@
 class UnusedVariableClassName {
     public static $staticField;
     public function __construct() {}
-    function functionName() {}
+    function functionName() {$this->functionName();}
     function formalParams($first, $second) {}
 }
+$GLOBALS["a"];
+$_SERVER["a"];
+$_GET["a"];
+$_POST["a"];
+$_FILES["a"];
+$_COOKIE["a"];
+$_SESSION["a"];
+$_REQUEST["a"];
+$_ENV["a"];
 echo $echoUsed;
 
 $simpleUnused;
