@@ -246,7 +246,8 @@ final class XMLMIMEComponent extends DefaultParser implements MIMEComponent {
         
         // the only way how to stop parser is throwing an exception
         private static final SAXException STOP = new SAXException("STOP");  //NOI18N
-
+        private int errors;
+        
         /**
          * Go ahead and retrieve a print or null
          */
@@ -347,6 +348,10 @@ final class XMLMIMEComponent extends DefaultParser implements MIMEComponent {
             }
             
             // go on anyway, needed to fix 203959
+            if (errors++ > 10) {
+                state = ERROR;
+                throw STOP;
+            }
         }
         
         
