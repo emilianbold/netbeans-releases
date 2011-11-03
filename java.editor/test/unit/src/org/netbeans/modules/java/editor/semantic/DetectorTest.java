@@ -407,6 +407,10 @@ public class DetectorTest extends TestBase {
         performTest("ReadUseElseTernary191230");
     }
 
+    public void testImportDisambiguation203874() throws Exception {
+        performTest("ImportDisambiguation");
+    }
+
     private void performTest(String fileName) throws Exception {
         performTest(fileName, new Performer() {
             public void compute(CompilationController parameter, Document doc, ErrorDescriptionSetter setter) {
@@ -417,119 +421,6 @@ public class DetectorTest extends TestBase {
         });
     }
     
-    public void testSimpleRemoveImport() throws Exception {
-        performRemoveUnusedImportTest("SimpleRemoveImport");
-    }
-
-    public void testRemoveImportNotLine1() throws Exception {
-        performRemoveUnusedImportTest("RemoveImportNotLine1");
-    }
-
-//    public void testRemoveImportNotLine2() throws Exception {
-//        performRemoveUnusedImportTest("RemoveImportNotLine2");
-//    }
-
-    public void testRemoveImportDocStart() throws Exception {
-        performRemoveUnusedImportTest("RemoveImportDocStart");
-    }
-
-    public void testRemoveImportTrim() throws Exception {
-        performRemoveUnusedImportTest("RemoveImportTrim");
-    }
-
-    public void testRemoveImportDocStartTrim() throws Exception {
-        performRemoveUnusedImportTest("RemoveImportDocStartTrim");
-    }
-
-    public void testRemoveAllImports() throws Exception {
-        performRemoveUnusedImportTest("RemoveAllImports", 2, 2, 0, 1);
-    }
-
     private FileObject testSourceFO;
     
-    protected void performRemoveUnusedImportTest(String fileName) throws Exception {
-        performRemoveUnusedImportTest(fileName, 1, 1, 0, 0);
-    }
-    
-    protected void performRemoveUnusedImportTest(String fileName, int errorCount, int fixesCount, int errorToFix, int fixToPerform) throws Exception {
-        SourceUtilsTestUtil.prepareTest(new String[] {"org/netbeans/modules/java/editor/resources/layer.xml"}, new Object[] {new MIMEResolverImpl()});
-        
-	FileObject scratch = SourceUtilsTestUtil.makeScratchDir(this);
-	FileObject cache   = scratch.createFolder("cache");
-	
-        File wd         = getWorkDir();
-        File testSource = new File(wd, "test/" + fileName + ".java");
-        
-        testSource.getParentFile().mkdirs();
-        
-        File dataFolder = new File(getDataDir(), "org/netbeans/modules/java/editor/semantic/data/");
-        
-        for (File f : dataFolder.listFiles()) {
-            copyToWorkDir(f, new File(wd, "test/" + f.getName()));
-        }
-        
-        testSourceFO = FileUtil.toFileObject(testSource);
-
-        assertNotNull(testSourceFO);
-        
-        File testBuildTo = new File(wd, "test-build");
-        
-        testBuildTo.mkdirs();
-
-        FileObject srcRoot = FileUtil.toFileObject(testSource.getParentFile());
-        SourceUtilsTestUtil.prepareTest(srcRoot, FileUtil.toFileObject(testBuildTo), cache);
-        SourceUtilsTestUtil.compileRecursively(srcRoot);
-
-        final Document doc = getDocument(testSourceFO);
-        
-        JavaSource source = JavaSource.forFileObject(testSourceFO);
-        
-        assertNotNull(source);
-        
-        final List<ErrorDescription> errors = new ArrayList<ErrorDescription>();
-        
-        SemanticHighlighter.ErrorDescriptionSetter oldSetter = SemanticHighlighter.ERROR_DESCRIPTION_SETTER;
-        
-        try {
-            SemanticHighlighter.ERROR_DESCRIPTION_SETTER = new SemanticHighlighter.ErrorDescriptionSetter() {
-                public void setErrors(Document doc, List<ErrorDescription> errs, List<TreePathHandle> allUnusedImports) {
-                    errors.addAll(errs);
-                }
-            
-                public void setHighlights(Document doc, OffsetsBag highlights) {
-                }
-
-                public void setColorings(Document doc,
-                                         Map<Token, Coloring> colorings,
-                                         Set<Token> addedTokens,
-                                         Set<Token> removedTokens) {
-                }
-            };
-            
-            source.runUserActionTask(new Task<CompilationController>() {
-                public void run(CompilationController parameter) {
-                    try {
-                        parameter.toPhase(Phase.UP_TO_DATE);
-                        new SemanticHighlighter(parameter.getFileObject()).process(parameter, doc);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }, true);
-            
-            assertEquals(errors.toString(), errorCount, errors.size());
-            
-            List<Fix> fixes = errors.get(errorToFix).getFixes().getFixes();
-            
-            assertEquals(fixesCount, fixes.size());
-            
-            fixes.get(fixToPerform).implement();
-            
-            ref(doc.getText(0, doc.getLength()));
-            
-            compareReferenceFiles();
-        } finally {
-            SemanticHighlighter.ERROR_DESCRIPTION_SETTER = oldSetter;
-        }
-    }
 }

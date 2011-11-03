@@ -332,6 +332,13 @@ public final class RepositoryUtils {
         return getRepositoryListenerProxy().getErrorCount(project.getUniqueName());
     }
 
+    public static void registerRepositoryError(ProjectBase project, Exception e) {
+        CsmUID<?> uid = project.getUID();
+        assert uid != null;
+        Key key = UIDtoKey(uid);        
+        getRepositoryListenerProxy().anExceptionHappened(key.getUnit(), new RepositoryException(e));
+    }
+    
     public static void onProjectDeleted(NativeProject nativeProject) {
         Key key = KeyUtilities.createProjectKey(nativeProject);
         repository.removeUnit(key.getUnit());

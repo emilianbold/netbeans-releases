@@ -43,6 +43,7 @@
  */
 package org.openide.util.datatransfer;
 
+import java.awt.EventQueue;
 import java.awt.datatransfer.*;
 
 import javax.swing.event.EventListenerList;
@@ -185,12 +186,33 @@ public abstract class ExClipboard extends Clipboard {
         }
     }
 
-    public synchronized void setContents(Transferable contents, ClipboardOwner owner) {
-        if (this.contents != null) {
-            transferableOwnershipLost(this.contents);
-        }
+    @Override
+    public void setContents(Transferable contents, ClipboardOwner owner) {
+        synchronized (this) {
+            if (this.contents != null) {
+                transferableOwnershipLost(this.contents);
+            }
 
-        super.setContents(contents, owner);
+            final ClipboardOwner oldOwner = this.owner;
+            final Transferable oldContents = this.contents;
+
+            this.owner = owner;
+            this.contents = contents;
+
+            if (oldOwner != null && oldOwner != owner) {
+                EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        oldOwner.lostOwnership(ExClipboard.this, oldContents);
+                    }
+                });
+            }
+        }
+        FlavorEvent e = new FlavorEvent(this);
+        fireClipboardChange();
+        for (FlavorListener l : getFlavorListeners()) {
+            l.flavorsChanged(e);
+        }
     }
 
     /** Notifies the transferable that it has lost ownership in clipboard.

@@ -317,7 +317,7 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
         return delegatingUndoRedo;
     }
 
-    void componentClosed() {
+    public void componentClosed () {
         setSetups(Collections.<File, Setup>emptyMap(), Collections.<File, EditorCookie>emptyMap());
         prevAction.setEnabled(false);
         nextAction.setEnabled(false);
@@ -468,6 +468,13 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
     }
 
     private void setSetups (Map<File, Setup> setups, Map<File, EditorCookie> editorCookies) {
+        for (Map.Entry<File, Setup> e : this.setups.entrySet()) {
+            Setup setup = e.getValue();
+            if (setup != null) {
+                setup.getFirstSource().close();
+                setup.getSecondSource().close();
+            }
+        }
         this.setups.clear();
         this.setups.putAll(setups);
         this.editorCookies.clear();

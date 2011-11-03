@@ -98,6 +98,17 @@ public class MavenAnnotationProcessingQueryImplTest extends NbTestCase {
                 + "<version>2.1</version></plugin></plugins></build>",
             "enabled=[] run=null s=.../target/generated-sources/annotations/ opts={}", "src/main/java");
     }
+
+    public void testCustomOutputLocationDirect() throws Exception {
+        assertOpts("<build><plugins><plugin><artifactId>maven-compiler-plugin</artifactId>"
+                + "<configuration><generatedSourcesDirectory>${project.build.directory}/generated-sources/annos</generatedSourcesDirectory></configuration></plugin></plugins></build>",
+                "enabled=[ON_SCAN, IN_EDITOR] run=null s=.../target/generated-sources/annos/ opts={}", "src/main/java");
+    }
+
+    public void testCustomOutputLocationImplicit() throws Exception {
+        assertOpts("<build><directory>${project.basedir}/build/maven/${project.artifactId}/target</directory></build>",
+                "enabled=[ON_SCAN, IN_EDITOR] run=null s=.../build/maven/prj/target/generated-sources/annotations/ opts={}", "src/main/java");
+    }
     
     // XXX compilerArgument unformatted vs. compilerArguments
     // XXX annotationProcessors config

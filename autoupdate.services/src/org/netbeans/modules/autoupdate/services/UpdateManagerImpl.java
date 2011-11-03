@@ -58,6 +58,8 @@ import java.util.logging.Logger;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
+import org.netbeans.api.autoupdate.UpdateUnitProvider;
+import org.netbeans.api.autoupdate.UpdateUnitProviderFactory;
 import org.netbeans.spi.autoupdate.UpdateProvider;
 import org.openide.modules.Dependency;
 import org.openide.modules.ModuleInfo;
@@ -85,6 +87,7 @@ public class UpdateManagerImpl extends Object {
     public void clearCache () {
         synchronized(UpdateManagerImpl.Cache.class) {
             cacheReference = null;
+            source2UpdateUnitProvider = null;
         }
     }    
     
@@ -212,6 +215,19 @@ public class UpdateManagerImpl extends Object {
         synchronized(UpdateManagerImpl.Cache.class) {        
             cacheReference = new WeakReference<UpdateManagerImpl.Cache>(c);
         }        
+    }
+    
+    private Map<String, UpdateUnitProvider> source2UpdateUnitProvider = null;
+
+    public UpdateUnitProvider getUpdateUnitProvider(String source) {
+        if (source2UpdateUnitProvider == null) {
+            List<UpdateUnitProvider> providers = UpdateUnitProviderFactory.getDefault().getUpdateUnitProviders(false);
+            source2UpdateUnitProvider = new HashMap<String, UpdateUnitProvider>(providers.size());
+            for (UpdateUnitProvider updateUnitProvider : providers) {
+                source2UpdateUnitProvider.put(updateUnitProvider.getDisplayName(), updateUnitProvider);
+            }
+        }
+        return source2UpdateUnitProvider.get(source);
     }
     
     private class Cache {

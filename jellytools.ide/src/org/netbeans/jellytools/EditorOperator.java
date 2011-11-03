@@ -459,6 +459,54 @@ public class EditorOperator extends TopComponentOperator {
         int offset = txtEditorPane().getCaretPosition();
         return NbDocument.findLineNumber(doc, offset) + 1;
     }
+    
+    /**
+     * Types one char.
+     * @param keyChar key char
+     */
+    @Override
+    public void typeKey(char keyChar) {
+        // need to request focus
+        this.requestFocus();
+        txtEditorPane().typeKey(keyChar);
+    }
+
+    /**
+     * Types one char.
+     * @param keyChar key char
+     * @param modifiers modifiers
+     */
+    @Override
+    public void typeKey(char keyChar, int modifiers) {
+        // need to request focus
+        this.requestFocus();
+        txtEditorPane().typeKey(keyChar, modifiers);
+    }
+
+    /**
+     * Types one char.
+     * @param keyCode key code
+     * @param keyChar key char
+     * @param modifiers modifiers
+     */
+    @Override
+    public void typeKey(int keyCode, char keyChar, int modifiers) {
+        // need to request focus
+        this.requestFocus();
+        txtEditorPane().typeKey(keyCode, keyChar, modifiers);
+    }
+
+    /**
+     * Pushes key of requested key code.
+     * @param keyCode key code
+     * @param modifiers modifiers
+     */
+    @Override
+    public void pushKey(int keyCode, int modifiers) {
+        // need to request focus before any key push
+        this.requestFocus();
+        txtEditorPane().pushKey(keyCode, modifiers);
+    }
 
     /**
      * Pushes key of requested key code.
@@ -466,9 +514,7 @@ public class EditorOperator extends TopComponentOperator {
      */
     @Override
     public void pushKey(int keyCode) {
-        // need to request focus before any key push
-        this.requestFocus();
-        txtEditorPane().pushKey(keyCode);
+        pushKey(keyCode, 0);
     }
 
     /** Pushes Home key (KeyEvent.VK_HOME) */

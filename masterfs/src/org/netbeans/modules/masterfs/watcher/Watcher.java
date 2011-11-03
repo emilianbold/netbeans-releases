@@ -43,9 +43,12 @@ import java.awt.Image;
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.ReferenceQueue;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
@@ -71,7 +74,8 @@ import org.openide.util.lookup.ServiceProviders;
 })
 public final class Watcher extends AnnotationProvider {
     static final Logger LOG = Logger.getLogger(Watcher.class.getName());
-
+    private static final Map<FileObject,int[]> MODIFIED = new WeakHashMap<FileObject, int[]>();
+    
     private Ext<?> ext;
     
     public Watcher() {
@@ -366,6 +370,10 @@ public final class Watcher extends AnnotationProvider {
             LOG.log(Level.FINE, "Refreshing {0} directories", toRefresh.size());
 
             for (FileObject fileObject : toRefresh) {
+                if (isLocked(fileObject)) {
+                    enqueue(fileObject);
+                    continue;
+                }
                 LOG.log(Level.FINEST, "Refreshing {0}", fileObject);
                 fileObject.refresh();
             }
@@ -435,5 +443,27 @@ public final class Watcher extends AnnotationProvider {
             LOG.warning(x.toString());
         }
         return null;
+    }
+    
+    public static synchronized void lock(FileObject fileObject) {
+        int[] arr = MODIFIED.get(fileObject);
+        if (arr == null) {
+            MODIFIED.put(fileObject, arr = new int[] { 0 });
+        }
+        arr[0]++;
+    }
+    
+    private static synchronized boolean isLocked(FileObject fo) {
+        return MODIFIED.get(fo) != null;
+    }
+
+    public static synchronized void unlock(FileObject fo) {
+        int[] arr = MODIFIED.get(fo);
+        if (arr == null) {
+            return;
+        }
+        if (--arr[0] == 0) {
+            MODIFIED.remove(fo);
+        }
     }
 }

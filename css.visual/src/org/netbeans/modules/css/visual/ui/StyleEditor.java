@@ -47,12 +47,8 @@
  *
  * Created on October 13, 2004, 12:26 PM
  */
-
 package org.netbeans.modules.css.visual.ui;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
@@ -66,7 +62,6 @@ import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.JPanel;
 import org.netbeans.modules.css.visual.api.CssRuleContext;
-import org.openide.util.Exceptions;
 
 /**
  * Super class for all Style editors
@@ -76,30 +71,25 @@ import org.openide.util.Exceptions;
 abstract public class StyleEditor extends JPanel {
 
     private PropertyChangeSupport cssPropertyChangeSupport;
-
     CssPropertyChangeListener cssPropertyChangeListener = new CssPropertyChangeListener();
-
     boolean listenerAdded = false;
-
     private CssRuleContext content;
-
-    private final Object LOCK = new Object();
-    private Executor EXECUTOR = Executors.newSingleThreadExecutor();
-
     private final AtomicBoolean IN_PROPERTY_VALUES_INITIALIZATION = new AtomicBoolean(false);
+    
+    private AtomicBoolean initialized = new AtomicBoolean();
+    private Runnable setContentTask;
 
     protected StyleEditor(String name, String dispName) {
         setName(name); //NOI18N
-        setDisplayName(dispName);
-        
-        armPanel();
+        this.displayName = dispName;
     }
-
+    
     /** Called by StyleBuilderPanel to set the UI panel property values. */
     public synchronized void setContent(final CssRuleContext content) {
         this.content = content;
 
         Runnable task = new Runnable() {
+
             @Override
             public void run() {
                 SwingUtilities.invokeLater(new Runnable() {
@@ -128,79 +118,53 @@ abstract public class StyleEditor extends JPanel {
                         IN_PROPERTY_VALUES_INITIALIZATION.set(true);
                         setCssPropertyValues(content.selectedRuleContent());
                         IN_PROPERTY_VALUES_INITIALIZATION.set(false);
-                        //once the instance executor is used, we can release it and run the code directly
-                        EXECUTOR = null;
                     }
-                    
                 });
             }
         };
 
-        if(EXECUTOR != null) {
-            EXECUTOR.execute(task);
-        } else {
+        //if the panel has already been loaded and initialized run the task 
+        //immediately otherwise postpone until the initialization is done
+        if (initialized.get()) {
             task.run();
+        } else {
+            setContentTask = task;
         }
 
     }
 
     protected void startAggregatedEventsSession() {
-        if(!IN_PROPERTY_VALUES_INITIALIZATION.get()) {
+        if (!IN_PROPERTY_VALUES_INITIALIZATION.get()) {
             CssEditorSupport.getDefault().firstAggregatedEventWillFire();
         }
     }
 
     protected void closeAggregatedEventsSession() {
-        if(!IN_PROPERTY_VALUES_INITIALIZATION.get()) {
+        if (!IN_PROPERTY_VALUES_INITIALIZATION.get()) {
             CssEditorSupport.getDefault().lastAggregatedEventFired();
         }
     }
-    
+
     protected CssRuleContext content() {
         return content;
     }
 
     protected abstract void lazyInitializePanel();
-    
+
     public void initializePanel() {
-        synchronized (LOCK) {
-            LOCK.notifyAll(); //AWT
-        }
-    }
+        if(initialized.compareAndSet(false, true)) {
+            lazyInitializePanel();
 
-    private StyleEditor armPanel() {
-        EXECUTOR.execute(new Runnable() {
+            revalidate();
+            repaint();
 
-            @Override
-            public void run() {
-                //this blocks the execution until the editor panel is selected
-                synchronized (LOCK) {
-                    try {
-                        LOCK.wait();
-                    } catch (InterruptedException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                }
-                try {
-                    SwingUtilities.invokeAndWait(new Runnable() {
-                        
-                        @Override
-                        public void run() {
-                            lazyInitializePanel();
-
-                            revalidate();
-                            repaint();
-                        }
-                    });
-                } catch (InterruptedException ex) {
-                    Exceptions.printStackTrace(ex);
-                } catch (InvocationTargetException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
+            //run the setContent task is already created
+            if(setContentTask != null) {
+                setContentTask.run();
+                setContentTask = null;
             }
-        });
-
-        return this;
+        }
+        
     }
 
     /**
@@ -212,20 +176,20 @@ abstract public class StyleEditor extends JPanel {
     abstract protected void setCssPropertyValues(CssRuleContent styleData);
 
     PropertyChangeSupport cssPropertyChangeSupport() {
-        if(cssPropertyChangeSupport == null) {
-            cssPropertyChangeSupport =  new PropertyChangeSupport(this);
+        if (cssPropertyChangeSupport == null) {
+            cssPropertyChangeSupport = new PropertyChangeSupport(this);
         }
         return cssPropertyChangeSupport;
     }
-    
+
     /**
      * Set the CSS property change listener
      */
-    public void setCssPropertyChangeListener(CssRuleContent styleData){
+    public void setCssPropertyChangeListener(CssRuleContent styleData) {
         // We don't want the property change listener added more than
         // once accidently
-        synchronized(StyleEditor.class){
-            if (!listenerAdded){
+        synchronized (StyleEditor.class) {
+            if (!listenerAdded) {
                 listenerAdded = true;
                 cssPropertyChangeListener.setCssStyleData(styleData);
                 cssPropertyChangeSupport().addPropertyChangeListener(cssPropertyChangeListener);
@@ -236,21 +200,18 @@ abstract public class StyleEditor extends JPanel {
     /**
      * Remove the CSS property change listener
      */
-    public void removeCssPropertyChangeListener(){
-        synchronized(StyleEditor.class){
-            if (listenerAdded){
+    public void removeCssPropertyChangeListener() {
+        synchronized (StyleEditor.class) {
+            if (listenerAdded) {
                 listenerAdded = false;
                 cssPropertyChangeSupport().removePropertyChangeListener(cssPropertyChangeListener);
             }
         }
     }
-
-
     /**
      * Holds value of property displayName.
      */
     private String displayName;
-
     /**
      * Holds value of property icon.
      */
@@ -262,14 +223,6 @@ abstract public class StyleEditor extends JPanel {
      */
     public String getDisplayName() {
         return this.displayName;
-    }
-
-    /**
-     * Setter for property displayName.
-     * @param displayName New value of property displayName.
-     */
-    public void setDisplayName(String displayName) {
-        this.displayName = displayName;
     }
 
     /**
@@ -288,17 +241,18 @@ abstract public class StyleEditor extends JPanel {
         this.icon = icon;
     }
 
-    static class CssPropertyChangeListener implements PropertyChangeListener{
+    static class CssPropertyChangeListener implements PropertyChangeListener {
+
         CssRuleContent cssStyleData;
 
-        public CssPropertyChangeListener(){
+        public CssPropertyChangeListener() {
         }
 
-        public CssPropertyChangeListener(CssRuleContent styleData){
+        public CssPropertyChangeListener(CssRuleContent styleData) {
             cssStyleData = styleData;
         }
 
-        public void setCssStyleData(CssRuleContent styleData){
+        public void setCssStyleData(CssRuleContent styleData) {
             cssStyleData = styleData;
         }
 

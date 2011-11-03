@@ -44,9 +44,12 @@ package org.netbeans.modules.cnd.makeproject;
 import org.netbeans.modules.cnd.makeproject.api.support.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -64,6 +67,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.modules.cnd.api.project.NativeProjectType;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
+import org.netbeans.modules.cnd.api.xml.LineSeparatorDetector;
 import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -378,6 +382,28 @@ public final class MakeProjectHelperImpl implements MakeProjectHelper {
         dir.getFileSystem().runAtomicAction(action);
     }
 
+    private byte[] convertLineSeparator(ByteArrayOutputStream in, final String path) {
+        String lineSeparator = new LineSeparatorDetector(dir.getFileObject(path), dir).getInitialSeparator();
+        byte[] data = in.toByteArray();
+        try {
+            BufferedReader reader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(data), "UTF-8")); // NOI18N
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            while(true){
+                String line = reader.readLine();
+                if (line == null){
+                    break;
+                }
+                baos.write(line.getBytes("UTF-8")); // NOI18N
+                baos.write(lineSeparator.getBytes("UTF-8")); // NOI18N
+            }
+            reader.close();
+            baos.close();
+            data = baos.toByteArray();
+        } catch (IOException ex) {
+        }
+        return data;
+    }
+    
     /**
      * Save an XML config file to a named path.
      * If the file does not yet exist, it is created.
@@ -393,7 +419,7 @@ public final class MakeProjectHelperImpl implements MakeProjectHelper {
                 // Keep a copy of xml *while holding modifiedMetadataPaths monitor*.
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 XMLUtil.write(doc, baos, "UTF-8"); // NOI18N
-                final byte[] data = baos.toByteArray();
+                final byte[] data = convertLineSeparator(baos, path);
                 final FileObject xml = FileUtil.createData(dir, path);
                 try {
                     _lock[0] = xml.lock(); // unlocked by {@link #save}
@@ -1170,5 +1196,5 @@ public final class MakeProjectHelperImpl implements MakeProjectHelper {
         @Override
         public void propertiesChanged(MakeProjectEvent ev) {
         }
-    }
+    }    
 }

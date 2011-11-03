@@ -54,6 +54,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.eclipse.mylyn.commons.net.AuthenticationCredentials;
 import org.eclipse.mylyn.commons.net.AuthenticationType;
+import org.eclipse.mylyn.internal.bugzilla.core.BugzillaClient;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
@@ -110,7 +111,7 @@ public class RepositoryController extends BugtrackingController implements Docum
         String url = panel.urlField.getText().trim();
         return url.endsWith("/") ? url.substring(0, url.length() - 1) : url; // NOI18N
     }
-
+    
     private String getName() {
         return panel.nameField.getText();
     }
@@ -173,12 +174,8 @@ public class RepositoryController extends BugtrackingController implements Docum
             return false;
         }
 
-        try {
-            new URL(url); // check this first even if URL is an URI
-            new URI(url);
-        } catch (Exception ex) {
+        if(!BugzillaClient.isValidUrl(url) || "http://".equals(url) || "https://".equals(url)) {
             errorMessage = NbBundle.getMessage(RepositoryController.class, "MSG_WRONG_URL_FORMAT");  // NOI18N
-            Bugzilla.LOG.log(Level.FINE, errorMessage, ex);
             return false;
         }
 

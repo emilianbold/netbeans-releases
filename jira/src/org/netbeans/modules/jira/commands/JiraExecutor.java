@@ -195,7 +195,7 @@ public class JiraExecutor {
         protected JiraRepository repository;
 
         protected ExceptionHandler(WrapperException ex, String msg, JiraExecutor executor, JiraRepository repository) {
-            this.errroMsg = msg;
+            this.errroMsg = msg == null ? ex.getMessage() : msg;
             this.ex = ex;
             this.executor = executor;
             this.repository = repository;

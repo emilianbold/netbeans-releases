@@ -201,7 +201,7 @@ public class StylesheetTest extends NbTestCase {
         
         Item val = decl.getValue();
         assertNotNull(val);
-        assertEquals("", val.image().toString());
+        assertEquals("}", val.image().toString());
         
     }
     

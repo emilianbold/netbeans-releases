@@ -403,7 +403,7 @@ public class XMLLexerFormatter extends TagBasedLexerFormatter {
                                 int begin = currentTokensSize;
                                 int end = begin + image.length();
 
-                                boolean preservingWhitespaceOnClose = preserveNesting_outdent.removeLast();
+                                boolean preservingWhitespaceOnClose = !preserveNesting_outdent.isEmpty() && preserveNesting_outdent.removeLast();
                                 if (indentLevel < 0) {
                                     indentLevel = 0;
                                 }

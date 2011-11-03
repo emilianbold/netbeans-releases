@@ -89,7 +89,10 @@ class HighlightVisitor implements DependencyNodeVisitor {
                     ew.setState(EdgeWidget.GRAYED);
                 }
             } else {
-                rectangle = rectangle.union (aw.convertLocalToScene (aw.getBounds ()));
+                Rectangle bounds = aw.getBounds();
+                if (bounds != null) {
+                    rectangle = rectangle.union(aw.convertLocalToScene(bounds));
+                }
                 aw.setPaintState(EdgeWidget.REGULAR);
                 for (ArtifactGraphEdge e : edges) {
                     EdgeWidget ew = (EdgeWidget) scene.findWidget(e);

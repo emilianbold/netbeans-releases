@@ -3,7 +3,7 @@
 23:13-23:21:error:There is no ID defined for this entity hierarchy.
 Create Entity ID...
 Organize imports
-Remove Unused Import
+Remove unused import
 ---------------------
 /*
  * CreateID.java

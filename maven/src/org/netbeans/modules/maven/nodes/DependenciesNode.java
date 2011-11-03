@@ -312,6 +312,9 @@ public class DependenciesNode extends AbstractNode {
             if (this == NULL && obj == NULL) {
                 return true;
             }
+            if (this == NULL || obj == NULL) {
+                return false;
+            }
             if (obj == null) {
                 return false;
             }
@@ -319,7 +322,10 @@ public class DependenciesNode extends AbstractNode {
                 return false;
             }
             final DependencyWrapper other = (DependencyWrapper) obj;
-            if (this.artifact != other.artifact && (this.artifact == null || !this.artifact.equals(other.artifact))) {
+            if (!artifact.equals(other.artifact)) {
+                return false;
+            }
+            if (!artifact.getDependencyTrail().equals(other.artifact.getDependencyTrail())) {
                 return false;
             }
             return true;
@@ -331,7 +337,7 @@ public class DependenciesNode extends AbstractNode {
             if (this == NULL) {
                 return hash;
             }
-            hash = 23 * hash + (this.artifact != null ? this.artifact.hashCode() : 0);
+            hash = 23 * hash + artifact.hashCode() + artifact.getDependencyTrail().hashCode();
             return hash;
         }
         

@@ -60,7 +60,7 @@ public class LibrariesContentHyperlinkTestCase extends HyperlinkBaseTestCase {
     }
 
     @Override
-    protected File changeDefProjectDirBeforeParsingProjectIfNeeded(File projectDir) {
+    protected File[] changeDefProjectDirBeforeParsingProjectIfNeeded(File projectDir) {
         // we have following structure for this test
         // test-folder
         //  --src\
@@ -80,7 +80,7 @@ public class LibrariesContentHyperlinkTestCase extends HyperlinkBaseTestCase {
         checkDir(incl2);
         List<String> sysIncludes = Arrays.asList(incl1.getAbsolutePath(), incl2.getAbsolutePath());
         super.setSysIncludes(sysIncludes);
-        return srcDir;
+        return new File[] {srcDir};
     }
 
     private void checkDir(File srcDir) {

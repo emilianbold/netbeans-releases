@@ -280,7 +280,7 @@ public final class EditorBridge extends KeymapManager {
                 continue;
             }
             
-            editorActionsMap.put(id, action);
+            getEditorActionsMap().put(id, action);
             if (LOG.isLoggable(Level.FINE)) {
                 LOG.fine("Action '" + id + "' loaded for '" + (mimeType == null ? "" : mimeType) + "'"); //NOI18N
             }

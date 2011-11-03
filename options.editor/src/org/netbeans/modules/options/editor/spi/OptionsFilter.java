@@ -139,8 +139,10 @@ public final class OptionsFilter {
             if (parent == getRoot()) {
                 return categories.size();
             }
-
-            return category2Nodes.get(parent).size();
+            if (category2Nodes.get(parent) != null)
+                return category2Nodes.get(parent).size();
+            else
+                return 0;
         }
 
         @Override

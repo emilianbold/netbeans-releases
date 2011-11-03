@@ -41,10 +41,14 @@
  */
 package org.netbeans.modules.maven.indexer;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.apache.maven.index.updater.ResourceFetcher;
 import org.apache.maven.wagon.events.TransferEvent;
 import org.apache.maven.wagon.events.TransferListener;
 import org.netbeans.api.annotations.common.NonNull;
@@ -65,6 +69,7 @@ public class RemoteIndexTransferListener implements TransferListener, Cancellabl
     private final RepositoryInfo info;
     private int lastunit;/*last work unit*/
     private int units;
+    private ResourceFetcher fetcher;
 
     private final AtomicBoolean canceled = new AtomicBoolean();
     private final AtomicBoolean unpacking = new AtomicBoolean();
@@ -81,6 +86,10 @@ public class RemoteIndexTransferListener implements TransferListener, Cancellabl
         handle.start();
     }
 
+    void setFetcher(ResourceFetcher fetcher) {
+        this.fetcher = fetcher;
+    }
+
     public @Override void transferInitiated(TransferEvent arg0) {
         checkCancel();
     }
@@ -94,6 +103,14 @@ public class RemoteIndexTransferListener implements TransferListener, Cancellabl
     }
 
     public @Override boolean cancel() {
+        handle.finish();
+        if (fetcher != null) {
+            try {
+                fetcher.disconnect();
+            } catch (IOException x) {
+                Logger.getLogger(RemoteIndexTransferListener.class.getName()).log(Level.INFO, "closing " + info.getId(), x);
+            }
+        }
         return canceled.compareAndSet(false, true);
     }
 
@@ -113,7 +130,8 @@ public class RemoteIndexTransferListener implements TransferListener, Cancellabl
         handle.switchToIndeterminate();
     }
 
-    public @Override void transferError(TransferEvent arg0) {
+    public @Override void transferError(TransferEvent e) {
+        Logger.getLogger(RemoteIndexTransferListener.class.getName()).log(Level.FINE, "error transferring " + info.getIndexUpdateUrl(), e.getException());
         handle.switchToIndeterminate();
     }
 

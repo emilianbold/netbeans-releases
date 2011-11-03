@@ -45,7 +45,6 @@ package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
-import java.io.File;
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.ResourceBundle;
@@ -116,6 +115,9 @@ public class ItemConfiguration implements ConfigurationAuxObject {
             return false;
         }
         if (customToolConfiguration != null && customToolConfiguration.getModified()) {
+            return false;
+        }
+        if (getLanguageFlavor() != null && getLanguageFlavor() != LanguageFlavor.UNKNOWN) {
             return false;
         }
         return true;

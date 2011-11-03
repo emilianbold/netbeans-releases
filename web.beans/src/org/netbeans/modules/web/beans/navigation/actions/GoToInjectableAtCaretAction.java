@@ -45,6 +45,7 @@ package org.netbeans.modules.web.beans.navigation.actions;
 
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -60,7 +61,9 @@ import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.ui.ElementOpen;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.web.beans.UsageLogger;
 import org.netbeans.modules.web.beans.api.model.InjectionPointDefinitionError;
 import org.netbeans.modules.web.beans.api.model.DependencyInjectionResult;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
@@ -229,6 +232,26 @@ public class GoToInjectableAtCaretAction extends AbstractInjectableAction {
         }
         catch (BadLocationException ex) {
             Exceptions.printStackTrace(ex);
+        }
+    }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.navigation.actions.AbstractCdiAction#handleProject(org.netbeans.api.project.Project, java.awt.event.ActionEvent)
+     */
+    @Override
+    protected void handleProject( Project project , ActionEvent event ) {
+        String msg = null;
+        if ( event == null ){
+            msg = "USG_CDI_GO_TO_INJECTABLE_GLYPH";           // NOI18N
+        }
+        else {
+            msg = "USG_CDI_GO_TO_INJECTABLE";                 // NOI18N
+        }
+        UsageLogger logger = project.getLookup().lookup(UsageLogger.class);
+        if (logger != null) {
+            logger.log(msg, 
+                    GoToInjectableAtCaretAction.class, new Object[] { project
+                            .getClass().getName() });
         }
     }
 

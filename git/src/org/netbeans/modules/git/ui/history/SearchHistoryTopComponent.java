@@ -81,6 +81,11 @@ public class SearchHistoryTopComponent extends TopComponent {
         shp = new SearchHistoryPanel(repository, files, scp);
         add(shp);
     }
+
+    @Override
+    protected void componentClosed () {
+        shp.releaseDiff();
+    }
     
     @Override
     public HelpCtx getHelpCtx() {

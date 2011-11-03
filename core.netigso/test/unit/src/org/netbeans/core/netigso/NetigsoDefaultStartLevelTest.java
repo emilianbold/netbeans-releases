@@ -52,9 +52,6 @@ import org.netbeans.ModuleManager;
 import org.netbeans.SetupHid;
 import org.netbeans.core.startup.Main;
 import org.netbeans.core.startup.ModuleSystem;
-import org.osgi.framework.ServiceReference;
-import org.osgi.framework.launch.Framework;
-import org.osgi.service.startlevel.StartLevel;
 
 /**
  * Do we correctly call the BundleActivators?

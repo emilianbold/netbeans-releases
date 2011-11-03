@@ -61,7 +61,6 @@ import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NonNull;
-import org.openide.ErrorManager;
 import org.openide.modules.Dependency;
 
 // XXX a lot of code in this method is more or less duplicated from
@@ -225,7 +224,7 @@ public final class ManifestManager {
                 jf.close();
             }
         } catch (IOException e) {
-            Util.err.notify(ErrorManager.INFORMATIONAL, e);
+            LOG.log(Level.INFO, "While opening: " + jar, e);
             return NULL_INSTANCE;
         }
     }

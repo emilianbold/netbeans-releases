@@ -71,6 +71,7 @@ import org.netbeans.modules.masterfs.filebasedfs.utils.FSException;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FileChangedManager;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FileInfo;
 import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
+import org.netbeans.modules.masterfs.watcher.Watcher;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -240,6 +241,7 @@ public final class FolderObj extends BaseFileObj {
             if (!myFile.canWrite()) {
                 FSException.io("EXC_CannotCreateFolder", folder2Create.getName(), getPath());// NOI18N
             }
+            Watcher.lock(this);
             createFolder(folder2Create, name);
 
             FileNaming childName = this.getChildrenCache().getChild(folder2Create.getName(), true);
@@ -326,6 +328,7 @@ public final class FolderObj extends BaseFileObj {
         FileObj retVal;
         FileNaming childName;
         try {
+            Watcher.lock(this);
             createData(file2Create);
             childName = getChildrenCache().getChild(file2Create.getName(), true);
             if (childName != null && childName.isDirectory()) {

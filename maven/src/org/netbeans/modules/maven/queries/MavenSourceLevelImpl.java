@@ -100,7 +100,7 @@ public class MavenSourceLevelImpl implements SourceLevelQueryImplementation2 {
         String version = PluginPropertyUtils.getPluginVersion(
                 project.getLookup().lookup(NbMavenProjectImpl.class).getOriginalMavenProject(),
                 Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_COMPILER);
-        if (version != null && new DefaultArtifactVersion(version).compareTo(new DefaultArtifactVersion("2.3")) >= 0) {
+        if (version == null || new DefaultArtifactVersion(version).compareTo(new DefaultArtifactVersion("2.3")) >= 0) {
             return "1.5";
         } else {
             return "1.3";

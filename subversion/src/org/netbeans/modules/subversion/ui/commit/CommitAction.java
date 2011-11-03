@@ -624,6 +624,7 @@ public class CommitAction extends ContextAction {
 
             List<SvnFileNode> addCandidates = new ArrayList<SvnFileNode>();
             List<File> removeCandidates = new ArrayList<File>();
+            List<File> missingFiles = new ArrayList<File>();
             Set<File> commitCandidates = new LinkedHashSet<File>();
             Set<File> binnaryCandidates = new HashSet<File>();
 
@@ -674,6 +675,9 @@ public class CommitAction extends ContextAction {
                 } else if (CommitOptions.COMMIT_REMOVE == option) {
                     removeCandidates.add(node.getFile());
                     commitCandidates.add(node.getFile());
+                    if ((node.getInformation().getStatus() & FileInformation.STATUS_VERSIONED_DELETEDLOCALLY) != 0) {
+                        missingFiles.add(node.getFile());
+                    }
                 } else if (CommitOptions.COMMIT == option) {
                     commitCandidates.add(node.getFile());
                 }
@@ -723,6 +727,13 @@ public class CommitAction extends ContextAction {
                     } catch (IOException ex) {
                         // XXX handle veto
                     }
+                }
+            }
+            if (!missingFiles.isEmpty()) {
+                // we need to correct metadata for externally deleted files and folders
+                deleteMissingFiles(missingFiles, client);
+                if (support.isCanceled()) {
+                    return;
                 }
             }
             // finally commit
@@ -880,15 +891,18 @@ public class CommitAction extends ContextAction {
         try {
             rev = SVNRevision.getRevision(String.valueOf(revision));
         } catch (ParseException ex) {
-            Subversion.LOG.log(Level.INFO, null, ex);
+            Subversion.LOG.log(Level.WARNING, "" + revision, ex);
         }
         if (Subversion.LOG.isLoggable(Level.FINER)) {
             Subversion.LOG.log(Level.FINER, "{0}: getting last commit message for svn hooks", CommitAction.class.getName());
         }
         // log has to be called directly on the file
-        ISVNLogMessage[] ls = client.getLogMessages(SvnUtils.getRepositoryUrl(file), rev, rev);
+        final SVNUrl fileRepositoryUrl = SvnUtils.getRepositoryUrl(file);
+        ISVNLogMessage[] ls = client.getLogMessages(fileRepositoryUrl, rev, rev);
         if (ls.length > 0) {
             log = ls[0];
+        } else {
+            Subversion.LOG.log(Level.WARNING, "no logs available for file {0} with repo url {1}", new Object[]{file, fileRepositoryUrl});
         }
         return log;
     }
@@ -1130,5 +1144,9 @@ public class CommitAction extends ContextAction {
             SvnClientExceptionHandler.notifyException(ex, true, true); // should not hapen
             return null;
         }
+    }
+
+    private static void deleteMissingFiles (List<File> removeCandidates, SvnClient client) throws SVNClientException {
+        client.remove(removeCandidates.toArray(new File[removeCandidates.size()]), true);
     }
 }

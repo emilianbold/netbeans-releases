@@ -711,7 +711,8 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
 
     private static boolean isKnownProblem(RuntimeException e) {
         //issue #194939
-        if(e.getClass().equals(StringIndexOutOfBoundsException.class)) {
+        Class eClass = e.getClass();
+        if(eClass.equals(StringIndexOutOfBoundsException.class)) {
             StackTraceElement[] stelements = e.getStackTrace();
             if(stelements.length >= 1) {
                 if(stelements[1].getClassName().equals("com.thaiopensource.validate.schematron.OutputHandler") //NOI18N
@@ -719,6 +720,10 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
                     return true;
                 }
             }
+        } else if(eClass.equals(IllegalStateException.class)) {
+            //Bug 199647 - Failed validation and IllegalStateException during pojects scanning
+            String msg = "Two cells in effect cannot start on the same column, so this should never happen!"; //NOI18N
+            return e.getMessage() != null && e.getMessage().indexOf(msg) != -1;
         }
 
         return false;

@@ -289,6 +289,12 @@ public class PHPNewLineIndenter {
                                     }
 
                                 }
+                            } else if (ts.token().id() == PHPTokenId.PHP_PUBLIC || ts.token().id() == PHPTokenId.PHP_PROTECTED || ts.token().id() == PHPTokenId.PHP_PRIVATE) {
+                                int startExpression = findStartTokenOfExpression(ts);
+                                if (startExpression != -1) {
+                                    newIndent = Utilities.getRowIndent(doc, startExpression) + continuationSize;
+                                    break;
+                                }
                             }
                         }
                     }

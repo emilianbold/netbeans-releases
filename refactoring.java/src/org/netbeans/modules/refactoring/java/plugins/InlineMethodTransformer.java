@@ -73,6 +73,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.java.Pair;
@@ -401,6 +404,25 @@ public class InlineMethodTransformer extends RefactoringVisitor {
             }
 
             body = methodTree.getBody();
+            
+            TreeScanner<Void, ExecutableElement> nameClashScanner = new TreeScanner<Void, ExecutableElement>() {
+
+                @Override
+                public Void visitVariable(VariableTree node, ExecutableElement p) {
+                    Element variable = trees.getElement(trees.getPath(workingCopy.getCompilationUnit(), node));
+                    if(!(variable.getKind() == ElementKind.PARAMETER && p.getParameters().contains((VariableElement)variable))) {
+                        String msg = RetoucheUtils.variableClashes(node.getName().toString(), currentPath, workingCopy);
+                        if (msg != null) {
+                            problem = MoveTransformer.createProblem(problem, true, NbBundle.getMessage(InlineRefactoringPlugin.class,
+                                    "ERR_InlineMethodNameClash", msg)); // NOI18N
+                        }
+                    }
+                    return super.visitVariable(node, p);
+                }
+            };
+            
+            nameClashScanner.scan(body, (ExecutableElement)p);
+            
             if (hasParameters) {
                 final Map<ExpressionTree, ExpressionTree> original2Translated = new HashMap<ExpressionTree, ExpressionTree>();
 
@@ -426,21 +448,6 @@ public class InlineMethodTransformer extends RefactoringVisitor {
                 }
                 body = (BlockTree) workingCopy.getTreeUtilities().translate(body, original2Translated);
             }
-            
-            TreeScanner nameClashScanner = new TreeScanner() {
-
-                @Override
-                public Object visitIdentifier(IdentifierTree node, Object p) {
-                    String msg = RetoucheUtils.variableClashes(node.getName().toString(), currentPath, workingCopy);
-                    if (msg != null) {
-                        problem = MoveTransformer.createProblem(problem, true, NbBundle.getMessage(InlineRefactoringPlugin.class,
-                                "ERR_InlineMethodNameClash", msg)); // NOI18N
-                    }
-                    return super.visitIdentifier(node, p);
-                }
-            };
-            
-            nameClashScanner.scan(body, p);
             
             BlockTree newBlock = imtv.replaceStatement(cachedBlock, statementPath, node);
             changes.put(upperBlock, newBlock);

@@ -51,6 +51,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -66,6 +67,7 @@ import javax.tools.Diagnostic.Kind;
 import javax.tools.DiagnosticListener;
 import javax.tools.JavaFileObject;
 import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.CompilationInfo.CacheClearPolicy;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.modules.java.source.JavaFileFilterQuery;
@@ -89,7 +91,7 @@ public final class CompilationInfoImpl {
     private JavacTaskImpl javacTask;
     private DiagnosticListener<JavaFileObject> diagnosticListener;
     private final ClasspathInfo cpInfo;
-    Pair<DocPositionRegion,MethodTree> changedMethod;
+    private Pair<DocPositionRegion,MethodTree> changedMethod;
     private final FileObject file;
     private final FileObject root;
     final JavaFileObject jfo;
@@ -99,6 +101,7 @@ public final class CompilationInfoImpl {
     private final boolean isClassFile;
     private final boolean isDetached;
     JavaSource.Phase parserCrashed = JavaSource.Phase.UP_TO_DATE;      //When javac throws an error, the moveToPhase sets this to the last safe phase
+    private final Map<CacheClearPolicy, Map<Object, Object>> userCache = new EnumMap<CacheClearPolicy, Map<Object, Object>>(CacheClearPolicy.class);
 
     /**
      * Creates a new CompilationInfoImpl for given source file
@@ -387,6 +390,38 @@ public final class CompilationInfoImpl {
 	return javacTask;
     }
 
+    public Object getCachedValue(Object key) {
+        for (Map<Object, Object> c : userCache.values()) {
+            Object res = c.get(key);
+
+            if (res != null) return res;
+        }
+
+        return null;
+    }
+
+    public void putCachedValue(Object key, Object value, CacheClearPolicy clearPolicy) {
+        for (Map<Object, Object> c : userCache.values()) {
+            c.remove(key);
+        }
+
+        Map<Object, Object> c = userCache.get(clearPolicy);
+
+        if (c == null) {
+            userCache.put(clearPolicy, c = new HashMap<Object, Object>());
+        }
+
+        c.put(key, value);
+    }
+
+    public void taskFinished() {
+        userCache.remove(CacheClearPolicy.ON_TASK_END);
+    }
+
+    public void dispose() {
+        userCache.clear();
+    }
+    
     /**
      * Returns current {@link DiagnosticListener}
      * @return listener
@@ -410,6 +445,8 @@ public final class CompilationInfoImpl {
      */
     void setChangedMethod (final Pair<DocPositionRegion,MethodTree> changedMethod) {
         this.changedMethod = changedMethod;
+        userCache.remove(CacheClearPolicy.ON_TASK_END);
+        userCache.remove(CacheClearPolicy.ON_CHANGE);
     }
     
     /**

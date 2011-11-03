@@ -76,6 +76,7 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.UnionType;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
@@ -203,7 +204,7 @@ public final class UncaughtException implements ErrorRule<Void> {
                     break OUTTER;
                 case THROW:
                     TypeMirror uncaughtException = info.getTrees().getTypeMirror(new TreePath(path, ((ThrowTree) leaf).getExpression()));
-                    uncaught = Collections.singletonList(uncaughtException);
+                    uncaught = uncaughtException.getKind() != TypeKind.UNION ? Collections.singletonList(uncaughtException) : ((UnionType) uncaughtException).getAlternatives();
                     break OUTTER;
             }
             
@@ -288,7 +289,7 @@ public final class UncaughtException implements ErrorRule<Void> {
             if (!uncaught.isEmpty() && !disableSurroundWithTryCatch) {
                 List<TypeMirrorHandle> thandles = new ArrayList<TypeMirrorHandle>();
                 List<String> fqns = new ArrayList<String>();
-                
+
                 for (TypeMirror tm : uncaught) {
                     if (tm.getKind() != TypeKind.ERROR) {
                         thandles.add(TypeMirrorHandle.create(tm));

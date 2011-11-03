@@ -49,6 +49,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.text.MessageFormat;
 import java.util.*;
+import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -84,28 +85,32 @@ public class MoveRefactoringPlugin extends JavaRefactoringPlugin {
     ArrayList<FileObject> filesToMove = new ArrayList<FileObject>();
     /** top level classes to move */
     Set<ElementHandle<TypeElement>> classes;
+    /** packages of which the content will change */
+    Set<ElementHandle<PackageElement>> packages;
     /** list of folders grouped by source roots */
     List<List<FileObject>> foldersToMove = new ArrayList<List<FileObject>>();
     /** collection of packages that will change its name */
-    Set<String> packages;
+    Set<String> packageNames;
     
     public MoveRefactoringPlugin(MoveRefactoring move) {
-        this.refactoring = move;
-        if (move == null) throw new NullPointerException ();
-        this.isRenameRefactoring = false;
-        setup(move.getRefactoringSource().lookupAll(FileObject.class), "", true);
+        this(move, false);
+        setup(move.getRefactoringSource().lookupAll(FileObject.class), "", true); // NOI18N
     }
     
     public MoveRefactoringPlugin(RenameRefactoring rename) {
-        this.refactoring = rename;
-        if (rename == null) throw new NullPointerException ();
-        this.isRenameRefactoring = true;
+        this(rename, true);
         FileObject fo = rename.getRefactoringSource().lookup(FileObject.class);
         if (fo!=null) {
-            setup(Collections.singletonList(fo), "", true);
+            setup(Collections.singletonList(fo), "", true); //NOI18N
         } else {
             setup(Collections.singletonList((rename.getRefactoringSource().lookup(NonRecursiveFolder.class)).getFolder()), "", false); // NOI18N
         }
+    }
+    
+    private MoveRefactoringPlugin(AbstractRefactoring refactoring, boolean isRenameRefactoring) {
+        this.refactoring = refactoring;
+        if (refactoring == null) throw new NullPointerException ();
+        this.isRenameRefactoring = isRenameRefactoring;
     }
     
     @Override
@@ -270,12 +275,17 @@ public class MoveRefactoringPlugin extends JavaRefactoringPlugin {
             Set<FileObject> files = idx.getResources(elementHandle, EnumSet.of(ClassIndex.SearchKind.TYPE_REFERENCES, ClassIndex.SearchKind.IMPLEMENTORS),EnumSet.of(ClassIndex.SearchScope.SOURCE));
             set.addAll(files);
         }
+        for (ElementHandle<PackageElement> elementHandle : packages) {
+            Set<FileObject> files = idx.getResourcesForPackage(elementHandle, EnumSet.of(ClassIndex.SearchKind.TYPE_REFERENCES), EnumSet.of(ClassIndex.SearchScope.SOURCE));
+            set.addAll(files);
+        }
         set.addAll(filesToMove);
         return set;
     }    
     
     private void initClasses() {
         classes = new HashSet<ElementHandle<TypeElement>>();
+        packages = new HashSet<ElementHandle<PackageElement>>();
         for (int i=0;i<filesToMove.size();i++) {
             final int j = i;
             try {
@@ -294,10 +304,12 @@ public class MoveRefactoringPlugin extends JavaRefactoringPlugin {
                         List<? extends Tree> trees= parameter.getCompilationUnit().getTypeDecls();
                         for (Tree t: trees) {
                             if (TreeUtilities.CLASS_TREE_KINDS.contains(t.getKind())) {
-                                classes.add(ElementHandle.create((TypeElement) parameter.getTrees().getElement(TreePath.getPath(parameter.getCompilationUnit(), t))));
+                                TypeElement klass = (TypeElement) parameter.getTrees().getElement(TreePath.getPath(parameter.getCompilationUnit(), t));
+                                classes.add(ElementHandle.create(klass));
+                                PackageElement packageOf = parameter.getElements().getPackageOf(klass);
+                                packages.add(ElementHandle.create(packageOf));
                             }
                         }
-                              
                     }
                 }, true);
             } catch (IOException ex) {
@@ -309,10 +321,10 @@ public class MoveRefactoringPlugin extends JavaRefactoringPlugin {
 
     private Problem initPackages() {
         if (foldersToMove.isEmpty()) {
-            packages = Collections.emptySet();
+            packageNames = Collections.emptySet();
             return null;
         } else {
-            packages = new HashSet<String>();
+            packageNames = new HashSet<String>();
         }
         
         for (List<FileObject> folders : foldersToMove) {
@@ -325,7 +337,7 @@ public class MoveRefactoringPlugin extends JavaRefactoringPlugin {
             }
             for (FileObject folder : folders) {
                 String pkgName = cp.getResourceName(folder, '.', false);
-                packages.add(pkgName);
+                packageNames.add(pkgName);
             }
         }
         return null;

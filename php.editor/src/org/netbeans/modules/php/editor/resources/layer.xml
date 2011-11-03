@@ -289,22 +289,23 @@
                     <folder name="stable">
                         <attr name="position" intvalue="200"/>
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.editor.verification.Bundle"/>
-                        <file name="org-netbeans-modules-php-editor-verification-AccidentalAssignmentRule.instance"/>
-                        <file name="org-netbeans-modules-php-editor-verification-AddUseImportRule.instance"/>
-                        <file name="org-netbeans-modules-php-editor-verification-WrongOrderOfArgsRule.instance"/>
-                        <file name="org-netbeans-modules-php-editor-verification-ImplementAbstractMethods.instance"/>
+                        <file name="org-netbeans-modules-php-editor-verification-AddUseImportHint.instance"/>
+                        <file name="org-netbeans-modules-php-editor-verification-ImplementAbstractMethodsHint.instance"/>
                         <file name="org-netbeans-modules-php-editor-verification-VarDocHint.instance"/>
                         <file name="org-netbeans-modules-php-editor-verification-AssignVariableHint.instance"/>
                         <file name="org-netbeans-modules-php-editor-verification-IntroduceHint.instance"/>
-                        <file name="org-netbeans-modules-php-editor-verification-TypeRedeclaration.instance"/>
+                        <file name="org-netbeans-modules-php-editor-verification-TypeRedeclarationHint.instance"/>
                         <file name="org-netbeans-modules-php-editor-verification-UnusedVariableHint.instance"/>
                     </folder>
                     <folder name="experimental">
                         <attr name="position" intvalue="100"/>
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.editor.verification.Bundle"/>
-                        <file name="org-netbeans-modules-php-editor-verification-ClassNotFoundRule.instance"/>
-                        <file name="org-netbeans-modules-php-editor-verification-UnknownFunctionRule.instance"/>
                         <file name="org-netbeans-modules-php-editor-verification-UninitializedVariableHint.instance"/>
+                        <file name="org-netbeans-modules-php-editor-verification-WrongOrderOfArgsHint.instance"/>
+                        <file name="org-netbeans-modules-php-editor-verification-AccidentalAssignmentHint.instance"/>
+                        <file name="org-netbeans-modules-php-editor-verification-AbstractClassInstantiationHint.instance"/>
+                        <file name="org-netbeans-modules-php-editor-verification-MethodRedeclarationHint.instance"/>
+                        <file name="org-netbeans-modules-php-editor-verification-ModifiersCheckHint.instance"/>
                     </folder>
                 </folder>
             </folder>

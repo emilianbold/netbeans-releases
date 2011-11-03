@@ -307,7 +307,7 @@ ${selection}${cursor}
     <!-- Added in 6.9 -->
 
     <!-- Arrays and List conversion and sorting -->
-    <codetemplate abbreviation="2ar" contexts="BLOCK,CASE,LABELED_STATEMENT" descriptionId="CT_fori">
+    <codetemplate abbreviation="2ar" contexts="BLOCK,CASE,LABELED_STATEMENT">
          <code>
  <![CDATA[${clazz}[] ${var newVarName default="arr"} = (${clazz}[]) ${coll instanceof="java.util.Collection"}.toArray(new ${clazz}[${coll}.size()]);
  ]]>
@@ -326,10 +326,10 @@ ${cursor}]]></code></codetemplate>
      ${cursor}]]></code></codetemplate>
      <codetemplate abbreviation="csort"><code><![CDATA[${collsType type="java.util.Collections" default="Collections" editable="false"}.sort(${var instanceof="java.util.List"});
          ${cursor}]]></code></codetemplate>
-     <codetemplate abbreviation="form"><code><![CDATA[for (Map.Entry<${KeyType}, ${ValType}> en : ${map instanceof="java.util.Map" default="m"}.entrySet()) {
-            ${KeyType} key = en.getKey();
-            ${ValType} val = en.getValue();
-            ${cursor}
+     <codetemplate abbreviation="form" contexts="BLOCK,CASE,LABELED_STATEMENT" descriptionId="CT_form"><code><![CDATA[for (${entryType iterableElementType default="Map.Entry<Object, Object>" editable=false} ${entry newVarName default="en"} : ${map instanceof="java.util.Map" default="m"}.entrySet()) {
+            ${KeyType rightSideType default="Object"} ${key newVarName default="key"} = ${entry}.getKey();
+            ${ValType rightSideType default="Object"} ${val newVarName default="val"} = ${entry}.getValue();
+            ${selection}${cursor}
         }]]></code></codetemplate>
 
      <!-- Instantiating common classes -->

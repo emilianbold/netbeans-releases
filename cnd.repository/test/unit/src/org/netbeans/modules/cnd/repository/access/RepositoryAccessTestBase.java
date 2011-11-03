@@ -74,7 +74,7 @@ public class RepositoryAccessTestBase  extends ModelImplBaseTestCase {
 
     @Override
     protected File getTestCaseDataDir() {
-	String dataPath = getDataDir().getAbsolutePath().replaceAll("repository", "modelimpl"); //NOI18N
+	String dataPath = getDataDir().getAbsolutePath().replaceAll("/repository/", "/modelimpl/").replaceAll("\\\\repository\\\\", "\\modelimpl\\"); //NOI18N
         String filePath = "common";
         return Manager.normalizeFile(new File(dataPath, filePath));
     }
@@ -91,11 +91,11 @@ public class RepositoryAccessTestBase  extends ModelImplBaseTestCase {
 	}
     }
     
-    protected static ProjectBase createExtraProject(TraceModelBase traceModel, File projectRoot, String name) {
+    protected static ProjectBase createExtraProject(TraceModelBase traceModel, File projectRoot, String name) throws IOException {
 	return createExtraProject(traceModel, Collections.singletonList(projectRoot), name);
     }
     
-    protected static ProjectBase createExtraProject(TraceModelBase traceModel, List<File> files, String name) {
+    protected static ProjectBase createExtraProject(TraceModelBase traceModel, List<File> files, String name) throws IOException {
 	NativeProject nativeProject = NativeProjectProvider.createProject(name, files, 
 		Collections.<String>emptyList(), Collections.<String>emptyList(), 
                 Collections.<String>emptyList(), Collections.<String>emptyList(), true);

@@ -79,12 +79,20 @@ class QueryUtil {
         if (operator == Occur.SHOULD) {
             final BooleanQuery query = new BooleanQuery ();
             for (ClassIndexImpl.UsageType ut : mask) {
-                final Query subQuery = new WildcardQuery(DocumentUtil.referencesTerm (resourceName, EnumSet.of(ut)));
+                final Query subQuery = new WildcardQuery(
+                    DocumentUtil.referencesTerm (
+                        resourceName,
+                        EnumSet.of(ut),
+                        false));
                 query.add(subQuery, operator);
             }
             return query;
         } else if (operator == Occur.MUST) {
-            return new WildcardQuery(DocumentUtil.referencesTerm (resourceName, mask));
+            return new WildcardQuery(
+                DocumentUtil.referencesTerm (
+                    resourceName,
+                    mask,
+                    false));
         } else {
             throw new IllegalArgumentException();
         }
@@ -101,12 +109,18 @@ class QueryUtil {
         if (operator == Occur.SHOULD) {
             final BooleanQuery query = new BooleanQuery ();
             for (ClassIndexImpl.UsageType ut : mask) {
-                final Term t = DocumentUtil.referencesTerm (pattern, EnumSet.of(ut));
+                final Term t = DocumentUtil.referencesTerm (
+                        pattern,
+                        EnumSet.of(ut),
+                        true);
                 query.add(Queries.createQuery(t.field(), t.field(), t.text(), Queries.QueryKind.REGEXP), operator);
             }
             return query;
         } else if (operator == Occur.MUST) {
-            final Term t = DocumentUtil.referencesTerm (pattern, mask);
+            final Term t = DocumentUtil.referencesTerm (
+                    pattern,
+                    mask,
+                    true);
             return Queries.createQuery(t.field(), t.field(), t.text(), Queries.QueryKind.REGEXP);
         } else {
             throw new IllegalArgumentException();

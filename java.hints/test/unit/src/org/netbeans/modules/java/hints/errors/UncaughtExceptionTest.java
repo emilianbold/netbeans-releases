@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,132 +24,73 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ *
  * Contributor(s):
  *
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.java.hints.errors;
 
-import org.netbeans.modules.java.hints.infrastructure.HintsTestBase;
+import com.sun.source.util.TreePath;
+import java.util.List;
+import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.modules.java.hints.infrastructure.ErrorHintsTestBase;
+import org.netbeans.spi.editor.hints.Fix;
+import org.openide.util.NbBundle;
 
 /**
- * Tests for Uncaught Exceptions (add throws, surround with try-catch)
- * @author Max Sauer
+ *
+ * @author lahvac
  */
-public class UncaughtExceptionTest extends HintsTestBase {
+public class UncaughtExceptionTest extends ErrorHintsTestBase {
 
     public UncaughtExceptionTest(String name) {
-	super(name);
-    }
-    
-    @Override
-    protected void setUp() throws Exception {
-        super.doSetUp("org/netbeans/modules/java/hints/resources/layer.xml");
-    }
-    
-    @Override
-    protected String testDataExtension() {
-        return "org/netbeans/test/java/hints/UncaughtExceptionTest/";
-    }
-    
-    /** Surround with try catch as this() parameter */
-    public void testBug113448() throws Exception {
-	performTestDoNotPerform("Test", 8, 22);
-    }
-    
-    /** Surround with try catch as this() parameter, deeper in path */
-    public void testBug113448b() throws Exception {
-	performTestDoNotPerform("Test", 12, 33);
-    }
-    
-    /** 
-     * Surround with try catch as this() parameter
-     * exception-throwing-method call
-     */
-    public void testBug113448c() throws Exception {
-	performTestDoNotPerform("Test", 19, 33);
-    }
-    
-    /**
-     * Don't offer surround with t-c for fields 
-     */ 
-    public void testBug95535() throws Exception {
-	performTestDoNotPerform("Test", 34, 21);
-    }
-    
-    /**
-     * Field access inside ctor
-     */
-    public void testBug113812() throws Exception {
-	performTestDoNotPerform("Test", 31, 23);
-    }
-    
-    /** Surround with try catch inside ctor */
-    public void testInsideCtor() throws Exception {
-	performTestDoNotPerform("Test", 16, 21);
-    }
-    
-    /** Surround with try catch as this() parameter, 
-     * but inside anonymous class. Should offer in this case.
-     */
-    public void testThisParamInsideAnonymous() throws Exception {
-	performTestDoNotPerform("Test", 24, 30);
-    }
-    
-    /**
-     * Offer proper exception types for generic parametrized methods
-     */ 
-    public void testBug113380a() throws Exception {
-	performTestDoNotPerform("TestBug113380", 13, 17);
-    }
-    
-    public void testBug113380b() throws Exception {
-	performTestDoNotPerform("TestBug113380", 14, 17);
+        super(name);
     }
 
-    /**
-     * Surround with try-catch should be offered inside initializers
-     * @throws java.lang.Exception
-     */
-    public void testSurroundWithTCInsideInitializer() throws Exception {
-        performTestDoNotPerform("TestInitializer", 7, 17);
+    public void test204029() throws Exception {
+        String code =  "package test;\n" +
+                       "import java.io.IOException;\n" +
+                       "import javax.swing.text.BadLocationException;\n" +
+                       "public class Test {\n" +
+                       "    void t2() {\n" +
+                       "        try {\n" +
+                       "            g();\n" +
+                       "        } catch (BadLocationException | IOException e) {\n" +
+                       "            throw e;\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "    void g() throws BadLocationException | IOException { }\n" +
+                       "}\n";
+        performAnalysisTest("test/Test.java",
+                            code,
+                            code.indexOf("throw e") + 1,
+                            "Add throws clause for javax.swing.text.BadLocationException",
+                            "Add throws clause for java.io.IOException",
+                            "Surround Statement with try-catch");
     }
 
-    public void testBug88923() throws Exception {
-        performTestDoNotPerform("TestBug88923", 8, 11);
+    @Override
+    protected List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) throws Exception {
+        return new UncaughtException().run(info, null, pos, path, null);
     }
-    
-    public void testBug123850a() throws Exception {
-        performTestDoNotPerform("TestBug123850a", 7, 18);
+
+    @Override
+    protected String toDebugString(CompilationInfo info, Fix f) {
+        return f.getText();
     }
-    
-    public void testBug123850b() throws Exception {
-        performTestDoNotPerform("TestBug123850b", 7, 18);
+
+    static {
+        NbBundle.setBranding("test");
     }
-    
-    public void testBug123850c() throws Exception {
-        performTestDoNotPerform("TestBug123850c", 7, 18);
-    }
-    
-    public void testBug123850d() throws Exception {
-        performTestDoNotPerform("TestBug123850d", 7, 18);
-    }
-    
-    public void testBug123850e() throws Exception {
-        performTestDoNotPerform("TestBug123850e", 7, 18);
-    }
-    
-    public void testBug123093() throws Exception {
-        performTestDoNotPerform("TestBug123093", 11, 18);
-    }
-    
-    /**
-     * Duplicate entries should not be offered
-     * (ie, two same exception thrown on same line, like:<br>
-     * <code>new Filereader("").read();</code>
-     */
-    public void testDuplicateHintEntries() throws Exception {
-        performTestDoNotPerform("TestDuplicate", 5, 15);
-    }
-    
 }

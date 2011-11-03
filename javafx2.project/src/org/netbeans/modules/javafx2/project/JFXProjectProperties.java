@@ -48,10 +48,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.net.URI;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -65,6 +69,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.text.Document;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
@@ -76,23 +81,20 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.ant.AntArtifact;
+import org.netbeans.api.project.ant.AntArtifactQuery;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
 import org.netbeans.modules.javafx2.platform.api.JavaFXPlatformUtils;
-import org.netbeans.modules.extbrowser.ExtWebBrowser;
+import org.netbeans.modules.javafx2.project.ui.CustomizerJarComponent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ui.StoreGroup;
-import org.openide.cookies.InstanceCookie;
-import org.openide.execution.NbProcessDescriptor;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
@@ -127,13 +129,14 @@ public final class JFXProjectProperties {
 
     // Packaging properties
     public static final String JAVAFX_BINARY_ENCODE_CSS = "javafx.binarycss"; // NOI18N
+    public static final String JAVAFX_DEPLOY_INCLUDEDT = "javafx.deploy.includeDT"; // NOI18N
     
     // FX config properties (Run panel), replicated from ProjectProperties
     public static final String MAIN_CLASS = "javafx.main.class"; // NOI18N
-    //public static final String APPLICATION_ARGS = "javafx.application.args"; // NOI18N
+    public static final String APPLICATION_ARGS = ProjectProperties.APPLICATION_ARGS;
     public static final String APP_PARAM_PREFIX = "javafx.param."; // NOI18N
     public static final String APP_PARAM_SUFFIXES[] = new String[] { "name", "value" }; // NOI18N
-    public static final String RUN_JVM_ARGS = ProjectProperties.RUN_JVM_ARGS; // NOI18N
+    public static final String RUN_JVM_ARGS = ProjectProperties.RUN_JVM_ARGS;
     public static final String FALLBACK_CLASS = "javafx.fallback.class"; // NOI18N
     public static final String SIGNED_JAR = "dist.signed.jar"; // NOI18N
     
@@ -198,11 +201,20 @@ public final class JFXProjectProperties {
         return binaryEncodeCSS;
     }
 
+    private CustomizerJarComponent jarComponent = null;
+    public CustomizerJarComponent getCustomizerJarComponent() {
+        if(jarComponent == null) {
+            jarComponent = new CustomizerJarComponent(this);
+        }
+        return jarComponent;
+    }
+
     // CustomizerRun
     private Map<String/*|null*/,Map<String,String/*|null*/>/*|null*/> RUN_CONFIGS;
     private Map<String/*|null*/,List<Map<String,String/*|null*/>>/*|null*/> APP_PARAMS;
     private String activeConfig;
-    
+    private Map<String,String> browserPaths = null;
+
     public Map<String/*|null*/,Map<String,String/*|null*/>/*|null*/> getRunConfigs() {
         return RUN_CONFIGS;
     }    
@@ -223,6 +235,15 @@ public final class JFXProjectProperties {
     }
     public void setActiveConfig(String config) {
         this.activeConfig = config;
+    }
+    public Map<String, String> getBrowserPaths() {
+        return browserPaths;
+    }
+    public void resetBrowserPaths() {
+        this.browserPaths = new HashMap<String, String>();
+    }
+    public void setBrowserPaths(Map<String, String> browserPaths) {
+        this.browserPaths = browserPaths;
     }
 
     // CustomizerRun - Preloader source type
@@ -413,7 +434,7 @@ public final class JFXProjectProperties {
         return evaluator;
     }
     
-    /** Keeps singleton instance for any fx project for which property customizer is opened at once */
+    /** Keeps singleton instance of JFXProjectProperties for any fx project for which property customizer is opened at once */
     private static Map<String, JFXProjectProperties> propInstance = new TreeMap<String, JFXProjectProperties>();
     
     /** Factory method */
@@ -451,6 +472,20 @@ public final class JFXProjectProperties {
         propInstance.remove(projDir);
     }
 
+    /** Keeps singleton instance of a set of preloader artifact dependencies for any fx project */
+    private static Map<String, Set<PreloaderArtifact>> prelArtifacts = new TreeMap<String, Set<PreloaderArtifact>>();
+    
+    /** Factory method */
+    private static Set<PreloaderArtifact> getPreloaderArtifacts(@NonNull Project proj) {
+        String projDir = proj.getProjectDirectory().getPath();
+        Set<PreloaderArtifact> prels = prelArtifacts.get(projDir);
+        if(prels == null) {
+            prels = new HashSet<PreloaderArtifact>();
+            prelArtifacts.put(projDir, prels);
+        }
+        return prels;
+    }
+    
     /** Creates a new instance of JFXProjectProperties */
     private JFXProjectProperties(Lookup context) {
         
@@ -635,6 +670,13 @@ public final class JFXProjectProperties {
             }
         }
         //System.err.println("readRunConfigs: " + p);
+        Set<PreloaderArtifact> prels = getPreloaderArtifacts(project);
+        prels.clear();
+        try {
+            prels.addAll(getPreloaderArtifactsFromConfigs(m));
+        } catch (IOException ex) {
+            // can be ignored
+        }
         return m;
     }
 
@@ -764,6 +806,54 @@ public final class JFXProjectProperties {
     }
 
     /**
+     * Gathers application parameters to one property APPLICATION_ARGS
+     * to be passed to run/debug target in build-impl.xml when Run as Standalone
+     */
+    void storeSingleParamsProperty(List<Map<String,String/*|null*/>> params,
+            EditableProperties projectProperties)
+    {
+        StringBuilder sb = new StringBuilder();
+        if(params != null) {
+            int index = 0;
+            for(Map<String,String> m : params) {
+                String name = null;
+                String value = null;
+                for (Map.Entry<String,String> propSuffix : m.entrySet()) {
+                    if(propSuffix.getKey().equalsIgnoreCase(APP_PARAM_SUFFIXES[0])) {
+                        name = propSuffix.getValue();
+                    }
+                    if(propSuffix.getKey().equalsIgnoreCase(APP_PARAM_SUFFIXES[1])) {
+                        value = propSuffix.getValue();
+                    }
+                }
+                if(name != null && name.length() > 0) {
+                    if(sb.length() > 0) {
+                        sb.append(" "); // NOI18N
+                    }
+                    if(value != null && value.length() > 0) {
+                        sb.append("--"); // NOI18N
+                        sb.append(name);
+                        sb.append("="); // NOI18N
+                        sb.append(value);
+                    } else {
+                        sb.append(name);                        
+                    }
+                }
+                index++;
+            }
+        }
+        String sbs = sb.toString();
+        if (!Utilities.compareObjects(sbs, projectProperties.getProperty(APPLICATION_ARGS))) {
+            if (sbs != null && sbs.length() > 0) {
+                projectProperties.setProperty(APPLICATION_ARGS, sbs);
+                projectProperties.setComment(APPLICATION_ARGS, new String[]{"# " + NbBundle.getMessage(JFXProjectProperties.class, "COMMENT_app_args")}, false); // NOI18N
+            } else {
+                projectProperties.remove(APPLICATION_ARGS);
+            }
+        }
+    }
+    
+    /**
      * A royal mess. (modified from J2SEProjectProperties)
      */
     void storeRunConfigs(Map<String/*|null*/,Map<String,String/*|null*/>/*|null*/> configs,
@@ -791,20 +881,25 @@ public final class JFXProjectProperties {
             }
         }
         int index = 0;
-        for(Map<String,String> m : params.get(null)) {
-            for (Map.Entry<String,String> propSuffix : m.entrySet()) {
-                String prop = APP_PARAM_PREFIX + index + "." + propSuffix.getKey();
-                String v = propSuffix.getValue();
-                if (!Utilities.compareObjects(v, projectProperties.getProperty(prop))) {
-                    if (v != null && v.length() > 0) {
-                        projectProperties.setProperty(prop, v);
-                    } else {
-                        projectProperties.remove(prop);
+        List<Map<String,String/*|null*/>> paramsDefault = params.get(null);
+        if(paramsDefault != null) {
+            for(Map<String,String> m : paramsDefault) {
+                for (Map.Entry<String,String> propSuffix : m.entrySet()) {
+                    String prop = APP_PARAM_PREFIX + index + "." + propSuffix.getKey();
+                    String v = propSuffix.getValue();
+                    if (!Utilities.compareObjects(v, projectProperties.getProperty(prop))) {
+                        if (v != null && v.length() > 0) {
+                            projectProperties.setProperty(prop, v);
+                        } else {
+                            projectProperties.remove(prop);
+                        }
                     }
                 }
+                index++;
             }
-            index++;
         }
+        storeSingleParamsProperty(paramsDefault, privateProperties);
+        
         for (Map.Entry<String,Map<String,String>> entry : configs.entrySet()) {
             String config = entry.getKey();
             if (config == null) {
@@ -867,40 +962,121 @@ public final class JFXProjectProperties {
                     index++;
                 }
             }
+            storeSingleParamsProperty(paramsConfig, privateCfgProps);
+            
             saveToFile(sharedPath, sharedCfgProps);    //Make sure the definition file is always created, even if it is empty.
             if (privatePropsChanged) {                              //Definition file is written, only when changed
                 saveToFile(privatePath, privateCfgProps);
             }
         }
     }
-    
-    private void updatePreloaderDependencies(Map<String/*|null*/,Map<String,String/*|null*/>/*|null*/> configs) throws IOException {
-        // depeding on the currently (de)selected preloader update project dependencies,
-        // i.e., remove deselected preloader project dependency and add selected preloader project dependency        
-        Map<String,String> active = Collections.unmodifiableMap(configs.get(activeConfig));
-        String projDir = active.get(PRELOADER_PROJECT);
-        if (projDir == null) {
-            return;
+
+    private FileObject getSrcRoot(Project project)
+    {
+        FileObject srcRoot = null;
+        for (SourceGroup sg : ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
+            if (!isTest(sg.getRootFolder(),project)) {
+                srcRoot = sg.getRootFolder();
+                break;
+            }
         }
-        
-        File projDirF = new File(projDir);
-        if( isTrue(active.get(PRELOADER_ENABLED)) && projDirF.exists() ) {
-            FileObject srcRoot = null;
-            for (SourceGroup sg : ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
-                if (!isTest(sg.getRootFolder(),project)) {
-                    srcRoot = sg.getRootFolder();
-                    break;
+        return srcRoot;
+    }
+    
+    private Set<PreloaderArtifact> getPreloaderArtifactsFromConfigs(Map<String/*|null*/,Map<String,String/*|null*/>/*|null*/> configs) throws IOException {       
+        Set<PreloaderArtifact> preloaderArtifacts = new HashSet<PreloaderArtifact>();
+        // check records on all preloaders from all configurations
+        Map<String,Map<String,String>> configsCopy = Collections.unmodifiableMap(configs);
+        for(Map.Entry<String,Map<String,String>> config : configsCopy.entrySet()) {
+            
+            PreloaderArtifact preloader = null;
+            Map<String,String> configCopy = Collections.unmodifiableMap(config.getValue());
+            if(!isTrue( configCopy.get(PRELOADER_ENABLED))) {
+                continue;
+            }
+            String prelTypeString = configCopy.get(PRELOADER_TYPE);
+            
+            String prelProjDir = configCopy.get(PRELOADER_PROJECT);
+            if (prelProjDir != null && isEqualIgnoreCase(prelTypeString, PreloaderSourceType.PROJECT.getString())) {
+                File prelProjDirF = new File(prelProjDir);
+                if( isTrue(configCopy.get(PRELOADER_ENABLED)) && prelProjDirF.exists() ) {
+                    FileObject srcRoot = getSrcRoot(getProject());
+                    if(srcRoot != null) {
+                        prelProjDirF = FileUtil.normalizeFile(prelProjDirF);
+                        FileObject prelProjFO = FileUtil.toFileObject(prelProjDirF);
+                        final Project proj = ProjectManager.getDefault().findProject(prelProjFO);
+
+                        AntArtifact[] artifacts = AntArtifactQuery.findArtifactsByType(proj, JavaProjectConstants.ARTIFACT_TYPE_JAR);
+                        List<URI> allURI = new ArrayList<URI>();
+                        for(AntArtifact artifact : artifacts) {
+                            allURI.addAll(Arrays.asList(artifact.getArtifactLocations()));
+                        }
+                        if(!allURI.isEmpty()) {
+                            URI[] arrayURI = allURI.toArray(new URI[0]);
+                            preloader = new PreloaderProjectArtifact(artifacts, arrayURI, srcRoot, ClassPath.COMPILE, prelProjDirF.getAbsolutePath());
+                        }
+                    }
                 }
             }
-            if(srcRoot != null) {
-                projDirF = FileUtil.normalizeFile(projDirF);
-                FileObject prelFO = FileUtil.toFileObject(projDirF);
-                final Project[] p = new Project[] {ProjectManager.getDefault().findProject(prelFO)};
-                ProjectClassPathModifier.addProjects(p, srcRoot, ClassPath.COMPILE);
+            if(preloader == null) {
+                String prelJar = configCopy.get(PRELOADER_JAR_PATH);
+                if(prelJar != null && isEqualIgnoreCase(prelTypeString, PreloaderSourceType.JAR.getString())) {
+                    File prelJarF = new File(prelJar);
+                    if( prelJarF.exists() ) {
+                        FileObject srcRoot = getSrcRoot(getProject());
+                        if(srcRoot != null) {
+                            String prelJarFS = "file:/" + prelJarF.getAbsolutePath() + "!/"; //NOI18N
+                            URL[] urls = new URL[1];
+                            urls[0] = new URL(prelJarFS);
+                            preloader = new PreloaderJarArtifact(urls, srcRoot, ClassPath.COMPILE, prelJarFS);
+                        }
+                    }
+                }
+            }
+            if(preloader != null) {
+                preloaderArtifacts.add(preloader);
             }
         }
+        return preloaderArtifacts;
     }
 
+    private void updatePreloaderDependencies(Map<String/*|null*/,Map<String,String/*|null*/>/*|null*/> configs) throws IOException {
+        // depeding on the currently (de)selected preloaders update project dependencies,
+        // i.e., remove disabled/deleted preloader project dependencies and add enabled/added preloader project dependencies
+        Set<PreloaderArtifact> preloaderArtifacts = getPreloaderArtifacts(getProject());
+        for(PreloaderArtifact artifact : preloaderArtifacts) {
+            artifact.setValid(false);
+        }
+        Set<PreloaderArtifact> currentArtifacts = getPreloaderArtifactsFromConfigs(configs);
+        for(PreloaderArtifact preloader : currentArtifacts) {
+            if(preloader != null) {
+                preloader.addDependency();
+                boolean updated = false;
+                for(PreloaderArtifact a : preloaderArtifacts) {
+                    if(a.equals(preloader)) {
+                        a.setValid(true);
+                        updated = true;
+                    }
+                }
+                if(!updated) {
+                    preloader.setValid(true);
+                    preloaderArtifacts.add(preloader);
+                }
+            }
+        }
+        // remove all previous dependencies that are no more specified in any configuration
+        Set<PreloaderArtifact> toRemove = new HashSet<PreloaderArtifact>();
+        for(PreloaderArtifact artifact : preloaderArtifacts) {
+            if(!artifact.isValid()) {
+                artifact.removeDependency();
+                toRemove.add(artifact);
+            }
+        }
+        for(PreloaderArtifact artifact : toRemove) {
+            preloaderArtifacts.remove(artifact);
+        }
+    }
+    
     private static boolean isTest(final FileObject root, final Project project) {
         assert root != null;
         assert project != null;
@@ -1262,7 +1438,7 @@ public final class JFXProjectProperties {
     }
     
     private void storeJSCallbacks(final EditableProperties props) {
-        if (jsCallbacksChanged) {
+        if (jsCallbacksChanged && jsCallbacks != null) {
             for (Map.Entry<String,String> entry : jsCallbacks.entrySet()) {
                 if(entry.getValue() != null && !entry.getValue().isEmpty()) {
                     props.setProperty(JAVASCRIPT_CALLBACK_PREFIX + entry.getKey(), entry.getValue());  //NOI18N
@@ -1286,19 +1462,11 @@ public final class JFXProjectProperties {
     }
 
     private String getSelectedBrowserPath() {
-        String selectedName = RUN_CONFIGS.get(activeConfig).get(RUN_IN_BROWSER);
-        if (selectedName == null) {
+        if (browserPaths == null) {
             return null;
         }
-        Lookup.Result<ExtWebBrowser> allBrowsers = Lookup.getDefault().lookupResult(ExtWebBrowser.class);
-        for(Lookup.Item<ExtWebBrowser> browser : allBrowsers.allItems()) {            
-            if(selectedName.equalsIgnoreCase(browser.getDisplayName())) {
-                NbProcessDescriptor proc = browser.getInstance().getBrowserExecutable();
-                String path = proc.getProcessName();
-                return path;
-            }
-        }
-        return null;
+        String selectedName = RUN_CONFIGS.get(activeConfig).get(RUN_IN_BROWSER);
+        return browserPaths.get(selectedName);
     }
     
     public class PreloaderClassComboBoxModel extends DefaultComboBoxModel {
@@ -1432,28 +1600,30 @@ public final class JFXProjectProperties {
         public void updateFile(OutputStream os) {
             final PrintWriter out = new PrintWriter(os); //todo: encoding
             copyReadme(out);
-            for(Map<String,String> m : params) {
-                String name = ""; //NOI18N
-                String value = ""; //NOI18N
-                for (Map.Entry<String,String> param : m.entrySet()) {
-                    if(param.getKey().equals("name")) { //NOI18N
-                        name = param.getValue();
-                    } else {
-                        if(param.getKey().equals("value")) { //NOI18N
-                            value = param.getValue();
+            if(params != null) {
+                for(Map<String,String> m : params) {
+                    String name = ""; //NOI18N
+                    String value = ""; //NOI18N
+                    for (Map.Entry<String,String> param : m.entrySet()) {
+                        if(param.getKey().equals("name")) { //NOI18N
+                            name = param.getValue();
+                        } else {
+                            if(param.getKey().equals("value")) { //NOI18N
+                                value = param.getValue();
+                            }
                         }
                     }
+                    out.println(line(name,value));
                 }
-                out.println(line(name,value));
             }
             out.flush();
         }
 
         private String line(String name, String value) {
-            if(value == null) {
-                return "<param name=\"" + name + "\"/>"; //NOI18N
+            if(value == null || value.length() == 0) {
+                return "<fx:param name=\"" + name + "\"/>"; //NOI18N
             } else {
-                return "<param name=\"" + name + "\" value=\"" + value + "\"/>"; //NOI18N
+                return "<fx:param name=\"" + name + "\" value=\"" + value + "\"/>"; //NOI18N
             }
         }        
     }
@@ -1465,11 +1635,13 @@ public final class JFXProjectProperties {
             //if (jsCallbacksChanged) {
                 final PrintWriter out = new PrintWriter(os); //todo: encoding
                 copyReadme(out);
-                for (Map.Entry<String,String> entry : jsCallbacks.entrySet()) {
-                    if(entry.getValue() != null && !entry.getValue().isEmpty()) {
-                        out.println("<callback name=\"" + entry.getKey() + "\">"); //NOI18N
-                        out.println(entry.getValue());
-                        out.println("</callback>"); //NOI18N
+                if(jsCallbacks != null) {
+                    for (Map.Entry<String,String> entry : jsCallbacks.entrySet()) {
+                        if(entry.getValue() != null && !entry.getValue().isEmpty()) {
+                            out.println("<fx:callback name=\"" + entry.getKey() + "\">"); //NOI18N
+                            out.println(entry.getValue());
+                            out.println("</fx:callback>"); //NOI18N
+                        }
                     }
                 }
                 out.flush();
@@ -1489,15 +1661,131 @@ public final class JFXProjectProperties {
         public void updateFile(OutputStream os) {
             final PrintWriter out = new PrintWriter(os); //todo: encoding
             copyReadme(out);
-            String vmo = props.get(RUN_JVM_ARGS);            
-            if (vmo != null) {
-                StringTokenizer tok = new StringTokenizer(vmo, " ");
-                while(tok.hasMoreElements()) {
-                    String s = tok.nextToken();
-                    out.println("<jvmarg value=\"" + s + "\"/>"); //NOI18N
+            if(props != null) {
+                String vmo = props.get(RUN_JVM_ARGS);            
+                if (vmo != null) {
+                    StringTokenizer tok = new StringTokenizer(vmo, " ");
+                    while(tok.hasMoreElements()) {
+                        String s = tok.nextToken();
+                        out.println("<fx:jvmarg value=\"" + s + "\"/>"); //NOI18N
+                    }
                 }
             }
             out.flush();
+        }
+    }
+
+    /**
+     * Each preloader specified in project configurations needs
+     * to be added/removed to/from project dependencies whenever
+     * configurations change (see Run category in Project Properties
+     * dialog). 
+     * List of preoader artifacts is thus needed to keep track which
+     * project dependencies are preloader related.
+     */
+    abstract class PreloaderArtifact {
+        
+        /**
+         * Dependency validity tag
+         */
+        private boolean valid;
+        
+        /**
+         * Add {@code this} to dependencies of project if it is not there yet
+         * @return true if preloader artifact has been added, false if it was already there
+         */
+        abstract boolean addDependency() throws IOException, UnsupportedOperationException;
+        
+        /**
+         * Remove {@code this} from dependencies of project if it is there
+         * @return true if preloader artifact has been removed, false if it was not among project dependencies
+         */
+        abstract boolean removeDependency() throws IOException, UnsupportedOperationException;
+        
+        /**
+         * Set the validity tag for {@code this} artifact
+         * @param valid true for dependencies to be kept, false for dependencies to be removed
+         */
+        void setValid(boolean valid) {
+            this.valid = valid;
+        }
+        
+        /**
+         * Get the validity tag for {@code this} artifact
+         * @return valid true for dependencies to be kept, false for dependencies to be removed
+         */
+        boolean isValid() {
+            return valid;
+        }
+    }
+    
+    class PreloaderProjectArtifact extends PreloaderArtifact {
+
+        private final String ID;
+        private final AntArtifact[] artifacts;
+        private final URI[] artifactElements;
+        private final FileObject projectArtifact;
+        private final String classPathType;
+                
+        PreloaderProjectArtifact(final @NonNull AntArtifact[] artifacts, final @NonNull URI[] artifactElements,
+            final @NonNull FileObject projectArtifact, final @NonNull String classPathType, final @NonNull String ID) {
+            this.artifacts = artifacts;
+            this.artifactElements = artifactElements;
+            this.projectArtifact = projectArtifact;
+            this.classPathType = classPathType;
+            this.ID = ID;
+        }
+        
+        @Override
+        public boolean addDependency() throws IOException, UnsupportedOperationException {
+            return ProjectClassPathModifier.addAntArtifacts(artifacts, artifactElements, projectArtifact, classPathType);
+        }
+
+        @Override
+        public boolean removeDependency()  throws IOException, UnsupportedOperationException {
+            return ProjectClassPathModifier.removeAntArtifacts(artifacts, artifactElements, projectArtifact, classPathType);
+        }
+
+        @Override
+        public boolean equals(Object that){
+            if ( this == that ) return true;
+            if ( !(that instanceof PreloaderProjectArtifact) ) return false;
+            PreloaderProjectArtifact concrete = (PreloaderProjectArtifact)that;
+            return ID.equals(concrete.ID);
+        }
+    }
+
+    class PreloaderJarArtifact extends PreloaderArtifact {
+
+        private final String ID;
+        private final URL[] classPathRoots;
+        private final FileObject projectArtifact;
+        private final String classPathType;
+                
+        PreloaderJarArtifact(final @NonNull URL[] classPathRoots, final @NonNull FileObject projectArtifact, 
+                final @NonNull String classPathType, final @NonNull String ID) {
+            this.classPathRoots = classPathRoots;
+            this.projectArtifact = projectArtifact;
+            this.classPathType = classPathType;
+            this.ID = ID;
+        }
+        
+        @Override
+        public boolean addDependency() throws IOException, UnsupportedOperationException {
+            return ProjectClassPathModifier.addRoots(classPathRoots, projectArtifact, classPathType);
+        }
+
+        @Override
+        public boolean removeDependency()  throws IOException, UnsupportedOperationException {
+            return ProjectClassPathModifier.removeRoots(classPathRoots, projectArtifact, classPathType);
+        }
+        
+        @Override
+        public boolean equals(Object that){
+            if ( this == that ) return true;
+            if ( !(that instanceof PreloaderJarArtifact) ) return false;
+            PreloaderJarArtifact concrete = (PreloaderJarArtifact)that;
+            return ID.equals(concrete.ID);
         }
     }
 

@@ -56,12 +56,16 @@ import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.core.api.support.java.JavaIdentifiers;
+import org.netbeans.modules.j2ee.persistence.wizard.Util;
 import org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.JpaControllerIterator;
 import org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.ProgressReporter;
 import org.netbeans.modules.websvc.rest.support.JavaSourceHelper;
 import org.netbeans.modules.websvc.rest.support.WebXmlHelper;
 import org.openide.filesystems.FileObject;
+
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
@@ -194,13 +198,22 @@ public class J2eeEntityResourcesGenerator extends EntityResourcesGenerator {
         }
         final String fqnController = JavaSourceHelper.getClassType(
                 JavaSource.forFileObject(controller));
-        final StringBuilder bodyText = new StringBuilder("{try { ") ;   // NOI18N
-        bodyText.append("UserTransaction utx = (UserTransaction) new " );// NOI18N
-        bodyText.append(
-                "InitialContext().lookup(\"java:comp/UserTransaction\");" );// NOI18N
+        Project project = FileOwnerQuery.getOwner( fileObject );
+        final StringBuilder bodyText = new StringBuilder("{try { "); // NOI18N
+        boolean needUtx = false;
+        if (project != null && Util.isContainerManaged( project)) {
+            needUtx = true;
+            bodyText.append("UserTransaction utx = (UserTransaction) new ");// NOI18N
+            bodyText.append("InitialContext().lookup(\"java:comp/UserTransaction\");");// NOI18N
+        }
         bodyText.append("return new ");                                 // NOI18N
         bodyText.append( jpaControllerName );
-        bodyText.append( "(utx, ");                                     // NOI18N
+        if ( needUtx ){
+            bodyText.append( "(utx, ");                                     // NOI18N
+        }
+        else {
+            bodyText.append( "(null, ");                                     // NOI18N
+        }
         bodyText.append( emGetter);
         bodyText.append( "());} catch (NamingException ex) {" );        // NOI18N
         bodyText.append( "throw new RuntimeException(ex);}");           // NOI18N
@@ -291,7 +304,6 @@ public class J2eeEntityResourcesGenerator extends EntityResourcesGenerator {
         javaSource.runModificationTask(task).commit();
         return entityManagerMethod;
     }
-
     
     private FileObject[] jpaControllers;
 }

@@ -5,7 +5,7 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
     <head>
-        <title>Options: PHP: Debugging</title>
+        <title>PHP Debugging Options</title>
         <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
         <link rel="stylesheet" href=
               "nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
@@ -13,7 +13,7 @@
     </head>
     <body>
         <p> <small><a href="#seealso">See Also</a>&nbsp; </small> 
-        <h2>Options: PHP: Debugging</h2>
+        <h2>PHP Debugging Options</h2>
         <p>In this tab, set the following options:</p>
         <ul>
             <li><strong>Debugger port </strong>This is the port that XDebug uses, 
@@ -36,11 +36,12 @@
                     <param name="content" value="http://netbeans.org/bugzilla/show_bug.cgi?id=181186">
                     <param name="text" value="<html><u>Issue 181186</u></html>">
                     <param name="textFontSize" value="medium">
-                    <param name="textColor" value="blue"></object>.</li>
-            <li><strong>Maximum Depth of Structures.</strong> Sets the visibility of nested structures (such as nested arrays, objects in objects, etc.) </li>
-            <li><strong>Maximum Number of Children.</strong> Sets the visibility of array items during Watch evaluation. (If you set Maximum Number of Children to 1 you will see only the first item of an array even if the array has more then one item.)</li>
+                    <param name="textColor" value="blue"></object>.
+                <ul><li><strong>Maximum Depth of Structures.</strong> Sets the visibility of nested structures (such as nested arrays, objects in objects, etc.) </li>
+                    <li><strong>Maximum Number of Children.</strong> Sets the visibility of array items during Watch evaluation. (If you set Maximum Number of Children to 1 you will see only the first item of an array even if the array has more then one item.)</li></ul></li>
+
             <li><strong>Show Requested URLs.</strong> Opens new Output window  during debugging. This Output window is named PHP Requested Urls and it shows currently processed URLs. The URLs are clickable. Click on a URL in the Output window to open the URL in a browser window.</li>
-            <li><strong>PHP Debugger Console.</strong> Opens new Output window that shows the output of debugged scripts.
+            <li><strong>Show Debugger Console.</strong> Opens new Output window that shows the output of debugged scripts.
                 <ul class="note">
                     <li>Set <tt>output_buffering = Off</tt> in your <tt>php.ini</tt> file. Otherwise there will be a delay in seeing script output in the Output window.</li>
                 </ul></li>

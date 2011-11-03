@@ -140,24 +140,46 @@ public class BuildProjectActionHandler implements ProjectActionHandler {
                 env.putenv(BuildTraceSupport.CND_BUILD_LOG,execLog.getAbsolutePath());
             }
             try {
-                String merge = env.getenv("LD_PRELOAD"); // NOI18N
-                if (merge != null && !merge.isEmpty()) {
-                    merge = BuildTraceHelper.INSTANCE.getLibraryName(execEnv)+":"+merge; // NOI18N
+                if (BuildTraceHelper.isMac(execEnv)) {
+                    String ldPreliad = BuildTraceHelper.getLDPreloadEnvName(execEnv);
+                    String merge = env.getenv(ldPreliad);
+                    String what = BuildTraceHelper.INSTANCE.getLibraryName(execEnv);
+                    if (what.indexOf(':') > 0) {
+                        what = what.substring(0,what.indexOf(':'));
+                    }
+                    String where = BuildTraceHelper.INSTANCE.getLDPaths(execEnv);
+                    if (where.indexOf(':') > 0) {
+                        where = where.substring(0,where.indexOf(':'));
+                    }
+                    String lib = where+'/'+what;
+                    if (merge != null && !merge.isEmpty()) {
+                        merge = lib+":"+merge; // NOI18N
+                    } else {
+                        merge = lib;
+                    }
+                    env.putenv(ldPreliad, merge);
                 } else {
-                    merge = BuildTraceHelper.INSTANCE.getLibraryName(execEnv);
-                }
-                env.putenv("LD_PRELOAD", merge); // NOI18N
+                    String ldPreliad = BuildTraceHelper.getLDPreloadEnvName(execEnv);
+                    String merge = env.getenv(ldPreliad);
+                    if (merge != null && !merge.isEmpty()) {
+                        merge = BuildTraceHelper.INSTANCE.getLibraryName(execEnv)+":"+merge; // NOI18N
+                    } else {
+                        merge = BuildTraceHelper.INSTANCE.getLibraryName(execEnv);
+                    }
+                    env.putenv(ldPreliad, merge);
 
-                merge = env.getenv("LD_LIBRARY_PATH"); // NOI18N
-                if (merge == null || merge.isEmpty()) {
-                    merge = HostInfoUtils.getHostInfo(execEnv).getEnvironment().get("LD_LIBRARY_PATH"); // NOI18N
+                    String ldPath = BuildTraceHelper.getLDPathEnvName(execEnv);
+                    merge = env.getenv(ldPath);
+                    if (merge == null || merge.isEmpty()) {
+                        merge = HostInfoUtils.getHostInfo(execEnv).getEnvironment().get(ldPath);
+                    }
+                    if (merge != null && !merge.isEmpty()) {
+                        merge = BuildTraceHelper.INSTANCE.getLDPaths(execEnv)+":"+merge; // NOI18N
+                    } else {
+                        merge = BuildTraceHelper.INSTANCE.getLDPaths(execEnv);
+                    }
+                    env.putenv(ldPath, merge); 
                 }
-                if (merge != null && !merge.isEmpty()) {
-                    merge = BuildTraceHelper.INSTANCE.getLDPaths(execEnv)+":"+merge; // NOI18N
-                } else {
-                    merge = BuildTraceHelper.INSTANCE.getLDPaths(execEnv);
-                }
-                env.putenv("LD_LIBRARY_PATH", merge); // NOI18N
             } catch (CancellationException ex) {
                 // don't report CancellationException
             } catch (IOException ex) {
@@ -214,7 +236,7 @@ public class BuildProjectActionHandler implements ProjectActionHandler {
     private static final class BuildTraceHelper extends HelperLibraryUtility {
         private static final BuildTraceHelper INSTANCE = new BuildTraceHelper();
         private BuildTraceHelper() {
-            super("org.netbeans.modules.cnd.actions", "bin/${osname}-${platform}${_isa}/libBuildTrace.so"); // NOI18N
+            super("org.netbeans.modules.cnd.actions", "bin/${osname}-${platform}${_isa}/libBuildTrace.${soext}"); // NOI18N
         }
     }
     

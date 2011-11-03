@@ -126,7 +126,8 @@ public final class CodeStyle {
     
     private boolean isOverideTabIndents(){
         if (useOverrideOptions) {
-            return EditorOptions.getOverideTabIndents(language);
+            return getOption(EditorOptions.overrideTabIndents,
+                             EditorOptions.overrideTabIndentsDefault);
         }
         return true;
     }
@@ -576,12 +577,15 @@ public final class CodeStyle {
 
     // Communication with non public packages ----------------------------------
     private static class FactoryImpl implements EditorOptions.CodeStyleFactory {
+        @Override
         public CodeStyle create(Language language, Preferences preferences, boolean useOverrideOptions) {
             return new CodeStyle(language, preferences, useOverrideOptions);
         }
+        @Override
         public Preferences getPreferences(CodeStyle codeStyle) {
             return codeStyle.getPreferences();
         }
+        @Override
         public void setPreferences(CodeStyle codeStyle, Preferences preferences) {
             codeStyle.setPreferences(preferences);
         }

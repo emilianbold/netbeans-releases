@@ -349,7 +349,7 @@ public class InnerToOutterTest extends RefactoringTestBase {
                 + "    class MyC1 extends C1 {\n"
                 + "\n"
                 + "        public MyC1(int i) {\n"
-//                + "            super(i);\n" // Should be fixed in #197097
+                + "            super(i);\n"
                 + "        }\n"
                 + "    }\n"
                 + "\n"

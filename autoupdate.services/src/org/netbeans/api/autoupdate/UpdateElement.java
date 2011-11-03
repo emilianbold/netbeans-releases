@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -45,9 +45,9 @@
 package org.netbeans.api.autoupdate;
 
 import java.awt.Image;
-import java.util.List;
 import org.netbeans.modules.autoupdate.services.UpdateElementImpl;
 import org.netbeans.api.autoupdate.UpdateUnitProvider.CATEGORY;
+import org.netbeans.modules.autoupdate.services.UpdateManagerImpl;
 import org.netbeans.modules.autoupdate.updateprovider.ProviderCategory;
 
 /** Instances provided by the <code>UpdateUnit</code> which represents specific version
@@ -163,15 +163,7 @@ public final class UpdateElement {
     }
     
     private UpdateUnitProvider getUpdateUnitProvider() {
-        String source = getSource();
-        UpdateUnitProvider retval = null;
-        List<UpdateUnitProvider> providers = UpdateUnitProviderFactory.getDefault().getUpdateUnitProviders(false);
-        for (UpdateUnitProvider updateUnitProvider : providers) {
-            if (source != null && source.equals(updateUnitProvider.getDisplayName())) {
-                retval = updateUnitProvider;
-            }
-        }
-        return retval;
+        return UpdateManagerImpl.getInstance().getUpdateUnitProvider(getSource());
     }
     
     /** Returns name of the author of the update element.

@@ -51,6 +51,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
+import javax.swing.Action;
 import org.netbeans.modules.mercurial.FileInformation;
 import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.HgProgressSupport;
@@ -61,8 +62,10 @@ import org.netbeans.modules.mercurial.ui.diff.ExportDiffChangesAction;
 import org.netbeans.modules.mercurial.ui.diff.Setup;
 import org.netbeans.modules.mercurial.ui.update.RevertModificationsAction;
 import org.netbeans.modules.mercurial.util.HgUtils;
+import org.netbeans.modules.versioning.shelve.ShelveChangesActionsRegistry.ShelveChangesActionProvider;
 import org.netbeans.modules.versioning.shelve.ShelveChangesSupport;
 import org.netbeans.modules.versioning.spi.VCSContext;
+import org.netbeans.modules.versioning.util.Utils;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionRegistration;
 import org.openide.nodes.Node;
@@ -77,6 +80,7 @@ import org.openide.util.actions.SystemAction;
 @ActionID(id = "org.netbeans.modules.mercurial.ui.shelve.ShelveChangesAction", category = "Mercurial")
 @ActionRegistration(displayName = "#CTL_ShelveChanges_Title")
 public class ShelveChangesAction extends ContextAction {
+    private static ShelveChangesActionProvider ACTION_PROVIDER;
 
     @Override
     public boolean enable(Node[] nodes) {
@@ -153,4 +157,18 @@ public class ShelveChangesAction extends ContextAction {
             support.start(rp, root, NbBundle.getMessage(ShelveChangesAction.class, "LBL_ShelveChanges_Progress")); //NOI18N
         }
     };
+    
+    public static ShelveChangesActionProvider getProvider () {
+        if (ACTION_PROVIDER == null) {
+            ACTION_PROVIDER = new ShelveChangesActionProvider() {
+                @Override
+                public Action getAction () {
+                    Action a = SystemAction.get(ShelveChangesAction.class);
+                    Utils.setAcceleratorBindings("Actions/Mercurial", a); //NOI18N
+                    return a;
+                }
+            };
+        };
+        return ACTION_PROVIDER;
+    }
 }

@@ -72,6 +72,7 @@ import javax.lang.model.type.ReferenceType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
+import javax.lang.model.type.UnionType;
 import javax.lang.model.type.WildcardType;
 import org.netbeans.api.annotations.common.NonNull;
 
@@ -217,6 +218,12 @@ public final class TypeMirrorHandle<T extends TypeMirror> {
                 ErrorType et = (ErrorType)tm;
                 element = ElementHandle.create(et.asElement());
                 break;
+            case UNION:
+                typeMirrors = new ArrayList<TypeMirrorHandle<? extends TypeMirror>>();
+                for (TypeMirror alternative : ((UnionType) tm).getAlternatives()) {
+                    typeMirrors.add(create(alternative, map));
+                }
+                break;
             default:
                 throw new IllegalArgumentException("Currently unsupported TypeKind: " + tm.getKind());
         }
@@ -353,6 +360,22 @@ public final class TypeMirrorHandle<T extends TypeMirror> {
                 if (!(e instanceof ClassSymbol))
                     return null;
                 return (T)new Type.ErrorType((ClassSymbol)e, Type.noType);
+            case UNION:
+                com.sun.tools.javac.util.List<Type> resolvedAlternatives = com.sun.tools.javac.util.List.nil();
+                for (TypeMirrorHandle alternative : typeMirrors) {
+                    TypeMirror resolvedAlternative = alternative.resolve(info, map);
+                    if (resolvedAlternative == null) {
+                        return null;
+                    }
+                    resolvedAlternatives = resolvedAlternatives.prepend((Type) resolvedAlternative);
+                }
+
+                Types t = Types.instance(info.impl.getJavacTask().getContext());
+                Type lub = t.lub(resolvedAlternatives);
+
+                if (lub.tag != TypeTags.CLASS) return null;
+
+                return (T) new Type.UnionClassType((ClassType) lub, resolvedAlternatives);
             default:
                 throw new IllegalStateException("Internal error: unknown TypeHandle kind: " + kind);
         }

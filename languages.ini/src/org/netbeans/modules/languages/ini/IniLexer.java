@@ -161,7 +161,7 @@ class IniLexer implements Lexer<IniTokenId> {
 
                         // possible error? any non-comment text on the same line?
                         final int read = input.readLength();
-                        ch = readTillEndLine(input, COMMENT);
+                        readTillEndLine(input, COMMENT);
                         int readNext = input.readLength();
                         int diff = readNext - read;
                         if (diff > 0) {
@@ -197,10 +197,10 @@ class IniLexer implements Lexer<IniTokenId> {
                             state = State.EQUALS;
                         }
                     } else {
-                            readTillEndLine(input);
-                            input.readText(0, input.readLength());
-                            state = State.START;
-                            return info.tokenFactory().createToken(IniTokenId.ERROR);
+                        readTillEndLine(input);
+                        input.readText(0, input.readLength());
+                        state = State.START;
+                        return info.tokenFactory().createToken(IniTokenId.ERROR);
                     }
 
                 } else {

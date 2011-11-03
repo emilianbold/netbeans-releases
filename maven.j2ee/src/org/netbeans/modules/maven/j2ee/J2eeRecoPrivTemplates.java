@@ -157,9 +157,10 @@ public class J2eeRecoPrivTemplates implements RecommendedTemplates, PrivilegedTe
     };
 
     private static final String[] WEB_TYPES_EJB_LITE = new String[] {
-        "ejb-types",            // NOI18N
-        "ejb-types_3_0",        // NOI18N
-        "ejb-types_3_1"         // NOI18N
+        "ejb-types",                // NOI18N
+        "ejb-types_3_0",            // NOI18N
+        "ejb-types_3_1",            // NOI18N
+        "ejb-deployment-descriptor" // NOI18N
     };
 
     
@@ -284,11 +285,13 @@ public class J2eeRecoPrivTemplates implements RecommendedTemplates, PrivilegedTe
                 if (Profile.JAVA_EE_6_WEB.equals(p) || Profile.JAVA_EE_6_FULL.equals(p)) {
                     ArrayList<String> toRet = new ArrayList<String>(Arrays.asList(WEB_PRIVILEGED_NAMES_6));
                     J2eeProjectCapabilities cap = J2eeProjectCapabilities.forProject(project);
-                    if (cap.isEjb31Supported()) {
-                        toRet.addAll(Arrays.asList(WEB_PRIVILEGED_NAMES_EE6_FULL));
-                    }
-                    if (cap.isEjb31LiteSupported()) {
-                        toRet.addAll(Arrays.asList(WEB_PRIVILEGED_NAMES_EE6_WEB));
+                    if (cap != null) {
+                        if (cap.isEjb31Supported()) {
+                            toRet.addAll(Arrays.asList(WEB_PRIVILEGED_NAMES_EE6_FULL));
+                        }
+                        if (cap.isEjb31LiteSupported()) {
+                            toRet.addAll(Arrays.asList(WEB_PRIVILEGED_NAMES_EE6_WEB));
+                        }
                     }
                     return toRet.toArray(new String[0]);
                 }

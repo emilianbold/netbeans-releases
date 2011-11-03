@@ -72,6 +72,7 @@ import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.NativeProcessChangeEvent;
@@ -166,8 +167,21 @@ public class ExecuteCommand {
 
         if (envMap.containsKey("__CND_TOOLS__")) { // NOI18N
             try {
-                mm.prependPathVariable("LD_PRELOAD", BuildTraceHelper.INSTANCE.getLibraryName(execEnv)); // NOI18N
-                mm.prependPathVariable("LD_LIBRARY_PATH", BuildTraceHelper.INSTANCE.getLDPaths(execEnv)); // NOI18N
+                if (BuildTraceHelper.isMac(execEnv)) {
+                    String what = BuildTraceHelper.INSTANCE.getLibraryName(execEnv);
+                    if (what.indexOf(':') > 0) {
+                        what = what.substring(0,what.indexOf(':'));
+                    }
+                    String where = BuildTraceHelper.INSTANCE.getLDPaths(execEnv);
+                    if (where.indexOf(':') > 0) {
+                        where = where.substring(0,where.indexOf(':'));
+                    }
+                    String lib = where+'/'+what;
+                    mm.prependPathVariable(BuildTraceHelper.getLDPreloadEnvName(execEnv),lib);
+                } else {
+                    mm.prependPathVariable(BuildTraceHelper.getLDPreloadEnvName(execEnv), BuildTraceHelper.INSTANCE.getLibraryName(execEnv));
+                    mm.prependPathVariable(BuildTraceHelper.getLDPathEnvName(execEnv), BuildTraceHelper.INSTANCE.getLDPaths(execEnv));
+                }
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -199,7 +213,7 @@ public class ExecuteCommand {
 
         return NativeExecutionService.newService(npb, descr, "make"); // NOI18N
     }
-
+    
     private CompilerSet getCompilerSet() {
         CompilerSet set = null;
         ToolchainProject toolchain = project.getLookup().lookup(ToolchainProject.class);
@@ -225,7 +239,7 @@ public class ExecuteCommand {
         private static final BuildTraceHelper INSTANCE = new BuildTraceHelper();
 
         private BuildTraceHelper() {
-            super("org.netbeans.modules.cnd.actions", "bin/${osname}-${platform}${_isa}/libBuildTrace.so"); // NOI18N
+            super("org.netbeans.modules.cnd.actions", "bin/${osname}-${platform}${_isa}/libBuildTrace.${soext}"); // NOI18N
         }
     }
 

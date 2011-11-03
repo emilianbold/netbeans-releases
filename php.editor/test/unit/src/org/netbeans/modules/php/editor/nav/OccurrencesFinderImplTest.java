@@ -433,6 +433,17 @@ public class OccurrencesFinderImplTest extends TestBase {
         checkOccurrences(getTestPath(), "$v4 = new baf\\MyClass203^419();", true);
     }
     
+    public void testIssue204433_01() throws Exception {
+        checkOccurrences(getTestPath(), "$form = new Edit^Form();", true);
+    }
+    
+    public void testIssue204433_02() throws Exception {
+        checkOccurrences(getTestPath(), "$form = new E^F()", true);
+    }
+
+    public void testIssue204433_03() throws Exception {
+        checkOccurrences(getTestPath(), "$fr = new Edit^Form();", true);
+    }
 
     //TODO; these 2 tests are temporary disabled not to fail, needs to be evaluated
     // and maybe fixed (NOT URGENT)

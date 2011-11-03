@@ -631,6 +631,18 @@ made subject to such option by the copyright holder.
    the <code>FRAMEWORK_START_LEVEL</code> key in <code>org/netbeans/core/netigso/Bundle.properties</code>.
    By default the key is empty, which means no change to default OSGi start level of <code>1</code>.
    </api>
+   <api category="devel" group="branding" name="org.netbeans.core.netigso.MODULE_START_LEVEL"
+   type="export">
+   The meaning of enabled module (a NetBeans terminology) and started bundle
+   (an OSGi terminology) is not the same. Although in general we recommend
+   to start all bundles that are marked as enabled, you may want to configure
+   this. To do so, you can use various start levels
+   and re-brand <code>MODULE_START_LEVEL</code> key in 
+   <code>org/netbeans/core/netigso/Bundle.properties</code> to specify the
+   start level of modules that are supposed to be started.
+   Only modules with lower or equal start level than value of this 
+   key will be started.
+   </api>
   </p>
  </answer>
 

@@ -1221,7 +1221,13 @@ public class DocumentFinder
                 length = end - start;
                 if (length <= 0){
                     found = false;
-                    return -1;
+                    do {
+                        initOffset++;
+                    } while(initOffset < chars.length() && matcher.find(initOffset) && matcher.end() - matcher.start() == 0);
+                    if(matcher.end() - matcher.start() > 0)
+                        return find(initOffset,chars);
+                    else
+                        return -1;
                 }
                 return start;
             }else{

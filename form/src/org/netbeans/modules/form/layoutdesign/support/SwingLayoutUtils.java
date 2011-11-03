@@ -49,6 +49,8 @@ import java.util.*;
 import javax.swing.AbstractButton;
 import javax.swing.JLabel;
 import org.netbeans.modules.form.layoutdesign.LayoutComponent;
+import org.netbeans.modules.form.layoutdesign.LayoutConstants;
+import org.netbeans.modules.form.layoutdesign.LayoutInterval;
 
 /**
  * Utilities for swing layout support.
@@ -62,7 +64,7 @@ public class SwingLayoutUtils {
     public static final int STATUS_NON_RESIZABLE = 0;
     /** The component is resizable by default. */
     public static final int STATUS_RESIZABLE = 1;
-    
+
     /**
      * Contains class names of non-resizable components e.g.
      * components that are non-resizable unless one (or more) of
@@ -170,5 +172,31 @@ public class SwingLayoutUtils {
         }
         return linkSizeGroup;
     }
-    
+
+    /**
+     * GroupLayout does not like the default ending container gap resizing if
+     * there is some other interval in parallel aligned at the trailing edge
+     * with it (or resizing), having smaller min size. It fails to compute the
+     * correct group size then. Simplest case of two buttons:
+     *   par(jButton1_resizing_or_trailing,
+     *       seq(jButton2_fixed, default_cont_gap_resizing))
+     * @param seq the sequence to check
+     * @return the undesirable resizing container gap at the end of the sequence
+     *         that should not be used, null if everything's ok
+     */
+    public static LayoutInterval getUnsupportedResizingContainerGap(LayoutInterval seq) {
+        if (seq.isSequential() && seq.getSubIntervalCount() > 1 && seq.getParent() != null) {
+            LayoutInterval gap = seq.getSubInterval(seq.getSubIntervalCount()-1);
+            if (gap.getPreferredSize() == LayoutConstants.NOT_EXPLICITLY_DEFINED && gap.getMaximumSize() == Short.MAX_VALUE
+                    && LayoutInterval.getNeighbor(seq, LayoutConstants.TRAILING, false, true, false) == null) {
+                for (Iterator<LayoutInterval> it=seq.getParent().getSubIntervals(); it.hasNext(); ) {
+                    LayoutInterval sub = it.next();
+                    if (sub != seq && LayoutInterval.isAlignedAtBorder(sub, LayoutConstants.TRAILING)) {
+                        return gap;
+                    }
+                }
+            }
+        }
+        return null;
+    }
 }

@@ -342,6 +342,13 @@ public class SwitcherTable extends JTable {
         super.paint(g);
     }
     
+    @Override
+    public void changeSelection(int rowIndex, int columnIndex, boolean toggle, boolean extend) {
+        //#203125 - CTRL key is held down while showing the popup switcher which confuses
+        //the mouse-originated selection changes 
+        super.changeSelection( rowIndex, columnIndex, false, false );
+    }
+    
     /**
      * Returns the last valid row in the last collumn.
      *

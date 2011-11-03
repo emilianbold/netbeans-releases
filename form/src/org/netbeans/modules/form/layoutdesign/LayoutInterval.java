@@ -399,7 +399,7 @@ public final class LayoutInterval implements LayoutConstants {
     void unsetAttribute(int attr) {
         attributes &= ~attr;
     }
-    
+
     /**
      * Sets attributes of the layout interval. Should be used by persistence manager only!
      *
@@ -475,7 +475,7 @@ public final class LayoutInterval implements LayoutConstants {
         return interval;
     }
 
-    LayoutInterval getSubInterval(int index) {
+    public LayoutInterval getSubInterval(int index) {
         return subIntervals != null ? subIntervals.get(index) : null;
     }
 
@@ -687,11 +687,11 @@ public final class LayoutInterval implements LayoutConstants {
      * @param aligned true if the indirect neighbor must be in contact with the
      *                     given interval
      */
-    static LayoutInterval getNeighbor(LayoutInterval interval,
-                                      int alignment,
-                                      boolean nonEmpty,
-                                      boolean outOfParent,
-                                      boolean aligned)
+    public static LayoutInterval getNeighbor(LayoutInterval interval,
+                                             int alignment,
+                                             boolean nonEmpty,
+                                             boolean outOfParent,
+                                             boolean aligned)
     {
         assert alignment == LEADING || alignment == TRAILING;
 
@@ -747,7 +747,7 @@ public final class LayoutInterval implements LayoutConstants {
      * For parallel parent the interval must have the given alignment in the
      * group, or be resizing.
      */
-    static boolean isAlignedAtBorder(LayoutInterval interval, int alignment) {
+    public static boolean isAlignedAtBorder(LayoutInterval interval, int alignment) {
         if (alignment != LEADING && alignment != TRAILING) {
             return false;
         }
@@ -1131,7 +1131,7 @@ public final class LayoutInterval implements LayoutConstants {
      * @return effective alignment within parent, or DEFAULT in case of
      *         ambiguous alignment in sequential parent
      */
-    static int getEffectiveAlignment(LayoutInterval interval, int edge) {
+    static int getEffectiveAlignment(LayoutInterval interval, int edge, boolean considerParentSequenceAlignment) {
         assert edge == LEADING || edge == TRAILING;
 
         boolean wantResize = LayoutInterval.wantResize(interval);
@@ -1150,8 +1150,10 @@ public final class LayoutInterval implements LayoutConstants {
             LayoutInterval li = parent.getSubInterval(i);
             if (li == interval) {
                 before = false;
-            }
-            else if (LayoutInterval.wantResize(li)) {
+                if (wantResize) {
+                    afterFixed = false;
+                }
+            } else if (LayoutInterval.wantResize(li)) {
                 if (before)
                     beforeFixed = false;
                 else
@@ -1165,13 +1167,13 @@ public final class LayoutInterval implements LayoutConstants {
         if (!beforeFixed && afterFixed)
             return edge^1;
         if (beforeFixed && afterFixed) {
-            if (wantResize) {
-                return edge;
-            } else {
+            if (considerParentSequenceAlignment) {
                 int parentAlignment = parent.getAlignment();
                 if (parentAlignment == LEADING || parentAlignment == TRAILING) {
                     return parentAlignment;
                 }
+            } else {
+                return edge;
             }
         }
 
@@ -1188,7 +1190,7 @@ public final class LayoutInterval implements LayoutConstants {
         assert parent.isParentOf(interval);
         int alignment = edge;
         do {
-            alignment = getEffectiveAlignment(interval, alignment);
+            alignment = getEffectiveAlignment(interval, alignment, true);
             interval = interval.getParent();
             if (alignment != LEADING && alignment != TRAILING) {
                 while (interval != parent) {
@@ -1200,6 +1202,22 @@ public final class LayoutInterval implements LayoutConstants {
         }
         while (interval != parent);
         return alignment;
+    }
+
+    static boolean hasAnyResizingNeighbor(LayoutInterval interval, int alignment) {
+        assert alignment == LEADING || alignment == TRAILING;
+        LayoutInterval parent = interval.getParent();
+        if (parent.isSequential()) {
+            int d = alignment==LEADING ? -1:1;
+            int index = parent.indexOf(interval) + d;
+            while (index >= 0 && index < parent.getSubIntervalCount()) {
+                if (LayoutInterval.wantResize(parent.getSubInterval(index))) {
+                    return true;
+                }
+                index += d;
+            }
+        }
+        return false;
     }
 
     static int getIndexInParent(LayoutInterval interval, LayoutInterval parent) {

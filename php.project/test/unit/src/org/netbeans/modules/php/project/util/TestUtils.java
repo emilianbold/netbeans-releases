@@ -46,13 +46,19 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.Random;
+import java.util.concurrent.Callable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import junit.framework.Assert;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.MockServices;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.api.PhpLanguageOptions.PhpVersion;
+import org.netbeans.modules.project.ui.test.ProjectSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 
@@ -61,25 +67,27 @@ import org.openide.util.Exceptions;
  */
 public final class TestUtils {
 
-    private TestUtils() {
-    }
+    private static final Logger PHP_PROJECT_LOGGER = Logger.getLogger(PhpProject.class.getName());
+    private static final TestLogHandler TEST_LOG_HANDLER = new TestLogHandler();
 
     static {
         MockServices.setServices(MockInstalledFileLocator.class);
     }
 
-    public static void init() {
-        // noop
+    private TestUtils() {
     }
 
     public static PhpProject createPhpProject(File workDir) throws IOException {
-        String projectName = "phpProject" + new Random().nextInt();
-        File projectDir = new File(workDir, projectName);
-        File srcDir = projectDir;
+        String projectName;
+        File projectDir;
+        do {
+            projectName = "phpProject" + new Random().nextLong();
+            projectDir = new File(workDir, projectName);
+        } while (projectDir.exists());
 
         final PhpProjectGenerator.ProjectProperties properties = new PhpProjectGenerator.ProjectProperties()
                 .setProjectDirectory(projectDir)
-                .setSourcesDirectory(srcDir)
+                .setSourcesDirectory(projectDir)
                 .setName(projectName)
                 .setUrl("http://localhost/" + projectName)
                 .setCharset(Charset.defaultCharset())
@@ -91,6 +99,65 @@ public final class TestUtils {
         ProjectManager.getDefault().saveProject(project);
         Assert.assertTrue("Not PhpProject but: " + project.getClass().getName(), project instanceof PhpProject);
         return (PhpProject) project;
+    }
+
+    public static PhpProject openPhpProject(PhpProject phpProject) throws Exception {
+        PhpProject openedProject = openPhpProject(phpProject.getProjectDirectory());
+        Assert.assertEquals("Project names should be same.", phpProject.getName(), openedProject.getName());
+        return openedProject;
+    }
+
+    public static PhpProject openPhpProject(FileObject projectDir) throws Exception {
+        Object openedProject = waitProjectOpened(projectDir);
+        Assert.assertTrue("Project should be opened: " + openedProject.getClass().getName(), openedProject instanceof PhpProject);
+        PhpProject phpProject = (PhpProject) openedProject;
+        return phpProject;
+    }
+
+    public static boolean closePhpProject(PhpProject project) throws Exception {
+        boolean closed = waitProjectClosed(project);
+        Assert.assertTrue("Project should be closed: " + project, closed);
+        return closed;
+    }
+
+    /**
+     * Open project and wait for ProjectOpenedHook to finish.
+     */
+    private static Object waitProjectOpened(final FileObject projectDir) throws Exception {
+        return waitForMessage("PROJECT_OPENED_FINISHED", new Callable<Object>() {
+            @Override
+            public Object call() throws Exception {
+                return ProjectSupport.openProject(FileUtil.toFile(projectDir));
+            }
+        });
+    }
+
+    /**
+     * Close project and wait for ProjectClosedHook to finish.
+     */
+    private static boolean waitProjectClosed(final PhpProject project) throws Exception {
+        return waitForMessage("PROJECT_CLOSED_FINISHED", new Callable<Boolean>() {
+            @Override
+            public Boolean call() throws Exception {
+                return ProjectSupport.closeProject(project.getName());
+            }
+        });
+    }
+
+    private static <T> T waitForMessage(String message, Callable<T> action) throws Exception {
+        T result = null;
+        final Level level = PHP_PROJECT_LOGGER.getLevel();
+        PHP_PROJECT_LOGGER.addHandler(TEST_LOG_HANDLER);
+        try {
+            PHP_PROJECT_LOGGER.setLevel(Level.FINEST);
+            TEST_LOG_HANDLER.expect(message);
+            result = action.call();
+            TEST_LOG_HANDLER.await(5000);
+        } finally {
+            PHP_PROJECT_LOGGER.setLevel(level);
+            PHP_PROJECT_LOGGER.removeHandler(TEST_LOG_HANDLER);
+        }
+        return result;
     }
 
     //~ Inner classes
@@ -111,5 +178,7 @@ public final class TestUtils {
             }
             return null;
         }
+
     }
+
 }

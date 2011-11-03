@@ -31,7 +31,7 @@ DEFAULTCONF=SunOS-x86
 CONF=${DEFAULTCONF}
 
 # All Configurations
-ALLCONFS=SunOS-x86 SunOS-x86_64 SunOS-sparc SunOS-sparc_64 Linux-x86 Linux-x86_64 
+ALLCONFS=SunOS-x86 SunOS-x86_64 SunOS-sparc SunOS-sparc_64 Linux-x86 Linux-x86_64 MacOSX-x86 MacOSX-x86_64 
 
 
 # build

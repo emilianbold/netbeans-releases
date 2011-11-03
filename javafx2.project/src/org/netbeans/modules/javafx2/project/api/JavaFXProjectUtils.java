@@ -46,6 +46,7 @@ import javax.swing.ListCellRenderer;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
 import org.netbeans.modules.javafx2.project.J2SEProjectType;
+import org.netbeans.modules.javafx2.project.ui.PlatformsComboBoxModel;
 
 /**
  * 
@@ -59,8 +60,8 @@ public final class JavaFXProjectUtils {
     private JavaFXProjectUtils() {
     }
 
-    public static ComboBoxModel createPlatformComboBoxModel(String activePlatform) {
-        return PlatformUiSupport.createPlatformComboBoxModel(activePlatform);
+    public static ComboBoxModel createPlatformComboBoxModel() {
+        return new PlatformsComboBoxModel(PlatformUiSupport.createPlatformComboBoxModel("default_platform")); // NOI18N
     }
 
     public static ListCellRenderer createPlatformListCellRenderer() {

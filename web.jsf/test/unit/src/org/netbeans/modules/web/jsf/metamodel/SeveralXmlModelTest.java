@@ -45,23 +45,15 @@ package org.netbeans.modules.web.jsf.metamodel;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.List;
 
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.support.TestUtilities;
 import org.netbeans.modules.web.jsf.api.facesmodel.Application;
+import org.netbeans.modules.web.jsf.api.metamodel.FacesManagedBean;
 import org.netbeans.modules.web.jsf.api.metamodel.JsfModel;
-import org.openide.filesystems.FileAttributeEvent;
-import org.openide.filesystems.FileChangeListener;
-import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileRenameEvent;
-import org.openide.filesystems.FileUtil;
 
 
 /**
@@ -162,6 +154,35 @@ public class SeveralXmlModelTest extends CommonTestCase {
                 
                 applications = model.getElements( Application.class);
                 assertEquals( 2 , applications.size());
+                return null;
+            }
+        });
+    }
+
+    public void testModelBeanCompletion() throws Exception {
+        FileObject fileObject = srcFO.getFileObject("META-INF/one.faces-config.xml");
+        if (fileObject != null) {
+            fileObject.delete();
+        }
+        TestUtilities.copyStringToFileObject(srcFO, "META-INF/faces-config.xml",
+                getFileContent("data/faces-config.xml"));
+
+        createJsfModel().runReadAction(new MetadataModelAction<JsfModel, Void>() {
+
+            @Override
+            public Void run(JsfModel model) throws Exception {
+                List<FacesManagedBean> elements = model.getElements(FacesManagedBean.class);
+                assertEquals(1 , elements.size());
+
+                PropListener l = new PropListener();
+                model.addPropertyChangeListener(l);
+                TestUtilities.copyStringToFileObject(srcFO, "META-INF/faces-config.xml",
+                        getFileContent("data/three.faces-config.xml"));
+                l.waitForModelUpdate();
+
+                // ManagedBeans without specified class shouldn't be returned
+                elements = model.getElements(FacesManagedBean.class);
+                assertEquals(0 , elements.size());
                 return null;
             }
         });

@@ -57,6 +57,7 @@ import org.openide.windows.Mode;
 import org.openide.windows.WindowManager;
 import org.openide.text.CloneableEditor;
 import org.openide.text.CloneableEditorSupport;
+import org.openide.windows.TopComponent.Description;
 
 /**
  * CloneableEditor subclass taking care about listening and delegating these event to
@@ -67,6 +68,7 @@ import org.openide.text.CloneableEditorSupport;
  * @author  Libor Kramolis
  * @version 0.1
  */
+@Description(preferredID = "xml.source", iconBase="org/netbeans/modules/xml/resources/xmlObject.gif")
 public class TextEditorComponent extends CloneableEditor {
 
     /** Serial Version UID */

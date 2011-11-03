@@ -285,7 +285,7 @@ public class BatchSearch {
                                     progress.setMessage("processing: " + FileUtil.getFileDisplayName(parameter.getFileObject()));
                                     Resource r = file2Resource.get(parameter.getFileObject());
 
-                                    List<ErrorDescription> hints = new HintsInvoker(parameter, new AtomicBoolean()).computeHints(parameter, r.hints, problems);
+                                    List<ErrorDescription> hints = new HintsInvoker(parameter, true, new AtomicBoolean()).computeHints(parameter, r.hints, problems);
 
                                     cont = callback.spansVerified(parameter, r, hints);
                                 } catch (ThreadDeath td) {

@@ -50,6 +50,7 @@ import java.util.Map;
 import java.util.Set;
 import javax.swing.event.ChangeListener;
 import org.apache.maven.artifact.versioning.ComparableVersion;
+import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluationException;
 import org.netbeans.api.java.queries.AnnotationProcessingQuery.Result;
 import org.netbeans.api.java.queries.AnnotationProcessingQuery.Trigger;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
@@ -74,7 +75,7 @@ public class MavenAnnotationProcessingQueryImpl implements AnnotationProcessingQ
                 if (version != null && new ComparableVersion(version).compareTo(new ComparableVersion("2.2")) < 0) {
                     return EnumSet.noneOf(Trigger.class);
                 }
-                String compilerArgument = PluginPropertyUtils.getPluginProperty(prj.getOriginalMavenProject(), Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_COMPILER, "compilerArgument", null);
+                String compilerArgument = PluginPropertyUtils.getPluginProperty(prj, Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_COMPILER, "compilerArgument", null);
                 if ("-proc:none".equals(compilerArgument)) {
                     return EnumSet.noneOf(Trigger.class);
                 }
@@ -84,7 +85,15 @@ public class MavenAnnotationProcessingQueryImpl implements AnnotationProcessingQ
                 return null;
             }
             public @Override URL sourceOutputDirectory() {
-                return FileUtil.urlForArchiveOrDir(new File(FileUtil.toFile(prj.getProjectDirectory()), "target/generated-sources/annotations")); // NOI18N
+                String generatedSourcesDirectory = PluginPropertyUtils.getPluginProperty(prj, Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_COMPILER, "generatedSourcesDirectory", null);
+                if (generatedSourcesDirectory == null) {
+                    generatedSourcesDirectory = "${project.build.directory}/generated-sources/annotations";
+                }
+                try {
+                    return FileUtil.urlForArchiveOrDir(new File((String) PluginPropertyUtils.createEvaluator(prj.getOriginalMavenProject()).evaluate(generatedSourcesDirectory)));
+                } catch (ExpressionEvaluationException ex) {
+                    return null;
+                }
             }
             public @Override Map<? extends String, ? extends String> processorOptions() {
                  Map<String, String> options = new LinkedHashMap<String, String>();

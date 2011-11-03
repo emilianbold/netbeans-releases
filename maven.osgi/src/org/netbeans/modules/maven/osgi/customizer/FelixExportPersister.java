@@ -56,7 +56,7 @@ import org.netbeans.modules.maven.model.pom.Configuration;
 import org.netbeans.modules.maven.model.pom.POMExtensibilityElement;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.Plugin;
-import org.netbeans.modules.maven.osgi.OSGIConstants;
+import org.netbeans.modules.maven.osgi.OSGiConstants;
 import org.netbeans.modules.maven.spi.customizer.SelectedItemsTablePersister;
 
 /**
@@ -76,17 +76,17 @@ public class FelixExportPersister implements SelectedItemsTablePersister {
     @Override
     public SortedMap<String, Boolean> read() {
         String[] exports = PluginPropertyUtils.getPluginPropertyList(project,
-                OSGIConstants.GROUPID_FELIX, OSGIConstants.ARTIFACTID_BUNDLE_PLUGIN,
-                OSGIConstants.PARAM_INSTRUCTIONS, OSGIConstants.EXPORT_PACKAGE,
-                OSGIConstants.GOAL_MANIFEST);
+                OSGiConstants.GROUPID_FELIX, OSGiConstants.ARTIFACTID_BUNDLE_PLUGIN,
+                OSGiConstants.PARAM_INSTRUCTIONS, OSGiConstants.EXPORT_PACKAGE,
+                OSGiConstants.GOAL_MANIFEST);
         String exportInstruction = null;
         if (exports != null && exports.length == 1) {
             exportInstruction = exports[0];
         }
         String[] privates = PluginPropertyUtils.getPluginPropertyList(project,
-                OSGIConstants.GROUPID_FELIX, OSGIConstants.ARTIFACTID_BUNDLE_PLUGIN,
-                OSGIConstants.PARAM_INSTRUCTIONS, OSGIConstants.PRIVATE_PACKAGE,
-                OSGIConstants.GOAL_MANIFEST);
+                OSGiConstants.GROUPID_FELIX, OSGiConstants.ARTIFACTID_BUNDLE_PLUGIN,
+                OSGiConstants.PARAM_INSTRUCTIONS, OSGiConstants.PRIVATE_PACKAGE,
+                OSGiConstants.GOAL_MANIFEST);
         String privateInstruction = null;
         if (privates != null && privates.length == 1) {
             privateInstruction = privates[0];
@@ -107,7 +107,7 @@ public class FelixExportPersister implements SelectedItemsTablePersister {
         Build build = pomModel.getProject().getBuild();
         Plugin felixPlugin = null;
         if (build != null) {
-            felixPlugin = build.findPluginById(OSGIConstants.GROUPID_FELIX, OSGIConstants.ARTIFACTID_BUNDLE_PLUGIN);
+            felixPlugin = build.findPluginById(OSGiConstants.GROUPID_FELIX, OSGiConstants.ARTIFACTID_BUNDLE_PLUGIN);
         } else {
             build = pomModel.getFactory().createBuild();
             pomModel.getProject().setBuild(build);
@@ -117,8 +117,8 @@ public class FelixExportPersister implements SelectedItemsTablePersister {
             config = felixPlugin.getConfiguration();
         } else {
             felixPlugin = pomModel.getFactory().createPlugin();
-            felixPlugin.setGroupId(OSGIConstants.GROUPID_FELIX);
-            felixPlugin.setArtifactId(OSGIConstants.ARTIFACTID_BUNDLE_PLUGIN);
+            felixPlugin.setGroupId(OSGiConstants.GROUPID_FELIX);
+            felixPlugin.setArtifactId(OSGiConstants.ARTIFACTID_BUNDLE_PLUGIN);
             felixPlugin.setExtensions(Boolean.TRUE);
             build.addPlugin(felixPlugin);
         }
@@ -130,19 +130,19 @@ public class FelixExportPersister implements SelectedItemsTablePersister {
         POMExtensibilityElement instructionsEl = null;
         List<POMExtensibilityElement> confEls = config.getConfigurationElements();
         for (POMExtensibilityElement el : confEls) {
-            if (OSGIConstants.PARAM_INSTRUCTIONS.equals(el.getQName().getLocalPart())) {
+            if (OSGiConstants.PARAM_INSTRUCTIONS.equals(el.getQName().getLocalPart())) {
                 instructionsEl = el;
                 break;
             }
         }
         if (instructionsEl == null) {
             instructionsEl = pomModel.getFactory().
-                    createPOMExtensibilityElement(new QName(OSGIConstants.PARAM_INSTRUCTIONS));
+                    createPOMExtensibilityElement(new QName(OSGiConstants.PARAM_INSTRUCTIONS));
             config.addExtensibilityElement(instructionsEl);
         }
         
-        POMExtensibilityElement exportEl = ModelUtils.getOrCreateChild(instructionsEl, OSGIConstants.EXPORT_PACKAGE, pomModel);
-        POMExtensibilityElement privateEl = ModelUtils.getOrCreateChild(instructionsEl, OSGIConstants.PRIVATE_PACKAGE, pomModel);
+        POMExtensibilityElement exportEl = ModelUtils.getOrCreateChild(instructionsEl, OSGiConstants.EXPORT_PACKAGE, pomModel);
+        POMExtensibilityElement privateEl = ModelUtils.getOrCreateChild(instructionsEl, OSGiConstants.PRIVATE_PACKAGE, pomModel);
 
         exportEl.setElementText(exportIns.get(InstructionsConverter.EXPORT_PACKAGE));
         privateEl.setElementText(exportIns.get(InstructionsConverter.PRIVATE_PACKAGE));

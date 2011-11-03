@@ -441,11 +441,13 @@ public class DefaultCssEditorModule extends CssEditorModule {
     public <T extends List<StructureItem>> NodeVisitor<T> getStructureItemsNodeVisitor(FeatureContext context, T result) {
 
         final List<StructureItem> rules = new ArrayList<StructureItem>();
+        final List<StructureItem> atrules = new ArrayList<StructureItem>();
         final Set<StructureItem> classes = new HashSet<StructureItem>();
         final Set<StructureItem> ids = new HashSet<StructureItem>();
         final Set<StructureItem> elements = new HashSet<StructureItem>();
 
         result.add(new TopLevelStructureItem.Rules(rules));
+        result.add(new TopLevelStructureItem.AtRules(atrules));
         result.add(new TopLevelStructureItem.Classes(classes));
         result.add(new TopLevelStructureItem.Ids(ids));
         result.add(new TopLevelStructureItem.Elements(elements));
@@ -478,6 +480,40 @@ public class DefaultCssEditorModule extends CssEditorModule {
                         break;
                     case cssId:
                         ids.add(new CssRuleStructureItemHashableByName(node.image(), CssNodeElement.createElement(node), snapshot));
+                        break;
+                    case charSet:
+                    case imports:
+                    case namespace:
+                        atrules.add(new CssRuleStructureItem(node.image(), CssNodeElement.createElement(node), snapshot));
+                        break;
+                    case fontFace:
+                        Node tokenNode = NodeUtil.getChildTokenNode(node, CssTokenId.FONT_FACE_SYM);
+                        atrules.add(new CssRuleStructureItem(tokenNode.image(), CssNodeElement.createElement(node), snapshot));
+                        break;
+                    case media_query_list:
+                        Node mediaNode = node.parent();
+                        assert mediaNode.type() == NodeType.media;
+                        StringBuilder image = new StringBuilder();
+                        image.append("@media "); //NOI18N
+                        image.append(node.image());
+                        atrules.add(new CssRuleStructureItem(image, CssNodeElement.createElement(mediaNode), snapshot));
+                        break;
+                    case page:
+                        Node pageSymbolNode = NodeUtil.getChildTokenNode(node, CssTokenId.PAGE_SYM);
+                        Node lbraceSymbolNode = NodeUtil.getChildTokenNode(node, CssTokenId.LBRACE);
+                        if(pageSymbolNode != null && lbraceSymbolNode != null) {
+                            CharSequence headingAreaImage = snapshot.getText().subSequence(pageSymbolNode.from(), lbraceSymbolNode.from());
+                            atrules.add(new CssRuleStructureItem(headingAreaImage, CssNodeElement.createElement(node), snapshot));
+                        }
+                        break;
+                    case counterStyle:
+                        Node identNode = NodeUtil.getChildTokenNode(node, CssTokenId.IDENT);
+                        if(identNode != null) {
+                            image = new StringBuilder();
+                            image.append("@counter-style "); //NOI18N
+                            image.append(identNode.image());
+                            atrules.add(new CssRuleStructureItem(image, CssNodeElement.createElement(node), snapshot));
+                        }
                         break;
 
                 }

@@ -98,7 +98,8 @@ public class ProjectUtils {
      * @see Project#getLookup
      */
     public static ProjectInformation getInformation(Project p) {
-        ProjectInformation pi = p.getLookup().lookup(ProjectInformation.class);
+        Lookup l = p.getLookup();
+        ProjectInformation pi = l.lookup(ProjectInformation.class);
         return new AnnotateIconProxyProjectInformation(pi != null ? pi : new BasicInformation(p));
     }
     
@@ -112,7 +113,8 @@ public class ProjectUtils {
      * @see Project#getLookup
      */
     public static Sources getSources(Project p) {
-        Sources s = p.getLookup().lookup(Sources.class);
+        Lookup l = p.getLookup();
+        Sources s = l.lookup(Sources.class);
         if (s != null) {
             return s;
         } else {

@@ -1627,6 +1627,41 @@ public class IntroduceHintTest extends NbTestCase {
         performConstantAccessTest("package test; public class Test { static String g(String s) { return s; } static String d(String s) { return |g(s)|; } }", false);
     }
 
+    public void testIntroduceMethod203254() throws Exception {
+        performFixTest("package test;\n" +
+                       "class Test {\n" +
+                       "    public void test() {\n" +
+                       "        final String s;\n" +
+                       "        |s = \"a\";|\n" +
+                       "    }\n" +
+                       "}",
+                       "package test; class Test { public void test() { final String s; name(); } private void name() { String s; s = \"a\"; } }",
+                       new DialogDisplayerImpl3("name", EnumSet.of(Modifier.PRIVATE), true),
+                       1, 0);
+    }
+
+    public void testIntroduceMethod203002() throws Exception {
+        performFixTest("package test;\n" +
+                       "class Test {\n" +
+                       "    public void test() {\n" +
+                       "        |double leftH, rightH;\n" +
+                       "        leftH = Math.max(1, 1);|\n" +
+                       "    }\n" +
+                       "}",
+                       ("package test;\n" +
+                       "class Test {\n" +
+                       "    public void test() {\n" +
+                       "        name();\n" +
+                       "    }\n" +
+                       "    private void name() {\n" +
+                       "        double leftH, rightH;\n" +
+                       "        leftH = Math.max(1, 1);\n" +
+                       "    }\n" +
+                       "}").replaceAll("[ \t\n]+", " "),
+                       new DialogDisplayerImpl3("name", EnumSet.of(Modifier.PRIVATE), true),
+                       1, 0);
+    }
+
     protected void prepareTest(String code) throws Exception {
         clearWorkDir();
         

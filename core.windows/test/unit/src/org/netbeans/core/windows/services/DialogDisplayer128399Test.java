@@ -45,11 +45,18 @@
 package org.netbeans.core.windows.services;
 
 import java.awt.Dialog;
+import java.awt.FlowLayout;
 import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
+import javax.swing.UnsupportedLookAndFeelException;
 import org.netbeans.junit.NbTestCase;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -141,9 +148,9 @@ public class DialogDisplayer128399Test extends NbTestCase {
      * 
      */
     public void testNotifyDescriptorConfirmation () {
-        final JButton testButton = new JButton ("for-test-only");
+        final JTextField testComponent = new JTextField ("for-test-only");
         NotifyDescriptor nd = new NotifyDescriptor.Confirmation (
-                testButton,
+                testComponent,
                 "testNotifyDescriptorConfirmation",
                 NotifyDescriptor.YES_NO_OPTION);
         assertEquals ("YES_OPTION is the default value.", NotifyDescriptor.YES_OPTION, nd.getDefaultValue ());
@@ -151,11 +158,56 @@ public class DialogDisplayer128399Test extends NbTestCase {
             public void run () {
                 assertEquals ("YES_OPTION is the default button on dialog",
                         NbBundle.getBundle (NbPresenter.class).getString ("YES_OPTION_CAPTION"),
-                        testButton.getRootPane ().getDefaultButton ().getText ());
-                testButton.getRootPane ().getDefaultButton ().doClick ();
+                        testComponent.getRootPane ().getDefaultButton ().getText ());
+                testComponent.getRootPane ().getDefaultButton ().doClick ();
             }
         }, 1000);
         DialogDisplayer.getDefault ().notify (nd);
+    }
+    
+    //#204066
+    public void testDialogDescriptorWithoutOptions () throws ClassNotFoundException, InstantiationException, IllegalAccessException, UnsupportedLookAndFeelException {
+        JPanel panel = new JPanel( new FlowLayout() );
+        final JTextField text = new JTextField( "text" );
+        final JButton button1 = new JButton( "button1" );
+        final JButton button2 = new JButton( "button2" );
+        panel.add( text );
+        panel.add( button1 );
+        panel.add( button2 );
+        DialogDescriptor dd = new DialogDescriptor(panel, "testDialogDescriptorWithoutOptions", true, new Object[0], null, DialogDescriptor.DEFAULT_ALIGN, null, null);
+        assertNull(dd.getDefaultValue());
+        final JDialog dlg = ( JDialog ) DialogDisplayer.getDefault().createDialog(dd);
+        final boolean[] result = new boolean[1];
+        result[0] = false;
+        RequestProcessor.getDefault ().post (new Runnable () {
+            public void run () {
+                SwingUtilities.invokeLater( new Runnable() {
+                    @Override
+                    public void run() {
+                        dlg.getRootPane().setDefaultButton( button2 );
+                        button1.requestFocusInWindow();
+                        text.requestFocusInWindow();
+                    }
+                });
+                try {
+                    Thread.sleep( 1000 );
+                    assertEquals( button2, dlg.getRootPane().getDefaultButton() );
+                    result[0] = true;
+                } catch( InterruptedException ex ) {
+                    Exceptions.printStackTrace( ex );
+                } finally {
+                    SwingUtilities.invokeLater( new Runnable() {
+
+                        @Override
+                        public void run() {
+                            dlg.setVisible( false );
+                        }
+                    });
+                }
+            }
+        }, 1000);
+        dlg.setVisible( true );
+        assertTrue( result[0] );
     }
     
 }

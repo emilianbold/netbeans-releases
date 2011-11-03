@@ -265,7 +265,6 @@ public final class HintsPanel extends javax.swing.JPanel   {
         editScriptButton.setVisible(editEnabled);
         editingButtons.setVisible(false);
         
-        toProblemCheckBox.setVisible(allHints);
         severityComboBox.setVisible(allHints);
         severityLabel.setVisible(allHints);
         validate();
@@ -470,13 +469,13 @@ public final class HintsPanel extends javax.swing.JPanel   {
         detailsPanel.setLayout(detailsPanelLayout);
         detailsPanelLayout.setHorizontalGroup(
             detailsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(optionsPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 426, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addComponent(optionsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 426, Short.MAX_VALUE)
             .addComponent(descriptionPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 426, Short.MAX_VALUE)
         );
         detailsPanelLayout.setVerticalGroup(
             detailsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(detailsPanelLayout.createSequentialGroup()
-                .addComponent(optionsPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 98, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(optionsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 98, Short.MAX_VALUE)
                 .addGap(12, 12, 12)
                 .addComponent(descriptionPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 176, Short.MAX_VALUE))
         );
@@ -646,7 +645,7 @@ public final class HintsPanel extends javax.swing.JPanel   {
             }
             DataFolder folder = (DataFolder) DataObject.find(folderFO);
             DataObject template = DataObject.find(tempFO);
-            DataObject newIfcDO = template.createFromTemplate(folder);
+            DataObject newIfcDO = template.createFromTemplate(folder, "Inspection");
             RulesManager.getInstance().reload();
             errorTreeModel = constructTM(Utilities.getBatchSupportedHints(), false);
             errorTree.setModel(errorTreeModel);
@@ -722,6 +721,7 @@ public final class HintsPanel extends javax.swing.JPanel   {
         errorTree.setModel(errorTreeModel);
         select(getHintByName(selectedHintId));
         cancelEditActionPerformed(evt);
+        hasNewHints = true;
     }//GEN-LAST:event_saveButtonActionPerformed
 
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
@@ -953,6 +953,7 @@ public final class HintsPanel extends javax.swing.JPanel   {
                         errorTreeModel = constructTM(Utilities.getBatchSupportedHints(), false);
                         errorTree.setModel(errorTreeModel);
                         select(getHintByName((String) newValue));
+                        hasNewHints = true;
                     } catch (IOException ex) {
                         JOptionPane.showMessageDialog(errorTree, NbBundle.getMessage(HintsPanel.class, "ERR_CannotRename", newValue));
                         errorTree.startEditingAtPath(path);
@@ -1086,6 +1087,7 @@ public final class HintsPanel extends javax.swing.JPanel   {
                     //errorTreeModel.removeNodeFromParent(node);
                     errorTreeModel = constructTM(Utilities.getBatchSupportedHints(), false);
                     errorTree.setModel(errorTreeModel);
+                    hasNewHints = true;
                 }
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);

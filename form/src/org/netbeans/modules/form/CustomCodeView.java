@@ -78,6 +78,8 @@ import org.openide.text.NbDocument;
 import org.openide.util.NbBundle;
 
 import static org.netbeans.modules.form.CustomCodeData.*;
+import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 
 /**
  * GUI panel of the code customizer.
@@ -143,6 +145,11 @@ class CustomCodeView extends javax.swing.JPanel {
         jScrollPane2.setRowHeaderView(declareGutter);
 //        jScrollPane1.setBorder(null);
 //        jScrollPane2.setBorder(null);
+    }
+
+    private javax.swing.JEditorPane createCodeEditorPane() {
+        FormServices services = Lookup.getDefault().lookup(FormServices.class);
+        return services.createCodeEditorPane();
     }
 
     @Override
@@ -528,10 +535,6 @@ class CustomCodeView extends javax.swing.JPanel {
         return null;
     }
 
-    private static Element getRootElement(Document doc) {
-        return doc.getRootElements()[0];
-    }
-
     // -----
 
     private class EditableLine {
@@ -638,7 +641,8 @@ class CustomCodeView extends javax.swing.JPanel {
     // document changes
 
     private class DocumentL implements DocumentListener {
-        boolean active = true;
+        private boolean active = true;
+        private Map<Document,Integer> lastDocLineCounts = new HashMap<Document,Integer>();
 
         @Override
         public void insertUpdate(DocumentEvent e) {
@@ -656,46 +660,37 @@ class CustomCodeView extends javax.swing.JPanel {
         public void changedUpdate(DocumentEvent e) {
         }
 
+        void setActive(boolean active) {
+            this.active = active;
+            if (active) {
+                lastDocLineCounts.clear();
+            }
+        }
+
         private void contentChange(DocumentEvent e) {
             changed = true;
 
             Document doc = e.getDocument();
             CodeCategory category = getCategoryForDocument(doc);
             int eBlockIndex = getEditBlockIndex(category, e.getOffset());
-            if (eBlockIndex < 0)
+            if (eBlockIndex < 0) {
                 return;
+            }
 
             List<EditableLine> lines = getEditInfos(category)[eBlockIndex].lines;
             int[] blockBounds = getEditBlockBounds(category, eBlockIndex);
-
             boolean repaint = false;
-            DocumentEvent.ElementChange change = e.getChange(getRootElement(doc));
-            if (change != null) {
-                Element[] added = change.getChildrenAdded();
-                Element[] removed = change.getChildrenRemoved();
-                if (added.length != removed.length) {
-                    Element rootEl = getRootElement(doc);
-                    int elIndex = rootEl.getElementIndex(e.getOffset());
-                    if (added.length > removed.length) { // lines added
-                        processAddedLines(rootEl, elIndex, lines, blockBounds,
-                                          codeData.getEditableBlock(category, eBlockIndex));
-                        repaint = true;
-                    }
-                    else if (added.length < removed.length) { // lines removed
-                        processRemovedLines(rootEl.getElement(elIndex), lines, blockBounds);
-                        if (blockBounds[0] == blockBounds[1]) { // whole block's text deleted
-                            try { // keep one empty line
-                                doc.insertString(blockBounds[0], "\n", null); // NOI18N
-                                getEditor(category).setCaretPosition(blockBounds[0]);
-                            }
-                            catch (BadLocationException ex) { // should not happen
-                                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-                            }
-                            return; // is updated with adding the new line
-                        }
-                        repaint = true;
-                    }
-                }
+
+            Integer lastLineCount = lastDocLineCounts.get(doc);
+            int lineCount = getLineCount(doc);
+            if (lastLineCount == null || lastLineCount.intValue() != lineCount) {
+                lastDocLineCounts.put(doc, new Integer(lineCount));
+                updateLines(doc, blockBounds[0], blockBounds[1], lines,
+                            codeData.getEditableBlock(category, eBlockIndex));
+                repaint = true;
+                // make sure our listener is invoked after position listeners update
+                doc.removeDocumentListener(this);
+                doc.addDocumentListener(this);
             }
 
             repaint |= updateGutterComponents(lines, doc, blockBounds[0], blockBounds[1]);
@@ -709,107 +704,61 @@ class CustomCodeView extends javax.swing.JPanel {
         }
     }
 
-    private void processAddedLines(Element rootEl, int elIndex,
-                                   List<EditableLine> lines,
-                                   int[] blockBounds,
-                                   EditableBlock eBlock)
-    {
-        Document doc = rootEl.getDocument();
-        int elPos = rootEl.getElement(elIndex).getStartOffset();
-        
-        // determine where to insert new lines (and which target should they have selected)
-        int endPos = -1;
-        int selIndex = -1;
+    private void updateLines(Document doc, int startPos, int endPos,
+                             List<EditableLine> lines, EditableBlock eBlock) {
+        String text;
+        try {
+            text = doc.getText(startPos, endPos - startPos);
+        } catch (BadLocationException ex) { // should not happen
+            Exceptions.printStackTrace(ex);
+            return;
+        }
         ListIterator<EditableLine> lineIt = lines.listIterator();
-        while (lineIt.hasNext()) {
-            EditableLine l = lineIt.next();
-            int pos = l.getPosition().getOffset();
-            if (pos > elPos) {
-                endPos = pos;
-                lineIt.previous();
-                break;
+        EditableLine line = null;
+        int selIndex = -1;
+        boolean onNewLine = true;
+        for (int offset=startPos; offset < endPos; offset++) {
+            boolean lineIsHere = false;
+            if (line == null && lineIt.hasNext()) {
+                line = lineIt.next();
             }
-            else {
-                selIndex = l.getSelectedIndex();
-                if (pos == elPos) { // already have line for this element (Enter on empty line)
-                    elIndex++;
-                    elPos = rootEl.getElement(elIndex).getStartOffset();
+            EditableLine first = null; // in case of multiple collapsed lines stacked after deleting some lines
+            while (line != null && line.getPosition().getOffset() == offset) {
+                // there is a line mark at this position
+                lineIsHere = true;
+                if (onNewLine && first == null) {
+                    first = line;
+                    selIndex = line.getSelectedIndex();
+                } else {
+                    lineIt.remove();
+                    Component comp = line.getGutterComponent();
+                    comp.getParent().remove(comp);
+                    if (first != null) {
+                        selIndex = line.getSelectedIndex();
+                        first.setSelectedIndex(selIndex);
+                    }
+                }
+                line = lineIt.hasNext() ? lineIt.next() : null;
+            }
+            if (onNewLine && !lineIsHere) {
+                if (selIndex < 0) {
+                    selIndex = eBlock.getPreferredEntryIndex();
+                }
+                try {
+                    Position pos = NbDocument.createPosition(doc, offset, Position.Bias.Backward);
+                    if (line != null) {
+                        lineIt.previous();
+                    }
+                    lineIt.add(new EditableLine(pos, eBlock, selIndex, lines));
+                    if (line != null) {
+                        lineIt.next();
+                    }
+                } catch (BadLocationException ex) { // should not happen
+                    Exceptions.printStackTrace(ex);
                 }
             }
-        }
-        if (endPos < 0) { // adding at the end of the block, don't have boundary line
-            endPos = blockBounds[1];
-        }
-        if (selIndex < 0) {
-            selIndex = eBlock.getPreferredEntryIndex();
-        }
-
-        // now create the missing lines
-        try {
-            do {
-                Position pos = NbDocument.createPosition(doc, elPos, Position.Bias.Backward);
-                lineIt.add(new EditableLine(pos, eBlock, selIndex, lines));
-                if (++elIndex >= rootEl.getElementCount())
-                    break;
-                elPos = rootEl.getElement(elIndex).getStartOffset();
-            }
-            while (elPos < endPos);
-        }
-        catch (BadLocationException ex) { // should not happen
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-        }
-    }
-
-    private void processRemovedLines(Element changeEl,
-                                     List<EditableLine> lines,
-                                     int[] blockBounds)
-    {
-        Document doc = changeEl.getDocument();
-        int startPos = changeEl.getStartOffset();
-        int endPos = changeEl.getEndOffset();
-
-        // determine the lines to remove (their positons lie in the affected element)
-        EditableLine firstLine = null;
-        EditableLine lastLine = null;
-        Iterator<EditableLine> it = lines.iterator();
-        while (it.hasNext()) {
-            EditableLine l = it.next();
-            int pos = l.getPosition().getOffset();
-            if (pos >= startPos) {
-                if (pos >= endPos)
-                    break;
-                if (firstLine == null)
-                    firstLine = l;
-                lastLine = l;
-            }
-        }
-        if (firstLine == null)
-            return; // no lines affected
-
-        boolean wholeFirstLine = lastLine.getPosition().getOffset() == startPos;
-        boolean mergedToGuarded = startPos == blockBounds[1] && startPos != doc.getLength();
-
-        // remove the lines
-        it = lines.iterator();
-        while (it.hasNext() && lastLine != null) {
-            EditableLine l = it.next();
-            boolean remove;
-            if (l == firstLine) {
-                remove =  mergedToGuarded || wholeFirstLine;
-                firstLine = null;
-            }
-            else if (l == lastLine) {
-                remove = mergedToGuarded || !wholeFirstLine;
-                lastLine = null;
-            }
-            else {
-                remove = firstLine == null; // all lines in between
-            }
-            if (remove) {
-                it.remove();
-                Component comp = l.getGutterComponent();
-                comp.getParent().remove(comp);
-            }
+            // is next position is on beginning of a new line?
+            onNewLine = (text.charAt(offset-startPos) == '\n'); 
         }
     }
 
@@ -824,10 +773,6 @@ class CustomCodeView extends javax.swing.JPanel {
 
     private int getEditBlockIndex(CodeCategory category, int offset) {
         return getBlockIndex(category, offset, true);
-    }
-
-    private int getGuardBlockIndex(CodeCategory category, int offset) {
-        return getBlockIndex(category, offset, false);
     }
 
     private int getBlockIndex(CodeCategory category, int offset, boolean editable) {
@@ -875,7 +820,7 @@ class CustomCodeView extends javax.swing.JPanel {
 
             JComboBox combo = (JComboBox) e.getSource();
             try {
-                docListener.active = false;
+                docListener.setActive(false);
                 if (combo.getSelectedIndex() == 1) { // changing from default to custom
                     NbDocument.unmarkGuarded(doc, startOffset, endOffset - startOffset);
                     // keep last '\n' so we don't destroy next editable block's position
@@ -923,7 +868,7 @@ class CustomCodeView extends javax.swing.JPanel {
                 // we must create a new Position - current was moved away by inserting new string on it
                 gInfo.position = NbDocument.createPosition(doc, startOffset, Position.Bias.Forward);
 
-                docListener.active = true;
+                docListener.setActive(true);
             }
             catch (BadLocationException ex) { // should not happen
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
@@ -963,7 +908,7 @@ class CustomCodeView extends javax.swing.JPanel {
             StyledDocument doc = (StyledDocument)editor.getDocument();
             for (Component comp : parent.getComponents()) {
                 Position pos = positions.get(comp);
-                int line = NbDocument.findLineNumber(doc, pos.getOffset());
+                int line = findLineNumber(doc, pos.getOffset());
                 Dimension prefSize = comp.getPreferredSize();
                 int dy = lineHeight() - prefSize.height;
                 dy = dy > 0 ? dy / 2 + 1 : 0;
@@ -1044,7 +989,43 @@ class CustomCodeView extends javax.swing.JPanel {
     }
 
     private static int getLineCount(Document doc) {
-        return getRootElement(doc).getElementCount();
+        int length = doc.getLength();
+        String text;
+        int count = 0;
+        try {
+            text = doc.getText(0, length);
+        } catch (BadLocationException ex) { // should not happen
+            Exceptions.printStackTrace(ex);
+            return -1;
+        }
+        for (int i=0; i < length; i++) {
+            if (text.charAt(i) == '\n') {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    private static int findLineNumber(Document doc, int offset) {
+        int length = doc.getLength();
+        String text;
+        int count = 0;
+        try {
+            text = doc.getText(0, length);
+        } catch (BadLocationException ex) { // should not happen
+            Exceptions.printStackTrace(ex);
+            return -1;
+        }
+        for (int i=0; i < length; i++) {
+            if (i == offset) {
+                return count;
+            }
+            if (text.charAt(i) == '\n') {
+                count++;
+                
+            }
+        }
+        return offset==length ? count : -1;
     }
 
     /** This method is called from within the constructor to
@@ -1057,10 +1038,10 @@ class CustomCodeView extends javax.swing.JPanel {
 
         javax.swing.JLabel initCodeLabel = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
-        initCodeEditor = new javax.swing.JEditorPane();
+        initCodeEditor = createCodeEditorPane();
         javax.swing.JLabel declarationCodeLabel = new javax.swing.JLabel();
         jScrollPane2 = new javax.swing.JScrollPane();
-        declareCodeEditor = new javax.swing.JEditorPane();
+        declareCodeEditor = createCodeEditorPane();
         javax.swing.JLabel selectComponentLabel = new javax.swing.JLabel();
         componentCombo = new javax.swing.JComboBox();
         renameButton = new javax.swing.JButton();
@@ -1173,7 +1154,7 @@ class CustomCodeView extends javax.swing.JPanel {
                     .addComponent(selectComponentLabel)
                     .addComponent(componentCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(renameButton))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(initCodeLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 348, Short.MAX_VALUE)

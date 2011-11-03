@@ -231,7 +231,7 @@ public class SmartyOptionsPanel extends JPanel {
                         .addComponent(smartyVersionLabel)
                         .addGap(19, 19, 19)
                         .addComponent(smartyVersionComboBox, GroupLayout.PREFERRED_SIZE, 126, GroupLayout.PREFERRED_SIZE))
-                    .addComponent(jSeparator1, GroupLayout.DEFAULT_SIZE, 586, Short.MAX_VALUE)
+                    .addComponent(jSeparator1, GroupLayout.DEFAULT_SIZE, 592, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(depthOfScanningLabel)
                         .addPreferredGap(ComponentPlacement.RELATED)
@@ -247,8 +247,7 @@ public class SmartyOptionsPanel extends JPanel {
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(closeDelimiterTextField, GroupLayout.PREFERRED_SIZE, 100, GroupLayout.PREFERRED_SIZE)
                                 .addGap(363, 363, 363))
-                            .addComponent(openDelimiterTextField, GroupLayout.DEFAULT_SIZE, 100, Short.MAX_VALUE))))
-                .addGap(215, 215, 215))
+                            .addComponent(openDelimiterTextField, GroupLayout.DEFAULT_SIZE, 100, Short.MAX_VALUE)))))
         );
 
         layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {closeDelimiterTextField, openDelimiterTextField});

@@ -43,6 +43,7 @@
  */
 package org.netbeans;
 
+import java.awt.EventQueue;
 import java.awt.KeyboardFocusManager;
 import java.awt.Window;
 import java.awt.datatransfer.Clipboard;
@@ -50,6 +51,7 @@ import java.awt.datatransfer.ClipboardOwner;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.FlavorEvent;
 import java.awt.datatransfer.FlavorListener;
+import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.IOException;
@@ -61,6 +63,8 @@ import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import org.netbeans.junit.NbTestCase;
 import org.openide.util.Utilities;
+import org.openide.util.datatransfer.ClipboardEvent;
+import org.openide.util.datatransfer.ClipboardListener;
 
 /** Basic tests on NbClipboard
  *
@@ -203,6 +207,48 @@ public class NbClipboardTest extends NbTestCase {
         }
     }
     
+
+    public void testAddRemoveClipboardListener () throws Throwable {
+        final NbClipboard clipboard = new NbClipboard(new Clipboard("testAddRemoveClipboardListener"));
+        class L implements ClipboardListener, FlavorListener {
+            public int cnt;
+            public ClipboardEvent ev;
+            public int flavorCnt;
+            @Override
+            public void clipboardChanged (ClipboardEvent ev) {
+                assertFalse("Don't hold locks", Thread.holdsLock(clipboard));
+                cnt++;
+                this.ev = ev;
+            }
+
+            @Override
+            public void flavorsChanged(FlavorEvent e) {
+                assertFalse("Don't hold locks", Thread.holdsLock(clipboard));
+                flavorCnt++;
+            }
+        }
+        L listener = new L ();
+        
+        clipboard.addClipboardListener (listener);
+        clipboard.addFlavorListener(listener);
+        StringSelection ss = new StringSelection("");
+        clipboard.setContents(ss, ss);
+        if (listener.cnt == 0) {
+            fail("At least one event expected");
+        }
+        int prev = listener.cnt;
+        if (listener.flavorCnt == 0) {
+            fail("At least one flavor event expected");
+        }
+        assertNotNull ("An event", listener.ev);
+        assertEquals ("source is right", clipboard, listener.ev.getSource ());
+        
+        clipboard.removeClipboardListener (listener);
+        StringSelection s2 = new StringSelection("Another");
+        clipboard.setContents(s2, s2);
+        
+        assertEquals ("no new change", prev, listener.cnt);
+    }
     
     
     private static void waitEQ(final Window w) throws Exception {

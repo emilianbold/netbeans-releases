@@ -298,7 +298,9 @@ public final class SearchScopeRegistry {
             newValue = false;
             searchScopes.remove(searchScope);
         }
-
+        if (changeListeners == null) { // #204118 - listeners already removed
+            return false;
+        }
         boolean stateChanged;
         if (newValue) {
             applicableSearchScopesCount++;

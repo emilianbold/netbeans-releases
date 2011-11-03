@@ -47,7 +47,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Collections;
 import java.util.logging.Level;
-import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -85,8 +84,6 @@ public class POHImpl {
     private PropertyChangeListener refreshListener;
     private J2eeModuleProvider lastJ2eeProvider;
 
-    public static final String USG_LOGGER_NAME = "org.netbeans.ui.metrics.maven"; //NOI18N
-    public static final Logger USG_LOGGER = Logger.getLogger(USG_LOGGER_NAME);
 
     public POHImpl(Project prj, J2eeLookupProvider.Provider prov) {
         project = prj;
@@ -94,13 +91,17 @@ public class POHImpl {
         
     }
     
-    public void hackModuleServerChange() {
-        ProjectManager.mutex().postReadRequest(new Runnable() {
-            @Override
-            public void run() {
-                refreshAppServerAssignment();
-            }
-        });
+    public void hackModuleServerChange(boolean useMutex) {
+        if (!useMutex) {
+            refreshAppServerAssignment();
+        } else {
+            ProjectManager.mutex().postReadRequest(new Runnable() {
+                @Override
+                public void run() {
+                    refreshAppServerAssignment();
+                }
+            });
+        }
     }
     private void projectOpened() {
         refreshAppServerAssignment();
@@ -111,7 +112,7 @@ public class POHImpl {
                 @Override
                 public void propertyChange(PropertyChangeEvent evt) {
                     if (NbMavenProject.PROP_PROJECT.equals(evt.getPropertyName())) {
-                        hackModuleServerChange();
+                        hackModuleServerChange(true);
                     }
                 }
             };
@@ -148,10 +149,7 @@ public class POHImpl {
             eeVersion = NbBundle.getMessage(POHImpl.class, "TXT_UnknownEEVersion"); //NOI18N
         }
         
-        LogRecord record = new LogRecord(Level.INFO, "USG_PROJECT_OPEN_MAVEN_EE");  //NOI18N
-        record.setLoggerName(USG_LOGGER_NAME);
-        record.setParameters(new Object[] { serverName, eeVersion });
-        USG_LOGGER.log(record);
+        LoggingUtils.logUsage(ExecutionChecker.class, "USG_PROJECT_OPEN_MAVEN_EE", new Object[] { serverName, eeVersion }, "maven"); //NOI18N
     }
 
     private synchronized void refreshAppServerAssignment() {

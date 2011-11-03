@@ -66,17 +66,17 @@ public class NbCss3LexerTest extends NbTestCase {
     protected void setUp() throws java.lang.Exception {
         // Set-up testing environment
     }
-    
+
     public void testAllANTLRTokensHasNbTokenIds() {
-        for(String tokenName : Css3Parser.tokenNames) {
+        for (String tokenName : Css3Parser.tokenNames) {
             char first = tokenName.charAt(0);
-            switch(first) {
+            switch (first) {
                 case '<':
                 case '\'':
                     continue;
                 default:
                     assertNotNull(CssTokenId.valueOf(tokenName));
-                    
+
             }
         }
     }
@@ -97,7 +97,6 @@ public class NbCss3LexerTest extends NbTestCase {
         assertEquals(";", ts.token().text().toString());
         assertEquals(CssTokenId.SEMI, ts.token().id());
     }
-    
 
     public void testOnlyAtSymbolLexing() throws Exception {
         String input = "@";
@@ -107,10 +106,10 @@ public class NbCss3LexerTest extends NbTestCase {
 
         assertTrue(ts.moveNext());
         Token<CssTokenId> token = ts.token();
-        
+
         assertNotNull(token);
         assertEquals(CssTokenId.ERROR, token.id());
-        
+
     }
 
     public void testBasicLexing() throws Exception {
@@ -137,13 +136,13 @@ public class NbCss3LexerTest extends NbTestCase {
     public void testErrorCase1() throws Exception {
         /*
         java.lang.ArrayIndexOutOfBoundsException: Array index out of range: 4
-	at java.util.Vector.get(Vector.java:694)
-	at org.netbeans.modules.css.lib.nblexer.NbLexerCharStream.rewind(NbLexerCharStream.java:131)
-	at org.antlr.runtime.DFA.predict(DFA.java:149)
-	at org.netbeans.modules.css.lib.Css3Lexer.mNUMBER(Css3Lexer.java:7440)
-        */
+        at java.util.Vector.get(Vector.java:694)
+        at org.netbeans.modules.css.lib.nblexer.NbLexerCharStream.rewind(NbLexerCharStream.java:131)
+        at org.antlr.runtime.DFA.predict(DFA.java:149)
+        at org.netbeans.modules.css.lib.Css3Lexer.mNUMBER(Css3Lexer.java:7440)
+         */
         String source = "padding: .5em; ";
- 
+
         TokenHierarchy th = TokenHierarchy.create(source, CssTokenId.language());
         TokenSequence ts = th.tokenSequence();
         ts.moveStart();
@@ -152,12 +151,12 @@ public class NbCss3LexerTest extends NbTestCase {
         assertToken(":", CssTokenId.COLON, ts);
         assertToken(" ", CssTokenId.WS, ts);
         assertToken(".5em", CssTokenId.EMS, ts);
-        
+
     }
-    
-     public void testCounterStyle() throws Exception {
+
+    public void testCounterStyle() throws Exception {
         String source = "@counter-style x { }";
- 
+
         TokenHierarchy th = TokenHierarchy.create(source, CssTokenId.language());
         TokenSequence ts = th.tokenSequence();
         ts.moveStart();
@@ -165,24 +164,39 @@ public class NbCss3LexerTest extends NbTestCase {
         assertToken("@counter-style", CssTokenId.COUNTER_STYLE_SYM, ts);
         assertToken(" ", CssTokenId.WS, ts);
     }
-    
+
+    public void testLexingOfSemicolonAtTheEndOfFile() throws Exception {
+        String source = "div:";
+
+        TokenHierarchy th = TokenHierarchy.create(source, CssTokenId.language());
+        TokenSequence ts = th.tokenSequence();
+        ts.moveStart();
+
+        assertToken("div", CssTokenId.IDENT, ts);
+        assertToken(":", CssTokenId.COLON, ts);
+    }
+
     private void assertToken(String expectedImage, CssTokenId expectedType, TokenSequence ts) {
         assertTrue(ts.moveNext());
         Token token = ts.token();
         assertNotNull(token);
-        assertEquals(expectedImage, token.text().toString());
         assertEquals(expectedType, token.id());
+        assertEquals(expectedImage, token.text().toString());
     }
-    
+
     public void testLexing_Netbeans_org() throws Exception {
-      LexerTestUtilities.checkTokenDump(this, "testfiles/netbeans.css",
+        LexerTestUtilities.checkTokenDump(this, "testfiles/netbeans.css",
                 CssTokenId.language());
-    };
+    }
+
+    ;
     
     public void testNamespaces() throws Exception {
-      LexerTestUtilities.checkTokenDump(this, "testfiles/namespaces.css",
+        LexerTestUtilities.checkTokenDump(this, "testfiles/namespaces.css",
                 CssTokenId.language());
-    };
+    }
+
+    ;
     
     public void testInput() throws Exception {
         LexerTestUtilities.checkTokenDump(this, "testfiles/testInputGeneratedCode.css.txt",
@@ -193,6 +207,4 @@ public class NbCss3LexerTest extends NbTestCase {
         LexerTestUtilities.checkTokenDump(this, "testfiles/testImportsLexing.css.txt",
                 CssTokenId.language());
     }
-
-    
 }

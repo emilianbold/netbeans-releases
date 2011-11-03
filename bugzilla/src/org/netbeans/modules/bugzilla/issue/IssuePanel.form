@@ -38,7 +38,7 @@
     <Container class="javax.swing.JPanel" name="timetrackingPanel">
       <Properties>
         <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-          <Color blue="ff" green="ff" id="EditorPane.background" palette="3" red="ff" type="palette"/>
+          <Color blue="ff" green="ff" id="TextArea.background" palette="3" red="ff" type="palette"/>
         </Property>
       </Properties>
 
@@ -113,18 +113,9 @@
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Component id="completeLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" alignment="1" attributes="0">
-                              <Component id="actualLabel" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                          </Group>
-                          <Group type="102" alignment="0" attributes="0">
-                              <Component id="estimatedLabel" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                          </Group>
-                          <Group type="102" alignment="0" attributes="0">
-                              <Component id="remainingLabel" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                          </Group>
+                          <Component id="actualLabel" alignment="1" min="-2" max="-2" attributes="0"/>
+                          <Component id="estimatedLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="remainingLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <Component id="workedLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                   </Group>
@@ -306,7 +297,7 @@
   </NonVisualComponents>
   <Properties>
     <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-      <Color blue="ff" green="ff" id="EditorPane.background" palette="3" red="ff" type="palette"/>
+      <Color blue="ff" green="ff" id="TextArea.background" palette="3" red="ff" type="palette"/>
     </Property>
   </Properties>
   <AuxValues>
@@ -324,13 +315,13 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="separator" alignment="1" pref="734" max="32767" attributes="0"/>
-          <Component id="dummyCommentsPanel" alignment="0" pref="734" max="32767" attributes="0"/>
+          <Component id="separator" alignment="1" max="32767" attributes="0"/>
+          <Component id="dummyCommentsPanel" alignment="0" max="32767" attributes="0"/>
           <Group type="102" alignment="1" attributes="0">
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="1" attributes="0">
-                      <Component id="headerField" pref="257" max="32767" attributes="0"/>
+                      <Component id="headerField" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="tasklistButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
@@ -370,8 +361,8 @@
                       </Group>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="dummyTimetrackingPanel" alignment="0" pref="574" max="32767" attributes="0"/>
-                          <Component id="dummyAttachmentsPanel" pref="574" max="32767" attributes="0"/>
+                          <Component id="dummyTimetrackingPanel" alignment="0" max="32767" attributes="0"/>
+                          <Component id="dummyAttachmentsPanel" max="32767" attributes="0"/>
                           <Group type="102" alignment="0" attributes="0">
                               <Group type="103" groupAlignment="0" max="-2" attributes="0">
                                   <Component id="issueTypeCombo" max="32767" attributes="1"/>
@@ -480,7 +471,7 @@
                           </Group>
                           <Component id="scrollPane1" alignment="0" max="32767" attributes="0"/>
                           <Group type="102" alignment="1" attributes="0">
-                              <Component id="summaryField" pref="552" max="32767" attributes="0"/>
+                              <Component id="summaryField" max="32767" attributes="0"/>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
                               <Component id="summaryWarning" min="-2" pref="16" max="-2" attributes="0"/>
                           </Group>
@@ -489,8 +480,8 @@
                               <EmptySpace min="-2" max="-2" attributes="0"/>
                               <Component id="cancelButton" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <Component id="messagePanel" alignment="0" pref="574" max="32767" attributes="0"/>
-                          <Component id="customFieldsPanelRight" alignment="0" pref="574" max="32767" attributes="0"/>
+                          <Component id="messagePanel" alignment="0" max="32767" attributes="0"/>
+                          <Component id="customFieldsPanelRight" alignment="0" max="32767" attributes="0"/>
                       </Group>
                   </Group>
               </Group>
@@ -1409,7 +1400,7 @@
     <Component class="javax.swing.JCheckBox" name="assignToDefaultCheckBox">
       <Properties>
         <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-          <Color blue="ff" green="ff" id="EditorPane.background" palette="3" red="ff" type="palette"/>
+          <Color blue="ff" green="ff" id="TextArea.background" palette="3" red="ff" type="palette"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.assignToDefaultCheckBox.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
