@@ -322,7 +322,11 @@ public class EditorModule extends ModuleInstall {
             @Override public void operationRename(Rename ev) {}
             @Override public void operationCreateShadow(Copy ev) {}
             @Override public void operationCreateFromTemplate(Copy ev) {
-                reformat(ev.getObject());
+                Object removeWritables = ev.getOriginalDataObject().getPrimaryFile().getAttribute("removeWritables");
+                if (removeWritables == null) {
+                    // Reformat only files created from original templates.
+                    reformat(ev.getObject());
+                }
             }
         });
     }
