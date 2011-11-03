@@ -49,7 +49,7 @@ import javax.swing.text.BadLocationException;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintSeverity;
 import org.netbeans.modules.php.editor.model.FileScope;
-import org.netbeans.modules.php.editor.model.MethodScope;
+import org.netbeans.modules.php.editor.model.FunctionScope;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
@@ -68,7 +68,7 @@ public class MethodRedeclarationHint extends AbstractRule {
     private List<Hint> hints;
 
     @Override
-    @Messages("MethodRedeclarationCustom=Method \"{0}\" has been already declared")
+    @Messages("MethodRedeclarationCustom=Method or function \"{0}\" has been already declared")
     void computeHintsImpl(PHPRuleContext context, List<Hint> hints, Kind kind) throws BadLocationException {
         PHPParseResult phpParseResult = (PHPParseResult) context.parserResult;
         if (phpParseResult.getProgram() == null) {
@@ -79,20 +79,21 @@ public class MethodRedeclarationHint extends AbstractRule {
         this.hints = hints;
         checkTypeScopes(ModelUtils.getDeclaredClasses(fileScope));
         checkTypeScopes(ModelUtils.getDeclaredInterfaces(fileScope));
+        checkDeclaredFunctions(ModelUtils.getDeclaredFunctions(fileScope));
     }
 
     private void checkTypeScopes(Collection<? extends TypeScope> typeScopes) {
         for (TypeScope typeScope : typeScopes) {
-            checkDeclaredMethods(typeScope.getDeclaredMethods());
+            checkDeclaredFunctions(typeScope.getDeclaredMethods());
         }
     }
 
-    private void checkDeclaredMethods(Collection<? extends MethodScope> declaredMethods) {
+    private void checkDeclaredFunctions(Collection<? extends FunctionScope> declaredFunctions) {
         Set<String> declaredMethodNames = new HashSet<String>();
-        for (MethodScope methodScope : declaredMethods) {
-            String methodName = methodScope.getName();
+        for (FunctionScope functionScope : declaredFunctions) {
+            String methodName = functionScope.getName();
             if (declaredMethodNames.contains(methodName)) {
-                hints.add(new Hint(this, Bundle.MethodRedeclarationCustom(methodName), fileObject, methodScope.getNameRange(), null, 500));
+                hints.add(new Hint(this, Bundle.MethodRedeclarationCustom(methodName), fileObject, functionScope.getNameRange(), null, 500));
             } else {
                 declaredMethodNames.add(methodName);
             }

@@ -25,5 +25,11 @@ interface MethodRedeclarationInterfaceName {
     function ifaceFunctionName($param);
 }
 
+function globalFunctionNameSame($param) {
+}
+
+function globalFunctionNameSame($param) {
+}
+
 //END
 ?>
