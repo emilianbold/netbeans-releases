@@ -667,7 +667,7 @@ public class HtmlCompletionQuery extends UserTask {
             int order = offset - (node != null ? node.startOffset() : 0);
 
             String tagName = isXHtml ? tag.getName() : (lowerCase ? tag.getName().toLowerCase(Locale.ENGLISH) : tag.getName().toUpperCase(Locale.ENGLISH));
-            items.add(HtmlCompletionItem.createEndTag(tagName, offset - 2 - prefix.length(), tagName, order, getEndTagType(leaf)));
+            items.add(HtmlCompletionItem.createEndTag(tag, tagName, offset - 2 - prefix.length(), tagName, order, getEndTagType(leaf)));
         }
         return items;
     }

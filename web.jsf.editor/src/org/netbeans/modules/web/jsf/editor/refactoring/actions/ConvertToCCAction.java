@@ -77,7 +77,7 @@ public class ConvertToCCAction extends NodeAction {
 		JTextComponent tc = EditorRegistry.lastFocusedComponent();
 		if (tc != null && tc.getSelectedText() != null) { //disable w/o editor selection
 		    DataObject editedDobj = NbEditorUtilities.getDataObject(tc.getDocument());
-		    if (editedDobj.equals(dobj)) {
+		    if (editedDobj != null && editedDobj.equals(dobj)) {
 			return true;
 		    }
 		}

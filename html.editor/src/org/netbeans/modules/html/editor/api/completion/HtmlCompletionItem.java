@@ -83,6 +83,10 @@ public class HtmlCompletionItem implements CompletionItem {
         return new Tag(tag, name, substitutionOffset, helpId, possible);
     }
  
+    public static HtmlCompletionItem createEndTag(HtmlTag tag, String name, int substitutionOffset, String helpId, int order, EndTag.Type type) {
+        return new EndTag(tag, name, substitutionOffset, helpId, order, type);
+    }
+    
     public static HtmlCompletionItem createEndTag(String name, int substitutionOffset, String helpId, int order, EndTag.Type type) {
         return new EndTag(name, substitutionOffset, helpId, order, type);
     }
@@ -458,7 +462,7 @@ public class HtmlCompletionItem implements CompletionItem {
 
         @Override
         public boolean hasHelp() {
-            return tag != null && tag.getHelp() != null || tag == null && super.hasHelp();
+            return tag != null && tag.getHelp() != null ||  super.hasHelp();
         }
 
 
@@ -538,7 +542,7 @@ public class HtmlCompletionItem implements CompletionItem {
 
         @Override
         public boolean hasHelp() {
-            return tag != null && tag.getHelp() != null || tag == null && super.hasHelp();
+            return tag != null && tag.getHelp() != null || super.hasHelp();
         }
 
     }
@@ -660,7 +664,7 @@ public class HtmlCompletionItem implements CompletionItem {
         
         @Override
         public boolean hasHelp() {
-            return attr != null && attr.getHelp() != null || attr == null && super.hasHelp();
+            return attr != null && attr.getHelp() != null || super.hasHelp();
         }
 
     }
