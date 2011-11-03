@@ -44,13 +44,12 @@
 
 package org.netbeans.modules.form.actions;
 
+import java.awt.Component;
 import java.awt.EventQueue;
 import java.util.ArrayList;
 import java.awt.event.*;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import javax.swing.*;
 import javax.swing.undo.UndoableEdit;
@@ -72,8 +71,6 @@ import org.openide.util.actions.NodeAction;
  */
 public class EncloseAction extends NodeAction {
     
-    private static HashMap<Node, ArrayList<String>> map = new HashMap<Node, ArrayList<String>>();
-
     @Override
     public String getName() {
         return NbBundle.getBundle(EncloseAction.class).getString("ACT_EncloseInContainer"); // NOI18N
@@ -136,16 +133,11 @@ public class EncloseAction extends NodeAction {
 
     private static PaletteItem[] getAllContainers(Node subMenuNode) {
         List<PaletteItem> list = new ArrayList<PaletteItem>();
-        // using the map in order to speed up the process and not search all candidates each time
-        if(!map.containsKey(subMenuNode)) {
-            ArrayList<String> listt = new ArrayList<String>();
-            List<Node> nodes = Arrays.asList(subMenuNode.getChildren().getNodes());
-            for (Node nod : nodes) {
-                listt.add(nod.getName());
+        for (Node itemNode : PaletteUtils.getItemNodes(subMenuNode, true)) {
+            PaletteItem item = itemNode.getLookup().lookup(PaletteItem.class);
+            if (item == null) {
+                continue;
             }
-            map.put(subMenuNode, listt);            
-        }
-        for (PaletteItem item : PaletteUtils.getAllItems()) {
             if (PaletteItem.TYPE_CHOOSE_BEAN.equals(item.getExplicitComponentType())) {
                 continue;
             }
@@ -154,14 +146,11 @@ public class EncloseAction extends NodeAction {
                   && JComponent.class.isAssignableFrom(cls)
                   && !MenuElement.class.isAssignableFrom(cls)
                   && FormUtils.isContainer(cls)) {
-                if(map.get(subMenuNode).contains(cls.getSimpleName())) {
-                    list.add(item);
-                }
+                list.add(item);
             }
         }
         // sort the PaletteItems alphabetically
         Collections.sort(list, new Comparator<PaletteItem>() {
-
             @Override
             public int compare(PaletteItem o1, PaletteItem o2) {
                 return o1.getNode().getDisplayName().compareTo(o2.getNode().getDisplayName());
@@ -227,6 +216,14 @@ public class EncloseAction extends NodeAction {
                             add(item);
                         }
                     }
+                }
+            }
+            // If there is just one sub-menu then dissolve it
+            if (getMenuComponentCount() == 1) {
+                JMenu menu = (JMenu)getMenuComponent(0);
+                remove(menu);
+                for (Component menuItem : menu.getMenuComponents()) {
+                    add(menuItem);
                 }
             }
         }

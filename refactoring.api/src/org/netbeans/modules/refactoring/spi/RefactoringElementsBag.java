@@ -104,7 +104,7 @@ public final class RefactoringElementsBag {
         Problem p = null;
         if (el == null) throw new NullPointerException ();
         //isQuery should be used
-        if (isReadOnly(el) && !(refactoring instanceof WhereUsedQuery)) {
+        if (isReadOnly(el) && !(refactoring instanceof WhereUsedQuery) && !(refactoring instanceof SingleCopyRefactoring)) {
             FileObject file = el.getParentFile();
             readOnlyFiles.add(file);
             el.setEnabled(false);

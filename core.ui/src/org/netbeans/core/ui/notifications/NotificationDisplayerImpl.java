@@ -58,6 +58,7 @@ import org.openide.awt.NotificationDisplayer;
 import org.openide.util.Lookup;
 import org.openide.util.Parameters;
 import org.openide.util.lookup.ServiceProvider;
+import org.openide.util.lookup.ServiceProviders;
 import org.openide.xml.XMLUtil;
 
 /**
@@ -67,7 +68,8 @@ import org.openide.xml.XMLUtil;
  * @since 1.14
  * @author S. Aubrecht
  */
-@ServiceProvider(service=NotificationDisplayer.class)
+@ServiceProviders({@ServiceProvider(service=NotificationDisplayer.class), 
+    @ServiceProvider(service=NotificationDisplayerImpl.class)})
 public final class NotificationDisplayerImpl extends NotificationDisplayer {
 
     static final String PROP_NOTIFICATION_ADDED = "notificationAdded"; //NOI18N
@@ -75,12 +77,17 @@ public final class NotificationDisplayerImpl extends NotificationDisplayer {
 
     private final List<NotificationImpl> model = new LinkedList<NotificationImpl>();
     private final PropertyChangeSupport propSupport = new PropertyChangeSupport(this);
+    
+    //#203326 - prevent the garbage collect of the instance held in Lookup
+    private static NotificationDisplayerImpl theInstance = null;
+    
+    public NotificationDisplayerImpl() {
+        assert null == theInstance;
+        theInstance = this;
+    }
 
     static NotificationDisplayerImpl getInstance() {
-        NotificationDisplayer nd = Lookup.getDefault().lookup(NotificationDisplayer.class);
-        if( nd instanceof NotificationDisplayerImpl )
-            return (NotificationDisplayerImpl) nd;
-        return null;
+        return Lookup.getDefault().lookup(NotificationDisplayerImpl.class);
     }
 
     @Override

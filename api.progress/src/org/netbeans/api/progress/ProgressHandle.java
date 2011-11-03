@@ -71,7 +71,7 @@ public final class ProgressHandle {
     /**
      * start the progress indication for indeterminate task. 
      * it will be visualized by a progress bar in indeterminate mode.
-     * 
+     * <code>start</code> method can be called just once.
      */
     public void start() {
         start(0, -1);
@@ -79,6 +79,7 @@ public final class ProgressHandle {
     
     /**
      * start the progress indication for a task with known number of steps.
+     * <code>start</code> method can be called just once.
      * @param workunits total number of workunits that will be processed
      */
     public void start(int workunits) {
@@ -89,6 +90,7 @@ public final class ProgressHandle {
     /**
      * start the progress indication for a task with known number of steps and known
      * time estimate for completing the task.
+     * <code>start</code> method can be called just once.
      * @param workunits total number of workunits that will be processed
      * @param estimate estimated time to process the task in seconds
      */
@@ -101,14 +103,16 @@ public final class ProgressHandle {
     /**
      * Currently determinate task (with percentage or time estimate) can be 
      * switched to indeterminate mode.
+     * This method has to be called after calling <code>start</code> method and before calling <code>finish</code> method (the task has to be running).
      */
     public void switchToIndeterminate() {
         internal.toIndeterminate();
     }
     
     /**
-     * Currently running task can switch to silent suspend mode where the progress bar 
-     * stops moving, hides completely or partially. Useful to make progress in status bar less intrusive 
+     * Current task can switch to silent suspend mode where the progress bar stops moving, hides completely or partially. 
+     * This method has to be called after calling <code>start</code> method and before calling <code>finish</code> method (the task has to be running).
+     * Useful to make progress in status bar less intrusive. 
      * for very long running tasks, eg. running an ant script that executes user application, debugs user application etc.
      * Any incoming progress wakes up the progress bar to previous state.
      * @param message a message to display in the silent mode
@@ -121,6 +125,7 @@ public final class ProgressHandle {
     
     /**
      * Currently indeterminate task can be switched to show percentage completed.
+     * This method has to be called after calling <code>start</code> method and before calling <code>finish</code> method (the task has to be running).
      * A common usecase is to calculate the amount of work in the beginning showing 
      * in indeterminate mode and later switch to the progress with known steps
      * @param workunits a definite number of complete units of work out of the total
@@ -131,6 +136,7 @@ public final class ProgressHandle {
     
     /**
      * Currently indeterminate task can be switched to show the time estimate til completion.
+     * This method has to be called after calling <code>start</code> method and before calling <code>finish</code> method (the task has to be running).
      * A common usecase is to calculate the amount of work in the beginning 
      * in indeterminate mode and later switch to the progress with the calculated estimate.
      * @param workunits a definite number of complete units of work out of the total
@@ -141,7 +147,8 @@ public final class ProgressHandle {
     }
     
     /**
-     * finish the task, remove the task's component from the progress bar UI.
+     * Finish the task, remove the task's component from the progress bar UI.
+     * This method has to be called after calling <code>start</code> method (the task has to be running).
      */
     public void finish() {
         internal.finish();
@@ -150,6 +157,7 @@ public final class ProgressHandle {
     
     /**
      * Notify the user about completed workunits.
+     * This method has to be called after calling <code>start</code> method and before calling <code>finish</code> method (the task has to be running).
      * @param workunit a cumulative number of workunits completed so far
      */
     public void progress(int workunit) {
@@ -158,6 +166,7 @@ public final class ProgressHandle {
     
     /**
      * Notify the user about progress by showing message with details.
+     * This method has to be called after calling <code>start</code> method and before calling <code>finish</code> method (the task has to be running).
      * @param message details about the status of the task
      */
     public void progress(String message) {
@@ -166,6 +175,7 @@ public final class ProgressHandle {
     
     /**
      * Notify the user about completed workunits and show additional detailed message.
+     * This method has to be called after calling <code>start</code> method and before calling <code>finish</code> method (the task has to be running).
      * @param message details about the status of the task
      * @param workunit a cumulative number of workunits completed so far
      */
@@ -191,7 +201,7 @@ public final class ProgressHandle {
     }
     
     /**
-     * change the display name of the progress task. Use with care, please make sure the changed name is not completely different,
+     * Change the display name of the progress task. Use with care, please make sure the changed name is not completely different,
      * or otherwise it might appear to the user as a different task.
      * @param newDisplayName a new name to set for the task
      * @since org.netbeans.api.progress 1.5

@@ -1955,6 +1955,20 @@ public class SpinnerModelEditor extends PropertyEditorSupport
         }
 
         /**
+         * Creates new <code>FormSpinnerModel</code> as a copy
+         * of some existing model.
+         * 
+         * @param original model to copy.
+         */
+        private FormSpinnerModel(FormSpinnerModel original) {
+            this.model = original.model;
+            this.initialValue = original.initialValue;
+            this.initialNow = original.initialNow;
+            this.minimumNow = original.minimumNow;
+            this.maximumNow = original.maximumNow;
+        }
+
+        /**
          * Returns the wrapped spinner model.
          * 
          * @return the wrapped spinner model.
@@ -2010,6 +2024,11 @@ public class SpinnerModelEditor extends PropertyEditorSupport
         @Override
         public SpinnerModel getDesignValue() {
             return model;
+        }
+
+        @Override
+        public Object copy(FormProperty targetFormProperty) {
+            return new FormSpinnerModel(this);
         }
 
     }
