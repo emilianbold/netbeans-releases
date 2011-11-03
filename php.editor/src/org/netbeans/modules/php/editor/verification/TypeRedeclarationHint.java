@@ -64,6 +64,7 @@ import org.openide.util.NbBundle.Messages;
  */
 public class TypeRedeclarationHint extends AbstractRule {
     @Override
+    @Messages("TypeRedeclarationDesc=Type \"{0}\" has been already declared")
     void computeHintsImpl(PHPRuleContext context, List<Hint> hints, Kind kind) throws BadLocationException {
         PHPParseResult phpParseResult = (PHPParseResult) context.parserResult;
         if (phpParseResult.getProgram() == null) {
@@ -91,7 +92,7 @@ public class TypeRedeclarationHint extends AbstractRule {
                 }
                 for (TypeScope typeInstance : instances) {
                     if (typeInstance != firstDeclaredInstance) {
-                        hints.add(new Hint(this, getDescription(),
+                        hints.add(new Hint(this, Bundle.TypeRedeclarationDesc(firstDeclaredInstance.getName()),
                                 context.parserResult.getSnapshot().getSource().getFileObject(),
                                 typeInstance.getNameRange(), Collections.<HintFix>emptyList(), 500));
 
