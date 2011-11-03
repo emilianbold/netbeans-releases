@@ -392,7 +392,7 @@ made subject to such option by the copyright holder.
         <folder name="PreviewExamples">
             <folder name="text">
                 <file name="html" url="HTMLExample"/>
-                <file name="xhtml" url="HTMLExample"/>
+                <file name="xhtml" url="XHTMLExample"/>
             </folder>
         </folder>
         <folder name="Editor">
