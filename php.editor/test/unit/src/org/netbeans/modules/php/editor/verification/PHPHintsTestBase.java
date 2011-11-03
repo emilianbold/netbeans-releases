@@ -57,6 +57,7 @@ import org.openide.filesystems.FileUtil;
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
 public class PHPHintsTestBase extends PHPTestBase {
+    private static final String TEST_DIRECTORY = "testfiles/verification/"; //NOI18N
 
     public PHPHintsTestBase(String testName) {
         super(testName);
@@ -70,7 +71,11 @@ public class PHPHintsTestBase extends PHPTestBase {
      * @throws Exception
      */
     protected void checkHintsInStartEndFile(Rule hint, String fileName) throws Exception {
-        checkHints(hint, "testfiles/verification/" + fileName, "<?php\n//START^", "^//END\n?>");
+        checkHints(hint, TEST_DIRECTORY + fileName, "<?php\n//START^", "^//END\n?>");
+    }
+
+    protected void checkHintsInFile(Rule hint, String fileName, String selStartLine, String selEndLine) throws Exception {
+        super.checkHints(hint, TEST_DIRECTORY + fileName, selStartLine, selEndLine);
     }
 
     @Override
@@ -78,7 +83,7 @@ public class PHPHintsTestBase extends PHPTestBase {
         return Collections.singletonMap(
             PhpSourcePath.SOURCE_CP,
             ClassPathSupport.createClassPath(new FileObject[] {
-                FileUtil.toFileObject(new File(getDataDir(), "/testfiles/verification"))
+                FileUtil.toFileObject(new File(getDataDir(), "/" + TEST_DIRECTORY))
             })
         );
     }
