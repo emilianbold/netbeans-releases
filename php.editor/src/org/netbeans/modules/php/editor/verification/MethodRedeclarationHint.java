@@ -68,7 +68,6 @@ public class MethodRedeclarationHint extends AbstractRule {
     private List<Hint> hints;
 
     @Override
-    @Messages("MethodRedeclarationCustom=Method or function \"{0}\" has been already declared")
     void computeHintsImpl(PHPRuleContext context, List<Hint> hints, Kind kind) throws BadLocationException {
         PHPParseResult phpParseResult = (PHPParseResult) context.parserResult;
         if (phpParseResult.getProgram() == null) {
@@ -88,6 +87,7 @@ public class MethodRedeclarationHint extends AbstractRule {
         }
     }
 
+    @Messages("MethodRedeclarationCustom=Method or function \"{0}\" has been already declared")
     private void checkDeclaredFunctions(Collection<? extends FunctionScope> declaredFunctions) {
         Set<String> declaredMethodNames = new HashSet<String>();
         for (FunctionScope functionScope : declaredFunctions) {
@@ -106,7 +106,7 @@ public class MethodRedeclarationHint extends AbstractRule {
     }
 
     @Override
-    @Messages("MethodRedeclarationHintDesc=Method name can be used just once in one class.")
+    @Messages("MethodRedeclarationHintDesc=Method name can be used just once in a class.")
     public String getDescription() {
         return Bundle.MethodRedeclarationHintDesc();
     }
