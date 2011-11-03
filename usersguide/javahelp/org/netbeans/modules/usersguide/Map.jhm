@@ -364,15 +364,14 @@ Other names may be trademarks of their respective owners.
   <!--ID for CSH in Options | Basic Options - General Category: --> 
   <mapID target="netbeans.optionsDialog.general" url="configure/options_general.html" />
   <!--ID for CSH in Options | Basic Options - Editor Category: --> 
-  <mapID target="netbeans.optionsDialog.editor.general" url="configure/options_editor.html" />
-  <mapID target="netbeans.optionsDialog.editor.formatting" url="configure/options_editor.html" />
-  <mapID target="netbeans.optionsDialog.editor.codeTemplates" url="configure/options_editor.html" />
-  <mapID target="netbeans.optionsDialog.editor.macros" url="configure/options_editor.html" />
-  <mapID target="netbeans.optionsDialog.editor.hints" url="configure/options_editor.html" />
-  <mapID target="netbeans.optionsDialog.editor.markOccurences" url="configure/options_editor.html" />
-  <mapID target="netbeans.optionsDialog.editor.tasklist" url="configure/options_editor.html" />
-  <mapID target="netbeans.optionsDialog.editor.identation" url="configure/options_editor.html" />
-  <mapID target="netbeans.optionsDialog.editor.codeCompletion" url="configure/options_editor.html" />
+  <mapID target="netbeans.optionsDialog.editor.general" url="configure/options-editor/general.html" />
+  <mapID target="netbeans.optionsDialog.editor.formatting" url="configure/options-editor/formatting.html" />
+  <mapID target="netbeans.optionsDialog.editor.codeTemplates" url="configure/options-editor/code-templates.html" />
+  <mapID target="netbeans.optionsDialog.editor.macros" url="configure/options-editor/macros.html" />
+  <mapID target="netbeans.optionsDialog.editor.hints" url="configure/options-editor/hints.html" />
+  <mapID target="netbeans.optionsDialog.editor.markOccurences" url="configure/options-editor/mark-occurrences.html" />
+  <mapID target="netbeans.optionsDialog.editor.identation" url="configure/options-editor/formatting.html" />
+  <mapID target="netbeans.optionsDialog.editor.codeCompletion" url="configure/options-editor/code-completion.html" />
 
   <!--ID for CSH in Options | Basic Options - Fonts and Colors Category: --> 
   <mapID target="netbeans.optionsDialog.fontAndColorsPanel" url="configure/options_fontscolors.html" />
