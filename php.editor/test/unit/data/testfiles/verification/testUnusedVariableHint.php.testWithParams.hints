@@ -1,0 +1,32 @@
+    function formalParams($first, $second) {}
+                                   ------
+HINT:Variable $first seems to be unused in its scope
+HINT:Variable $second seems to be unused in its scope
+$simpleUnused;
+ ------------
+HINT:Variable $simpleUnused seems to be unused in its scope
+$result = ($instanceUsed instanceof Foo);
+ ------
+HINT:Variable $result seems to be unused in its scope
+$cloned = clone $c;
+ ------
+HINT:Variable $cloned seems to be unused in its scope
+$casted = (int) $flt;
+ ------
+HINT:Variable $casted seems to be unused in its scope
+$assign = $rightUsed;
+ ------
+HINT:Variable $assign seems to be unused in its scope
+$condRes = $cond ? $true : $false;
+ -------
+HINT:Variable $condRes seems to be unused in its scope
+$cls = new $clsName($prm);
+ ---
+HINT:Variable $cls seems to be unused in its scope
+foreach ($arrayUsed as $key => $value) {
+                                -----
+HINT:Variable $key seems to be unused in its scope
+HINT:Variable $value seems to be unused in its scope
+$fnc = function($formUsed) use($lexUsed) {};
+ ---
+HINT:Variable $fnc seems to be unused in its scope
