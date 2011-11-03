@@ -196,6 +196,23 @@ public class AddParameterOrLocalFix implements Fix {
         return false;
     }
 
+    private static boolean isError(CompilationInfo info, Element el) {
+        if (el == null) return true;
+
+        if (!el.getKind().isClass()) return false;//TODO: currently holds, but is not guaranteed?
+
+        return el.asType() == null || el.asType().getKind() == TypeKind.ERROR;
+    }
+
+    private static boolean isEnhancedForLoopVariable(TreePath tp) {
+        if (tp.getLeaf().getKind() != Kind.VARIABLE)
+            return false;
+        TreePath context = tp.getParentPath();
+        if (context == null || context.getLeaf().getKind() != Kind.ENHANCED_FOR_LOOP)
+            return false;
+        return true;
+    }
+
     private void resolveLocalVariable55(final WorkingCopy wc, TreePath tp, TreeMaker make, TypeMirror proposedType) {
         final String name = ((IdentifierTree) tp.getLeaf()).getName().toString();
         TreePath blockPath = findOutmostBlock(tp);
@@ -242,12 +259,8 @@ public class AddParameterOrLocalFix implements Fix {
         }
         
         class FirstUsage extends TreePathScanner<TreePath, Void> {
-            private TreePath found;
             public @Override TreePath visitIdentifier(IdentifierTree tree, Void v) {
-                if (tree.getName().contentEquals(el.getSimpleName())) {
-                    if (found == null) {
-                        found = getCurrentPath();
-                    }
+                if (tree.getName().contentEquals(el.getSimpleName()) && isError(wc, wc.getTrees().getElement(getCurrentPath()))) {
                     return findStatement(getCurrentPath());
                 }
                 return null;
@@ -257,13 +270,13 @@ public class AddParameterOrLocalFix implements Fix {
                 TreePath firstBranchStatementWithUsage = null;
                 for (StatementTree t : tree.getStatements()) {
                     TreePath currentResult = scan(t, null);
-                    
-                    if (currentResult != null && result == null) {
+
+                    if (currentResult == null) continue;
+
+                    if (result == null) {
                         result = currentResult;
                         firstBranchStatementWithUsage = new TreePath(getCurrentPath(), t);
-                    }
-                    
-                    if (currentResult != t && result != null && result.getLeaf() != firstBranchStatementWithUsage.getLeaf()) {
+                    } else {
                         //ie.: { x = 1; } ... { x = 1; }
                         result = firstBranchStatementWithUsage;
                     }
@@ -301,6 +314,8 @@ public class AddParameterOrLocalFix implements Fix {
 
         if (isEnhancedForLoopIdentifier(tp)) {
             wc.rewrite(tp.getParentPath().getLeaf(), vt);
+        } else if (isEnhancedForLoopVariable(firstUse)) {
+            wc.rewrite(firstUse.getLeaf(), vt);
         } else if (statementParent.getKind() == Kind.BLOCK) {
             BlockTree block = (BlockTree) statementParent;
 

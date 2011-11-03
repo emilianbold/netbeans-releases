@@ -342,6 +342,74 @@ public class AddParameterOrLocalFixTest extends ErrorHintsTestBase {
         }
     }
 
+    public void test204584a() throws Exception {
+        parameter = false;
+        performFixTest("test/Test.java",
+                "package test;\n" +
+                "import java.util.*;\n" +
+                "public class Test {\n" +
+                "    public void method(List<String> l) {\n" +
+                "        if (true) {\n" +
+                "            for (Object o : l) {\n" +
+                "                String aa = (String) o;\n" +
+                "                System.err.println(aa);\n" +
+                "            }\n" +
+                "            Iterator<String> it = l.iterator();\n" +
+                "            while (it.hasNext()) {\n" +
+                "                a|a = it.next();\n" +
+                "            }\n" +
+                "        }\n" +
+                "    }\n" +
+                "}\n",
+                "AddParameterOrLocalFix:aa:java.lang.String:false",
+                ("package test;\n" +
+                 "import java.util.*;\n" +
+                 "public class Test {\n" +
+                 "    public void method(List<String> l) {\n" +
+                 "        if (true) {\n" +
+                 "            for (Object o : l) {\n" +
+                 "                String aa = (String) o;\n" +
+                 "                System.err.println(aa);\n" +
+                 "            }\n" +
+                 "            Iterator<String> it = l.iterator();\n" +
+                 "            while (it.hasNext()) {\n" +
+                 "                String aa = it.next();\n" +
+                 "            }\n" +
+                 "        }\n" +
+                 "    }\n" +
+                 "}\n").replaceAll("[ \t\n]+", " "));
+    }
+
+    public void test204584b() throws Exception {
+        parameter = false;
+        performFixTest("test/Test.java",
+                "package test;\n" +
+                "import java.util.*;\n" +
+                "public class Test {\n" +
+                "    public void method(int i) {\n" +
+                "        switch (i) {\n" +
+                "            case 1:\n" +
+                "                aa = 2;\n" +
+                "                a|a = 2;\n" +
+                "                break;\n" +
+                "        }\n" +
+                "    }\n" +
+                "}\n",
+                "AddParameterOrLocalFix:aa:int:false",
+                ("package test;\n" +
+                 "import java.util.*;\n" +
+                 "public class Test {\n" +
+                "    public void method(int i) {\n" +
+                "        switch (i) {\n" +
+                "            case 1:\n" +
+                "                int aa = 2;\n" +
+                "                aa = 2;\n" +
+                "                break;\n" +
+                "        }\n" +
+                "    }\n" +
+                 "}\n").replaceAll("[ \t\n]+", " "));
+    }
+
     protected List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) throws IOException {
         List<Fix> fixes = CreateElement.analyze(info, pos);
         List<Fix> result=  new LinkedList<Fix>();
