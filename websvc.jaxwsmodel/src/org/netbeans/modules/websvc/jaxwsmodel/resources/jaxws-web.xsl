@@ -142,7 +142,7 @@ made subject to such option by the copyright holder.
                     </xsl:if>
                     <property name="j2ee.platform.wsimport.classpath" value="${{libs.jaxws21.classpath}}"/>
                     <taskdef name="wsimport" classname="com.sun.tools.ws.ant.WsImport">
-                        <classpath path="${{java.home}}/../lib/tools.jar:${{j2ee.platform.wsimport.classpath}}"/>
+                        <classpath path="${{java.home}}/../lib/tools.jar:${{j2ee.platform.wsimport.classpath}}:${{javac.classpath}}"/>
                     </taskdef>
                     <condition property="conf-dir" value="${{conf.dir}}/" else="">
                         <isset property="conf.dir"/>
