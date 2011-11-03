@@ -48,10 +48,10 @@ import java.util.Set;
 import javax.swing.text.BadLocationException;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintSeverity;
-import org.netbeans.modules.php.editor.model.ClassScope;
 import org.netbeans.modules.php.editor.model.FileScope;
-import org.netbeans.modules.php.editor.model.MethodScope;
+import org.netbeans.modules.php.editor.model.FunctionScope;
 import org.netbeans.modules.php.editor.model.ModelUtils;
+import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.verification.PHPHintsProvider.Kind;
 import org.openide.filesystems.FileObject;
@@ -64,27 +64,38 @@ import org.openide.util.NbBundle.Messages;
 public class MethodRedeclarationHint extends AbstractRule {
 
     private static final String HINT_ID = "Method.Redeclaration.Hint"; //NOI18N
+    private FileObject fileObject;
+    private List<Hint> hints;
 
     @Override
-    @Messages("MethodRedeclarationCustom=Method \"{0}\" has been already declared")
+    @Messages("MethodRedeclarationCustom=Method or function \"{0}\" has been already declared")
     void computeHintsImpl(PHPRuleContext context, List<Hint> hints, Kind kind) throws BadLocationException {
         PHPParseResult phpParseResult = (PHPParseResult) context.parserResult;
         if (phpParseResult.getProgram() == null) {
             return;
         }
         FileScope fileScope = context.fileScope;
-        FileObject fileObject = context.parserResult.getSnapshot().getSource().getFileObject();
-        Collection<? extends ClassScope> declaredClasses = ModelUtils.getDeclaredClasses(fileScope);
-        for (ClassScope classScope : declaredClasses) {
-            Collection<? extends MethodScope> declaredMethods = classScope.getDeclaredMethods();
-            Set<String> declaredMethodNames = new HashSet<String>();
-            for (MethodScope methodScope : declaredMethods) {
-                String methodName = methodScope.getName();
-                if (declaredMethodNames.contains(methodName)) {
-                    hints.add(new Hint(this, Bundle.MethodRedeclarationCustom(methodName), fileObject, methodScope.getNameRange(), null, 500));
-                } else {
-                    declaredMethodNames.add(methodName);
-                }
+        fileObject = context.parserResult.getSnapshot().getSource().getFileObject();
+        this.hints = hints;
+        checkTypeScopes(ModelUtils.getDeclaredClasses(fileScope));
+        checkTypeScopes(ModelUtils.getDeclaredInterfaces(fileScope));
+        checkDeclaredFunctions(ModelUtils.getDeclaredFunctions(fileScope));
+    }
+
+    private void checkTypeScopes(Collection<? extends TypeScope> typeScopes) {
+        for (TypeScope typeScope : typeScopes) {
+            checkDeclaredFunctions(typeScope.getDeclaredMethods());
+        }
+    }
+
+    private void checkDeclaredFunctions(Collection<? extends FunctionScope> declaredFunctions) {
+        Set<String> declaredMethodNames = new HashSet<String>();
+        for (FunctionScope functionScope : declaredFunctions) {
+            String methodName = functionScope.getName();
+            if (declaredMethodNames.contains(methodName)) {
+                hints.add(new Hint(this, Bundle.MethodRedeclarationCustom(methodName), fileObject, functionScope.getNameRange(), null, 500));
+            } else {
+                declaredMethodNames.add(methodName);
             }
         }
     }
