@@ -192,7 +192,8 @@ public class LocalHistoryDiffView implements PropertyChangeListener, ActionListe
                     extractHistoryFile(siblingEntry, tmpHistorySiblingFile);
                 }
             } catch (IOException ioe) {
-                LocalHistory.LOG.log(Level.SEVERE, null, ioe);
+                LocalHistory.LOG.log(Level.WARNING, "Error while retrieving history for file {0} stored as {1}", new Object[]{entry.getFile(), entry.getStoreFile()}); // NOI18N
+                LocalHistory.LOG.log(Level.WARNING, null, ioe);
                 return;
             }
 
