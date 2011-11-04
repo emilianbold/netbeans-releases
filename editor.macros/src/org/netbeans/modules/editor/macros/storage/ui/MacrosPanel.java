@@ -86,6 +86,11 @@ public class MacrosPanel extends JPanel {
 
     private final MacrosModel model = MacrosModel.get();
     
+    /**
+     * Translates view > model indexes
+     */
+    private TableSorter sorter;
+    
     /** 
      * Creates new form MacrosPanel.
      */
@@ -109,7 +114,7 @@ public class MacrosPanel extends JPanel {
             }
         });
         tMacros.getTableHeader().setReorderingAllowed(false);
-        TableSorter sorter = new TableSorter(model.getTableModel());
+        sorter = new TableSorter(model.getTableModel());
         tMacros.setModel(sorter);
         sorter.setTableHeader(tMacros.getTableHeader());
         sorter.getTableHeader().setReorderingAllowed(false);
@@ -274,7 +279,6 @@ public class MacrosPanel extends JPanel {
         assert shortcutsFinder != null : "Can't find ShortcutsFinder"; //NOI18N
         
 	int selectedRow = tMacros.getSelectedRow();
-	
 	shortcutsFinder.refreshActions();
         String shortcut = shortcutsFinder.showShortcutsDialog();
         // is there already an action with such SC defined?
@@ -301,7 +305,8 @@ public class MacrosPanel extends JPanel {
         }
         
         if (shortcut != null) {
-            MacrosModel.Macro macro = model.getMacroByIndex(selectedRow);
+            int modelRow = sorter.modelIndex(selectedRow);
+            MacrosModel.Macro macro = model.getMacroByIndex(modelRow);
             macro.setShortcut(shortcut);
             shortcutsFinder.setShortcuts(macro, Collections.singleton(shortcut));
 //	    shortcutsFinder.apply();
@@ -311,8 +316,9 @@ public class MacrosPanel extends JPanel {
 
     private void bRemoveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bRemoveActionPerformed
 	ShortcutsFinder shortcutsFinder = Lookup.getDefault().lookup(ShortcutsFinder.class);
-	shortcutsFinder.setShortcuts(model.getMacroByIndex(tMacros.getSelectedRow()), Collections.<String>emptySet());
-        model.deleteMacro(tMacros.getSelectedRow());
+        int modelIndex = sorter.modelIndex(tMacros.getSelectedRow());
+	shortcutsFinder.setShortcuts(model.getMacroByIndex(modelIndex), Collections.<String>emptySet());
+        model.deleteMacro(modelIndex);
     }//GEN-LAST:event_bRemoveActionPerformed
 
     private void tMacrosValueChanged(ListSelectionEvent evt) {
@@ -324,7 +330,8 @@ public class MacrosPanel extends JPanel {
             bRemove.setEnabled(false);
             bSetShortcut.setEnabled(false);
         } else {
-            epMacroCode.setText(model.getMacroByIndex(index).getCode()); //NOI18N
+            int modelIndex = sorter.modelIndex(index);
+            epMacroCode.setText(model.getMacroByIndex(modelIndex).getCode()); //NOI18N
             epMacroCode.getCaret().setDot(0);
             epMacroCode.setEnabled(true);
             // Fix for #135985 commented to avoid focus
@@ -361,7 +368,7 @@ public class MacrosPanel extends JPanel {
     private void epMacroCodeDocumentChanged() {
         int index = tMacros.getSelectedRow();
         if (index >= 0) {
-            model.getMacroByIndex(index).setCode(epMacroCode.getText());
+            model.getMacroByIndex(sorter.modelIndex(index)).setCode(epMacroCode.getText());
         }
     }
     
