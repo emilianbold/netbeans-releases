@@ -636,15 +636,15 @@ public class ProxyLookup extends Lookup {
                             modified = false;
                         }
                     } else {
+                        Collection<? extends Item<T>> newItems = allItems();
+                        if (newItems.isEmpty()) {
+                            modified = false;
+                        }
                         synchronized (proxy()) {
                             if (getCache() == NO_CACHE) {
                                 // we have to initialize the cache
                                 // to show that the result has been initialized
                                 setCache(new Collection[3]);
-                            }
-                            Collection<? extends Item<T>> newItems = allItems();
-                            if (newItems.isEmpty()) {
-                                modified = false;
                             }
                         }
                     }
