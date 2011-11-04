@@ -61,7 +61,6 @@ final class SynchChildren<T> extends Children.Keys<T> implements ChildFactory.Ob
      */
     SynchChildren(ChildFactory<T> factory) {
         this.factory = factory;
-        factory.setObserver(this);
     }
     
     volatile boolean active = false;
