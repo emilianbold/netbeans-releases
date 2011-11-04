@@ -130,6 +130,11 @@ public class Html5CompletionQueryTest extends HtmlCompletionQueryTest {
         assertCompletedText("<div></di|", "/div", "<div></div>|");
     }
     
+    //Bug 197614 - Problem with HTML4 & code completion - non matching tags offered
+    public void testIssue197614() throws BadLocationException, ParseException {
+        assertItems("<table><tr><td></ta|", arr("table"), Match.EXACT);
+    }
+    
     @Override
     protected void assertItems(String documentText, final String[] expectedItemsNames, final Match type, int expectedAnchor) throws BadLocationException, ParseException {
         super.assertItems(HTML5_DOCTYPE + documentText,

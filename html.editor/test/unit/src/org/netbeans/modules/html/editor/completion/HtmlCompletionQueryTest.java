@@ -496,11 +496,9 @@ public class HtmlCompletionQueryTest extends HtmlCompletionTestBase {
     
     //Bug 197614 - Problem with HTML4 & code completion - non matching tags offered
     public void testIssue197614() throws BadLocationException, ParseException {
-//        assertItems("<table><tr><td></ta|", arr("table"), Match.EXACT);
-        
-//        assertCompletedText("<div></di|", "/div", "<div></div>|");
+        assertItems("<table><tr><td></ta|", arr("table"), Match.EXACT);
     }
-    
+
     
     //helper methods ------------
 
