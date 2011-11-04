@@ -264,63 +264,63 @@ if [ $ML_BUILD == 1 ]; then
     cd $NB_ALL/nbbuild/newbuild
 
     find $BASE_DIR/dist/ml/uc/apisupport/ -name "*.nbm" | xargs -t -I {} bash generate_updatetracking_from_nbm.sh {}
-    mv -u update_tracking/* $BASE_DIR/main/nbbuild/netbeans/apisupport/update_tracking/
+    mv -u update_tracking/* $BASE_DIR/main/nbbuild/netbeans-ml/apisupport/update_tracking/
     rm -rf update_tracking
 
     find $BASE_DIR/dist/ml/uc/cnd/ -name "*.nbm" | xargs -t -I {} bash generate_updatetracking_from_nbm.sh {}
-    mv -u update_tracking/* $BASE_DIR/main/nbbuild/netbeans/cnd/update_tracking/
+    mv -u update_tracking/* $BASE_DIR/main/nbbuild/netbeans-ml/cnd/update_tracking/
     rm -rf update_tracking
 
     find $BASE_DIR/dist/ml/uc/dlight/ -name "*.nbm" | xargs -t -I {} bash generate_updatetracking_from_nbm.sh {}
-    mv -u update_tracking/* $BASE_DIR/main/nbbuild/netbeans/dlight/update_tracking/
+    mv -u update_tracking/* $BASE_DIR/main/nbbuild/netbeans-ml/dlight/update_tracking/
     rm -rf update_tracking
 
     find $BASE_DIR/dist/ml/uc/enterprise/ -name "*.nbm" | xargs -t -I {} bash generate_updatetracking_from_nbm.sh {}
-    mv -u update_tracking/* $BASE_DIR/main/nbbuild/netbeans/enterprise/update_tracking/
+    mv -u update_tracking/* $BASE_DIR/main/nbbuild/netbeans-ml/enterprise/update_tracking/
     rm -rf update_tracking
 
     find $BASE_DIR/dist/ml/uc/ergonomics/ -name "*.nbm" | xargs -t -I {} bash generate_updatetracking_from_nbm.sh {}
-    mv -u update_tracking/* $BASE_DIR/main/nbbuild/netbeans/ergonomics/update_tracking/
+    mv -u update_tracking/* $BASE_DIR/main/nbbuild/netbeans-ml/ergonomics/update_tracking/
     rm -rf update_tracking
 
     find $BASE_DIR/dist/ml/uc/groovy/ -name "*.nbm" | xargs -t -I {} bash generate_updatetracking_from_nbm.sh {}
-    mv -u update_tracking/* $BASE_DIR/main/nbbuild/netbeans/groovy/update_tracking/
+    mv -u update_tracking/* $BASE_DIR/main/nbbuild/netbeans-ml/groovy/update_tracking/
     rm -rf update_tracking
 
     find $BASE_DIR/dist/ml/uc/harness/ -name "*.nbm" | xargs -t -I {} bash generate_updatetracking_from_nbm.sh {}
-    mv -u update_tracking/* $BASE_DIR/main/nbbuild/netbeans/harness/update_tracking/
+    mv -u update_tracking/* $BASE_DIR/main/nbbuild/netbeans-ml/harness/update_tracking/
     rm -rf update_tracking
 
     find $BASE_DIR/dist/ml/uc/ide/ -name "*.nbm" | xargs -t -I {} bash generate_updatetracking_from_nbm.sh {}
-    mv -u update_tracking/* $BASE_DIR/main/nbbuild/netbeans/ide/update_tracking/
+    mv -u update_tracking/* $BASE_DIR/main/nbbuild/netbeans-ml/ide/update_tracking/
     rm -rf update_tracking
 
     find $BASE_DIR/dist/ml/uc/java/ -name "*.nbm" | xargs -t -I {} bash generate_updatetracking_from_nbm.sh {}
-    mv -u update_tracking/* $BASE_DIR/main/nbbuild/netbeans/java/update_tracking/
+    mv -u update_tracking/* $BASE_DIR/main/nbbuild/netbeans-ml/java/update_tracking/
     rm -rf update_tracking
 
     find $BASE_DIR/dist/ml/uc/javacard/ -name "*.nbm" | xargs -t -I {} bash generate_updatetracking_from_nbm.sh {}
-    mv -u update_tracking/* $BASE_DIR/main/nbbuild/netbeans/javacard/update_tracking/
+    mv -u update_tracking/* $BASE_DIR/main/nbbuild/netbeans-ml/javacard/update_tracking/
     rm -rf update_tracking
 
     find $BASE_DIR/dist/ml/uc/mobility/ -name "*.nbm" | xargs -t -I {} bash generate_updatetracking_from_nbm.sh {}
-    mv -u update_tracking/* $BASE_DIR/main/nbbuild/netbeans/mobility/update_tracking/
+    mv -u update_tracking/* $BASE_DIR/main/nbbuild/netbeans-ml/mobility/update_tracking/
     rm -rf update_tracking
 
     find $BASE_DIR/dist/ml/uc/php/ -name "*.nbm" | xargs -t -I {} bash generate_updatetracking_from_nbm.sh {}
-    mv -u update_tracking/* $BASE_DIR/main/nbbuild/netbeans/php/update_tracking/
+    mv -u update_tracking/* $BASE_DIR/main/nbbuild/netbeans-ml/php/update_tracking/
     rm -rf update_tracking
 
     find $BASE_DIR/dist/ml/uc/platform/ -name "*.nbm" | xargs -t -I {} bash generate_updatetracking_from_nbm.sh {}
-    mv -u update_tracking/* $BASE_DIR/main/nbbuild/netbeans/platform/update_tracking/
+    mv -u update_tracking/* $BASE_DIR/main/nbbuild/netbeans-ml/platform/update_tracking/
     rm -rf update_tracking
 
     find $BASE_DIR/dist/ml/uc/profiler/ -name "*.nbm" | xargs -t -I {} bash generate_updatetracking_from_nbm.sh {}
-    mv -u update_tracking/* $BASE_DIR/main/nbbuild/netbeans/profiler/update_tracking/
+    mv -u update_tracking/* $BASE_DIR/main/nbbuild/netbeans-ml/profiler/update_tracking/
     rm -rf update_tracking
 
     find $BASE_DIR/dist/ml/uc/websvccommon/ -name "*.nbm" | xargs -t -I {} bash generate_updatetracking_from_nbm.sh {}
-    mv -u update_tracking/* $BASE_DIR/main/nbbuild/netbeans/websvccommon/update_tracking/
+    mv -u update_tracking/* $BASE_DIR/main/nbbuild/netbeans-ml/websvccommon/update_tracking/
     rm -rf update_tracking
 
 fi
