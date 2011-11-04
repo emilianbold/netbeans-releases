@@ -39,44 +39,54 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.editor.verification;
+package org.netbeans.editor.ext.html.parser;
+
+import java.util.List;
+import javax.swing.text.BadLocationException;
+import org.netbeans.editor.ext.html.parser.api.AstNode;
+import org.netbeans.editor.ext.html.parser.api.AstNodeUtils;
+import org.netbeans.editor.ext.html.parser.api.HtmlSource;
+import org.netbeans.editor.ext.html.parser.api.ParseException;
+import org.netbeans.editor.ext.html.parser.api.ProblemDescription;
+import org.netbeans.editor.ext.html.test.TestBase;
 
 /**
  *
- * @author Ondrej Brejla <obrejla@netbeans.org>
+ * @author marekfukala
  */
-public class PHPHintsTest extends PHPHintsTestBase {
-
-    public PHPHintsTest(String testName) {
-        super(testName);
+public class XmlSyntaxTreeBuilderTest extends TestBase {
+    
+    public XmlSyntaxTreeBuilderTest(String name) {
+        super(name);
     }
 
-    public void testModifiersCheckHint() throws Exception {
-        checkHintsInStartEndFile(new ModifiersCheckHint(), "testModifiersCheckHint.php");
+     //Bug 197608 - Non-html tags offered as closing tags using code completion
+    public void testIssue197608() throws ParseException, BadLocationException {
+        String code = "<div></di";
+        AstNode root = parse(code);
+
+        AstNode div = AstNodeUtils.query(root, "div"); 
+        assertNotNull(div);
+//        AstNodeUtils.dumpTree(root);
     }
 
-    public void testAbstractClassInstantiationHint() throws Exception {
-        checkHintsInStartEndFile(new AbstractClassInstantiationHint(), "testAbstractClassInstantiationHint.php");
-    }
-
-    public void testImplementAbstractMethodsHint() throws Exception {
-        checkHintsInStartEndFile(new ImplementAbstractMethodsHint(), "testImplementAbstractMethodsHint.php");
-    }
-
-    public void testMethodRedeclarationHint() throws Exception {
-        checkHintsInStartEndFile(new MethodRedeclarationHint(), "testMethodRedeclarationHint.php");
-    }
-
-    public void testTypeRedeclarationHint() throws Exception {
-        checkHintsInStartEndFile(new TypeRedeclarationHint(), "testTypeRedeclarationHint.php");
-    }
-
-    public void testUninitializedVariableHint() throws Exception {
-        checkHintsInStartEndFile(new UninitializedVariableHint(), "testUninitializedVariableHint.php");
-    }
-
-    public void testWrongOrderOfArgsHint() throws Exception {
-        checkHintsInStartEndFile(new WrongOrderOfArgsHint(), "testWrongOrderOfArgsHint.php");
+    private AstNode parse(String code) {
+        HtmlSource source = new HtmlSource(code);
+        SyntaxAnalyzer result = SyntaxAnalyzer.create(source);
+        SyntaxAnalyzerElements elements = result.elements();
+        
+//        for(SyntaxElement se : elements.items()) {
+//            System.out.print(se);
+//            List<ProblemDescription> problems = se.getProblems();
+//            if(problems == null || problems.isEmpty()) {
+//                System.out.println("OK");
+//            } else { 
+//                System.out.println(se.getProblems().get(0));
+//            }
+//            
+//        }
+        
+        return XmlSyntaxTreeBuilder.makeUncheckedTree(source, elements.items());
     }
 
 }
