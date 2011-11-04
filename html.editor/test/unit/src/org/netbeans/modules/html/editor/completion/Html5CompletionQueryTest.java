@@ -124,8 +124,15 @@ public class Html5CompletionQueryTest extends HtmlCompletionQueryTest {
         assertItems(sap.getCode(), new String[]{"id", "href"} , Match.CONTAINS);
     }
     
-    public void testEndTagsCompletionOfUndeclaredTagsMixedWithHtml() throws BadLocationException, ParseException {
-        super.testEndTagsCompletionOfUndeclaredTagsMixedWithHtml();
+    //Bug 197608 - Non-html tags offered as closing tags using code completion 
+    public void testIssue197608() throws BadLocationException, ParseException {
+        assertItems("<div></di|", arr("div"), Match.EXACT);
+        assertCompletedText("<div></di|", "/div", "<div></div>|");
+    }
+    
+    //Bug 197614 - Problem with HTML4 & code completion - non matching tags offered
+    public void testIssue197614() throws BadLocationException, ParseException {
+        assertItems("<table><tr><td></ta|", arr("table"), Match.EXACT);
     }
     
     @Override

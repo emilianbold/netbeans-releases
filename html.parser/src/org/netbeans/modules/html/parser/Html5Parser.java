@@ -213,6 +213,16 @@ public class Html5Parser implements HtmlParser {
 
         @Override
         public Map<HtmlTag, AstNode> getPossibleEndTags(AstNode node) {
+            //Bug 197608 - Non-html tags offered as closing tags using code completion
+            //XXX define of what type can be the node argument
+            if(node.type() != AstNode.NodeType.OPEN_TAG) {
+                node = node.parent();
+                if(node == null) {
+                    return Collections.emptyMap();
+                }
+            }
+            //<<<
+            
             HtmlTag tag = model().getTag(node.getNameWithoutPrefix());
             if (tag == null) {
                 return Collections.emptyMap();
