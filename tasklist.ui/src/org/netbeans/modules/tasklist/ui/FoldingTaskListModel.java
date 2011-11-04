@@ -76,7 +76,7 @@ class FoldingTaskListModel extends TaskListModel {
     
     @Override
     public int getRowCount() {
-        if( null == list )
+        if( null == taskList )
             return 0;
         int count = 0;
         synchronized( groups ) {
@@ -221,7 +221,7 @@ class FoldingTaskListModel extends TaskListModel {
     
     @Override
     protected void sortTaskList() {
-        Comparator<Task> comparator = null;
+        Comparator<Task> comparator;
         switch( sortingCol ) {
         case COL_DESCRIPTION:
             comparator = TaskComparator.getDescriptionComparator( ascending );
