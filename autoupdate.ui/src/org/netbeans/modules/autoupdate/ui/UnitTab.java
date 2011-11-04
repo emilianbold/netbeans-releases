@@ -560,7 +560,17 @@ public class UnitTab extends javax.swing.JPanel {
     
     private void listenOnSelection () {
         table.getSelectionModel ().addListSelectionListener (new ListSelectionListener () {
-            public void valueChanged (ListSelectionEvent e) {
+            public void valueChanged (final ListSelectionEvent e) {
+                if (! SwingUtilities.isEventDispatchThread()) {
+                    SwingUtilities.invokeLater(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            valueChanged(e);
+                        }
+                    });
+                    return ;
+                }
                 //Ignore extra messages.
                 if (e.getValueIsAdjusting ()) return;
                 ListSelectionModel lsm =
