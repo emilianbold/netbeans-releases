@@ -435,7 +435,10 @@ public class HtmlCompletionQuery extends UserTask {
                 result.addAll(translateHtmlTags(offset - 1, possibleOpenTags, allTags));
 
                 if(HtmlPreferences.completionOffersEndTagAfterLt()) {
-                    result.addAll(getPossibleEndTags(htmlResult, node, xmlLeafNode, offset, ""));
+                    //the end tag completion expects the item to be invoked after </ prefix
+                    //which is not true in this case, we need to adjust it by one char
+                    int endTagOffset = offset + 1; 
+                    result.addAll(getPossibleEndTags(htmlResult, node, xmlLeafNode, endTagOffset, ""));
                 }
             }
 
@@ -541,7 +544,10 @@ public class HtmlCompletionQuery extends UserTask {
 
                 HtmlTag tag = model.getTag(node.name());
                 HtmlTagAttribute attribute = tag != null ? tag.getAttribute(argName) : null;
-                result = new ArrayList<CompletionItem>();
+                
+                //use set instead of list since the AttrValuesCompletion may return identical values as
+                //HtmlTagAttribute.getPossibleValues()
+                result = new LinkedHashSet<CompletionItem> ();
 
                 if (id != HTMLTokenId.VALUE) {
                     //after the equal sign
@@ -661,7 +667,7 @@ public class HtmlCompletionQuery extends UserTask {
             int order = offset - (node != null ? node.startOffset() : 0);
 
             String tagName = isXHtml ? tag.getName() : (lowerCase ? tag.getName().toLowerCase(Locale.ENGLISH) : tag.getName().toUpperCase(Locale.ENGLISH));
-            items.add(HtmlCompletionItem.createEndTag(tagName, offset - 2 - prefix.length(), tagName, order, getEndTagType(leaf)));
+            items.add(HtmlCompletionItem.createEndTag(tag, tagName, offset - 2 - prefix.length(), tagName, order, getEndTagType(leaf)));
         }
         return items;
     }

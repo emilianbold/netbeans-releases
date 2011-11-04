@@ -106,6 +106,8 @@ public abstract class FormProperty extends Node.Property {
     public static final int NO_READ = DETACHED_READ | NO_READ_PROP; // no reading from property (bits 0,2)
     public static final int NO_WRITE = DETACHED_WRITE | NO_WRITE_PROP; // no writing to property (bits 1,3)
 
+    // Placeholder for the default value
+    public static final Object DEFAULT_VALUE = new Object();
 
     // ------------------------
     // variables
@@ -286,8 +288,9 @@ public abstract class FormProperty extends Node.Property {
                                               IllegalArgumentException,
                                               InvocationTargetException
     {
-//        if (!canWrite())
-//            throw new IllegalAccessException("Not a writeable property: "+getName());
+        if (value == DEFAULT_VALUE) {
+            value = getDefaultValue();
+        }
         // let the registered converters do something with the value (e.g. i18n)
         if (fireChanges)
             value = convertValue(value);

@@ -77,7 +77,6 @@ import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
-import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 
 /**
@@ -114,13 +113,14 @@ public class NavigationSideBar extends JPanel implements Accessible {
 
     public NavigationSideBar(JTextComponent component) {
         setLayout(new FlowLayout(FlowLayout.LEFT, 14, 0));
-        setBorder(new EmptyBorder(2,2,2,2));
+        setBorder(new EmptyBorder(2, 2, 2, 2));
 
         this.component = component;
         this.doc = component.getDocument();
 
         Source source = HtmlCaretAwareSourceTask.forDocument(doc);
         source.addChangeListener(new HtmlCaretAwareSourceTask.SourceListener() {
+
             @Override
             public void parsed(Result info, SchedulerEvent event) {
                 NavigationSideBar.this.change(info, event);
@@ -129,24 +129,27 @@ public class NavigationSideBar extends JPanel implements Accessible {
 
         updatePreferredSize();
 
-        setPleaseWaitUI();
     }
 
     private void change(Result info, SchedulerEvent event) {
-        int caretPosition = ((CursorMovedSchedulerEvent)event).getCaretOffset();
-        HtmlParserResult result = (HtmlParserResult)info;
+        if (event == null) {
+            return ;
+        }
+
+        int caretPosition = ((CursorMovedSchedulerEvent) event).getCaretOffset();
+        HtmlParserResult result = (HtmlParserResult) info;
         Collection<AstNode> allRoots = new LinkedList<AstNode>();
         allRoots.addAll(result.roots().values());
         allRoots.add(result.rootOfUndeclaredTagsParseTree());
 
         List<AstNode> nodesInPath = new ArrayList<AstNode>();
         int astOffset = info.getSnapshot().getEmbeddedOffset(caretPosition);
-        for(AstNode root : allRoots) {
+        for (AstNode root : allRoots) {
             AstNode leaf = AstNodeUtils.findNode(root, astOffset, false, false);
-            if(leaf != null) {
+            if (leaf != null) {
                 //add all nodes in the leaf's path to the root
-                for(AstNode node : leaf.path().path()) { //really brilliant wording!!!!
-                    if(node.type() == AstNode.NodeType.OPEN_TAG && !node.isVirtual()) {
+                for (AstNode node : leaf.path().path()) { //really brilliant wording!!!!
+                    if (node.type() == AstNode.NodeType.OPEN_TAG && !node.isVirtual()) {
                         nodesInPath.add(node);
                     }
                 }
@@ -159,12 +162,11 @@ public class NavigationSideBar extends JPanel implements Accessible {
             public int compare(AstNode o1, AstNode o2) {
                 return o1.startOffset() - o2.startOffset();
             }
-
         });
 
         updateNestingInfo(info, nodesInPath);
 
-        if(testAccess != null) {
+        if (testAccess != null) {
             testAccess.updated(nodesInPath);
         }
 
@@ -175,6 +177,7 @@ public class NavigationSideBar extends JPanel implements Accessible {
 
         //update UI
         SwingUtilities.invokeLater(new Runnable() {
+
             @Override
             public void run() {
                 updatePanelUI(tsource);
@@ -193,14 +196,17 @@ public class NavigationSideBar extends JPanel implements Accessible {
             label.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
             label.setText(getDrawText(node.name()));
             label.addMouseListener(new java.awt.event.MouseAdapter() {
+
                 @Override
                 public void mouseEntered(java.awt.event.MouseEvent evt) {
                     label.setForeground(Color.BLUE);
                 }
+
                 @Override
                 public void mouseExited(java.awt.event.MouseEvent evt) {
                     label.setForeground(Color.BLACK);
                 }
+
                 @Override
                 public void mouseClicked(java.awt.event.MouseEvent evt) {
                     int documentOffset = tsource.getSnapshot().getOriginalOffset(node.startOffset());
@@ -210,22 +216,6 @@ public class NavigationSideBar extends JPanel implements Accessible {
 
             add(label);
         }
-
-        revalidate();
-        repaint();
-    }
-
-    //shows please wait text until the document is parsed
-    private void setPleaseWaitUI() {
-        removeAll();
-
-        JLabel label = new javax.swing.JLabel();
-        label.setForeground(Color.DARK_GRAY);
-        label.setFont(new Font("Monospaced", Font.PLAIN, (int) (getColoring().getFont().getSize() * .9))); // NOI18N
-        label.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        label.setText(getDrawText(NbBundle.getMessage(NavigationSideBar.class, "MSG_NAVIGATION_BAR_PLEASE_WAIT")));
-
-        add(label);
 
         revalidate();
         repaint();
@@ -279,9 +269,8 @@ public class NavigationSideBar extends JPanel implements Accessible {
     }
 
     static interface TestAccess {
+
         public void updated(List<AstNode> path);
     }
-
     private TestAccess testAccess;
-
 }

@@ -229,6 +229,7 @@ public class ReplaceBar extends JPanel {
         expandButton = createExpandButton();
         expandPopup = createExpandPopup(expandButton);
         add(expandButton);
+        expandButton.setVisible(true);
         
         // padding at the end of the toolbar
         padding = new JPanel();
@@ -264,6 +265,7 @@ public class ReplaceBar extends JPanel {
         inBar.add(preserveCaseCheckBox);
         barOrder.addAll(Arrays.asList(this.getComponents()));
         remove(expandButton);
+        expandButton.setVisible(false);
     }
 
     private void showExpandedMenu() {
@@ -284,7 +286,8 @@ public class ReplaceBar extends JPanel {
 
     private JButton createExpandButton() throws MissingResourceException {
         JButton expButton = new JButton(ImageUtilities.loadImageIcon("org/netbeans/modules/editor/resources/find_expand.png", false)); // NOI18N
-        expButton.setMnemonic(NbBundle.getMessage(SearchBar.class, "CTL_ExpandButton_Mnemonic").charAt(0)); // NOI18N
+        expButton.setMnemonic(NbBundle.getMessage(SearchBar.class, "CTL_ReplaceExpandButton_Mnemonic").charAt(0)); // NOI18N
+        expButton.setToolTipText(NbBundle.getMessage(ReplaceBar.class, "TOOLTIP_ReplaceExpandButton")); // NOI18N
         expButton.setMargin(BUTTON_INSETS);
         expButton.addActionListener(new ActionListener() {
 
@@ -371,8 +374,10 @@ public class ReplaceBar extends JPanel {
         if (change) {
             if (inPopup.isEmpty()) {
                 remove(expandButton);
+                expandButton.setVisible(false);
             } else if (getComponentIndex(expandButton) < 0) {
                 add(expandButton, getComponentIndex(padding));
+                expandButton.setVisible(true);
             }
             this.revalidate();
             expandPopup.invalidate();
@@ -444,8 +449,11 @@ public class ReplaceBar extends JPanel {
         focusList.add(replaceTextField);
         focusList.add(replaceButton);
         focusList.add(replaceAllButton);
+        focusList.add(expandButton);
         focusList.add(searchBar.getFindPreviousButton());
         focusList.add(searchBar.getFindNextButton());
+        focusList.add(searchBar.getExpandButton());
+        
     }
 
     private ArrayList<JComponent> getFocusList() {
@@ -454,16 +462,15 @@ public class ReplaceBar extends JPanel {
 
     private FocusTraversalPolicy createSearchBarFocusTraversalPolicy() {
         return new FocusTraversalPolicy() {
-
             @Override
             public Component getComponentAfter(Container aContainer, Component aComponent) {
                 int indexOf = getFocusList().indexOf(aComponent);
                 if (indexOf == -1) {
                     return null;
                 } else if (indexOf == getFocusList().size() - 1) {
-                    return getFocusList().get(0).isEnabled() ? getFocusList().get(0) : getComponentAfter(aContainer, getFocusList().get(0));
+                    return isFocusableComponent(getFocusList().get(0)) ? getFocusList().get(0) : getComponentAfter(aContainer, getFocusList().get(0));
                 } else {
-                    return getFocusList().get(indexOf + 1).isEnabled() ? getFocusList().get(indexOf + 1) : getComponentAfter(aContainer, getFocusList().get(indexOf + 1));
+                    return isFocusableComponent(getFocusList().get(indexOf + 1)) ? getFocusList().get(indexOf + 1) : getComponentAfter(aContainer, getFocusList().get(indexOf + 1));
                 }
             }
 
@@ -473,9 +480,9 @@ public class ReplaceBar extends JPanel {
                 if (indexOf == -1) {
                     return null;
                 } else if (indexOf == 0) {
-                    return getFocusList().get(getFocusList().size() - 1).isEnabled() ? getFocusList().get(getFocusList().size() - 1) : getComponentBefore(aContainer, getFocusList().get(getFocusList().size() - 1));
+                    return isFocusableComponent(getFocusList().get(getFocusList().size() - 1)) && getFocusList().get(getFocusList().size() - 1).isVisible() ? getFocusList().get(getFocusList().size() - 1) : getComponentBefore(aContainer, getFocusList().get(getFocusList().size() - 1));
                 } else {
-                    return getFocusList().get(indexOf - 1).isEnabled() ? getFocusList().get(indexOf - 1) : getComponentBefore(aContainer, getFocusList().get(indexOf - 1));
+                    return isFocusableComponent(getFocusList().get(indexOf - 1)) ? getFocusList().get(indexOf - 1) : getComponentBefore(aContainer, getFocusList().get(indexOf - 1));
                 }
             }
 
@@ -492,6 +499,10 @@ public class ReplaceBar extends JPanel {
             @Override
             public Component getDefaultComponent(Container aContainer) {
                 return getFocusList().get(0);
+            }
+            
+            private boolean isFocusableComponent(Component aComponent) {
+                return aComponent.isEnabled() && aComponent.isVisible();
             }
         };
     }
@@ -636,7 +647,7 @@ public class ReplaceBar extends JPanel {
         }
 
         unchangeSearchBarToBeOnlySearchBar();
-                                setVisible(false);
+        setVisible(false);
     }
 
     void gainFocus() {
@@ -683,14 +694,6 @@ public class ReplaceBar extends JPanel {
         if (replaceAll) {
             findSupport.replaceAll(findProps);
         } else {
-            if (searchBar.isSearched()) {
-                if (backwardsCheckBox.isSelected()) {
-                    searchBar.findNext();
-                } else {
-                    searchBar.findPrevious();
-                }
-                searchBar.setSearched(false);
-            }
             try {
                 findSupport.replace(findProps, false);
             } catch (BadLocationException ex) {

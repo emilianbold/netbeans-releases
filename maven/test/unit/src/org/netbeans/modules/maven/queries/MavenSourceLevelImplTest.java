@@ -71,7 +71,7 @@ public class MavenSourceLevelImplTest extends NbTestCase {
         FileObject source = TestFileUtils.writeFile(wd, "src/main/java/p/C.java", "package p; class C {}");
         assertEquals("1.5", SourceLevelQuery.getSourceLevel(source));
     }
-    
+
     public void testCompilerPluginSpecifiedWithoutVersion() throws Exception {
         TestFileUtils.writeFile(wd, "pom.xml", "<project><modelVersion>4.0.0</modelVersion>"
                 + "<groupId>test</groupId><artifactId>prj</artifactId>"
@@ -123,6 +123,14 @@ public class MavenSourceLevelImplTest extends NbTestCase {
         FileObject source = TestFileUtils.writeFile(wd, "src/main/java/p/C.java", "package p; class C {}");
         System.setProperty("level", "1.4");
         assertEquals("1.4", SourceLevelQuery.getSourceLevel(source));
+    }
+
+    public void testUnrecognizedPackaging() throws Exception {
+        TestFileUtils.writeFile(wd, "pom.xml", "<project><modelVersion>4.0.0</modelVersion>"
+                + "<groupId>test</groupId><artifactId>prj</artifactId>"
+                + "<packaging>stuff</packaging><version>1.0</version></project>");
+        FileObject source = TestFileUtils.writeFile(wd, "src/main/java/p/C.java", "package p; class C {}");
+        assertEquals("1.5", SourceLevelQuery.getSourceLevel(source));
     }
 
     public void testTestSourceLevel() throws Exception { // e.g. org.apache.felix.configadmin

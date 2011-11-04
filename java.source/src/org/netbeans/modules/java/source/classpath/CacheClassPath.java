@@ -173,18 +173,7 @@ public class CacheClassPath implements ClassPathImplementation, PropertyChangeLi
                         }
                     }
                 }
-                try {
-                    File sigs = JavaIndex.getClassFolder(url);
-                    URL orl = FileUtil.urlForArchiveOrDir(sigs);
-                    if (orl != null) {
-                        _cache.add (ClassPathSupport.createResource(orl));                            
-                    }
-                    else {
-                        LOG.log(Level.WARNING, "Invalid cache root: {0} exists: {1} dir: {2} retry: {3}", new Object[]{sigs.getAbsolutePath(), sigs.exists(), sigs.isDirectory(), FileUtil.urlForArchiveOrDir(sigs)});  //NOI18N
-                    }
-                } catch (IOException ioe) {
-                    Exceptions.printStackTrace(ioe);
-                }
+                _cache.add(new CachingPathResourceImpl(url));
                 _cache.add (ClassPathSupport.createResource(url));                
             }
         }
@@ -217,5 +206,50 @@ public class CacheClassPath implements ClassPathImplementation, PropertyChangeLi
         assert sourcePath != null;
         return ClassPathFactory.createClassPath(new CacheClassPath(sourcePath,false));
     }
-    
+
+    private static final class CachingPathResourceImpl implements PathResourceImplementation {
+        private static final URL[] EMPTY = new URL[0];
+        
+        private final URL   originalRoot;
+        private       URL[] cacheRoot;
+
+        public CachingPathResourceImpl(URL originalRoot) {
+            this.originalRoot = originalRoot;
+        }
+
+        @Override public synchronized URL[] getRoots() {
+            URL[] result = cacheRoot;
+
+            if (result == null) {
+                result = EMPTY;
+                try {
+                    File sigs = JavaIndex.getClassFolder(originalRoot);
+                    URL orl = FileUtil.urlForArchiveOrDir(sigs);
+                    if (orl != null) {
+                        result = new URL[] {orl};
+                    }
+                    else {
+                        LOG.log(Level.WARNING, "Invalid cache root: {0} exists: {1} dir: {2} retry: {3}", new Object[]{sigs.getAbsolutePath(), sigs.exists(), sigs.isDirectory(), FileUtil.urlForArchiveOrDir(sigs)});  //NOI18N
+                    }
+                } catch (IOException ioe) {
+                    Exceptions.printStackTrace(ioe);
+                }
+
+                cacheRoot = result;
+            }
+
+            assert result != null;
+            
+            return result;
+        }
+
+        @Override public ClassPathImplementation getContent() {
+            return null;
+        }
+
+        @Override public void addPropertyChangeListener(PropertyChangeListener listener) {}
+
+        @Override public void removePropertyChangeListener(PropertyChangeListener listener) {}
+
+    }
 }

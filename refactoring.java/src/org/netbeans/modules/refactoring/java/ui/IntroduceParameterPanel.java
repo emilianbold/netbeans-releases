@@ -246,6 +246,7 @@ public class IntroduceParameterPanel extends JPanel implements CustomRefactoring
         setAutoscrolls(true);
         setName(getString("LBL_TitleIntroduceParameter"));
 
+        lblName.setLabelFor(jScrollPane1);
         org.openide.awt.Mnemonics.setLocalizedText(lblName, org.openide.util.NbBundle.getMessage(IntroduceParameterPanel.class, "IntroduceParameterPanel.lblName.text")); // NOI18N
 
         chkIsDeclareFinal.setSelected(((Boolean) RefactoringModule.getOption(DECLAREFINAL, Boolean.FALSE)).booleanValue());

@@ -360,7 +360,7 @@ moz_document_function
 	;
     
 page
-    : PAGE_SYM WS? IDENT? (pseudoPage WS*)?
+    : PAGE_SYM WS* ( IDENT WS* )? (pseudoPage WS*)?
         LBRACE WS*
             //the grammar in the http://www.w3.org/TR/css3-page/ says the declaration/margins should be delimited by the semicolon,
             //but there's no such char in the examples => making it arbitrary

@@ -61,7 +61,6 @@ import org.apache.maven.model.building.ModelBuilder;
 import org.apache.maven.model.building.ModelBuildingException;
 import org.apache.maven.model.building.ModelBuildingRequest;
 import org.apache.maven.model.building.ModelBuildingResult;
-import org.apache.maven.properties.internal.EnvironmentUtils;
 import org.codehaus.plexus.ContainerConfiguration;
 import org.codehaus.plexus.DefaultContainerConfiguration;
 import org.codehaus.plexus.DefaultPlexusContainer;
@@ -318,6 +317,7 @@ public final class EmbedderFactory {
     }
 
     public static ArtifactRepository createRemoteRepository(MavenEmbedder embedder, String url, String id) {
+        embedder.setUpLegacySupport();
         ArtifactRepositoryFactory fact = embedder.lookupComponent(ArtifactRepositoryFactory.class);
         assert fact!=null : "ArtifactRepositoryFactory component not found in maven";
         ArtifactRepositoryPolicy snapshotsPolicy = new ArtifactRepositoryPolicy(true, ArtifactRepositoryPolicy.UPDATE_POLICY_ALWAYS, ArtifactRepositoryPolicy.CHECKSUM_POLICY_WARN);

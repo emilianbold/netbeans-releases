@@ -142,7 +142,9 @@ public class BuildArtifactMapperImpl {
         }
     }
 
-    private static boolean protectAgainstErrors(File targetFolder, FileObject[][] sources) throws MalformedURLException {
+    private static final Set<Object> alreadyWarned = new WeakSet<Object>();
+
+    private static boolean protectAgainstErrors(File targetFolder, FileObject[][] sources, Object context) throws MalformedURLException {
         Preferences pref = NbPreferences.forModule(BuildArtifactMapperImpl.class).node(BuildArtifactMapperImpl.class.getSimpleName());
 
         if (!pref.getBoolean(ASK_BEFORE_RUN_WITH_ERRORS, true)) {
@@ -152,7 +154,7 @@ public class BuildArtifactMapperImpl {
         sources(targetFolder, sources);
         
         for (FileObject file : sources[0]) {
-            if (ErrorsCache.isInError(file, true)) {
+            if (ErrorsCache.isInError(file, true) && !alreadyWarned.contains(context)) {
                 JButton btnRunAnyway = new JButton();
                 org.openide.awt.Mnemonics.setLocalizedText(btnRunAnyway, org.openide.util.NbBundle.getMessage(BuildArtifactMapperImpl.class, "BTN_RunAnyway"));
                 btnRunAnyway.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(BuildArtifactMapperImpl.class, "ACSN_BTN_RunAnyway"));
@@ -180,6 +182,7 @@ public class BuildArtifactMapperImpl {
                 if (option == btnRunAnyway) {
                     pref.putBoolean(ASK_BEFORE_RUN_WITH_ERRORS, panel.getAskBeforeRunning());
 
+                    alreadyWarned.add(context);
                     return true;
                 }
 
@@ -224,9 +227,9 @@ public class BuildArtifactMapperImpl {
         
         return result;
     }
-    
+
     @SuppressWarnings("deprecation")
-    public static Boolean ensureBuilt(URL sourceRoot, boolean copyResources, boolean keepResourceUpToDate) throws IOException {
+    public static Boolean ensureBuilt(URL sourceRoot, Object context, boolean copyResources, boolean keepResourceUpToDate) throws IOException {
         File targetFolder = getTarget(sourceRoot);
         
         if (targetFolder == null) {
@@ -247,18 +250,22 @@ public class BuildArtifactMapperImpl {
 
         FileObject[][] sources = new FileObject[1][];
         
-        if (!protectAgainstErrors(targetFolder, sources)) {
+        if (!protectAgainstErrors(targetFolder, sources, context)) {
             return false;
         }
         
         File tagFile = new File(targetFolder, TAG_FILE_NAME);
-
-        if (tagFile.exists()) {
+        File tagUpdateResourcesFile = new File(targetFolder, TAG_UPDATE_RESOURCES);
+        final boolean forceResourceCopy = copyResources && keepResourceUpToDate && !tagUpdateResourcesFile.exists();
+        final boolean cosActive = tagFile.exists();
+        if (cosActive && !forceResourceCopy) {
             return true;
         }
-        
-        delete(targetFolder, false/*#161085: cleanCompletely*/);
-        
+
+        if (!cosActive) {
+            delete(targetFolder, false/*#161085: cleanCompletely*/);
+        }
+
         if (!targetFolder.exists() && !targetFolder.mkdirs()) {
             throw new IOException("Cannot create destination folder: " + targetFolder.getAbsolutePath());
         }
@@ -266,19 +273,21 @@ public class BuildArtifactMapperImpl {
         sources(targetFolder, sources);
 
         for (FileObject sr : sources[0]) {
-            URL srURL = sr.getURL();
-            File index = JavaIndex.getClassFolder(srURL, true);
+            if (!cosActive) {
+                URL srURL = sr.getURL();
+                File index = JavaIndex.getClassFolder(srURL, true);
 
-            if (index == null) {
-                //#181992: (not nice) ignore the annotation processing target directory:
-                if (srURL.equals(AnnotationProcessingQuery.getAnnotationProcessingOptions(sr).sourceOutputDirectory())) {
-                    continue;
+                if (index == null) {
+                    //#181992: (not nice) ignore the annotation processing target directory:
+                    if (srURL.equals(AnnotationProcessingQuery.getAnnotationProcessingOptions(sr).sourceOutputDirectory())) {
+                        continue;
+                    }
+
+                    return null;
                 }
-                
-                return null;
-            }
 
-            copyRecursively(index, targetFolder);
+                copyRecursively(index, targetFolder);
+            }
 
             if (copyResources) {
                 Set<String> javaMimeTypes = COSSynchronizingIndexer.gatherJavaMimeTypes();
@@ -287,11 +296,13 @@ public class BuildArtifactMapperImpl {
                 copyRecursively(sr, targetFolder, javaMimeTypes, javaMimeTypesArr);
             }
         }
-        
-        new FileOutputStream(tagFile).close();
+
+        if (!cosActive) {
+            new FileOutputStream(tagFile).close();
+        }
 
         if (keepResourceUpToDate)
-            new FileOutputStream(new File(targetFolder, TAG_UPDATE_RESOURCES)).close();
+            new FileOutputStream(tagUpdateResourcesFile).close();
         
         return true;
     }

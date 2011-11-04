@@ -55,6 +55,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.apisupport.project.api.ManifestManager.PackageExport;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.ProjectXMLManager;
@@ -118,7 +119,7 @@ public class UnitTestLibrariesNodeTest extends TestBase {
 //        assertEquals("nc nodes now", nc, libs.getChildren().getNodes().length);
 //    }
     
-    //test action on node
+    @RandomlyFails // NB-Core-Build #7354: "have a node with dependency"
     public void testActions() throws Exception{
         assertNotNull("have the Libraries node", libsNode);
         //test removedep action

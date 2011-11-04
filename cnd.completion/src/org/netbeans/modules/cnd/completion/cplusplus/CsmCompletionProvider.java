@@ -43,10 +43,7 @@
  */
 package org.netbeans.modules.cnd.completion.cplusplus;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import javax.swing.JToolTip;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
@@ -221,11 +218,28 @@ public class CsmCompletionProvider implements CompletionProvider {
             MAX_ITEMS_TO_DISPLAY = val;
         }
 
-        private void addItems(CompletionResultSet resultSet, Collection<? extends CompletionItem> items) {
+        private void addItems(CompletionResultSet resultSet, Collection<? extends CompletionItem> toAdd) {
             if (TRACE) {
                 System.err.println("adding items " + getTestState()); // NOI18N
             }
             boolean limit = false;
+            Collection<CompletionItem> items = new ArrayList<CompletionItem>(toAdd.size());
+            Set<String> handled = new HashSet<String>(toAdd.size());
+            for (CompletionItem item : toAdd) {
+                if (item instanceof CsmResultItem) {
+                    final String stringPresentation = ((CsmResultItem)item).getStringPresentation();
+                    if (handled.add(stringPresentation)) {
+                        items.add(item);
+                    } else if (TRACE) {
+                        System.err.println("skip object with same text " + item); // NOI18N
+                    }
+                } else {
+                    if (TRACE) {
+                        System.err.println("add not CsmResultItem item " + item); // NOI18N
+                    } 
+                    items.add(item);
+                }
+            }
             if (items.size() > MAX_ITEMS_TO_DISPLAY && queryResult.isSimpleVariableExpression()) {
                 limit = true;
             }

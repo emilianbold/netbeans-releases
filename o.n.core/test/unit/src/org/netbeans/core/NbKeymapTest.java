@@ -277,7 +277,9 @@ public class NbKeymapTest extends NbTestCase {
         assertEquals(null, km.getAction(KeyStroke.getKeyStroke(KeyEvent.VK_A, KeyEvent.CTRL_MASK)));
         make("Shortcuts/C-C.instance").setAttribute("instanceCreate", new DummyAction("three"));
         km.waitFinished();
-        assertEquals("three", km.getAction(KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyEvent.CTRL_MASK)).getValue(Action.NAME));
+        Action a = km.getAction(KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyEvent.CTRL_MASK));
+        assertNotNull(a);
+        assertEquals("three", a.getValue(Action.NAME));
         make("Keymaps/NetBeans/C-C.instance").setAttribute("instanceCreate", new DummyAction("four"));
         km.waitFinished();
         assertEquals("four", km.getAction(KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyEvent.CTRL_MASK)).getValue(Action.NAME));

@@ -64,8 +64,10 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.editor.ext.ExtSyntaxSupport;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplateManager;
+import org.netbeans.modules.csl.api.CslActions;
 import org.netbeans.modules.csl.api.DeleteToNextCamelCasePosition;
 import org.netbeans.modules.csl.api.DeleteToPreviousCamelCasePosition;
+import org.netbeans.modules.csl.api.GoToDeclarationAction;
 import org.netbeans.modules.csl.api.InstantRenameAction;
 import org.netbeans.modules.csl.api.KeystrokeHandler;
 import org.netbeans.modules.csl.api.NextCamelCasePosition;
@@ -76,7 +78,6 @@ import org.netbeans.modules.csl.api.SelectNextCamelCasePosition;
 import org.netbeans.modules.csl.api.SelectPreviousCamelCasePosition;
 import org.netbeans.modules.csl.api.ToggleBlockCommentAction;
 import org.netbeans.modules.csl.api.UiUtils;
-import org.netbeans.modules.csl.editor.hyperlink.GoToSupport;
 import org.netbeans.modules.csl.api.GoToMarkOccurrencesAction;
 import org.netbeans.modules.editor.NbEditorKit;
 import org.openide.awt.Mnemonics;
@@ -163,9 +164,17 @@ public final class CslEditorKit extends NbEditorKit {
         actions.add(new GsfDefaultKeyTypedAction());
         actions.add(new GsfInsertBreakAction());
         actions.add(new GsfDeleteCharAction(deletePrevCharAction, false));
-        actions.add(new ToggleBlockCommentAction());
+        
+        // The php needs to handle special cases of toggle comment. There has to be 
+        // registered ToggleBlockCommentAction in PHP that handles these special cases,
+        // but the current way, how the actions are registered, doesn't allow to overwrite the action
+        // registered here.
+        // See issue #204616. This hack can be removed, when issue #204616 will be done.
+        if (!mimeType.equals("text/x-php5")) {
+            actions.add(new ToggleBlockCommentAction());
+        }
         actions.add(new InstantRenameAction());
-        actions.add(new GenericGoToDeclarationAction());
+        actions.add(CslActions.createGoToDeclarationAction());
         actions.add(new GenericGenerateGoToPopupAction());
         actions.add(new SelectCodeElementAction(SelectCodeElementAction.selectNextElementAction, true));
         actions.add(new SelectCodeElementAction(SelectCodeElementAction.selectPreviousElementAction, false));
@@ -370,16 +379,6 @@ public final class CslEditorKit extends NbEditorKit {
                 }
             }
             super.charBackspaced(doc, dotPos, caret, ch);
-        }
-    }
-
-    private final class GenericGoToDeclarationAction extends GotoDeclarationAction {
-        @Override
-        public boolean gotoDeclaration(JTextComponent target) {
-            GoToSupport.performGoTo((BaseDocument)target.getDocument(),
-                target.getCaretPosition());
-
-            return true;
         }
     }
 

@@ -53,6 +53,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.cli.SvnCommand;
 import org.openide.xml.XMLUtil;
 import org.tigris.subversion.svnclientadapter.SVNRevision.Number;
@@ -376,6 +378,8 @@ public class StatusCommand extends SvnCommand {
                     date = dateFormat.parse(dateValue);
                 } catch (ParseException ex) {
                     // ignore
+                } catch (NumberFormatException ex) {
+                    Subversion.LOG.log(Level.INFO, dateValue, ex);
                 }
             }
             return date;

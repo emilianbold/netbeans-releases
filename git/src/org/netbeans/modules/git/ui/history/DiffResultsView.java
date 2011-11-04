@@ -123,7 +123,6 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
     public void ancestorRemoved(AncestorEvent event) {
         ExplorerManager em = ExplorerManager.find(treeView);
         em.removePropertyChangeListener(this);
-        cancelBackgroundTasks();
     }
 
     @Override
@@ -238,7 +237,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
         }
     }
 
-    private synchronized void cancelBackgroundTasks() {
+    synchronized void cancelBackgroundTasks () {
         if (currentTask != null) {
             currentTask.cancel();
         }
@@ -349,6 +348,8 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
         private RepositoryRevision.Event revision1;
         private final RepositoryRevision.Event revision2;
         private boolean showLastDifference;
+        private DiffStreamSource s1;
+        private DiffStreamSource s2;
 
         public ShowDiffTask(RepositoryRevision.Event header, RepositoryRevision.Event revision1, RepositoryRevision.Event revision2, boolean showLastDifference) {
             this.header = header;
@@ -372,10 +373,10 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
             if (isCanceled()) {
                 return;
             }
-            final DiffStreamSource s1 = new DiffStreamSource(f, revision, revision);
+            s1 = new DiffStreamSource(f, revision, revision);
             f = revision2 == null ? header.getFile() : revision2.getFile();
             revision = revision2 == null ? null : revision2.getLogInfoHeader().getLog().getRevision();
-            final DiffStreamSource s2 = new DiffStreamSource(f, revision, revision);
+            s2 = new DiffStreamSource(f, revision, revision);
 
             // it's enqueued at ClientRuntime queue and does not return until previous request handled
             s1.getMIMEType();  // triggers s1.init()
@@ -428,6 +429,17 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
                     }
                 }
             });
+        }
+
+        @Override
+        public boolean cancel () {
+            if (s1 != null) {
+                s1.close();
+            }
+            if (s2 != null) {
+                s2.close();
+            }
+            return super.cancel();
         }
 
         private boolean setLocation (DiffController view) {

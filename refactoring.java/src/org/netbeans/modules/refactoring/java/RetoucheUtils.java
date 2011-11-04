@@ -629,8 +629,10 @@ public class RetoucheUtils {
                 } else {
                     dependentRoots.add(sourceRoot);
                 }
-                for (FileObject f : cp.getRoots()) {
-                    dependentRoots.add(URLMapper.findURL(f, URLMapper.INTERNAL));
+                if (FileOwnerQuery.getOwner(fo) != null) {
+                    for (FileObject f : cp.getRoots()) {
+                        dependentRoots.add(URLMapper.findURL(f, URLMapper.INTERNAL));
+                    }
                 }
             } else {
                 for(ClassPath scp: GlobalPathRegistry.getDefault().getPaths(ClassPath.SOURCE)) {

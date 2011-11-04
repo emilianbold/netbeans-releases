@@ -51,6 +51,7 @@ import java.util.MissingResourceException;
 import java.util.concurrent.Future;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroExpander;
 import org.netbeans.modules.nativeexecution.support.InstalledFileLocatorProvider;
 import org.netbeans.modules.nativeexecution.support.Logger;
@@ -126,6 +127,24 @@ public class HelperLibraryUtility {
         return result;
     }
 
+    public static String getLDPathEnvName(ExecutionEnvironment execEnv) {
+        try {
+            HostInfo hostInfo = HostInfoUtils.getHostInfo(execEnv);
+            switch(hostInfo.getOSFamily()) {
+                case MACOSX:
+                   return "DYLD_LIBRARY_PATH"; // NOI18N
+                case LINUX:
+                case SUNOS:
+                   return "LD_LIBRARY_PATH"; // NOI18N
+                case WINDOWS:
+                   return "PATH"; // NOI18N
+            }
+        } catch (IOException ex) {
+        } catch (CancellationException ex) {
+        }
+        return null;
+    }
+
     public final String getLDPaths(final ExecutionEnvironment env) throws IOException {
         List<String> paths = getPaths(env);
         StringBuilder buf = new StringBuilder();
@@ -146,6 +165,24 @@ public class HelperLibraryUtility {
         return buf.toString();
     }
 
+    public static String getLDPreloadEnvName(ExecutionEnvironment execEnv) {
+        try {
+            HostInfo hostInfo = HostInfoUtils.getHostInfo(execEnv);
+            switch(hostInfo.getOSFamily()) {
+                case MACOSX:
+                   return "DYLD_INSERT_LIBRARIES"; // NOI18N
+                case LINUX:
+                case SUNOS:
+                   return "LD_PRELOAD"; // NOI18N
+                case WINDOWS:
+                   return "LD_PRELOAD"; // NOI18N
+            }
+        } catch (IOException ex) {
+        } catch (CancellationException ex) {
+        }
+        return null;
+    }
+    
     public final String getLibraryName(final ExecutionEnvironment env) throws IOException {
         List<String> paths = getPaths(env);
         String name = null;
@@ -158,6 +195,19 @@ public class HelperLibraryUtility {
             }
         }
         return name;
+    }
+    
+    public static boolean isMac(ExecutionEnvironment execEnv) {
+        try {
+            HostInfo hostInfo = HostInfoUtils.getHostInfo(execEnv);
+            switch(hostInfo.getOSFamily()) {
+                case MACOSX:
+                    return true;
+            }
+        } catch (IOException ex) {
+        } catch (CancellationException ex) {
+        }
+        return false;
     }
     
     private List<String> getLocalFileLocationFor(final ExecutionEnvironment env)

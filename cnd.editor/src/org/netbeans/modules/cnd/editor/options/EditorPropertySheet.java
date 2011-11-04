@@ -104,7 +104,7 @@ public class EditorPropertySheet extends javax.swing.JPanel
         this.preferencesModel = preferencesModel;
         this.filter = filter;
         initComponents();
-        overrideGlobalOptions.setSelected(EditorOptions.getOverideTabIndents(language));
+
         overrideGlobalOptions.addActionListener(EditorPropertySheet.this);
 
         holder = new PropertySheet();
@@ -194,6 +194,7 @@ public class EditorPropertySheet extends javax.swing.JPanel
         if (lastSheetPreferences != null){
             lastSheetPreferences.removePreferenceChangeListener(this);
         }
+        overrideGlobalOptions.setSelected(preferences.getBoolean(EditorOptions.overrideTabIndents, (Boolean)EditorOptions.getDefault(language, preferences.getStyleId(), EditorOptions.overrideTabIndents)));
         Sheet sheet = new Sheet();
         Sheet.Set set;
         if (filter == Filter.All || filter == Filter.TabsAndIndents) {
@@ -392,7 +393,6 @@ public class EditorPropertySheet extends javax.swing.JPanel
             return;
         }
         EditorOptions.setCurrentProfileId(language, preferencesModel.getLanguageDefaultStyle(language));
-        EditorOptions.setOverideTabIndents(language, overrideGlobalOptions.isSelected());
         StringBuilder buf = new StringBuilder();
         for(Map.Entry<String, PreviewPreferences> prefEntry : preferencesModel.getLanguagePreferences(language).entrySet()){
             String style = prefEntry.getKey();
@@ -461,6 +461,7 @@ public class EditorPropertySheet extends javax.swing.JPanel
         } else if (overrideGlobalOptions.equals(e.getSource())) {
             EntryWrapper category = (EntryWrapper)styleComboBox.getSelectedItem();
             if (category != null) {
+                category.preferences.putBoolean(EditorOptions.overrideTabIndents, overrideGlobalOptions.isSelected());
                 preferencesModel.setLanguageDefaultStyle(language, category.name);
                 initSheets(category.preferences);
                 repaintPreview();
@@ -618,20 +619,20 @@ public class EditorPropertySheet extends javax.swing.JPanel
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(EditorPropertySheet.class, "LBL_Style_Name")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 6);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 6);
         add(jLabel1, gridBagConstraints);
 
         styleComboBox.setMaximumSize(new java.awt.Dimension(100, 25));
         styleComboBox.setPreferredSize(new java.awt.Dimension(100, 25));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
         add(styleComboBox, gridBagConstraints);
 
         categoryPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
@@ -655,20 +656,20 @@ public class EditorPropertySheet extends javax.swing.JPanel
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 12, 6);
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 6, 6);
         add(manageStyles, gridBagConstraints);
 
         overrideGlobalOptions.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(overrideGlobalOptions, org.openide.util.NbBundle.getMessage(EditorPropertySheet.class, "LBL_OverrideGlobalOptions")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 6);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 6);
         add(overrideGlobalOptions, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 

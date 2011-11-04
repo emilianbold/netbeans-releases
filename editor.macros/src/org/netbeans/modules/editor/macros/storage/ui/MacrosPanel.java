@@ -412,4 +412,11 @@ public class MacrosPanel extends JPanel {
         }
         return null;
     }
+    
+    public void save() {
+        getModel().save();
+        // force shortcut finder flush
+        ShortcutsFinder f = Lookup.getDefault().lookup(ShortcutsFinder.class);
+        f.apply();
+    }
 }

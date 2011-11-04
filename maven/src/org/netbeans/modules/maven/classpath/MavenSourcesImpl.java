@@ -588,7 +588,11 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
 
         private Resource checkResource(FileObject rootFold, List<Resource> list) {
             for (Resource elem : list) {
-                URI uri = FileUtilities.getDirURI(project.getProjectDirectory(), elem.getDirectory());
+                String dir = elem.getDirectory();
+                if (dir == null) { // #203635
+                    continue;
+                }
+                URI uri = FileUtilities.getDirURI(project.getProjectDirectory(), dir);
                 FileObject fo = FileUtilities.convertURItoFileObject(uri);
                 if (fo != null && fo.equals(rootFold)) {
                     return elem;

@@ -167,8 +167,6 @@ public class UnusedVariableHint extends AbstractRule implements PHPRuleWithPrefe
                 List<Variable> scopeVariables = unusedVariables.get(scopeNode);
                 for (Variable variable : scopeVariables) {
                     int start = variable.getStartOffset() + 1;
-
-
                     int end = variable.getEndOffset();
                     OffsetRange offsetRange = new OffsetRange(start, end);
                     hints.add(new Hint(UnusedVariableHint.this, Bundle.UnusedVariableHintCustom(getIdentifier(variable).getName()), fileObject, offsetRange, null, 500));
@@ -623,13 +621,13 @@ public class UnusedVariableHint extends AbstractRule implements PHPRuleWithPrefe
     }
 
     @Override
-    @Messages("UnusedVariableHintDesc=Variable seems to be unused in its scope")
+    @Messages("UnusedVariableHintDesc=Detects variables which are declared, but not used in their scope.")
     public String getDescription() {
         return Bundle.UnusedVariableHintDesc();
     }
 
     @Override
-    @Messages("UnusedVariableHintDispName=Variable seems to be unused in its scope")
+    @Messages("UnusedVariableHintDispName=Unused Variables")
     public String getDisplayName() {
         return Bundle.UnusedVariableHintDispName();
     }

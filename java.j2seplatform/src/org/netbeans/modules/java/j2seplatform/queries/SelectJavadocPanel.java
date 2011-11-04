@@ -97,7 +97,10 @@ class SelectJavadocPanel extends javax.swing.JPanel implements ItemListener {
             final List<URI> paths = new ArrayList<URI>();
             final String str = localField.getText();
             for (String pathElement : str.split(File.pathSeparator)) {
-                paths.add(convertor.call(pathElement.trim()));
+                pathElement = pathElement.trim();
+                if (pathElement.length() > 0) {
+                    paths.add(convertor.call(pathElement));
+                }
             }
             return paths;
         } else if (remoteJavadoc.isSelected()) {

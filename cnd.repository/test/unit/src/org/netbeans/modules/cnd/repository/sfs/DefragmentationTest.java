@@ -84,7 +84,7 @@ public class DefragmentationTest extends NbTestCase {
     }
 
     private void fillData(DoubleFileStorage dfs) throws IOException {
-        String dataPath = getDataDir().getAbsolutePath().replaceAll("repository", "modelimpl"); //NOI18N
+        String dataPath = getDataDir().getAbsolutePath().replaceAll("/repository/", "/modelimpl/").replaceAll("\\\\repository\\\\", "\\modelimpl\\"); //NOI18N
         Collection<TestObject> objects = new TestObjectCreator().createTestObjects(dataPath);
         for (int i = 0; i < 3; i++) {
             for (TestObject obj : objects) {

@@ -170,6 +170,9 @@ public abstract class CsmRefactoringPlugin extends ProgressProviderAdapter imple
     }
 
     protected Collection<CsmFile> getRelevantFiles(CsmFile startFile, CsmObject referencedObject, AbstractRefactoring refactoring) {
+        if (CsmKindUtilities.isFile(referencedObject)) {
+            return CsmIncludeHierarchyResolver.getDefault().getFiles((CsmFile)referencedObject);
+        }
         CsmObject enclScope = referencedObject == null ? null : CsmRefactoringUtils.getEnclosingElement(referencedObject);
         CsmFile scopeFile = null;
         if (enclScope == null && !CsmKindUtilities.isNamespace(referencedObject)) {

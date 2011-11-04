@@ -51,7 +51,7 @@ import org.openide.util.lookup.ServiceProvider;
 public class SupportedProjectTypes implements PackagingProvider {
 
     @Override public String packaging(Project project) {
-        String[] types = PluginPropertyUtils.getPluginPropertyList(project, OSGIConstants.GROUPID_FELIX, OSGIConstants.ARTIFACTID_BUNDLE_PLUGIN, "supportedProjectTypes", "supportedProjectType", /*"bundle" would not work for GlassFish parent POM*/null);
+        String[] types = PluginPropertyUtils.getPluginPropertyList(project, OSGiConstants.GROUPID_FELIX, OSGiConstants.ARTIFACTID_BUNDLE_PLUGIN, "supportedProjectTypes", "supportedProjectType", /*"bundle" would not work for GlassFish parent POM*/null);
         if (types == null) {
             return null;
         }

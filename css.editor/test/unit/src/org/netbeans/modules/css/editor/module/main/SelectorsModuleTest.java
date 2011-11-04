@@ -53,6 +53,16 @@ public class SelectorsModuleTest extends CssModuleTestBase {
         super(name);
     }
 
+    //Bug 204504 - Code completion for pseudo-classes doesn't work properly
+    public void testIssue204504() throws ParseException  {
+        checkCC("p { } \ndiv:|\n", arr("enabled"), Match.CONTAINS);
+        checkCC("p { } \ndiv:|", arr("enabled"), Match.CONTAINS);
+    }
+    
+    public void testPseudoClassesCompletionDoesnOfferSelector() throws ParseException  {
+        checkCC("div:|", arr("body"), Match.DOES_NOT_CONTAIN);
+    }
+    
     public void testPseudoClassesCompletion() throws ParseException  {
         checkCC("div:| ", arr("enabled"), Match.CONTAINS);
         checkCC("div:| \n h1 { } ", arr("enabled"), Match.CONTAINS);

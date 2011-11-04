@@ -70,10 +70,7 @@ public class ProjectPieChartModel extends DrillDownPieChartModel {
 
     @Override
     public double getItemValue(int index) {
-        double ret = getItemValueAt(getMappedIndex(index));
-        System.out.println("Getting value for category n." + index + "  : " + ret); // NOI18N
-
-        return ret;
+        return getItemValueAt(getMappedIndex(index));
     }
 
     @Override
@@ -91,7 +88,7 @@ public class ProjectPieChartModel extends DrillDownPieChartModel {
 
             //    allTimeCalc = allTimeCalc - allTime + netSelfTime; // compensation for gross time of the current category; it gets its way in as one of the submark times (self submark time)
             if (allTimeCalc != allTime) {
-                LOGGER.finest("time mismatch: " + allTime + " != " + allTimeCalc); // NOI18N
+                LOGGER.log(Level.FINEST, "time mismatch: {0} != {1}", new Object[]{allTime, allTimeCalc}); // NOI18N
             }
         }
 
@@ -103,13 +100,15 @@ public class ProjectPieChartModel extends DrillDownPieChartModel {
         return getItemValueAt(getMappedIndex(index)) / (double) allTime;
     }
 
+    @Override
     public boolean isSelectable(int index) {
-        if (drillDown.getSubCategories().size() <= index) {
+        List<Category> subs = drillDown.getSubCategories();
+        if (subs.size() <= index) {
             return false;
         }
 
         if (index != -1) {
-            return drillDown.canDrilldown(getSubCategories().get(index));
+            return drillDown.canDrilldown(subs.get(index));
         }
 
         return false;

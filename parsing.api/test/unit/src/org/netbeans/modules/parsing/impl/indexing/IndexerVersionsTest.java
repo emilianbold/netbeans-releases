@@ -442,7 +442,7 @@ public class IndexerVersionsTest extends NbTestCase {
         private final CountDownLatch latch;
 
         private AwaitWork(final CountDownLatch latch) {
-            super(false,false,false,false);
+            super(false,false,false,false,null);
             assert latch != null;
             this.latch = latch;
         }

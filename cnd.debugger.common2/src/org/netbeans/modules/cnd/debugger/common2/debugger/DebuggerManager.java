@@ -191,6 +191,9 @@ public final class DebuggerManager extends DebuggerManagerAdapter {
 
             // restore breakpints if any
             singleton.breakpointBag();
+            
+            // restore watch bag
+            singleton.watchBag();
         }
     }
 
@@ -482,9 +485,6 @@ public final class DebuggerManager extends DebuggerManagerAdapter {
         if (breakpointBag != null && DebuggerOption.SAVE_BREAKPOINTS.isEnabled(globalOptions())) {
             breakpointBag.save();
         }
-        if (watchBag != null) {
-            watchBag.save();
-        }
         if (isStandalone()) {
             DebugTargetList.saveList();
             CustomizableHostList.saveList();
@@ -687,10 +687,12 @@ public final class DebuggerManager extends DebuggerManagerAdapter {
             NativeWatch nativeWatch = new NativeWatch(watch);
             watchMap(nativeWatch);
             watchBag().restore(nativeWatch);
-            if (!watchBag().isRestoring()) {
+            
+            // IZ 181906 was fixed, so this should not happen any more
+            //if (!watchBag().isRestoring()) {
                 // if we're restoring the watches will be applied on prog_load.
                 spreadWatchCreation(null, nativeWatch);
-            }
+            //}
 
         }
     }
@@ -1278,7 +1280,6 @@ public final class DebuggerManager extends DebuggerManagerAdapter {
     public WatchBag watchBag() {
         if (watchBag == null) {
             watchBag = new WatchBag();
-            watchBag.restore();
         }
         return watchBag;
     }
@@ -1801,8 +1802,8 @@ public final class DebuggerManager extends DebuggerManagerAdapter {
     /*
      * Format a message and put the resulting text into the status area
      */
-    public String formatStatusText(String fmtKey, String[] args) {
-        String msg = Catalog.format(fmtKey, (Object) args);
+    public String formatStatusText(String fmtKey, Object... args) {
+        String msg = Catalog.format(fmtKey, args);
         setStatusText(msg);
         return msg;
     }

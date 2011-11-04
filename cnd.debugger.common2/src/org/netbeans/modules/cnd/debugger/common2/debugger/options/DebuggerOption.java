@@ -316,14 +316,14 @@ public class DebuggerOption extends Option {
 			    "gdb_init_file", // NOI18N //name
 			    default_gdb_init_file, // deault value
 			    false, // is engine option
-			    FILE, true);  //type , hasToolTip
+			    FILE, false);  //type , hasToolTip
     
     public static final DebuggerOption GDB_SOURCE_DIRS =
 	new DebuggerOption( // NOI18N
 			    "gdb_source_dirs", // NOI18N //name
 			    "", //NOI18N // deault value
 			    false, // is engine option
-			    TEXT_AREA, true);  //type , hasToolTip
+			    TEXT_AREA, false);  //type , hasToolTip
 
     public static final DebuggerOption OUTPUT_BASE  =
 	new DebuggerOption( // NOI18N

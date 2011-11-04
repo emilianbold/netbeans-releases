@@ -43,15 +43,19 @@
  */
 package org.netbeans.modules.cnd.source;
 
+import java.util.Collection;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
-
+import org.netbeans.modules.cnd.source.spi.RenameHandler;
+import org.openide.actions.OpenAction;
+import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Children;
 import org.openide.util.HelpCtx;
-import org.openide.util.actions.SystemAction;
-import org.openide.actions.OpenAction;
 import org.openide.util.Lookup;
+import org.openide.util.actions.SystemAction;
 
 /**
  *  A base class for C/C++/Fortran (C-C-F) nodes.
@@ -79,4 +83,30 @@ public class SourceDataNode extends DataNode {
     public HelpCtx getHelpCtx() {
         return new HelpCtx("Welcome_cpp_home"); // NOI18N
     }
+    
+    @Override
+    public void setName(String name) {
+        RenameHandler handler = getRenameHandler();
+        if (handler == null) {
+            super.setName(name);
+        } else {
+            try {
+                handler.handleRename(SourceDataNode.this, name);
+            } catch (IllegalArgumentException ioe) {
+                super.setName(name);
+            }
+        }
+    }
+
+    private static synchronized RenameHandler getRenameHandler() {
+        Collection<? extends RenameHandler> handlers = (Lookup.getDefault().lookupAll(RenameHandler.class));
+        if (handlers.isEmpty()) {
+            return null;
+        }
+        if (handlers.size() > 1) {
+            LOG.log(Level.WARNING, "Multiple instances of RenameHandler found in Lookup; only using first one: {0}", handlers); //NOI18N
+        }
+        return handlers.iterator().next();
+    }
+    private static final Logger LOG = Logger.getLogger(SourceDataNode.class.getName());
 }

@@ -361,7 +361,7 @@ public class MasterDetailGenerator {
      */
     private static String deleteSections(String result, String sectionName, boolean commentsOnly, boolean java) {
         String marker = markerRegexp(sectionName, java);
-        String delimiter = commentsOnly ? marker : marker + "(.|\\s)*?" + marker; // NOI18N
+        String delimiter = commentsOnly ? marker : "(?s)" + marker + ".*?" + marker; // NOI18N
         StringBuilder sb = new StringBuilder();
         for (String part : result.split(delimiter)) {
             sb.append(part);
@@ -479,7 +479,7 @@ public class MasterDetailGenerator {
      */
     private static TemplateInfo findTemplate(String where, String templateName) {
         String marker = markerRegexp(templateName, false);
-        Pattern pattern = Pattern.compile(marker+"((.|\\s)*?)"+marker); // NOI18N
+        Pattern pattern = Pattern.compile(marker+"(.*?)"+marker, Pattern.DOTALL); // NOI18N
         Matcher matcher = pattern.matcher(where);
         matcher.find();
         TemplateInfo info = new TemplateInfo();

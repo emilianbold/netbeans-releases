@@ -73,7 +73,7 @@ public class LexerUtils {
             throw new NullPointerException();
         }
 
-        if(offset < 0 || offset >= text.length()) {
+        if(offset < 0 || offset > text.length()) {
             throw new BadLocationException("The given offset is out of bounds <0, " + text.length() + ">" , offset); //NOI18N
         }
         int line = 0;
@@ -90,8 +90,8 @@ public class LexerUtils {
             }
         }
 
-        assert false; //we cannot get here
-        return -1;
+        //for position just at the length of the text
+        return line;
     }
 
     public static Token followsToken(TokenSequence ts, TokenId searchedId, boolean backwards, boolean repositionBack, TokenId... skipIds) {

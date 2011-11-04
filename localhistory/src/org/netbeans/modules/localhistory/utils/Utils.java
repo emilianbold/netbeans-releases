@@ -46,12 +46,17 @@ package org.netbeans.modules.localhistory.utils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.util.logging.Level;
+import javax.swing.JEditorPane;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.localhistory.LocalHistory;
 import org.netbeans.modules.localhistory.store.StoreEntry;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileAlreadyLockedException;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 
 /**
@@ -110,4 +115,34 @@ public class Utils {
         }
     }
     
+    /**
+     * Determines if the given DataObject has an opened editor
+     * @param dataObject
+     * @return true if the given DataObject has an opened editor. Otherwise false.
+     * @throws InterruptedException
+     * @throws InvocationTargetException 
+     */
+    public static boolean hasOpenedEditorPanes(final DataObject dataObject) throws InterruptedException, InvocationTargetException {
+        final boolean[] hasEditorPanes = new boolean[] {false};
+        Runnable r = new Runnable() {
+            @Override
+            public void run() {
+                EditorCookie cookie = dataObject.getLookup().lookup(EditorCookie.class);
+                if(cookie != null) {
+                    // hack - care only about dataObjects with opened editors.
+                    // otherwise we won't assume it's file were opened to be edited
+                    JEditorPane[] panes = cookie.getOpenedPanes();
+                    if(panes != null && panes.length > 0) {
+                        hasEditorPanes[0] = true;
+                    }
+                }
+            }
+        };
+        if(SwingUtilities.isEventDispatchThread()) { 
+            r.run();
+        } else {
+            SwingUtilities.invokeAndWait(r);
+        }
+        return hasEditorPanes[0];
+    }    
 }

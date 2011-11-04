@@ -137,7 +137,7 @@ public class CompletionJList extends JList {
         if (renderingHints != null && g instanceof Graphics2D) {
             Graphics2D g2d = (Graphics2D) g;
             RenderingHints oldHints = g2d.getRenderingHints();
-            g2d.setRenderingHints(renderingHints);
+            g2d.addRenderingHints(renderingHints);
             try {
                 super.paint(g2d);
             } finally {
@@ -158,15 +158,16 @@ public class CompletionJList extends JList {
             boolean stop = false;
             for(int index = 0; index < itemCount; index++) {
                 Object value = data.get(index);
-                Dimension cellSize;
                 if (value instanceof LazyCompletionItem)
                     maxWidth = (int)(ScreenBoundsProvider.getScreenBounds(editorComponent).width * ScreenBoundsProvider.COMPL_COVERAGE);
                 Component c = renderer.getListCellRendererComponent(this, value, index, false, false);
-                cellSize = c.getPreferredSize();
-                if (cellSize.width > width) {
-                    width = cellSize.width;
-                    if (width >= maxWidth)
-                        stop = true;                    
+                if (c != null) {
+                    Dimension cellSize = c.getPreferredSize();
+                    if (cellSize.width > width) {
+                        width = cellSize.width;
+                        if (width >= maxWidth)
+                            stop = true;                    
+                    }
                 }
                 if (smartIndex < 0 && value instanceof CompletionItem && ((CompletionItem)value).getSortPriority() >= 0)
                     smartIndex = index;

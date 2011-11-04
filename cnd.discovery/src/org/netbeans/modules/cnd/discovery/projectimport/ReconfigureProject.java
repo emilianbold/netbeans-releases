@@ -479,6 +479,7 @@ public class ReconfigureProject {
                     try {
                         HostInfo hostInfo = HostInfoUtils.getHostInfo(executionEnvironment);
                         switch (hostInfo.getOSFamily()) {
+                        case MACOSX:
                         case SUNOS:
                         case LINUX:
                             execLog = ImportProject.createTempFile("exec"); // NOI18N

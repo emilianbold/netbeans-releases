@@ -2227,6 +2227,14 @@ public class GandalfPersistenceManager extends PersistenceManager {
 	try {
             if (prEd != null) {
                 property.setCurrentEditor(prEd);
+                
+                // Issue 204180: current editor can be a delegate editor of ResourceWrapperEditor
+                // Such editor must be replaced by the ResourceWrapperEditor,
+                // getAllEditors() takes care about this.
+                PropertyEditor editor = property.getPropertyEditor();
+                if (editor instanceof FormPropertyEditor) {
+                    ((FormPropertyEditor)editor).getAllEditors();
+                }
             }            
             if(value instanceof RADConnectionPropertyEditor.RADConnectionDesignValue) {         
                 boolean accepted = setConnectedProperty(property, 

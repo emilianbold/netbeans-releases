@@ -54,6 +54,8 @@ import junit.framework.Assert;
 
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.modules.java.source.indexing.JavaCustomIndexer;
+import org.netbeans.modules.java.source.parsing.ClassParser;
+import org.netbeans.modules.java.source.parsing.ClassParserFactory;
 import org.netbeans.modules.java.source.parsing.JavacParser;
 import org.netbeans.modules.java.source.parsing.JavacParserFactory;
 import org.netbeans.modules.parsing.impl.indexing.CacheFolder;
@@ -160,18 +162,25 @@ public class TestUtilities extends ProxyLookup {
     
     @ServiceProvider(service=MimeDataProvider.class)
     public static final class JavacParserProvider implements MimeDataProvider {
+        private Lookup javaLookup = Lookups.fixed(
+            new JavacParserFactory(),
+            new JavaCustomIndexer.Factory()
+        );
+        private Lookup classLookup = Lookups.fixed(
+            new ClassParserFactory(),
+            new JavaCustomIndexer.Factory()
+        );
 
-        private Lookup javaLookup = Lookups.fixed(new JavacParserFactory(),
-                new JavaCustomIndexer.Factory());
-
+        @Override
         public Lookup getLookup(MimePath mimePath) {
             if (mimePath.getPath().endsWith(JavacParser.MIME_TYPE)) {
                 return javaLookup;
             }
-
+            if (mimePath.getPath().endsWith(ClassParser.MIME_TYPE)) {
+                return classLookup;
+            }
             return Lookup.EMPTY;
         }
-
     }
 
 }

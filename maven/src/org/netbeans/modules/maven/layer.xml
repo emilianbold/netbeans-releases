@@ -195,17 +195,6 @@ made subject to such option by the copyright holder.
                 </file>
             </folder>
             <file name="nbactions.xml" url="nbactions.xml"/>
-            <folder name="Customizer">
-                <folder name="Formatting">
-                    <attr bundlevalue="org.netbeans.modules.maven.Bundle#LBL_CategoryFormatting" name="displayName"/>
-                    <attr intvalue="1000" name="position"/>
-                    <file name="Self.instance">
-                        <attr name="instanceOf" stringvalue="org.netbeans.spi.project.ui.support.ProjectCustomizer$CompositeCategoryProvider"/>
-                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.editor.indent.project.api.Customizers.createFormattingCategoryProvider"/>
-                        <attr intvalue="0" name="position"/>
-                    </file>
-                </folder>
-            </folder>
         </folder>
     </folder>
     <folder name="OptionsExport">

@@ -44,6 +44,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.java.hints.declarative.Condition.Instanceof;
 import org.netbeans.modules.java.hints.declarative.DeclarativeHintsParser.FixTextDescription;
@@ -178,6 +179,7 @@ public class EmbeddingProviderImpl extends EmbeddingProvider {
 
     private static final String CUSTOM_CONDITIONS_VARIABLES = "private final Context context = null;\nprivate final Matcher matcher = null;\n";
 
+    @MimeRegistration(mimeType=DeclarativeHintTokenId.MIME_TYPE, service=TaskFactory.class)
     public static final class FactoryImpl extends TaskFactory {
 
         @Override

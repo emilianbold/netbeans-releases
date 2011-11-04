@@ -69,6 +69,7 @@ import org.netbeans.modules.j2ee.common.queries.api.InjectionTargetQuery;
 import org.netbeans.modules.j2ee.core.api.support.java.SourceUtils;
 import org.netbeans.modules.j2ee.dd.api.client.AppClient;
 import org.netbeans.modules.j2ee.dd.api.client.DDProvider;
+import org.netbeans.modules.j2ee.dd.api.common.CommonDDBean;
 import org.netbeans.modules.j2ee.dd.api.common.EjbRef;
 import org.netbeans.modules.j2ee.dd.api.common.MessageDestinationRef;
 import org.netbeans.modules.j2ee.dd.api.common.ResourceRef;
@@ -242,13 +243,24 @@ public class JarContainerImpl implements EnterpriseReferenceContainer {
     }
     
     private String addReference(EjbReference ejbReference, EjbReference.EjbRefIType refType, String ejbRefName, FileObject referencingFile, String referencingClass) throws IOException {
-        String refName = null;
+        String refName = ejbRefName;
         AppClient webApp = getAppClient();
-        refName = getUniqueName(getAppClient(), "EjbRef", "EjbRefName", ejbRefName); //NOI18N
+
+        // don't duplicate ejbRefs with same name - issue #193576
+        CommonDDBean bean = getAppClient().findBeanByName("EjbRef", "EjbRefName", ejbRefName); //NOI18N
+        if (bean != null) {
+            // when the name leads to the same bean
+            if (bean.getValue(EjbRef.REMOTE).equals(ejbReference.getRemote())) {
+                return ejbRefName;
+            } else {
+                refName = getUniqueName(getAppClient(), "EjbRef", "EjbRefName", ejbRefName); //NOI18N
+            }
+        }
+
         // EjbRef can come from Ejb project
         try {
             EjbRef newRef = (EjbRef)webApp.createBean("EjbRef"); //NOI18N
-            newRef.setEjbRefName(ejbRefName);
+            newRef.setEjbRefName(refName);
             newRef.setEjbRefType(ejbReference.getEjbRefType());
             newRef.setHome(ejbReference.getRemoteHome());
             newRef.setRemote(ejbReference.getRemote());

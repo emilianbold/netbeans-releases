@@ -188,6 +188,7 @@ public class Lookups {
      * @param classLoader class loader to use for loading
      * @param prefix prefix to prepend to the class name when searching
      * @since 7.9
+     * @see ServiceProvider#path
      */
     public static Lookup metaInfServices(ClassLoader classLoader, String prefix) {
         return new MetaInfServicesLookup(classLoader, prefix);

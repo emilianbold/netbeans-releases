@@ -44,6 +44,8 @@
 
 package org.openide.util.datatransfer;
 
+import java.awt.datatransfer.FlavorEvent;
+import java.awt.datatransfer.FlavorListener;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
 import junit.framework.TestCase;
@@ -71,19 +73,31 @@ public class ExClipboardTest extends TestCase {
 
     public void testAddRemoveClipboardListener () {
         
-        class L implements ClipboardListener {
+        class L implements ClipboardListener, FlavorListener {
             public int cnt;
             public ClipboardEvent ev;
+            public int flavorCnt;
+            @Override
             public void clipboardChanged (ClipboardEvent ev) {
+                assertFalse("Don't hold locks", Thread.holdsLock(clipboard));
                 cnt++;
                 this.ev = ev;
+            }
+
+            @Override
+            public void flavorsChanged(FlavorEvent e) {
+                assertFalse("Don't hold locks", Thread.holdsLock(clipboard));
+                flavorCnt++;
             }
         }
         L listener = new L ();
         
         clipboard.addClipboardListener (listener);
-        clipboard.fireClipboardChange ();
+        clipboard.addFlavorListener(listener);
+        StringSelection ss = new StringSelection("");
+        clipboard.setContents(ss, ss);
         assertEquals ("One event", 1, listener.cnt);
+        assertEquals ("One flavor event", 1, listener.flavorCnt);
         assertNotNull ("An event", listener.ev);
         assertEquals ("source is right", clipboard, listener.ev.getSource ());
         

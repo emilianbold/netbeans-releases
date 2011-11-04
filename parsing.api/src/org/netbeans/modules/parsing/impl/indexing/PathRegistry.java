@@ -57,10 +57,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.classpath.GlobalPathRegistryEvent;
@@ -104,13 +106,15 @@ public final class PathRegistry implements Runnable {
     private Collection<URL> unknownSourcePath;
     private Map<URL, PathIds> rootPathIds;
     private Map<String, Set<URL>> pathIdToRoots;
-    
+
     private final Listener listener;
     private final List<PathRegistryListener> listeners;
+    private final AtomicReference<LogContext> logCtx;
 
     @SuppressWarnings("LeakingThisInConstructor")
     private  PathRegistry () {
         firerTask = firer.create(this, true);
+        logCtx = new AtomicReference<LogContext>();
         regs = GlobalPathRegistry.getDefault();
         assert regs != null;
         this.listener = new Listener ();
@@ -206,7 +210,7 @@ public final class PathRegistry implements Runnable {
             }
             LOGGER.log(Level.FINE, "registerUnknownSourceRoots: {0}", l); // NOI18N
         }
-        firerTask.schedule(0);
+        scheduleFirer();
     }
 
     public Collection<? extends URL> getSources () {
@@ -740,9 +744,10 @@ public final class PathRegistry implements Runnable {
         }
     }
 
-    private void resetCacheAndFire (final EventKind eventKind,
-            final PathKind pathKind, final String pathId,
-            final Set<? extends ClassPath> paths) {
+    private void resetCacheAndFire (
+            @NonNull final EventKind eventKind,
+            @NonNull final PathKind pathKind, final String pathId,
+            @NonNull final Set<? extends ClassPath> paths) {
         synchronized (this) {
             this.sourcePaths = null;
             this.libraryPath = null;
@@ -756,11 +761,18 @@ public final class PathRegistry implements Runnable {
 
         LOGGER.log(Level.FINE, "resetCacheAndFire: eventKind={0}, pathKind={1}, pathId={2}, paths={3}",
             new Object [] { eventKind, pathKind, pathId, paths }); // NOI18N
+        scheduleFirer();
+    }
+
+    private void scheduleFirer() {
+        if (logCtx.get() == null) {
+            logCtx.compareAndSet(null, LogContext.create(LogContext.EventType.PATH, null));
+        }
         firerTask.schedule(0);
     }
 
     private void fire (final Iterable<? extends PathRegistryEvent.Change> changes) {
-        final PathRegistryEvent event = new PathRegistryEvent(this, changes);
+        final PathRegistryEvent event = new PathRegistryEvent(this, changes, logCtx.getAndSet(null));
         for (PathRegistryListener l : listeners) {
             l.pathsChanged(event);
         }

@@ -45,24 +45,17 @@ package org.netbeans.modules.php.project.ui.actions.tests;
 import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
-import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.php.project.phpunit.PhpUnit;
-import org.netbeans.modules.php.project.util.TestUtils;
+import org.netbeans.modules.php.project.util.PhpTestCase;
 import org.openide.util.Utilities;
 
 /**
  * @author Tomas Mysik
  */
-public class CreateTestsActionTest extends NbTestCase {
+public class CreateTestsActionTest extends PhpTestCase {
 
     public CreateTestsActionTest(String name) {
         super(name);
-    }
-
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        TestUtils.init();
     }
 
     public void testRequireOnceUnix() throws Exception {

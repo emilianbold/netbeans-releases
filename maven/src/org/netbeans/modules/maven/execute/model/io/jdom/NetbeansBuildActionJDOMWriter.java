@@ -31,7 +31,7 @@ import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
  * 
  * @version $Revision$ $Date$
  */
-@SuppressWarnings({"unchecked", "deprecated"}) //a generated class
+@SuppressWarnings({"unchecked", "deprecated", "rawtypes"}) //a generated class
 public class NetbeansBuildActionJDOMWriter {
 
 
@@ -199,7 +199,7 @@ public class NetbeansBuildActionJDOMWriter {
         Iterator it = parent.getContent().iterator();
         Text lastText = null;
         int offset = 0;
-        while (it.hasNext() && elementCounter <= counter.getCurrentIndex()) {
+        while (it.hasNext() && elementCounter /* http://jira.codehaus.org/browse/MODELLO-257 */< counter.getCurrentIndex()) {
             Object next = it.next();
             offset = offset + 1;
             if (next instanceof Element) {

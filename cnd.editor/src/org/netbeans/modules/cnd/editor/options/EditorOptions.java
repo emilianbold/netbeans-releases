@@ -73,7 +73,7 @@ public class EditorOptions {
         try {
             Class.forName(c.getName(), true, c.getClassLoader());
         } catch (Exception ex) {
-            ex.printStackTrace();
+            ex.printStackTrace(System.err);
         }
     }
 
@@ -340,6 +340,7 @@ public class EditorOptions {
     private static void createDefaults() {
         defaults = new HashMap<String,Object>();
         // Indents
+        defaults.put(overrideTabIndents, overrideTabIndentsDefault);
         defaults.put(indentSize, indentSizeDefault);
         defaults.put(expandTabToSpaces, expandTabToSpacesDefault);
         defaults.put(tabSize, tabSizeDefault);
@@ -555,6 +556,11 @@ public class EditorOptions {
         mysql.put(spaceAroundAssignOps, false);
         mysql.put(spaceKeepExtra, true);
         mysql.put(addLeadingStarInComment, false);
+        
+        //DEFAULT_PROFILE
+        Map<String,Object> netbeans = new HashMap<String,Object>();
+        namedDefaults.put(DEFAULT_PROFILE, netbeans);
+        netbeans.put(overrideTabIndents, false);
     }
 
     public static Object getDefault(CodeStyle.Language language, String styleId, String id){
@@ -715,47 +721,6 @@ public class EditorOptions {
         codeStyleFactory.setPreferences(codeStyle, preferences);
     }
 
-    public static boolean getOverideTabIndents(CodeStyle.Language language) {
-        Preferences p;
-        switch (language){
-            case C:
-                p = MimeLookup.getLookup(MIMENames.C_MIME_TYPE).lookup(Preferences.class);
-                break;
-            case HEADER:
-                p = MimeLookup.getLookup(MIMENames.HEADER_MIME_TYPE).lookup(Preferences.class);
-                break;
-            case CPP:
-            default:
-                p = MimeLookup.getLookup(MIMENames.CPLUSPLUS_MIME_TYPE).lookup(Preferences.class);
-                break;
-        }
-        if (p != null) {
-            return p.getBoolean(overrideTabIndents, overrideTabIndentsDefault);
-        }
-        return overrideTabIndentsDefault;
-    }
-
-    public static void setOverideTabIndents(CodeStyle.Language language, boolean override) {
-        switch (language){
-            case C:
-                setOverideTabIndents(MimeLookup.getLookup(MIMENames.C_MIME_TYPE).lookup(Preferences.class), override);
-                break;
-            case HEADER:
-                setOverideTabIndents(MimeLookup.getLookup(MIMENames.HEADER_MIME_TYPE).lookup(Preferences.class), override);
-                break;
-            case CPP:
-            default:
-                setOverideTabIndents(MimeLookup.getLookup(MIMENames.CPLUSPLUS_MIME_TYPE).lookup(Preferences.class), override);
-                break;
-        }
-    }
-
-    private static void setOverideTabIndents(Preferences p, boolean override){
-        if (p != null) {
-            p.putBoolean(overrideTabIndents, override);
-        }
-    }
-
     public static void updateSimplePreferences(CodeStyle.Language language, CodeStyle codeStyle) {
         switch (language){
             case C:
@@ -778,6 +743,7 @@ public class EditorOptions {
                 if (!set.contains(p.absolutePath())) {
                     set.add(p.absolutePath());
                     p.addPreferenceChangeListener(new PreferenceChangeListener() {
+                        @Override
                         public void preferenceChange(PreferenceChangeEvent evt) {
                             System.err.println("Changed "+evt.getKey()+"="+evt.getNewValue()+" in preferences "+evt.getNode().absolutePath());
                         }

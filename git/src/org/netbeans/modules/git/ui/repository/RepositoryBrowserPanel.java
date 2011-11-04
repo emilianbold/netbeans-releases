@@ -369,7 +369,18 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
             setComparator(new Comparator<Node>() {
                 @Override
                 public int compare (Node o1, Node o2) {
-                    return o1.toString().compareTo(o2.toString());
+                    int result;
+                    if (o1 instanceof RepositoryNode && o2 instanceof RepositoryNode) {
+                        File repo1 = ((RepositoryNode) o1).getRepository();
+                        File repo2 = ((RepositoryNode) o2).getRepository();
+                        result = repo1.getName().compareTo(repo2.getName());
+                        if (result == 0 && !repo1.equals(repo2)) {
+                            result = repo1.getAbsolutePath().compareTo(repo2.getAbsolutePath());
+                        }
+                    } else {
+                        result = o1.toString().compareTo(o2.toString());
+                    }
+                    return result;
                 }
             });
             GitRepositories.getInstance().addPropertyChangeListener(WeakListeners.propertyChange(list = new PropertyChangeListener() {
@@ -498,6 +509,11 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
             return new Action[] {
                 SystemAction.get(FetchAction.class)
             };
+        }
+
+        @Override
+        public String getShortDescription () {
+            return repository.getAbsolutePath();
         }
     }
 

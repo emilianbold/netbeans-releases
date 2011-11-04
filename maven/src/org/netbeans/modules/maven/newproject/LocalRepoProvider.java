@@ -45,6 +45,7 @@ package org.netbeans.modules.maven.newproject;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import org.apache.maven.repository.RepositorySystem;
 import org.netbeans.modules.maven.api.archetype.Archetype;
 import org.netbeans.modules.maven.api.archetype.ArchetypeProvider;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
@@ -74,7 +75,7 @@ public class LocalRepoProvider implements ArchetypeProvider {
                 arch.setVersion(art.getVersion());
                 arch.setName(art.getProjectName());
                 arch.setDescription(art.getProjectDescription());
-                arch.setRepository(RepositoryPreferences.LOCAL_REPO_ID);
+                arch.setRepository(RepositorySystem.DEFAULT_LOCAL_REPO_ID);
                 lst.add(arch);
             }
        

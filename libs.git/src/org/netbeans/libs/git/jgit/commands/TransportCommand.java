@@ -43,6 +43,7 @@
 package org.netbeans.libs.git.jgit.commands;
 
 import com.jcraft.jsch.JSchException;
+import java.net.HttpURLConnection;
 import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.List;
@@ -140,6 +141,9 @@ abstract class TransportCommand extends GitCommand {
         if (config != null) {
             transport.applyConfig(config);
         }
+        if (transport.getTimeout() <= 0) {
+            transport.setTimeout(45);
+        }
         transport.setCredentialsProvider(getCredentialsProvider());
         return transport;
     }
@@ -152,13 +156,20 @@ abstract class TransportCommand extends GitCommand {
         } else if ((pos = message.indexOf(": " + JGitText.get().notAuthorized)) != -1) { //NOI18N
             String repositoryUrl = message.substring(0, pos);
             throw new GitException.AuthorizationException(repositoryUrl, message, e);
+        } else if ((pos = message.indexOf(": " + HttpURLConnection.HTTP_UNAUTHORIZED + " ")) != -1) { //NOI18N
+            String repositoryUrl = message.substring(0, pos);
+            throw new GitException.AuthorizationException(repositoryUrl, message, e);
         } else if (message.contains(JGitText.get().notAuthorized)) { //NOI18N
             throw new GitException.AuthorizationException(uri.toString(), message, e);
         } else if ((pos = message.toLowerCase().indexOf(": auth cancel")) != -1) { //NOI18N
             String repositoryUrl = message.substring(0, pos);
             throw new GitException.AuthorizationException(repositoryUrl, message, e);
         } else if (e.getCause() instanceof JSchException) {
-            throw new GitException.AuthorizationException(uri.toString(), message, e);
+            if (message.contains("timeout:")) { //NOI18N
+                throw new GitException(message, e);
+            } else {
+                throw new GitException.AuthorizationException(uri.toString(), message, e);
+            }
         } else {
             throw new GitException(message, e);
         }

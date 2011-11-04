@@ -145,7 +145,7 @@ public final class InternalHandle {
     
     public void setInitialDelay(int millis) {
         if (state != STATE_INITIALIZED) {
-            LOG.warning("Setting ProgressHandle.setInitialDelay() after the task is started has no effect"); //NOI18N
+            LOG.log(Level.WARNING, "Setting ProgressHandle.setInitialDelay() after the task is started has no effect at {0}", findCaller()); //NOI18N         
             return;
         }
         initialDelay = millis;
@@ -157,7 +157,8 @@ public final class InternalHandle {
     
     public synchronized void toSilent(String message) {
         if (state != STATE_RUNNING && state != STATE_REQUEST_STOP) {
-            assert false : "cannot switch to silent mode when not running";
+            LOG.log(Level.WARNING, "Cannot switch to silent mode when not running at {0}", findCaller()); //NOI18N
+            return;
         }
         timeLastProgress = System.currentTimeMillis();
         timeSleepy = timeLastProgress;
@@ -173,7 +174,8 @@ public final class InternalHandle {
     
     public synchronized void toIndeterminate() {
         if (state != STATE_RUNNING && state != STATE_REQUEST_STOP) {
-            assert false : "cannot switch to indeterminate mode when not running: " + state;
+            LOG.log(Level.WARNING, "Cannot switch to indeterminate mode when not running at {0}", findCaller());           
+            return;
         }
         totalUnits = 0;
         currentUnit = 0;
@@ -184,7 +186,8 @@ public final class InternalHandle {
     
     public synchronized void toDeterminate(int workunits, long estimate) {
         if (state != STATE_RUNNING && state != STATE_REQUEST_STOP) {
-            assert false : "cannot switch to determinate mode when not running";
+            LOG.log(Level.WARNING, "Cannot switch to determinate mode when not running at {0}", findCaller()); //NOI18N           
+            return;
         }
         if (workunits < 0) {
             throw new IllegalArgumentException("number of workunits cannot be negative");
@@ -206,7 +209,8 @@ public final class InternalHandle {
      */
     public synchronized void start(String message, int workunits, long estimate) {
         if (state != STATE_INITIALIZED) {
-            throw new IllegalStateException("Cannot call start twice on a handle");
+            LOG.log(Level.WARNING, "Cannot call start twice on a handle at {0}", findCaller()); //NOI18N
+            return;
         }
         if (workunits < 0) {
             throw new IllegalArgumentException("number of workunits cannot be negative");
@@ -233,9 +237,11 @@ public final class InternalHandle {
      */
     public synchronized void finish() {
         if (state == STATE_INITIALIZED) {
-            throw new IllegalStateException("Cannot finish a task that was never started");
+            LOG.log(Level.WARNING, "Cannot finish a task that was never started at {0}", findCaller()); //NOI18N
+            return;
         }
         if (state == STATE_FINISHED) {
+            LOG.log(Level.WARNING, "Cannot call finish twice on a handle at {0}", findCaller()); //NOI18N          
             return;
         }
         state = STATE_FINISHED;
@@ -252,6 +258,7 @@ public final class InternalHandle {
      */
     public synchronized void progress(String message, int workunit) {
         if (state != STATE_RUNNING && state != STATE_REQUEST_STOP) {
+            LOG.log(Level.WARNING, "Cannot call progress on a taks that was never started at {0}", findCaller()); //NOI18N
             return;
         }
 
@@ -418,6 +425,12 @@ public final class InternalHandle {
         return timeStarted;
     }
 
-
-
+    private static String findCaller() {
+        for (StackTraceElement line : Thread.currentThread().getStackTrace()) {          
+            if (!line.getClassName().matches("(java|org[.]netbeans[.](api[.]progress|modules[.]progress|progress[.]module))[.].+")) { // NOI18N
+                return line.toString();
+            } 
+        }
+        return "???"; // NOI18N
+    }
 }

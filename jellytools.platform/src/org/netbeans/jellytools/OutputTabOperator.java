@@ -59,11 +59,7 @@ import org.netbeans.jellytools.actions.FindAction;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.JemmyException;
-import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.jemmy.operators.JButtonOperator;
-import org.netbeans.jemmy.operators.JComponentOperator;
-import org.netbeans.jemmy.operators.JTabbedPaneOperator;
-import org.netbeans.jemmy.operators.Operator;
+import org.netbeans.jemmy.operators.*;
 import org.openide.util.Lookup;
 
 /** Operator for Output tab. It resides in output top component.
@@ -94,11 +90,6 @@ public class OutputTabOperator extends JComponentOperator {
             "ACTION_FIND_NEXT"),
             null,
             KeyStroke.getKeyStroke(KeyEvent.VK_F3, 0));
-    private static final Action selectAllAction =
-            new Action(null, null, null,
-            System.getProperty("os.name").toLowerCase().indexOf("mac") > -1
-            ? KeyStroke.getKeyStroke(KeyEvent.VK_A, KeyEvent.META_MASK)
-            : KeyStroke.getKeyStroke(KeyEvent.VK_A, KeyEvent.CTRL_MASK));
     private static final Action wrapTextAction =
             new Action(null,
             Bundle.getString("org.netbeans.core.output2.Bundle",
@@ -516,6 +507,6 @@ public class OutputTabOperator extends JComponentOperator {
 
     /** Performs select all action. */
     public void selectAll() {
-        selectAllAction.perform(outputPaneOperator());
+        new JEditorPaneOperator(this).selectAll();
     }
 }

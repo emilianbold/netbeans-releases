@@ -230,16 +230,16 @@ public final class SunDDVisualPanel extends JPanel {
         String result = null;
         Object moduleType = j2eeModule.getType();
         if(J2eeModule.Type.WAR.equals(moduleType)) {
-            result = null != serverInstanceID && serverInstanceID.contains(EE6WC) ?
+            result = org.netbeans.modules.glassfish.spi.Utils.useGlassfishPrefix(serverInstanceID) ?
                     "glassfish-web.xml" : "sun-web.xml"; // NOI18N;
         } else if(J2eeModule.Type.EJB.equals(moduleType)) {
-            result = null != serverInstanceID && serverInstanceID.contains(EE6WC) ?
+            result = org.netbeans.modules.glassfish.spi.Utils.useGlassfishPrefix(serverInstanceID) ?
                     "glassfish-ejb-jar.xml" : "sun-ejb-jar.xml"; // NOI18N
         } else if(J2eeModule.Type.EAR.equals(moduleType)) {
-            result = null != serverInstanceID && serverInstanceID.contains(EE6WC) ?
+            result = org.netbeans.modules.glassfish.spi.Utils.useGlassfishPrefix(serverInstanceID) ?
                     "glassfish-application.xml" : "sun-application.xml"; // NOI18N
         } else if(J2eeModule.Type.CAR.equals(moduleType)) {
-            result = null != serverInstanceID && serverInstanceID.contains(EE6WC) ?
+            result = org.netbeans.modules.glassfish.spi.Utils.useGlassfishPrefix(serverInstanceID) ?
                     "glassfish-application-client.xml" : "sun-application-client.xml"; // NOI18N
         }
         return result;

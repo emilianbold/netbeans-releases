@@ -44,6 +44,8 @@
 
 package org.netbeans.modules.apisupport.project.ui.wizard.project;
 
+import java.awt.Graphics;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -53,9 +55,13 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+import javax.imageio.ImageIO;
+import javax.swing.Icon;
+import javax.swing.JLabel;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
@@ -75,6 +81,8 @@ import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.modules.SpecificationVersion;
+import org.openide.util.Exceptions;
 
 /**
  * Wizard for creating new project templates.
@@ -178,16 +186,16 @@ public final class NewProjectIterator extends BasicWizardIterator {
         
     }
     
-    public static void generateFileChanges(DataModel model) {
+    public static void generateFileChanges(final DataModel model) {
         CreatedModifiedFiles fileChanges = new CreatedModifiedFiles(model.getProject());
-        Project project = model.getProject();
-        NbModuleProvider moduleInfo = model.getModuleInfo();
+        final Project project = model.getProject();
+        final NbModuleProvider moduleInfo = model.getModuleInfo();
         final String category = model.getCategory();
         final String displayName = model.getDisplayName();
         final String name = model.getName();
         final String packageName = model.getPackageName();
         
-        HashMap<String, String> replaceTokens = new HashMap<String, String>();
+        Map<String,Object> replaceTokens = new HashMap<String,Object>();
         replaceTokens.put("CATEGORY", category);//NOI18N
         replaceTokens.put("DISPLAYNAME", displayName);//NOI18N
         replaceTokens.put("TEMPLATENAME", name);//NOI18N
@@ -205,20 +213,59 @@ public final class NewProjectIterator extends BasicWizardIterator {
             fileChanges.add(fileChanges.addModuleDependency(MODULES[i]));
         }
 
-        fileChanges.add(fileChanges.bundleKeyDefaultBundle(category + "/" + name +  "Project.zip", displayName)); // NOI18N
         // XXX use @Messages where available
         String bundlePath = getRelativePath(moduleInfo.getResourceDirectoryPath(false), packageName, "", "Bundle.properties");//NOI18N
         fileChanges.add(fileChanges.bundleKey(bundlePath, "LBL_CreateProjectStep",  "Name and Location")); // NOI18N
         
         // 3. create sample template
+        boolean useTR = false;
+        try {
+            SpecificationVersion v = moduleInfo.getDependencyVersion("org.openide.loaders");
+            if (v != null && v.compareTo(new SpecificationVersion("7.29")) >= 0) {
+                useTR = true;
+            }
+        } catch (IOException x) {
+            Exceptions.printStackTrace(x);
+        }
+        if (useTR) {
+            replaceTokens.put("useTR", true);
+            fileChanges.add(new CreatedModifiedFiles.AbstractOperation(project) {
+                final String zipPath;
+                final String iconPath;
+                {
+                    zipPath = getRelativePath(moduleInfo.getResourceDirectoryPath(false), packageName, name, "Project.zip");
+                    iconPath = getRelativePath(moduleInfo.getResourceDirectoryPath(false), packageName, name, ".png");
+                    addCreatedOrModifiedPath(zipPath, false);
+                    addCreatedOrModifiedPath(iconPath, false);
+                }
+                @Override public void run() throws IOException {
+                    FileObject zip = FileUtil.createData(project.getProjectDirectory(), zipPath);
+                    OutputStream os = zip.getOutputStream();
+                    try {
+                        createProjectZip(os, model.getTemplate());
+                    } finally {
+                        os.close();
+                    }
+                    FileObject icon = FileUtil.createData(project.getProjectDirectory(), iconPath);
+                    os = icon.getOutputStream();
+                    try {
+                        writeIcon(os, model.getTemplate());
+                    } finally {
+                        os.close();
+                    }
+                }
+            });
+        } else {
+        fileChanges.add(fileChanges.bundleKeyDefaultBundle(category + "/" + name +  "Project.zip", displayName)); // NOI18N
         FileObject xml = LayerHandle.forProject(project).getLayerFile();
         FileObject parent = xml != null ? xml.getParent() : null;
         // XXX this is not fully accurate since if two ops would both create the same file,
         // really the second one would automatically generate a uniquified name... but close enough!
         Set<String> externalFiles = Collections.singleton(LayerUtils.findGeneratedName(parent, name + "Project.zip")); // NOI18N
         fileChanges.add(fileChanges.layerModifications(
-                new CreateProjectZipOperation(model.getTemplate(), name, packageName,
+                new LayerCreateProjectZipOperation(model.getTemplate(), name, packageName,
                 category, ManifestManager.getInstance(Util.getManifest(moduleInfo.getManifestFile()), false)),externalFiles));
+        }
         
         // x. generate java classes
         final String iteratorName = getRelativePath(moduleInfo.getSourceDirectoryPath(), packageName,
@@ -262,6 +309,15 @@ public final class NewProjectIterator extends BasicWizardIterator {
         collectFiles(group.getRootFolder(), files,
                 SharabilityQuery.getSharability(FileUtil.toFile(group.getRootFolder())));
         createZipFile(target, group.getRootFolder(), files);
+    }
+
+    private static void writeIcon(OutputStream target, Project source) throws IOException {
+        Icon icon = ProjectUtils.getInformation(source).getIcon();
+        BufferedImage image = new BufferedImage(icon.getIconWidth(), icon.getIconHeight(), BufferedImage.TYPE_INT_ARGB);
+        Graphics g = image.getGraphics();
+        icon.paintIcon(new JLabel(), g, 0, 0);
+        g.dispose();
+        ImageIO.write(image, "png", target);
     }
     
     private static void collectFiles(FileObject parent, Collection<FileObject> accepted, int parentSharab) {
@@ -321,7 +377,7 @@ public final class NewProjectIterator extends BasicWizardIterator {
         }
     }
     
-    static class CreateProjectZipOperation implements CreatedModifiedFiles.LayerOperation {
+    private static class LayerCreateProjectZipOperation implements CreatedModifiedFiles.LayerOperation {
         
         private final String name;
         private final String packageName;
@@ -329,7 +385,7 @@ public final class NewProjectIterator extends BasicWizardIterator {
         private final String category;
         private final ManifestManager manifestManager;
         
-        public CreateProjectZipOperation(Project template, String name, String packageName, 
+        LayerCreateProjectZipOperation(Project template, String name, String packageName,
                 String category, ManifestManager manifestManager) {
             this.packageName = packageName;
             this.name = name;
@@ -345,6 +401,7 @@ public final class NewProjectIterator extends BasicWizardIterator {
             }
             FileObject file = folder.createData(name + "Project", "zip"); // NOI18N
             createProjectZip(file.getOutputStream(), templateProject);
+            // XXX use writeIcon
             String bundlePath = manifestManager.getLocalizingBundle();
             String suffix = ".properties"; // NOI18N
             if (bundlePath != null && bundlePath.endsWith(suffix)) {

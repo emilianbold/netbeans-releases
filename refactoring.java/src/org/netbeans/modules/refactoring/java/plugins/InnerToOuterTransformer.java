@@ -262,21 +262,21 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
                 FileObject sourceRoot=ClassPath.getClassPath(workingCopy.getFileObject(), ClassPath.SOURCE).findOwnerRoot(workingCopy.getFileObject());
                 ClassTree outerTree = (ClassTree) workingCopy.getTrees().getTree(outer);
                 ClassTree newOuter = make.removeClassMember(outerTree, innerClass);
-                workingCopy.rewrite(outerTree, newOuter);
+                rewrite(outerTree, newOuter);
                 JavaRefactoringUtils.cacheTreePathInfo(workingCopy.getTrees().getPath(outer), workingCopy);
                 CompilationUnitTree compilationUnit = tp.getCompilationUnit();
                 String relativePath = RetoucheUtils.getPackageName(compilationUnit).replace('.', '/') + '/' + refactoring.getClassName() + ".java"; // NOI18N
                 CompilationUnitTree newCompilation = make.CompilationUnit(sourceRoot, relativePath, null, Collections.singletonList(newInnerClass));
-                workingCopy.rewrite(null, newCompilation);
+                rewrite(null, newCompilation);
                 return newOuter;
             } else {
                 ClassTree outerTree = (ClassTree) workingCopy.getTrees().getTree(outer);
                 ClassTree outerouterTree = (ClassTree) workingCopy.getTrees().getTree(outerouter);
                 ClassTree newOuter = make.removeClassMember(outerTree, innerClass);
                 ClassTree newOuterOuter = GeneratorUtilities.get(workingCopy).insertClassMember(outerouterTree, newInnerClass);
-                workingCopy.rewrite(outerTree, newOuter);
+                rewrite(outerTree, newOuter);
                 JavaRefactoringUtils.cacheTreePathInfo(workingCopy.getTrees().getPath(outer), workingCopy);
-                workingCopy.rewrite(outerouterTree, newOuterOuter);
+                rewrite(outerouterTree, newOuterOuter);
                 return newOuterOuter;
             }
             
@@ -377,7 +377,7 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
                     String import1 = innerPackageName + "." + refactoring.getClassName(); //NOI18N
                     try {
                         CompilationUnitTree cut = RetoucheUtils.addImports(workingCopy.getCompilationUnit(), Collections.singletonList(import1), make);
-                        workingCopy.rewrite(workingCopy.getCompilationUnit(), cut);
+                        rewrite(workingCopy.getCompilationUnit(), cut);
                     } catch (IOException ex1) {
                         Exceptions.printStackTrace(ex1);
                     }
@@ -411,12 +411,12 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
             if (tree != null && tree.getKind() == Tree.Kind.METHOD) {
                 MethodTree method = (MethodTree) tree;
                 if (method.getModifiers().getFlags().contains(Modifier.PRIVATE)) {
-                    workingCopy.rewrite(method.getModifiers(), make.removeModifiersModifier(method.getModifiers(), Modifier.PRIVATE));
+                    rewrite(method.getModifiers(), make.removeModifiersModifier(method.getModifiers(), Modifier.PRIVATE));
                 }
             } else if (tree != null && tree.getKind() == Tree.Kind.VARIABLE) {
                 VariableTree variable = (VariableTree) tree;
                 if (variable.getModifiers().getFlags().contains(Modifier.PRIVATE)) {
-                    workingCopy.rewrite(variable.getModifiers(), make.removeModifiersModifier(variable.getModifiers(), Modifier.PRIVATE));
+                    rewrite(variable.getModifiers(), make.removeModifiersModifier(variable.getModifiers(), Modifier.PRIVATE));
                 }
             }
             

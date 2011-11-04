@@ -341,7 +341,7 @@ public class Css3ParserTest extends CslTestBase {
         //syncToIdent bug - it cannot sync to ident since there isn't one - but the case is valid
         //=> reconsider putting syncToIdent back to the declarations rule, but then I need 
         //to resolve why it is not called even in proper cases!!!
-        NodeUtil.dumpTree(res.getParseTree());
+//        NodeUtil.dumpTree(res.getParseTree());
         AtomicBoolean recoveryNodeFound = new AtomicBoolean(false);
         NodeVisitor<AtomicBoolean> visitor = new NodeVisitor<AtomicBoolean>(recoveryNodeFound) {
 
@@ -386,6 +386,8 @@ public class Css3ParserTest extends CslTestBase {
         String content = "h1 { color: ;}";
 
         CssParserResult result = TestUtil.parse(content);
+//        TestUtil.dumpResult(result);
+        
         assertResult(result, 1);
     }
 
@@ -512,7 +514,7 @@ public class Css3ParserTest extends CslTestBase {
                 + "ruleSet/selectorsGroup/selector/simpleSelectorSequence/error");
         assertNotNull(error);
         assertEquals(2, error.from());
-        assertEquals(5, error.to());
+        assertEquals(6, error.to());
 
         content = "h1[foo=] { }";
 
@@ -725,6 +727,31 @@ public class Css3ParserTest extends CslTestBase {
 
 
     }
+    
+    public void testPagedMediaWithoutPseudoClass() throws ParseException, BadLocationException {
+        String content = "@page test {"
+                + "color: green;"
+                + "}";
+
+        CssParserResult result = TestUtil.parse(content);
+//        TestUtil.dumpTokens(result);
+//        TestUtil.dumpResult(result);
+
+        assertResultOK(result);
+
+        //test page node
+        Node page = NodeUtil.query(result.getParseTree(),
+                TestUtil.bodysetPath
+                + "page");
+        assertNotNull(page);
+
+        //declaration
+        Node declaration = NodeUtil.query(page,
+                "declaration");
+        assertNotNull(declaration);
+        assertEquals("color: green", declaration.image().toString());
+
+    }
 
     public void testCounterStyle() throws ParseException, BadLocationException {
         String content = "@counter-style cool { glyph: '|'; }";
@@ -844,7 +871,82 @@ public class Css3ParserTest extends CslTestBase {
         
         assertResultOK(result);
     }
+    
+    //Bug 204128 - CC stops work after # in a color attribute 
+    public void testErrorRecoveryAfterHash() throws BadLocationException, ParseException {
+        CssParserResult result = TestUtil.parse(
+                "#test {\n"
+                + "color: #\n"
+                + "\n"
+                + "   }\n"
+                + "div { color: red; }\n");
+                
+//        TestUtil.dumpResult(result);
+        Node node = NodeUtil.query(result.getParseTree(),
+                "styleSheet/bodylist/bodyset/"
+                + "ruleSet/declarations/declaration/expr/error");
+        assertNotNull(node);
+        assertEquals(15, node.from());
+        assertEquals(16, node.to());
+    }
+    
+    public void testParsingOfAsterixOnly() throws BadLocationException, ParseException {
+        CssParserResult result = TestUtil.parse("*     ");
+        TestUtil.dumpResult(result);
+        
+        Node node = NodeUtil.query(result.getParseTree(),
+                "styleSheet/bodylist/bodyset/"
+                + "ruleSet/selectorsGroup/selector/simpleSelectorSequence/error");
+        assertNotNull(node);
+        assertEquals(1, node.from());
+        assertEquals(6, node.to());
+        
+    }
+    
+    public void testErrorInSelector() throws BadLocationException, ParseException {
+        CssParserResult result = TestUtil.parse("h1[|");
+        TestUtil.dumpResult(result);
+        
+//        Node node = NodeUtil.query(result.getParseTree(),
+//                "styleSheet/bodylist/bodyset/"
+//                + "ruleSet/selectorsGroup/selector/simpleSelectorSequence/error");
+//        assertNotNull(node);
+//        assertEquals(1, node.from());
+//        assertEquals(6, node.to());
+        
+    }
+    
+    public void testNoEmptyRuleNodesInTheParseTree() throws BadLocationException, ParseException {
+        CssParserResult result = TestUtil.parse("*  ");
+        AtomicBoolean foundEmptyRuleNode = new AtomicBoolean(false);
+        NodeVisitor<AtomicBoolean> visitor  = new NodeVisitor<AtomicBoolean>(foundEmptyRuleNode) {
+            @Override
+            public boolean visit(Node node) {
+                if(node instanceof RuleNode) {
+                    if(node.children().isEmpty()) {
+                        getResult().set(true);
+                        return true;
+                    }
+                }
+                return false;
+            }
+        };
+        visitor.visitChildren(result.getParseTree());
+        assertFalse(foundEmptyRuleNode.get());
+    }
 
+    public void testDuplicatedErrors() throws BadLocationException, ParseException {
+        CssParserResult result = TestUtil.parse(
+                  "head{\n"
+                + "    background-image: uri();\n"
+                + "}");
+        
+//        TestUtil.dumpResult(result);
+        
+        assertResult(result, 1);
+        
+    }
+    
     private CssParserResult assertResultOK(CssParserResult result) {
         return assertResult(result, 0);
     }

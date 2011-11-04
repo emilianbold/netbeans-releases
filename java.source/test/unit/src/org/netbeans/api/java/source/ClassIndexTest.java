@@ -50,15 +50,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import javax.lang.model.element.ElementKind;
@@ -471,6 +463,83 @@ public class ClassIndexTest extends NbTestCase {
         assertElementHandles(new String[]{}, r);
     }
 
+    public void testPackageUdages() throws Exception {
+        final FileObject wd = FileUtil.toFileObject(getWorkDir());
+        final FileObject root = FileUtil.createFolder(wd,"src");    //NOI18N
+        sourcePath = ClassPathSupport.createClassPath(root);
+        compilePath = ClassPathSupport.createClassPath(new URL[0]);
+        bootPath = JavaPlatformManager.getDefault().getDefaultPlatform().getBootstrapLibraries();
+        final FileObject t1 = createJavaFile(
+                root,
+                "org.me.test",                                          //NOI18N
+                "T1",                                                   //NOI18N
+                "package org.me.test;\n"+                               //NOI18N
+                "public class T1 extends java.util.ArrayList {}");      //NOI18N
+        final FileObject t2 = createJavaFile(
+                root,
+                "org.me.test",                                          //NOI18N
+                "T2",                                                   //NOI18N
+                "package org.me.test;\n"+                               //NOI18N
+                "public class T2 {\n"+                                  //NOI18N
+                "   private java.util.Map m;"+                          //NOI18N
+                "}");                                                   //NOI18N
+        final FileObject t3 = createJavaFile(
+                root,
+                "org.me.test",                                          //NOI18N
+                "T3",                                                   //NOI18N
+                "package org.me.test;\n"+                               //NOI18N
+                "public class T3 {\n"+                                  //NOI18N
+                "   private java.io.File f;"+                           //NOI18N
+                "}");                                                   //NOI18N
+        final FileObject t4 = createJavaFile(
+                root,
+                "org.me.test",                                          //NOI18N
+                "T4",                                                   //NOI18N
+                "package org.me.test;\n"+                               //NOI18N
+                "import u.*;\n"+                                        //NOI18N
+                "public class T4 {}");                                  //NOI18N
+        final FileObject dummy = createJavaFile(
+                root,
+                "u",                                                    //NOI18N
+                "D",                                                    //NOI18N
+                "package u;\n"+                                         //NOI18N
+                "public class D {\n"+                                   //NOI18N
+                "}");
+        IndexingManager.getDefault().refreshIndexAndWait(root.getURL(), null);
+        final ClassIndex ci = ClasspathInfo.create(bootPath, compilePath, sourcePath).getClassIndex();
+        assertNotNull(ci);
+        Set<FileObject> result = ci.getResourcesForPackage(
+            ElementHandleAccessor.INSTANCE.create(ElementKind.PACKAGE, "java.util"),    //NOI18N
+            EnumSet.<ClassIndex.SearchKind>of(ClassIndex.SearchKind.IMPLEMENTORS),
+            EnumSet.<ClassIndex.SearchScope>of(ClassIndex.SearchScope.SOURCE));
+        assertNotNull(result);
+        assertFiles(Collections.singleton(t1),result);
+        result = ci.getResourcesForPackage(
+            ElementHandleAccessor.INSTANCE.create(ElementKind.PACKAGE, "java.util"),    //NOI18N
+            EnumSet.<ClassIndex.SearchKind>allOf(ClassIndex.SearchKind.class),
+            EnumSet.<ClassIndex.SearchScope>of(ClassIndex.SearchScope.SOURCE));
+        assertNotNull(result);
+        assertFiles(Arrays.asList(t1,t2),result);
+        result = ci.getResourcesForPackage(
+            ElementHandleAccessor.INSTANCE.create(ElementKind.PACKAGE, "java.io"),      //NOI18N
+            EnumSet.<ClassIndex.SearchKind>allOf(ClassIndex.SearchKind.class),
+            EnumSet.<ClassIndex.SearchScope>of(ClassIndex.SearchScope.SOURCE));
+        assertNotNull(result);
+        assertFiles(Collections.singleton(t3),result);
+        result = ci.getResourcesForPackage(
+            ElementHandleAccessor.INSTANCE.create(ElementKind.PACKAGE, "java.util.concurrent"), //NOI18N
+            EnumSet.<ClassIndex.SearchKind>allOf(ClassIndex.SearchKind.class),
+            EnumSet.<ClassIndex.SearchScope>of(ClassIndex.SearchScope.SOURCE));
+        assertNotNull(result);
+        assertFiles(Collections.<FileObject>emptySet(),result);
+        result = ci.getResourcesForPackage(
+            ElementHandleAccessor.INSTANCE.create(ElementKind.PACKAGE, "u"),    //NOI18N
+            EnumSet.<ClassIndex.SearchKind>of(ClassIndex.SearchKind.TYPE_REFERENCES),
+            EnumSet.<ClassIndex.SearchScope>of(ClassIndex.SearchScope.SOURCE));
+        assertNotNull(result);
+        assertFiles(Arrays.asList(dummy, t4),result);
+    }
+
     private FileObject createJavaFile (
             final FileObject root,
             final String pkg,
@@ -504,6 +573,18 @@ public class ClassIndexTest extends NbTestCase {
         }
         if (!expSet.isEmpty()) {
             throw new AssertionError("Expected: " + Arrays.toString(expected) +" Result: " + result);
+        }
+    }
+
+    private void assertFiles(final Collection<FileObject> expected, final Collection<FileObject> result) {
+        final Set<FileObject> expSet = new HashSet<FileObject>(expected);
+        for (FileObject fo : result) {
+            if (!expSet.remove(fo)) {
+                throw new AssertionError("Expected: " + expected +" Result: " + result);
+            }
+        }
+        if (!expSet.isEmpty()) {
+            throw new AssertionError("Expected: " + expected +" Result: " + result);
         }
     }
 

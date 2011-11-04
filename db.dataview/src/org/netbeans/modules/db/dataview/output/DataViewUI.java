@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR parent HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
 
 Oracle and Java are registered trademarks of Oracle and/or its affiliates.
 Other names may be trademarks of their respective owners.
@@ -44,7 +44,6 @@ Other names may be trademarks of their respective owners.
 package org.netbeans.modules.db.dataview.output;
 
 import java.awt.BorderLayout;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
@@ -61,7 +60,7 @@ import java.util.List;
 import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
-import javax.swing.GroupLayout;
+import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JPanel;
@@ -574,6 +573,7 @@ class DataViewUI extends JXPanel {
 
         JXPanel panel = new JXPanel();
         panel.setBorder(BorderFactory.createEtchedBorder());
+        panel.setLayout(new BoxLayout(panel, BoxLayout.LINE_AXIS));
 
         ActionListener outputListener = createOutputListener();
         initVerticalToolbar(outputListener);
@@ -581,38 +581,20 @@ class DataViewUI extends JXPanel {
         JToolBar toolbarWest = new JToolBar();
         toolbarWest.setFloatable(false);
         toolbarWest.setRollover(true);
-
         initToolbarWest(toolbarWest, outputListener, nbOutputComponent);
         
-        JToolBar toolbarCentral = new JToolBar();
-        toolbarCentral.setFloatable(false);
-        toolbarCentral.setRollover(true);
-
         JToolBar toolbarEast = new JToolBar();
         toolbarEast.setFloatable(false);
         toolbarEast.setRollover(true);
         initToolbarEast(toolbarEast);
+        toolbarEast.setMinimumSize(toolbarWest.getPreferredSize());
+        toolbarEast.setSize(toolbarWest.getPreferredSize());
+        toolbarEast.setMaximumSize(toolbarWest.getPreferredSize());
 
-        javax.swing.GroupLayout groupLayout = new javax.swing.GroupLayout(panel);
-        panel.setLayout(groupLayout);
-        groupLayout.setHorizontalGroup(
-            groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(groupLayout.createSequentialGroup()
-                .addComponent(toolbarWest, javax.swing.GroupLayout.DEFAULT_SIZE, 100, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(toolbarCentral, javax.swing.GroupLayout.PREFERRED_SIZE, 178, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(toolbarEast, javax.swing.GroupLayout.DEFAULT_SIZE, 100, Short.MAX_VALUE))
-        );
-        groupLayout.setVerticalGroup(
-            groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(groupLayout.createSequentialGroup()
-                //.addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(toolbarEast, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(toolbarWest, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(toolbarCentral, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)))
-        );
+        panel.add(toolbarWest);
+        panel.add(Box.createHorizontalGlue());
+        panel.add(toolbarEast);
+
         return panel;
     }
 

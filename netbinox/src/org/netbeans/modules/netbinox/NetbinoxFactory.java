@@ -78,6 +78,8 @@ public class NetbinoxFactory implements FrameworkFactory {
         configMap.put("osgi.install.area", System.getProperty("netbeans.home")); // NOI18N
         // some useless value
         configMap.put("osgi.framework.properties", System.getProperty("netbeans.user")); // NOI18N
+        // don't change classloader when getting XMLParsers
+        configMap.put("eclipse.parsers.setTCCL", "false"); // NOI18N
 
         Object rawBundleMap = configMap.get("felix.bootdelegation.classloaders"); // NOI18N
 

@@ -53,6 +53,7 @@ import java.util.HashMap;
 
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import javax.swing.JRootPane;
 import javax.swing.UIManager;
 import org.openide.util.Parameters;
 
@@ -124,8 +125,11 @@ final class DropGlassPane extends JPanel {
         if (oldPane == null) {
             throw new IllegalStateException("No original pane present");
         }
-
-        originalSource.getRootPane().setGlassPane(oldPane);
+        final JRootPane rp = originalSource.getRootPane();
+        if (rp == null) {
+            throw new IllegalStateException("originalSource " + originalSource + " has no root pane: " + rp); // NOI18N
+        }
+        rp.setGlassPane(oldPane);
         oldPane.setVisible(wasVisible);
         oldPane = null;
     }

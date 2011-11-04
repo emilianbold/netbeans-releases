@@ -175,6 +175,9 @@ public class WebServicesHintsProvider {
                 FileObject wsdlFolder = jaxwsSupport.getLocalWsdlFolderForService(service.getName(), false);
                 if(wsdlFolder!=null) {
                     FileObject wsdlFo = wsdlFolder.getFileObject(service.getLocalWsdlFile());
+                    if ( wsdlFo == null ){
+                        return;
+                    }
                     WSDLModel tmpModel = WSDLModelFactory.getDefault().getModel(
                             Utilities.getModelSource(wsdlFo, true));
                     if(tmpModel!=wsdlModel) {

@@ -44,17 +44,21 @@
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="destinationText" pref="360" max="32767" attributes="0"/>
-                          <Component id="mdbCombo" alignment="1" pref="360" max="32767" attributes="0"/>
-                          <Component id="serverDestinationsCombo" alignment="1" pref="360" max="32767" attributes="1"/>
-                          <Component id="projectDestinationsCombo" alignment="1" pref="360" max="32767" attributes="1"/>
-                          <Component id="connectionFactoryTextField" alignment="0" pref="360" max="32767" attributes="0"/>
+                          <Component id="destinationText" pref="392" max="32767" attributes="0"/>
+                          <Component id="mdbCombo" alignment="1" pref="392" max="32767" attributes="0"/>
+                          <Component id="serverDestinationsCombo" alignment="1" pref="392" max="32767" attributes="1"/>
+                          <Component id="projectDestinationsCombo" alignment="1" pref="392" max="32767" attributes="1"/>
+                          <Component id="connectionFactoryTextField" alignment="0" pref="392" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="addButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
                   <Component id="jLabel1" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Group type="102" alignment="0" attributes="0">
+                      <Component id="warningLabel" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace pref="643" max="32767" attributes="0"/>
+                  </Group>
               </Group>
           </Group>
       </Group>
@@ -90,7 +94,8 @@
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="serviceLocatorPanel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="32767" attributes="0"/>
+              <EmptySpace pref="24" max="32767" attributes="0"/>
+              <Component id="warningLabel" min="-2" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -104,9 +109,6 @@
         <Property name="selected" type="boolean" value="true"/>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/j2ee/ejbcore/ui/logicalview/entries/Bundle.properties" key="LBL_ProjectDestinations" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-        <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
-          <Insets value="[0, 0, 0, 0]"/>
         </Property>
       </Properties>
       <AccessibilityProperties>
@@ -122,9 +124,6 @@
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/j2ee/ejbcore/ui/logicalview/entries/Bundle.properties" key="LBL_ServerDestinations" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-        <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
-          <Insets value="[0, 0, 0, 0]"/>
         </Property>
       </Properties>
       <AccessibilityProperties>
@@ -170,9 +169,6 @@
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/j2ee/ejbcore/ui/logicalview/entries/Bundle.properties" key="LBL_MessageDrivenBean" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
-        <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
-          <Insets value="[0, 0, 0, 0]"/>
-        </Property>
       </Properties>
       <AccessibilityProperties>
         <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
@@ -211,6 +207,13 @@
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="connectionFactoryTextField">
+    </Component>
+    <Component class="javax.swing.JLabel" name="warningLabel">
+      <Properties>
+        <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+          <Color blue="0" green="77" red="dd" type="rgb"/>
+        </Property>
+      </Properties>
     </Component>
   </SubComponents>
 </Form>

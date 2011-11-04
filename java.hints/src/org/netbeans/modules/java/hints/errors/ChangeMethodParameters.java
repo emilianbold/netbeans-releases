@@ -41,33 +41,17 @@
  */
 package org.netbeans.modules.java.hints.errors;
 
-import com.sun.source.tree.BlockTree;
-import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.IdentifierTree;
-import com.sun.source.tree.MethodInvocationTree;
-import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.Scope;
-import com.sun.source.tree.Tree;
-import com.sun.source.tree.VariableTree;
+import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Modifier;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
+import java.util.*;
+import javax.lang.model.element.*;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.modules.java.hints.infrastructure.ErrorHintsProvider;
+import org.netbeans.modules.java.hints.infrastructure.Pair;
 import org.netbeans.modules.java.hints.spi.ErrorRule;
 import org.netbeans.modules.java.hints.spi.ErrorRule.Data;
 import org.netbeans.modules.refactoring.java.api.ChangeParametersRefactoring;
@@ -131,16 +115,27 @@ public class ChangeMethodParameters implements ErrorRule<Void> {
         
         if(error.getKind() == Tree.Kind.METHOD_INVOCATION) {
             MethodInvocationTree invocation = (MethodInvocationTree) error;
+            
             if (invocation.getMethodSelect().getKind().equals(Tree.Kind.IDENTIFIER))  {
+
+                TreePath enclosingTypePath = findEnclosingType(errorPath.getParentPath());
+                List<? extends ExpressionTree> arguments = invocation.getArguments();
+                Pair<List<? extends TypeMirror>, List<String>> formalArguments = Utilities.resolveArguments(info, errorPath.getParentPath(), arguments, info.getTrees().getElement(enclosingTypePath));
+
+                //currently, we cannot handle error types, TYPEVARs and WILDCARDs:
+                if (formalArguments == null) {
+                    return Collections.<Fix>emptyList();
+                }
+            
                 IdentifierTree methodSelect = (IdentifierTree) invocation.getMethodSelect();
-                TreePath typePath = findEnclosingType(errorPath.getParentPath());
+                
                 List<TreePath> methods = new LinkedList<TreePath>();
-                for (Tree tree : ((ClassTree) typePath.getLeaf()).getMembers()) {
+                for (Tree tree : ((ClassTree) enclosingTypePath.getLeaf()).getMembers()) {
                     if(cancel) return Collections.<Fix>emptyList();
                     if (tree.getKind().equals(Tree.Kind.METHOD)) {
                         MethodTree method = (MethodTree) tree;
                         if(method.getName().contentEquals(methodSelect.getName())) {
-                            methods.add(new TreePath(typePath, method));
+                            methods.add(new TreePath(enclosingTypePath, method));
                         }
                     }
                 }
@@ -156,8 +151,7 @@ public class ChangeMethodParameters implements ErrorRule<Void> {
                         VariableTree parTree = (VariableTree) info.getTrees().getTree(param);
                         parameterInfo[i] = new ChangeParametersRefactoring.ParameterInfo(i, param.toString(), parTree.getType().toString(), null);
                     }
-                    ChangeParametersRefactoring.ParameterInfo[] newParameterInfo = new ChangeParametersRefactoring.ParameterInfo[invocation.getArguments().size()];
-
+                    ChangeParametersRefactoring.ParameterInfo[] newParameterInfo = new ChangeParametersRefactoring.ParameterInfo[arguments.size()];
                     MethodTree methodTree = (MethodTree) path.getLeaf();
                     BlockTree methodBody = methodTree.getBody();
                     Scope scope =  null;
@@ -166,7 +160,7 @@ public class ChangeMethodParameters implements ErrorRule<Void> {
                         scope = info.getTrees().getScope(bodyPath);
                     }
                     int i = 0;
-                    for (ExpressionTree argument : invocation.getArguments()) {
+                    for (ExpressionTree argument : arguments) {
                         if(cancel) return Collections.<Fix>emptyList();
                         TreePath argumentPath = new TreePath(path, argument);
                         TypeMirror argumentType = info.getTrees().getTypeMirror(argumentPath);
@@ -180,7 +174,7 @@ public class ChangeMethodParameters implements ErrorRule<Void> {
                         i++;
                     }
 
-                    TypeElement typeElement = (TypeElement) info.getTrees().getElement(typePath);
+                    TypeElement typeElement = (TypeElement) info.getTrees().getElement(enclosingTypePath);
                     
                     // Find old parameters with the same type and copy the information
                     for (i = 0; i < newParameterInfo.length; i++) {
@@ -293,9 +287,22 @@ public class ChangeMethodParameters implements ErrorRule<Void> {
         if(from.equals(to)) {
             return true;
         } else {
-            TypeElement fromType = (TypeElement) info.getTypes().asElement(info.getTreeUtilities().parseType(from, scopeType));
-            TypeElement toType = (TypeElement) info.getTypes().asElement(info.getTreeUtilities().parseType(to, scopeType));
-            if (fromType != null && toType != null) {
+            Element fromElement = info.getTypes().asElement(info.getTreeUtilities().parseType(from, scopeType));
+            Element toElement = info.getTypes().asElement(info.getTreeUtilities().parseType(to, scopeType));
+            
+            if (fromElement != null && toElement != null) {
+                
+                if(!(fromElement.getKind().isClass() || fromElement.getKind().isInterface() || fromElement.getKind().isField())) {
+                    return false;
+                }
+
+                if(!(toElement.getKind().isClass() || toElement.getKind().isInterface() || toElement.getKind().isField())) {
+                    return false;
+                }
+
+                TypeElement fromType = (TypeElement) fromElement;
+                TypeElement toType = (TypeElement) toElement;
+
                 return info.getTypes().isSubtype(fromType.asType(), toType.asType());
             } else {
                 return false;

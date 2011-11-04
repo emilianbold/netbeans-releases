@@ -46,6 +46,8 @@
 package org.openide.explorer;
 
 import java.awt.datatransfer.ClipboardOwner;
+import java.awt.datatransfer.FlavorEvent;
+import java.awt.datatransfer.FlavorListener;
 import java.awt.datatransfer.Transferable;
 import java.util.Arrays;
 
@@ -554,13 +556,19 @@ public class ExplorerPanelTest extends NbTestCase {
             super (s);
         }
 
+        @Override
         protected org.openide.util.datatransfer.ExClipboard.Convertor[] getConvertors() {
             return new org.openide.util.datatransfer.ExClipboard.Convertor[0];
         }
         
+        @Override
         public void setContents (Transferable t, ClipboardOwner o) {
             super.setContents (t, o);
             fireClipboardChange ();
+            FlavorEvent ev = new FlavorEvent(this);
+            for (FlavorListener flavorListener : getFlavorListeners()) {
+                flavorListener.flavorsChanged(ev);
+            }
         }
     }
     

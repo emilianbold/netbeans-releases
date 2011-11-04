@@ -45,9 +45,9 @@ import java.util.List;
 import javax.swing.Action;
 import javax.swing.Icon;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
+import org.netbeans.modules.php.project.util.PhpTestCase;
 import org.netbeans.modules.php.project.util.TestUtils;
 import org.netbeans.modules.project.uiapi.ActionsFactory;
 import org.netbeans.spi.project.ui.support.NodeList;
@@ -60,7 +60,7 @@ import org.openide.util.Lookup;
 import org.openide.util.test.MockLookup;
 import org.openidex.search.SearchInfo;
 
-public class SrcNodeTest extends NbTestCase {
+public class SrcNodeTest extends PhpTestCase {
 
     public SrcNodeTest(String name) {
         super(name);

@@ -83,7 +83,7 @@ import org.openide.util.Exceptions;
  */
 public class DocumentUtil {
     
-    
+
     static final String FIELD_PACKAGE_NAME = "packageName";     //NOI18N
     static final String FIELD_SIMPLE_NAME = "simpleName";       //NOI18N
     static final String FIELD_CASE_INSENSITIVE_NAME = "ciName"; //NOI18N    
@@ -93,24 +93,19 @@ public class DocumentUtil {
     private static final String FIELD_BINARY_NAME = "binaryName";         //NOI18N
     private static final String FIELD_SOURCE = "source";                //NOI18N
     private static final String FIELD_REFERENCES = "references";        //NOI18N
-    
-    private static final char PKG_SEPARATOR = '.';                              //NOI18N
-    private static final char WILDCARD = '?';                                   //NOI18N
+
+    private static final char PKG_SEPARATOR = '.';                      //NOI18N
     private static final char NO = '-';                                 //NOI18N
     private static final char YES = '+';                                //NOI18N
-        
+    private static final char WILDCARD_QUERY_WILDCARD = '?';            //NOI18N
+    private static final char REGEX_QUERY_WILDCARD = '.';               //NOI18N
+
     private static final char EK_CLASS = 'C';                           //NOI18N
     private static final char EK_INTERFACE = 'I';                       //NOI18N
     private static final char EK_ENUM = 'E';                            //NOI18N
     private static final char EK_ANNOTATION = 'A';                      //NOI18N
-        
     private static final int SIZE = ClassIndexImpl.UsageType.values().length;    
-    private static final char[] MASK_ANY_USAGE = new char[SIZE];        
-    
-    static {
-        Arrays.fill(MASK_ANY_USAGE, WILDCARD);    //NOI18N
-    }
-    
+
     private DocumentUtil () {
     }
     
@@ -211,20 +206,26 @@ public class DocumentUtil {
             pkgName = resourceName.substring(0,index);
             sName = resourceName.substring(index+1);
         }
-        sName = sName + WILDCARD;   //Type of type element (Enum, Class, Interface, Annotation)
+        sName = sName + WILDCARD_QUERY_WILDCARD;   //Type of type element (Enum, Class, Interface, Annotation)
         query.add (new TermQuery (new Term (FIELD_PACKAGE_NAME, pkgName)),BooleanClause.Occur.MUST);
         query.add (new WildcardQuery (new Term (FIELD_BINARY_NAME, sName)),BooleanClause.Occur.MUST);
         return query;
     }
                                     
-    static Term referencesTerm (String resourceName, final Set<? extends ClassIndexImpl.UsageType> usageType) {
+    static Term referencesTerm (
+        String resourceName,
+        final Set<? extends ClassIndexImpl.UsageType> usageType,
+        final boolean javaRegEx) {
         assert resourceName  != null;
+        final char wildcard = javaRegEx ? REGEX_QUERY_WILDCARD : WILDCARD_QUERY_WILDCARD;
+        final char[] yes = javaRegEx ? new char[] {'\\',YES} : new char[] {YES};
         if (usageType != null) {
-            resourceName = encodeUsage (resourceName, usageType, WILDCARD).toString();
-        }
-        else {
-            StringBuilder sb = new StringBuilder (resourceName);
-            sb.append(MASK_ANY_USAGE);
+            resourceName = encodeUsage (resourceName, usageType, wildcard, yes).toString();
+        } else {
+            final StringBuilder sb = new StringBuilder (resourceName);
+            for (int i = 0; i< SIZE; i++) {
+                sb.append(wildcard);
+            }
             resourceName = sb.toString();
         }
         return new Term (FIELD_REFERENCES, resourceName);
@@ -288,22 +289,25 @@ public class DocumentUtil {
         
     // Functions for encoding and decoding of UsageType    
     static String encodeUsage (final String className, final Set<ClassIndexImpl.UsageType> usageTypes) {
-        return encodeUsage (className, usageTypes, NO).toString();
+        return encodeUsage (className, usageTypes, NO, new char[] {YES}).toString();
     }
     
-    private static StringBuilder encodeUsage (final String className, final Set<? extends ClassIndexImpl.UsageType> usageTypes, char fill) {
+    private static StringBuilder encodeUsage (
+        final String className,
+        final Set<? extends ClassIndexImpl.UsageType> usageTypes,
+        char fill,
+        char[] yes) {
         assert className != null;
         assert usageTypes != null;
         StringBuilder builder = new StringBuilder ();
         builder.append(className);
-        char[] map = new char [SIZE];
-        Arrays.fill(map,fill);
-        for (ClassIndexImpl.UsageType usageType : usageTypes) {
-            int offset = usageType.getOffset ();
-            assert offset >= 0 && offset < SIZE;
-            map[offset] = YES;
+        for (ClassIndexImpl.UsageType ut : ClassIndexImpl.UsageType.values()) {
+            if (usageTypes.contains(ut)) {
+                builder.append(yes);
+            } else {
+                builder.append(fill);
+            }
         }
-        builder.append(map);
         return builder;
     }
             
@@ -316,11 +320,12 @@ public class DocumentUtil {
         final int index = rawUsageLen - SIZE;
         final String className = rawUsage.substring(0,index);
         final String map = rawUsage.substring (index);
-        for (ClassIndexImpl.UsageType usageType : ClassIndexImpl.UsageType.values()) {
-            if (map.charAt(usageType.getOffset()) == YES) {
-                usageTypes.add (usageType);
+        final ClassIndexImpl.UsageType[] values = ClassIndexImpl.UsageType.values();
+        for (int i=0; i< values.length; i++) {
+            if (map.charAt(i) == YES) {
+                usageTypes.add (values[i]);
             }
-        }        
+        }
         return className;
     }
     
@@ -570,7 +575,7 @@ public class DocumentUtil {
                 sName = resourceName.substring(index+1);
             }
             final BooleanQuery snQuery = new BooleanQuery();
-            snQuery.add (new WildcardQuery (new Term (DocumentUtil.FIELD_BINARY_NAME, sName + DocumentUtil.WILDCARD)),Occur.SHOULD);
+            snQuery.add (new WildcardQuery (new Term (DocumentUtil.FIELD_BINARY_NAME, sName + DocumentUtil.WILDCARD_QUERY_WILDCARD)),Occur.SHOULD);
             snQuery.add (new PrefixQuery (new Term (DocumentUtil.FIELD_BINARY_NAME, sName + '$')),Occur.SHOULD);   //NOI18N
             if (pkgName.length() == 0) {
                 return snQuery;

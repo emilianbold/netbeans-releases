@@ -12,5 +12,9 @@ public class D implements I {
 
     public void run() {
     }
-    
+
+    @Override
+    public String toString() {
+        return "D{" + '}';
+    }
 }

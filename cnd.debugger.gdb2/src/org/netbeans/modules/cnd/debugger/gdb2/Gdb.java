@@ -55,6 +55,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.text.MessageFormat;
 import java.util.LinkedList;
+import java.util.logging.Level;
 
 import org.openide.ErrorManager;
 import org.openide.awt.StatusDisplayer;
@@ -1175,8 +1176,22 @@ public class Gdb {
 	    }
 	}
     }
+    
+    void sendCommand(MICommand cmd, boolean setRunning) {
+        if (debugger.state().isRunning) {
+            GdbDebuggerImpl.LOG.log(Level.WARNING, "Sending {0} to gdb while program is running", cmd);
+            // see IZ 200046, do not send commands while running
+//            if (debugger.getHost().getPlatform() == Platform.MacOSX_x86) {
+//                return;
+//            }
+        }
+        if (setRunning) {
+            debugger.state().isRunning = true;
+        }
+        myMIProxy.send(cmd);
+    }
 
     void sendCommand(MICommand cmd) {
-        myMIProxy.send(cmd);
+        sendCommand(cmd, false);
     }
 }

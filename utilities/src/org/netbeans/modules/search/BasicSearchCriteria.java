@@ -802,6 +802,9 @@ final class BasicSearchCriteria {
             freeDataObject();
             return true;
         }
+        catch (BufferedCharSequence.TerminatedException e) {
+            LOG.log(Level.INFO, "Search in {0} was terminated.", fo); // NOI18N
+        }
         catch(DataObjectNotFoundException e){
             LOG.log(Level.SEVERE,
                     "Unable to get data object for the {0}", fo); // NOI18N
@@ -1116,7 +1119,7 @@ final class BasicSearchCriteria {
     /** Stop all searches that are processed by this instance. */
     synchronized void terminateCurrentSearches() throws IOException {
         for (BufferedCharSequence bcs: currentlyProcessedSequences) {
-            bcs.close();
+            bcs.terminate();
         }
         currentlyProcessedSequences.clear();
         terminated = true;

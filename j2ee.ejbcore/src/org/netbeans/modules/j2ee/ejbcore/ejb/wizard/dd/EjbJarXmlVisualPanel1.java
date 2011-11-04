@@ -75,13 +75,14 @@ public final class EjbJarXmlVisualPanel1 extends JPanel {
 
     void setProject(Project project) {
         this.project = project;
-        EjbJar[] apiEjbJars = EjbJar.getEjbJars(project);
-        // initialize visual components
         fileNameText.setText("ejb-jar.xml"); // NOI18N
         projectText.setText(ProjectUtils.getInformation(project).getDisplayName());
-        for (int i = 0; i < apiEjbJars.length; i++) {
-            if (apiEjbJars[i].getDeploymentDescriptor() == null) {
-                locationCombo.addItem(apiEjbJars[i].getMetaInf());
+        
+        for (EjbJar ejbJar : EjbJar.getEjbJars(project)) {
+            if (ejbJar.getDeploymentDescriptor() != null) { // ejb-jar.xml already exists
+                locationCombo.addItem(ejbJar.getDeploymentDescriptor());
+            } else if (ejbJar.getMetaInf() != null) { // WEB-INF/META-INF folder exists but there is no ejb-jar.xml
+                locationCombo.addItem(ejbJar.getMetaInf());
             }
         }
         refreshLocation();

@@ -62,6 +62,7 @@ import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.api.elements.ElementFilter;
 import org.netbeans.modules.php.editor.model.impl.ModelVisitor;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
@@ -166,7 +167,12 @@ public final class FindUsageSupport {
                 } else if (kind.equals(PhpElementKind.METHOD) && MethodElement.CONSTRUCTOR_NAME.equalsIgnoreCase(name)) {
                     name = element.getInScope().getName();
                 }
-                this.files.addAll(index.getLocationsForIdentifiers(name));
+                for(FileObject fo : index.getLocationsForIdentifiers(name)) {
+                    if (PhpSourcePath.getFileType(fo) == PhpSourcePath.FileType.SOURCE
+                            || PhpSourcePath.getFileType(fo) == PhpSourcePath.FileType.TEST) {
+                        this.files.add(fo);
+                    }
+                }
             }
         }
         return files;

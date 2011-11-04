@@ -50,8 +50,35 @@ $functionsDoc = parse_phpdoc_functions ($phpdocDir, $extensions);
 $fieldsDoc = parse_phpdoc_fields ($phpdocDir, $extensions);
 $classesDoc = parse_phpdoc_classes ($phpdocDir, $extensions);
 $constantsDoc = parse_phpdoc_constants ($phpdocDir);
+$functionBlackList = array(
+    'oci_lob_save' => 1,
+    'oci_lob_import' => 1,
+    'oci_lob_size' => 1,
+    'oci_lob_load' => 1,
+    'oci_lob_read' => 1,
+    'oci_lob_eof' => 1,
+    'oci_lob_tell' => 1,
+    'oci_lob_truncate' => 1,
+    'oci_lob_erase' => 1,
+    'oci_lob_flush' => 1,
+    'ocisetbufferinglob' => 1,
+    'ocigetbufferinglob' => 1,
+    'oci_lob_rewind' => 1,
+    'oci_lob_write' => 1,
+    'oci_lob_append' => 1,
+    'oci_lob_export' => 1,
+    'oci_lob_seek' => 1,
+    'oci_free_collection' => 1,
+    'oci_collection_append' => 1,
+    'oci_collection_element_get' => 1,
+    'oci_collection_element_assign' => 1,
+    'oci_collection_size' => 1,
+    'oci_collection_max' => 1,
+    'oci_collection_trim' => 1,
+    'oci_collection_assign' => 1,
+);
 
-$processedFunctions = array();
+$processedFunctions = $functionBlackList;
 $processedClasses = array();
 $processedConstants = array();
 
@@ -167,6 +194,12 @@ function clean_php_identifier ($name) {
 	return $name;
 }
 
+function clean_php_value($type) {
+    $type = trim($type);
+    $type = strip_tags($type);
+    return $type;
+}
+
 /**
  * Makes generic key from given function reference
  * @param name ReflectionMethod function reference
@@ -222,7 +255,8 @@ function parse_phpdoc_functions ($phpdocDir, $extensions) {
 			$refname = make_funckey_from_str ($match[2]);
             $functionsDoc[$refname] = array();
             $functionsDoc[$refname]['id'] = $match[1];
-            $functionsDoc[$refname]['quickref'] = trim($match[3]);
+            $functionsDoc[$refname]['quickref'] = xml_to_phpdoc($match[3]);
+            $functionsDoc[$refname]['deprecated'] = strpos($xml_file, "/oldaliases/") !== false;
 
 			if (preg_match ('@<refsect1\s+role=["\']description["\']>(.*?)</refsect1>@s', $xml, $match)) {
 				$description = $match[1];
@@ -251,7 +285,7 @@ function parse_phpdoc_functions ($phpdocDir, $extensions) {
 					if ($has_object_style) {
 						$function_alias = trim($match[2]);
 					} else {
-						$functionsDoc[$refname]['returntype'] = trim($match[1]);
+						$functionsDoc[$refname]['returntype'] = trim(str_replace('-', '_', $match[1])); // e.g. OCI-Collection -> OCI_Collection
 						$functionsDoc[$refname]['methodname'] = trim($match[2]);
                                                 $parameters = $match[3];
 					}
@@ -270,7 +304,7 @@ function parse_phpdoc_functions ($phpdocDir, $extensions) {
 								$parameter['isreference'] = true;
 							}
 							if (@strlen(trim($match[5][$i]))) {
-								$parameter['defaultvalue'] = trim($match[5][$i]);
+								$parameter['defaultvalue'] = clean_php_value($match[5][$i]);
                                                                 $parameter['isoptional'] = true;
 							}
 							$functionsDoc[$refname]['parameters'][] = $parameter;
@@ -293,8 +327,8 @@ function parse_phpdoc_functions ($phpdocDir, $extensions) {
 			}
 			if (preg_match ('@<refsect1\s+role=["\']returnvalues["\']>(.*?)</refsect1>@s', $xml, $match)) {
 				$returnvalues = $match[1];
-				if (preg_match ('@<para>\s*(Returns)?(.*)</para>?@s', $returnvalues, $match)) {
-					$functionsDoc[$refname]['returndoc'] = xml_to_phpdoc ($match[2]);
+				if (preg_match ('@<para>\s*(.*)</para>?@s', $returnvalues, $match)) {
+					$functionsDoc[$refname]['returndoc'] = preg_replace("@^Returns @", "", xml_to_phpdoc ($match[1]));
 				}
 			}
 
@@ -448,6 +482,8 @@ function parse_phpdoc_constants ($phpdocDir) {
  * @param extRef ReflectionExtension object
  */
 function print_extension ($extRef) {
+    global $functionBlackList;
+
 	print "\n// Start of {$extRef->getName()} v.{$extRef->getVersion()}\n";
 
 	// process classes:
@@ -461,7 +497,10 @@ function print_extension ($extRef) {
 	// process functions
 	$funcsRef = $extRef->getFunctions();
 	if (count ($funcsRef) > 0) {
-		foreach ($funcsRef as $funcRef) {
+		foreach ($funcsRef as $funcName => $funcRef) {
+                    if (array_key_exists($funcName, $functionBlackList)) {
+                        continue;
+                    }
 			print_function ($funcRef);
 		}
 		print "\n";
@@ -820,11 +859,15 @@ function print_doccomment ($ref, $tabs = 0) {
 	}
 	else if ($ref instanceof ReflectionFunctionAbstract) {
 		$funckey = make_funckey_from_ref ($ref);
-		$returntype = @$functionsDoc[$funckey]['returntype'];
                 $id = @$functionsDoc[$funckey]['id'];
                 $ver_info = findVerInfo($id);
                 $desc = @$functionsDoc[$funckey]['quickref'];
-		$returndoc = newline_to_phpdoc (@$functionsDoc[$funckey]['returndoc'], $tabs);
+		$returntype = "";
+                $returndoc = "";
+                if (strpos($funckey, "::__construct") === false) {
+                    $returntype = @$functionsDoc[$funckey]['returntype'];
+                    $returndoc = newline_to_phpdoc (@$functionsDoc[$funckey]['returndoc'], $tabs);
+                }
 
 		$paramsRef = $ref->getParameters();
 		$parameters = @$functionsDoc[$funckey]['parameters'];
@@ -845,43 +888,48 @@ function print_doccomment ($ref, $tabs = 0) {
 				$url = make_url ($functionsDoc[$funckey]['id']);
 				print " * @link {$url}\n";
 			}
-                        if($parameters) {
-                            foreach ($parameters as $parameter) {
-                                print_tabs($tabs);
-                                print " * @param {$parameter['type']} \${$parameter['name']}";
-                                if (@$parameter['isoptional']) {
-                                    print " [optional]";
-                                }
-                                $paramdoc = @$parameter['paramdoc'];
-                                if ($paramdoc && $paramdoc != "<p>\n</p>") {
-                                    $paramdoc = newline_to_phpdoc(@$parameter['paramdoc'], $tabs);
-                                    print " {$paramdoc}";
-                                }
-                                print "\n";
-                            }
-                        } else {
-                            $i = 0;
-                            foreach ($paramsRef as $paramRef) {
-                                print_tabs($tabs);
-                                $name = $paramRef->getName() ? $paramRef->getName() : "var".++$i;
-                                print " * @param";
-                                if($className = get_parameter_classname($paramRef)) {
-                                    print " {$className}";
-                                    if($paramRef->isArray()) {
-                                        print "[]";
+                        if (!@$functionsDoc[$funckey]['deprecated']) {
+                            if($parameters) {
+                                foreach ($parameters as $parameter) {
+                                    print_tabs($tabs);
+                                    print " * @param {$parameter['type']} \${$parameter['name']}";
+                                    if (@$parameter['isoptional']) {
+                                        print " [optional]";
                                     }
+                                    $paramdoc = @$parameter['paramdoc'];
+                                    if ($paramdoc && $paramdoc != "<p>\n</p>") {
+                                        $paramdoc = newline_to_phpdoc(@$parameter['paramdoc'], $tabs);
+                                        print " {$paramdoc}";
+                                    }
+                                    print "\n";
                                 }
-                                print " \${$name}";
-                                if($paramRef->isOptional()) {
-                                    print " [optional]";
+                            } else {
+                                $i = 0;
+                                foreach ($paramsRef as $paramRef) {
+                                    print_tabs($tabs);
+                                    $name = $paramRef->getName() ? $paramRef->getName() : "var".++$i;
+                                    print " * @param";
+                                    if($className = get_parameter_classname($paramRef)) {
+                                        print " {$className}";
+                                        if($paramRef->isArray()) {
+                                            print "[]";
+                                        }
+                                    }
+                                    print " \${$name}";
+                                    if($paramRef->isOptional()) {
+                                        print " [optional]";
+                                    }
+                                    print "\n";
                                 }
-                                print "\n";
+                            }
+                            if ($returntype || $returndoc) {
+                                if (!$returntype) {
+                                    $returntype = 'mixed';
+                                }
+                                    print_tabs ($tabs);
+                                    print " * @return " . trim("{$returntype} {$returndoc}") . "\n";
                             }
                         }
-			if ($returntype) {
-				print_tabs ($tabs);
-				print " * @return " . trim("{$returntype} {$returndoc}") . "\n";
-			}
 			print_tabs ($tabs);
 			print " */\n";
 		}
@@ -907,17 +955,30 @@ function print_doccomment ($ref, $tabs = 0) {
  */
 function xml_to_phpdoc ($str) {
 	$str = str_replace ("&return.success;", "Returns true on success or false on failure.", $str);
+	$str = str_replace ("&return.falseforfailure;", " or &false; on failure", $str);
 	$str = str_replace ("&return.void;", "", $str);
 	$str = str_replace ("&true;", "true", $str);
 	$str = str_replace ("&null;", "null", $str);
 	$str = str_replace ("&false;", "false", $str);
+	$str = str_replace ("&example.outputs;", "The above example will output:", $str);
 	$str = str_replace ("&resource;", "resource", $str);
 	$str = str_replace ("&style.oop;", "Oriented object style", $str);
 	$str = str_replace ("&style.procedural;", "Procedural style", $str);
-    $str = strip_tags_special ($str);
+	$str = str_replace ("&example.outputs.similar;", "The above example will output something similar to:", $str);
+	$str = str_replace ("&gmp.parameter;", "It can be either a GMP number resource, or a numeric string given that it is possible to convert the latter to a number.", $str);
+	$str = str_replace ("&oci.parameter.connection;", "An Oracle connection identifier, returned by <function>oci_connect</function>, <function>oci_pconnect</function>, or <function>oci_new_connect</function>.", $str);
+	$str = str_replace ("&oci.arg.statement.id;", "A valid OCI8 statement identifier created by <function>oci_parse</function> and executed by <function>oci_execute</function>, or a <literal>REF CURSOR</literal> statement identifier.", $str);
+	$str = str_replace ("&oci.db;", '<p>Contains the <literal>Oracle instance</literal> to connect to. It can be an Easy Connect string, or a Connect Name from the <filename>tnsnames.ora</filename> file, or the name of a local Oracle instance.</p><p>If not specified, PHP uses environment variables such as <constant>TWO_TASK</constant> (on Linux) or <constant>LOCAL</constant> (on Windows) and <constant>ORACLE_SID</constant> to determine the <literal>Oracle instance</literal> to connect to. </p><p>To use the Easy Connect naming method, PHP must be linked with Oracle 10g or greater Client libraries. The Easy Connect string for Oracle 10g is of the form: <emphasis>[//]host_name[:port][/service_name]</emphasis>. With Oracle 11g, the syntax is: <emphasis>[//]host_name[:port][/service_name][:server_type][/instance_name]</emphasis>. Service names can be found by running the Oracle utility <literal>lsnrctl status</literal> on the database server machine.</p><p>The <filename>tnsnames.ora</filename> file can be in the Oracle Net search path, which includes <filename>$ORACLE_HOME/network/admin</filename> and <filename>/etc</filename>.  Alternatively set <literal>TNS_ADMIN</literal> so that <filename>$TNS_ADMIN/tnsnames.ora</filename> is read.  Make sure the web daemon has read access to the file.</p>', $str);
+	$str = str_replace ("&oci.charset;", "Determines the character set used by the Oracle Client libraries.  The character set does not need to match the character set used by the database.  If it doesn't match, Oracle will do its best to convert data to and from the database character set.  Depending on the character sets this may not give usable results.  Conversion also adds some time overhead.", $str);
+        $str = str_replace ("&oci.sessionmode;", 'This parameter is available since version PHP 5 (PECL OCI8 1.1) and accepts the following values: <constant>OCI_DEFAULT</constant>, <constant>OCI_SYSOPER</constant> and <constant>OCI_SYSDBA</constant>. If either <constant>OCI_SYSOPER</constant> or <constant>OCI_SYSDBA</constant> were specified, this function will try to establish privileged connection using external credentials. Privileged connections are disabled by default. To enable them you need to set <link linkend="ini.oci8.privileged-connect">oci8.privileged_connect</link> to <literal>On</literal>.', $str);
+	$str = str_replace ("&note.ctype.parameter.integer;", "<p>If an integer between -128 and 255 inclusive is provided, it is interpreted as the ASCII value of a single character (negative values have 256 added in order to allow characters in the Extended ASCII range). Any other integer is interpreted as a string containing the decimal digits of the integer.</p>", $str);
+	$str = str_replace ("&Alias;", "Alias of", $str);
+	$str = str_replace ("&Description;", "Description", $str);
+        $str = strip_tags_special ($str);
 	$str = preg_replace ("/  */", " ", $str);
+	$str = str_replace ("*/", "* /", $str);
 	$str = preg_replace ("/[\r\n][\t ]/", "\n", $str);
-	$str = trim ($str);
+        $str = trim($str);
 	return $str;
 }
 
@@ -986,17 +1047,80 @@ function finish_file_output($filename) {
  * @return string
  */
 function strip_tags_special ($str) {
+    // methodsynopsis
+//    $str = method_to_phpdoc($str);
     // first mask and translate the tags to preseve
     $str = preg_replace ("/<(\/?)table>/", "###($1table)###", $str);
     $str = str_replace ("<row>", "###(tr valign=\"top\")###", $str);
     $str = str_replace ("</row>", "###(/tr)###", $str);
     $str = preg_replace ("/<(\/?)entry>/", "###($1td)###", $str);
     $str = preg_replace ("/<(\/?)para>/", "###($1p)###", $str);
+    $str = preg_replace ("/<(\/?)p>/", "###($1p)###", $str);
+    // remove cdata
+    $str = str_replace ("<![CDATA[", "###(pre)###", $str);
+    $str = str_replace ("]]>", "###(/pre)###", $str);
+    // preserve php samples; XXX sample for preg_match_all
+    $str = str_replace ("<?php", "###(code)###", $str);
+    $str = str_replace ("?>", "###(/code)###", $str);
+    // handle "<pre><code>"
+    $str = preg_replace ("/###\(pre\)###\s*\n\s*###\(code\)###/", "###(code)###", $str);
+    $str = preg_replace ("/###\(\/code\)###\s*\n\s*###\(\/pre\)###/", "###(/code)###", $str);
+    // constant & function etc.
+    $str = preg_replace ("%<(/)?(constant|function|classname|methodname|methodparam)[^>]*>%", "###(\\1b)###", $str);
+    $str = preg_replace ("%<(/)?(parameter)[^>]*>%", "###(\\1i)###", $str);
     // now strip the remaining tags
     $str = strip_tags ($str);
     // and restore the translated ones
     $str = str_replace ("###(", "<", $str);
     $str = str_replace (")###", ">", $str);
+    return $str;
+}
+
+// XXX, see set_error_handler
+function method_to_phpdoc($str) {
+    $tmp = array();
+    $methodsynopsis = preg_match_all ('@<methodsynopsis>.*?<type>(.*?)</type>.*?<methodname>(.*?)</methodname>(.*?)</methodsynopsis>@s', $str, $tmp);
+    if (!$methodsynopsis) {
+        return $str;
+    }
+    $functionsDoc = array();
+    $parameters = null;
+    for ($i = 0; $i < count($tmp); ++$i) {
+        $refname = trim($tmp[2][$i]);
+        $functionsDoc[$refname]['methodname'] = $refname;
+        $parameters = $tmp[3][$i];
+        if ($parameters) {
+                if (preg_match_all ('@<methodparam\s*(.*?)>.*?<type>(.*?)</type>.*?<parameter\s*(.*?)>(.*?)</parameter>(?:<initializer>(.+?)</initializer>)?.*?</methodparam>@s', $parameters, $match)) {
+                        for ($i = 0; $i < count($match[0]); ++$i) {
+                                $parameter = array (
+                                        'type' => trim(str_replace('-', '_', $match[2][$i])), // e.g. OCI-Collection -> OCI_Collection
+                                        'name' => clean_php_identifier(trim($match[4][$i])),
+                                );
+                                if (preg_match ('@choice=[\'"]opt[\'"]@', $match[1][$i])) {
+                                        $parameter['isoptional'] = true;
+                                }
+                                if (preg_match ('@role=[\'"]reference[\'"]@', $match[3][$i])) {
+                                        $parameter['isreference'] = true;
+                                }
+                                if (@strlen(trim($match[5][$i]))) {
+                                        $parameter['defaultvalue'] = clean_php_value($match[5][$i]);
+                                        $parameter['isoptional'] = true;
+                                }
+                                $functionsDoc[$refname]['parameters'][] = $parameter;
+                        }
+                }
+                if (preg_match_all('@<varlistentry\s*.*?>.*?<parameter>(.*?)</parameter>.*?<listitem\s*.*?>(.*?)</listitem>.*?</varlistentry>@s', $parameters, $match)) {
+                    for ($i = 0; $i < count($match[0]); $i++) {
+                        for ($j = 0; $j < count(@$functionsDoc[$refname]['parameters']); $j++) {
+                            if (clean_php_identifier(trim($match[1][$i])) == $functionsDoc[$refname]['parameters'][$j]['name']) {
+                                $functionsDoc[$refname]['parameters'][$j]['paramdoc'] = xml_to_phpdoc ($match[2][$i]);
+                                break;
+                            }
+                        }
+                    }
+                }
+        }
+    }
     return $str;
 }
 

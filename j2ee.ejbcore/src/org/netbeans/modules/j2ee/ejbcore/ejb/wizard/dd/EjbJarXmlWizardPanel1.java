@@ -96,11 +96,17 @@ public class EjbJarXmlWizardPanel1 implements WizardDescriptor.Panel {
     }
     
     public Component getComponent() {
-        if (component.getSelectedLocation() == null) {
-            infoPanel.setText(NbBundle.getMessage(EjbJarXmlWizardPanel1.class,"ERR_FileExistsOrNoValidLocation"));
-            return infoPanel;
+        FileObject selectedDDLocation = component.getSelectedLocation();
+        if (selectedDDLocation != null) {
+            if (selectedDDLocation.isFolder()) {
+                return component;
+            } else {
+                infoPanel.setText(NbBundle.getMessage(EjbJarXmlWizardPanel1.class,"ERR_FileExists"));
+                return infoPanel;
+            }
         } else {
-            return component;
+            infoPanel.setText(NbBundle.getMessage(EjbJarXmlWizardPanel1.class,"ERR_NoValidLocation"));
+            return infoPanel;
         }
     }
     

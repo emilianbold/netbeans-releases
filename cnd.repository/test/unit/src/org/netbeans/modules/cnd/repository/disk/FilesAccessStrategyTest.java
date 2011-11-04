@@ -77,7 +77,7 @@ public class FilesAccessStrategyTest extends ModelImplBaseTestCase {
 
     public void testSignleThread() throws Exception {
 
-        String dataPath = getDataDir().getAbsolutePath().replaceAll("repository", "modelimpl"); //NOI18N
+        String dataPath = getDataDir().getAbsolutePath().replaceAll("/repository/", "/modelimpl/").replaceAll("\\\\repository\\\\", "\\modelimpl\\"); //NOI18N
 
         String unit = "FilesAccessStrategyTestUnit";
 
@@ -119,7 +119,7 @@ public class FilesAccessStrategyTest extends ModelImplBaseTestCase {
 
     public void testMultyThread() throws Exception {
 
-        String dataPath = getDataDir().getAbsolutePath().replaceAll("repository", "modelimpl"); //NOI18N
+        String dataPath = getDataDir().getAbsolutePath().replaceAll("/repository/", "/modelimpl/").replaceAll("\\\\repository\\\\", "\\modelimpl\\"); //NOI18N
         dataPath = dataPath+"/org"; //NOI18N
 
         String[] units = new String[]{

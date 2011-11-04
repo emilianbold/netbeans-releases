@@ -44,6 +44,9 @@
 package org.netbeans.modules.refactoring.java.ui;
 
 import com.sun.source.tree.ExpressionTree;
+import java.net.MalformedURLException;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.Preferences;
 import org.netbeans.modules.refactoring.java.api.ui.JavaScopeBuilder;
 import org.netbeans.modules.refactoring.api.Scope;
 import com.sun.source.util.TreePath;
@@ -53,11 +56,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.beans.BeanInfo;
 import java.io.IOException;
+import java.net.URL;
 import java.text.MessageFormat;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -73,7 +74,6 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.openide.awt.Mnemonics;
-import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.refactoring.java.RefactoringModule;
@@ -96,9 +96,11 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.ui.ElementHeaders;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
-import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.*;
 import org.openide.loaders.DataObject;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
+import org.openide.util.NbPreferences;
 
 
 /**
@@ -106,7 +108,8 @@ import org.openide.util.ImageUtilities;
  * @author  Ralph Ruijs
  */
 public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
-
+    
+    private static final String PREF_SCOPE = "FindUsages-Scope";
     private static final String PACKAGE = "org/netbeans/spi/java/project/support/ui/package.gif"; // NOI18N
     private final transient TreePathHandle element;
     private  TreePathHandle newElement;
@@ -299,7 +302,15 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
                         if(enableScope && currentProject!=null) {
                             scope.setModel(new DefaultComboBoxModel(new Object[]{allProjects, currentProject, currentPackage, currentFile, customScope }));
                             int defaultItem = (Integer) RefactoringModule.getOption("whereUsed.scope", 0); // NOI18N
-                            scope.setSelectedIndex(defaultItem);
+                            WhereUsedPanel.this.customScope = readScope();
+                            if(defaultItem == 4 &&
+                                    WhereUsedPanel.this.customScope.getFiles().isEmpty() &&
+                                    WhereUsedPanel.this.customScope.getFolders().isEmpty() &&
+                                    WhereUsedPanel.this.customScope.getSourceRoots().isEmpty()) {
+                                scope.setSelectedIndex(0);
+                            } else {
+                                scope.setSelectedIndex(defaultItem);
+                            }
                             scope.setRenderer(new JLabelRenderer());
                         } else {
                             scopePanel.setVisible(false);
@@ -369,10 +380,82 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
             if (customScope != null) {
                 WhereUsedPanel.this.customScope = customScope;
                 scope.setSelectedIndex(4);
+                storeScope(customScope);
             }
         }
     }
     
+    private void storeScope(Scope customScope) {
+        try {
+            storeFileList(customScope.getSourceRoots(), "sourceRoot" ); //NOI18N
+            storeFileList(customScope.getFolders(), "folder" ); //NOI18N
+            storeFileList(customScope.getFiles(), "file" ); //NOI18N
+        } catch (BackingStoreException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+    
+    private Scope readScope() {
+        try {
+            if (NbPreferences.forModule(JavaScopeBuilder.class).nodeExists(PREF_SCOPE)) { //NOI18N
+                return Scope.create(
+                        loadFileList("sourceRoot", FileObject.class), //NOI18N
+                        loadFileList("folder", NonRecursiveFolder.class), //NOI18N
+                        loadFileList("file", FileObject.class)); //NOI18N
+            }
+        } catch (BackingStoreException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return null;
+    }
+    
+    private <T> List<T> loadFileList(String basekey, Class<T> type) throws BackingStoreException {
+        Preferences pref = NbPreferences.forModule(JavaScopeBuilder.class).node(PREF_SCOPE).node(basekey);
+        List<T> toRet = new LinkedList<T>();
+        for (String key : pref.keys()) {
+            final String url = pref.get(key, null);
+            if (url != null && !url.isEmpty()) {
+                try {
+                    final FileObject f = URLMapper.findFileObject(new URL(url));
+                    if (f != null && f.isValid()) {
+                        if (type.isAssignableFrom(FileObject.class)) {
+                            toRet.add((T) f);
+                        } else {
+                            toRet.add((T) new NonRecursiveFolder() {
+
+                                public FileObject getFolder() {
+                                    return f;
+                                }
+                            });
+                        }
+                    }
+                } catch (MalformedURLException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+        return toRet;
+    }
+    
+    private void storeFileList(Set files, String basekey) throws BackingStoreException {
+        Preferences pref = NbPreferences.forModule(WhereUsedPanel.class).node(PREF_SCOPE).node(basekey);
+        assert files != null;
+        pref.clear();
+        int count = 0;
+        for (Object next : files) {
+            try {
+                if (next instanceof FileObject) {
+                    pref.put(basekey + count++, ((FileObject) next).getURL().toExternalForm());
+                } else {
+                    pref.put(basekey + count++, ((NonRecursiveFolder) next).getFolder().getURL().toExternalForm());
+                }
+            } catch (FileStateInvalidException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        pref.flush();
+    }
+        
     private String getSimpleName(Element clazz) {
         return clazz.getSimpleName().toString();
         //return NbBundle.getMessage(WhereUsedPanel.class, "LBL_AnonymousClass"); // NOI18N

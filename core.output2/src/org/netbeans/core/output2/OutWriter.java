@@ -70,6 +70,8 @@ class OutWriter extends PrintWriter {
     
     private boolean disposed = false;
 
+    private boolean disposeOnClose = false;
+
     //IZ 44375 - Memory mapping fails with bad file handle on win 98
     private static final boolean USE_HEAP_STORAGE =
         Boolean.getBoolean("nb.output.heap") || Utilities.getOperatingSystem() == //NOI18N
@@ -309,9 +311,27 @@ class OutWriter extends PrintWriter {
                 storage.close();
             }
             lines.fire();
+            if (isDisposeOnClose() && !isDisposed()) {
+                dispose();
+            }
         } catch (IOException ioe) {
             onWriteException();
         }
+    }
+
+    /**
+     * Is this writer set to dispose automatically when it is closed?
+     */
+    boolean isDisposeOnClose() {
+        return disposeOnClose;
+    }
+
+    /**
+     * Set the writer to dispose or not to dispose itself automatically when it
+     * is closed.
+     */
+    void setDisposeOnClose(boolean disposeOnClose) {
+        this.disposeOnClose = disposeOnClose;
     }
 
     @Override

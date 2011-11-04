@@ -250,7 +250,8 @@ public final class CodeTemplateInsertHandler implements TextRegionManagerListene
         // Insert the template into document
         insertTemplate();
 
-        checkInvokeCompletion();
+        if (!isEditable())
+            checkInvokeCompletion();
     }
 
     void checkInsertTextBuilt() {
@@ -483,7 +484,8 @@ public final class CodeTemplateInsertHandler implements TextRegionManagerListene
                 CodeTemplateInsertHandler handler = removedGroups.get(i).clientInfo();
                 if (handler == this) {
                     release();
-                    checkInvokeCompletion();
+                    if (isEditable())
+                        checkInvokeCompletion();
                     break;
                 }
             }
@@ -554,6 +556,14 @@ public final class CodeTemplateInsertHandler implements TextRegionManagerListene
                 }
             });
         }
+    }
+    
+    private boolean isEditable() {
+        for (CodeTemplateParameter param : masterParameters) {
+            if (param.isEditable())
+                return true;
+        }
+        return false;
     }
 
     @Override

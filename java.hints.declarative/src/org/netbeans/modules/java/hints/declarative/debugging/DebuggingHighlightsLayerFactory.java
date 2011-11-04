@@ -40,6 +40,8 @@
 package org.netbeans.modules.java.hints.declarative.debugging;
 
 import javax.swing.text.Document;
+import org.netbeans.api.editor.mimelookup.MimeRegistration;
+import org.netbeans.modules.java.hints.declarative.DeclarativeHintTokenId;
 import org.netbeans.spi.editor.highlighting.HighlightsLayer;
 import org.netbeans.spi.editor.highlighting.HighlightsLayerFactory;
 import org.netbeans.spi.editor.highlighting.ZOrder;
@@ -49,6 +51,7 @@ import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
  *
  * @author Jan Lahoda
  */
+@MimeRegistration(mimeType=DeclarativeHintTokenId.MIME_TYPE, service=HighlightsLayerFactory.class)
 public class DebuggingHighlightsLayerFactory implements HighlightsLayerFactory {
 
     public HighlightsLayer[] createLayers(Context context) {

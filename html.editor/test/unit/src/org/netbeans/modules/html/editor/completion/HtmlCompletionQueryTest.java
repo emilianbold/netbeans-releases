@@ -55,12 +55,14 @@ import junit.framework.TestSuite;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.editor.ext.html.parser.api.HtmlSource;
 import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
-import org.netbeans.editor.ext.html.parser.spi.HtmlTagAttribute;
 import org.netbeans.editor.ext.html.parser.spi.UndeclaredContentResolver;
 import org.netbeans.junit.MockServices;
+import org.netbeans.modules.html.editor.HtmlPreferences;
 import org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem;
 import org.netbeans.modules.html.editor.api.gsf.HtmlExtension;
 import org.netbeans.modules.html.editor.api.gsf.HtmlExtension.CompletionContext;
+import org.netbeans.modules.html.editor.api.gsf.HtmlExtensionTestSupport;
+import org.netbeans.modules.html.editor.completion.HtmlCompletionTestSupport.Match;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.spi.editor.completion.CompletionItem;
 
@@ -388,7 +390,7 @@ public class HtmlCompletionQueryTest extends HtmlCompletionTestBase {
 
     public void testEndTagsCompletionOfUndeclaredTagsMixedWithHtml() throws BadLocationException, ParseException {
         //including html content
-        assertItems("<div><x:out></|", arr("x:out"), Match.CONTAINS);
+//        assertItems("<div><x:out></|", arr("x:out"), Match.CONTAINS);
         assertItems("<div><x:out></x| </div>", arr("x:out"), Match.CONTAINS);
         assertItems("<div><x:out></x:|", arr("x:out"), Match.CONTAINS);
         assertItems("<p><x:out></x:ou| </p>", arr("x:out"), Match.CONTAINS);
@@ -435,7 +437,7 @@ public class HtmlCompletionQueryTest extends HtmlCompletionTestBase {
         
         assertItems("<my:tag att|", arr("fake"), Match.CONTAINS);
         
-        
+        HtmlExtensionTestSupport.EXTENSIONS.clear();
     }
     
     public void testHtmlExtensionCompletionOfTagAttributeValue() throws BadLocationException, ParseException {
@@ -466,7 +468,7 @@ public class HtmlCompletionQueryTest extends HtmlCompletionTestBase {
         assertItems("<my:tag attr=\"|\"", arr("fake"), Match.CONTAINS);
         assertItems("<my:tag attr=\"fa|\"", arr("fake"), Match.CONTAINS);
         
-        
+        HtmlExtensionTestSupport.EXTENSIONS.clear();
     }
     
     public void testInputTagTypeAttributeCompletion() throws BadLocationException, ParseException {
@@ -474,6 +476,23 @@ public class HtmlCompletionQueryTest extends HtmlCompletionTestBase {
     }
     
     
+    public void testLinkTypeAttributeCompletion() throws BadLocationException, ParseException {
+        assertItems("<link rel=\"|\">", arr("stylesheet", "chapter"), Match.CONTAINS);
+        assertItems("<link rel=\"|\">", arr("foo"), Match.DOES_NOT_CONTAIN);
+    }
+    
+    //Bug 204227 - When HTML Completion Offers End Tags After Less Than Character option is enabled and used the previous character gets deleted
+    public void testIssue204227() throws BadLocationException, ParseException {
+        assertCompletedText("<p>abc</|", "p", "<p>abc</p>|");
+
+        HtmlPreferences.completionOffersEndTagAfterLt(); //load
+        HtmlPreferences.completionOffersEndTagAfterLt = true; //reset the value
+        assertCompletedText("<p>abc<|", "/p", "<p>abc</p>|");
+    }
+    
+    public void testDirAttribute() throws BadLocationException, ParseException {
+        assertItems("<div dir=\"|\">", arr("ltr", "rtl"), Match.EXACT);
+    }
     //helper methods ------------
 
     @Override

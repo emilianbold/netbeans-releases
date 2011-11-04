@@ -53,6 +53,7 @@ import javax.swing.text.Document;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.editor.settings.AttributesUtilities;
 import org.netbeans.modules.java.hints.declarative.test.TestParser.TestCase;
 import org.netbeans.modules.java.hints.declarative.test.TestParser.TestResult;
@@ -171,6 +172,7 @@ public class EditorTestPerformer extends ParserResultTask<TestResult>{
         return bag;
     }
 
+    @MimeRegistration(mimeType=TestTokenId.MIME_TYPE, service=TaskFactory.class)
     public static final class FactoryImpl extends TaskFactory {
 
         @Override

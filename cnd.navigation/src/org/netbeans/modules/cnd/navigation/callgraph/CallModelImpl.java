@@ -184,8 +184,11 @@ public class CallModelImpl implements CallModel {
                 }
             }
         }
-        for(Map.Entry<CsmFunction,CsmReference> r : set.entrySet()){
-            res.add(new CallImpl(r.getKey(), r.getValue(), getFunctionDeclaration(owner), true));
+        final CsmFunction functionDeclaration = getFunctionDeclaration(owner);
+        if (functionDeclaration != null) {
+            for(Map.Entry<CsmFunction,CsmReference> r : set.entrySet()){
+                res.add(new CallImpl(r.getKey(), r.getValue(), functionDeclaration, true));
+            }
         }
         return res;
     }
@@ -243,8 +246,11 @@ public class CallModelImpl implements CallModel {
                 }, CsmReferenceKind.ANY_REFERENCE_IN_ACTIVE_CODE);
             }
         }
-        for(Map.Entry<CsmFunction,CsmReference> r : set.entrySet()){
-            res.add(new CallImpl( getFunctionDeclaration((owner)), r.getValue(),r.getKey(), false));
+        final CsmFunction functionDeclaration = getFunctionDeclaration(owner);
+        if (functionDeclaration != null) {
+            for(Map.Entry<CsmFunction,CsmReference> r : set.entrySet()){
+                res.add(new CallImpl( functionDeclaration, r.getValue(),r.getKey(), false));
+            }
         }
         return res;
     }

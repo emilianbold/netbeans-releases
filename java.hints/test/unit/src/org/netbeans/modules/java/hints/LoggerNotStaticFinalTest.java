@@ -145,6 +145,16 @@ public class LoggerNotStaticFinalTest extends TestBase {
                             "}");
     }
 
+    public void testInnerClass202795() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test;\n" +
+                            "public class Test {\n" +
+                            "    public class I {\n" +
+                            "        private java.util.logging.Logger LOG = null;\n" +
+                            "    }\n" +
+                            "}");
+    }
+
     @Override
     protected String toDebugString(CompilationInfo info, Fix f) {
         return "LoggerNotStaticFinalFix";

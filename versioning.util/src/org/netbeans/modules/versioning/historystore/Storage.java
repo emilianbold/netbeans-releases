@@ -95,7 +95,7 @@ public class Storage {
      * @return file's content in the given revision
      */
     public synchronized File getContent (String repositoryPath, String filename, String revision) {
-        File content = new File(Utils.getTempFolder(), "nb-vcs-" + filename); //NOI18N
+        File content = new File(Utils.getTempFolder(), filename); //NOI18N
         if (storageAccessible) {
             content.deleteOnExit();
             Entry entry = getEntry(repositoryPath, revision, false);

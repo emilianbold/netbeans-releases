@@ -52,6 +52,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -61,6 +62,7 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import org.netbeans.api.templates.TemplateRegistration;
 import org.netbeans.modules.apisupport.project.api.UIUtil;
+import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.apisupport.project.ui.wizard.common.BasicWizardIterator;
 import org.netbeans.modules.apisupport.project.ui.wizard.common.CreatedModifiedFiles;
 import org.openide.WizardDescriptor;
@@ -70,6 +72,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.modules.SpecificationVersion;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle.Messages;
 import org.openide.xml.XMLUtil;
 
@@ -324,6 +327,7 @@ public final class NewLoaderIterator extends BasicWizardIterator {
         fileChanges.add(fileChanges.addModuleDependency("org.openide.util")); //NOI18N
         fileChanges.add(fileChanges.addModuleDependency("org.openide.util.lookup")); //NOI18N
         if (isEditable) {
+            // XXX unused at least for multiview case:
             fileChanges.add(fileChanges.addModuleDependency("org.openide.text")); //NOI18N
         }
         if (isEditable) {
@@ -331,9 +335,7 @@ public final class NewLoaderIterator extends BasicWizardIterator {
         }
         if (model.isUseMultiview()) {
             fileChanges.add(fileChanges.addModuleDependency("org.netbeans.core.multiview")); //NOI18N
-            String bundlePath = model.getDefaultPackagePath("Bundle.properties", true); // NOI18N
-            fileChanges.add(fileChanges.bundleKey(bundlePath, "LBL_" + namePrefix + "_EDITOR", // NOI18N
-                    "Source")); //NOI18N
+            fileChanges.add(fileChanges.addModuleDependency("org.openide.awt")); //NOI18N
         }
 
         if (!loaderlessObject) {
@@ -429,13 +431,31 @@ public final class NewLoaderIterator extends BasicWizardIterator {
                 assert false: ex;
             }
         }
-        Map<String, Object> attrs = new HashMap<String, Object>();
-        attrs.put("template", true); // NOI18N
-        fileChanges.add(fileChanges.createLayerEntry("Templates/Other/" + namePrefix + suffix, //NOI18N
-                template,
-                replaceTokens,
-                "Empty " + namePrefix + " file", // NOI18N
-                attrs)); //NOI18N
+        boolean useTR = false;
+        NbModuleProvider nbmp = model.getModuleInfo();
+        try {
+            SpecificationVersion v = nbmp.getDependencyVersion("org.openide.loaders");
+            if (v != null && v.compareTo(new SpecificationVersion("7.29")) >= 0) {
+                useTR = true;
+            }
+        } catch (IOException x) {
+            Exceptions.printStackTrace(x);
+        }
+        String displayName = "Empty " + namePrefix + " file";
+        String templateName = namePrefix + suffix;
+        if (useTR) {
+            fileChanges.add(fileChanges.createFileWithSubstitutions(model.getDefaultPackagePath(templateName, true), template, replaceTokens));
+            Map<String,Map<String,?>> annos = new LinkedHashMap<String,Map<String,?>>();
+            Map<String,Object> tr = new LinkedHashMap<String,Object>();
+            tr.put("folder", "Other");
+            tr.put("displayName", "#" + namePrefix + "template_displayName");
+            tr.put("content", templateName);
+            annos.put("org.netbeans.api.templates.TemplateRegistration", tr);
+            annos.put("org.openide.util.NbBundle.Messages", Collections.singletonMap("value", namePrefix + "template_displayName=" + displayName));
+            fileChanges.add(fileChanges.packageInfo(packageName, annos));
+        } else {
+            fileChanges.add(fileChanges.createLayerEntry("Templates/Other/" + templateName, template, replaceTokens, displayName, Collections.singletonMap("template", true)));
+        }
         model.setCreatedModifiedFiles(fileChanges);
     }
     

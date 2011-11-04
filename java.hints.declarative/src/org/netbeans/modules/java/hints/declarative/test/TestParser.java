@@ -48,6 +48,7 @@ import java.util.regex.Pattern;
 import javax.lang.model.SourceVersion;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Task;
 import org.netbeans.modules.parsing.spi.ParseException;
@@ -65,13 +66,11 @@ public class TestParser extends Parser {
     
     @Override
     public void parse(Snapshot snapshot, Task task, SourceModificationEvent event) throws ParseException {
-        System.err.println("parse");
         result = new TestResult(snapshot, parse(snapshot.getText().toString()));
     }
 
     @Override
     public Result getResult(Task task) throws ParseException {
-        System.err.println("getResult");
         return result;
     }
 
@@ -103,6 +102,7 @@ public class TestParser extends Parser {
         
     }
 
+    @MimeRegistration(mimeType=TestTokenId.MIME_TYPE, service=ParserFactory.class)
     public static final class FactoryImpl extends ParserFactory {
 
         @Override

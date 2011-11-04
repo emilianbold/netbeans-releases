@@ -56,7 +56,7 @@ made subject to such option by the copyright holder.
     </fontcolor>
     <fontcolor name="php_variable" foreColor="6D3206" default="smarty"/>
     <fontcolor name="config_variable" foreColor="FF0000" default="smarty"/>
-    <fontcolor name="error" default="smarty" waveUnderlined="red"/>
+    <fontcolor name="error" waveUnderlined="red"/>
     <fontcolor name="variable_modifier" foreColor="FF7700" default="smarty"/>
     <fontcolor name="string" foreColor="CE7B00" default="smarty"/>
     <fontcolor name="smarty_operator" foreColor="FF00FF" default="smarty"/>

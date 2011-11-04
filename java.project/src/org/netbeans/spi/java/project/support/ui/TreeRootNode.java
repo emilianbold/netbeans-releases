@@ -249,7 +249,11 @@ final class TreeRootNode extends FilterNode implements PropertyChangeListener {
         }
 
         public boolean acceptFileObject(FileObject fo) {
-            return fo.isValid() && g.contains(fo) && VisibilityQuery.getDefault().isVisible(fo);
+            try {
+                return fo.isValid() && g.contains(fo) && VisibilityQuery.getDefault().isVisible(fo);
+            } catch (IllegalArgumentException iae) {
+                return false;
+            }
         }
         
     }
@@ -263,8 +267,8 @@ final class TreeRootNode extends FilterNode implements PropertyChangeListener {
                 
         @Override
         protected Node copyNode(final Node originalNode) {
-            DataObject dobj = originalNode.getLookup().lookup(DataObject.class);
-            return (dobj instanceof DataFolder) ? new PackageFilterNode (originalNode) : super.copyNode(originalNode);
+            FileObject fobj = originalNode.getLookup().lookup(FileObject.class);
+            return fobj.isFolder() ? new PackageFilterNode (originalNode) : super.copyNode(originalNode);
         }
     }
     

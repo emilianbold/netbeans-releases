@@ -71,6 +71,7 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.editor.AnnotationType;
 import org.netbeans.editor.AnnotationTypes;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.FindSupport;
 import org.netbeans.editor.FindSupport.SearchPatternWrapper;
@@ -78,6 +79,7 @@ import org.netbeans.editor.LocaleSupport;
 import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.modules.editor.lib.EditorPackageAccessor;
 import org.netbeans.modules.editor.lib2.EditorApiPackageAccessor;
+import org.netbeans.modules.editor.lib2.document.ReadWriteUtils;
 import org.netbeans.modules.editor.options.AnnotationTypesFolder;
 import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataLoaderPool;
@@ -658,6 +660,7 @@ public class EditorModule extends ModuleInstall {
                 
             } finally {
                 reformat.unlock();
+                doc.putProperty(BaseDocument.READ_LINE_SEPARATOR_PROP, ReadWriteUtils.getSystemLineSeparator());
                 ec.saveDocument();
             }
             

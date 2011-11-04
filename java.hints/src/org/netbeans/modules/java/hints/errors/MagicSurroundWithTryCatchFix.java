@@ -249,6 +249,8 @@ final class MagicSurroundWithTryCatchFix implements Fix {
                 while (currentBlockCandidate.getLeaf() != tt) {
                     currentBlockCandidate = currentBlockCandidate.getParentPath();
                 }
+
+                currentBlockCandidate = currentBlockCandidate.getParentPath();
                 
                 if (currentBlockCandidate.getLeaf().getKind() == Kind.BLOCK) {
                     BlockTree originalTree = (BlockTree) currentBlockCandidate.getLeaf();
@@ -258,7 +260,7 @@ final class MagicSurroundWithTryCatchFix implements Fix {
                     statements.remove(index);
                     statements.add(index, nueTry);
                     statements.add(index, declaration);
-                    info.rewrite(originalTree, make.Block(statements, false));
+                    info.rewrite(originalTree, make.Block(statements, originalTree.isStatic()));
                 } else {
                     BlockTree nueBlock = make.Block(Arrays.asList(declaration, nueTry), false);
                     
@@ -303,7 +305,7 @@ final class MagicSurroundWithTryCatchFix implements Fix {
             return result;
         }
         
-        private BlockTree createBlock(StatementTree... trees) {
+        private BlockTree createBlock(boolean statik, StatementTree... trees) {
             List<StatementTree> statements = new LinkedList<StatementTree>();
             
             for (StatementTree t : trees) {
@@ -312,7 +314,7 @@ final class MagicSurroundWithTryCatchFix implements Fix {
                 }
             }
             
-            return make.Block(statements, false);
+            return make.Block(statements, statik);
         }
         
         public @Override Void visitBlock(BlockTree bt, Void p) {
@@ -335,7 +337,7 @@ final class MagicSurroundWithTryCatchFix implements Fix {
             }
             
             if (!streamAlike) {
-                info.rewrite(bt, createBlock(toKeep, make.Try(toUse, catches, null)));
+                info.rewrite(bt, createBlock(bt.isStatic(), toKeep, make.Try(toUse, catches, null)));
             } else {
                 VariableTree originalDeclaration = (VariableTree) statement.getLeaf();
                 VariableTree declaration = make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), originalDeclaration.getName(), originalDeclaration.getType(), make.Identifier("null"));
@@ -343,7 +345,7 @@ final class MagicSurroundWithTryCatchFix implements Fix {
                 BlockTree finallyTree = make.Block(Collections.singletonList(createFinallyCloseBlockStatement(originalDeclaration)), false);
                 
                 info.rewrite(originalDeclaration, assignment);
-                info.rewrite(bt, createBlock(toKeep, declaration, make.Try(toUse, catches, finallyTree)));
+                info.rewrite(bt, createBlock(bt.isStatic(), toKeep, declaration, make.Try(toUse, catches, finallyTree)));
             }
             
             return null;

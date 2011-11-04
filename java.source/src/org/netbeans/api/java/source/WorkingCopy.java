@@ -46,6 +46,10 @@ package org.netbeans.api.java.source;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.ExpressionStatementTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
@@ -356,8 +360,24 @@ public class WorkingCopy extends CompilationController {
     }
             
     private static boolean REWRITE_WHOLE_FILE = Boolean.getBoolean(WorkingCopy.class.getName() + ".rewrite-whole-file");
-    
-    private List<Difference> processCurrentCompilationUnit(DiffContext diffContext, Map<?, int[]> tag2Span) throws IOException, BadLocationException {
+
+    private void addNonSyntheticTree(DiffContext diffContext, Tree node) {
+        if (node != null && node.getKind() == Kind.EXPRESSION_STATEMENT) {
+            ExpressionTree est = ((ExpressionStatementTree) node).getExpression();
+
+            if (est.getKind() == Kind.METHOD_INVOCATION) {
+                ExpressionTree select = ((MethodInvocationTree) est).getMethodSelect();
+
+                if (select.getKind() == Kind.IDENTIFIER && ((IdentifierTree) select).getName().contentEquals("super")) {
+                    if (!getTreeUtilities().isSynthetic(diffContext.origUnit, node)) {
+                        diffContext.notSyntheticTrees.add(node);
+                    }
+                }
+            }
+        }
+    }
+
+    private List<Difference> processCurrentCompilationUnit(final DiffContext diffContext, Map<?, int[]> tag2Span) throws IOException, BadLocationException {
         final Set<TreePath> pathsToRewrite = new LinkedHashSet<TreePath>();
         final Map<TreePath, Map<Tree, Tree>> parent2Rewrites = new IdentityHashMap<TreePath, Map<Tree, Tree>>();
         boolean fillImports = true;
@@ -370,11 +390,20 @@ public class WorkingCopy extends CompilationController {
                 @Override
                 public Void scan(Tree node, Void p) {
                     oldTrees.add(node);
+                    addNonSyntheticTree(diffContext, node);
+                    return super.scan(node, p);
+                }
+            }.scan(diffContext.origUnit, null);
+        } else {
+            new TreeScanner<Void, Void>() {
+                @Override
+                public Void scan(Tree node, Void p) {
+                    addNonSyntheticTree(diffContext, node);
                     return super.scan(node, p);
                 }
             }.scan(diffContext.origUnit, null);
         }
-        
+
         if (!REWRITE_WHOLE_FILE) {
             new TreePathScanner<Void, Void>() {
                 private TreePath currentParent;
@@ -519,7 +548,7 @@ public class WorkingCopy extends CompilationController {
         return r.diffs;
     }
     
-    private List<Difference> processExternalCUs(Map<?, int[]> tag2Span) {
+    private List<Difference> processExternalCUs(Map<?, int[]> tag2Span, Set<Tree> notSyntheticTrees) {
         if (externalChanges == null) {
             return Collections.<Difference>emptyList();
         }
@@ -535,7 +564,7 @@ public class WorkingCopy extends CompilationController {
 
                 StringWriter target = new StringWriter();
 
-                ModificationResult.commit(targetFile, processCurrentCompilationUnit(new DiffContext(this, templateCUT, targetFile.asText(), new PositionConverter(), targetFile), tag2Span), target);
+                ModificationResult.commit(targetFile, processCurrentCompilationUnit(new DiffContext(this, templateCUT, targetFile.asText(), new PositionConverter(), targetFile, notSyntheticTrees), tag2Span), target);
                 result.add(new CreateChange(t.getSourceFile(), target.toString()));
                 target.close();
             } catch (BadLocationException ex) {
@@ -625,12 +654,13 @@ public class WorkingCopy extends CompilationController {
             }
         }
         List<Difference> result = new LinkedList<Difference>();
+        Set<Tree> notSyntheticTrees = new HashSet<Tree>();
         
         if (getFileObject() != null) {
-            result.addAll(processCurrentCompilationUnit(new DiffContext(this), tag2Span));
+            result.addAll(processCurrentCompilationUnit(new DiffContext(this, notSyntheticTrees), tag2Span));
         }
         
-        result.addAll(processExternalCUs(tag2Span));
+        result.addAll(processExternalCUs(tag2Span, notSyntheticTrees));
 
         overlay.clearElementsCache();
         
