@@ -1300,7 +1300,9 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                 scannedRoots2Peers,
                 sourcesForBinaryRoots,
                 true,
-                work.getLogContext()), false);
+                work == null ?
+                    LogContext.create(LogContext.EventType.PATH, null)
+                    : work.getLogContext()), false);
 
             if (work instanceof RootsWork) {
                 // if the work is the initial RootsWork it's superseeded
