@@ -116,7 +116,8 @@ public class ProgressHandleTest extends NbTestCase {
         
         proghandle.start();
         assertEquals(InternalHandle.STATE_RUNNING, handle.getState());
-        // should not start a task repeatedly, but not a hard error:
+        
+        // restarting already started task does not throw an ISE any more - #186366
         proghandle.start();
         // package private call, user triggered cancel action.
         handle.requestCancel();
