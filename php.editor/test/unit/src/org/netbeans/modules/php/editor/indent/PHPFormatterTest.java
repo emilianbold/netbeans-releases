@@ -1541,6 +1541,20 @@ public class PHPFormatterTest extends PHPTestBase {
 
         reformatFileContents("testfiles/formatting/alignment/alignmentKeywords04.php", options);
     }
+    
+    public void testGroupAlignmentAssignment01() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+	options.put(FmtOptions.groupAlignmentAssignment, true);
+
+        reformatFileContents("testfiles/formatting/alignment/groupAlignmentAssignment01.php", options);
+    }
+    
+    public void testGroupAlignmentArrayInit01() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+	options.put(FmtOptions.groupAlignmentArrayInit, true);
+
+        reformatFileContents("testfiles/formatting/alignment/groupAlignmentArrayInit01.php", options);
+    }
 
     public void testIssue181624_01() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());

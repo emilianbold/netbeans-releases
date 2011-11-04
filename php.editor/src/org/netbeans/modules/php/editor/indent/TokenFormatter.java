@@ -202,6 +202,8 @@ public class TokenFormatter {
 	public boolean alignMultilineAssignment;
 	public boolean alignMultilineFor;
 	public boolean alignMultilineArrayInit;
+        public boolean groupMulitilineAssignment;
+        public boolean groupMulitilineArrayInit;
 
 	public DocumentOptions(BaseDocument doc) {
 	    CodeStyle codeStyle = CodeStyle.get(doc);
@@ -323,6 +325,8 @@ public class TokenFormatter {
 	    alignMultilineAssignment = codeStyle.alignMultilineAssignment();
 	    alignMultilineFor = codeStyle.alignMultilineFor();
 	    alignMultilineArrayInit = codeStyle.alignMultilineArrayInit();
+            groupMulitilineArrayInit = codeStyle.groupMulitlineArrayInit();
+            groupMulitilineAssignment = codeStyle.groupMulitlineAssignment();
 	}
     }
 
@@ -762,10 +766,22 @@ public class TokenFormatter {
                                         countSpaces = docOptions.spaceAroundTernaryOps ? 1 : 0;
                                         break;
                                     case WHITESPACE_AROUND_ASSIGN_OP:
-                                        countSpaces = docOptions.spaceAroundAssignOps ? 1 : 0;
+                                        countSpaces = 0;
+                                        if (index > 0 && docOptions.groupMulitilineAssignment
+                                                && formatTokens.get(index - 1).getId() == FormatToken.Kind.ASSIGNMENT_ANCHOR) {
+                                            FormatToken.AssignmentAnchorToken aaToken = (FormatToken.AssignmentAnchorToken)formatTokens.get(index - 1);
+                                            countSpaces = aaToken.getMaxLength() - aaToken.getLenght();
+                                        }
+                                        countSpaces = countSpaces + (docOptions.spaceAroundAssignOps ? 1 : 0);
                                         break;
                                     case WHITESPACE_AROUND_KEY_VALUE_OP:
-                                        countSpaces = docOptions.spaceAroundKeyValueOps ? 1 : 0;
+                                        countSpaces = 0;
+                                        if (index > 0 && docOptions.groupMulitilineArrayInit
+                                                && formatTokens.get(index - 1).getId() == FormatToken.Kind.ASSIGNMENT_ANCHOR) {
+                                            FormatToken.AssignmentAnchorToken aaToken = (FormatToken.AssignmentAnchorToken)formatTokens.get(index - 1);
+                                            countSpaces = aaToken.getMaxLength() - aaToken.getLenght();
+                                        }
+                                        countSpaces = countSpaces + (docOptions.spaceAroundKeyValueOps ? 1 : 0);
                                         break;
                                     case WHITESPACE_BEFORE_METHOD_DEC_PAREN:
                                         countSpaces = docOptions.spaceBeforeMethodDeclParen ? 1 : 0;
