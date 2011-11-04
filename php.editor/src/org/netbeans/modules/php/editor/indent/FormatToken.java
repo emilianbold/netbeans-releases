@@ -53,6 +53,7 @@ public class FormatToken {
     public enum Kind {
 	TEXT,
 	ANCHOR,
+        ASSIGNMENT_ANCHOR,
 	UNBREAKABLE_SEQUENCE_START,
 	UNBREAKABLE_SEQUENCE_END,
 	OPEN_TAG,
@@ -266,7 +267,59 @@ public class FormatToken {
 	}
 
     }
+    
+    /**
+     * This class remember length of an identifier that is placed before = or =>
+     * to allow group alignment
+     */
+    public static class AssignmentAnchorToken extends FormatToken {
+        
+        /**
+         * length of the identifier that is before the aligned operator
+         */
+        private int length;
+        /**
+         * max length of an identifier in the group
+         */
+        private int maxLength;
+        /**
+         * Keeps previous instance in the group. 
+         */
+        private AssignmentAnchorToken previous;
+        
+        public AssignmentAnchorToken(int offset) {
+	    super(Kind.ASSIGNMENT_ANCHOR, offset);
+            length = -1;
+            maxLength = -1;
+            previous = null;
+	}
 
+        public int getLenght() {
+            return length;
+        }
+
+        public void setLenght(int lenght) {
+            this.length = lenght;
+        }
+
+        public int getMaxLength() {
+            return maxLength;
+        }
+
+        public void setMaxLength(int maxLength) {
+            this.maxLength = maxLength;
+        }
+
+        public AssignmentAnchorToken getPrevious() {
+            return previous;
+        }
+
+        public void setPrevious(AssignmentAnchorToken previous) {
+            this.previous = previous;
+        }
+        
+    }
+    
     public static class UnbreakableSequenceToken extends FormatToken {
 
 	private AnchorToken anchor;

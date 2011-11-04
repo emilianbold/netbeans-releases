@@ -203,6 +203,9 @@ public class FmtOptions {
     public static final String alignMultilineAssignment = "alignMultilineAssignment"; //NOI18N
     public static final String alignMultilineFor = "alignMultilineFor"; //NOI18N
     public static final String alignMultilineArrayInit = "alignMultilineArrayInit"; //NOI18N
+    
+    public static final String groupAlignmentAssignment = "groupAlignmentAssignment"; //NOI18N
+    public static final String groupAlignmentArrayInit = "groupAlignmentArrayInit"; //NOI18N
 
     public static final String wrapExtendsImplementsKeyword = "wrapExtendsImplementsKeyword"; //NOI18N
     public static final String wrapExtendsImplementsList = "wrapExtendsImplementsList"; //NOI18N
@@ -367,6 +370,9 @@ public class FmtOptions {
             { placeWhileOnNewLine, FALSE}, //NOI18N
             { placeCatchOnNewLine, FALSE}, //NOI18N
             { placeNewLineAfterModifiers, FALSE}, //NOI18N
+            
+            {groupAlignmentArrayInit, FALSE},
+            {groupAlignmentAssignment, FALSE},
 
 	    { wrapExtendsImplementsKeyword, WRAP_NEVER}, //NOI18N
             { wrapExtendsImplementsList, WRAP_NEVER}, //NOI18N

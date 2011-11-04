@@ -78,6 +78,7 @@ public class FormatVisitor extends DefaultVisitor {
     private boolean isCurly; // whether the last visited block is curly or standard syntax.
     private boolean isMethodInvocationShifted; // is continual indentation already included ?
     private boolean isFirstUseStatementPart;
+    private FormatToken.AssignmentAnchorToken previousGroupToken = null; //used for assignment alignment
 
     public FormatVisitor(BaseDocument document) {
         this.document = document;
@@ -236,9 +237,29 @@ public class FormatVisitor extends DefaultVisitor {
             addFormatToken(formatTokens); // add array keyword
         }
         formatTokens.add(new FormatToken.IndentToken(ts.offset(), delta));
+        previousGroupToken = null;
         super.visit(node);
         formatTokens.add(new FormatToken.IndentToken(ts.offset() + ts.token().length(), -1 * delta));
         addAllUntilOffset(node.getEndOffset());
+    }
+
+    @Override
+    public void visit(ArrayElement node) {
+        if (node.getKey() != null && node.getValue() != null) {
+            scan(node.getKey());
+            while (ts.moveNext() && ts.offset() < node.getValue().getStartOffset()) {
+                if (ts.token().id() == PHPTokenId.PHP_OPERATOR && "=>".equals(ts.token().text().toString())) { //NOI18N
+                    handleGroupAlignment(node.getKey());
+                    addFormatToken(formatTokens);
+                } else {
+                    addFormatToken(formatTokens);
+                }
+            }
+            ts.movePrevious();
+            scan(node.getValue());
+        } else {
+            super.visit(node);
+        }
     }
 
     @Override
@@ -249,6 +270,9 @@ public class FormatVisitor extends DefaultVisitor {
             addFormatToken(formatTokens);
         }
         if (ts.token().id() == PHPTokenId.PHP_TOKEN) {
+            if (node.getLeftHandSide() instanceof Variable) {
+                handleGroupAlignment(node.getLeftHandSide());
+            }
             addFormatToken(formatTokens);
         } else {
             ts.movePrevious();
@@ -258,6 +282,7 @@ public class FormatVisitor extends DefaultVisitor {
 
     @Override
     public void visit(Block node) {
+        previousGroupToken = null; // for every block reset group of alignment
         if (path.size() > 1 && (path.get(1) instanceof NamespaceDeclaration
                 && !((NamespaceDeclaration) path.get(1)).isBracketed())) {
             // dont process blok for namespace
@@ -546,7 +571,20 @@ public class FormatVisitor extends DefaultVisitor {
                 }
             }
             formatTokens.add(new FormatToken.IndentToken(node.getStartOffset(), options.continualIndentSize));
-            super.visit(node);
+            scan(node.getNames());
+            if (node.getNames().size() == 1) {
+                while (ts.moveNext() && ts.token().id() != PHPTokenId.PHP_TOKEN) {
+                    addFormatToken(formatTokens);
+                }
+                if (ts.token().id() == PHPTokenId.PHP_TOKEN) {    
+                    handleGroupAlignment(node.getNames().get(0));
+                    addFormatToken(formatTokens);
+                } else {
+                    ts.movePrevious();
+                }
+
+            }
+            scan(node.getInitializers());
             formatTokens.add(new FormatToken.IndentToken(node.getStartOffset(), options.continualIndentSize * -1));
             if (index == statements.size() - 1
                     || ((index < statements.size() - 1) && !(statements.get(index + 1) instanceof ConstantDeclaration))) {
@@ -1008,7 +1046,8 @@ public class FormatVisitor extends DefaultVisitor {
         scan(node.getName());
         if (node.getValue() != null) {
             while (ts.moveNext() && ts.offset() < node.getValue().getStartOffset()) {
-                if (ts.token().id() == PHPTokenId.PHP_TOKEN && "=".equals(ts.token().text().toString())) {
+                if (ts.token().id() == PHPTokenId.PHP_TOKEN && "=".equals(ts.token().text().toString())) { //NOI18N
+                    handleGroupAlignment(node.getName());
                     addFormatToken(formatTokens);
                 } else {
                     addFormatToken(formatTokens);
@@ -1160,7 +1199,12 @@ public class FormatVisitor extends DefaultVisitor {
         lastIndex = ts.index();
         switch (ts.token().id()) {
             case WHITESPACE:
-                tokens.add((countOfNewLines(ts.token().text()) > 0)
+                int countNewLines = countOfNewLines(ts.token().text());
+                if (countNewLines > 1) {
+                    // reset group alignment, if there is an empty line 
+                    previousGroupToken = null;
+                }
+                tokens.add(countNewLines > 0
                         ? new FormatToken(FormatToken.Kind.WHITESPACE_INDENT, ts.offset(), ts.token().text().toString())
                         : new FormatToken(FormatToken.Kind.WHITESPACE, ts.offset(), ts.token().text().toString()));
                 break;
@@ -1174,6 +1218,11 @@ public class FormatVisitor extends DefaultVisitor {
                     }
                     if (ts.moveNext()) {
                         if (ts.token().id() == PHPTokenId.WHITESPACE) {
+                            countNewLines = countOfNewLines(ts.token().text());
+                            if (countNewLines > 0) {
+                                // reset group alignment, if there is an empty line 
+                                previousGroupToken = null;
+                            }
                             tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_INDENT, newOffset, "\n" + ts.token().text().toString()));
                             if (ts.moveNext() && ts.token().id() == PHPTokenId.PHP_LINE_COMMENT) {
                                 tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BETWEEN_LINE_COMMENTS, ts.offset()));
@@ -1649,7 +1698,40 @@ public class FormatVisitor extends DefaultVisitor {
         }
         return value;
     }
+    
+    /**
+     * 
+     * @param node and identifier that is before the operator that is aligned in the group
+     */
+    private void handleGroupAlignment(ASTNode node) {
 
+        int length = node.getEndOffset() - node.getStartOffset();
+        if (previousGroupToken == null) {
+            // it's the first line in the group
+            previousGroupToken = new FormatToken.AssignmentAnchorToken(ts.offset());
+            previousGroupToken.setLenght(length);
+            previousGroupToken.setMaxLength(length);
+        } else {
+            // it's a next line in the group.
+            FormatToken.AssignmentAnchorToken aaToken = new FormatToken.AssignmentAnchorToken(ts.offset());
+            aaToken.setLenght(length);
+            aaToken.setPrevious(previousGroupToken);
+            if (previousGroupToken.getMaxLength() < length) {
+                // if the length of the current identifier is bigger, then is in
+                // the group so far, change max length for all items in the group
+                previousGroupToken = aaToken;
+                do {
+                    aaToken.setMaxLength(length);
+                    aaToken = aaToken.getPrevious();
+                } while (aaToken != null);
+            } else {
+                aaToken.setMaxLength(previousGroupToken.getMaxLength());
+                previousGroupToken = aaToken;
+            }
+        }
+        formatTokens.add(previousGroupToken);
+    }
+    
     protected static boolean isWhitespace(final CharSequence text) {
         int index = 0;
         while (index < text.length()
