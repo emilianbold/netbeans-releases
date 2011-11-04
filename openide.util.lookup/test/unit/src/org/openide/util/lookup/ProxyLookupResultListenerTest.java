@@ -166,6 +166,11 @@ public class ProxyLookupResultListenerTest {
         public final void changeLookups(final Lookup... lookups) {
             setLookups(lookups);
         }
+
+        @Override
+        protected void beforeLookup(Template<?> template) {
+            assertFalse("Don't hold lock on proxy", Thread.holdsLock(this));
+        }
     }
 
     public static final class Params {
