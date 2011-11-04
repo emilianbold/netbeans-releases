@@ -50,7 +50,10 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JList;
@@ -59,9 +62,13 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.queries.SourceForBinaryQuery;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ant.AntArtifactQuery;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.j2ee.common.J2eeProjectCapabilities;
@@ -69,6 +76,7 @@ import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.dd.api.ejb.Session;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -180,7 +188,14 @@ public class SessionEJBWizardPanel extends javax.swing.JPanel {
     public static List<Project> getProjectsList(Project project) {
         List<Project> names = new ArrayList<Project>();
         boolean maven = isMaven(project);
-        for (Project p : OpenProjects.getDefault().getOpenProjects()) {
+
+        Set<Project> allProjects = new HashSet<Project>();
+        // include all opened projects
+        allProjects.addAll(Arrays.asList(OpenProjects.getDefault().getOpenProjects()));
+        // include projects from given projects CP
+        allProjects.addAll(getProjectsFromClasspath(project));
+
+        for (Project p : allProjects) {
             if (p.equals(project)) {
                 continue;
             }
@@ -191,8 +206,8 @@ public class SessionEJBWizardPanel extends javax.swing.JPanel {
                 }
             } else {
                 // if project is ant then only list ant projects which produce JARs
-                if (p.getLookup().lookup(AntArtifactProvider.class) == null ||
-                        AntArtifactQuery.findArtifactsByType(p, JavaProjectConstants.ARTIFACT_TYPE_JAR).length == 0) {
+                if (p.getLookup().lookup(AntArtifactProvider.class) == null
+                        || AntArtifactQuery.findArtifactsByType(p, JavaProjectConstants.ARTIFACT_TYPE_JAR).length == 0) {
                     continue;
                 }
             }
@@ -201,14 +216,44 @@ public class SessionEJBWizardPanel extends javax.swing.JPanel {
                 continue;
             }
             // skip the j2ee projects
-            if (p.getLookup().lookup(J2eeModuleProvider.class) != null){
+            if (p.getLookup().lookup(J2eeModuleProvider.class) != null) {
                 continue;
             }
             names.add(p);
         }
         return names;
     }
-    
+
+    /**
+     * Finds all projects on classpath of given source project.
+     *
+     * @param project which classpath will be scanned
+     * @return {@code List} of all projects on its classpath
+     */
+    public static List<Project> getProjectsFromClasspath(Project project) {
+        List<Project> projects = new ArrayList<Project>();
+        SourceGroup[] groups = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        for (SourceGroup group : groups) {
+            ClassPath cp = ClassPath.getClassPath(group.getRootFolder(), ClassPath.COMPILE);
+            if (cp == null) {
+                continue;
+            }
+
+            for (ClassPath.Entry entry : cp.entries()) {
+                FileObject[] fos = SourceForBinaryQuery.findSourceRoots(entry.getURL()).getRoots();
+                for (FileObject fo : fos) {
+                    Project p = FileOwnerQuery.getOwner(fo);
+                    if (p != null) {
+                        projects.add(p);
+                        break;
+                    }
+                }
+            }
+        }
+
+        return projects;
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is

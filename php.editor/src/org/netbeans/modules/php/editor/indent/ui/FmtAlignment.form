@@ -1,10 +1,7 @@
-<?xml version="1.1" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 
 <Form version="1.4" maxVersion="1.4" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <Properties>
-    <Property name="focusTraversalPolicy" type="java.awt.FocusTraversalPolicy" editor="org.netbeans.modules.a11ychecker.traverse.FocusTraversalPolicyEditor">
-      <SerializedValue value="-84,-19,0,5,115,114,0,59,111,114,103,46,110,101,116,98,101,97,110,115,46,109,111,100,117,108,101,115,46,97,49,49,121,99,104,101,99,107,101,114,46,116,114,97,118,101,114,115,101,46,77,121,84,114,97,118,101,114,115,97,108,80,111,108,105,99,121,-117,45,-95,-30,56,-106,56,86,2,0,3,76,0,3,101,110,100,116,0,18,76,106,97,118,97,47,108,97,110,103,47,83,116,114,105,110,103,59,76,0,12,115,97,118,101,100,66,117,116,116,111,110,115,116,0,18,76,106,97,118,97,47,117,116,105,108,47,86,101,99,116,111,114,59,76,0,5,115,116,97,114,116,113,0,126,0,1,120,112,112,115,114,0,16,106,97,118,97,46,117,116,105,108,46,86,101,99,116,111,114,-39,-105,125,91,-128,59,-81,1,3,0,3,73,0,17,99,97,112,97,99,105,116,121,73,110,99,114,101,109,101,110,116,73,0,12,101,108,101,109,101,110,116,67,111,117,110,116,91,0,11,101,108,101,109,101,110,116,68,97,116,97,116,0,19,91,76,106,97,118,97,47,108,97,110,103,47,79,98,106,101,99,116,59,120,112,0,0,0,0,0,0,0,13,117,114,0,19,91,76,106,97,118,97,46,108,97,110,103,46,79,98,106,101,99,116,59,-112,-50,88,-97,16,115,41,108,2,0,0,120,112,0,0,0,20,115,114,0,56,111,114,103,46,110,101,116,98,101,97,110,115,46,109,111,100,117,108,101,115,46,97,49,49,121,99,104,101,99,107,101,114,46,116,114,97,118,101,114,115,101,46,77,121,83,97,118,105,110,103,66,117,116,116,111,110,-19,-86,-80,71,10,30,-18,-64,2,0,2,76,0,4,110,97,109,101,113,0,126,0,1,76,0,8,110,101,120,116,78,97,109,101,113,0,126,0,1,120,112,116,0,20,97,109,84,101,114,110,97,114,121,79,112,67,104,101,99,107,66,111,120,49,112,115,113,0,126,0,9,116,0,17,97,109,65,115,115,105,103,110,67,104,101,99,107,66,111,120,49,116,0,24,97,109,80,97,114,101,110,116,104,101,115,105,122,101,100,67,104,101,99,107,66,111,120,49,115,113,0,126,0,9,116,0,14,110,108,69,108,115,101,67,104,101,99,107,66,111,120,116,0,15,110,108,87,104,105,108,101,67,104,101,99,107,66,111,120,115,113,0,126,0,9,116,0,19,97,109,66,105,110,97,114,121,79,112,67,104,101,99,107,66,111,120,49,113,0,126,0,13,115,113,0,126,0,9,116,0,15,110,108,67,97,116,99,104,67,104,101,99,107,66,111,120,116,0,22,97,109,77,101,116,104,111,100,80,97,114,97,109,115,67,104,101,99,107,66,111,120,115,113,0,126,0,9,113,0,126,0,17,116,0,19,110,108,77,111,100,105,102,105,101,114,115,67,104,101,99,107,66,111,120,115,113,0,126,0,9,113,0,126,0,14,116,0,14,97,109,70,111,114,67,104,101,99,107,66,111,120,49,115,113,0,126,0,9,113,0,126,0,26,116,0,18,97,109,67,97,108,108,65,114,103,115,67,104,101,99,107,66,111,120,115,113,0,126,0,9,113,0,126,0,24,113,0,126,0,21,115,113,0,126,0,9,113,0,126,0,28,116,0,21,97,109,73,109,112,108,101,109,101,110,116,115,67,104,101,99,107,66,111,120,49,115,113,0,126,0,9,113,0,126,0,22,113,0,126,0,19,115,113,0,126,0,9,116,0,20,97,109,65,114,114,97,121,73,110,105,116,67,104,101,99,107,66,111,120,49,113,0,126,0,11,115,113,0,126,0,9,113,0,126,0,31,113,0,126,0,34,112,112,112,112,112,112,112,120,112"/>
-    </Property>
     <Property name="name" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
       <ResourceString bundle="org/netbeans/modules/java/ui/Bundle.properties" key="LBL_Alignment" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
     </Property>
@@ -35,32 +32,13 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" attributes="0">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" alignment="0" attributes="0">
-                      <Component id="newLinesLabel" min="-2" max="-2" attributes="0"/>
+                  <Group type="102" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="jSeparator1" pref="281" max="32767" attributes="0"/>
-                  </Group>
-                  <Group type="103" alignment="0" groupAlignment="1" max="-2" attributes="0">
-                      <Group type="102" alignment="0" attributes="1">
-                          <Component id="multilineAlignmentLabel" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace max="-2" attributes="0"/>
-                          <Component id="jSeparator2" max="32767" attributes="1"/>
-                      </Group>
-                      <Group type="102" alignment="0" attributes="0">
-                          <EmptySpace max="-2" attributes="0"/>
-                          <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="amMethodParamsCheckBox" min="-2" max="-2" attributes="1"/>
-                              <Component id="amParenthesizedCheckBox1" alignment="0" min="-2" max="-2" attributes="0"/>
-                              <Component id="amBinaryOpCheckBox1" alignment="0" min="-2" max="-2" attributes="0"/>
-                              <Component id="amAssignCheckBox1" alignment="0" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <EmptySpace min="-2" pref="24" max="-2" attributes="0"/>
-                          <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="amCallArgsCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
-                              <Component id="amImplementsCheckBox1" min="-2" max="-2" attributes="0"/>
-                              <Component id="amArrayInitCheckBox1" min="-2" max="-2" attributes="0"/>
-                              <Component id="amTernaryOpCheckBox1" min="-2" max="-2" attributes="0"/>
-                          </Group>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="amMethodParamsCheckBox" min="-2" max="-2" attributes="1"/>
+                          <Component id="amParenthesizedCheckBox1" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="amBinaryOpCheckBox1" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="amAssignCheckBox1" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
@@ -69,19 +47,46 @@
                           <Component id="nlWhileCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="nlElseCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace min="-2" pref="67" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="nlModifiersCheckBox" min="-2" max="-2" attributes="0"/>
-                          <Component id="nlCatchCheckBox" min="-2" max="-2" attributes="0"/>
-                      </Group>
-                      <EmptySpace min="-2" pref="48" max="-2" attributes="0"/>
                   </Group>
+                  <Component id="groupMultilineAlignmentLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="amForCheckBox1" min="-2" max="-2" attributes="0"/>
+                      <Component id="gmlAssignmentCheckBox" min="-2" max="-2" attributes="0"/>
                   </Group>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Component id="gmlArrayInitializerCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="amTernaryOpCheckBox1" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="amArrayInitCheckBox1" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="amImplementsCheckBox1" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="amCallArgsCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="nlCatchCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="nlModifiersCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
+          </Group>
+          <Group type="102" alignment="0" attributes="0">
+              <EmptySpace min="194" pref="194" max="194" attributes="0"/>
+              <Component id="jSeparator3" pref="196" max="32767" attributes="1"/>
+              <EmptySpace pref="12" max="32767" attributes="0"/>
+          </Group>
+          <Group type="102" alignment="0" attributes="1">
+              <Component id="multilineAlignmentLabel" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="jSeparator2" pref="124" max="32767" attributes="1"/>
+              <EmptySpace pref="131" max="32767" attributes="0"/>
+          </Group>
+          <Group type="102" alignment="0" attributes="0">
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="amForCheckBox1" min="-2" max="-2" attributes="0"/>
+              <EmptySpace pref="343" max="32767" attributes="0"/>
+          </Group>
+          <Group type="102" alignment="0" attributes="0">
+              <Component id="newLinesLabel" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="jSeparator1" pref="305" max="32767" attributes="0"/>
+              <EmptySpace pref="12" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -140,7 +145,17 @@
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="amForCheckBox1" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="36" max="32767" attributes="0"/>
+              <EmptySpace type="separate" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Component id="groupMultilineAlignmentLabel" min="-2" max="-2" attributes="0"/>
+                  <Component id="jSeparator3" min="-2" pref="10" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="gmlAssignmentCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="gmlArrayInitializerCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace pref="67" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -439,6 +454,29 @@
     <Component class="javax.swing.JSeparator" name="jSeparator1">
     </Component>
     <Component class="javax.swing.JSeparator" name="jSeparator2">
+    </Component>
+    <Component class="javax.swing.JLabel" name="groupMultilineAlignmentLabel">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/php/editor/indent/ui/Bundle.properties" key="LBL_al_AccrosMultilineAllignment" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JSeparator" name="jSeparator3">
+    </Component>
+    <Component class="javax.swing.JCheckBox" name="gmlAssignmentCheckBox">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/php/editor/indent/ui/Bundle.properties" key="FmtAlignment.gmlAssignmentCheckBox.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JCheckBox" name="gmlArrayInitializerCheckBox">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/php/editor/indent/ui/Bundle.properties" key="FmtAlignment.gmlArrayInitializerCheckBox.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
     </Component>
   </SubComponents>
 </Form>

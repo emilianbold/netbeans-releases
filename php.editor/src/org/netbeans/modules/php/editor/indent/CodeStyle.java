@@ -513,6 +513,14 @@ public final class CodeStyle {
     public boolean placeNewLineAfterModifiers() {
         return preferences.getBoolean(placeNewLineAfterModifiers, getDefaultAsBoolean(placeNewLineAfterModifiers));
     }
+    
+    public boolean groupMulitlineAssignment() {
+        return preferences.getBoolean(groupAlignmentAssignment, getDefaultAsBoolean(groupAlignmentAssignment));
+    }
+    
+    public boolean groupMulitlineArrayInit() {
+        return preferences.getBoolean(groupAlignmentArrayInit, getDefaultAsBoolean(groupAlignmentArrayInit));
+    }
 
     // Wrapping ----------------------------------------------------------------
 
