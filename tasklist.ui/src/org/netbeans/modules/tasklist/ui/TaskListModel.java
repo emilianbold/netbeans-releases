@@ -80,10 +80,12 @@ class TaskListModel extends AbstractTableModel implements TaskList.Listener {
         sortTaskList();
     }
     
+    @Override
     public int getRowCount() {
         return null == getListOfTasks() ? 0 : getListOfTasks().size();
     }
     
+    @Override
     public int getColumnCount() {
         return 4;
     }
@@ -115,6 +117,7 @@ class TaskListModel extends AbstractTableModel implements TaskList.Listener {
 	return false;
     }
     
+    @Override
     public Object getValueAt(int row, int col) {
         Task t = getTaskAtRow( row );
         if( null != t ) {
@@ -138,6 +141,7 @@ class TaskListModel extends AbstractTableModel implements TaskList.Listener {
         return getListOfTasks().get( row );
     }
 
+    @Override
     public void tasksAdded( final List<? extends Task> tasks ) {
         if( tasks.isEmpty() )
             return;
@@ -155,6 +159,7 @@ class TaskListModel extends AbstractTableModel implements TaskList.Listener {
         listOfTasks = null;
     }
 
+    @Override
     public void tasksRemoved( final List<? extends Task> tasks ) {
         if( tasks.isEmpty() )
             return;
@@ -173,6 +178,7 @@ class TaskListModel extends AbstractTableModel implements TaskList.Listener {
         listOfTasks = null;
     }
 
+    @Override
     public void cleared() {
         fireTableDataChanged();
     }

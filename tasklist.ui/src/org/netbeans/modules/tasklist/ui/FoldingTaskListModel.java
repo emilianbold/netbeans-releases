@@ -391,6 +391,7 @@ class FoldingTaskListModel extends TaskListModel {
             }
         }
     
+        @Override
         public int compareTo(org.netbeans.modules.tasklist.ui.FoldingTaskListModel.FoldingGroup other) {
             List<? extends TaskGroup> groupList = TaskGroup.getGroups();
             int myIndex = groupList.indexOf( tg );
