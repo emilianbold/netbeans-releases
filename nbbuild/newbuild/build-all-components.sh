@@ -21,27 +21,27 @@ cd  $NB_ALL
 mkdir -p nbbuild/netbeans
 
 #Build source packages
-#ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/build.xml -Dmerge.dependent.modules=false -Dcluster.config=full build-source-config
-#ERROR_CODE=$?
-#
-#create_test_result "build.source.package" "Build Source package" $ERROR_CODE
-#if [ $ERROR_CODE != 0 ]; then
-#    echo "ERROR: $ERROR_CODE - Can't build all source package"
-##    exit $ERROR_CODE;
-#else
-#    mv nbbuild/build/*-src-* $DIST/zip/$BASENAME-src.zip
-#fi
+ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/build.xml -Dmerge.dependent.modules=false -Dcluster.config=full build-source-config
+ERROR_CODE=$?
 
-#ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/build.xml -Dmerge.dependent.modules=false -Dcluster.config=platform build-source-config
-#ERROR_CODE=$?
-#
-#create_test_result "build.source.platform" "Build Platform Source package" $ERROR_CODE
-#if [ $ERROR_CODE != 0 ]; then
-#    echo "ERROR: $ERROR_CODE - Can't build basic platform source package"
-##    exit $ERROR_CODE;
-#else
-#    mv nbbuild/build/*-src-* $DIST/zip/$BASENAME-platform-src.zip
-#fi
+create_test_result "build.source.package" "Build Source package" $ERROR_CODE
+if [ $ERROR_CODE != 0 ]; then
+    echo "ERROR: $ERROR_CODE - Can't build all source package"
+#    exit $ERROR_CODE;
+else
+    mv nbbuild/build/*-src-* $DIST/zip/$BASENAME-src.zip
+fi
+
+ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/build.xml -Dmerge.dependent.modules=false -Dcluster.config=platform build-source-config
+ERROR_CODE=$?
+
+create_test_result "build.source.platform" "Build Platform Source package" $ERROR_CODE
+if [ $ERROR_CODE != 0 ]; then
+    echo "ERROR: $ERROR_CODE - Can't build basic platform source package"
+#    exit $ERROR_CODE;
+else
+    mv nbbuild/build/*-src-* $DIST/zip/$BASENAME-platform-src.zip
+fi
 
 #Build the NB IDE first - no validation tests!
 ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/build.xml build-nozip -Dbuild.compiler.debuglevel=source,lines,vars
@@ -109,14 +109,14 @@ fi
 cd $NB_ALL
 
 #Build JNLP
-#ant -Djnlp.codebase=http://bits.netbeans.org/dev/jnlp/ -Djnlp.signjar.keystore=$KEYSTORE -Djnlp.signjar.alias=nb_ide -Djnlp.signjar.password=$STOREPASS -Djnlp.dest.dir=${DIST}/jnlp build-jnlp
-#ERROR_CODE=$?
-#
-#create_test_result "build.jnlp" "Build JNLP" $ERROR_CODE
-#if [ $ERROR_CODE != 0 ]; then
-#    echo "ERROR: $ERROR_CODE - Can't build JNLP"
-##    exit $ERROR_CODE;
-#fi
+ant -Djnlp.codebase=http://bits.netbeans.org/dev/jnlp/ -Djnlp.signjar.keystore=$KEYSTORE -Djnlp.signjar.alias=nb_ide -Djnlp.signjar.password=$STOREPASS -Djnlp.dest.dir=${DIST}/jnlp build-jnlp
+ERROR_CODE=$?
+
+create_test_result "build.jnlp" "Build JNLP" $ERROR_CODE
+if [ $ERROR_CODE != 0 ]; then
+    echo "ERROR: $ERROR_CODE - Can't build JNLP"
+#    exit $ERROR_CODE;
+fi
 
 #Build all NBMs for stable UC - IDE + UC-only
 ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/build.xml build-nbms -Dcluster.config=stableuc -Dbase.nbm.target.dir=${DIST}/uc2 -Dkeystore=$KEYSTORE -Dstorepass=$STOREPASS -Dbuild.compiler.debuglevel=source,lines
@@ -191,17 +191,17 @@ if [ $ERROR_CODE != 0 ]; then
 fi
 cd ..
 
-#ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/javadoctools/build.xml build-javadoc
-#ERROR_CODE=$?
-#
-#create_test_result "build.javadoc" "Build javadoc" $ERROR_CODE
-#if [ $ERROR_CODE != 0 ]; then
-#    echo "ERROR: $ERROR_CODE - Building of Javadoc Distrubution failed"
-##    exit $ERROR_CODE;
-#else
-#    mv nbbuild/NetBeans-*-javadoc.zip $DIST/zip/$BASENAME-javadoc.zip
-#    cp -r nbbuild/build/javadoc $DIST/
-#fi
+ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/javadoctools/build.xml build-javadoc
+ERROR_CODE=$?
+
+create_test_result "build.javadoc" "Build javadoc" $ERROR_CODE
+if [ $ERROR_CODE != 0 ]; then
+    echo "ERROR: $ERROR_CODE - Building of Javadoc Distrubution failed"
+#    exit $ERROR_CODE;
+else
+    mv nbbuild/NetBeans-*-javadoc.zip $DIST/zip/$BASENAME-javadoc.zip
+    cp -r nbbuild/build/javadoc $DIST/
+fi
 
 #ML_BUILD
 if [ $ML_BUILD == 1 ]; then
