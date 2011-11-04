@@ -4245,7 +4245,9 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                             }
                         } else {
                             if (absorbedBy.logCtx != null) {
-                                absorbedBy.logCtx.absorb(work.logCtx);
+                                if (work.logCtx != null) {
+                                    absorbedBy.logCtx.absorb(work.logCtx);
+                                }
                             } else {
                                 absorbedBy.logCtx = work.logCtx;
                             }
