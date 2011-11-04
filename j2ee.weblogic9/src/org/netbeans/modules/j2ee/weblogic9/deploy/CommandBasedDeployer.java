@@ -809,7 +809,11 @@ public final class CommandBasedDeployer extends AbstractDeployer {
                         }
 
                         if (modules[i].getWeb() != null) {
-                            childModuleId.setContextURL(serverUrl + modules[i].getWeb().getContextRoot());
+                            String context = modules[i].getWeb().getContextRoot();
+                            if (context != null && !context.startsWith("/") && !serverUrl.endsWith("/")) {
+                                context = "/" + context;
+                            }
+                            childModuleId.setContextURL(serverUrl + context);
                         }
                         moduleId.addChild(childModuleId);
                     }

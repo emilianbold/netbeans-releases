@@ -78,6 +78,7 @@ import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.modules.web.common.api.LexerUtils;
 import org.netbeans.modules.web.common.api.ValueCompletion;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.openide.filesystems.FileObject;
@@ -667,7 +668,9 @@ public class HtmlCompletionQuery extends UserTask {
             int order = offset - (node != null ? node.startOffset() : 0);
 
             String tagName = isXHtml ? tag.getName() : (lowerCase ? tag.getName().toLowerCase(Locale.ENGLISH) : tag.getName().toUpperCase(Locale.ENGLISH));
-            items.add(HtmlCompletionItem.createEndTag(tag, tagName, offset - 2 - prefix.length(), tagName, order, getEndTagType(leaf)));
+            if (LexerUtils.startsWith(tagName, prefix, true, false)) {
+                items.add(HtmlCompletionItem.createEndTag(tag, tagName, offset - 2 - prefix.length(), tagName, order, getEndTagType(leaf)));
+            }
         }
         return items;
     }

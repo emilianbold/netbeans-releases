@@ -493,6 +493,13 @@ public class HtmlCompletionQueryTest extends HtmlCompletionTestBase {
     public void testDirAttribute() throws BadLocationException, ParseException {
         assertItems("<div dir=\"|\">", arr("ltr", "rtl"), Match.EXACT);
     }
+    
+    //Bug 197614 - Problem with HTML4 & code completion - non matching tags offered
+    public void testIssue197614() throws BadLocationException, ParseException {
+        assertItems("<table><tr><td></ta|", arr("table"), Match.EXACT);
+    }
+
+    
     //helper methods ------------
 
     @Override

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -61,7 +61,6 @@ import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -78,7 +77,6 @@ import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -116,7 +114,7 @@ import org.openide.util.TaskListener;
  *
  * @author  Jiri Rechtacek, Radek Matous
  */
-public class UnitTab extends javax.swing.JPanel {
+public final class UnitTab extends javax.swing.JPanel {
     static final String PROP_LAST_CHECK = "lastCheckTime"; // NOI18N    
     private PreferenceChangeListener preferenceChangeListener;    
     private UnitTable table = null;
@@ -138,12 +136,14 @@ public class UnitTab extends javax.swing.JPanel {
     
     private static final RequestProcessor SEARCH_PROCESSOR = new RequestProcessor ("search-processor");
     private final RequestProcessor.Task searchTask = SEARCH_PROCESSOR.create (new Runnable (){
+        @Override
         public void run () {
             if (filter != null) {
                 int row = getSelectedRow();
                 final Unit u = (row >= 0) ? getModel().getUnitAtRow(row) : null;
                 final Map<String, Boolean> state = UnitCategoryTableModel.captureState (model.getUnits ());
                 Runnable runAftreWards = new Runnable (){
+                    @Override
                     public void run () {
                         if (u != null) {
                             int row = findRow(u.updateUnit.getCodeName());
@@ -191,14 +191,17 @@ public class UnitTab extends javax.swing.JPanel {
             }
         });
         addUpdateUnitListener(new UpdateUnitListener() {
+            @Override
             public void updateUnitsChanged() {
                 UnitTab.this.manager.updateUnitsChanged();
             }
 
+            @Override
             public void buttonsChanged() {
                 UnitTab.this.manager.buttonsChanged();
             }
 
+            @Override
             public void filterChanged() {
                 model.fireTableDataChanged();
                 UnitTab.this.manager.decorateTabTitle(UnitTab.this.table);                
@@ -216,6 +219,7 @@ public class UnitTab extends javax.swing.JPanel {
     
     void focusTable () {
         SwingUtilities.invokeLater (new Runnable () {
+            @Override
             public void run () {
                 table.requestFocusInWindow ();
             }
@@ -293,10 +297,12 @@ public class UnitTab extends javax.swing.JPanel {
         
         if (flForSearch == null) {
             flForSearch = new FocusListener() {
+                @Override
                 public void focusGained(FocusEvent e) {
                     tfSearch.selectAll();
                 }
 
+                @Override
                 public void focusLost(FocusEvent e) {
                     tfSearch.select(0, 0);
                 }
@@ -304,11 +310,12 @@ public class UnitTab extends javax.swing.JPanel {
             tfSearch.addFocusListener(flForSearch);
         }
         RequestProcessor.Task runningTask = PluginManagerUI.getRunningTask ();
-        synchronized (isWaitingForExternal) {
+        synchronized (this) {
             if (runningTask != null && ! runningTask.isFinished () && ! isWaitingForExternal) {
                 isWaitingForExternal = true;
                 runningTask.addTaskListener (new TaskListener () {
-                    public void taskFinished (org.openide.util.Task task) {
+                    @Override
+                     public void taskFinished (org.openide.util.Task task) {
                         reloadTask (false).schedule (10);
                         isWaitingForExternal = false;
                     }
@@ -346,7 +353,7 @@ public class UnitTab extends javax.swing.JPanel {
         oldUnits = units;
         popupActionsSupport.tableDataChanged ();
         
-        if (units.size () == 0) {
+        if (units.isEmpty()) {
             cleanSelectionInfo ();
         } else {
             setSelectionInfo (null, units.size ());
@@ -363,12 +370,13 @@ public class UnitTab extends javax.swing.JPanel {
         }
         if (units.size () > 0 && ! alreadyScheduled) {
             getDownloadSizeTask = DOWNLOAD_SIZE_PROCESSOR.post (new Runnable () {
+                @Override
                 public void run () {
                     int downloadSize = model.getDownloadSize ();
                     if (Thread.interrupted ()) {
                         return ;
                     }
-                    if (model.getMarkedUnits ().size () == 0) {
+                    if (model.getMarkedUnits ().isEmpty()) {
                         cleanSelectionInfo ();
                     } else {
                         setSelectionInfo (Utilities.getDownloadSizeAsString (downloadSize), model.getMarkedUnits ().size ());
@@ -387,6 +395,7 @@ public class UnitTab extends javax.swing.JPanel {
                 downloadedTableModel.setUnits(empty);
                 SwingUtilities.invokeLater(new Runnable()  {
 
+                    @Override
                     public void run() {
                         fireUpdataUnitChange();
                         UnitCategoryTableModel.restoreState(model.getUnits(), state, model.isMarkedAsDefault());
@@ -492,6 +501,7 @@ public class UnitTab extends javax.swing.JPanel {
             break;
         }
         model.addTableModelListener (new TableModelListener () {
+            @Override
             public void tableChanged (TableModelEvent e) {
                 refreshState ();
             }
@@ -560,7 +570,18 @@ public class UnitTab extends javax.swing.JPanel {
     
     private void listenOnSelection () {
         table.getSelectionModel ().addListSelectionListener (new ListSelectionListener () {
-            public void valueChanged (ListSelectionEvent e) {
+            @Override
+            public void valueChanged (final ListSelectionEvent e) {
+                if (! SwingUtilities.isEventDispatchThread()) {
+                    SwingUtilities.invokeLater(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            valueChanged(e);
+                        }
+                    });
+                    return ;
+                }
                 //Ignore extra messages.
                 if (e.getValueIsAdjusting ()) return;
                 ListSelectionModel lsm =
@@ -602,15 +623,18 @@ public class UnitTab extends javax.swing.JPanel {
     DocumentListener getDocumentListener () {
         if (dlForSearch == null) {
             dlForSearch = new DocumentListener () {
+                @Override
                 public void insertUpdate (DocumentEvent arg0) {
                     filter = tfSearch.getText ().trim ();
                     searchTask.schedule (350);
                 }
                 
+                @Override
                 public void removeUpdate (DocumentEvent arg0) {
                     insertUpdate (arg0);
                 }
                 
+                @Override
                 public void changedUpdate (DocumentEvent arg0) {
                     insertUpdate (arg0);
                 }
@@ -735,6 +759,7 @@ public class UnitTab extends javax.swing.JPanel {
     
     private Task reloadTask (final boolean force) {
         final Runnable checkUpdates = new Runnable (){
+            @Override
             public void run () {
                 ProgressHandle handle = ProgressHandleFactory.createHandle (NbBundle.getMessage (UnitTab.class,  ("UnitTab_ReloadAction")));
                 JComponent progressComp = ProgressHandleFactory.createProgressComponent (handle);
@@ -760,6 +785,7 @@ public class UnitTab extends javax.swing.JPanel {
                 manager.unsetProgressComponent (detailLabel, progressComp);
                 Utilities.presentRefreshProviders (manager, force);
                 SwingUtilities.invokeLater (new Runnable () {
+                    @Override
                     public void run () {
                         fireUpdataUnitChange ();
                         UnitCategoryTableModel.restoreState (model.getUnits (), state, model.isMarkedAsDefault ());
@@ -874,6 +900,7 @@ public class UnitTab extends javax.swing.JPanel {
             return false;
         }
 
+        @Override
         public void run () {
             Point p = getPositionForPopup();
 
@@ -901,6 +928,7 @@ public class UnitTab extends javax.swing.JPanel {
 
         public final Action popupOnF10 = new AbstractAction () {
 
+            @Override
             public void actionPerformed (ActionEvent evt) {
                 popupActionsSupport.run ();
             }
@@ -963,9 +991,11 @@ public class UnitTab extends javax.swing.JPanel {
         if (preferenceChangeListener == null) {
             preferenceChangeListener = new PreferenceChangeListener() {
 
+                @Override
                 public void preferenceChange(PreferenceChangeEvent evt) {
                     SwingUtilities.invokeLater(new Runnable() {
 
+                        @Override
                         public void run() {
                              initReloadTooltip();
                         }
@@ -1031,6 +1061,7 @@ public class UnitTab extends javax.swing.JPanel {
                     RequestProcessor.Task t = PluginManagerUI.getRunningTask ();
                     if (t != null && ! t.isFinished ()) {
                         t.addTaskListener (new TaskListener () {
+                            @Override
                             public void taskFinished (org.openide.util.Task task) {
                                 setEnabled (true);
                             }
@@ -1061,6 +1092,7 @@ public class UnitTab extends javax.swing.JPanel {
                 actionPerformed (null);
             }
         }
+        @Override
         public final void actionPerformed (ActionEvent e) {
             try {
                 performerImpl ();
@@ -1099,7 +1131,7 @@ public class UnitTab extends javax.swing.JPanel {
         public final boolean isVisible (){
             return (u != null) ? isVisible (u) : isVisible(row);
         }
-        private final void unitChanged () {
+        private void unitChanged () {
             if (u != null) {
                 setEnabled (isEnabled (u));
                 setContextName (getContextName (u));
@@ -1119,6 +1151,7 @@ public class UnitTab extends javax.swing.JPanel {
             unitChanged ();
         }
         
+        @Override
         public final  void performerImpl () {
             performerImpl (u);
         }
@@ -1144,6 +1177,7 @@ public class UnitTab extends javax.swing.JPanel {
             super ("UnitTab_CheckAction", KeyStroke.getKeyStroke (KeyEvent.VK_SPACE, 0), null);
         }
         
+        @Override
         public void performerImpl (Unit u) {
             final int row = getSelectedRow();
             if (model.isExpansionControlAtRow(row)) {
@@ -1160,6 +1194,7 @@ public class UnitTab extends javax.swing.JPanel {
         }
 
         
+        @Override
         protected boolean isEnabled (Unit u) {
             return u != null && u.canBeMarked ();
         }
@@ -1170,6 +1205,7 @@ public class UnitTab extends javax.swing.JPanel {
         }
         
         
+        @Override
         protected String getContextName (Unit u) {
             return getActionName ();
         }
@@ -1190,6 +1226,7 @@ public class UnitTab extends javax.swing.JPanel {
             super ("UnitTab_bTabAction_Name_INSTALLED", null);
         }
         
+        @Override
         public void performerImpl () {
             boolean wizardFinished = false;
             final int row = getSelectedRow ();
@@ -1213,7 +1250,7 @@ public class UnitTab extends javax.swing.JPanel {
 
         @Override
         public void tableDataChanged (Collection<Unit> units) {
-            if (units.size() == 0) {
+            if (units.isEmpty()) {
                 setEnabled(false);
                 return;
             }
@@ -1236,6 +1273,7 @@ public class UnitTab extends javax.swing.JPanel {
             super ("UnitTab_bTabAction_Name_UPDATE", null);
         }
         
+        @Override
         public void performerImpl () {
             boolean wizardFinished = false;
             final int row = getSelectedRow();
@@ -1260,6 +1298,7 @@ public class UnitTab extends javax.swing.JPanel {
             super ("UnitTab_bTabAction_Name_AVAILABLE", null);
         }
         
+        @Override
         public void performerImpl () {
             boolean wizardFinished = false;
             final int row = getSelectedRow();
@@ -1284,6 +1323,7 @@ public class UnitTab extends javax.swing.JPanel {
         public LocalUpdateAction () {
             super ("UnitTab_bTabAction_Name_LOCAL", null);
         }
+        @Override
         public void performerImpl () {
             boolean wizardFinished = false;
             final int row = getSelectedRow();
@@ -1315,6 +1355,7 @@ public class UnitTab extends javax.swing.JPanel {
         public CheckCategoryAction () {
             super ("UnitTab_CheckCategoryAction", /*KeyStroke.getKeyStroke (KeyEvent.VK_C, KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK),*/ "Check");
         }
+        @Override
         protected boolean isEnabled (Unit u) {
             boolean retval = false;
             String category = u.getCategoryName();
@@ -1327,9 +1368,11 @@ public class UnitTab extends javax.swing.JPanel {
             }
             return retval;
         }
+        @Override
         protected String getContextName (Unit u) {
             return getActionName () + " \"" + u.getCategoryName ()+"\"";//NOI18N
         }
+        @Override
         public void performerImpl (Unit u) {
             String category = u.getCategoryName ();
             int count = model.getRowCount ();
@@ -1446,6 +1489,7 @@ public class UnitTab extends javax.swing.JPanel {
             super ("UnitTab_ActivateCategoryAction", /*KeyStroke.getKeyStroke (KeyEvent.VK_C, KeyEvent.CTRL_DOWN_MASK),*/ "EnableDisable");
         }
         
+        @Override
         protected boolean isEnabled (Unit uu) {
             boolean retval = false;
             
@@ -1462,12 +1506,14 @@ public class UnitTab extends javax.swing.JPanel {
             
             return  retval;
         }
+        @Override
         protected String getContextName (Unit u) {
             if ((u != null) && (u instanceof Unit.Installed)) {
                 return getActionName ()+ " \"" + u.getCategoryName () + "\"";
             }
             return getActionName ();
         }
+        @Override
         public void performerImpl (Unit uu) {
             Unit.Installed unit = (Unit.Installed)uu;
             final int row = getSelectedRow();
@@ -1593,6 +1639,7 @@ public class UnitTab extends javax.swing.JPanel {
             super ("UnitTab_DeactivateCategoryAction", /*KeyStroke.getKeyStroke (KeyEvent.VK_G, KeyEvent.CTRL_DOWN_MASK),*/ "EnableDisable");
         }
         
+        @Override
         protected boolean isEnabled (Unit uu) {
             boolean retval = false;
             
@@ -1609,12 +1656,14 @@ public class UnitTab extends javax.swing.JPanel {
             return  retval;
         }
         
+        @Override
         protected String getContextName (Unit u) {
             if ((u != null) && (u instanceof Unit.Installed)) {
                 return getActionName ()+ " \"" + u.getCategoryName () + "\"";//NOI18N
             }
             return getActionName ();
         }
+        @Override
         public void performerImpl (Unit uu) {
             Unit.Installed unit = (Unit.Installed)uu;
             final int row = getSelectedRow();
@@ -1700,6 +1749,7 @@ public class UnitTab extends javax.swing.JPanel {
             return super.isVisible(u);
         }
         
+        @Override
         protected String getContextName (Unit u) {
             return getActionName () + " \"" + u.getCategoryName ()+"\""; //NOI18N
         }
@@ -1709,6 +1759,7 @@ public class UnitTab extends javax.swing.JPanel {
             super ("UnitTab_CheckAllAction", KeyStroke.getKeyStroke (KeyEvent.VK_A, KeyEvent.CTRL_DOWN_MASK), "Check");
         }
         
+        @Override
         public void performerImpl (Unit uu) {
             final int row = getSelectedRow();
             Collection<Unit> allUnits = model.getUnits();
@@ -1721,9 +1772,11 @@ public class UnitTab extends javax.swing.JPanel {
             restoreSelectedRow(row);
         }
         
+        @Override
         protected boolean isEnabled (Unit uu) {
             return true;
         }
+        @Override
         protected String getContextName (Unit u) {
             return getActionName ();
         }
@@ -1733,6 +1786,7 @@ public class UnitTab extends javax.swing.JPanel {
         public UncheckAllAction () {
             super ("UnitTab_UncheckAllAction", /*KeyStroke.getKeyStroke (KeyEvent.VK_N, KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK), */"Uncheck");
         }
+        @Override
         public void performerImpl (Unit uu) {
             final int row = getSelectedRow();
             Collection<Unit> markedUnits = model.getMarkedUnits();
@@ -1745,10 +1799,12 @@ public class UnitTab extends javax.swing.JPanel {
             restoreSelectedRow(row);
         }
         
+        @Override
         protected boolean isEnabled (Unit uu) {
             return true;
         }
         
+        @Override
         protected String getContextName (Unit u) {
             return getActionName ();
         }
@@ -1758,6 +1814,7 @@ public class UnitTab extends javax.swing.JPanel {
         public MoreAction () {
             super ("UnitTab_MoreAction", /*KeyStroke.getKeyStroke (KeyEvent.VK_N, KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK), */"Expand");//NOI18N
         }
+        @Override
         public void performerImpl (Unit uu) {
             try {
                 setWaitingState(true);
@@ -1781,6 +1838,7 @@ public class UnitTab extends javax.swing.JPanel {
             return !model.isExpansionControlAtRow(row) && isEnabled(row);
         }
                 
+        @Override
         protected boolean isEnabled (Unit uu) {
             return uu != null && model.isExpansionControlPresent() && model.isCollapsed();
         }
@@ -1790,6 +1848,7 @@ public class UnitTab extends javax.swing.JPanel {
             return model.isExpansionControlPresent() && model.isCollapsed();
         }
         
+        @Override
         protected String getContextName (Unit u) {
             return getActionName();
         }
@@ -1799,6 +1858,7 @@ public class UnitTab extends javax.swing.JPanel {
         public LessAction () {
             super ("UnitTab_LessAction", /*KeyStroke.getKeyStroke (KeyEvent.VK_N, KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK), */"Expand");//NOI18N
         }
+        @Override
         public void performerImpl (Unit uu) {
             try {
                 setWaitingState(true);
@@ -1822,6 +1882,7 @@ public class UnitTab extends javax.swing.JPanel {
             return !model.isExpansionControlAtRow(row) && isEnabled(row);
         }
                 
+        @Override
         protected boolean isEnabled (Unit uu) {
             return uu != null && model.isExpansionControlPresent() && model.isExpanded();
         }
@@ -1831,6 +1892,7 @@ public class UnitTab extends javax.swing.JPanel {
             return model.isExpansionControlPresent() && model.isExpanded();
         }
                 
+        @Override
         protected String getContextName (Unit u) {
             return getActionName();
         }
@@ -1839,6 +1901,7 @@ public class UnitTab extends javax.swing.JPanel {
     
     private class ReloadAction extends TabAction {
         Task reloadTask = null;
+        @SuppressWarnings("OverridableMethodCallInConstructor")
         public ReloadAction () {
             super ("UnitTab_ReloadAction", KeyStroke.getKeyStroke (KeyEvent.VK_R, KeyEvent.CTRL_DOWN_MASK), null);
             String tooltip = NbBundle.getMessage (UnitTab.class, "UnitTab_Tooltip_RefreshAction");//NOI18N
@@ -1846,6 +1909,7 @@ public class UnitTab extends javax.swing.JPanel {
             setEnabled (false);
         }
 
+        @Override
         public void performerImpl () {
             setEnabled (false);
             reloadTask = reloadTask (true);
@@ -1867,6 +1931,7 @@ public class UnitTab extends javax.swing.JPanel {
             putValue (TOOL_TIP_TEXT_KEY, tooltip);
         }
         
+        @Override
         public void performerImpl () {
             final Map<String, Boolean> state = UnitCategoryTableModel.captureState (model.getUnits ());
             if (getLocalDownloadSupport ().chooseNbmFiles ()) {
@@ -1888,6 +1953,7 @@ public class UnitTab extends javax.swing.JPanel {
             putValue (TOOL_TIP_TEXT_KEY, tooltip);
         }
         
+        @Override
         protected boolean isEnabled (Unit uu) {
             return uu != null && (model.getType ().equals (UnitCategoryTableModel.Type.LOCAL));
         }
@@ -1906,8 +1972,10 @@ public class UnitTab extends javax.swing.JPanel {
             super.setEnabled (enabled);
             super.firePropertyChange ("enabled", !isEnabled (), isEnabled ());
         }
+        @Override
         public void performerImpl (final Unit unit) {
             final Runnable removeUpdates = new Runnable (){
+                @Override
                 public void run () {
                     final Map<String, Boolean> state = UnitCategoryTableModel.captureState (model.getUnits ());
                     try {
@@ -1919,6 +1987,7 @@ public class UnitTab extends javax.swing.JPanel {
                         getLocalDownloadSupport ().getUpdateUnits ();
                     } finally {
                         SwingUtilities.invokeLater (new Runnable () {
+                            @Override
                             public void run () {
                                 fireUpdataUnitChange();
                                 UnitCategoryTableModel.restoreState (model.getUnits (), state, model.isMarkedAsDefault ());
@@ -1933,6 +2002,7 @@ public class UnitTab extends javax.swing.JPanel {
             Utilities.startAsWorkerThread (removeUpdates, 250);
         }
         
+        @Override
         protected String getContextName (Unit u) {
             return getActionName ();//NOI18N
         }
