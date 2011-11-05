@@ -166,6 +166,8 @@ public class POHImpl {
             if (impl != null) {
                 impl.setServerInstanceID(instanceFound);
                 impl.getConfigSupport().ensureConfigurationReady();
+                
+                MavenProjectSupport.createDDIfRequired(project, instanceFound);
             }
             EjbModuleProviderImpl ejb = project.getLookup().lookup(EjbModuleProviderImpl.class);
             if (ejb != null) {
@@ -209,7 +211,7 @@ public class POHImpl {
             }
         }
     }
-
+    
     private void projectClosed() {
         //is null check necessary?
         if (refreshListener != null) {

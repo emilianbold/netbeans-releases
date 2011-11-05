@@ -42,6 +42,9 @@
 
 package org.netbeans.modules.maven.j2ee.newproject;
 
+import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.modules.j2ee.common.dd.DDHelper;
+import org.netbeans.modules.maven.j2ee.web.WebModuleImpl;
 import java.util.Collections;
 import java.awt.Component;
 import java.io.File;
@@ -63,11 +66,13 @@ import org.netbeans.modules.maven.api.archetype.Archetype;
 import org.netbeans.modules.maven.api.archetype.ArchetypeWizards;
 import org.netbeans.modules.maven.api.archetype.ProjectInfo;
 import org.netbeans.modules.maven.j2ee.MavenJavaEEConstants;
+import org.netbeans.modules.maven.j2ee.MavenProjectSupport;
 import org.netbeans.modules.maven.j2ee.newproject.archetype.J2eeArchetypeFactory;
 import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import static org.netbeans.modules.maven.j2ee.newproject.Bundle.*;
+import org.netbeans.modules.maven.j2ee.web.WebModuleProviderImpl;
 import org.netbeans.modules.maven.model.pom.Properties;
 import org.netbeans.spi.project.AuxiliaryProperties;
 import org.netbeans.validation.api.ui.ValidationGroup;
@@ -172,6 +177,7 @@ public class EAWizardIterator implements WizardDescriptor.BackgroundInstantiatin
         if (projectDirName.endsWith("-ejb") || projectDirName.endsWith("-ear") || projectDirName.endsWith("-web")) { // NOI18N
             storeSettingsToPom(projectFile, MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER, serverID);
         }
+        MavenProjectSupport.createDDIfRequired(project, serverID);
     }
     
     private void storeSettingsToPom(FileObject projectFile, final String propertyName, final String serverID) {
