@@ -56,12 +56,16 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.templates.TemplateRegistration;
 import org.netbeans.api.validation.adapters.WizardDescriptorAdapter;
+import org.netbeans.modules.j2ee.common.dd.DDHelper;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.archetype.Archetype;
 import org.netbeans.modules.maven.api.archetype.ArchetypeWizards;
 import org.netbeans.modules.maven.api.archetype.ProjectInfo;
+import org.netbeans.modules.maven.j2ee.MavenProjectSupport;
 import org.netbeans.modules.maven.j2ee.newproject.archetype.J2eeArchetypeFactory;
+import org.netbeans.modules.maven.j2ee.web.WebModuleImpl;
+import org.netbeans.modules.maven.j2ee.web.WebModuleProviderImpl;
 import static org.netbeans.modules.maven.j2ee.newproject.Bundle.*;
 import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.Utilities;
@@ -156,6 +160,7 @@ public class BasicEEWizardIterator implements WizardDescriptor.BackgroundInstant
         props.put(Constants.HINT_COMPILE_ON_SAVE, "all", true); //NOI18N
         
         storeSettingsToPom(projectFile, MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER, serverID);
+        MavenProjectSupport.createDDIfRequired(project, serverID);
     }
     
     private void storeSettingsToPom(FileObject projectFile, final String propertyName, final String serverID) {
