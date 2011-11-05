@@ -309,8 +309,15 @@ public abstract class Children extends Object {
      */ 
     public static <T> Children create (ChildFactory <T> factory, boolean asynchronous) {
         if (factory == null) throw new NullPointerException ("Null factory");
-        return asynchronous ? new AsynchChildren <T> (factory) : 
-            new SynchChildren <T> (factory);
+        if (asynchronous) {
+            AsynchChildren<T> ch = new AsynchChildren <T> (factory);
+            factory.setObserver(ch);
+            return ch;
+        } else {
+            SynchChildren<T> ch = new SynchChildren <T> (factory);
+            factory.setObserver(ch);
+            return ch;
+        }
     }
 
     /**
