@@ -73,7 +73,6 @@ final class AsynchChildren <T> extends Children.Keys <Object> implements
      *        Nodes for them
      */ 
     AsynchChildren(ChildFactory<T> factory) {
-        factory.setObserver (this);
         this.factory = factory;
         task = PROC.create(this, true);
     }
