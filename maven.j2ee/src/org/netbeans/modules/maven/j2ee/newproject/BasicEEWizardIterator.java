@@ -56,7 +56,6 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.templates.TemplateRegistration;
 import org.netbeans.api.validation.adapters.WizardDescriptorAdapter;
-import org.netbeans.modules.j2ee.common.dd.DDHelper;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.archetype.Archetype;
@@ -64,8 +63,6 @@ import org.netbeans.modules.maven.api.archetype.ArchetypeWizards;
 import org.netbeans.modules.maven.api.archetype.ProjectInfo;
 import org.netbeans.modules.maven.j2ee.MavenProjectSupport;
 import org.netbeans.modules.maven.j2ee.newproject.archetype.J2eeArchetypeFactory;
-import org.netbeans.modules.maven.j2ee.web.WebModuleImpl;
-import org.netbeans.modules.maven.j2ee.web.WebModuleProviderImpl;
 import static org.netbeans.modules.maven.j2ee.newproject.Bundle.*;
 import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.Utilities;
@@ -102,19 +99,19 @@ public class BasicEEWizardIterator implements WizardDescriptor.BackgroundInstant
     }
     
 
-    @TemplateRegistration(folder=ArchetypeWizards.TEMPLATE_FOLDER, position=200, displayName="#template.WebApp", iconBase="org/netbeans/modules/maven/j2ee/web/maven_web_application_16.png", description="WebAppDescription.html")
+    @TemplateRegistration(folder=ArchetypeWizards.TEMPLATE_FOLDER, position=200, displayName="#template.WebApp", iconBase="org/netbeans/modules/maven/j2ee/resources/maven_web_application_16.png", description="../resources/WebAppDescription.html")
     @Messages("template.WebApp=Web Application")
     public static BasicEEWizardIterator createWebAppIterator() {
         return new BasicEEWizardIterator(J2eeModule.Type.WAR);
     }
 
-    @TemplateRegistration(folder=ArchetypeWizards.TEMPLATE_FOLDER, position=250, displayName="#template.EJB", iconBase="org/netbeans/modules/maven/j2ee/ejb/maven_ejb_module_16.png", description="EjbDescription.html")
+    @TemplateRegistration(folder=ArchetypeWizards.TEMPLATE_FOLDER, position=250, displayName="#template.EJB", iconBase="org/netbeans/modules/maven/j2ee/resources/maven_ejb_module_16.png", description="../resources/EjbDescription.html")
     @Messages("template.EJB=EJB Module")
     public static BasicEEWizardIterator createEJBIterator() {
         return new BasicEEWizardIterator(J2eeModule.Type.EJB);
     }
     
-    @TemplateRegistration(folder=ArchetypeWizards.TEMPLATE_FOLDER, position=277, displayName="#template.APPCLIENT", iconBase="org/netbeans/modules/maven/j2ee/appclient/appclient.png", description="AppClientDescription.html")
+    @TemplateRegistration(folder=ArchetypeWizards.TEMPLATE_FOLDER, position=277, displayName="#template.APPCLIENT", iconBase="org/netbeans/modules/maven/j2ee/resources/appclient.png", description="../resources/AppClientDescription.html")
     @Messages("template.APPCLIENT=Enterprise Application Client")
     public static BasicEEWizardIterator createAppClientIterator() {
         return new BasicEEWizardIterator(J2eeModule.Type.CAR);
