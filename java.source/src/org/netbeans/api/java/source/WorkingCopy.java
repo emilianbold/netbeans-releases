@@ -542,10 +542,18 @@ public class WorkingCopy extends CompilationController {
             }
         });
 
-        Rewriter r = new Rewriter(diffContext.file, diffContext.positionConverter, userInfo);
-        commit(diffContext.origUnit, diffs, r);
+        try {
+            Rewriter r = new Rewriter(diffContext.file, diffContext.positionConverter, userInfo);
+            commit(diffContext.origUnit, diffs, r);
 
-        return r.diffs;
+            return r.diffs;
+        } catch (IOException ex) {
+            if (!diffContext.file.isValid()) {
+                Logger.getLogger(WorkingCopy.class.getName()).log(Level.FINE, null, ex);
+                return Collections.emptyList();
+            }
+            throw ex;
+        }
     }
     
     private List<Difference> processExternalCUs(Map<?, int[]> tag2Span, Set<Tree> notSyntheticTrees) {
