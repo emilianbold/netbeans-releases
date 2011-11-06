@@ -43,17 +43,43 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<project name="c.jcraft.jsch" default="netbeans" basedir=".">
-    <import file="../nbbuild/templates/projectized.xml"/>
-    <target name="jar">
-        <jar jarfile="${cluster}/${module.jar}">
-            <zipfileset src="external/jsch-0.1.44.jar"/>
-            <manifest>
-                <attribute name="Bundle-SymbolicName" value="com.jcraft.jsch"/>
-                <attribute name="Bundle-Version" value="0.1.44"/>
-                <attribute name="Export-Package" value="com.jcraft.jsch"/>
-                <attribute name="Require-Bundle" value="com.jcraft.jzlib"/>
-            </manifest>
-        </jar>
-    </target>
-</project>
+
+<!DOCTYPE MIME-resolver PUBLIC "-//NetBeans//DTD MIME Resolver 1.0//EN" "http://www.netbeans.org/dtds/mime-resolver-1_0.dtd">
+
+<MIME-resolver>
+    <!-- UTF-8, ASCII, or some 8/7 bit encoding -->
+    <file>
+        <magic hex="3c3f786d"/>
+        <resolver mime="text/xml"/>
+    </file>
+    
+    <!-- UTF-8 with BO mark -->
+    <file>
+        <magic hex="efbbbf3c3f786d"/>
+        <resolver mime="text/xml"/>
+    </file>
+    
+    <!-- Unmarked Little Endian UTF-16-->
+    <file>
+        <magic hex="3c003f0078006d00"/>
+        <resolver mime="text/xml"/>
+    </file>
+    
+    <!-- Unmarked Big Endian UTF-16-->
+    <file>
+        <magic hex="003c003f0078006d"/>
+        <resolver mime="text/xml"/>
+    </file>
+    
+    <!-- Byteorder-marked Little Endian UTF-16-->
+    <file>
+        <magic hex="fffe3c003f0078006d00"/>
+        <resolver mime="text/xml"/>
+    </file>
+    
+    <!-- Byteorder-marked Big Endian UTF-16-->
+    <file>
+        <magic hex="feff003c003f0078006d"/>
+        <resolver mime="text/xml"/>
+    </file>
+</MIME-resolver>

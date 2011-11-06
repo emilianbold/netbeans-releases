@@ -58,7 +58,7 @@ import org.openide.util.Exceptions;
  *
  * @author  mkleint
  */
-public class CustomizerRunEar extends AbstractCustomizer {
+public class CustomizerRunEar extends BaseRunCustomizer {
 
     private Ear module;
 
@@ -85,7 +85,7 @@ public class CustomizerRunEar extends AbstractCustomizer {
     }
 
     @Override
-    void applyChangesInAWT() {
+    public void applyChangesInAWT() {
         boolean browserSelected = cbBrowser.isSelected();
         try {
             project.getProjectDirectory().setAttribute(PROP_SHOW_IN_BROWSER, browserSelected ? null : Boolean.FALSE.toString());
@@ -100,7 +100,7 @@ public class CustomizerRunEar extends AbstractCustomizer {
     }
 
     @Override
-    void applyChanges() {
+    public void applyChanges() {
         //#109507 workaround
         SessionContent sc = project.getLookup().lookup(SessionContent.class);
         if (listener.getValue() != null) {

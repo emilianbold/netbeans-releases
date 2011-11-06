@@ -39,44 +39,41 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.editor.verification;
+package org.netbeans.modules.css.editor.api;
+
+import javax.swing.text.BadLocationException;
+import org.netbeans.modules.csl.api.Error;
+import org.netbeans.modules.css.editor.module.main.CssModuleTestBase;
+import org.netbeans.modules.css.lib.TestUtil;
+import org.netbeans.modules.css.lib.api.CssParserResult;
+import org.netbeans.modules.parsing.spi.ParseException;
 
 /**
  *
- * @author Ondrej Brejla <obrejla@netbeans.org>
+ * @author marekfukala
  */
-public class PHPHintsTest extends PHPHintsTestBase {
+public class CssCslParserResultTest extends CssModuleTestBase {
 
-    public PHPHintsTest(String testName) {
-        super(testName);
+    public CssCslParserResultTest(String name) {
+        super(name);
     }
 
-    public void testModifiersCheckHint() throws Exception {
-        checkHintsInStartEndFile(new ModifiersCheckHint(), "testModifiersCheckHint.php");
+    public void testDuplicatedErrors() throws BadLocationException, ParseException {
+        CssParserResult result = TestUtil.parse(
+                "head{\n"
+                + "    background-image: uri();\n"
+                + "}");
+//        TestUtil.dumpResult(result);
+
+        assertNotNull(result);
+
+        CssCslParserResult cslresult = new CssCslParserResult(result);
+
+        for (Error e : cslresult.getDiagnostics()) {
+            System.out.println(e);
+        }
+
     }
 
-    public void testAbstractClassInstantiationHint() throws Exception {
-        checkHintsInStartEndFile(new AbstractClassInstantiationHint(), "testAbstractClassInstantiationHint.php");
-    }
-
-    public void testImplementAbstractMethodsHint() throws Exception {
-        checkHintsInStartEndFile(new ImplementAbstractMethodsHint(), "testImplementAbstractMethodsHint.php");
-    }
-
-    public void testMethodRedeclarationHint() throws Exception {
-        checkHintsInStartEndFile(new MethodRedeclarationHint(), "testMethodRedeclarationHint.php");
-    }
-
-    public void testTypeRedeclarationHint() throws Exception {
-        checkHintsInStartEndFile(new TypeRedeclarationHint(), "testTypeRedeclarationHint.php");
-    }
-
-    public void testUninitializedVariableHint() throws Exception {
-        checkHintsInStartEndFile(new UninitializedVariableHint(), "testUninitializedVariableHint.php");
-    }
-
-    public void testWrongOrderOfArgsHint() throws Exception {
-        checkHintsInStartEndFile(new WrongOrderOfArgsHint(), "testWrongOrderOfArgsHint.php");
-    }
 
 }

@@ -53,12 +53,12 @@ import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JPanel;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
-import org.netbeans.modules.maven.api.customizer.ModelHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
@@ -70,7 +70,6 @@ import org.netbeans.modules.web.spi.webmodule.WebModuleExtender;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 import org.netbeans.modules.web.api.webmodule.WebModule;
@@ -83,21 +82,23 @@ import org.openide.WizardDescriptor;
  * 
  * @author mkleint
  */
-public class CustomizerFrameworks extends AbstractCustomizer implements ListSelectionListener {
+public class CustomizerFrameworks extends JPanel implements ApplyChangesCustomizer, ListSelectionListener {
     
     private final ProjectCustomizer.Category category;
+    private Project project;
+    
     private List<WebModuleExtender> newExtenders = new LinkedList<WebModuleExtender>();
     private List<WebModuleExtender> existingExtenders = new LinkedList<WebModuleExtender>();
     private List<WebFrameworkProvider> usedFrameworks = new LinkedList<WebFrameworkProvider>();
     private Map<WebFrameworkProvider, WebModuleExtender> extenders = new IdentityHashMap<WebFrameworkProvider, WebModuleExtender>();
-    List<WebFrameworkProvider> addedFrameworks = new LinkedList<WebFrameworkProvider>();
+    private List<WebFrameworkProvider> addedFrameworks = new LinkedList<WebFrameworkProvider>();
 
     private ExtenderController controller = ExtenderController.create();
     
     
-    public CustomizerFrameworks(ProjectCustomizer.Category category, ModelHandle handle, Project project) {
-        super(handle, project);
+    public CustomizerFrameworks(ProjectCustomizer.Category category, Project project) {
         this.category = category;
+        this.project = project;
         
         initComponents();
         initFrameworksList();
@@ -122,7 +123,7 @@ public class CustomizerFrameworks extends AbstractCustomizer implements ListSele
     }
 
     @Override
-    void applyChanges() {
+    public void applyChanges() {
         WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
         for (int i = 0; i < newExtenders.size(); i++) {
             newExtenders.get(i).extend(webModule);
@@ -135,6 +136,10 @@ public class CustomizerFrameworks extends AbstractCustomizer implements ListSele
             }
         }
         existingExtenders.clear();
+    }
+
+    @Override
+    public void applyChangesInAWT() {
     }
     
     private void doUIandUsageLogging() {

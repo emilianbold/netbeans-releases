@@ -116,9 +116,8 @@ public final class CmFieldGenerator extends AbstractMethodGenerator {
     public void addFieldToClass(final MethodModel.Variable variable,  final boolean localGetter, final boolean localSetter,
             final boolean remoteGetter, final boolean remoteSetter) throws IOException {
 
-        // ejb class
-        JavaSource javaSource = JavaSource.forFileObject(ejbClassFileObject);
-        javaSource.runModificationTask(new Task<WorkingCopy>() {
+        // ejb class task creation
+        Task ejbClassTask = new Task<WorkingCopy>() {
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 TypeElement typeElement = workingCopy.getElements().getTypeElement(ejbClass);
@@ -129,7 +128,7 @@ public final class CmFieldGenerator extends AbstractMethodGenerator {
                 newClassTree = workingCopy.getTreeMaker().addClassMember(newClassTree, setterTree);
                 workingCopy.rewrite(classTree, newClassTree);
             }
-        }).commit();
+        };
 
         Map<String, String> interfaces = getInterfaces();
         final String local = interfaces.get(EntityAndSession.LOCAL);
@@ -138,7 +137,7 @@ public final class CmFieldGenerator extends AbstractMethodGenerator {
         // local interface
         if (localGetter || localSetter) {
             FileObject localFileObject = _RetoucheUtil.resolveFileObjectForClass(ejbClassFileObject, local);
-            javaSource = JavaSource.forFileObject(localFileObject);
+            JavaSource javaSource = JavaSource.forFileObject(localFileObject);
             javaSource.runModificationTask(new Task<WorkingCopy>() {
                 public void run(WorkingCopy workingCopy) throws IOException {
                     workingCopy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
@@ -161,7 +160,7 @@ public final class CmFieldGenerator extends AbstractMethodGenerator {
         // remote interface
         if (remoteGetter || remoteSetter) {
             FileObject remoteFileObject = _RetoucheUtil.resolveFileObjectForClass(ejbClassFileObject, remote);
-            javaSource = JavaSource.forFileObject(remoteFileObject);
+            JavaSource javaSource = JavaSource.forFileObject(remoteFileObject);
             javaSource.runModificationTask(new Task<WorkingCopy>() {
                 public void run(WorkingCopy workingCopy) throws IOException {
                     workingCopy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
@@ -181,6 +180,9 @@ public final class CmFieldGenerator extends AbstractMethodGenerator {
             }).commit();
         }
 
+        // commit task on ejb class
+        JavaSource javaSource = JavaSource.forFileObject(ejbClassFileObject);
+        javaSource.runModificationTask(ejbClassTask).commit();
     }
 
     /**
