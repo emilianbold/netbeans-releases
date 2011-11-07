@@ -206,24 +206,36 @@ public class HtmlHintsProvider implements HintsProvider {
                 fatalErrors.add(e);
             }
         }
-        for(Error e : fatalErrors) {
-            //remove the fatal error from the list of errors for further processing
-            htmlRuleContext.getLeftDiagnostics().remove(e);
-            
-            String message = new StringBuilder()
-                    .append(e.getDescription())
-                    .append('\n')
-                    .append(NbBundle.getMessage(HtmlValidatorRule.class, "MSG_FatalHtmlErrorAddendum"))
-                    .toString();
-            //add a special hint for the fatal error
-            Hint fatalErrorHint = new Hint(new FatalHtmlRule(),
-                    message,
-                    fo,
-                    EmbeddingUtil.getErrorOffsetRange(e, snapshot),
-                    Collections.<HintFix>emptyList(),
-                    5);//looks like lower number o the priority means higher priority
-            
-            hints.add(fatalErrorHint);
+        //To resolve following 
+        //Bug 200801 - Fatal error hint for mixed php/html code
+        //but keep the behavior described in 
+        //Bug 199104 - No error for unmatched <div> tag 
+        //I need to keep the fatal errors enabled only for something which is xml-like
+        //
+        //Really proper solution would be to introduce a facility which would filter
+        //out the error messages selectively and keep just those whose cannot be 
+        //false errors caused by a templating language. The tags pairing in facelets
+        //is nice example as described in the issue above.
+        if(isXmlBasedMimetype(saresult)) {
+            for(Error e : fatalErrors) {
+                //remove the fatal error from the list of errors for further processing
+                htmlRuleContext.getLeftDiagnostics().remove(e);
+
+                String message = new StringBuilder()
+                        .append(e.getDescription())
+                        .append('\n')
+                        .append(NbBundle.getMessage(HtmlValidatorRule.class, "MSG_FatalHtmlErrorAddendum"))
+                        .toString();
+                //add a special hint for the fatal error
+                Hint fatalErrorHint = new Hint(new FatalHtmlRule(),
+                        message,
+                        fo,
+                        EmbeddingUtil.getErrorOffsetRange(e, snapshot),
+                        Collections.<HintFix>emptyList(),
+                        5);//looks like lower number o the priority means higher priority
+
+                hints.add(fatalErrorHint);
+            }
         }
         
         //now process the non-fatal errors
@@ -394,6 +406,12 @@ public class HtmlHintsProvider implements HintsProvider {
             default:
                 throw new AssertionError("Unexpected severity level"); //NOI18N
         }
+    }
+
+    private boolean isXmlBasedMimetype(SyntaxAnalyzerResult saresult) {
+        String mimeType = HtmlErrorFilter.getWebPageMimeType(saresult);
+        //return true for something like text/xml, text/xhtml or text/facelets+xhtml
+        return mimeType.indexOf("xml") != -1 || mimeType.indexOf("xhtml") != -1;
     }
     
     private static final class HtmlRule implements ErrorRule {
