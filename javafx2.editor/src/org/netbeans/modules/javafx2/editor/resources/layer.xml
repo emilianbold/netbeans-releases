@@ -47,7 +47,7 @@ made subject to such option by the copyright holder.
 <filesystem>
     <folder name="Editors">
         <folder name="text">
-            <folder name="xml">
+            <folder name="x-fxml+xml">
                 <folder name="CompletionProviders">
                     <file name="org-netbeans-modules-javafx2-editor-FXMLCompletion.instance"/>
                 </folder>

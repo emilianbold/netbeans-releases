@@ -47,6 +47,6 @@ made subject to such option by the copyright holder.
 <MIME-resolver>
     <file>
         <ext name="fxml"/>
-        <resolver mime="text/xml"/>
+        <resolver mime="text/x-fxml+xml"/>
     </file>
 </MIME-resolver>
