@@ -43,11 +43,7 @@ package org.netbeans.modules.cnd.discovery.projectimport;
 
 import java.io.IOException;
 import java.io.Writer;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
@@ -57,25 +53,16 @@ import org.netbeans.api.extexecution.ExecutionDescriptor.LineConvertorFactory;
 import org.netbeans.api.extexecution.print.ConvertedLine;
 import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
-import org.netbeans.modules.cnd.api.remote.RemoteProject;
-import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
-import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
-import org.netbeans.modules.cnd.api.remote.ServerList;
-import org.netbeans.modules.cnd.api.remote.ServerRecord;
+import org.netbeans.modules.cnd.api.remote.*;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
+import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
+import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.spi.toolchain.CompilerLineConvertor;
 import org.netbeans.modules.cnd.spi.toolchain.ToolchainProject;
 import org.netbeans.modules.cnd.utils.CndUtils;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
-import org.netbeans.modules.nativeexecution.api.ExecutionListener;
-import org.netbeans.modules.nativeexecution.api.HostInfo;
-import org.netbeans.modules.nativeexecution.api.NativeProcess;
-import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
-import org.netbeans.modules.nativeexecution.api.NativeProcessChangeEvent;
+import org.netbeans.modules.nativeexecution.api.*;
 import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionDescriptor;
 import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionService;
 import org.netbeans.modules.nativeexecution.api.execution.PostMessageDisplayer;
@@ -96,7 +83,7 @@ import org.openide.windows.InputOutput;
 public class ExecuteCommand {
 
     private final String runDir;
-    private final String command;
+    private String command;
     private final Project project;
     private final ExecutionEnvironment execEnv;
 
@@ -127,6 +114,17 @@ public class ExecuteCommand {
         } catch (CancellationException ex) {
             Exceptions.printStackTrace(ex);
             return null;
+        }
+        if (command.indexOf("${MAKE}") >= 0) { //NOI18N
+            String make = "make"; //NOI18N
+            CompilerSet compilerSet = getCompilerSet();
+            if (compilerSet != null) {
+                Tool findTool = compilerSet.findTool(PredefinedToolKind.MakeTool);
+                if (findTool != null) {
+                    make = findTool.getPath();
+                }
+            }
+            command = command.replace("${MAKE}", make);
         }
         // Arguments
         String[] args = new String[]{"-c", command}; // NOI18N
