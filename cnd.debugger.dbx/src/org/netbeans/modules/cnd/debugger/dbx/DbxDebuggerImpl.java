@@ -3755,11 +3755,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
 
     public void notifyUnsavedFiles(String file[]) {
         // perhaps SHOULD use interruptQuietly?
-	/* DEBUG
-        We want this to fail in order to get to the bottom of IZ 50761
-        if (dbx != null)
-         */
-        if (postedKillEngine) {
+        if (!isConnected()) {
             return;
         }
 	String mappedFile[] = new String[file.length];
