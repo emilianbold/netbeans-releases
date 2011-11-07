@@ -43,6 +43,7 @@
  */
 package org.netbeans.api.java.source;
 
+import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.LiteralTree;
@@ -53,7 +54,9 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
+import com.sun.source.util.TreePathScanner;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -479,5 +482,20 @@ public class TreeUtilitiesTest extends NbTestCase {
         Scope s = info.getTrees().getScope(tp);
 
         assertFalse(info.getTreeUtilities().isStaticContext(s));
+    }
+
+    public void testIsCompileTimeConstant() throws Exception {
+        prepareTest("Test", "package test; public class Test { private void m(String str) { int i; i = 1 + 1; i = str.length(); } }");
+
+        final List<Boolean> result = new ArrayList<Boolean>();
+
+        new TreePathScanner<Void, Void>() {
+            @Override public Void visitAssignment(AssignmentTree node, Void p) {
+                result.add(info.getTreeUtilities().isCompileTimeConstantExpression(new TreePath(getCurrentPath(), node.getExpression())));
+                return super.visitAssignment(node, p);
+            }
+        }.scan(info.getCompilationUnit(), null);
+
+        assertEquals(Arrays.asList(true, false), result);
     }
 }
