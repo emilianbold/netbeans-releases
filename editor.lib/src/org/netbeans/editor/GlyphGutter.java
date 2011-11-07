@@ -80,7 +80,6 @@ import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
 import javax.swing.text.JTextComponent;
-import javax.swing.text.Position;
 import javax.swing.text.View;
 import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.editor.fold.FoldHierarchyEvent;
@@ -93,7 +92,6 @@ import org.netbeans.modules.editor.lib.ColoringMap;
 import org.netbeans.modules.editor.lib2.view.LockedViewHierarchy;
 import org.netbeans.modules.editor.lib2.view.ParagraphViewDescriptor;
 import org.netbeans.modules.editor.lib2.view.ViewHierarchy;
-import org.openide.ErrorManager;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -364,10 +362,6 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
             dim.width = glyphGutterWidth;
             dim.height = getHeightDimension();
 
-
-            // enlarge the gutter so that inserting new lines into
-            // document does not cause resizing too often
-            dim.height += ENLARGE_GUTTER_HEIGHT * eui.getLineHeight();
 
             setPreferredSize(dim);
 
