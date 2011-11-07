@@ -4837,8 +4837,8 @@ class LayoutFeeder implements LayoutConstants {
         if (subGroup != null && best.newSubGroup && best.snappedParallel != null) {
             // after reconfiguring into subgroup it may require to re-check the aligned inclusion (bug 203742)
             IncludeDesc alignedDesc = addAligningInclusion(inclusions);
-            if (alignedDesc != null && best.parent.isParentOf(alignedDesc.parent)) {
-                inclusions.remove(best); // this new alignedDesc is the best...
+            if (alignedDesc != null) {
+                inclusions.remove(best.parent.isParentOf(alignedDesc.parent) ? best : alignedDesc);
             }
         }
 
