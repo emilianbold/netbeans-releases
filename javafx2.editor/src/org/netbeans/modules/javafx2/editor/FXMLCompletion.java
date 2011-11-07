@@ -63,7 +63,6 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.xml.lexer.XMLTokenId;
-import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.editor.structure.api.DocumentElement;
 import org.netbeans.modules.editor.structure.api.DocumentModel;
 import org.netbeans.modules.editor.structure.api.DocumentModelException;
@@ -109,15 +108,13 @@ public class FXMLCompletion implements CompletionProvider {
         return 0;
     }
 
-    private static class Query extends AsyncCompletionQuery {
+    static class Query extends AsyncCompletionQuery {
+        List<FXMLCompletionItem> results;
 
         @Override
         protected void query(final CompletionResultSet resultSet, final Document document, final int caretOffset) {
 
-            if (!(document instanceof BaseDocument)) {
-                return;
-            }
-            final BaseDocument bdoc = (BaseDocument) document;
+            results = new ArrayList<FXMLCompletionItem>();
 
             document.render(new Runnable() {
 
@@ -132,7 +129,7 @@ public class FXMLCompletion implements CompletionProvider {
                         ts.move(caretOffset);
                         if (ts.moveNext()) {
                             Token<?> t = ts.token();
-                            List<DocumentElement> path = getPathToRoot(bdoc, caretOffset);
+                            List<DocumentElement> path = getPathToRoot(document, caretOffset);
                             String prefix = "";
   //                        System.out.println("TOKEN ID= " + t.id() + " TEXT: " + t.text()); // TODO: remove me
                             if (t.id() == XMLTokenId.TAG) {
@@ -145,14 +142,14 @@ public class FXMLCompletion implements CompletionProvider {
                                        ) {
                                         List<String> classes = getAvailableClasses(document, prefix, resultSet);
                                         for (String cls : classes) {
-                                            resultSet.addItem(new FXMLCompletionItem(ts.offset(), "<" + cls)); // NOI18N
+                                            results.add(new FXMLCompletionItem(ts.offset(), "<" + cls)); // NOI18N
                                         }
                                     }
                                     if ( (path.size() > 2) && (!path.get(1).getName().equals("children")) )  { // NOI18N
                                         String className = path.get(1).getName();
                                         List<String> properties = getAvailableProperties(document, prefix, className,resultSet);
                                         for (String prop : properties) {
-                                            resultSet.addItem(new FXMLCompletionItem(ts.offset(), "<" + prop)); // NOI18N
+                                            results.add(new FXMLCompletionItem(ts.offset(), "<" + prop)); // NOI18N
                                         }
                                     }
                                 }
@@ -165,7 +162,7 @@ public class FXMLCompletion implements CompletionProvider {
                                     String className = path.get(0).getName();
                                     List<String> props = getAvailableProperties(document, prefix, className, resultSet);
                                     for (String prop : props) {
-                                        resultSet.addItem(new FXMLCompletionItem(ts.offset(), prop)); // NOI18N
+                                        results.add(new FXMLCompletionItem(ts.offset(), prop)); // NOI18N
                                     }
                                 }
                             }
@@ -179,7 +176,11 @@ public class FXMLCompletion implements CompletionProvider {
                     }
                 }
             });
-            resultSet.finish();
+            if (resultSet != null) {
+                // resultSet can be null only in tests!
+                resultSet.addAllItems(results);
+                resultSet.finish();
+            }
         }
     }
 
@@ -190,7 +191,7 @@ public class FXMLCompletion implements CompletionProvider {
      * @return the list contains first the element at current offset and the
      *    path all the way up to the root (root is the last in the list)
      */
-    private static List<DocumentElement> getPathToRoot(BaseDocument bdoc, int caretOffset) {
+    private static List<DocumentElement> getPathToRoot(Document bdoc, int caretOffset) {
         List<DocumentElement> result = new ArrayList<DocumentElement>();
         final DocumentModel model;
         try {
@@ -214,7 +215,9 @@ public class FXMLCompletion implements CompletionProvider {
         List<String> result = new ArrayList<String>();
         Future<Void> f = ParserManager.parseWhenScanFinished(MIME_TYPE, getAllPropertiesTask(doc, prefix, className, result));
         if (!f.isDone()) {
-            resultSet.setWaitText(NbBundle.getMessage(FXMLCompletion.class, "scanning-in-progress")); //NOI18N
+            if (resultSet != null) {
+                resultSet.setWaitText(NbBundle.getMessage(FXMLCompletion.class, "scanning-in-progress")); //NOI18N
+            }
             f.get();
         }
         return result;
@@ -225,7 +228,9 @@ public class FXMLCompletion implements CompletionProvider {
         List<String> result = new ArrayList<String>();
         Future<Void> f = ParserManager.parseWhenScanFinished(MIME_TYPE, getAllClassesTask(doc, prefix, result));
         if (!f.isDone()) {
-            resultSet.setWaitText(NbBundle.getMessage(FXMLCompletion.class, "scanning-in-progress")); //NOI18N
+            if (resultSet != null) {
+                resultSet.setWaitText(NbBundle.getMessage(FXMLCompletion.class, "scanning-in-progress")); //NOI18N
+            }
             f.get();
         }
         return result;
@@ -292,9 +297,13 @@ public class FXMLCompletion implements CompletionProvider {
                 ClassIndex index = cpInfo.getClassIndex();
                 CompilationInfo info = CompilationInfo.get(result);
                 Elements elems = info.getElements();
+                TypeElement fxBaseElem = elems.getTypeElement(FX_BASE_CLASS);
+                if (fxBaseElem == null) {
+                    throw new IllegalStateException("Cannot find class " + FX_BASE_CLASS + " on classpath!"); // NOI18N
+                }
                 Types types = info.getTypes();
                 if (prefix != null && prefix.length()>2) {
-                    DeclaredType fxBaseClassType = types.getDeclaredType(elems.getTypeElement(FX_BASE_CLASS));
+                    DeclaredType fxBaseClassType = types.getDeclaredType(fxBaseElem);
                     for(ElementHandle<TypeElement> handle : index.getDeclaredTypes(prefix, 
                             ClassIndex.NameKind.PREFIX, EnumSet.allOf(ClassIndex.SearchScope.class))) {
                         TypeElement te = handle.resolve(info);
@@ -304,7 +313,7 @@ public class FXMLCompletion implements CompletionProvider {
                     }
                 } else {
                     List<ElementHandle> toExplore = new LinkedList<ElementHandle>();
-                    toExplore.add(ElementHandle.create(elems.getTypeElement(FX_BASE_CLASS)));
+                    toExplore.add(ElementHandle.create(fxBaseElem));
                     while (!toExplore.isEmpty()) {
                         ElementHandle current = toExplore.remove(0);
                         for (ElementHandle<TypeElement> eh : index.getElements(current, 

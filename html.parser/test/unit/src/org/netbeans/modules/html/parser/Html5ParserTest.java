@@ -873,16 +873,33 @@ public class Html5ParserTest extends NbTestCase {
     public void testIssue197608() throws ParseException {
 //        AstNodeTreeBuilder.setLoggerLevel(Level.FINER);
         
-        String code = "<div></di   <p>";
-        //             0123456789
+        String code = "<div></di   <p> aaa";
+        //             0123456789012345
 
         HtmlParseResult result = parse(code);
         AstNode root = result.root();
 
         assertNotNull(root);
-//        AstNodeUtils.dumpTree(root);
+        AstNodeUtils.dumpTree(root);
 
-        //bad, bad... the parse tree doesn't contain any error node for the "</di" element
+        Collection<ProblemDescription> problems = result.getProblems();
+        assertNotNull(problems);
+        assertEquals(2, problems.size());
+        
+        Iterator<ProblemDescription> problemsItr = problems.iterator();
+        ProblemDescription pd = problemsItr.next();
+        assertNotNull(pd.getKey());
+        assertNotNull(pd.getText());
+        assertEquals(ProblemDescription.ERROR, pd.getType());
+        assertEquals(9, pd.getFrom());
+        assertEquals(9, pd.getTo());
+        
+        pd = problemsItr.next();
+        assertNotNull(pd.getKey());
+        assertNotNull(pd.getText());
+        assertEquals(ProblemDescription.ERROR, pd.getType());
+        assertEquals(12, pd.getFrom());
+        assertEquals(12, pd.getTo());
         
     }
     
