@@ -87,7 +87,7 @@ public class InferenceCompletionTest extends GroovyTestBase {
         checkCompletion(TEST_BASE + "Inference1.groovy", "        set.a^", true);
     }
 
-    public void testinference2() throws Exception {
+    public void testInference2() throws Exception {
         checkCompletion(TEST_BASE + "Inference1.groovy", "        set.t^", true);
     }
 }

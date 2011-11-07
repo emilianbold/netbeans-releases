@@ -4,7 +4,7 @@ new Test().get|
 ------------------------------------
 METHOD     getAge()                        [PUBLIC]   Object
 METHOD     getAt(String)                              Object
-METHOD     getClass()                      [PUBLIC]   Class<? extends Object>
+METHOD     getClass()                      [PUBLIC]   Class<?>
 METHOD     getMetaClass()                             MetaClass
 METHOD     getMetaPropertyValues()                    List
 METHOD     getName()                       [PUBLIC]   String

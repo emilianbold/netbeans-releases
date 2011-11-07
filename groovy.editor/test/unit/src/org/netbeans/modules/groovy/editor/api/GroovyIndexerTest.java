@@ -119,6 +119,7 @@ public class GroovyIndexerTest extends GroovyTestBase {
 //        });
     }
 
+    // TESTFAIL x
     public void testClasses() throws Exception {
         indexFile("testfiles/Hello.groovy");
         FileObject fo = getTestFile("testfiles/Hello.groovy");
