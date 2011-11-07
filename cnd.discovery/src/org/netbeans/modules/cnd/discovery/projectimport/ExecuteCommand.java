@@ -124,7 +124,7 @@ public class ExecuteCommand {
                     make = findTool.getPath();
                 }
             }
-            command = command.replace("${MAKE}", make);
+            command = command.replace("${MAKE}", make); //NOI18N
         }
         // Arguments
         String[] args = new String[]{"-c", command}; // NOI18N
