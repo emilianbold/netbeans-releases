@@ -139,6 +139,9 @@ public final class EndorsedClassPathImpl implements ClassPathImplementation, Fil
                                                 return;
                                             }
                                         }
+                                        if (!jar.isFile()) {
+                                            return;
+                                        }
                                         File toScan = null;
                                         REPO: for (RepositoryInfo repo : RepositoryPreferences.getInstance().getRepositoryInfos()) {
                                             LOG.log(Level.FINE, "checking {0}", repo);

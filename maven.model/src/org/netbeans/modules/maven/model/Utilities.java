@@ -190,6 +190,8 @@ public class Utilities {
                     BaseDocument doc = getDocument(dobj);
                     if (doc != null) {
                         items.add(doc);
+                    } else {
+                        logger.log(Level.WARNING, "no Document found for {0}", dobj);
                     }
                 } catch (IOException x) {
                     logger.log(Level.SEVERE, x.getMessage());
