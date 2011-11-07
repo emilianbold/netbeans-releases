@@ -164,7 +164,6 @@ CLASS      GroovyClassLoader                          null
 CLASS      GroovyCodeSource                           null
 CLASS      GroovyCollections                          null
 CLASS      GroovyInterceptable                        null
-CLASS      GroovyLog                                  null
 CLASS      GroovyLogTestCase                          null
 CLASS      GroovyMBean                                null
 CLASS      GroovyObject                               null
@@ -201,7 +200,6 @@ CLASS      IllegalMonitorStateException               null
 CLASS      IllegalPropertyAccessException             null
 CLASS      IllegalStateException                      null
 CLASS      IllegalThreadStateException                null
-CLASS      Immutable                                  null
 CLASS      IncompatibleClassChangeError               null
 CLASS      IncorrectClosureArgumentsExcep             null
 CLASS      IndentPrinter                              null
@@ -317,7 +315,6 @@ CLASS      OutputStream                               null
 CLASS      OutputStreamWriter                         null
 CLASS      Override                                   null
 CLASS      Package                                    null
-CLASS      PackageScope                               null
 CLASS      ParameterArray                             null
 CLASS      PasswordAuthentication                     null
 CLASS      PermutationGenerator                       null

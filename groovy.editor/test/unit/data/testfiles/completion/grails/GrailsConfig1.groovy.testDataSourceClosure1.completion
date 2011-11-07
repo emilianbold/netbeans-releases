@@ -14,6 +14,7 @@ METHOD     call(Object[])                  [PUBLIC]   V
 METHOD     clone()                         [PUBLIC]   Object
 METHOD     collect(Closure)                           List
 METHOD     collect(Collection, Closure)               Collection
+METHOD     curry(Object)                   [PUBLIC]   Closure<V>
 METHOD     curry(Object[])                 [PUBLIC]   Closure<V>
 METHOD     dump()                                     String
 METHOD     each(Closure)                              Object
