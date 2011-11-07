@@ -1905,7 +1905,7 @@ public abstract class Children extends Object {
     */
 
     private static final class ProjectManagerDeadlockDetector implements Executor {
-
+        private final Mutex FALLBACK = new Mutex();
         private final AtomicReference<WeakReference<Mutex>> pmMutexRef = new AtomicReference<WeakReference<Mutex>>();
 
         public void execute(Runnable command) {
@@ -1950,15 +1950,15 @@ public abstract class Children extends Object {
                 method = clazz.getMethod("mutex"); // NOI18N
                 return (Mutex) method.invoke(null);
             } catch (ClassNotFoundException e) {
-                return null;
+                return FALLBACK;
             } catch (IllegalAccessException e) {
-                return null;
+                return FALLBACK;
             } catch (IllegalArgumentException e) {
-                return null;
+                return FALLBACK;
             } catch (InvocationTargetException e) {
-                return null;
+                return FALLBACK;
             } catch (NoSuchMethodException e) {
-                return null;
+                return FALLBACK;
             } catch (ClassCastException e) { // observed to occur in MemoryValidationTest
                 Class<?> type = method.getReturnType();
                 LOG.log(Level.WARNING, "Reopen #175325 and save complete log: type=" + type.getName() + " type.cl=" + type.getClassLoader() +
