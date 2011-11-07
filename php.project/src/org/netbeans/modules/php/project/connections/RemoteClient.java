@@ -105,10 +105,10 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
 
     private final RemoteConfiguration configuration;
     private final AdvancedProperties properties;
-    private final String baseRemoteDirectory;
     // @GuardedBy(this) to avoid over-complicated code, can be improved
     private final org.netbeans.modules.php.project.connections.spi.RemoteClient remoteClient;
 
+    private volatile String baseRemoteDirectory;
     private volatile boolean cancelled = false;
     private volatile OperationMonitor operationMonitor;
 
@@ -196,6 +196,12 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
                 disconnect();
             }
             throw new RemoteException(NbBundle.getMessage(RemoteClient.class, "MSG_CannotChangeDirectory", baseRemoteDirectory), remoteClient.getReplyString());
+        }
+        // #204680 - symlinks on remote server
+        String pwd = remoteClient.printWorkingDirectory();
+        if (!pwd.equals(baseRemoteDirectory)) {
+            LOGGER.log(Level.FINE, "Changing base remote directory (symlink?): {0} -> {1}", new Object[] {baseRemoteDirectory, pwd});
+            baseRemoteDirectory = pwd;
         }
     }
 
