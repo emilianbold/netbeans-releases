@@ -23,9 +23,12 @@ CLASS      Collection                                 null
 CLASS      Comparable                                 null
 CLASS      Comparator                                 null
 CLASS      ContentHandlerFactory                      null
+CLASS      CookiePolicy                               null
+CLASS      CookieStore                                null
 CLASS      DataInput                                  null
 CLASS      DataOutput                                 null
 CLASS      DatagramSocketImplFactory                  null
+CLASS      Deque                                      null
 CLASS      Enumeration                                null
 CLASS      EventListener                              null
 CLASS      Externalizable                             null
@@ -35,6 +38,7 @@ CLASS      FileNameMap                                null
 CLASS      FilenameFilter                             null
 CLASS      Flushable                                  null
 CLASS      Formattable                                null
+CLASS      GroovyCallable                             null
 CLASS      GroovyInterceptable                        null
 CLASS      GroovyObject                               null
 CLASS      GroovyResourceLoader                       null
@@ -50,6 +54,8 @@ CLASS      MetaClassRegistry                          null
 CLASS      MetaClassRegistryChangeEventLi             null
 CLASS      MetaObjectProtocol                         null
 CLASS      MutableMetaClass                           null
+CLASS      NavigableMap                               null
+CLASS      NavigableSet                               null
 CLASS      ObjectInput                                null
 CLASS      ObjectInputValidation                      null
 CLASS      ObjectOutput                               null

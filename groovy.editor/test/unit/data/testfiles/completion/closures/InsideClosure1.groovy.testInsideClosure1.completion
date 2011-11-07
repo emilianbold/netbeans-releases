@@ -25,6 +25,7 @@ CLASS      AllTestSuite                               null
 CLASS      AntBuilder                                 null
 CLASS      Appendable                                 null
 CLASS      ArithmeticException                        null
+CLASS      ArrayDeque                                 null
 CLASS      ArrayIndexOutOfBoundsException             null
 CLASS      ArrayList                                  null
 CLASS      ArrayStoreException                        null
@@ -81,9 +82,13 @@ CLASS      ConfigBinding                              null
 CLASS      ConfigObject                               null
 CLASS      ConfigSlurper                              null
 CLASS      ConnectException                           null
+CLASS      Console                                    null
 CLASS      ContentHandler                             null
 CLASS      ContentHandlerFactory                      null
 CLASS      CookieHandler                              null
+CLASS      CookieManager                              null
+CLASS      CookiePolicy                               null
+CLASS      CookieStore                                null
 CLASS      Currency                                   null
 CLASS      DataInput                                  null
 CLASS      DataInputStream                            null
@@ -98,6 +103,7 @@ CLASS      Delegate                                   null
 CLASS      DelegatingMetaClass                        null
 CLASS      Deprecated                                 null
 CLASS      DeprecationException                       null
+CLASS      Deque                                      null
 CLASS      Dictionary                                 null
 CLASS      Double                                     null
 CLASS      DuplicateFormatFlagsException              null
@@ -148,8 +154,12 @@ CLASS      Formatter                                  null
 CLASS      FormatterClosedException                   null
 CLASS      GString                                    null
 CLASS      Grab                                       null
+CLASS      GrabConfig                                 null
+CLASS      GrabExclude                                null
+CLASS      GrabResolver                               null
 CLASS      Grapes                                     null
 CLASS      GregorianCalendar                          null
+CLASS      GroovyCallable                             null
 CLASS      GroovyClassLoader                          null
 CLASS      GroovyCodeSource                           null
 CLASS      GroovyCollections                          null
@@ -170,9 +180,12 @@ CLASS      GroovyTestSuite                            null
 CLASS      HashMap                                    null
 CLASS      HashSet                                    null
 CLASS      Hashtable                                  null
+CLASS      HttpCookie                                 null
 CLASS      HttpRetryException                         null
 CLASS      HttpURLConnection                          null
+CLASS      IDN                                        null
 CLASS      IFileNameFinder                            null
+CLASS      IOError                                    null
 CLASS      IOException                                null
 CLASS      IdentityHashMap                            null
 CLASS      IllegalAccessError                         null
@@ -207,6 +220,7 @@ CLASS      InstantiationException                     null
 CLASS      IntRange                                   null
 CLASS      Integer                                    null
 CLASS      Interceptor                                null
+CLASS      InterfaceAddress                           null
 CLASS      InternalError                              null
 CLASS      InterruptedException                       null
 CLASS      InterruptedIOException                     null
@@ -216,6 +230,8 @@ CLASS      InvalidPropertiesFormatExcepti             null
 CLASS      Iterable                                   null
 CLASS      Iterator                                   null
 CLASS      JarURLConnection                           null
+CLASS      JavadocAssertionTestBuilder                null
+CLASS      JavadocAssertionTestSuite                  null
 CLASS      Lazy                                       null
 CLASS      LineNumberInputStream                      null
 CLASS      LineNumberReader                           null
@@ -231,6 +247,7 @@ CLASS      Long                                       null
 CLASS      MalformedURLException                      null
 CLASS      Map                                        null
 CLASS      MapEntry                                   null
+CLASS      MapWithDefault                             null
 CLASS      Math                                       null
 CLASS      MetaArrayLengthProperty                    null
 CLASS      MetaBeanProperty                           null
@@ -253,6 +270,8 @@ CLASS      MissingResourceException                   null
 CLASS      Mixin                                      null
 CLASS      MulticastSocket                            null
 CLASS      MutableMetaClass                           null
+CLASS      NavigableMap                               null
+CLASS      NavigableSet                               null
 CLASS      NegativeArraySizeException                 null
 CLASS      NetPermission                              null
 CLASS      NetworkInterface                           null
@@ -301,6 +320,7 @@ CLASS      Package                                    null
 CLASS      PackageScope                               null
 CLASS      ParameterArray                             null
 CLASS      PasswordAuthentication                     null
+CLASS      PermutationGenerator                       null
 CLASS      PipedInputStream                           null
 CLASS      PipedOutputStream                          null
 CLASS      PipedReader                                null
@@ -352,6 +372,8 @@ CLASS      SequenceInputStream                        null
 CLASS      Serializable                               null
 CLASS      SerializablePermission                     null
 CLASS      ServerSocket                               null
+CLASS      ServiceConfigurationError                  null
+CLASS      ServiceLoader                              null
 CLASS      Set                                        null
 CLASS      Short                                      null
 CLASS      SimpleTimeZone                             null

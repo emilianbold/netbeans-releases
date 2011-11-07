@@ -48,6 +48,7 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import org.codehaus.groovy.ast.AnnotatedNode;
 import org.codehaus.groovy.ast.ClassCodeVisitorSupport;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.ConstructorNode;
@@ -101,7 +102,7 @@ public class SemanticAnalysisVisitor extends ClassCodeVisitorSupport {
 
     @Override
     public void visitField(FieldNode node) {
-        if (node.getLineNumber() > 0) {
+        if (isInSource(node)) {
             OffsetRange range = AstUtilities.getRange(node, doc);
             EnumSet<ColoringAttributes> attributes = EnumSet.of(ColoringAttributes.FIELD);
 
@@ -115,7 +116,7 @@ public class SemanticAnalysisVisitor extends ClassCodeVisitorSupport {
 
     @Override
     public void visitConstructor(ConstructorNode node) {
-        if (node.getLineNumber() > 0) {
+        if (isInSource(node)) {
             // Beware, a ConstructorNode is a MethodNode as well, (see below)
             // but we have to catch the Constructors first.
             OffsetRange range = AstUtilities.getRange(node, doc);
@@ -126,7 +127,7 @@ public class SemanticAnalysisVisitor extends ClassCodeVisitorSupport {
 
     @Override
     public void visitMethod(MethodNode node) {
-        if (node.getLineNumber() > 0) {
+        if (isInSource(node)) {
             OffsetRange range = AstUtilities.getRange(node, doc);
             EnumSet<ColoringAttributes> attributes = EnumSet.of(ColoringAttributes.METHOD);
 
@@ -150,7 +151,7 @@ public class SemanticAnalysisVisitor extends ClassCodeVisitorSupport {
 
     @Override
     public void visitClass(ClassNode node) {
-        if (node.getLineNumber() > 0) {
+        if (isInSource(node)) {
             OffsetRange range = AstUtilities.getRange(node, doc);
             highlights.put(range, ColoringAttributes.CLASS_SET);
         }
@@ -162,11 +163,15 @@ public class SemanticAnalysisVisitor extends ClassCodeVisitorSupport {
         Variable var = node.getAccessedVariable();
 
         if (var instanceof FieldNode) {
-            if (node.getLineNumber() > 0) {
+            if (isInSource(node)) {
                 OffsetRange range = AstUtilities.getRange(node, doc);
                 highlights.put(range, ColoringAttributes.FIELD_SET);
             }
         }
         super.visitVariableExpression(node);
+    }
+
+    private boolean isInSource(AnnotatedNode node) {
+        return node.getLineNumber() > 0 && !node.hasNoRealSourcePosition();
     }
 }
