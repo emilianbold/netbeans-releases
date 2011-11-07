@@ -24,10 +24,21 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ *
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -41,25 +52,23 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.cnd.spi.model.services;
 
-package org.netbeans.modules.cnd.source.spi;
-
-import org.openide.nodes.Node;
+import org.netbeans.modules.cnd.api.model.CsmObject;
 
 /**
- * This handler is used by JavaNode.setName() method. JavaNode.setName() uses
- * Lookup.getDefault() to lookup for instances of RenameHandler. If there is one
- * instance found, it's handleRename(...) method is called to handle rename
- * request. More than one instance of RenameHandler is not allowed.
+ * Provider for visibility query.
  *
- * @author Jan Becicka, Vladimir Voskresensky
- * @since 1.8.0
+ * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
-public interface RenameHandler {
+public interface CsmVisibilityQueryProvider {
+
     /**
-     * @param node on this node rename was requested
-     * @param newName new name of node
-     * @throws java.lang.IllegalArgumentException thrown if rename cannot be performed
+     * Checks visibility.
+     *
+     * @param obj - code model object
+     * @return visibility
      */
-    void handleRename(Node node, String newName) throws IllegalArgumentException;
+    public boolean isVisible(CsmObject obj);
+
 }
