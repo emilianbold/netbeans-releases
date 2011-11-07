@@ -169,7 +169,7 @@ public final class FolderObj extends BaseFileObj {
                 }
                 mutexPrivileged.enterWriteAccess();
                 try {
-                    Set<FileNaming> res = childrenCache.getChildren(false, task);
+                    Set<FileNaming> res = childrenCache.getChildren(counter >= 10, task);
                     if (res != null) {
                         fileNames = new HashSet<FileNaming>(res);
                     }   
