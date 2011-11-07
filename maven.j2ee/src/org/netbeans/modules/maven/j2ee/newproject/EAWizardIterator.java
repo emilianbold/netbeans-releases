@@ -42,33 +42,21 @@
 
 package org.netbeans.modules.maven.j2ee.newproject;
 
-import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Set;
-import javax.swing.JComponent;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.templates.TemplateRegistration;
-import org.netbeans.api.validation.adapters.WizardDescriptorAdapter;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.archetype.Archetype;
 import org.netbeans.modules.maven.api.archetype.ArchetypeWizards;
 import org.netbeans.modules.maven.api.archetype.ProjectInfo;
-import org.netbeans.modules.maven.j2ee.MavenJavaEEConstants;
-import org.netbeans.modules.maven.j2ee.MavenProjectSupport;
 import org.netbeans.modules.maven.j2ee.newproject.archetype.J2eeArchetypeFactory;
 import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.POMModel;
-import static org.netbeans.modules.maven.j2ee.newproject.Bundle.*;
-import org.netbeans.spi.project.AuxiliaryProperties;
 import org.netbeans.validation.api.ui.ValidationGroup;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -82,19 +70,9 @@ import org.openide.util.NbBundle.Messages;
  */
 @TemplateRegistration(folder=ArchetypeWizards.TEMPLATE_FOLDER, position=270, displayName="#template.EA", iconBase="org/netbeans/modules/maven/j2ee/resources/maven_enterprise_application_16.png", description="../resources/EADescription.html")
 @Messages("template.EA=Enterprise Application")
-public class EAWizardIterator implements WizardDescriptor.BackgroundInstantiatingIterator {
-    
-    private static final long serialVersionUID = 1L;
-    private transient int index;
-    private transient WizardDescriptor.Panel[] panels;
-    private transient WizardDescriptor wiz;
-    private final List<ChangeListener> listeners;
+public class EAWizardIterator extends BaseWizardIterator {
     
 
-    public EAWizardIterator() {
-        listeners = new ArrayList<ChangeListener>();
-    }
-    
     @Override
     public Set<FileObject> instantiate() throws IOException {
         ProjectInfo ear_vi = (ProjectInfo) wiz.getProperty("ear_versionInfo"); //NOI18N
@@ -122,7 +100,13 @@ public class EAWizardIterator implements WizardDescriptor.BackgroundInstantiatin
         // For every single created project we need to setup server correctly
         Set<FileObject> projects = ArchetypeWizards.openProjects(rootFile, earFile);
         for (FileObject projectFile : projects) {
-            saveServerSettings(projectFile);
+            saveSettingsToNbConfiguration(projectFile);
+
+            // We don't want to set server in pom.xml for pom-packaging module
+            String projectDirName = projectFile.getName();
+            if (projectDirName.endsWith("-ejb") || projectDirName.endsWith("-ear") || projectDirName.endsWith("-web")) { // NOI18N
+                saveServerToPom(ProjectManager.getDefault().findProject(projectFile));
+            }
         }
         
         return projects;
@@ -151,140 +135,11 @@ public class EAWizardIterator implements WizardDescriptor.BackgroundInstantiatin
         Utilities.performPOMModelOperations(earDirFO.getFileObject("pom.xml"), operations); // NOI18N
     }
     
-    private void saveServerSettings(FileObject projectFile) throws IOException {
-        Project project = ProjectManager.getDefault().findProject(projectFile);
-        
-        // Getting properties saved in ServerSelectionHelper.storeServerSettings
-        String instanceID = (String) wiz.getProperty(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID);
-        String serverID = (String) wiz.getProperty(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER);
-        String j2eeVersion = (String) wiz.getProperty(MavenJavaEEConstants.HINT_J2EE_VERSION);
-
-        // Saving server information for project
-        AuxiliaryProperties props = project.getLookup().lookup(AuxiliaryProperties.class);
-        props.put(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID, instanceID, false);
-        props.put(MavenJavaEEConstants.HINT_J2EE_VERSION, j2eeVersion, false);
-        props.put(Constants.HINT_COMPILE_ON_SAVE, "all", true); //NOI18N
-        
-        String projectDirName = project.getProjectDirectory().getName();
-        if (projectDirName.endsWith("-ejb") || projectDirName.endsWith("-ear") || projectDirName.endsWith("-web")) { // NOI18N
-            MavenProjectSupport.storeSettingsToPom(projectFile, MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER, serverID);
-        }
-        MavenProjectSupport.createDDIfRequired(project, serverID);
-    }
-    
     @Override
-    public void initialize(WizardDescriptor wiz) {
-        this.wiz = wiz;
-        index = 0;
-        ValidationGroup vg = ValidationGroup.create(new WizardDescriptorAdapter(wiz));
-        panels = createPanels(vg);
-        updateSteps();
-    }
-    
-    private WizardDescriptor.Panel[] createPanels(ValidationGroup vg) {
+    protected WizardDescriptor.Panel[] createPanels(ValidationGroup vg) {
         return new WizardDescriptor.Panel[] {
             ArchetypeWizards.basicWizardPanel(vg, false, null),
             new EAWizardPanel(vg)
-        };
-    }
-    
-    @Override
-    public void uninitialize(WizardDescriptor wiz) {
-        this.wiz.putProperty("projdir",null); //NOI18N
-        this.wiz.putProperty("name",null); //NOI18N
-        this.wiz = null;
-        panels = null;
-        listeners.clear();
-    }
-    
-    @Override
-    public String name() {
-        return NameFormat(index + 1, panels.length);
-    }
-    
-    @Override
-    public boolean hasNext() {
-        return index < panels.length - 1;
-    }
-    
-    @Override
-    public boolean hasPrevious() {
-        return index > 0;
-    }
-    
-    @Override
-    public void nextPanel() {
-        if (!hasNext()) {
-            throw new NoSuchElementException();
-        }
-        index++;
-    }
-    
-    @Override
-    public void previousPanel() {
-        if (!hasPrevious()) {
-            throw new NoSuchElementException();
-        }
-        index--;
-    }
-    
-    @Override
-    public WizardDescriptor.Panel current() {
-        return panels[index];
-    }
-    
-    // If nothing unusual changes in the middle of the wizard, simply:
-    @Override
-    public final void addChangeListener(ChangeListener l) {
-        synchronized (listeners) {
-            listeners.add(l);
-        }
-    }
-    
-    @Override
-    public final void removeChangeListener(ChangeListener l) {
-        synchronized (listeners) {
-            listeners.remove(l);
-        }
-    }
-
-    private void fireChange() {
-        synchronized (listeners) {
-            for (ChangeListener list : listeners) {
-                list.stateChanged(new ChangeEvent(this));
-            }
-        }
-    }
-
-    private void updateSteps() {
-        // Make sure list of steps is accurate.
-        String[] steps = new String[panels.length];
-        String[] basicOnes = createSteps();
-        System.arraycopy(basicOnes, 0, steps, 0, basicOnes.length);
-        for (int i = 0; i < panels.length; i++) {
-            Component c = panels[i].getComponent();
-            if (i >= basicOnes.length || steps[i] == null) {
-                // Default step name to component name of panel.
-                // Mainly useful for getting the name of the target
-                // chooser to appear in the list of steps.
-                steps[i] = c.getName();
-            }
-            if (c instanceof JComponent) {
-                // assume Swing components
-                JComponent jc = (JComponent) c;
-                // Step #.
-                jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i)); //NOI18N
-                // Step name (actually the whole list for reference).
-                jc.putClientProperty("WizardPanel_contentData", steps); //NOI18N
-            }
-        }
-    }
-        
-    @Messages("LBL_CreateProjectStep2ee=Name and Location")
-    private String[] createSteps() {
-        return new String[] { 
-            LBL_CreateProjectStep2ee(), 
-            LBL_EESettings() 
         };
     }
 }
