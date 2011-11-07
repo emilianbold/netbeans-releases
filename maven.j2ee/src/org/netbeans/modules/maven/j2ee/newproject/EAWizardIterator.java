@@ -42,9 +42,6 @@
 
 package org.netbeans.modules.maven.j2ee.newproject;
 
-import org.netbeans.api.j2ee.core.Profile;
-import org.netbeans.modules.j2ee.common.dd.DDHelper;
-import org.netbeans.modules.maven.j2ee.web.WebModuleImpl;
 import java.util.Collections;
 import java.awt.Component;
 import java.io.File;
@@ -72,7 +69,6 @@ import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import static org.netbeans.modules.maven.j2ee.newproject.Bundle.*;
-import org.netbeans.modules.maven.j2ee.web.WebModuleProviderImpl;
 import org.netbeans.modules.maven.model.pom.Properties;
 import org.netbeans.spi.project.AuxiliaryProperties;
 import org.netbeans.validation.api.ui.ValidationGroup;
@@ -88,7 +84,7 @@ import org.openide.util.NbBundle.Messages;
  * 
  *@author Dafe Simonek, Martin Janicek
  */
-@TemplateRegistration(folder=ArchetypeWizards.TEMPLATE_FOLDER, position=270, displayName="#template.EA", iconBase="org/netbeans/modules/maven/j2ee/ear/maven_enterprise_application_16.png", description="EADescription.html")
+@TemplateRegistration(folder=ArchetypeWizards.TEMPLATE_FOLDER, position=270, displayName="#template.EA", iconBase="org/netbeans/modules/maven/j2ee/resources/maven_enterprise_application_16.png", description="../resources/EADescription.html")
 @Messages("template.EA=Enterprise Application")
 public class EAWizardIterator implements WizardDescriptor.BackgroundInstantiatingIterator {
     
