@@ -425,7 +425,7 @@ public class InspectAndRefactorPanel extends javax.swing.JPanel implements Popup
 
                     @Override
                     public FileObject getFolder() {
-                        return fileObject.getParent();
+                        return fileObject.isFolder()?fileObject:fileObject.getParent();
                     }
                 });
                 customScope = org.netbeans.modules.refactoring.api.Scope.create(Collections.EMPTY_LIST, col, Collections.EMPTY_LIST);
@@ -600,7 +600,7 @@ public class InspectAndRefactorPanel extends javax.swing.JPanel implements Popup
     }
 
     private Scope getThisPackageScope() {
-        return Scopes.specifiedFoldersScope(Folder.convert(Collections.singleton(fileObject.getParent())));
+        return Scopes.specifiedFoldersScope(Folder.convert(Collections.singleton(fileObject.isFolder()?fileObject:fileObject.getParent())));
     }
 
     private Scope getThisFileScope() {
