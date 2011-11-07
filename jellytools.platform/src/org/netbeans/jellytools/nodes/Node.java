@@ -52,10 +52,7 @@ import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.JellyVersion;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.ActionNoBlock;
-import org.netbeans.jemmy.ComponentChooser;
-import org.netbeans.jemmy.JemmyException;
-import org.netbeans.jemmy.Waitable;
-import org.netbeans.jemmy.Waiter;
+import org.netbeans.jemmy.*;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.jemmy.operators.Operator;
@@ -720,10 +717,34 @@ public class Node {
         @Override
         public void expandPath(final TreePath treePath) {
             super.expandPath(treePath);
+            // call getNodes(true) but restrict it by timeout to prevent occasional infinite loop
             try {
-                Visualizer.findNode(treePath.getLastPathComponent()).getChildren().getNodes(true);
-            } catch (ClassCastException e) {
-                // ignore for trees in IDE which are not compound from VisualizerNode instances
+                ActionProducer actionProducer = new ActionProducer(new org.netbeans.jemmy.Action() {
+
+                    @Override
+                    public Object launch(Object obj) {
+                        try {
+                            Visualizer.findNode(treePath.getLastPathComponent()).getChildren().getNodes(true);
+                        } catch (ClassCastException e) {
+                            // ignore for trees in IDE which are not compound from VisualizerNode instances
+                        }
+                        return null;
+                    }
+
+                    @Override
+                    public String getDescription() {
+                        return "org.openide.nodes.Node.getChildren().getNodes(true)";  //NOI18N
+                    }
+                });
+                actionProducer.getTimeouts().setTimeout("ActionProducer.MaxActionTime", getTimeouts().getTimeout("JTreeOperator.WaitNodeVisibleTimeout"));  //NOI18N
+                actionProducer.produceAction(null);
+            } catch (InterruptedException e) {
+                throw new JemmyException("Interrupted.", e);
+            } catch (TimeoutExpiredException tee) {
+                // ignore and just prints nodes to jemmy log
+                for (org.openide.nodes.Node n : Visualizer.findNode(treePath.getLastPathComponent()).getChildren().getNodes()) {
+                    getOutput().printLine("    " + n.getDisplayName() + "  " + n);
+                }
             }
         }
     }
