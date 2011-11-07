@@ -274,13 +274,18 @@ public class ServerWizardIterator extends PortCollection implements WizardDescri
         this.useDefaultPorts = useDefaultPorts;
     }
 
-    public String formatUri(String host, int port, String target) {
+    public String formatUri(String host, int port, String target, String domainsD, String domainN) {
+        String domainInfo = "";
+        if (null != domainsD && domainsD.length() > 0 &&
+                null != domainN && domainN.length() > 0) {
+            domainInfo = File.pathSeparator + domainsD + File.separator + domainN;
+        }
         if (null == target || "".equals(target.trim())) {
-            return null != sd ? "[" + glassfishRoot + "]" + sd.getUriFragment() + ":" + host + ":" + port // NOI18N
-                    : "[" + glassfishRoot + "]null:" + host + ":" + port; // NOI18N
+            return null != sd ? "[" + glassfishRoot + domainInfo + "]" + sd.getUriFragment() + ":" + host + ":" + port // NOI18N
+                    : "[" + glassfishRoot + domainInfo + "]null:" + host + ":" + port; // NOI18N
         } else {
-            return null != sd ? "[" + glassfishRoot + "]" + sd.getUriFragment() + ":" + host + ":" + port+":"+target // NOI18N
-                    : "[" + glassfishRoot + "]null:" + host + ":" + port+":"+target; // NOI18N
+            return null != sd ? "[" + glassfishRoot + domainInfo + "]" + sd.getUriFragment() + ":" + host + ":" + port+":"+target // NOI18N
+                    : "[" + glassfishRoot + domainInfo + "]null:" + host + ":" + port+":"+target; // NOI18N
         }
     }
     
@@ -439,7 +444,7 @@ public class ServerWizardIterator extends PortCollection implements WizardDescri
                     (String) wizard.getProperty("ServInstWizard_displayName"),  // NOI18N
                     installRoot, glassfishRoot, domainsDir, domainName, 
                     newHttpPort, newAdminPort, 
-                    formatUri("localhost", newAdminPort,getTargetValue()), 
+                    formatUri("localhost", newAdminPort,getTargetValue(),domainsDir,domainName), 
                     sd.getUriFragment(),
                     gip);
             result.add(instance.getCommonInstance());
@@ -447,7 +452,7 @@ public class ServerWizardIterator extends PortCollection implements WizardDescri
             GlassfishInstance instance = GlassfishInstance.create(
                     (String) wizard.getProperty("ServInstWizard_displayName"),  // NOI18N
                     installRoot, glassfishRoot, domainsDir, domainName, getHttpPort(),
-                    getAdminPort(), formatUri("localhost", getAdminPort(), getTargetValue()),
+                    getAdminPort(), formatUri("localhost", getAdminPort(), getTargetValue(), domainsDir, domainName),
                     sd.getUriFragment(),
                     gip);
             result.add(instance.getCommonInstance());
@@ -464,7 +469,7 @@ public class ServerWizardIterator extends PortCollection implements WizardDescri
         GlassfishInstance instance = GlassfishInstance.create(
                 (String) wizard.getProperty("ServInstWizard_displayName"),   // NOI18N
                 installRoot, glassfishRoot, null, null, getHttpPort(), getAdminPort(),
-                formatUri(hn, getAdminPort(), getTargetValue()), sd.getUriFragment(), gip);
+                formatUri(hn, getAdminPort(), getTargetValue(),null,null), sd.getUriFragment(), gip);
         result.add(instance.getCommonInstance());
     }
 
