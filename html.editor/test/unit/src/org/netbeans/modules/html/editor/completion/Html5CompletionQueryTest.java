@@ -134,7 +134,7 @@ public class Html5CompletionQueryTest extends HtmlCompletionQueryTest {
     public void testIssue197614() throws BadLocationException, ParseException {
         assertItems("<table><tr><td></ta|", arr("table"), Match.EXACT);
     }
-    
+
     @Override
     protected void assertItems(String documentText, final String[] expectedItemsNames, final Match type, int expectedAnchor) throws BadLocationException, ParseException {
         super.assertItems(HTML5_DOCTYPE + documentText,
