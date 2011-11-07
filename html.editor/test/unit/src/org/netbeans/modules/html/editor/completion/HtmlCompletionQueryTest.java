@@ -397,7 +397,7 @@ public class HtmlCompletionQueryTest extends HtmlCompletionTestBase {
         assertItems("<div><div><x:out></x:out|", arr("x:out"), Match.CONTAINS);
 
         //nested - the tags needs to be close, so only the closest unclosed tag is offered
-        assertItems("<div><x:out><div><x:in></|", arr("x:in", "div"), Match.CONTAINS);
+        assertItems("<div><x:out><div><x:in></|", arr("x:in"), Match.CONTAINS);
         assertItems("<div><x:out><div><x:in></x:| </div></div>", arr("x:in"), Match.CONTAINS);
         assertItems("<p><x:out><x:in></|", arr("x:out"), Match.DOES_NOT_CONTAIN);
         assertItems("<p><x:out><x:in></x:|", arr("x:out"), Match.DOES_NOT_CONTAIN);
