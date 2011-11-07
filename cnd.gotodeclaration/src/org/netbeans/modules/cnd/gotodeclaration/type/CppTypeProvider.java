@@ -36,6 +36,7 @@ import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
+import org.netbeans.modules.cnd.api.model.services.CsmVisibilityQuery;
 import org.netbeans.spi.jumpto.support.NameMatcher;
 import org.netbeans.spi.jumpto.support.NameMatcherFactory;
 
@@ -171,7 +172,9 @@ public class CppTypeProvider implements TypeProvider {
                     CsmClass cls = (CsmClass) decl;
                     if (!CsmClassifierResolver.getDefault().isForwardClass(cls)) {
                         if (matcher.accept(decl.getName().toString())) {
-                            result.add(createTypeDescriptor(cls));
+                            if(CsmVisibilityQuery.isVisible(cls)) {
+                                result.add(createTypeDescriptor(cls));
+                            }
                         }
                         for( CsmMember member : cls.getMembers() ) {
                             if( ! isCancelled ) {
@@ -187,7 +190,9 @@ public class CppTypeProvider implements TypeProvider {
             case TYPEDEF:
                 if(!isCancelled) {
                     if (matcher.accept(decl.getName().toString())) {
-                        result.add(createTypeDescriptor((CsmClassifier) decl));
+                        if(CsmVisibilityQuery.isVisible(decl)) {
+                            result.add(createTypeDescriptor((CsmClassifier) decl));
+                        }
                     }
                 }
                 break;
