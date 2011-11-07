@@ -91,6 +91,9 @@ public class CdiAnalysisTest extends BaseAnalisysTestCase {
         return new CdiAnalysisTestTask();
     }
     
+    /*
+     * TypedClassAnalizer
+     */
     public void testTypedClass() throws IOException{
         FileObject errorFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz.java",
                 "package foo; " +
@@ -121,6 +124,9 @@ public class CdiAnalysisTest extends BaseAnalisysTestCase {
         runAnalysis( goodFile, NO_ERRORS_PROCESSOR );
     }
     
+    /*
+     * AnnotationsAnalyzer(ClassAnalyzer) checkDecoratorInterceptor
+     */
     public void testAnnotationsDecoratorInterceptor() throws IOException{
         FileObject errorFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz.java",
                 "package foo; " +
@@ -150,6 +156,9 @@ public class CdiAnalysisTest extends BaseAnalisysTestCase {
         runAnalysis( goodFile, NO_ERRORS_PROCESSOR );
     }
     
+    /*
+     * AnnotationsAnalyzer(ClassAnalyzer) checkDelegateInjectionPoint
+     */
     public void testDecoratorDelegate() throws IOException{
         FileObject errorFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz.java",
                 "package foo; " +
@@ -186,6 +195,9 @@ public class CdiAnalysisTest extends BaseAnalisysTestCase {
         runAnalysis( goodFile, NO_ERRORS_PROCESSOR );
     }
     
+    /*
+     * AnnotationsAnalyzer(ClassAnalyzer) checkProducerFields
+     */
     public void testDecoratorProducerField() throws IOException{
         FileObject errorFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz.java",
                 "package foo; " +
@@ -221,6 +233,9 @@ public class CdiAnalysisTest extends BaseAnalisysTestCase {
         runAnalysis( goodFile, NO_ERRORS_PROCESSOR );
     }
     
+    /*
+     * AnnotationsAnalyzer(ClassAnalyzer) checkMethods
+     */
     public void testInterceptorMethods() throws IOException{
         FileObject errorFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz.java",
                 "package foo; " +
@@ -255,6 +270,9 @@ public class CdiAnalysisTest extends BaseAnalisysTestCase {
         runAnalysis( goodFile, NO_ERRORS_PROCESSOR );
     }
     
+    /*
+     * AnnotationsAnalyzer(ClassAnalyzer) checkSession
+     */
     public void testInterceptorSessionBeans() throws IOException{
         FileObject errorFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz.java",
                 "package foo; " +
@@ -287,6 +305,9 @@ public class CdiAnalysisTest extends BaseAnalisysTestCase {
         runAnalysis( goodFile, NO_ERRORS_PROCESSOR );
     }
     
+    /*
+     * CtorsAnalyzer
+     */
     public void testInitializerCtors() throws IOException{
         FileObject errorFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz.java",
                 "package foo; " +
@@ -319,6 +340,9 @@ public class CdiAnalysisTest extends BaseAnalisysTestCase {
         runAnalysis( goodFile, NO_ERRORS_PROCESSOR );
     }
     
+    /*
+     * TypedFieldAnalyzer
+     */
     public void testTypedField() throws IOException{
         
         FileObject errorFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz.java",
@@ -351,6 +375,9 @@ public class CdiAnalysisTest extends BaseAnalisysTestCase {
         runAnalysis( goodFile, NO_ERRORS_PROCESSOR );
     }
     
+    /*
+     * DelegateFieldAnalizer 
+     */
     public void testDelegateField() throws IOException{
         
         TestUtilities.copyStringToFileObject(srcFO, "foo/Iface.java",
@@ -461,6 +488,9 @@ public class CdiAnalysisTest extends BaseAnalisysTestCase {
         assertEquals(expectedName, fqn);
     }
     
+    /*
+     * ProducerFieldAnalyzer : checkSessionBean
+     */
     public void testProductionFieldInSession() throws IOException{
         
         FileObject errorFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz.java",
@@ -494,6 +524,9 @@ public class CdiAnalysisTest extends BaseAnalisysTestCase {
         runAnalysis( goodFile, NO_ERRORS_PROCESSOR );
     }
     
+    /*
+     * ProducerFieldAnalyzer : checkType
+     */
     public void testProductionFieldType() throws IOException{
         FileObject goodFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz.java",
                 "package foo; " +
@@ -542,6 +575,9 @@ public class CdiAnalysisTest extends BaseAnalisysTestCase {
         runAnalysis( goodFile, NO_ERRORS_PROCESSOR );
     }
     
+    /*
+     * TypedMethodAnalyzer
+     */
     public void testTypedMethod() throws IOException{
         
         FileObject errorFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz.java",
@@ -574,6 +610,9 @@ public class CdiAnalysisTest extends BaseAnalisysTestCase {
         runAnalysis( goodFile, NO_ERRORS_PROCESSOR );
     }
     
+    /*
+     * AnnotationsAnalyzer : combinations of various CDI annotations: inject, producer, observer, disposes
+     */
     public void testMethodAnnotations() throws IOException {
         /*
          * Create a good one class file
@@ -657,6 +696,9 @@ public class CdiAnalysisTest extends BaseAnalisysTestCase {
         runAnalysis(goodFile, NO_ERRORS_PROCESSOR);
     }
     
+    /*
+     * AnnotationsAnalyzer: checkAbstractMethod
+     */
   public void testAbstractMethod() throws IOException {
       /*
        * Create a good one class file
@@ -715,6 +757,9 @@ public class CdiAnalysisTest extends BaseAnalisysTestCase {
       runAnalysis(goodFile, NO_ERRORS_PROCESSOR);
   }
     
+  /*
+   * AnnotationsAnalyzer: checkBusinessMethod
+   */
     public void testBusinessAnnotations() throws IOException {
         /*
          * Create a good one class file
@@ -802,6 +847,9 @@ public class CdiAnalysisTest extends BaseAnalisysTestCase {
         runAnalysis(goodFile, NO_ERRORS_PROCESSOR);
     }
     
+    /*
+     * AnnotationsAnalyzer: initializers check
+     */
     public void testInitializers() throws IOException{
         FileObject goodFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz.java",
                 "package foo; " +
@@ -864,6 +912,9 @@ public class CdiAnalysisTest extends BaseAnalisysTestCase {
         runAnalysis( goodFile, NO_ERRORS_PROCESSOR );
     }
     
+    /*
+     * DelegateMethodAnalyzer: checkMethodDefinition, checkClassDefinition, checkDelegateType
+     */
     public void testDelegateMethod() throws IOException{
         
         TestUtilities.copyStringToFileObject(srcFO, "foo/Iface.java",
@@ -964,6 +1015,103 @@ public class CdiAnalysisTest extends BaseAnalisysTestCase {
         };
         runAnalysis(errorFile2 , processor);
         
+        runAnalysis( goodFile, NO_ERRORS_PROCESSOR );
+    }
+    
+    /*
+     * ProducerMethodAnalyzer : checkType, checkSpecializes
+     */
+    public void testProducerMethod() throws IOException{
+        FileObject goodFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz.java",
+                "package foo; " +
+                "import javax.enterprise.inject.Produces; "+
+                " public class Clazz  { "+
+                " static @Produces Class<String> productionMethod(){ return null; } "+
+                " void  operation(){} "+
+                "}");
+        
+        FileObject errorFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz1.java",
+                "package foo; " +
+                "import javax.enterprise.inject.Produces; "+
+                " public class Clazz1<T> { "+
+                " @Produces T productionMethod(){ return null; } "+
+                " void  operation(){} "+
+                "}");
+        
+        FileObject errorFile1 = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz2.java",
+                "package foo; " +
+                "import javax.enterprise.inject.Produces; "+
+                " public class Clazz2 { "+
+                " @Produces Class<? extends String> productionMethod(){ return null; } "+
+                " void  operation(){} "+
+                "}");
+        
+        FileObject errorFile2 = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz3.java",
+                "package foo; " +
+                "import javax.enterprise.inject.Produces; "+
+                "import javax.enterprise.inject.Specializes; "+
+                " public class Clazz3 { "+
+                " static @Specializes @Produces String productionMethod(){ return null; } "+
+                " @Produces String productionMethod1(){ return null; } "+
+                "}");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/SuperClass.java",
+                "package foo; " +
+                "import javax.enterprise.inject.Produces; "+
+                " public class SuperClass { "+
+                " String nonProduction(){ return null; } "+
+                " @Produces String superProduction(){ return null; } "+
+                "}");
+        
+        FileObject errorFile3 = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz4.java",
+                "package foo; " +
+                "import javax.enterprise.inject.Produces; "+
+                "import javax.enterprise.inject.Specializes; "+
+                " public class Clazz4 extends SuperClass{ "+
+                " @Specializes @Produces String nonProduction(){ return null; } "+
+                " @Specializes @Produces String superProduction(){ return null; } "+
+                "}");
+        
+        
+        ResultProcessor processor = new ResultProcessor (){
+
+            @Override
+            public void process( TestProblems result ) {
+                checkMethodElement(result, "foo.Clazz1", "productionMethod");
+            }
+            
+        };
+        runAnalysis(errorFile , processor);
+        
+        processor = new ResultProcessor (){
+
+            @Override
+            public void process( TestProblems result ) {
+                checkMethodElement(result, "foo.Clazz2", "productionMethod");
+            }
+            
+        };
+        runAnalysis(errorFile1 , processor);
+        
+        processor = new ResultProcessor (){
+
+            @Override
+            public void process( TestProblems result ) {
+                checkMethodElement(result, "foo.Clazz3", "productionMethod");
+            }
+            
+        };
+        runAnalysis(errorFile2 , processor);
+        
+        processor = new ResultProcessor (){
+
+            @Override
+            public void process( TestProblems result ) {
+                checkMethodElement(result, "foo.Clazz4", "nonProduction");
+            }
+            
+        };
+        runAnalysis(errorFile3 , processor);
         runAnalysis( goodFile, NO_ERRORS_PROCESSOR );
     }
     

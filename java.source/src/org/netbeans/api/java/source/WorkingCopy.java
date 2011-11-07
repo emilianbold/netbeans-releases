@@ -303,7 +303,7 @@ public class WorkingCopy extends CompilationController {
     private static void commit(CompilationUnitTree topLevel, List<Diff> diffs, SourceRewriter out) throws IOException, BadLocationException {
         SourceReader in = null;
         try {
-            String s = ((JCTree.JCCompilationUnit) topLevel).sourcefile.getCharContent(true).toString();
+            String s = codeForCompilationUnit(topLevel);
             char[] buf = s.toCharArray();
             in = new SourceReader(buf);
 
@@ -330,6 +330,10 @@ public class WorkingCopy extends CompilationController {
         
     }
 
+    private static String codeForCompilationUnit(CompilationUnitTree topLevel) throws IOException {
+        return ((JCTree.JCCompilationUnit) topLevel).sourcefile.getCharContent(true).toString();
+    }
+    
     class Translator extends ImmutableTreeTranslator {
         private Map<Tree, Tree> changeMap;
 
@@ -572,7 +576,7 @@ public class WorkingCopy extends CompilationController {
 
                 StringWriter target = new StringWriter();
 
-                ModificationResult.commit(targetFile, processCurrentCompilationUnit(new DiffContext(this, templateCUT, targetFile.asText(), new PositionConverter(), targetFile, notSyntheticTrees), tag2Span), target);
+                ModificationResult.commit(targetFile, processCurrentCompilationUnit(new DiffContext(this, templateCUT, codeForCompilationUnit(templateCUT), new PositionConverter(), targetFile, notSyntheticTrees), tag2Span), target);
                 result.add(new CreateChange(t.getSourceFile(), target.toString()));
                 target.close();
             } catch (BadLocationException ex) {
