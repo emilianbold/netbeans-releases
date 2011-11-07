@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.maven.j2ee.newproject;
 
-import java.util.Collections;
 import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
@@ -69,14 +68,11 @@ import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import static org.netbeans.modules.maven.j2ee.newproject.Bundle.*;
-import org.netbeans.modules.maven.model.pom.Properties;
 import org.netbeans.spi.project.AuxiliaryProperties;
 import org.netbeans.validation.api.ui.ValidationGroup;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle.Messages;
 
 /**
@@ -171,37 +167,11 @@ public class EAWizardIterator implements WizardDescriptor.BackgroundInstantiatin
         
         String projectDirName = project.getProjectDirectory().getName();
         if (projectDirName.endsWith("-ejb") || projectDirName.endsWith("-ear") || projectDirName.endsWith("-web")) { // NOI18N
-            storeSettingsToPom(projectFile, MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER, serverID);
+            MavenProjectSupport.storeSettingsToPom(projectFile, MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER, serverID);
         }
         MavenProjectSupport.createDDIfRequired(project, serverID);
     }
     
-    private void storeSettingsToPom(FileObject projectFile, final String propertyName, final String serverID) {
-        final ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
-
-            @Override
-            public void performOperation(POMModel model) {
-                Properties props = model.getProject().getProperties();
-                if (props == null) {
-                    props = model.getFactory().createProperties();
-                    model.getProject().setProperties(props);
-                }
-                props.setProperty(propertyName, serverID);
-            }
-        };
-        final FileObject pom = projectFile.getFileObject("pom.xml"); //NOI18N
-        try {
-            pom.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
-                @Override
-                public void run() throws IOException {
-                    Utilities.performPOMModelOperations(pom, Collections.singletonList(operation));
-                }
-            });
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-    }
-
     @Override
     public void initialize(WizardDescriptor wiz) {
         this.wiz = wiz;
