@@ -42,13 +42,19 @@
 package org.netbeans.modules.maven.j2ee;
 
 import java.io.IOException;
+import java.util.Collections;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.common.dd.DDHelper;
 import org.netbeans.modules.maven.j2ee.web.WebModuleImpl;
 import org.netbeans.modules.maven.j2ee.web.WebModuleProviderImpl;
+import org.netbeans.modules.maven.model.ModelOperation;
+import org.netbeans.modules.maven.model.Utilities;
+import org.netbeans.modules.maven.model.pom.POMModel;
+import org.netbeans.modules.maven.model.pom.Properties;
 import org.netbeans.spi.project.AuxiliaryProperties;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.Exceptions;
 
 /**
@@ -61,6 +67,43 @@ public class MavenProjectSupport {
     private MavenProjectSupport() {
     }
     
+    
+    public static void storeSettingsToPom(Project project, final String name, final String value) {
+        storeSettingsToPom(project.getProjectDirectory(), name, value);
+    }
+    
+    /**
+     * Store given property pair <name, value> to pom.xml file of the given project
+     * 
+     * @param projectFile project to which pom.xml should be updated
+     * @param name property name
+     * @param value property value
+     */
+    public static void storeSettingsToPom(FileObject projectFile, final String name, final String value) {
+        final ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
+
+            @Override
+            public void performOperation(POMModel model) {
+                Properties props = model.getProject().getProperties();
+                if (props == null) {
+                    props = model.getFactory().createProperties();
+                    model.getProject().setProperties(props);
+                }
+                props.setProperty(name, value);
+            }
+        };
+        final FileObject pom = projectFile.getFileObject("pom.xml"); //NOI18N
+        try {
+            pom.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
+                @Override
+                public void run() throws IOException {
+                    Utilities.performPOMModelOperations(pom, Collections.singletonList(operation));
+                }
+            });
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
     
     public static void createDDIfRequired(Project project) {
         createDDIfRequired(project, null);

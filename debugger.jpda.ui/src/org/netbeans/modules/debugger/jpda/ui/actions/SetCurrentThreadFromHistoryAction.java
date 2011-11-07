@@ -45,6 +45,8 @@ package org.netbeans.modules.debugger.jpda.ui.actions;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.HierarchyEvent;
+import java.awt.event.HierarchyListener;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
@@ -85,11 +87,11 @@ public class SetCurrentThreadFromHistoryAction extends AbstractAction implements
                 showWindow();
             }
         });
-        item.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                if ("ancestor".equals(evt.getPropertyName())) {
-                    item.setEnabled(ThreadsHistoryAction.getThreads().size() > 0);
-                }
+        item.addHierarchyListener(new HierarchyListener() {
+            @Override
+            public void hierarchyChanged(HierarchyEvent e) {
+                if (item.getParent() == null || !item.isDisplayable()) return;
+                item.setEnabled(ThreadsHistoryAction.getThreads().size() > 0);
             }
         });
         //item.setAccelerator(KeyStroke.getKeyStroke('T', InputEvent.SHIFT_DOWN_MASK | InputEvent.ALT_DOWN_MASK));
