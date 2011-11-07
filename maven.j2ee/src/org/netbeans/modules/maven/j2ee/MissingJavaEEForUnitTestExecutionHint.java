@@ -40,7 +40,7 @@
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.maven.j2ee.hints;
+package org.netbeans.modules.maven.j2ee;
 
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
