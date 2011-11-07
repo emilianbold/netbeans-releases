@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,26 +34,24 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.cnd.source.spi;
-
-import org.openide.nodes.Node;
+package org.netbeans.modules.javafx2.editor;
 
 /**
- * This handler is used by JavaNode.setName() method. JavaNode.setName() uses
- * Lookup.getDefault() to lookup for instances of RenameHandler. If there is one
- * instance found, it's handleRename(...) method is called to handle rename
- * request. More than one instance of RenameHandler is not allowed.
  *
- * @author Jan Becicka, Vladimir Voskresensky
- * @since 1.8.0
+ * @author David Strupl
  */
-public interface RenameHandler {
-    /**
-     * @param node on this node rename was requested
-     * @param newName new name of node
-     * @throws java.lang.IllegalArgumentException thrown if rename cannot be performed
-     */
-    void handleRename(Node node, String newName) throws IllegalArgumentException;
+public class FXMLCompletionTest extends FXMLCompletionTestBase {
+    
+    public FXMLCompletionTest(String testName) {
+        super(testName);
+    }
+
+    public void testSimple1() throws Exception {
+        performTest("Simple", 754, null, "simpleTest.pass");
+    }
 }
