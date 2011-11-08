@@ -190,32 +190,32 @@ public class CodeCompletionTest extends GroovyTestBase {
         checkCompletion(CLOSURE_BASE + "InsideClosure1.groovy", "\"TestString\".eachLine {String line -> println lin^}", false);
     }
 
-    // proper recognition of Constructor calls and the corresponding types.
-
-    public void testConstructorCall1() throws Exception {
-        checkCompletion(TEST_BASE + "ConstructorCall1.groovy", "println new URL(\"http://google.com\").getT^", false);
-    }
-
-    // Test CamelCase constructor-proposals
-
-    public void testCamelCaseConstructor1() throws Exception {
-        checkCompletion(TEST_BASE + "CamelCaseConstructor1.groovy", "SSC^", false);
-    }
-
-
-    // Package completion could not be tested at the moment, since this statement returns nothing for "java.n|":
-//    pkgSet = pathInfo.getClassIndex().getPackageNames(packageRequest.fullString, true, EnumSet.allOf(ClassIndex.SearchScope.class));
-
-//    public void testKeywordImport2() throws Exception {
-//        checkCompletion(TEST_BASE + "KeywordImport2.groovy", "import java.n^", false);
-//        assertTrue(false);
+//    // proper recognition of Constructor calls and the corresponding types.
+//
+//    public void testConstructorCall1() throws Exception {
+//        checkCompletion(TEST_BASE + "ConstructorCall1.groovy", "println new URL(\"http://google.com\").getT^", false);
 //    }
-
-
-//    Testing all completion possibilities for java.lang.String is broken
-
-//    public void testClassMethodLocalStringConst1() throws Exception {
-//        checkCompletion(TEST_BASE + "ClassMethodLocalStringConst1.groovy", "\" ddd \".^", false);
+//
+//    // Test CamelCase constructor-proposals
+//
+//    public void testCamelCaseConstructor1() throws Exception {
+//        checkCompletion(TEST_BASE + "CamelCaseConstructor1.groovy", "SSC^", false);
 //    }
+//
+//
+//    // Package completion could not be tested at the moment, since this statement returns nothing for "java.n|":
+////    pkgSet = pathInfo.getClassIndex().getPackageNames(packageRequest.fullString, true, EnumSet.allOf(ClassIndex.SearchScope.class));
+//
+////    public void testKeywordImport2() throws Exception {
+////        checkCompletion(TEST_BASE + "KeywordImport2.groovy", "import java.n^", false);
+////        assertTrue(false);
+////    }
+//
+//
+////    Testing all completion possibilities for java.lang.String is broken
+//
+////    public void testClassMethodLocalStringConst1() throws Exception {
+////        checkCompletion(TEST_BASE + "ClassMethodLocalStringConst1.groovy", "\" ddd \".^", false);
+////    }
 
 }

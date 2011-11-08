@@ -5,10 +5,13 @@ Code completion result for source line:
 METHOD     add(E)                          [PUBLIC]   boolean
 METHOD     add(int, E)                     [PUBLIC]   void
 METHOD     addAll(Collection<? extends E>  [PUBLIC]   boolean
+METHOD     addAll(Object[])                           boolean
 METHOD     addAll(int, Collection<? exten  [PUBLIC]   boolean
+METHOD     addAll(int, Object)                        boolean
 METHOD     addShutdownHook(Closure)                   void
 METHOD     any()                                      boolean
 METHOD     any(Closure)                               boolean
+METHOD     asBoolean()                                boolean
 METHOD     asImmutable()                              List
 METHOD     asList()                                   List
 METHOD     asSynchronized()                           List
@@ -18,14 +21,24 @@ METHOD     collect(Closure)                           List
 METHOD     collect(Collection, Closure)               Collection
 METHOD     collectAll(Closure)                        List
 METHOD     collectAll(Collection, Closure             Collection
+METHOD     collectEntries(Closure)                    Map
+METHOD     collectEntries(Map, Closure)               Map
+METHOD     collectMany(Closure)                       Collection
+METHOD     collectNested(Closure)                     List
+METHOD     collectNested(Collection, Clos             Collection
 METHOD     combinations()                             List
 METHOD     contains(Object)                [PUBLIC]   boolean
 METHOD     containsAll(Collection<?>)      [PUBLIC]   boolean
+METHOD     containsAll(Object[])                      boolean
 METHOD     containsWithinBounds(Object)    [PUBLIC]   boolean
+METHOD     count(Closure)                             Number
 METHOD     count(Object)                              Number
+METHOD     countBy(Closure)                           Map
 METHOD     disjoint(Collection)                       boolean
+METHOD     drop(int)                                  List
 METHOD     dump()                                     String
 METHOD     each(Closure)                              Object
+METHOD     eachPermutation(Closure)                   Iterator
 METHOD     eachWithIndex(Closure)                     Object
 METHOD     equals(List)                               boolean
 METHOD     equals(Object)                  [PUBLIC]   boolean
@@ -33,7 +46,11 @@ METHOD     equals(Object[])                           boolean
 METHOD     every()                                    boolean
 METHOD     every(Closure)                             boolean
 METHOD     execute()                                  Process
+METHOD     execute(List, File)                        Process
+METHOD     execute(String[], File)                    Process
+METHOD     find()                                     Object
 METHOD     find(Closure)                              Object
+METHOD     findAll()                                  Collection
 METHOD     findAll(Closure)                           Collection
 METHOD     findIndexOf(Closure)                       int
 METHOD     findIndexOf(int, Closure)                  int
@@ -41,22 +58,29 @@ METHOD     findIndexValues(Closure)                   List
 METHOD     findIndexValues(Number, Closur             List
 METHOD     findLastIndexOf(Closure)                   int
 METHOD     findLastIndexOf(int, Closure)              int
+METHOD     findResult(Closure)                        Object
+METHOD     findResult(Object, Closure)                Object
+METHOD     findResults(Closure)                       Collection
 METHOD     first()                                    Object
 METHOD     flatten()                                  Collection
 METHOD     flatten(Closure)                           Collection
 METHOD     get(int)                        [PUBLIC]   E
 METHOD     getAt(Collection)                          List
-METHOD     getAt(IntRange)                            List
+METHOD     getAt(EmptyRange)                          List
+METHOD     getAt(Range)                               List
 METHOD     getAt(String)                              List
 METHOD     getAt(int)                                 Object
-METHOD     getClass()                      [PUBLIC]   Class<? extends Object>
+METHOD     getClass()                      [PUBLIC]   Class<?>
 METHOD     getFrom()                       [PUBLIC]   Comparable
 METHOD     getMetaClass()                             MetaClass
 METHOD     getMetaPropertyValues()                    List
 METHOD     getProperties()                            Map
 METHOD     getTo()                         [PUBLIC]   Comparable
+METHOD     grep()                                     Collection
 METHOD     grep(Object)                               Collection
 METHOD     groupBy(Closure)                           Map
+METHOD     groupBy(List)                              Map
+METHOD     groupBy(Object[])                          Map
 METHOD     hasProperty(String)                        MetaProperty
 METHOD     hashCode()                      [PUBLIC]   int
 METHOD     head()                                     Object
@@ -89,8 +113,11 @@ METHOD     minus(Object)                              List
 METHOD     multiply(Number)                           List
 METHOD     notify()                        [PUBLIC]   void
 METHOD     notifyAll()                     [PUBLIC]   void
+METHOD     permutations()                             Set
 METHOD     plus(Collection)                           Collection
 METHOD     plus(Object)                               Collection
+METHOD     plus(int, List)                            List
+METHOD     plus(int, Object)                          List
 METHOD     pop()                                      Object
 METHOD     print(Object)                              void
 METHOD     print(PrintWriter)                         void
@@ -100,6 +127,7 @@ METHOD     println()                                  void
 METHOD     println(Object)                            void
 METHOD     println(PrintWriter)                       void
 METHOD     push(Object)                               boolean
+METHOD     putAt(EmptyRange, Collection)              void
 METHOD     putAt(EmptyRange, Object)                  void
 METHOD     putAt(IntRange, Collection)                void
 METHOD     putAt(IntRange, Object)                    void
@@ -109,11 +137,16 @@ METHOD     putAt(String, Object)                      void
 METHOD     putAt(int, Object)                         void
 METHOD     remove(Object)                  [PUBLIC]   boolean
 METHOD     remove(int)                     [PUBLIC]   E
+METHOD     removeAll(Closure)                         boolean
 METHOD     removeAll(Collection<?>)        [PUBLIC]   boolean
+METHOD     removeAll(Object[])                        boolean
 METHOD     respondsTo(String)                         List
 METHOD     respondsTo(String, Object)                 List
+METHOD     retainAll(Closure)                         boolean
 METHOD     retainAll(Collection<?>)        [PUBLIC]   boolean
+METHOD     retainAll(Object[])                        boolean
 METHOD     reverse()                                  List
+METHOD     reverse(boolean)                           List
 METHOD     reverseEach(Closure)                       List
 METHOD     set(int, E)                     [PUBLIC]   E
 METHOD     setMetaClass(MetaClass)                    void
@@ -123,26 +156,37 @@ METHOD     sleep(long, Closure)                       void
 METHOD     sort()                                     List
 METHOD     sort(Closure)                              List
 METHOD     sort(Comparator)                           List
+METHOD     sort(boolean)                              List
+METHOD     sort(boolean, Closure)                     List
+METHOD     sort(boolean, Comparator)                  List
 METHOD     split(Closure)                             Collection
 METHOD     sprintf(String, Object)                    String
 METHOD     sprintf(String, Object)                    String
-METHOD     step(int)                       [PUBLIC]   List
+METHOD     step(int)                       [PUBLIC]   List<T>
 METHOD     step(int, Closure)              [PUBLIC]   void
 METHOD     subList(int, int)               [PUBLIC]   List<E>
+METHOD     subsequences()                             Set
 METHOD     sum()                                      Object
 METHOD     sum(Closure)                               Object
 METHOD     sum(Object)                                Object
 METHOD     sum(Object, Closure)                       Object
 METHOD     tail()                                     List
+METHOD     take(int)                                  List
 METHOD     toArray()                       [PUBLIC]   Object[]
 METHOD     toArray(T[])                    [PUBLIC]   T[]
 METHOD     toList()                                   List
 METHOD     toListString()                             String
+METHOD     toListString(int)                          String
+METHOD     toSet()                                    Set
+METHOD     toSpreadMap()                              SpreadMap
 METHOD     toString()                                 String
 METHOD     transpose()                                List
 METHOD     unique()                                   Collection
 METHOD     unique(Closure)                            Collection
 METHOD     unique(Comparator)                         Collection
+METHOD     unique(boolean)                            Collection
+METHOD     unique(boolean, Closure)                   Collection
+METHOD     unique(boolean, Comparator)                Collection
 METHOD     use(Class, Closure)                        Object
 METHOD     use(List, Closure)                         Object
 METHOD     use(Object[])                              Object

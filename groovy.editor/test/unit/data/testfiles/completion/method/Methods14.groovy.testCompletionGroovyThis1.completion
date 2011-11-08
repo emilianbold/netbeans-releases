@@ -3,7 +3,7 @@ this.get|
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 METHOD     getAt(String)                              Object
-METHOD     getClass()                      [PUBLIC]   Class<? extends Object>
+METHOD     getClass()                      [PUBLIC]   Class<?>
 METHOD     getMetaClass()                             MetaClass
 METHOD     getMetaPropertyValues()                    List
 METHOD     getProperties()                            Map

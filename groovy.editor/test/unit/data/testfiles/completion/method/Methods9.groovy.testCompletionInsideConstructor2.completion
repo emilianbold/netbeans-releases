@@ -4,7 +4,7 @@ new File(new Date().get|)
 ------------------------------------
 METHOD     getAt(String)                              Object
 METHOD     getAt(int)                                 int
-METHOD     getClass()                      [PUBLIC]   Class<? extends Object>
+METHOD     getClass()                      [PUBLIC]   Class<?>
 METHOD     getDate()                       [PUBLIC]   int
 METHOD     getDateString()                            String
 METHOD     getDateTimeString()                        String

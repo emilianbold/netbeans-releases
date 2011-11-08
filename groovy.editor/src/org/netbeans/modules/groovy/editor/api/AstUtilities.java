@@ -185,6 +185,12 @@ public class AstUtilities {
             FieldNode fieldNode = (FieldNode) node;
             return getNextIdentifierByName(doc, fieldNode.getName(), start);
         } else if (node instanceof ClassNode) {
+            // classnode for script does not have real declaration and thus
+            // location
+            if (((ClassNode) node).isScript()) {
+                return OffsetRange.NONE;
+            }
+
             // ok, here we have to move the Range to the first character
             // after the "class" keyword, plus an indefinite nuber of spaces
             // FIXME: have to check what happens with other whitespaces between
@@ -201,12 +207,13 @@ public class AstUtilities {
                 int start = getOffset(doc, lineNumber, columnNumber);
                 int limit = getLimit(node, doc, docLength);
 
+
                 try {
                     // we have to really search for class keyword other keyword
                     // (such as abstract) can precede class
                     start = doc.find(new FinderFactory.StringFwdFinder("class", true), start, limit) + "class".length(); // NOI18N
                 } catch (BadLocationException ex) {
-                    Exceptions.printStackTrace(ex);
+                    LOGGER.log(Level.WARNING, null, ex);
                 }
 
                 if (start > docLength) {
