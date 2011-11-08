@@ -835,8 +835,7 @@ public class CompletionContextImpl extends CompletionContext {
                     // ignore, was added from specific location
                     continue;
                 }
-                DefaultModelProvider provider = new DefaultModelProvider(this);
-                CompletionModel cm = provider.getCompletionModel(new java.net.URI(temp), true);
+                CompletionModel cm = DefaultModelProvider.getCompletionModel(new java.net.URI(temp), true, this);
                 if (cm != null) {
                     populateModelMap(cm);
                     continue;
