@@ -42,12 +42,17 @@
 
 package org.netbeans.modules.maven;
 
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
+import java.util.Collections;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
+import org.netbeans.api.annotations.common.SuppressWarnings;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.projectapi.TimedWeakReference;
 import org.netbeans.spi.project.LookupMerger;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileObject;
@@ -131,6 +136,23 @@ public class NbMavenProjectImplTest extends NbTestCase {
                 }
             };
         }
+    }
+
+    @SuppressWarnings("ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD")
+    public void testMemoryReleased() throws Exception {
+        TimedWeakReference.TIMEOUT = 0;
+        FileObject wd = FileUtil.toFileObject(getWorkDir());
+        TestFileUtils.writeFile(wd, "pom.xml", "<project><modelVersion>4.0.0</modelVersion>"
+                + "<groupId>g</groupId><artifactId>a</artifactId>"
+                + "<version>0</version></project>");
+        Project p = ProjectManager.getDefault().findProject(wd);
+        ((NbMavenProjectImpl) p).attachUpdater();
+        /* Want to avoid leaks even if this is not called for some reason:
+        ((NbMavenProjectImpl) p).detachUpdater();
+        */
+        Reference<?> r = new WeakReference<Object>(p);
+        p = null;
+        assertGC("can release project after updater detached", r, Collections.singleton(wd));
     }
 
 }
