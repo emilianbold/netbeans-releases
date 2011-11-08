@@ -852,9 +852,11 @@ public class RemoteServices {
                 // Collected too soon, try again...
             }
         }
+        List<Value> values = new ArrayList<Value>(bytes.length);
         for (int i = 0; i < bytes.length; i++) {
-            ArrayReferenceWrapper.setValue(array, i, VirtualMachineWrapper.mirrorOf(vm, bytes[i]));
+            values.add(VirtualMachineWrapper.mirrorOf(vm, bytes[i]));
         }
+        ArrayReferenceWrapper.setValues(array, values);
         return array;
     }
     
