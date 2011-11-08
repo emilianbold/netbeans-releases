@@ -51,6 +51,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.maven.api.archetype.Archetype;
 import org.netbeans.modules.maven.api.archetype.ArchetypeWizards;
 import org.netbeans.modules.maven.api.archetype.ProjectInfo;
+import org.netbeans.modules.maven.j2ee.POHImpl;
 import org.netbeans.modules.maven.j2ee.newproject.archetype.J2eeArchetypeFactory;
 import org.netbeans.validation.api.ui.ValidationGroup;
 import org.openide.WizardDescriptor;
@@ -107,11 +108,17 @@ public class EEWizardIterator extends BaseWizardIterator {
         Set<FileObject> projects = ArchetypeWizards.openProjects(rootFile, rootFile);
         for (FileObject projectFile : projects) {
             saveSettingsToNbConfiguration(projectFile);
+            
+            /* #202662 This is another ugly hack causes by POHImpl.hackModuleServerChange. We need to setup context 
+             * path to some default value, but there is no way to do that when wizard is finishing because there is no
+             * server set to the project. In that case this need to be done when project is opened, but it is important
+             * to do so only once to allow user to set empty context value in the future */
+            POHImpl.setNewlyCreated(true);
         }
         
         return projects;
     }
-    
+
     @Override
     protected WizardDescriptor.Panel[] createPanels(ValidationGroup vg) {
         return new WizardDescriptor.Panel[] {

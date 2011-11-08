@@ -52,11 +52,16 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.util.Collections;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
+
+import javax.swing.SwingUtilities;
+
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
@@ -183,7 +188,32 @@ public class MavenProjectRestSupport extends WebRestSupport {
             }
         }
 
-        addSwdpLibrary( restConfig );
+        if ( SwingUtilities.isEventDispatchThread() ){
+            final WebRestSupport.RestConfig config = restConfig;
+            final IOException[] exception = new IOException[1];
+            Runnable runnable = new Runnable() {
+                
+                @Override
+                public void run() {
+                    try {
+                        addSwdpLibrary( config );
+                    }
+                    catch( IOException e ){
+                        exception[0] = e;
+                    }
+                }
+            };
+            AtomicBoolean cancel = new AtomicBoolean();
+            ProgressUtils.runOffEventDispatchThread( runnable , 
+                    NbBundle.getMessage(MavenProjectRestSupport.class, 
+                    "TTL_ExtendProjectClasspath"), cancel, false );  // NOI18N
+            if ( exception[0]!= null ){
+                throw exception[0];
+            }
+        }
+        else {
+            addSwdpLibrary( restConfig );
+        }
     }
 
     @Override
