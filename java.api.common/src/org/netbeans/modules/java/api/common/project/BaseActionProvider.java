@@ -715,7 +715,7 @@ public abstract class BaseActionProvider implements ActionProvider {
             String mainClass = evaluator.getProperty(ProjectProperties.MAIN_CLASS);
             MainClassStatus result;
             if (doJavaChecks) {
-                result = isSetMainClass (projectSourceRoots.getRoots(), mainClass);
+                result = isSetMainClass (projectSourceRoots, mainClass);
             } else {
                 result = MainClassStatus.SET_AND_VALID;
             }
@@ -734,7 +734,7 @@ public abstract class BaseActionProvider implements ActionProvider {
                     }
                     // No longer use the evaluator: have not called putProperties yet so it would not work.
                     mainClass = ep.get(ProjectProperties.MAIN_CLASS);
-                    result=isSetMainClass (projectSourceRoots.getRoots(), mainClass);
+                    result=isSetMainClass (projectSourceRoots, mainClass);
                 } while (result != MainClassStatus.SET_AND_VALID);
                 try {
                     if (updateHelper.requestUpdate()) {
@@ -1415,7 +1415,7 @@ public abstract class BaseActionProvider implements ActionProvider {
      * @param mainClass main class name
      * @return status code
      */
-    private MainClassStatus isSetMainClass(FileObject[] sourcesRoots, String mainClass) {
+    private MainClassStatus isSetMainClass(SourceRoots roots, String mainClass) {
 
         // support for unit testing
         if (MainClassChooser.unitTestingSupport_hasMainMethodResult != null) {
@@ -1426,6 +1426,7 @@ public abstract class BaseActionProvider implements ActionProvider {
             LOG.fine("Main class is not set");    //NOI18N
             return MainClassStatus.UNSET;
         }
+        final FileObject[] sourcesRoots = roots.getRoots();
         if (sourcesRoots.length > 0) {
             LOG.log(Level.FINE, "Searching main class {0} for root: {1}",   //NOI18N
                     new Object[] {
@@ -1435,14 +1436,22 @@ public abstract class BaseActionProvider implements ActionProvider {
             ClassPath bootPath = null, compilePath = null;
             try {
                 bootPath = ClassPath.getClassPath (sourcesRoots[0], ClassPath.BOOT);        //Single compilation unit
-                assert bootPath != null : assertPath (sourcesRoots[0], sourcesRoots, ClassPath.BOOT);
+                assert bootPath != null : assertPath (
+                        sourcesRoots[0],
+                        sourcesRoots,
+                        roots,
+                        ClassPath.BOOT);
             } catch (AssertionError e) {
                 //Log the assertion when -ea
                 Exceptions.printStackTrace(e);
             }
             try {
                 compilePath = ClassPath.getClassPath (sourcesRoots[0], ClassPath.EXECUTE);
-                assert compilePath != null : assertPath (sourcesRoots[0], sourcesRoots, ClassPath.EXECUTE);
+                assert compilePath != null : assertPath (
+                        sourcesRoots[0],
+                        sourcesRoots,
+                        roots,
+                        ClassPath.EXECUTE);
             } catch (AssertionError e) {
                 //Log the assertion when -ea
                 Exceptions.printStackTrace(e);
@@ -1492,7 +1501,8 @@ public abstract class BaseActionProvider implements ActionProvider {
 
     private String assertPath (
         FileObject          fileObject,
-        FileObject[]          expectedRoots,
+        FileObject[]        expectedRoots,
+        SourceRoots         roots,
         String              pathType
     ) {
         StringBuilder sb = new StringBuilder ();
@@ -1508,7 +1518,9 @@ public abstract class BaseActionProvider implements ActionProvider {
         for (SourceGroup sg : sgs) {
             sb.append("\n  ").append(FileUtil.getFileDisplayName(sg.getRootFolder()));                                  //NOI18N
         }
-        sb.append ("\nProject Source Roots:");                                                                          //NOI18N
+        sb.append ("\nProject Source Roots(");                                                                          //NOI18N
+        sb.append(System.identityHashCode(roots));
+        sb.append("):");                                                                                                //NOI18N
         for (FileObject expectedRoot : expectedRoots) {
             sb.append("\n  ").append(FileUtil.getFileDisplayName(expectedRoot));                                        //NOI18N
         }
