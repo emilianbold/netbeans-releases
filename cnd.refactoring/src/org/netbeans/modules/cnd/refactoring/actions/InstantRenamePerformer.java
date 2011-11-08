@@ -157,10 +157,10 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
             final BaseDocument bdoc = (BaseDocument) doc;
             bdoc.addPostModificationDocumentListener(InstantRenamePerformer.this);
             
-            UndoableEdit undo = new CancelInstantRenameUndoableEdit(this);
-            for (UndoableEditListener l : bdoc.getUndoableEditListeners()) {
-                l.undoableEditHappened(new UndoableEditEvent(doc, undo));
-            }            
+//            UndoableEdit undo = new CancelInstantRenameUndoableEdit(this);
+//            for (UndoableEditListener l : bdoc.getUndoableEditListeners()) {
+//                l.undoableEditHappened(new UndoableEditEvent(doc, undo));
+//            }            
         }
         
 	target.addKeyListener(InstantRenamePerformer.this);
@@ -271,13 +271,8 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
     
     public synchronized static void performInstantRename(JTextComponent target, Collection<CsmReference> highlights, int caretOffset) throws BadLocationException {
         if (instance != null) {
-            if (instance.target != target) {
-                // cancel rename in other component
-                instance.release();
-            } else {
-                // prohibit two renames in the same component
-                return;
-            }
+            // cancel previouse rename
+            instance.release();
         }
         UIGesturesSupport.submit(CsmRefactoringUtils.USG_CND_REFACTORING, "INSTANT_RENAME"); // NOI18N
         instance = new InstantRenamePerformer(target, highlights, caretOffset);
@@ -337,6 +332,11 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
     }
 
     private synchronized void release() {
+        if (target == null) {
+            //already released
+            return;
+        }
+        
 	target.putClientProperty(InstantRenamePerformer.class, null);
         if (doc instanceof BaseDocument) {
             ((BaseDocument) doc).removePostModificationDocumentListener(this);
