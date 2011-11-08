@@ -70,6 +70,7 @@ import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
 import org.netbeans.modules.maven.j2ee.web.WebModuleProviderImpl;
 import org.netbeans.modules.maven.spi.debug.MavenDebugger;
 import org.netbeans.modules.maven.j2ee.customizer.CustomizerRunWeb;
+import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
 import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.POMModel;
@@ -337,27 +338,8 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
 
     private static void persistServer(Project project, final String iID, final String sID, final Project targetPrj) {
         project.getLookup().lookup(AuxiliaryProperties.class).put(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID, iID, false);
-        final ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
-            public void performOperation(POMModel model) {
-                Properties props = model.getProject().getProperties();
-                if (props == null) {
-                    props = model.getFactory().createProperties();
-                    model.getProject().setProperties(props);
-                }
-                props.setProperty(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER, sID);
-            }
-        };
-        final FileObject projDir = targetPrj.getProjectDirectory();
-        final FileObject fo = projDir.getFileObject("pom.xml"); //NOI18N
-        try {
-            fo.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
-                public void run() throws IOException {
-                    Utilities.performPOMModelOperations(fo, Collections.singletonList(operation));
-                }
-            });
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+        MavenProjectSupport.storeSettingsToPom(targetPrj, MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER, sID);
+        
         //#109507 workaround
         POHImpl poh = project.getLookup().lookup(POHImpl.class);
         poh.hackModuleServerChange(true);
