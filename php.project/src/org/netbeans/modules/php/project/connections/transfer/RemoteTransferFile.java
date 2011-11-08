@@ -79,7 +79,7 @@ final class RemoteTransferFile extends TransferFile {
         if (!parentDirectory.startsWith(REMOTE_PATH_SEPARATOR)) {
             throw new IllegalArgumentException("Parent directory '" + parentDirectory + "' must start with '" + REMOTE_PATH_SEPARATOR + "'");
         }
-        if (!parentDirectory.startsWith(baseDirectory)) {
+        if (!(parentDirectory + REMOTE_PATH_SEPARATOR).startsWith(baseDirectory + REMOTE_PATH_SEPARATOR)) {
             throw new IllegalArgumentException("Parent directory '" + parentDirectory + "' must be underneath base directory '" + baseDirectory + "'");
         }
     }
