@@ -309,16 +309,27 @@ public final class UnitTab extends javax.swing.JPanel {
             };
             tfSearch.addFocusListener(flForSearch);
         }
-        RequestProcessor.Task runningTask = PluginManagerUI.getRunningTask ();
+        RequestProcessor.Task runningTask = PluginManagerUI.getRunningTask (new Runnable() {
+
+            @Override
+            public void run() {
+                if (isWaitingForExternal) {
+                    reloadTask (false).schedule (10);
+                    isWaitingForExternal = false;
+                }
+            }
+        });
         synchronized (this) {
             if (runningTask != null && ! runningTask.isFinished () && ! isWaitingForExternal) {
                 isWaitingForExternal = true;
                 runningTask.addTaskListener (new TaskListener () {
                     @Override
                      public void taskFinished (org.openide.util.Task task) {
-                        reloadTask (false).schedule (10);
+                        if (isWaitingForExternal) {
+                            reloadTask (false).schedule (10);
+                        }
                         isWaitingForExternal = false;
-                    }
+                     }
                 });
             }
         }
@@ -1058,7 +1069,13 @@ public final class UnitTab extends javax.swing.JPanel {
         public void setEnabled (boolean enabled) {
             if (isEnabled () != enabled) {
                 if (enabled) {
-                    RequestProcessor.Task t = PluginManagerUI.getRunningTask ();
+                    RequestProcessor.Task t = PluginManagerUI.getRunningTask (new Runnable () {
+
+                        @Override
+                        public void run() {
+                            setEnabled (true);
+                        }
+                    });
                     if (t != null && ! t.isFinished ()) {
                         t.addTaskListener (new TaskListener () {
                             @Override
