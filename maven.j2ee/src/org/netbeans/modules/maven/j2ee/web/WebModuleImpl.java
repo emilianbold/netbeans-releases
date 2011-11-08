@@ -239,7 +239,7 @@ public class WebModuleImpl implements WebModuleImplementation2, J2eeModuleImplem
         if(getDeploymentDescriptor() != null || prof == Profile.JAVA_EE_6_FULL || prof == Profile.JAVA_EE_6_WEB) {
             try {
                 String path = provider.getConfigSupport().getWebContextRoot();
-                if (path != null) {
+                if (path != null && !"".equals(path.trim())) {
                     return path;
                 }
             } catch (ConfigurationException e) {
