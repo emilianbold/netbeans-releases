@@ -262,6 +262,7 @@ final class XMLMIMEComponent extends DefaultParser implements MIMEComponent {
             if (fo.getSize() == 0) return null;
             
             print = new Smell();
+            errors = 0;
             parse(fo);
             if (this.state == ERROR) {
                 return null;
