@@ -84,9 +84,8 @@ public class J2eeLookupProvider implements LookupProvider {
     public Lookup createAdditionalLookup(Lookup baseLookup) {
         Project project = baseLookup.lookup(Project.class);
         assert project != null;
-//        // if there's more items later, just do a proxy..
+
         InstanceContent ic = new InstanceContent();
-        // XXX replace everything with @ProjectServiceProvider(projectType="org-netbeans-modules-maven/" + NbMavenProject.TYPE_WAR) etc.
         ic.add(new J2EEPrerequisitesChecker());
         ic.add(new J2eeRecoPrivTemplates(project));
         ic.add(new J2eeMavenSourcesImpl(project));

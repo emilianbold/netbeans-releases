@@ -256,12 +256,23 @@ public class ETable extends JTable {
      */
     private static TableColumnSelector defaultColumnSelector;
     
-    /**
-     * The column selection corner can use either dialog or popup menu.
-     */
-    private boolean popupUsedFromTheCorner;
+    private final Object columnSelectionOnMouseClickLock = new Object();
+    private ColumnSelection[] columnSelectionOnMouseClick = new ColumnSelection[] {
+        ColumnSelection.NO_SELECTION,           // no button
+        ColumnSelection.DIALOG,                 // dialog on left-click
+        ColumnSelection.NO_SELECTION,           // no action on middle button
+        ColumnSelection.POPUP,                  // popup on right-click
+    };
     
     private boolean columnHidingAllowed = true;
+    
+    /**
+     * The visible column selection methods.
+     * @since 1.17
+     */
+    public enum ColumnSelection {
+        NO_SELECTION, POPUP, DIALOG
+    }
     
     /**
      * Constructs a default <code>JTable</code> that is initialized with a default
@@ -1066,8 +1077,14 @@ public class ETable extends JTable {
                     b.addMouseListener(new MouseAdapter() {
                         @Override
                         public void mouseClicked(MouseEvent me) {
-                            if (me.getButton() == MouseEvent.BUTTON3) {
-                                ColumnSelectionPanel.showColumnSelectionPopup(b, ETable.this);
+                            ColumnSelection cs = getColumnSelectionOn(me.getButton());
+                            switch (cs) {
+                                case POPUP:
+                                    ColumnSelectionPanel.showColumnSelectionPopup (b, ETable.this);
+                                    break;
+                                case DIALOG:
+                                    ColumnSelectionPanel.showColumnSelectionDialog(ETable.this);
+                                    break;
                             }
                         }
                     });
@@ -2265,16 +2282,27 @@ public class ETable extends JTable {
         }
     }
     
+    private void showColumnSelection(MouseEvent me) {
+        ColumnSelection cs = getColumnSelectionOn(me.getButton());
+        switch (cs) {
+            case POPUP:
+                ColumnSelectionPanel.showColumnSelectionPopup (me.getComponent (), me.getX(), me.getY(), ETable.this);
+                break;
+            case DIALOG:
+                ColumnSelectionPanel.showColumnSelectionDialog(ETable.this);
+                break;
+        }
+    }
+    
     /**
-     * Mouse listener attached to the JTableHeader of this table. Single
-     * click on the table header should trigger sorting on that column.
-     * Double click on the column divider automatically resizes the column.
+     * Mouse listener attached to the scroll pane of this table, handles the case
+     * when no columns are displayed.
      */
     private class ColumnSelectionMouseListener extends MouseAdapter {
         @Override
         public void mouseClicked(MouseEvent me) {
-            if (me.getButton() == MouseEvent.BUTTON3) {
-                ColumnSelectionPanel.showColumnSelectionPopup (me.getComponent (), me.getX(), me.getY(), ETable.this);
+            if (me.getButton() != MouseEvent.BUTTON1) {
+                showColumnSelection(me);
             }
         }
     }
@@ -2286,8 +2314,8 @@ public class ETable extends JTable {
     private class HeaderMouseListener extends MouseAdapter {
         @Override
         public void mouseClicked(MouseEvent me) {
-            if (me.getButton() == MouseEvent.BUTTON3) {
-                ColumnSelectionPanel.showColumnSelectionPopup (me.getComponent (), me.getX(), me.getY(), ETable.this);
+            if (me.getButton() == MouseEvent.BUTTON3) { // Other buttons are reserved for sorting
+                showColumnSelection(me);
                 return;
             }
             TableColumn resColumn = getResizingColumn(me.getPoint());
@@ -2702,16 +2730,83 @@ public class ETable extends JTable {
 
     /**
      * The column selection corner can use either dialog or popup menu.
+     * 
+     * @return <code>true</code>, when left mouse click invokes a popup menu,
+     * or <code>false</code>, when left mouse click opens a dialog for column selection.
      */
     public boolean isPopupUsedFromTheCorner() {
-        return popupUsedFromTheCorner;
+        synchronized (columnSelectionOnMouseClickLock) {
+            ColumnSelection cs = columnSelectionOnMouseClick[1];
+            return cs == ColumnSelection.POPUP;
+        }
     }
 
     /**
-     * The column selection corner can use either dialog or popup menu.
+     * The column selection corner can use either dialog or popup menu.<br/>
+     * This method is equivalent to {@link #setColumnSelectionOn(int, org.netbeans.swing.etable.ETable.ColumnSelection)}
+     * with arguments <code>1</code> and appropriate column selection constant.
+     * 
+     * @param popupUsedFromTheCorner When <code>true</code>, left mouse click invokes a popup menu,
+     * when <code>false</code>, left mouse click opens a dialog for column selection.
      */
     public void setPopupUsedFromTheCorner(boolean popupUsedFromTheCorner) {
-        this.popupUsedFromTheCorner = popupUsedFromTheCorner;
+        synchronized (columnSelectionOnMouseClickLock) {
+            columnSelectionOnMouseClick[1] = popupUsedFromTheCorner ? ColumnSelection.POPUP : ColumnSelection.DIALOG;
+        }
+    }
+    
+    /**
+     * Get the column selection method, that is displayed as a response to the
+     * mouse event. A popup with column selection menu, or column selection
+     * dialog can be displayed.<br/>
+     * By default, popup menu is displayed on button3 mouse click
+     * and dialog or popup menu is displayed on the corner
+     * button1 mouse action, depending on the value of {@link #isPopupUsedFromTheCorner()}
+     * 
+     * @param mouseButton The button of the mouse event
+     * @return The column selection method.
+     * @since 1.17
+     */
+    public ColumnSelection getColumnSelectionOn(int mouseButton) {
+        if (mouseButton < 0) {
+            throw new IllegalArgumentException("Button = "+mouseButton);
+        }
+        synchronized (columnSelectionOnMouseClickLock) {
+            if (mouseButton >= columnSelectionOnMouseClick.length) {
+                return null;
+            }
+            return columnSelectionOnMouseClick[mouseButton];
+        }
+    }
+    
+    /**
+     * Set if popup with column selection menu or column selection dialog
+     * should be displayed as a response to the mouse event.<br/>
+     * 
+     * @param mouseButton The button of the mouse event
+     * @param selection The column selection method.
+     * @since 1.17
+     */
+    public void setColumnSelectionOn(int mouseButton, ColumnSelection selection) {
+        if (mouseButton < 0) {
+            throw new IllegalArgumentException("Button = "+mouseButton);
+        }
+        synchronized (columnSelectionOnMouseClickLock) {
+            if (mouseButton >= columnSelectionOnMouseClick.length) {
+                ColumnSelection[] csp = new ColumnSelection[mouseButton + 1];
+                System.arraycopy(columnSelectionOnMouseClick, 0, csp, 0, columnSelectionOnMouseClick.length);
+                columnSelectionOnMouseClick = csp;
+            }
+            columnSelectionOnMouseClick[mouseButton] = selection;
+        }
+    }
+    
+    /**
+     * Shows dialog that allows to show/hide columns.
+     * @since 1.17
+     */
+    public final void showColumnSelectionDialog() {
+        ColumnSelectionPanel.showColumnSelectionDialog(this);
     }
 
     /**

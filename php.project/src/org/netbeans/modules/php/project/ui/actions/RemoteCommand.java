@@ -229,7 +229,9 @@ public abstract class RemoteCommand extends Command {
 
         if (transferInfo.hasAnyIgnored()) {
             printIgnore(io, NbBundle.getMessage(RemoteCommand.class, "LBL_RemoteIgnored"));
-            for (Map.Entry<TransferFile, String> entry : transferInfo.getIgnored().entrySet()) {
+            Map<TransferFile, String> sorted = new TreeMap<TransferFile, String>(TRANSFER_FILE_COMPARATOR);
+            sorted.putAll(transferInfo.getIgnored());
+            for (Map.Entry<TransferFile, String> entry : sorted.entrySet()) {
                 printIgnore(io, maxRelativePath, entry.getKey(), entry.getValue());
             }
         }
