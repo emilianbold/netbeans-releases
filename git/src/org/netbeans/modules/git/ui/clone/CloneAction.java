@@ -170,7 +170,7 @@ public class CloneAction implements ActionListener, HelpCtx.Provider {
                         }
 
                         client.setRemote(new CloneRemoteConfig(remoteName, remoteUri, refSpecs), this);
-                        
+                        org.netbeans.modules.versioning.util.Utils.logVCSExternalRepository("GIT", remoteUri.toString()); //NOI18N
                         client.createBranch(branch.getName(), remoteName + "/" + branch.getName(), this);
                         client.checkoutRevision(branch.getName(), true, this);
 
