@@ -592,7 +592,7 @@ class OccurenceBuilder {
                 case CLASS_INSTANCE_CREATION:
                 case CLASS:
                     final QualifiedName qualifiedName = elementInfo.getNodeInfo() != null 
-                            ? getFullyQualifiedName(elementInfo.getNodeInfo(), elementInfo.getScope())
+                            ? getFullyQualifiedName(elementInfo.getNodeInfo().getQualifiedName(), elementInfo.getNodeInfo().getOriginalNode().getStartOffset(), elementInfo.getScope())
                             : elementInfo.getQualifiedName();
                     final Set<TypeElement> types = index.getTypes(NameKind.exact(qualifiedName));
                     if (elementInfo.setDeclarations(types)) {
@@ -793,6 +793,7 @@ class OccurenceBuilder {
     private void buildTypeConstants(final Index index, FileScopeImpl fileScope, final List<Occurence> occurences) {
         final Exact methodName = NameKind.exact(elementInfo.getName());
         QualifiedName clzName = elementInfo.getTypeQualifiedName();
+        clzName = getFullyQualifiedName(clzName, elementInfo.getNodeInfo().getOriginalNode().getStartOffset(), elementInfo.getScope());
         final Set<TypeConstantElement> constants = new HashSet<TypeConstantElement>();
         Scope scope = elementInfo.getScope() instanceof TypeScope ? elementInfo.getScope() : elementInfo.getScope().getInScope();
         if (clzName.getKind().isUnqualified() && scope instanceof TypeScope) {
@@ -1329,7 +1330,7 @@ class OccurenceBuilder {
         for (PhpElement phpElement : elements) {
             for (Entry<ASTNodeInfo<ClassInstanceCreation>, Scope> entry : clasInstanceCreations.entrySet()) {
                 ASTNodeInfo<ClassInstanceCreation> nodeInfo = entry.getKey();
-                final QualifiedName qualifiedName = getFullyQualifiedName(nodeInfo, entry.getValue());
+                final QualifiedName qualifiedName = getFullyQualifiedName(nodeInfo.getQualifiedName(), nodeInfo.getOriginalNode().getStartOffset(), entry.getValue());
                 Set<? extends PhpElement> contextTypes = elements;
                 if (NameKind.exact(qualifiedName).matchesName(phpElement)) {
                     if (qualifiedName.getKind().isUnqualified()) {
@@ -1780,61 +1781,62 @@ class OccurenceBuilder {
         return false;
     }
 
-    private static QualifiedName getFullyQualifiedName(ASTNodeInfo nodeInfo, Scope inScope) {
+    private static QualifiedName getTypeFullyQualifedName(ASTNodeInfo nodeInfo, Scope inScope) {
+        return null;
+    }
+    
+    private static QualifiedName getFullyQualifiedName(QualifiedName qualifiedName, int offset, Scope inScope) {
         
-        QualifiedName qualifiedName = null;
-        if (nodeInfo != null) {
-            qualifiedName = nodeInfo.getQualifiedName();
-            if(qualifiedName.getKind() != QualifiedNameKind.FULLYQUALIFIED) {
-                
-                while (inScope != null && !(inScope instanceof NamespaceScope)) {
-                    inScope = inScope.getInScope();
-                }
-                if (inScope != null) {
-                    NamespaceScope namespace = (NamespaceScope) inScope;
-                    // needs to count 
-                    String firstSegmentName = qualifiedName.getSegments().getFirst();
-                    UseElement matchedUseElement = null;
-                    int lastOffset = -1; // remember offset of the last use declaration, that fits
-                    for (UseElement useElement : namespace.getDeclaredUses()) {
-                        if (useElement.getOffset() < nodeInfo.getRange().getStart()) {
-                            AliasedName aliasName = useElement.getAliasedName();
-                            if (aliasName != null) {
-                                //if it's allisased name
-                                if (firstSegmentName.equals(aliasName.getAliasName())) {
-                                    matchedUseElement = useElement;
-                                    continue;
-                                }
-                            } else {
-                                // no alias
-                                if (lastOffset < useElement.getOffset() && useElement.getName().endsWith(firstSegmentName)) {
-                                    matchedUseElement = useElement;
-                                    // we need to check all use elements that can fit the name
-                                    lastOffset = useElement.getOffset();
-                                }
+        if(qualifiedName.getKind() != QualifiedNameKind.FULLYQUALIFIED) {
+
+            while (inScope != null && !(inScope instanceof NamespaceScope)) {
+                inScope = inScope.getInScope();
+            }
+            if (inScope != null) {
+                NamespaceScope namespace = (NamespaceScope) inScope;
+                // needs to count 
+                String firstSegmentName = qualifiedName.getSegments().getFirst();
+                UseElement matchedUseElement = null;
+                int lastOffset = -1; // remember offset of the last use declaration, that fits
+                for (UseElement useElement : namespace.getDeclaredUses()) {
+                    if (useElement.getOffset() < offset) {
+                        AliasedName aliasName = useElement.getAliasedName();
+                        if (aliasName != null) {
+                            //if it's allisased name
+                            if (firstSegmentName.equals(aliasName.getAliasName())) {
+                                matchedUseElement = useElement;
+                                continue;
+                            }
+                        } else {
+                            // no alias
+                            if (lastOffset < useElement.getOffset() && useElement.getName().endsWith(firstSegmentName)) {
+                                matchedUseElement = useElement;
+                                // we need to check all use elements that can fit the name
+                                lastOffset = useElement.getOffset();
                             }
                         }
                     }
-                    if (matchedUseElement != null) {
-                        ArrayList<String> segments = new ArrayList();
-                        // create segmens from the usage
-                        for (StringTokenizer st = new StringTokenizer(matchedUseElement.getName(), "\\"); st.hasMoreTokens();) {
-                            String token = st.nextToken();
-                            segments.add(token);
-                        }
-                        // and add all segments from the name except the first one.
-                        // the first one mathces the name of the usage or alias. 
-                        List<String> origName = qualifiedName.getSegments();
-                        for (int i = 1; i < origName.size(); i++) {
-                            segments.add(origName.get(i));
-                        }
-                        qualifiedName = QualifiedName.create(true, segments);
-                    } else if (qualifiedName.getKind() == QualifiedNameKind.UNQUALIFIED) {
-                        qualifiedName = inScope.getNamespaceName().append(qualifiedName);
+                }
+                if (matchedUseElement != null) {
+                    ArrayList<String> segments = new ArrayList();
+                    // create segmens from the usage
+                    for (StringTokenizer st = new StringTokenizer(matchedUseElement.getName(), "\\"); st.hasMoreTokens();) {
+                        String token = st.nextToken();
+                        segments.add(token);
                     }
+                    // and add all segments from the name except the first one.
+                    // the first one mathces the name of the usage or alias. 
+                    List<String> origName = qualifiedName.getSegments();
+                    for (int i = 1; i < origName.size(); i++) {
+                        segments.add(origName.get(i));
+                    }
+                    qualifiedName = QualifiedName.create(true, segments);
+                } else if (qualifiedName.getKind() == QualifiedNameKind.UNQUALIFIED) {
+                    qualifiedName = inScope.getNamespaceName().append(qualifiedName);
                 }
             }
         }
+
         return qualifiedName;
     }
 
