@@ -54,6 +54,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.event.AncestorEvent;
 import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.api.project.Project;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -63,18 +64,20 @@ import org.netbeans.api.java.source.ui.TypeElementFinder;
 import javax.swing.SwingUtilities;
 import java.util.Set;
 import javax.lang.model.element.TypeElement;
+import javax.swing.event.AncestorListener;
 import org.netbeans.api.java.source.ClassIndex.NameKind;
 import org.netbeans.api.java.source.ClassIndex.SearchScope;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.hibernate.service.api.HibernateEnvironment;
 import org.openide.filesystems.FileObject;
+import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author  gowri
  */
-public class HibernateMappingWizardPanel extends javax.swing.JPanel {
+public class HibernateMappingWizardPanel extends javax.swing.JPanel implements AncestorListener {
 
     private Project project;
     List<FileObject> configFileObjects;
@@ -88,16 +91,19 @@ public class HibernateMappingWizardPanel extends javax.swing.JPanel {
         env = project.getLookup().lookup(HibernateEnvironment.class);
         String[] configFiles = getConfigFilesFromProject(project);
         this.cmbResource.setModel(new DefaultComboBoxModel(configFiles));
-        fillDatabaseTable();
+        addAncestorListener(this);
         this.browseButton.addActionListener(new java.awt.event.ActionListener() {
-
+            @Override
             public void actionPerformed(ActionEvent evt) {
                 browseButtonActionPerformed(evt);
             }
         });
     }
 
-    // This fills the databaseTable drop down with a list of tables
+    /*
+     * This fills the databaseTable drop down with a list of tables
+     * Need to be called in EDT
+     */
     public void fillDatabaseTable() {
         if (cmbResource.getItemCount() == 0) {
             this.cmbDatabaseTable.setModel(new DefaultComboBoxModel(new String[]{}));
@@ -124,13 +130,16 @@ public class HibernateMappingWizardPanel extends javax.swing.JPanel {
     private void browseButtonActionPerformed(ActionEvent evt) {
         SwingUtilities.invokeLater(new Runnable() {
 
+            @Override
             public void run() {
                 final ElementHandle<TypeElement> handle = TypeElementFinder.find(null, new TypeElementFinder.Customizer() {
 
+                    @Override
                     public Set<ElementHandle<TypeElement>> query(ClasspathInfo classpathInfo, String textForQuery, NameKind nameKind, Set<SearchScope> searchScopes) {
                         return classpathInfo.getClassIndex().getDeclaredTypes(textForQuery, nameKind, searchScopes);
                     }
 
+                    @Override
                     public boolean accept(ElementHandle<TypeElement> typeHandle) {
                         return true;
                     }
@@ -275,4 +284,32 @@ public class HibernateMappingWizardPanel extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel3;
     private javax.swing.JTextField txtClassName;
     // End of variables declaration//GEN-END:variables
+
+    @Override
+    public void ancestorAdded(AncestorEvent event) {
+        //need to move fill into EDT but also direct call cause lock
+        //this way code is called after panel is initialized and is added
+        //see also 204327
+        RequestProcessor.getDefault().post(new Runnable() {
+            @Override
+            public void run() {
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        fillDatabaseTable();
+                    }
+                });
+            }
+        });
+        
+        removeAncestorListener(this);
+    }
+
+    @Override
+    public void ancestorRemoved(AncestorEvent event) {
+    }
+
+    @Override
+    public void ancestorMoved(AncestorEvent event) {
+    }
 }

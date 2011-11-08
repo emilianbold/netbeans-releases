@@ -57,10 +57,11 @@ import org.openide.util.Exceptions;
  */
 
 @EditorActionRegistration(name = ExtKit.toggleCommentAction, mimeType="text/x-php5")
-
 public class ToggleBlockCommentAction extends BaseAction{
 
     static final long serialVersionUID = -1L;
+    static final private String FORCE_COMMENT = "force-comment";    //NOI18N
+    static final private String FORCE_UNCOMMENT = "force-uncomment";    //NOI18N
     
     @Override
     public void actionPerformed(ActionEvent evt, JTextComponent target) {
@@ -112,8 +113,16 @@ public class ToggleBlockCommentAction extends BaseAction{
             }
         }
         if(!processedHere) {
-            (new org.netbeans.modules.csl.api.ToggleBlockCommentAction()).actionPerformed(evt, target);
+            BaseAction action = new org.netbeans.modules.csl.api.ToggleBlockCommentAction();
+            if (getValue(FORCE_COMMENT) != null) {   
+                action.putValue(FORCE_COMMENT, getValue(FORCE_COMMENT)); 
+            }
+            if (getValue(FORCE_UNCOMMENT) != null) {
+                action.putValue(FORCE_UNCOMMENT, getValue(FORCE_UNCOMMENT));
+            }
+            action.actionPerformed(evt, target);
         }
     }
     
 }
+
