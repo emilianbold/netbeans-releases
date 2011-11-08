@@ -337,6 +337,11 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
     }
 
     private synchronized void release() {
+        if (target == null) {
+            //already released
+            return;
+        }
+        
 	target.putClientProperty(InstantRenamePerformer.class, null);
         if (doc instanceof BaseDocument) {
             ((BaseDocument) doc).removePostModificationDocumentListener(this);
