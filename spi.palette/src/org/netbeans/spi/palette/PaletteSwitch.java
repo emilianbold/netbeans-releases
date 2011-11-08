@@ -51,10 +51,9 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.MissingResourceException;
 import java.util.Set;
 import java.util.WeakHashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
@@ -65,6 +64,7 @@ import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -107,6 +107,9 @@ final class PaletteSwitch implements Runnable, LookupListener {
     }
     
     public void startListening() {
+        if( !isPaletteWindowEnabled() ) {
+            return;
+        }
         synchronized( theInstance ) {
             if( null == registryListener ) {
                 registryListener = createRegistryListener();
@@ -361,5 +364,22 @@ final class PaletteSwitch implements Runnable, LookupListener {
             }
         }
         return false;
+    }
+
+    /**
+     * 
+     * @return True to auto-show/hide palette window when an editor with palette content
+     * is activated, false to let the user open palette window manually.
+     * @since 1.29
+     */
+    private static boolean isPaletteWindowEnabled() {
+        boolean result = true;
+        try {
+            String resValue = NbBundle.getMessage(PaletteModule.class, "Palette.Window.Enabled" ); //NOI18N
+            result = "true".equals( resValue.toLowerCase() ); //NOI18N
+        } catch( MissingResourceException mrE ) {
+            //ignore
+        }
+        return result;
     }
 }

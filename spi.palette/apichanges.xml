@@ -359,6 +359,31 @@ is the proper place.
         </description>
         <issue number="170718"/>
     </change>
+
+    <change id="disable-palette-window" >
+        <api name="palette_api"/>
+        <summary>Allow to turn the auto-show of palette window on/off.</summary>
+        <version major="1" minor="29"/>
+        <date day="8" month="11" year="2011"/>
+        <author login="saubrecht"/>
+        <compatibility addition="yes" binary="compatible" deletion="no" semantic="compatible" deprecation="no" modification="no" source="compatible"/>
+        <description>
+            <p>
+                A new branding token <code>Palette.Window.Enabled</code> in 
+                <code>org.netbeans.spi.palette</code> package allows to turn the automatic display of palette
+                window on/off. When the property value is <code>false</code> then
+                the palette window will not show when an editor with palette
+                content is activated. The user must open/close the palette window
+                manually. The default value is <code>true</code> which means
+                the palette window will auto-show/hide when active editor changes.
+                Note: The palette window is part of <code>commonpalette</code> TopComponent group
+                which the form designer opens when activated. So to turn the palette
+                window off completely it is necessary to remove its reference
+                from that group.
+            </p>
+        </description>
+        <issue number="204786"/>
+    </change>
     
 </changes>
   
