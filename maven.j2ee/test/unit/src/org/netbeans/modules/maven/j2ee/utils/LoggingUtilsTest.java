@@ -39,8 +39,9 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.maven.j2ee;
+package org.netbeans.modules.maven.j2ee.utils;
 
+import org.netbeans.modules.maven.j2ee.utils.LoggingUtils;
 import java.util.logging.Logger;
 import org.junit.runner.Description;
 import org.junit.Rule;

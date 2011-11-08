@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.maven.j2ee;
 
+import org.netbeans.modules.maven.j2ee.utils.LoggingUtils;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
