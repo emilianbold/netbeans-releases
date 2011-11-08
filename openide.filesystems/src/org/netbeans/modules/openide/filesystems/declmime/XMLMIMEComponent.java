@@ -246,7 +246,8 @@ final class XMLMIMEComponent extends DefaultParser implements MIMEComponent {
         
         // the only way how to stop parser is throwing an exception
         private static final SAXException STOP = new SAXException("STOP");  //NOI18N
-
+        private int errors;
+        
         /**
          * Go ahead and retrieve a print or null
          */
@@ -286,7 +287,8 @@ final class XMLMIMEComponent extends DefaultParser implements MIMEComponent {
             return parser;
         }
         
-        protected boolean isStopException(Exception e) {
+        @Override
+        protected boolean isStopException(Throwable e) {
             return STOP.getMessage().equals(e.getMessage());
         }        
         
@@ -344,9 +346,12 @@ final class XMLMIMEComponent extends DefaultParser implements MIMEComponent {
             if (emgr.isLoggable(Level.FINE)) {
                 emgr.fine("[while parsing " + fo + "] " + exception.getSystemId() + ":" + exception.getLineNumber() + ":" + exception.getColumnNumber() + ": " + exception.getMessage()); // NOI18N
             }
-
-            this.state = ERROR;
-            throw STOP;
+            
+            // go on anyway, needed to fix 203959
+            if (errors++ > 10) {
+                state = ERROR;
+                throw STOP;
+            }
         }
         
         
