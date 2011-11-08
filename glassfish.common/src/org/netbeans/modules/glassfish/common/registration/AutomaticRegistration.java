@@ -112,7 +112,7 @@ public class AutomaticRegistration {
             // ee6wc
             config = "GlassFishEE6WC/Instances";
             deployer = "deployer:gfv3ee6wc";
-            defaultDisplayName = "GlassFish Server 3.1";
+            defaultDisplayName = "GlassFish Server 3.1.1";
         } else if(new File(glassfishHome, "lib/schemas/web-app_3_0.xsd").exists()) {
             // ee6
             config = "GlassFishEE6/Instances";
@@ -137,8 +137,13 @@ public class AutomaticRegistration {
                 return 2;
             }
         }
+        
+        // beware of trailling File.separator
+        //
+        glassfishRoot = new File(glassfishRoot).getAbsolutePath();
 
-        final String url = "[" + glassfishRoot + "]" + deployer + ":localhost:4848"; // NOI18N
+        final String url = "[" + glassfishRoot + File.pathSeparator + 
+                glassfishRoot + File.separator + "domains" + File.separator + "domain1]" + deployer + ":localhost:4848"; // NOI18N
 
         // make sure the server is not registered yet
         for (FileObject fo : serverInstanceDir.getChildren()) {

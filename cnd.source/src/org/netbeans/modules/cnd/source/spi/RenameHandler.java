@@ -59,7 +59,6 @@ public interface RenameHandler {
     /**
      * @param node on this node rename was requested
      * @param newName new name of node
-     * @param newNameExt new of file (with extension if any)
      * @throws java.lang.IllegalArgumentException thrown if rename cannot be performed
      */
     void handleRename(Node node, String newName) throws IllegalArgumentException;

@@ -55,6 +55,7 @@ import org.netbeans.editor.ext.html.parser.api.AstNode;
 import org.netbeans.editor.ext.html.parser.api.AstNodeUtils;
 import org.netbeans.editor.ext.html.parser.api.HtmlSource;
 import org.netbeans.editor.ext.html.parser.api.ParseException;
+import org.netbeans.editor.ext.html.parser.api.ProblemDescription;
 import org.netbeans.editor.ext.html.parser.spi.HelpItem;
 import org.netbeans.editor.ext.html.parser.spi.HtmlModel;
 import org.netbeans.editor.ext.html.parser.spi.HtmlParseResult;
@@ -817,7 +818,7 @@ public class Html5ParserTest extends NbTestCase {
     
     //Bug 196479 - Problem with finding end tag for style element
     public void testStyleTag() throws ParseException {
-        AstNodeTreeBuilder.setLoggerLevel(Level.FINER);
+//        AstNodeTreeBuilder.setLoggerLevel(Level.FINER);
         
         String code = "<!doctype html>"
                 + "<html>"
@@ -867,6 +868,42 @@ public class Html5ParserTest extends NbTestCase {
         assertEquals(51, style.endOffset());
 
     }
+    
+    //Bug 197608 - Non-html tags offered as closing tags using code completion
+    public void testIssue197608() throws ParseException {
+//        AstNodeTreeBuilder.setLoggerLevel(Level.FINER);
+        
+        String code = "<div></di   <p> aaa";
+        //             0123456789012345
+
+        HtmlParseResult result = parse(code);
+        AstNode root = result.root();
+
+        assertNotNull(root);
+        AstNodeUtils.dumpTree(root);
+
+        Collection<ProblemDescription> problems = result.getProblems();
+        assertNotNull(problems);
+        assertEquals(2, problems.size());
+        
+        Iterator<ProblemDescription> problemsItr = problems.iterator();
+        ProblemDescription pd = problemsItr.next();
+        assertNotNull(pd.getKey());
+        assertNotNull(pd.getText());
+        assertEquals(ProblemDescription.ERROR, pd.getType());
+        assertEquals(9, pd.getFrom());
+        assertEquals(9, pd.getTo());
+        
+        pd = problemsItr.next();
+        assertNotNull(pd.getKey());
+        assertNotNull(pd.getText());
+        assertEquals(ProblemDescription.ERROR, pd.getType());
+        assertEquals(12, pd.getFrom());
+        assertEquals(12, pd.getTo());
+        
+    }
+    
+    
     //fails
 //     //Bug 194037 - AssertionError at nu.validator.htmlparser.impl.TreeBuilder.endTag
 //    public void testIssue194037() throws ParseException {

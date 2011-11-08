@@ -72,6 +72,7 @@ import org.netbeans.modules.refactoring.api.ProgressEvent;
 import org.netbeans.modules.refactoring.api.impl.APIAccessor;
 import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
 import org.netbeans.modules.refactoring.spi.impl.ProblemComponent.CallbackAction;
+import org.openide.LifecycleManager;
 import org.openide.awt.Mnemonics;
 
 
@@ -595,6 +596,9 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
             @Override
             public void run() {
                 try {
+                    if (!rui.isQuery()) {
+                        LifecycleManager.getDefault().saveAll();                    
+                    }
                     problem = rui.getRefactoring().preCheck();
                 } catch (RuntimeException e) {
                     setVisibleLater(false);

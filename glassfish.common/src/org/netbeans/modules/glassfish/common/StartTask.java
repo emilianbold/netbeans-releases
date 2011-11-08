@@ -333,7 +333,7 @@ public class StartTask extends BasicTask<OperationState> {
         // Waiting for server to start
         while(System.currentTimeMillis() - start < START_TIMEOUT) {
             // Send the 'completed' event and return when the server is running
-            boolean httpLive = Utils.isLocalPortOccupied(adminPort);
+            boolean httpLive = CommonServerSupport.isRunning("localhost", adminPort, "localhost"); // Utils.isLocalPortOccupied(adminPort);
 
             // Sleep for a little so that we do not make our checks too often
             //

@@ -91,7 +91,7 @@ class JavaMailChildrenFactory extends ChildFactory<ResourceNode>
     protected boolean createKeys( final List<ResourceNode> children ) {
         WLDeploymentManager manager = lookup.lookup(WLDeploymentManager.class);
 
-        WLConnectionSupport support = new WLConnectionSupport(manager);
+        WLConnectionSupport support = manager.getConnectionSupport();
         try {
              support.executeAction(new WLConnectionSupport.JMXRuntimeAction<Void>()
                     {

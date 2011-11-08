@@ -809,7 +809,9 @@ public final class CommandBasedDeployer extends AbstractDeployer {
                         }
 
                         if (modules[i].getWeb() != null) {
-                            childModuleId.setContextURL(serverUrl + modules[i].getWeb().getContextRoot());
+                            String context = modules[i].getWeb().getContextRoot();
+                            String contextUrl = getContextUrl(serverUrl, context);
+                            childModuleId.setContextURL(contextUrl);
                         }
                         moduleId.addChild(childModuleId);
                     }
@@ -841,9 +843,19 @@ public final class CommandBasedDeployer extends AbstractDeployer {
     }
 
     private static void configureWarModuleId(WLTargetModuleID moduleId, FileObject file, String serverUrl) {
-        String ctx = readWebContext(file);
-        assert ctx.startsWith("/") : "context must start with forward slash - "+ctx; // NOI18N
-        moduleId.setContextURL(serverUrl + ctx);
+        String contextUrl = getContextUrl(serverUrl, readWebContext(file));
+        moduleId.setContextURL(contextUrl);
+    }
+
+    private static String getContextUrl(String serverUrl, String context) {
+        StringBuilder builder = new StringBuilder(serverUrl);
+        if (context != null && !context.startsWith("/")) {
+            LOGGER.log(Level.INFO, "Context path should start with forward slash while it is {0}", context);
+            if (!serverUrl.endsWith("/")) {
+                builder.append('/').append(context);
+            }
+        }
+        return builder.toString();
     }
     
     public static String readWebContext(FileObject file) {

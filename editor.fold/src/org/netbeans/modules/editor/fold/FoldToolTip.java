@@ -47,12 +47,18 @@ package org.netbeans.modules.editor.fold;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.JPanel;
 import javax.swing.border.LineBorder;
 import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
+import javax.swing.text.JTextComponent;
 import org.netbeans.modules.editor.lib2.view.DocumentView;
+import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 
 /**
  * Component that displays a collapsed fold preview.
@@ -69,11 +75,11 @@ public class FoldToolTip extends JPanel {
         this.foldPreviewPane = foldPreviewPane;
 
         setLayout(new BorderLayout());
-//        JScrollPane scrollPane = new JScrollPane(previewPane);
-//        add(scrollPane, BorderLayout.CENTER);
-//        scrollPane.setColumnHeaderView(lineGutter);
         add(foldPreviewPane, BorderLayout.CENTER);
         putClientProperty("tooltip-type", "fold-preview"); // Checked in NbToolTip
+
+        addGlyphGutter(foldPreviewPane);
+        
         addAncestorListener(new AncestorListener() {
             @Override
             public void ancestorAdded(AncestorEvent event) {
@@ -105,6 +111,39 @@ public class FoldToolTip extends JPanel {
         Color foreColor = this.foldPreviewPane.getForeground();
         setBorder(new LineBorder(foreColor));
         setOpaque(true);
+    }
+    
+    private void addGlyphGutter(JTextComponent jtx) {
+        ClassLoader cls = Lookup.getDefault().lookup(ClassLoader.class);
+        Class clazz;
+        Class editorUiClass;
+        
+        JComponent gutter = null;
+        try {
+            clazz = Class.forName("org.netbeans.editor.GlyphGutter", true, cls); // NOI18N
+            editorUiClass = Class.forName("org.netbeans.editor.EditorUI", true, cls); // NOI18N
+            // get the factory instance
+            Object o = clazz.newInstance();
+            Method m = clazz.getDeclaredMethod("createSideBar", JTextComponent.class); // NOI18N
+            gutter = (JComponent)m.invoke(o, jtx);
+        } catch (IllegalArgumentException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (InvocationTargetException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (NoSuchMethodException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (SecurityException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (InstantiationException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IllegalAccessException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (ClassNotFoundException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        if (gutter != null) {
+            add(gutter, BorderLayout.WEST);
+        }
     }
 
     @Override

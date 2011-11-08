@@ -68,7 +68,7 @@ import org.netbeans.modules.maven.j2ee.Wrapper;
  *
  * @author Martin Janicek
  */
-public abstract class AbstractCustomizer extends JPanel {
+public abstract class BaseRunCustomizer extends JPanel implements ApplyChangesCustomizer {
     
     protected Project project;
     protected ModelHandle handle;
@@ -76,14 +76,10 @@ public abstract class AbstractCustomizer extends JPanel {
     protected ComboBoxUpdater<Wrapper> listener;
     
 
-    public AbstractCustomizer(ModelHandle handle, Project project) {
+    public BaseRunCustomizer(ModelHandle handle, Project project) {
         this.handle = handle;
         this.project = project;
     }
-    
-    void applyChanges() {}
-    
-    void applyChangesInAWT() {}
     
     
     protected void initDeployOnSaveComponent(final JCheckBox dosCheckBox, final JLabel dosDescription) {
