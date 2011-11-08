@@ -199,6 +199,24 @@ is the proper place.
       <class package="org.netbeans.swing.etable" name="ETableColumnModel"/>
       <issue number="195226"/>
     </change>
+    <change id="column_selection_popup_or_dialog">
+      <api name="etable_outline"/>
+      <summary>Allow more detailed customization of whether popup menu or dialog
+      is displayed to select visible columns.</summary>
+      <version major="1" minor="17"/>
+      <date day="8" month="11" year="2011"/>
+      <author login="mentlicher"/>
+      <compatibility addition="yes" binary="compatible" deprecation="no"/>
+      <description>
+        <p>Added enumeration <code>ETable.ColumnSelection</code> and methods: 
+           <code>ETable.setColumnSelectionOn(int mouseButton, ColumnSelection selection</code>,
+           <code>ETable.getColumnSelectionOn(int mouseButton)</code> and
+           <code>ETable.showColumnSelectionDialog()</code>.
+        </p>
+      </description>
+      <class package="org.netbeans.swing.etable" name="ETable"/>
+      <issue number="200991"/>
+    </change>
 
 </changes>
 
