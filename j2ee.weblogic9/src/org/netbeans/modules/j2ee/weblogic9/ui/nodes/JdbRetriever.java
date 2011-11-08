@@ -126,7 +126,7 @@ public class JdbRetriever implements JdbcChildrenFactory.Retriever {
 
         WLDeploymentManager manager = lookup.lookup(WLDeploymentManager.class);
 
-        WLConnectionSupport support = new WLConnectionSupport(manager);
+        WLConnectionSupport support = manager.getConnectionSupport();
         List<JDBCDataBean> list = Collections.emptyList();
 
         try {
@@ -368,7 +368,7 @@ public class JdbRetriever implements JdbcChildrenFactory.Retriever {
         public void unregister() {
             WLDeploymentManager manager = lookup.lookup(WLDeploymentManager.class);
 
-            WLConnectionSupport support = new WLConnectionSupport(manager);
+            WLConnectionSupport support = manager.getConnectionSupport();
             try {
                 support.executeAction(new WLConnectionSupport.JMXEditAction<Void>() {
 
@@ -457,7 +457,7 @@ public class JdbRetriever implements JdbcChildrenFactory.Retriever {
         public void unregister() {
             WLDeploymentManager manager = lookup.lookup(WLDeploymentManager.class);
 
-            WLConnectionSupport support = new WLConnectionSupport(manager);
+            WLConnectionSupport support = manager.getConnectionSupport();
             try {
                 support.executeAction(new WLConnectionSupport.JMXEditAction<Void>() {
 

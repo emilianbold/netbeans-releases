@@ -53,6 +53,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.maven.indexer.spi.ArchetypeQueries;
@@ -64,7 +66,6 @@ import org.netbeans.modules.maven.indexer.spi.ContextLoadedQuery;
 import org.netbeans.modules.maven.indexer.spi.DependencyInfoQueries;
 import org.netbeans.modules.maven.indexer.spi.GenericFindQuery;
 import org.netbeans.modules.maven.indexer.spi.RepositoryIndexerImplementation;
-import org.openide.util.Exceptions;
 
 /**
  * Searches Maven repositories in various ways.
@@ -198,7 +199,7 @@ public final class RepositoryQueries {
             String calculateChecksum = RepositoryUtil.calculateSHA1Checksum(file);
             return findBySHA1(calculateChecksum, repos);
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            Logger.getLogger(RepositoryQueries.class.getName()).log(Level.INFO, "Could not determine SHA-1 of " + file, ex);
         }
         return Collections.emptyList();
         

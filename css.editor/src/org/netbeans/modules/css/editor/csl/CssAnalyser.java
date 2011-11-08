@@ -45,7 +45,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.Severity;
-import org.netbeans.modules.csl.spi.DefaultError;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.css.editor.Css3Utils;
@@ -69,10 +68,7 @@ public class CssAnalyser {
     private static final String UNKNOWN_PROPERTY_ERROR_KEY_DELIMITER = "/";//NOI18N
     private static final String UNKNOWN_PROPERTY_ERROR_KEY = "unknown_property" + UNKNOWN_PROPERTY_ERROR_KEY_DELIMITER;//NOI18N
     private static final String INVALID_PROPERTY_VALUE = "invalid_property_value";//NOI18N
-    private static final String INVALID_CONTENT = "invalid_content";//NOI18N
 
-    private static final String INVALID_CONTENT_MSG = NbBundle.getMessage(CssAnalyser.class, INVALID_CONTENT);
-    
     public static List<Error> checkForErrors(final Snapshot snapshot, final Node node) {
         List<Error> errors = new ArrayList<Error>();
         NodeVisitor<List<Error>> visitor = new NodeVisitor<List<Error>>(errors) {
@@ -163,20 +159,7 @@ public class CssAnalyser {
 
                     }
 
-                } else if(node.type() == NodeType.error && node.image().length() > 0) {
-                    Error error = makeError(
-                            node.from(),
-                            node.to(),
-                            snapshot,
-                            INVALID_CONTENT,
-                            INVALID_CONTENT_MSG,
-                            INVALID_CONTENT_MSG,
-                            true,
-                            Severity.ERROR);
-                    if(error != null) {
-                        getResult().add(error);
-                    }
-                }
+                } 
                 
                 return false;
             }
@@ -201,7 +184,7 @@ public class CssAnalyser {
 
         assert from <= to;
 
-        return DefaultError.createDefaultError(key,
+        return CssErrorFactory.createError(key,
                             displayName,
                             description,
                             snapshot.getSource().getFileObject(),

@@ -126,6 +126,7 @@ import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
 import org.netbeans.spi.queries.FileBuiltQueryImplementation;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -956,10 +957,11 @@ public final class NbModuleProject implements Project {
         }
     }    
 
-    private final class LocalizedBundleInfoProvider implements LocalizedBundleInfo.Provider {
+    private final class LocalizedBundleInfoProvider extends FileChangeAdapter implements LocalizedBundleInfo.Provider {
 
         private LocalizedBundleInfo bundleInfo;
         private FileObject manifestFO;
+        private final FileChangeListener listener = FileUtil.weakFileChangeListener(this, null);
 
         public LocalizedBundleInfo getLocalizedBundleInfo() {
             if (bundleInfo == null) {
@@ -973,22 +975,23 @@ public final class NbModuleProject implements Project {
                 }
                 if (mf != null) {
                     manifestFO = getManifestFile();
-                    manifestFO.addFileChangeListener(new FileChangeAdapter() {
-                        public @Override void fileChanged(FileEvent fe) {
-                            // cannot reload manifest-dependent things immediately (see 67961 for more details)
-                            bundleInfo = null;
-                        }
-
-                        @Override
-                        public void fileDeleted(FileEvent fe) {
-                            manifestFO = null;
-                        }
-
-                    });
+                    if (manifestFO != null) {
+                        manifestFO.addFileChangeListener(listener);
+                    }
                 }
             }
             return bundleInfo;
         }
+
+        @Override public void fileChanged(FileEvent fe) {
+            // cannot reload manifest-dependent things immediately (see 67961 for more details)
+            bundleInfo = null;
+        }
+
+        @Override public void fileDeleted(FileEvent fe) {
+            manifestFO = null;
+        }
+
     }
 
     private SourceForBinaryQueryImplementation createESQI(ExtraSJQEvaluator eJSQEval) {

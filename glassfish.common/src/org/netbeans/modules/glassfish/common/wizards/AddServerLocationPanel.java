@@ -198,7 +198,15 @@ public class AddServerLocationPanel implements WizardDescriptor.FinishablePanel,
                                 AddServerLocationPanel.class, "ERR_DefaultDomainInvalid", getSanitizedPath(installDir)));
                     } else {
                         org.netbeans.modules.glassfish.common.Util.readServerConfiguration(domainDir, wizardIterator);
-                        String uri = wizardIterator.formatUri(GlassfishInstance.DEFAULT_HOST_NAME, wizardIterator.getAdminPort(), wizardIterator.getTargetValue());
+                        // finish initializing the registration data
+                        if (installDir.equals(glassfishDir)) {
+                            installDir = glassfishDir.getParentFile();
+                        }
+                        wizardIterator.setInstallRoot(installDir.getAbsolutePath());
+                        wizardIterator.setGlassfishRoot(glassfishDir.getAbsolutePath());
+                        String uri = wizardIterator.formatUri(GlassfishInstance.DEFAULT_HOST_NAME, 
+                                wizardIterator.getAdminPort(), wizardIterator.getTargetValue(),
+                                domainDir.getParentFile().getAbsolutePath(), domainDir.getName());
                         if (-1 == wizardIterator.getHttpPort()) {
                             wizard.putProperty(PROP_ERROR_MESSAGE,
                                     NbBundle.getMessage(this.getClass(), "ERR_InvalidDomainData", domainDir.getName())); // NOI18N

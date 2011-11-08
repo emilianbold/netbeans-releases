@@ -149,7 +149,7 @@ public class WLFindJSPServlet implements FindJSPServlet2 {
     }
 
     private ApplicationDescriptor getApplicationDescriptor(final String moduleContextPath) {
-        WLConnectionSupport support = new WLConnectionSupport(deploymentManager);
+        WLConnectionSupport support = deploymentManager.getConnectionSupport();
         try {
             return support.executeAction(new WLConnectionSupport.JMXRuntimeAction<ApplicationDescriptor>() {
 
