@@ -43,11 +43,13 @@
 package org.netbeans.modules.web.beans.analysis;
 
 import java.io.IOException;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
@@ -324,8 +326,8 @@ public class CdiAnalysisTest extends BaseAnalisysTestCase {
                 "package foo; " +
                 "import javax.inject.Inject; "+
                 " public class Clazz1 { "+
-                " @Inject public Clazz( int i){} "+
-                " public Clazz( Stirng str ){} "+
+                " @Inject public Clazz1( int i){} "+
+                " public Clazz1( Stirng str ){} "+
                 "}");
         ResultProcessor processor = new ResultProcessor (){
 
@@ -474,20 +476,6 @@ public class CdiAnalysisTest extends BaseAnalisysTestCase {
         runAnalysis( goodFile, NO_ERRORS_PROCESSOR );
     }
 
-    private void checkTypeElement( TestProblems result , String expectedName ){
-        Set<Element> elements = result.getErrors().keySet();
-        if ( elements.size() > 1 ){
-            for( Element element : elements ){
-                System.out.println( "Found element : "+element.toString());
-            }
-        }
-        assertEquals(  "Expected exactly one error element", 1 , elements.size());
-        Element element = elements.iterator().next();
-        assertTrue( element instanceof TypeElement );
-        String fqn = ((TypeElement)element).getQualifiedName().toString();
-        assertEquals(expectedName, fqn);
-    }
-    
     /*
      * ProducerFieldAnalyzer : checkSessionBean
      */
@@ -1115,6 +1103,58 @@ public class CdiAnalysisTest extends BaseAnalisysTestCase {
         runAnalysis( goodFile, NO_ERRORS_PROCESSOR );
     }
     
+    /*
+     * org.netbeans.modules.web.beans.analysis.analyzer.CtorAnalyzer
+     */
+    public void testCtor() throws IOException{
+        FileObject errorFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz.java",
+                "package foo; " +
+                "import javax.enterprise.inject.Disposes; "+
+                " public class Clazz { "+
+                " public Clazz( int i){} "+
+                " public Clazz( @Disposes String str ){} "+
+                "}");
+        
+        FileObject errorFile1 = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz1.java",
+                "package foo; " +
+                "import javax.enterprise.event.Observes; "+
+                " public class Clazz1 { "+
+                " public Clazz1( int i){} "+
+                " public Clazz1( @Observes String str ){} "+
+                "}");
+        
+        /*
+         * Create a good one class file
+         */
+        FileObject goodFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz2.java",
+                "package foo; " +
+                "import javax.inject.Inject; "+
+                " public class Clazz2 { "+
+                " public Clazz2( Stirng str ){} "+
+                "}");
+        ResultProcessor processor = new ResultProcessor (){
+
+            @Override
+            public void process( TestProblems result ) {
+                checkCtor(result, "foo.Clazz");
+            }
+            
+        };
+        runAnalysis(errorFile , processor);
+        
+        processor = new ResultProcessor (){
+
+            @Override
+            public void process( TestProblems result ) {
+                checkCtor(result, "foo.Clazz1");
+            }
+            
+        };
+        runAnalysis(errorFile1 , processor);
+        
+        runAnalysis( goodFile, NO_ERRORS_PROCESSOR );
+    }
+    
     private void checkFieldElement(TestProblems result , String enclosingClass, 
             String expectedName )
     {
@@ -1141,8 +1181,21 @@ public class CdiAnalysisTest extends BaseAnalisysTestCase {
         checkMethodElement(result, enclosingClass, expectedName, false );
     }
     
+    private void checkCtor(TestProblems result , String enclosingClass)
+    {
+        ElementMatcher matcher = new CtorMatcher();
+        checkElement(result, enclosingClass, matcher, ExecutableElement.class, false);
+    }
+    
     private <T extends Element> void checkElement(TestProblems result , String enclosingClass, 
             String expectedName , Class<T> elementClass, boolean checkOnlyFields )
+    {
+        ElementMatcher matcher = new SimpleNameMatcher( expectedName );
+        checkElement(result, enclosingClass, matcher, elementClass, checkOnlyFields);
+    }
+    
+    private <T extends Element> void checkElement(TestProblems result , String enclosingClass, 
+            ElementMatcher matcher, Class<T> elementClass, boolean checkOnlyFields )
     {
         Set<Element> elements = result.getErrors().keySet();
         Set<Element> classElements = new HashSet<Element>();
@@ -1163,7 +1216,7 @@ public class CdiAnalysisTest extends BaseAnalisysTestCase {
             }
             else {
                 assertTrue("Found element which parent is not a type definition " +
-                		"and is not a definition itself ", false);
+                        "and is not a definition itself ", false);
             }
             if (  forAdd && clazz.getQualifiedName().contentEquals( enclosingClass )){
                 enclosingClazz = clazz;
@@ -1176,7 +1229,10 @@ public class CdiAnalysisTest extends BaseAnalisysTestCase {
         Element element = classElements.iterator().next();
         assertTrue( "Element has a class "+element.getClass(), 
                 elementClass.isAssignableFrom( element.getClass() ) );
-        assertEquals(expectedName, element.getSimpleName().toString());
+        boolean match = matcher.matches( element );
+        if ( !match ){
+            assertTrue(  matcher.getMessage(), match);
+        }
     }
     
     private void checkParamElement(TestProblems result , String enclosingClass, 
@@ -1221,4 +1277,55 @@ public class CdiAnalysisTest extends BaseAnalisysTestCase {
         assertEquals(paramName, element.getSimpleName().toString());
     }
     
+    private void checkTypeElement( TestProblems result , String expectedName ){
+        Set<Element> elements = result.getErrors().keySet();
+        if ( elements.size() > 1 ){
+            for( Element element : elements ){
+                System.out.println( "Found element : "+element.toString());
+            }
+        }
+        assertEquals(  "Expected exactly one error element", 1 , elements.size());
+        Element element = elements.iterator().next();
+        assertTrue( element instanceof TypeElement );
+        String fqn = ((TypeElement)element).getQualifiedName().toString();
+        assertEquals(expectedName, fqn);
+    }
+    
+    interface ElementMatcher {
+        boolean matches(Element element);
+        String getMessage();
+    }
+    
+    class SimpleNameMatcher implements ElementMatcher {
+        
+        SimpleNameMatcher( String simpleName ){
+            myName = simpleName; 
+        }
+        
+        public boolean matches(Element element){
+            myMessage = "Found "+element.getSimpleName()+" element, expected "+myName;
+            return myName.contentEquals( element.getSimpleName());
+        }
+        
+        public String getMessage() {
+            return myMessage;
+        }
+        
+        private String myName;
+        private String myMessage;
+    }
+    
+    class CtorMatcher implements ElementMatcher {
+        
+        public boolean matches(Element element){
+            myKind = element.getKind();
+            return  myKind== ElementKind.CONSTRUCTOR;
+        }
+        
+        public String getMessage() {
+            return "Found element has "+myKind+" , not CTOR";
+        }
+        
+        private ElementKind myKind;
+    }
 }
