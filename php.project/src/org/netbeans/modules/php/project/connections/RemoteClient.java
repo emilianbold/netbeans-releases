@@ -105,10 +105,10 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
 
     private final RemoteConfiguration configuration;
     private final AdvancedProperties properties;
-    private final String baseRemoteDirectory;
     // @GuardedBy(this) to avoid over-complicated code, can be improved
     private final org.netbeans.modules.php.project.connections.spi.RemoteClient remoteClient;
 
+    private volatile String baseRemoteDirectory;
     private volatile boolean cancelled = false;
     private volatile OperationMonitor operationMonitor;
 
@@ -196,6 +196,12 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
                 disconnect();
             }
             throw new RemoteException(NbBundle.getMessage(RemoteClient.class, "MSG_CannotChangeDirectory", baseRemoteDirectory), remoteClient.getReplyString());
+        }
+        // #204680 - symlinks on remote server
+        String pwd = remoteClient.printWorkingDirectory();
+        if (!pwd.equals(baseRemoteDirectory)) {
+            LOGGER.log(Level.FINE, "Changing base remote directory (symlink?): {0} -> {1}", new Object[] {baseRemoteDirectory, pwd});
+            baseRemoteDirectory = pwd;
         }
     }
 
@@ -377,11 +383,12 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
     }
 
     private void uploadFile(TransferInfo transferInfo, File baseLocalDir, TransferFile file) throws IOException, RemoteException {
-        if (file.isLink()) {
-            transferIgnored(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_Symlink", file.getRemotePath()));
-        } else if (isParentLink(file)) {
-            transferIgnored(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_ParentSymlink", file.getRemotePath()));
-        } else if (file.isDirectory()) {
+        // xxx upload cannot check symlinks because project files of /path/<symlink>/my/project would not be uploaded at all!
+//        if (file.isLink()) {
+//            transferIgnored(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_Symlink", file.getRemotePath()));
+//        } else if (isParentLink(file)) {
+//            transferIgnored(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_ParentSymlink", file.getRemotePath()));
+        if (file.isDirectory()) {
             // folder => just ensure that it exists
             if (LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.log(Level.FINE, "Uploading directory: {0}", file);
@@ -889,13 +896,16 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
     }
 
     /**
-     * Check whether any of parent file is not a symlink.
+     * Check whether any of parent file (but not {@link TransferFile#isProjectRoot() project root}) is a symlink.
      * @param file file to check
-     * @return {@code true} if any of parent file is a symlink, {@code false} otherwise
+     * @return {@code true} if any of parent file (but not {@link TransferFile#isProjectRoot() project root}) is a symlink, {@code false} otherwise
      */
     private boolean isParentLink(TransferFile file) {
         while (file.hasParent()) {
             TransferFile parent = file.getParent();
+            if (parent.isProjectRoot()) {
+                return false;
+            }
             if (parent.isLink()) {
                 return true;
             }
