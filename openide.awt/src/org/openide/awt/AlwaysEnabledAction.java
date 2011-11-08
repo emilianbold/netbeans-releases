@@ -74,6 +74,7 @@ import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.NbPreferences;
 import org.openide.util.WeakSet;
+import org.openide.util.WeakListeners;
 import org.openide.util.actions.Presenter;
 import org.openide.util.actions.ActionInvoker;
 
@@ -97,6 +98,7 @@ implements PropertyChangeListener, ContextAwareAction {
 
     final Map map;
     private final AlwaysEnabledAction parent;
+    private PropertyChangeListener weakL;
     ActionListener delegate;
     final Lookup context;
     final Object equals;
@@ -141,7 +143,10 @@ implements PropertyChangeListener, ContextAwareAction {
             delegate = bindToContext(al, context);
             if (delegate instanceof Action) {
                 Action actionDelegate = (Action) delegate;
-                actionDelegate.addPropertyChangeListener(this);
+                if (weakL == null) {
+                    weakL = WeakListeners.propertyChange(this, actionDelegate);
+                }
+                actionDelegate.addPropertyChangeListener(weakL);
                 // Ensure display names and other properties are in sync or propagate them
                 syncActionDelegateProperty(Action.NAME, actionDelegate);
             }
