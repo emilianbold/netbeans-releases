@@ -126,7 +126,7 @@ public class ClassNode extends ContainerNode {
                 updateDisplayName(displayName + " [" + implementing + "]");
             }
         }
-        this.signature = new ClientUtils.SourceCodeSelection(cInfo.getQualifiedName() + ".**", null, null); // NOI18N
+        this.signature = new ClientUtils.SourceCodeSelection(cInfo.getQualifiedName() + "$**", null, null); // NOI18N
     }
 
     public ClassNode(SourceClassInfo cInfo, final ContainerNode parent) {
