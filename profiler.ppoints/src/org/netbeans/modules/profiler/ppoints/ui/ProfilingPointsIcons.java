@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,11 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -39,51 +34,38 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.profiler.ppoints.ui;
 
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.util.actions.SystemAction;
-import java.awt.event.ActionEvent;
 import org.netbeans.modules.profiler.api.icons.Icons;
 
-
 /**
- * Opens the Profiling Points view.
  *
- * @author Maros Sandor
+ * @author Jiri Sedlacek
  */
-public class OpenProfilingPointsWindowAction extends SystemAction {
-    //~ Static fields/initializers -----------------------------------------------------------------------------------------------
-
-    // -----
-    // I18N String constants
-    private static final String ACTION_NAME = NbBundle.getMessage(OpenProfilingPointsWindowAction.class,
-                                                                  "OpenProfilingPointsWindowAction_ActionName"); // NOI18N
-                                                                                                                 // -----
-
-    //~ Constructors -------------------------------------------------------------------------------------------------------------
-
-    public OpenProfilingPointsWindowAction() {
-        putValue("noIconInMenu", null); // NOI18N
-        setIcon(Icons.getIcon(ProfilingPointsIcons.PPOINT));
-    }
-
-    //~ Methods ------------------------------------------------------------------------------------------------------------------
-
-    public HelpCtx getHelpCtx() {
-        return new HelpCtx(OpenProfilingPointsWindowAction.class);
-    }
-
-    public String getName() {
-        return ACTION_NAME;
-    }
-
-    public void actionPerformed(ActionEvent e) {
-        ProfilingPointsWindow stc = ProfilingPointsWindow.getDefault();
-        stc.open();
-        stc.requestActive();
-    }
+public interface ProfilingPointsIcons extends Icons.Keys {
+    
+    public static final String CODE = "ProfilingPointsIcons.Code"; // NOI18N
+    public static final String GLOBAL = "ProfilingPointsIcons.Global"; // NOI18N
+    public static final String LOAD_GENERATOR = "ProfilingPointsIcons.LoadGenerator"; // NOI18N
+    public static final String LOAD_GENERATOR_DISABLED = "ProfilingPointsIcons.LoadGeneratorDisabled"; // NOI18N
+    public static final String PPOINT = "ProfilingPointsIcons.PPoint"; // NOI18N
+    public static final String ADD = "ProfilingPointsIcons.Add"; // NOI18N
+    public static final String EDIT = "ProfilingPointsIcons.Edit"; // NOI18N
+    public static final String ENABLE_DISABLE = "ProfilingPointsIcons.EnableDisable"; // NOI18N
+    public static final String REMOVE = "ProfilingPointsIcons.Remove"; // NOI18N
+    public static final String RESET_RESULTS = "ProfilingPointsIcons.ResetResults"; // NOI18N
+    public static final String RESET_RESULTS_DISABLED = "ProfilingPointsIcons.ResetResultsDisabled"; // NOI18N
+    public static final String STOPWATCH = "ProfilingPointsIcons.Stopwatch"; // NOI18N
+    public static final String STOPWATCH_DISABLED = "ProfilingPointsIcons.StopwatchDisabled"; // NOI18N
+    public static final String TAKE_SNAPSHOT = "ProfilingPointsIcons.TakeSnapshot"; // NOI18N
+    public static final String TAKE_SNAPSHOT_DISABLED = "ProfilingPointsIcons.TakeSnapshotDisabled"; // NOI18N
+    public static final String TAKE_SNAPSHOT_TIMED = "ProfilingPointsIcons.TakeSnapshotTimed"; // NOI18N
+    public static final String TAKE_SNAPSHOT_TRIGGERED = "ProfilingPointsIcons.TakeSnapshotTriggered"; // NOI18N
+    
+    
 }
