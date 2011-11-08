@@ -849,15 +849,19 @@ public final class CommandBasedDeployer extends AbstractDeployer {
 
     private static String getContextUrl(String serverUrl, String context) {
         StringBuilder builder = new StringBuilder(serverUrl);
-        if (context != null && !context.startsWith("/")) {
-            LOGGER.log(Level.INFO, "Context path should start with forward slash while it is {0}", context);
-            if (!serverUrl.endsWith("/")) {
-                builder.append('/').append(context);
+        if (serverUrl.endsWith("/")) {
+            builder.setLength(builder.length() - 1);
+        }
+        if (context != null) {
+            if (!context.startsWith("/")) {
+                LOGGER.log(Level.INFO, "Context path should start with forward slash while it is {0}", context);
+                builder.append('/');
             }
+            builder.append(context);
         }
         return builder.toString();
     }
-    
+
     public static String readWebContext(FileObject file) {
         if (file.isFolder()) {
             FileObject weblogicXml = file.getFileObject("WEB-INF/weblogic.xml"); // NOI18N
