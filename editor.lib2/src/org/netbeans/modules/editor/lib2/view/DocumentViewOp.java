@@ -53,6 +53,8 @@ import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.awt.font.FontRenderContext;
@@ -68,13 +70,16 @@ import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
+import javax.swing.Action;
 import javax.swing.JViewport;
+import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import javax.swing.text.Keymap;
 import javax.swing.text.StyleConstants;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.EditorStyleConstants;
@@ -1215,21 +1220,42 @@ public final class DocumentViewOp
         // the code in DocumentView.setParent() removes BasicScrollPaneUI.Handler and stores it
         // in origMouseWheelListener and installs "this" as MouseWheelListener instead.
         // This method only calls origMouseWheelListener if Ctrl is not pressed (zooming in/out).
-        if (evt.isControlDown() && evt.getScrollType() == MouseWheelEvent.WHEEL_UNIT_SCROLL) {
-            // Subtract rotation (instead of adding) in order to increase the font by rotating wheel up.
-            JTextComponent textComponent = docView.getTextComponent();
-            if (textComponent != null) {
-                Integer textZoom = ((Integer) textComponent.getClientProperty(DocumentView.TEXT_ZOOM_PROPERTY));
-                if (textZoom == null) {
-                    textZoom = 0;
-                }
-                textZoom -= evt.getWheelRotation();
-                textComponent.putClientProperty(DocumentView.TEXT_ZOOM_PROPERTY, textZoom);
-            }
-//            evt.consume(); // consuming the event has no effect
-        } else {
+        if (evt.getScrollType() != MouseWheelEvent.WHEEL_UNIT_SCROLL) {
             origMouseWheelListener.mouseWheelMoved(evt);
+//          evt.consume(); // consuming the event has no effect
+            return;
         }
+        
+        int modifiers = 0;
+        if (evt.isControlDown()) {
+            modifiers |= InputEvent.CTRL_DOWN_MASK;
+        }
+        if (evt.isAltDown()) {
+            modifiers |= InputEvent.ALT_DOWN_MASK;
+        }
+        if (evt.isShiftDown()) {
+            modifiers |= InputEvent.SHIFT_DOWN_MASK;
+        }
+        if (evt.isMetaDown()) {
+            modifiers |= InputEvent.META_DOWN_MASK;
+        }
+       
+        Keymap keymap = docView.getTextComponent().getKeymap();
+        if (evt.getWheelRotation() < 0) {
+            Action action = keymap.getAction(KeyStroke.getKeyStroke(0x290, modifiers)); //WHEEL_UP constant
+            if (action != null) {
+                action.actionPerformed(new ActionEvent(docView.getTextComponent(),0,""));
+                return;
+            }
+            origMouseWheelListener.mouseWheelMoved(evt);
+        } else {
+            Action action = keymap.getAction(KeyStroke.getKeyStroke(0x291, modifiers)); //WHEEL_DOWN constant
+            if (action != null) {
+                action.actionPerformed(new ActionEvent(docView.getTextComponent(),0,""));
+                return;
+            }
+            origMouseWheelListener.mouseWheelMoved(evt);
+        }   
     }
 
     StringBuilder appendInfo(StringBuilder sb) {

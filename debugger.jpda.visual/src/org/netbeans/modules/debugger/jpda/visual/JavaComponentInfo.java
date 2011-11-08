@@ -568,6 +568,7 @@ abstract public class JavaComponentInfo implements ComponentInfo {
                     return StringReferenceWrapper.value((StringReference) v);
                 }
                 if (v instanceof ObjectReference) {
+                    isEditablePtr[0] = false;
                     Type t = ValueWrapper.type(v);
                     if (t instanceof ClassType) {
                         Method toStringMethod = ClassTypeWrapper.concreteMethodByName((ClassType) t, "toString", "()Ljava/lang/String;");
