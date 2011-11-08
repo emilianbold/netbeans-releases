@@ -137,8 +137,13 @@ public class AutomaticRegistration {
                 return 2;
             }
         }
+        
+        // beware of trailling File.separator
+        //
+        glassfishRoot = new File(glassfishRoot).getAbsolutePath();
 
-        final String url = "[" + glassfishRoot + "]" + deployer + ":localhost:4848"; // NOI18N
+        final String url = "[" + glassfishRoot + File.pathSeparator + 
+                glassfishRoot + File.separator + "domains" + File.separator + "domain1]" + deployer + ":localhost:4848"; // NOI18N
 
         // make sure the server is not registered yet
         for (FileObject fo : serverInstanceDir.getChildren()) {
