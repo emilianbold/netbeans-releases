@@ -230,7 +230,7 @@ public class WLIncrementalDeployment extends IncrementalDeployment implements In
         // is using weburl as moduleID for war in ear
         // and ejb jar name for ejb in ear, we need moduleURI
         final String id = module.getModuleID();
-        WLConnectionSupport support = new WLConnectionSupport(dm);
+        WLConnectionSupport support = dm.getConnectionSupport();
         String url = null;
         try {
             url = support.executeAction(new WLConnectionSupport.JMXRuntimeAction<String>() {
@@ -264,7 +264,7 @@ public class WLIncrementalDeployment extends IncrementalDeployment implements In
         final String server = module.getTarget().getName();
         final String application = module.getModuleID();
 
-        WLConnectionSupport support = new WLConnectionSupport(dm);
+        WLConnectionSupport support = dm.getConnectionSupport();
         try {
             Boolean ret = support.executeAction(new WLConnectionSupport.JMXAction<Boolean>() {
 

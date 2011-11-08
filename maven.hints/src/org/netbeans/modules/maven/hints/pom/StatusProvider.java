@@ -66,6 +66,8 @@ import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.project.ProjectBuildingException;
 import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.project.ProjectBuildingResult;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -121,7 +123,7 @@ public final class StatusProvider implements UpToDateStatusProviderFactory {
 
     static class StatusProviderImpl extends UpToDateStatusProvider {
         private Document document;
-        private POMModel model;
+        private @NullAllowed POMModel model;
         private Project project;
         private FileChangeListener listener;
 
@@ -149,10 +151,13 @@ public final class StatusProvider implements UpToDateStatusProviderFactory {
 
 
         private void checkHints() {
+            if (model == null) {
+                return;
+            }
             HintsController.setErrors(document, LAYER_POM, findHints(model, project, -1, -1));
         }
 
-        static List<ErrorDescription> findHints(final POMModel model, final Project project, final int selectionStart, final int selectionEnd) {
+        static List<ErrorDescription> findHints(final @NonNull POMModel model, final Project project, final int selectionStart, final int selectionEnd) {
             assert model != null;
             if (!model.getModelSource().isEditable()) {
                 return new ArrayList<ErrorDescription>();
@@ -234,6 +239,9 @@ public final class StatusProvider implements UpToDateStatusProviderFactory {
 
         @Override
         public UpToDateStatus getUpToDate() {
+            if (model == null) {
+                return UpToDateStatus.UP_TO_DATE_OK;
+            }
 //            if (!checkHints()) {
 //                System.out.println("skipped checking hints");
 //                return UpToDateStatus.UP_TO_DATE_DIRTY;

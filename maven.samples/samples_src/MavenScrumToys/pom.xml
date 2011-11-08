@@ -40,7 +40,7 @@ Other names may be trademarks of their respective owners. The contents of
     <groupId>com.sun.faces</groupId>
     <artifactId>jsf-scrumtoys</artifactId>
     <packaging>war</packaging>
-    <name>jsf-scrumtoys</name>
+    <name>Maven Scrum Toys</name>
     <url>https://mojarra.dev.java.net/</url>
     <description>ScrumToys sample app</description>
     <version>0.1</version>

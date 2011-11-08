@@ -83,7 +83,7 @@ import org.openide.util.NbBundle;
  *
  * @author  mkleint
  */
-public class CustomizerRunWeb extends AbstractCustomizer {
+public class CustomizerRunWeb extends BaseRunCustomizer {
     public static final String PROP_SHOW_IN_BROWSER = "netbeans.deploy.showBrowser"; //NOI18N
     
     private WebModule module;
@@ -435,7 +435,7 @@ public class CustomizerRunWeb extends AbstractCustomizer {
     }
 
     @Override
-    void applyChangesInAWT() {
+    public void applyChangesInAWT() {
         assert SwingUtilities.isEventDispatchThread();
         boolean bool = cbBrowser.isSelected();
         try {
@@ -451,7 +451,7 @@ public class CustomizerRunWeb extends AbstractCustomizer {
     }
 
     @Override
-    void applyChanges() {
+    public void applyChanges() {
         assert !SwingUtilities.isEventDispatchThread();
 
         //#109507 workaround
