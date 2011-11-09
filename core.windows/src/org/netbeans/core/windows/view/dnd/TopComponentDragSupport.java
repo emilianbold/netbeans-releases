@@ -378,7 +378,9 @@ implements AWTEventListener, DragSourceListener, DragSourceMotionListener {
             debugLog("doStartDrag"); // NOI18N
         }
         
-        canCopy = transfer.getTopComponent() instanceof TopComponent.Cloneable;
+        TopComponent tc = transfer.getTopComponent();
+        canCopy = tc instanceof TopComponent.Cloneable
+                && !Boolean.TRUE.equals( tc.getClientProperty( TopComponent.PROP_DND_COPY_DISABLED ) );
         
         // Inform window sys there is DnD about to start.
         // XXX Using the firstTC in DnD manager is a hack.
