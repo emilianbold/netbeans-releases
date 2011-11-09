@@ -2464,7 +2464,12 @@ class LayoutFeeder implements LayoutConstants {
         }
         layoutModel.setIntervalAlignment(addingInterval, DEFAULT);
 
-        index += operations.addContent(addingInterval, seq, index);
+        if (definite) {
+            index += operations.addContent(addingInterval, seq, index);
+        } else { // avoid optimizations
+            assert !addingInterval.isSequential();
+            layoutModel.addInterval(addingInterval, seq, index++);
+        }
         if (gaps[TRAILING] != null) {
             layoutModel.addInterval(gaps[TRAILING], seq, index);
         }
@@ -4637,6 +4642,18 @@ class LayoutFeeder implements LayoutConstants {
         int[] fixedSideGaps = new int[2];
         List<LayoutInterval[]> unifyGaps = null;
 
+        // Placing the adding interval into individual inclusions in step 4
+        // could destroy it if it's a sequential group of multiple components.
+        LayoutInterval addingMultiWrapper;
+        if (addingInterval.isSequential()) {
+            addingMultiWrapper = new LayoutInterval(PARALLEL);
+            addingMultiWrapper.add(addingInterval, 0);
+            addingMultiWrapper.getCurrentSpace().set(addingSpace);
+            addingInterval = addingMultiWrapper;
+        } else {
+            addingMultiWrapper = null;
+        }
+
         // 4th collect surroundings of adding interval
         // (the intervals will go into a side group in step 5, or into subgroup
         //  of 'subGroup' next to the adding interval if in previous step some
@@ -4690,6 +4707,10 @@ class LayoutFeeder implements LayoutConstants {
         }
         if (!inclusions.contains(best)) {
             inclusions.add(best);
+        }
+
+        if (addingMultiWrapper != null) {
+            addingInterval = addingMultiWrapper.remove(0);
         }
 
         if (unifyGaps != null) {
