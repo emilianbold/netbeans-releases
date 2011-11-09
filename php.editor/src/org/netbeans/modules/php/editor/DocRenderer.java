@@ -222,7 +222,7 @@ class DocRenderer {
         private static final Pattern KEEP_NEWLINE_PATTERN = Pattern.compile("(\r?\n)(?=(\\s\\S|[-+#o]\\s|\\d\\.?\\s))"); // NOI18N
 
         private static final ArrayList<String> LINK_TAGS = new ArrayList<String>();
-        
+
         static {
             LINK_TAGS.add("@link");
             LINK_TAGS.add("@see");
@@ -291,28 +291,28 @@ class DocRenderer {
             StringBuilder params = new StringBuilder();
             StringBuilder returnValue = new StringBuilder();
             String description = methodTag.getDocumentation();
-            
+
             if (description != null && description.length() > 0) {
                 description = processPhpDoc(description);
             }
-            
+
             if (methodTag.getParameters() != null && methodTag.getParameters().size() > 0 ) {
                 for (PHPDocVarTypeTag tag : methodTag.getParameters()) {
                     params.append(composeParameterLine(tag));
                 }
             }
-            
+
             returnValue.append(composeReturnValue(methodTag.getTypes(), null));
-            
+
             phpDoc.append(composeFunctionDoc(description, params.toString(), returnValue.toString(), null, null));
         }
-        
+
         private void extractPHPDoc(PHPDocBlock pHPDocBlock) {
             StringBuilder params = new StringBuilder();
             StringBuilder links = new StringBuilder();
             StringBuilder returnValue = new StringBuilder();
             StringBuilder others = new StringBuilder();
-            
+
             for (PHPDocTag tag : pHPDocBlock.getTags()) {
 
                 switch (tag.getKind()) {
@@ -339,7 +339,7 @@ class DocRenderer {
             }
 
             phpDoc.append(composeFunctionDoc(processDescription(processPhpDoc(pHPDocBlock.getDescription())), params.toString(), returnValue.toString(), links.toString(), others.toString()));
-            
+
         }
 
         protected String processDescription(String text){
@@ -368,7 +368,7 @@ class DocRenderer {
                             }
                         }
                 }
-                
+
                 index = text.indexOf('{' , index + 1);
             }
             if (lastIndex > -1) {
@@ -376,13 +376,13 @@ class DocRenderer {
             }
             return result.toString();
         }
-        
+
         private String composeFunctionDoc(String description, String parameters, String returnValue, String links, String others) {
             StringBuilder value = new StringBuilder();
-            
+
             value.append(description);
             value.append("<br />\n"); //NOI18N
-            
+
             if (parameters.length() > 0) {
                 value.append("<h3>"); //NOI18N
                 value.append(NbBundle.getMessage(DocRenderer.class, "Parameters"));
@@ -408,14 +408,14 @@ class DocRenderer {
             }
             return value.toString();
         }
-        
+
         private String composeParameterLine(PHPDocVarTypeTag param) {
              String type = composeType(param.getTypes());
              String pline = String.format("<tr><td>&nbsp;</td><td valign=\"top\" %s><nobr>%s</nobr></td><td valign=\"top\" %s><nobr><b>%s</b></nobr></td><td valign=\"top\" %s>%s</td></tr>\n", //NOI18N
                     TD_STYLE, type, TD_STYLE, param.getVariable().getValue(), TD_STYLE_MAX_WIDTH, param.getDocumentation() == null ? "&nbsp" : processPhpDoc(param.getDocumentation()));
              return pline;
         }
-        
+
         private String composeReturnValue(List<PHPDocTypeNode> types, String documentation) {
             StringBuilder returnValue = new StringBuilder();
             if (types != null && types.size() > 0) {
@@ -428,11 +428,11 @@ class DocRenderer {
             }
             return returnValue.toString();
         }
-        
+
         /**
          * Create a string from the list of types;
          * @param tag
-         * @return 
+         * @return
          */
         private String composeType(List<PHPDocTypeNode> types) {
             StringBuilder type = new StringBuilder();
@@ -449,7 +449,7 @@ class DocRenderer {
                 }
             return type.toString();
         }
-        
+
         // because of unit tests
         static String processPhpDoc(String phpDoc) {
             String notags = KEEP_TAGS_PATTERN.matcher(phpDoc).replaceAll("&lt;"); // NOI18N
