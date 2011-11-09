@@ -1039,7 +1039,7 @@
     
     <target name="-set-html-file" depends="-set-template-processed-html-file" unless="html-file-exists">
         <basename property="jfx.deployment.base" file="${jfx.deployment.jar}" suffix=".jar"/>
-        <property name="jfx.deployment.html" location="${jfx.deployment.dir}/${jfx.deployment.base}.html"/>
+        <property name="jfx.deployment.html" location="${jfx.deployment.dir}${file.separator}${jfx.deployment.base}.html"/>
         <condition property="html-file-exists">
             <available file="${jfx.deployment.html}"/>
         </condition>
