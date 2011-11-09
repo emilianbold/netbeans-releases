@@ -315,13 +315,7 @@ public class JFXProjectGenerator {
     private static void createJfxExtension(Project p, FileObject dirFO) throws IOException {
         //adding JavaFX buildscript extension
         FileObject templateFO = FileUtil.getConfigFile("Templates/JFX/jfx-impl.xml"); //NOI18N
-        FileObject platformFO = FileUtil.getConfigFile("Templates/JFX/jfx-impl-platform.xmlinc"); //NOI18N
-        FileObject parametersFO = FileUtil.getConfigFile("Templates/JFX/jfx-impl-parameters.xmlinc"); //NOI18N
-        FileObject callbacksFO = FileUtil.getConfigFile("Templates/JFX/jfx-impl-callbacks.xmlinc"); //NOI18N
-        if (templateFO != null && platformFO != null && parametersFO != null && callbacksFO != null) {
-            FileUtil.copyFile(platformFO, dirFO.getFileObject("nbproject"), "jfx-impl-platform"); // NOI18N
-            FileUtil.copyFile(parametersFO, dirFO.getFileObject("nbproject"), "jfx-impl-parameters"); // NOI18N
-            FileUtil.copyFile(callbacksFO, dirFO.getFileObject("nbproject"), "jfx-impl-callbacks"); // NOI18N
+        if (templateFO != null) {
             FileObject jfxBuildFile = FileUtil.copyFile(templateFO, dirFO.getFileObject("nbproject"), "jfx-impl"); // NOI18N
             AntBuildExtender extender = p.getLookup().lookup(AntBuildExtender.class);
             if (extender != null) {

@@ -47,6 +47,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.php.project.connections.RemoteClientImplementation;
 import org.netbeans.modules.php.project.connections.RemoteException;
+import org.netbeans.modules.php.project.connections.common.RemoteUtils;
 import org.netbeans.modules.php.project.connections.spi.RemoteFile;
 
 /**
@@ -82,6 +83,11 @@ final class RemoteTransferFile extends TransferFile {
         if (!(parentDirectory + REMOTE_PATH_SEPARATOR).startsWith(baseDirectory + REMOTE_PATH_SEPARATOR)) {
             throw new IllegalArgumentException("Parent directory '" + parentDirectory + "' must be underneath base directory '" + baseDirectory + "'");
         }
+        if (LOGGER.isLoggable(Level.FINE)) {
+            // #204874 (non-standard ssh server?)
+            LOGGER.log(Level.FINE, "Absolute remote path \"{0}\" -> remote path \"{1}\" (base directory \"{2}\")",
+                    new Object[] {getAbsolutePath(), getRemotePath(), baseDirectory});
+        }
     }
 
     @Override
@@ -93,10 +99,7 @@ final class RemoteTransferFile extends TransferFile {
 
     @Override
     public String getRemotePath() {
-        String absolutePath;
-        synchronized (file) {
-            absolutePath = file.getParentDirectory() + REMOTE_PATH_SEPARATOR + getName();
-        }
+        String absolutePath = getAbsolutePath();
         if (absolutePath.equals(baseDirectory)) {
             return REMOTE_PROJECT_ROOT;
         }
@@ -109,7 +112,8 @@ final class RemoteTransferFile extends TransferFile {
         try {
             return remoteClient.listFiles(this);
         } catch (RemoteException ex) {
-            LOGGER.log(Level.WARNING, "Error while getting children for " + this, ex);
+            LOGGER.log(Level.INFO, "Error while getting children for " + this, ex);
+            RemoteUtils.processRemoteException(ex);
         }
         return Collections.emptyList();
     }
@@ -149,6 +153,12 @@ final class RemoteTransferFile extends TransferFile {
     protected long getTimestampImpl() {
         synchronized (file) {
             return file.getTimestamp();
+        }
+    }
+
+    private String getAbsolutePath() {
+        synchronized (file) {
+            return file.getParentDirectory() + REMOTE_PATH_SEPARATOR + getName();
         }
     }
 

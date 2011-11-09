@@ -249,11 +249,16 @@ public class POHImpl {
     private void projectCreated() {
         NbMavenProject mavenProject = project.getLookup().lookup(NbMavenProject.class);
         WebModuleProviderImpl webModuleProvider = project.getLookup().lookup(WebModuleProviderImpl.class);
+        
+        if (NbMavenProject.TYPE_WAR.equals(mavenProject.getPackagingType()) == false || webModuleProvider == null) {
+            return; // We want to set context path only for Web projects
+        }
+        
         WebModuleImpl webModuleImpl = webModuleProvider.getWebModuleImplementation();
         String contextPath = webModuleImpl.getContextPath();
         
         if (contextPath == null || "".equals(contextPath)) {
-            webModuleImpl.setContextPath("/" + mavenProject.getMavenProject().getArtifactId());
+            webModuleImpl.setContextPath("/" + mavenProject.getMavenProject().getArtifactId()); //NOI18N
         }
     }
 
