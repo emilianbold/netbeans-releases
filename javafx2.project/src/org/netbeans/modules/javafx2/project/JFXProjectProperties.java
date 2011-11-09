@@ -192,10 +192,6 @@ public final class JFXProjectProperties {
     private StoreGroup fxPropGroup = new StoreGroup();
     
     // Packaging
-    public static final String BUILD_INCLUDE_PLATFORM_FILE = "nbproject/jfx-impl-platform.xmlinc"; // NOI18N
-    public static final String BUILD_INCLUDE_PARAMETERS_FILE = "nbproject/jfx-impl-parameters.xmlinc"; // NOI18N
-    public static final String BUILD_INCLUDE_CALLBACKS_FILE = "nbproject/jfx-impl-callbacks.xmlinc"; // NOI18N
-    
     JToggleButton.ToggleButtonModel binaryEncodeCSS;
     public JToggleButton.ToggleButtonModel getBinaryEncodeCSSModel() {
         return binaryEncodeCSS;
@@ -1230,41 +1226,6 @@ public final class JFXProjectProperties {
         }
     }
 
-    public void saveToFile(String relativePath, final IncludeFileSaver saver) throws IOException {
-        FileObject f = project.getProjectDirectory().getFileObject(relativePath);
-        final FileObject propsFO;
-        if(f == null) {
-            propsFO = FileUtil.createData(project.getProjectDirectory(), relativePath);
-            assert propsFO != null : "FU.cD must not return null; called on " + project.getProjectDirectory() + " + " + relativePath; // #50802  // NOI18N
-        } else {
-            propsFO = f;
-        }
-        try {
-            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
-                @Override
-                public Void run() throws Exception {
-                    OutputStream os = null;
-                    FileLock lock = null;
-                    try {
-                        lock = propsFO.lock();
-                        os = propsFO.getOutputStream(lock);
-                        saver.updateFile(os);
-                    } finally {
-                        if (lock != null) {
-                            lock.releaseLock();
-                        }
-                        if (os != null) {
-                            os.close();
-                        }
-                    }
-                    return null;
-                }
-            });
-        } catch (MutexException mux) {
-            throw (IOException) mux.getException();
-        }
-    }
-
     public void store() throws IOException {
         
         final EditableProperties ep = new EditableProperties(true);
@@ -1333,10 +1294,6 @@ public final class JFXProjectProperties {
         } catch (MutexException mux) {
             throw (IOException) mux.getException();
         }
-        
-        saveToFile(BUILD_INCLUDE_PLATFORM_FILE, new PlatformIncludeFileSaver(RUN_CONFIGS.get(activeConfig)));
-        saveToFile(BUILD_INCLUDE_PARAMETERS_FILE, new ParamIncludeFileSaver(APP_PARAMS.get(activeConfig)));
-        saveToFile(BUILD_INCLUDE_CALLBACKS_FILE, new CallbacksIncludeFileSaver());
     }
 
     private void initSigning(PropertyEvaluator eval) {
@@ -1570,111 +1527,6 @@ public final class JFXProjectProperties {
         
     }
     
-    public abstract class IncludeFileSaver {
-        
-        abstract void updateFile(OutputStream os);
-        
-        void copyReadme(PrintWriter out) {
-            FileObject readmeTemplate = FileUtil.getConfigFile("Templates/JFX/jfx-impl-readme.xmlinc"); // NOI18N
-            if(readmeTemplate != null) {
-                try {
-                    for(String line : readmeTemplate.asLines()) {
-                        out.println(line);
-                    }
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
-        }
-    }
-    
-    public final class ParamIncludeFileSaver extends IncludeFileSaver {
-        
-        final List<Map<String,String/*|null*/>> params;
-        
-        ParamIncludeFileSaver(List<Map<String,String/*|null*/>> params) {
-            this.params = params;
-        }
-        
-        @Override
-        public void updateFile(OutputStream os) {
-            final PrintWriter out = new PrintWriter(os); //todo: encoding
-            copyReadme(out);
-            if(params != null) {
-                for(Map<String,String> m : params) {
-                    String name = ""; //NOI18N
-                    String value = ""; //NOI18N
-                    for (Map.Entry<String,String> param : m.entrySet()) {
-                        if(param.getKey().equals("name")) { //NOI18N
-                            name = param.getValue();
-                        } else {
-                            if(param.getKey().equals("value")) { //NOI18N
-                                value = param.getValue();
-                            }
-                        }
-                    }
-                    out.println(line(name,value));
-                }
-            }
-            out.flush();
-        }
-
-        private String line(String name, String value) {
-            if(value == null || value.length() == 0) {
-                return "<fx:param name=\"" + name + "\"/>"; //NOI18N
-            } else {
-                return "<fx:param name=\"" + name + "\" value=\"" + value + "\"/>"; //NOI18N
-            }
-        }        
-    }
-
-    public final class CallbacksIncludeFileSaver extends IncludeFileSaver {
-        
-        @Override
-        public void updateFile(OutputStream os) {
-            //if (jsCallbacksChanged) {
-                final PrintWriter out = new PrintWriter(os); //todo: encoding
-                copyReadme(out);
-                if(jsCallbacks != null) {
-                    for (Map.Entry<String,String> entry : jsCallbacks.entrySet()) {
-                        if(entry.getValue() != null && !entry.getValue().isEmpty()) {
-                            out.println("<fx:callback name=\"" + entry.getKey() + "\">"); //NOI18N
-                            out.println(entry.getValue());
-                            out.println("</fx:callback>"); //NOI18N
-                        }
-                    }
-                }
-                out.flush();
-            //}
-        }
-    }
-
-    public final class PlatformIncludeFileSaver extends IncludeFileSaver {
-        
-        final Map<String,String/*|null*/> props;
-        
-        PlatformIncludeFileSaver(Map<String,String/*|null*/> activeProps) {
-            this.props = activeProps;
-        }
-        
-        @Override
-        public void updateFile(OutputStream os) {
-            final PrintWriter out = new PrintWriter(os); //todo: encoding
-            copyReadme(out);
-            if(props != null) {
-                String vmo = props.get(RUN_JVM_ARGS);            
-                if (vmo != null) {
-                    StringTokenizer tok = new StringTokenizer(vmo, " ");
-                    while(tok.hasMoreElements()) {
-                        String s = tok.nextToken();
-                        out.println("<fx:jvmarg value=\"" + s + "\"/>"); //NOI18N
-                    }
-                }
-            }
-            out.flush();
-        }
-    }
-
     /**
      * Each preloader specified in project configurations needs
      * to be added/removed to/from project dependencies whenever
