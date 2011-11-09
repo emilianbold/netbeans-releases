@@ -143,38 +143,39 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
             if (files.contains(refacElem.getParentFile())) {
                 continue;
             }
-            
+
             if (!isPendingDelete(elem, refactoredObjects)) {
-                JavaSource src = JavaSource.forFileObject(elem.getFileObject());
                 final AtomicBoolean override = new AtomicBoolean(false);
-                try {
-                    src.runUserActionTask(new CancellableTask<CompilationController>() {
+                if (elem != null) {
+                    JavaSource src = JavaSource.forFileObject(elem.getFileObject());
+                    try {
+                        src.runUserActionTask(new CancellableTask<CompilationController>() {
 
-                        @Override
-                        public void cancel() {}
+                            @Override
+                            public void cancel() {}
 
-                        @Override
-                        public void run(CompilationController parameter) throws Exception {
-                            parameter.toPhase(JavaSource.Phase.PARSED);
-                            TreePath resolve = elem.getHandle().resolve(parameter);
-                            if(resolve.getLeaf().getKind() == Tree.Kind.METHOD) {
-                                MethodTree method = (MethodTree) resolve.getLeaf();
-                                List<? extends AnnotationTree> annotations = method.getModifiers().getAnnotations();
-                                boolean hasOverride = false;
-                                for (AnnotationTree annotationTree : annotations) {
-                                    if(annotationTree.toString().equals("@Override()")) { //NOI18N
-                                        hasOverride = true;
+                            @Override
+                            public void run(CompilationController parameter) throws Exception {
+                                parameter.toPhase(JavaSource.Phase.PARSED);
+                                TreePath resolve = elem.getHandle().resolve(parameter);
+                                if(resolve.getLeaf().getKind() == Tree.Kind.METHOD) {
+                                    MethodTree method = (MethodTree) resolve.getLeaf();
+                                    List<? extends AnnotationTree> annotations = method.getModifiers().getAnnotations();
+                                    boolean hasOverride = false;
+                                    for (AnnotationTree annotationTree : annotations) {
+                                        if(annotationTree.toString().equals("@Override()")) { //NOI18N
+                                            hasOverride = true;
+                                        }
+                                    }
+                                    if(!hasOverride) {
+                                        override.set(true);
                                     }
                                 }
-                                if(!hasOverride) {
-                                    override.set(true);
-                                }
                             }
-                        }
-                        
-                    }, true);
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
+                        }, true);
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
                 }
                 if(override.get()) {
                     problemImplemented = new Problem(false, getString("WRN_ImplementsFound"), ProblemDetailsFactory.createProblemDetails(new ProblemDetailsImplemen(new WhereUsedQueryUI(elem!=null?elem.getHandle():null, getWhereUsedItemNames(), refactoring), inner)));
