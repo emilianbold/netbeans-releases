@@ -181,8 +181,8 @@ public class RemoteServerRecord implements ServerRecord {
             ConnectionManager.getInstance().connectTo(executionEnvironment);
         } catch (IOException ex) {
             RemoteUtil.LOGGER.log(Level.INFO, "Error connecting to " + executionEnvironment, ex);
-            setState(State.OFFLINE);
             reason = ex.getMessage();            
+            setState(State.OFFLINE);
             return;
         } catch (CancellationException ex) {
             setState(State.CANCELLED);
@@ -205,8 +205,8 @@ public class RemoteServerRecord implements ServerRecord {
             if (rss.isCancelled()) {
                 setState(State.CANCELLED);
             } else if (rss.isFailed()) {
-                setState(State.OFFLINE);
                 reason = rss.getReason();
+                setState(State.OFFLINE);
             } else {
                 initPathMap = true;
                 setState(State.ONLINE);
