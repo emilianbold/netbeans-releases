@@ -166,6 +166,7 @@
                 <friend>com.sun.tools.ide.analysis.discover</friend>
                 <friend>com.sun.tools.ide.analysis.previse</friend>
                 <friend>com.sun.tools.ide.analysis.tha</friend>
+                <friend>com.sun.tools.tuxedo.codemodel.bridge</friend>
                 <friend>com.sun.tools.tuxedo.completion</friend>
                 <friend>com.sun.tools.tuxedo.project</friend>
                 <friend>com.sun.tools.tuxedo.source</friend>

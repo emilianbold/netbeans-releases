@@ -47,7 +47,7 @@ import org.netbeans.modules.maven.j2ee.POHImpl;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-import org.netbeans.modules.maven.j2ee.LoggingUtils;
+import org.netbeans.modules.maven.j2ee.utils.LoggingUtils;
 import org.netbeans.modules.maven.j2ee.SessionContent;
 
 
@@ -55,7 +55,7 @@ import org.netbeans.modules.maven.j2ee.SessionContent;
  *
  * @author  mkleint
  */
-public class CustomizerRunEjb extends AbstractCustomizer {
+public class CustomizerRunEjb extends BaseRunCustomizer {
 
     private EjbJar module;
 
@@ -75,7 +75,7 @@ public class CustomizerRunEjb extends AbstractCustomizer {
     }
 
     @Override
-    void applyChangesInAWT() {
+    public void applyChangesInAWT() {
         Object obj = comServer.getSelectedItem();
         if (obj != null) {
             LoggingUtils.logUsage(CustomizerRunEjb.class, "USG_PROJECT_CONFIG_MAVEN_SERVER", new Object[] { obj.toString() }, "maven"); //NOI18N
@@ -83,7 +83,7 @@ public class CustomizerRunEjb extends AbstractCustomizer {
     }
 
     @Override
-    void applyChanges() {
+    public void applyChanges() {
         //#109507 workaround -
         SessionContent sc = project.getLookup().lookup(SessionContent.class);
         if (listener.getValue() != null) {

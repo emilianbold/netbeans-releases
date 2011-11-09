@@ -65,8 +65,11 @@ import javax.swing.text.Element;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import javax.swing.text.Position.Bias;
+import javax.swing.text.StyleConstants;
 import javax.swing.text.View;
 import org.netbeans.api.editor.fold.Fold;
+import org.netbeans.api.editor.settings.FontColorNames;
+import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.modules.editor.lib2.view.EditorView;
 import org.netbeans.modules.editor.lib2.view.ViewUtils;
 
@@ -97,8 +100,10 @@ public class FoldView extends EditorView {
     private final Fold fold; // 36 + 4 = 40 bytes
     
     private TextLayout collapsedTextLayout; // 40 + 4 = 44 bytes
+    
+    private AttributeSet    foldingColors;
 
-    public FoldView(JTextComponent textComponent, Fold fold) {
+    public FoldView(JTextComponent textComponent, Fold fold, FontColorSettings colorSettings) {
         super(null);
         int offset = fold.getStartOffset();
         int len = fold.getEndOffset() - offset;
@@ -107,6 +112,7 @@ public class FoldView extends EditorView {
         this.length = len;
         this.textComponent = textComponent;
         this.fold = fold;
+        this.foldingColors = colorSettings.getFontColors(FontColorNames.CODE_FOLDING_COLORING);
     }
 
     @Override
@@ -269,6 +275,30 @@ public class FoldView extends EditorView {
         }
         return null;
     }
+    
+    private Color getForegroundColor() {
+        if (foldingColors == null) {
+            return textComponent.getForeground();
+        }
+        Object bgColorObj = foldingColors.getAttribute(StyleConstants.Foreground);
+        if (bgColorObj instanceof Color) {
+            return (Color)bgColorObj;
+        } else {
+            return textComponent.getForeground();
+        }
+    }
+
+    private Color getBackgroundColor() {
+        if (foldingColors == null) {
+            return textComponent.getBackground();
+        }
+        Object bgColorObj = foldingColors.getAttribute(StyleConstants.Background);
+        if (bgColorObj instanceof Color) {
+            return (Color)bgColorObj;
+        } else {
+            return textComponent.getBackground();
+        }
+    }
 
     @Override
     public void paint(Graphics2D g, Shape alloc, Rectangle clipBounds) {
@@ -276,14 +306,18 @@ public class FoldView extends EditorView {
         if (allocBounds.intersects(clipBounds)) {
             Font origFont = g.getFont();
             Color origColor = g.getColor();
+            Color origBkColor = g.getBackground();
             try {
                 // Leave component font
-                g.setColor(textComponent.getForeground());
+                g.setColor(getForegroundColor());
+                g.setBackground(getBackgroundColor());
+
                 int xInt = (int) allocBounds.getX();
                 int yInt = (int) allocBounds.getY();
                 int endXInt = (int) (allocBounds.getX() + allocBounds.getWidth() - 1);
                 int endYInt = (int) (allocBounds.getY() + allocBounds.getHeight() - 1);
                 g.drawRect(xInt, yInt, endXInt - xInt, endYInt - yInt);
+                g.clearRect(xInt + 1, yInt + 1, endXInt - xInt - 1, endYInt - yInt - 1);
                 TextLayout textLayout = getTextLayout();
                 if (textLayout != null) {
                     String desc = fold.getDescription(); // For empty desc a single-space text layout is returned
@@ -294,6 +328,7 @@ public class FoldView extends EditorView {
                     }
                 }
             } finally {
+                g.setBackground(origBkColor);
                 g.setColor(origColor);
                 g.setFont(origFont);
             }

@@ -1780,6 +1780,32 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
 
         <basename property="code.name.base.dashes" file="${nbm.filename}" suffix=".nbm"/>
 
+        <condition property="module" value="tmp/netbeans/lib/boot.jar">
+            <equals arg1="${code.name.base.dashes}" arg2="org-netbeans-bootstrap" />
+        </condition>
+
+        <condition property="module" value="tmp/netbeans/core/core.jar">
+            <equals arg1="${code.name.base.dashes}" arg2="org-netbeans-core-startup" />
+        </condition>
+
+        <condition property="module" value="tmp/netbeans/lib/org-openide-util-lookup.jar">
+            <equals arg1="${code.name.base.dashes}" arg2="org-openide-util-lookup" />
+        </condition>
+
+        <condition property="module" value="tmp/netbeans/lib/org-openide-util.jar">
+            <equals arg1="${code.name.base.dashes}" arg2="org-openide-util" />
+        </condition>
+
+        <condition property="module" value="tmp/netbeans/core/org-openide-filesystems.jar">
+            <equals arg1="${code.name.base.dashes}" arg2="org-openide-filesystems" />
+        </condition>
+
+        <condition property="module" value="tmp/netbeans/lib/org-openide-modules.jar">
+            <equals arg1="${code.name.base.dashes}" arg2="org-openide-modules" />
+        </condition>
+
+        <property name="module" value="tmp/netbeans/modules/${code.name.base.dashes}.jar"/>
+
         <patternset id="module.files">
             <!-- include name="${module.jar}"/ -->
             <include name="**/*.jar"/>
@@ -1787,7 +1813,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
         </patternset>
 
 
-        <genlist outputfiledir="newbuild" module="tmp/netbeans/modules/${code.name.base.dashes}.jar">
+        <genlist outputfiledir="newbuild" module="${module}">
             <fileset dir="newbuild/tmp/netbeans">
                 <patternset refid="module.files"/>
             </fileset>

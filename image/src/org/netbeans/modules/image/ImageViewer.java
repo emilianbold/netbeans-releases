@@ -412,139 +412,19 @@ public class ImageViewer extends CloneableTopComponent {
         setToolTipText(FileUtil.getFileDisplayName(fo));
     }
 
-    /** Docks the table into the workspace if top component is valid.
-     *  (Top component may become invalid after deserialization)
+    /** 
      */
-    public void open(Workspace workspace){
-        if (discard()) return;
-
-        Workspace realWorkspace = (workspace == null)
-                                  ? WindowManager.getDefault().getCurrentWorkspace()
-                                  : workspace;
-        dockIfNeeded(realWorkspace);
-        boolean modeVisible = false;
-        TopComponent[] tcArray = editorMode(realWorkspace).getTopComponents();
-        for (int i = 0; i < tcArray.length; i++) {
-            if (tcArray[i].isOpened(realWorkspace)) {
-                modeVisible = true;
-                break;
-            }
+    public void open(){
+        if (discard()) {
+            return;
         }
-        if (!modeVisible) {
-            openOtherEditors(realWorkspace);
-        }
-        super.open(workspace);
-        openOnOtherWorkspaces(realWorkspace);
+        super.open();
     }
     
     /**
      */
     protected String preferredID() {
         return getClass().getName();
-    }
-
-    private void superOpen(Workspace workspace) {
-        super.open(workspace);
-    }
-
-
-    /** Utility method, opens this top component on all workspaces
-     * where editor mode is visible and which differs from given
-     * workspace.  */
-    private void openOnOtherWorkspaces(Workspace workspace) {
-        Workspace[] workspaces = WindowManager.getDefault().getWorkspaces();
-        Mode curEditorMode = null;
-        Mode tcMode = null;
-        for (int i = 0; i < workspaces.length; i++) {
-            // skip given workspace
-            if (workspaces[i].equals(workspace)) {
-                continue;
-            }
-            curEditorMode = workspaces[i].findMode(CloneableEditorSupport.EDITOR_MODE);
-            tcMode = workspaces[i].findMode(this);
-            if (
-                !isOpened(workspaces[i]) &&
-                curEditorMode != null &&
-                (
-                    tcMode == null ||
-                    tcMode.equals(curEditorMode)
-                )
-            ) {
-                // candidate for opening, but mode must be already visible
-                // (= some opened top component in it)
-                TopComponent[] tcArray = curEditorMode.getTopComponents();
-                for (int j = 0; j < tcArray.length; j++) {
-                    if (tcArray[j].isOpened(workspaces[i])) {
-                        // yep, open this top component on found workspace too
-                        pureOpen(this, workspaces[i]);
-                        break;
-                    }
-                }
-            }
-        }
-    }
-
-    /** Utility method, opens top components which are opened
-     * in editor mode on some other workspace.
-     * This method should be called only if first top component is
-     * being opened in editor mode on given workspace  */
-    private void openOtherEditors(Workspace workspace) {
-        // choose candidates for opening
-        Set topComps = new HashSet(15);
-        Workspace[] wsArray = WindowManager.getDefault().getWorkspaces();
-        Mode curEditorMode = null;
-        TopComponent[] tcArray = null;
-        for (int i = 0; i < wsArray.length; i++) {
-            curEditorMode = wsArray[i].findMode(CloneableEditorSupport.EDITOR_MODE);
-            if (curEditorMode != null) {
-                tcArray = curEditorMode.getTopComponents();
-                for (int j = 0; j < tcArray.length; j++) {
-                    if (tcArray[j].isOpened(wsArray[i])) {
-                        topComps.add(tcArray[j]);
-                    }
-                }
-            }
-        }
-        // open choosed candidates
-        for (Iterator iter = topComps.iterator(); iter.hasNext(); ) {
-            pureOpen((TopComponent)iter.next(), workspace);
-        }
-    }
-        
-    /** Utility method, calls super version of open if given
-     * top component is of Editor type, or calls regular open otherwise.
-     * The goal is to prevent from cycle open call between
-     * Editor top components  */
-    private void pureOpen(TopComponent tc,Workspace workspace) {
-        if (tc instanceof ImageViewer) {
-            ((ImageViewer)tc).dockIfNeeded(workspace);
-            ((ImageViewer)tc).superOpen(workspace);
-        } else {
-            tc.open(workspace);
-        }
-    }
-
-    /** Dock this top component to editor mode if it is not docked
-     * in some mode at this time  */
-    private void dockIfNeeded(Workspace workspace) {
-        // dock into editor mode if possible
-        Mode ourMode = workspace.findMode(this);
-        if (ourMode == null) {
-            editorMode(workspace).dockInto(this);
-        }
-    }
-
-    private Mode editorMode(Workspace workspace) {
-        Mode ourMode = workspace.findMode(this);
-        if (ourMode == null) {
-            ourMode = workspace.createMode(
-                          CloneableEditorSupport.EDITOR_MODE, getName(),
-                          CloneableEditorSupport.class.getResource(
-                              "/org/openide/resources/editorMode.gif" // NOI18N
-                          )
-                      );
-        }
-        return ourMode;
     }
     
     /** Gets HelpContext. */

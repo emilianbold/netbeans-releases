@@ -46,14 +46,16 @@ package org.netbeans.modules.cnd.refactoring.actions;
 import java.awt.Color;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
-import javax.swing.event.CaretEvent;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
+import javax.swing.event.*;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -61,6 +63,9 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import javax.swing.text.Position.Bias;
 import javax.swing.text.StyleConstants;
+import javax.swing.undo.AbstractUndoableEdit;
+import javax.swing.undo.CannotUndoException;
+import javax.swing.undo.UndoableEdit;
 import org.netbeans.api.editor.settings.AttributesUtilities;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseKit;
@@ -126,21 +131,41 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
             bag.addHighlight(start, end, COLORING);
 	}
 	
-	if (mainRegion == null) {
-	    throw new IllegalArgumentException("No highlight contains the caret."); // NOI18N
-	}
+        if (mainRegion == null) {
+            Logger.getLogger(InstantRenamePerformer.class.getName()).log(Level.WARNING, "No highlight contains the caret ({0}; highlights={1})", new Object[]{caretOffset, highlights}); //NOI18N
+            // Attempt to use another region - pick the one closest to the caret
+            if (regions.size() > 0) {
+                mainRegion = regions.get(0);
+                int mainDistance = Integer.MAX_VALUE;
+                for (MutablePositionRegion r : regions) {
+                    int distance = caretOffset < r.getStartOffset() ? (r.getStartOffset() - caretOffset) : (caretOffset - r.getEndOffset());
+                    if (distance < mainDistance) {
+                        mainRegion = r;
+                        mainDistance = distance;
+                    }
+                }
+            } else {
+                return;
+            }
+        }
 	
 	regions.add(0, mainRegion);
 	
 	this.region = new SyncDocumentRegion(doc, regions);
 	
         if (doc instanceof BaseDocument) {
-            ((BaseDocument) doc).addPostModificationDocumentListener(this);
+            final BaseDocument bdoc = (BaseDocument) doc;
+            bdoc.addPostModificationDocumentListener(InstantRenamePerformer.this);
+            
+//            UndoableEdit undo = new CancelInstantRenameUndoableEdit(this);
+//            for (UndoableEditListener l : bdoc.getUndoableEditListeners()) {
+//                l.undoableEditHappened(new UndoableEditEvent(doc, undo));
+//            }            
         }
         
-	target.addKeyListener(this);
+	target.addKeyListener(InstantRenamePerformer.this);
 	
-	target.putClientProperty(InstantRenamePerformer.class, this);
+	target.putClientProperty(InstantRenamePerformer.class, InstantRenamePerformer.this);
 	
         getHighlightsBag(doc).setHighlights(bag);
         
@@ -246,13 +271,8 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
     
     public synchronized static void performInstantRename(JTextComponent target, Collection<CsmReference> highlights, int caretOffset) throws BadLocationException {
         if (instance != null) {
-            if (instance.target != target) {
-                // cancel rename in other component
-                instance.release();
-            } else {
-                // prohibit two renames in the same component
-                return;
-            }
+            // cancel previouse rename
+            instance.release();
         }
         UIGesturesSupport.submit(CsmRefactoringUtils.USG_CND_REFACTORING, "INSTANT_RENAME"); // NOI18N
         instance = new InstantRenamePerformer(target, highlights, caretOffset);
@@ -312,6 +332,11 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
     }
 
     private synchronized void release() {
+        if (target == null) {
+            //already released
+            return;
+        }
+        
 	target.putClientProperty(InstantRenamePerformer.class, null);
         if (doc instanceof BaseDocument) {
             ((BaseDocument) doc).removePostModificationDocumentListener(this);
@@ -336,4 +361,26 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
         return bag;
     }
     
+    private static class CancelInstantRenameUndoableEdit extends AbstractUndoableEdit {
+
+        private final Reference<InstantRenamePerformer> performer;
+
+        public CancelInstantRenameUndoableEdit(InstantRenamePerformer performer) {
+            this.performer = new WeakReference<InstantRenamePerformer>(performer);
+        }
+
+        @Override
+        public boolean isSignificant() {
+            return false;
+        }
+
+        @Override
+        public void undo() throws CannotUndoException {
+            InstantRenamePerformer perf = performer.get();
+
+            if (perf != null) {
+                perf.release();
+            }
+        }
+    }
 }

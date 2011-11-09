@@ -39,49 +39,16 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.maven.j2ee;
-
-import java.util.logging.Logger;
-import org.junit.runner.Description;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestRule;
-import org.junit.rules.TestWatcher;
-import org.openide.util.NbBundle;
-import static org.junit.Assert.*;
+package org.netbeans.modules.maven.j2ee.customizer;
 
 /**
  *
- * @author mjanicek
+ * @author Martin Janicek
  */
-public class LoggingUtilsTest {
+public interface ApplyChangesCustomizer {
     
-    @Rule
-    public TestRule rule = new TestWatcher() {
-        
-        @Override
-        public void succeeded(Description desc) {
-        }
-    };
- 
-    @Test
-    public void getInstanceTest() {
-        LoggingUtils.logUI(LoggingUtilsTest.class, "UI_LOG_MESSAGE", new Object[] {});
-        LoggingUtils.logUI(LoggingUtilsTest.class, "UI_LOG_MESSAGE", new Object[] {}, "maven");
-        LoggingUtils.logUI(NbBundle.getBundle(LoggingUtilsTest.class), "UI_LOG_MESSAGE", new Object[] {});
-        LoggingUtils.logUI(NbBundle.getBundle(LoggingUtilsTest.class), "UI_LOG_MESSAGE", new Object[] {}, "maven");
-        
-        LoggingUtils.logUsage(LoggingUtilsTest.class, "USG_LOG_MESSAGE", new Object[] {});
-        LoggingUtils.logUsage(LoggingUtilsTest.class, "USG_LOG_MESSAGE", new Object[] {}, "maven");
-        LoggingUtils.logUsage(NbBundle.getBundle(LoggingUtilsTest.class), "USG_LOG_MESSAGE", new Object[] {});
-        LoggingUtils.logUsage(NbBundle.getBundle(LoggingUtilsTest.class), "USG_LOG_MESSAGE", new Object[] {}, "maven");
-        
-        assertEquals("org.netbeans.ui", LoggingUtils.createUiLogger(null).getName());
-        assertEquals("org.netbeans.ui", LoggingUtils.createUiLogger("").getName());
-        assertEquals("org.netbeans.ui.metrics", LoggingUtils.createUsageLogger(null).getName());
-        assertEquals("org.netbeans.ui.metrics", LoggingUtils.createUsageLogger("").getName());
-        
-        assertEquals("org.netbeans.ui.maven", LoggingUtils.createUiLogger("maven").getName());
-        assertEquals("org.netbeans.ui.metrics.maven", LoggingUtils.createUsageLogger("maven").getName());
-    }
+    void applyChanges();
+    
+    void applyChangesInAWT();
+    
 }

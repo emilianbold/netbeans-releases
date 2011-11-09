@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.maven.j2ee;
 
+import org.netbeans.modules.maven.j2ee.utils.LoggingUtils;
+import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -66,6 +68,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerManager;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.maven.api.execute.RunUtils;
+import org.netbeans.modules.maven.j2ee.web.WebModuleImpl;
 import org.netbeans.modules.maven.j2ee.web.WebModuleProviderImpl;
 import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.Utilities;
@@ -83,12 +86,22 @@ public class POHImpl {
     private J2eeLookupProvider.Provider provider;
     private PropertyChangeListener refreshListener;
     private J2eeModuleProvider lastJ2eeProvider;
+    
+    /* #202662 This is another ugly hack causes by POHImpl.hackModuleServerChange. We need to setup context path 
+     * to some default value, but there is no way to do that when wizard is finishing because there is no
+     * server set to the project. In that case this need to be done when project is opened, but it is important
+     * to do so only once to allow user to set empty context value in the future */
+    private static boolean newlyCreated;
 
 
     public POHImpl(Project prj, J2eeLookupProvider.Provider prov) {
         project = prj;
         provider = prov;
-        
+        newlyCreated = false;
+    }
+    
+    public static void setNewlyCreated(boolean newValue) {
+        newlyCreated = newValue;
     }
     
     public void hackModuleServerChange(boolean useMutex) {
@@ -151,7 +164,7 @@ public class POHImpl {
         
         LoggingUtils.logUsage(ExecutionChecker.class, "USG_PROJECT_OPEN_MAVEN_EE", new Object[] { serverName, eeVersion }, "maven"); //NOI18N
     }
-
+    
     private synchronized void refreshAppServerAssignment() {
         provider.hackModuleServerChange();
 
@@ -166,6 +179,8 @@ public class POHImpl {
             if (impl != null) {
                 impl.setServerInstanceID(instanceFound);
                 impl.getConfigSupport().ensureConfigurationReady();
+                
+                MavenProjectSupport.createDDIfRequired(project, instanceFound);
             }
             EjbModuleProviderImpl ejb = project.getLookup().lookup(EjbModuleProviderImpl.class);
             if (ejb != null) {
@@ -209,7 +224,7 @@ public class POHImpl {
             }
         }
     }
-
+    
     private void projectClosed() {
         //is null check necessary?
         if (refreshListener != null) {
@@ -228,6 +243,17 @@ public class POHImpl {
             } catch (FileStateInvalidException ex) {
                 Exceptions.printStackTrace(ex);
             }
+        }
+    }
+    
+    private void projectCreated() {
+        NbMavenProject mavenProject = project.getLookup().lookup(NbMavenProject.class);
+        WebModuleProviderImpl webModuleProvider = project.getLookup().lookup(WebModuleProviderImpl.class);
+        WebModuleImpl webModuleImpl = webModuleProvider.getWebModuleImplementation();
+        String contextPath = webModuleImpl.getContextPath();
+        
+        if (contextPath == null || "".equals(contextPath)) {
+            webModuleImpl.setContextPath("/" + mavenProject.getMavenProject().getArtifactId());
         }
     }
 
@@ -344,12 +370,15 @@ public class POHImpl {
         @Override
         protected void projectOpened() {
             poh.projectOpened();
+            if (newlyCreated) {
+                poh.projectCreated();
+                newlyCreated = false;
+            }
         }
 
         @Override
         protected void projectClosed() {
             poh.projectClosed();
         }
-        
     }
 }
