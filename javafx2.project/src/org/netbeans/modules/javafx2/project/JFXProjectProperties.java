@@ -47,7 +47,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
@@ -61,7 +60,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.StringTokenizer;
 import java.util.TreeMap;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JToggleButton;
@@ -95,6 +93,7 @@ import org.netbeans.spi.project.support.ant.ui.StoreGroup;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
@@ -130,6 +129,7 @@ public final class JFXProjectProperties {
     // Packaging properties
     public static final String JAVAFX_BINARY_ENCODE_CSS = "javafx.binarycss"; // NOI18N
     public static final String JAVAFX_DEPLOY_INCLUDEDT = "javafx.deploy.includeDT"; // NOI18N
+    public static final String JAVAFX_DEPLOY_EMBEDJNLP = "javafx.deploy.embedJNLP"; // NOI18N
     
     // FX config properties (Run panel), replicated from ProjectProperties
     public static final String MAIN_CLASS = "javafx.main.class"; // NOI18N
@@ -510,7 +510,7 @@ public final class JFXProjectProperties {
             preloaderClassModel = new PreloaderClassComboBoxModel();
             
             initSigning(evaluator);
-            initResources(evaluator, project);
+            initResources(evaluator, project, Collections.unmodifiableMap(RUN_CONFIGS));
             initJSCallbacks(evaluator);
         }
     }
@@ -1024,7 +1024,9 @@ public final class JFXProjectProperties {
                             String prelJarFS = "file:/" + prelJarF.getAbsolutePath() + "!/"; //NOI18N
                             URL[] urls = new URL[1];
                             urls[0] = new URL(prelJarFS);
-                            preloader = new PreloaderJarArtifact(urls, srcRoot, ClassPath.COMPILE, prelJarFS);
+                            FileObject[] fos = new FileObject[1];
+                            fos[0] = FileUtil.toFileObject(prelJarF);
+                            preloader = new PreloaderJarArtifact(urls, fos, srcRoot, ClassPath.COMPILE, prelJarFS);
                         }
                     }
                 }
@@ -1326,7 +1328,7 @@ public final class JFXProjectProperties {
         permissionsElevated = isTrue(eval.getProperty(PERMISSIONS_ELEVATED));
     }
     
-    private void initResources (final PropertyEvaluator eval, final Project prj) {
+    private void initResources (final PropertyEvaluator eval, final Project prj, final Map<String/*|null*/,Map<String,String/*|null*/>/*|null*/> configs) {
         final String lz = eval.getProperty(DOWNLOAD_MODE_LAZY_JARS); //old way, when changed rewritten to new
         final String rcp = eval.getProperty(RUN_CP);        
         final String bc = eval.getProperty(BUILD_CLASSES);        
@@ -1343,6 +1345,15 @@ public final class JFXProjectProperties {
         paths = PropertyUtils.tokenizePath(rcp);
         String mainJar = eval.getProperty(DIST_JAR);
         final File mainFile = PropertyUtils.resolveFile(prjDir, mainJar);
+        List<FileObject> preloaders = new ArrayList<FileObject>();
+        try {
+            for(PreloaderArtifact pa : getPreloaderArtifactsFromConfigs(configs)) {
+                preloaders.addAll(Arrays.asList(pa.getFileObjects()));
+            }
+        } catch (IOException ex) {
+            // no need to react
+        }
+
         final List<File> resFileList = new ArrayList<File>(paths.length);
         for (String p : paths) {
             if (p.startsWith("${") && p.endsWith("}")) {    //NOI18N
@@ -1352,7 +1363,15 @@ public final class JFXProjectProperties {
             if (f.equals(mainFile)) {
                 continue;
             }
-            if (bc == null || !bcDir.equals(f)) {
+            boolean isPrel = false;
+            for(FileObject prelfo : preloaders) {
+                File prelf = FileUtil.toFile(prelfo);
+                if(prelf != null && prelf.equals(f)) {
+                    isPrel = true;
+                    continue;
+                }
+            }
+            if (!isPrel && (bc == null || !bcDir.equals(f)) ) {
                 resFileList.add(f);
                 if (isTrue(eval.getProperty(String.format(DOWNLOAD_MODE_LAZY_FORMAT, f.getName())))) {
                     lazyFileList.add(f);
@@ -1555,6 +1574,12 @@ public final class JFXProjectProperties {
         abstract boolean removeDependency() throws IOException, UnsupportedOperationException;
         
         /**
+         * Returns array of files represented by this PreloaderArtifact
+         * @return array of FileObjects of files represented by this object
+         */
+        abstract FileObject[] getFileObjects();
+        
+        /**
          * Set the validity tag for {@code this} artifact
          * @param valid true for dependencies to be kept, false for dependencies to be removed
          */
@@ -1605,18 +1630,29 @@ public final class JFXProjectProperties {
             PreloaderProjectArtifact concrete = (PreloaderProjectArtifact)that;
             return ID.equals(concrete.ID);
         }
+
+        @Override
+        final FileObject[] getFileObjects() {
+            List<FileObject> l = new ArrayList<FileObject>();
+            for(AntArtifact a : artifacts) {
+                l.addAll(Arrays.asList(a.getArtifactFiles()));
+            }
+            return l.toArray(new FileObject[l.size()]);
+        }
     }
 
     class PreloaderJarArtifact extends PreloaderArtifact {
 
         private final String ID;
         private final URL[] classPathRoots;
+        private final FileObject[] fileObjects;
         private final FileObject projectArtifact;
         private final String classPathType;
                 
-        PreloaderJarArtifact(final @NonNull URL[] classPathRoots, final @NonNull FileObject projectArtifact, 
+        PreloaderJarArtifact(final @NonNull URL[] classPathRoots, final @NonNull FileObject[] fileObjects, final @NonNull FileObject projectArtifact, 
                 final @NonNull String classPathType, final @NonNull String ID) {
             this.classPathRoots = classPathRoots;
+            this.fileObjects = fileObjects;
             this.projectArtifact = projectArtifact;
             this.classPathType = classPathType;
             this.ID = ID;
@@ -1638,6 +1674,11 @@ public final class JFXProjectProperties {
             if ( !(that instanceof PreloaderJarArtifact) ) return false;
             PreloaderJarArtifact concrete = (PreloaderJarArtifact)that;
             return ID.equals(concrete.ID);
+        }
+
+        @Override
+        final FileObject[] getFileObjects() {
+            return fileObjects;
         }
     }
 

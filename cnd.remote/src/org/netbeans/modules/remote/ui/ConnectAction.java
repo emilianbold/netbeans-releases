@@ -70,12 +70,13 @@ public class ConnectAction extends SingleHostAction {
 
     @Override
     protected boolean enable(ExecutionEnvironment env) {
-        return !ConnectionManager.getInstance().isConnectedTo(env);
+        return !ConnectionManager.getInstance().isConnectedTo(env)
+                || !HostNode.isOnline(env);
     }
 
     @Override
     public boolean isVisible(Node node) {
-        ExecutionEnvironment env = node.getLookup().lookup(ExecutionEnvironment.class);
+        ExecutionEnvironment env = node.getLookup().lookup(ExecutionEnvironment.class);        
         return env != null && env.isRemote();
     }
 
@@ -91,15 +92,15 @@ public class ConnectAction extends SingleHostAction {
     }
 
     private void connect(ExecutionEnvironment env) {
-        if (!ConnectionManager.getInstance().isConnectedTo(env)) {
-            try {
-                ConnectionManager.getInstance().connectTo(env);
-                RemoteUtil.checkSetupAfterConnection(env);
-            } catch (IOException ex) {
-                conectionFailed(env, ex);
-            } catch (CancellationException ex) {
-                conectionFailed(env, ex);
-            }
+        try {
+            ConnectionManager.getInstance().connectTo(env);
+        } catch (IOException ex) {
+            conectionFailed(env, ex);
+        } catch (CancellationException ex) {
+            conectionFailed(env, ex);
+        }
+        if (!HostNode.isOnline(env)) {
+            RemoteUtil.checkSetupAfterConnection(env);
         }
     }
 
@@ -110,7 +111,7 @@ public class ConnectAction extends SingleHostAction {
 
     private void conectionFailed(ExecutionEnvironment env, Exception e) {
         StatusDisplayer.getDefault().setStatusText(
-                NbBundle.getMessage(HostNode.class, "UnableToConnectMessage", RemoteUtil.getDisplayName(env), e.getMessage()));
+                NbBundle.getMessage(ConnectAction.class, "UnableToConnectMessage", RemoteUtil.getDisplayName(env), e.getMessage()));
 
     }
 }
