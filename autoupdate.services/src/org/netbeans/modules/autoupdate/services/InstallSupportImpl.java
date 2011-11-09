@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -46,15 +46,7 @@ package org.netbeans.modules.autoupdate.services;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -62,23 +54,8 @@ import java.net.UnknownHostException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.cert.Certificate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.*;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -86,17 +63,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.CRC32;
 import org.netbeans.Module;
-import org.netbeans.api.autoupdate.InstallSupport;
 import org.netbeans.api.autoupdate.InstallSupport.Installer;
-import org.netbeans.api.autoupdate.OperationSupport.Restarter;
 import org.netbeans.api.autoupdate.InstallSupport.Validator;
-import org.netbeans.api.autoupdate.OperationContainer;
 import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
-import org.netbeans.api.autoupdate.OperationException;
-import org.netbeans.api.autoupdate.UpdateElement;
-import org.netbeans.api.autoupdate.UpdateUnit;
+import org.netbeans.api.autoupdate.OperationSupport.Restarter;
+import org.netbeans.api.autoupdate.*;
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.core.startup.Main;
 import org.netbeans.modules.autoupdate.updateprovider.NetworkAccess;
 import org.netbeans.modules.autoupdate.updateprovider.NetworkAccess.Task;
 import org.netbeans.updater.ModuleDeactivator;
@@ -317,6 +289,7 @@ public class InstallSupportImpl {
         assert installer != null;
         Callable<Boolean> installCallable = new Callable<Boolean>() {
             @Override
+            @SuppressWarnings("SleepWhileInLoop")
             public Boolean call() throws Exception {
                 synchronized(LOCK) {
                     assert currentStep != STEP.FINISHED : currentStep + " != STEP.FINISHED";
@@ -352,7 +325,7 @@ public class InstallSupportImpl {
                 }
                 
                 boolean needsRestart = false;
-                File targetCluster = null;
+                File targetCluster;
                 List <UpdaterInfo> updaterFiles = new ArrayList <UpdaterInfo> ();
                 
                 for (ModuleUpdateElementImpl moduleImpl : affectedModuleImpls) {
@@ -869,7 +842,7 @@ public class InstallSupportImpl {
             throw new OperationException(OperationException.ERROR_TYPE.INSTALL, sb.toString());
         }
         
-        int wasVerified = 0;
+        int wasVerified;
 
         // verify
         wasVerified = verifyNbm (toUpdateImpl.getUpdateElement (), dest, progress, verified);
@@ -916,20 +889,24 @@ public class InstallSupportImpl {
         public int getContentLength() {
             return contentLength;
         }
+        @Override
         public void streamOpened(InputStream stream, int contentLength) {
             LOG.log(Level.FINEST, "Opened connection for " + source);
             this.stream = stream;
             this.contentLength = contentLength;
         }
 
+        @Override
         public void accessCanceled() {
             LOG.log(Level.INFO, "Opening connection for " + source + "was cancelled");
         }
 
+        @Override
         public void accessTimeOut() {
             LOG.log(Level.INFO, "Opening connection for " + source + "was finised due to timeout");
         }
 
+        @Override
         public void notifyException(Exception x) {
             ex = x;
         }
@@ -947,6 +924,8 @@ public class InstallSupportImpl {
                 AutoupdateSettings.getOpenConnectionTimeout(),
                 listener);
         new Thread(new Runnable() {
+            @SuppressWarnings("SleepWhileInLoop")
+            @Override
             public void run() {
                 while (true) {
                     if (task.isFinished()) {
@@ -1065,7 +1044,7 @@ public class InstallSupportImpl {
     }
     
     private int verifyNbm (UpdateElement el, File nbmFile, ProgressHandle progress, int verified) throws OperationException {
-        String res = null;
+        String res;
         try {
             verified += el.getDownloadSize ();
             if (progress != null) {
@@ -1142,6 +1121,7 @@ public class InstallSupportImpl {
     /**
      * @throws SecurityException
      */
+    @SuppressWarnings("empty-statement")
     private static void verifyEntry (JarFile jf, JarEntry je) throws IOException {
         InputStream is = null;
         try {
@@ -1153,8 +1133,6 @@ public class InstallSupportImpl {
         } finally {
             if (is != null) is.close ();
         }
-        
-        return;
     }
     
     private boolean needsRestart (boolean isUpdate, UpdateElementImpl toUpdateImpl, File dest) {
