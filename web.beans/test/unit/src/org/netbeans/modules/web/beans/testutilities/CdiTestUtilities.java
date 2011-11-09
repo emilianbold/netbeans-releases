@@ -44,7 +44,12 @@ package org.netbeans.modules.web.beans.testutilities;
 
 import java.io.IOException;
 
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.support.TestUtilities;
+import org.netbeans.modules.web.beans.api.model.ModelUnit;
+import org.netbeans.modules.web.beans.api.model.WebBeansModel;
+import org.netbeans.modules.web.beans.api.model.WebBeansModelFactory;
 import org.openide.filesystems.FileObject;
 
 
@@ -63,6 +68,14 @@ public class CdiTestUtilities {
         for (FileObject fileObject : children) {
             fileObject.delete();
         }
+    }
+    
+    public MetadataModel<WebBeansModel> createBeansModel() throws IOException, InterruptedException {
+        ModelUnit modelUnit = ModelUnit.create(
+                ClassPath.getClassPath(mySourceRoot, ClassPath.BOOT),
+                ClassPath.getClassPath(mySourceRoot, ClassPath.COMPILE),
+                ClassPath.getClassPath(mySourceRoot, ClassPath.SOURCE));
+        return WebBeansModelFactory.createMetaModel(modelUnit);
     }
     
     public void createQualifier(String name ) throws IOException{

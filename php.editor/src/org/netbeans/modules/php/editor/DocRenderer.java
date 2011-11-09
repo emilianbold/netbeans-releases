@@ -424,7 +424,7 @@ class DocRenderer {
             }
 
             if (documentation != null && documentation.length() > 0) {
-                returnValue.append(String.format("<tr><td>&nbsp;</td><td><b>%s:</b></td><td>%s</td></tr>", //NOI18N
+                returnValue.append(String.format("<tr><td>&nbsp;</td><td valign=\"top\"><b>%s:</b></td><td>%s</td></tr>", //NOI18N
                         NbBundle.getMessage(DocRenderer.class, "Description"), processPhpDoc(documentation)));
             }
             return returnValue.toString();
