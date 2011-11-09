@@ -481,6 +481,7 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
                     session.doRefactoring(true);
                 } finally {
                     session.removeProgressListener(progressListener);
+                    progressListener.stop(null);
                     progressListener = null;
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
@@ -1058,10 +1059,12 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
             });
         }
         
-        public void stop(ProgressEvent event) {
+        public void stop(final ProgressEvent event) {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    handle.finish();
+                    if (event!=null) {
+                        handle.finish();
+                    }
                     d.setVisible(false);
                 }
             });
