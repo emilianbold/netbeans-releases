@@ -79,6 +79,7 @@ import javax.swing.event.ListDataListener;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.PlatformsCustomizer;
 import org.netbeans.api.project.Project;
@@ -125,7 +126,7 @@ public final class CustomizerLibraries extends NbPropertyPanel.Single {
     private ProjectXMLManager pxml;
 
     @Messages("CTL_AddSimple=&Add...")
-    public CustomizerLibraries(final SingleModuleProperties props, ProjectCustomizer.Category category) {
+    public CustomizerLibraries(SingleModuleProperties props, ProjectCustomizer.Category category, @NonNull NbModuleProject p) {
         super(props, CustomizerLibraries.class, category);
         initComponents();
         if (!getProperties().isSuiteComponent()) {
@@ -141,7 +142,7 @@ public final class CustomizerLibraries extends NbPropertyPanel.Single {
                 FileUtil.toFileObject(getProperties().getProjectDirectoryFile())));
         DefaultButtonModel dummy = new DefaultButtonModel();
         EditMediator.register(
-                getProperties().getProject(),
+                p,
                 getProperties().getHelper(),
                 getProperties().getRefHelper(),
                 emListComp,
@@ -155,7 +156,7 @@ public final class CustomizerLibraries extends NbPropertyPanel.Single {
                 null,
                 null);
         attachListeners();
-        pxml = new ProjectXMLManager((NbModuleProject) getProperties().getProject());
+        pxml = new ProjectXMLManager(p);
     }
 
     @Override protected void refresh() {
@@ -612,7 +613,8 @@ public final class CustomizerLibraries extends NbPropertyPanel.Single {
     }// </editor-fold>//GEN-END:initComponents
     
     private void addLibraryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addLibraryActionPerformed
-        NbModuleProject project = ApisupportAntUIUtils.runLibraryWrapperWizard(getProperties().getProject());
+        Project p = getProperties().getProject();
+        NbModuleProject project = p != null ? ApisupportAntUIUtils.runLibraryWrapperWizard(p) : null;
         if (project != null) {
             try {
                 // presuambly we do not need to reset anything else
@@ -766,6 +768,9 @@ public final class CustomizerLibraries extends NbPropertyPanel.Single {
         FileChooser chooser;
         AntProjectHelper helper = getProperties().getHelper();
         Project project = getProperties().getProject();
+        if (project == null) {
+            return;
+        }
         if (helper.isSharableProject()) {
             chooser = new FileChooser(helper, true);
         } else {
