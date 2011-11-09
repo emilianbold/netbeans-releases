@@ -322,6 +322,8 @@ public class JFXProjectGenerator {
                 assert jfxBuildFile != null;
                 if (extender.getExtension("jfx") == null) { // NOI18N
                     AntBuildExtender.Extension ext = extender.addExtension("jfx", jfxBuildFile); // NOI18N
+                    ext.addDependency("jar", "-jfx-copylibs"); // NOI18N
+                    ext.addDependency("-post-jar", "-jfx-copylibs"); //NOI18N
                     ext.addDependency("-post-jar", "jfx-deployment"); //NOI18N 
                     ext.addDependency("run", "jar"); //NOI18N
                     ext.addDependency("debug", "jar");//NOI18N
@@ -378,6 +380,7 @@ public class JFXProjectGenerator {
         ep.setProperty(ProjectProperties.COMPILE_ON_SAVE_UNSUPPORTED_PREFIX + ".javafx", "true"); // NOI18N
         ep.setProperty(JFXProjectProperties.JAVAFX_BINARY_ENCODE_CSS, "true"); // NOI18N
         ep.setProperty(JFXProjectProperties.JAVAFX_DEPLOY_INCLUDEDT, "true"); // NOI18N
+        ep.setProperty(JFXProjectProperties.JAVAFX_DEPLOY_EMBEDJNLP, "true"); // NOI18N
         
         ep.setProperty(JFXProjectProperties.UPDATE_MODE_BACKGROUND, "true"); // NOI18N
         ep.setComment(JFXProjectProperties.UPDATE_MODE_BACKGROUND, new String[]{"# " + NbBundle.getMessage(JFXProjectGenerator.class, "COMMENT_updatemode")}, false); // NOI18N
@@ -396,6 +399,7 @@ public class JFXProjectGenerator {
             ep.setProperty(JFXProjectProperties.PRELOADER_ENABLED, "false"); // NOI18N
             ep.setComment(JFXProjectProperties.PRELOADER_ENABLED, new String[]{"# " + NbBundle.getMessage(JFXProjectGenerator.class, "COMMENT_prepreloader")}, false); // NOI18N
         } else {
+            // TODO: J2SE jar creation is currently hardwired with dependent lib copying (see <copylibs> in build.xml), now using workaround
             ep.setProperty("jar.archive.disabled", "true"); // NOI18N
             ep.setComment("jar.archive.disabled", new String[]{"# " + NbBundle.getMessage(JFXProjectGenerator.class, "COMMENT_oldjar")}, false); // NOI18N
             ep.setProperty(ProjectProperties.MAIN_CLASS, "com.javafx.main.Main"); // NOI18N

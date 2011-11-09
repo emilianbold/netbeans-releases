@@ -93,10 +93,8 @@ import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.LifecycleManager;
 import org.openide.cookies.EditorCookie;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.*;
 import org.openide.loaders.DataObject;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.SharedClassObject;
 import org.openide.util.lookup.Lookups;
@@ -223,7 +221,7 @@ public class FXMLCompletionTestBase extends NbTestCase {
             URL location = new URL(jfxrtUrl);
             copyToWorkDir(location, finalDestination);
         }
-        return new URL("jar:file:"+ finalDestination.getPath() + "!/");
+        return new URL("jar:file:/"+ finalDestination.getCanonicalPath().replace("\\", "/") + "!/");
     }
         
     protected void performTest(String source, int caretPos, String textToInsert, String goldenFileName) throws Exception {

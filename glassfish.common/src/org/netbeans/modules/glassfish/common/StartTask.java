@@ -98,6 +98,7 @@ public class StartTask extends BasicTask<OperationState> {
     private List<String> jvmArgs = null;
     static final private int LOWEST_USER_PORT = org.openide.util.Utilities.isWindows() ? 1 : 1025;
     private final VMIntrospector vmi;
+    private static RequestProcessor NODE_REFRESHER = new RequestProcessor("nodes to refresh");
 
     /**
      *
@@ -363,7 +364,7 @@ public class StartTask extends BasicTask<OperationState> {
             // if we are profiling, we need to lie about the status?
             if (null != jvmArgs) {
                 // try to sync the states after the profiler attaches
-                RequestProcessor.getDefault().post(new Runnable () {
+                NODE_REFRESHER.post(new Runnable () {
 
                     @Override
                     public void run() {

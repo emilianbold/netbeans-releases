@@ -576,6 +576,20 @@ public class FlowTest extends NbTestCase {
                     "null");
     }
 
+    public void testContinue204845() throws Exception {
+        performTest("package test;\n" +
+                    "public class Test {\n" +
+                    "    static void t() {\n" +
+                    "        String tp = \"\";\n" +
+                    "        if (t`p.length() == 0) {\n" +
+                    "            continue ;\n" +
+                    "        }\n" +
+                    "    }\n" +
+                    "}\n",
+                    true,
+                    "\"\"");
+    }
+
     private void prepareTest(String code, boolean allowErrors) throws Exception {
         clearWorkDir();
 

@@ -78,7 +78,6 @@ import org.netbeans.editor.ext.ExtSyntaxSupport;
 import org.netbeans.editor.ext.java.JavaTokenContext;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem;
-import org.netbeans.modules.web.core.syntax.completion.StandardTagLibraryPrefixes;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.text.CloneableEditorSupport;
@@ -223,7 +222,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport implements FileChangeList
     /** Returns a map of prefix -> URI that maps tag libraries on prefixes.
      * For the XML syntax this mapping may only be approximate.
      */
-    private Map getPrefixMapper() {
+    protected Map getPrefixMapper() {
         // PENDING - must also take xmlPrefixMapper into account
         JspParserAPI.ParseResult result = getParseResult();
         Map prefixMapper = null;
