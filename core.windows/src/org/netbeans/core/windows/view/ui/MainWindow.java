@@ -265,10 +265,11 @@ public final class MainWindow {
                            frame.getRootPane().putClientProperty ("Window.documentModified", //NOI18N
                                    modified ? Boolean.TRUE : Boolean.FALSE);
                        } else if (ev.getSource() == dobResult) {
-                           int count = dobResult.allItems().size();
+                           Collection<? extends Lookup.Item<DataObject>> allItems = dobResult.allItems();
+                           int count = allItems.size();
                            switch (count) {
                                case 1 :
-                                   DataObject dob = dobResult.allInstances().iterator().next();
+                                   DataObject dob = allItems.iterator().next().getInstance();
                                    FileObject file = dob.getPrimaryFile();
                                    File f = FileUtil.toFile(file);
                                    if (f != null) {
