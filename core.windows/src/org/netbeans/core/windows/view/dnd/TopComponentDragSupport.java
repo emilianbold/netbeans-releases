@@ -169,9 +169,6 @@ implements AWTEventListener, DragSourceListener, DragSourceMotionListener {
     /** Flag indicating the user has cancelled drag operation by pressing ESC key. */
     private boolean hackESC;
 
-    /** Weak set of componens on which we listen for ESC key. */
-    private final Set keyObservers = new WeakSet(4);
-
     private Point startingPoint;
     private Component startingComponent;
     private long startingTime;
