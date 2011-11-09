@@ -95,18 +95,15 @@ public final class CsmRefactoringUtils {
     private CsmRefactoringUtils() {
     }
 
-    public static boolean isElementInOpenProject(FileObject f) {
-        if (f == null) {
+    public static boolean isElementInOpenProject(CsmFile csmFile) {
+        if (csmFile == null) {
             return false;
         }
-        Project p = FileOwnerQuery.getOwner(f);
+        Object p = csmFile.getProject().getPlatformProject();
         if (p != null) {
             for (NativeProject prj : NativeProjectRegistry.getDefault().getOpenProjects()) {
-                Provider project = prj.getProject();
-                if (project != null) {
-                    if (p.equals(project) || project.equals(p)) {
-                        return true;
-                    }
+                if (prj.equals(p)) {
+                    return true;
                 }
             }
         }
