@@ -46,8 +46,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import javax.swing.text.Document;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.el.spi.ELPlugin;
+import org.netbeans.modules.web.el.spi.Function;
 import org.netbeans.modules.web.el.spi.ImplicitObject;
 import org.netbeans.modules.web.el.spi.ImplicitObjectType;
 import org.netbeans.modules.web.el.spi.ResourceBundle;
@@ -129,6 +131,11 @@ public class FaceletsELPlugin implements ELPlugin {
         result.add(new JsfImplicitObject("requestScope", null, SCOPE_TYPE));
         result.add(new JsfImplicitObject("viewScope", null, SCOPE_TYPE));
         return result;
+    }
+
+    @Override
+    public List<Function> getFunctions(FileObject file) {
+        return Collections.emptyList();
     }
 
     static class FacesContextObject extends JsfImplicitObject {
