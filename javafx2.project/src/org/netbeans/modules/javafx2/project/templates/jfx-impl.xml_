@@ -173,10 +173,6 @@
         <echo message="Warning: Note that due to a bug in early JavaFX 2.0 SDK distributions the icon may not be properly set in deployment files."/>
     </target>
 
-    <target name="-offline-allowed-warning" depends="-check-project" unless="offline-allowed">
-        <echo message="Warning: Note that due to a bug in early JavaFX 2.0 SDK distributions the 'offline allowed' property may not be properly set in deployment files."/>
-    </target>
-
     <target name="-set-dimensions" depends="-check-project" if="dimensions-available">
         <property name="javafx.width" value="${javafx.run.width}"/>
         <property name="javafx.height" value="${javafx.run.height}"/>
@@ -243,7 +239,7 @@
 
     <target name="jfx-deployment" depends="-check-jfx-deployment,-check-project,-icon-warning,
         -set-dimensions,-reset-dimensions,-set-update-mode-background,-set-update-mode-eager,
-        -offline-allowed-warning,-set-permissions-elevated,-reset-permissions-elevated,
+        -set-permissions-elevated,-reset-permissions-elevated,
         -copy-external-preloader-jar,-set-binary-css,-unset-binary-css,-copy-binary-css,
         -deploy-app-sign-nopreloader-notemplate,
         -deploy-app-sign-preloader-notemplate,
@@ -550,16 +546,25 @@
                     var width = project.getProperty("javafx.width");
                     var height = project.getProperty("javafx.height");
                     var outdir = project.getProperty("jfx.deployment.dir");
+                    var embedJNLP = project.getProperty("javafx.deploy.embedJNLP");
                     var updatemode = project.getProperty("update-mode");
                     var outfile = project.getProperty("application.title");
                     var includeDT = project.getProperty("javafx.deploy.includeDT");
+                    var offline = project.getProperty("javafx.deploy.allowoffline");
                     deploy.setWidth(width);
                     deploy.setHeight(height);
                     deploy.setOutdir(outdir);
-                    deploy.setEmbedJNLP(true); // default
+                    deploy.setEmbedJNLP(isTrue(embedJNLP));
                     deploy.setUpdateMode(updatemode);
                     deploy.setOutfile(outfile);
                     deploy.setIncludeDT(isTrue(includeDT));
+                    if(offline != null) {
+                        if(fx_ant_api_1_1 == "true") {
+                            deploy.setOfflineAllowed(isTrue(offline));
+                        } else {
+                            println("Warning: offlineAllowed not supported by this version of JavaFX SDK deployment Ant task. Please upgrade JavaFX to 2.0.2 or higher.");
+                        }
+                    }
 
                     // fx:application
                     var app = deploy.createApplication();
@@ -641,6 +646,15 @@
                     var vendor = project.getProperty("application.vendor");
                     info.setTitle(title); // title known from before
                     info.setVendor(vendor);
+                    var icon = project.getProperty("javafx.deploy.icon");
+                    if(icon != null) {
+                        if(fx_ant_api_1_1 == "true") {
+                            var iicon = info.createIcon();
+                            iicon.setHref(icon);
+                        } else {
+                            println("Warning: Icon not supported by this version of JavaFX SDK deployment Ant task. Please upgrade JavaFX to 2.0.2 or higher.");
+                        }
+                    }
                     
                     // fx:permissions
                     var perm = deploy.createPermissions();
