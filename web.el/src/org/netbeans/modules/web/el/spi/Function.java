@@ -41,66 +41,51 @@
  */
 package org.netbeans.modules.web.el.spi;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import org.openide.filesystems.FileObject;
-import org.openide.util.Lookup;
 
 /**
  *
- * @author marekfukala
+ * @author Martin Fousek <marfous@netbeans.org>
  */
-public interface ELPlugin {
+public class Function {
 
-    /** Name - id of the ELPlugin */
-    public String getName();
+    private String name;
+    private String returnType;
+    private List<String> parameters;
+    private String description;
 
-    /** A list of file mimetypes which this plugin is registered for. */
-    public Collection<String> getMimeTypes();
+    public Function(String name, String returnType, List<String> parameters, String description) {
+        this.name = name;
+        this.returnType = returnType;
+        this.parameters = parameters;
+        this.description = description;
+    }
 
-    /** A list of EL implicit objects for given file */
-    public Collection<ImplicitObject> getImplicitObjects(FileObject file);
+    /**
+     * @return name of the function
+     */
+    public String getName() {
+        return name;
+    }
 
-    /** A list of resource bundles for given file */
-    public List<ResourceBundle> getResourceBundles(FileObject file);
+    /**
+     * @return return type
+     */
+    public String getReturnType() {
+        return returnType;
+    }
 
-    /** A list of functions for given file */
-    public List<Function> getFunctions(FileObject file);
+    /**
+     * @return {@code list} of method parameters
+     */
+    public List<String> getParameters() {
+        return parameters;
+    }
 
-    static class Query {
-
-        public static Collection<? extends ELPlugin> getELPlugins() {
-            Collection<? extends ELPlugin> plugins =
-                    Lookup.getDefault().lookupAll(ELPlugin.class);
-            return plugins;
-        }
-
-        public static Collection<ImplicitObject> getImplicitObjects(FileObject file) {
-            Set<ImplicitObject> result = new HashSet<ImplicitObject>();
-            for (ELPlugin plugin : getELPlugins()) {
-                result.addAll(plugin.getImplicitObjects(file));
-            }
-            return result;
-        }
-
-        public static List<ResourceBundle> getResourceBundles(FileObject file) {
-            List<ResourceBundle> result = new ArrayList<ResourceBundle>();
-             for (ELPlugin plugin : getELPlugins()) {
-                result.addAll(plugin.getResourceBundles(file));
-            }
-            return result;
-        }
-
-        public static List<Function> getFunctions(FileObject file) {
-            List<Function> result = new ArrayList<Function>();
-             for (ELPlugin plugin : getELPlugins()) {
-                result.addAll(plugin.getFunctions(file));
-            }
-            return result;
-        }
-
+    /**
+     * @return description of usage and functionality this function
+     */
+    public String getDescription() {
+        return description;
     }
 }
