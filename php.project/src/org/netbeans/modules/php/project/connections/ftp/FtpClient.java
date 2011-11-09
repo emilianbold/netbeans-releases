@@ -687,5 +687,12 @@ public class FtpClient implements RemoteClient {
         public long getTimestamp() {
             return TimeUnit.SECONDS.convert(ftpFile.getTimestamp().getTimeInMillis() + getTimestampDiff(), TimeUnit.MILLISECONDS);
         }
+
+        @Override
+        public String toString() {
+            return "FtpFile[name: " + getName() + ", parent directory: " + getParentDirectory() + "]";
+        }
+
     }
+
 }
