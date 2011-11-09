@@ -107,6 +107,8 @@ import org.openide.util.RequestProcessor;
  */
 public class ActionMappings extends javax.swing.JPanel {
     private static final String CUSTOM_ACTION_PREFIX = "CUSTOM-"; //NOI18N
+
+    private static final RequestProcessor RP = new RequestProcessor(ActionMappings.class);
     private NbMavenProjectImpl project;
     private ModelHandle handle;
     private HashMap<String, String> titles = new HashMap<String, String>();
@@ -237,7 +239,7 @@ public class ActionMappings extends javax.swing.JPanel {
         setupConfigurations();
         loadMappings();
         addListeners();
-        RequestProcessor.getDefault().post(new Runnable() {
+        RP.post(new Runnable() {
             @Override public void run() {
                 final GoalsProvider provider = Lookup.getDefault().lookup(GoalsProvider.class);
                 final Set<String> strs = provider.getAvailableGoals();
