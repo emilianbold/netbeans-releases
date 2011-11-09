@@ -128,7 +128,7 @@ public class InstallSupportImpl {
     
     private Future<Boolean> runningTask;
     private final Object LOCK = new Object();
-    
+
     private static enum STEP {
         NOTSTARTED,
         DOWNLOAD,
@@ -437,24 +437,33 @@ public class InstallSupportImpl {
 
                         if (progress != null) progress.switchToDeterminate (affectedModuleImpls.size ());
 
-                        Set <File> files = null;
+                        final Set <File> files;
                         synchronized(downloadedFiles) {
                             files = new HashSet <File> (downloadedFiles);
                         }
                         if (! files.isEmpty ()) {
                             try {
-                                UpdaterInternal.update(
-                                    files,
-                                    new RefreshModulesListener (progress),
-                                    NbBundle.getBranding()
-                                );
+                                FileUtil.runAtomicAction(new Runnable() {
+
+                                    @Override
+                                    public void run() {
+                                        try {
+                                            UpdaterInternal.update(
+                                                files,
+                                                new RefreshModulesListener (progress),
+                                                NbBundle.getBranding()
+                                            );
+                                        } catch (InterruptedException ex) {
+                                            Exceptions.printStackTrace(ex);
+                                        }
+                                    }
+                                });
                                 for (ModuleUpdateElementImpl impl : affectedModuleImpls) {
                                     int rerunWaitCount = 0;
                                     Module module = Utilities.toModule (impl.getCodeName(), impl.getSpecificationVersion ());
                                     for (; rerunWaitCount < 100 && module == null; rerunWaitCount++) {
                                         LOG.log(Level.FINE, "Waiting for {0}@{1} #{2}", new Object[]{ impl.getCodeName(), impl.getSpecificationVersion(), rerunWaitCount});
                                         Thread.sleep(100);
-                                        Main.getModuleSystem().refresh();
                                         module = Utilities.toModule (impl.getCodeName(), impl.getSpecificationVersion ());
                                     }
                                     if (rerunWaitCount == 100) {
@@ -1152,9 +1161,10 @@ public class InstallSupportImpl {
         return InstallManager.needsRestart (isUpdate, toUpdateImpl, dest);
     }
     
-    private static final class RefreshModulesListener implements PropertyChangeListener  {
+    private static final class RefreshModulesListener implements PropertyChangeListener, Runnable  {
         private ProgressHandle handle;
         private int i;
+        private PropertyChangeEvent ev;
         
         public RefreshModulesListener (ProgressHandle handle) {
             this.handle = handle;
@@ -1162,12 +1172,22 @@ public class InstallSupportImpl {
         }
         
         @Override
-        public void propertyChange(PropertyChangeEvent ev) {
+        public void propertyChange(final PropertyChangeEvent ev) {
             if (UpdaterInternal.RUNNING.equals (ev.getPropertyName ())) {
                 if (handle != null) {
                     handle.progress (i++);
                 }
             } else if (UpdaterInternal.FINISHED.equals (ev.getPropertyName ())){
+                this.ev = ev;
+                FileUtil.runAtomicAction(this);
+            } else {
+                assert false : "Unknown property " + ev.getPropertyName ();
+            }
+        }
+
+        @Override
+        public void run() {
+            for (int loop = 0; loop < 10; loop++) {
                 // XXX: the modules list should be refresh automatically when config/Modules/ changes
                 Map<File,Long> modifiedFiles = NbCollections.checkedMapByFilter(
                     (Map)ev.getNewValue(), 
@@ -1177,19 +1197,47 @@ public class InstallSupportImpl {
                 for (Map.Entry<File,Long> e : modifiedFiles.entrySet()) {
                     touch(e.getKey(), Math.max(e.getValue(), now));
                 }
-                FileUtil.getConfigRoot().refresh();
                 FileObject modulesRoot = FileUtil.getConfigFile(ModuleDeactivator.MODULES);
                 if (modulesRoot != null) {
                     LOG.fine("Refreshing Modules directory"); // NOI18N
                     modulesRoot.refresh();
                     LOG.fine("Done refreshing Modules directory"); // NOI18N
-                } else {
-                    LOG.warning("No Modules directory to refresh!"); // NOI18N
                 }
-            } else {
-                assert false : "Unknown property " + ev.getPropertyName ();
+                boolean ok = true;
+                for (File file : modifiedFiles.keySet()) {
+                    String rel = relativePath(file, new StringBuilder());
+                    if (rel == null) {
+                        continue;
+                    }
+                    FileObject fo = FileUtil.getConfigFile(rel);
+                    if (fo == null) {
+                        LOG.log(loop < 5 ? Level.FINE : Level.WARNING, "Cannot find " + rel);
+                        ok = false;
+                    }
+                    LOG.fine("Refreshing " + fo);
+                    fo.refresh();
+                }
+                if (ok) {
+                    LOG.log(loop < 5 ? Level.FINE : Level.INFO, "All was OK on " + loop + " th iteration");
+                    break;
+                }
             }
         }
+
+    }
+    
+    private static String relativePath(File f, StringBuilder sb) {
+        if (f == null) {
+            return null;
+        }
+        if (f.getName().equals("config")) {
+            return sb.toString();
+        }
+        if (sb.length() > 0) {
+            sb.insert(0, '/');
+        }
+        sb.insert(0, f.getName());
+        return relativePath(f.getParentFile(), sb);
     }
     
     private static void touch(File f, long minTime) {
