@@ -405,11 +405,6 @@ public class CompletionContextImpl extends CompletionContext {
                         }
                         */
                         EmptyTag tag = (EmptyTag) element;
-                        if (CompletionUtil.isCaretInsideTag(completionAtOffset, tokenSequence)) {
-//***???completionType = CompletionType.COMPLETION_TYPE_ATTRIBUTE;
-//***???pathFromRoot = getPathFromRoot(element);
-                            break;
-                        }
                         if ((element.getElementOffset() + 1 == completionAtOffset) ||
                             (token.getOffset() + token.getImage().length() == completionAtOffset)) {
                             completionType = CompletionType.COMPLETION_TYPE_ELEMENT;
