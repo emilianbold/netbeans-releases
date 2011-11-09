@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<project name="jfx-impl" default="jfx-deployment" basedir=".." xmlns:j2seproject1="http://www.netbeans.org/ns/j2se-project/1" xmlns:fx="javafx:com.sun.javafx.tools.ant">
+<project name="jfx-impl" default="jfx-deployment" basedir=".." xmlns:j2seproject1="http://www.netbeans.org/ns/j2se-project/1" xmlns:j2seproject3="http://www.netbeans.org/ns/j2se-project/3" xmlns:fx="javafx:com.sun.javafx.tools.ant">
     <description>JavaFX-specific Ant calls</description>
 
     <target name="-init-javafx">
@@ -200,6 +200,21 @@
         <property name="permissions.elevated" value="false"/>
     </target>
 
+    <target name="-check-copylibs">
+        <condition property="have.copylibs">
+            <and>
+                <isset property="libs.CopyLibs.classpath"/>
+                <not>
+                    <istrue value="${mkdist.disabled}"/>
+                </not>
+            </and>
+        </condition>
+    </target>
+    <target name="-jfx-copylibs" depends="init,compile,-pre-pre-jar,-pre-jar,-init-macrodef-copylibs,-check-copylibs" if="have.copylibs">
+        <j2seproject1:jar/>
+        <j2seproject3:copylibs/>
+    </target>
+    
     <target name="-copy-external-preloader-jar" depends="-check-project" if="app-with-external-preloader-jar">
         <copy file="${javafx.preloader.jar.path}" todir="${dist.dir}${file.separator}lib"/>
     </target>
@@ -306,8 +321,14 @@
 
     <macrodef name="deploy-preprocess">
         <sequential>
-            <delete file="${jfx.deployment.dir}/${jfx.deployment.jar}"/>
-            <delete file="${jfx.deployment.dir}/README.TXT"/>
+            <delete file="${jfx.deployment.dir}${file.separator}${jfx.deployment.jar}"/>
+            <delete file="${jfx.deployment.dir}${file.separator}lib${file.separator}${jfx.deployment.jar}"/>
+            <delete includeEmptyDirs="true">
+                <fileset dir="${jfx.deployment.dir}${file.separator}lib">
+                    <exclude name="**${file.separator}*.jar"/>
+                </fileset>
+            </delete>
+            <delete file="${jfx.deployment.dir}${file.separator}README.TXT"/>
         </sequential>
     </macrodef>
 
