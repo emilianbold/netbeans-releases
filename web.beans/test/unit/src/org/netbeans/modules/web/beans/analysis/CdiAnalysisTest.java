@@ -43,6 +43,9 @@
 package org.netbeans.modules.web.beans.analysis;
 
 import java.io.IOException;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Map;
@@ -1147,6 +1150,74 @@ public class CdiAnalysisTest extends BaseAnalisysTestCase {
             @Override
             public void process( TestProblems result ) {
                 checkCtor(result, "foo.Clazz1");
+            }
+            
+        };
+        runAnalysis(errorFile1 , processor);
+        
+        runAnalysis( goodFile, NO_ERRORS_PROCESSOR );
+    }
+    
+    /*
+     * ScopeAnalyzer
+     */
+    public void testCtor() throws IOException{
+        FileObject errorFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Scope1.java",
+                "package foo; " +
+                " import javax.inject.Scope; "+
+                " import java.lang.annotation.Retention; "+
+                " import java.lang.annotation.RetentionPolicy; "+
+                " import java.lang.annotation.Target; " +
+                " import java.lang.annotation.ElementType; "+
+                " @Retention(RetentionPolicy.RUNTIME) "+
+                " @Target({ElementType.ANNOTATION_TYPE}) "+
+                " @Scope "+
+                " public @interface Scope1 { "+
+                "}");
+        
+        FileObject errorFile1 = TestUtilities.copyStringToFileObject(srcFO, "foo/Scope2.java",
+                "package foo; " +
+                " import javax.inject.Scope; "+
+                " import java.lang.annotation.Retention; "+
+                " import java.lang.annotation.RetentionPolicy; "+
+                " import java.lang.annotation.Target; " +
+                " import java.lang.annotation.ElementType; "+
+                " @Target({ElementType.METHOD,ElementType.FIELD, ElementType.TYPE}) "+
+                " @Scope "+
+                " public @interface Scope2 { "+
+                "}");
+        
+        /*
+         * Create a good one class file
+         */
+        FileObject goodFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Scope3.java",
+                "package foo; " +
+                " import javax.inject.Scope; "+
+                " import java.lang.annotation.Retention; "+
+                " import java.lang.annotation.RetentionPolicy; "+
+                " import java.lang.annotation.Target; " +
+                " import java.lang.annotation.ElementType; "+
+                " @Retention(RetentionPolicy.RUNTIME) "+
+                " @Target({ElementType.METHOD,ElementType.FIELD, ElementType.TYPE}) "+
+                " @Scope "+
+                " public @interface Scope3 { "+
+                "}");
+        
+        ResultProcessor processor = new ResultProcessor (){
+
+            @Override
+            public void process( TestProblems result ) {
+                checkTypeElement(result, "foo.Scope1");
+            }
+            
+        };
+        runAnalysis(errorFile , processor);
+        
+        processor = new ResultProcessor (){
+
+            @Override
+            public void process( TestProblems result ) {
+                checkTypeElement(result, "foo.Scope2");
             }
             
         };
