@@ -720,6 +720,9 @@ public class SourcePathProviderImpl extends SourcePathProvider {
             //e.printStackTrace ();
             return null;
         }
+        if (fo == null) {
+            return null;
+        }
         String relativePath = smartSteppingSourcePath.getResourceName (
             fo, 
             directorySeparator,
