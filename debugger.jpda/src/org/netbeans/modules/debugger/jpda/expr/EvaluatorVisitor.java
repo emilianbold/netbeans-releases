@@ -444,6 +444,9 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
 
     private ReferenceType findEnclosingTypeWithMethod(ReferenceType type, String enclosingClass, String methodName, List<? extends TypeMirror> paramTypes, List<? extends Type> argTypes, Method[] methodPtr) {
         ReferenceType etype = findEnclosingType(type, enclosingClass);
+        if (etype == null) {
+            return null;
+        }
         Method method;
         try {
             if (paramTypes != null) {
