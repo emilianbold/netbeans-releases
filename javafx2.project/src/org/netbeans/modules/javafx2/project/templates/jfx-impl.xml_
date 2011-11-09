@@ -317,14 +317,14 @@
 
     <macrodef name="deploy-preprocess">
         <sequential>
-            <delete file="${jfx.deployment.dir}${file.separator}${jfx.deployment.jar}"/>
-            <delete file="${jfx.deployment.dir}${file.separator}lib${file.separator}${jfx.deployment.jar}"/>
-            <delete includeEmptyDirs="true">
+            <delete file="${jfx.deployment.dir}${file.separator}${jfx.deployment.jar}" quiet="true"/>
+            <delete file="${jfx.deployment.dir}${file.separator}lib${file.separator}${jfx.deployment.jar}" quiet="true"/>
+            <delete includeEmptyDirs="true" quiet="true">
                 <fileset dir="${jfx.deployment.dir}${file.separator}lib">
                     <exclude name="**${file.separator}*.jar"/>
                 </fileset>
             </delete>
-            <delete file="${jfx.deployment.dir}${file.separator}README.TXT"/>
+            <delete file="${jfx.deployment.dir}${file.separator}README.TXT" quiet="true"/>
         </sequential>
     </macrodef>
 
@@ -341,11 +341,34 @@
             <property name="pp_jar_fs3" value="lib${file.separator}${jfx.deployment.jar}"/>
             <script language="javascript">
                 <![CDATA[
+                    var S = java.io.File.separator;
                     var JFXPAR = "javafx.param";
                     var JFXPARN = "name";
                     var JFXPARV = "value";
+                    var JFXLAZY = "download.mode.lazy.jar";
                     var withpreloader = project.getProperty("app-with-preloader");
                     var fx_ant_api_1_1 = project.getProperty("have-fx-ant-api-1.1");
+
+                    // get jars with lazy download mode property set
+                    function getLazyJars() {
+                        var jars = new Array();
+                        var keys = project.getProperties().keys();
+                        while(keys.hasMoreElements()) {
+                            var pn = keys.nextElement();
+                            if(pn.substr(0,JFXLAZY.length) == JFXLAZY) {
+                                var fname = pn.substring(JFXLAZY.length+1);
+                                jars.push(fname);
+                            }
+                        }
+                        return jars.length > 0 ? jars : null;
+                    }
+                    // set download mode of dependent libraries
+                    function setDownloadMode(fsEager, fsLazy, jars) {
+                        for(i = 0; i < jars.length; i++) {
+                            fsEager.setExcludes("lib" + S + jars[i]);
+                            fsLazy.setIncludes("lib" + S + jars[i]);
+                        }
+                    }
                     
                     // fx:jar
                     var jar = project.createTask("fx_jar");
@@ -394,35 +417,51 @@
                     res.setProject(project);
                     var pdir = project.getProperty("pp_jar_dir");
                     if(withpreloader == "true") {
-                        var fsp1 = res.createFileSet();
-                        fsp1.setProject(project);
-                        fsp1.setDir(new java.io.File(pdir));
-                        var pinc1 = project.getProperty("pp_jar_fs1");
-                        fsp1.setIncludes(pinc1);
-                        fsp1.setRequiredFor("preloader");
-                        var fsp2 = res.createFileSet();
-                        fsp2.setProject(project);
-                        fsp2.setDir(new java.io.File(pdir));
-                        var pinc2a = project.getProperty("jfx.deployment.jar");
-                        var pinc2b = project.getProperty("pp_jar_fs2");
-                        var pinc2c = project.getProperty("pp_jar_fs1");
-                        var pinc2d = project.getProperty("pp_jar_fs3");
-                        fsp2.setIncludes(pinc2a);
-                        fsp2.setIncludes(pinc2b);
-                        fsp2.setExcludes(pinc2c);
-                        fsp2.setExcludes(pinc2d);
-                        fsp2.setRequiredFor("startup");
+                        var f1 = res.createFileSet();
+                        f1.setProject(project);
+                        f1.setDir(new java.io.File(pdir));
+                        var i1 = project.getProperty("pp_deploy_fs1");
+                        f1.setIncludes(i1);
+                        f1.setRequiredFor("preloader");
+                        var f2 = res.createFileSet();
+                        f2.setProject(project);
+                        f2.setDir(new java.io.File(pdir));
+                        var i2a = project.getProperty("jfx.deployment.jar");
+                        var i2b = project.getProperty("pp_deploy_fs2");
+                        var e2c = project.getProperty("pp_deploy_fs1");
+                        var e2d = project.getProperty("pp_deploy_fs3");
+                        f2.setIncludes(i2a);
+                        f2.setIncludes(i2b);
+                        f2.setExcludes(e2c);
+                        f2.setExcludes(e2d);
+                        f2.setRequiredFor("startup");
+                        var lazyjars = getLazyJars();
+                        if(lazyjars != null) {
+                            var f3 = res.createFileSet();
+                            f3.setProject(project);
+                            f3.setDir(new java.io.File(pdir));
+                            f3.setRequiredFor("runtime");
+                            setDownloadMode(f2,f3,lazyjars);
+                        }
                     } else {
-                        var fsn = res.createFileSet();
-                        fsn.setProject(project);
-                        fsn.setDir(new java.io.File(pdir));
-                        var pinca = project.getProperty("jfx.deployment.jar");
-                        var pincb = project.getProperty("pp_jar_fs2");
-                        var pincd = project.getProperty("pp_jar_fs3");
-                        fsn.setIncludes(pinca);
-                        fsn.setIncludes(pincb);
-                        fsn.setExcludes(pincd);
-                        fsn.setRequiredFor("startup");
+                        var fn = res.createFileSet();
+                        fn.setProject(project);
+                        fn.setDir(new java.io.File(pdir));
+                        var ia = project.getProperty("jfx.deployment.jar");
+                        var ib = project.getProperty("pp_deploy_fs2");
+                        var ec = project.getProperty("pp_deploy_fs3");
+                        fn.setIncludes(ia);
+                        fn.setIncludes(ib);
+                        fn.setExcludes(ec);
+                        fn.setRequiredFor("startup");
+                        var lazyjars = getLazyJars();
+                        if(lazyjars != null) {
+                            var fn2 = res.createFileSet();
+                            fn2.setProject(project);
+                            fn2.setDir(new java.io.File(pdir));
+                            fn2.setRequiredFor("runtime");
+                            setDownloadMode(fn,fn2,lazyjars);
+                        }
                     }
                     
                     // fileset to exclude *.css or *.bss
@@ -537,8 +576,30 @@
                     var JFXPARN = "name";
                     var JFXPARV = "value";
                     var JFXCALLB = "javafx.jscallback";
+                    var JFXLAZY = "download.mode.lazy.jar";
                     var withpreloader = project.getProperty("app-with-preloader");
                     var fx_ant_api_1_1 = project.getProperty("have-fx-ant-api-1.1");
+
+                    // get jars with lazy download mode property set
+                    function getLazyJars() {
+                        var jars = new Array();
+                        var keys = project.getProperties().keys();
+                        while(keys.hasMoreElements()) {
+                            var pn = keys.nextElement();
+                            if(pn.substr(0,JFXLAZY.length) == JFXLAZY) {
+                                var fname = pn.substring(JFXLAZY.length+1);
+                                jars.push(fname);
+                            }
+                        }
+                        return jars.length > 0 ? jars : null;
+                    }
+                    // set download mode of dependent libraries
+                    function setDownloadMode(fsEager, fsLazy, jars) {
+                        for(i = 0; i < jars.length; i++) {
+                            fsEager.setExcludes("lib" + S + jars[i]);
+                            fsLazy.setIncludes("lib" + S + jars[i]);
+                        }
+                    }
                     
                     // fx:deploy
                     var deploy = project.createTask("fx_deploy");
@@ -597,7 +658,7 @@
                                         var arg = app.createArgument();
                                         arg.setName(propn);
                                     } else {
-                                        println("Warning: Unnamed parameters not supported by this version of JavaFX SDK deployment Ant tasks");
+                                        println("Warning: Unnamed parameters not supported by this version of JavaFX SDK deployment Ant tasks. Upgrade JavaFX to 2.0.2 or higher.");
                                     }
                                 }
                             }
@@ -627,6 +688,14 @@
                         f2.setExcludes(e2c);
                         f2.setExcludes(e2d);
                         f2.setRequiredFor("startup");
+                        var lazyjars = getLazyJars();
+                        if(lazyjars != null) {
+                            var f3 = res.createFileSet();
+                            f3.setProject(project);
+                            f3.setDir(new java.io.File(deploydir));
+                            f3.setRequiredFor("runtime");
+                            setDownloadMode(f2,f3,lazyjars);
+                        }
                     } else {
                         var fn = res.createFileSet();
                         fn.setProject(project);
@@ -638,6 +707,14 @@
                         fn.setIncludes(ib);
                         fn.setExcludes(ec);
                         fn.setRequiredFor("startup");
+                        var lazyjars = getLazyJars();
+                        if(lazyjars != null) {
+                            var fn2 = res.createFileSet();
+                            fn2.setProject(project);
+                            fn2.setDir(new java.io.File(deploydir));
+                            fn2.setRequiredFor("runtime");
+                            setDownloadMode(fn,fn2,lazyjars);
+                        }
                     }
                     
                     // fx:info
