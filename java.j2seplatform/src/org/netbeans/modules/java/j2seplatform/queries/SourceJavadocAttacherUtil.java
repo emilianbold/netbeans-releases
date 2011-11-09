@@ -46,6 +46,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Callable;
 import javax.swing.JFileChooser;
@@ -89,7 +90,7 @@ public final class SourceJavadocAttacherUtil {
     public static List<? extends URI> selectJavadoc(
             @NonNull final URL root,
             @NonNull final Callable<List<? extends String>> browseCall,
-            @NonNull final Function<String,URI> convertor) {
+            @NonNull final Function<String,Collection<? extends URI>> convertor) {
         assert root != null;
         assert browseCall != null;
         assert convertor != null;
@@ -119,7 +120,7 @@ public final class SourceJavadocAttacherUtil {
     public static List<? extends URI> selectSources(
             @NonNull final URL root,
             @NonNull final Callable<List<? extends String>> browseCall,
-            @NonNull final Function<String,URI> convertor) {
+            @NonNull final Function<String,Collection<? extends URI>> convertor) {
         assert root != null;
         assert browseCall != null;
         assert convertor != null;
@@ -200,23 +201,28 @@ public final class SourceJavadocAttacherUtil {
         return call;
     }
 
-    public static Function<String,URI> createDefaultURIConvertor(final boolean forSources) {
-        return new Function<String, URI>() {
+    public static Function<String,Collection<? extends URI>> createDefaultURIConvertor(final boolean forSources) {
+        return new Function<String, Collection<? extends URI>>() {
             @Override
-            public URI call(String param) throws Exception {
+            public Collection<? extends URI> call(String param) throws Exception {
                 final File f = new File (param);
                 assert f.isAbsolute() : param;
                 FileObject fo = FileUtil.toFileObject(f);
                 if (fo.isData()) {
                     fo = FileUtil.getArchiveRoot(fo);
                 }
-                FileObject root = forSources ?
-                    JavadocAndSourceRootDetection.findSourceRoot(fo) :
-                    JavadocAndSourceRootDetection.findJavadocRoot(fo);
-                if (root == null) {
-                    root = fo;
+                final List<URI> result = new ArrayList<URI>();
+                if (forSources) {
+                    for (FileObject root : JavadocAndSourceRootDetection.findSourceRoots(fo,null)) {
+                        result.add(root.getURL().toURI());
+                    }
+                } else {
+                    FileObject root = JavadocAndSourceRootDetection.findJavadocRoot(fo);
+                    if (root != null) {
+                        result.add(root.getURL().toURI());
+                    }
                 }
-                return root.getURL().toURI();
+                return result;
             }
         };
     }
