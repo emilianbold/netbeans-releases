@@ -763,7 +763,8 @@ public class FormatVisitor extends DefaultVisitor {
         // scan the parameters
         List<FormalParameter> parameters = node.getFormalParameters();
         if (parameters != null && parameters.size() > 0) {
-            while (ts.moveNext() && ts.offset() < parameters.get(0).getStartOffset()) {
+            while (ts.moveNext() && ts.offset() < parameters.get(0).getStartOffset()
+                    && lastIndex < ts.index()) {
                 addFormatToken(formatTokens);
             }
             ts.movePrevious();
