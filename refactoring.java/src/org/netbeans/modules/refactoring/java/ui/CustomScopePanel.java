@@ -65,6 +65,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import javax.lang.model.element.TypeElement;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -220,7 +221,7 @@ public class CustomScopePanel extends javax.swing.JPanel implements ExplorerMana
 
         public SourceData(String name, Data parent, FileObject sourceRoot, Set<FileObject> sourceRoots) {
             super(name, parent);
-            packages = new HashMap<String, PackageData>();
+            packages = new TreeMap<String, PackageData>();
             this.sourceRoot = sourceRoot;
             this.sourceRoots = sourceRoots;
         }
