@@ -855,7 +855,8 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
         if(tr.isDataFlavorSupported(df)) {
             try {
                 ModeImpl mode = (ModeImpl)tr.getTransferData(df);
-                return new TopComponentDraggable( mode );
+                if( null != mode )
+                    return new TopComponentDraggable( mode );
             } catch(UnsupportedFlavorException ufe) {
                 Logger.getLogger(WindowDnDManager.class.getName()).log(Level.WARNING, null, ufe);
             } catch(IOException ioe) {
