@@ -842,8 +842,12 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
                     tc = (TopComponent)tr.getTransferData(df);
                 }
 
-                if( null != tc )
-                    return new TopComponentDraggable( tc );
+                if( null != tc ) {
+                    ModeImpl mode = ( ModeImpl ) WindowManagerImpl.getInstance().findMode( (TopComponent)tr.getTransferData(df) );
+                    if( null != mode ) {
+                        return new TopComponentDraggable( tc, mode );
+                    }
+                }
             } catch(UnsupportedFlavorException ufe) {
                 Logger.getLogger(WindowDnDManager.class.getName()).log(Level.WARNING, null, ufe);
             } catch(IOException ioe) {
