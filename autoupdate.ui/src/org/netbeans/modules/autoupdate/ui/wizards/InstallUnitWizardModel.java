@@ -81,6 +81,7 @@ public class InstallUnitWizardModel extends OperationWizardModel {
     public InstallUnitWizardModel (OperationType doOperation) {
         this.doOperation = doOperation;
         assert getBaseContainer () != null : "The base container for operation " + doOperation + " must exist!";
+        updateContainer = getBaseContainer ();
     }
     
     public OperationType getOperation () {
@@ -170,6 +171,9 @@ public class InstallUnitWizardModel extends OperationWizardModel {
     public void doCleanup (boolean cancel) throws OperationException {
         try {
             if (cancel) {
+                if (support != null) {
+                    support.doCancel();
+                }
                 if (getBaseContainer ().getSupport () instanceof InstallSupport) {
                     if (OperationType.LOCAL_DOWNLOAD == getOperation ()) {
                         InstallSupport asupp = Containers.forAvailableNbms ().getSupport ();
