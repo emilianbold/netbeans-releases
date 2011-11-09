@@ -1099,7 +1099,7 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
     }
 
     private boolean cdBaseRemoteDirectory(String subdirectory, boolean create) throws RemoteException {
-        assert subdirectory == null || !subdirectory.startsWith(TransferFile.REMOTE_PATH_SEPARATOR) : "Subdirectory must be null or relative [" + subdirectory + "]" ;
+        assert subdirectory == null || !subdirectory.startsWith(TransferFile.REMOTE_PATH_SEPARATOR) : "Subdirectory must be null or relative [" + subdirectory + "]";
 
         String path = baseRemoteDirectory;
         if (subdirectory != null && !subdirectory.equals(TransferFile.REMOTE_PROJECT_ROOT)) {

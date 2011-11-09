@@ -47,6 +47,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.php.project.connections.RemoteClientImplementation;
 import org.netbeans.modules.php.project.connections.RemoteException;
+import org.netbeans.modules.php.project.connections.common.RemoteUtils;
 import org.netbeans.modules.php.project.connections.spi.RemoteFile;
 
 /**
@@ -109,7 +110,8 @@ final class RemoteTransferFile extends TransferFile {
         try {
             return remoteClient.listFiles(this);
         } catch (RemoteException ex) {
-            LOGGER.log(Level.WARNING, "Error while getting children for " + this, ex);
+            LOGGER.log(Level.INFO, "Error while getting children for " + this, ex);
+            RemoteUtils.processRemoteException(ex);
         }
         return Collections.emptyList();
     }
