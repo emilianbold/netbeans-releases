@@ -43,6 +43,9 @@
 package org.netbeans.modules.web.beans.analysis;
 
 import java.io.IOException;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Map;
@@ -1153,6 +1156,180 @@ public class CdiAnalysisTest extends BaseAnalisysTestCase {
         runAnalysis(errorFile1 , processor);
         
         runAnalysis( goodFile, NO_ERRORS_PROCESSOR );
+    }
+    
+    /*
+     * ScopeAnalyzer
+     */
+    public void testScope() throws IOException{
+        FileObject errorFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Scope1.java",
+                "package foo; " +
+                " import javax.inject.Scope; "+
+                " import java.lang.annotation.Retention; "+
+                " import java.lang.annotation.RetentionPolicy; "+
+                " import java.lang.annotation.Target; " +
+                " import java.lang.annotation.ElementType; "+
+                " @Retention(RetentionPolicy.RUNTIME) "+
+                " @Target({ElementType.ANNOTATION_TYPE}) "+
+                " @Scope "+
+                " public @interface Scope1 { "+
+                "}");
+        
+        FileObject errorFile1 = TestUtilities.copyStringToFileObject(srcFO, "foo/Scope2.java",
+                "package foo; " +
+                " import javax.inject.Scope; "+
+                " import java.lang.annotation.Retention; "+
+                " import java.lang.annotation.RetentionPolicy; "+
+                " import java.lang.annotation.Target; " +
+                " import java.lang.annotation.ElementType; "+
+                " @Target({ElementType.METHOD,ElementType.FIELD, ElementType.TYPE}) "+
+                " @Scope "+
+                " public @interface Scope2 { "+
+                "}");
+        
+        /*
+         * Create a good one class file
+         */
+        FileObject goodFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Scope3.java",
+                "package foo; " +
+                " import javax.inject.Scope; "+
+                " import java.lang.annotation.Retention; "+
+                " import java.lang.annotation.RetentionPolicy; "+
+                " import java.lang.annotation.Target; " +
+                " import java.lang.annotation.ElementType; "+
+                " @Retention(RetentionPolicy.RUNTIME) "+
+                " @Target({ElementType.METHOD,ElementType.FIELD, ElementType.TYPE}) "+
+                " @Scope "+
+                " public @interface Scope3 { "+
+                "}");
+        
+        ResultProcessor processor = new ResultProcessor (){
+
+            @Override
+            public void process( TestProblems result ) {
+                checkTypeElement(result, "foo.Scope1");
+            }
+            
+        };
+        runAnalysis(errorFile , processor);
+        
+        processor = new ResultProcessor (){
+
+            @Override
+            public void process( TestProblems result ) {
+                checkTypeElement(result, "foo.Scope2");
+            }
+            
+        };
+        runAnalysis(errorFile1 , processor);
+        
+        runAnalysis( goodFile, NO_ERRORS_PROCESSOR );
+    }
+    
+    /*
+     * QualifierAnalyzer
+     */
+    public void testQualifier() throws IOException{
+        FileObject errorFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Qualifier1.java",
+                "package foo; " +
+                " import javax.inject.Qualifier; "+
+                " import java.lang.annotation.Retention; "+
+                " import java.lang.annotation.RetentionPolicy; "+
+                " import java.lang.annotation.Target; " +
+                " import java.lang.annotation.ElementType; "+
+                " @Retention(RetentionPolicy.RUNTIME) "+
+                " @Target({ElementType.ANNOTATION_TYPE}) "+
+                " @Qualifier "+
+                " public @interface Qualifier1 { "+
+                "}");
+        
+        FileObject errorFile1 = TestUtilities.copyStringToFileObject(srcFO, "foo/Qualifier2.java",
+                "package foo; " +
+                " import javax.inject.Qualifier; "+
+                " import java.lang.annotation.Retention; "+
+                " import java.lang.annotation.RetentionPolicy; "+
+                " import java.lang.annotation.Target; " +
+                " import java.lang.annotation.ElementType; "+
+                " @Retention(RetentionPolicy.RUNTIME) "+
+                " @Target({ElementType.METHOD,ElementType.FIELD, ElementType.TYPE}) "+
+                " @Qualifier "+
+                " public @interface Qualifier2 { "+
+                "}");
+        
+        FileObject errorFile2 = TestUtilities.copyStringToFileObject(srcFO, "foo/Qualifier3.java",
+                "package foo; " +
+                " import javax.inject.Qualifier; "+
+                " import java.lang.annotation.Retention; "+
+                " import java.lang.annotation.RetentionPolicy; "+
+                " import java.lang.annotation.Target; " +
+                " import java.lang.annotation.ElementType; "+
+                " @Target({ElementType.FIELD, ElementType.PARAMETER}) "+
+                " @Qualifier "+
+                " public @interface Qualifier3 { "+
+                "}");
+        
+        /*
+         * Create a good class files
+         */
+        FileObject goodFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Qualifier4.java",
+                "package foo; " +
+                " import javax.inject.Qualifier; "+
+                " import java.lang.annotation.Retention; "+
+                " import java.lang.annotation.RetentionPolicy; "+
+                " import java.lang.annotation.Target; " +
+                " import java.lang.annotation.ElementType; "+
+                " @Retention(RetentionPolicy.RUNTIME) "+
+                " @Target({ElementType.METHOD,ElementType.FIELD, " +
+                "ElementType.PARAMETER, ElementType.TYPE}) "+
+                " @Qualifier "+
+                " public @interface Qualifier4 { "+
+                "}");
+        
+        FileObject goodFile1 = TestUtilities.copyStringToFileObject(srcFO, "foo/Qualifier5.java",
+                "package foo; " +
+                " import javax.inject.Qualifier; "+
+                " import java.lang.annotation.Retention; "+
+                " import java.lang.annotation.RetentionPolicy; "+
+                " import java.lang.annotation.Target; " +
+                " import java.lang.annotation.ElementType; "+
+                " @Retention(RetentionPolicy.RUNTIME) "+
+                " @Target({ElementType.FIELD, ElementType.PARAMETER}) "+
+                " @Qualifier "+
+                " public @interface Qualifier5 { "+
+                "}");
+        
+        ResultProcessor processor = new ResultProcessor (){
+
+            @Override
+            public void process( TestProblems result ) {
+                checkTypeElement(result, "foo.Qualifier1");
+            }
+            
+        };
+        runAnalysis(errorFile , processor);
+        
+        processor = new ResultProcessor (){
+
+            @Override
+            public void process( TestProblems result ) {
+                checkTypeElement(result, "foo.Qualifier2");
+            }
+            
+        };
+        runAnalysis(errorFile1 , processor);
+        
+        processor = new ResultProcessor (){
+
+            @Override
+            public void process( TestProblems result ) {
+                checkTypeElement(result, "foo.Qualifier3");
+            }
+            
+        };
+        runAnalysis(errorFile2 , processor);
+        
+        runAnalysis( goodFile, NO_ERRORS_PROCESSOR );
+        runAnalysis( goodFile1, NO_ERRORS_PROCESSOR );
     }
     
     private void checkFieldElement(TestProblems result , String enclosingClass, 
