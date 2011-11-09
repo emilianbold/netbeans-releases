@@ -72,6 +72,7 @@ public final class TopComponentDraggable {
     
     public TopComponentDraggable( ModeImpl mode ) {
         this.tc = null;
+        assert null != mode;
         this.mode = mode;
     }
     
