@@ -576,7 +576,7 @@ public class FormatVisitor extends DefaultVisitor {
                 while (ts.moveNext() && ts.token().id() != PHPTokenId.PHP_TOKEN) {
                     addFormatToken(formatTokens);
                 }
-                if (ts.token().id() == PHPTokenId.PHP_TOKEN) {    
+                if (ts.token().id() == PHPTokenId.PHP_TOKEN) {
                     handleGroupAlignment(node.getNames().get(0));
                     addFormatToken(formatTokens);
                 } else {
@@ -595,7 +595,7 @@ public class FormatVisitor extends DefaultVisitor {
             addAllUntilOffset(node.getStartOffset());
             formatTokens.add(new FormatToken.IndentToken(node.getStartOffset(), options.continualIndentSize));
             super.visit(node);
-            formatTokens.add(new FormatToken.IndentToken(node.getEndOffset(), options.continualIndentSize * -1));   
+            formatTokens.add(new FormatToken.IndentToken(node.getEndOffset(), options.continualIndentSize * -1));
         }
     }
 
@@ -1201,7 +1201,7 @@ public class FormatVisitor extends DefaultVisitor {
             case WHITESPACE:
                 int countNewLines = countOfNewLines(ts.token().text());
                 if (countNewLines > 1) {
-                    // reset group alignment, if there is an empty line 
+                    // reset group alignment, if there is an empty line
                     previousGroupToken = null;
                 }
                 tokens.add(countNewLines > 0
@@ -1220,7 +1220,7 @@ public class FormatVisitor extends DefaultVisitor {
                         if (ts.token().id() == PHPTokenId.WHITESPACE) {
                             countNewLines = countOfNewLines(ts.token().text());
                             if (countNewLines > 0) {
-                                // reset group alignment, if there is an empty line 
+                                // reset group alignment, if there is an empty line
                                 previousGroupToken = null;
                             }
                             tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_INDENT, newOffset, "\n" + ts.token().text().toString()));
@@ -1410,7 +1410,7 @@ public class FormatVisitor extends DefaultVisitor {
                     tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_UNARY_OP, ts.offset()));
                     tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), text));
                     tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_UNARY_OP, ts.offset() + ts.token().length()));
-                } else if ("=".equals(text)) { 
+                } else if ("=".equals(text)) {
                     tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_ASSIGN_OP, ts.offset()));
                     tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), text));
                     tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_ASSIGN_OP, ts.offset() + ts.token().length()));
@@ -1698,9 +1698,9 @@ public class FormatVisitor extends DefaultVisitor {
         }
         return value;
     }
-    
+
     /**
-     * 
+     *
      * @param node and identifier that is before the operator that is aligned in the group
      */
     private void handleGroupAlignment(ASTNode node) {
@@ -1731,7 +1731,7 @@ public class FormatVisitor extends DefaultVisitor {
         }
         formatTokens.add(previousGroupToken);
     }
-    
+
     protected static boolean isWhitespace(final CharSequence text) {
         int index = 0;
         while (index < text.length()
