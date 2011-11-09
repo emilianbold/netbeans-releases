@@ -51,18 +51,6 @@ made subject to such option by the copyright holder.
             <file name="jfx-impl.xml" url="templates/jfx-impl.xml_">
                 <attr name="position" intvalue="25"/>
             </file>
-            <file name="jfx-impl-readme.xmlinc" url="templates/jfx-impl-readme.xmlinc_">
-                <attr name="position" intvalue="35"/>
-            </file>
-            <file name="jfx-impl-platform.xmlinc" url="templates/jfx-impl-platform.xmlinc_">
-                <attr name="position" intvalue="45"/>
-            </file>
-            <file name="jfx-impl-parameters.xmlinc" url="templates/jfx-impl-parameters.xmlinc_">
-                <attr name="position" intvalue="55"/>
-            </file>
-            <file name="jfx-impl-callbacks.xmlinc" url="templates/jfx-impl-callbacks.xmlinc_">
-                <attr name="position" intvalue="65"/>
-            </file>
         </folder>
         
         <folder name="Project">
