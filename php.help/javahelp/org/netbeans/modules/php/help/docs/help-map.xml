@@ -61,5 +61,6 @@
     <mapID target="org.netbeans.modules.php.project.phpunit.PhpUnit" url="options-csh/unit-testing.html" />
     <mapID target="org.netbeans.modules.php.phpdoc.ui.options.PhpDocOptions" url="options-csh/phpdoc.html" />
     <mapID target="org.netbeans.modules.php.symfony.ui.options.SymfonyOptions" url="options-csh/symfony.html" />
+    <mapID target="org.netbeans.modules.php.symfony2.options.Symfony2Options" url="options-csh/symfony2.html" />
     <mapID target="org.netbeans.modules.php.zend.ui.options.ZendOptions" url="options-csh/zend.html" />
 </map>
