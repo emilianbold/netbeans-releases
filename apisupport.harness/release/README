@@ -675,6 +675,10 @@ harness.dir - location of the build harness (for external modules). Usually
 is.autoload and is.eager - default false, but if true, make this module an
 autoload or eager module.
 
+module.startlevel [since 7.1] - modules which are OSGi bundles can specify its
+start level (a positive integer) via this property. Default is empty, meaning
+no start level specified for the bundle (according to OSGi spec defaults to 1).
+
 javac.compilerargs [since 5.0u1] - default none; additional arguments to pass
 to the Java compiler, e.g. "-Xlint:unchecked".
 

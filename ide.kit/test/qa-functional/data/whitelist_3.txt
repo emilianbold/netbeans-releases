@@ -82,8 +82,6 @@ org.netbeans.spi.editor.typinghooks.TypedTextInterceptor$Factory
 
 
 #200050
-org.netbeans.modules.spring.beans.index.SpringBinaryIndexer
-org.netbeans.modules.spring.beans.index.SpringBinaryIndexer$Factory
 org.netbeans.modules.web.beans.analysis.CdiEditorAnalysisFactory
 org.netbeans.modules.web.beans.analysis.WebBeansModelAnalysisFactory
 org.netbeans.modules.web.el.ELIndexer$Factory

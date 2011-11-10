@@ -217,10 +217,12 @@ public class MoveTransformer extends RefactoringVisitor {
                         
                         EnumSet<Modifier> neededMods = EnumSet.of(Modifier.PUBLIC);
                         TreePath enclosingClassPath = RetoucheUtils.findEnclosingClass(workingCopy, getCurrentPath(), true, true, true, true, false);
-                        Element enclosingClass = workingCopy.getTrees().getElement(enclosingClassPath);
-                        if(enclosingTypeElement != null && enclosingClass != null
-                                && workingCopy.getTypes().isSubtype(enclosingClass.asType(), enclosingTypeElement.asType())) {
-                            neededMods = EnumSet.of(Modifier.PUBLIC, Modifier.PROTECTED);
+                        if (enclosingClassPath != null) {
+                            Element enclosingClass = workingCopy.getTrees().getElement(enclosingClassPath);
+                            if (enclosingTypeElement != null && enclosingClass != null
+                                    && workingCopy.getTypes().isSubtype(enclosingClass.asType(), enclosingTypeElement.asType())) {
+                                neededMods = EnumSet.of(Modifier.PUBLIC, Modifier.PROTECTED);
+                            }
                         }
                         
                         if (getPackageOf(el).toString().equals(originalPackage)

@@ -110,6 +110,23 @@ is the proper place.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+  <change id="ConstrainedBinaryIndexer">
+      <api name="ParsingAPI"/>
+      <summary>Added <code>ConstrainedBinaryIndexer</code> to prevent indexer creation when constrained are not fulfilled.</summary>
+      <version major="1" minor="48"/>
+      <date day="10" month="11" year="2011"/>
+      <author login="tzezula"/>
+      <compatibility source="compatible" binary="compatible" semantic="compatible" deletion="no" addition="yes" modification="no"/>
+      <description>
+          <p>
+              Added <code>ConstrainedBinaryIndexer</code> to prevent indexer creation and calling when declared
+              constraints are not fulfilled. The <code>ConstrainedBinaryIndexer</code> allows an indexer to specify
+              constraints which need to be fulfilled, the check is done by infrastructure before the indexer is loaded.
+          </p>
+      </description>
+      <class package="org.netbeans.modules.parsing.spi.indexing" name="ConstrainedBinaryIndexer"/>
+      <issue number="200050"/>
+  </change>
   <change id="IndexingManager-refreshIndexAndWait-checkEditor">
       <api name="ParsingAPI"/>
       <summary>Adding refreshIndexAndWait method into the IndexingManager allowing to specify if indexers should use modified content of editors</summary>
