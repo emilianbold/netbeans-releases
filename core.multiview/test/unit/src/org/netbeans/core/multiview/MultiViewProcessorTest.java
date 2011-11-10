@@ -205,6 +205,41 @@ public class MultiViewProcessorTest extends NbTestCase {
         assertEquals("1 now", Integer.valueOf(1), mvc.getLookup().lookup(Integer.class));
     }
     
+    
+    public void testLookupInitializedForCloneable() {
+        InstanceContent ic = new InstanceContent();
+        Lookup lookup = new AbstractLookup(ic);
+        ic.add(10);
+
+        CloneableTopComponent cmv = MultiViews.createCloneableMultiView("text/context", new LP(lookup));
+        assertEquals("10 now", Integer.valueOf(10), cmv.getLookup().lookup(Integer.class));
+        
+        assertNotNull("MultiViewComponent created", cmv);
+        TopComponent mvc = cmv.cloneTopComponent();
+        
+        assertNotNull("MultiViewComponent cloned", mvc);
+        MultiViewHandler handler = MultiViews.findMultiViewHandler(mvc);
+        assertNotNull("Handler found", handler);
+        
+        assertEquals("10 now", Integer.valueOf(10), mvc.getLookup().lookup(Integer.class));
+        ic.remove(10);
+        ic.add(1);
+        assertEquals("1 now", Integer.valueOf(1), mvc.getLookup().lookup(Integer.class));
+    }
+    
+    public void testLookupInitialized() {
+        InstanceContent ic = new InstanceContent();
+        Lookup lookup = new AbstractLookup(ic);
+        ic.add(10);
+
+        TopComponent mvc = MultiViews.createMultiView("text/context", new LP(lookup));
+        assertEquals("10 now", Integer.valueOf(10), mvc.getLookup().lookup(Integer.class));
+        ic.remove(10);
+        ic.add(1);
+        assertEquals("1 now", Integer.valueOf(1), mvc.getLookup().lookup(Integer.class));
+    }
+    
+    
     public void testNotSourceView() {
         int cnt = 0;
         for (MultiViewDescription d : MimeLookup.getLookup("text/context").lookupAll(MultiViewDescription.class)) {
