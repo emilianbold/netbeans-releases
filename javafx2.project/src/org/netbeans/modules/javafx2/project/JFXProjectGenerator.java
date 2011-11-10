@@ -766,13 +766,7 @@ public class JFXProjectGenerator {
         } else {
             JavaPlatform defaultPlatform = JavaPlatformManager.getDefault().getDefaultPlatform();
             SpecificationVersion v = defaultPlatform.getSpecification().getVersion();
-            if (v.equals(new SpecificationVersion("1.6")) || v.equals(new SpecificationVersion("1.7"))) { // NOI18N
-                // #89131: these levels are not actually distinct from 1.5. - xxx not true, but may be acceptable to have 1.5 as default
-                // since NB7.1 return 1.6 as default
-                return new SpecificationVersion("1.6"); // NOI18N
-            } else {
-                return v;
-            }
+            return v;
         }
     }
     private static final Pattern INVALID_NAME = Pattern.compile("[$/\\\\\\p{Cntrl}]");  //NOI18N
