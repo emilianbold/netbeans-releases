@@ -132,6 +132,7 @@ public final class StatusProvider implements UpToDateStatusProviderFactory {
             listener = new FileChangeAdapter() {
                 @Override
                 public void fileChanged(FileEvent fe) {
+                    // XXX fire PROP_UP_TO_DATE
                     RP.post(new Runnable() {
                         @Override
                         public void run() {
@@ -242,40 +243,45 @@ public final class StatusProvider implements UpToDateStatusProviderFactory {
             if (model == null) {
                 return UpToDateStatus.UP_TO_DATE_OK;
             }
-//            if (!checkHints()) {
-//                System.out.println("skipped checking hints");
-//                return UpToDateStatus.UP_TO_DATE_DIRTY;
-//            }
-
-            //this condition is important in order not to break any running hints
-            //the model sync+refresh renders any existing POMComponents people
-            // might be holding useless
-            if (!model.isIntransaction()) {
-                FileObject fo = NbEditorUtilities.getFileObject(document);
-                boolean ok = false;
-                try {
-                    if (fo.isValid()) {
-                        DataObject dobj = DataObject.find(fo);
-                        EditorCookie ed = dobj.getCookie(EditorCookie.class);
-                        if (ed != null) {
-                            JEditorPane[] panes = ed.getOpenedPanes();
-                            if (panes != null && panes.length > 0 && panes[0].getSelectionStart() != panes[0].getSelectionEnd()) {
-                                HintsController.setErrors(document, LAYER_POM_SELECTION, findHints(model, project, panes[0].getSelectionStart(), panes[0].getSelectionEnd()));
+            FileObject fo = NbEditorUtilities.getFileObject(document);
+            boolean ok = false;
+            try {
+                if (fo.isValid()) {
+                    DataObject dobj = DataObject.find(fo);
+                    EditorCookie ed = dobj.getCookie(EditorCookie.class);
+                    if (ed != null) {
+                        JEditorPane[] panes = ed.getOpenedPanes();
+                        if (panes != null && panes.length > 0) {
+                            final int selectionStart = panes[0].getSelectionStart();
+                            final int selectionEnd = panes[0].getSelectionEnd();
+                            if (selectionStart != selectionEnd) {
+                                RP.post(new Runnable() {
+                                    @Override public void run() {
+                                        //this condition is important in order not to break any running hints
+                                        //the model sync+refresh renders any existing POMComponents people
+                                        // might be holding useless
+                                        if (!model.isIntransaction()) {
+                                            HintsController.setErrors(document, LAYER_POM_SELECTION, findHints(model, project, selectionStart, selectionEnd));
+                                        } else {
+                                            HintsController.setErrors(document, LAYER_POM_SELECTION, Collections.<ErrorDescription>emptyList());
+                                        }
+                                    }
+                                });
                                 ok = true;
+                                return UpToDateStatus.UP_TO_DATE_PROCESSING;
                             }
                         }
                     }
-                } catch (DataObjectNotFoundException ex) {
-                    //#166011 just a minor issue, just log, but don't show to user directly
-                    LOG.log(Level.INFO, "Touched somehow invalidated FileObject", ex);
-                } finally {
-                    if (!ok) {
-                        HintsController.setErrors(document, LAYER_POM_SELECTION, Collections.<ErrorDescription>emptyList());
-                    }
+                }
+            } catch (DataObjectNotFoundException ex) {
+                //#166011 just a minor issue, just log, but don't show to user directly
+                LOG.log(Level.INFO, "Touched somehow invalidated FileObject", ex);
+            } finally {
+                if (!ok) {
+                    HintsController.setErrors(document, LAYER_POM_SELECTION, Collections.<ErrorDescription>emptyList());
                 }
             }
-            //TODO use processing and posting to RP thread.
-            return UpToDateStatus.UP_TO_DATE_OK;
+            return UpToDateStatus.UP_TO_DATE_OK; // XXX should use UP_TO_DATE_PROCESSING if checkHints task is currently running
         }
 
     }
