@@ -68,9 +68,9 @@ public class WebBeansAnalysisTest extends BaseAnalisysTestCase {
     }
     
     /*
-     * ManagedBeansAnalizer
+     * ManagedBeansAnalizer.checkCtor
      */
-    public void testManagedBeans() throws IOException {
+    public void testManagedBeansCtor() throws IOException {
         getUtilities().createQualifier("Qualifier1");
         FileObject errorFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz.java",
                 "package foo; " +
@@ -79,20 +79,81 @@ public class WebBeansAnalysisTest extends BaseAnalisysTestCase {
                 " private Clazz(){} "+
                 "}");
         
-        FileObject goodFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz1.java",
+        FileObject errorFile1 = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz1.java",
                 "package foo; " +
                 " @Qualifier1 "+
-                " public class Clazz1  { "+
+                " public class Clazz1 { "+
+                " public Clazz1( int i ){} "+
+                "}");
+        
+        FileObject goodFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz2.java",
+                "package foo; " +
+                " @Qualifier1 "+
+                " public class Clazz2  { "+
+                "}");
+        
+        FileObject goodFile1 = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz3.java",
+                "package foo; " +
+                "import javax.inject.Inject; "+
+                " @Qualifier1 "+
+                " public class Clazz3  { "+
+                " @Inject public Clazz3( String str ){} "+
                 "}");
         ResultProcessor processor = new ResultProcessor (){
 
             @Override
             public void process( TestProblems result ) {
                 checkTypeElement(result.getWarings(), "foo.Clazz");
+                assertEquals( "Found unexpected errors", 0, result.getErrors().size());
             }
             
         };
         runAnalysis(errorFile , processor);
+        
+        processor = new ResultProcessor (){
+
+            @Override
+            public void process( TestProblems result ) {
+                checkTypeElement(result.getWarings(), "foo.Clazz1");
+                assertEquals( "Found unexpected errors", 0, result.getErrors().size());
+            }
+            
+        };
+        runAnalysis(errorFile1 , processor);
+        
+        runAnalysis( goodFile, NO_ERRORS_PROCESSOR );
+        runAnalysis( goodFile1, NO_ERRORS_PROCESSOR );
+    }
+    
+    /*
+     * ManagedBeansAnalizer.checkInner
+     */
+    public void testManagedBeansInner() throws IOException {
+        getUtilities().createQualifier("Qualifier1");
+        FileObject errorFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz.java",
+                "package foo; " +
+                " public class Clazz { "+
+                " @Qualifier1 "+
+                " class Inner{} "+
+                "}");
+        
+        FileObject goodFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz1.java",
+                "package foo; " +
+                " public class Clazz1  { "+
+                " @Qualifier1 "+
+                " static class Inner{} "+
+                "}");
+        
+        ResultProcessor processor = new ResultProcessor (){
+
+            @Override
+            public void process( TestProblems result ) {
+                checkTypeElement( result , "foo.Clazz.Inner");
+            }
+            
+        };
+        runAnalysis(errorFile , processor);
+        
         runAnalysis( goodFile, NO_ERRORS_PROCESSOR );
     }
 }
