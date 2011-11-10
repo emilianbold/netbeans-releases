@@ -231,6 +231,11 @@ If you are sure you want to build with JDK 7+ anyway, use: -Dpermit.jdk7.builds=
         <releasefilescopy cluster="${cluster}"/>
     </target>
 
+    <target name="-init-startlevel">
+        <property name="module.startlevel" value="4"/>
+        <property name="check.module.startlevel" value="false"/>
+    </target>
+
     <target name="-check-for-libs.junit4">
         <condition property="build.libs.junit4">
             <not>

@@ -39,72 +39,39 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.jsf.editor.facelets;
+package org.netbeans.modules.php.editor;
 
-import java.util.Collection;
+import java.io.File;
+import java.util.Collections;
 import java.util.Map;
-import org.netbeans.modules.web.jsfapi.api.Attribute;
-import org.netbeans.modules.web.jsfapi.api.Tag;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author marekfukala
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public final class TagImpl implements Tag {
+public class PHPCodeCompletion204908Test extends PHPTestBase {
 
-    //JSF spec 3.1.12 Render-Independent Properties: RW: id, parent, rendered,
-    //rendererType, transient; RO:  rendersChildren
-    private static final String[] DEFAULT_ATTRS = new String[]{"id", "parent", "rendered",
-        "rendererType", "transient", "class" /* not in the spec */}; //NOI18N
-    
-    private String name;
-    private String description;
-    private Map<String, Attribute> attrs;
+    public PHPCodeCompletion204908Test(String testName) {
+        super(testName);
+    }
 
-    public TagImpl(String name, String description, Map<String, Attribute> attrs) {
-        this.name = name;
-        this.description = description;
-        this.attrs = attrs;
-        //add the default ID attribute
-        for(String defaultAttributeName : DEFAULT_ATTRS) {
-            if(getAttribute(defaultAttributeName) == null)
-            attrs.put(defaultAttributeName, new Attribute.DefaultAttribute(defaultAttributeName, "", false));
-        }
+    public void testUseCase1() throws Exception {
+        checkCompletion("testfiles/completion/lib/test204908/test204908.php", "$ot2->^", false);
     }
 
     @Override
-    public String getName() {
-        return name;
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        return Collections.singletonMap(
+            PhpSourcePath.SOURCE_CP,
+            ClassPathSupport.createClassPath(new FileObject[] {
+                FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/lib/test204908/"))
+            })
+        );
     }
 
-    @Override
-    public String getDescription() {
-        return description;
-    }
-
-    @Override
-    public boolean hasNonGenenericAttributes() {
-        return getAttributes().size() > 1; //the ID attribute is the default generic one
-    }
-
-    @Override
-    public Collection<Attribute> getAttributes() {
-        return attrs.values();
-    }
-
-    @Override
-    public Attribute getAttribute(String name) {
-        return attrs.get(name);
-    }
-
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("Tag[name=").append(getName()).append(", attributes={"); //NOI18N
-        for (Attribute attr : getAttributes()) {
-            sb.append(attr.toString()).append(",");
-        }
-        sb.append("}]");
-        return sb.toString();
-    }
 }
