@@ -54,4 +54,9 @@ public class FXMLCompletionTest extends FXMLCompletionTestBase {
     public void testSimple1() throws Exception {
         performTest("Simple", 754, null, "simpleTest.pass");
     }
+    
+    public void testSimple2() throws Exception {
+        performTest("Simple", 960, null, "simpleTest2.pass");
+    }
+    
 }

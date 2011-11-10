@@ -111,6 +111,8 @@ public final class ModuleActions implements ActionProvider, ExecProject {
         COMMAND_DEBUG_SINGLE
     ));
 
+    private static final RequestProcessor RP = new RequestProcessor(ModuleActions.class);
+
     @Override
     public Task execute(String... args) throws IOException {
         StringBuilder sb = new StringBuilder();
@@ -515,7 +517,7 @@ public final class ModuleActions implements ActionProvider, ExecProject {
             }
         };
         if (bkgActions.contains(command)) {
-            RequestProcessor.getDefault().post(runnable);
+            RP.post(runnable);
         } else
             runnable.run();
     }
