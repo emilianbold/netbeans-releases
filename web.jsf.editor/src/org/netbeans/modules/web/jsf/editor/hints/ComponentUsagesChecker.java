@@ -181,7 +181,7 @@ public class ComponentUsagesChecker extends HintsProvider {
 					    tag.getAttribute(nodeAttr.name()) == null &&
 					    !"xmlns".equals(nodeAttr.name().toLowerCase(Locale.ENGLISH))) {
                                         //unknown attribute
-                                        Hint hint = new Hint(DEFAULT_ERROR_RULE,
+                                        Hint hint = new Hint(DEFAULT_WARNING_RULE,
                                                     NbBundle.getMessage(HintsProvider.class, "MSG_UNKNOWN_ATTRIBUTE", nodeAttr.name()),
                                                     context.parserResult.getSnapshot().getSource().getFileObject(),
                                                     JsfUtils.createOffsetRange(snapshot, docText, nodeAttr.nameOffset(), nodeAttr.valueOffset() + nodeAttr.value().length()),
