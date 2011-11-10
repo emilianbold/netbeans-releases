@@ -41,13 +41,7 @@
  */
 package org.netbeans.modules.maven.j2ee.utils;
 
-import org.netbeans.modules.maven.j2ee.utils.LoggingUtils;
-import java.util.logging.Logger;
-import org.junit.runner.Description;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
-import org.junit.rules.TestWatcher;
 import org.openide.util.NbBundle;
 import static org.junit.Assert.*;
 
@@ -57,14 +51,6 @@ import static org.junit.Assert.*;
  */
 public class LoggingUtilsTest {
     
-    @Rule
-    public TestRule rule = new TestWatcher() {
-        
-        @Override
-        public void succeeded(Description desc) {
-        }
-    };
- 
     @Test
     public void getInstanceTest() {
         LoggingUtils.logUI(LoggingUtilsTest.class, "UI_LOG_MESSAGE", new Object[] {});
