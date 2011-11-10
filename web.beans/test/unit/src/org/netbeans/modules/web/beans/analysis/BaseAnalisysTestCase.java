@@ -82,6 +82,11 @@ public abstract class BaseAnalisysTestCase extends JavaSourceTestCase {
                 msg = result.getErrors().values().iterator().next();
             }
             assertTrue(  "Expected no errors, but found :" +msg , elements.isEmpty() );
+            elements = result.getWarings().keySet();
+            if ( !elements.isEmpty()) {
+                msg = result.getWarings().values().iterator().next();
+            }
+            assertTrue(  "Expected no warnings, but found :" +msg , elements.isEmpty() );
         }
         
     };
@@ -258,6 +263,7 @@ public abstract class BaseAnalisysTestCase extends JavaSourceTestCase {
     
     protected void checkTypeElement( TestProblems result , String expectedName ){
         checkTypeElement(result.getErrors(), expectedName);
+        assertEquals( "Found unexpected warnings" , 0, result.getWarings().size() );
     }
     
     protected void checkTypeElement( Map<Element,String> map, String expectedName ){
