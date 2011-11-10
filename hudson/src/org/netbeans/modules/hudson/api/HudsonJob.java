@@ -45,6 +45,9 @@
 package org.netbeans.modules.hudson.api;
 
 import java.util.Collection;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.NonNull;
 import org.openide.filesystems.FileSystem;
 import org.openide.nodes.AbstractNode;
 
@@ -54,7 +57,8 @@ import org.openide.nodes.AbstractNode;
 public interface HudsonJob extends Comparable<HudsonJob> {
 
     /**
-     * Describes state of the Hudson Job
+     * Describes state of the Hudson Job.
+     * See {@code hudson.model.BallColor}.
      */
     public enum Color {
         blue("blue"), blue_anime("blue_run"), // NOI18N
@@ -76,9 +80,19 @@ public interface HudsonJob extends Comparable<HudsonJob> {
                 return "<font color='#A40000'>" + displayName + "</font>"; // NOI18N
             }
         },
-        disabled("grey"), // NOI18N
+        disabled("grey"), disabled_anime("grey"), // NOI18N
         aborted("grey"), aborted_anime("grey"), // NOI18N
-        grey("grey"), grey_anime("grey"), secured("secured"); // NOI18N
+        grey("grey"), grey_anime("grey"), // NOI18N
+        not_built("grey"), not_built_anime("grey"), // JENKINS-11013
+        secured("secured"); // fake color
+        public static @NonNull Color find(@NonNull String name) {
+            try {
+                return valueOf(name);
+            } catch (IllegalArgumentException x) {
+                Logger.getLogger(HudsonJob.class.getName()).log(Level.WARNING, "#126166/#203886: no known job color {0}", name);
+                return grey;
+            }
+        }
         private final String iconBaseName;
         private Color(String iconBaseName) {this.iconBaseName = iconBaseName;}
         /**
@@ -93,6 +107,12 @@ public interface HudsonJob extends Comparable<HudsonJob> {
          */
         public String colorizeDisplayName(String displayName) {
             return displayName;
+        }
+        /**
+         * Checks whether this represents a running job.
+         */
+        public boolean isRunning() {
+            return name().endsWith("_anime");
         }
     }
     

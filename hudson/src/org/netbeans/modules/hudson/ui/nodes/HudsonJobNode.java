@@ -177,17 +177,11 @@ public class HudsonJobNode extends AbstractNode {
         if (!job.isSalient()) {
             // XXX visually mark this somehow?
         }
-        switch (color) {
-        case red_anime:
-        case yellow_anime:
-        case blue_anime:
-        case grey_anime:
-        case aborted_anime:
+        if (color.isRunning()) {
             htmlDisplayName += " <font color='!controlShadow'>" + HudsonJobNode_running() + "</font>";
-            break;
-        case secured:
+        }
+        if (color == Color.secured) {
             htmlDisplayName += " <font color='!controlShadow'>" + HudsonJobNode_secured() + "</font>";
-            break;
         }
         if (job.isInQueue()) {
             htmlDisplayName += " <font color='!controlShadow'>" + HudsonJobNode_in_queue() + "</font>";
