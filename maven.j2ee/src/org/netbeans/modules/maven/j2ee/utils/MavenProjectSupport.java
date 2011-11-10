@@ -46,6 +46,8 @@ import java.util.Collections;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.common.dd.DDHelper;
+import org.netbeans.modules.maven.api.Constants;
+import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.j2ee.MavenJavaEEConstants;
 import org.netbeans.modules.maven.j2ee.web.WebModuleImpl;
 import org.netbeans.modules.maven.j2ee.web.WebModuleProviderImpl;
@@ -127,16 +129,52 @@ public class MavenProjectSupport {
         }
     }
     
-    private static String readServerID(Project project) {
-        AuxiliaryProperties props = project.getLookup().lookup(AuxiliaryProperties.class);
-        return props.get(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER, false);
+    /**
+     * Read server ID for the given project
+     * 
+     * @param project project for which we want to get server ID
+     * @return server ID
+     */
+    public static String readServerID(Project project) {
+        return readSettings(project, MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER, false);
+    }
+
+    /**
+     * Read J2EE version for the given project
+     * 
+     * @param projectfor which we want to get J2EE version
+     * @return J2EE version
+     */
+    public static String readJ2eeVersion(Project project)  {
+        return readSettings(project, MavenJavaEEConstants.HINT_J2EE_VERSION, false);
+    }
+    
+    /**
+     * Read compileOnSave property for the given project
+     * Possible values are:
+     * <ul>
+     * <li>all - both tests and application gets run by netbeans quick run infrastructure</li>
+     * <li>test - only tests are run by netbeans quick run infrastructure, not application - default value</li>
+     * <li>app - only application is run by netbeans quick run infrastructure, not tests</li>
+     * <li>none - no compile on save
+     * </ul>
+     * 
+     * @param project project for which we want to get CoS value
+     * @return one of possible CoS values
+     */
+    public static String isCompileOnSave(Project project) {
+        return readSettings(project, Constants.HINT_COMPILE_ON_SAVE, true);
+    }
+    
+    private static String readSettings(Project project, String propertyName, boolean shared) {
+        return project.getLookup().lookup(AuxiliaryProperties.class).get(propertyName, shared);
     }
     
     private static void createDD(Project project) {
         WebModuleProviderImpl webModule = project.getLookup().lookup(WebModuleProviderImpl.class);
         
         if (webModule != null) {
-            WebModuleImpl webModuleImpl = webModule.getWebModuleImplementation();
+            WebModuleImpl webModuleImpl = webModule.getModuleImpl();
             try {
                 FileObject webInf = webModuleImpl.getWebInf();
                 if (webInf == null) {
