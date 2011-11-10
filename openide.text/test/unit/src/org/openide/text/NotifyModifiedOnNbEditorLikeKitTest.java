@@ -76,8 +76,20 @@ public class NotifyModifiedOnNbEditorLikeKitTest extends NotifyModifiedTest {
     }
     
     private static RequestProcessor testRP = new RequestProcessor("Test");
+    
+    private boolean outerNotifyModify = true;
+
     @Override
     protected void checkThatDocumentLockIsNotHeld () {
+        // Since 6.43 (UndoRedoManager addition) the CES installs DocumentFilter (that prevents modification)
+        // to any AbstractDocument-based document including javax.swing.text.PlainDocument but the filter is checked
+        // under document lock. However if document has "supportsModificationListener" property turned on
+        // then the outer access will be serviced by the vetoable listener without being document locked.
+        if (!Boolean.TRUE.equals(support.getDocument().getProperty("supportsModificationListener")) || !outerNotifyModify) {
+            return;
+        }
+        outerNotifyModify = false; // inner accesses are by the filter and thus document-locked
+        
         class X implements Runnable {
             private boolean second;
             private boolean ok;
