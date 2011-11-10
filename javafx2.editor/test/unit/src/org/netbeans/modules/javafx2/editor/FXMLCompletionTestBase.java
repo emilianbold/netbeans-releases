@@ -300,8 +300,8 @@ public class FXMLCompletionTestBase extends NbTestCase {
     }
 
     private void copyToWorkDir(File resource, File toFile) throws IOException {
-        InputStream is = new FileInputStream(resource);
-        OutputStream outs = new FileOutputStream(toFile);
+        InputStream is = new BufferedInputStream(new FileInputStream(resource));
+        OutputStream outs = new BufferedOutputStream(new FileOutputStream(toFile));
         int read;
         while ((read = is.read()) != (-1)) {
             outs.write(read);
