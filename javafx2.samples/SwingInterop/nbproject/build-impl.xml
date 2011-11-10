@@ -172,9 +172,7 @@ is divided into following sections:
             </or>
         </condition>
         <condition property="have.tests">
-            <or>
-                <available file="${test.src.dir}"/>
-            </or>
+            <or/>
         </condition>
         <condition property="have.sources">
             <or>
@@ -236,7 +234,6 @@ is divided into following sections:
     </target>
     <target depends="-pre-init,-init-private,-init-user,-init-project,-do-init" name="-init-check">
         <fail unless="src.dir">Must set src.dir</fail>
-        <fail unless="test.src.dir">Must set test.src.dir</fail>
         <fail unless="build.dir">Must set build.dir</fail>
         <fail unless="dist.dir">Must set dist.dir</fail>
         <fail unless="build.classes.dir">Must set build.classes.dir</fail>
@@ -369,11 +366,7 @@ is divided into following sections:
             <sequential>
                 <property name="junit.forkmode" value="perTest"/>
                 <junit dir="${work.dir}" errorproperty="tests.failed" failureproperty="tests.failed" fork="true" forkmode="${junit.forkmode}" jvm="${platform.java}" showoutput="true" tempdir="${build.dir}">
-                    <batchtest todir="${build.test.results.dir}">
-                        <fileset dir="${test.src.dir}" excludes="@{excludes},${excludes}" includes="@{includes}">
-                            <filename name="@{testincludes}"/>
-                        </fileset>
-                    </batchtest>
+                    <batchtest todir="${build.test.results.dir}"/>
                     <classpath>
                         <path path="${run.test.classpath}"/>
                     </classpath>
@@ -733,11 +726,11 @@ is divided into following sections:
         </delete>
     </target>
     <target depends="init,compile,-pre-pre-jar,-pre-jar,-do-jar-with-libraries-create-manifest,-do-jar-with-libraries-copy-manifest,-do-jar-with-libraries-set-main,-do-jar-with-libraries-set-splashscreen,-do-jar-with-libraries-pack,-do-jar-with-libraries-delete-manifest" name="-do-jar-with-libraries"/>
-    <target depends="jfx-deployment" name="-post-jar">
+    <target depends="-jfx-copylibs,jfx-deployment" name="-post-jar">
         <!-- Empty placeholder for easier customization. -->
         <!-- You can override this target in the ../build.xml file. -->
     </target>
-    <target depends="init,compile,-pre-jar,-do-jar-with-manifest,-do-jar-without-manifest,-do-jar-with-mainclass,-do-jar-with-libraries,-post-jar" description="Build JAR." name="jar"/>
+    <target depends="init,compile,-pre-jar,-do-jar-with-manifest,-do-jar-without-manifest,-do-jar-with-mainclass,-do-jar-with-libraries,-post-jar,-jfx-copylibs" description="Build JAR." name="jar"/>
     <!--
                 =================
                 EXECUTION SECTION
@@ -875,6 +868,14 @@ is divided into following sections:
             -->
     <target depends="init" if="have.sources" name="-javadoc-build">
         <mkdir dir="${dist.javadoc.dir}"/>
+        <condition else="" property="javadoc.endorsed.classpath.cmd.line.arg" value="-J${endorsed.classpath.cmd.line.arg}">
+            <and>
+                <isset property="endorsed.classpath.cmd.line.arg"/>
+                <not>
+                    <equals arg1="${endorsed.classpath.cmd.line.arg}" arg2=""/>
+                </not>
+            </and>
+        </condition>
         <javadoc additionalparam="${javadoc.additionalparam}" author="${javadoc.author}" charset="UTF-8" destdir="${dist.javadoc.dir}" docencoding="UTF-8" encoding="${javadoc.encoding.used}" executable="${platform.javadoc}" failonerror="true" noindex="${javadoc.noindex}" nonavbar="${javadoc.nonavbar}" notree="${javadoc.notree}" private="${javadoc.private}" source="${javac.source}" splitindex="${javadoc.splitindex}" use="${javadoc.use}" useexternalfile="true" version="${javadoc.version}" windowtitle="${javadoc.windowtitle}">
             <classpath>
                 <path path="${javac.classpath}"/>
@@ -886,6 +887,7 @@ is divided into following sections:
                 <include name="**/*.java"/>
                 <exclude name="*.java"/>
             </fileset>
+            <arg line="${javadoc.endorsed.classpath.cmd.line.arg}"/>
         </javadoc>
         <copy todir="${dist.javadoc.dir}">
             <fileset dir="${src.dir}" excludes="${excludes}" includes="${includes}">
@@ -913,13 +915,11 @@ is divided into following sections:
         <!-- You can override this target in the ../build.xml file. -->
     </target>
     <target if="do.depend.true" name="-compile-test-depend">
-        <j2seproject3:depend classpath="${javac.test.classpath}" destdir="${build.test.classes.dir}" srcdir="${test.src.dir}"/>
+        <j2seproject3:depend classpath="${javac.test.classpath}" destdir="${build.test.classes.dir}" srcdir=""/>
     </target>
     <target depends="init,deps-jar,compile,-pre-pre-compile-test,-pre-compile-test,-compile-test-depend" if="have.tests" name="-do-compile-test">
-        <j2seproject3:javac apgeneratedsrcdir="${build.test.classes.dir}" classpath="${javac.test.classpath}" debug="true" destdir="${build.test.classes.dir}" processorpath="${javac.test.processorpath}" srcdir="${test.src.dir}"/>
-        <copy todir="${build.test.classes.dir}">
-            <fileset dir="${test.src.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
-        </copy>
+        <j2seproject3:javac apgeneratedsrcdir="${build.test.classes.dir}" classpath="${javac.test.classpath}" debug="true" destdir="${build.test.classes.dir}" processorpath="${javac.test.processorpath}" srcdir=""/>
+        <copy todir="${build.test.classes.dir}"/>
     </target>
     <target name="-post-compile-test">
         <!-- Empty placeholder for easier customization. -->
@@ -933,10 +933,8 @@ is divided into following sections:
     <target depends="init,deps-jar,compile,-pre-pre-compile-test,-pre-compile-test-single" if="have.tests" name="-do-compile-test-single">
         <fail unless="javac.includes">Must select some files in the IDE or set javac.includes</fail>
         <j2seproject3:force-recompile destdir="${build.test.classes.dir}"/>
-        <j2seproject3:javac apgeneratedsrcdir="${build.test.classes.dir}" classpath="${javac.test.classpath}" debug="true" destdir="${build.test.classes.dir}" excludes="" includes="${javac.includes}" processorpath="${javac.test.processorpath}" sourcepath="${test.src.dir}" srcdir="${test.src.dir}"/>
-        <copy todir="${build.test.classes.dir}">
-            <fileset dir="${test.src.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
-        </copy>
+        <j2seproject3:javac apgeneratedsrcdir="${build.test.classes.dir}" classpath="${javac.test.classpath}" debug="true" destdir="${build.test.classes.dir}" excludes="" includes="${javac.includes}" processorpath="${javac.test.processorpath}" sourcepath="" srcdir=""/>
+        <copy todir="${build.test.classes.dir}"/>
     </target>
     <target name="-post-compile-test-single">
         <!-- Empty placeholder for easier customization. -->

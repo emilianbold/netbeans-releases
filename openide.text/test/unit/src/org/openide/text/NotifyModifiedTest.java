@@ -132,7 +132,9 @@ implements CloneableEditorSupport.Env {
     }
 
     protected void doesVetoedInsertFireBadLocationException (javax.swing.text.BadLocationException e) {
-        if (e != null) {
+        // Since 6.43 (UndoRedoManager addition) the CES installs DocumentFilter (that prevents modification)
+        // to any AbstractDocument-based document including javax.swing.text.PlainDocument so: if (e == null) => fail
+        if (e == null) {
             fail("On non-nblike documents, vetoed insert does not generate BadLocationException");
         }
     }
@@ -233,7 +235,10 @@ implements CloneableEditorSupport.Env {
                     try {
                         doc[0].insertString (0, "Ahoj", null);
                     } catch (javax.swing.text.BadLocationException e) {
-                        fail ("Inside atomic no BadLocationException due to unmodifiable source");
+                        // Expected - Since 6.43 (UndoRedoManager addition) the CES installs DocumentFilter (that prevents modification)
+                        // to any AbstractDocument-based document including javax.swing.text.PlainDocument
+                        // so even individual modifications inside atomic runnable fail.
+//                        fail ("Inside atomic no BadLocationException due to unmodifiable source");
                     }
                 }
             }
@@ -267,7 +272,7 @@ implements CloneableEditorSupport.Env {
                   " but was: " + first);
         }
         
-        assertEquals ("Five vetoed modifications", 10, support.notifyModified);
+        assertEquals ("Vetoed modifications", 10, support.notifyModified);
         assertEquals ("No unmodification called", 0, support.notifyUnmodified);
     }
     
@@ -286,7 +291,10 @@ implements CloneableEditorSupport.Env {
             // ok
         }
         
-        int expected = createEditorKit () instanceof NbLikeEditorKit ? 1 : 0;
+        // Since 6.43 (UndoRedoManager addition) the CES installs DocumentFilter (that prevents modification)
+        // to any AbstractDocument-based document including javax.swing.text.PlainDocument
+        // so even non-NbLikeEditorKit will have 1 attempt
+        int expected = createEditorKit () instanceof NbLikeEditorKit ? 1 : 1;
         assertEquals (expected + " modification called (but it was vetoed)", expected, support.notifyModified);
         assertEquals (expected + " unmodification called", expected, support.notifyUnmodified);
 
@@ -335,12 +343,15 @@ implements CloneableEditorSupport.Env {
                 
                 try {
                     doc.insertString (0, "Ahoj", null);
+                    fail("Unexpected to pass the insertString() due vetoed notifyModify()");
                     doc.remove (0, 1);
                     doc.remove (0, 1);
                 } catch (javax.swing.text.BadLocationException ex) {
-                    AssertionFailedError e = new AssertionFailedError (ex.getMessage ());
-                    e.initCause (ex);
-                    throw e;
+                    // Expected - since 6.43 (UndoRedoManager addition) the CES installs DocumentFilter (that prevents modification)
+                    // so even individual modifications (inside runAtomic() will fail with BLE
+//                    AssertionFailedError e = new AssertionFailedError (ex.getMessage ());
+//                    e.initCause (ex);
+//                    throw e;
                 }
             }
         }
@@ -350,8 +361,11 @@ implements CloneableEditorSupport.Env {
         NbDocument.runAtomic (doc, r);
         waitEQ ();
         
-        
-        assertTrue ("Runable started", r.gotIntoRunnable);
+        // Since 6.43 (UndoRedoManager addition) if doc supports "supportsModificationListener" property
+        // it is required to call notifyModify() before writeLock that spans atomic modification
+        // (NbLikeEditorKit.Doc.insOrRemoveOrRunnable() was fixed to adhere.
+
+        assertTrue ("Runable should be started", r.gotIntoRunnable);
 
         if (support.notifyModified == 0) {
             fail ("At least One notification expected");
@@ -362,6 +376,10 @@ implements CloneableEditorSupport.Env {
         
         String text = doc.getText (0, doc.getLength ());
         assertEquals ("The text is the same as original content", content, text);
+    }
+    
+    protected final boolean supportsModificationListener() {
+        return Boolean.TRUE.equals(support.getDocument().getProperty("supportsModificationListener"));
     }
     
     public void testRevertModificationAfterSave () throws Exception {
@@ -409,26 +427,35 @@ implements CloneableEditorSupport.Env {
         NbDocument.runAtomic (doc, r);
 
         assertEquals ("The same number of modification and unmodifications", support.notifyModified, support.notifyUnmodified);
-        assertEquals ("Actually it is zero", 0, support.notifyUnmodified);
+        // runAtomic() for supportsModificationListener() must notifyModify() before acquiring doc.writeLock()
+        //   => 1 modify and 1 unmodify
+        int expectedCount = supportsModificationListener() ? 1 : 0;
+        assertEquals ("Actually it is zero", expectedCount, support.notifyUnmodified);
     }
     
+    
+    
     public void testDoInsertAfterEmptyBlock () throws Exception {
-        testAtomicBlockWithoutModifications ();
+        testAtomicBlockWithoutModifications (); // may produce notifyModify (see impl)
         
         support.getDocument ().insertString (0, "Ahoj", null);
         
-        assertEquals ("One modification now", 1, support.notifyModified);
-        assertEquals ("No unmodified", 0, support.notifyUnmodified);
+        int expectedCount = supportsModificationListener() ? 2 : 1;
+        assertEquals ("One modification now", expectedCount, support.notifyModified);
+        expectedCount = supportsModificationListener() ? 1 : 0;
+        assertEquals ("No unmodified", expectedCount, support.notifyUnmodified);
         support.assertModified (true, "Is modified");
     }
 
     public void testDoRemoveAfterEmptyBlock () throws Exception {
-        testAtomicBlockWithoutModifications ();
+        testAtomicBlockWithoutModifications (); // may produce notifyModify (see impl)
         
         support.getDocument ().remove (0, 4);
         
-        assertEquals ("One modification now", 1, support.notifyModified);
-        assertEquals ("No unmodified", 0, support.notifyUnmodified);
+        int expectedCount = supportsModificationListener() ? 2 : 1;
+        assertEquals ("One modification now", expectedCount, support.notifyModified);
+        expectedCount = supportsModificationListener() ? 1 : 0;
+        assertEquals ("No unmodified", expectedCount, support.notifyUnmodified);
         support.assertModified (true, "Is modified");
     }
     
@@ -565,8 +592,10 @@ implements CloneableEditorSupport.Env {
         assertEquals ("Length it new", newLen, doc.getLength ());
         assertEquals ("Content is new", "Newcontent", doc.getText (0, newLen));
 
-        assertEquals ("Still one modified", 1, support.notifyModified);
-        assertEquals ("Still one unmodified", 1, support.notifyUnmodified);
+        // getUndoRedo().discardAllEdits(); in CES around line 1848 uses doc.runAtomic() => may call notifyModify()
+        int expectedCount = supportsModificationListener() ? 2 : 1;
+        assertEquals ("Modified", expectedCount, support.notifyModified);
+        assertEquals ("Unmodified", expectedCount, support.notifyUnmodified);
     }
 
     public void testUndoMarksFileUnmodified () throws Exception {
@@ -755,8 +784,7 @@ implements CloneableEditorSupport.Env {
         @Override
         protected void notifyUnmodified () {
             notifyUnmodified++;
-            Exceptions.printStackTrace(new java.lang.Exception("notifyUnmodified: " +
-                                                               notifyUnmodified));
+//            Exceptions.printStackTrace(new java.lang.Exception("notifyUnmodified: " + notifyUnmodified));
             
             super.notifyUnmodified();
         }
@@ -769,8 +797,7 @@ implements CloneableEditorSupport.Env {
                 return false;
             }
             
-            Exceptions.printStackTrace(new java.lang.Exception("notifyModified: " +
-                                                               notifyModified));
+//            Exceptions.printStackTrace(new java.lang.Exception("notifyModified: " + notifyModified));
             
             boolean retValue;            
             retValue = super.notifyModified();
