@@ -1804,6 +1804,10 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
             <equals arg1="${code.name.base.dashes}" arg2="org-openide-modules" />
         </condition>
 
+        <condition property="module" value="tmp/netbeans/core/org-netbeans-upgrader.jar">
+            <equals arg1="${code.name.base.dashes}" arg2="org-netbeans-upgrader" />
+        </condition>
+
         <property name="module" value="tmp/netbeans/modules/${code.name.base.dashes}.jar"/>
 
         <patternset id="module.files">

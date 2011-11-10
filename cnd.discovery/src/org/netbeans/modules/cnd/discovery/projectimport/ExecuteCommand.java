@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.cnd.discovery.projectimport;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.*;
@@ -254,7 +255,15 @@ public class ExecuteCommand {
             return null;
         }
         if (execEnv.isRemote()) {
-            return RemoteSyncSupport.getPathMap(execEnv, project).getRemotePath(localDir, false);
+            final PathMap pathMap = RemoteSyncSupport.getPathMap(execEnv, project);
+            String remotePath = pathMap.getRemotePath(localDir, false);
+            if (remotePath == null) {
+                if (!pathMap.checkRemotePaths(new File[]{new File(localDir)}, true)) {
+                    return null;
+                }
+                remotePath = pathMap.getRemotePath(localDir, false);
+            }
+            return remotePath;
         }
         return localDir;
     }

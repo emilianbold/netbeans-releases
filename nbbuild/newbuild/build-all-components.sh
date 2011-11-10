@@ -303,8 +303,16 @@ if [ $ML_BUILD == 1 ]; then
     mv -u update_tracking/* $BASE_DIR/main/nbbuild/netbeans-ml/javacard/update_tracking/
     rm -rf update_tracking
 
+    find $BASE_DIR/dist/ml/uc/javafx/ -name "*.nbm" | xargs -t -I {} bash generate_updatetracking_from_nbm.sh {}
+    mv -u update_tracking/* $BASE_DIR/main/nbbuild/netbeans-ml/javafx/update_tracking/
+    rm -rf update_tracking
+
     find $BASE_DIR/dist/ml/uc/mobility/ -name "*.nbm" | xargs -t -I {} bash generate_updatetracking_from_nbm.sh {}
     mv -u update_tracking/* $BASE_DIR/main/nbbuild/netbeans-ml/mobility/update_tracking/
+    rm -rf update_tracking
+
+    find $BASE_DIR/dist/ml/uc/nb/ -name "*.nbm" | xargs -t -I {} bash generate_updatetracking_from_nbm.sh {}
+    mv -u update_tracking/* $BASE_DIR/main/nbbuild/netbeans-ml/nb/update_tracking/
     rm -rf update_tracking
 
     find $BASE_DIR/dist/ml/uc/php/ -name "*.nbm" | xargs -t -I {} bash generate_updatetracking_from_nbm.sh {}

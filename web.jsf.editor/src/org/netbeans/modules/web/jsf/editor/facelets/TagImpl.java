@@ -52,7 +52,11 @@ import org.netbeans.modules.web.jsfapi.api.Tag;
  */
 public final class TagImpl implements Tag {
 
-    private static final String ID_ATTR_NAME = "id"; //NOI18N
+    //JSF spec 3.1.12 Render-Independent Properties: RW: id, parent, rendered,
+    //rendererType, transient; RO:  rendersChildren
+    private static final String[] DEFAULT_ATTRS = new String[]{"id", "parent", "rendered",
+        "rendererType", "transient", "class" /* not in the spec */}; //NOI18N
+    
     private String name;
     private String description;
     private Map<String, Attribute> attrs;
@@ -62,8 +66,9 @@ public final class TagImpl implements Tag {
         this.description = description;
         this.attrs = attrs;
         //add the default ID attribute
-        if (getAttribute(ID_ATTR_NAME) == null) {
-            attrs.put(ID_ATTR_NAME, new Attribute.DefaultAttribute(ID_ATTR_NAME, "", false));
+        for(String defaultAttributeName : DEFAULT_ATTRS) {
+            if(getAttribute(defaultAttributeName) == null)
+            attrs.put(defaultAttributeName, new Attribute.DefaultAttribute(defaultAttributeName, "", false));
         }
     }
 
