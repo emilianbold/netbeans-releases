@@ -86,7 +86,7 @@ import org.openide.util.lookup.ServiceProviders;
  */
 @ServiceProviders({
     @ServiceProvider(service=HintProvider.class),
-    @ServiceProvider(service=ClassPathBasedHintProvider.class),
+    @ServiceProvider(service=ClassPathBasedHintProvider.class)
 })
 public class DeclarativeHintRegistry implements HintProvider, ClassPathBasedHintProvider {
 
