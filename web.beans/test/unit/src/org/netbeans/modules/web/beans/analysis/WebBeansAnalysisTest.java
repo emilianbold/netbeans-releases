@@ -156,4 +156,72 @@ public class WebBeansAnalysisTest extends BaseAnalisysTestCase {
         
         runAnalysis( goodFile, NO_ERRORS_PROCESSOR );
     }
+    
+    /*
+     * ManagedBeansAnalizer.checkAbstract
+     */
+    public void testManagedBeansAbstract() throws IOException {
+        getUtilities().createQualifier("Qualifier1");
+        FileObject errorFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz.java",
+                "package foo; " +
+                " @Qualifier1 "+
+                " public abstract class Clazz { "+
+                "}");
+        
+        FileObject goodFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz1.java",
+                "package foo; " +
+                "import javax.decorator.Decorator; "+
+                "import javax.decorator.Delegate; "+
+                "import javax.inject.Inject; "+
+                " @Qualifier1 "+
+                " @Decorator "+
+                " public abstract class Clazz1  { "+
+                " @Inject public Clazz1( @Qualifier1 @Delegate Clazz arg ){ "+
+                "}");
+        
+        ResultProcessor processor = new ResultProcessor (){
+
+            @Override
+            public void process( TestProblems result ) {
+                checkTypeElement( result.getWarings() , "foo.Clazz");
+                assertEquals( "Unxepected error found", 0, result.getErrors().size());
+            }
+            
+        };
+        runAnalysis(errorFile , processor);
+        
+        runAnalysis( goodFile, NO_ERRORS_PROCESSOR );
+    }
+    
+    /*
+     * ManagedBeansAnalizer.checkImplementsExtension
+     */
+    public void testManagedBeansImplementsExtension() throws IOException {
+        getUtilities().createQualifier("Qualifier1");
+        FileObject errorFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz.java",
+                "package foo; " +
+                "import javax.enterprise.inject.spi.Extension "+
+                " @Qualifier1 "+
+                " public class Clazz implements Extension { "+
+                "}");
+        
+        FileObject goodFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz1.java",
+                "package foo; " +
+                " @Qualifier1 "+
+                " public class Clazz1  { "+
+                "}");
+        
+        ResultProcessor processor = new ResultProcessor (){
+
+            @Override
+            public void process( TestProblems result ) {
+                checkTypeElement( result.getWarings() , "foo.Clazz");
+                assertEquals( "Unxepected error found", 0, result.getErrors().size());
+            }
+            
+        };
+        runAnalysis(errorFile , processor);
+        
+        runAnalysis( goodFile, NO_ERRORS_PROCESSOR );
+    }
 }
