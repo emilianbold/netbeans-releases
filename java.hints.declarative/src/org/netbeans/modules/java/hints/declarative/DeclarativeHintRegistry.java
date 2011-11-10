@@ -71,21 +71,23 @@ import org.netbeans.modules.java.hints.jackpot.spi.HintDescription;
 import org.netbeans.modules.java.hints.jackpot.spi.HintDescription.AdditionalQueryConstraints;
 import org.netbeans.modules.java.hints.jackpot.spi.HintDescriptionFactory;
 import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata;
-import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata.Kind;
 import org.netbeans.modules.java.hints.jackpot.spi.HintProvider;
 import org.netbeans.modules.java.hints.jackpot.spi.Trigger.PatternDescription;
-import org.netbeans.modules.java.hints.spi.AbstractHint.HintSeverity;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
+import org.openide.util.lookup.ServiceProviders;
 
 /**
  *
  * @author Jan Lahoda
  */
-@ServiceProvider(service=HintProvider.class)
+@ServiceProviders({
+    @ServiceProvider(service=HintProvider.class),
+    @ServiceProvider(service=ClassPathBasedHintProvider.class),
+})
 public class DeclarativeHintRegistry implements HintProvider, ClassPathBasedHintProvider {
 
     public Map<HintMetadata, Collection<? extends HintDescription>> computeHints() {
@@ -247,7 +249,7 @@ public class DeclarativeHintRegistry implements HintProvider, ClassPathBasedHint
                 if ("rules".equals(file.getParent().getName())) {
                     cat = "custom";
                 } else {
-                    cat = "general";
+                    cat = "classpathbased";
                 }
             }
 

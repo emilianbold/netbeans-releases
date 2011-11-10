@@ -52,15 +52,19 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 import javax.swing.text.Position.Bias;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.modules.java.hints.jackpot.impl.RulesManager;
 import org.netbeans.modules.java.hints.jackpot.spi.HintDescription;
@@ -163,26 +167,54 @@ public class Utilities {
         }
     }
     
-    public static ArrayList<HintMetadata> getBatchSupportedHints() {
-        HashSet hintSet = new HashSet();
+    public static Map<? extends HintMetadata, ? extends Collection<? extends HintDescription>> getBatchSupportedHints(ClassPathBasedHintWrapper cpBased) {
+        Map<HintMetadata, Collection<? extends HintDescription>> result = new HashMap<HintMetadata, Collection<? extends HintDescription>>();
+
         for (Map.Entry<HintMetadata, Collection<? extends HintDescription>> entry: RulesManager.getInstance().allHints.entrySet()) {
             if (entry.getKey().options.contains(Options.NO_BATCH)) continue;
-            hintSet.add(entry.getKey());
+            result.put(entry.getKey(), entry.getValue());
+        }
+
+        for (Map.Entry<? extends HintMetadata, ? extends Collection<? extends HintDescription>> entry: cpBased.getHints().entrySet()) {
+            if (entry.getKey().options.contains(Options.NO_BATCH)) continue;
+            result.put(entry.getKey(), entry.getValue());
         }
         
-        ArrayList hints = new ArrayList(hintSet); 
-            
-        Collections.sort(hints, new Comparator<HintMetadata>() {
-
-            @Override
-            public int compare(HintMetadata t, HintMetadata t1) {
-                return t.displayName.compareTo(t1.displayName);
-            }
-        });
-        
-        return hints;
+        return result;
     }
     
+    public static final class ClassPathBasedHintWrapper {
+        private Map<? extends HintMetadata, ? extends Collection<? extends HintDescription>> hints;
+
+        public synchronized void compute() {
+            if (hints != null) return ;
+            
+            Set<ClassPath> classPath = new HashSet<ClassPath>();
+            classPath.addAll(GlobalPathRegistry.getDefault().getPaths(ClassPath.SOURCE));
+            classPath.addAll(GlobalPathRegistry.getDefault().getPaths(ClassPath.COMPILE));
+            classPath.addAll(GlobalPathRegistry.getDefault().getPaths(ClassPath.BOOT));
+            List<HintDescription> listedHints = org.netbeans.modules.java.hints.jackpot.impl.Utilities.listClassPathHints(classPath);
+            Map<HintMetadata, Collection<HintDescription>> result = new HashMap<HintMetadata, Collection<HintDescription>>();
+
+            for (HintDescription hd : listedHints) {
+                Collection<HintDescription> h = result.get(hd.getMetadata());
+
+                if (h == null) {
+                    result.put(hd.getMetadata(), h = new ArrayList<HintDescription>());
+                }
+
+                h.add(hd);
+            }
+
+            this.hints = result;
+        }
+
+        public synchronized Map<? extends HintMetadata, ? extends Collection<? extends HintDescription>> getHints() {
+            compute();
+            return hints;
+        }
+
+    }
 
     private static final class RefactoringElementImpl extends SimpleRefactoringElementImplementation {
 
