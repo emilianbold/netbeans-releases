@@ -106,7 +106,7 @@ class JPAStuffImpl implements JPAModuleInfo, JPADataSourcePopulator,
         }
         WebModuleProviderImpl im2 = project.getLookup().lookup(WebModuleProviderImpl.class);
         if (im2 != null) {
-            return im2.getWebModuleImplementation().getModuleVersion();
+            return im2.getModuleImpl().getModuleVersion();
         }
         throw new IllegalStateException("Wrong placement of JPAModuleInfo in maven project " + project.getProjectDirectory());
     }

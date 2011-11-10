@@ -76,6 +76,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleChangeReporter;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleImplementation2;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarImplementation2;
+import org.netbeans.modules.maven.j2ee.EjbChangeDescriptorImpl;
 import org.netbeans.modules.maven.j2ee.MavenJavaEEConstants;
 import org.netbeans.spi.project.AuxiliaryProperties;
 import org.openide.ErrorManager;
@@ -318,28 +319,14 @@ public class EjbJarImpl implements EjbJarImplementation2, J2eeModuleImplementati
         
     }
     
-    
-    
     public EjbChangeDescriptor getEjbChanges(long timestamp) {
-        return new EjbChange();
+        return new EjbChangeDescriptorImpl();
     }
     
     public boolean isManifestChanged(long timestamp) {
-        //TODO
         return false;
     }
 
-//TODO
-    private class EjbChange implements EjbChangeDescriptor {
-        public boolean ejbsChanged() {
-            return false;
-        }
-        
-        public String[] getChangedEjbs() {
-            return new String[0];
-        }
-    }
-    
     // inspired by netbeans' webmodule codebase, not really sure what is the point
     // of the iterator..
     private static final class ContentIterator implements Iterator {

@@ -202,7 +202,7 @@ public class EntRefContainerImpl implements EnterpriseReferenceContainer {
     
     private WebApp getWebApp() throws IOException {
         if (webApp==null) {
-            WebModuleImpl jp = project.getLookup().lookup(WebModuleProviderImpl.class).getWebModuleImplementation();
+            WebModuleImpl jp = project.getLookup().lookup(WebModuleProviderImpl.class).getModuleImpl();
             FileObject fo = jp.getDeploymentDescriptor();
             if (fo != null) {
                 webApp = DDProvider.getDefault().getDDRoot(fo);
@@ -219,7 +219,7 @@ public class EntRefContainerImpl implements EnterpriseReferenceContainer {
             cppImpl.getProjectSourcesClassPath(ClassPath.SOURCE) 
         );
         JavaSource javaSource = JavaSource.create(classpathInfo, Collections.<FileObject>emptyList());
-        WebModuleImpl jp = project.getLookup().lookup(WebModuleProviderImpl.class).getWebModuleImplementation();
+        WebModuleImpl jp = project.getLookup().lookup(WebModuleProviderImpl.class).getModuleImpl();
         
         // test if referencing class is injection target
         final boolean[] isInjectionTarget = {false};
@@ -247,7 +247,7 @@ public class EntRefContainerImpl implements EnterpriseReferenceContainer {
     public String addResourceRef(ResourceReference ref, FileObject referencingFile, String referencingClass) throws IOException {
         WebApp wa = getWebApp();
         if (wa == null) {
-            WebModuleImpl jp = project.getLookup().lookup(WebModuleProviderImpl.class).getWebModuleImplementation();
+            WebModuleImpl jp = project.getLookup().lookup(WebModuleProviderImpl.class).getModuleImpl();
             // if web.xml is optional then create a blank one so that reference can be added to it;
             // if this results into unnecessary creation of web.xml then the caller of this
             // method should be fixed to not call it

@@ -49,24 +49,14 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleChangeReporter;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleFactory;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarFactory;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarProvider;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarsInProject;
 import org.netbeans.modules.maven.api.classpath.ProjectSourcesClassPathProvider;
-import org.netbeans.modules.maven.api.execute.RunUtils;
-import org.netbeans.modules.maven.j2ee.ExecutionChecker;
-import org.netbeans.modules.maven.j2ee.POHImpl;
-import org.netbeans.modules.maven.j2ee.CopyOnSave;
-import org.netbeans.modules.maven.j2ee.customizer.CustomizerRunWeb;
-import org.netbeans.modules.maven.spi.cos.AdditionalDestination;
+import org.netbeans.modules.maven.j2ee.BaseEEModuleProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -74,48 +64,22 @@ import org.openide.filesystems.FileUtil;
  *
  */
 
-public class EjbModuleProviderImpl extends J2eeModuleProvider implements EjbJarProvider, EjbJarsInProject  {
+public class EjbModuleProviderImpl extends BaseEEModuleProvider implements EjbJarProvider, EjbJarsInProject  {
     
     private EjbJarImpl ejbimpl;
-    private Project project;
-    private String serverInstanceID;
-    private J2eeModule j2eemodule;    
     private EjbJar apiEjbJar;
-    private NbMavenProject mavenproject;
-    private final CopyOnSave copyOnSave;
 
     
-    /** Creates a new instance of EjbModuleProviderImpl */
-    public EjbModuleProviderImpl(Project proj) {
-        project = proj;
+    public EjbModuleProviderImpl(Project project) {
+        super(project);
         ejbimpl = new EjbJarImpl(project, this);
-        mavenproject = project.getLookup().lookup(NbMavenProject.class);
-        copyOnSave = new CopyOnSave(proj, this);
     }
 
     @Override
-    public DeployOnSaveSupport getDeployOnSaveSupport() {
-        return copyOnSave;
-    }
-
-    public CopyOnSave getCopyOnSaveSupport() {
-        return copyOnSave;
-    }
-
-    @Override
-    public boolean isOnlyCompileOnSaveEnabled() {
-        return RunUtils.hasApplicationCompileOnSaveEnabled(project) && !CustomizerRunWeb.isDeployOnSave(project);
-    }
-
     public EjbJarImpl getModuleImpl() {
         return ejbimpl;
     }
     
-    /**
-     * 
-     * @param file 
-     * @return 
-     */
     @Override
     public EjbJar findEjbJar(FileObject file) {
         Project proj = FileOwnerQuery.getOwner (file);
@@ -133,65 +97,12 @@ public class EjbModuleProviderImpl extends J2eeModuleProvider implements EjbJarP
         return null;
     }
 
-    /**
-     * 
-     * @return 
-     */
-    @Override
-    public synchronized J2eeModule getJ2eeModule() {
-        if (j2eemodule == null) {
-            j2eemodule = J2eeModuleFactory.createJ2eeModule(ejbimpl);
-        }
-        return j2eemodule; 
-    }
-    
-    /**
-     * 
-     * @return 
-     */
-    @Override
-    public ModuleChangeReporter getModuleChangeReporter() {
-        return ejbimpl;
-    }
-
-
-    @Override
-    public void setServerInstanceID(String string) {
-        String oldone = null;
-        if (serverInstanceID != null) {
-            oldone = POHImpl.privateGetServerId(serverInstanceID);
-        }
-        serverInstanceID = string;
-        if (oldone != null) {
-            fireServerChange(oldone, getServerID());            
-        }
-    }
-    
-    @Override
-    public String getServerInstanceID() {
-        if (serverInstanceID != null && POHImpl.privateGetServerId(serverInstanceID) != null) {
-            return serverInstanceID;
-        }
-        return ExecutionChecker.DEV_NULL;
-    }
-    
-    @Override
-    public String getServerID() {
-        if (serverInstanceID != null) {
-            String tr = POHImpl.privateGetServerId(serverInstanceID);
-            if (tr != null) {
-                return tr;
-            }
-        }
-        return ExecutionChecker.DEV_NULL;
-    }
-    
     @Override
     public FileObject[] getSourceRoots() {
         ProjectSourcesClassPathProvider cppImpl = project.getLookup().lookup(ProjectSourcesClassPathProvider.class);
         ClassPath cp = cppImpl.getProjectSourcesClassPath(ClassPath.SOURCE);
         List<URL> resUris = new ArrayList<URL>();
-        for (URI uri : mavenproject.getResources(false)) {
+        for (URI uri : mavenProject.getResources(false)) {
             try {
                 resUris.add(uri.toURL());
             } catch (MalformedURLException ex) {

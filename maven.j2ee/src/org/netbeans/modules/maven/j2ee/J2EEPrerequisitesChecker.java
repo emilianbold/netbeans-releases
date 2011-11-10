@@ -99,7 +99,7 @@ public class J2EEPrerequisitesChecker implements PrerequisitesChecker, LateBound
                     break;
                 }
             }
-            ((WebModuleProviderImpl)provider).getWebModuleImplementation().setWarInplace(inplace);
+            ((WebModuleProviderImpl) provider).getModuleImpl().setWarInplace(inplace);
         }
     }
 

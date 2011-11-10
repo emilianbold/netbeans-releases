@@ -254,7 +254,7 @@ public class POHImpl {
             return; // We want to set context path only for Web projects
         }
         
-        WebModuleImpl webModuleImpl = webModuleProvider.getWebModuleImplementation();
+        WebModuleImpl webModuleImpl = webModuleProvider.getModuleImpl();
         String contextPath = webModuleImpl.getContextPath();
         
         if (contextPath == null || "".equals(contextPath)) {

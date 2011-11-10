@@ -42,7 +42,7 @@
 
 package org.netbeans.modules.maven.j2ee.web;
 
-import org.netbeans.modules.maven.j2ee.customizer.CustomizerRunWeb;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleImplementation2;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -53,18 +53,10 @@ import java.util.Iterator;
 import java.util.List;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.deployment.common.api.EjbChangeDescriptor;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleChangeReporter;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleFactory;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.classpath.ProjectSourcesClassPathProvider;
-import org.netbeans.modules.maven.api.execute.RunUtils;
-import org.netbeans.modules.maven.j2ee.ExecutionChecker;
-import org.netbeans.modules.maven.j2ee.POHImpl;
-import org.netbeans.modules.maven.j2ee.CopyOnSave;
+import org.netbeans.modules.maven.j2ee.BaseEEModuleProvider;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.spi.webmodule.WebModuleFactory;
 import org.netbeans.modules.web.spi.webmodule.WebModuleProvider;
@@ -77,27 +69,23 @@ import org.openide.util.Exceptions;
  * web module provider implementation for maven2 project type.
  * @author  Milos Kleint 
  */
-public class WebModuleProviderImpl extends J2eeModuleProvider implements WebModuleProvider {
+public class WebModuleProviderImpl extends BaseEEModuleProvider implements WebModuleProvider {
     
-    
-    private Project project;
     private WebModuleImpl implementation;
     private WebModule module;
-    private J2eeModule j2eemodule;
     
-    private ModuleChangeReporter moduleChange;
     
-    private String serverInstanceID;
-    private final WebCopyOnSave copyOnSave;
-
-    
-    public WebModuleProviderImpl(Project proj) {
-        project = proj;
+    public WebModuleProviderImpl(Project project) {
+        super(project);
         implementation = new WebModuleImpl(project, this);
-        moduleChange = new ModuleChangeReporterImpl();
-        copyOnSave = new WebCopyOnSave(proj, this);
     }
     
+    @Override
+    public WebModuleImpl getModuleImpl() {
+        return implementation;
+    }
+    
+    @Override
     public WebModule findWebModule(FileObject fileObject) {
         if (implementation != null && implementation.isValid()) {
             if (module == null) {
@@ -108,52 +96,6 @@ public class WebModuleProviderImpl extends J2eeModuleProvider implements WebModu
         return null;
     }
     
-    public synchronized J2eeModule getJ2eeModule() {
-        if (j2eemodule == null) {
-            j2eemodule = J2eeModuleFactory.createJ2eeModule(implementation);
-        }
-        return j2eemodule; 
-    }
-    
-    /**
-     * 
-     * @return 
-     */
-    public WebModuleImpl getWebModuleImplementation() {
-        return implementation;
-    }
-    
-    public ModuleChangeReporter getModuleChangeReporter() {
-        return moduleChange;
-    }
-    
-    public void setServerInstanceID(String str) {
-        String oldone = null;
-        if (serverInstanceID != null) {
-            oldone = POHImpl.privateGetServerId(serverInstanceID);
-        }
-        serverInstanceID = str;
-        if (oldone != null) {
-            fireServerChange(oldone, getServerID());            
-        }
-        // TODO write into the private/public profile..
-
-    }
-
-    @Override
-    public DeployOnSaveSupport getDeployOnSaveSupport() {
-        return copyOnSave;
-    }
-    
-    public CopyOnSave getCopyOnSaveSupport() {
-        return copyOnSave;
-    }
-
-    @Override
-    public boolean isOnlyCompileOnSaveEnabled() {
-        return RunUtils.hasApplicationCompileOnSaveEnabled(project) && !CustomizerRunWeb.isDeployOnSave(project);
-    }
-
     @Override
     public DeployOnSaveClassInterceptor getDeployOnSaveClassInterceptor() {
         return new DeployOnSaveClassInterceptor() {
@@ -181,34 +123,6 @@ public class WebModuleProviderImpl extends J2eeModuleProvider implements WebModu
         };
     }
     
-    
-    /** Id of server isntance for deployment. The default implementation returns
-     * the default server instance selected in Server Registry.
-     * The return value may not be null.
-     * If modules override this method they also need to override {@link useDefaultServer}.
-     */
-    @Override
-    public String getServerInstanceID() {
-        if (serverInstanceID != null && POHImpl.privateGetServerId(serverInstanceID) != null) {
-            return serverInstanceID;
-        }
-        return ExecutionChecker.DEV_NULL;
-    }
-    
-    /** This method is used to determin type of target server.
-     * The return value must correspond to value returned from {@link getServerInstanceID}.
-     */
-    @Override
-    public String getServerID() {
-        if (serverInstanceID != null) {
-            String tr = POHImpl.privateGetServerId(serverInstanceID);
-            if (tr != null) {
-                return tr;
-            }
-        }
-        return ExecutionChecker.DEV_NULL;
-    }
-
     /**
      *  Returns list of root directories for source files including configuration files.
      *  Examples: file objects for src/java, src/conf.  
@@ -254,26 +168,4 @@ public class WebModuleProviderImpl extends J2eeModuleProvider implements WebModu
         }
         return toRet.toArray(new FileObject[0]);
     }
-
-
-    // TODO what is this actually good for?
-    private class ModuleChangeReporterImpl implements ModuleChangeReporter, EjbChangeDescriptor {
-        public EjbChangeDescriptor getEjbChanges(long param) {
-            return this;
-        }
-        
-        public boolean isManifestChanged(long param) {
-            return false;
-        }
-
-        public boolean ejbsChanged() {
-            return false;
-        }
-
-        public String[] getChangedEjbs() {
-            return new String[] {};
-        }
-        
-    }
-    
 }

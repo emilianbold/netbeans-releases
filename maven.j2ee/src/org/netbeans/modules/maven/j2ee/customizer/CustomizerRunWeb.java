@@ -124,7 +124,7 @@ public class CustomizerRunWeb extends BaseRunCustomizer {
         Profile p = module.getJ2eeProfile();
         String version = p.equals(Profile.JAVA_EE_6_WEB) ? Profile.JAVA_EE_6_FULL.getDisplayName() : p.getDisplayName();
         txtJ2EEVersion.setText(version);
-        WebModuleImpl impl = moduleProvider.getWebModuleImplementation();
+        WebModuleImpl impl = moduleProvider.getModuleImpl();
         if (Profile.JAVA_EE_6_WEB.equals(impl.getDescriptorJ2eeProfile())) {
             lblProfile.setVisible(true);
             comProfile.setVisible(true);
@@ -386,7 +386,7 @@ public class CustomizerRunWeb extends BaseRunCustomizer {
         } else {
             if (!txtContextPath.isEnabled()) {
                 txtContextPath.setEnabled(true);
-                WebModuleImpl impl = moduleProvider.getWebModuleImplementation();
+                WebModuleImpl impl = moduleProvider.getModuleImpl();
                 if (oldContextPath != null) {
                     txtContextPath.setText(oldContextPath);
                 } else {
@@ -469,7 +469,7 @@ public class CustomizerRunWeb extends BaseRunCustomizer {
                 moduleProvider = project.getLookup().lookup(WebModuleProviderImpl.class);
                 if (txtContextPath.isEnabled()) {
                     final String contextPath = txtContextPath.getText().trim();
-                    WebModuleImpl impl = moduleProvider.getWebModuleImplementation();
+                    WebModuleImpl impl = moduleProvider.getModuleImpl();
                     impl.setContextPath(contextPath);
                 }
             }
