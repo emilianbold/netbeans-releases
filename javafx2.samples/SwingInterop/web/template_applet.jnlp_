@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<jnlp spec="6.0" xmlns:jfx="http://javafx.com" href="@NAME@_applet.jnlp">
+  <information>
+    <title>@TITLE@</title>
+    <vendor>@VENDOR@</vendor>
+    <description>Swing applet embedding JavaFX components.</description>
+    <offline-allowed/>
+  </information>
+  <security>
+      <all-permissions/>
+  </security>
+  <resources>
+    <j2se version="1.6+" href="http://java.sun.com/products/autodl/j2se"/>
+    <jfx:javafx-runtime version="2.0+" href="http://javafx.com/jfx-20.exe"/>
+    <jar href="@NAME@.jar" size="@FILESIZE@" download="eager" />
+  </resources>
+  <applet-desc width="@WIDTH@" height="@HEIGHT@"
+       main-class="@MAINCLASS@"
+       name="@NAME@" />
+  <update check="background"/>
+</jnlp>
