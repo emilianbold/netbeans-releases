@@ -44,6 +44,7 @@ package org.netbeans.modules.parsing.spi.indexing;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.Map;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
@@ -56,6 +57,7 @@ import org.netbeans.modules.parsing.impl.indexing.SPIAccessor;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Parameters;
 
 
 /**
@@ -237,6 +239,59 @@ public final class Indexable {
         @Override
         public void setAllFilesJob(final Context context, final boolean allFilesJob) {
             context.setAllFilesJob(allFilesJob);
+        }
+
+        @Override
+        public void index(
+                @NonNull final ConstrainedBinaryIndexer indexer,
+                @NonNull final Map<String,? extends Iterable<? extends FileObject>> files,
+                @NonNull final Context context) {
+            Parameters.notNull("indexer", indexer);     //NOI18N
+            Parameters.notNull("files", files);     //NOI18N
+            Parameters.notNull("context", context); //NOI18N
+            indexer.index(files, context);
+        }
+
+        @Override
+        public boolean scanStarted(
+                @NonNull final ConstrainedBinaryIndexer indexer,
+                @NonNull final Context context) {
+            Parameters.notNull("indexer", indexer); //NOI18N
+            Parameters.notNull("context", context); //NOI18N
+            return indexer.scanStarted(context);
+        }
+
+        @Override
+        public void scanFinished(
+                @NonNull final ConstrainedBinaryIndexer indexer,
+                @NonNull final Context context) {
+            Parameters.notNull("indexer", indexer); //NOI18N
+            Parameters.notNull("context", context); //NOI18N
+            indexer.scanFinished(context);
+        }
+
+        @Override
+        public void rootsRemoved(
+                @NonNull ConstrainedBinaryIndexer indexer,
+                @NonNull Iterable<? extends URL> removed) {
+            Parameters.notNull("indexer", indexer); //NOI18N
+            Parameters.notNull("removed", removed); //NOI18N
+            indexer.rootsRemoved(removed);
+        }
+
+        @Override
+        public void putProperty(
+                @NonNull final Context context,
+                @NonNull final String propName,
+                @NullAllowed final Object value) {
+            context.putProperty(propName, value);
+        }
+
+        @Override
+        public Object getProperty(
+                @NonNull final Context context,
+                @NonNull final String propName) {
+            return context.getProperty(propName);
         }
     }
 
