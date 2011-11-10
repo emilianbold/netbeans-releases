@@ -344,12 +344,12 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
             DataFolder webInfDO = DataFolder.findFolder(webInf);
             final List<File> newConfigFiles = new ArrayList<File>(2);
             HashMap<String, Object> params = new HashMap<String, Object>();
-            String appContextTemplateName = "applicationContext-2.5.xml";
-            String dispServletTemplateName = "dispatcher-servlet-2.5.xml";
+            String appContextTemplateName = "applicationContext-2.5.xml"; //NOI18N
+            String dispServletTemplateName = "dispatcher-servlet-2.5.xml"; //NOI18N
             if (version.startsWith("3.0")) {    //NOI18N
 //                params.put("springVersion3", Boolean.TRUE); //NOI18N
-                appContextTemplateName = "applicationContext-3.0.xml";
-                dispServletTemplateName = "dispatcher-servlet-3.0.xml";
+                appContextTemplateName = "applicationContext-3.0.xml"; //NOI18N
+                dispServletTemplateName = "dispatcher-servlet-3.0.xml"; //NOI18N
             }
             FileObject configFile = createFromTemplate(appContextTemplateName, webInfDO, "applicationContext",params); // NOI18N
             addFileToOpen(configFile);
