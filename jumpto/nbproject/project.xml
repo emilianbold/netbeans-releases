@@ -217,6 +217,7 @@ Contributor(s): Andrei Badea
                 </test-type>
             </test-dependencies>
             <friend-packages>
+                <friend>com.sun.tools.tuxedo.codemodel.bridge</friend>
                 <friend>org.netbeans.modules.cnd.gotodeclaration</friend>
                 <friend>org.netbeans.modules.cnd.makeproject</friend>
                 <friend>org.netbeans.modules.csl.api</friend>
@@ -226,9 +227,9 @@ Contributor(s): Andrei Badea
                 <friend>org.netbeans.modules.spring.beans</friend>
                 <package>org.netbeans.api.jumpto.type</package>
                 <package>org.netbeans.spi.jumpto.file</package>
+                <package>org.netbeans.spi.jumpto.support</package>
                 <package>org.netbeans.spi.jumpto.symbol</package>
                 <package>org.netbeans.spi.jumpto.type</package>
-                <package>org.netbeans.spi.jumpto.support</package>
             </friend-packages>
         </data>
     </configuration>
