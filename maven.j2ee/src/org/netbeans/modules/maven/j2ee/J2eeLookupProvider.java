@@ -87,7 +87,6 @@ public class J2eeLookupProvider implements LookupProvider {
 
         InstanceContent ic = new InstanceContent();
         ic.add(new J2EEPrerequisitesChecker());
-        ic.add(new J2eeRecoPrivTemplates(project));
         ic.add(new J2eeMavenSourcesImpl(project));
         ic.add(new ExecutionChecker(project));
         ic.add(new SessionContent());
@@ -194,9 +193,9 @@ public class J2eeLookupProvider implements LookupProvider {
                 content.add(webRootProvider);
                 content.add(jsfSupportHandle);
                 //j2ee 6 stuff..
-                Profile prf = prov.getWebModuleImplementation().getJ2eeProfile();
+                Profile prf = prov.getModuleImpl().getJ2eeProfile();
                 if (Profile.JAVA_EE_6_WEB.equals(prf) || Profile.JAVA_EE_6_FULL.equals(prf)) {
-                    WebEjbJarImpl webEjbJarImpl = new WebEjbJarImpl(prov.getWebModuleImplementation(), project);
+                    WebEjbJarImpl webEjbJarImpl = new WebEjbJarImpl(prov.getModuleImpl(), project);
                     EjbJar apiEjbJar = EjbJarFactory.createEjbJar(webEjbJarImpl);
                     webEjbJarProvider = EjbJarSupport.createEjbJarProvider(project, apiEjbJar);
                     ejbJarsInProject = EjbJarSupport.createEjbJarsInProject(apiEjbJar);

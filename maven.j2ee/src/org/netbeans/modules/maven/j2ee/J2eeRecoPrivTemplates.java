@@ -44,11 +44,12 @@ package org.netbeans.modules.maven.j2ee;
 import java.util.ArrayList;
 import java.util.Arrays;
 import org.netbeans.api.j2ee.core.Profile;
-import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.common.J2eeProjectCapabilities;
 import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
 
@@ -56,12 +57,25 @@ import org.netbeans.spi.project.ui.RecommendedTemplates;
  * j2ee specific part of RecommendedTemplates and PrivilegedTemplates,
  * @author Milos Kleint
  */
+@ProjectServiceProvider(service={RecommendedTemplates.class, PrivilegedTemplates.class}, projectType={
+    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_WAR,
+    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_EJB,
+    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_APPCLIENT,
+    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_EAR
+})
 public class J2eeRecoPrivTemplates implements RecommendedTemplates, PrivilegedTemplates {
     
     private final Project project;
-    
-    J2eeRecoPrivTemplates(Project proj) {
-        project = proj;
+    private String packaging;
+
+    public J2eeRecoPrivTemplates(Project project) {
+        this.project = project;
+        this.packaging = project.getLookup().lookup(NbMavenProject.class).getPackagingType();
+        
+        if (packaging == null) {
+            packaging = NbMavenProject.TYPE_JAR;
+        }
+        packaging = packaging.trim();
     }
     
     private static final String[] EAR_TYPES = new String[] {
@@ -203,102 +217,108 @@ public class J2eeRecoPrivTemplates implements RecommendedTemplates, PrivilegedTe
     };
 
     
+    @Override
     public String[] getRecommendedTypes() {
-        NbMavenProject watcher = project.getLookup().lookup(NbMavenProject.class);
-        String packaging = watcher.getPackagingType();
-        if (packaging == null) {
-            packaging = NbMavenProject.TYPE_JAR;
-        }
-        packaging = packaging.trim();
         if (NbMavenProject.TYPE_EJB.equals(packaging)) {
-            EjbJar jar = EjbJar.getEjbJar(project.getProjectDirectory());
-            if (jar != null) {
-                Profile p = jar.getJ2eeProfile();
-                if (Profile.JAVA_EE_5.equals(p)) {
-                    return EJB_TYPES_5;
-                }
-                if (Profile.JAVA_EE_6_FULL.equals(p)) {
-                    return EJB_TYPES_6;
-                }
-            }
-            return EJB_TYPES_4;
+            return getEjbRecommendedTypes();
         }
         if (NbMavenProject.TYPE_EAR.equals(packaging)) {
             return EAR_TYPES;
         }
         if (NbMavenProject.TYPE_WAR.equals(packaging)) {
-            WebModule web = WebModule.getWebModule(project.getProjectDirectory());
-            if (web != null) {
-                Profile p = web.getJ2eeProfile();
-                if (Profile.JAVA_EE_5.equals(p)) {
-                    return WEB_TYPES_5;
-                }
-                if (Profile.JAVA_EE_6_WEB.equals(p) || Profile.JAVA_EE_6_FULL.equals(p)) {
-                    ArrayList<String> toRet = new ArrayList<String>(Arrays.asList(WEB_TYPES_6));
-                    J2eeProjectCapabilities cap = J2eeProjectCapabilities.forProject(project);
-                    if (cap != null) {
-                        if (cap.isEjb31Supported()) {
-                            toRet.addAll(Arrays.asList(WEB_TYPES_EJB));
-                        }
-                        if (cap.isEjb31LiteSupported()) {
-                            toRet.addAll(Arrays.asList(WEB_TYPES_EJB_LITE));
-                        }
-                    }
-                    return toRet.toArray(new String[0]);
-                }
-            }
-            return WEB_TYPES;
+            return getWebRecommendedTypes();
         }
         return new String[0];
     }
     
-    public String[] getPrivilegedTemplates() {
-        NbMavenProject watcher = project.getLookup().lookup(NbMavenProject.class);
-        String packaging = watcher.getPackagingType();
-        if (packaging == null) {
-            packaging = NbMavenProject.TYPE_JAR;
-        }
-        packaging = packaging.trim();
-        if (NbMavenProject.TYPE_EJB.equals(packaging)) {
-            EjbJar jar = EjbJar.getEjbJar(project.getProjectDirectory());
-            if (jar != null) {
-                Profile p = jar.getJ2eeProfile();
-                if (Profile.JAVA_EE_5.equals(p)) {
-                    return EJB_PRIVILEGED_NAMES_5;
-                }
-                if (Profile.JAVA_EE_6_FULL.equals(p)) {
-                    return EJB_PRIVILEGED_NAMES_6;
-                }
+    private String[] getEjbRecommendedTypes() {
+        EjbJar jar = EjbJar.getEjbJar(project.getProjectDirectory());
+        if (jar != null) {
+            Profile p = jar.getJ2eeProfile();
+            if (Profile.JAVA_EE_5.equals(p)) {
+                return EJB_TYPES_5;
             }
-            return EJB_PRIVILEGED_NAMES_4;
+            if (Profile.JAVA_EE_6_FULL.equals(p)) {
+                return EJB_TYPES_6;
+            }
+        }
+        return EJB_TYPES_4;
+    }
+    
+    private String[] getWebRecommendedTypes() {
+        WebModule web = WebModule.getWebModule(project.getProjectDirectory());
+        if (web != null) {
+            Profile p = web.getJ2eeProfile();
+            if (Profile.JAVA_EE_5.equals(p)) {
+                return WEB_TYPES_5;
+            }
+            if (Profile.JAVA_EE_6_WEB.equals(p) || Profile.JAVA_EE_6_FULL.equals(p)) {
+                ArrayList<String> toRet = new ArrayList<String>(Arrays.asList(WEB_TYPES_6));
+                J2eeProjectCapabilities cap = J2eeProjectCapabilities.forProject(project);
+                if (cap != null) {
+                    if (cap.isEjb31Supported()) {
+                        toRet.addAll(Arrays.asList(WEB_TYPES_EJB));
+                    }
+                    if (cap.isEjb31LiteSupported()) {
+                        toRet.addAll(Arrays.asList(WEB_TYPES_EJB_LITE));
+                    }
+                }
+                return toRet.toArray(new String[0]);
+            }
+        }
+        return WEB_TYPES;
+    }
+    
+    @Override
+    public String[] getPrivilegedTemplates() {
+        if (NbMavenProject.TYPE_EJB.equals(packaging)) {
+            return getEjbPrivilegedTemplates();
         }
         if (NbMavenProject.TYPE_EAR.equals(packaging)) {
             return EAR_PRIVILEGED_NAMES;
         }
         if (NbMavenProject.TYPE_WAR.equals(packaging)) {
-            WebModule web = WebModule.getWebModule(project.getProjectDirectory());
-            if (web != null) {
-                Profile p = web.getJ2eeProfile();
-                if (Profile.JAVA_EE_5.equals(p)) {
-                    return WEB_PRIVILEGED_NAMES_5;
-                }
-                if (Profile.JAVA_EE_6_WEB.equals(p) || Profile.JAVA_EE_6_FULL.equals(p)) {
-                    ArrayList<String> toRet = new ArrayList<String>(Arrays.asList(WEB_PRIVILEGED_NAMES_6));
-                    J2eeProjectCapabilities cap = J2eeProjectCapabilities.forProject(project);
-                    if (cap != null) {
-                        if (cap.isEjb31Supported()) {
-                            toRet.addAll(Arrays.asList(WEB_PRIVILEGED_NAMES_EE6_FULL));
-                        }
-                        if (cap.isEjb31LiteSupported()) {
-                            toRet.addAll(Arrays.asList(WEB_PRIVILEGED_NAMES_EE6_WEB));
-                        }
-                    }
-                    return toRet.toArray(new String[0]);
-                }
-            }
-            return WEB_PRIVILEGED_NAMES;
+            return getWebPrivilegedTemplates();
         }
         
         return new String[0];
+    }
+    
+    private String[] getEjbPrivilegedTemplates() {
+        EjbJar jar = EjbJar.getEjbJar(project.getProjectDirectory());
+        if (jar != null) {
+            Profile p = jar.getJ2eeProfile();
+            if (Profile.JAVA_EE_5.equals(p)) {
+                return EJB_PRIVILEGED_NAMES_5;
+            }
+            if (Profile.JAVA_EE_6_FULL.equals(p)) {
+                return EJB_PRIVILEGED_NAMES_6;
+            }
+        }
+        return EJB_PRIVILEGED_NAMES_4;
+    }
+    
+    private String[] getWebPrivilegedTemplates() {
+        WebModule web = WebModule.getWebModule(project.getProjectDirectory());
+        if (web != null) {
+            Profile p = web.getJ2eeProfile();
+            if (Profile.JAVA_EE_5.equals(p)) {
+                return WEB_PRIVILEGED_NAMES_5;
+            }
+            if (Profile.JAVA_EE_6_WEB.equals(p) || Profile.JAVA_EE_6_FULL.equals(p)) {
+                ArrayList<String> toRet = new ArrayList<String>(Arrays.asList(WEB_PRIVILEGED_NAMES_6));
+                J2eeProjectCapabilities cap = J2eeProjectCapabilities.forProject(project);
+                if (cap != null) {
+                    if (cap.isEjb31Supported()) {
+                        toRet.addAll(Arrays.asList(WEB_PRIVILEGED_NAMES_EE6_FULL));
+                    }
+                    if (cap.isEjb31LiteSupported()) {
+                        toRet.addAll(Arrays.asList(WEB_PRIVILEGED_NAMES_EE6_WEB));
+                    }
+                }
+                return toRet.toArray(new String[0]);
+            }
+        }
+        return WEB_PRIVILEGED_NAMES;
     }
 }
