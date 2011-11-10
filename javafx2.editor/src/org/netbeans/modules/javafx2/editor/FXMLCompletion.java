@@ -244,11 +244,21 @@ public class FXMLCompletion implements CompletionProvider {
                 ClassIndex index = cpInfo.getClassIndex();
                 CompilationInfo info = CompilationInfo.get(result);
                 Elements elems = info.getElements();
+                TypeElement fxBaseElem = elems.getTypeElement(FX_BASE_CLASS);
+                if (fxBaseElem == null) {
+                    throw new IllegalStateException("Cannot find class " + FX_BASE_CLASS + " on classpath!"); // NOI18N
+                }
                 Types types = info.getTypes();
+                DeclaredType fxBaseClassType = types.getDeclaredType(fxBaseElem);
                 List<TypeElement> myTypes =new LinkedList<TypeElement>();
                 for(ElementHandle<TypeElement> handle : index.getDeclaredTypes(className, 
                             ClassIndex.NameKind.SIMPLE_NAME, EnumSet.allOf(ClassIndex.SearchScope.class))) {
-                    myTypes.add(handle.resolve(info));
+                    TypeElement te = handle.resolve(info);
+                    if (te != null && types.isSubtype(types.getDeclaredType(te), fxBaseClassType)) {
+                        myTypes.add(te);
+                    }
+                    
+
                 }
                 List<TypeElement> superTypes = new LinkedList<TypeElement>();
                 for (TypeElement myType : myTypes) {

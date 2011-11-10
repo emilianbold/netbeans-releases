@@ -56,6 +56,7 @@ import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.*;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.refactoring.spi.CsmRenameExtraObjectsProvider;
 import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
 import org.netbeans.modules.cnd.refactoring.support.ModificationResult;
 import org.netbeans.modules.cnd.refactoring.support.ModificationResult.Difference;
@@ -67,6 +68,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.PositionRef;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
@@ -149,41 +151,48 @@ public class CsmRenameRefactoringPlugin extends CsmModificationRefactoringPlugin
     }
 
     private void initReferencedObjects() {
-        CsmObject referencedObject = CsmRefactoringUtils.getReferencedElement(getStartReferenceObject());
-        if (referencedObject != null) {
+        CsmObject primaryObject = CsmRefactoringUtils.getReferencedElement(getStartReferenceObject());
+        if (primaryObject != null) {
+            Collection<CsmObject> allObjects = new HashSet<CsmObject>();
+            allObjects.add(primaryObject);
+            for (CsmRenameExtraObjectsProvider provider : Lookup.getDefault().lookupAll(CsmRenameExtraObjectsProvider.class)) {
+                allObjects.addAll(provider.getExtraObjects(primaryObject));
+            }
             this.referencedObjects = new LinkedHashSet<CsmObject>();
-            if (CsmKindUtilities.isClass(referencedObject)) {
-                // for class we need to add all needed elements
-                this.referencedObjects.addAll(getRenamingClassObjects((CsmClass)referencedObject));
-            } else if (CsmKindUtilities.isConstructor(referencedObject) || CsmKindUtilities.isDestructor(referencedObject)) {
-                // for constructor/destructor we need to add all needed elements
-                CsmFunction fun = (CsmFunction)referencedObject;
-                CsmClass cls = CsmBaseUtilities.getFunctionClass(fun);
-                if (cls != null) {
-                    this.referencedObjects.addAll(getRenamingClassObjects(cls));
-                }
-            } else if (CsmKindUtilities.isMethod(referencedObject)) {
-                CsmMethod method = (CsmMethod) CsmBaseUtilities.getFunctionDeclaration((CsmFunction) referencedObject);
-                this.referencedObjects.add(method);
-                if (CsmVirtualInfoQuery.getDefault().isVirtual(method)) {
-                    this.referencedObjects.addAll(CsmVirtualInfoQuery.getDefault().getOverriddenMethods(method, true));
-                    assert !this.referencedObjects.isEmpty() : "must be at least start object " + method;
-                }
-            } else if (CsmKindUtilities.isFile(referencedObject)) {
-                // use all csm files associated with file object
-                CsmFile file = (CsmFile) referencedObject;
-                FileObject fileObject = file.getFileObject();
-                try {
-                    DataObject dob = DataObject.find(fileObject);
-                    if (dob != null) {
-                        CsmFile[] csmFiles = CsmUtilities.getCsmFiles(dob, true, false);
-                        this.referencedObjects.addAll(Arrays.asList(csmFiles));
+            for (CsmObject referencedObject : allObjects) {
+                if (CsmKindUtilities.isClass(referencedObject)) {
+                    // for class we need to add all needed elements
+                    this.referencedObjects.addAll(getRenamingClassObjects((CsmClass)referencedObject));
+                } else if (CsmKindUtilities.isConstructor(referencedObject) || CsmKindUtilities.isDestructor(referencedObject)) {
+                    // for constructor/destructor we need to add all needed elements
+                    CsmFunction fun = (CsmFunction)referencedObject;
+                    CsmClass cls = CsmBaseUtilities.getFunctionClass(fun);
+                    if (cls != null) {
+                        this.referencedObjects.addAll(getRenamingClassObjects(cls));
                     }
-                } catch (DataObjectNotFoundException ex) {
-                    Exceptions.printStackTrace(ex);
+                } else if (CsmKindUtilities.isMethod(referencedObject)) {
+                    CsmMethod method = (CsmMethod) CsmBaseUtilities.getFunctionDeclaration((CsmFunction) referencedObject);
+                    this.referencedObjects.add(method);
+                    if (CsmVirtualInfoQuery.getDefault().isVirtual(method)) {
+                        this.referencedObjects.addAll(CsmVirtualInfoQuery.getDefault().getOverriddenMethods(method, true));
+                        assert !this.referencedObjects.isEmpty() : "must be at least start object " + method;
+                    }
+                } else if (CsmKindUtilities.isFile(referencedObject)) {
+                    // use all csm files associated with file object
+                    CsmFile file = (CsmFile) referencedObject;
+                    FileObject fileObject = file.getFileObject();
+                    try {
+                        DataObject dob = DataObject.find(fileObject);
+                        if (dob != null) {
+                            CsmFile[] csmFiles = CsmUtilities.getCsmFiles(dob, true, false);
+                            this.referencedObjects.addAll(Arrays.asList(csmFiles));
+                        }
+                    } catch (DataObjectNotFoundException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                } else {
+                    this.referencedObjects.add(referencedObject);
                 }
-            } else {
-                this.referencedObjects.add(referencedObject);
             }
         }
     }

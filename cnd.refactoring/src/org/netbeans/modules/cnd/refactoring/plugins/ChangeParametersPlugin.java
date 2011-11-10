@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.cnd.refactoring.plugins;
 
-import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
@@ -71,6 +70,7 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.refactoring.api.ChangeParametersRefactoring;
 import org.netbeans.modules.cnd.refactoring.api.ChangeParametersRefactoring.ParameterInfo;
+import org.netbeans.modules.cnd.refactoring.spi.CsmChangeParametersExtraObjectsProvider;
 import org.netbeans.modules.cnd.refactoring.support.CsmContext;
 import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
 import org.netbeans.modules.cnd.refactoring.support.ModificationResult;
@@ -79,9 +79,8 @@ import org.netbeans.modules.refactoring.api.*;
 import org.openide.filesystems.FileObject;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.PositionRef;
-import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.UserQuestionException;
 
 /**
  * Refactoring used for changing method signature. It changes method declaration
@@ -229,18 +228,25 @@ public class ChangeParametersPlugin extends CsmModificationRefactoringPlugin {
     }
 
     private void initReferencedObjects(CsmObject directReferencedObject) {
-        CsmObject referencedObject = CsmRefactoringUtils.getReferencedElement(directReferencedObject);
-        if (referencedObject != null) {
+        CsmObject primaryObject = CsmRefactoringUtils.getReferencedElement(directReferencedObject);
+        if (primaryObject != null) {
+            Collection<CsmObject> allObjects = new HashSet<CsmObject>();
+            allObjects.add(primaryObject);
+            for (CsmChangeParametersExtraObjectsProvider provider : Lookup.getDefault().lookupAll(CsmChangeParametersExtraObjectsProvider.class)) {
+                allObjects.addAll(provider.getExtraObjects(primaryObject));
+            }
             this.referencedObjects = new LinkedHashSet<CsmObject>();
-            if (CsmKindUtilities.isMethod(referencedObject) && !CsmKindUtilities.isConstructor(referencedObject)) {
-                CsmMethod method = (CsmMethod) CsmBaseUtilities.getFunctionDeclaration((CsmFunction) referencedObject);
-                this.referencedObjects.add(method);
-                if (CsmVirtualInfoQuery.getDefault().isVirtual(method)) {
-                    this.referencedObjects.addAll(CsmVirtualInfoQuery.getDefault().getOverriddenMethods(method, true));
-                    assert !this.referencedObjects.isEmpty() : "must be at least start object " + method;
+            for (CsmObject referencedObject : allObjects) {
+                if (CsmKindUtilities.isMethod(referencedObject) && !CsmKindUtilities.isConstructor(referencedObject)) {
+                    CsmMethod method = (CsmMethod) CsmBaseUtilities.getFunctionDeclaration((CsmFunction) referencedObject);
+                    this.referencedObjects.add(method);
+                    if (CsmVirtualInfoQuery.getDefault().isVirtual(method)) {
+                        this.referencedObjects.addAll(CsmVirtualInfoQuery.getDefault().getOverriddenMethods(method, true));
+                        assert !this.referencedObjects.isEmpty() : "must be at least start object " + method;
+                    }
+                } else {
+                    this.referencedObjects.add(referencedObject);
                 }
-            } else {
-                this.referencedObjects.add(referencedObject);
             }
         }
     }
