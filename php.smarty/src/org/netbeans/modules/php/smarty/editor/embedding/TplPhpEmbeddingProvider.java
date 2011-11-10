@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -34,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.smarty.editor.embedding;
 
@@ -54,14 +57,14 @@ import org.netbeans.modules.parsing.spi.TaskFactory;
 import org.netbeans.modules.php.smarty.editor.lexer.TplTopTokenId;
 
 /**
- * Provides model for TPL files.
+ * Provides embedding of PHP sources within TPL files.
  *
+ * @author Martin Fousek <marfous@netbeans.org>
  */
-public class TplEmbeddingProvider extends EmbeddingProvider {
+public class TplPhpEmbeddingProvider extends EmbeddingProvider {
 
     private static final String MIME_TYPE_PHP = "text/x-php5"; //NOI18N
-    private static final String MIME_TYPE_HTML = "text/html"; //NOI18N
-    public static final String GENERATED_CODE = "@@@"; //NOI18N
+    private static final String GENERATED_CODE = "@@@"; //NOI18N
     private boolean isPhpEnabled;
 
     @Override
@@ -69,10 +72,9 @@ public class TplEmbeddingProvider extends EmbeddingProvider {
 
         TokenHierarchy<CharSequence> th = TokenHierarchy.create(snapshot.getText(), TplTopTokenId.language());
         TokenSequence<TplTopTokenId> sequence = th.tokenSequence(TplTopTokenId.language());
-//        boolean isPhpEnabled = false;
 
         if (sequence == null) {
-            Logger.getLogger("TplEmbeddingProvider").warning(
+            Logger.getLogger("TplPhpEmbeddingProvider").warning(
                     "TokenHierarchy.tokenSequence(TplTopTokenId.language()) == null "
                     + "for static immutable TPL TokenHierarchy!\nFile = '"
                     + snapshot.getSource().getFileObject().getPath()
@@ -87,8 +89,8 @@ public class TplEmbeddingProvider extends EmbeddingProvider {
         int from = -1;
         int len = 0;
         while (sequence.moveNext()) {
-            Token t = sequence.token();
-            if (t.id().getClass() == TplTopTokenId.class && isSmartyToken((TplTopTokenId) t.id())) {
+            Token<TplTopTokenId> t = sequence.token();
+            if (isSmartyToken(t.id())) {
                 if (isPhpEnabled) {
                     isPhpEnabled = false;
                     embeddings.add(snapshot.create(";?>", MIME_TYPE_PHP)); //NOI18N
@@ -118,8 +120,6 @@ public class TplEmbeddingProvider extends EmbeddingProvider {
                             isPhpEnabled = false;
                             embeddings.add(snapshot.create(";?>", MIME_TYPE_PHP)); //NOI18N
                         }
-                        embeddings.add(snapshot.create(from, len, MIME_TYPE_HTML));
-                        embeddings.add(snapshot.create(GENERATED_CODE, MIME_TYPE_HTML));
                     }
                 }
 
@@ -128,39 +128,19 @@ public class TplEmbeddingProvider extends EmbeddingProvider {
             }
         }
         if (from >= 0) {
-            embeddings.add(snapshot.create(from, len, MIME_TYPE_HTML));
-            embeddings.add(snapshot.create(GENERATED_CODE, MIME_TYPE_HTML));
+            embeddings.add(snapshot.create(from, len, MIME_TYPE_PHP));
+            embeddings.add(snapshot.create(GENERATED_CODE, MIME_TYPE_PHP));
         }
         if (embeddings.isEmpty()) {
-            return Collections.singletonList(snapshot.create("", "text/html")); 
+            return Collections.singletonList(snapshot.create("", MIME_TYPE_PHP)); //NOI18N
         } else {
             return Collections.singletonList(Embedding.create(embeddings));
         }
     }
 
-//    private boolean farFromSmartyDelimiter(TokenSequence<TplTopTokenId> sequence) {
-//        if (sequence.moveNext()) {
-//            TplTopTokenId token = sequence.token().id();
-//            sequence.movePrevious();
-//            if (token == TplTopTokenId.T_SMARTY_OPEN_DELIMITER) {
-//                return false;
-//            }
-//        }
-//        if (sequence.movePrevious()) {
-//            TplTopTokenId token = sequence.token().id();
-//            sequence.moveNext();
-//            if (token == TplTopTokenId.T_SMARTY_OPEN_DELIMITER) {
-//                return false;
-//            }
-//        }
-//        return true;
-//    }
-
     @Override
     public int getPriority() {
         return 130;
-
-
     }
 
     @Override
@@ -173,11 +153,11 @@ public class TplEmbeddingProvider extends EmbeddingProvider {
 
         @Override
         public Collection create(final Snapshot snapshot) {
-            return Collections.singletonList(new TplEmbeddingProvider());
+            return Collections.singletonList(new TplPhpEmbeddingProvider());
         }
     }
 
-    public boolean isSmartyToken(TplTopTokenId tokenId) {
+    private static boolean isSmartyToken(TplTopTokenId tokenId) {
         return ((tokenId == TplTopTokenId.T_COMMENT) || (tokenId == TplTopTokenId.T_LITERAL_DEL)
                 || (tokenId == TplTopTokenId.T_PHP_DEL) || (tokenId == TplTopTokenId.T_SMARTY)
                 || (tokenId == TplTopTokenId.T_SMARTY_CLOSE_DELIMITER) || (tokenId == TplTopTokenId.T_SMARTY_OPEN_DELIMITER));
