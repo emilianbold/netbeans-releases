@@ -159,6 +159,14 @@ public abstract class BaseAnalisysTestCase extends JavaSourceTestCase {
                 checkOnlyFields);
     }
     
+    protected void checkMethodElement(Map<Element,String> map , String enclosingClass, 
+            String expectedName )
+    {
+        ElementMatcher matcher = new SimpleNameMatcher( expectedName );
+        checkElement(map, enclosingClass, matcher, ExecutableElement.class, 
+                false);
+    }
+    
     protected void checkMethodElement(TestProblems result , String enclosingClass, 
             String expectedName )
     {
@@ -181,7 +189,14 @@ public abstract class BaseAnalisysTestCase extends JavaSourceTestCase {
     protected <T extends Element> void checkElement(TestProblems result , String enclosingClass, 
             ElementMatcher matcher, Class<T> elementClass, boolean checkOnlyFields )
     {
-        Set<Element> elements = result.getErrors().keySet();
+        checkElement(result.getErrors(), enclosingClass, matcher, elementClass, 
+                checkOnlyFields);
+    }
+    
+    protected <T extends Element> void checkElement(Map<Element,String> map , String enclosingClass, 
+            ElementMatcher matcher, Class<T> elementClass, boolean checkOnlyFields )
+    {
+        Set<Element> elements = map.keySet();
         Set<Element> classElements = new HashSet<Element>();
         TypeElement enclosingClazz = null;
         for( Element element : elements ){

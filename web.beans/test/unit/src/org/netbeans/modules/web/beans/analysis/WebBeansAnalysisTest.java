@@ -67,6 +67,11 @@ public class WebBeansAnalysisTest extends BaseAnalisysTestCase {
         return new WebBeansAnalysisTestTask( getUtilities() );
     }
     
+    //=======================================================================
+    //
+    //  ClassModelAnalyzer - ManagedBeansAnalizer
+    //
+    //=======================================================================
     /*
      * ManagedBeansAnalizer.checkCtor
      */
@@ -217,6 +222,169 @@ public class WebBeansAnalysisTest extends BaseAnalisysTestCase {
             public void process( TestProblems result ) {
                 checkTypeElement( result.getWarings() , "foo.Clazz");
                 assertEquals( "Unxepected error found", 0, result.getErrors().size());
+            }
+            
+        };
+        runAnalysis(errorFile , processor);
+        
+        runAnalysis( goodFile, NO_ERRORS_PROCESSOR );
+    }
+    
+  //=======================================================================
+    //
+    //  ClassModelAnalyzer - ScopedBeanAnalyzer
+    //
+    //=======================================================================
+    
+    /*
+     * ScopedBeanAnalyzer.checkProxiability
+     */
+    public void testScopedProxiability() throws IOException {
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Scope1.java",
+                "package foo; " +
+                " import javax.inject.Scope; "+
+                " import java.lang.annotation.Retention; "+
+                " import java.lang.annotation.RetentionPolicy; "+
+                " import java.lang.annotation.Target; " +
+                " import java.lang.annotation.ElementType; "+
+                " @Retention(RetentionPolicy.RUNTIME) "+
+                " @Target({ElementType.METHOD,ElementType.FIELD, ElementType.TYPE}) "+
+                " @Scope "+
+                " public @interface Scope1 { "+
+                "}");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Scope2.java",
+                "package foo; " +
+                " import javax.enterprise.context.NormalScope; "+
+                " import java.lang.annotation.Retention; "+
+                " import java.lang.annotation.RetentionPolicy; "+
+                " import java.lang.annotation.Target; " +
+                " import java.lang.annotation.ElementType; "+
+                " @Retention(RetentionPolicy.RUNTIME) "+
+                " @Target({ElementType.METHOD,ElementType.FIELD, ElementType.TYPE}) "+
+                " @NormalScope "+
+                " public @interface Scope2 { "+
+                "}");
+        
+        FileObject errorFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz.java",
+                "package foo; " +
+                " @Scope2 "+
+                " public final class Clazz { "+
+                "}");
+        
+        FileObject errorFile1 = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz1.java",
+                "package foo; " +
+                " @Scope2 "+
+                " public class Clazz1 { "+
+                " public final void op(){} "+
+                "}");
+        
+        FileObject goodFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz2.java",
+                "package foo; " +
+                " @Scope1 "+
+                " public final class Clazz2  { "+
+                "}");
+        
+        ResultProcessor processor = new ResultProcessor (){
+
+            @Override
+            public void process( TestProblems result ) {
+                checkTypeElement( result , "foo.Clazz");
+            }
+            
+        };
+        runAnalysis(errorFile , processor);
+        
+        processor = new ResultProcessor (){
+
+            @Override
+            public void process( TestProblems result ) {
+                checkMethodElement(result.getWarings() , "foo.Clazz1", "op");
+                assertEquals( "Unxepected error found", 0, result.getErrors().size());
+            }
+            
+        };
+        runAnalysis(errorFile1 , processor);
+        
+        runAnalysis( goodFile, NO_ERRORS_PROCESSOR );
+    }
+    
+    /*
+     * ScopedBeanAnalyzer.checkPublicField
+     */
+    public void testScopedPublicField() throws IOException {
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Scope1.java",
+                "package foo; " +
+                " import javax.inject.Scope; "+
+                " import java.lang.annotation.Retention; "+
+                " import java.lang.annotation.RetentionPolicy; "+
+                " import java.lang.annotation.Target; " +
+                " import java.lang.annotation.ElementType; "+
+                " @Retention(RetentionPolicy.RUNTIME) "+
+                " @Target({ElementType.METHOD,ElementType.FIELD, ElementType.TYPE}) "+
+                " @Scope "+
+                " public @interface Scope1 { "+
+                "}");
+        
+        FileObject errorFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz.java",
+                "package foo; " +
+                " @Scope1 "+
+                " public class Clazz { "+
+                " public int field; "+
+                "}");
+        
+        FileObject goodFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz1.java",
+                "package foo; " +
+                " public class Clazz1  { "+
+                " public int field; "+
+                "}");
+        
+        ResultProcessor processor = new ResultProcessor (){
+
+            @Override
+            public void process( TestProblems result ) {
+                checkTypeElement(result, "foo.Clazz");
+            }
+            
+        };
+        runAnalysis(errorFile , processor);
+        
+        runAnalysis( goodFile, NO_ERRORS_PROCESSOR );
+    }
+    
+    /*
+     * ScopedBeanAnalyzer.checkParameterizedBean
+     */
+    public void testScopedParameterizedBean() throws IOException {
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Scope1.java",
+                "package foo; " +
+                " import javax.inject.Scope; "+
+                " import java.lang.annotation.Retention; "+
+                " import java.lang.annotation.RetentionPolicy; "+
+                " import java.lang.annotation.Target; " +
+                " import java.lang.annotation.ElementType; "+
+                " @Retention(RetentionPolicy.RUNTIME) "+
+                " @Target({ElementType.METHOD,ElementType.FIELD, ElementType.TYPE}) "+
+                " @Scope "+
+                " public @interface Scope1 { "+
+                "}");
+        
+        FileObject errorFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz.java",
+                "package foo; " +
+                " @Scope1 "+
+                " public class Clazz<T> { "+
+                "}");
+        
+        FileObject goodFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz1.java",
+                "package foo; " +
+                " public class Clazz1<T>  { "+
+                "}");
+        
+        ResultProcessor processor = new ResultProcessor (){
+
+            @Override
+            public void process( TestProblems result ) {
+                checkTypeElement(result, "foo.Clazz");
             }
             
         };
