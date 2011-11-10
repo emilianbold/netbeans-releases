@@ -57,7 +57,7 @@ public class NewConfigurationPanel extends javax.swing.JPanel implements Documen
     private DialogDescriptor descriptor;
 
     public String getConfigurationId() {
-        return txtId.getText();
+        return txtId.getText().trim();
     }
 
     public void setConfigurationId(String configurationId) {
@@ -109,7 +109,7 @@ public class NewConfigurationPanel extends javax.swing.JPanel implements Documen
 
     private void check() {
         if (descriptor != null) {
-            descriptor.setValid(txtId.getText().trim().length() > 0);
+            descriptor.setValid(!txtId.getText().trim().isEmpty() && txtId.getText().indexOf('/') == -1);
         }
     }
     
