@@ -67,6 +67,7 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.api.templates.TemplateRegistration;
+import org.netbeans.modules.java.j2seproject.api.J2SEProjectBuilder;
 import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
 
@@ -78,6 +79,8 @@ public class NewJ2SEProjectWizardIterator implements WizardDescriptor.ProgressIn
     enum WizardType {APP, LIB, EXT}
     
     static final String PROP_NAME_INDEX = "nameIndex";      //NOI18N
+    static final String PROP_BUILD_SCRIPT_NAME = "buildScriptName"; //NOI18N
+    static final String PROP_DIST_FOLDER = "distFolder";    //NOI18N
 
     private static final String MANIFEST_FILE = "manifest.mf"; // NOI18N
 
@@ -166,8 +169,17 @@ public class NewJ2SEProjectWizardIterator implements WizardDescriptor.ProgressIn
         case EXT:
             File[] sourceFolders = (File[])wiz.getProperty("sourceRoot");        //NOI18N
             File[] testFolders = (File[])wiz.getProperty("testRoot");            //NOI18N
-            String buildScriptName = (String) wiz.getProperty("buildScriptName");//NOI18N
-            AntProjectHelper h = J2SEProjectGenerator.createProject(dirF, name, sourceFolders, testFolders, MANIFEST_FILE, librariesDefinition, buildScriptName);
+            String buildScriptName = (String) wiz.getProperty(PROP_BUILD_SCRIPT_NAME);
+            String distFolder = (String) wiz.getProperty(PROP_DIST_FOLDER);
+            AntProjectHelper h = new J2SEProjectBuilder(dirF, name).
+                addSourceRoots(sourceFolders).
+                addTestRoots(testFolders).
+                skipTests(testFolders.length == 0).
+                setManifest(MANIFEST_FILE).
+                setLibrariesDefinitionFile(librariesDefinition).
+                setBuildXmlName(buildScriptName).
+                setDistFolder(distFolder).
+                build();
             EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
             String includes = (String) wiz.getProperty(ProjectProperties.INCLUDES);
             if (includes == null) {
