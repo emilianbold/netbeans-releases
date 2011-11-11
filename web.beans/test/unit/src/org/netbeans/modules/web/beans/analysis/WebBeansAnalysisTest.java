@@ -230,7 +230,7 @@ public class WebBeansAnalysisTest extends BaseAnalisysTestCase {
         runAnalysis( goodFile, NO_ERRORS_PROCESSOR );
     }
     
-  //=======================================================================
+    //=======================================================================
     //
     //  ClassModelAnalyzer - ScopedBeanAnalyzer
     //
@@ -391,5 +391,83 @@ public class WebBeansAnalysisTest extends BaseAnalisysTestCase {
         runAnalysis(errorFile , processor);
         
         runAnalysis( goodFile, NO_ERRORS_PROCESSOR );
+    }
+    
+    //=======================================================================
+    //
+    //  ClassModelAnalyzer - SessionBeanAnalyzer
+    //
+    //=======================================================================
+    
+    public void testSessionBeanAnalyzer() throws IOException {
+        getUtilities().initEnterprise();
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Scope1.java",
+                "package foo; " +
+                " import javax.inject.Scope; "+
+                " import java.lang.annotation.Retention; "+
+                " import java.lang.annotation.RetentionPolicy; "+
+                " import java.lang.annotation.Target; " +
+                " import java.lang.annotation.ElementType; "+
+                " @Retention(RetentionPolicy.RUNTIME) "+
+                " @Target({ElementType.METHOD,ElementType.FIELD, ElementType.TYPE}) "+
+                " @Scope "+
+                " public @interface Scope1 { "+
+                "}");
+        
+        FileObject errorFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz.java",
+                "package foo; " +
+                "import javax.ejb.Singleton; "+
+                " @Scope1 "+
+                " @Singleton "+
+                " public class Clazz { "+
+                "}");
+        
+        FileObject errorFile1 = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz1.java",
+                "package foo; " +
+                "import javax.ejb.Stateless; "+
+                " @Scope1 "+
+                " @Stateless "+
+                " public class Clazz1 { "+
+                "}");
+        
+        FileObject goodFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz2.java",
+                "package foo; " +
+                "import javax.enterprise.context.ApplicationScoped; "+
+                "import javax.ejb.Singleton; "+
+                " @Singleton "+
+                " @ApplicationScoped "+
+                " public class Clazz2  { "+
+                "}");
+        
+        FileObject goodFile1 = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz3.java",
+                "package foo; " +
+                "import javax.ejb.Stateless; "+
+                " @Stateless "+
+                " public class Clazz3  { "+
+                "}");
+        
+        ResultProcessor processor = new ResultProcessor (){
+
+            @Override
+            public void process( TestProblems result ) {
+                checkTypeElement(result, "foo.Clazz");
+            }
+            
+        };
+        runAnalysis(errorFile , processor);
+        
+        processor = new ResultProcessor (){
+
+            @Override
+            public void process( TestProblems result ) {
+                checkTypeElement(result, "foo.Clazz1");
+            }
+            
+        };
+        runAnalysis(errorFile1 , processor);
+        
+        runAnalysis( goodFile, NO_ERRORS_PROCESSOR );
+        runAnalysis( goodFile1, NO_ERRORS_PROCESSOR );
     }
 }
