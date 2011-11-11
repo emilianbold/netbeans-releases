@@ -93,6 +93,7 @@ import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
 import org.openide.awt.DynamicMenuContent;
+import org.openide.awt.StatusDisplayer;
 import org.openide.loaders.DataObject;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
@@ -151,10 +152,8 @@ public class ActionProviderImpl implements ActionProvider {
                 supp.addAll( added);
             }
         }
-        if (RunUtils.hasTestCompileOnSaveEnabled(project) || (usingSurefire28() && usingJUnit4())) {
-            supp.add(SingleMethod.COMMAND_RUN_SINGLE_METHOD);
-            supp.add(SingleMethod.COMMAND_DEBUG_SINGLE_METHOD);
-        }
+        supp.add(SingleMethod.COMMAND_RUN_SINGLE_METHOD);
+        supp.add(SingleMethod.COMMAND_DEBUG_SINGLE_METHOD);
         return supp.toArray(new String[0]);
     }
 
@@ -175,8 +174,14 @@ public class ActionProviderImpl implements ActionProvider {
         return false;
     }
 
-    @Override
-    public void invokeAction(final String action, final Lookup lookup) {
+    @Messages("run_single_method_disabled=Surefire 2.8+ with JUnit 4 needed to run a single test method without Compile on Save.")
+    @Override public void invokeAction(final String action, final Lookup lookup) {
+        if (action.equals(SingleMethod.COMMAND_RUN_SINGLE_METHOD) || action.equals(SingleMethod.COMMAND_DEBUG_SINGLE_METHOD)) {
+            if (!RunUtils.hasTestCompileOnSaveEnabled(project) && (!usingSurefire28() || !usingJUnit4())) {
+                StatusDisplayer.getDefault().setStatusText(run_single_method_disabled());
+                return;
+            }
+        }
         if (COMMAND_DELETE.equals(action)) {
             DefaultProjectOperations.performDefaultDeleteOperation(project);
             return;
@@ -277,6 +282,9 @@ public class ActionProviderImpl implements ActionProvider {
                 COMMAND_RENAME.equals(action) ||
                 COMMAND_COPY.equals(action) ||
                 COMMAND_MOVE.equals(action)) {
+            return true;
+        }
+        if (action.equals(SingleMethod.COMMAND_RUN_SINGLE_METHOD) || action.equals(SingleMethod.COMMAND_DEBUG_SINGLE_METHOD)) {
             return true;
         }
         //TODO if order is important, use the lookupmerger
