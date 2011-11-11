@@ -296,7 +296,9 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
         SFS_RP.post(new Runnable() {
             public void run() {
                 Util.err.log("Loading " + startFolder + " from SFS...."); // NOI18N
-                final FileObject parent = getSFS().getRoot().getFileObject(startFolder);
+                FileSystem sfs = getSFS();
+                data.setSFS(sfs);
+                final FileObject parent = sfs.getRoot().getFileObject(startFolder);
                 final DataFolder parentDF = (parent != null ? DataFolder.findFolder(parent) : null);
                 if (parentDF == null) {
                     Util.err.log("Could not find " + startFolder);

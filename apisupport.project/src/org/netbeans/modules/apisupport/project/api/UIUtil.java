@@ -73,7 +73,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.DefaultListCellRenderer;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
@@ -443,7 +442,7 @@ public final class UIUtil {
                 }
             }
         } catch (IOException exc) {
-            Util.err.notify(exc);
+            Logger.getLogger(UIUtil.class.getName()).log(Level.INFO, "Failed to create model of " + sfsRoot, exc);
         }
         return model;
     }

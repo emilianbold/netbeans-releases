@@ -157,6 +157,7 @@ public final class DesignSupport implements TaskListener, Runnable {
 
     static String[] existingModes(NewTCIterator.DataModel data) throws IOException {
         FileSystem fs = LayerUtils.getEffectiveSystemFilesystem(data.getProject());
+        data.setSFS(fs);
         FileObject foRoot = fs.getRoot().getFileObject("Windows2/Modes"); //NOI18N
         if (foRoot != null) {
             FileObject[] fos = foRoot.getChildren();
