@@ -92,7 +92,7 @@ public class SourceRoots {
             // in-place plugins
             for (GrailsPlugin plugin : project.getBuildConfig().getLocalPlugins()) {
                 if (plugin.getPath() != null) {
-                    FileObject fo = FileUtil.toFileObject(plugin.getPath());
+                    FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(plugin.getPath()));
                     if (fo != null) {
                         addGrailsSourceRoots(fo, result);
                     }

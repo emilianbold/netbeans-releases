@@ -67,6 +67,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
@@ -110,6 +111,7 @@ import org.netbeans.modules.java.hints.jackpot.impl.batch.BatchSearch.Folder;
 import org.netbeans.modules.java.hints.jackpot.impl.batch.BatchSearch.Scope;
 import org.netbeans.modules.java.hints.jackpot.impl.batch.Scopes;
 import org.netbeans.modules.java.hints.jackpot.impl.refactoring.InspectAndRefactorUI.HintWrap;
+import org.netbeans.modules.java.hints.jackpot.impl.refactoring.Utilities.ClassPathBasedHintWrapper;
 import org.netbeans.modules.java.hints.jackpot.spi.HintDescription;
 import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata;
 import org.netbeans.modules.java.hints.options.HintsPanel;
@@ -137,7 +139,9 @@ public class InspectAndRefactorPanel extends javax.swing.JPanel implements Popup
 
     private static final String PACKAGE = "org/netbeans/spi/java/project/support/ui/package.gif"; // NOI18N    
     private FileObject fileObject;
+    private final Lookup context;
     private final HintWrap hintWrap;
+    private final ClassPathBasedHintWrapper cpBased;
     org.netbeans.modules.refactoring.api.Scope customScope;
     
     private JLabel customScopeLab = null;
@@ -148,13 +152,19 @@ public class InspectAndRefactorPanel extends javax.swing.JPanel implements Popup
     private Project project;
     private String PREF_SCOPE = "InspectAndTransform-Scope";
     
-    /** Creates new form InspectAndRefactorPanel */
-    public InspectAndRefactorPanel(Lookup context, ChangeListener parent, boolean query) {
-        
+    public InspectAndRefactorPanel(Lookup context, ChangeListener parent, boolean query, ClassPathBasedHintWrapper cpBased) {
+        this.context = context;
+        this.hintWrap = context.lookup(HintWrap.class);
+        this.cpBased = cpBased;
+    }
+
+    private Map<? extends HintMetadata, ? extends Iterable<? extends HintDescription>> allHints;
+
+    public synchronized void initialize() {
         initComponents();
-        hintWrap = context.lookup(HintWrap.class);
         configurationCombo.setModel(new ConfigurationsComboModel(false));
-        singleRefactoringCombo.setModel(new InspectionComboModel(hintWrap != null ? Collections.singletonList(hintWrap.hm) : Utilities.getBatchSupportedHints()));
+        allHints = hintWrap != null ? Collections.singletonMap(hintWrap.hm, hintWrap.hints) : Utilities.getBatchSupportedHints(cpBased);
+        singleRefactoringCombo.setModel(new InspectionComboModel(allHints.keySet()));
         singleRefactoringCombo.addActionListener( new ActionListener() {
 
             Object currentItem = singleRefactoringCombo.getSelectedItem();
@@ -425,7 +435,7 @@ public class InspectAndRefactorPanel extends javax.swing.JPanel implements Popup
 
                     @Override
                     public FileObject getFolder() {
-                        return fileObject.getParent();
+                        return fileObject.isFolder()?fileObject:fileObject.getParent();
                     }
                 });
                 customScope = org.netbeans.modules.refactoring.api.Scope.create(Collections.EMPTY_LIST, col, Collections.EMPTY_LIST);
@@ -460,20 +470,22 @@ public class InspectAndRefactorPanel extends javax.swing.JPanel implements Popup
     private JComboBox singleRefactoringCombo;
     // End of variables declaration//GEN-END:variables
 
-    public Union2<String, Iterable<? extends HintDescription>> getPattern() {
+    public synchronized Union2<String, Iterable<? extends HintDescription>> getPattern() {
         if(singleRefactorRadio.isSelected()) {
             if (hintWrap != null) {
                 return Union2.<String, Iterable<? extends HintDescription>>createSecond(hintWrap.hints);
             }
         HintMetadata hint = (HintMetadata) singleRefactoringCombo.getSelectedItem();
-        Collection<? extends HintDescription> hintDesc = RulesManager.getInstance().allHints.get(hint);
+        Iterable<? extends HintDescription> hintDesc = allHints.get(hint);
         return Union2.<String, Iterable<? extends HintDescription>>createSecond(hintDesc);
             
         } else {
             Configuration config = (Configuration) configurationCombo.getSelectedItem();
             List<HintDescription> hintsToApply = new LinkedList();
-            for (HintMetadata hint:config.getHints()) {
-                hintsToApply.addAll(RulesManager.getInstance().allHints.get(hint));
+            for (HintMetadata hint:config.getHints(allHints)) {
+                for (HintDescription hd : allHints.get(hint)) {
+                    hintsToApply.add(hd);
+                }
             }
             return Union2.<String, Iterable<? extends HintDescription>>createSecond(hintsToApply);
         }
@@ -600,19 +612,19 @@ public class InspectAndRefactorPanel extends javax.swing.JPanel implements Popup
     }
 
     private Scope getThisPackageScope() {
-        return Scopes.specifiedFoldersScope(Folder.convert(Collections.singleton(fileObject.getParent())));
+        return Scopes.specifiedFoldersScope(Folder.convert(Collections.singleton(fileObject.isFolder()?fileObject:fileObject.getParent())));
     }
 
     private Scope getThisFileScope() {
         return Scopes.specifiedFoldersScope(Folder.convert(Collections.singleton(fileObject)));
     }
 
-    private void manageRefactorings(boolean single) {
+    private synchronized void manageRefactorings(boolean single) {
         HintsPanel panel;
         if (single) {
-            panel = new HintsPanel((HintMetadata) singleRefactoringCombo.getSelectedItem());
+            panel = new HintsPanel((HintMetadata) singleRefactoringCombo.getSelectedItem(), cpBased);
         } else {
-            panel = new HintsPanel((Configuration) configurationCombo.getSelectedItem());
+            panel = new HintsPanel((Configuration) configurationCombo.getSelectedItem(), cpBased);
         }
         DialogDescriptor descriptor = new DialogDescriptor(panel, NbBundle.getMessage(InspectAndRefactorPanel.class, "CTL_ManageRefactorings"), true, new Object[]{}, null, 0, null, null);
         
@@ -630,7 +642,7 @@ public class InspectAndRefactorPanel extends javax.swing.JPanel implements Popup
                 HintMetadata selectedHint = panel.getSelectedHint();
                 if (selectedHint != null) {
                     if (panel.hasNewHints()) {
-                        singleRefactoringCombo.setModel(new InspectionComboModel(Utilities.getBatchSupportedHints()));
+                        singleRefactoringCombo.setModel(new InspectionComboModel((allHints = Utilities.getBatchSupportedHints(cpBased)).keySet()));
                     }
                     singleRefactoringCombo.setSelectedItem(selectedHint);
                 }

@@ -50,6 +50,8 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import javax.swing.SwingUtilities;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeWillExpandListener;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -128,15 +130,49 @@ public class RootSelectorTree extends JCheckTree {
 
     public void setSelection(final SourceCodeSelection[] selection) {
         new SwingWorker(false) {
-
+            
             protected void doInBackground() {
                 removeSelection(getSelection());
                 applySelection(selection);
             }
 
+            @Override
+            protected void nonResponding() {
+                final CountDownLatch cl = new CountDownLatch(1);
+                SwingUtilities.invokeLater(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        RootSelectorTree.this.setEnabled(false);
+                        cl.countDown();
+                    }
+                });
+                progress.showProgress(NbBundle.getMessage(RootSelectorTree.class, "MSG_ApplyingSelection")); // NOI18N
+                
+                try {
+                    cl.await();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+            
             protected void done() {
+                progress.close();
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        RootSelectorTree.this.setEnabled(true);
+                    }
+                });
                 treeDidChange();
             }
+
+            @Override
+            protected int getWarmup() {
+                return 50;
+            }
+            
+            
         }.execute();
     }
 

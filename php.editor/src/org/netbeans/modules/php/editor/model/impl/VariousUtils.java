@@ -81,6 +81,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.ArrayCreation;
 import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassName;
+import org.netbeans.modules.php.editor.parser.astnodes.CloneExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.Comment;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldAccess;
@@ -282,6 +283,9 @@ public class VariousUtils {
             if (operator.equals(OperatorType.CONCAT)) {
                 return Type.STRING.toString().toLowerCase();
             }
+        } else if (expression instanceof CloneExpression) {
+            CloneExpression cloneExpression = (CloneExpression) expression;
+            return extractVariableTypeFromExpression(cloneExpression.getExpression(), allAssignments);
         }
         return null;
     }

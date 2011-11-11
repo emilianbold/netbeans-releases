@@ -44,12 +44,12 @@ package org.netbeans.modules.java.hints.jackpot.impl.refactoring;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.prefs.BackingStoreException;
+import java.util.Map;
 import java.util.prefs.Preferences;
 import org.netbeans.modules.java.hints.jackpot.impl.RulesManager;
+import org.netbeans.modules.java.hints.jackpot.spi.HintDescription;
 import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata;
 import org.netbeans.modules.java.hints.options.HintsSettings;
-import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
 
 /**
@@ -68,9 +68,9 @@ public class Configuration {
         prefs.put("display.name", displayName);
     }
     
-    public List<HintMetadata> getHints() {
+    public List<HintMetadata> getHints(Map<? extends HintMetadata, ? extends Iterable<? extends HintDescription>> allHints) {
         ArrayList<HintMetadata> hints = new ArrayList();
-        for (HintMetadata hint : RulesManager.getInstance().allHints.keySet()) {
+        for (HintMetadata hint : allHints.keySet()) {
             Preferences prefs = RulesManager.getPreferences(hint.id, id());
             if (HintsSettings.isEnabled(hint, prefs)) {
                 hints.add(hint);

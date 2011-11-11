@@ -122,7 +122,7 @@ public class OptionsPanelControllerProcessor extends LayerGeneratingProcessor {
     }
 
     private void iconBase(Element e, String iconBase, Annotation r, File file, LayerBuilder builder) throws LayerGenerationException {
-        builder.validateResource(iconBase, e, r, "iconBase", false);
+        builder.validateResource(iconBase, e, r, "iconBase", true);
         file.stringvalue("iconBase", iconBase);
     }
 

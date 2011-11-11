@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.java.j2seproject.ui.customizer;
 
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -65,6 +66,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.Vector;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Logger;
 import javax.swing.ButtonModel;
 import javax.swing.ComboBoxModel;
@@ -75,6 +77,7 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.PlainDocument;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
@@ -102,11 +105,7 @@ import org.netbeans.spi.project.support.ant.ui.StoreGroup;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
-import org.openide.util.Mutex;
-import org.openide.util.MutexException;
-import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
+import org.openide.util.*;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -270,6 +269,7 @@ public class J2SEProjectProperties {
     private Map<String,String> additionalProperties;
 
     private String includes, excludes;
+    private final List<ActionListener> optionListeners = new CopyOnWriteArrayList<ActionListener>();
     
     J2SEProject getProject() {
         return project;
@@ -950,6 +950,21 @@ public class J2SEProjectProperties {
                 }
             }
         }
+    }
+
+    @NonNull
+    Iterable<? extends ActionListener> getOptionListeners() {
+        return optionListeners;
+    }
+
+    void addOptionListener(@NonNull final ActionListener al) {
+        Parameters.notNull("al", al);   //NOI18N
+        optionListeners.add(al);
+    }
+
+    void removeOptionListener(@NonNull final ActionListener al) {
+        Parameters.notNull("al", al);   //NOI18N
+        optionListeners.remove(al);
     }
 
 }
