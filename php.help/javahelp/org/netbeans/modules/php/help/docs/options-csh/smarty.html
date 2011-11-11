@@ -16,14 +16,19 @@
         <h2>Smarty Options</h2>
         <p>In this tab you set global options for projects that contain Smarty templates (.tpl files).</p>
         <ul>
-            <li><strong>Smarty version.</strong> Select Smarty2 or Smarty3. This field affects NetBeans IDE code completion. If you select Smarty3, JavaScript code completion appears outside of <tt>{literal}</tt> blocks. If you select Smarty2, JavaScript code completion only appears inside <tt>{literal}</tt> blocks. The Smarty3 parser can parse JavaScript but the Smarty2 parser cannot.</li>
+            <li><strong>Smarty version.</strong> Select Smarty2 or Smarty3. This field affects the parsing of Smarty template (.tpl) files. If you select Smarty3, curly brackets are recognized as JavaScript code if they are surrounded by whitespaces. If you select Smarty2, all curly brackets are recognized as Smarty delimiters, unless you set custom delimiters. For more information, see <i>"{" and "}" (Javascript) Auto-Escapement</i> in <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                    <param name="content" value="http://www.smarty.net/v3_overview">
+                    <param name="text" value="<html><u>Smarty 3 Overview</u>.</html>">
+                    <param name="textFontSize" value="medium">
+                    <param name="textColor" value="blue">
+                </object></li>
             <li><strong>Open delimiter/Close delimiter.</strong> Set delimiters globally for Smarty templates. 
                 <ul class="note">
                     <li>You can override global delimiter settings for individual projects. Open the project's Properties and navigate to the Frameworks &gt; Smarty category. The project must include a .tpl file.</li>
                 </ul></li>
                 <li><strong>Subdirectory level for TPL file scanning.</strong> Set how many levels down project subdirectories NetBeans IDE should scan for Smarty template files. 
                     <ul class="note">
-                        <li>If your .tpl files are deeper in your directory than this setting, your project is not recognized as a Smarty project. However, setting this value to higher than 1 slows the IDE's handling of all PHP projects.</li>
+                        <li>If your .tpl files are deeper in your directory than this setting, your project is not recognized as a Smarty project. However, setting this value to higher than 1 can slow the IDE's handling of all PHP projects.</li>
                     </ul></li>
         </ul>
         <dl> 
