@@ -114,6 +114,9 @@ public abstract class EJBProblemFinder {
             }
 
             EjbJar ejbModule = EjbJar.getEjbJar(file);
+            if (ejbModule == null) {
+                return;
+            }
             ejbModule.getMetadataModel().runReadAction(new MetadataModelAction<EjbJarMetadata, Void>() {
                 public Void run(EjbJarMetadata metadata) {
                     String ejbVersion = metadata.getRoot().getVersion().toString();
