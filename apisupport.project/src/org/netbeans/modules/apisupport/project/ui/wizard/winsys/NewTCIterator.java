@@ -70,7 +70,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle.Messages;
 import org.openide.windows.WindowManager;
 
@@ -128,6 +127,8 @@ public final class NewTCIterator extends BasicWizardIterator {
         private boolean ignorePreviousRun = true;
         
         private CreatedModifiedFiles files;
+
+        FileSystem sfs;
         
         DataModel(WizardDescriptor wiz) {
             super(wiz);
@@ -262,6 +263,9 @@ public final class NewTCIterator extends BasicWizardIterator {
 
         public void setUndockingNotAllowed(boolean undockingNotAllowed) {
             this.undockingNotAllowed = undockingNotAllowed;
+        }
+        void setSFS(FileSystem sfs) {
+            this.sfs = sfs;
         }
     }
     
@@ -429,13 +433,7 @@ public final class NewTCIterator extends BasicWizardIterator {
         final Map<String, String> newModes = model.getNewModes();
         if (newModes != null) {
             Set<String> files = new HashSet<String>();
-            FileObject parent;
-            try {
-                parent = moduleInfo.getEffectiveSystemFilesystem().findResource("Windows2/Modes");
-            } catch (IOException x) {
-                Exceptions.printStackTrace(x);
-                parent = null;
-            }
+            FileObject parent = model.sfs.findResource("Windows2/Modes");
             for (String wsmode : newModes.keySet()) {
                 files.add(LayerUtils.findGeneratedName(parent, wsmode + ".wsmode"));
             }
