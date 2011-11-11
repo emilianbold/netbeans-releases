@@ -17,47 +17,47 @@ Macros:
 CLASS ClassWithIncludedBody (ClassWithIncludedBody ) [2:1/1-12:2/187] lcurly=29 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
-        FUNCTION class_body_included_foo [2:11/11-4:11/42] MethodImpl SCOPE: ClassWithIncludedBody 
+        FUNCTION class_body_included_foo [2:1/11-2:32/42] MethodImpl SCOPE: ClassWithIncludedBody 
             DEFINITION: null
             SIGNATURE class_body_included_foo()
             UNIQUE NAME F:ClassWithIncludedBody::class_body_included_foo()
             PARAMETERS:
-            RETURNS void TEXT=void  [2:11/11-2:15/15]
-        FUNCTION class_body_included_boo [5:19/62-7:2/93] MethodImpl SCOPE: ClassWithIncludedBody 
+            RETURNS void TEXT=void  [2:1/11-2:5/15]
+        FUNCTION class_body_included_boo [4:1/62-4:32/93] MethodImpl SCOPE: ClassWithIncludedBody 
             DEFINITION: null
             SIGNATURE class_body_included_boo()
             UNIQUE NAME F:ClassWithIncludedBody::class_body_included_boo()
             PARAMETERS:
-            RETURNS void TEXT=void  [5:19/62-5:23/66]
-        FUNCTION class_body_included_no_name_fun [7:9/100-8:36/139] MethodImpl SCOPE: ClassWithIncludedBody 
+            RETURNS void TEXT=void  [4:1/62-4:5/66]
+        FUNCTION class_body_included_no_name_fun [6:1/100-6:40/139] MethodImpl SCOPE: ClassWithIncludedBody 
             DEFINITION: null
             SIGNATURE class_body_included_no_name_fun()
             UNIQUE NAME F:ClassWithIncludedBody::class_body_included_no_name_fun()
             PARAMETERS:
-            RETURNS void TEXT=void  [7:9/100-8:1/104]
+            RETURNS void TEXT=void  [6:1/100-6:5/104]
 
 ========== Dumping model of PROJECT DummyProject
 CLASS ClassWithIncludedBody (ClassWithIncludedBody ) [2:1/1-12:2/187] lcurly=29 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
-        FUNCTION class_body_included_foo [2:11/11-4:11/42] MethodImpl SCOPE: ClassWithIncludedBody 
+        FUNCTION class_body_included_foo [2:1/11-2:32/42] MethodImpl SCOPE: ClassWithIncludedBody 
             DEFINITION: null
             SIGNATURE class_body_included_foo()
             UNIQUE NAME F:ClassWithIncludedBody::class_body_included_foo()
             PARAMETERS:
-            RETURNS void TEXT=void  [2:11/11-2:15/15]
-        FUNCTION class_body_included_boo [5:19/62-7:2/93] MethodImpl SCOPE: ClassWithIncludedBody 
+            RETURNS void TEXT=void  [2:1/11-2:5/15]
+        FUNCTION class_body_included_boo [4:1/62-4:32/93] MethodImpl SCOPE: ClassWithIncludedBody 
             DEFINITION: null
             SIGNATURE class_body_included_boo()
             UNIQUE NAME F:ClassWithIncludedBody::class_body_included_boo()
             PARAMETERS:
-            RETURNS void TEXT=void  [5:19/62-5:23/66]
-        FUNCTION class_body_included_no_name_fun [7:9/100-8:36/139] MethodImpl SCOPE: ClassWithIncludedBody 
+            RETURNS void TEXT=void  [4:1/62-4:5/66]
+        FUNCTION class_body_included_no_name_fun [6:1/100-6:40/139] MethodImpl SCOPE: ClassWithIncludedBody 
             DEFINITION: null
             SIGNATURE class_body_included_no_name_fun()
             UNIQUE NAME F:ClassWithIncludedBody::class_body_included_no_name_fun()
             PARAMETERS:
-            RETURNS void TEXT=void  [7:9/100-8:1/104]
+            RETURNS void TEXT=void  [6:1/100-6:5/104]
 FUNCTION class_body_included_foo [2:1/11-2:32/42] FunctionImpl SCOPE: $Global$ 
     DEFINITION: null
     SIGNATURE class_body_included_foo()

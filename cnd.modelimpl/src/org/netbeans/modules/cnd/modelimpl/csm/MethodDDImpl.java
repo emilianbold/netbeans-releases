@@ -70,9 +70,8 @@ public class MethodDDImpl<T> extends MethodImpl<T> implements CsmFunctionDefinit
         super(name, rawName, cls, visibility, _virtual, _explicit, _static, _const, file, startOffset, endOffset, global);
     }
 
-    public static<T> MethodDDImpl<T> create(AST ast, ClassImpl cls, CsmVisibility visibility, boolean global) throws AstRendererException {
+    public static<T> MethodDDImpl<T> create(AST ast, final CsmFile file, ClassImpl cls, CsmVisibility visibility, boolean global) throws AstRendererException {
         CsmScope scope = cls;
-        CsmFile file = cls.getContainingFile();
         
         int startOffset = getStartOffset(ast);
         int endOffset = getEndOffset(ast);
@@ -124,7 +123,7 @@ public class MethodDDImpl<T> extends MethodImpl<T> implements CsmFunctionDefinit
         methodDDImpl.setCompoundStatement(body);
 
         postObjectCreateRegistration(global, methodDDImpl);
-        nameHolder.addReference(cls.getContainingFile(), methodDDImpl);
+        nameHolder.addReference(file, methodDDImpl);
         return methodDDImpl;
     }
 
