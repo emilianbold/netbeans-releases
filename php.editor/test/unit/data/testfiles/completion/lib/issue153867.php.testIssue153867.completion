@@ -63,12 +63,14 @@ CLASS      EmptyClassFromNs                [PUBLIC]   Extra
 CLASS      EmptyClassFromNs                [PUBLIC]   ExtraThrow
 CLASS      ExMyException                   [PUBLIC]   issue194875.php
 CLASS      ExMyException                   [PUBLIC]   issue201310.php
+CLASS      ExMyException1                  [PUBLIC]   issue204958.php
 CLASS      ExMyExceptionFromNs             [PUBLIC]   Extra
 CLASS      ExMyExceptionFromNs             [PUBLIC]   ExtraThrow
 CLASS      Exception                       [PUBLIC]   MySpace
 CLASS      Exception                       [PUBLIC]   MySpaceThrow
 CLASS      Exception                       [PUBLIC]   issue194875.php
 CLASS      Exception                       [PUBLIC]   issue201310.php
+CLASS      Exception1                      [PUBLIC]   issue204958.php
 CLASS      Foo                             [PUBLIC]   issue159970.php
 CLASS      Foo                             [PUBLIC]   issue191666.php
 CLASS      Foo                             [PUBLIC]   test203294.php
@@ -84,6 +86,8 @@ CLASS      If1                             [PUBLIC]   tests166339.php
 CLASS      If2                             [PUBLIC]   tests166339.php
 CLASS      IndexController                 [PUBLIC]   App\Test
 CLASS      InsideClass                     [PUBLIC]   insideClass.php
+CLASS      InstanceOfBar                   [PUBLIC]   issue204958.php
+CLASS      InstanceOfFoo                   [PUBLIC]   issue204958.php
 CLASS      InvisibleClass                  [PUBLIC]   issue194875.php
 CLASS      InvisibleClass                  [PUBLIC]   issue201310.php
 CLASS      InvisibleClassFromNs            [PUBLIC]   Extra
