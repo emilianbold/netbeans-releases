@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,38 +37,34 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.php.project.connections.transfer;
 
-package org.netbeans.modules.php.project.util;
-
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.php.api.util.StringUtils;
-import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
+import org.netbeans.modules.php.project.connections.RemoteClientImplementation;
+import org.netbeans.modules.php.project.connections.RemoteException;
 
-import static org.junit.Assert.*;
+/**
+ * Mock implementation of {@link RemoteClientImplementation}.
+ */
+public final class RemoteClient implements RemoteClientImplementation {
 
-public class PhpProjectUtilsTest extends NbTestCase {
+    private final String baseRemoteDirectory;
 
-    public PhpProjectUtilsTest(String name) {
-        super(name);
+    public RemoteClient(String baseRemoteDirectory) {
+        this.baseRemoteDirectory = baseRemoteDirectory;
     }
 
-    public void testImplode() {
-        final List<String> items = Arrays.asList("one", "two");
-        assertEquals("one" + PhpProjectProperties.DEBUG_PATH_MAPPING_SEPARATOR + "two", StringUtils.implode(items, PhpProjectProperties.DEBUG_PATH_MAPPING_SEPARATOR));
+    @Override
+    public String getBaseRemoteDirectory() {
+        return baseRemoteDirectory;
     }
 
-    public void testExplode() {
-        final String[] items = {"one", "two"};
-        String string = "one" + PhpProjectProperties.DEBUG_PATH_MAPPING_SEPARATOR + "two";
-        assertArrayEquals(items, StringUtils.explode(string, PhpProjectProperties.DEBUG_PATH_MAPPING_SEPARATOR).toArray(new String[0]));
-
-        // test for empty string (relative path ".")
-        string = "one" + PhpProjectProperties.DEBUG_PATH_MAPPING_SEPARATOR + "" + PhpProjectProperties.DEBUG_PATH_MAPPING_SEPARATOR + "two";
-        assertArrayEquals(new String[] {"one", "", "two"}, StringUtils.explode(string, PhpProjectProperties.DEBUG_PATH_MAPPING_SEPARATOR).toArray(new String[0]));
+    @Override
+    public List<TransferFile> listFiles(TransferFile file) throws RemoteException {
+        return Collections.emptyList();
     }
 
 }

@@ -41,7 +41,10 @@
  */
 package org.netbeans.modules.php.project.connections.common;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.php.project.connections.RemoteException;
+import org.netbeans.modules.php.project.connections.transfer.TransferFile;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
@@ -50,6 +53,9 @@ import org.openide.util.NbBundle;
  * Utility methods for remote connections.
  */
 public final class RemoteUtils {
+
+    private static final Logger LOGGER = Logger.getLogger(RemoteUtils.class.getName());
+
 
     private RemoteUtils() {
     }
@@ -81,6 +87,24 @@ public final class RemoteUtils {
                 new Object[] {NotifyDescriptor.OK_OPTION},
                 NotifyDescriptor.OK_OPTION);
         DialogDisplayer.getDefault().notifyLater(notifyDescriptor);
+    }
+
+    /**
+     * Remote trailing {@value TransferFile#REMOTE_PATH_SEPARATOR} from the given
+     * directory path.
+     * <p>
+     * If the path is <i>root</i> (it equals just {@value TransferFile#REMOTE_PATH_SEPARATOR}),
+     * no sanitation is done.
+     * @param directoryPath directory to be sanitized
+     * @return sanitized directory path
+     */
+    public static String sanitizeDirectoryPath(String directoryPath) {
+        while (!directoryPath.equals(TransferFile.REMOTE_PATH_SEPARATOR)
+                && directoryPath.endsWith(TransferFile.REMOTE_PATH_SEPARATOR)) {
+            LOGGER.log(Level.FINE, "Removing ending slash from directory {0}", directoryPath);
+            directoryPath = directoryPath.substring(0, directoryPath.length() - TransferFile.REMOTE_PATH_SEPARATOR.length());
+        }
+        return directoryPath;
     }
 
 }

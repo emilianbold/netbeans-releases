@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,38 +37,61 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.php.project.connections.transfer;
 
-package org.netbeans.modules.php.project.util;
+import java.util.Date;
+import org.netbeans.modules.php.project.connections.spi.RemoteFile;
 
-import java.util.Arrays;
-import java.util.List;
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.php.api.util.StringUtils;
-import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
+/**
+ * Mock implementation of {@link RemoteFile}.
+ */
+public final class RemoteFileImpl implements RemoteFile {
 
-import static org.junit.Assert.*;
+    private final String name;
+    private final String parentDirectory;
+    private final boolean file;
 
-public class PhpProjectUtilsTest extends NbTestCase {
-
-    public PhpProjectUtilsTest(String name) {
-        super(name);
+    public RemoteFileImpl(String name, String parentDirectory, boolean file) {
+        this.name = name;
+        this.parentDirectory = parentDirectory;
+        this.file = file;
     }
 
-    public void testImplode() {
-        final List<String> items = Arrays.asList("one", "two");
-        assertEquals("one" + PhpProjectProperties.DEBUG_PATH_MAPPING_SEPARATOR + "two", StringUtils.implode(items, PhpProjectProperties.DEBUG_PATH_MAPPING_SEPARATOR));
+    @Override
+    public String getName() {
+        return name;
     }
 
-    public void testExplode() {
-        final String[] items = {"one", "two"};
-        String string = "one" + PhpProjectProperties.DEBUG_PATH_MAPPING_SEPARATOR + "two";
-        assertArrayEquals(items, StringUtils.explode(string, PhpProjectProperties.DEBUG_PATH_MAPPING_SEPARATOR).toArray(new String[0]));
+    @Override
+    public String getParentDirectory() {
+        return parentDirectory;
+    }
 
-        // test for empty string (relative path ".")
-        string = "one" + PhpProjectProperties.DEBUG_PATH_MAPPING_SEPARATOR + "" + PhpProjectProperties.DEBUG_PATH_MAPPING_SEPARATOR + "two";
-        assertArrayEquals(new String[] {"one", "", "two"}, StringUtils.explode(string, PhpProjectProperties.DEBUG_PATH_MAPPING_SEPARATOR).toArray(new String[0]));
+    @Override
+    public boolean isDirectory() {
+        return !file;
+    }
+
+    @Override
+    public boolean isFile() {
+        return file;
+    }
+
+    @Override
+    public boolean isLink() {
+        return false;
+    }
+
+    @Override
+    public long getSize() {
+        return 999;
+    }
+
+    @Override
+    public long getTimestamp() {
+        return new Date().getTime();
     }
 
 }
