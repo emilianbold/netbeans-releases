@@ -111,6 +111,28 @@ public class CdiTestUtilities {
                 "public @interface "+name+"  {} ");
     }
     
+    public void initEnterprise()  throws IOException{
+        TestUtilities.copyStringToFileObject(mySourceRoot, "javax/ejb/Singleton.java",
+                "package javax.ejb; " +
+                "import static java.lang.annotation.ElementType; "+
+                "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
+                "import java.lang.annotation.*; "+
+                "import java.lang.annotation.RetentionPolicy; "+
+                "@Retention(RUNTIME) "+
+                "@Target({ElementType.TYPE}) "+          
+                "public @interface Singleton  {}");
+        
+        TestUtilities.copyStringToFileObject(mySourceRoot, "javax/ejb/Stateless.java",
+                "package javax.ejb; " +
+                "import static java.lang.annotation.ElementType; "+
+                "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
+                "import java.lang.annotation.*; "+
+                "import java.lang.annotation.RetentionPolicy; "+
+                "@Retention(RUNTIME) "+
+                "@Target({ElementType.TYPE}) "+          
+                "public @interface Stateless  {}");
+    }
+    
     public  void initAnnotations() throws IOException{
         TestUtilities.copyStringToFileObject(mySourceRoot, "javax/inject/Qualifier.java",
                 "package javax.inject; " +
