@@ -63,7 +63,6 @@ import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.apisupport.project.ui.wizard.common.CreatedModifiedFiles;
-import org.netbeans.modules.apisupport.project.layers.LayerUtils;
 import org.netbeans.modules.apisupport.project.ui.wizard.common.BasicWizardIterator;
 import org.openide.WizardDescriptor;
 import org.openide.awt.ActionReference;
@@ -154,6 +153,8 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
     private String displayName;
     private String origIconPath;
     private String largeIconPath;
+
+    private FileSystem sfs;
     
     DataModel(WizardDescriptor wiz) {
         super(wiz);
@@ -281,9 +282,9 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
             if (globalMenuItemEnabled) {
                 refs.add(createActionReference(
                     gmiParentMenuPath,
-                    gmiSeparatorBefore ? Position.toInteger(gmiPosition, getProject(), gmiParentMenuPath, Boolean.TRUE) : -1,
-                    gmiSeparatorAfter ? Position.toInteger(gmiPosition, getProject(), gmiParentMenuPath, Boolean.FALSE) : -1,
-                    Position.toInteger(gmiPosition, getProject(), gmiParentMenuPath),
+                    gmiSeparatorBefore ? Position.toInteger(gmiPosition, getProject(), gmiParentMenuPath, true, sfs) : -1,
+                    gmiSeparatorAfter ? Position.toInteger(gmiPosition, getProject(), gmiParentMenuPath, false, sfs) : -1,
+                    Position.toInteger(gmiPosition, getProject(), gmiParentMenuPath, null, sfs),
                     null
                 ));
             }
@@ -294,7 +295,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
                     toolbar,
                     -1,
                     -1,
-                    Position.toInteger(toolbarPosition, getProject(), toolbar),
+                    Position.toInteger(toolbarPosition, getProject(), toolbar, null, sfs),
                     null
                 ));
             }
@@ -319,9 +320,9 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
             if (ftContextEnabled) {
                 refs.add(createActionReference(
                     ftContextType,
-                    ftContextSeparatorBefore ? Position.toInteger(ftContextPosition, getProject(), ftContextType, Boolean.TRUE) : -1,
-                    ftContextSeparatorAfter ? Position.toInteger(ftContextPosition, getProject(), ftContextType, Boolean.FALSE) : -1,
-                    Position.toInteger(ftContextPosition, getProject(), ftContextType),
+                    ftContextSeparatorBefore ? Position.toInteger(ftContextPosition, getProject(), ftContextType, true, sfs) : -1,
+                    ftContextSeparatorAfter ? Position.toInteger(ftContextPosition, getProject(), ftContextType, false, sfs) : -1,
+                    Position.toInteger(ftContextPosition, getProject(), ftContextType, null, sfs),
                     null
                 ));
             }
@@ -329,9 +330,9 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
             if (edContextEnabled) {
                 refs.add(createActionReference(
                     edContextType,
-                    edContextSeparatorBefore ? Position.toInteger(edContextPosition, getProject(), edContextType, Boolean.TRUE) : -1,
-                    edContextSeparatorAfter ? Position.toInteger(edContextPosition, getProject(), edContextType, Boolean.FALSE) : -1,
-                    Position.toInteger(edContextPosition, getProject(), edContextType),
+                    edContextSeparatorBefore ? Position.toInteger(edContextPosition, getProject(), edContextType, true, sfs) : -1,
+                    edContextSeparatorAfter ? Position.toInteger(edContextPosition, getProject(), edContextType, false, sfs) : -1,
+                    Position.toInteger(edContextPosition, getProject(), edContextType, null, sfs),
                     null
                 ));
             }
@@ -683,6 +684,10 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
             new H()
         );
     }
+
+    void setSFS(FileSystem sfs) {
+        this.sfs = sfs;
+    }
     
     static final class Position {
 
@@ -728,25 +733,17 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
             return beforeText + POSITION_HERE + afterText;
         }
 
-        static int toInteger(Position p, Project project, @NonNull String layerPath) {
-            return toInteger(p, project, layerPath, null);
-        }
-        static int toInteger(Position p, Project project, @NonNull String layerPath, Boolean middleBelowAbove) {
+        static int toInteger(Position p, Project project, @NonNull String layerPath, Boolean middleBelowAbove, FileSystem sfs) {
             if (p == null) {
                 return -1;
             }
-            try {
                 assert layerPath != null;
-                FileSystem sfs = LayerUtils.getEffectiveSystemFilesystem(project);
                 assert sfs != null;
                 FileObject merged = sfs.findResource(layerPath);
                 assert merged != null : layerPath;
                 Integer beforePos = getPosition(merged, p.getBefore());
                 Integer afterPos = getPosition(merged, p.getAfter());
                 return toIntFromBounds(beforePos, afterPos, middleBelowAbove);
-            } catch (IOException ex) {
-                return 3334;
-            }
         }
         private static Integer getPosition(FileObject folder, String name) {
             if (name == null) {
