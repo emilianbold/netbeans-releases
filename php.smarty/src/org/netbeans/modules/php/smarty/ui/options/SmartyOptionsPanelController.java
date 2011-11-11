@@ -128,7 +128,7 @@ public class SmartyOptionsPanelController extends OptionsPanelController impleme
 
     @Override
     public HelpCtx getHelpCtx() {
-        return null;
+        return new HelpCtx(SmartyOptions.class);
     }
 
     @Override
