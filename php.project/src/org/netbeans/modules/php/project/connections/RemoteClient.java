@@ -65,6 +65,7 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.PhpVisibilityQuery;
+import org.netbeans.modules.php.project.connections.common.RemoteUtils;
 import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
 import org.netbeans.modules.php.project.connections.spi.RemoteConnectionProvider;
 import org.netbeans.modules.php.project.connections.spi.RemoteFile;
@@ -198,7 +199,7 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
             throw new RemoteException(NbBundle.getMessage(RemoteClient.class, "MSG_CannotChangeDirectory", baseRemoteDirectory), remoteClient.getReplyString());
         }
         // #204680 - symlinks on remote server
-        String pwd = remoteClient.printWorkingDirectory();
+        String pwd = getWorkingDirectory();
         if (!pwd.equals(baseRemoteDirectory)) {
             LOGGER.log(Level.FINE, "Changing base remote directory (symlink?): {0} -> {1}", new Object[] {baseRemoteDirectory, pwd});
             baseRemoteDirectory = pwd;
@@ -428,7 +429,7 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
 
             if (LOGGER.isLoggable(Level.FINE)) {
                 synchronized (this) {
-                    LOGGER.log(Level.FINE, "Uploading file {0} => {1}", new Object[] {fileName, remoteClient.printWorkingDirectory() + TransferFile.REMOTE_PATH_SEPARATOR + tmpFileName});
+                    LOGGER.log(Level.FINE, "Uploading file {0} => {1}", new Object[] {fileName, getWorkingDirectory() + TransferFile.REMOTE_PATH_SEPARATOR + tmpFileName});
                 }
             }
             // XXX lock the file?
@@ -1138,19 +1139,19 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
                 if (!remoteClient.makeDirectory(dir)) {
                     // XXX check 52x codes
                     if (LOGGER.isLoggable(Level.FINE)) {
-                        LOGGER.log(Level.FINE, "Cannot create directory: {0}", remoteClient.printWorkingDirectory() + TransferFile.REMOTE_PATH_SEPARATOR + dir);
+                        LOGGER.log(Level.FINE, "Cannot create directory: {0}", getWorkingDirectory() + TransferFile.REMOTE_PATH_SEPARATOR + dir);
                     }
                     throw new RemoteException(NbBundle.getMessage(RemoteClient.class, "MSG_CannotCreateDirectory", dir), remoteClient.getReplyString());
                 } else if (!remoteClient.changeWorkingDirectory(dir)) {
                     if (LOGGER.isLoggable(Level.FINE)) {
-                        LOGGER.log(Level.FINE, "Cannot enter directory: {0}", remoteClient.printWorkingDirectory() + TransferFile.REMOTE_PATH_SEPARATOR + dir);
+                        LOGGER.log(Level.FINE, "Cannot enter directory: {0}", getWorkingDirectory() + TransferFile.REMOTE_PATH_SEPARATOR + dir);
                     }
                     return false;
                     // XXX
                     //throw new RemoteException("Cannot change directory '" + dir + "' [" + remoteClient.getReplyString() + "]");
                 }
                 if (LOGGER.isLoggable(Level.FINE)) {
-                    LOGGER.log(Level.FINE, "Directory '{0}' created and entered", remoteClient.printWorkingDirectory());
+                    LOGGER.log(Level.FINE, "Directory '{0}' created and entered", getWorkingDirectory());
                 }
             }
         }
@@ -1284,6 +1285,13 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
         }
         return dirs;
     }
+
+    // #204874 - some servers return ending '/' for directories => remove it
+    private synchronized String getWorkingDirectory() throws RemoteException {
+        return RemoteUtils.sanitizeDirectoryPath(remoteClient.printWorkingDirectory());
+    }
+
+    //~ Inner classes
 
     public static interface OperationMonitor {
         /**
