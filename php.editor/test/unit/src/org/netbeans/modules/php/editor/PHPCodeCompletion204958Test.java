@@ -39,66 +39,43 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.jsf.editor.facelets;
+package org.netbeans.modules.php.editor;
 
-import java.util.ArrayList;
-import java.util.Collection;
+import java.io.File;
+import java.util.Collections;
 import java.util.Map;
-import org.netbeans.modules.web.jsfapi.api.Attribute;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author mfukala@netbeans.org
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public final class TagImpl extends GenericTag {
+public class PHPCodeCompletion204958Test extends PHPTestBase {
 
-    private String name;
-    private String description;
-    private Map<String, Attribute> attrs;
+    public PHPCodeCompletion204958Test(String testName) {
+        super(testName);
+    }
 
-    public TagImpl(String name, String description, Map<String, Attribute> attrs) {
-        this.name = name;
-        this.description = description;
-        this.attrs = attrs;
+    public void testUseCase1() throws Exception {
+        checkCompletion("testfiles/completion/lib/test204958/issue204958.php", "if ($obj instanceof ^", false);
+    }
+
+    public void testUseCase2() throws Exception {
+        checkCompletion("testfiles/completion/lib/test204958/issue204958.php", "if ($obj instanceof I^", false);
     }
 
     @Override
-    public String getName() {
-        return name;
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        return Collections.singletonMap(
+            PhpSourcePath.SOURCE_CP,
+            ClassPathSupport.createClassPath(new FileObject[] {
+                FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/lib/test204958/"))
+            })
+        );
     }
 
-    @Override
-    public String getDescription() {
-        return description;
-    }
-
-    @Override
-    public boolean hasNonGenenericAttributes() {
-        return !attrs.isEmpty();
-    }
-
-    @Override
-    public Collection<Attribute> getAttributes() {
-        //merge with default attributes
-        Collection<Attribute> all = new ArrayList<Attribute>(super.getAttributes());
-        all.addAll(attrs.values());
-        return all;
-    }
-
-    @Override
-    public Attribute getAttribute(String name) {
-        Attribute superA = super.getAttribute(name);
-        return superA != null ? superA : attrs.get(name);
-    }
-
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("Tag[name=").append(getName()).append(", attributes={"); //NOI18N
-        for (Attribute attr : getAttributes()) {
-            sb.append(attr.toString()).append(",");
-        }
-        sb.append("}]");
-        return sb.toString();
-    }
 }
