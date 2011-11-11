@@ -65,6 +65,7 @@ import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.MultiFileLoader;
 import org.openide.NotifyDescriptor;
 import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -84,7 +85,10 @@ public class URLDataObject extends MultiDataObject
     
     /** Generated serial version UID. */
     static final long serialVersionUID = 6829522922370124627L;
-    
+
+    /** Try to find URL string in the first 10 lines of the .url file */
+    private static final int LINES_LIMIT = 10;
+
     /** */
     private Lookup lookup;
 
@@ -139,8 +143,8 @@ public class URLDataObject extends MultiDataObject
         InputStream is = null;
         try {
             is = urlFile.getInputStream();
-            urlString = new BufferedReader(new InputStreamReader(is))
-                        .readLine();
+            BufferedReader br = new BufferedReader(new InputStreamReader(is));
+            urlString = findUrlInFileContent(br);
         } catch (FileNotFoundException fne) {
             ErrorManager.getDefault().notify(ErrorManager.WARNING, fne);
             return null;
@@ -166,6 +170,33 @@ public class URLDataObject extends MultiDataObject
             urlString = "";                                             //NOI18N
         }
         return urlString;
+    }
+
+    /**
+     * Find URL string in URL file content. Only read first LINES_LIMIT lines.
+     * See bug #204972.
+     *
+     * @return If any found, string on separate line after "url=", otherwise the
+     * first line.
+     */
+    private String findUrlInFileContent(BufferedReader reader) {
+        String line = null;
+        String firstLine = null;
+        int tries = 0;
+        try {
+            while ((line = reader.readLine()) != null && tries < LINES_LIMIT) {
+                if (firstLine == null) {
+                    firstLine = line;
+                }
+                if (line.substring(0, 4).equalsIgnoreCase("url=")) {
+                    return line.substring(4);
+                }
+                tries++;
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return firstLine;
     }
 
     /**
