@@ -4,12 +4,14 @@ implements |ClsBaseDeclarationTest
 PACKAGE    ANS                             [PUBLIC]   null
 PACKAGE    Admin                           [PUBLIC]   null
 PACKAGE    App                             [PUBLIC]   null
+PACKAGE    Bar                             [PUBLIC]   null
 PACKAGE    Brite                           [PUBLIC]   null
 PACKAGE    CNS                             [PUBLIC]   null
 PACKAGE    Core                            [PUBLIC]   null
 PACKAGE    Data                            [PUBLIC]   null
 PACKAGE    Extra                           [PUBLIC]   null
 PACKAGE    ExtraThrow                      [PUBLIC]   null
+PACKAGE    Foo                             [PUBLIC]   null
 PACKAGE    MySpace                         [PUBLIC]   null
 PACKAGE    MySpaceThrow                    [PUBLIC]   null
 PACKAGE    Shit                            [PUBLIC]   null

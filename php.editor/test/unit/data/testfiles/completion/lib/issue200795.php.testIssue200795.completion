@@ -4,12 +4,14 @@ $clazz = new |MyNonAbstractClass();
 PACKAGE    ANS                             [PUBLIC]   null
 PACKAGE    Admin                           [PUBLIC]   null
 PACKAGE    App                             [PUBLIC]   null
+PACKAGE    Bar                             [PUBLIC]   null
 PACKAGE    Brite                           [PUBLIC]   null
 PACKAGE    CNS                             [PUBLIC]   null
 PACKAGE    Core                            [PUBLIC]   null
 PACKAGE    Data                            [PUBLIC]   null
 PACKAGE    Extra                           [PUBLIC]   null
 PACKAGE    ExtraThrow                      [PUBLIC]   null
+PACKAGE    Foo                             [PUBLIC]   null
 PACKAGE    MySpace                         [PUBLIC]   null
 PACKAGE    MySpaceThrow                    [PUBLIC]   null
 PACKAGE    Shit                            [PUBLIC]   null
@@ -116,6 +118,8 @@ CLASS      I146187ChildClass               [PUBLIC]   issue146187.php
 CLASS      I146187ChildClass               [PUBLIC]   issue146187.php
 CLASS      I146187Parent1                  [PUBLIC]   issue146187.php
 CLASS      I146187Parent2                  [PUBLIC]   issue146187.php
+CLASS      Image                           [PUBLIC]   Bar
+CLASS      Image                           [PUBLIC]   Foo
 CLASS      IndexController                 [PUBLIC]   App\Test
 CLASS      InsideClass                     [PUBLIC]   insideClass.php
 CLASS      InstanceOfBar                   [PUBLIC]   issue204958.php
