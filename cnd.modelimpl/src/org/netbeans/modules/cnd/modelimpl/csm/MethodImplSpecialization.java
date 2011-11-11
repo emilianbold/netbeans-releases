@@ -71,9 +71,8 @@ public class MethodImplSpecialization<T> extends MethodImpl<T> {
         super(name, rawName, cls, visibility, _virtual, _explicit, _static, _const, file, startOffset, endOffset, global);
     }
 
-    public static<T> MethodImplSpecialization<T> create(AST ast, ClassImpl cls, CsmVisibility visibility, boolean global) throws AstRendererException {
+    public static<T> MethodImplSpecialization<T> create(AST ast, final CsmFile file, ClassImpl cls, CsmVisibility visibility, boolean global) throws AstRendererException {
         CsmScope scope = cls;
-        CsmFile file = cls.getContainingFile();
         
         int startOffset = getStartOffset(ast);
         int endOffset = getEndOffset(ast);
@@ -119,7 +118,7 @@ public class MethodImplSpecialization<T> extends MethodImpl<T> {
                 AstRenderer.FunctionRenderer.isVoidParameter(ast));
         
         postObjectCreateRegistration(global, methodImpl);
-        nameHolder.addReference(cls.getContainingFile(), methodImpl);
+        nameHolder.addReference(file, methodImpl);
         return methodImpl;
     }
 

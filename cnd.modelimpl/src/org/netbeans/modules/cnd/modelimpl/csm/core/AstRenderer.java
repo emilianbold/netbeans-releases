@@ -211,7 +211,7 @@ public class AstRenderer {
                                     // this is a template method specialization declaration (without a definition)
                                     ClassImplFunctionSpecialization spec = ClassImplFunctionSpecialization.create(token, currentNamespace, file, !isRenderingLocalContext(), container);
                                     container.addDeclaration(spec);
-                                    MethodImplSpecialization explicitSpecializationDeclaration = MethodImplSpecialization.create(token, spec, CsmVisibility.PUBLIC, !isRenderingLocalContext());
+                                    MethodImplSpecialization explicitSpecializationDeclaration = MethodImplSpecialization.create(token, file, spec, CsmVisibility.PUBLIC, !isRenderingLocalContext());
                                     spec.addMember(explicitSpecializationDeclaration, !isRenderingLocalContext());
                                     if (currentNamespace != null && NamespaceImpl.isNamespaceScope(explicitSpecializationDeclaration)) {
                                         currentNamespace.addDeclaration(explicitSpecializationDeclaration);
