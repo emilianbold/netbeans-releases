@@ -292,6 +292,13 @@ public class StartTask extends BasicTask<OperationState> {
             if (null != db && "true".equals(ip.get(GlassfishModule.START_DERBY_FLAG))) { // NOI18N
                 db.start();
             }
+            int testPort = 0;
+            String portCandidate = support.getAdminPort();
+            try {
+                testPort = Integer.parseInt(portCandidate);
+            } catch (NumberFormatException nfe) {
+                Logger.getLogger("glassfish").log(Level.INFO, "could not parse {0} as an Inetger", portCandidate); // NOI18N
+            }
             // this may be an autheticated server... so we will say it is started.
             // other operations will fail if the process on the port is not a
             // GF v3 server.
@@ -301,6 +308,9 @@ public class StartTask extends BasicTask<OperationState> {
                     result = OperationState.FAILED;
                 }
                 return fireOperationStateChanged(result,
+                        "MSG_START_SERVER_OCCUPIED_PORT", instanceName); //NOI18N
+            } else if (testPort != 0 && Utils.isLocalPortOccupied(testPort)) {
+                return fireOperationStateChanged(OperationState.FAILED,
                         "MSG_START_SERVER_OCCUPIED_PORT", instanceName); //NOI18N
             }
             if (upgradeFailed()) {

@@ -415,7 +415,8 @@ public class VariousUtils {
                         assert frgs.length == 2;
                         String clsName = frgs[0];
                         if (clsName != null) {
-                            Collection<? extends ClassScope> classes = IndexScopeImpl.getClasses(createQuery(clsName, varScope), varScope);
+                            QualifiedName fullyQualifiedName = getFullyQualifiedName(createQuery(clsName, varScope), offset, varScope);
+                            Collection<? extends ClassScope> classes = IndexScopeImpl.getClasses(fullyQualifiedName, varScope);
                             for (ClassScope cls : classes) {
                                 Collection<? extends MethodScope> inheritedMethods = IndexScopeImpl.getMethods(cls, frgs[1], varScope, PhpModifiers.ALL_FLAGS);
                                 for (MethodScope meth : inheritedMethods) {
@@ -730,7 +731,7 @@ public class VariousUtils {
             return "@" + FUNCTION_TYPE_PREFIX + fname;
         } else if (varBase instanceof StaticMethodInvocation) {
             StaticMethodInvocation staticMethodInvocation = (StaticMethodInvocation) varBase;
-            String className = CodeUtils.extractUnqualifiedClassName(staticMethodInvocation);
+            String className = CodeUtils.extractQualifiedName(staticMethodInvocation.getClassName());
             String methodName = CodeUtils.extractFunctionName(staticMethodInvocation.getMethod());
 
             if (className != null && methodName != null) {
