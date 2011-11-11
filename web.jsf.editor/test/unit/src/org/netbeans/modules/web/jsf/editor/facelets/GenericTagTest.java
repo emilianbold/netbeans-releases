@@ -41,64 +41,65 @@
  */
 package org.netbeans.modules.web.jsf.editor.facelets;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Map;
+import java.util.Collections;
+import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.web.jsfapi.api.Attribute;
+import org.netbeans.modules.web.jsfapi.api.Tag;
+
 
 /**
  *
  * @author mfukala@netbeans.org
  */
-public final class TagImpl extends GenericTag {
+public class GenericTagTest extends NbTestCase {
 
-    private String name;
-    private String description;
-    private Map<String, Attribute> attrs;
-
-    public TagImpl(String name, String description, Map<String, Attribute> attrs) {
-        this.name = name;
-        this.description = description;
-        this.attrs = attrs;
+    public GenericTagTest(String name) {
+        super(name);
     }
 
-    @Override
-    public String getName() {
-        return name;
+    public void testAll() {
+        Tag t = new GenericTagImpl();
+        
+        assertNotNull(t.getAttribute("class"));
+        assertNotNull(t.getAttribute("rendered"));
+        
+        assertFalse(t.hasNonGenenericAttributes());
+        
+        Collection<Attribute> attrs = t.getAttributes();
+        assertNotNull(attrs);
+        assertFalse(attrs.isEmpty());
+        
+        Attribute id = t.getAttribute("id");
+        assertNotNull(id);
+        assertEquals("id", id.getName());
+        assertFalse(id.isRequired());
+        assertNull(id.getType());
+        assertNotNull(id.getDescription());
+        assertEquals("The component identifier", id.getDescription());
+        
     }
-
-    @Override
-    public String getDescription() {
-        return description;
-    }
-
-    @Override
-    public boolean hasNonGenenericAttributes() {
-        return !attrs.isEmpty();
-    }
-
-    @Override
-    public Collection<Attribute> getAttributes() {
-        //merge with default attributes
-        Collection<Attribute> all = new ArrayList<Attribute>(super.getAttributes());
-        all.addAll(attrs.values());
-        return all;
-    }
-
-    @Override
-    public Attribute getAttribute(String name) {
-        Attribute superA = super.getAttribute(name);
-        return superA != null ? superA : attrs.get(name);
-    }
-
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("Tag[name=").append(getName()).append(", attributes={"); //NOI18N
-        for (Attribute attr : getAttributes()) {
-            sb.append(attr.toString()).append(",");
+    
+    public void testGenericAttributesDescription() {
+        Tag t = new GenericTagImpl();
+        for(Attribute ga : t.getAttributes()) {
+            assertNotNull(ga.getDescription());
+            assertFalse(ga.getDescription().isEmpty());
         }
-        sb.append("}]");
-        return sb.toString();
     }
+    
+    private static class GenericTagImpl extends GenericTag {
+
+            @Override
+            public String getName() {
+                return "test";
+            }
+
+            @Override
+            public String getDescription() {
+                return null;
+            }
+
+    }
+    
 }

@@ -41,64 +41,58 @@
  */
 package org.netbeans.modules.web.jsf.editor.facelets;
 
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.modules.web.jsfapi.api.Attribute;
+import org.netbeans.modules.web.jsfapi.api.Tag;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author mfukala@netbeans.org
  */
-public final class TagImpl extends GenericTag {
+public abstract class GenericTag implements Tag {
 
-    private String name;
-    private String description;
-    private Map<String, Attribute> attrs;
-
-    public TagImpl(String name, String description, Map<String, Attribute> attrs) {
-        this.name = name;
-        this.description = description;
-        this.attrs = attrs;
-    }
-
-    @Override
-    public String getName() {
-        return name;
-    }
-
-    @Override
-    public String getDescription() {
-        return description;
-    }
-
-    @Override
-    public boolean hasNonGenenericAttributes() {
-        return !attrs.isEmpty();
-    }
+    /*
+     * JSF spec 3.1.12 Render-Independent Properties: 
+     * Read-Write: id, parent, rendered, rendererType, transient; 
+     * Read-Only:  rendersChildren
+    */
+    private static final String[] DEFAULT_ATTRS = new String[]{"id", "parent", "rendered",
+        "rendererType", "transient", "class" /* not in the spec */}; //NOI18N
+    
+    private AtomicReference<Map<String, Attribute>> attrs = new AtomicReference<Map<String, Attribute>>();
 
     @Override
     public Collection<Attribute> getAttributes() {
-        //merge with default attributes
-        Collection<Attribute> all = new ArrayList<Attribute>(super.getAttributes());
-        all.addAll(attrs.values());
-        return all;
+        return getGenericAttributes().values();
     }
 
     @Override
     public Attribute getAttribute(String name) {
-        Attribute superA = super.getAttribute(name);
-        return superA != null ? superA : attrs.get(name);
+        return getGenericAttributes().get(name);
     }
 
     @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("Tag[name=").append(getName()).append(", attributes={"); //NOI18N
-        for (Attribute attr : getAttributes()) {
-            sb.append(attr.toString()).append(",");
-        }
-        sb.append("}]");
-        return sb.toString();
+    public boolean hasNonGenenericAttributes() {
+        return false;
     }
+    
+    private Map<String, Attribute> getGenericAttributes() {
+        if (attrs.compareAndSet(null, new HashMap<String, Attribute>())) {
+            //add the default ID attribute
+            for (String defaultAttributeName : DEFAULT_ATTRS) {
+                if (getAttribute(defaultAttributeName) == null) {
+                    attrs.get().put(defaultAttributeName, 
+                            new Attribute.DefaultAttribute(defaultAttributeName, 
+                            NbBundle.getMessage(GenericTag.class, new StringBuilder().append("HELP_").append(defaultAttributeName).toString()), false)); //NOI18N
+                }
+            }
+        }
+
+        return attrs.get();
+    }
+    
 }
