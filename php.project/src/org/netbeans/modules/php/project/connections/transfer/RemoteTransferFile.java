@@ -76,7 +76,7 @@ final class RemoteTransferFile extends TransferFile {
         if (!baseDirectory.startsWith(REMOTE_PATH_SEPARATOR)) {
             throw new IllegalArgumentException("Base directory '" + baseDirectory + "' must start with '" + REMOTE_PATH_SEPARATOR + "'");
         }
-        String parentDirectory = file.getParentDirectory();
+        String parentDirectory = getParentDirectory();
         if (!parentDirectory.startsWith(REMOTE_PATH_SEPARATOR)) {
             throw new IllegalArgumentException("Parent directory '" + parentDirectory + "' must start with '" + REMOTE_PATH_SEPARATOR + "'");
         }
@@ -156,9 +156,16 @@ final class RemoteTransferFile extends TransferFile {
         }
     }
 
+    // #204874 - some servers return ending '/' for directories => remove it
+    private String getParentDirectory() {
+        synchronized (file) {
+            return RemoteUtils.sanitizeDirectoryPath(file.getParentDirectory());
+        }
+    }
+
     private String getAbsolutePath() {
         synchronized (file) {
-            return file.getParentDirectory() + REMOTE_PATH_SEPARATOR + getName();
+            return getParentDirectory() + REMOTE_PATH_SEPARATOR + getName();
         }
     }
 
