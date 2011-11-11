@@ -313,7 +313,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
                                     indeterminateProgress = false;
                                 }
                             }
-                            if (! indeterminateProgress) {
+                            if (! indeterminateProgress && spareHandleStarted) {
                                 spareHandle.progress (((JLabel) evt.getSource ()).getText (), processedUnits < totalUnits - 1 ? processedUnits : totalUnits - 1);
                             }
                         }
