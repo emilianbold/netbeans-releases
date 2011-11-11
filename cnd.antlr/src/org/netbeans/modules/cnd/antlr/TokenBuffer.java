@@ -40,7 +40,7 @@ public class TokenBuffer {
     private final List<Token> tokens;
 
     // type buffer data (created to improve performance of LA)
-    private int size = 0;
+    private final int size;
     private short[] data;
 
     /** Create a token buffer */
@@ -53,8 +53,8 @@ public class TokenBuffer {
         tokens = new ArrayList<Token>(initialCapacity);
         data = new short[initialCapacity];
         // fill buffer
+        int pos = 0;
         try {
-            int pos = 0;
             Token t = input.nextToken();
             int type;
             while ( (t != null) && ((type = t.getType()) != Token.EOF_TYPE) ) {
@@ -66,11 +66,11 @@ public class TokenBuffer {
                 data[pos++] = (short) type;
                 t = input.nextToken();
             }
-            size = pos;
         }
         catch (TokenStreamException tse) {
                 System.err.println("tmp error: can't load tokens: "+tse);
         }
+        size = pos;
     }
 
     // double data size
@@ -96,7 +96,7 @@ public class TokenBuffer {
 
     /** Get a lookahead token */
     public final Token LT(int i) {
-        if ( (p+i-1) >= tokens.size() ) {
+        if ( (p+i-1) >= size ) {
                 return TokenImpl.EOF_TOKEN;
         }
         return tokens.get(p + i - 1);
