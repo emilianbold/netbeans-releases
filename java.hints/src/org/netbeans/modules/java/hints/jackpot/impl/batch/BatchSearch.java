@@ -188,11 +188,11 @@ public class BatchSearch {
         return BulkSearch.getDefault().create(code, trees, additionalConstraints);
     }
 
-    public static void getVerifiedSpans(BatchResult candidates, @NonNull ProgressHandleWrapper progress, final VerifiedSpansCallBack callback, final Collection<? super MessageImpl> problems) {
-        getVerifiedSpans(candidates, progress, callback, false, problems);
+    public static void getVerifiedSpans(BatchResult candidates, @NonNull ProgressHandleWrapper progress, final VerifiedSpansCallBack callback, final Collection<? super MessageImpl> problems, AtomicBoolean cancel) {
+        getVerifiedSpans(candidates, progress, callback, false, problems, cancel);
     }
 
-    public static void getVerifiedSpans(BatchResult candidates, @NonNull ProgressHandleWrapper progress, final VerifiedSpansCallBack callback, boolean doNotRegisterClassPath, final Collection<? super MessageImpl> problems) {
+    public static void getVerifiedSpans(BatchResult candidates, @NonNull ProgressHandleWrapper progress, final VerifiedSpansCallBack callback, boolean doNotRegisterClassPath, final Collection<? super MessageImpl> problems, AtomicBoolean cancel) {
         int[] parts = new int[candidates.projectId2Resources.size()];
         int   index = 0;
 
@@ -203,13 +203,15 @@ public class BatchSearch {
         ProgressHandleWrapper inner = progress.startNextPartWithEmbedding(parts);
 
         for (Entry<? extends IndexEnquirer, ? extends Collection<? extends Resource>> e : candidates.projectId2Resources.entrySet()) {
+            if (cancel.get()) 
+                return;
             inner.startNextPart(e.getValue().size());
 
-            e.getKey().validateResource(e.getValue(), progress, callback, doNotRegisterClassPath, problems);
+            e.getKey().validateResource(e.getValue(), inner, callback, doNotRegisterClassPath, problems, cancel);
         }
     }
 
-    private static void getLocalVerifiedSpans(Collection<? extends Resource> resources, @NonNull final ProgressHandleWrapper progress, final VerifiedSpansCallBack callback, boolean doNotRegisterClassPath, final Collection<? super MessageImpl> problems) {
+    private static void getLocalVerifiedSpans(Collection<? extends Resource> resources, @NonNull final ProgressHandleWrapper progress, final VerifiedSpansCallBack callback, boolean doNotRegisterClassPath, final Collection<? super MessageImpl> problems, final AtomicBoolean cancel) {
         Collection<FileObject> files = new LinkedList<FileObject>();
         final Map<FileObject, Resource> file2Resource = new HashMap<FileObject, Resource>();
 
@@ -256,6 +258,8 @@ public class BatchSearch {
 
 //                    for (FileObject f : toProcess) {
                     while (currentPointer.get() < toProcess.size()) {
+                        if (cancel.get())
+                            return;
                         final AtomicBoolean stop = new AtomicBoolean();
 //                        JavaSource js = JavaSource.create(e.getKey(), f);
                         JavaSource js = JavaSource.create(e.getKey(), toProcess.subList(currentPointer.get(), toProcess.size()));
@@ -263,6 +267,7 @@ public class BatchSearch {
                         js.runUserActionTask(new Task<CompilationController>() {
                             public void run(CompilationController parameter) throws Exception {
                                 if (stop.get()) return;
+                                if (cancel.get()) return;
 
                                 //workaround for #192481:
                                 if (parameter.toPhase(Phase.PARSED).compareTo(Phase.PARSED) < 0)
@@ -552,7 +557,7 @@ public class BatchSearch {
             this.src = src;
         }
         public abstract Collection<? extends Resource> findResources(Iterable<? extends HintDescription> hints, ProgressHandleWrapper progress, @NullAllowed Callable<BulkPattern> bulkPattern, Collection<? super MessageImpl> problems);
-        public abstract void validateResource(Collection<? extends Resource> resources, ProgressHandleWrapper progress, VerifiedSpansCallBack callback, boolean doNotRegisterClassPath, Collection<? super MessageImpl> problems);
+        public abstract void validateResource(Collection<? extends Resource> resources, ProgressHandleWrapper progress, VerifiedSpansCallBack callback, boolean doNotRegisterClassPath, Collection<? super MessageImpl> problems, AtomicBoolean cancel);
 //        public int[] getEstimatedSpan(Resource r);
     }
 
@@ -560,8 +565,8 @@ public class BatchSearch {
         public LocalIndexEnquirer(FileObject src) {
             super(src);
         }
-        public void validateResource(Collection<? extends Resource> resources, ProgressHandleWrapper progress, VerifiedSpansCallBack callback, boolean doNotRegisterClassPath, Collection<? super MessageImpl> problems) {
-            getLocalVerifiedSpans(resources, progress, callback, false/*XXX*/, problems);
+        public void validateResource(Collection<? extends Resource> resources, ProgressHandleWrapper progress, VerifiedSpansCallBack callback, boolean doNotRegisterClassPath, Collection<? super MessageImpl> problems, AtomicBoolean cancel) {
+            getLocalVerifiedSpans(resources, progress, callback, false/*XXX*/, problems, cancel);
         }
     }
 
