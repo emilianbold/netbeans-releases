@@ -52,7 +52,6 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.TypeElement;
-import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -61,8 +60,6 @@ import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.common.J2eeProjectCapabilities;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.HintsController;
 import org.openide.filesystems.FileObject;
@@ -91,7 +88,7 @@ public abstract class EJBProblemFinder {
     
     public void run(final CompilationInfo info) throws Exception{
 
-        if (!"text/x-java".equals(file.getMIMEType())){ //NOI18N
+        if (!"text/x-java".equals(file.getMIMEType("text/x-java"))){ //NOI18N
             return;
         }
 
@@ -105,7 +102,6 @@ public abstract class EJBProblemFinder {
             cancelled = false;
             problemsFound.clear();
 
-            boolean isEjb = false;
             Project prj = FileOwnerQuery.getOwner(file);
             //#156889: Add check for null.
             if (prj == null) {
