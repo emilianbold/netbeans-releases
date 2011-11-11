@@ -80,9 +80,7 @@ final class RemoteTransferFile extends TransferFile {
         if (!parentDirectory.startsWith(REMOTE_PATH_SEPARATOR)) {
             throw new IllegalArgumentException("Parent directory '" + parentDirectory + "' must start with '" + REMOTE_PATH_SEPARATOR + "'");
         }
-        if (!(parentDirectory + REMOTE_PATH_SEPARATOR).startsWith(baseDirectory + REMOTE_PATH_SEPARATOR)) {
-            throw new IllegalArgumentException("Parent directory '" + parentDirectory + "' must be underneath base directory '" + baseDirectory + "'");
-        }
+        checkParentDirectory(baseDirectory, parentDirectory);
         if (LOGGER.isLoggable(Level.FINE)) {
             // #204874 (non-standard ssh server?)
             LOGGER.log(Level.FINE, "Absolute remote path \"{0}\" -> remote path \"{1}\" (base directory \"{2}\")",
@@ -166,6 +164,14 @@ final class RemoteTransferFile extends TransferFile {
     private String getAbsolutePath() {
         synchronized (file) {
             return getParentDirectory() + REMOTE_PATH_SEPARATOR + getName();
+        }
+    }
+
+    static void checkParentDirectory(String baseDirectory, String parentDirectory) {
+        boolean root = baseDirectory.equals(REMOTE_PATH_SEPARATOR);
+        if ((root && !parentDirectory.startsWith(REMOTE_PATH_SEPARATOR))
+                || (!root && !(parentDirectory + REMOTE_PATH_SEPARATOR).startsWith(baseDirectory + REMOTE_PATH_SEPARATOR))) {
+            throw new IllegalArgumentException("Parent directory '" + parentDirectory + "' must be underneath base directory '" + baseDirectory + "'");
         }
     }
 

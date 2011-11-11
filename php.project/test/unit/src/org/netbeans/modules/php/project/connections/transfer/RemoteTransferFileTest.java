@@ -96,4 +96,36 @@ public class RemoteTransferFileTest extends NbTestCase {
         assertEquals(TransferFile.REMOTE_PROJECT_ROOT, transferFile.getParentRemotePath());
     }
 
+    public void testParentDirectory0() {
+        RemoteTransferFile.checkParentDirectory("/home", "/home/project");
+        RemoteTransferFile.checkParentDirectory("/", "/home");
+    }
+
+    public void testParentDirectory1() {
+        try {
+            RemoteTransferFile.checkParentDirectory("/home", "/var");
+            fail("Should not get here");
+        } catch (IllegalArgumentException exc) {
+            // expected
+        }
+    }
+
+    public void testParentDirectory2() {
+        try {
+            RemoteTransferFile.checkParentDirectory("/home", "/home2");
+            fail("Should not get here");
+        } catch (IllegalArgumentException exc) {
+            // expected
+        }
+    }
+
+    public void testParentDirectory3() {
+        try {
+            RemoteTransferFile.checkParentDirectory("/home", "/home2/project");
+            fail("Should not get here");
+        } catch (IllegalArgumentException exc) {
+            // expected
+        }
+    }
+
 }
