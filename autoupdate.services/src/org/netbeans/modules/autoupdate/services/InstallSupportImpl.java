@@ -1191,6 +1191,7 @@ public class InstallSupportImpl {
                     if (fo == null) {
                         LOG.log(loop < 5 ? Level.FINE : Level.WARNING, "Cannot find " + rel);
                         ok = false;
+                        continue;
                     }
                     LOG.fine("Refreshing " + fo);
                     fo.refresh();
