@@ -42,6 +42,7 @@
 package org.netbeans.modules.web.jsf.editor.facelets;
 
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -68,11 +69,10 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
     private final String compositeLibraryResourceFolderName;
     private final String defaultPrefix;
 
-
     //for cc libraries with facelets library descriptor, the constructor is called by Mojarra
     public CompositeComponentLibrary(FaceletsLibrarySupport support, String compositeLibraryName, String namespace, URL libraryDescriptorURL) {
         super(support, namespace, libraryDescriptorURL);
-        
+
         this.compositeLibraryResourceFolderName = compositeLibraryName;
 
         //the default prefix is always computed from the composite library location
@@ -87,7 +87,6 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
         return new CompositeLibraryDescriptor(super.getFaceletsLibraryDescriptor(), new CCVirtualLibraryDescriptor());
     }
 
-    
     @Override
     public LibraryType getType() {
         return LibraryType.COMPOSITE;
@@ -114,7 +113,7 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
         all.putAll(getCompositeComponentsMap());
         return all;
     }
-    
+
     private Map<String, CompositeComponent> getCompositeComponentsMap() {
         Map<String, CompositeComponent> ccomponents = new HashMap<String, CompositeComponent>();
         Collection<String> componentNames = index().getCompositeLibraryComponents(getLibraryName());
@@ -160,7 +159,6 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
         public CompositeComponentModel getComponentModel() {
             return index().getCompositeComponentModel(getLibraryName(), name);
         }
-
     }
 
     protected class CCVirtualLibraryDescriptor implements LibraryDescriptor {
@@ -180,7 +178,7 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
             return CompositeComponentLibrary.this.getNamespace();
         }
 
-        private class LazyLoadingTag implements Tag {
+        private class LazyLoadingTag extends GenericTag {
 
             private CompositeComponent cc;
             private Map<String, Attribute> attrs;
@@ -284,19 +282,24 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
 
             @Override
             public boolean hasNonGenenericAttributes() {
-                return getAttributes().size() > 1; //the ID attribute is the default generic one
+                load();
+                return !attrs.isEmpty();
             }
 
             @Override
             public Collection<Attribute> getAttributes() {
                 load();
-                return attrs.values();
+                //merge with default attributes
+                Collection<Attribute> all = new ArrayList<Attribute>(super.getAttributes());
+                all.addAll(attrs.values());
+                return all;
             }
 
             @Override
             public Attribute getAttribute(String name) {
                 load();
-                return attrs.get(name);
+                Attribute superA = super.getAttribute(name);
+                return superA != null ? superA : attrs.get(name);
             }
         }
     }

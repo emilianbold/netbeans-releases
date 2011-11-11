@@ -583,4 +583,62 @@ public class WebBeansAnalysisTest extends BaseAnalisysTestCase {
     //  ClassModelAnalyzer - DeclaredIBindingsAnalyzer
     //
     //=======================================================================
+    
+    public void testIBindingsDuplication() throws IOException {
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/IBinding1.java",
+                "package foo; " +
+                "import static java.lang.annotation.ElementType.METHOD; "+
+                "import static java.lang.annotation.ElementType.TYPE; "+
+                "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
+                "import javax.enterprise.inject.*; "+
+                "import javax.inject.*; "+
+                "import java.lang.annotation.*; "+
+                "import javax.interceptor.*; "+
+                "@InterceptorBinding " +
+                "@Retention(RUNTIME) "+
+                "@Target({METHOD, TYPE}) "+
+                "public @interface IBinding1  {" +
+                "    String value(); "+
+                "} ");
+
+        TestUtilities.copyStringToFileObject(srcFO, "foo/IBinding2.java",
+                "package foo; " +
+                "import static java.lang.annotation.ElementType.METHOD; "+
+                "import static java.lang.annotation.ElementType.TYPE; "+
+                "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
+                "import javax.enterprise.inject.*; "+
+                "import javax.inject.*; "+
+                "import java.lang.annotation.*; "+
+                "import javax.interceptor.*; "+
+                "@InterceptorBinding " +
+                "@Retention(RUNTIME) "+
+                "@Target({METHOD, TYPE}) "+
+                "@IBinding1(\"a\") "+
+                "public @interface IBinding2  {} ");
+        
+        FileObject errorFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz.java",
+                "package foo; " +
+                " @IBinding1(\"b\") @IBinding2 " +
+                " public class Clazz { "+
+                "}");
+        
+        FileObject goodFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz1.java",
+                "package foo; " +
+                " @IBinding1(\"a\") @IBinding2 " +
+                " public class Clazz1 { "+
+                "}");
+        
+        ResultProcessor processor = new ResultProcessor (){
+
+            @Override
+            public void process( TestProblems result ) {
+                checkTypeElement(result, "foo.Clazz");
+            }
+            
+        };
+        runAnalysis(errorFile , processor);
+        
+        runAnalysis( goodFile, NO_ERRORS_PROCESSOR );
+    }
 }
