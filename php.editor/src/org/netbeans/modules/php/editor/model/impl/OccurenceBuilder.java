@@ -591,7 +591,7 @@ class OccurenceBuilder {
                 case IFACE:
                 case CLASS_INSTANCE_CREATION:
                 case CLASS:
-                    final QualifiedName qualifiedName = elementInfo.getNodeInfo() != null 
+                    final QualifiedName qualifiedName = elementInfo.getNodeInfo() != null
                             ? getFullyQualifiedName(elementInfo.getNodeInfo().getQualifiedName(), elementInfo.getNodeInfo().getOriginalNode().getStartOffset(), elementInfo.getScope())
                             : elementInfo.getQualifiedName();
                     final Set<TypeElement> types = index.getTypes(NameKind.exact(qualifiedName));
@@ -847,7 +847,7 @@ class OccurenceBuilder {
             }
         }
     }
-    
+
     private void buildMagicMethodDeclarationReturnType(ElementInfo nodeCtxInfo, FileScopeImpl fileScope, final List<Occurence> occurences) {
         for (Entry<MagicMethodDeclarationInfo, MethodScope> entry : magicMethodDeclarations.entrySet()) {
             MagicMethodDeclarationInfo nodeInfo = entry.getKey();
@@ -1365,11 +1365,11 @@ class OccurenceBuilder {
                                 ElementQuery elementQuery = element.getElementQuery();
                                 if (element instanceof TypeElement && elementQuery != null && elementQuery.getQueryScope().isIndexScope()) {
                                     ElementQuery.Index index = (ElementQuery.Index) elementQuery;
-                                    Set<MethodElement> declaredMethods = 
+                                    Set<MethodElement> declaredMethods =
                                             ElementFilter.forName(NameKind.exact(MethodElement.CONSTRUCTOR_NAME)).filter(index.getDeclaredMethods((TypeElement) element));
                                     if (!declaredMethods.isEmpty()) {
                                         result.addAll(declaredMethods);
-                                    } 
+                                    }
                                 }
                             }
                             if (result.size() > 0) {
@@ -1380,7 +1380,7 @@ class OccurenceBuilder {
                     };
                     occurences.add(occurenceImpl);
 
-                } 
+                }
             }
         }
     }
@@ -1482,7 +1482,7 @@ class OccurenceBuilder {
         for (PhpElement phpElement : elements) {
             for (Entry<InterfaceDeclarationInfo, InterfaceScope> entry : ifaceDeclarations.entrySet()) {
                 InterfaceDeclarationInfo nodeInfo = entry.getKey();
-                if (NameKind.exact(nodeInfo.getQualifiedName()).matchesName(phpElement) && 
+                if (NameKind.exact(nodeInfo.getQualifiedName()).matchesName(phpElement) &&
                         nodeInfo.getRange().containsInclusive(phpElement.getOffset())) {
                     if (fileScope.getFileObject() == phpElement.getFileObject()) {
                         occurences.add(new OccurenceImpl(phpElement, nodeInfo.getRange()));
@@ -1706,7 +1706,7 @@ class OccurenceBuilder {
         if (retval == null && setElementInfo(offset)) {
             build(fileScope);
             retval = findOccurenceByOffset(offset);
-        } 
+        }
         return retval;
     }
 
@@ -1716,7 +1716,7 @@ class OccurenceBuilder {
         }
         return cachedOccurences;
     }
-    
+
     /**
      * This method ensure that all method bodies are scanned, if there were not
      * scanned yet.
@@ -1784,9 +1784,9 @@ class OccurenceBuilder {
     private static QualifiedName getTypeFullyQualifedName(ASTNodeInfo nodeInfo, Scope inScope) {
         return null;
     }
-    
+
     private static QualifiedName getFullyQualifiedName(QualifiedName qualifiedName, int offset, Scope inScope) {
-        
+
         if(qualifiedName.getKind() != QualifiedNameKind.FULLYQUALIFIED) {
 
             while (inScope != null && !(inScope instanceof NamespaceScope)) {
@@ -1794,7 +1794,7 @@ class OccurenceBuilder {
             }
             if (inScope != null) {
                 NamespaceScope namespace = (NamespaceScope) inScope;
-                // needs to count 
+                // needs to count
                 String firstSegmentName = qualifiedName.getSegments().getFirst();
                 UseElement matchedUseElement = null;
                 int lastOffset = -1; // remember offset of the last use declaration, that fits
@@ -1825,7 +1825,7 @@ class OccurenceBuilder {
                         segments.add(token);
                     }
                     // and add all segments from the name except the first one.
-                    // the first one mathces the name of the usage or alias. 
+                    // the first one mathces the name of the usage or alias.
                     List<String> origName = qualifiedName.getSegments();
                     for (int i = 1; i < origName.size(); i++) {
                         segments.add(origName.get(i));
