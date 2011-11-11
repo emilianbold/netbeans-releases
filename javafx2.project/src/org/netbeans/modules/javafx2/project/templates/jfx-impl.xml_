@@ -405,7 +405,7 @@
                                 } else {
                                     if(fx_ant_api_1_1 == "true") {
                                         var arg = app.createArgument();
-                                        arg.setName(propn);
+                                        arg.addText(propn);
                                     }
                                 }
                             }
@@ -656,7 +656,7 @@
                                 } else {
                                     if(fx_ant_api_1_1 == "true") {
                                         var arg = app.createArgument();
-                                        arg.setName(propn);
+                                        arg.addText(propn);
                                     } else {
                                         println("Warning: Unnamed parameters not supported by this version of JavaFX SDK deployment Ant tasks. Upgrade JavaFX to 2.0.2 or higher.");
                                     }
