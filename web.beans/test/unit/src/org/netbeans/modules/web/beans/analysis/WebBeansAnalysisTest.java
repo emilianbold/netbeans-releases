@@ -399,7 +399,7 @@ public class WebBeansAnalysisTest extends BaseAnalisysTestCase {
     //
     //=======================================================================
     
-    public void testSessionBeanAnalyzer() throws IOException {
+    public void testSessionBean() throws IOException {
         getUtilities().initEnterprise();
         
         TestUtilities.copyStringToFileObject(srcFO, "foo/Scope1.java",
@@ -470,4 +470,117 @@ public class WebBeansAnalysisTest extends BaseAnalisysTestCase {
         runAnalysis( goodFile, NO_ERRORS_PROCESSOR );
         runAnalysis( goodFile1, NO_ERRORS_PROCESSOR );
     }
+    
+    //=======================================================================
+    //
+    //  ClassModelAnalyzer - InterceptedBeanAnalyzer
+    //
+    //=======================================================================
+    
+    public void testInterceptedBean() throws IOException {
+        getUtilities().createInterceptorBinding("IBinding");
+        
+        FileObject errorFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz.java",
+                "package foo; " +
+                " @IBinding "+
+                " public class Clazz { "+
+                " public final void method(){} "+
+                " private final void privateMethod(){} "+
+                "}");
+        
+        FileObject errorFile1 = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz1.java",
+                "package foo; " +
+                " @IBinding "+
+                " public final class Clazz1 { "+
+                " static void staticMethod(){} "+
+                "}");
+        
+        FileObject goodFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz2.java",
+                "package foo; " +
+                " @IBinding "+
+                " public class Clazz2  { "+
+                " private final void privateMethod(){} "+
+                " final static void staticMethod(){} "+
+                "}");
+        
+        ResultProcessor processor = new ResultProcessor (){
+
+            @Override
+            public void process( TestProblems result ) {
+                checkTypeElement(result, "foo.Clazz");
+            }
+            
+        };
+        runAnalysis(errorFile , processor);
+        
+        processor = new ResultProcessor (){
+
+            @Override
+            public void process( TestProblems result ) {
+                checkTypeElement(result, "foo.Clazz1");
+            }
+            
+        };
+        runAnalysis(errorFile1 , processor);
+        
+        runAnalysis( goodFile, NO_ERRORS_PROCESSOR );
+    }
+    
+    //=======================================================================
+    //
+    //  ClassModelAnalyzer - NamedModelAnalyzer
+    //
+    //=======================================================================
+    
+    public void testNamed() throws IOException {
+        
+        FileObject goodFile = TestUtilities.copyStringToFileObject(srcFO, "foo/SuperClass.java",
+                "package foo; " +
+                " import javax.inject.Named; "+
+                "@Named "+
+                " public class SuperClass { "+
+                "}");
+        
+        FileObject errorFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz.java",
+                "package foo; " +
+                " import javax.inject.Named; "+
+                " import javax.enterprise.inject.Specializes; "+
+                "@Named "+
+                "@Specializes "+
+                " public class Clazz extends SuperClass { "+
+                "}");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/SuperClass1.java",
+                "package foo; " +
+                " public class SuperClass1  { "+
+                "}");
+        
+        FileObject goodFile1 = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz1.java",
+                "package foo; " +
+                " import javax.inject.Named; "+
+                " import javax.enterprise.inject.Specializes; "+
+                "@Named "+
+                "@Specializes "+
+                " public class Clazz1 extends SuperClass1 { "+
+                "}");
+        
+        ResultProcessor processor = new ResultProcessor (){
+
+            @Override
+            public void process( TestProblems result ) {
+                checkTypeElement(result, "foo.Clazz");
+            }
+            
+        };
+        runAnalysis(errorFile , processor);
+        
+        runAnalysis( goodFile, NO_ERRORS_PROCESSOR );
+        runAnalysis( goodFile1, NO_ERRORS_PROCESSOR );
+    }
+    
+    //=======================================================================
+    //
+    //  ClassModelAnalyzer - DeclaredIBindingsAnalyzer
+    //
+    //=======================================================================
 }
