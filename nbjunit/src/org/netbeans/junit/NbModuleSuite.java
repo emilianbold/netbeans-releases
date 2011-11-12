@@ -42,13 +42,8 @@
 
 package org.netbeans.junit;
 
+import java.io.*;
 import org.netbeans.junit.internal.NbModuleLogHandler;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -132,6 +127,7 @@ public class NbModuleSuite {
         final boolean gui;
         final boolean enableClasspathModules;
         final boolean honorAutoEager;
+        final boolean hideExtraModules;
         final Level failOnMessage;
         final Level failOnException;
 
@@ -147,7 +143,8 @@ public class NbModuleSuite {
             boolean enableCPModules,
             boolean honorAutoEager,
             Level failOnMessage,
-            Level failOnException
+            Level failOnException,
+            boolean hideExtraModules    
         ) {
             this.clusterRegExp = clusterRegExp;
             this.moduleRegExp = moduleRegExp;
@@ -161,13 +158,14 @@ public class NbModuleSuite {
             this.honorAutoEager = honorAutoEager;
             this.failOnException = failOnException;
             this.failOnMessage = failOnMessage;
+            this.hideExtraModules = hideExtraModules;
         }
 
         static Configuration create(Class<? extends TestCase> clazz) {            
             return new Configuration(
                 null, null, null, ClassLoader.getSystemClassLoader().getParent(),
                 Collections.<Item>emptyList(), clazz, false, true, true, false
-                , null, null);
+                , null, null, false);
         }
         
         /** Regular expression to match clusters that shall be enabled.
@@ -196,7 +194,7 @@ public class NbModuleSuite {
                 list, moduleRegExp, startupArgs, parentClassLoader, tests,
                 latestTestCaseClass, reuseUserDir, gui, enableClasspathModules,
                 honorAutoEager
-            , failOnMessage, failOnException);
+            , failOnMessage, failOnException, hideExtraModules);
         }
 
         /** By default only modules on classpath of the test are enabled, 
@@ -236,7 +234,8 @@ public class NbModuleSuite {
             return new Configuration(
                 this.clusterRegExp, arr, startupArgs, parentClassLoader,
                 tests, latestTestCaseClass, reuseUserDir, gui,
-                enableClasspathModules, honorAutoEager, failOnMessage, failOnException);
+                enableClasspathModules, honorAutoEager, failOnMessage, 
+                failOnException, hideExtraModules);
         }
         
         /**
@@ -270,7 +269,8 @@ public class NbModuleSuite {
             return new Configuration(
                 clusterRegExp, moduleRegExp, newArgs, parentClassLoader,
                 tests, latestTestCaseClass, reuseUserDir, gui,
-                enableClasspathModules, honorAutoEager, failOnMessage, failOnException);
+                enableClasspathModules, honorAutoEager, failOnMessage, 
+                failOnException, hideExtraModules);
         }
 
         Configuration classLoader(ClassLoader parent) {
@@ -278,7 +278,7 @@ public class NbModuleSuite {
                 clusterRegExp, moduleRegExp, startupArgs, parent, tests,
                 latestTestCaseClass, reuseUserDir, gui, enableClasspathModules,
                 honorAutoEager
-            , failOnMessage, failOnException);
+            , failOnMessage, failOnException, hideExtraModules);
         }
 
         /** Adds new test name, or array of names into the configuration. By 
@@ -301,7 +301,8 @@ public class NbModuleSuite {
             return new Configuration(
                 clusterRegExp, moduleRegExp, startupArgs, parentClassLoader,
                 newTests, latestTestCaseClass, reuseUserDir, gui,
-                enableClasspathModules, honorAutoEager, failOnMessage, failOnException);
+                enableClasspathModules, honorAutoEager, failOnMessage, 
+                failOnException, hideExtraModules);
         }
         
         /** Adds new test class to run, together with a list of its methods
@@ -328,7 +329,7 @@ public class NbModuleSuite {
                 clusterRegExp, moduleRegExp, startupArgs, parentClassLoader,
                 newTests, test, reuseUserDir, gui, enableClasspathModules,
                 honorAutoEager
-            , failOnMessage, failOnException);
+            , failOnMessage, failOnException, hideExtraModules);
         }
         
         /**
@@ -353,7 +354,7 @@ public class NbModuleSuite {
                 clusterRegExp, moduleRegExp, startupArgs, parentClassLoader,
                 newTests, latestTestCaseClass, reuseUserDir,
                 gui, enableClasspathModules, honorAutoEager
-            , failOnMessage, failOnException);
+            , failOnMessage, failOnException, hideExtraModules);
         }
 
         /** By default all modules on classpath are enabled (so you can link
@@ -369,7 +370,7 @@ public class NbModuleSuite {
             return new Configuration(
                 clusterRegExp, moduleRegExp, startupArgs, parentClassLoader,
                 tests, latestTestCaseClass, reuseUserDir,
-                gui, enable, honorAutoEager, failOnMessage, failOnException);
+                gui, enable, honorAutoEager, failOnMessage, failOnException, hideExtraModules);
         }
 
         /** By default the {@link #enableModules(java.lang.String)} method
@@ -388,7 +389,51 @@ public class NbModuleSuite {
                 clusterRegExp, moduleRegExp, startupArgs, parentClassLoader,
                 tests, latestTestCaseClass, reuseUserDir,
                 gui, enableClasspathModules, honor
-            , failOnMessage, failOnException);
+            , failOnMessage, failOnException, hideExtraModules);
+        }
+        
+        /** Allows to limit what modules get enabled in the system.
+         * The original purpose of {@link NbModuleSuite} was to enable
+         * as much of modules as possible. This was believed to 
+         * resemble the real situation in the running application the best.
+         * However it turned out there
+         * are situations when too much modules can break the system
+         * and it is necessary to prevent loading some of them.
+         * This method can achieve that.
+         * <p>
+         * The primary usage is for <em>Ant</em> based harness. It usually
+         * contains full installation of various clusters and the application
+         * picks just certain modules from that configuration. 
+         * <code>hideExtraModules(true)</code> allows exclusion of these
+         * modules as well.
+         * <p>
+         * The usefulness of this method in <em>Maven</em> based environment
+         * is not that big. Usually the nbm plugin makes only necessary
+         * JARs available. In combination with {@link #enableClasspathModules(boolean) 
+         * enableClasspathModules(false)}, it may give you a subset of
+         * the Platform loaded in a test. In a
+         * Maven-based app declaring a dependency on the whole 
+         * org.netbeans.cluster:platform use the following suite expression:
+         * <pre>
+         * NbModuleSuite.createConfiguration(ApplicationTest.class).
+         *     gui(true).
+         *     hideExtraModules(true).
+         *     enableModules("(?!org.netbeans.modules.autoupdate|org.netbeans.modules.core.kit|org.netbeans.modules.favorites).*").
+         *     enableClasspathModules(false).
+         *     suite();
+         * </pre>
+         * 
+         * @param hide true if all enabled not explicitly requested modules should
+         *   be hidden
+         * @return new configuration with holds the provided parameter
+         * @since 1.72
+         */
+        public Configuration hideExtraModules(boolean hide) {
+            return new Configuration(
+                    clusterRegExp, moduleRegExp, startupArgs, parentClassLoader,
+                    tests, latestTestCaseClass, reuseUserDir,
+                    gui, enableClasspathModules, honorAutoEager, failOnMessage, 
+                    failOnException, hide);
         }
 
         /** Fails if there is a message sent to {@link Logger} with appropriate
@@ -403,7 +448,7 @@ public class NbModuleSuite {
                 clusterRegExp, moduleRegExp, startupArgs, parentClassLoader,
                 tests, latestTestCaseClass, reuseUserDir,
                 gui, enableClasspathModules, honorAutoEager
-                , level, failOnException);
+                , level, failOnException, hideExtraModules);
         }
 
         /** Fails if there is an exception reported to {@link Logger} with appropriate
@@ -418,7 +463,7 @@ public class NbModuleSuite {
                 clusterRegExp, moduleRegExp, startupArgs, parentClassLoader,
                 tests, latestTestCaseClass, reuseUserDir,
                 gui, enableClasspathModules, honorAutoEager
-                , failOnMessage, level);
+                , failOnMessage, level, hideExtraModules);
         }
 
         private void addLatest(List<Item> newTests) {
@@ -441,7 +486,7 @@ public class NbModuleSuite {
                 clusterRegExp, moduleRegExp, startupArgs, parentClassLoader,
                 newTests, latestTestCaseClass, reuseUserDir, gui,
                 enableClasspathModules
-            ,honorAutoEager, failOnMessage, failOnException);
+            ,honorAutoEager, failOnMessage, failOnException, hideExtraModules);
         }
         
         /** Should the system run with GUI or without? The default behaviour
@@ -458,7 +503,7 @@ public class NbModuleSuite {
                 clusterRegExp, moduleRegExp, startupArgs, parentClassLoader,
                 tests, latestTestCaseClass, reuseUserDir, gui,
                 enableClasspathModules
-            ,honorAutoEager, failOnMessage, failOnException);
+            ,honorAutoEager, failOnMessage, failOnException, hideExtraModules);
         }
 
         /**
@@ -471,7 +516,7 @@ public class NbModuleSuite {
             return new Configuration(
                 clusterRegExp, moduleRegExp, startupArgs, parentClassLoader, tests,
                 latestTestCaseClass, reuse, gui, enableClasspathModules
-            ,honorAutoEager, failOnMessage, failOnException);
+            ,honorAutoEager, failOnMessage, failOnException, hideExtraModules);
         }
 
         /**
@@ -805,6 +850,17 @@ public class NbModuleSuite {
                 sep = File.pathSeparator;
             }
             System.setProperty("netbeans.dirs", sb.toString());
+
+            if (config.hideExtraModules) {
+                Collection<File> clusters = new LinkedHashSet<File>();
+                if (config.clusterRegExp != null) {
+                    findClusters(clusters, config.clusterRegExp);
+                }
+                clusters.add(findPlatform());
+                for (File f : clusters) {
+                    disableModules(ud, f);
+                }
+            }
 
             System.setProperty("netbeans.security.nocheck", "true");
 
@@ -1150,6 +1206,29 @@ public class NbModuleSuite {
                 builder.deleteCharAt(index);
             }
             return builder.toString();
+        }
+
+        private void disableModules(File ud, File cluster) throws IOException {
+            File confDir = new File(new File(cluster, "config"), "Modules");
+            for (File c : confDir.listFiles()) {
+                if (!isModuleEnabled(c)) {
+                    continue;
+                }
+                File udC = new File(new File(new File(ud, "config"), "Modules"), c.getName());
+                if (!udC.exists()) {
+                    File hidden = new File(udC.getParentFile(), c.getName() + "_hidden");
+                    hidden.createNewFile();
+                }
+            }
+        }
+        
+        private static boolean isModuleEnabled(File config) throws IOException {
+            String xml = asString(new FileInputStream(config), true);
+            Matcher matcherEnabled = ENABLED.matcher(xml);
+            if (matcherEnabled.find()) {
+                return "true".equals(matcherEnabled.group(1));
+            }
+            return false;
         }
 
         private static final class JUnitLoader extends ClassLoader {

@@ -112,8 +112,12 @@ public final class MultiViewCloneableTopComponent extends CloneableTopComponent
     MultiViewModel getModel() {
         return peer.getModel();
     }
-    
-    
+
+    @Override
+    public Lookup getLookup() {
+        peer.assignLookup((MultiViewTopComponentLookup)super.getLookup());
+        return super.getLookup();
+    }
     
     protected void componentClosed() {
         super.componentClosed();
