@@ -1269,6 +1269,12 @@ public class OutlineView extends JScrollPane {
             // defined on Ctrl-c, Ctrl-v and Ctrl-x)
             removeDefaultCutCopyPaste(getInputMap(WHEN_FOCUSED));
             removeDefaultCutCopyPaste(getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT));
+            
+            KeyStroke ctrlSpace = KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, KeyEvent.CTRL_DOWN_MASK, false);
+            Object ctrlSpaceActionBind = getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).get(ctrlSpace);
+            getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(ctrlSpace, "invokeCustomEditor"); //NOI18N
+            Action invokeCustomEditorAction = new InvokeCustomEditorAction(ctrlSpaceActionBind);
+            getActionMap().put("invokeCustomEditor", invokeCustomEditorAction);
         }
         
         private void removeDefaultCutCopyPaste(InputMap map) {
@@ -1455,6 +1461,82 @@ public class OutlineView extends JScrollPane {
                 }
             }
             
+        }
+        
+        private class InvokeCustomEditorAction implements Action {
+            
+            private Object delegateActionBind;
+            
+            InvokeCustomEditorAction(Object delegateActionBind) {
+                this.delegateActionBind = delegateActionBind;
+            }
+
+            @Override
+            public Object getValue(String key) {
+                return null;
+            }
+
+            @Override
+            public void putValue(String key, Object value) {
+            }
+
+            @Override
+            public void setEnabled(boolean b) {
+            }
+
+            @Override
+            public boolean isEnabled() {
+                return true;
+            }
+
+            @Override
+            public void addPropertyChangeListener(PropertyChangeListener listener) {
+            }
+
+            @Override
+            public void removePropertyChangeListener(PropertyChangeListener listener) {
+            }
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (!openCustomEditor(e)) {
+                    Action a = getActionMap().get(delegateActionBind);
+                    if (a != null && a.isEnabled()) {
+                        a.actionPerformed(e);
+                    }
+                }
+            }
+            
+            private boolean openCustomEditor(ActionEvent e) {
+                if (getSelectedRowCount() != 1 || getSelectedColumnCount() != 1) {
+                    return false;
+                }
+                int row = getSelectedRow();
+                if (row < 0) return false;
+                int column = getSelectedColumn();
+                if (column < 0) return false;
+                Object o = getValueAt(row, column);
+                if (!(o instanceof Node.Property)) {
+                    return false;
+                }
+                Node.Property p = (Node.Property) o;
+                if (!Boolean.TRUE.equals(p.getValue("suppressCustomEditor"))) { //NOI18N
+                    PropertyPanel panel = new PropertyPanel(p);
+                    @SuppressWarnings("deprecation")
+                    PropertyEditor ed = panel.getPropertyEditor();
+
+                    if ((ed != null) && ed.supportsCustomEditor()) {
+                        Action act = panel.getActionMap().get("invokeCustomEditor"); //NOI18N
+
+                        if (act != null) {
+                            act.actionPerformed(null);
+
+                            return true;
+                        }
+                    }
+                }
+                return false;
+            }
         }
         
         private void setExplorerManager(ExplorerManager manager) {
