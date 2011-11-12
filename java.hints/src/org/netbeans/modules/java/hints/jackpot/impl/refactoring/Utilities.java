@@ -194,19 +194,8 @@ public class Utilities {
             classPath.addAll(GlobalPathRegistry.getDefault().getPaths(ClassPath.COMPILE));
             classPath.addAll(GlobalPathRegistry.getDefault().getPaths(ClassPath.BOOT));
             List<HintDescription> listedHints = org.netbeans.modules.java.hints.jackpot.impl.Utilities.listClassPathHints(classPath);
-            Map<HintMetadata, Collection<HintDescription>> result = new HashMap<HintMetadata, Collection<HintDescription>>();
-
-            for (HintDescription hd : listedHints) {
-                Collection<HintDescription> h = result.get(hd.getMetadata());
-
-                if (h == null) {
-                    result.put(hd.getMetadata(), h = new ArrayList<HintDescription>());
-                }
-
-                h.add(hd);
-            }
-
-            this.hints = result;
+            
+            this.hints = sortByMetadata(listedHints);
         }
 
         public synchronized Map<? extends HintMetadata, ? extends Collection<? extends HintDescription>> getHints() {
@@ -214,6 +203,22 @@ public class Utilities {
             return hints;
         }
 
+    }
+
+    public static Map<HintMetadata, Collection<HintDescription>> sortByMetadata(List<HintDescription> listedHints) {
+        Map<HintMetadata, Collection<HintDescription>> result = new HashMap<HintMetadata, Collection<HintDescription>>();
+
+        for (HintDescription hd : listedHints) {
+            Collection<HintDescription> h = result.get(hd.getMetadata());
+
+            if (h == null) {
+                result.put(hd.getMetadata(), h = new ArrayList<HintDescription>());
+            }
+
+            h.add(hd);
+        }
+
+        return result;
     }
 
     private static final class RefactoringElementImpl extends SimpleRefactoringElementImplementation {
