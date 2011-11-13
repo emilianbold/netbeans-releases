@@ -73,8 +73,10 @@ import org.netbeans.modules.html.parser.model.ElementDescriptor;
 import org.netbeans.modules.html.parser.model.NamedCharacterReference;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
+import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
 /**
  *
@@ -99,10 +101,40 @@ public class Html5Parser implements HtmlParser {
 
             Driver driver = new Driver(tokenizer);
             driver.setTransitionHandler(treeBuilder);
+            
+            final Collection<ProblemDescription> problems = new ArrayList<ProblemDescription>();
+            driver.setErrorHandler(new ErrorHandler() {
+
+                @Override
+                public void warning(SAXParseException saxpe) throws SAXException {
+                    reportProblem(saxpe.getLocalizedMessage(), ProblemDescription.WARNING);
+                    
+                }
+
+                @Override
+                public void error(SAXParseException saxpe) throws SAXException {
+                    reportProblem(saxpe.getLocalizedMessage(), ProblemDescription.ERROR);
+                }
+
+                @Override
+                public void fatalError(SAXParseException saxpe) throws SAXException {
+                    reportProblem(saxpe.getLocalizedMessage(), ProblemDescription.FATAL);
+                }
+                
+                private void reportProblem(String message, int type) {
+                    problems.add(ProblemDescription.create(
+                            "html5.parser",  //NOI18N
+                            message, 
+                            type, 
+                            treeBuilder.getOffset(), 
+                            treeBuilder.getOffset()));
+                }
+                
+            });
             driver.tokenize(is);
             AstNode root = treeBuilder.getRoot();
 
-            return new Html5ParserResult(source, root, Collections.<ProblemDescription>emptyList(), preferedVersion);
+            return new Html5ParserResult(source, root, problems, preferedVersion);
 
         } catch (SAXException ex) {
             throw new ParseException(ex);
@@ -213,6 +245,16 @@ public class Html5Parser implements HtmlParser {
 
         @Override
         public Map<HtmlTag, AstNode> getPossibleEndTags(AstNode node) {
+            //Bug 197608 - Non-html tags offered as closing tags using code completion
+            //XXX define of what type can be the node argument
+            if(node.type() != AstNode.NodeType.OPEN_TAG) {
+                node = node.parent();
+                if(node == null) {
+                    return Collections.emptyMap();
+                }
+            }
+            //<<<
+            
             HtmlTag tag = model().getTag(node.getNameWithoutPrefix());
             if (tag == null) {
                 return Collections.emptyMap();

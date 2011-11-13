@@ -223,21 +223,22 @@ final class PackageRootNode extends AbstractNode implements Runnable, FileStatus
 
     // Show reasonable properties of the DataFolder,
     //it shows the sorting names as rw property, the name as ro property and the path to root as ro property
-    public @Override PropertySet[] getPropertySets() {            
-        PropertySet[] properties =  getDataFolderNodeDelegate().getPropertySets();
-        for (int i=0; i< properties.length; i++) {
-            if (Sheet.PROPERTIES.equals(properties[i].getName())) {
+    public @Override PropertySet[] getPropertySets() {
+        final PropertySet[] properties =  getDataFolderNodeDelegate().getPropertySets();
+        final PropertySet[] newProperties = Arrays.copyOf(properties, properties.length);
+        for (int i=0; i< newProperties.length; i++) {
+            if (Sheet.PROPERTIES.equals(newProperties[i].getName())) {
                 //Replace the Sheet.PROPERTIES by the new one
                 //having the ro name property and ro path property
-                properties[i] = Sheet.createPropertiesSet();
-                ((Sheet.Set) properties[i]).put(new PropertySupport.ReadOnly<String>(DataObject.PROP_NAME, String.class,
+                newProperties[i] = Sheet.createPropertiesSet();
+                ((Sheet.Set)newProperties[i]).put(new PropertySupport.ReadOnly<String>(DataObject.PROP_NAME, String.class,
                         NbBundle.getMessage(PackageRootNode.class,"PROP_name"), NbBundle.getMessage(PackageRootNode.class,"HINT_name")) {
                     @Override
                     public String getValue() {
                         return PackageRootNode.this.getDisplayName();
                     }
                 });
-                ((Sheet.Set) properties[i]).put(new PropertySupport.ReadOnly<String>("ROOT_PATH", String.class,    //NOI18N
+                ((Sheet.Set)newProperties[i]).put(new PropertySupport.ReadOnly<String>("ROOT_PATH", String.class,    //NOI18N
                         NbBundle.getMessage(PackageRootNode.class,"PROP_rootpath"), NbBundle.getMessage(PackageRootNode.class,"HINT_rootpath")) {
                     @Override
                     public String getValue() {
@@ -246,7 +247,7 @@ final class PackageRootNode extends AbstractNode implements Runnable, FileStatus
                 });
             }
         }
-        return properties;
+        return newProperties;
     }
 
     // XXX Paste types - probably not very nice 

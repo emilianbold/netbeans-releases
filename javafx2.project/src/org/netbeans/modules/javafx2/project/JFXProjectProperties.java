@@ -47,7 +47,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
@@ -61,7 +60,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.StringTokenizer;
 import java.util.TreeMap;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JToggleButton;
@@ -95,6 +93,7 @@ import org.netbeans.spi.project.support.ant.ui.StoreGroup;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
@@ -130,6 +129,7 @@ public final class JFXProjectProperties {
     // Packaging properties
     public static final String JAVAFX_BINARY_ENCODE_CSS = "javafx.binarycss"; // NOI18N
     public static final String JAVAFX_DEPLOY_INCLUDEDT = "javafx.deploy.includeDT"; // NOI18N
+    public static final String JAVAFX_DEPLOY_EMBEDJNLP = "javafx.deploy.embedJNLP"; // NOI18N
     
     // FX config properties (Run panel), replicated from ProjectProperties
     public static final String MAIN_CLASS = "javafx.main.class"; // NOI18N
@@ -192,10 +192,6 @@ public final class JFXProjectProperties {
     private StoreGroup fxPropGroup = new StoreGroup();
     
     // Packaging
-    public static final String BUILD_INCLUDE_PLATFORM_FILE = "nbproject/jfx-impl-platform.xmlinc"; // NOI18N
-    public static final String BUILD_INCLUDE_PARAMETERS_FILE = "nbproject/jfx-impl-parameters.xmlinc"; // NOI18N
-    public static final String BUILD_INCLUDE_CALLBACKS_FILE = "nbproject/jfx-impl-callbacks.xmlinc"; // NOI18N
-    
     JToggleButton.ToggleButtonModel binaryEncodeCSS;
     public JToggleButton.ToggleButtonModel getBinaryEncodeCSSModel() {
         return binaryEncodeCSS;
@@ -514,7 +510,7 @@ public final class JFXProjectProperties {
             preloaderClassModel = new PreloaderClassComboBoxModel();
             
             initSigning(evaluator);
-            initResources(evaluator, project);
+            initResources(evaluator, project, Collections.unmodifiableMap(RUN_CONFIGS));
             initJSCallbacks(evaluator);
         }
     }
@@ -1028,7 +1024,9 @@ public final class JFXProjectProperties {
                             String prelJarFS = "file:/" + prelJarF.getAbsolutePath() + "!/"; //NOI18N
                             URL[] urls = new URL[1];
                             urls[0] = new URL(prelJarFS);
-                            preloader = new PreloaderJarArtifact(urls, srcRoot, ClassPath.COMPILE, prelJarFS);
+                            FileObject[] fos = new FileObject[1];
+                            fos[0] = FileUtil.toFileObject(prelJarF);
+                            preloader = new PreloaderJarArtifact(urls, fos, srcRoot, ClassPath.COMPILE, prelJarFS);
                         }
                     }
                 }
@@ -1230,41 +1228,6 @@ public final class JFXProjectProperties {
         }
     }
 
-    public void saveToFile(String relativePath, final IncludeFileSaver saver) throws IOException {
-        FileObject f = project.getProjectDirectory().getFileObject(relativePath);
-        final FileObject propsFO;
-        if(f == null) {
-            propsFO = FileUtil.createData(project.getProjectDirectory(), relativePath);
-            assert propsFO != null : "FU.cD must not return null; called on " + project.getProjectDirectory() + " + " + relativePath; // #50802  // NOI18N
-        } else {
-            propsFO = f;
-        }
-        try {
-            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
-                @Override
-                public Void run() throws Exception {
-                    OutputStream os = null;
-                    FileLock lock = null;
-                    try {
-                        lock = propsFO.lock();
-                        os = propsFO.getOutputStream(lock);
-                        saver.updateFile(os);
-                    } finally {
-                        if (lock != null) {
-                            lock.releaseLock();
-                        }
-                        if (os != null) {
-                            os.close();
-                        }
-                    }
-                    return null;
-                }
-            });
-        } catch (MutexException mux) {
-            throw (IOException) mux.getException();
-        }
-    }
-
     public void store() throws IOException {
         
         final EditableProperties ep = new EditableProperties(true);
@@ -1333,10 +1296,6 @@ public final class JFXProjectProperties {
         } catch (MutexException mux) {
             throw (IOException) mux.getException();
         }
-        
-        saveToFile(BUILD_INCLUDE_PLATFORM_FILE, new PlatformIncludeFileSaver(RUN_CONFIGS.get(activeConfig)));
-        saveToFile(BUILD_INCLUDE_PARAMETERS_FILE, new ParamIncludeFileSaver(APP_PARAMS.get(activeConfig)));
-        saveToFile(BUILD_INCLUDE_CALLBACKS_FILE, new CallbacksIncludeFileSaver());
     }
 
     private void initSigning(PropertyEvaluator eval) {
@@ -1369,7 +1328,7 @@ public final class JFXProjectProperties {
         permissionsElevated = isTrue(eval.getProperty(PERMISSIONS_ELEVATED));
     }
     
-    private void initResources (final PropertyEvaluator eval, final Project prj) {
+    private void initResources (final PropertyEvaluator eval, final Project prj, final Map<String/*|null*/,Map<String,String/*|null*/>/*|null*/> configs) {
         final String lz = eval.getProperty(DOWNLOAD_MODE_LAZY_JARS); //old way, when changed rewritten to new
         final String rcp = eval.getProperty(RUN_CP);        
         final String bc = eval.getProperty(BUILD_CLASSES);        
@@ -1386,6 +1345,15 @@ public final class JFXProjectProperties {
         paths = PropertyUtils.tokenizePath(rcp);
         String mainJar = eval.getProperty(DIST_JAR);
         final File mainFile = PropertyUtils.resolveFile(prjDir, mainJar);
+        List<FileObject> preloaders = new ArrayList<FileObject>();
+        try {
+            for(PreloaderArtifact pa : getPreloaderArtifactsFromConfigs(configs)) {
+                preloaders.addAll(Arrays.asList(pa.getFileObjects()));
+            }
+        } catch (IOException ex) {
+            // no need to react
+        }
+
         final List<File> resFileList = new ArrayList<File>(paths.length);
         for (String p : paths) {
             if (p.startsWith("${") && p.endsWith("}")) {    //NOI18N
@@ -1395,7 +1363,15 @@ public final class JFXProjectProperties {
             if (f.equals(mainFile)) {
                 continue;
             }
-            if (bc == null || !bcDir.equals(f)) {
+            boolean isPrel = false;
+            for(FileObject prelfo : preloaders) {
+                File prelf = FileUtil.toFile(prelfo);
+                if(prelf != null && prelf.equals(f)) {
+                    isPrel = true;
+                    continue;
+                }
+            }
+            if (!isPrel && (bc == null || !bcDir.equals(f)) ) {
                 resFileList.add(f);
                 if (isTrue(eval.getProperty(String.format(DOWNLOAD_MODE_LAZY_FORMAT, f.getName())))) {
                     lazyFileList.add(f);
@@ -1570,111 +1546,6 @@ public final class JFXProjectProperties {
         
     }
     
-    public abstract class IncludeFileSaver {
-        
-        abstract void updateFile(OutputStream os);
-        
-        void copyReadme(PrintWriter out) {
-            FileObject readmeTemplate = FileUtil.getConfigFile("Templates/JFX/jfx-impl-readme.xmlinc"); // NOI18N
-            if(readmeTemplate != null) {
-                try {
-                    for(String line : readmeTemplate.asLines()) {
-                        out.println(line);
-                    }
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
-        }
-    }
-    
-    public final class ParamIncludeFileSaver extends IncludeFileSaver {
-        
-        final List<Map<String,String/*|null*/>> params;
-        
-        ParamIncludeFileSaver(List<Map<String,String/*|null*/>> params) {
-            this.params = params;
-        }
-        
-        @Override
-        public void updateFile(OutputStream os) {
-            final PrintWriter out = new PrintWriter(os); //todo: encoding
-            copyReadme(out);
-            if(params != null) {
-                for(Map<String,String> m : params) {
-                    String name = ""; //NOI18N
-                    String value = ""; //NOI18N
-                    for (Map.Entry<String,String> param : m.entrySet()) {
-                        if(param.getKey().equals("name")) { //NOI18N
-                            name = param.getValue();
-                        } else {
-                            if(param.getKey().equals("value")) { //NOI18N
-                                value = param.getValue();
-                            }
-                        }
-                    }
-                    out.println(line(name,value));
-                }
-            }
-            out.flush();
-        }
-
-        private String line(String name, String value) {
-            if(value == null || value.length() == 0) {
-                return "<fx:param name=\"" + name + "\"/>"; //NOI18N
-            } else {
-                return "<fx:param name=\"" + name + "\" value=\"" + value + "\"/>"; //NOI18N
-            }
-        }        
-    }
-
-    public final class CallbacksIncludeFileSaver extends IncludeFileSaver {
-        
-        @Override
-        public void updateFile(OutputStream os) {
-            //if (jsCallbacksChanged) {
-                final PrintWriter out = new PrintWriter(os); //todo: encoding
-                copyReadme(out);
-                if(jsCallbacks != null) {
-                    for (Map.Entry<String,String> entry : jsCallbacks.entrySet()) {
-                        if(entry.getValue() != null && !entry.getValue().isEmpty()) {
-                            out.println("<fx:callback name=\"" + entry.getKey() + "\">"); //NOI18N
-                            out.println(entry.getValue());
-                            out.println("</fx:callback>"); //NOI18N
-                        }
-                    }
-                }
-                out.flush();
-            //}
-        }
-    }
-
-    public final class PlatformIncludeFileSaver extends IncludeFileSaver {
-        
-        final Map<String,String/*|null*/> props;
-        
-        PlatformIncludeFileSaver(Map<String,String/*|null*/> activeProps) {
-            this.props = activeProps;
-        }
-        
-        @Override
-        public void updateFile(OutputStream os) {
-            final PrintWriter out = new PrintWriter(os); //todo: encoding
-            copyReadme(out);
-            if(props != null) {
-                String vmo = props.get(RUN_JVM_ARGS);            
-                if (vmo != null) {
-                    StringTokenizer tok = new StringTokenizer(vmo, " ");
-                    while(tok.hasMoreElements()) {
-                        String s = tok.nextToken();
-                        out.println("<fx:jvmarg value=\"" + s + "\"/>"); //NOI18N
-                    }
-                }
-            }
-            out.flush();
-        }
-    }
-
     /**
      * Each preloader specified in project configurations needs
      * to be added/removed to/from project dependencies whenever
@@ -1701,6 +1572,12 @@ public final class JFXProjectProperties {
          * @return true if preloader artifact has been removed, false if it was not among project dependencies
          */
         abstract boolean removeDependency() throws IOException, UnsupportedOperationException;
+        
+        /**
+         * Returns array of files represented by this PreloaderArtifact
+         * @return array of FileObjects of files represented by this object
+         */
+        abstract FileObject[] getFileObjects();
         
         /**
          * Set the validity tag for {@code this} artifact
@@ -1753,18 +1630,29 @@ public final class JFXProjectProperties {
             PreloaderProjectArtifact concrete = (PreloaderProjectArtifact)that;
             return ID.equals(concrete.ID);
         }
+
+        @Override
+        final FileObject[] getFileObjects() {
+            List<FileObject> l = new ArrayList<FileObject>();
+            for(AntArtifact a : artifacts) {
+                l.addAll(Arrays.asList(a.getArtifactFiles()));
+            }
+            return l.toArray(new FileObject[l.size()]);
+        }
     }
 
     class PreloaderJarArtifact extends PreloaderArtifact {
 
         private final String ID;
         private final URL[] classPathRoots;
+        private final FileObject[] fileObjects;
         private final FileObject projectArtifact;
         private final String classPathType;
                 
-        PreloaderJarArtifact(final @NonNull URL[] classPathRoots, final @NonNull FileObject projectArtifact, 
+        PreloaderJarArtifact(final @NonNull URL[] classPathRoots, final @NonNull FileObject[] fileObjects, final @NonNull FileObject projectArtifact, 
                 final @NonNull String classPathType, final @NonNull String ID) {
             this.classPathRoots = classPathRoots;
+            this.fileObjects = fileObjects;
             this.projectArtifact = projectArtifact;
             this.classPathType = classPathType;
             this.ID = ID;
@@ -1786,6 +1674,11 @@ public final class JFXProjectProperties {
             if ( !(that instanceof PreloaderJarArtifact) ) return false;
             PreloaderJarArtifact concrete = (PreloaderJarArtifact)that;
             return ID.equals(concrete.ID);
+        }
+
+        @Override
+        final FileObject[] getFileObjects() {
+            return fileObjects;
         }
     }
 

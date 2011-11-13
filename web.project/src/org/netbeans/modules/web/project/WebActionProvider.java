@@ -276,7 +276,11 @@ class WebActionProvider extends BaseActionProvider {
             }
             s = getEvaluator().getProperty(ProjectProperties.ENDORSED_CLASSPATH);
             if (s != null && s.trim().length() > 0) {
-                coll.add("-Xbootclasspath/p:"+s);
+                ClassPath ecp = ClassPathFactory.createClassPath(
+                        ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
+                        FileUtil.toFile(getProject().getProjectDirectory()), getEvaluator(),
+                        new String[]{ProjectProperties.ENDORSED_CLASSPATH}));
+                coll.add("-Xbootclasspath/p:\""+ecp.toString(ClassPath.PathConversionMode.WARN) +"\"");
             }
         }
     }

@@ -62,6 +62,7 @@ import org.netbeans.modules.git.ui.merge.MergeRevisionAction;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
 import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.spi.VCSContext;
+import org.netbeans.modules.versioning.util.Utils;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionRegistration;
 import org.openide.util.NbBundle;
@@ -87,6 +88,7 @@ public class PullAction extends GetRemoteChangesAction {
         Map<String, GitRemoteConfig> remotes = info.getRemotes();
         PullWizard wiz = new PullWizard(repository, remotes);
         if (wiz.show()) {
+            Utils.logVCSExternalRepository("GIT", wiz.getFetchUri()); //NOI18N
             pull(repository, wiz.getFetchUri(), wiz.getFetchRefSpecs(), wiz.getBranchToMerge());
         }
     }

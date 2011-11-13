@@ -60,15 +60,11 @@ import org.netbeans.api.extexecution.print.ConvertedLine;
 import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.api.remote.*;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.spi.toolchain.ToolchainProject;
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;
-import org.netbeans.modules.cnd.api.remote.RemoteProject;
-import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
-import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
-import org.netbeans.modules.cnd.api.remote.ServerList;
-import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.nativeexecution.api.util.Path;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
@@ -471,7 +467,15 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
             return null;
         }
         if (execEnv.isRemote()) {
-            return RemoteSyncSupport.getPathMap(execEnv, project).getRemotePath(localDir, false);
+            final PathMap pathMap = RemoteSyncSupport.getPathMap(execEnv, project);
+            String remotePath = pathMap.getRemotePath(localDir, false);
+            if (remotePath == null) {
+                if (!pathMap.checkRemotePaths(new File[]{new File(localDir)}, true)) {
+                    return null;
+                }
+                remotePath = pathMap.getRemotePath(localDir, false);
+            }
+            return remotePath;
         }
         return localDir;
     }

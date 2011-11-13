@@ -352,6 +352,9 @@ public class SvnClientInvocationHandler implements InvocationHandler {
             // save the proxy settings into the svn servers file                
             if(desc != null && desc.getSvnUrl() != null) {
                 SvnConfigFiles.getInstance().storeSvnServersSettings(desc.getSvnUrl(), connectionType);
+                if (!parallelizable(proxyMethod, args) && !"getInfo".equals(proxyMethod.getName())) { //NOI18N
+                    Utils.logVCSExternalRepository("SVN", desc.getSvnUrl().toString()); //NOI18N
+                }
             }
             logClientInvoked();
             ret = adapter.getClass().getMethod(proxyMethod.getName(), parameters).invoke(adapter, args);

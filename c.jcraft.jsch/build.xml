@@ -52,7 +52,7 @@ made subject to such option by the copyright holder.
                 <attribute name="Bundle-SymbolicName" value="com.jcraft.jsch"/>
                 <attribute name="Bundle-Version" value="0.1.44"/>
                 <attribute name="Export-Package" value="com.jcraft.jsch"/>
-                <attribute name="Require-Bundle" value="com.jcraft.jzlib;resolution:=optional"/>
+                <attribute name="Require-Bundle" value="com.jcraft.jzlib"/>
             </manifest>
         </jar>
     </target>

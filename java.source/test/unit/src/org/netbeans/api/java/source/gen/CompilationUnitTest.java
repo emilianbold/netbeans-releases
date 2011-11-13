@@ -33,10 +33,12 @@ package org.netbeans.api.java.source.gen;
 import com.sun.source.tree.*;
 import com.sun.source.util.TreePathScanner;
 import java.io.File;
+import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.Map;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
@@ -54,6 +56,10 @@ import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.java.source.save.CasualDiff;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.CreateFromTemplateHandler;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  * Test for compilation unit creation.
@@ -74,6 +80,14 @@ public class CompilationUnitTest extends GeneratorTestMDRCompat {
 //        suite.addTest(new CompilationUnitTest("test117607_1"));
 //        suite.addTest(new CompilationUnitTest("test157760"));
         return suite;
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        FileObject templates = FileUtil.getConfigFile("Templates/Classes/Class.java");
+
+        if (templates != null) templates.delete();
     }
 
     public void testNewCompilationUnit() throws Exception {
@@ -860,6 +874,78 @@ public class CompilationUnitTest extends GeneratorTestMDRCompat {
         assertEquals(res, golden1);
     }
 
+    public void test204638() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package zoo;\n" +
+            "\n" +
+            "public class A {\n" +
+            "}\n"
+        );
+
+        FileObject emptyJava = FileUtil.createData(FileUtil.getConfigRoot(), "Templates/Classes/Empty.java");
+        emptyJava.setAttribute("template", Boolean.TRUE);
+        FileObject classJava = FileUtil.createData(FileUtil.getConfigRoot(), "Templates/Classes/Class.java");
+        classJava.setAttribute("template", Boolean.TRUE);
+        classJava.setAttribute("verbatim-create-from-template", Boolean.TRUE);
+        String template = "/*\r\ninitial\r\ncomment\r\n*/\r\npackage zoo;\r\npublic class Template {\r\n    public Template() {}\r\n}\r\n";
+        Writer w = new OutputStreamWriter(classJava.getOutputStream(), "UTF-8");
+        w.write(template);
+        w.close();
+        FileObject testSourceFO = FileUtil.toFileObject(testFile);
+        assertNotNull(testSourceFO);
+        DataObject created = DataObject.find(classJava).createFromTemplate(DataFolder.findFolder(testSourceFO.getParent()));
+        assertEquals(template, created.getPrimaryFile().asText());
+        ClassPath sourcePath = ClassPath.getClassPath(testSourceFO, ClassPath.SOURCE);
+        assertNotNull(sourcePath);
+        FileObject[] roots = sourcePath.getRoots();
+        assertEquals(1, roots.length);
+        final FileObject sourceRoot = roots[0];
+        assertNotNull(sourceRoot);
+        ClassPath compilePath = ClassPath.getClassPath(testSourceFO, ClassPath.COMPILE);
+        assertNotNull(compilePath);
+        ClassPath bootPath = ClassPath.getClassPath(testSourceFO, ClassPath.BOOT);
+        assertNotNull(bootPath);
+        ClasspathInfo cpInfo = ClasspathInfo.create(bootPath, compilePath, sourcePath);
+
+        String golden1 =
+            "/*\n" +
+            "initial\n" +
+            "comment\n" +
+            "*/\n" +
+            "package zoo;\n" +
+            "public class Krtek {\n" +
+            "    public Krtek() {}\n" +
+            "}\n";
+
+        JavaSource javaSource = JavaSource.create(cpInfo, FileUtil.toFileObject(testFile));
+
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void cancel() {
+            }
+
+            public void run(WorkingCopy workingCopy) throws Exception {
+                workingCopy.toPhase(JavaSource.Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                CompilationUnitTree newTree = make.CompilationUnit(
+                        sourceRoot,
+                        "zoo/Krtek.java",
+                        Collections.<ImportTree>emptyList(),
+                        Collections.<Tree>emptyList()
+                );
+                MethodTree constr = make.Method(make.Modifiers(EnumSet.of(Modifier.PUBLIC)), "Krtek", null, Collections.<TypeParameterTree>emptyList(), Collections.<VariableTree>emptyList(), Collections.<ExpressionTree>emptyList(), "{}", null);
+                newTree = make.addCompUnitTypeDecl(newTree, make.Class(make.Modifiers(EnumSet.of(Modifier.PUBLIC)), "Krtek", Collections.<TypeParameterTree>emptyList(), null, Collections.<Tree>emptyList(), Collections.<Tree>singletonList(constr)));
+                workingCopy.rewrite(null, newTree);
+            }
+        };
+        ModificationResult result = javaSource.runModificationTask(task);
+        result.commit();
+        String res = TestUtilities.copyFileToString(new File(getDataDir().getAbsolutePath() + "/zoo/Krtek.java"));
+        System.err.println(res);
+        assertEquals(res, golden1);
+    }
+
     public void test197097a() throws Exception {
         boolean origKeep = CasualDiff.OLD_TREES_VERBATIM;
 
@@ -965,5 +1051,20 @@ public class CompilationUnitTest extends GeneratorTestMDRCompat {
 
     String getSourcePckg() {
         return "";
+    }
+
+    @ServiceProvider(service=CreateFromTemplateHandler.class)
+    public static final class CreateFromTemplateHandlerImpl extends CreateFromTemplateHandler {
+
+        @Override
+        protected boolean accept(FileObject orig) {
+            return orig.getAttribute("verbatim-create-from-template") != null;
+        }
+
+        @Override
+        protected FileObject createFromTemplate(FileObject orig, FileObject f, String name, Map<String, Object> parameters) throws IOException {
+            return FileUtil.copyFile(orig, f, name);
+        }
+
     }
 }

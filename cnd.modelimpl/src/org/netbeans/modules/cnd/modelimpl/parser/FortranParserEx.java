@@ -89,6 +89,8 @@ public class FortranParserEx {
         public String name;
         public int startOffset;
         public int endOffset;
+        
+        public List<Object> members = null;
     }
 
     public class SubroutineData {
@@ -170,6 +172,8 @@ public class FortranParserEx {
                     programData = new ProgramData();
                     programData.name = id.getText();
                     programData.startOffset = ((APTToken) ((MyToken) programKeyword).t).getOffset();
+                    
+                    programData.members = new ArrayList<Object>();
                     // System.out.println("program " + id);
                 }
             }
@@ -194,6 +198,8 @@ public class FortranParserEx {
                     }
                     if(moduleData != null && moduleData.members != null) {
                         moduleData.members.add(subroutineData);
+                    } else if(programData != null && programData.members != null) {
+                        programData.members.add(subroutineData);
                     } else {
                         parsedObjects.add(subroutineData);
                     }
@@ -208,6 +214,8 @@ public class FortranParserEx {
                     }
                     if(moduleData != null && moduleData.members != null) {
                         moduleData.members.add(functionData);
+                    } else if(programData != null && programData.members != null) {
+                        programData.members.add(functionData);
                     } else {
                         parsedObjects.add(functionData);
                     }
@@ -249,6 +257,8 @@ public class FortranParserEx {
                     }
                     if(moduleData != null && moduleData.members != null) {
                         moduleData.members.add(subroutineData);
+                    } else if(programData != null && programData.members != null) {
+                        programData.members.add(subroutineData);
                     } else {
                         parsedObjects.add(subroutineData);
                     }
@@ -280,6 +290,8 @@ public class FortranParserEx {
                     }
                     if(moduleData != null && moduleData.members != null) {
                         moduleData.members.add(functionData);
+                    } else if(programData != null && programData.members != null) {
+                        programData.members.add(functionData);
                     } else {
                         parsedObjects.add(functionData);
                     }
@@ -371,6 +383,8 @@ public class FortranParserEx {
                     }
                     if(moduleData != null && moduleData.members != null) {
                         moduleData.members.add(subroutineData);
+                    } else if(programData != null && programData.members != null) {
+                        programData.members.add(subroutineData);
                     } else {
                         parsedObjects.add(subroutineData);
                     }
@@ -385,6 +399,8 @@ public class FortranParserEx {
                     }
                     if(moduleData != null && moduleData.members != null) {
                         moduleData.members.add(functionData);
+                    } else if(programData != null && programData.members != null) {
+                        programData.members.add(functionData);
                     } else {
                         parsedObjects.add(functionData);
                     }

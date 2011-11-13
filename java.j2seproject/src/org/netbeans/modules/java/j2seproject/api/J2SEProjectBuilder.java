@@ -551,15 +551,10 @@ public class J2SEProjectBuilder {
         } else {
             final JavaPlatform defaultPlatform = JavaPlatformManager.getDefault().getDefaultPlatform();
             final SpecificationVersion v = defaultPlatform.getSpecification().getVersion();
-            if (v.equals(new SpecificationVersion("1.7"))) {    //NOI18N
-                // #89131, #194283 - default source level for JDK 6 & JDK 7 is 1.6. The 1.5 causes AP problems                
-                return new SpecificationVersion("1.6");         //NOI18N
-            } else {
-                return v;
-            }
+            return v;
         }
     }
-    
+
     private String[] toClassPathElements(
             final @NonNull Collection<? extends Library> libraries,
             final @NonNull String... additionalEntries) {

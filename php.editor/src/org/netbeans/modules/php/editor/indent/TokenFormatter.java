@@ -196,12 +196,12 @@ public class TokenFormatter {
 	public boolean alignMultilineMethodParams;
 	public boolean alignMultilineCallArgs;
 	public boolean alignMultilineImplements;
-	public boolean alignMultilineParenthesized;
-	public boolean alignMultilineBinaryOp;
-	public boolean alignMultilineTernaryOp;
-	public boolean alignMultilineAssignment;
-	public boolean alignMultilineFor;
-	public boolean alignMultilineArrayInit;
+	public boolean alignMultilineParenthesized; // not implemented yet
+	public boolean alignMultilineBinaryOp; // not implemented yet
+	public boolean alignMultilineTernaryOp; // not implemented yet
+	public boolean alignMultilineAssignment;    // not implemented yet
+	public boolean alignMultilineFor;       // not implemented yet
+	public boolean alignMultilineArrayInit; //not implemented yet
         public boolean groupMulitilineAssignment;
         public boolean groupMulitilineArrayInit;
 

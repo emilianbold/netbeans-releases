@@ -44,11 +44,19 @@ package org.netbeans.modules.git.ui.actions;
 
 import java.io.File;
 import java.util.AbstractMap.SimpleImmutableEntry;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.libs.git.GitClient;
+import org.netbeans.libs.git.GitException;
+import org.netbeans.libs.git.GitRemoteConfig;
+import org.netbeans.libs.git.progress.ProgressMonitor;
+import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.util.Utils;
@@ -61,6 +69,7 @@ import org.openide.nodes.Node;
 public abstract class SingleRepositoryAction extends GitAction {
 
     private static final Logger LOG = Logger.getLogger(SingleRepositoryAction.class.getName());
+    private static final Set<File> loggedRepositories = new HashSet<File>();
 
     @Override
     protected final void performContextAction (final Node[] nodes) {
@@ -76,6 +85,7 @@ public abstract class SingleRepositoryAction extends GitAction {
     public final void performAction (VCSContext context) {
         Map.Entry<File, File[]> actionRoots = getActionRoots(context);
         if (actionRoots != null) {
+            logRemoteRepositoryAccess(actionRoots.getKey());
             performAction(actionRoots.getKey(), actionRoots.getValue(), context);
         }
     }
@@ -96,5 +106,40 @@ public abstract class SingleRepositoryAction extends GitAction {
             }
         }
         return actionRoots;
+    }
+    
+    /**
+     * Reads all remotes in a local repository's config and logs remote repository urls.
+     * Does this only once per a NB session and repository
+     * @param repositoryRoot root of the local repository
+     */
+    private void logRemoteRepositoryAccess (final File repositoryRoot) {
+        if (loggedRepositories.add(repositoryRoot)) {
+            Git.getInstance().getRequestProcessor(repositoryRoot).post(new Runnable() {
+                @Override
+                public void run () {
+                    Set<String> urls = new HashSet<String>();
+                    try {
+                        GitClient client = Git.getInstance().getClient(repositoryRoot);
+                        Map<String, GitRemoteConfig> cfgs = client.getRemotes(ProgressMonitor.NULL_PROGRESS_MONITOR);
+                        for (Map.Entry<String, GitRemoteConfig> e : cfgs.entrySet()) {
+                            GitRemoteConfig cfg = e.getValue();
+                            for (List<String> uris : Arrays.asList(cfg.getUris(), cfg.getPushUris())) {
+                                if (!uris.isEmpty()) {
+                                    urls.addAll(uris);
+                                }
+                            }
+                        }
+                    } catch (GitException ex) {
+                        // not interested
+                    }
+                    for (String url : urls) {
+                        if (!url.trim().isEmpty()) {
+                            Utils.logVCSExternalRepository("GIT", url); //NOI18N
+                        }
+                    }
+                }
+            });
+        }
     }
 }

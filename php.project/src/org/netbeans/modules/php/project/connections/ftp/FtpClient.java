@@ -583,7 +583,7 @@ public class FtpClient implements RemoteClient {
 
     // #203987
     private void preventNoOperationTimeout() throws IOException {
-        long counter = keepAliveCounter.incrementAndGet();
+        int counter = keepAliveCounter.incrementAndGet();
         if (counter == 10) {
             keepAliveCounter.set(0);
             LOGGER.log(Level.FINE, "Keep-alive (PWD) for {0}", configuration.getHost());
@@ -687,5 +687,12 @@ public class FtpClient implements RemoteClient {
         public long getTimestamp() {
             return TimeUnit.SECONDS.convert(ftpFile.getTimestamp().getTimeInMillis() + getTimestampDiff(), TimeUnit.MILLISECONDS);
         }
+
+        @Override
+        public String toString() {
+            return "FtpFile[name: " + getName() + ", parent directory: " + getParentDirectory() + "]";
+        }
+
     }
+
 }

@@ -52,7 +52,7 @@ import org.openide.windows.TopComponent;
  */
 public final class FXMLMultiViewHelper {
     
-    public static final String MIME_TYPE = "text/fxml+xml"; // NOI18N
+    public static final String MIME_TYPE = "text/x-fxml+xml"; // NOI18N
 
     private FXMLMultiViewHelper() {
     }

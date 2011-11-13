@@ -7,6 +7,7 @@
  * @author Michael Spector <michael@zend.com>
  */
 
+define("BRANCH_DIR", ""); // can be e.g. "/trunk" (do not forget slash!)
 define("DOC_URL", "./html/");      // PHP documentation, separate HTML files
 if (!is_dir(DOC_URL)) {
     die('Incorrect directory for separated HTML files ("./html/" expected)!');
@@ -196,6 +197,7 @@ function clean_php_identifier ($name) {
 
 function clean_php_value($type) {
     $type = trim($type);
+    $type = str_replace("&null;", "null", $type);
     $type = strip_tags($type);
     return $type;
 }
@@ -234,13 +236,13 @@ function make_classmember_ref ($className, $memberName) {
  */
 function parse_phpdoc_functions ($phpdocDir, $extensions) {
 	$xml_files = array_merge (
-		glob ("{$phpdocDir}/en/reference/*/functions/*.xml"),
-		glob ("{$phpdocDir}/en/language/predefined/*/*.xml"),
-		glob ("{$phpdocDir}/en/reference/*/functions/*/*.xml")
+		glob ("{$phpdocDir}/en" . BRANCH_DIR . "/reference/*/functions/*.xml"),
+		glob ("{$phpdocDir}/en" . BRANCH_DIR . "/language/predefined/*/*.xml"),
+		glob ("{$phpdocDir}/en" . BRANCH_DIR . "/reference/*/functions/*/*.xml")
 	);
 	foreach ($extensions as $extName) {
 		$extName = strtolower($extName);
-		$globPattern = "{$phpdocDir}/en/reference/{$extName}/*/*.xml";
+		$globPattern = "{$phpdocDir}/en" . BRANCH_DIR . "/reference/{$extName}/*/*.xml";
 		$xml_files = array_merge (
 			$xml_files,
 			glob ($globPattern)
@@ -353,8 +355,8 @@ function parse_phpdoc_fields ($phpdocDir, $extensions) {
 
 		$xml_files = array_merge (
 			$xml_files,
-			glob ("{$phpdocDir}/en/reference/{$extName}/*.xml"),
-                        glob ("{$phpdocDir}/en/reference/{$extName}/*/*.xml")
+			glob ("{$phpdocDir}/en" . BRANCH_DIR . "/reference/{$extName}/*.xml"),
+                        glob ("{$phpdocDir}/en" . BRANCH_DIR . "/reference/{$extName}/*/*.xml")
 		);
 	}
         foreach ($xml_files as $xml_file) {
@@ -397,14 +399,14 @@ function parse_phpdoc_fields ($phpdocDir, $extensions) {
  */
 function parse_phpdoc_classes ($phpdocDir, $extensions) {
 	$xml_files = array_merge (
-		glob ("{$phpdocDir}/en/reference/*/reference.xml"),
-		glob ("{$phpdocDir}/en/reference/*/classes.xml"),
-		glob ("{$phpdocDir}/en/language/*/*.xml"),
-		glob ("{$phpdocDir}/en/language/*.xml")
+		glob ("{$phpdocDir}/en" . BRANCH_DIR . "/reference/*/reference.xml"),
+		glob ("{$phpdocDir}/en" . BRANCH_DIR . "/reference/*/classes.xml"),
+		glob ("{$phpdocDir}/en" . BRANCH_DIR . "/language/*/*.xml"),
+		glob ("{$phpdocDir}/en" . BRANCH_DIR . "/language/*.xml")
 	);
 	foreach ($extensions as $extName) {
 		$extName = strtolower($extName);
-		$globPattern = "{$phpdocDir}/en/reference/{$extName}/*.xml";
+		$globPattern = "{$phpdocDir}/en" . BRANCH_DIR . "/reference/{$extName}/*.xml";
 		$xml_files = array_merge (
 			$xml_files,
 			glob ($globPattern)
@@ -665,7 +667,7 @@ function print_parameters ($parameters) {
 				if (@strlen($parameter['defaultvalue'])) {
 					$value = $parameter['defaultvalue'];
                                         if (is_numeric ($value)
-                                                || in_array(strtolower($value), array('true', 'false', '&null'))
+                                                || in_array(strtolower($value), array('true', 'false', 'null'))
                                                 || (substr($value, 0, 1) == '\'' && substr($value, -1) == '\'')
                                                 || (substr($value, 0, 1) == '"' && substr($value, -1) == '"')) {
                                             // no apostrophes
@@ -959,6 +961,7 @@ function xml_to_phpdoc ($str) {
 	$str = str_replace ("&return.void;", "", $str);
 	$str = str_replace ("&true;", "true", $str);
 	$str = str_replace ("&null;", "null", $str);
+	$str = str_replace ("&php.ini;", "###(i)###php.ini###(/i)###", $str); // XXX will be replaced in strip_tags_special()
 	$str = str_replace ("&false;", "false", $str);
 	$str = str_replace ("&example.outputs;", "The above example will output:", $str);
 	$str = str_replace ("&resource;", "resource", $str);
