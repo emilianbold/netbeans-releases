@@ -55,6 +55,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.JTree;
+import javax.swing.UIManager;
 import javax.swing.event.TreeExpansionListener;
 import javax.swing.plaf.TreeUI;
 import javax.swing.plaf.basic.BasicTreeUI;
@@ -103,8 +104,13 @@ public class DebugTreeView extends BeanTreeView {
         tree.setCellRenderer(rend);
 
         setBackground(tree.getBackground());
-        tree.setOpaque(false);
-        ((JComponent)tree.getParent()).setOpaque(false);
+        if (System.getProperty("java.version").startsWith("1.6") &&
+            "GTK".equals(UIManager.getLookAndFeel().getID())) {
+            // leave the tree as opaque to paint the whole area
+        } else {
+            tree.setOpaque(false);
+            ((JComponent)tree.getParent()).setOpaque(false);
+        }
         ((JComponent)tree.getParent()).setBackground(tree.getBackground());
         setWheelScrollingEnabled(false);
     }
