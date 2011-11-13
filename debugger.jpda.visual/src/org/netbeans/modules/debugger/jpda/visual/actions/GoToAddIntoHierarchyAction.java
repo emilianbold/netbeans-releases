@@ -79,6 +79,7 @@ public class GoToAddIntoHierarchyAction extends NodeAction {
                         String methodName = frames[i].getMethodName();
                         if (!JavaComponentInfo.isCustomType(className) &&
                             (methodName.startsWith("add") || 
+                             methodName.equals("createHierarchyEvents") ||
                              methodName.startsWith("onChanged") ||
                              methodName.startsWith("setParent") ||
                              methodName.startsWith("callObservers")
@@ -116,6 +117,7 @@ public class GoToAddIntoHierarchyAction extends NodeAction {
             JPDADebugger debugger = engine.lookupFirst(null, JPDADebugger.class);
             type = EditorContextBridge.getRelativePath (type);
             final String url = ((JPDADebuggerImpl) debugger).getEngineContext().getURL(type, true);
+            //System.err.println("Going to show "+url+" for type = "+type+", line = "+lineNumber);
             SwingUtilities.invokeLater (new Runnable () {
                 public void run () {
                     EditorContextBridge.getContext().showSource(url, lineNumber, null);
