@@ -1569,14 +1569,14 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
     /** Extended write locking of the document allowing
     * reentrant write lock acquiring.
     */
-    public synchronized final void extWriteLock() {
+    public final void extWriteLock() {
         super.writeLock(); // AD.writeLock() already reentrant for several JDK releases
     }
 
     /** Extended write unlocking.
     * @see extWriteLock()
     */
-    public synchronized final void extWriteUnlock() {
+    public final void extWriteUnlock() {
         super.writeUnlock(); // AD.writeUnlock() already reentrant for several JDK releases
     }
 
@@ -1848,6 +1848,21 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
 
     public void removeUpdateDocumentListener(DocumentListener listener) {
         updateDocumentListenerList.remove(listener);
+    }
+
+    @Override
+    public void addUndoableEditListener(UndoableEditListener listener) {
+        super.addUndoableEditListener(listener);
+        if (LOG.isLoggable(Level.FINE)) {
+            UndoableEditListener[] listeners = getUndoableEditListeners();
+            if (listeners.length > 1) {
+                // Having two UE listeners may be dangerous - for example
+                // having two undo managers attached at once will lead to strange errors
+                // since only one of the UMs will work normally while processing
+                // in the other one will be (typically silently) failing.
+                LOG.log(Level.INFO, "Two or more UndoableEditListeners attached", new Exception()); // NOI18N
+            }
+        }
     }
 
     /**
