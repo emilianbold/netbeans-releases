@@ -42,6 +42,7 @@
 package org.netbeans.modules.cnd.modelutil.spi;
 
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 
 /**
  * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
@@ -50,4 +51,5 @@ public interface FileObjectRedirector {
     
     FileObject redirect(FileObject file);
     
+    DataObject redirect(DataObject file);
 }

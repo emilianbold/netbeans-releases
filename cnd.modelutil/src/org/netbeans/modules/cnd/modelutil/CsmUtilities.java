@@ -506,7 +506,7 @@ public class CsmUtilities {
     }
     
     public static FileObject getFileObject(CsmFile csmFile) {
-        return (csmFile == null) ? null : redirect(csmFile.getFileObject());
+        return (csmFile == null) ? null : csmFile.getFileObject();
 //        FileObject fo = null;
 //        if (csmFile != null) {
 //            
@@ -699,11 +699,6 @@ public class CsmUtilities {
         if (ces == null) {
             return null;
         }
-        FileObject fo = redirect(getFileObject(ces.getDocument()));
-        ces = getCloneableEditorSupport(fo);
-        if (ces == null) {
-            return null;
-        }
         StyledDocument document = null;
         try {
             try {
@@ -738,7 +733,6 @@ public class CsmUtilities {
     }
 
     public static boolean openSource(FileObject fo, int line, int column) {
-        fo = redirect(fo);
         DataObject dob;
         try {
             dob = DataObject.find(fo);
@@ -749,7 +743,6 @@ public class CsmUtilities {
     }
 
     public static boolean openSource(FileObject fo, int offset) {
-        fo = redirect(fo);
         DataObject dob;
         try {
             dob = DataObject.find(fo);
@@ -761,11 +754,6 @@ public class CsmUtilities {
 
     public static boolean openSource(PositionBounds position) {
         CloneableEditorSupport editorSupport = position.getBegin().getCloneableEditorSupport();
-        FileObject fo = redirect(getFileObject(editorSupport.getDocument()));
-        editorSupport = getCloneableEditorSupport(fo);        
-        if (editorSupport == null) {
-            return false;
-        }
         editorSupport.edit();
         JEditorPane[] panes = editorSupport.getOpenedPanes();
         if (panes != null) {
@@ -782,25 +770,13 @@ public class CsmUtilities {
         }
         return false;
     }
-    
-    private static CloneableEditorSupport getCloneableEditorSupport(FileObject fo) {
-        if (fo == null) {
-            return null;
-        }
-        DataObject dobj = null;
-        try {
-            dobj = DataObject.find(fo);
-        } catch(DataObjectNotFoundException ex) {
-            return null;
-        }
-        return dobj.getLookup().lookup(CloneableEditorSupport.class);
-    }    
 
     private static boolean openAtElement(final CsmOffsetable element) {
         return openAtElement(getDataObject(element.getContainingFile()), new PointOrOffsetable(element));
     }
 
-    private static boolean openAtElement(final DataObject dob, final PointOrOffsetable element) {
+    private static boolean openAtElement(final DataObject orig, final PointOrOffsetable element) {
+        final DataObject dob = redirect(orig);
         if (dob != null) {
             final EditorCookie.Observable ec = dob.getCookie(EditorCookie.Observable.class);
             if (ec != null) {
@@ -1092,15 +1068,18 @@ public class CsmUtilities {
         return sb.toString();
     }
     
-    private static FileObject redirect(FileObject fo) {
+    private static DataObject redirect(DataObject dob) {
+        if (dob == null) {
+            return null;
+        }
         Collection<? extends FileObjectRedirector> redirectors = Lookup.getDefault().lookupAll(FileObjectRedirector.class);
         for (FileObjectRedirector redirector : redirectors) {
-            FileObject newFO = redirector.redirect(fo);
-            if(newFO != null) {
-                fo = newFO;
+            DataObject newDO = redirector.redirect(dob);
+            if(newDO != null) {
+                dob = newDO;
             }
         }
-        return fo;
+        return dob;
     }
     
     //-----------------------------------------------------------------

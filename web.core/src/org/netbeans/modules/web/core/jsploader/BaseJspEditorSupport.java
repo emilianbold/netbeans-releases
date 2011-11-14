@@ -55,6 +55,7 @@ import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.DocumentListener;
@@ -100,12 +101,13 @@ class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, Edit
     private static final RequestProcessor RP = new RequestProcessor(BaseJspEditorSupport.class.getSimpleName(), 4);
     private static final int AUTO_PARSING_DELAY = 2000;//ms
     private Task PARSER_RESTART_TASK;
-    /** Cash of encoding of the file */
-    private String encoding;
-    /** When unsupported encoding is set for a jsp file, then defaulEncoding is used for loading
+    
+    /** 
+     * When unsupported encoding is set for a jsp file, then defaulEncoding is used for loading
      * and saving
      */
     private static String defaulEncoding = "UTF-8"; // NOI18N
+    
     private final DocumentListener DOCUMENT_LISTENER;
 
     public BaseJspEditorSupport(JspDataObject obj) {
@@ -142,8 +144,6 @@ class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, Edit
                 }
             }
         });
-
-        encoding = null;
 
         WebModule webModule = getWebModule(getDataObject().getPrimaryFile());
         if (webModule != null) {
@@ -249,15 +249,42 @@ class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, Edit
     }
 
     @Override
-    //runs in non-AWT thread
-    protected void loadFromStreamToKit(StyledDocument doc, InputStream stream, EditorKit kit) throws IOException, BadLocationException {
-        //update the encoding - will access the jsp parser, may take longer time
-        ((JspDataObject) getDataObject()).updateFileEncoding(false);
-        
-        //get the file encoding and check if it's valid. If not show some 
-        //warning message
-        encoding = ((JspDataObject) getDataObject()).getFileEncoding();
+    protected boolean asynchronousOpen() {
+        return true;
+    }
+    
+    private JspDataObject getJspDataObject() {
+        return (JspDataObject)getDataObject();
+    }
+   
+    private final AtomicBoolean encodingVerified = new AtomicBoolean();
+    
+    @Override
+    public void open() {
+        super.open();
 
+        //possibly warn the user about incorrect encoding after the file opens
+        if(encodingVerified.compareAndSet(false, true)) {
+            verifyEncoding();
+        }
+
+    }
+
+    @Override
+    protected void notifyClosed() {
+        //all views of this file have been closed, reset the verification 
+        //flag so next time it will popup again if user opens the file
+        encodingVerified.set(false);
+        
+        super.notifyClosed();
+    }
+    
+    
+    /**
+     * Test if the loaded encoding is supported and warn the user if not.
+     */
+    private void verifyEncoding() {
+        String encoding = getJspDataObject().getFileEncoding();
         if (!isSupportedEncoding(encoding)) {
 
             NotifyDescriptor nd = new NotifyDescriptor.Message(
@@ -266,23 +293,10 @@ class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, Edit
                         encoding,
                         defaulEncoding}),
                     NotifyDescriptor.WARNING_MESSAGE);
+            
             DialogDisplayer.getDefault().notifyLater(nd);
         }
 
-        super.loadFromStreamToKit(doc, stream, kit);
-    }
-
-
-    @Override
-    protected boolean asynchronousOpen() {
-        return true;
-    }
-
-    @Override
-    public void open() {
-
-        
-        super.open();
 
     }
 
@@ -353,7 +367,7 @@ class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, Edit
     private void checkFileEncoding() throws UserCancelException {
         ((JspDataObject) getDataObject()).updateFileEncoding(true);
 
-        encoding = ((JspDataObject) getDataObject()).getFileEncoding();
+        String encoding = ((JspDataObject) getDataObject()).getFileEncoding();
         if (!isSupportedEncoding(encoding)) {
             NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
                     NbBundle.getMessage(BaseJspEditorSupport.class, "MSG_BadEncodingDuringSave", //NOI18N

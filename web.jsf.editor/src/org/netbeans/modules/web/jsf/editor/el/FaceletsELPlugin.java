@@ -54,6 +54,7 @@ import org.netbeans.modules.web.el.spi.ImplicitObject;
 import org.netbeans.modules.web.el.spi.ImplicitObjectType;
 import org.netbeans.modules.web.el.spi.ResourceBundle;
 import org.netbeans.modules.web.jsf.api.editor.JSFResourceBundlesProvider;
+import org.netbeans.modules.web.jsf.editor.JsfUtils;
 import static org.netbeans.modules.web.el.spi.ImplicitObjectType.*;
 import org.openide.filesystems.FileObject;
 import org.openide.util.lookup.ServiceProvider;
@@ -66,7 +67,6 @@ import org.openide.util.lookup.ServiceProvider;
 public class FaceletsELPlugin implements ELPlugin {
 
     private static final String PLUGIN_NAME = "JSF Facelets EL Plugin"; //NOI18N
-    private static final String XHTML_MIMETYPE = "text/xhtml"; //NOI18N
 
     private Collection<ImplicitObject> IMPL_OBJECTS;
 
@@ -77,7 +77,7 @@ public class FaceletsELPlugin implements ELPlugin {
 
     @Override
     public Collection<String> getMimeTypes() {
-        return Collections.singletonList(XHTML_MIMETYPE);
+        return Collections.singletonList(JsfUtils.XHTML_MIMETYPE);
     }
 
     @Override
