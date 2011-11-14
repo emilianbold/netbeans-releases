@@ -191,6 +191,7 @@
                 <friend>org.netbeans.modules.cnd.testrunner</friend>
                 <friend>org.netbeans.modules.dlight.tha</friend>
                 <package>org.netbeans.modules.cnd.modelutil</package>
+                <package>org.netbeans.modules.cnd.modelutil.spi</package>
                 <package>org.netbeans.modules.cnd.modelutil.ui</package>
             </friend-packages>
         </data>
