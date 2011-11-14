@@ -43,6 +43,7 @@
  */
 package org.openide.explorer;
 
+import org.netbeans.modules.openide.explorer.ExplorerActionsImpl;
 import org.openide.nodes.*;
 import org.openide.util.*;
 

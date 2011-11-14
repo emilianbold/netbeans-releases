@@ -296,9 +296,11 @@ public class UnusedVariableHint extends AbstractRule implements PHPRuleWithPrefe
 
         @Override
         public void visit(FunctionDeclaration node) {
-            parentNodes.push(node);
-            super.visit(node);
-            parentNodes.pop();
+            if (node.getBody() != null) {
+                parentNodes.push(node);
+                super.visit(node);
+                parentNodes.pop();
+            }
         }
 
         @Override

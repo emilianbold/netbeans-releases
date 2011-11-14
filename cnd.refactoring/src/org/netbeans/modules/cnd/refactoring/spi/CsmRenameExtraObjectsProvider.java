@@ -42,7 +42,11 @@
 package org.netbeans.modules.cnd.refactoring.spi;
 
 import java.util.Collection;
+import java.util.Set;
+import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.xref.CsmReference;
+import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 
 /**
  * provider which can contribute extra objects for refactoring.
@@ -54,5 +58,20 @@ import org.netbeans.modules.cnd.api.model.CsmObject;
  * @author Vladimir Voskresensky
  */
 public interface CsmRenameExtraObjectsProvider {
+    /**
+     * return extra objects which will be refactored as well
+     * @param orig original object
+     * @return collection of extra objects
+     */
     Collection<CsmObject> getExtraObjects(CsmObject orig);
+    
+    /**
+     * return extra references if target object is referenced in file.
+     * For instance object reference can be embedded in comment or string
+     * @param targetObjectSearchedInFile target objects collection
+     * @param csmFile current file
+     * @param kinds kinds of references which are collected
+     * @return extra references to target object in input file
+     */
+    Collection<CsmReference> getExtraFileReferences(Collection<? extends CsmObject> targetObjectSearchedInFile, CsmFile csmFile, Set<CsmReferenceKind> kinds);
 }

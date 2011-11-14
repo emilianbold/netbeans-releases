@@ -232,7 +232,7 @@ abstract public class JavaComponentInfo implements ComponentInfo {
         return !(type.startsWith("java.awt.") || 
                  type.startsWith("javax.swing.") || 
                  type.startsWith("javafx.") ||
-                 type.startsWith("com.sun.javafx."));  // NOI18N
+                 type.startsWith("com.sun."));  // NOI18N
     }
 
     @Override
@@ -823,6 +823,16 @@ abstract public class JavaComponentInfo implements ComponentInfo {
         
         public Frame[] getFrames() {
             return frames;
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder sb = new StringBuilder("Stack with "+frames.length+" elements.");
+            for (Frame f : frames) {
+                sb.append("\n    ");
+                sb.append(f.toString());
+            }
+            return sb.toString();
         }
         
         public static class Frame {

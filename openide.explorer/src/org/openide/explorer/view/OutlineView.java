@@ -51,7 +51,11 @@ import java.awt.Graphics;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.ActionEvent;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
@@ -65,6 +69,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditor;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -75,9 +80,11 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractButton;
 import javax.swing.Action;
+import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
 import javax.swing.InputMap;
 import javax.swing.JComponent;
@@ -113,8 +120,11 @@ import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
+import org.netbeans.modules.openide.explorer.ExplorerActionsImpl;
+import org.netbeans.modules.openide.explorer.ExternalDragAndDrop;
 import org.netbeans.swing.etable.ETable;
 import org.netbeans.swing.etable.ETableColumnModel;
+import org.netbeans.swing.etable.ETableTransferHandler;
 import org.netbeans.swing.etable.TableColumnSelector;
 import org.netbeans.swing.outline.DefaultOutlineModel;
 import org.netbeans.swing.outline.Outline;
@@ -124,6 +134,7 @@ import org.netbeans.swing.outline.TreePathSupport;
 import org.openide.awt.Mnemonics;
 import org.openide.awt.MouseUtils;
 import org.openide.explorer.ExplorerManager;
+import org.openide.explorer.ExplorerUtils;
 import org.openide.explorer.propertysheet.PropertyPanel;
 import org.openide.nodes.Node;
 import org.openide.nodes.Node.Property;
@@ -135,6 +146,7 @@ import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
+import org.openide.util.datatransfer.ExTransferable;
 
 /**
  * <p>Explorer view displaying nodes in a tree table.</p>
@@ -153,6 +165,8 @@ public class OutlineView extends JScrollPane {
     private static final String TREE_HORIZONTAL_SCROLLBAR = "TREE_HORIZONTAL_SCROLLBAR";    // NOI18N
 
     private static RequestProcessor REVALIDATING_RP = new RequestProcessor("OutlineView", 1);   // NOI18N
+    
+    private static final Logger logger = Logger.getLogger(OutlineView.class.getName());
 
     /** The table */
     private OutlineViewOutline outline;
@@ -695,6 +709,7 @@ public class OutlineView extends JScrollPane {
             manager.addVetoableChangeListener(wlvc = WeakListeners.vetoableChange(managerListener, manager));
             manager.addPropertyChangeListener(wlpc = WeakListeners.propertyChange(managerListener, manager));
         }
+        outline.setExplorerManager(newManager);
         
         synchronizeRootContext();
         synchronizeSelectedNodes(true);
@@ -1227,6 +1242,7 @@ public class OutlineView extends JScrollPane {
     static class OutlineViewOutline extends Outline {
         private final PropertiesRowModel rowModel;
         private static final String COLUMNS_SELECTOR_HINT = "ColumnsSelectorHint"; // NOI18N
+        private static final String COPY_ACTION_DELEGATE = "Outline Copy Action Delegate "; // NOI18N
 
         private boolean treeSortable = true;
 
@@ -1238,6 +1254,7 @@ public class OutlineView extends JScrollPane {
         private RequestProcessor.Task changeTask;
         private boolean defaultActionAllowed = true;
         private String nodesColumnDescription;
+        private ExplorerManager manager;
         //private int maxRowWidth;
 
         public OutlineViewOutline(final OutlineModel mdl, PropertiesRowModel rowModel) {
@@ -1252,25 +1269,278 @@ public class OutlineView extends JScrollPane {
             // defined on Ctrl-c, Ctrl-v and Ctrl-x)
             removeDefaultCutCopyPaste(getInputMap(WHEN_FOCUSED));
             removeDefaultCutCopyPaste(getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT));
+            
+            KeyStroke ctrlSpace = KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, KeyEvent.CTRL_DOWN_MASK, false);
+            Object ctrlSpaceActionBind = getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).get(ctrlSpace);
+            getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(ctrlSpace, "invokeCustomEditor"); //NOI18N
+            Action invokeCustomEditorAction = new InvokeCustomEditorAction(ctrlSpaceActionBind);
+            getActionMap().put("invokeCustomEditor", invokeCustomEditorAction);
         }
         
         private void removeDefaultCutCopyPaste(InputMap map) {
-            map.put(KeyStroke.getKeyStroke("control C"), "none"); // NOI18N
+            putActionDelegate(map, KeyStroke.getKeyStroke("control C")); // NOI18N
             map.put(KeyStroke.getKeyStroke("control V"), "none"); // NOI18N
             map.put(KeyStroke.getKeyStroke("control X"), "none"); // NOI18N
-            map.put(KeyStroke.getKeyStroke("COPY"), "none"); // NOI18N
+            putActionDelegate(map, KeyStroke.getKeyStroke("COPY")); // NOI18N
             map.put(KeyStroke.getKeyStroke("PASTE"), "none"); // NOI18N
             map.put(KeyStroke.getKeyStroke("CUT"), "none"); // NOI18N
 
             if (Utilities.isMac()) {
-                map.put(KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.META_MASK), "none"); // NOI18N
+                putActionDelegate(map, KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.META_MASK)); // NOI18N
                 map.put(KeyStroke.getKeyStroke(KeyEvent.VK_X, InputEvent.META_MASK), "none"); // NOI18N
                 map.put(KeyStroke.getKeyStroke(KeyEvent.VK_V, InputEvent.META_MASK), "none"); // NOI18N
             } else {
-                map.put(KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_DOWN_MASK), "none"); // NOI18N
+                putActionDelegate(map, KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_DOWN_MASK)); // NOI18N
                 map.put(KeyStroke.getKeyStroke(KeyEvent.VK_X, InputEvent.CTRL_DOWN_MASK), "none"); // NOI18N
                 map.put(KeyStroke.getKeyStroke(KeyEvent.VK_V, InputEvent.CTRL_DOWN_MASK), "none"); // NOI18N
             }
+        }
+        
+        private void putActionDelegate(InputMap map, KeyStroke ks) {
+            String binding = COPY_ACTION_DELEGATE+ks.toString();
+            Action action = getCopyActionDelegate(map, ks);
+            if (action != null) {
+                getActionMap().put(binding, action);
+                map.put(ks, binding);
+            }
+        }
+        
+        private Action getCopyActionDelegate(InputMap map, KeyStroke ks) {
+            ActionMap am = getActionMap();
+
+            if(map != null && am != null && isEnabled()) {
+                Object binding = map.get(ks);
+                final Action action = (binding == null) ? null : am.get(binding);
+                if (action != null) {
+                    return new CopyToClipboardAction(action);
+                }
+            }
+            return null;
+        }
+        
+        private class CopyToClipboardAction implements Action {
+            
+            private Action orig;
+            
+            CopyToClipboardAction(Action orig) {
+                this.orig = orig;
+            }
+            
+            private Action getDelegate() {
+                ExplorerManager em = manager;
+                if (em == null) {
+                    return orig;
+                }
+                Action a = ExplorerUtils.actionCopy(em);
+                if (a.isEnabled()) {
+                    return a;
+                } else {
+                    return orig;
+                }
+            }
+
+            @Override
+            public Object getValue(String key) {
+                return getDelegate().getValue(key);
+            }
+
+            @Override
+            public void putValue(String key, Object value) {
+                getDelegate().putValue(key, value);
+            }
+
+            @Override
+            public void setEnabled(boolean b) {
+                throw new UnsupportedOperationException("Not supported.");
+            }
+
+            @Override
+            public boolean isEnabled() {
+                return getDelegate().isEnabled();
+            }
+
+            @Override
+            public void addPropertyChangeListener(PropertyChangeListener listener) {
+                getDelegate().addPropertyChangeListener(listener);
+            }
+
+            @Override
+            public void removePropertyChangeListener(PropertyChangeListener listener) {
+                getDelegate().removePropertyChangeListener(listener);
+            }
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                ExplorerManager em = manager;
+                if (em != null) {
+                    Action a = ExplorerUtils.actionCopy(em);
+                    if (a.isEnabled()) {
+                        doCopy(em);
+                        return ;
+                    }
+                }
+                getDelegate().actionPerformed(e);
+            }
+            
+            // Modified ExplorerActionsImpl.CopyCutActionPerformer.actionPerformed()
+            private void doCopy(ExplorerManager em) {
+                Node[] sel = em.getSelectedNodes();
+                Transferable trans = ExplorerActionsImpl.getTransferableOwner(sel, true);
+                
+                Transferable ot = new OutlineTransferHandler().createOutlineTransferable();
+                if (trans != null) {
+                    if (ot != null) {
+                        trans = new TextAddedTransferable(trans, ot);
+                    }
+                } else {
+                    trans = ot;
+                }
+                
+                if (trans != null) {
+                    Clipboard clipboard = ExplorerActionsImpl.getClipboard();
+                    if (clipboard != null) {
+                        clipboard.setContents(trans, new StringSelection("")); // NOI18N
+                    }
+                }                        
+            }
+        }
+        
+        private class OutlineTransferHandler extends ETableTransferHandler {
+
+            public Transferable createOutlineTransferable() {
+                return super.createTransferable(OutlineViewOutline.this);
+            }
+            
+        }
+        
+        private static class TextAddedTransferable implements Transferable {
+            
+            private Transferable trans;
+            private Transferable ss;
+            private DataFlavor[] dataFlavors;
+            
+            public TextAddedTransferable(Transferable trans, Transferable ss) {
+                this.trans = trans;
+                this.ss = ss;
+            }
+
+            @Override
+            public synchronized DataFlavor[] getTransferDataFlavors() {
+                if (dataFlavors == null) {
+                    DataFlavor[] tf = trans.getTransferDataFlavors();
+                    DataFlavor[] sf = ss.getTransferDataFlavors();
+                    List<DataFlavor> dfs = new ArrayList<DataFlavor>(tf.length + sf.length);
+                    for (DataFlavor df : tf) {
+                        dfs.add(df);
+                    }
+                    for (DataFlavor df : sf) {
+                        if (!dfs.contains(df)) {
+                            dfs.add(df);
+                        }
+                    }
+                    dataFlavors = dfs.toArray(new DataFlavor[] {});
+                }
+                return dataFlavors;
+            }
+
+            @Override
+            public boolean isDataFlavorSupported(DataFlavor flavor) {
+                if (trans.isDataFlavorSupported(flavor)) {
+                    return true;
+                } else {
+                    return ss.isDataFlavorSupported(flavor);
+                }
+            }
+
+            @Override
+            public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException {
+                if (trans.isDataFlavorSupported(flavor)) {
+                    return trans.getTransferData(flavor);
+                } else {
+                    return ss.getTransferData(flavor);
+                }
+            }
+            
+        }
+        
+        private class InvokeCustomEditorAction implements Action {
+            
+            private Object delegateActionBind;
+            
+            InvokeCustomEditorAction(Object delegateActionBind) {
+                this.delegateActionBind = delegateActionBind;
+            }
+
+            @Override
+            public Object getValue(String key) {
+                return null;
+            }
+
+            @Override
+            public void putValue(String key, Object value) {
+            }
+
+            @Override
+            public void setEnabled(boolean b) {
+            }
+
+            @Override
+            public boolean isEnabled() {
+                return true;
+            }
+
+            @Override
+            public void addPropertyChangeListener(PropertyChangeListener listener) {
+            }
+
+            @Override
+            public void removePropertyChangeListener(PropertyChangeListener listener) {
+            }
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (!openCustomEditor(e)) {
+                    Action a = getActionMap().get(delegateActionBind);
+                    if (a != null && a.isEnabled()) {
+                        a.actionPerformed(e);
+                    }
+                }
+            }
+            
+            private boolean openCustomEditor(ActionEvent e) {
+                if (getSelectedRowCount() != 1 || getSelectedColumnCount() != 1) {
+                    return false;
+                }
+                int row = getSelectedRow();
+                if (row < 0) return false;
+                int column = getSelectedColumn();
+                if (column < 0) return false;
+                Object o = getValueAt(row, column);
+                if (!(o instanceof Node.Property)) {
+                    return false;
+                }
+                Node.Property p = (Node.Property) o;
+                if (!Boolean.TRUE.equals(p.getValue("suppressCustomEditor"))) { //NOI18N
+                    PropertyPanel panel = new PropertyPanel(p);
+                    @SuppressWarnings("deprecation")
+                    PropertyEditor ed = panel.getPropertyEditor();
+
+                    if ((ed != null) && ed.supportsCustomEditor()) {
+                        Action act = panel.getActionMap().get("invokeCustomEditor"); //NOI18N
+
+                        if (act != null) {
+                            act.actionPerformed(null);
+
+                            return true;
+                        }
+                    }
+                }
+                return false;
+            }
+        }
+        
+        private void setExplorerManager(ExplorerManager manager) {
+            this.manager = manager;
         }
 
         PropertiesRowModel getRowModel() {
@@ -1302,6 +1572,17 @@ public class OutlineView extends JScrollPane {
             return PropertiesRowModel.getValueFromProperty(value);
         }
 
+        @Override
+        public String convertValueToString(Object value) {
+            if (value instanceof VisualizerNode) {
+                return ((VisualizerNode) value).getDisplayName();
+            } else if (value instanceof Node) {
+                return ((Node) value).getDisplayName();
+            } else {
+                return super.convertValueToString(value);
+            }
+        }
+        
         void setTreeHScrollingEnabled(boolean isHScrollingEnabled, JScrollBar hScrollBar) {
             this.isHScrollingEnabled = isHScrollingEnabled;
             this.hScrollBar = hScrollBar;

@@ -106,6 +106,7 @@ import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VirtualMachineWrapper;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.modules.debugger.jpda.visual.JavaComponentInfo.Stack;
+import org.netbeans.modules.debugger.jpda.visual.breakpoints.AWTComponentBreakpointImpl;
 import org.netbeans.modules.debugger.jpda.visual.ui.ScreenshotComponent;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.openide.util.Exceptions;
@@ -171,27 +172,27 @@ public class VisualDebuggerListener extends DebuggerManagerAdapter {
             DebuggerManager.getDebuggerManager().addBreakpoint(mb[0]);
             DebuggerManager.getDebuggerManager().addBreakpoint(mb[1]);
         }
-        boolean trackComponentChanges = p.getBoolean("TrackComponentChanges", false);
+        boolean trackComponentChanges = p.getBoolean("TrackComponentChanges", true);
         if (debugger != null) {
             if (trackComponentChanges) {
-                FieldBreakpoint fb = FieldBreakpoint.create("java.awt.Component", "parent", FieldBreakpoint.TYPE_MODIFICATION);
-                fb.setHidden(true);
-                fb.addJPDABreakpointListener(new JPDABreakpointListener() {
+                MethodBreakpoint cmb = MethodBreakpoint.create("java.awt.Component", "createHierarchyEvents");
+                cmb.setHidden(true);
+                cmb.addJPDABreakpointListener(new JPDABreakpointListener() {
                     @Override
                     public void breakpointReached(JPDABreakpointEvent event) {
-                        componentParentChanged(debugger, event);
+                        componentParentChanged(debugger, event, RemoteServices.ServiceType.AWT);
                         event.resume();
                     }
                 });
-                DebuggerManager.getDebuggerManager().addBreakpoint(fb);
-                trackComponentBreakpoints.add(fb);
+                DebuggerManager.getDebuggerManager().addBreakpoint(cmb);
+                trackComponentBreakpoints.add(cmb);
                 
                 MethodBreakpoint mb = MethodBreakpoint.create("javafx.scene.Node", "setParent");
                 mb.setHidden(true);
                 mb.addJPDABreakpointListener(new JPDABreakpointListener() {
                     @Override
                     public void breakpointReached(JPDABreakpointEvent event) {
-                        componentParentChanged(debugger, event);
+                        componentParentChanged(debugger, event, RemoteServices.ServiceType.FX);
                         event.resume();
                     }
                 });
@@ -324,15 +325,15 @@ public class VisualDebuggerListener extends DebuggerManagerAdapter {
         }
     }
     
-    private static void componentParentChanged(JPDADebugger debugger, JPDABreakpointEvent event) {
+    private static void componentParentChanged(JPDADebugger debugger, JPDABreakpointEvent event,
+                                               RemoteServices.ServiceType serviceType) {
         ObjectReference component = null;
+        ObjectReference[] parentPtr = null;
 
         try {
-            java.lang.reflect.Field f = event.getClass().getDeclaredField("event"); // NOI18N
-            f.setAccessible(true);
-            Event jdievent = (Event) f.get(event);
-            if (jdievent instanceof WatchpointEvent) {
-                component = ((WatchpointEvent) jdievent).object();
+            if (RemoteServices.ServiceType.AWT.equals(serviceType)) {
+                parentPtr = new ObjectReference[] { null };
+                component = AWTComponentBreakpointImpl.getComponentOfParentChanged(event, parentPtr);
             } else {
                 JPDAThread t = event.getThread();
                 JDIVariable v = (JDIVariable)t.getCallStack(0, 1)[0].getThisVariable();
@@ -340,12 +341,23 @@ public class VisualDebuggerListener extends DebuggerManagerAdapter {
             }
         } catch (Exception ex) {}
         if (component != null) {
+            if (parentPtr != null && parentPtr[0] == null) {
+                // Component was removed
+                synchronized (componentsAndStackTraces) {
+                    Map<ObjectReference, Stack> componentAndStackTrace = componentsAndStackTraces.get(debugger);
+                    if (componentAndStackTrace != null) {
+                        componentAndStackTrace.remove(component);
+                    }
+                }
+                return ;
+            }
             Stack stack;
             try {
                 stack = new Stack(event.getThread().getCallStack());
             } catch (AbsentInformationException ex) {
                 return;
             }
+            //System.err.println("Have following stack for component "+component+", all = "+all+": "+stack);
             synchronized (componentsAndStackTraces) {
                 Map<ObjectReference, Stack> componentAndStackTrace = componentsAndStackTraces.get(debugger);
                 if (componentAndStackTrace == null) {

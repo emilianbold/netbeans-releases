@@ -74,5 +74,10 @@ $fnc = function($formUsed) use($lexUsed) {};
 
 $staticAnotherClass::$staticField;
 
+abstract class AbstractFoo
+{
+    abstract public function notHandled(array $array);
+}
+
 //END
 ?>

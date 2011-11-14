@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,25 +37,41 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.php.editor;
 
-package org.netbeans.modules.web.jsf.editor;
-
-import org.netbeans.modules.html.palette.api.HtmlPaletteFolderProvider;
+import java.io.File;
+import java.util.Collections;
+import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
- * Enables JSF palette for fileobjects located in capable project.
  *
- * @author mfukala@netbeans.org
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class JsfHtmlPaletteFolderProvider implements HtmlPaletteFolderProvider {
+public class PHPCodeCompletion204847Test extends PHPTestBase {
+
+    public PHPCodeCompletion204847Test(String testName) {
+        super(testName);
+    }
+
+    public void testUseCase1() throws Exception {
+        checkCompletion("testfiles/completion/lib/test204847/User.php", "$this->type = Types::^", false);
+    }
 
     @Override
-    public String getPaletteFolderName(FileObject fileObject) {
-        return (fileObject.getMIMEType().equals(JsfUtils.XHTML_MIMETYPE) && 
-                JsfSupportImpl.findFor(fileObject) != null) ? "XHTMLPalette" : null; //NOI18N
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        return Collections.singletonMap(
+            PhpSourcePath.SOURCE_CP,
+            ClassPathSupport.createClassPath(new FileObject[] {
+                FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/lib/test204847/"))
+            })
+        );
     }
 
 }

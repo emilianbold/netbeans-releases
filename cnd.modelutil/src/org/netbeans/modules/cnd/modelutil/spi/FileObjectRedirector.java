@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,25 +37,19 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.modelutil.spi;
 
-package org.netbeans.modules.web.jsf.editor;
-
-import org.netbeans.modules.html.palette.api.HtmlPaletteFolderProvider;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 
 /**
- * Enables JSF palette for fileobjects located in capable project.
- *
- * @author mfukala@netbeans.org
+ * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
-public class JsfHtmlPaletteFolderProvider implements HtmlPaletteFolderProvider {
-
-    @Override
-    public String getPaletteFolderName(FileObject fileObject) {
-        return (fileObject.getMIMEType().equals(JsfUtils.XHTML_MIMETYPE) && 
-                JsfSupportImpl.findFor(fileObject) != null) ? "XHTMLPalette" : null; //NOI18N
-    }
-
+public interface FileObjectRedirector {
+    
+    FileObject redirect(FileObject file);
+    
+    DataObject redirect(DataObject file);
 }
