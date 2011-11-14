@@ -880,7 +880,7 @@ public class VariousUtils {
                         state = State.INVALID;
                         if (isString(token)) {
                             metaAll.insert(0, "@" + VariousUtils.FIELD_TYPE_PREFIX);
-                            metaAll.insert(0, token.text().toString());
+                            metaAll.insert(0, qualifyTypeNames(token.text().toString(), tokenSequence.offset(), varScope));
                             state = State.CLASSNAME;
                         } else if (isSelf(token) || isParent(token) || isStatic(token)) {
                             metaAll.insert(0, "@" + VariousUtils.FIELD_TYPE_PREFIX);
@@ -1322,6 +1322,14 @@ public class VariousUtils {
         return retval;
     }
 
+    /**
+     * Resolves fully qualified type names from their simple names.
+     *
+     * @param typeNames Type names in to format: string|ClassName|null
+     * @param offset Offset, where the type is resolved.
+     * @param inScope Scope, where the type is resolved.
+     * @return Fully qualified type names in the format: string|\Foo\ClassName|null
+     */
     public static String qualifyTypeNames(String typeNames, int offset, Scope inScope) {
         String retval = ""; //NOI18N
         final String typeSeparator = "|"; //NOI18N

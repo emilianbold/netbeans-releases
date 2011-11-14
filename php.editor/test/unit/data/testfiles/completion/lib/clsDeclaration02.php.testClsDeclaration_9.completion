@@ -14,6 +14,8 @@ PACKAGE    ExtraThrow                      [PUBLIC]   null
 PACKAGE    Foo                             [PUBLIC]   null
 PACKAGE    MySpace                         [PUBLIC]   null
 PACKAGE    MySpaceThrow                    [PUBLIC]   null
+PACKAGE    Package1                        [PUBLIC]   null
+PACKAGE    Package2                        [PUBLIC]   null
 PACKAGE    Shit                            [PUBLIC]   null
 PACKAGE    Test204925_01_C                 [PUBLIC]   null
 PACKAGE    Test204925_01_P                 [PUBLIC]   null
@@ -42,6 +44,7 @@ PACKAGE    Controller                      [PUBLIC]   Brite
 PACKAGE    Data                            [PUBLIC]   Shit
 PACKAGE    NNS                             [PUBLIC]   CNS
 PACKAGE    Test                            [PUBLIC]   App
+PACKAGE    User                            [PUBLIC]   Package2
 PACKAGE    a                               [PUBLIC]   Test204925_06_P
 PACKAGE    a                               [PUBLIC]   Test204925_07_P
 PACKAGE    a                               [PUBLIC]   Test204925_08_P
@@ -198,12 +201,14 @@ CLASS      TestIssue145206                 [PUBLIC]   issue145206.php
 CLASS      TestIssue146176                 [PUBLIC]   issue146176.php
 CLASS      TestMethod                      [PUBLIC]   test202530.php
 CLASS      TestOptionalArgsClass           [PUBLIC]   optional_args.php
+CLASS      Types                           [PUBLIC]   Package1
 CLASS      TypesinPHPDoc                   [PUBLIC]   types_in_phpdoc.php
 CLASS      UsageReturnTypeInOtherFile      [PUBLIC]   Usage.php
 CLASS      User                            [PUBLIC]   Core
 CLASS      User                            [PUBLIC]   Core
 CLASS      User                            [PUBLIC]   Data
 CLASS      User                            [PUBLIC]   Data
+CLASS      User                            [PUBLIC]   Package2\User
 CLASS      User                            [PUBLIC]   Shit\Data
 CLASS      User                            [PUBLIC]   Shit\Data
 CLASS      User                            [PUBLIC]   issue142051.php
