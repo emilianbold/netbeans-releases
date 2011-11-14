@@ -107,7 +107,7 @@ public class DebugTreeView extends BeanTreeView {
         ((JComponent)tree.getParent()).setOpaque(false);
         ((JComponent)tree.getParent()).setBackground(tree.getBackground());
         setWheelScrollingEnabled(false);
-        }
+    }
 
     public JTree getTree() {
         return tree;
