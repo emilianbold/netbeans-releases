@@ -288,12 +288,12 @@ public class MakeProjectGeneratorImpl {
                 projectDescriptor.clean();
             }
         };
-        if (project instanceof MakeProject && !saveNow) { // How can it not be an instance of MakeProject???
-            MakeProject makeProject = (MakeProject) project;
-            makeProject.addOpenedTask(task);
-        } else {
+        //if (project instanceof MakeProject && !saveNow) { // How can it not be an instance of MakeProject???
+        //    MakeProject makeProject = (MakeProject) project;
+        //    makeProject.addOpenedTask(task);
+        //} else {
             task.run();
-        }
+        //}
         if (!prjParams.getFullRemote() && !prjParams.isMakefileProject()) {
             FileObject baseDirFileObject = projectDescriptor.getBaseDirFileObject();
             FileObject createData = baseDirFileObject.createData(projectDescriptor.getProjectMakefileName());
