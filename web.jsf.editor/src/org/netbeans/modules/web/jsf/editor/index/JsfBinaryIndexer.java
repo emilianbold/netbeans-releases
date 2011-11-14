@@ -42,12 +42,8 @@
 package org.netbeans.modules.web.jsf.editor.index;
 
 import java.io.IOException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.Enumeration;
-import java.util.Locale;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
@@ -57,11 +53,11 @@ import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
-import org.netbeans.modules.parsing.spi.indexing.BinaryIndexer;
-import org.netbeans.modules.parsing.spi.indexing.BinaryIndexerFactory;
+import org.netbeans.modules.parsing.spi.indexing.ConstrainedBinaryIndexer;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
+import org.netbeans.modules.web.jsf.editor.JsfUtils;
 import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibraryDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -71,33 +67,36 @@ import org.openide.util.Exceptions;
  *
  * @author marekfukala
  */
-public class JsfBinaryIndexer extends BinaryIndexer {
-
-    static final String INDEXER_NAME = "jsfBinary"; //NOI18N
-    static final int INDEX_VERSION = 8;
+@ConstrainedBinaryIndexer.Registration(mimeType = {JsfUtils.XHTML_MIMETYPE, JsfUtils.TLD_MIMETYPE, JsfUtils.XML_MIMETYPE},
+indexVersion = JsfBinaryIndexer.INDEXER_VERSION,
+indexerName = JsfBinaryIndexer.INDEXER_NAME) //NOI18N
+public class JsfBinaryIndexer extends ConstrainedBinaryIndexer {
 
     private static final Logger LOGGER = Logger.getLogger(JsfBinaryIndexer.class.getSimpleName());
+    static final int INDEXER_VERSION = 8; //NOI18N
+    static final String INDEXER_NAME = "jsfBinary"; //NOI18N
 
     @Override
-    protected void index(Context context) {
+    protected void index(Map<String, ? extends Iterable<? extends FileObject>> files, Context context) {
         LOGGER.log(Level.FINE, "indexing {0}", context.getRoot()); //NOI18N
 
         if (context.getRoot() == null) {
             return;
         }
 
-        processTlds(context);
+        processTlds(files.get(JsfUtils.TLD_MIMETYPE), context);
 
-        processFaceletsLibraryDescriptors(context);
+        processFaceletsLibraryDescriptors(files.get(JsfUtils.XML_MIMETYPE), context);
 
-        processFaceletsCompositeLibraries(context);
+        processFaceletsCompositeLibraries(files.get(JsfUtils.XHTML_MIMETYPE), context);
 
     }
-    
-    private void processTlds(Context context) {
-        FileObject root = context.getRoot();
-        //find all TLDs in the jar file
-        for (FileObject file : findLibraryDescriptors(root, JsfIndexSupport.TLD_LIB_SUFFIX)) {
+
+    private void processTlds(Iterable<? extends FileObject> files, Context context) {
+        if(files == null) {
+            return ;
+        }
+        for (FileObject file : files) {
             try {
                 String namespace = FaceletsLibraryDescriptor.parseNamespace(file.getInputStream(), "taglib", "uri");
                 if (namespace != null) {
@@ -111,122 +110,70 @@ public class JsfBinaryIndexer extends BinaryIndexer {
 
     }
 
-    private void processFaceletsLibraryDescriptors(Context context) {
-        FileObject root = context.getRoot();
-        for (FileObject file : findLibraryDescriptors(root, JsfIndexSupport.FACELETS_LIB_SUFFIX)) {
-            try {
-                String namespace = FaceletsLibraryDescriptor.parseNamespace(file.getInputStream());
-                if(namespace != null) {
-                    JsfIndexSupport.indexFaceletsLibraryDescriptor(context, file, namespace);
-                    LOGGER.log(Level.FINE, "The file {0} indexed as a Facelets Library Descriptor", file); //NOI18N
+    private void processFaceletsLibraryDescriptors(Iterable<? extends FileObject> files, Context context) {
+        if(files == null) {
+            return ;
+        }
+        for (FileObject file : files) {
+            //no special mimetype for facelet library descriptor AFAIK
+            if (file.getNameExt().endsWith(JsfIndexSupport.FACELETS_LIB_SUFFIX)) {
+                try {
+                    String namespace = FaceletsLibraryDescriptor.parseNamespace(file.getInputStream());
+                    if (namespace != null) {
+                        JsfIndexSupport.indexFaceletsLibraryDescriptor(context, file, namespace);
+                        LOGGER.log(Level.FINE, "The file {0} indexed as a Facelets Library Descriptor", file); //NOI18N
+                    }
+                } catch (IOException ex) {
+                    LOGGER.info(String.format("Error parsing %s file: %s", file.getPath(), ex.getMessage()));//NOI18N
                 }
-            } catch (IOException ex) {
-                LOGGER.info(String.format("Error parsing %s file: %s", file.getPath(), ex.getMessage()));//NOI18N
             }
         }
 
     }
 
-    private void processFaceletsCompositeLibraries(Context context) {
-        //look for /META-INF/resources/<folder>/*.xhtml
-        //...and index as normal composite library
-        FileObject resourcesFolder = context.getRoot().getFileObject("META-INF/resources"); //NOI18N //can it be stored in META-INF.* ????
-        if(resourcesFolder != null) {
-            LOGGER.log(Level.FINE, "Composite Libraries Scan: META-INF/resources folder found"); //NOI18N
-            try {
-                Enumeration<? extends FileObject> folders = resourcesFolder.getFolders(false);
-                final IndexingSupport sup = IndexingSupport.getInstance(context);
-                final JsfPageModelFactory compositeComponentModelFactory = JsfPageModelFactory.getFactory(CompositeComponentModel.Factory.class);
-                while (folders.hasMoreElements()) {
-                    FileObject folder = folders.nextElement();
-                    //process all xhtml files
-                    for (final FileObject file : folder.getChildren()) {
-                        if (file.getExt().equalsIgnoreCase("xhtml")) {
-                            //NOI18N
-                            //parse && index the html content of the file
-                            LOGGER.log(Level.FINE, "Composite Libraries Scan: found {0}", file); //NOI18N
-                            Source source = Source.create(file);
-                            try {
-                                ParserManager.parse(Collections.singleton(source), new UserTask() {
-                                    @Override
-                                    public void run(ResultIterator resultIterator) throws Exception {
-                                        for (Embedding e : resultIterator.getEmbeddings()) {
-                                            if (e.getMimeType().equals("text/html")) {
-                                                //NOI18N
-                                                HtmlParserResult result = (HtmlParserResult) resultIterator.getResultIterator(e).getParserResult();
-                                                CompositeComponentModel ccmodel = (CompositeComponentModel) compositeComponentModelFactory.getModel(result);
-                                                if (ccmodel != null) {
-                                                    //looks like a composite component
-                                                    IndexDocument doc = sup.createDocument(file);
-                                                    ccmodel.storeToIndex(doc);
-                                                    sup.addDocument(doc);
+    private void processFaceletsCompositeLibraries(Iterable<? extends FileObject> files, Context context) {
+        if(files == null) {
+            return ;
+        }
+        try {
+            //look for /META-INF/resources/<folder>/*.xhtml
+            //...and index as normal composite library
+            final JsfPageModelFactory compositeComponentModelFactory = JsfPageModelFactory.getFactory(CompositeComponentModel.Factory.class);
+            final IndexingSupport sup = IndexingSupport.getInstance(context);
+            for (final FileObject file : files) {
+                if (CompositeComponentModel.isCompositeLibraryMember(file)) {
+                    Source source = Source.create(file);
+                    try {
+                        ParserManager.parse(Collections.singleton(source), new UserTask() {
 
-                                                    LOGGER.log(Level.FINE, "Composite Libraries Scan: Model created for file {0}", file); //NOI18N
-                                                }
-                                            }
+                            @Override
+                            public void run(ResultIterator resultIterator) throws Exception {
+                                for (Embedding e : resultIterator.getEmbeddings()) {
+                                    if (e.getMimeType().equals("text/html")) {
+                                        //NOI18N
+                                        HtmlParserResult result = (HtmlParserResult) resultIterator.getResultIterator(e).getParserResult();
+                                        CompositeComponentModel ccmodel = (CompositeComponentModel) compositeComponentModelFactory.getModel(result);
+                                        if (ccmodel != null) {
+                                            //looks like a composite component
+                                            IndexDocument doc = sup.createDocument(file);
+                                            ccmodel.storeToIndex(doc);
+                                            sup.addDocument(doc);
+
+                                            LOGGER.log(Level.FINE, "Composite Libraries Scan: Model created for file {0}", file); //NOI18N
                                         }
                                     }
-                                });
-                            } catch (ParseException ex) {
-                                Exceptions.printStackTrace(ex);
+                                }
                             }
-                        }
+                        });
+                    } catch (ParseException ex) {
+                        Exceptions.printStackTrace(ex);
                     }
                 }
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
             }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
         }
 
     }
 
-    public static Collection<FileObject> findLibraryDescriptors(FileObject classpathRoot, String suffix) {
-        Collection<FileObject> files = new ArrayList<FileObject>();
-        Enumeration<? extends FileObject> fos = classpathRoot.getChildren(true); //scan all files in the jar
-        while (fos.hasMoreElements()) {
-            FileObject file = fos.nextElement();
-            if(!file.isValid() || !file.isData()) {
-                continue;
-            }
-            if (file.getNameExt().toLowerCase(Locale.US).endsWith(suffix)) { //NOI18N
-                //found library, create a new instance and cache it
-                files.add(file);
-            }
-        }
-        return files;
-    }
-
-    public static class Factory extends BinaryIndexerFactory {
-
-        @Override
-        public BinaryIndexer createIndexer() {
-            return new JsfBinaryIndexer();
-        }
-
-        @Override
-        public void rootsRemoved(Iterable<? extends URL> removedRoots) {
-            //no-op
-        }
-
-        @Override
-	public boolean scanStarted(Context context) {
-            try {
-                return IndexingSupport.getInstance(context).isValid();
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-                return false;
-            }
-	}
-
-        @Override
-        public String getIndexerName() {
-            return INDEXER_NAME;
-        }
-
-        @Override
-        public int getIndexVersion() {
-            return INDEX_VERSION;
-        }
-
-    }
 }
