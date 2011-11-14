@@ -126,6 +126,16 @@ final class UndoRedoManager extends UndoRedo.Manager {
      * is started.
      */
     static final UndoableEdit MARK_COMMIT_GROUP = new CompoundEdit();
+    
+    static {
+        // Prevent the special edits to merge with any other edits.
+        // This might happen in an errorneous situation when e.g. two undo managers
+        // are attached to the same document at once.
+        ((CompoundEdit)SAVEPOINT).end();
+        ((CompoundEdit)BEGIN_COMMIT_GROUP).end();
+        ((CompoundEdit)END_COMMIT_GROUP).end();
+        ((CompoundEdit)MARK_COMMIT_GROUP).end();
+    }
 
 
     CloneableEditorSupport support;
