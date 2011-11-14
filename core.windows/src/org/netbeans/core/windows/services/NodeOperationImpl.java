@@ -450,10 +450,13 @@ public final class NodeOperationImpl extends NodeOperation {
                 // #68943 - stop to listen, as we are waving goodbye :-)
                 tc.removePropertyChangeListener(this);
                 Mutex.EVENT.readAccess(new Runnable() {
+                    @Override
                     public void run() {
-                        dialog.setVisible(false);
-                        dialog.dispose();
-                        dialog = null;
+                        if (dialog != null) {
+                            dialog.setVisible(false);
+                            dialog.dispose();
+                            dialog = null;
+                        }
                     }
                 });
             }
