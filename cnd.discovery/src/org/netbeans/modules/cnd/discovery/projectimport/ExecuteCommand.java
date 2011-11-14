@@ -67,11 +67,8 @@ import org.netbeans.modules.nativeexecution.api.*;
 import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionDescriptor;
 import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionService;
 import org.netbeans.modules.nativeexecution.api.execution.PostMessageDisplayer;
-import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.*;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
-import org.netbeans.modules.nativeexecution.api.util.HelperLibraryUtility;
-import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
-import org.netbeans.modules.nativeexecution.api.util.MacroMap;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.windows.IOProvider;
@@ -105,10 +102,9 @@ public class ExecuteCommand {
     }
 
     private NativeExecutionService prepare(ExecutionListener listener, Writer outputListener, List<String> additionalEnvironment) {
-        // Executable
-        String executable;
+        final HostInfo hostInfo;
         try {
-            executable = HostInfoUtils.getHostInfo(execEnv).getShell();
+            hostInfo = HostInfoUtils.getHostInfo(execEnv);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
             return null;
@@ -116,6 +112,8 @@ public class ExecuteCommand {
             Exceptions.printStackTrace(ex);
             return null;
         }
+        // Executable
+        String executable = hostInfo.getShell();
         if (command.indexOf("${MAKE}") >= 0) { //NOI18N
             String make = "make"; //NOI18N
             CompilerSet compilerSet = getCompilerSet();
@@ -123,6 +121,9 @@ public class ExecuteCommand {
                 Tool findTool = compilerSet.findTool(PredefinedToolKind.MakeTool);
                 if (findTool != null) {
                     make = findTool.getPath();
+                    if (hostInfo.getOSFamily() == HostInfo.OSFamily.WINDOWS) {
+                        make = WindowsSupport.getInstance().convertToShellPath(make);
+                    }
                 }
             }
             command = command.replace("${MAKE}", make); //NOI18N

@@ -55,8 +55,13 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.EventObject;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -78,11 +83,13 @@ import javax.swing.event.TreeModelEvent;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 import javax.swing.tree.AbstractLayoutCache;
 import javax.swing.tree.TreePath;
 import org.netbeans.swing.etable.ETable;
 import org.netbeans.swing.etable.ETableColumn;
+import org.netbeans.swing.etable.ETableColumnModel;
 
 /** An Outline, or tree-table component.  Takes an instance of OutlineModel,
  * an interface which merges TreeModel and TableModel.
@@ -448,7 +455,54 @@ public class Outline extends ETable {
             return super.createToolTip();
         }
     }
+    
+    private transient Map<TreePath, RowMapping> tempSortMap = null;
+    private transient final Object tempSortMapLock = new Object();
 
+    /**
+     * Sorts the rows of the tree table.
+     */
+    @Override
+    protected void sortAndFilter() {
+        TableColumnModel tcm = getColumnModel();
+        if (tcm instanceof ETableColumnModel) {
+            ETableColumnModel etcm = (ETableColumnModel) tcm;
+            Comparator<RowMapping> c = etcm.getComparator();
+            if (c != null) {
+                TableModel model = getModel();
+                int noRows = model.getRowCount();
+                List<RowMapping> rows = new ArrayList<RowMapping>();
+                synchronized (tempSortMapLock) {
+                    if (tempSortMap != null) {
+                        return ; // Sorting right now
+                    }
+                    Map<TreePath, RowMapping> tsm = new HashMap<TreePath, RowMapping>();
+                    for (int i = 0; i < noRows; i++) {
+                        if (acceptByQuickFilter(model, i)) {
+                            TreePath tp = getLayoutCache().getPathForRow(i);
+                            RowMapping rm = new RowMapping(i, model);
+                            tsm.put(tp, rm);
+                            rows.add(rm);
+                        }
+                    }
+                    tempSortMap = tsm;
+                    Collections.sort(rows, c);
+                    tempSortMap = null;
+                }
+                int [] res = new int[rows.size()];
+                int [] invRes = new int[noRows]; // carefull - this one is bigger!
+                for (int i = 0; i < res.length; i++) {
+                    RowMapping rm = rows.get(i);
+                    int rmi = rm.getModelRowIndex();
+                    res[i] = rmi;
+                    invRes[rmi] = i;
+                }
+                sortingPermutation = res;
+                inverseSortingPermutation = invRes;
+            }
+        }
+    }
+    
     /**
      * An Outline implementation of table column.
      */
@@ -509,6 +563,8 @@ public class Outline extends ETable {
                 if (tp2.isDescendant(tp1)) {
                     return 1;
                 }
+                boolean tp1Changed = false;
+                boolean tp2Changed = false;
                 TreePath parent1 = tp1.getParentPath();
                 TreePath parent2 = tp2.getParentPath();
                 if (parent1 != null && parent2 != null && parent1.equals(parent2) &&
@@ -518,9 +574,11 @@ public class Outline extends ETable {
                 }
                 while (tp1.getPathCount() < tp2.getPathCount()) {
                     tp2 = tp2.getParentPath();
+                    tp2Changed = true;
                 }
                 while (tp1.getPathCount() > tp2.getPathCount()) {
                     tp1 = tp1.getParentPath();
+                    tp1Changed = true;
                 }
                 parent1 = tp1.getParentPath();
                 parent2 = tp2.getParentPath();
@@ -529,33 +587,14 @@ public class Outline extends ETable {
                     tp2 = parent2;
                     parent1 = tp1.getParentPath();
                     parent2 = tp2.getParentPath();
+                    tp1Changed = true;
+                    tp2Changed = true;
                 }
-                int r1 = getLayoutCache().getRowForPath(tp1);
-                int r2 = getLayoutCache().getRowForPath(tp2);
-                
-                Object obj1 = getModel().getValueAt(r1, column);
-                Object obj2 = getModel().getValueAt(r2, column);
-                obj1 = transformValue(obj1);
-                obj2 = transformValue(obj2);
-                if (obj1 == null && obj2 == null) {
-                    return 0;
+                if (tp1Changed || tp2Changed) {
+                    return compare(tempSortMap.get(tp1), tempSortMap.get(tp2));
+                } else {
+                    return ascending ? super.compare(rm1, rm2) : - super.compare(rm1, rm2);
                 }
-                if (obj1 == null) {
-                    return (ascending) ? -1 : 1;
-                }
-                if (obj2 == null) {
-                    return (ascending) ? 1 : -1;
-                }
-                // check nested comparator
-                if (getNestedComparator () != null) {
-                    int res = getNestedComparator ().compare (obj1, obj2);
-                    return ascending ? res : -res;
-                } else if ((obj1 instanceof Comparable) && (obj1.getClass().isAssignableFrom(obj2.getClass()))){
-                    Comparable c1 = (Comparable) obj1;
-                    return ascending ? c1.compareTo(obj2) : - c1.compareTo(obj2);
-                }
-                return ascending ? obj1.toString().compareTo(obj2.toString()) :
-                                   obj2.toString().compareTo(obj1.toString());
             }
         }
     }

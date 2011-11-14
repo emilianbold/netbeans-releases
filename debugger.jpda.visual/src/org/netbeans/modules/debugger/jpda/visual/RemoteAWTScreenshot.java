@@ -723,14 +723,14 @@ public class RemoteAWTScreenshot {
         
         @Override
         public Action[] getActions(boolean context) {
-            FieldInfo fieldInfo = getField();
+            //FieldInfo fieldInfo = getField();
             ObjectReference component = getComponent();
             ComponentBreakpoint b = ComponentBreakpointActionProvider.findBreakpoint(component);
             
             List<Action> actions = new ArrayList<Action>();
             actions.add(GoToFieldDeclarationAction.get(GoToFieldDeclarationAction.class));
             actions.add(GoToSourceAction.get(GoToSourceAction.class));
-            if (fieldInfo != null) {
+            if (getAddCallStack() != null) {
                 actions.add(GoToAddIntoHierarchyAction.get(GoToAddIntoHierarchyAction.class));
             }
             actions.add(null);

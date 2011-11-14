@@ -41,10 +41,17 @@
  */
 package org.netbeans.modules.debugger.jpda.visual.breakpoints;
 
+import com.sun.jdi.Field;
+import com.sun.jdi.IncompatibleThreadStateException;
+import com.sun.jdi.IntegerValue;
+import com.sun.jdi.LongValue;
 import com.sun.jdi.Method;
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.ReferenceType;
+import com.sun.jdi.StackFrame;
+import com.sun.jdi.ThreadReference;
 import com.sun.jdi.Value;
+import java.awt.event.HierarchyEvent;
 import java.util.List;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.jpda.FieldBreakpoint;
@@ -57,12 +64,21 @@ import org.netbeans.api.debugger.jpda.event.JPDABreakpointListener;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.expr.JDIVariable;
 import org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.IllegalThreadStateExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.IntegerValueWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.LongValueWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ObjectReferenceWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ReferenceTypeWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.StackFrameWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ThreadReferenceWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.TypeComponentWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.VirtualMachineWrapper;
+import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -80,19 +96,33 @@ public class AWTComponentBreakpointImpl extends BaseComponentBreakpointImpl {
         Variable variableComponent = ((JPDADebuggerImpl) debugger).getVariable(component);
         //mb.setInstanceFilters(debugger, new ObjectVariable[] { (ObjectVariable) variableComponent });
         
-        int type = cb.getType();
+        final int type = cb.getType();
         if (((type & AWTComponentBreakpoint.TYPE_ADD) != 0) || ((type & AWTComponentBreakpoint.TYPE_REMOVE) != 0)) {
-            FieldBreakpoint fb = FieldBreakpoint.create("java.awt.Component", "parent", FieldBreakpoint.TYPE_MODIFICATION);
-            fb.setHidden(true);
-            fb.setInstanceFilters(debugger, new ObjectVariable[] { (ObjectVariable) variableComponent });
-            fb.addJPDABreakpointListener(new JPDABreakpointListener() {
+            MethodBreakpoint mb = MethodBreakpoint.create("java.awt.Component", "createHierarchyEvents");   // NOI18N
+            mb.setHidden(true);
+            mb.setInstanceFilters(debugger, new ObjectVariable[] { (ObjectVariable) variableComponent });
+            mb.addJPDABreakpointListener(new JPDABreakpointListener() {
                 @Override
                 public void breakpointReached(JPDABreakpointEvent event) {
-                    navigateToCustomCode(event.getThread());
+                    ObjectReference[] parentPtr = null;
+                    if ((type & AWTComponentBreakpoint.TYPE_ADD) == 0) {
+                        parentPtr = new ObjectReference[] { null };
+                    }
+                    if ((type & AWTComponentBreakpoint.TYPE_REMOVE) == 0) {
+                        parentPtr = new ObjectReference[] { null };
+                    }
+                    ObjectReference component = getComponentOfParentChanged(event, parentPtr);
+                    if (component == null ||
+                        (type & AWTComponentBreakpoint.TYPE_ADD) == 0 && parentPtr == null ||
+                        (type & AWTComponentBreakpoint.TYPE_REMOVE) == 0 && parentPtr != null) {
+                        event.resume();
+                    } else {
+                        navigateToCustomCode(event.getThread());
+                    }
                 }
             });
-            DebuggerManager.getDebuggerManager().addBreakpoint(fb);
-            serviceBreakpoints.add(fb);
+            DebuggerManager.getDebuggerManager().addBreakpoint(mb);
+            serviceBreakpoints.add(mb);
         }
         if (((type & AWTComponentBreakpoint.TYPE_SHOW) != 0) || ((type & AWTComponentBreakpoint.TYPE_HIDE) != 0)) {
             MethodBreakpoint mbShow = MethodBreakpoint.create("java.awt.Component", "show");
@@ -127,6 +157,59 @@ public class AWTComponentBreakpointImpl extends BaseComponentBreakpointImpl {
             DebuggerManager.getDebuggerManager().addBreakpoint(mbShow);
             serviceBreakpoints.add(mbShow);
         }
+    }
+    
+    public static ObjectReference getComponentOfParentChanged(JPDABreakpointEvent event,
+                                                              ObjectReference[] parentPtr) {
+        ThreadReference tr = ((JPDAThreadImpl) event.getThread()).getThreadReference();
+        try {
+            StackFrame frame = ThreadReferenceWrapper.frame(tr, 0);
+            //com.sun.jdi.Method m = LocationWrapper.method(StackFrameWrapper.location(frame));
+            List<Value> argumentValues = StackFrameWrapper.getArgumentValues0(frame);
+            // int createHierarchyEvents(int id, Component changed,
+            //                  Container changedParent, long changeFlags,
+            //                  boolean enabledOnToolkit) {
+            if (argumentValues.size() < 4) {
+                return null;
+            }
+            Value idValue = argumentValues.get(0);
+            if (!(idValue instanceof IntegerValue &&
+                  HierarchyEvent.HIERARCHY_CHANGED == IntegerValueWrapper.value((IntegerValue) idValue))) {
+                return null;
+            }
+            Value changeFlags = argumentValues.get(3);
+            if (!(changeFlags instanceof LongValue &&
+                  (LongValueWrapper.value((LongValue) changeFlags) & HierarchyEvent.PARENT_CHANGED) != 0)) {
+                return null;
+            }
+            ObjectReference component = (ObjectReference) argumentValues.get(1);
+            if (parentPtr != null) {
+                List<ReferenceType> componentClassesByName = VirtualMachineWrapper.classesByName(tr.virtualMachine(), "java.awt.Component");
+                try {
+                    Field parent = ReferenceTypeWrapper.fieldByName(componentClassesByName.get(0), "parent");
+                    if (parent != null) {
+                        parentPtr[0] = (ObjectReference) ObjectReferenceWrapper.getValue(component, parent);
+                    }
+                } catch (ClassNotPreparedExceptionWrapper ex) {
+                    // Should not ever happen
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+            return component;
+        } catch (IncompatibleThreadStateException e) {
+            return null;
+        } catch (IllegalThreadStateExceptionWrapper e) {
+            return null;
+        } catch (InvalidStackFrameExceptionWrapper e) {
+            return null;
+        } catch (InternalExceptionWrapper e) {
+            return null;
+        } catch (ObjectCollectedExceptionWrapper ocex) {
+            return null;
+        } catch (VMDisconnectedExceptionWrapper e) {
+            return null;
+        }
+        
     }
 
     private String findClassWithMethod(ObjectReference value, String name, String signature) {
