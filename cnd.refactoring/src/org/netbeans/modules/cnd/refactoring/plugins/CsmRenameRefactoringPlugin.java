@@ -265,7 +265,9 @@ public class CsmRenameRefactoringPlugin extends CsmModificationRefactoringPlugin
                 refs.addAll(curRefs);
             }
         }
-        if (refs.size() > 0) {
+        Collection<CsmReference> extraRefs = getExtraRenameModificationsInFile(refObjects, csmFile, CsmReferenceKind.ALL);
+        refs.addAll(extraRefs); 
+        if (!refs.isEmpty()) {
             List<CsmReference> sortedRefs = new ArrayList<CsmReference>(refs);
             Collections.sort(sortedRefs, new Comparator<CsmReference>() {
                 @Override
@@ -329,5 +331,13 @@ public class CsmRenameRefactoringPlugin extends CsmModificationRefactoringPlugin
         PositionRef endPos = ces.createPositionRef(ref.getEndOffset(), Bias.Backward);
         Difference diff = new Difference(Difference.Kind.CHANGE, startPos, endPos, oldName, newName, descr);
         return diff;
+    }
+
+    private Collection<CsmReference> getExtraRenameModificationsInFile(Collection<? extends CsmObject> objs, CsmFile csmFile, Set<CsmReferenceKind> kinds) {
+        Collection<CsmReference> out = new HashSet<CsmReference>();
+        for (CsmRenameExtraObjectsProvider prov : Lookup.getDefault().lookupAll(CsmRenameExtraObjectsProvider.class)) {
+            out.addAll(prov.getExtraFileReferences(objs, csmFile, kinds));
+        }
+        return out;
     }
 }
