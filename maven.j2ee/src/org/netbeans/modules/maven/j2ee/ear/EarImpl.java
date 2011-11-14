@@ -88,6 +88,7 @@ import org.netbeans.modules.j2ee.spi.ejbjar.EarImplementation2;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.embedder.NBPluginParameterExpressionEvaluator;
+import org.netbeans.modules.maven.j2ee.EjbChangeDescriptorImpl;
 import org.netbeans.modules.maven.j2ee.MavenJavaEEConstants;
 import org.netbeans.modules.maven.spi.debug.AdditionalDebuggedProjects;
 import org.netbeans.modules.web.api.webmodule.WebModule;
@@ -495,7 +496,7 @@ class EarImpl implements EarImplementation, EarImplementation2,
     }
 
     public EjbChangeDescriptor getEjbChanges(long timestamp) {
-        return new EjbChange();
+        return new EjbChangeDescriptorImpl();
     }
 
     public boolean isManifestChanged(long timestamp) {
@@ -558,17 +559,6 @@ class EarImpl implements EarImplementation, EarImplementation2,
 
         public String getRelativePath() {
             return FileUtil.getRelativePath(root, f);
-        }
-    }
-
-    //TODO
-    private class EjbChange implements EjbChangeDescriptor {
-        public boolean ejbsChanged() {
-            return false;
-        }
-
-        public String[] getChangedEjbs() {
-            return new String[0];
         }
     }
 
