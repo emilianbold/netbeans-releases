@@ -1850,6 +1850,21 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         updateDocumentListenerList.remove(listener);
     }
 
+    @Override
+    public void addUndoableEditListener(UndoableEditListener listener) {
+        super.addUndoableEditListener(listener);
+        if (LOG.isLoggable(Level.FINE)) {
+            UndoableEditListener[] listeners = getUndoableEditListeners();
+            if (listeners.length > 1) {
+                // Having two UE listeners may be dangerous - for example
+                // having two undo managers attached at once will lead to strange errors
+                // since only one of the UMs will work normally while processing
+                // in the other one will be (typically silently) failing.
+                LOG.log(Level.INFO, "Two or more UndoableEditListeners attached", new Exception()); // NOI18N
+            }
+        }
+    }
+
     /**
      * Add a custom undoable edit during atomic lock of the document.
      * <br/>
