@@ -1569,14 +1569,14 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
     /** Extended write locking of the document allowing
     * reentrant write lock acquiring.
     */
-    public synchronized final void extWriteLock() {
+    public final void extWriteLock() {
         super.writeLock(); // AD.writeLock() already reentrant for several JDK releases
     }
 
     /** Extended write unlocking.
     * @see extWriteLock()
     */
-    public synchronized final void extWriteUnlock() {
+    public final void extWriteUnlock() {
         super.writeUnlock(); // AD.writeUnlock() already reentrant for several JDK releases
     }
 
