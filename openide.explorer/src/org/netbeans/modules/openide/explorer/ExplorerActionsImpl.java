@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.openide.explorer;
+package org.netbeans.modules.openide.explorer;
 
 import java.awt.EventQueue;
 import java.awt.GraphicsEnvironment;
@@ -58,15 +58,15 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import org.netbeans.modules.openide.explorer.ExternalDragAndDrop;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.explorer.ExplorerManager;
+import org.openide.explorer.ExtendedDelete;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -88,7 +88,7 @@ import org.openide.util.datatransfer.PasteType;
  *
  * @author Jan Jancura, Petr Hamernik, Ian Formanek, Jaroslav Tulach
  */
-final class ExplorerActionsImpl {
+public final class ExplorerActionsImpl {
     /** background updater of actions */
     private static final RequestProcessor RP = new RequestProcessor("Explorer Actions"); // NOI18N
     
@@ -115,7 +115,7 @@ final class ExplorerActionsImpl {
      * performers (the old behaviour) or only set the state of cut,copy,delete,
      * and paste actions.
      */
-    ExplorerActionsImpl() {
+    public ExplorerActionsImpl() {
     }
 
     //
@@ -124,24 +124,24 @@ final class ExplorerActionsImpl {
 
     /** Getter for the copy action.
      */
-    final Action copyAction() {
+    public Action copyAction() {
         return copyActionPerformer;
     }
 
     /** The cut action */
-    final Action cutAction() {
+    public Action cutAction() {
         return cutActionPerformer;
     }
 
     /** The delete action
      */
-    final Action deleteAction(boolean confirm) {
+    public Action deleteAction(boolean confirm) {
         return confirm ? deleteActionPerformerConfirm : deleteActionPerformerNoConfirm;
     }
 
     /** Own paste action
      */
-    final Action pasteAction() {
+    public Action pasteAction() {
         return pasteActionPerformer;
     }
 
@@ -398,9 +398,44 @@ final class ExplorerActionsImpl {
 
         pasteActionPerformer.setPasteTypes(null);
     }
+    
+    private static Transferable getTransferableOwner(Node node, boolean copyCut) {
+        try {
+            return copyCut ? node.clipboardCopy() : node.clipboardCut();
+        } catch (IOException e) {
+            Logger.getLogger(ExplorerActionsImpl.class.getName()).log(Level.WARNING, null, e);
+
+            return null;
+        }
+    }
+    
+    /**
+     * Get a transferable of a selection of node(s).
+     * @param sel An array with selected nodes.
+     * @param copyCut <code>true</code> for copy, <code>false</code> for cut.
+     * @return The transferable or <code>null</code>
+     */
+    public static Transferable getTransferableOwner(Node[] sel, boolean copyCut) {
+        Transferable trans;
+        if (sel.length != 1) {
+            Transferable[] arrayTrans = new Transferable[sel.length];
+
+            for (int i = 0; i < sel.length; i++) {
+                if ((arrayTrans[i] = getTransferableOwner(sel[i], copyCut)) == null) {
+                    return null;
+                }
+            }
+
+            trans = ExternalDragAndDrop.maybeAddExternalFileDnd( new ExTransferable.Multi(arrayTrans) );
+        } else {
+            trans = getTransferableOwner(sel[0], copyCut);
+        }
+
+        return trans;
+    }
 
     /** If our clipboard is not found return the default system clipboard. */
-    private static Clipboard getClipboard() {
+    public static Clipboard getClipboard() {
         if (GraphicsEnvironment.isHeadless()) {
             return null;
         }
@@ -544,26 +579,12 @@ final class ExplorerActionsImpl {
 
         @Override
         public void actionPerformed(ActionEvent ev) {
-            Transferable trans = null;
             ExplorerManager em = manager;
             if (em == null) {
                 return;
             }
             Node[] sel = em.getSelectedNodes();
-
-            if (sel.length != 1) {
-                Transferable[] arrayTrans = new Transferable[sel.length];
-
-                for (int i = 0; i < sel.length; i++) {
-                    if ((arrayTrans[i] = getTransferableOwner(sel[i])) == null) {
-                        return;
-                    }
-                }
-
-                trans = ExternalDragAndDrop.maybeAddExternalFileDnd( new ExTransferable.Multi(arrayTrans) );
-            } else {
-                trans = getTransferableOwner(sel[0]);
-            }
+            Transferable trans = getTransferableOwner(sel, copyCut);
 
             if (trans != null) {
                 Clipboard clipboard = getClipboard();
@@ -573,15 +594,6 @@ final class ExplorerActionsImpl {
             }
         }
 
-        private Transferable getTransferableOwner(Node node) {
-            try {
-                return copyCut ? node.clipboardCopy() : node.clipboardCut();
-            } catch (IOException e) {
-                Logger.getLogger(ExplorerActionsImpl.class.getName()).log(Level.WARNING, null, e);
-
-                return null;
-            }
-        }
     }
 
     /** Class which performs delete action */
@@ -689,7 +701,7 @@ final class ExplorerActionsImpl {
 
     }
     
-    final void waitFinished() {
+    public final void waitFinished() {
         ActionStateUpdater u = actionStateUpdater;
         synchronized (this) {
             u = actionStateUpdater;
