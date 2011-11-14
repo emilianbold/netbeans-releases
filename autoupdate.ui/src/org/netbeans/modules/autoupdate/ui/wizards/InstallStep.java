@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -137,6 +137,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
     
     private boolean wasStored = false;
     private boolean runInBg = false;
+    private boolean canceled = false;
     private OperationException installException;
     private final boolean allowRunInBackground;
     
@@ -153,6 +154,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
         this.allowRunInBackground = allowRunInBackground;
     }
     
+    @Override
     public boolean isFinishPanel() {
         return true;
     }
@@ -162,16 +164,17 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
         if (component == null) {
             panel = new OperationPanel(allowRunInBackground);
             panel.addPropertyChangeListener (new PropertyChangeListener () {
-                    public void propertyChange (PropertyChangeEvent evt) {
-                        if (OperationPanel.RUN_ACTION.equals (evt.getPropertyName ())) {
-                            RequestProcessor.Task it = createInstallTask ();
-                            PluginManagerUI.registerRunningTask (it);
-                            it.waitFinished ();
-                            PluginManagerUI.unregisterRunningTask ();
-                        } else if (OperationPanel.RUN_IN_BACKGROUND.equals (evt.getPropertyName ())) {
-                            setRunInBackground (true);
-                        }
+                @Override
+                public void propertyChange (PropertyChangeEvent evt) {
+                    if (OperationPanel.RUN_ACTION.equals (evt.getPropertyName ())) {
+                        RequestProcessor.Task it = createInstallTask ();
+                        PluginManagerUI.registerRunningTask (it);
+                        it.waitFinished ();
+                        PluginManagerUI.unregisterRunningTask ();
+                    } else if (OperationPanel.RUN_IN_BACKGROUND.equals (evt.getPropertyName ())) {
+                        setRunInBackground ();
                     }
+                }
             });
             component = new PanelBodyContainer (getBundle (HEAD_DOWNLOAD), getBundle (CONTENT_DOWNLOAD), panel);
             component.setPreferredSize (OperationWizardModel.PREFFERED_DIMENSION);
@@ -204,12 +207,18 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
                 }
             }
         }
-        fireChange ();
+        if (! canceled) {
+            fireChange ();
+        }
     }
     
     private Validator validator;
     
     private Validator handleDownload () {
+        if (canceled) {
+            log.fine("Quit handleDownload() because an previous installation was canceled.");
+            return null;
+        }
         validator = null;
         OperationContainer installContainer = model.getBaseContainer ();
         final InstallSupport support = model.getInstallSupport ();
@@ -229,28 +238,24 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
         return runInBg;
     }
     
-    private void setRunInBackground (boolean inBackground) {
-        if (inBackground == runInBg) {
+    private void setRunInBackground () {
+        if (runInBg) {
             return ;
         }
-        runInBg = inBackground;
-        if (inBackground) {
-            assert SwingUtilities.isEventDispatchThread () : "In AWT queue only.";
-            Window w = SwingUtilities.getWindowAncestor (getComponent ());
-            if (spareHandle != null && !spareHandleStarted) {
-                indeterminateProgress = true;
-                spareHandle.setInitialDelay(0);
-                spareHandle.start();
-                spareHandleStarted = true;
-            }
-            if (w != null) {
-                w.setVisible (false);
-            }
-            if (model.getPluginManager () != null) {
-                model.getPluginManager ().close ();
-            }
-        } else {
-            assert false : "Cannot set runInBackground to false";
+        runInBg = true;
+        assert SwingUtilities.isEventDispatchThread () : "In AWT queue only.";
+        Window w = SwingUtilities.getWindowAncestor (getComponent ());
+        if (spareHandle != null && !spareHandleStarted) {
+            indeterminateProgress = true;
+            spareHandle.setInitialDelay(0);
+            spareHandle.start();
+            spareHandleStarted = true;
+        }
+        if (w != null) {
+            w.setVisible (false);
+        }
+        if (model.getPluginManager () != null) {
+            model.getPluginManager ().close ();
         }
     }
     
@@ -263,7 +268,9 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
             systemHandle.finish ();
         }
         try {
+            canceled = true;
             model.doCleanup (true);
+            PluginManagerUI.cancelRunningTask();
         } catch (OperationException x) {
             Logger.getLogger (InstallStep.class.getName ()).log (Level.INFO, x.getMessage (), x);
         }
@@ -282,6 +289,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
             if (runInBackground ()) {
                 systemHandle = ProgressHandleFactory.createHandle (getBundle ("InstallStep_Download_DownloadingPlugins"),
                         new Cancellable () {
+                            @Override
                             public boolean cancel () {
                                 return handleCancel ();
                             }
@@ -290,6 +298,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
             } else {
                 spareHandle = ProgressHandleFactory.createHandle (getBundle ("InstallStep_Download_DownloadingPlugins"),
                         new Cancellable () {
+                            @Override
                             public boolean cancel () {
                                 return handleCancel ();
                             }
@@ -297,6 +306,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
                 totalUnits = model.getBaseContainer ().listAll ().size ();
                 processedUnits = 0;
                 detailLabel.addPropertyChangeListener (TEXT_PROPERTY, new PropertyChangeListener () {
+                    @Override
                     public void propertyChange (PropertyChangeEvent evt) {
                         assert TEXT_PROPERTY.equals (evt.getPropertyName ()) : "Listens onlo on " + TEXT_PROPERTY + " but was " + evt;
                         if (evt.getOldValue () != evt.getNewValue ()) {
@@ -308,7 +318,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
                                     indeterminateProgress = false;
                                 }
                             }
-                            if (! indeterminateProgress) {
+                            if (! indeterminateProgress && spareHandleStarted) {
                                 spareHandle.progress (((JLabel) evt.getSource ()).getText (), processedUnits < totalUnits - 1 ? processedUnits : totalUnits - 1);
                             }
                         }
@@ -361,6 +371,10 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
     }
     
     private Installer handleValidation (Validator v) {
+        if (canceled) {
+            log.fine("Quit handleValidation() because an previous installation was canceled.");
+            return null;
+        }
         component.setHeadAndContent (getBundle (HEAD_VERIFY), getBundle (CONTENT_VERIFY));
         final InstallSupport support = model.getInstallSupport ();
         assert support != null : "OperationSupport cannot be null because OperationContainer " +
@@ -372,6 +386,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
         if (runInBackground ()) {
             systemHandle = ProgressHandleFactory.createHandle (getBundle ("InstallStep_Validate_ValidatingPlugins"),
                         new Cancellable () {
+                            @Override
                             public boolean cancel () {
                                 handleCancel ();
                                 return true;
@@ -381,6 +396,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
         } else {
             spareHandle = ProgressHandleFactory.createHandle (getBundle ("InstallStep_Validate_ValidatingPlugins"),
                     new Cancellable () {
+                        @Override
                         public boolean cancel () {
                             handleCancel ();
                             return true;
@@ -390,6 +406,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
             processedUnits = 0;
             if (indeterminateProgress) {
                 detailLabel.addPropertyChangeListener (TEXT_PROPERTY, new PropertyChangeListener () {
+                    @Override
                     public void propertyChange (PropertyChangeEvent evt) {
                         assert TEXT_PROPERTY.equals (evt.getPropertyName ()) : "Listens onlo on " + TEXT_PROPERTY + " but was " + evt;
                         if (evt.getOldValue () != evt.getNewValue ()) {
@@ -450,6 +467,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
             Mnemonics.setLocalizedText (showCertificate, getBundle ("ValidationWarningPanel_ShowCertificateButton"));
             final String certificate = certs;
             showCertificate.addActionListener (new ActionListener () {
+                @Override
                 public void actionPerformed (ActionEvent e) {
                     if (showCertificate.equals (e.getSource ())) {
                         JTextArea ta = new JTextArea (certificate);
@@ -473,6 +491,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
             final Dialog dlg = DialogDisplayer.getDefault ().createDialog (dd);
             try {
                 SwingUtilities.invokeAndWait (new Runnable () {
+                    @Override
                     public void run () {
                         dlg.setVisible (true);
                     }
@@ -495,6 +514,10 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
     }
     
     private Restarter handleInstall (Installer i) {
+        if (canceled) {
+            log.fine("Quit handleInstall() because an previous installation was canceled.");
+            return null;
+        }
         installException = null;
         component.setHeadAndContent (getBundle (HEAD_INSTALL), getBundle (CONTENT_INSTALL));
         InstallSupport support = model.getInstallSupport();
@@ -515,6 +538,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
             processedUnits = 0;
             if (indeterminateProgress) {
                 detailLabel.addPropertyChangeListener (TEXT_PROPERTY, new PropertyChangeListener () {
+                    @Override
                     public void propertyChange (PropertyChangeEvent evt) {
                         assert TEXT_PROPERTY.equals (evt.getPropertyName ()) : "Listens onlo on " + TEXT_PROPERTY + " but was " + evt;
                         if (evt.getOldValue () != evt.getNewValue ()) {
@@ -559,6 +583,10 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
     }
     
     private void presentInstallDone () {
+        if (canceled) {
+            log.fine("Quit presentInstallDone() because an previous installation was canceled.");
+            return ;
+        }
         model.modifyOptionsForDoClose (wd);
         if (installException == null) {
             component.setHeadAndContent (getBundle (HEAD_INSTALL_DONE), getBundle (CONTENT_INSTALL_DONE));
@@ -574,6 +602,10 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
     }
     
     private void presentInstallNeedsRestart (Restarter r) {
+        if (canceled) {
+            log.fine("Quit presentInstallNeedsRestart() because an previous installation was canceled.");
+            return ;
+        }
         component.setHeadAndContent (getBundle (HEAD_RESTART), getBundle (CONTENT_RESTART));
         model.modifyOptionsForDoClose (wd, true);
         restarter = r;
@@ -599,6 +631,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
     
     private static void notifyInstallRestartNeeded (final InstallSupport support, final Restarter r) {
         final Runnable onMouseClick = new Runnable () {
+            @Override
             public void run () {
                 try {
                     support.doRestart (r, null);
@@ -616,6 +649,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
         //                                    getBundle ("RestartConfirmation_Title"),
         //                                    NotifyDescriptor.YES_NO_OPTION);
         ActionListener onClickAction = new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 //DialogDisplayer.getDefault ().notify (nd);
                 //if (NotifyDescriptor.OK_OPTION.equals (nd.getValue ())) {
@@ -638,6 +672,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
     private void notifyNetworkProblem (final OperationException ex) {
         // Some network problem found
         ActionListener onMouseClickAction = new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 NetworkProblemPanel problem = new NetworkProblemPanel (ex.getLocalizedMessage ());
                 problem.showNetworkProblemDialog ();
@@ -650,15 +685,18 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
                 description, onMouseClickAction, NotificationDisplayer.Priority.HIGH);
     }
 
+    @Override
     public HelpCtx getHelp() {
         return null;
     }
 
+    @Override
     public void readSettings (WizardDescriptor wd) {
         this.wd = wd;
         this.wasStored = false;
     }
 
+    @Override
     public void storeSettings (WizardDescriptor wd) {
         assert ! WizardDescriptor.PREVIOUS_OPTION.equals (wd.getValue ()) : "Cannot invoke Back in this case.";
         if (wasStored) {
@@ -705,14 +743,17 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
         }
     }
 
+    @Override
     public boolean isValid() {
         return true;
     }
 
+    @Override
     public synchronized void addChangeListener(ChangeListener l) {
         listeners.add(l);
     }
 
+    @Override
     public synchronized void removeChangeListener(ChangeListener l) {
         listeners.remove(l);
     }

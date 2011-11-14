@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.masterfs.filebasedfs.fileobjects;
 
+import java.io.File;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FSException;
 import org.openide.filesystems.*;
 
@@ -169,7 +170,20 @@ public final class RootObjWindows extends FileObject {
         return rootChildren.toArray(new FileObject[rootChildren.size()]);
     }
 
+    @Override
     public final FileObject getFileObject(String name, final String ext) {
+        FileObject first = getFileObjectImpl(name, ext);
+        if (first != null) {
+            return first;
+        }
+        if (name.length() >= 2 && name.charAt(1) == ':') {
+            final File root = new File(name.charAt(0) + ":\\"); // NOI18N
+            FileObjectFactory.getInstance(root, true);
+        }
+        return getFileObjectImpl(name, ext);
+    }
+    
+    private FileObject getFileObjectImpl(String name, String ext) {
         FileObject[] rootChildren =  getChildren();
         for (int i = 0; i < rootChildren.length; i++) {
             FileObject fileObject = rootChildren[i];            

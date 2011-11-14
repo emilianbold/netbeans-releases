@@ -2269,18 +2269,20 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
             }
         }
 
-        protected final boolean indexBinary(URL root, BinaryIndexers indexers, Map<BinaryIndexerFactory, Boolean> votes) throws IOException {
+        protected final boolean indexBinary(
+                final URL root,
+                final BinaryIndexers indexers,
+                final Map<BinaryIndexerFactory,Context> contexts,
+                final Map<BinaryIndexerFactory, Boolean> votes) throws IOException {
             LOGGER.log(Level.FINE, "Scanning binary root: {0}", root); //NOI18N
 
             if (!RepositoryUpdater.getDefault().rootsListeners.add(root, false)) {
                 return false;
             }
-            
+
             FileObjectCrawler crawler = null;
 
-            List<Context> transactionContexts = new LinkedList<Context>();
             try {
-                final FileObject cacheRoot = CacheFolder.getDataFolder(root);
                 if (LOGGER.isLoggable(Level.FINER)) {
                     LOGGER.fine("Using BinaryIndexerFactories: " + indexers.bifs); //NOI18N
                 }
@@ -2289,11 +2291,9 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     if (getShuttdownRequest().isRaised()) {
                         break;
                     }
-                    final Context ctx = SPIAccessor.getInstance().createContext(
-                            cacheRoot, root, f.getIndexerName(), f.getIndexVersion(), null, false, false,
-                            false, getShuttdownRequest());
+                    final Context ctx = contexts.get(f);
+                    assert ctx != null;
                     SPIAccessor.getInstance().setAllFilesJob(ctx, true);
-                    transactionContexts.add(ctx);
 
                     final BinaryIndexer indexer = f.createIndexer();
                     if (LOGGER.isLoggable(Level.FINE)) {
@@ -2317,12 +2317,6 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                 }
                 if (crawler != null && crawler.isFinished()) {
                     crawler.storeTimestamps();
-                }
-                for(Context ctx : transactionContexts) {
-                    DocumentIndex index = SPIAccessor.getInstance().getIndexFactory(ctx).getIndex(ctx.getIndexFolder());
-                    if (index != null) {
-                        storeChanges(index, isSteady(), null);
-                    }
                 }
             }
         }
@@ -3767,7 +3761,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                 binaryScanStarted(root, binaryIndexers, contexts, votes);
                 try {
                     updateProgress(root, true);
-                    indexBinary(root, binaryIndexers, votes);
+                    indexBinary(root, binaryIndexers, contexts, votes);
                     return true;
                 } catch (IOException ioe) {
                     LOGGER.log(Level.WARNING, null, ioe);

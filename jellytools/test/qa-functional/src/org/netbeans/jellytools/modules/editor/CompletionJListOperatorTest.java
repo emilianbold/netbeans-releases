@@ -93,7 +93,7 @@ public class CompletionJListOperatorTest extends JellyTestCase {
     }
 
     public void testCompletionDot() throws Exception {
-        eo.txtEditorPane().typeKey('.');
+        eo.typeKey('.');
 
         CompletionJListOperator lrComplOp = new CompletionJListOperator();
         lrComplOp.getCompletionItems();

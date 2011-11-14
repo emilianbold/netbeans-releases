@@ -128,11 +128,15 @@ public class GeneratedComponentsDestionationTest extends ExtJellyTestCase {
             options.pushKey(KeyEvent.VK_SPACE);
         }
         waitNoEvent(500);
-        int i = 0;
+        
+        JRadioButtonOperator jrbo = new JRadioButtonOperator(options,"Local Variables in initComponents() Method" );
+        //int i = 0;
         if (!local) {
-            i = 1;
+           // i = 1;
+            jrbo = new JRadioButtonOperator(options,"Fields in the Form Class");
         }
-        JRadioButtonOperator jrbo = new JRadioButtonOperator(options, i);
+        
+                //new JRadioButtonOperator(options, i);
         jrbo.setSelected(true);
 
         waitNoEvent(1000);

@@ -50,6 +50,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JFileChooser;
 import javax.swing.JTextField;
@@ -63,8 +64,10 @@ import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.modules.SpecificationVersion;
+import org.openide.util.AsyncGUIJob;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  * @author Radek Matous
@@ -80,7 +83,16 @@ final class OptionsPanel0 extends BasicWizardIterator.Panel {
         initAccessibility();
         putClientProperty("NewFileWizard_Title",// NOI18N
                 NbBundle.getMessage(OptionsPanel0.class,"LBL_OptionsWizardTitle")); // NOI18N
-        
+        primaryPanelCombo.setModel(UIUtil.createComboWaitModel());
+        Utilities.attachInitJob(primaryPanelCombo, new AsyncGUIJob() {
+            ComboBoxModel model;
+            @Override public void construct() {
+                model = new DefaultComboBoxModel(getPrimaryIdsFromLayer());
+            }
+            @Override public void finished() {
+                primaryPanelCombo.setModel(model);
+            }
+        });
     }
     
     /** Returns array of IDs of primary panels (categories) from project's layer. 
@@ -331,7 +343,6 @@ final class OptionsPanel0 extends BasicWizardIterator.Panel {
         org.openide.awt.Mnemonics.setLocalizedText(primaryPanelComboLbl, org.openide.util.NbBundle.getMessage(OptionsPanel0.class, "LBL_PrimaryPanelCombo")); // NOI18N
 
         primaryPanelCombo.setEditable(true);
-        primaryPanelCombo.setModel(new DefaultComboBoxModel(getPrimaryIdsFromLayer()));
         primaryPanelCombo.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 primaryPanelComboActionPerformed(evt);
@@ -356,27 +367,6 @@ final class OptionsPanel0 extends BasicWizardIterator.Panel {
                 .addComponent(advancedButton, javax.swing.GroupLayout.PREFERRED_SIZE, 400, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(98, 98, 98))
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(18, 18, 18)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(displayNameLbl1)
-                            .addComponent(primaryPanelComboLbl)
-                            .addComponent(keywordsLabel))
-                        .addGap(22, 22, 22)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(secondaryKwField, javax.swing.GroupLayout.DEFAULT_SIZE, 420, Short.MAX_VALUE)
-                            .addComponent(primaryPanelCombo, 0, 420, Short.MAX_VALUE)
-                            .addComponent(secondaryPanelTitle, javax.swing.GroupLayout.DEFAULT_SIZE, 420, Short.MAX_VALUE))
-                        .addGap(10, 10, 10))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(235, 235, 235)
-                        .addComponent(dummyPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap())
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(optionsCategoryButton, javax.swing.GroupLayout.PREFERRED_SIZE, 400, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
-            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(categoryNameLbl)
@@ -392,15 +382,33 @@ final class OptionsPanel0 extends BasicWizardIterator.Panel {
                         .addComponent(categoryNameField, javax.swing.GroupLayout.DEFAULT_SIZE, 418, Short.MAX_VALUE)
                         .addContainerGap())))
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(primKeywordsLabel)
-                .addGap(49, 49, 49)
-                .addComponent(primaryKwField, javax.swing.GroupLayout.DEFAULT_SIZE, 425, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(18, 18, 18)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(displayNameLbl1)
+                            .addComponent(primaryPanelComboLbl)
+                            .addComponent(keywordsLabel))
+                        .addGap(22, 22, 22)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(secondaryKwField, javax.swing.GroupLayout.DEFAULT_SIZE, 408, Short.MAX_VALUE)
+                            .addComponent(primaryPanelCombo, 0, 408, Short.MAX_VALUE)
+                            .addComponent(secondaryPanelTitle, javax.swing.GroupLayout.DEFAULT_SIZE, 408, Short.MAX_VALUE))
+                        .addGap(10, 10, 10))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(235, 235, 235)
+                        .addComponent(dummyPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(optionsCategoryButton, javax.swing.GroupLayout.PREFERRED_SIZE, 400, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(primKeywordsLabel)
+                        .addGap(49, 49, 49)
+                        .addComponent(primaryKwField, javax.swing.GroupLayout.DEFAULT_SIZE, 425, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(allowSecondaryPanelsCheckBox, javax.swing.GroupLayout.PREFERRED_SIZE, 215, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 338, Short.MAX_VALUE)))
                 .addContainerGap())
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(allowSecondaryPanelsCheckBox, javax.swing.GroupLayout.PREFERRED_SIZE, 215, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(350, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)

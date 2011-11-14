@@ -113,6 +113,10 @@ public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implement
         return stack.peek();
     }
 
+    int getOffset() {
+        return offset;
+    }
+    
     @Override
     protected void elementPopped(String namespace, String name, AstNode t) throws SAXException {
         if (LOG) {
@@ -523,7 +527,7 @@ public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implement
 
             @Override
             public void publish(LogRecord record) {
-                System.err.println(record.getMessage());
+                System.out.println(record.getMessage());
             }
 
             @Override

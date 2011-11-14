@@ -104,16 +104,19 @@ final class GeneralAction {
     
     public static ContextAwareAction context(Map map) {
         Class<?> dataType = readClass(map.get("type")); // NOI18N
-        return _context(map, dataType);
+        return new DelegateAction(map, _context(map, dataType, Utilities.actionsGlobalContext()));
     }
-    private static <T> ContextAwareAction _context(Map map, Class<T> dataType) {
+    public static Action bindContext(Map map, Lookup context) {
+        Class<?> dataType = readClass(map.get("type")); // NOI18N
+        return new BaseDelAction(map, _context(map, dataType, context));
+    }
+    private static <T> ContextAwareAction _context(Map map, Class<T> dataType, Lookup context) {
         ContextSelection sel = readSelection(map.get("selectionType")); // NOI18N
         Performer<T> perf = new Performer<T>(map);
         boolean survive = Boolean.TRUE.equals(map.get("surviveFocusChange")); // NOI18N
-        ContextAwareAction cAction = new ContextAction<T>(
-            perf, sel, Utilities.actionsGlobalContext(), dataType, survive
+        return new ContextAction<T>(
+            perf, sel, context, dataType, survive
         );
-        return new DelegateAction(map, cAction);
     }
     
     private static ContextSelection readSelection(Object obj) {
@@ -157,31 +160,43 @@ final class GeneralAction {
      * extract the nodes it operates on from it. Otherwise it delegates to the
      * regular NodeAction.
      */
-    static final class DelegateAction extends Object 
-    implements Action, ContextAwareAction, PropertyChangeListener {
+    static final class DelegateAction extends BaseDelAction 
+    implements ContextAwareAction {
+        public DelegateAction(Map map, Object key, Lookup actionContext, Action fallback, boolean surviveFocusChange, boolean async) {
+            super(map, key, actionContext, fallback, surviveFocusChange, async);
+        }
+
+        public DelegateAction(Map map, Action fallback) {
+            super(map, fallback);
+        }
+    } // end of DelegateAction
+    
+    static class BaseDelAction extends Object 
+    implements Action, PropertyChangeListener {
         /** file object, if we are associated to any */
-        private Map map;
+        final Map map;
         /** action to delegate too */
-        private Action fallback;
+        final Action fallback;
         /** key to delegate to */
-        private Object key;
+        final Object key;
         /** are we asynchronous? */
-        private final boolean async;
+        final boolean async;
 
         /** global lookup to work with */
-        private GlobalManager global;
+        final GlobalManager global;
 
         /** support for listeners */
         private PropertyChangeSupport support;
 
         /** listener to check listen on state of action(s) we delegate to */
-        private PropertyChangeListener weakL;
+        final PropertyChangeListener weakL;
+        Map<String,Object> attrs;
         
         /** Constructs new action that is bound to given context and
          * listens for changes of <code>ActionMap</code> in order to delegate
          * to right action.
          */
-        public DelegateAction(Map map, Object key, Lookup actionContext, Action fallback, boolean surviveFocusChange, boolean async) {
+        protected BaseDelAction(Map map, Object key, Lookup actionContext, Action fallback, boolean surviveFocusChange, boolean async) {
             this.map = map;
             this.key = key;
             this.fallback = fallback;
@@ -193,7 +208,7 @@ final class GeneralAction {
             }
         }
         
-        public DelegateAction(Map map, Action fallback) {
+        protected BaseDelAction(Map map, Action fallback) {
             this(
                 map,
                 map.get("key"), // NOI18N
@@ -248,7 +263,6 @@ final class GeneralAction {
             }
         }
 
-        private Map<String,Object> attrs;
 
         public void putValue(String key, Object value) {
             if (attrs == null) {

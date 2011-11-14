@@ -68,7 +68,7 @@ public class CustomizerLibrariesTest extends TestBase {
         SingleModuleProperties props = SingleModulePropertiesTest.loadProperties(p);
         ProjectCustomizer.Category cat = ProjectCustomizer.Category.create("XX", "xx", null);
                 
-        CustomizerLibraries panel = new CustomizerLibraries(props, cat);
+        CustomizerLibraries panel = new CustomizerLibraries(props, cat, p);
         panel.refresh();
         Reference<?> ref = new WeakReference<Object>(panel);
         OpenProjects.getDefault().close(new Project[] { p });

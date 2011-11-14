@@ -52,10 +52,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
+import java.util.StringTokenizer;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.php.editor.CodeUtils;
+import org.netbeans.modules.php.editor.api.AliasedName;
 import org.netbeans.modules.php.editor.api.PhpModifiers;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.model.ClassScope;
@@ -75,12 +77,14 @@ import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.model.UseElement;
 import org.netbeans.modules.php.editor.model.VariableName;
 import org.netbeans.modules.php.editor.model.VariableScope;
+import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
 import org.netbeans.modules.php.editor.parser.api.Utils;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.ArrayCreation;
 import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassName;
+import org.netbeans.modules.php.editor.parser.astnodes.CloneExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.Comment;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldAccess;
@@ -282,6 +286,9 @@ public class VariousUtils {
             if (operator.equals(OperatorType.CONCAT)) {
                 return Type.STRING.toString().toLowerCase();
             }
+        } else if (expression instanceof CloneExpression) {
+            CloneExpression cloneExpression = (CloneExpression) expression;
+            return extractVariableTypeFromExpression(cloneExpression.getExpression(), allAssignments);
         }
         return null;
     }
@@ -408,7 +415,8 @@ public class VariousUtils {
                         assert frgs.length == 2;
                         String clsName = frgs[0];
                         if (clsName != null) {
-                            Collection<? extends ClassScope> classes = IndexScopeImpl.getClasses(createQuery(clsName, varScope), varScope);
+                            QualifiedName fullyQualifiedName = getFullyQualifiedName(createQuery(clsName, varScope), offset, varScope);
+                            Collection<? extends ClassScope> classes = IndexScopeImpl.getClasses(fullyQualifiedName, varScope);
                             for (ClassScope cls : classes) {
                                 Collection<? extends MethodScope> inheritedMethods = IndexScopeImpl.getMethods(cls, frgs[1], varScope, PhpModifiers.ALL_FLAGS);
                                 for (MethodScope meth : inheritedMethods) {
@@ -723,7 +731,7 @@ public class VariousUtils {
             return "@" + FUNCTION_TYPE_PREFIX + fname;
         } else if (varBase instanceof StaticMethodInvocation) {
             StaticMethodInvocation staticMethodInvocation = (StaticMethodInvocation) varBase;
-            String className = CodeUtils.extractUnqualifiedClassName(staticMethodInvocation);
+            String className = CodeUtils.extractQualifiedName(staticMethodInvocation.getClassName());
             String methodName = CodeUtils.extractFunctionName(staticMethodInvocation.getMethod());
 
             if (className != null && methodName != null) {
@@ -1245,6 +1253,91 @@ public class VariousUtils {
             }
         }
         return namespaces;
+    }
+
+    public static QualifiedName getFullyQualifiedName(QualifiedName qualifiedName, int offset, Scope inScope) {
+        if(qualifiedName.getKind() != QualifiedNameKind.FULLYQUALIFIED) {
+            while (inScope != null && !(inScope instanceof NamespaceScope)) {
+                inScope = inScope.getInScope();
+            }
+            if (inScope != null) {
+                NamespaceScope namespace = (NamespaceScope) inScope;
+                // needs to count
+                String firstSegmentName = qualifiedName.getSegments().getFirst();
+                UseElement matchedUseElement = null;
+                int lastOffset = -1; // remember offset of the last use declaration, that fits
+                for (UseElement useElement : namespace.getDeclaredUses()) {
+                    if (useElement.getOffset() < offset) {
+                        AliasedName aliasName = useElement.getAliasedName();
+                        if (aliasName != null) {
+                            //if it's allisased name
+                            if (firstSegmentName.equals(aliasName.getAliasName())) {
+                                matchedUseElement = useElement;
+                                continue;
+                            }
+                        } else {
+                            // no alias
+                            if (lastOffset < useElement.getOffset() && useElement.getName().endsWith(firstSegmentName)) {
+                                matchedUseElement = useElement;
+                                // we need to check all use elements that can fit the name
+                                lastOffset = useElement.getOffset();
+                            }
+                        }
+                    }
+                }
+                if (matchedUseElement != null) {
+                    ArrayList<String> segments = new ArrayList();
+                    // create segmens from the usage
+                    for (StringTokenizer st = new StringTokenizer(matchedUseElement.getName(), "\\"); st.hasMoreTokens();) { //NOI18N
+                        String token = st.nextToken();
+                        segments.add(token);
+                    }
+                    // and add all segments from the name except the first one.
+                    // the first one mathces the name of the usage or alias.
+                    List<String> origName = qualifiedName.getSegments();
+                    for (int i = 1; i < origName.size(); i++) {
+                        segments.add(origName.get(i));
+                    }
+                    qualifiedName = QualifiedName.create(true, segments);
+                } else if (qualifiedName.getKind() == QualifiedNameKind.UNQUALIFIED) {
+                    qualifiedName = inScope.getNamespaceName().append(qualifiedName);
+                }
+            }
+        }
+        return qualifiedName;
+    }
+
+    public static boolean isPrimitiveType(String typeName) {
+        boolean retval = false;
+        if (typeName.toLowerCase().equals("bool") || typeName.toLowerCase().equals("boolean") || typeName.toLowerCase().equals("int")
+                || typeName.toLowerCase().equals("integer") || typeName.toLowerCase().equals("float") || typeName.toLowerCase().equals("real")
+                || typeName.toLowerCase().equals("array") || typeName.toLowerCase().equals("object") || typeName.toLowerCase().equals("mixed")
+                || typeName.toLowerCase().equals("number") || typeName.toLowerCase().equals("callback") || typeName.toLowerCase().equals("resource")
+                || typeName.toLowerCase().equals("double") || typeName.toLowerCase().equals("string") || typeName.toLowerCase().equals("null")) { //NOI18N
+            retval = true;
+        }
+        return retval;
+    }
+
+    public static String qualifyTypeNames(String typeNames, int offset, Scope inScope) {
+        String retval = ""; //NOI18N
+        final String typeSeparator = "|"; //NOI18N
+        if (typeNames != null) {
+            for (String typeName : typeNames.split("\\" + typeSeparator)) { //NOI18N
+                if (!typeName.startsWith(NamespaceDeclarationInfo.NAMESPACE_SEPARATOR) && !VariousUtils.isPrimitiveType(typeName)) {
+                    QualifiedName fullyQualifiedName = VariousUtils.getFullyQualifiedName(QualifiedName.create(typeName), offset, inScope);
+                    fullyQualifiedName.toString().startsWith(NamespaceDeclarationInfo.NAMESPACE_SEPARATOR);
+                    retval += fullyQualifiedName.toString().startsWith(NamespaceDeclarationInfo.NAMESPACE_SEPARATOR) ? "" : NamespaceDeclarationInfo.NAMESPACE_SEPARATOR; //NOI18N
+                    retval += fullyQualifiedName.toString() + typeSeparator;
+                } else {
+                    retval += typeName + typeSeparator;
+                }
+            }
+            retval = retval.substring(0, retval.length() - typeSeparator.length());
+        } else {
+            retval = typeNames;
+        }
+        return retval;
     }
 
 }

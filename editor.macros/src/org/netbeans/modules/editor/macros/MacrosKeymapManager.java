@@ -82,9 +82,11 @@ public final class MacrosKeymapManager extends KeymapManager {
                 // Compute all macro's shortcuts
                 Set<String> shortcuts = new HashSet<String>();
                 for(MultiKeyBinding mkb : macro.getShortcuts()) {
+                    // keyStrokesToString uses $, but it's an API and I cannot change its behaviour
                     String shortcut = StorageSupport.keyStrokesToString(mkb.getKeyStrokeList(), true);
                     assert shortcut != null;
-                    shortcuts.add(shortcut);
+                    // Keymaps work with " " as the keystroke keyseparator
+                    shortcuts.add(shortcut.replace("$", " "));
                 }
                 if (shortcuts.size() > 0) {
                     macroShortcutsMap.put(macro, shortcuts);
@@ -123,8 +125,12 @@ public final class MacrosKeymapManager extends KeymapManager {
             
             MacrosModel.Macro macro = (MacrosModel.Macro) shortcutAction;
             Set<String> shortcuts = actionToShortcuts.get(shortcutAction);
-            
-            macro.setShortcuts(shortcuts);
+            Set<String> newShortcuts = new HashSet<String>(shortcuts.size());
+            // layers and macro storage subsystem use $ as the delimiter
+            for (String s : shortcuts) {
+                newShortcuts.add(s.replace(" ", "$"));
+            }
+            macro.setShortcuts(newShortcuts);
         }
         
         getModel().save();

@@ -241,6 +241,13 @@ public final class SourceRoots extends Roots {
                                 result.add(f);
                             }
                             sourceRoots = Collections.unmodifiableList(result);
+                            LOG.log(
+                                Level.FINE,
+                                "Instance ({0}) setting roots to: {1}", //NOI18N
+                                new Object[]{
+                                    System.identityHashCode(SourceRoots.this),
+                                    sourceRoots
+                            });
                         }
                         return sourceRoots.toArray(new FileObject[sourceRoots.size()]);
                     }
@@ -471,11 +478,19 @@ public final class SourceRoots extends Roots {
                 sourceRootURLs = null;
                 listener.removeFileListeners();
                 fire = true;
+                LOG.log(
+                    Level.FINE,
+                    "Instance ({0}) reseting cache due to project.xml change",  //NOI18N
+                    System.identityHashCode(SourceRoots.this));
             } else if (propName == null || (sourceRootProperties != null && sourceRootProperties.contains(propName))) {
                 sourceRoots = null;
                 sourceRootURLs = null;
                 listener.removeFileListeners();
                 fire = true;
+                LOG.log(
+                    Level.FINE,
+                    "Instance ({0}) reseting cache due to property change",  //NOI18N
+                    System.identityHashCode(SourceRoots.this));
             }
         }
         if (fire) {

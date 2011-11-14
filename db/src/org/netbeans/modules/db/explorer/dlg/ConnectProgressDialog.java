@@ -44,22 +44,31 @@
 
 package org.netbeans.modules.db.explorer.dlg;
 
-import javax.swing.GroupLayout;
 import javax.swing.JComponent;
+import javax.swing.JProgressBar;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author  Andrei Badea
  */
 public class ConnectProgressDialog extends javax.swing.JPanel {
+    private final String tLabel;
+    private final JProgressBar pbProgress;
 
     /** Creates new form ConnectProgressDialog */
     public ConnectProgressDialog(JComponent progressComponent, String label) {
-        initComponents();
-        ((GroupLayout)getLayout()).replace(placeholderLabel, progressComponent);
-        if (label != null) {
-            pleaseWaitLabel.setText(label);
+        if (progressComponent instanceof JProgressBar) {
+            pbProgress = (JProgressBar) progressComponent;
+        } else {
+            pbProgress = new JProgressBar();
         }
+        if (label != null) {
+            this.tLabel = label;
+        } else {
+            this.tLabel = NbBundle.getMessage(ConnectProgressDialog.class, "LBL_Connecting"); // NOI18N
+        }
+        initComponents();
     }
 
     /** This method is called from within the constructor to
@@ -71,37 +80,35 @@ public class ConnectProgressDialog extends javax.swing.JPanel {
     private void initComponents() {
 
         pleaseWaitLabel = new javax.swing.JLabel();
-        placeholderLabel = new javax.swing.JLabel();
+        pbProgressBar = pbProgress;
 
-        pleaseWaitLabel.setText(org.openide.util.NbBundle.getMessage(ConnectProgressDialog.class, "LBL_Connecting")); // NOI18N
-
-        placeholderLabel.setText("(placeholder label: must be wider than the label above -- issue 120177)");
+        pleaseWaitLabel.setText(tLabel);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(placeholderLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(pleaseWaitLabel))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(pleaseWaitLabel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(pbProgressBar, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 88, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(pleaseWaitLabel)
+                .addComponent(pleaseWaitLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(placeholderLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(pbProgressBar, javax.swing.GroupLayout.DEFAULT_SIZE, 18, Short.MAX_VALUE)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel placeholderLabel;
+    private javax.swing.JProgressBar pbProgressBar;
     private javax.swing.JLabel pleaseWaitLabel;
     // End of variables declaration//GEN-END:variables
     

@@ -39,8 +39,6 @@
 
 package org.netbeans.modules.openide.awt;
 
-import java.net.URL;
-import javax.tools.ToolProvider;
 import java.awt.Component;
 import java.awt.GraphicsEnvironment;
 import javax.swing.JComponent;
@@ -55,7 +53,6 @@ import org.openide.awt.ActionID;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.ByteArrayOutputStream;
-import java.net.URLClassLoader;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
@@ -897,11 +894,7 @@ public class ActionProcessorTest extends NbTestCase {
 
     public void testWrongPointerToIcon() throws IOException {
         clearWorkDir();
-        // Cannot just check for e.g. SourceVersion.RELEASE_7 because we might be running JDK 6 javac w/ JDK 7 boot CP, and that is in JRE.
-        // (Anyway libs.javacapi/external/javac-api-nb-7.0-b07.jar, in the test's normal boot CP, has this!)
-        // Filter.class added in 7ae4016c5938, not long after f3323b1c65ee which we rely on for this to work.
-        // Also cannot just check Class.forName(...) since tools.jar not in CP but ToolProvider loads it specially.
-        if (new URLClassLoader(new URL[] {ToolProvider.getSystemJavaCompiler().getClass().getProtectionDomain().getCodeSource().getLocation()}).findResource("com/sun/tools/javac/util/Filter.class") == null) {
+        if (AnnotationProcessorTestUtils.searchClasspathBroken()) {
             System.err.println("#196933: testWrongPointerToIcon will only pass when using JDK 7 javac, skipping");
             return;
         }

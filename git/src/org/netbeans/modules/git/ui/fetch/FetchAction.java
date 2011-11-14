@@ -91,6 +91,7 @@ public class FetchAction extends GetRemoteChangesAction {
         Map<String, GitRemoteConfig> remotes = info.getRemotes();
         FetchWizard wiz = new FetchWizard(repository, remotes);
         if (wiz.show()) {
+            Utils.logVCSExternalRepository("GIT", wiz.getFetchUri()); //NOI18N
             fetch(repository, wiz.getFetchUri(), wiz.getFetchRefSpecs());
         }
     }

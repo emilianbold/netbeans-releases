@@ -43,6 +43,7 @@
 package org.netbeans.modules.java.hints.jackpot.hintsimpl;
 
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
@@ -149,8 +150,8 @@ public class LoggerStringConcat {
     public static ErrorDescription hint2(HintContext ctx) {
         TreePath inv = ctx.getPath();
         MethodInvocationTree mit = (MethodInvocationTree) inv.getLeaf();
-        MemberSelectTree sel = (MemberSelectTree) mit.getMethodSelect();
-        String methodName = sel.getIdentifier().toString();
+        ExpressionTree sel = mit.getMethodSelect();
+        String methodName = sel.getKind() == Kind.MEMBER_SELECT ? ((MemberSelectTree) sel).getIdentifier().toString() : ((IdentifierTree) sel).getName().toString();
 
         if (findConstant(ctx.getInfo(), methodName) != null) {
             return compute(ctx, methodName);
@@ -277,8 +278,14 @@ public class LoggerStringConcat {
             nueParams.addAll(newParams);
         }
 
-        MemberSelectTree sel = (MemberSelectTree) invocation.getMethodSelect();
-        MemberSelectTree nueSel = make.MemberSelect(sel.getExpression(), "log");
+        ExpressionTree sel = invocation.getMethodSelect();
+        ExpressionTree nueSel;
+
+        if (sel.getKind() == Kind.MEMBER_SELECT)
+            nueSel = make.MemberSelect(((MemberSelectTree) sel).getExpression(), "log");
+        else
+            nueSel = make.Identifier("log");
+        
         MethodInvocationTree nue = make.MethodInvocation((List<? extends ExpressionTree>) invocation.getTypeArguments(), nueSel, nueParams);
 
         wc.rewrite(invocation, nue);

@@ -64,12 +64,15 @@ import org.openide.windows.TopComponent;
 @Messages("CTL_ApplyPatternAction=Inspect and Transform...")
 public final class ApplyPatternAction implements ActionListener {
 
+    @Override
     public void actionPerformed(ActionEvent e) {
         Node[] n = TopComponent.getRegistry().getActivatedNodes();
-        if (n.length > 0) {
-            InspectAndRefactorUI.openRefactoringUI(n[0].getLookup());
-            return;
-        }
-        InspectAndRefactorUI.openRefactoringUI(Lookup.EMPTY);
+        final Lookup context = n.length > 0 ? n[0].getLookup():Lookup.EMPTY;
+        Utilities.invokeAfterScanFinished(new Runnable() {
+            @Override
+            public void run() {
+                InspectAndRefactorUI.openRefactoringUI(context);
+            }
+        }, Bundle.CTL_ApplyPatternAction());
     }
 }

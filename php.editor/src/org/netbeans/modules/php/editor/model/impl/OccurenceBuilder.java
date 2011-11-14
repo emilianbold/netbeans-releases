@@ -51,9 +51,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.StringTokenizer;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.php.editor.api.AliasedName;
 import org.netbeans.modules.php.editor.api.ElementQuery;
 import org.netbeans.modules.php.editor.api.ElementQuery.Index;
 import org.netbeans.modules.php.editor.api.NameKind;
@@ -75,8 +73,6 @@ import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.Occurence;
 import org.netbeans.modules.php.editor.api.QualifiedName;
-import org.netbeans.modules.php.editor.api.QualifiedNameKind;
-import org.netbeans.modules.php.editor.api.elements.AliasedClass;
 import org.netbeans.modules.php.editor.api.elements.ElementFilter;
 import org.netbeans.modules.php.editor.api.elements.FunctionElement;
 import org.netbeans.modules.php.editor.api.elements.PhpElement;
@@ -87,7 +83,6 @@ import org.netbeans.modules.php.editor.model.NamespaceScope;
 import org.netbeans.modules.php.editor.model.Occurence.Accuracy;
 import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.TypeScope;
-import org.netbeans.modules.php.editor.model.UseElement;
 import org.netbeans.modules.php.editor.model.VariableName;
 import org.netbeans.modules.php.editor.model.VariableScope;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
@@ -591,8 +586,8 @@ class OccurenceBuilder {
                 case IFACE:
                 case CLASS_INSTANCE_CREATION:
                 case CLASS:
-                    final QualifiedName qualifiedName = elementInfo.getNodeInfo() != null 
-                            ? getFullyQualifiedName(elementInfo.getNodeInfo(), elementInfo.getScope())
+                    final QualifiedName qualifiedName = elementInfo.getNodeInfo() != null
+                            ? VariousUtils.getFullyQualifiedName(elementInfo.getNodeInfo().getQualifiedName(), elementInfo.getNodeInfo().getOriginalNode().getStartOffset(), elementInfo.getScope())
                             : elementInfo.getQualifiedName();
                     final Set<TypeElement> types = index.getTypes(NameKind.exact(qualifiedName));
                     if (elementInfo.setDeclarations(types)) {
@@ -793,6 +788,7 @@ class OccurenceBuilder {
     private void buildTypeConstants(final Index index, FileScopeImpl fileScope, final List<Occurence> occurences) {
         final Exact methodName = NameKind.exact(elementInfo.getName());
         QualifiedName clzName = elementInfo.getTypeQualifiedName();
+        clzName = VariousUtils.getFullyQualifiedName(clzName, elementInfo.getNodeInfo().getOriginalNode().getStartOffset(), elementInfo.getScope());
         final Set<TypeConstantElement> constants = new HashSet<TypeConstantElement>();
         Scope scope = elementInfo.getScope() instanceof TypeScope ? elementInfo.getScope() : elementInfo.getScope().getInScope();
         if (clzName.getKind().isUnqualified() && scope instanceof TypeScope) {
@@ -846,7 +842,7 @@ class OccurenceBuilder {
             }
         }
     }
-    
+
     private void buildMagicMethodDeclarationReturnType(ElementInfo nodeCtxInfo, FileScopeImpl fileScope, final List<Occurence> occurences) {
         for (Entry<MagicMethodDeclarationInfo, MethodScope> entry : magicMethodDeclarations.entrySet()) {
             MagicMethodDeclarationInfo nodeInfo = entry.getKey();
@@ -1329,7 +1325,7 @@ class OccurenceBuilder {
         for (PhpElement phpElement : elements) {
             for (Entry<ASTNodeInfo<ClassInstanceCreation>, Scope> entry : clasInstanceCreations.entrySet()) {
                 ASTNodeInfo<ClassInstanceCreation> nodeInfo = entry.getKey();
-                final QualifiedName qualifiedName = getFullyQualifiedName(nodeInfo, entry.getValue());
+                final QualifiedName qualifiedName = VariousUtils.getFullyQualifiedName(nodeInfo.getQualifiedName(), nodeInfo.getOriginalNode().getStartOffset(), entry.getValue());
                 Set<? extends PhpElement> contextTypes = elements;
                 if (NameKind.exact(qualifiedName).matchesName(phpElement)) {
                     if (qualifiedName.getKind().isUnqualified()) {
@@ -1364,11 +1360,11 @@ class OccurenceBuilder {
                                 ElementQuery elementQuery = element.getElementQuery();
                                 if (element instanceof TypeElement && elementQuery != null && elementQuery.getQueryScope().isIndexScope()) {
                                     ElementQuery.Index index = (ElementQuery.Index) elementQuery;
-                                    Set<MethodElement> declaredMethods = 
+                                    Set<MethodElement> declaredMethods =
                                             ElementFilter.forName(NameKind.exact(MethodElement.CONSTRUCTOR_NAME)).filter(index.getDeclaredMethods((TypeElement) element));
                                     if (!declaredMethods.isEmpty()) {
                                         result.addAll(declaredMethods);
-                                    } 
+                                    }
                                 }
                             }
                             if (result.size() > 0) {
@@ -1379,7 +1375,7 @@ class OccurenceBuilder {
                     };
                     occurences.add(occurenceImpl);
 
-                } 
+                }
             }
         }
     }
@@ -1481,7 +1477,7 @@ class OccurenceBuilder {
         for (PhpElement phpElement : elements) {
             for (Entry<InterfaceDeclarationInfo, InterfaceScope> entry : ifaceDeclarations.entrySet()) {
                 InterfaceDeclarationInfo nodeInfo = entry.getKey();
-                if (NameKind.exact(nodeInfo.getQualifiedName()).matchesName(phpElement) && 
+                if (NameKind.exact(nodeInfo.getQualifiedName()).matchesName(phpElement) &&
                         nodeInfo.getRange().containsInclusive(phpElement.getOffset())) {
                     if (fileScope.getFileObject() == phpElement.getFileObject()) {
                         occurences.add(new OccurenceImpl(phpElement, nodeInfo.getRange()));
@@ -1705,7 +1701,7 @@ class OccurenceBuilder {
         if (retval == null && setElementInfo(offset)) {
             build(fileScope);
             retval = findOccurenceByOffset(offset);
-        } 
+        }
         return retval;
     }
 
@@ -1715,7 +1711,7 @@ class OccurenceBuilder {
         }
         return cachedOccurences;
     }
-    
+
     /**
      * This method ensure that all method bodies are scanned, if there were not
      * scanned yet.
@@ -1780,62 +1776,8 @@ class OccurenceBuilder {
         return false;
     }
 
-    private static QualifiedName getFullyQualifiedName(ASTNodeInfo nodeInfo, Scope inScope) {
-        
-        QualifiedName qualifiedName = null;
-        if (nodeInfo != null) {
-            qualifiedName = nodeInfo.getQualifiedName();
-            if(qualifiedName.getKind() != QualifiedNameKind.FULLYQUALIFIED) {
-                
-                while (inScope != null && !(inScope instanceof NamespaceScope)) {
-                    inScope = inScope.getInScope();
-                }
-                if (inScope != null) {
-                    NamespaceScope namespace = (NamespaceScope) inScope;
-                    // needs to count 
-                    String firstSegmentName = qualifiedName.getSegments().getFirst();
-                    UseElement matchedUseElement = null;
-                    int lastOffset = -1; // remember offset of the last use declaration, that fits
-                    for (UseElement useElement : namespace.getDeclaredUses()) {
-                        if (useElement.getOffset() < nodeInfo.getRange().getStart()) {
-                            AliasedName aliasName = useElement.getAliasedName();
-                            if (aliasName != null) {
-                                //if it's allisased name
-                                if (firstSegmentName.equals(aliasName.getAliasName())) {
-                                    matchedUseElement = useElement;
-                                    continue;
-                                }
-                            } else {
-                                // no alias
-                                if (lastOffset < useElement.getOffset() && useElement.getName().endsWith(firstSegmentName)) {
-                                    matchedUseElement = useElement;
-                                    // we need to check all use elements that can fit the name
-                                    lastOffset = useElement.getOffset();
-                                }
-                            }
-                        }
-                    }
-                    if (matchedUseElement != null) {
-                        ArrayList<String> segments = new ArrayList();
-                        // create segmens from the usage
-                        for (StringTokenizer st = new StringTokenizer(matchedUseElement.getName(), "\\"); st.hasMoreTokens();) {
-                            String token = st.nextToken();
-                            segments.add(token);
-                        }
-                        // and add all segments from the name except the first one.
-                        // the first one mathces the name of the usage or alias. 
-                        List<String> origName = qualifiedName.getSegments();
-                        for (int i = 1; i < origName.size(); i++) {
-                            segments.add(origName.get(i));
-                        }
-                        qualifiedName = QualifiedName.create(true, segments);
-                    } else if (qualifiedName.getKind() == QualifiedNameKind.UNQUALIFIED) {
-                        qualifiedName = inScope.getNamespaceName().append(qualifiedName);
-                    }
-                }
-            }
-        }
-        return qualifiedName;
+    private static QualifiedName getTypeFullyQualifedName(ASTNodeInfo nodeInfo, Scope inScope) {
+        return null;
     }
 
     private class OccurenceImpl implements Occurence {
