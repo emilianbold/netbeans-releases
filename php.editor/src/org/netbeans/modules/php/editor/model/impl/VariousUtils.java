@@ -880,7 +880,7 @@ public class VariousUtils {
                         state = State.INVALID;
                         if (isString(token)) {
                             metaAll.insert(0, "@" + VariousUtils.FIELD_TYPE_PREFIX);
-                            metaAll.insert(0, token.text().toString());
+                            metaAll.insert(0, qualifyTypeNames(token.text().toString(), tokenSequence.offset(), varScope));
                             state = State.CLASSNAME;
                         } else if (isSelf(token) || isParent(token) || isStatic(token)) {
                             metaAll.insert(0, "@" + VariousUtils.FIELD_TYPE_PREFIX);
