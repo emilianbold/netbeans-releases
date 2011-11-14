@@ -55,6 +55,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.php.project.connections.RemoteClient;
 import org.netbeans.modules.php.project.connections.RemoteException;
+import org.netbeans.modules.php.project.connections.common.RemoteUtils;
 import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
 import org.netbeans.modules.php.project.connections.transfer.TransferFile;
 import org.netbeans.modules.php.project.connections.ui.transfer.TransferFilesChooser;
@@ -171,6 +172,7 @@ public class RemoteConfirmationPanel implements WizardDescriptor.Panel<WizardDes
         canceled = true;
         if (remoteClient != null) {
             remoteClient.cancel();
+            disconnectRemoteClient();
         }
     }
 
@@ -225,6 +227,7 @@ public class RemoteConfirmationPanel implements WizardDescriptor.Panel<WizardDes
         RemoteConfiguration remoteConfiguration = (RemoteConfiguration) descriptor.getProperty(RunConfigurationPanel.REMOTE_CONNECTION);
         InputOutput remoteLog = RemoteCommand.getRemoteLog(remoteConfiguration.getDisplayName());
         String remoteDirectory = (String) descriptor.getProperty(RunConfigurationPanel.REMOTE_DIRECTORY);
+        disconnectRemoteClient();
         remoteClient = new RemoteClient(remoteConfiguration, new RemoteClient.AdvancedProperties()
                     .setInputOutput(remoteLog)
                     .setAdditionalInitialSubdirectory(remoteDirectory)
@@ -236,4 +239,17 @@ public class RemoteConfirmationPanel implements WizardDescriptor.Panel<WizardDes
     public void stateChanged(ChangeEvent e) {
         changeSupport.fireChange();
     }
+
+    // #205087
+    private void disconnectRemoteClient() {
+        if (remoteClient != null) {
+            try {
+                remoteClient.disconnect();
+            } catch (RemoteException ex) {
+                RemoteUtils.processRemoteException(ex);
+            }
+            remoteClient = null;
+        }
+    }
+
 }

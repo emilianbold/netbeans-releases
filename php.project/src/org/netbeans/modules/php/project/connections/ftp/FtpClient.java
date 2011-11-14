@@ -564,16 +564,17 @@ public class FtpClient implements RemoteClient {
             preventNoOperationTimeout();
             scheduleKeepAlive();
         } catch (IOException ex) {
+            LOGGER.log(Level.FINE, "Keep-alive (NOOP/PWD) error for " + configuration.getHost(), ex);
+            keepAliveTask.cancel();
             silentDisconnect();
             WindowsJdk7WarningPanel.warn();
-            LOGGER.log(Level.FINE, "Keep-alive (NOOP/PWD) error for " + configuration.getHost(), ex);
             // #201828
             RemoteException exc = new RemoteException(NbBundle.getMessage(FtpClient.class, "MSG_FtpCannotKeepAlive", configuration.getHost()), ex, getReplyString());
             RemoteUtils.processRemoteException(exc);
         }
     }
 
-    void silentDisconnect() {
+    private void silentDisconnect() {
         try {
             disconnect();
         } catch (RemoteException ex) {
