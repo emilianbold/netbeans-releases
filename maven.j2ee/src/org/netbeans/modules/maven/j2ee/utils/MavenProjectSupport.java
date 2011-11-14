@@ -129,6 +129,32 @@ public class MavenProjectSupport {
         }
     }
     
+    private static void createDD(Project project) {
+        WebModuleProviderImpl webModule = project.getLookup().lookup(WebModuleProviderImpl.class);
+        
+        if (webModule != null) {
+            WebModuleImpl webModuleImpl = webModule.getModuleImpl();
+            try {
+                FileObject webInf = webModuleImpl.getWebInf();
+                if (webInf == null) {
+                    webInf = webModuleImpl.createWebInf();
+                }
+                assert webInf != null;
+                
+                FileObject webXml = webModuleImpl.getDeploymentDescriptor();
+                if (webXml == null) {
+                    AuxiliaryProperties props = project.getLookup().lookup(AuxiliaryProperties.class);
+                    String j2eeVersion = props.get(MavenJavaEEConstants.HINT_J2EE_VERSION, false);
+                    webXml = DDHelper.createWebXml(Profile.fromPropertiesString(j2eeVersion), webInf);
+                }
+
+                assert webXml != null; // this should never happend if there a valid j2eeVersion was parsed
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+    }
+    
     /**
      * Read server ID for the given project
      * 
@@ -170,27 +196,22 @@ public class MavenProjectSupport {
         return project.getLookup().lookup(AuxiliaryProperties.class).get(propertyName, shared);
     }
     
-    private static void createDD(Project project) {
-        WebModuleProviderImpl webModule = project.getLookup().lookup(WebModuleProviderImpl.class);
-        
-        if (webModule != null) {
-            WebModuleImpl webModuleImpl = webModule.getModuleImpl();
-            try {
-                FileObject webInf = webModuleImpl.getWebInf();
-                if (webInf == null) {
-                    webInf = webModuleImpl.createWebInf();
-                }
-                FileObject webXml = webModuleImpl.getDeploymentDescriptor();
-                if (webXml == null) {
-                    AuxiliaryProperties props = project.getLookup().lookup(AuxiliaryProperties.class);
-                    String j2eeVersion = props.get(MavenJavaEEConstants.HINT_J2EE_VERSION, false);
-                    webXml = DDHelper.createWebXml(Profile.fromPropertiesString(j2eeVersion), webInf);
-                }
-
-                assert webXml != null; // this should never happend if there a valid j2eeVersion was parsed
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
+    
+    
+    public static void setJ2eeVersion(Project project, String value) {
+        setSettings(project, MavenJavaEEConstants.HINT_J2EE_VERSION, value, false);
+    }
+    
+    public static void setServerID(Project project, String value) {
+        setSettings(project, MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER, value, false);
+    }
+    
+    public static void setCompileOnSave(Project project, String value) {
+        setSettings(project, Constants.HINT_COMPILE_ON_SAVE, value, true);
+    }
+    
+    private static void setSettings(Project project, String key, String value, boolean shared) {
+        AuxiliaryProperties props = project.getLookup().lookup(AuxiliaryProperties.class);
+        props.put(key, value, shared);
     }
 }
