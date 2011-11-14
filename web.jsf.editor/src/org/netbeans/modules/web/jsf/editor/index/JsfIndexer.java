@@ -56,6 +56,7 @@ import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
+import org.netbeans.modules.web.jsf.editor.JsfUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
@@ -152,7 +153,7 @@ public class JsfIndexer extends EmbeddingIndexer {
             //index all text/xhtml files, not only in web projects since there might be java library with facelets components
             FileObject fo = snapshot.getSource().getFileObject();
             String sourceFileMimeType = fo.getMIMEType();
-            return "text/xhtml".equals(sourceFileMimeType);
+            return JsfUtils.XHTML_MIMETYPE.equals(sourceFileMimeType);
         }
         
     } //end of Factory class
