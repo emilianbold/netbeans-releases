@@ -63,4 +63,5 @@
     <mapID target="org.netbeans.modules.php.symfony.ui.options.SymfonyOptions" url="options-csh/symfony.html" />
     <mapID target="org.netbeans.modules.php.symfony2.options.Symfony2Options" url="options-csh/symfony2.html" />
     <mapID target="org.netbeans.modules.php.zend.ui.options.ZendOptions" url="options-csh/zend.html" />
+    <mapID target="org.netbeans.modules.php.smarty.ui.options.SmartyOptions" url="options-csh/smarty.html"/>
 </map>
