@@ -1322,6 +1322,14 @@ public class VariousUtils {
         return retval;
     }
 
+    /**
+     * Resolves fully qualified type names from their simple names.
+     *
+     * @param typeNames Type names in to format: string|ClassName|null
+     * @param offset Offset, where the type is resolved.
+     * @param inScope Scope, where the type is resolved.
+     * @return Fully qualified type names in the format: string|\Foo\ClassName|null
+     */
     public static String qualifyTypeNames(String typeNames, int offset, Scope inScope) {
         String retval = ""; //NOI18N
         final String typeSeparator = "|"; //NOI18N
