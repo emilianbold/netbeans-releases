@@ -42,6 +42,8 @@ package org.openide.actions;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Locale;
+import java.util.Locale;
 import javax.swing.Action;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.undo.CannotRedoException;
@@ -60,6 +62,9 @@ import org.openide.util.lookup.InstanceContent;
  */
 public class UndoRedoActionTest extends NbTestCase
 implements UndoRedo.Provider {
+    static {
+        Locale.setDefault(Locale.ENGLISH);
+    }
     private UndoRedo.Manager ur;
     private MyEdit me;
 
@@ -125,6 +130,7 @@ implements UndoRedo.Provider {
         assertTrue("Action is enabled", u.isEnabled());
         assertEquals("One change", 1, lu.cnt);
         assertEquals("No redo change", 0, lr.cnt);
+        assertEquals("Undo presentation", "&Undo My Undo", u.getValue(Action.NAME));
 
         u.actionPerformed(new ActionEvent(this, 0, ""));
         if (testCounts) {
@@ -135,6 +141,7 @@ implements UndoRedo.Provider {
             assertEquals("Another undo change", 2, lu.cnt);
             assertEquals("New redo change", 1, lr.cnt);
             assertTrue("Redo action enabled", r.isEnabled());
+            assertEquals("Redo presentation correct", "&Redo My Redo", r.getValue(Action.NAME));
         }
 
         r.actionPerformed(new ActionEvent(this, 0, ""));
