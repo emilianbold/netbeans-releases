@@ -46,7 +46,7 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.web.beans.UsageLogger;
+import org.netbeans.modules.web.beans.CdiUtil;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.filesystems.FileObject;
@@ -115,7 +115,7 @@ abstract class CreateAnnotationFix implements Fix {
         diff.commit();*/
         Project project = FileOwnerQuery.getOwner( myInfo.getFileObject() );
         if ( project != null ){
-            UsageLogger logger = project.getLookup().lookup(UsageLogger.class);
+            CdiUtil logger = project.getLookup().lookup(CdiUtil.class);
             if ( logger!= null ){
                 logger.log(getUsageLogMessage(), getClass(), 
                         new Object[]{project.getClass().getName()});

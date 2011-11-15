@@ -199,7 +199,7 @@ public class ProxyLookup extends Lookup {
      * @param template the template of the query
      * @since 1.31
      */
-    protected void beforeLookup(Template<?> template) {
+     protected void beforeLookup(Template<?> template) {
     }
 
     public final <T> T lookup(Class<T> clazz) {
