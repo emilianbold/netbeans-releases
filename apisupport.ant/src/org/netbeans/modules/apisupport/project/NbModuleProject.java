@@ -60,7 +60,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.WeakHashMap;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -416,23 +415,14 @@ public final class NbModuleProject implements Project {
         return eval;
     }
     
-    private final Map<String,FileObject> directoryCache = new WeakHashMap<String,FileObject>();
-    
     private FileObject getDir(String prop) {
-        // XXX also add a PropertyChangeListener to eval and clear the cache of changed props
-        if (directoryCache.containsKey(prop)) {
-            return directoryCache.get(prop);
-        } else {
-            String v = evaluator().getProperty(prop);
-            if (v == null) {
-                Logger.getLogger(NbModuleProject.class.getName()).log(Level.WARNING,
-                        "#150612: property {0} was undefined in {1}", new Object[] {prop, this});
-                return null;
-            }
-            FileObject f = helper.resolveFileObject(v);
-            directoryCache.put(prop, f);
-            return f;
+        String v = evaluator().getProperty(prop);
+        if (v == null) {
+            Logger.getLogger(NbModuleProject.class.getName()).log(Level.WARNING,
+                    "#150612: property {0} was undefined in {1}", new Object[] {prop, this});
+            return null;
         }
+        return helper.resolveFileObject(v);
     }
 
     public FileObject getSourceDirectory() {
