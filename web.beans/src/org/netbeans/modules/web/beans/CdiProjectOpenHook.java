@@ -40,47 +40,53 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.web.beans;
 
-package org.netbeans.modules.profiler.utils;
+import java.lang.ref.WeakReference;
+
+import org.netbeans.api.project.Project;
+import org.netbeans.spi.project.ProjectServiceProvider;
+import org.netbeans.spi.project.ui.ProjectOpenedHook;
 
 
 /**
+ * @author ads
  *
- * @author Jaroslav Bachorik
  */
-public class OutputParameter<T> {
-    //~ Instance fields ----------------------------------------------------------------------------------------------------------
-
-    T value;
-
-    //~ Constructors -------------------------------------------------------------------------------------------------------------
-
-    /** Creates a new instance of OutputParameter */
-    public OutputParameter(T initialValue) {
-        value = initialValue;
+@ProjectServiceProvider(service={ProjectOpenedHook.class}, projectType = {
+    "org-netbeans-modules-java-j2seproject",
+    "org-netbeans-modules-j2ee-clientproject",
+    "org-netbeans-modules-j2ee-ejbjarproject",
+    "org-netbeans-modules-web-project"}
+    )
+public class CdiProjectOpenHook extends ProjectOpenedHook {
+    
+    public CdiProjectOpenHook(Project project){
+        myProject = new WeakReference<Project>( project );
     }
-
-    //~ Methods ------------------------------------------------------------------------------------------------------------------
-
-    public boolean isSet() {
-        return value != null;
-    }
-
-    public void setValue(T value) {
-        this.value = value;
-    }
-
-    public T getValue() {
-        return value;
-    }
-
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.spi.project.ui.ProjectOpenedHook#projectClosed()
+     */
     @Override
-    public boolean equals(Object obj) {
-        return value.equals(obj);
+    protected void projectClosed() {
     }
 
+    /* (non-Javadoc)
+     * @see org.netbeans.spi.project.ui.ProjectOpenedHook#projectOpened()
+     */
     @Override
-    public int hashCode() {
-        return value.hashCode();
+    protected void projectOpened() {
+        Project project = myProject.get();
+        if ( project == null ){
+            return;
+        }
+        CdiUtil util = project.getLookup().lookup(CdiUtil.class);
+        if ( util!= null && util.isCdiEnabled() ){
+            util.log("USG_CDI_BEANS_OPENED_PROJECT", CdiProjectOpenHook.class, 
+                    new Object[]{project.getClass().getName()});  // NOI18N
+        }
     }
+    
+    private WeakReference<Project> myProject;
 }

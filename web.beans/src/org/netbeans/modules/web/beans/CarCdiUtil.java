@@ -42,61 +42,42 @@
  */
 package org.netbeans.modules.web.beans;
 
-import java.lang.ref.WeakReference;
-import java.util.Set;
-import java.util.concurrent.CopyOnWriteArraySet;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
-import java.util.logging.Logger;
+import java.util.Collection;
+import java.util.Collections;
 
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.api.ejbjar.Car;
 import org.netbeans.spi.project.ProjectServiceProvider;
-import org.openide.util.NbBundle;
+import org.netbeans.spi.project.ui.ProjectOpenedHook;
+import org.openide.filesystems.FileObject;
 
 
 /**
  * @author ads
  *
  */
-@ProjectServiceProvider(service=UsageLogger.class, projectType = 
-    {"org-netbeans-modules-java-j2seproject",
-    "org-netbeans-modules-j2ee-ejbjarproject", 
-    "org-netbeans-modules-j2ee-clientproject", 
-    "org-netbeans-modules-web-project"})
-public class UsageLogger {
-    private static final Logger LOG = Logger.getLogger("org.netbeans.ui.metrics.cdi");   // NOI18N
-    
-    public UsageLogger(Project project){
-        myProject = new WeakReference<Project>( project );
-        myMessages = new CopyOnWriteArraySet<String>();
+@ProjectServiceProvider(service=CdiUtil.class, projectType = 
+    "org-netbeans-modules-j2ee-clientproject")
+public class CarCdiUtil extends CdiUtil {
+
+    public CarCdiUtil( Project project ) {
+        super(project);
     }
     
-    public void log(String message , Class<?> clazz, Object[] params){
-        log(message, clazz, params , false );
-    }
-    
-    
-    public void log(String message , Class<?> clazz, Object[] params, boolean once){
-        if (!once) {
-            if (myMessages.contains(message)) {
-                return;
-            }
-            else {
-                myMessages.add(message);
-            }
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.CdiUtil#getBeansTargetFolder(boolean)
+     */
+    @Override
+    public Collection<FileObject> getBeansTargetFolder( boolean create ) {
+        Project project = getProject();
+        if ( project == null ){
+            return Collections.emptyList();
         }
-        
-        LogRecord logRecord = new LogRecord(Level.INFO, message);
-        logRecord.setLoggerName(LOG.getName());
-        logRecord.setResourceBundle(NbBundle.getBundle(clazz));
-        logRecord.setResourceBundleName(clazz.getPackage().getName() + ".Bundle"); // NOI18N
-        if (params != null) {
-            logRecord.setParameters(params);
-        }
-        LOG.log(logRecord);
+        Car cars[] = Car.getCars(project);
+        if (cars.length > 0) {
+            return Collections.singleton(cars[0].getMetaInf());
+        } 
+        return super.getBeansTargetFolder(create);
     }
-    
-    private WeakReference<Project> myProject;
-    private Set<String> myMessages;
 
 }

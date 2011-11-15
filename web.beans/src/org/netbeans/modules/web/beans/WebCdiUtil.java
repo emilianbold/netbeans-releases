@@ -42,54 +42,55 @@
  */
 package org.netbeans.modules.web.beans;
 
-import java.lang.ref.WeakReference;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.beans.analysis.CdiAnalysisResult;
 import org.netbeans.spi.project.ProjectServiceProvider;
-import org.netbeans.spi.project.ui.ProjectOpenedHook;
-
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 
 /**
  * @author ads
  *
  */
-@ProjectServiceProvider(service=ProjectOpenedHook.class, projectType = {
-    "org-netbeans-modules-java-j2seproject",
-    "org-netbeans-modules-j2ee-ejbjarproject", "org-netbeans-modules-j2ee-clientproject", 
-    "org-netbeans-modules-web-project"})
-public class CdiOpenHook extends ProjectOpenedHook {
+@ProjectServiceProvider(service={CdiUtil.class}, projectType = 
+    "org-netbeans-modules-web-project")
+public class WebCdiUtil extends CdiUtil {
     
-    public CdiOpenHook(Project project){
-        myProject = new WeakReference<Project>( project);
+    public WebCdiUtil( Project project ) {
+        super(project);
     }
-
+    
     /* (non-Javadoc)
-     * @see org.netbeans.spi.project.ui.ProjectOpenedHook#projectClosed()
+     * @see org.netbeans.modules.web.beans.CdiUtil#getBeansTargetFolder(boolean)
      */
     @Override
-    protected void projectClosed() {
-    }
-
-    /* (non-Javadoc)
-     * @see org.netbeans.spi.project.ui.ProjectOpenedHook#projectOpened()
-     */
-    @Override
-    protected void projectOpened() {
-        Project project = myProject.get();
-        if ( project== null ){
-            return;
+    public Collection<FileObject> getBeansTargetFolder( boolean create ) {
+        Project project = getProject();
+        if ( project == null ){
+            return Collections.emptyList();
         }
-        if ( CdiAnalysisResult.isCdiEnabled(project)){
-            UsageLogger logger = project.getLookup().lookup(UsageLogger.class);
-            if ( logger == null ){
-                return;
+        WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
+        if (wm != null) {
+            FileObject webInf = wm.getWebInf();
+            if (webInf == null && create ) {
+                try {
+                    webInf = FileUtil.createFolder(wm.getDocumentBase(), WEB_INF); 
+                } catch (IOException ex) {
+                    Logger.getLogger( CdiAnalysisResult.class.getName() ).log( 
+                            Level.WARNING, null, ex );
+                }
             }
-            logger.log("USG_CDI_BEANS_OPENED_PROJECT", CdiOpenHook.class, 
-                    new Object[]{project.getClass().getName()});  // NOI18N
-        }
+            return Collections.singleton(webInf);
+        } 
+        return super.getBeansTargetFolder(create);
     }
-
-    private WeakReference<Project> myProject;
+    
 }
