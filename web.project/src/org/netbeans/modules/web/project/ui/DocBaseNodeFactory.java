@@ -55,7 +55,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Action;
-import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
@@ -410,16 +409,7 @@ public final class DocBaseNodeFactory implements NodeFactory {
                 
         public boolean acceptDataObject(DataObject obj) {                
             FileObject fo = obj.getPrimaryFile();                
-            boolean show = true;
-            try {
-                if (sourceGroup != null && !sourceGroup.contains(fo)) {
-                    show = false;
-                }
-            } catch (IllegalArgumentException ex) {
-                // sourceGroup is not parent of fo -> do not show file:
-                show = false;
-            }
-            return show && VisibilityQuery.getDefault().isVisible(fo);
+            return (sourceGroup == null || sourceGroup.contains(fo)) && VisibilityQuery.getDefault().isVisible(fo);
         }
         
         public void stateChanged( ChangeEvent e) {            
