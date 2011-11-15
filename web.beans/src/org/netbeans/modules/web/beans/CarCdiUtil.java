@@ -42,54 +42,42 @@
  */
 package org.netbeans.modules.web.beans;
 
-import java.lang.ref.WeakReference;
+import java.util.Collection;
+import java.util.Collections;
 
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.web.beans.analysis.CdiAnalysisResult;
+import org.netbeans.modules.j2ee.api.ejbjar.Car;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
-
+import org.openide.filesystems.FileObject;
 
 
 /**
  * @author ads
  *
  */
-@ProjectServiceProvider(service=ProjectOpenedHook.class, projectType = {
-    "org-netbeans-modules-java-j2seproject",
-    "org-netbeans-modules-j2ee-ejbjarproject", "org-netbeans-modules-j2ee-clientproject", 
-    "org-netbeans-modules-web-project"})
-public class CdiOpenHook extends ProjectOpenedHook {
+@ProjectServiceProvider(service=CdiUtil.class, projectType = 
+    "org-netbeans-modules-j2ee-clientproject")
+public class CarCdiUtil extends CdiUtil {
+
+    public CarCdiUtil( Project project ) {
+        super(project);
+    }
     
-    public CdiOpenHook(Project project){
-        myProject = new WeakReference<Project>( project);
-    }
-
     /* (non-Javadoc)
-     * @see org.netbeans.spi.project.ui.ProjectOpenedHook#projectClosed()
+     * @see org.netbeans.modules.web.beans.CdiUtil#getBeansTargetFolder(boolean)
      */
     @Override
-    protected void projectClosed() {
+    public Collection<FileObject> getBeansTargetFolder( boolean create ) {
+        Project project = getProject();
+        if ( project == null ){
+            return Collections.emptyList();
+        }
+        Car cars[] = Car.getCars(project);
+        if (cars.length > 0) {
+            return Collections.singleton(cars[0].getMetaInf());
+        } 
+        return super.getBeansTargetFolder(create);
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.spi.project.ui.ProjectOpenedHook#projectOpened()
-     */
-    @Override
-    protected void projectOpened() {
-        Project project = myProject.get();
-        if ( project== null ){
-            return;
-        }
-        if ( CdiAnalysisResult.isCdiEnabled(project)){
-            UsageLogger logger = project.getLookup().lookup(UsageLogger.class);
-            if ( logger == null ){
-                return;
-            }
-            logger.log("USG_CDI_BEANS_OPENED_PROJECT", CdiOpenHook.class, 
-                    new Object[]{project.getClass().getName()});  // NOI18N
-        }
-    }
-
-    private WeakReference<Project> myProject;
 }
