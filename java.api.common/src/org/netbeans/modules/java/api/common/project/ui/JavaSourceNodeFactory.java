@@ -323,7 +323,7 @@ public final class JavaSourceNodeFactory implements NodeFactory {
         }
 
         @Override
-        public boolean contains(FileObject file) throws IllegalArgumentException {
+        public boolean contains(FileObject file) {
             return true;
         }
 

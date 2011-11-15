@@ -194,13 +194,13 @@ public final class SourcesHelper {
                 return opened ? icon : openedIcon;
             }
 
-            public boolean contains(FileObject file) throws IllegalArgumentException {
+            @Override public boolean contains(FileObject file) {
                 if (file == loc) {
                     return true;
                 }
                 String path = FileUtil.getRelativePath(loc, file);
                 if (path == null) {
-                    throw new IllegalArgumentException(file + " is not inside " + loc);
+                    return false;
                 }
                 if (file.isFolder()) {
                     path += "/"; // NOI18N

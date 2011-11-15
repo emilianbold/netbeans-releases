@@ -158,9 +158,9 @@ public class GenericSources {
             return opened ? icon : openedIcon;
         }
         
-        public boolean contains(FileObject file) throws IllegalArgumentException {
+        @Override public boolean contains(FileObject file) {
             if (file != rootFolder && !FileUtil.isParentOf(rootFolder, file)) {
-                throw new IllegalArgumentException(rootFolder + " [isValid=" + rootFolder.isValid() + "] is not parent of " + file + " [isValid=" + file.isValid() + "].");  //NOI18N
+                return false;
             }
             if (file.isFolder() && file != p.getProjectDirectory() && ProjectManager.getDefault().isProject(file)) {
                 // #67450: avoid actually loading the nested project.
