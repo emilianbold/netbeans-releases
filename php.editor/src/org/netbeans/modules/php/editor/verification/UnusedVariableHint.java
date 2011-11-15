@@ -526,10 +526,15 @@ public class UnusedVariableHint extends AbstractRule implements PHPRuleWithPrefe
 
         @Override
         public void visit(LambdaFunctionDeclaration node) {
-            forceVariableAsUsed = true;
-            scan(node.getFormalParameters());
-            scan(node.getLexicalVariables());
             forceVariableAsUsed = false;
+            scan(node.getFormalParameters());
+            if (checkUnusedFormalParameters(preferences)) {
+                scan(node.getLexicalVariables());
+            } else {
+                forceVariableAsUsed = true;
+                scan(node.getLexicalVariables());
+                forceVariableAsUsed = false;
+            }
             scan(node.getBody());
         }
 
