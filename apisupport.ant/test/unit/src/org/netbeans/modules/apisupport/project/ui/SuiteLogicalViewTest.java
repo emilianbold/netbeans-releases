@@ -51,6 +51,7 @@ import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -72,7 +73,8 @@ public class SuiteLogicalViewTest extends TestBase {
     public SuiteLogicalViewTest(String name) {
         super(name);
     }
-    
+
+    @RandomlyFails // NB-Core-Build #7497: two children expected:<2> but was:<0>
     public void testModulesNode() throws Exception {
         SuiteProject suite1 = generateSuite("suite1");
         TestBase.generateSuiteComponent(suite1, "module1a");
