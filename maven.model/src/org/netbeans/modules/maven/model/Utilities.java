@@ -263,7 +263,7 @@ public class Utilities {
                 logger.log(Level.FINE, "saving changes in {0}", dobj);
                 save.save();
             } else {
-                logger.log(Level.FINE, "no changes in {0}", dobj);
+                logger.log(Level.FINE, "no changes in {0} where modified={1}", new Object[] {dobj, dobj.isModified()});
             }
         }
     }
