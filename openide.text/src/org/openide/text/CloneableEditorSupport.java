@@ -208,7 +208,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     private Listener listener;
 
     /** the undo/redo manager to use for this document */
-    private UndoRedoManager undoRedo;
+    private UndoRedo.Manager undoRedo;
 
     /** lines set for this object */
     private Line.Set lineSet;
@@ -380,20 +380,16 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         
         if (undoRedo == null) {
             UndoRedo.Manager mgr = createUndoRedoManager();
-            if (!(mgr instanceof UndoRedoManager)) {
-                ERR.info("createUndoRedoManager(): ignoring created instance of class " + // NOI18N
-                        mgr.getClass() + " since CloneableEditorSupport requires instance of " + // NOI18N"
-                        UndoRedoManager.class.getName() + "\n"); // NOI18N
-                mgr = new UndoRedoManager(this);
-            }
-            undoRedo = (UndoRedoManager) mgr;
+//            if (!(mgr instanceof UndoRedoManager)) {
+//                ERR.info("createUndoRedoManager(): ignoring created instance of class " + // NOI18N
+//                        mgr.getClass() + " since CloneableEditorSupport requires instance of " + // NOI18N"
+//                        UndoRedoManager.class.getName() + "\n"); // NOI18N
+//                mgr = new UndoRedoManager(this);
+//            }
+            undoRedo = mgr;
         }
 
         return undoRedo;
-    }
-    
-    UndoRedoManager getUndoRedoManager() {
-        return (UndoRedoManager) getUndoRedo();
     }
 
     /** Provides access to position manager for the document.
@@ -733,8 +729,11 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                                                                // atomic action has finished
                                                                // definitively sooner than leaving lock section
                                                                // and notifying al waiters, see #47022
-                                                               getUndoRedoManager().markSavepoint();
-                                                               getDoc().addUndoableEditListener(getUndoRedo());
+                                                               UndoRedo.Manager urm = getUndoRedo();
+                                                               if (urm instanceof UndoRedoManager) {
+                                                                   ((UndoRedoManager)urm).markSavepoint();
+                                                               }
+                                                               getDoc().addUndoableEditListener(urm);
                                                                d = getDoc();
                                                            } catch (DelegateIOExc t) {
                                                                prepareDocumentRuntimeException = t;
@@ -1103,7 +1102,10 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                         }
                     }
 
-                    getUndoRedoManager().markSavepoint();
+                    UndoRedo.Manager urm = getUndoRedo();
+                    if (urm instanceof UndoRedoManager) {
+                        ((UndoRedoManager)urm).markSavepoint();
+                    }
 
                     // update cached info about lines
                     updateLineSet(true);
@@ -1127,11 +1129,16 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         // Run before-save actions
         Runnable beforeSaveRunnable = (Runnable) myDoc.getProperty("beforeSaveRunnable");
         if (beforeSaveRunnable != null) {
-            undoRedo.setPerformingSaveActions(true);
+            UndoRedo.Manager urm = getUndoRedo();
+            if (urm instanceof UndoRedoManager) {
+                ((UndoRedoManager)undoRedo).setPerformingSaveActions(true);
+            }
             try {
                 beforeSaveRunnable.run();
             } finally {
-                undoRedo.setPerformingSaveActions(false);
+                if (urm instanceof UndoRedoManager) {
+                    ((UndoRedoManager)undoRedo).setPerformingSaveActions(false);
+                }
             }
         }
         // undoRedo.markSavepoint() will be done in SaveAsReader runnable
@@ -1839,8 +1846,11 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                                                  }
                                                  // XXX do this from AWT???
                                                  ERR.fine("task-discardAllEdits");
-                                                 getUndoRedo().discardAllEdits();
-                                                 getUndoRedoManager().markSavepoint();
+                                                 UndoRedo.Manager urm = getUndoRedo();
+                                                 urm.discardAllEdits();
+                                                 if (urm instanceof UndoRedoManager) {
+                                                     ((UndoRedoManager)urm).markSavepoint();
+                                                 }
                                                  ERR.fine("task-check already modified");
                                                  // #57104 - if modified previously now it should become unmodified
                                                  if (isAlreadyModified()) {

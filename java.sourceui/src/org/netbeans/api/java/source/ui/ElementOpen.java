@@ -52,9 +52,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.lang.model.element.ElementKind;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.openide.util.NbBundle;
+import org.openide.util.Parameters;
 
 /** Utility class for opening elements in editor.
  *
@@ -116,11 +118,12 @@ public final class ElementOpen {
      * @return true if and only if the declaration was correctly opened,
      *                false otherwise
      */
-    public static boolean open(final FileObject toSearch, final ElementHandle<? extends Element> toOpen) {
-        if (toSearch == null || toOpen == null) {
-            throw new IllegalArgumentException("null not supported");
-        }
-        
+    public static boolean open(
+            @NonNull final FileObject toSearch,
+            @NonNull final ElementHandle<? extends Element> toOpen) {
+        Parameters.notNull("toSearch", toSearch);   //NOI18N
+        Parameters.notNull("toOpen", toOpen);       //NOI18N
+
         Object[] openInfo = getOpenInfo (toSearch, toOpen);
         if (openInfo != null) {
             assert openInfo[0] instanceof FileObject;

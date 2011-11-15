@@ -71,11 +71,7 @@ public final class OpenAction extends AbstractAction {
     private ElementHandle<? extends Element> elementHandle;   
     private FileObject fileObject;
     private String displayName;
-      
-    public OpenAction( ElementHandle<? extends Element> elementHandle, FileObject fileObject ) {
-        this( elementHandle, fileObject, null );
-    }
-    
+
     public OpenAction( ElementHandle<? extends Element> elementHandle, FileObject fileObject, String displayName ) {
         this.elementHandle = elementHandle;
         this.fileObject = fileObject;

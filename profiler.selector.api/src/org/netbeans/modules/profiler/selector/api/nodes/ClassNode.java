@@ -55,6 +55,7 @@ import org.netbeans.modules.profiler.api.icons.Icons;
 import org.netbeans.modules.profiler.api.icons.LanguageIcons;
 import org.netbeans.modules.profiler.api.java.SourceClassInfo;
 import org.netbeans.modules.profiler.api.java.SourceMethodInfo;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -108,7 +109,7 @@ public class ClassNode extends ContainerNode {
 
     /** Creates a new instance of ClassNode */
     public ClassNode(SourceClassInfo cInfo, String displayName, Icon icon, final ContainerNode parent) {
-        super(cInfo.getQualifiedName(), displayName, icon, parent);
+        super((cInfo != null ? cInfo.getQualifiedName() : NbBundle.getMessage(ClassNode.class, "LBL_Unknown")), displayName, icon, parent); // NOI8N
         this.cInfo = cInfo;
         
         if (isAnonymous()) {
