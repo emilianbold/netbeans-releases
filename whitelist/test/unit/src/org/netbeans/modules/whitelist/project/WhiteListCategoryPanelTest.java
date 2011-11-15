@@ -143,6 +143,7 @@ public class WhiteListCategoryPanelTest extends NbTestCase {
                     }
                 });
                 res.allInstances();
+                WhiteListLookupProvider.enableWhiteListInProject(p, Query1.class.getSimpleName(), true);
             }
         }).start();
         synchronized (lck) {
