@@ -249,7 +249,7 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
                 File f = as.next().getFile();
                 if (f != null) {
                     LOG.log(Level.FINE, "ceasing to listen to {0} from {1}", new Object[] {f, nbproject.getPOMFile()});
-                    FileUtil.removeFileChangeListener(fcl, f);
+                    FileUtil.removeFileChangeListener(fcl, FileUtil.normalizeFile(f));
                     if (f.isFile()) {
                         BatchProblemNotifier.resolved(f);
                     }
