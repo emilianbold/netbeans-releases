@@ -78,6 +78,11 @@ public final class XMLDataObject extends org.openide.loaders.XMLDataObject
      * Special MIME type so that other XML data objects do not inherit our editor
      */
     public static final String MIME_PLAIN_XML = "text/plain+xml";
+    
+    /**
+     * XSD pseudo-MIME type
+     */
+    public static final String MIME_XSD_XML = "text/xsd+xml";
 
     /** Serial Version UID */
     private static final long serialVersionUID = 9153823984913876866L;
@@ -140,6 +145,18 @@ public final class XMLDataObject extends org.openide.loaders.XMLDataObject
         return new MultiViewEditorElement(context);
     }
         
+    @MultiViewElement.Registration(
+        displayName="org.netbeans.modules.xml.Bundle#CTL_SourceTabCaption",
+        iconBase="org/netbeans/modules/xml/resources/xmlObject.gif",
+        persistenceType=TopComponent.PERSISTENCE_ONLY_OPENED,
+        preferredID="xml.text",
+        mimeType=MIME_XSD_XML,
+        position=1
+    )
+    public static MultiViewEditorElement createMultiViewXSDEditorElement(Lookup context) {
+        return new MultiViewEditorElement(context);
+    }
+
     @Override protected int associateLookup() {
         return 1;
     }

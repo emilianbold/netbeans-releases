@@ -43,26 +43,18 @@
  */
 package org.netbeans.swing.etable;
 
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.Graphics;
 import java.awt.Point;
 import java.util.Comparator;
-import java.util.List;
 import java.util.Properties;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JViewport;
 import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
-import javax.swing.plaf.UIResource;
-import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
@@ -105,8 +97,6 @@ public class ETableColumn extends TableColumn implements Comparable<ETableColumn
     private Comparator<ETable.RowMapping> comparator;
     /** */
     private boolean ascending = true;
-    /** */
-    private boolean headerRendererSetExternally = false;
     /** */
     private ETable table;
     /** */
@@ -245,22 +235,9 @@ public class ETableColumn extends TableColumn implements Comparable<ETableColumn
      */
     @Override
     public void setHeaderRenderer(TableCellRenderer tcr) {
-        headerRendererSetExternally = true;
         super.setHeaderRenderer(tcr);
     }
     
-    /**
-     * Use a special renderer (result of calling createDefaultHeaderRenderer)
-     * if it was not set by setHeaderRenderer.
-     */
-    @Override
-    public TableCellRenderer getHeaderRenderer() {
-        if (headerRendererSetExternally) {
-            return super.getHeaderRenderer();
-        }
-	return createDefaultHeaderRenderer();
-    }
-
     /**
      * The column can be hidden if this method returns true.
      */
@@ -280,6 +257,10 @@ public class ETableColumn extends TableColumn implements Comparable<ETableColumn
      */
     public void setCustomIcon(Icon i) {
         customIcon = i;
+    }
+    
+    Icon getCustomIcon() {
+        return customIcon;
     }
     
     /**
@@ -494,66 +475,20 @@ public class ETableColumn extends TableColumn implements Comparable<ETableColumn
      */
     @Override
     protected TableCellRenderer createDefaultHeaderRenderer() {
-        if (myHeaderRenderer == null) {
-            myHeaderRenderer = new ETableHeaderRenderer();
-        }
-        return myHeaderRenderer;
+        return new ETableColumnHeaderRendererDelegate();
     }
-
-    /**
-     * An icon pointing down. It is used if the LAF does not supply
-     * special icon.
-     */
-    private static class SortDownIcon implements Icon {
-        
-        public SortDownIcon() {
-        }
-        
-        @Override
-        public int getIconWidth() {
-            return 8;
-        }
-        
-        @Override
-        public int getIconHeight() {
-            return 8;
-        }
-        
-        @Override
-        public void paintIcon(Component c, Graphics g, int x, int y) {
-            g.setColor(Color.BLACK);
-            g.drawLine(x    , y + 2, x + 8, y + 2);
-            g.drawLine(x    , y + 2, x + 4, y + 6);
-            g.drawLine(x + 8, y + 2, x + 4, y + 6);
-        }
+    
+    void setTableHeaderRendererDelegate(TableCellRenderer delegate) {
+        myHeaderRenderer = delegate;
     }
-
-    /**
-     * An icon pointing up. It is used if the LAF does not supply
-     * special icon.
-     */
-    private static class SortUpIcon implements Icon {
-        
-        public SortUpIcon() {
-        }
+     
+    class ETableColumnHeaderRendererDelegate implements TableCellRenderer {
         
         @Override
-        public int getIconWidth() {
-            return 8;
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            return myHeaderRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
         }
         
-        @Override
-        public int getIconHeight() {
-            return 8;
-        }
-        
-        @Override
-        public void paintIcon(Component c, Graphics g, int x, int y) {
-            g.setColor(Color.BLACK);
-            g.drawLine(x    , y + 6, x + 8, y + 6);
-            g.drawLine(x    , y + 6, x + 4, y + 2);
-            g.drawLine(x + 8, y + 6, x + 4, y + 2);
-        }
     }
     
     /**
@@ -573,85 +508,6 @@ public class ETableColumn extends TableColumn implements Comparable<ETableColumn
         
         public Comparator<ETable.RowMapping> getOriginalComparator() {
             return origComparator;
-        }
-    }
-    
-    /**
-     * Special renderer painting sorting icons and also special icon
-     * for the QuickFilter columns.
-     */
-    private class ETableHeaderRenderer extends DefaultTableCellRenderer implements UIResource {
-
-        private TableCellRenderer headerRenderer = new JTable().getTableHeader().getDefaultRenderer();
-
-        @Override
-        public Component getTableCellRendererComponent(JTable table, Object value,
-                boolean isSelected, boolean hasFocus, int row, int column) {
-            Component res = headerRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-            if( res instanceof JLabel ) {
-                JLabel label = (JLabel)res;
-            String valueString = "";
-            if (value != null) {
-                valueString = value.toString();
-            }
-            if (table instanceof ETable) {
-                ETable et = (ETable)table;
-                valueString = et.getColumnDisplayName(valueString);
-            }
-            Icon sortIcon = null;
-
-            List<TableColumn> sortedColumns = ((ETableColumnModel) table.getColumnModel ()).getSortedColumns ();
-
-            if (sortRank != 0) {
-                if (sortedColumns.size () > 1) {
-                    valueString = (valueString == null || valueString.isEmpty()) ?
-                        Integer.toString(sortRank) :
-                        sortRank+" "+valueString;
-                }
-                // don't use deriveFont() - see #49973 for details
-                label.setFont (new Font (getFont ().getName (), Font.BOLD, getFont ().getSize ()));
-
-                if (ascending) {
-                    sortIcon = UIManager.getIcon("ETableHeader.ascendingIcon");
-                    if (sortIcon == null) {
-                        sortIcon = new SortUpIcon();
-                    }
-                } else {
-                    sortIcon = UIManager.getIcon("ETableHeader.descendingIcon");
-                    if (sortIcon == null) {
-                        sortIcon = new SortDownIcon();
-                    }
-                }
-            }
-            label.setText(valueString);
-            if (sortIcon == null) {
-                if (customIcon == null) {
-                    Icon dummy = new Icon() {
-                            @Override
-                        public void paintIcon(Component c, Graphics g, int x, int y) {
-                        }
-                            @Override
-                        public int getIconWidth() {
-                            return 0;
-                        }
-                            @Override
-                        public int getIconHeight() {
-                            return 0;
-                        }
-                    };
-                    label.setIcon(dummy);
-                } else {
-                    label.setIcon(customIcon);
-                }
-            } else {
-                if (customIcon == null) {
-                    label.setIcon(sortIcon);
-                } else {
-                    label.setIcon(mergeIcons(customIcon, sortIcon, 16, 0, this));
-                }
-            }
-            }
-            return res;
         }
     }
     

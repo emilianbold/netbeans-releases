@@ -352,6 +352,15 @@ public class GeneralPHP extends JellyTestCase {
             if (bRandomCheck) {
                 fail("Invalid completion, looks like issue #153062 still here: \"" + sText + "\", should be: \"" + sCheck + "\"");
             } else {
+                log("Trace wrong completion:");
+                String text = eoPHP.getText(eoPHP.getLineNumber() + iOffset).replace("\r\n", "").replace("\n", "");
+                int count = 0;
+                while (!text.isEmpty() && count < 20) {
+                    eoPHP.pushKey(KeyEvent.VK_Z, KeyEvent.CTRL_MASK);
+                    text = eoPHP.getText(eoPHP.getLineNumber() + iOffset).replace("\r\n", "").replace("\n", "");;
+                    log(">>" + text + "<<");
+                    count++;
+                }
                 fail("Invalid completion: \"" + sText + "\", should be: \"" + sCheck + "\"");
             }
         }

@@ -147,7 +147,7 @@ public class DelegateMethodGenerator implements CodeGenerator {
     }
 
     public void invoke() {
-        final DelegatePanel panel = new DelegatePanel(component, description);
+        final DelegatePanel panel = new DelegatePanel(component, handle, description);
         DialogDescriptor dialogDescriptor = GeneratorUtils.createDialogDescriptor(panel, NbBundle.getMessage(ConstructorGenerator.class, "LBL_generate_delegate")); //NOI18N
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);
         dialog.setVisible(true);
@@ -189,8 +189,8 @@ public class DelegateMethodGenerator implements CodeGenerator {
     }
 
     private static Logger log = Logger.getLogger(DelegateMethodGenerator.class.getName());
-    public static ElementNode.Description getAvailableMethods(final JTextComponent component, final ElementHandle<? extends Element> elementHandle) {
-        if (elementHandle.getKind().isField()) {
+    public static ElementNode.Description getAvailableMethods(final JTextComponent component, final ElementHandle<? extends TypeElement> typeElementHandle, final ElementHandle<? extends VariableElement> fieldHandle) {
+        if (fieldHandle.getKind().isField()) {
             final JavaSource js = JavaSource.forDocument(component.getDocument());
             if (js != null) {
                 final int caretOffset = component.getCaretPosition();
@@ -215,7 +215,7 @@ public class DelegateMethodGenerator implements CodeGenerator {
                                 if (cancel.get()) {
                                     return;
                                 }
-                                description[0] = getAvailableMethods(controller, caretOffset, elementHandle);
+                                description[0] = getAvailableMethods(controller, caretOffset, typeElementHandle, fieldHandle);
                             }
                         }, true);
                         } catch (IOException ioe) {
@@ -260,15 +260,15 @@ public class DelegateMethodGenerator implements CodeGenerator {
         return descriptions;
     }
         
-    static ElementNode.Description getAvailableMethods(CompilationInfo controller, int caretOffset, final ElementHandle<? extends Element> elementHandle) {
-        VariableElement field = (VariableElement) elementHandle.resolve(controller);
-        assert field != null;
+    static ElementNode.Description getAvailableMethods(CompilationInfo controller, int caretOffset, final ElementHandle<? extends TypeElement> typeElementHandle, final ElementHandle<? extends VariableElement> fieldHandle) {
+        TypeElement origin = typeElementHandle.resolve(controller);
+        VariableElement field = fieldHandle.resolve(controller);
+        assert origin != null && field != null;
         if (field.asType().getKind() == TypeKind.DECLARED) {
             DeclaredType type = (DeclaredType) field.asType();
             Trees trees = controller.getTrees();
             ElementUtilities eu = controller.getElementUtilities();
             Scope scope = controller.getTreeUtilities().scopeFor(caretOffset);
-            TypeElement origin = scope.getEnclosingClass();
             Map<Element, List<ElementNode.Description>> map = new LinkedHashMap<Element, List<ElementNode.Description>>();
             for (ExecutableElement method : ElementFilter.methodsIn(controller.getElements().getAllMembers((TypeElement) type.asElement()))) {
                 if (trees.isAccessible(scope, method, type)) {
