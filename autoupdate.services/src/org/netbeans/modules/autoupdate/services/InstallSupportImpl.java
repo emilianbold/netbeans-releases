@@ -77,6 +77,7 @@ import org.netbeans.updater.UpdateTracking;
 import org.netbeans.updater.UpdaterInternal;
 import org.openide.LifecycleManager;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -1177,9 +1178,19 @@ public class InstallSupportImpl {
                 }
                 FileObject modulesRoot = FileUtil.getConfigFile(ModuleDeactivator.MODULES);
                 if (modulesRoot != null) {
+                    /* XXX: uncomment when #205120 fixed.
                     LOG.fine("Refreshing Modules directory"); // NOI18N
                     modulesRoot.refresh();
                     LOG.fine("Done refreshing Modules directory"); // NOI18N
+                     */
+                    LOG.fine("Refreshing whole MFS"); // NOI18N
+                    modulesRoot.refresh();
+                    try {
+                        FileUtil.getConfigRoot().getFileSystem().refresh(true);
+                    } catch (FileStateInvalidException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                    LOG.fine("Done refreshing MFS"); // NOI18N
                 }
                 boolean ok = true;
                 for (File file : modifiedFiles.keySet()) {
