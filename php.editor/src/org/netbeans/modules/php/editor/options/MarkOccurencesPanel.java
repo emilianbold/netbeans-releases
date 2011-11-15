@@ -58,12 +58,12 @@ import org.openide.util.Exceptions;
  * @author  Petr Hrebejk
  */
 public class MarkOccurencesPanel extends javax.swing.JPanel {
-   
+
     private static final boolean DEFAULT_VALUE = true; // May need to be splited if the defaunts ar not all on
-    
+
     private List<JCheckBox> boxes;
     private MarkOccurencesOptionsPanelController controller;
-    
+
     /** Creates new form MarkOccurencesPanel */
     public MarkOccurencesPanel( MarkOccurencesOptionsPanelController controller ) {
         initComponents();
@@ -74,20 +74,20 @@ public class MarkOccurencesPanel extends javax.swing.JPanel {
         addListeners();
         load( controller );
     }
-    
+
     public void load( MarkOccurencesOptionsPanelController controller ) {
         this.controller = controller;
-        
+
         Preferences node = MarkOccurencesSettings.getCurrentNode();
-        
+
         for (JCheckBox box : boxes) {
             box.setSelected(node.getBoolean(box.getActionCommand(), DEFAULT_VALUE));
         }
-        
+
         componentsSetEnabled();
-        
+
     }
-    
+
     public void store( ) {
         Preferences node = MarkOccurencesSettings.getCurrentNode();
 
@@ -107,11 +107,11 @@ public class MarkOccurencesPanel extends javax.swing.JPanel {
             Exceptions.printStackTrace(ex);
         }
 }
-    
+
     public boolean changed() {
-        
+
         Preferences node = MarkOccurencesSettings.getCurrentNode();
-        
+
         for (JCheckBox box : boxes) {
             boolean value = box.isSelected();
             boolean original = node.getBoolean(box.getActionCommand(), DEFAULT_VALUE);
@@ -122,8 +122,8 @@ public class MarkOccurencesPanel extends javax.swing.JPanel {
 
         return false;
     }
-    
-    
+
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -183,51 +183,51 @@ public class MarkOccurencesPanel extends javax.swing.JPanel {
         getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(MarkOccurencesPanel.class, "MarkOccurencesPanel.AccessibleContext.accessibleName")); // NOI18N
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MarkOccurencesPanel.class, "MarkOccurencesPanel.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
-    
-    
+
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox onOffCheckBox;
     // End of variables declaration//GEN-END:variables
     // End of variables declaration
 
-    
+
     private void fillBoxes() {
         boxes = new ArrayList<JCheckBox>();
         boxes.add( onOffCheckBox );
         
         onOffCheckBox.setActionCommand(MarkOccurencesSettings.ON_OFF);
     }
-    
-    
+
+
     private void addListeners() {
         ChangeListener cl = new CheckChangeListener();
-        
+
         for( JCheckBox box : boxes ) {
             box.addChangeListener(cl);
         }
-        
+
     }
-    
+
     private void componentsSetEnabled() {
         for( int i = 1; i < boxes.size(); i++ ) {
             boxes.get(i).setEnabled(onOffCheckBox.isSelected()); // Switch off the other boxes
         }
     }
-    
-    
+
+
     private class CheckChangeListener implements ChangeListener {
 
         public void stateChanged(ChangeEvent evt) {
-            
+
             if ( evt.getSource() == onOffCheckBox ) {
                 componentsSetEnabled();
             }
-            
-            controller.changed();            
+
+            controller.changed();
         }
-        
+
     }
-    
-    
-    
+
+
+
 }
