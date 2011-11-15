@@ -554,12 +554,9 @@ public final class SourcesHelperTest extends NbTestCase {
         l.assertEvents();
         // </editor-fold>
         // <editor-fold desc="testing misc">
-        try {
-            FileObject f = src2dir.getFileObject("java/lang/Class.java");
-            assertNotNull(f);
-            g1.contains(f);
-            fail("wrong root");
-        } catch (IllegalArgumentException e) {/* good */}
+        FileObject f = src2dir.getFileObject("java/lang/Class.java");
+        assertNotNull(f);
+        assertFalse("wrong root", g1.contains(f));
         SourceGroup[] ggroups = s.getSourceGroups(Sources.TYPE_GENERIC);
         SourceGroup gg1 = ggroups[0];
         assertEquals("Sources #2", gg1.getDisplayName());

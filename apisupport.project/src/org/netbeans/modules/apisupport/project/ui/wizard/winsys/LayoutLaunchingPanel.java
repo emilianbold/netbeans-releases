@@ -79,7 +79,7 @@ implements TaskListener, Runnable, ExplorerManager.Provider {
     private Task task;
     private ProgressHandle handle;
     private ExplorerManager em;
-    private final OutlineView outlineView;
+    private OutlineView outlineView;
     
     @NbBundle.Messages({
         "CTL_FoundModes=Found modes",
@@ -94,6 +94,10 @@ implements TaskListener, Runnable, ExplorerManager.Provider {
         initComponents();
         initAccessibility();
         putClientProperty("NewFileWizard_Title", Bundle.LBL_LayoutingWizardTitle()); // NOI18N
+    }
+
+    @Override public void addNotify() {
+        super.addNotify();
         outlineView = new OutlineView(Bundle.CTL_FoundModes());
         outlineView.getOutline().setRootVisible(false);
         tree.add(outlineView);
