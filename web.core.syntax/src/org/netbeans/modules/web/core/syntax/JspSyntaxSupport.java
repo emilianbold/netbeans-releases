@@ -303,14 +303,14 @@ public class JspSyntaxSupport extends ExtSyntaxSupport implements FileChangeList
 
         EditorKit kit;
         // try the content language support
-        kit = CloneableEditorSupport.getEditorKit(JspUtils.getContentLanguage());
+        kit = CloneableEditorSupport.getEditorKit("text/html"); //NOI18N
         if (kit instanceof BaseKit) {
             support = ((BaseKit)kit).createSyntaxSupport(getDocument());
             if (support != null)
                 return support;
         }
         // try the scripting language support
-        kit = CloneableEditorSupport.getEditorKit(JspUtils.getScriptingLanguage());
+        kit = CloneableEditorSupport.getEditorKit("text/x-java"); //NOI18N
         if (kit instanceof BaseKit) {
             support = ((BaseKit)kit).createSyntaxSupport(getDocument());
             if (support != null)

@@ -73,9 +73,7 @@ public class JUnitTestSession extends TestSession{
 
     public JUnitTestSession(String name, Project project, SessionType sessionType, TestRunnerNodeFactory nodeFactory) {
         super(name, project, sessionType, nodeFactory);
-        if (project != null){
-            projectFileLocator = new ProjectFileLocator(project);
-        }
+        projectFileLocator = new ProjectFileLocator(project);
     }
 
     @Override

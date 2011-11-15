@@ -717,6 +717,21 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         return whitespaceAcceptor.accept(ch);
     }
     
+    /**
+     * When called within runnable of {@link #runAtomic(java.lang.Runnable) }
+     * this method returns true if the document can be mutated or false
+     * if any attempt of inserting/removing text would throw {@link GuardedException}.
+     *
+     * @return true if document can be mutated by
+     * {@link #insertString(int, java.lang.String, javax.swing.text.AttributeSet)}
+     *  or {@link #remove(int, int) }.
+     *
+     * @since 3.17
+     */
+    public boolean isModifiable() {
+        return modifiable;
+    }
+    
     /** Inserts string into document */
     public @Override void insertString(int offset, String text, AttributeSet attrs)
     throws BadLocationException {

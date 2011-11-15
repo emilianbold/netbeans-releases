@@ -1193,7 +1193,11 @@ public final class CreatedModifiedFiles {
                                 wc.rewrite(old, nue);
                             }
                         }).commit();
-                        SaveCookie sc = DataObject.find(srcFile != null ? srcFile : srcRoot.getFileObject(srcRelPath)).getLookup().lookup(SaveCookie.class);
+                        FileObject srcFile2 = srcFile != null ? srcFile : srcRoot.getFileObject(srcRelPath);
+                        if (srcFile2 == null) {
+                            throw new IOException("#204274: no package-info.java created?");
+                        }
+                        SaveCookie sc = DataObject.find(srcFile2).getLookup().lookup(SaveCookie.class);
                         if (sc != null) {
                             sc.save();
                         }
