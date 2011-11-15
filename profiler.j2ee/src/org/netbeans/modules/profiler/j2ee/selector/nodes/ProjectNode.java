@@ -47,7 +47,6 @@ import java.util.Enumeration;
 import org.netbeans.api.project.Project;
 import org.netbeans.lib.profiler.client.ClientUtils.SourceCodeSelection;
 import org.netbeans.modules.profiler.api.ProjectUtilities;
-import org.netbeans.modules.profiler.nbimpl.javac.ClasspathInfoFactory;
 import org.netbeans.modules.profiler.selector.api.nodes.ContainerNode;
 import org.netbeans.modules.profiler.selector.api.nodes.SelectorNode;
 import org.openide.util.Lookup;
@@ -58,11 +57,11 @@ import org.openide.util.lookup.Lookups;
  * @author Jaroslav Bachorik
  */
 abstract public class ProjectNode extends ContainerNode {
+    final private String projectName;
     /** Creates a new instance of ProjectNode */
     public ProjectNode(final Lookup.Provider project, ContainerNode root) {
         super(ProjectUtilities.getDisplayName(project), ProjectUtilities.getIcon(project), root, Lookups.fixed(project)); // NOI18N
-        // TODO
-//        setValid(ClasspathInfoFactory.infoFor(project, false) != null);
+        projectName = ProjectUtilities.getDisplayName(project);
     }
 
     public ProjectNode(Lookup.Provider project) {
@@ -79,5 +78,15 @@ abstract public class ProjectNode extends ContainerNode {
         }
 
         return roots;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return super.equals(obj) && projectName.equals(((ProjectNode)obj).projectName);
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode() + (projectName != null ? projectName.hashCode() : 0);
     }
 }
