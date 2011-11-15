@@ -80,7 +80,7 @@ made subject to such option by the copyright holder.
     </folder> 
     <folder name="org-netbeans-api-project-libraries">
         <folder name="Libraries">
-            <file name="JAXB-ENDORSED.xml" url="jaxb-endorsed.xml">
+            <file name="JAXB-ENDORSED.xml" url="nbresloc:/org/netbeans/modules/xml/jaxb/jaxb-endorsed.xml">
                 <attr name="displayName" bundlevalue="org/netbeans/modules/xml/jaxb/Bundle#JAXB-ENDORSED"/>
             </file>
         </folder>
