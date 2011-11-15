@@ -20,8 +20,7 @@ org.netbeans.modules.java.editor.whitelist.WhiteListTaskProvider
 org.netbeans.modules.java.editor.whitelist.WhiteListTaskProvider$Work
 org.netbeans.modules.whitelist.index.WhiteListIndexAccessor
 org.netbeans.modules.whitelist.index.WhiteListIndexerPlugin
-org.netbeans.modules.whitelist.project.WhiteListCategoryPanel
-org.netbeans.modules.whitelist.project.WhiteListCategoryPanel$WhiteListLookup
+org.netbeans.modules.whitelist.project.WhiteListLookupProvider$WhiteListLookup
 org.netbeans.modules.whitelist.project.WhiteListLookupProvider
 org.netbeans.spi.whitelist.WhiteListQueryImplementation
 
