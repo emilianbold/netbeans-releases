@@ -92,10 +92,10 @@ public class WhiteListCategoryPanelTest extends NbTestCase {
         createWhiteListsFolder(Query1.class, Query2.class);
         final FileObject home = FileUtil.toFileObject(getWorkDir());
         final Project p = new MockProject(home);
-        Lookup lkp = WhiteListCategoryPanel.getEnabledUserSelectableWhiteLists(p);
+        Lookup lkp = WhiteListLookupProvider.getEnabledUserSelectableWhiteLists(p);
         assertNotNull(lkp);
         assertTrue(lkp.lookupAll(WhiteListQueryImplementation.class).isEmpty());
-        WhiteListCategoryPanel.enableWhiteListInProject(p, Query1.class.getSimpleName(), true);
+        WhiteListLookupProvider.enableWhiteListInProject(p, Query1.class.getSimpleName(), true);
         Collection<? extends WhiteListQueryImplementation> items = lkp.lookupAll(WhiteListQueryImplementation.class);
         assertEquals(1,items.size());
         assertEquals(Query1.class,items.iterator().next().getClass());
@@ -108,7 +108,7 @@ public class WhiteListCategoryPanelTest extends NbTestCase {
                 throw new AssertionError();
             }
         }
-        lkp = WhiteListCategoryPanel.getEnabledUserSelectableWhiteLists(p);
+        lkp = WhiteListLookupProvider.getEnabledUserSelectableWhiteLists(p);
         assertNotNull(lkp);
         items = lkp.lookupAll(WhiteListQueryImplementation.UserSelectable.class);
         assertEquals(1,items.size());
@@ -119,7 +119,7 @@ public class WhiteListCategoryPanelTest extends NbTestCase {
         createWhiteListsFolder(Query1.class, Query2.class);
         final FileObject home = FileUtil.toFileObject(getWorkDir());
         final Project p = new MockProject(home);
-        final Lookup lkp = WhiteListCategoryPanel.getEnabledUserSelectableWhiteLists(p);
+        final Lookup lkp = WhiteListLookupProvider.getEnabledUserSelectableWhiteLists(p);
         assertNotNull(lkp);
         final Object lck = new Object();
         final CountDownLatch l1 = new CountDownLatch(1);
