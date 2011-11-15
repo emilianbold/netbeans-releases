@@ -322,6 +322,8 @@ public class JFXProjectGenerator {
                 assert jfxBuildFile != null;
                 if (extender.getExtension("jfx") == null) { // NOI18N
                     AntBuildExtender.Extension ext = extender.addExtension("jfx", jfxBuildFile); // NOI18N
+                    ext.addDependency("-init-check", "-check-javafx"); // NOI18N
+                    ext.addDependency("-init-check", "-javafx-check-error"); // NOI18N
                     ext.addDependency("jar", "-jfx-copylibs"); // NOI18N
                     ext.addDependency("-post-jar", "-jfx-copylibs"); //NOI18N
                     ext.addDependency("-post-jar", "jfx-deployment"); //NOI18N 
