@@ -131,6 +131,7 @@ public final class JavaFXPlatformUtils {
         Parameters.notNull("platformName", platformName);   //NOI18N
         return String.format("${platforms.%s.javafx.runtime.home}", platformName);  //NOI18N
     }
+
     /**
      * Returns path to JavaFX SDK installation
      * 
@@ -142,6 +143,17 @@ public final class JavaFXPlatformUtils {
         return PlatformPropertiesHandler.getGlobalProperties().get(Utils.getSDKPropertyKey(platformName));
     }
     
+    /**
+     * Returns a reference to JavaFX SDK Folder
+     * @param platformName the name of the platform for which the reference should be created
+     * @return the reference to JavaFX SDK Folder for given platform
+     * @since 1.5
+     */
+    @NonNull
+    public static String getJavaFXSDKPathReference(@NonNull String platformName) {
+        Parameters.notNull("platformName", platformName);   //NOI18N
+        return String.format("${platforms.%s.javafx.sdk.home}", platformName);  //NOI18N
+    }
     /**
      * Constructs classpath for JavaFX project
      * xxx: Is this really an "API"?
