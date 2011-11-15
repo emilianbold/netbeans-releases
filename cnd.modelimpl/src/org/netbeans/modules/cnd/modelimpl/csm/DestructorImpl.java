@@ -64,9 +64,8 @@ public final class DestructorImpl extends MethodImpl<CsmMethod> {
         super(name, rawName, cls, visibility, _virtual, _explicit, _static, _const, file, startOffset, endOffset, global);
     }
 
-    public static DestructorImpl createDestructor(AST ast, ClassImpl cls, CsmVisibility visibility, boolean global) throws AstRendererException {
+    public static DestructorImpl createDestructor(AST ast, final CsmFile file, ClassImpl cls, CsmVisibility visibility, boolean global) throws AstRendererException {
         CsmScope scope = cls;
-        CsmFile file = cls.getContainingFile();
         
         int startOffset = getStartOffset(ast);
         int endOffset = getEndOffset(ast);
@@ -112,7 +111,7 @@ public final class DestructorImpl extends MethodImpl<CsmMethod> {
                 AstRenderer.FunctionRenderer.isVoidParameter(ast));
         
         postObjectCreateRegistration(global, destructorImpl);
-        nameHolder.addReference(cls.getContainingFile(), destructorImpl);
+        nameHolder.addReference(file, destructorImpl);
         return destructorImpl;
     }
 

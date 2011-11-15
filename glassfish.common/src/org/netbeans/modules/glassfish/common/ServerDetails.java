@@ -101,7 +101,7 @@ public enum ServerDetails {
         "http://serverplugins.netbeans.org/glassfishv3/post701v3-1-1.txt" // NOI18N
             ),
     /**
-     * details for an instance of GlassFish Server 3.1.1
+     * details for an instance of GlassFish Server 3.1.2
      */
     GLASSFISH_SERVER_3_1_2(NbBundle.getMessage(ServerDetails.class, "STR_312_SERVER_NAME", new Object[]{}), // NOI18N
         "deployer:gfv3ee6wc", // NOI18N
@@ -112,7 +112,7 @@ public enum ServerDetails {
         "http://serverplugins.netbeans.org/glassfishv3/post701v3-1-2.txt" // NOI18N
     ),
     /**
-     * details for an instance of GlassFish Server 3.1.1
+     * details for an instance of GlassFish Server 4.0.0
      */
     GLASSFISH_SERVER_4_0(NbBundle.getMessage(ServerDetails.class, "STR_40_SERVER_NAME", new Object[]{}), // NOI18N
         "deployer:gfv3ee6wc", // NOI18N

@@ -66,6 +66,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Element;
@@ -106,7 +107,7 @@ public class JavadocHelper {
      */
     public static final class TextStream {
         private final URL url;
-        private InputStream stream;
+        private final AtomicReference<InputStream> stream = new AtomicReference<InputStream>();
         private byte[] cache;
         /**
          * Creates a text stream from a given URL with no preopened stream.
@@ -117,7 +118,7 @@ public class JavadocHelper {
         }
         TextStream(URL url, InputStream stream) {
             this(url);
-            this.stream = stream;
+            this.stream.set(stream);
         }
         /**
          * Location of the text.
@@ -129,14 +130,14 @@ public class JavadocHelper {
         /**
          * Close any preopened stream without reading it.
          */
-        public synchronized void close() {
-            if (stream != null) {
+        public void close() {
+            final InputStream is = stream.getAndSet(null);
+            if (is != null) {
                 try {
-                    stream.close();
+                    is.close();
                 } catch (IOException x) {
                     LOG.log(Level.INFO, null, x);
                 }
-                stream = null;
             }
         }
         /**
@@ -151,11 +152,8 @@ public class JavadocHelper {
                 return new ByteArrayInputStream(cache);
             }
             assert !isRemote() || !EventQueue.isDispatchThread();
-            InputStream uncached;
-            if (stream != null) {
-                uncached = stream;
-                stream = null;
-            } else {
+            InputStream uncached = stream.getAndSet(null);
+            if (uncached == null) {
                 uncached = JavadocHelper.openStream(url);
             }
             if (isRemote()) {

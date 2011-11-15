@@ -43,13 +43,9 @@
 package org.netbeans.modules.maven;
 
 import java.io.File;
-import java.util.Arrays;
-import java.util.List;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.spi.project.ActionProvider;
-import org.netbeans.spi.project.SingleMethod;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.test.TestFileUtils;
 
@@ -70,7 +66,7 @@ public class ActionProviderImplTest extends NbTestCase {
                 + "<build><plugins><plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-surefire-plugin</artifactId><version>2.7</version></plugin></plugins></build>"
                 + "<dependencies><dependency><groupId>junit</groupId><artifactId>junit</artifactId><version>3.8.2</version><scope>test</scope></dependency></dependencies>"
                 + "</project>");
-        assertSupportsAction(ProjectManager.getDefault().findProject(FileUtil.toFileObject(getWorkDir())), SingleMethod.COMMAND_RUN_SINGLE_METHOD, true);
+        assertSupportsRunSingleMethod(ProjectManager.getDefault().findProject(FileUtil.toFileObject(getWorkDir())), true);
     }
 
     public void testRunSingleMethodDisabledWhenDoNotHaveCoS() throws Exception {
@@ -81,7 +77,7 @@ public class ActionProviderImplTest extends NbTestCase {
                 + "<dependencies><dependency><groupId>junit</groupId><artifactId>junit</artifactId><version>4.8.2</version><scope>test</scope></dependency></dependencies>"
                 + "<properties><netbeans.compile.on.save>none</netbeans.compile.on.save></properties>"
                 + "</project>");
-        assertSupportsAction(ProjectManager.getDefault().findProject(FileUtil.toFileObject(getWorkDir())), SingleMethod.COMMAND_RUN_SINGLE_METHOD, false);
+        assertSupportsRunSingleMethod(ProjectManager.getDefault().findProject(FileUtil.toFileObject(getWorkDir())), false);
     }
 
     public void testRunSingleMethodEnabledForSurefire28() throws Exception { // #196655
@@ -92,7 +88,7 @@ public class ActionProviderImplTest extends NbTestCase {
                 + "<dependencies><dependency><groupId>junit</groupId><artifactId>junit</artifactId><version>4.8.2</version><scope>test</scope></dependency></dependencies>"
                 + "<properties><netbeans.compile.on.save>none</netbeans.compile.on.save></properties>"
                 + "</project>");
-        assertSupportsAction(ProjectManager.getDefault().findProject(FileUtil.toFileObject(getWorkDir())), SingleMethod.COMMAND_RUN_SINGLE_METHOD, true);
+        assertSupportsRunSingleMethod(ProjectManager.getDefault().findProject(FileUtil.toFileObject(getWorkDir())), true);
     }
 
     public void testRunSingleMethodDisabledForJUnit3() throws Exception { //SUREFIRE-724
@@ -103,7 +99,7 @@ public class ActionProviderImplTest extends NbTestCase {
                 + "<dependencies><dependency><groupId>junit</groupId><artifactId>junit</artifactId><version>3.8.2</version><scope>test</scope></dependency></dependencies>"
                 + "<properties><netbeans.compile.on.save>none</netbeans.compile.on.save></properties>"
                 + "</project>");
-        assertSupportsAction(ProjectManager.getDefault().findProject(FileUtil.toFileObject(getWorkDir())), SingleMethod.COMMAND_RUN_SINGLE_METHOD, false);
+        assertSupportsRunSingleMethod(ProjectManager.getDefault().findProject(FileUtil.toFileObject(getWorkDir())), false);
     }
 
     public void testRunSingleMethodEnabledForUnusualJUnitScope() throws Exception {
@@ -114,14 +110,13 @@ public class ActionProviderImplTest extends NbTestCase {
                 + "<dependencies><dependency><groupId>junit</groupId><artifactId>junit</artifactId><version>4.8.2</version></dependency></dependencies>"
                 + "<properties><netbeans.compile.on.save>none</netbeans.compile.on.save></properties>"
                 + "</project>");
-        assertSupportsAction(ProjectManager.getDefault().findProject(FileUtil.toFileObject(getWorkDir())), SingleMethod.COMMAND_RUN_SINGLE_METHOD, true);
+        assertSupportsRunSingleMethod(ProjectManager.getDefault().findProject(FileUtil.toFileObject(getWorkDir())), true);
     }
 
-    private static void assertSupportsAction(Project p, String command, boolean supports) {
-        ActionProvider ap = p.getLookup().lookup(ActionProvider.class);
+    private static void assertSupportsRunSingleMethod(Project p, boolean supports) {
+        ActionProviderImpl ap = p.getLookup().lookup(ActionProviderImpl.class);
         assertNotNull(ap);
-        List<String> commands = Arrays.asList(ap.getSupportedActions());
-        assertTrue(commands.toString(), commands.contains(command) ^ !supports);
+        assertTrue(ap.runSingleMethodEnabled() ^ !supports);
     }
 
 }

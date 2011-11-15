@@ -123,6 +123,14 @@ public class MarkOccurrencesHighlighter extends ParserResultTask<ParserResult> {
         if (isCancelled()) {
             return;
         }
+        
+        int snapshotOffset = info.getSnapshot().getEmbeddedOffset(caretPosition);
+
+        if (snapshotOffset == -1) {
+            // caret offset not part of this lang embedding, ignore, since
+            // we cannot assume identifiers in different languages match.
+            return;
+        }
 
         List<OffsetRange> bag = processImpl(info, doc, caretPosition);
         if(bag == null) {

@@ -45,8 +45,11 @@ package org.netbeans.modules.parsing.spi.indexing;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.parsing.impl.indexing.CancelRequest;
@@ -59,6 +62,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
+import org.openide.util.Parameters;
 
 /**
  * Represents a context of indexing given root.
@@ -76,6 +80,7 @@ public final class Context {
     private final boolean sourceForBinaryRoot;
     private final CancelRequest cancelRequest;
     private final LogContext logContext;
+    private final Map<String,Object> props;
     private FileObject indexFolder;
     private boolean allFilesJob;
 
@@ -105,6 +110,7 @@ public final class Context {
         this.sourceForBinaryRoot = sourceForBinaryRoot;
         this.cancelRequest = cancelRequest;
         this.logContext = logContext;
+        this.props = new HashMap<String, Object>();
     }
 
     // -----------------------------------------------------------------------
@@ -282,6 +288,18 @@ public final class Context {
 
     void setAllFilesJob (final boolean allFilesJob) {
         this.allFilesJob = allFilesJob;
+    }
+
+    void putProperty(
+            @NonNull String propName,
+            @NullAllowed final Object value) {
+        Parameters.notNull("propName", propName);   //NOI18N
+        props.put(propName, value);
+    }
+
+    Object getProperty(@NonNull String propName) {
+        Parameters.notNull("propName", propName);   //NOI18N
+        return props.get(propName);
     }
 
     static String getIndexerPath (final String indexerName, final int indexerVersion) {

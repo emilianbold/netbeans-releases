@@ -66,7 +66,7 @@ import org.netbeans.junit.NbModuleSuite;
  */
 public class MasterDetailFormTest extends ExtJellyTestCase {
    
-    private String _newFormName = "NewMasterDetailForm_" + getTimeStamp();
+    private String _newFormName = "ANewMasterDetailForm_" + getTimeStamp();
 
     /**
      * Constructor required by JUnit
@@ -118,6 +118,8 @@ public class MasterDetailFormTest extends ExtJellyTestCase {
         new Node(prn, "Source Packages|META-INF|persistence.xml"); // NOI18N
         
         // open form file ...
+        prn = pto.getProjectRootNode(getTestProjectName());
+        prn.select();
         Node n=new Node(prn, "Source Packages|data|"+_newFormName);
         //openFile(_newFormName);
         n.select();

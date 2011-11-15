@@ -106,14 +106,18 @@ public class AuxiliaryConfigBasedPreferencesProvider {
         return prov;
     }
     
-    public static Preferences getPreferences(Project project, Class clazz, boolean shared) {
-        AuxiliaryConfigBasedPreferencesProvider provider = findProvider(project, shared);
+    public static Preferences getPreferences(final Project project, final Class clazz, final boolean shared) {
+        return ProjectManager.mutex().readAccess(new Action<Preferences>() {
+            @Override public Preferences run() {
+                AuxiliaryConfigBasedPreferencesProvider provider = findProvider(project, shared);
 
-        if (provider == null) {
-            return null;
-        }
-        
-        return provider.findModule(AuxiliaryConfigBasedPreferencesProvider.findCNBForClass(clazz));
+                if (provider == null) {
+                    return null;
+                }
+
+                return provider.findModule(AuxiliaryConfigBasedPreferencesProvider.findCNBForClass(clazz));
+            }
+        });
     }
 
     private static String encodeString(String s) {

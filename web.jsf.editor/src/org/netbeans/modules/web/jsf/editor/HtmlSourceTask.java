@@ -106,7 +106,7 @@ public final class HtmlSourceTask extends ParserResultTask<HtmlParserResult> {
         Source source = result.getSnapshot().getSource();
 
         //embedding stuff: process only xhtml file contents, while the task needs to be bound to text/html
-        if (!source.getMimeType().equals("text/xhtml")) { //NOI18N
+        if (!source.getMimeType().equals(JsfUtils.XHTML_MIMETYPE)) { //NOI18N
             return;
         }
 

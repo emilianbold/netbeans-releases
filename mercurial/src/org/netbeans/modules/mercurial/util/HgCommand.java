@@ -74,6 +74,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
@@ -3210,6 +3211,9 @@ public class HgCommand {
                         }
                     }
                 };
+                if (repository != null) {
+                    logExternalRepositories(repository, hgCommand);
+                }
                 if (modifiesRepository(hgCommand) && repository != null) {
                     return Mercurial.getInstance().runWithoutExternalEvents(repository, callable);
                 } else {
@@ -4060,6 +4064,30 @@ public class HgCommand {
         } catch (Exception ex) {
             Mercurial.LOG.log(Level.INFO, "Cannot run command hg " + hgCommand + " without indexing", ex); //NOI18N
             throw new HgException("Cannot run command hg " + hgCommand + " due to: " + ex.getMessage()); //NOI18N
+        }
+    }
+
+    private static final Set<File> loggedRepositories = new HashSet<File>();
+    private static final Set<String> noLogCommands = new HashSet<String>(Arrays.asList(
+        HG_BRANCHES_CMD,
+        HG_CAT_CMD,
+        HG_HEADS_CMD,
+        HG_PARENT_CMD,
+        HG_RESOLVE_CMD,
+        HG_STATUS_CMD,
+        HG_TAGS_CMD,
+        HG_VERSION_CMD
+    ));
+    private static void logExternalRepositories (File repository, String hgCommand) {
+        if (!noLogCommands.contains(hgCommand) && loggedRepositories.add(repository)) {
+            HgConfigFiles hgConfigFiles = new HgConfigFiles(repository);
+            if (hgConfigFiles.getException() == null) {
+                for (Entry<Object, Object> prop : hgConfigFiles.getProperties(HgConfigFiles.HG_PATHS_SECTION).entrySet()) {
+                    if (!prop.getValue().toString().isEmpty()) {
+                        Utils.logVCSExternalRepository("HG", prop.getValue().toString()); //NOI18N
+                    }
+                }
+            }
         }
     }
 

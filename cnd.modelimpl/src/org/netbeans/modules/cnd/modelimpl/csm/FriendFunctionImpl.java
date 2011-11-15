@@ -81,8 +81,7 @@ public final class FriendFunctionImpl extends FunctionImpl<CsmFriendFunction> im
         friendClassUID = UIDs.get(cls);
     }
     
-    public static FriendFunctionImpl create(AST ast, CsmClass cls, CsmScope scope, boolean global) throws AstRendererException {
-        CsmFile file = cls.getContainingFile();
+    public static FriendFunctionImpl create(AST ast, final CsmFile file, CsmClass cls, CsmScope scope, boolean global) throws AstRendererException {
         
         int startOffset = getStartOffset(ast);
         int endOffset = getEndOffset(ast);
@@ -114,7 +113,7 @@ public final class FriendFunctionImpl extends FunctionImpl<CsmFriendFunction> im
                 AstRenderer.FunctionRenderer.isVoidParameter(ast));
         
         postObjectCreateRegistration(global, friendFunctionImpl);
-        nameHolder.addReference(cls.getContainingFile(), friendFunctionImpl);
+        nameHolder.addReference(file, friendFunctionImpl);
         return friendFunctionImpl;
     }
     

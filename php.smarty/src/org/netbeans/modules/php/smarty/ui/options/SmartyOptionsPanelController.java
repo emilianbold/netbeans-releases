@@ -50,7 +50,6 @@ import org.netbeans.modules.php.smarty.editor.utlis.LexerUtils;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
 
 /**
  * @author Martin Fousek
@@ -64,24 +63,18 @@ import org.openide.util.NbBundle;
 public class SmartyOptionsPanelController extends OptionsPanelController implements ChangeListener {
     private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 
-    private SmartyOptionsPanel smartyOptionsPanel = null;
+    private SmartyOptionsPanel smartyOptionsPanel;
     private volatile boolean changed = false;
 
     @Override
     public void update() {
-        getOptions().setSmartyVersion(smartyOptionsPanel.getSmartyVersion());
-        getOptions().setDefaultOpenDelimiter(smartyOptionsPanel.getOpenDelimiter());
-        getOptions().setDefaultCloseDelimiter(smartyOptionsPanel.getCloseDelimiter());
-        getOptions().setScanningDepth(smartyOptionsPanel.getDepthOfScanning());
+        getPanel().update();
         changed = false;
     }
 
     @Override
     public void applyChanges() {
-        getOptions().setSmartyVersion(smartyOptionsPanel.getSmartyVersion());
-        getOptions().setDefaultOpenDelimiter(smartyOptionsPanel.getOpenDelimiter());
-        getOptions().setDefaultCloseDelimiter(smartyOptionsPanel.getCloseDelimiter());
-        getOptions().setScanningDepth(smartyOptionsPanel.getDepthOfScanning());
+        getPanel().applyChanges();
         changed = false;
 
         // accomplish manual relexing
@@ -94,22 +87,7 @@ public class SmartyOptionsPanelController extends OptionsPanelController impleme
 
     @Override
     public boolean isValid() {
-        // warnings
-        if (smartyOptionsPanel.getOpenDelimiter().equals("") || 
-                smartyOptionsPanel.getCloseDelimiter().equals("")) {
-            smartyOptionsPanel.setError(NbBundle.getMessage(SmartyOptionsPanel.class, "WRN_EmptyDelimiterFields"));
-            return false;
-        }
-        
-        // too deep level for scanning 
-        if (smartyOptionsPanel.getDepthOfScanning() > 1) {
-            smartyOptionsPanel.setWarning(NbBundle.getMessage(SmartyOptionsPanel.class, "WRN_TooDeepScanningLevel"));
-            return true;
-        }
-
-        // everything ok
-        smartyOptionsPanel.setWarning(" "); // NOI18N
-        return true;
+        return getPanel().valid();
     }
 
     @Override
@@ -119,6 +97,10 @@ public class SmartyOptionsPanelController extends OptionsPanelController impleme
 
     @Override
     public JComponent getComponent(Lookup masterLookup) {
+        return getPanel();
+    }
+
+    private synchronized SmartyOptionsPanel getPanel() {
         if (smartyOptionsPanel == null) {
             smartyOptionsPanel = new SmartyOptionsPanel();
             smartyOptionsPanel.addChangeListener(this);
@@ -128,7 +110,7 @@ public class SmartyOptionsPanelController extends OptionsPanelController impleme
 
     @Override
     public HelpCtx getHelpCtx() {
-        return null;
+        return new HelpCtx(SmartyOptions.class);
     }
 
     @Override
@@ -147,9 +129,5 @@ public class SmartyOptionsPanelController extends OptionsPanelController impleme
             propertyChangeSupport.firePropertyChange(OptionsPanelController.PROP_CHANGED, false, true);
         }
         propertyChangeSupport.firePropertyChange(OptionsPanelController.PROP_VALID, null, null);
-    }
-
-    private SmartyOptions getOptions() {
-        return SmartyOptions.getInstance();
     }
 }

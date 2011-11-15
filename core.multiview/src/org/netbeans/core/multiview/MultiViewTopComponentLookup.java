@@ -46,11 +46,9 @@ package org.netbeans.core.multiview;
 
 import javax.swing.Action;
 import org.openide.util.Lookup;
-import java.beans.*;
 import java.util.*;
 import javax.swing.ActionMap;
 
-import org.openide.nodes.*;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.lookup.Lookups;
@@ -105,6 +103,10 @@ class MultiViewTopComponentLookup extends Lookup {
         retValue = proxy.lookup(template);
         retValue = new ExclusionResult(retValue);
         return retValue;
+    }
+
+    boolean isInitialized() {
+        return proxy.isInitialized();
     }
     
     /**
@@ -199,7 +201,15 @@ class MultiViewTopComponentLookup extends Lookup {
         }
 
         public void setElementLookup(Lookup look) {
+            final Lookup[] arr = getLookups();
+            if (arr.length == 2 && look == arr[1]) {
+                return;
+            }
             setLookups(new Lookup[] {initialLookup, look});
+        }
+
+        private boolean isInitialized() {
+            return getLookups().length == 2;
         }
     }
     

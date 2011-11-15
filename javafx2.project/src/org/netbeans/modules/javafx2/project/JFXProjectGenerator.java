@@ -315,19 +315,15 @@ public class JFXProjectGenerator {
     private static void createJfxExtension(Project p, FileObject dirFO) throws IOException {
         //adding JavaFX buildscript extension
         FileObject templateFO = FileUtil.getConfigFile("Templates/JFX/jfx-impl.xml"); //NOI18N
-        FileObject platformFO = FileUtil.getConfigFile("Templates/JFX/jfx-impl-platform.xmlinc"); //NOI18N
-        FileObject parametersFO = FileUtil.getConfigFile("Templates/JFX/jfx-impl-parameters.xmlinc"); //NOI18N
-        FileObject callbacksFO = FileUtil.getConfigFile("Templates/JFX/jfx-impl-callbacks.xmlinc"); //NOI18N
-        if (templateFO != null && platformFO != null && parametersFO != null && callbacksFO != null) {
-            FileUtil.copyFile(platformFO, dirFO.getFileObject("nbproject"), "jfx-impl-platform"); // NOI18N
-            FileUtil.copyFile(parametersFO, dirFO.getFileObject("nbproject"), "jfx-impl-parameters"); // NOI18N
-            FileUtil.copyFile(callbacksFO, dirFO.getFileObject("nbproject"), "jfx-impl-callbacks"); // NOI18N
+        if (templateFO != null) {
             FileObject jfxBuildFile = FileUtil.copyFile(templateFO, dirFO.getFileObject("nbproject"), "jfx-impl"); // NOI18N
             AntBuildExtender extender = p.getLookup().lookup(AntBuildExtender.class);
             if (extender != null) {
                 assert jfxBuildFile != null;
                 if (extender.getExtension("jfx") == null) { // NOI18N
                     AntBuildExtender.Extension ext = extender.addExtension("jfx", jfxBuildFile); // NOI18N
+                    ext.addDependency("jar", "-jfx-copylibs"); // NOI18N
+                    ext.addDependency("-post-jar", "-jfx-copylibs"); //NOI18N
                     ext.addDependency("-post-jar", "jfx-deployment"); //NOI18N 
                     ext.addDependency("run", "jar"); //NOI18N
                     ext.addDependency("debug", "jar");//NOI18N
@@ -384,6 +380,7 @@ public class JFXProjectGenerator {
         ep.setProperty(ProjectProperties.COMPILE_ON_SAVE_UNSUPPORTED_PREFIX + ".javafx", "true"); // NOI18N
         ep.setProperty(JFXProjectProperties.JAVAFX_BINARY_ENCODE_CSS, "true"); // NOI18N
         ep.setProperty(JFXProjectProperties.JAVAFX_DEPLOY_INCLUDEDT, "true"); // NOI18N
+        ep.setProperty(JFXProjectProperties.JAVAFX_DEPLOY_EMBEDJNLP, "true"); // NOI18N
         
         ep.setProperty(JFXProjectProperties.UPDATE_MODE_BACKGROUND, "true"); // NOI18N
         ep.setComment(JFXProjectProperties.UPDATE_MODE_BACKGROUND, new String[]{"# " + NbBundle.getMessage(JFXProjectGenerator.class, "COMMENT_updatemode")}, false); // NOI18N
@@ -402,6 +399,7 @@ public class JFXProjectGenerator {
             ep.setProperty(JFXProjectProperties.PRELOADER_ENABLED, "false"); // NOI18N
             ep.setComment(JFXProjectProperties.PRELOADER_ENABLED, new String[]{"# " + NbBundle.getMessage(JFXProjectGenerator.class, "COMMENT_prepreloader")}, false); // NOI18N
         } else {
+            // TODO: J2SE jar creation is currently hardwired with dependent lib copying (see <copylibs> in build.xml), now using workaround
             ep.setProperty("jar.archive.disabled", "true"); // NOI18N
             ep.setComment("jar.archive.disabled", new String[]{"# " + NbBundle.getMessage(JFXProjectGenerator.class, "COMMENT_oldjar")}, false); // NOI18N
             ep.setProperty(ProjectProperties.MAIN_CLASS, "com.javafx.main.Main"); // NOI18N
@@ -768,13 +766,7 @@ public class JFXProjectGenerator {
         } else {
             JavaPlatform defaultPlatform = JavaPlatformManager.getDefault().getDefaultPlatform();
             SpecificationVersion v = defaultPlatform.getSpecification().getVersion();
-            if (v.equals(new SpecificationVersion("1.6")) || v.equals(new SpecificationVersion("1.7"))) { // NOI18N
-                // #89131: these levels are not actually distinct from 1.5. - xxx not true, but may be acceptable to have 1.5 as default
-                // since NB7.1 return 1.6 as default
-                return new SpecificationVersion("1.6"); // NOI18N
-            } else {
-                return v;
-            }
+            return v;
         }
     }
     private static final Pattern INVALID_NAME = Pattern.compile("[$/\\\\\\p{Cntrl}]");  //NOI18N

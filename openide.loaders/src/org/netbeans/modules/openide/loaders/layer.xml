@@ -42,7 +42,7 @@
                         <attr methodvalue="org.netbeans.core.spi.multiview.MultiViewFactory.createMultiViewDescription" name="instanceCreate"/>
                         <attr name="instanceClass" stringvalue="org.netbeans.core.multiview.ContextAwareDescription"/>
                         <attr name="class" stringvalue="org.netbeans.core.spi.multiview.text.MultiViewEditorElement"/>
-                        <attr name="displayName" stringvalue="Source"/>
+                        <attr name="displayName" bundlevalue="org.openide.loaders.Bundle#CTL_Source"/>
                         <attr name="iconBase" stringvalue="none"/>
                         <attr name="preferredID" stringvalue="editor"/>
                         <attr intvalue="2" name="persistenceType"/>

@@ -221,6 +221,14 @@ public class ServerList {
         public boolean isRememberPassword() {
             return false;
         }
+
+        @Override
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
+        }
+
+        @Override
+        public void removePropertyChangeListener(PropertyChangeListener listener) {
+        }        
     }
 
     private static class DummyServerListImplementation implements ServerListImplementation {

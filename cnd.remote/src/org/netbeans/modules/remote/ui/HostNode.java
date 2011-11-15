@@ -80,6 +80,12 @@ public final class HostNode extends AbstractNode implements ConnectionListener, 
         this.env = execEnv;
         ConnectionManager.getInstance().addConnectionListener(WeakListeners.create(ConnectionListener.class, this, null));
         ServerList.addPropertyChangeListener(WeakListeners.propertyChange(this, null));
+        addRecordListener();
+    }
+    
+    private void addRecordListener() {
+        ServerRecord record = ServerList.get(env);
+        record.addPropertyChangeListener(WeakListeners.propertyChange(this, null));
     }
 
     private static Children createChildren(ExecutionEnvironment execEnv) {
@@ -106,7 +112,28 @@ public final class HostNode extends AbstractNode implements ConnectionListener, 
         if (evt.getPropertyName().equals(ServerList.PROP_DEFAULT_RECORD)) {
             refresh();
         }
+        if (evt.getPropertyName().equals(ServerRecord.PROP_STATE_CHANGED)) {
+            fireIconChange();
+        }
+//        if (evt.getPropertyName().equals(ServerList.PROP_RECORD_LIST)) {
+//            List<RemoteServerRecord> oldItems = (List<RemoteServerRecord>) evt.getOldValue();            
+//            List<RemoteServerRecord> newItems = (List<RemoteServerRecord>) evt.getNewValue();
+//            if (contains(newItems, env) && !contains(oldItems, env)) {
+//                addRecordListener();
+//            }
+//        }
     }
+    
+//    private static boolean contains(List<? extends ServerRecord> list, ExecutionEnvironment env) {
+//        if (list != null) {
+//            for (ServerRecord record : list) {
+//                if (env.equals(record.getExecutionEnvironment())) {
+//                    return true;
+//                }
+//            }
+//        }
+//        return false;
+//    }
 
     /*package*/ void refresh() {
         fireDisplayNameChange("", getDisplayName()); // to make Node refresh
@@ -120,10 +147,19 @@ public final class HostNode extends AbstractNode implements ConnectionListener, 
     @Override
     public Image getIcon(int type) {
         if (isConnected()) {
-            return ImageUtilities.loadImage("org/netbeans/modules/remote/ui/connected_host.png"); //NOI18N
+            if (isOnline(env)) {
+                return ImageUtilities.loadImage("org/netbeans/modules/remote/ui/connected_host.png"); //NOI18N
+            } else {
+                return ImageUtilities.loadImage("org/netbeans/modules/remote/ui/not_set_up_host.png"); //NOI18N
+            }
         } else {
             return ImageUtilities.loadImage("org/netbeans/modules/remote/ui/disconnected_host.png"); //NOI18N
         }
+    }
+    
+    static boolean isOnline(ExecutionEnvironment execEnv) {
+        ServerRecord record = ServerList.get(execEnv);
+        return record != null && record.isOnline();
     }
 
     private boolean isConnected() {

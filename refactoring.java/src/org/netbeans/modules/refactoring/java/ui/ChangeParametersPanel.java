@@ -58,23 +58,15 @@ import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.*;
-import java.util.Set;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.*;
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.table.*;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
-import javax.swing.text.JTextComponent;
-import javax.swing.text.Position;
+import javax.swing.text.*;
 import org.netbeans.api.editor.DialogBinding;
-import org.netbeans.api.java.source.CancellableTask;
-import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.java.source.ElementUtilities;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.java.source.*;
 import org.netbeans.api.java.source.ui.TypeElementFinder;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.refactoring.java.RefactoringModule;
@@ -1081,8 +1073,9 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
 
     class ParamEditor implements TableCellEditor {
 
+        private static final String NO_ACTION = "no-action"; //NOI18N
         private final TableCellEditor original;
-        private JTextComponent editorPane;
+        private JEditorPane editorPane;
         private int startOffset;
 
         public ParamEditor(TableCellEditor original) {
@@ -1129,6 +1122,19 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
                             }
                         }
                     };
+                    EditorKit kit = MimeLookup.getLookup(MIME_JAVA).lookup(EditorKit.class);
+                    if (kit == null) {
+                        throw new IllegalStateException("No EditorKit for '" + MIME_JAVA + "' mimetype."); //NOI18N
+                    }
+                    editorPane.setEditorKit(kit);
+                    
+                    KeyStroke enterKs = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0);
+                    KeyStroke escKs = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
+                    KeyStroke tabKs = KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0);
+                    InputMap im = editorPane.getInputMap();
+                    im.put(enterKs, NO_ACTION);
+                    im.put(escKs, NO_ACTION);
+                    im.put(tabKs, NO_ACTION);
                     
                     FileObject fileObject = refactoredObj.getFileObject();
                     DataObject dob = DataObject.find(fileObject);

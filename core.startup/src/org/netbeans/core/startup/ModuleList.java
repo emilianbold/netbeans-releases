@@ -990,8 +990,6 @@ final class ModuleList implements Stamps.Updater {
         return p;
     }
     
-    private static RequestProcessor rpListener = null;
-
     final void init() {
         weakListener = FileUtil.weakFileChangeListener(listener, folder);
         folder.getChildren();
@@ -1006,8 +1004,11 @@ final class ModuleList implements Stamps.Updater {
      * Also listens to changes in the Modules/ folder and processes them in req proc.
      */
     private final class Listener implements PropertyChangeListener, ErrorHandler, EntityResolver, FileChangeListener, Runnable {
+        private final RequestProcessor.Task task;
         
-        Listener() {}
+        Listener() {
+            task = RequestProcessor.getDefault().create(this);
+        }
         
         // Property change coming from ModuleManager or some known Module.
         
@@ -1194,20 +1195,11 @@ final class ModuleList implements Stamps.Updater {
         
         // Dealing with changes in Modules/ folder and processing them.
         
-        private boolean pendingRun = false;
-        private synchronized void runme() {
-            if (! pendingRun) {
-                pendingRun = true;
-                if (rpListener == null) {
-                    rpListener = new RequestProcessor("org.netbeans.core.modules.ModuleList.Listener"); // NOI18N
-                }
-                rpListener.post(this);
-            }
+        private void runme() {
+            task.schedule(100);
         }
+        @Override
         public void run() {
-            synchronized (this) {
-                pendingRun = false;
-            }
             LOG.fine("ModuleList: will process outstanding external XML changes");
             mgr.mutexPrivileged().enterWriteAccess();
             try {

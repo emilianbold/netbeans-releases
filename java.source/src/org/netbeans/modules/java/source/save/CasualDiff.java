@@ -2801,7 +2801,7 @@ public class CasualDiff {
                 }
                 case DELETE: {
                     int[] pos = estimator.getPositions(i);
-                    if (localPointer < pos[0]) {
+                    if (localPointer < pos[0] && lastdel == null) {
                         copyTo(localPointer, pos[0], printer);
                     }
                     lastdel = oldList.get(i);

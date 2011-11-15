@@ -410,6 +410,7 @@ public class JaxWsNode extends AbstractNode implements
         String serverInstanceID = provider.getServerInstanceID();
         if (serverInstanceID == null) {
             Logger.getLogger(JaxWsNode.class.getName()).log(Level.INFO, "Can not detect target J2EE server"); //NOI18N
+            return null;
         }
         // getting port and host name
         ServerInstance serverInstance = Deployment.getDefault().getServerInstance(serverInstanceID);
@@ -718,6 +719,9 @@ public class JaxWsNode extends AbstractNode implements
 
     private String getWebServiceURL() {
         ServerContextInfo serverContextInfo = getServerContextInfo();
+        if ( serverContextInfo == null ){
+            return "";
+        }
         String contextRoot = serverContextInfo.getContextRoot();
         return "http://" + serverContextInfo.getHost() + ":" + serverContextInfo.getPort() + "/" + //NOI18N
                 getServiceUri(contextRoot);

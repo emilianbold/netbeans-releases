@@ -141,7 +141,7 @@ public class AutomaticInternationalizationTest extends ExtJellyTestCase {
         options.pushKey(KeyEvent.VK_SPACE);
         waitNoEvent(500);
        
-        JComboBoxOperator jcbo = new JComboBoxOperator(options, 4);
+        JComboBoxOperator jcbo = new JComboBoxOperator(options, 3);
 
         jcbo.selectItem("On");
         options.ok();

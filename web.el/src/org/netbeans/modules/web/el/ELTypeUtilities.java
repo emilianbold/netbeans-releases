@@ -79,6 +79,7 @@ import org.netbeans.modules.web.el.spi.ImplicitObject;
 import org.netbeans.modules.web.el.refactoring.RefactoringUtil;
 import org.netbeans.modules.web.el.spi.ELPlugin;
 import org.netbeans.modules.web.el.spi.ELVariableResolver;
+import org.netbeans.modules.web.el.spi.Function;
 import org.netbeans.modules.web.el.spi.ImplicitObjectType;
 import org.openide.filesystems.FileObject;
 
@@ -291,6 +292,10 @@ public final class ELTypeUtilities {
 
     public static Collection<ImplicitObject> getImplicitObjects(CompilationContext info) {
         return ELPlugin.Query.getImplicitObjects(info.file());
+    }
+
+    public static Collection<Function> getELFunctions(CompilationContext info) {
+        return ELPlugin.Query.getFunctions(info.file());
     }
 
     public static boolean isScopeObject(CompilationContext info, Node target) {

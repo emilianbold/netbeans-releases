@@ -60,6 +60,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 import junit.framework.TestSuite;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -368,7 +369,7 @@ public class BatchSearchTest extends NbTestCase {
             public void cannotVerifySpan(Resource r) {
                 fail("Cannot verify: " +r.getRelativePath());
             }
-        }, doNotRegisterClassPath, errors);
+        }, doNotRegisterClassPath, errors, new AtomicBoolean());
 
         return result;
     }

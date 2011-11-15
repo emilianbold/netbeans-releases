@@ -74,6 +74,7 @@ import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectRegistry;
+import org.netbeans.modules.cnd.modelutil.spi.FileObjectRedirector;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
@@ -94,6 +95,7 @@ import org.openide.text.NbDocument;
 import org.openide.text.PositionBounds;
 import org.openide.text.PositionRef;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.UserQuestionException;
 import org.openide.windows.TopComponent;
@@ -773,7 +775,8 @@ public class CsmUtilities {
         return openAtElement(getDataObject(element.getContainingFile()), new PointOrOffsetable(element));
     }
 
-    private static boolean openAtElement(final DataObject dob, final PointOrOffsetable element) {
+    private static boolean openAtElement(final DataObject orig, final PointOrOffsetable element) {
+        final DataObject dob = redirect(orig);
         if (dob != null) {
             final EditorCookie.Observable ec = dob.getCookie(EditorCookie.Observable.class);
             if (ec != null) {
@@ -1064,6 +1067,21 @@ public class CsmUtilities {
         //return NameCache.getString(sb.toString());
         return sb.toString();
     }
+    
+    private static DataObject redirect(DataObject dob) {
+        if (dob == null) {
+            return null;
+        }
+        Collection<? extends FileObjectRedirector> redirectors = Lookup.getDefault().lookupAll(FileObjectRedirector.class);
+        for (FileObjectRedirector redirector : redirectors) {
+            DataObject newDO = redirector.redirect(dob);
+            if(newDO != null) {
+                dob = newDO;
+            }
+        }
+        return dob;
+    }
+    
     //-----------------------------------------------------------------
 
     private static final class FileTarget implements CsmOffsetable {

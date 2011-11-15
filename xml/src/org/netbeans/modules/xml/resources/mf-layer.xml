@@ -70,6 +70,11 @@ made subject to such option by the copyright holder.
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/resources/entObject.gif"/>
                 <attr name="position" intvalue="60003"/>
             </file>
+            <file name="org-netbeans-modules-xml-services-FallbackXMLResolver.xml" url="xml-fallback-resolver.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/resources/xmlObject.gif"/>
+                <attr name="position" intvalue="999000"/>
+            </file>
         </folder>
     </folder> <!-- Services --> 
 

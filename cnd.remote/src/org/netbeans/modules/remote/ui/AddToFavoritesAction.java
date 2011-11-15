@@ -55,6 +55,7 @@ import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
+import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.ActionID;
@@ -165,7 +166,8 @@ public class AddToFavoritesAction extends SingleHostAction {
                         try {
                             ConnectionManager.getInstance().connectTo(env);
                         } catch (IOException ex) {
-                            Exceptions.printStackTrace(ex);
+                            DialogDisplayer.getDefault().notify(new DialogDescriptor.Message(
+                                    ex.getLocalizedMessage(), DialogDescriptor.ERROR_MESSAGE));
                             return;
                         } catch (CancellationException ex) {
                             // don't report CancellationException

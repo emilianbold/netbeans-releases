@@ -533,4 +533,16 @@ public class TopLoggingTest extends NbTestCase {
         assertTrue(disk, disk.contains("me please"));
     }
 
+    public void testThreadDeath() throws Exception { // #203171
+        Thread t = new Thread(new Runnable() {
+            @Override public void run() {
+                throw new ThreadDeath();
+            }
+        });
+        t.start();
+        t.join();
+        String disk = readLog(true);
+        assertFalse(disk, disk.contains("java.lang.ThreadDeath"));
+    }
+
 }

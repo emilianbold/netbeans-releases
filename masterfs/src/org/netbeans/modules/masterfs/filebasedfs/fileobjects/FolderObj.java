@@ -169,7 +169,7 @@ public final class FolderObj extends BaseFileObj {
                 }
                 mutexPrivileged.enterWriteAccess();
                 try {
-                    Set<FileNaming> res = childrenCache.getChildren(false, task);
+                    Set<FileNaming> res = childrenCache.getChildren(counter >= 10, task);
                     if (res != null) {
                         fileNames = new HashSet<FileNaming>(res);
                     }   
@@ -190,6 +190,11 @@ public final class FolderObj extends BaseFileObj {
                     lfs.getFileObject(fInfo, FileObjectFactory.Caller.GetChildern);
                 if (fo != null) {
                     final FileNaming foFileName = ((BaseFileObj)fo).getFileName();
+                    if (!fo.isValid()) {
+                        final Level level = counter < 10 ? Level.FINE : Level.WARNING;
+                        LOG.log(level, "Invalid fileObject {0}, trying again for {1}", new Object[] { fo, counter }); // NOI18N
+                        continue LOOP;
+                    }
                     if (fileName != foFileName && counter < 10) {
                         continue LOOP;
                     }
