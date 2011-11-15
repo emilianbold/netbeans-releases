@@ -42,27 +42,18 @@
 
 package org.netbeans.modules.cnd.refactoring.plugins;
 
-import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmFunction;
-import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmObject;
-import org.netbeans.modules.cnd.api.model.CsmOffsetable;
-import org.netbeans.modules.cnd.api.model.services.CsmVirtualInfoQuery;
-import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
-import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.refactoring.spi.CheckModificationHook;
 import org.netbeans.modules.cnd.refactoring.support.CsmContext;
-import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
 import org.netbeans.modules.cnd.refactoring.support.ModificationResult;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.ProgressEvent;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
-import org.openide.filesystems.FileObject;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -74,12 +65,17 @@ public abstract class CsmModificationRefactoringPlugin extends CsmRefactoringPlu
     private final CsmObject startReferenceObject;
     private final CsmContext editorContext;
     private final AbstractRefactoring refactoring;
+    private final Collection<CheckModificationHook> modificationHooks;
 
     protected CsmModificationRefactoringPlugin(AbstractRefactoring refactoring) {
         this.refactoring = refactoring;
         this.startReferenceObject = refactoring.getRefactoringSource().lookup(CsmObject.class);
         this.editorContext = refactoring.getRefactoringSource().lookup(CsmContext.class);
         assert startReferenceObject != null || editorContext != null: "no start reference or editor context";
+        modificationHooks = new ArrayList<CheckModificationHook>(refactoring.getRefactoringSource().lookupAll(CheckModificationHook.class));
+        if (modificationHooks.isEmpty()) {
+            modificationHooks.add(new DefaultHookImpl());
+        }
     }
 
     protected final CsmObject getStartReferenceObject() {
@@ -90,6 +86,7 @@ public abstract class CsmModificationRefactoringPlugin extends CsmRefactoringPlu
         return editorContext;
     }
 
+    @Override
     public final Problem prepare(RefactoringElementsBag elements) {
         Problem out = null;
         try {
@@ -104,62 +101,27 @@ public abstract class CsmModificationRefactoringPlugin extends CsmRefactoringPlu
 
     protected abstract Collection<CsmFile> getRefactoredFiles();
 
-    protected final Problem checkIfModificationPossible(Problem problem, CsmObject referencedObject,
-            String fatalMessage, String warnMessage) {
-        // check read-only elements
-        problem = checkIfModificationPossibleInFile(problem, referencedObject);
+    protected Problem checkIfModificationPossible(Problem problem, CsmObject referencedObject) {
         fireProgressListenerStep();
-        if (problem != null) {
-            return problem;
-        }
-        if (CsmKindUtilities.isMethod(referencedObject)) {
-            fireProgressListenerStep();
-            CsmMethod method = (CsmMethod) CsmBaseUtilities.getFunctionDeclaration((CsmFunction) referencedObject);
-            if (CsmVirtualInfoQuery.getDefault().isVirtual(method)) {
-                Collection<CsmMethod> overridenMethods = CsmVirtualInfoQuery.getDefault().getOverriddenMethods(method, true);
-                if (overridenMethods.size() > 1) {
-                    // check all overriden methods
-                    for (CsmMethod csmMethod : overridenMethods) {
-                        problem = checkIfModificationPossibleInFile(problem, csmMethod);
-                        CsmFunction def = csmMethod.getDefinition();
-                        if (def != null && !csmMethod.equals(def)) {
-                            problem = checkIfModificationPossibleInFile(problem, def);
-                        }
-                    }
-                    boolean fatal = (problem != null);
-                    String msg = fatal ? fatalMessage : warnMessage;
-                    problem = createProblem(problem, fatal, msg);
+        try {
+            for (CheckModificationHook hook : modificationHooks) {
+                problem = hook.appendProblem(refactoring, problem, referencedObject);
+                if (problem != null && problem.isFatal()) {
+                    return problem;
                 }
             }
-        } else {
+        } finally {
             fireProgressListenerStep();
         }
         return problem;
     }
 
-    private Problem checkIfModificationPossibleInFile(Problem problem, CsmObject csmObject) {
-        CsmFile csmFile = null;
-        if (CsmKindUtilities.isFile(csmObject)) {
-            csmFile = (CsmFile) csmObject;
-        } else if (CsmKindUtilities.isOffsetable(csmObject)) {
-            csmFile = ((CsmOffsetable) csmObject).getContainingFile();
-        }
-        if (csmFile != null) {
-            FileObject fo = CsmUtilities.getFileObject(csmFile);
-            if (!CsmRefactoringUtils.isRefactorable(fo)) {
-                problem = createProblem(problem, true, getCannotRename(fo));
-            }
-            // check that object is in opened project
-            if (problem ==null && !CsmRefactoringUtils.isElementInOpenProject(csmFile)) {
-                problem = new Problem(false, NbBundle.getMessage(CsmModificationRefactoringPlugin.class, "ERR_ProjectNotOpened"));
-                return problem;
-            }
-        }
-        return problem;
-    }
+    private static final class DefaultHookImpl extends CheckModificationHook {
 
-    private String getCannotRename(FileObject r) {
-        return new MessageFormat(NbBundle.getMessage(CsmModificationRefactoringPlugin.class, "ERR_CannotModifyInFile")).format(new Object[]{r.getNameExt()});
+        @Override
+        public Problem appendProblem(AbstractRefactoring refactoring, Problem problem, CsmObject referencedObject) {
+            return super.defaultCheckIfModificationPossible(problem, referencedObject);
+        }
     }
 
     @Override

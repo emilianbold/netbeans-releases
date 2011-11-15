@@ -141,7 +141,7 @@ public class CsmRenameRefactoringPlugin extends CsmModificationRefactoringPlugin
         }
         CsmObject directReferencedObject = CsmRefactoringUtils.getReferencedElement(getStartReferenceObject());
         // check read-only elements
-        preCheckProblem = checkIfModificationPossible(preCheckProblem, directReferencedObject, getString("ERR_Overrides_Fatal"), getString("ERR_OverridesOrOverriden"));
+        preCheckProblem = checkIfModificationPossible(preCheckProblem, directReferencedObject);
         fireProgressListenerStop();
         return preCheckProblem;
     }
