@@ -52,6 +52,7 @@ import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.modules.javafx2.platform.PlatformPropertiesHandler;
 import org.netbeans.modules.javafx2.platform.Utils;
 import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.openide.util.Parameters;
 
 /**
  * API Utility class for JavaFX platform.
@@ -118,7 +119,18 @@ public final class JavaFXPlatformUtils {
     public static String getJavaFXRuntimePath(@NonNull String platformName) {
         return PlatformPropertiesHandler.getGlobalProperties().get(Utils.getRuntimePropertyKey(platformName));
     }
-    
+
+    /**
+     * Returns a reference to JavaFX Runtime Folder
+     * @param platformName the name of the platform for which the reference should be created
+     * @return the reference to JavaFX Runtime Folder for given platform
+     * @since 1.5
+     */
+    @NonNull
+    public static String getJavaFXRuntimePathReference(@NonNull String platformName) {
+        Parameters.notNull("platformName", platformName);   //NOI18N
+        return String.format("${platforms.%s.javafx.runtime.home}", platformName);  //NOI18N
+    }
     /**
      * Returns path to JavaFX SDK installation
      * 

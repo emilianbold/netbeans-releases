@@ -1432,7 +1432,7 @@ public final class JFXProjectProperties {
             String platformName = javaPlatform.getProperties().get(JavaFXPlatformUtils.PLATFORM_ANT_NAME);
             if (platformName.equals(activePlatform) && JavaFXPlatformUtils.isJavaFXEnabled(javaPlatform)) {
                 editableProps.setProperty(JavaFXPlatformUtils.PROPERTY_JAVAFX_SDK, JavaFXPlatformUtils.getJavaFXSDKPath(activePlatform));
-                editableProps.setProperty(JavaFXPlatformUtils.PROPERTY_JAVAFX_RUNTIME, JavaFXPlatformUtils.getJavaFXRuntimePath(activePlatform));
+                editableProps.setProperty(JavaFXPlatformUtils.PROPERTY_JAVAFX_RUNTIME, JavaFXPlatformUtils.getJavaFXRuntimePathReference(activePlatform));
             }
         }
     }
