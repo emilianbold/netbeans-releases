@@ -981,7 +981,7 @@ public class PackageViewTest extends NbTestCase {
             return null;
         }
 
-        public boolean contains(FileObject file) throws IllegalArgumentException {
+        @Override public boolean contains(FileObject file) {
             return FileUtil.isParentOf( root, file );
         }
     
@@ -1022,10 +1022,10 @@ public class PackageViewTest extends NbTestCase {
                 return null;
             }
             boolean sense = true;
-            public boolean contains(FileObject file) throws IllegalArgumentException {
+            @Override public boolean contains(FileObject file) {
                 String path = FileUtil.getRelativePath(r, file);
                 if (path == null) {
-                    throw new IllegalArgumentException();
+                    return false;
                 }
                 return !path.matches(".+/(" + (sense ? "bad" : "contemporary") + "(/|$)|" + (sense ? "Ugly" : "Pretty") + ".*\\.java$)");
             }

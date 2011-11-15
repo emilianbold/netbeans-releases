@@ -53,6 +53,7 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 import javax.tools.JavaCompiler;
 import javax.tools.JavaFileObject;
 import javax.tools.StandardJavaFileManager;
@@ -133,7 +134,15 @@ public class HQLEditorController {
                         logger.log(Level.INFO, "Problem in executing HQL", e);
                         hqlResult.getExceptions().add(e);
                     }
-                    editorTopComponent.setResult(hqlResult, customClassLoader);
+                    final HQLResult hqlResult0 = hqlResult;
+                    final ClassLoader customClassLoader0 = customClassLoader;
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            editorTopComponent.setResult(hqlResult0, customClassLoader0);
+                        }
+                    });    
+                    
                     Thread.currentThread().setContextClassLoader(defClassLoader);
                 }
             };

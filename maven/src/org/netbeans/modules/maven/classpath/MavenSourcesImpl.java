@@ -556,7 +556,7 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
         
         public @Override boolean contains(FileObject file)  {
              if (file != rootFolder && !FileUtil.isParentOf(rootFolder, file)) {
-                throw new IllegalArgumentException();
+                return false;
             }
             if (project != null) {
                 if (file.isFolder() && file != project.getProjectDirectory() && ProjectManager.getDefault().isProject(file)) {
@@ -644,7 +644,7 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
         
         public @Override boolean contains(FileObject file)  {
              if (file != rootFolder && !FileUtil.isParentOf(rootFolder, file)) {
-                throw new IllegalArgumentException();
+                return false;
             }
             if (project != null) {
                 if (file.isFolder() && file != project.getProjectDirectory() && ProjectManager.getDefault().isProject(file)) {

@@ -158,6 +158,7 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
                     dataModel.removeChangeListener( this );
             }
         });
+        showHideControlButtons();
     }
     
     /**

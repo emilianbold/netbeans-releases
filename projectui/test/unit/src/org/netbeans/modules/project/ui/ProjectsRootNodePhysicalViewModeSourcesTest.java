@@ -293,7 +293,7 @@ public class ProjectsRootNodePhysicalViewModeSourcesTest extends NbTestCase {
             return null;
         }
 
-        public boolean contains(FileObject file) throws IllegalArgumentException {
+        @Override public boolean contains(FileObject file) {
             return file.equals(root);
         }
 
