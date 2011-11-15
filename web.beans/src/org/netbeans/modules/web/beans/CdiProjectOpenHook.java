@@ -43,60 +43,50 @@
 package org.netbeans.modules.web.beans;
 
 import java.lang.ref.WeakReference;
-import java.util.Set;
-import java.util.concurrent.CopyOnWriteArraySet;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
-import java.util.logging.Logger;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.ProjectServiceProvider;
-import org.openide.util.NbBundle;
+import org.netbeans.spi.project.ui.ProjectOpenedHook;
 
 
 /**
  * @author ads
  *
  */
-@ProjectServiceProvider(service=UsageLogger.class, projectType = 
-    {"org-netbeans-modules-java-j2seproject",
-    "org-netbeans-modules-j2ee-ejbjarproject", 
-    "org-netbeans-modules-j2ee-clientproject", 
-    "org-netbeans-modules-web-project"})
-public class UsageLogger {
-    private static final Logger LOG = Logger.getLogger("org.netbeans.ui.metrics.cdi");   // NOI18N
+@ProjectServiceProvider(service={ProjectOpenedHook.class}, projectType = {
+    "org-netbeans-modules-java-j2seproject",
+    "org-netbeans-modules-j2ee-clientproject",
+    "org-netbeans-modules-j2ee-ejbjarproject",
+    "org-netbeans-modules-web-project"}
+    )
+public class CdiProjectOpenHook extends ProjectOpenedHook {
     
-    public UsageLogger(Project project){
+    public CdiProjectOpenHook(Project project){
         myProject = new WeakReference<Project>( project );
-        myMessages = new CopyOnWriteArraySet<String>();
     }
     
-    public void log(String message , Class<?> clazz, Object[] params){
-        log(message, clazz, params , false );
+    /* (non-Javadoc)
+     * @see org.netbeans.spi.project.ui.ProjectOpenedHook#projectClosed()
+     */
+    @Override
+    protected void projectClosed() {
     }
-    
-    
-    public void log(String message , Class<?> clazz, Object[] params, boolean once){
-        if (!once) {
-            if (myMessages.contains(message)) {
-                return;
-            }
-            else {
-                myMessages.add(message);
-            }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.spi.project.ui.ProjectOpenedHook#projectOpened()
+     */
+    @Override
+    protected void projectOpened() {
+        Project project = myProject.get();
+        if ( project == null ){
+            return;
         }
-        
-        LogRecord logRecord = new LogRecord(Level.INFO, message);
-        logRecord.setLoggerName(LOG.getName());
-        logRecord.setResourceBundle(NbBundle.getBundle(clazz));
-        logRecord.setResourceBundleName(clazz.getPackage().getName() + ".Bundle"); // NOI18N
-        if (params != null) {
-            logRecord.setParameters(params);
+        CdiUtil util = project.getLookup().lookup(CdiUtil.class);
+        if ( util!= null && util.isCdiEnabled() ){
+            util.log("USG_CDI_BEANS_OPENED_PROJECT", CdiProjectOpenHook.class, 
+                    new Object[]{project.getClass().getName()});  // NOI18N
         }
-        LOG.log(logRecord);
     }
     
     private WeakReference<Project> myProject;
-    private Set<String> myMessages;
-
 }
