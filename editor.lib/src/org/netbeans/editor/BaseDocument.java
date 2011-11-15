@@ -730,9 +730,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         // Always acquire atomic lock (it simplifies processing and improves readability)
         atomicLockImpl();
         try {
-            if (!modifiable) {
-                throw new BadLocationException("Modification prohibited", offset);
-            }
+            checkModifiable(offset);
             DocumentFilter filter = getDocumentFilter();
             if (filter != null) {
                 filter.insertString(getFilterBypass(), offset, text, attrs);
@@ -870,9 +868,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         // Always acquire atomic lock (it simplifies processing and improves readability)
         atomicLockImpl();
         try {
-            if (!modifiable) {
-                throw new BadLocationException("Modification prohibited", offset);
-            }
+            checkModifiable(offset);
             DocumentFilter filter = getDocumentFilter();
             if (filter != null) {
                 filter.remove(getFilterBypass(), offset, length);
@@ -969,9 +965,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         // Always acquire atomic lock (it simplifies processing and improves readability)
         atomicLockImpl();
         try {
-            if (!modifiable) {
-                throw new BadLocationException("Modification prohibited", offset);
-            }
+            checkModifiable(offset);
             DocumentFilter filter = getDocumentFilter();
             if (filter != null) {
                 filter.replace(getFilterBypass(), offset, length, text, attrs);
@@ -981,6 +975,12 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
             }
         } finally {
             atomicUnlockImpl(true);
+        }
+    }
+    
+    private void checkModifiable(int offset) throws BadLocationException {
+        if (!modifiable) {
+            throw new GuardedException("Modification prohibited", offset);
         }
     }
 
