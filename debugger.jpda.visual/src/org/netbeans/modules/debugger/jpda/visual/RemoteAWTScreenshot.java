@@ -633,6 +633,7 @@ public class RemoteAWTScreenshot {
     
     public static class AWTComponentInfo extends JavaComponentInfo {
         private int shiftX, shiftY;
+        private boolean visible;
         private VirtualMachine vm;
         private ClassType containerClass, componentClass;
         private Method getBounds, getComponents;
@@ -668,6 +669,7 @@ public class RemoteAWTScreenshot {
             
             this.shiftX = shiftX;
             this.shiftY = shiftY;
+            this.visible = true;
             init();
         }
         
@@ -698,6 +700,7 @@ public class RemoteAWTScreenshot {
             setBounds(bounds);
             this.shiftX = allDataArray[dpos++];
             this.shiftY = allDataArray[dpos++];
+            visible = (allDataArray[dpos++] == 0) ? false : true;
             setWindowBounds(new Rectangle(shiftX, shiftY, bounds.width, bounds.height));
             int iname = allNames.indexOf(STRING_DELIMITER, inamePtr[0]);
             String name = allNames.substring(0, iname);
@@ -719,6 +722,10 @@ public class RemoteAWTScreenshot {
                 setSubComponents(cis);
             }
             init();
+        }
+        
+        public boolean isVisible() {
+            return visible;
         }
         
         @Override
@@ -753,14 +760,29 @@ public class RemoteAWTScreenshot {
             y -= bounds.y;
             ComponentInfo[] subComponents = getSubComponents();
             if (subComponents != null) {
+                ComponentInfo invisible = null;
                 for (int i = 0; i < subComponents.length; i++) {
                     Rectangle sb = subComponents[i].getBounds();
                     if (sb.contains(x, y)) {
+                        if (subComponents[i] instanceof AWTComponentInfo &&
+                            !((AWTComponentInfo) subComponents[i]).isVisible()) {
+                            if (invisible == null) {
+                                invisible = subComponents[i];
+                            }
+                            continue;
+                        }
                         ComponentInfo tci = subComponents[i].findAt(x, y);
                         Rectangle tbounds = tci.getBounds();
                         if (tbounds.width < bounds.width || tbounds.height < bounds.height) {
                             return tci;
                         }
+                    }
+                }
+                if (invisible != null) {
+                    ComponentInfo tci = invisible.findAt(x, y);
+                    Rectangle tbounds = tci.getBounds();
+                    if (tbounds.width < bounds.width || tbounds.height < bounds.height) {
+                        return tci;
                     }
                 }
             }

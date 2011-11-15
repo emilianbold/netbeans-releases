@@ -249,7 +249,10 @@ public class RemoteAWTService {
                 shiftx += x;
                 shifty += y;
             }
-            ComponentInfo ci = new ComponentInfo(c, name, x, y, rectangle.width, rectangle.height, shiftx, shifty);
+            ComponentInfo ci = new ComponentInfo(c, name, x, y,
+                                                 rectangle.width, rectangle.height,
+                                                 shiftx, shifty,
+                                                 c.isVisible());
             if (c instanceof Container) {
                 Component[] subComponents = ((Container) c).getComponents();
                 int n = subComponents.length;
@@ -314,7 +317,7 @@ public class RemoteAWTService {
         
         private static class ComponentInfo {
             
-            private final static int INT_DATA_LENGTH = 7;
+            private final static int INT_DATA_LENGTH = 8;
             private final static ComponentInfo[] NO_SUBCOMPONENTS = new ComponentInfo[] {};
             
             private Component c;
@@ -325,9 +328,12 @@ public class RemoteAWTService {
             private int height;
             private int shiftx;
             private int shifty;
+            private boolean visible;
             private ComponentInfo[] subComponents = NO_SUBCOMPONENTS;
             
-            ComponentInfo(Component c, String name, int x, int y, int width, int height, int shiftx, int shifty) {
+            ComponentInfo(Component c, String name, int x, int y,
+                          int width, int height, int shiftx, int shifty,
+                          boolean visible) {
                 this.c = c;
                 this.name = name;
                 this.x = x;
@@ -336,6 +342,7 @@ public class RemoteAWTService {
                 this.height = height;
                 this.shiftx = shiftx;
                 this.shifty = shifty;
+                this.visible = visible;
             }
             
             void setSubcomponents(ComponentInfo[] subComponents) {
@@ -361,6 +368,7 @@ public class RemoteAWTService {
                 array[pos++] = height;
                 array[pos++] = shiftx;
                 array[pos++] = shifty;
+                array[pos++] = visible ? 1 : 0;
                 array[pos++] = subComponents.length;
                 for (int i = 0; i < subComponents.length; i++) {
                     pos = subComponents[i].putIntData(array, pos);
