@@ -150,7 +150,7 @@ public class LibraryDeclarationHandlerImpl implements LibraryDeclarationHandler 
             }
             LibraryTypeProvider provider = LibraryTypeRegistry.getDefault().getLibraryTypeProvider(this.libraryType);
             if (provider == null) {
-                throw new SAXParseException("LibraryDeclarationHandlerImpl: Cannot create library: "+this.libraryName+" of unknown type: " + this.libraryType,null);
+                throw new UnknownLibraryTypeException(libraryName, libraryType);
             }
             this.library = provider.createLibrary();
             update = false;
@@ -176,9 +176,9 @@ public class LibraryDeclarationHandlerImpl implements LibraryDeclarationHandler 
                     this.library.setContent(contentType, cp);
                 }
             } catch (IllegalArgumentException e) {
-                throw (SAXException) new SAXException(e.toString()).initCause(e);
+                throw new SAXException(e);
             }
-        }        
+        }
     }
 
     @Override
@@ -214,6 +214,14 @@ public class LibraryDeclarationHandlerImpl implements LibraryDeclarationHandler 
 
     public LibraryImplementation getLibrary () {
         return this.library;
+    }
+
+    public static class UnknownLibraryTypeException extends SAXException {
+        private UnknownLibraryTypeException(
+            final String libraryName,
+            final String libraryType) {
+            super ("Cannot create library: "+libraryName+" of unknown type: " +libraryType,null);
+        }
     }
 
 

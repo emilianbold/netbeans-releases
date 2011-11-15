@@ -4264,10 +4264,17 @@ class LayoutFeeder implements LayoutConstants {
                         || !LayoutInterval.isAlignedAtBorder(aSnappedParallel, parent, aEdge))) {
                 iDesc.snappedParallel = parent;
                 iDesc.parent = LayoutInterval.getFirstParent(parent, PARALLEL);
+                boolean same = false;
                 for (IncludeDesc inc : inclusions) {
                     if (inc.snappedParallel == aSnappedParallel) {
                         inc.snappedParallel = iDesc.snappedParallel;
+                        if (inc.parent == iDesc.parent) {
+                            same = true;
+                        }
                     }
+                }
+                if (same) {
+                    return null; // we have such inclusion after all (just corrected its snappedParallel)
                 }
             }
         }
@@ -4566,10 +4573,12 @@ class LayoutFeeder implements LayoutConstants {
             }
         }
 
-        if (best.parent.isParallel() && best.snappedParallel != null && best.ortDistance != 0
-            && inclusions.size() > 1)
-        {   // forced inclusion by addAlignedInclusion
-            inclusions.remove(best);
+        if (original != null && original.parent.isParallel() && original.snappedParallel != null
+                && original.ortDistance != 0 && inclusions.size() > 1) {
+            // inclusion not overlapping orthogonally is not meaningful (either
+            // forced by addAlignedInclusion, or it's an original position of
+            // resizing in orthogonal dimension that started not overlapping)
+            inclusions.remove(original);
         }
         if (inclusions.size() == 1)
             return;
