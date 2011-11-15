@@ -57,6 +57,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
@@ -94,7 +96,8 @@ public final class GlobalSourceForBinaryImpl implements SourceForBinaryQueryImpl
     
     public SourceForBinaryQuery.Result findSourceRoots(URL binaryRoot) {
         try {
-            if (binaryRoot.toExternalForm().startsWith("jar:file:")) { // NOI18N
+            String binaryRootS = binaryRoot.toExternalForm();
+            if (binaryRootS.startsWith("jar:file:")) { // NOI18N
                 // check for tests.jar in test distribution
                 File jar = FileUtil.archiveOrDirForURL(binaryRoot);
                 TestEntry testJar = jar != null ? TestEntry.get(jar) : null;
@@ -114,14 +117,6 @@ public final class GlobalSourceForBinaryImpl implements SourceForBinaryQueryImpl
                     }
                 }
             }
-            NbPlatform supposedPlaf = null;
-            for (NbPlatform plaf : NbPlatform.getPlatformsOrNot()) {
-                // XXX more robust condition?
-                if (binaryRoot.toExternalForm().indexOf(plaf.getDestDir().toURI().toURL().toExternalForm()) != -1) {
-                    supposedPlaf = plaf;
-                    break;
-                }
-            }
             if (!binaryRoot.getProtocol().equals("jar")) { // NOI18N
                 Util.err.log(binaryRoot + " is not an archive file."); // NOI18N
                 return null;
@@ -135,6 +130,15 @@ public final class GlobalSourceForBinaryImpl implements SourceForBinaryQueryImpl
                 return null;
             }
             String cnb = name.substring(0, name.length() - 4).replace('-', '.');
+            NbPlatform supposedPlaf = null;
+            for (NbPlatform plaf : NbPlatform.getPlatformsOrNot()) {
+                String plafS = plaf.getDestDir().toURI().toURL().toExternalForm();
+                Matcher m = Pattern.compile("jar:\\Q" + plafS + "\\E[^/]+/(?:modules|lib|core)/([^/]+)[.]jar!/").matcher(binaryRootS);
+                if (m.matches()) {
+                    supposedPlaf = plaf;
+                    break;
+                }
+            }
             if (supposedPlaf == null) {
                 // try external clusters
                 URL[] sourceRoots = ModuleList.getSourceRootsForExternalModule(binaryRootF);
@@ -143,10 +147,6 @@ public final class GlobalSourceForBinaryImpl implements SourceForBinaryQueryImpl
                 }
                 return null;    // TODO C.P library wrapper sources support? probably not
             }
-  //          if (testCnb != null && supposedPlaf != null) {
-                // test
-   //             supposedPlaf.
-   //         }
             return new NbPlatformResult(supposedPlaf, cnb);
         } catch (IOException ex) {
             throw new AssertionError(ex);
