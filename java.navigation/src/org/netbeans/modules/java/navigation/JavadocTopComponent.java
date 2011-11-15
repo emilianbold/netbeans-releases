@@ -88,10 +88,13 @@ public final class JavadocTopComponent extends TopComponent {
     
     public static boolean shouldUpdate() {
         if ( instance == null ) {
+            LOGGER.fine("shouldUpdate -> false (no instance)"); //NOI18N
             return false;
         }
         else  {
-            return instance.isShowing();
+            final boolean isShowing = instance.isShowing();
+            LOGGER.log(Level.FINE, "shouldUpdate -> {0}", isShowing);   //NOI18N
+            return isShowing;
         }
     }
     

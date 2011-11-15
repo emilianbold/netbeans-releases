@@ -70,15 +70,14 @@ public class MethodImpl<T> extends FunctionImpl<T> implements CsmMethod {
     private static final byte EXPLICIT = (byte)(1 << (FunctionImpl.LAST_USED_FLAG_INDEX+3));
 
     protected MethodImpl(CharSequence name, CharSequence rawName, CsmClass cls, CsmVisibility visibility,  boolean _virtual, boolean _explicit, boolean _static, boolean _const, CsmFile file, int startOffset, int endOffset, boolean global) {
-        super(name, rawName, cls, _static, _const, cls.getContainingFile(), startOffset, endOffset, global);
+        super(name, rawName, cls, _static, _const, file, startOffset, endOffset, global);
         this.visibility = visibility;
         setVirtual(_virtual);
         setExplicit(_explicit);
     }
 
-    public static<T> MethodImpl<T> create(AST ast, ClassImpl cls, CsmVisibility visibility, boolean global) throws AstRendererException {
+    public static<T> MethodImpl<T> create(AST ast, final CsmFile file, ClassImpl cls, CsmVisibility visibility, boolean global) throws AstRendererException {
         CsmScope scope = cls;
-        CsmFile file = cls.getContainingFile();
         
         int startOffset = getStartOffset(ast);
         int endOffset = getEndOffset(ast);
@@ -124,7 +123,7 @@ public class MethodImpl<T> extends FunctionImpl<T> implements CsmMethod {
                 AstRenderer.FunctionRenderer.isVoidParameter(ast));
         
         postObjectCreateRegistration(global, methodImpl);
-        nameHolder.addReference(cls.getContainingFile(), methodImpl);
+        nameHolder.addReference(file, methodImpl);
         return methodImpl;
     }
 

@@ -46,11 +46,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.Callable;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
@@ -210,7 +206,7 @@ public class J2SELibrarySourceJavadocAttacher implements SourceJavadocAttacherIm
         }
     }
 
-    private static class Convertor implements SourceJavadocAttacherUtil.Function<String, URI> {
+    private static class Convertor implements SourceJavadocAttacherUtil.Function<String, Collection<? extends URI>> {
 
         private final String volume;
         private final File baseFolder;
@@ -223,8 +219,8 @@ public class J2SELibrarySourceJavadocAttacher implements SourceJavadocAttacherIm
         }
 
         @Override
-        public URI call(String param) throws Exception {
-            return J2SEVolumeCustomizer.pathToURI(baseFolder, param, volume);
+        public Collection<? extends URI> call(String param) throws Exception {
+            return Collections.singleton(J2SEVolumeCustomizer.pathToURI(baseFolder, param, volume));
         }
 
     }

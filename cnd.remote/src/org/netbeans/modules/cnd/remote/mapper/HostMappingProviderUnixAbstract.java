@@ -51,6 +51,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -58,6 +59,7 @@ import java.util.regex.Pattern;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
@@ -108,6 +110,21 @@ public abstract class HostMappingProviderUnixAbstract implements HostMappingProv
                         }
                     }
                 }
+            }
+        }
+        if (execEnv.isRemote()) {
+            try {
+                HostInfo hostInfo = HostInfoUtils.getHostInfo(execEnv);
+                String userDir = hostInfo.getUserDir();
+                if (RemotePathMap.isTheSame(execEnv, userDir, CndFileUtils.createLocalFile(userDir))) {
+                    mappings.put(userDir, userDir);
+                }            
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            } catch (CancellationException ex) {
+                //don't report CancellationException
+            } catch (InterruptedException ex) {
+                //don't report InterruptedException
             }
         }
         return mappings;

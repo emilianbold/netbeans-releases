@@ -44,11 +44,7 @@
 
 package org.netbeans.modules.localhistory.store;
 
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.OutputStream;
+import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
@@ -59,6 +55,9 @@ import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.localhistory.LocalHistory;
 import org.netbeans.modules.localhistory.LogHandler;
 import org.netbeans.modules.localhistory.utils.FileUtils;
+import org.netbeans.modules.versioning.util.VersioningEvent;
+import org.netbeans.modules.versioning.util.VersioningListener;
+import org.openide.util.Exceptions;
 
 /**
 */
@@ -676,6 +675,39 @@ public class StoreTest extends LHTestCase {
         h.checkException();        
     }      
 
+    public void testNoEntryInZipStoreFile() throws Exception {
+        final LocalHistoryTestStore store = createStore();
+        final LogHandler lhBlock = new LogHandler("created storage file", LogHandler.Compare.STARTS_WITH);
+        LogHandler lh = new LogHandler("finnished copy file", LogHandler.Compare.STARTS_WITH);
+        ExceptionHandler h = new ExceptionHandler();
+        
+        final long ts = System.currentTimeMillis();
+        final File file = new File(dataDir, "file");
+        final Exception[] e = new Exception[1];
+        final boolean event[] = new boolean[] {false};
+        store.addVersioningListener(new VersioningListener() {
+            @Override
+            public void versioningEvent(VersioningEvent evt) {
+                event[0] = true;
+                StoreEntry entry = store.getStoreEntry(file, ts);
+                try {
+                    entry.getStoreFileOutputStream();
+                } catch (IOException ex) {
+                    e[0] = ex;
+                }
+            }
+        });
+
+        lhBlock.block();   // start blocking so that we can try to access after created, but before filed with data
+        changeFile(store, file, ts, "data2");    
+        long ts1 = System.currentTimeMillis();
+        while(!event[0] && !(System.currentTimeMillis() - ts1 < 10000)) {
+            Thread.sleep(200);
+        }
+        lhBlock.unblock();   
+        lh.waitUntilDone();
+    }
+    
     private class ExceptionHandler extends Handler {
         private Throwable thrown;
 

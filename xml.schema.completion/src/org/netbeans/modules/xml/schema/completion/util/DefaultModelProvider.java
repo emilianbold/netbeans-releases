@@ -67,15 +67,9 @@ import org.openide.util.Lookup;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.schema.completion.spi.CompletionModelProvider.class)
 public class DefaultModelProvider extends CompletionModelProvider {
     
-    private CompletionContextImpl context;
-    
     public DefaultModelProvider() {        
     }
 
-    public DefaultModelProvider(CompletionContextImpl context) {
-        this.context = context;
-    }
-    
     /**
      * Returns a list of CompletionModel. Default implementation looks for
      * schemaLocation attribute in the document and if specified creates model
@@ -84,13 +78,13 @@ public class DefaultModelProvider extends CompletionModelProvider {
     public synchronized List<CompletionModel> getModels(CompletionContext context) {
         if(context.getPrimaryFile() == null)
             return null;
-        this.context = (CompletionContextImpl)context;
-        List<URI> uris = this.context.getSchemas();
-        if(uris == null || uris.size() == 0)
+        CompletionContextImpl contextImpl = (CompletionContextImpl)context;
+        List<URI> uris = contextImpl.getSchemas();
+        if(uris.isEmpty())
             return null;
         List<CompletionModel> models = new ArrayList<CompletionModel>();
         for(URI uri : uris) {
-            CompletionModel model = getCompletionModel(uri, true);
+            CompletionModel model = getCompletionModel(uri, true, contextImpl);
             if(model != null)
                 models.add(model);
         }
@@ -98,7 +92,7 @@ public class DefaultModelProvider extends CompletionModelProvider {
         return models;
     }
     
-    CompletionModel getCompletionModel(URI schemaURI, boolean fetch) {
+    static CompletionModel getCompletionModel(URI schemaURI, boolean fetch, CompletionContextImpl context) {
         CompletionModel model = null;
         try {
             ModelSource modelSource = null;
@@ -157,11 +151,11 @@ public class DefaultModelProvider extends CompletionModelProvider {
      *
      * During actual CC from IDE, this will return null.
      */
-    private CatalogModelProvider getCatalogModelProvider() {
+    private static CatalogModelProvider getCatalogModelProvider() {
         Lookup.Template templ = new Lookup.Template(CatalogModelProvider.class);
         Lookup.Result result = Lookup.getDefault().lookup(templ);
         Collection impls = result.allInstances();
-        if(impls == null || impls.size() == 0)
+        if(impls.isEmpty())
             return null;
         
         return (CatalogModelProvider)impls.iterator().next();

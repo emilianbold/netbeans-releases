@@ -56,16 +56,7 @@ import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-import java.util.StringTokenizer;
-import java.util.TreeMap;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
@@ -1093,13 +1084,17 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
         
         @Override
         public Node.PropertySet[] getPropertySets () {
-            Node.PropertySet[] properties = super.getPropertySets ();
-            for (int i=0; i< properties.length; i++) {
-                if (Sheet.PROPERTIES.equals(properties[i].getName())) {
+            final Node.PropertySet[] properties = super.getPropertySets ();
+            final List<Node.PropertySet> result = new ArrayList<PropertySet>(properties.length);
+            for (Node.PropertySet set : properties) {
+                if (set == null) {
+                    continue;
+                }
+                if (Sheet.PROPERTIES.equals(set.getName())) {
                     //Replace the Sheet.PROPERTIES by the new one
                     //having only the name property which does refactoring
-                    properties[i] = Sheet.createPropertiesSet();
-                    ((Sheet.Set) properties[i]).put(new PropertySupport.ReadWrite<String>(DataObject.PROP_NAME, String.class,
+                    set = Sheet.createPropertiesSet();
+                    ((Sheet.Set)set).put(new PropertySupport.ReadWrite<String>(DataObject.PROP_NAME, String.class,
                             NbBundle.getMessage(PackageViewChildren.class,"PROP_name"), NbBundle.getMessage(PackageViewChildren.class,"HINT_name")) {
                         @Override
                         public String getValue() {
@@ -1118,8 +1113,9 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
                         }
                     });
                 }
+                result.add(set);
             }
-            return properties;
+            return result.toArray(new Node.PropertySet[result.size()]);
         }
         
         private DataFolder getDataFolder() {

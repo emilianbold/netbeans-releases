@@ -84,6 +84,7 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
+import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.AttributesUtilities;
 import org.netbeans.api.editor.settings.EditorStyleConstants;
@@ -117,7 +118,7 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Lahoda
  */
-public final class AnnotationHolder implements ChangeListener, PropertyChangeListener, DocumentListener {
+public final class AnnotationHolder implements ChangeListener, DocumentListener {
 
     private static final Logger LOG = Logger.getLogger(AnnotationHolder.class.getName());
     
@@ -143,12 +144,62 @@ public final class AnnotationHolder implements ChangeListener, PropertyChangeLis
     private Map<String, List<ErrorDescription>> layer2Errors;
 
     private Set<JEditorPane> openedComponents;
-    private EditorCookie.Observable editorCookie;
     private FileObject file;
     private DataObject od;
     private BaseDocument doc;
 
     private static Map<DataObject, AnnotationHolder> file2Holder = new HashMap<DataObject, AnnotationHolder>();
+
+    static {
+        EditorRegistry.addPropertyChangeListener(new PropertyChangeListener() {
+            @Override public void propertyChange(PropertyChangeEvent evt) {
+                if (evt.getPropertyName() == null || EditorRegistry.COMPONENT_REMOVED_PROPERTY.equals(evt.getPropertyName())) {
+                    resolveAllComponents();
+                } else if (EditorRegistry.FOCUS_GAINED_PROPERTY.equals(evt.getPropertyName())) {
+                    JTextComponent c = EditorRegistry.focusedComponent();
+                    Object o = c.getDocument().getProperty(Document.StreamDescriptionProperty);
+                    @SuppressWarnings("element-type-mismatch")
+                    AnnotationHolder holder = file2Holder.get(o);
+
+                    if (holder != null) {
+                        holder.maybeAddComponent(c);
+                    }
+                }
+            }
+        });
+    }
+
+    private static void resolveAllComponents() {
+        Map<DataObject, Set<JTextComponent>> file2Components = new HashMap<DataObject, Set<JTextComponent>>();
+
+        for (JTextComponent c : EditorRegistry.componentList()) {
+            Object o = c.getDocument().getProperty(Document.StreamDescriptionProperty);
+
+            if (!(o instanceof DataObject)) continue;
+
+            DataObject od = (DataObject) o;
+            Set<JTextComponent> components = file2Components.get(od);
+
+            if (components == null) {
+                file2Components.put(od, components = new HashSet<JTextComponent>());
+            }
+
+            components.add(c);
+        }
+
+        Map<DataObject, AnnotationHolder> file2HolderCopy = new HashMap<DataObject, AnnotationHolder>();
+        synchronized (AnnotationHolder.class) {
+            file2HolderCopy.putAll(file2Holder);
+        }
+
+        for (Entry<DataObject, AnnotationHolder> e : file2HolderCopy.entrySet()) {
+            Set<JTextComponent> components = file2Components.get(e.getKey());
+
+            if (components == null) components = Collections.emptySet();
+
+            e.getValue().setComponents(components);
+        }
+    }
 
     public static synchronized AnnotationHolder getInstance(FileObject file) {
         if (file == null)
@@ -159,7 +210,7 @@ public final class AnnotationHolder implements ChangeListener, PropertyChangeLis
             AnnotationHolder result = file2Holder.get(od);
 
             if (result == null) {
-                EditorCookie.Observable editorCookie = od.getCookie(EditorCookie.Observable.class);
+                EditorCookie editorCookie = od.getCookie(EditorCookie.class);
 
                 if (editorCookie == null) {
                     LOG.log(Level.WARNING,
@@ -168,7 +219,7 @@ public final class AnnotationHolder implements ChangeListener, PropertyChangeLis
                     Document doc = editorCookie.getDocument();
 
                     if (doc instanceof BaseDocument) {
-                        file2Holder.put(od, result = new AnnotationHolder(file, od, (BaseDocument) doc, editorCookie));
+                        file2Holder.put(od, result = new AnnotationHolder(file, od, (BaseDocument) doc));
                     }
                 }
             }
@@ -181,7 +232,7 @@ public final class AnnotationHolder implements ChangeListener, PropertyChangeLis
     }
 
     @SuppressWarnings("LeakingThisInConstructor")
-    private AnnotationHolder(FileObject file, DataObject od, BaseDocument doc, EditorCookie.Observable editorCookie) {
+    private AnnotationHolder(FileObject file, DataObject od, BaseDocument doc) {
         if (file == null)
             return ;
 
@@ -194,10 +245,12 @@ public final class AnnotationHolder implements ChangeListener, PropertyChangeLis
         getBag(doc);
 
         DocumentUtilities.addPriorityDocumentListener(this.doc, this, DocumentListenerPriority.AFTER_CARET_UPDATE);
-        editorCookie.addPropertyChangeListener(WeakListeners.propertyChange(this, editorCookie));
-        this.editorCookie = editorCookie;
 
-        propertyChange(null);
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override public void run() {
+                resolveAllComponents();
+            }
+        });
 
 //        LOG.log(Level.FINE, null, new Throwable("Creating AnnotationHolder for " + file.getPath()));
         Logger.getLogger("TIMER").log(Level.FINE, "Annotation Holder", //NOI18N
@@ -262,43 +315,54 @@ public final class AnnotationHolder implements ChangeListener, PropertyChangeLis
         getBag(doc).clear();
     }
 
-    public void propertyChange(PropertyChangeEvent evt) {
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                if (editorCookie.getDocument() == null) {
-                    clearAll();
-                    return;
-                }
+    private synchronized void maybeAddComponent(JTextComponent c) {
+        if (!(c instanceof JEditorPane)) return;
 
-                JEditorPane[] panes = editorCookie.getOpenedPanes();
+        JEditorPane pane = (JEditorPane) c;
 
-                if (panes == null) {
-                    return ;
-                }
+        if (!openedComponents.add(pane)) return;
 
-                Set<JEditorPane> addedPanes = new HashSet<JEditorPane>(Arrays.asList(panes));
-                Set<JEditorPane> removedPanes = new HashSet<JEditorPane>(openedComponents);
+        addViewportListener(pane);
+        updateVisibleRanges();
+    }
 
-                removedPanes.removeAll(addedPanes);
-                addedPanes.removeAll(openedComponents);
+    private void addViewportListener(JEditorPane pane) {
+        Container parent = pane.getParent();
 
-                for (JEditorPane pane : addedPanes) {
-                    Container parent = pane.getParent();
+        if (parent instanceof JViewport) {
+            JViewport viewport = (JViewport) parent;
 
-                    if (parent instanceof JViewport) {
-                        JViewport viewport = (JViewport) parent;
+            viewport.addChangeListener(WeakListeners.change(AnnotationHolder.this, viewport));
+        }
+    }
 
-                        viewport.addChangeListener(WeakListeners.change(AnnotationHolder.this, viewport));
-                    }
-                }
+    private synchronized void setComponents(Set<JTextComponent> newComponents) {
+        if (newComponents.isEmpty()) {
+            clearAll();
+            return;
+        }
 
-                openedComponents.removeAll(removedPanes);
-                openedComponents.addAll(addedPanes);
+        Set<JEditorPane> addedPanes = new HashSet<JEditorPane>();
 
-                updateVisibleRanges();
-                return ;
-            }
-        });
+        for (JTextComponent c : newComponents) {
+            if (!(c instanceof JEditorPane)) continue;
+
+            addedPanes.add((JEditorPane) c);
+        }
+
+        Set<JEditorPane> removedPanes = new HashSet<JEditorPane>(openedComponents);
+
+        removedPanes.removeAll(addedPanes);
+        addedPanes.removeAll(openedComponents);
+
+        for (JEditorPane pane : addedPanes) {
+            addViewportListener(pane);
+        }
+
+        openedComponents.removeAll(removedPanes);
+        openedComponents.addAll(addedPanes);
+
+        updateVisibleRanges();
     }
 
     public synchronized void insertUpdate(DocumentEvent e) {

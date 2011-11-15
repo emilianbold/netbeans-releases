@@ -696,6 +696,7 @@ public class ReplaceBar extends JPanel {
         } else {
             try {
                 findSupport.replace(findProps, false);
+                findSupport.find(findProps, false);
             } catch (BadLocationException ex) {
                 Exceptions.printStackTrace(ex);
             }

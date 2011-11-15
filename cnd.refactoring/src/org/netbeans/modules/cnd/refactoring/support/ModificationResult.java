@@ -69,7 +69,7 @@ import org.openide.text.PositionRef;
 public final class ModificationResult {
 
     private final CsmProject project;
-    Map<FileObject, List<Difference>> diffs = new HashMap<FileObject, List<Difference>>();
+    Map<FileObject, Collection<Difference>> diffs = new HashMap<FileObject, Collection<Difference>>();
 
     /** Creates a new instance of ModificationResult */
     public ModificationResult(CsmProject project) {
@@ -78,9 +78,9 @@ public final class ModificationResult {
 
     // API of the class --------------------------------------------------------
     public void addDifference(FileObject fo, Difference diff) {
-        List<Difference> foDiffs = diffs.get(fo);
+        Collection<Difference> foDiffs = diffs.get(fo);
         if (foDiffs == null) {
-            foDiffs = new LinkedList<Difference>();
+            foDiffs = new LinkedHashSet<Difference>();
             diffs.put(fo, foDiffs);
         }
         foDiffs.add(diff);
@@ -90,7 +90,7 @@ public final class ModificationResult {
         return diffs.keySet();
     }
 
-    public List<? extends Difference> getDifferences(FileObject fo) {
+    public Collection<? extends Difference> getDifferences(FileObject fo) {
         return diffs.get(fo);
     }
 
@@ -100,7 +100,7 @@ public final class ModificationResult {
      */
     public void commit() throws IOException {
         try {
-            for (Map.Entry<FileObject, List<Difference>> me : diffs.entrySet()) {
+            for (Map.Entry<FileObject, Collection<Difference>> me : diffs.entrySet()) {
                 commit(me.getKey(), me.getValue(), null);
             }
         } finally {
@@ -111,7 +111,7 @@ public final class ModificationResult {
         }
     }
 
-    private void commit(final FileObject fo, final List<Difference> differences, Writer out) throws IOException {
+    private void commit(final FileObject fo, final Collection<Difference> differences, Writer out) throws IOException {
         DataObject dObj = DataObject.find(fo);
         EditorCookie ec = dObj != null ? dObj.getCookie(org.openide.cookies.EditorCookie.class) : null;
         // if editor cookie was found and user does not provided his own
@@ -266,7 +266,7 @@ public final class ModificationResult {
 
     public Set<File> getNewFiles() {
         Set<File> newFiles = new HashSet<File>();
-        for (List<Difference> ds : diffs.values()) {
+        for (Collection<Difference> ds : diffs.values()) {
             for (Difference d : ds) {
                 if (d.getKind() == Difference.Kind.CREATE) {
                     //newFiles.add(new File(((CreateChange) d).getFileObject().toUri()));
@@ -340,5 +340,40 @@ public final class ModificationResult {
             CHANGE,
             CREATE
         }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final Difference other = (Difference) obj;
+            if (this.kind != other.kind) {
+                return false;
+            }
+            if (!equalPos(this.startPos, other.startPos)) {
+                return false;
+            }
+            if (!equalPos(this.endPos, other.endPos)) {
+                return false;
+            }
+            return true;
+        }
+
+        private boolean equalPos(PositionRef first, PositionRef second) {
+            return first == second || (first != null && second != null && first.getOffset() == second.getOffset());
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 79 * hash + this.kind.ordinal();
+            hash = 79 * hash + (this.startPos != null ? this.startPos.getOffset() : 0);
+            hash = 79 * hash + (this.endPos != null ? this.endPos.getOffset() : 0);
+            return hash;
+        }
+        
     }
 }

@@ -406,7 +406,7 @@ public final class ViewUtils {
      *
      * @param r 
      */
-    public static void runInEQ(Runnable r) {
+    public static void runInEDT(Runnable r) {
         if (SwingUtilities.isEventDispatchThread()) {
             r.run();
         } else {

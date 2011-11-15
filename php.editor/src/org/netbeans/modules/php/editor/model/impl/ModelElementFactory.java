@@ -42,9 +42,12 @@
 
 package org.netbeans.modules.php.editor.model.impl;
 
+import java.util.Collection;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.model.FunctionScope;
 import org.netbeans.modules.php.editor.model.Scope;
+import org.netbeans.modules.php.editor.model.UseElement;
 import org.netbeans.modules.php.editor.model.nodes.ClassConstantDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.ClassDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.IncludeInfo;
@@ -89,10 +92,10 @@ class ModelElementFactory {
     }
 
     static MethodScopeImpl create(MethodDeclarationInfo nodeInfo, ModelBuilder context, ModelVisitor visitor) {
-        String returnType = VariousUtils.getReturnTypeFromPHPDoc(context.getProgram(), 
+        String returnType = VariousUtils.getReturnTypeFromPHPDoc(context.getProgram(),
                 nodeInfo.getOriginalNode().getFunction());
-
-        MethodScopeImpl method = new MethodScopeImpl(context.getCurrentScope(), returnType, nodeInfo, visitor);
+        String qualifiedReturnType = VariousUtils.qualifyTypeNames(returnType, nodeInfo.getOriginalNode().getStartOffset(), context.getCurrentScope());
+        MethodScopeImpl method = new MethodScopeImpl(context.getCurrentScope(), qualifiedReturnType, nodeInfo, visitor);
         return method;
     }
 

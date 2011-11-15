@@ -85,6 +85,11 @@ public class ClassContentTestCase extends CompletionBaseTestCase {
         super.performTest("file.cc", 6, 5, "d = new ");
     }
 
+    public void testCompletionAfterNewWithClassPrefix() throws Exception {
+        //  #204910 - Auto complete misses c++ constructors
+        super.performTest("file.cc", 6, 5, "d = new D");
+    }
+
     public void testCompletionOnUnfinishedConstructor1() throws Exception {
         // IZ 138291 : Completion does not work for unfinished constructor
         super.performTest("file.h", 18, 5, "E(const )", -1);

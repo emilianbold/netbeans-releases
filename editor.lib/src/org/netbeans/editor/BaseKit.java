@@ -3306,6 +3306,9 @@ public class BaseKit extends DefaultEditorKit {
 
     /** Increase/decrease indentation of the block of the code. Document
     * is atomically locked during the operation.
+    * <br/>
+    * If indent is in between multiplies of shiftwidth it jumps to multiplies of shiftwidth.
+    * 
     * @param doc document to operate on
     * @param startPos starting line position
     * @param endPos ending line position
@@ -3329,20 +3332,25 @@ public class BaseKit extends DefaultEditorKit {
         doc.runAtomic (new Runnable () {
             public void run () {
                 try {
-                    int indentDelta = shiftCnt * doc.getShiftWidth();
+                    int shiftWidth = doc.getShiftWidth();
+                    if (shiftWidth <= 0) {
+                        return;
+                    }
+                    int indentDelta = shiftCnt * shiftWidth;
                     int end = (endPos > 0 && Utilities.getRowStart(doc, endPos) == endPos) ?
                         endPos - 1 : endPos;
 
-                    int pos = Utilities.getRowStart(doc, startPos );
-                    for (int lineCnt = Utilities.getRowCount(doc, startPos, end);
-                            lineCnt > 0; lineCnt--
-                        ) {
-                        int indent = Utilities.getRowIndent(doc, pos);
-                        if (Utilities.isRowWhite(doc, pos)) {
-                            indent = -indentDelta; // zero indentation for white line
-                        }
-                        changeRowIndent(doc, pos, Math.max(indent + indentDelta, 0));
-                        pos = Utilities.getRowStart(doc, pos, +1);
+                    int lineStartOffset = Utilities.getRowStart(doc, startPos );
+                    int lineCount = Utilities.getRowCount(doc, startPos, end);
+                    for (int i = lineCount - 1; i >= 0; i--) {
+                        int indent = Utilities.getRowIndent(doc, lineStartOffset);
+                        int newIndent = (indent == -1) ? 0 : // Zero indent if row is white
+                                ((indent + indentDelta +
+                                    ((shiftCnt < 0) ? shiftWidth - 1 : 0))
+                                    / shiftWidth * shiftWidth);
+                                
+                        changeRowIndent(doc, lineStartOffset, Math.max(newIndent, 0));
+                        lineStartOffset = Utilities.getRowStart(doc, lineStartOffset, +1);
                     }
                 } catch (BadLocationException ex) {
                     badLocationExceptions [0] = ex;

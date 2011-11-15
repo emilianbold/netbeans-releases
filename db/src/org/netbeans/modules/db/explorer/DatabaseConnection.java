@@ -210,7 +210,8 @@ public final class DatabaseConnection implements DBConnection {
             }
         });
     }
-    private static final RequestProcessor RP = new RequestProcessor(DatabaseConnection.class.getName(), 1);
+    
+    private static final RequestProcessor RP = new RequestProcessor(DatabaseConnection.class.getName(), 10);
 
     /** Default constructor */
     @SuppressWarnings("LeakingThisInConstructor")
@@ -660,10 +661,14 @@ public final class DatabaseConnection implements DBConnection {
     
     private void waitForReading(final Runnable toRun) {
         if (SwingUtilities.isEventDispatchThread()) {
+            LOGGER.finest("Showing a wait dialog...");
             showWaitingDialog(toRun);
+            LOGGER.finest("Showing a wait dialog - done.");
         } else {
             if (keyringTask != null && ! keyringTask.isFinished()) {
+                LOGGER.finest("Wait for finished keyringTask");
                 keyringTask.waitFinished();
+                LOGGER.finest("keyringTask done.");
                 toRun.run();
                 return ;
             }            
@@ -672,10 +677,12 @@ public final class DatabaseConnection implements DBConnection {
 
                 @Override
                 public void run() {
+                    LOGGER.finest("Showing a wait dialog...");
                     showWaitingDialog(toRun);
                     synchronized (lock) {
                         lock.notifyAll();
                     }
+                    LOGGER.finest("Showing a wait dialog - done.");
                 }
             });
             try {
@@ -695,7 +702,7 @@ public final class DatabaseConnection implements DBConnection {
 
         ProgressHandle progress = ProgressHandleFactory.createHandle("keyring");
         JComponent progressComponent = ProgressHandleFactory.createProgressComponent(progress);
-        progressComponent.setPreferredSize(new Dimension(350, 20));
+        progress.start();
         ConnectProgressDialog panel = new ConnectProgressDialog(progressComponent,
                 NbBundle.getMessage(DatabaseConnection.class, "DatabaseConnection_PleaseWaitMessage")); // NOI18N);
         panel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage (ConnectAction.class, "ACS_ConnectingDialogTextA11yDesc")); // NOI18N
@@ -703,6 +710,8 @@ public final class DatabaseConnection implements DBConnection {
                                 NbBundle.getMessage(DatabaseConnection.class, "DatabaseConnection_PleaseWaitTitle"), // NOI18N
                                 true);
         d.add(panel);
+        d.setSize(new Dimension(500, 100));
+        d.setLocationRelativeTo(WindowManager.getDefault().getMainWindow());
         keyringTask = RP.post(new Runnable() {
 
             @Override
@@ -715,6 +724,7 @@ public final class DatabaseConnection implements DBConnection {
                         @Override
                         public void run() {
                             if (d != null) {
+                                LOGGER.finest("Hide Waiting For Access to Keyring dialog.");
                                 d.setVisible(false);
                                 d.dispose();
                             }
@@ -723,7 +733,13 @@ public final class DatabaseConnection implements DBConnection {
                 }
             }
         });
-        d.setVisible(true);
+        LOGGER.finest("Show Waiting For Access to Keyring dialog.");
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException ex) {
+            LOGGER.log(Level.INFO, ex.getMessage(), ex);
+        }
+        d.setVisible(! keyringTask.isFinished());
     }
     
     public static void deletePassword(final String key) {
@@ -744,7 +760,8 @@ public final class DatabaseConnection implements DBConnection {
         if (rpwd == null) {
             restorePassword();
         }
-        return rpwd.booleanValue();
+        assert rpwd != null : "rpwd must be set to true or false";
+        return rpwd == null ? false : rpwd.booleanValue();
     }
 
     /** Sets password should be remembered
@@ -786,7 +803,7 @@ public final class DatabaseConnection implements DBConnection {
             propertySupport.firePropertyChange(PROP_PASSWORD, oldpwd, pwd);
         }
     }
-
+    
     /** Creates JDBC connection
      * Uses DriverManager to create connection to specified database. Throws
      * DDLException if none of driver/database/user/password is set or if

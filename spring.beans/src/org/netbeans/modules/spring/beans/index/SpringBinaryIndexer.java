@@ -42,15 +42,13 @@
 
 package org.netbeans.modules.spring.beans.index;
 
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Enumeration;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.modules.parsing.spi.indexing.BinaryIndexer;
-import org.netbeans.modules.parsing.spi.indexing.BinaryIndexerFactory;
+import org.netbeans.modules.parsing.spi.indexing.ConstrainedBinaryIndexer;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
@@ -69,14 +67,21 @@ import org.openide.util.Exceptions;
  *
  * @author alexeybutenko
  */
-
-public class SpringBinaryIndexer extends BinaryIndexer {
+@ConstrainedBinaryIndexer.Registration(
+    mimeType=SpringBinaryIndexer.XSD_MIME,
+    requiredResource=SpringBinaryIndexer.REQUIRED_RESOURCE,
+    indexerName=SpringBinaryIndexer.INDEXER_NAME,
+    indexVersion=SpringBinaryIndexer.INDEX_VERSION
+)
+public class SpringBinaryIndexer extends ConstrainedBinaryIndexer {
 
    public static final Logger LOGGER = Logger.getLogger(SpringBinaryIndexer.class.getSimpleName());
 
     static final String INDEXER_NAME = "SpringBinary"; //NOI18N
     static final int INDEX_VERSION = 1;
     private static final String XSD_SUFFIX = ".xsd";    //NOI18N
+    static final String XSD_MIME = "text/xsd+xml";  //NOI18N
+    static final String REQUIRED_RESOURCE = "org/springframework";  //NOI18N
     static final String LIBRARY_MARK_KEY = "xsdSpringSchema";   //NOI18N
     static final String NAMESPACE_MARK_KEY = "namespace";   //NOI18N
 
@@ -84,25 +89,26 @@ public class SpringBinaryIndexer extends BinaryIndexer {
     private String version;
 
     @Override
-    protected void index(Context context) {
+    protected void index(
+        Map<String,? extends Iterable<? extends FileObject>> files,
+        Context context) {
         LOGGER.log(Level.FINE, "indexing " + context.getRoot()); //NOI18N
 
         FileObject root = context.getRoot();
         if (root == null) {
             return;
         }
-        if (root.getFileObject("org/springframework") == null) {   //NOI18N
-            return;
-        }
+        assert root.getFileObject("org/springframework") != null;
         version = findVersion(root);
         if (version !=null) {
-            processXsds(context);
+            processXsds(files, context);
         }
     }
 
-    private void processXsds(Context context) {
-        FileObject root = context.getRoot();
-        for (FileObject fileObject : findSpringLibraryDescriptors(root, XSD_SUFFIX)) {
+    private void processXsds(
+        Map<String,? extends Iterable<? extends FileObject>> files,
+        Context context) {
+        for (FileObject fileObject : findSpringLibraryDescriptors(files.get(XSD_MIME), XSD_SUFFIX)) {
             try {
                 ModelSource source = Utilities.getModelSource(fileObject, true);
                 SchemaModel model = SchemaModelFactory.getDefault().getModel(source);
@@ -126,14 +132,10 @@ public class SpringBinaryIndexer extends BinaryIndexer {
         }
     }
 
-    private Collection<FileObject> findSpringLibraryDescriptors(FileObject classpathRoot, String suffix) {
+    private Collection<FileObject> findSpringLibraryDescriptors(Iterable<? extends FileObject> res, String suffix) {
+        assert res != null;
         Collection<FileObject> files = new ArrayList<FileObject>();
-        if (classpathRoot.getFileObject("org/springframework") == null) {   //NOI18N
-            return files;
-        }
-        Enumeration<? extends FileObject> fos = classpathRoot.getChildren(true); //scan all files in the jar
-        while (fos.hasMoreElements()) {
-            FileObject file = fos.nextElement();
+        for (FileObject file : res) {
             //XXX Version??? spring 2-5 has some xsd's with non 2.5 version
             String fileName = file.getNameExt().toLowerCase();
             if (fileName !=null && fileName.endsWith(suffix) && version.startsWith(findXsdVersion(file))) { //NOI18N
@@ -174,28 +176,4 @@ public class SpringBinaryIndexer extends BinaryIndexer {
         }
         return null;
     }
-
-    public static class Factory extends BinaryIndexerFactory {
-
-        @Override
-        public BinaryIndexer createIndexer() {
-            return new SpringBinaryIndexer();
-        }
-
-        @Override
-        public void rootsRemoved(Iterable<? extends URL> removedRoots) {
-//            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public String getIndexerName() {
-            return INDEXER_NAME;
-        }
-
-        @Override
-        public int getIndexVersion() {
-            return INDEX_VERSION;
-        }
-    }
-
 }
