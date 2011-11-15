@@ -4558,16 +4558,22 @@ class LayoutFeeder implements LayoutConstants {
                                 }
                             }
                         }
+                        if (iDesc.parent == group) {
+                            iDesc.parent = commonGroup;
+                        }
                         if (group.getSubIntervalCount() == 1 && group.getParent() != null) {
                             LayoutInterval parent = group.getParent();
                             LayoutInterval last = layoutModel.removeInterval(group, 0);
-                            operations.addContent(last, parent, layoutModel.removeInterval(group), dimension);
-                            if (commonGroup == last && commonGroup.getParent() == null) // commonGroup dissolved in parent
-                                commonGroup = parent;
-                            updateReplacedOriginalGroup(commonGroup, null);
+                            int index = layoutModel.removeInterval(group);
+                            operations.addContent(last, parent, index, dimension);
+                            updateInclusionsForEliminatedGroup(inclusions, group, parent, index);
+                            if (last.getParent() == null) { // dissolved into parent
+                                updateInclusionsForEliminatedGroup(inclusions, last, parent, index);
+                                if (commonGroup == last) {
+                                    commonGroup = parent; // parent is parallel in this case
+                                }
+                            }
                         }
-                        if (iDesc.parent == group)
-                            iDesc.parent = commonGroup;
                     }
                 }
             }
@@ -4671,7 +4677,17 @@ class LayoutFeeder implements LayoutConstants {
         for (Iterator it=inclusions.iterator(); it.hasNext(); ) {
             IncludeDesc iDesc = (IncludeDesc) it.next();
             if (iDesc.parent.isParallel() || !iDesc.newSubGroup) {
+                // add to this inclusion (temporarily) - then can get surroundings
+                LayoutInterval snp = null;
+                if (iDesc.snappedParallel != null && !iDesc.parent.isParentOf(iDesc.snappedParallel)) {
+                    snp = iDesc.snappedParallel;  // it may be removed from layout at this moment,
+                    iDesc.snappedParallel = null; // and we won't do aligning in parallel anyway
+                }
                 addToGroup(iDesc, null, false);
+                if (snp != null) {
+                    iDesc.snappedParallel = snp;
+                }
+
                 if (subGroup == null && !LayoutInterval.wantResize(addingInterval)) {
                     // now we may have L and T gaps next to the added interval
                     LayoutInterval lGap = LayoutInterval.getDirectNeighbor(addingInterval, LEADING, false);
@@ -4937,6 +4953,35 @@ class LayoutFeeder implements LayoutConstants {
         LayoutRegion spaceAvailable = group1.getCurrentSpace();
         return LayoutRegion.pointInside(spaceToHold, LEADING, spaceAvailable, dimension)
                && LayoutRegion.pointInside(spaceToHold, TRAILING, spaceAvailable, dimension);
+    }
+
+    private void updateInclusionsForEliminatedGroup(List<IncludeDesc> inclusions,
+            LayoutInterval replacedGroup, LayoutInterval newGroup, int index) {
+        for (IncludeDesc iDesc : inclusions) {
+            updateReplacedGroup(iDesc, replacedGroup, newGroup, index);
+        }
+        if (originalPosition != null) {
+            if (originalPosition.desc1 != null) {
+                updateReplacedGroup(originalPosition.desc1, replacedGroup, newGroup, index);
+            }
+            if (originalPosition.desc2 != null) {
+                updateReplacedGroup(originalPosition.desc2, replacedGroup, newGroup, index);
+            }
+        }
+    }
+
+    private static void updateReplacedGroup(IncludeDesc iDesc,
+            LayoutInterval replacedGroup, LayoutInterval newGroup, int index) {
+        if (iDesc.parent == replacedGroup) {
+            if (newGroup.isSequential()) {
+                if (replacedGroup.isParallel()) {
+                    iDesc.newSubGroup = true;
+                } else if (iDesc.index >= 0 && index >= 0) {
+                    iDesc.index += index;
+                }
+            }
+            iDesc.parent = newGroup;
+        }
     }
 
     private void updateReplacedOriginalGroup(LayoutInterval newGroup, LayoutInterval newSeq) {

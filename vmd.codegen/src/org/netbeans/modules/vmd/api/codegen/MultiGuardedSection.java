@@ -165,8 +165,12 @@ public final class MultiGuardedSection {
         for (int a = index + 1; a < size; a ++)
             guardedSections.get (a).removeSection ();
         try {
-            // TODO - check if there is no gurded section between begin and end. if so, then do not do anything to prevent data-lost
-            document.remove (begin.getOffset () + 1, end.getOffset () - (begin.getOffset () + 1));
+            //#205148
+            if (begin.getOffset() == end.getOffset()) {
+                // no guarded section
+            } else {
+                document.remove (begin.getOffset () + 1, end.getOffset () - (begin.getOffset () + 1));
+            }
         } catch (BadLocationException e) {
             throw Debug.error (e);
         }

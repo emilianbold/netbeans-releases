@@ -717,6 +717,21 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         return whitespaceAcceptor.accept(ch);
     }
     
+    /**
+     * When called within runnable of {@link #runAtomic(java.lang.Runnable) }
+     * this method returns true if the document can be mutated or false
+     * if any attempt of inserting/removing text would throw {@link GuardedException}.
+     *
+     * @return true if document can be mutated by
+     * {@link #insertString(int, java.lang.String, javax.swing.text.AttributeSet)}
+     *  or {@link #remove(int, int) }.
+     *
+     * @since 3.17
+     */
+    public boolean isModifiable() {
+        return modifiable;
+    }
+    
     /** Inserts string into document */
     public @Override void insertString(int offset, String text, AttributeSet attrs)
     throws BadLocationException {
@@ -730,9 +745,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         // Always acquire atomic lock (it simplifies processing and improves readability)
         atomicLockImpl();
         try {
-            if (!modifiable) {
-                throw new BadLocationException("Modification prohibited", offset);
-            }
+            checkModifiable(offset);
             DocumentFilter filter = getDocumentFilter();
             if (filter != null) {
                 filter.insertString(getFilterBypass(), offset, text, attrs);
@@ -870,9 +883,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         // Always acquire atomic lock (it simplifies processing and improves readability)
         atomicLockImpl();
         try {
-            if (!modifiable) {
-                throw new BadLocationException("Modification prohibited", offset);
-            }
+            checkModifiable(offset);
             DocumentFilter filter = getDocumentFilter();
             if (filter != null) {
                 filter.remove(getFilterBypass(), offset, length);
@@ -969,9 +980,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         // Always acquire atomic lock (it simplifies processing and improves readability)
         atomicLockImpl();
         try {
-            if (!modifiable) {
-                throw new BadLocationException("Modification prohibited", offset);
-            }
+            checkModifiable(offset);
             DocumentFilter filter = getDocumentFilter();
             if (filter != null) {
                 filter.replace(getFilterBypass(), offset, length, text, attrs);
@@ -981,6 +990,12 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
             }
         } finally {
             atomicUnlockImpl(true);
+        }
+    }
+    
+    private void checkModifiable(int offset) throws BadLocationException {
+        if (!modifiable) {
+            throw new GuardedException("Modification prohibited", offset);
         }
     }
 

@@ -1407,8 +1407,10 @@ public class SourcePathProviderImpl extends SourcePathProvider {
                         FileObject fo = FileUtil.toFileObject(f);
                         if (fo != null) {
                             String className = fileToClassName(fo);
-                            FixActionProvider.ClassesToReload.getInstance().addClassToReload(
-                                    debugger, src, className, fo);
+                            if (className != null) {
+                                FixActionProvider.ClassesToReload.getInstance().addClassToReload(
+                                        debugger, src, className, fo);
+                            }
                         }
                     }
                     return ;
@@ -1418,7 +1420,9 @@ public class SourcePathProviderImpl extends SourcePathProvider {
                     FileObject fo = FileUtil.toFileObject(f);
                     if (fo != null) {
                         String className = fileToClassName(fo);
-                        classes.put(className, fo);
+                        if (className != null) {
+                            classes.put(className, fo);
+                        }
                     }
                 }
                 FixActionProvider.reloadClasses(debugger, classes);
@@ -1434,6 +1438,10 @@ public class SourcePathProviderImpl extends SourcePathProvider {
         private static String fileToClassName (FileObject fo) {
             // remove ".class" from and use dots for for separator
             ClassPath cp = ClassPath.getClassPath (fo, ClassPath.EXECUTE);
+            if (cp == null) {
+                logger.warning("Did not find EXECUTE class path for "+fo);
+                return null;
+            }
     //        FileObject root = cp.findOwnerRoot (fo);
             return cp.getResourceName (fo, '.', false);
         }

@@ -1021,12 +1021,11 @@ public final class JFXProjectProperties {
                     if( prelJarF.exists() ) {
                         FileObject srcRoot = getSrcRoot(getProject());
                         if(srcRoot != null) {
-                            String prelJarFS = "file:/" + prelJarF.getAbsolutePath() + "!/"; //NOI18N
                             URL[] urls = new URL[1];
-                            urls[0] = new URL(prelJarFS);
+                            urls[0] = FileUtil.urlForArchiveOrDir(prelJarF);
                             FileObject[] fos = new FileObject[1];
                             fos[0] = FileUtil.toFileObject(prelJarF);
-                            preloader = new PreloaderJarArtifact(urls, fos, srcRoot, ClassPath.COMPILE, prelJarFS);
+                            preloader = new PreloaderJarArtifact(urls, fos, srcRoot, ClassPath.COMPILE, urls[0].toString());
                         }
                     }
                 }
@@ -1431,8 +1430,8 @@ public final class JFXProjectProperties {
         for (JavaPlatform javaPlatform : installedPlatforms) {
             String platformName = javaPlatform.getProperties().get(JavaFXPlatformUtils.PLATFORM_ANT_NAME);
             if (platformName.equals(activePlatform) && JavaFXPlatformUtils.isJavaFXEnabled(javaPlatform)) {
-                editableProps.setProperty(JavaFXPlatformUtils.PROPERTY_JAVAFX_SDK, JavaFXPlatformUtils.getJavaFXSDKPath(activePlatform));
-                editableProps.setProperty(JavaFXPlatformUtils.PROPERTY_JAVAFX_RUNTIME, JavaFXPlatformUtils.getJavaFXRuntimePath(activePlatform));
+                editableProps.setProperty(JavaFXPlatformUtils.PROPERTY_JAVAFX_SDK, JavaFXPlatformUtils.getJavaFXSDKPathReference(activePlatform));
+                editableProps.setProperty(JavaFXPlatformUtils.PROPERTY_JAVAFX_RUNTIME, JavaFXPlatformUtils.getJavaFXRuntimePathReference(activePlatform));
             }
         }
     }
