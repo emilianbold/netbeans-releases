@@ -222,7 +222,7 @@ public class ChangeParametersPlugin extends CsmModificationRefactoringPlugin {
             fireProgressListenerStep();
         }
         // check read-only elements
-        preCheckProblem = checkIfModificationPossible(preCheckProblem, directReferencedObject, getString("ERR_Overrides_Fatal"), getString("ERR_OverridesOrOverriden"));
+        preCheckProblem = checkIfModificationPossible(preCheckProblem, directReferencedObject);
         fireProgressListenerStop();
         return preCheckProblem;
     }

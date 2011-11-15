@@ -173,7 +173,7 @@ public final class EncapsulateFieldsPlugin extends CsmModificationRefactoringPlu
             return preCheckProblem;
         }
         // check read-only elements
-        preCheckProblem = checkIfModificationPossible(preCheckProblem, this.enclosingClass, "", ""); // NOI18N
+        preCheckProblem = checkIfModificationPossible(preCheckProblem, this.enclosingClass);
         fireProgressListenerStop();
         if (fieldsInfo.isEmpty()) {
             // check that class has at least one field
@@ -184,7 +184,7 @@ public final class EncapsulateFieldsPlugin extends CsmModificationRefactoringPlu
             }
             return new Problem(true, getString("ERR_EncapsulateNoFields", enclosingClass.getQualifiedName().toString())); // NOI18N
         } else {
-            return null;
+            return preCheckProblem;
         }
     }
 
