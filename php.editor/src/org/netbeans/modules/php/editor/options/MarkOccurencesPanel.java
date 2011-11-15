@@ -135,6 +135,7 @@ public class MarkOccurencesPanel extends javax.swing.JPanel {
         onOffCheckBox = new javax.swing.JCheckBox();
 
         setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 8, 8));
+        setFocusCycleRoot(true);
         setFocusTraversalPolicy(new java.awt.FocusTraversalPolicy() {
             public java.awt.Component getDefaultComponent(java.awt.Container focusCycleRoot){
                 return onOffCheckBox;
@@ -177,11 +178,11 @@ public class MarkOccurencesPanel extends javax.swing.JPanel {
                 .addContainerGap(273, Short.MAX_VALUE))
         );
 
-        onOffCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(MarkOccurencesPanel.class, "MarkOccurencesPanel.onOffCheckBox.AccessibleContext.accessibleName")); // NOI18N
+        onOffCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(MarkOccurencesPanel.class, "MarkOccurrencesPanel.onOffCheckBox.AccessibleContext.accessibleName")); // NOI18N
         onOffCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MarkOccurencesPanel.class, "ACSD_OnOff_CB")); // NOI18N
 
-        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(MarkOccurencesPanel.class, "MarkOccurencesPanel.AccessibleContext.accessibleName")); // NOI18N
-        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MarkOccurencesPanel.class, "MarkOccurencesPanel.AccessibleContext.accessibleDescription")); // NOI18N
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(MarkOccurencesPanel.class, "MarkOccurrencesPanel.AccessibleContext.accessibleName")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MarkOccurencesPanel.class, "MarkOccurrencesPanel.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 
@@ -194,7 +195,7 @@ public class MarkOccurencesPanel extends javax.swing.JPanel {
     private void fillBoxes() {
         boxes = new ArrayList<JCheckBox>();
         boxes.add( onOffCheckBox );
-        
+
         onOffCheckBox.setActionCommand(MarkOccurencesSettings.ON_OFF);
     }
 
