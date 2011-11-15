@@ -48,6 +48,11 @@ import javax.swing.text.BadLocationException;
 
 /**
 * Attempt to insert or remove from the guarded block has been done.
+* <br/>
+* Also it's thrown when modification is prohibited (CloneableEditorSupport
+* sets a "modificationListener" and possibly responds by VetoException to signal
+* that document is unmodifiable) since this is in fact a case when document
+* is fully guarded.
 *
 * @version 1.0
 * @author Miloslav Metelka
@@ -56,6 +61,7 @@ import javax.swing.text.BadLocationException;
 public class GuardedException extends BadLocationException {
 
     static final long serialVersionUID =-8139460534188487509L;
+
     public GuardedException(String s, int offs) {
         super (s, offs);
     }

@@ -4671,7 +4671,17 @@ class LayoutFeeder implements LayoutConstants {
         for (Iterator it=inclusions.iterator(); it.hasNext(); ) {
             IncludeDesc iDesc = (IncludeDesc) it.next();
             if (iDesc.parent.isParallel() || !iDesc.newSubGroup) {
+                // add to this inclusion (temporarily) - then can get surroundings
+                LayoutInterval snp = null;
+                if (iDesc.snappedParallel != null && !iDesc.parent.isParentOf(iDesc.snappedParallel)) {
+                    snp = iDesc.snappedParallel;  // it may be removed from layout at this moment,
+                    iDesc.snappedParallel = null; // and we won't do aligning in parallel anyway
+                }
                 addToGroup(iDesc, null, false);
+                if (snp != null) {
+                    iDesc.snappedParallel = snp;
+                }
+
                 if (subGroup == null && !LayoutInterval.wantResize(addingInterval)) {
                     // now we may have L and T gaps next to the added interval
                     LayoutInterval lGap = LayoutInterval.getDirectNeighbor(addingInterval, LEADING, false);

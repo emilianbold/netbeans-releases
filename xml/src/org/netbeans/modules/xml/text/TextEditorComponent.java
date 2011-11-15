@@ -92,7 +92,7 @@ public class TextEditorComponent extends CloneableEditor {
 
     /** Creates new editor */
     public TextEditorComponent (TextEditorSupport editor) {
-        super (editor);
+        super (editor, true);
         initialize();
         dockIntoEditorMode();
     }
