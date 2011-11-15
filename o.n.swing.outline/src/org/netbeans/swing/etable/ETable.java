@@ -1417,6 +1417,11 @@ public class ETable extends JTable {
         }
     }
     
+    @Override
+    protected JTableHeader createDefaultTableHeader() {
+        return new ETableHeader(columnModel);
+    }
+
     /**
      * Updates the value of filteredRowCount variable.
      */
