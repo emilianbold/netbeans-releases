@@ -150,6 +150,16 @@ public class GlobalSourceForBinaryImplTest extends TestBase {
         assertRoot(loadersURL, URLMapper.findFileObject(loadersSrcURL));
     }
 
+    public void testUnrelatedJAR() throws Exception { // #201043
+        File plaf = getWorkDir();
+        org.openide.util.test.TestFileUtils.writeZipFile(new File(plaf, "platform/core/core.jar"));
+        File mavenJar = org.openide.util.test.TestFileUtils.writeZipFile(new File(plaf, "java/maven/lib/maven-core-3.0.3.jar"));
+        assertTrue(NbPlatform.isPlatformDirectory(plaf));
+        assertTrue(NbPlatform.isSupportedPlatform(plaf));
+        NbPlatform.addPlatform("test", plaf, "Test Plaf");
+        assertNull(new GlobalSourceForBinaryImpl().findSourceRoots(FileUtil.urlForArchiveOrDir(mavenJar)));
+    }
+
     private File generateNbSrcZip(String topLevelEntry) throws IOException {
         return FileUtil.toFile(TestFileUtils.writeZipFile(FileUtil.toFileObject(getWorkDir()), "nbsrc.zip",
                 topLevelEntry + "nbbuild/nbproject/project.xml:",

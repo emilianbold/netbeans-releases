@@ -87,6 +87,25 @@ public class HudsonGitSCMTest extends NbTestCase {
         assertTrue(text, text.contains("x/y.git"));
     }
 
+    public void testForFolderLocal() throws Exception {
+        TestFileUtils.writeFile(new File(getWorkDir(), ".git/config"),
+                  "[core]\n"
+                + "\trepositoryformatversion = 0\n");
+        assertEquals(null, HudsonGitSCM.getRemoteOrigin(getWorkDir().toURI(), null));
+        HudsonSCM.Configuration cfg = new HudsonGitSCM().forFolder(getWorkDir());
+        assertNotNull(cfg);
+        Document doc = XMLUtil.createDocument("whatever", null, null, null);
+        cfg.configure(doc);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        XMLUtil.write(doc, baos, "UTF-8");
+        String text = baos.toString("UTF-8");
+        assertTrue(text, text.contains(getWorkDirPath()));
+    }
+
+    public void testForFolderUnversioned() throws Exception { // #204834
+        assertNull(new HudsonGitSCM().forFolder(getWorkDir()));
+    }
+
     public void testROReplacement() throws Exception {
         assertEquals("git://github.com/x/y.git", HudsonGitSCM.roReplacement("ssh://git@github.com/x/y.git"));
         // XXX should https://user@github.com/user/repo.git also be replaced?

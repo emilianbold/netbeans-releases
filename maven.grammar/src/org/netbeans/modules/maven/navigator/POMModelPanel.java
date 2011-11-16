@@ -139,13 +139,14 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
             }
         }
     });
+    private final RequestProcessor.Task showTask = RequestProcessor.getDefault().create(this);
 
 
     private FileChangeAdapter adapter = new FileChangeAdapter(){
             @Override
             public void fileChanged(FileEvent fe) {
                 showWaitNode();
-                RequestProcessor.getDefault().post(POMModelPanel.this);
+                showTask.schedule(0);
             }
         };
     private TapPanel filtersPanel;
@@ -283,7 +284,7 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
         current = d;
         current.getPrimaryFile().addFileChangeListener(adapter);
         showWaitNode();
-        RequestProcessor.getDefault().post(this);
+        showTask.schedule(0);
     }
 
     void cleanup() {

@@ -91,7 +91,9 @@ public class MissingClient implements ActionListener, HyperlinkListener {
         panel.downloadRadioButton.addActionListener(this);
         panel.cliRadioButton.addActionListener(this);        
         if(Utilities.isWindows() && !SvnUtils.isJava64()) {
-            panel.downloadRadioButton.setSelected(true);
+            boolean forcedCmd = SvnModuleConfig.getDefault().isForcedCommandlineClient();
+            panel.cliRadioButton.setSelected(forcedCmd);
+            panel.downloadRadioButton.setSelected(!forcedCmd);
         } else {
             panel.cliRadioButton.setSelected(true);
             panel.downloadRadioButton.setEnabled(false);

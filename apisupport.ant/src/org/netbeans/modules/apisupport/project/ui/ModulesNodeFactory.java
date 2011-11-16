@@ -75,7 +75,6 @@ import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeFactorySupport;
 import org.netbeans.spi.project.ui.support.NodeList;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.StatusDisplayer;
 import org.openide.nodes.AbstractNode;
@@ -96,7 +95,7 @@ import org.openide.windows.WindowManager;
 @NodeFactory.Registration(projectType="org-netbeans-modules-apisupport-project-suite", position=100)
 public class ModulesNodeFactory implements NodeFactory {
 
-    public ModulesNodeFactory() {}
+    private static final Logger LOG = Logger.getLogger(ModulesNodeFactory.class.getName());
 
     public NodeList createNodes(Project p) {
         SuiteProject prj = p.getLookup().lookup(SuiteProject.class);
@@ -207,7 +206,7 @@ public class ModulesNodeFactory implements NodeFactory {
                         SuiteUtils.addModule(suite, project);
                         ProjectManager.getDefault().saveProject(suite);
                     } catch (IOException ex) {
-                        ErrorManager.getDefault().notify(ex);
+                        LOG.log(Level.INFO, "could not add " + project + " to " + suite, ex);
                     }
                 } else {
                     DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
@@ -256,7 +255,7 @@ public class ModulesNodeFactory implements NodeFactory {
                     ApisupportAntUtils.addDependency(target, project.getCodeNameBase(), null, null, true);
                     ProjectManager.getDefault().saveProject(target);
                 } catch (IOException e) {
-                    assert false : e;
+                    LOG.log(Level.INFO, "could not add dependency on " + project.getCodeNameBase() + " to " + target, e);
                 }
             }
         }
@@ -328,7 +327,7 @@ public class ModulesNodeFactory implements NodeFactory {
                                 confirmMessage, getMessage("CTL_RemoveDependency"), null, NotifyDescriptor.QUESTION_MESSAGE);
                     }
                 } catch (IOException ex) {
-                    Logger.getLogger(ModulesNodeFactory.class.getName()).log(Level.INFO, null, ex);
+                    LOG.log(Level.INFO, null, ex);
                     // #137021: suite may have broken platform dependency, so just continue
                 }
                 if (remove) {
