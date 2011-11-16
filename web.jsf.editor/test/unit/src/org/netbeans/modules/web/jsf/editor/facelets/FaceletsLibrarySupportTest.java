@@ -43,6 +43,7 @@
 package org.netbeans.modules.web.jsf.editor.facelets;
 
 import java.io.IOException;
+import java.util.Map;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -53,6 +54,7 @@ import org.netbeans.modules.web.jsf.editor.TestBaseForTestProject;
 import org.netbeans.modules.web.jsf.editor.index.JsfCustomIndexer;
 import org.netbeans.modules.web.jsf.editor.index.JsfIndexer;
 import org.netbeans.modules.web.jsfapi.api.Attribute;
+import org.netbeans.modules.web.jsfapi.api.Function;
 import org.netbeans.modules.web.jsfapi.api.JsfSupport;
 import org.netbeans.modules.web.jsfapi.api.Library;
 import org.netbeans.modules.web.jsfapi.api.LibraryComponent;
@@ -279,6 +281,31 @@ public class FaceletsLibrarySupportTest extends TestBaseForTestProject {
         assertEquals("ccattr2", a.getName());
 
     }
+
+    public void testLibraryDescriptorWithFunctions() throws Exception {
+        JsfSupportImpl instance = getJsfSupportImpl();
+
+        String libNs = "http://java.sun.com/jsp/jstl/functions";
+        Library lib = instance.getLibrary(libNs);
+        assertNotNull(String.format("Library %s not found!", libNs), lib);
+
+        assertTrue(lib instanceof FaceletsLibrary);
+        FaceletsLibrary flib = (FaceletsLibrary) lib;
+        assertNotNull(flib.getFaceletsLibraryDescriptor());
+        LibraryDescriptor descriptor = flib.getFaceletsLibraryDescriptor();
+        assertTrue(descriptor instanceof FaceletsLibraryDescriptor);
+        FaceletsLibraryDescriptor faceletsDescriptor = (FaceletsLibraryDescriptor) descriptor;
+
+        assertTrue(!faceletsDescriptor.getFunctions().isEmpty());
+        Map<String, Function> functions = faceletsDescriptor.getFunctions();
+        Function function = functions.get("length");
+        assertNotNull(function);
+
+        assertEquals(function.getName(), "length");
+        assertEquals(function.getSignature(), "int length(java.lang.Object)");
+        assertEquals(function.getDescription(), "Returns the number of items in a collection, or the number of characters in a string.");
+    }
+
 
     //TODO fix the test - it seems to fail on a real bug!
 //    public void testModifyCompositeComponentLibrary() throws IOException {
