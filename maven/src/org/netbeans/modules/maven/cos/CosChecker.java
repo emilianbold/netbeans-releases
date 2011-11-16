@@ -616,7 +616,7 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
         } else {
             roots = RuntimeClassPathImpl.createPath(prj);
         }
-        return ClassPathSupport.createClassPath(AbstractProjectClassPathImpl.getPath(roots.toArray(new URI[0])));
+        return ClassPathSupport.createClassPath(AbstractProjectClassPathImpl.getPath(roots.toArray(new URI[0]), null));
     }
 
     private static File getCoSFile(RunConfig rc, boolean test) {
