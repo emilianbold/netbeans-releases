@@ -46,9 +46,7 @@ package org.netbeans.modules.cnd.makeproject;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
@@ -76,7 +74,6 @@ import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
-import org.netbeans.modules.cnd.makeproject.api.configurations.BooleanConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configurations;
@@ -84,13 +81,9 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
-import org.netbeans.modules.cnd.makeproject.api.configurations.VectorConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCCompilerConfiguration;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider.Delta;
-import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
-import org.netbeans.modules.cnd.makeproject.api.configurations.FolderConfiguration;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.CndUtils;
@@ -116,6 +109,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
     private final Project project;
     private final ConfigurationDescriptorProvider projectDescriptorProvider;
     private final Set<NativeProjectItemsListener> listeners = new HashSet<NativeProjectItemsListener>();
+    private static final RequestProcessor RP = new RequestProcessor("ReadErrorStream", 2); // NOI18N
 
     public NativeProjectProvider(Project project, ConfigurationDescriptorProvider projectDescriptorProvider) {
         this.project = project;
@@ -695,8 +689,9 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
             List<String> arguments = new ArrayList<String>(args.length + 1);
             arguments.add(exePath);
             arguments.addAll(Arrays.asList(args));
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
             StringBuilder output = new StringBuilder();
+            RequestProcessor.Task errorTask = null;
+            Process startedProcess = null;
            
             try {
                 ProcessBuilder pb = new ProcessBuilder(arguments);
@@ -706,24 +701,45 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
                         pb.environment().put(varValuePair[0], varValuePair[1]);
                     }
                 }
-                Process p = pb.start();
-                InputStream is = p.getInputStream();
-                InputStreamReader ist = new InputStreamReader(is);
-                BufferedReader br = new BufferedReader(ist);
+                startedProcess = pb.start();
+
+                final BufferedReader reader2 = new BufferedReader(new InputStreamReader(startedProcess.getErrorStream()));
+                errorTask = RP.post(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        try {
+                            String line;
+                            while ((line = reader2.readLine()) != null) {
+                                // we is not interested in err stream
+                                //System.err.println(line);
+                            }
+                        } catch (IOException ex) {
+                        }
+                    }
+                });
+                
+                BufferedReader reader1 = new BufferedReader(new InputStreamReader(startedProcess.getInputStream()));
                 String line;
-                while ((line = br.readLine()) != null) {
+                while ((line = reader1.readLine()) != null) {
                     output.append(line).append("\n"); // NOI18N
                 }
-                p.waitFor();
-                br.close();
-                ist.close();
-                is.close();
-                bos.close();
+
+                startedProcess.waitFor();
+                reader1.close();
+                reader2.close();
                 return new NativeExitStatus(0, output.toString(), "");
             } catch (IOException ioe) {
                 throw ioe;
             } catch (InterruptedException ex) {
                 throw new IOException(ex);
+            } finally {
+                if (errorTask != null){
+                    errorTask.cancel();
+                }
+                if (startedProcess != null) {
+                    startedProcess.destroy();
+                }
             }
         } else {
             ServerRecord record = ServerList.get(ev);
