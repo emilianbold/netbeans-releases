@@ -205,10 +205,10 @@ public final class ModificationResult {
                 IndexingController.getDefault().exitProtectedMode(null);
                 Set<FileObject> alreadyRefreshed = new HashSet<FileObject>();
                 if (this.sources != null) {
-                    if (sources.size() == 1) // moved from JavaSourceAccessor.revalidate(Java Source)
-                        Utilities.revalidate(sources.iterator().next());
-                    for (Source source : sources)
+                    for (Source source : sources) {
+                        Utilities.revalidate(source);
                         alreadyRefreshed.add(source.getFileObject());
+                    }
                 }
                 for (FileObject currentlyVisibleInEditor : JavaSourceSupportAccessor.ACCESSOR.getVisibleEditorsFiles()) {
                     if (!alreadyRefreshed.contains(currentlyVisibleInEditor)) {

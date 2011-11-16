@@ -79,6 +79,7 @@ import org.netbeans.api.editor.guards.GuardedSection;
 import org.netbeans.api.editor.guards.GuardedSectionManager;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.editor.GuardedException;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.editor.indent.api.Reformat;
 import org.openide.DialogDescriptor;
@@ -165,6 +166,8 @@ public class AddPropertyCodeGenerator implements CodeGenerator {
                             r.reformat(Utilities.getRowStart(pane, start.getOffset()), Utilities.getRowEnd(pane, end.getOffset()));
                             bounds[0] = start;
                             bounds[1] = end;
+                        } catch (GuardedException ex) {
+                            //workaround for bug 205193
                         } catch (BadLocationException ex) {
                             Exceptions.printStackTrace(ex);
                         }

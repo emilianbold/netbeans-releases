@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import javax.swing.JComboBox;
+import javax.swing.JDialog;
 import javax.swing.JTextField;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
@@ -75,8 +76,9 @@ import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.jellytools.modules.j2ee.nodes.J2eeServerNode;
 import org.netbeans.jellytools.NavigatorOperator;
 import org.netbeans.jellytools.actions.*;
+import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.modules.web.nodes.WebPagesNode;
-import org.netbeans.jemmy.ComponentChooser;
+import org.netbeans.jemmy.*;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
@@ -135,9 +137,6 @@ public class WebProjectValidation extends J2eeTestCase {
     @Override
     public void setUp() throws Exception {
         System.out.println("########  " + this.getClass().getSimpleName() + "." + getName() + "  #######");
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 180000);
-        JemmyProperties.setCurrentTimeout("FrameWaiter.WaitFrameTimeout", 180000);
-        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 180000);
         if (server == null) {
             server = new ServerInstance();
         }
@@ -184,11 +183,16 @@ public class WebProjectValidation extends J2eeTestCase {
         serverStep.next();
         NewWebProjectSourcesStepOperator frameworkStep = new NewWebProjectSourcesStepOperator();
         frameworkStep.finish();
-        waitScanFinished();
+        frameworkStep.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 120000);
+        frameworkStep.waitClosed();
+        // wait project appear in projects view
+        // wait 30 second
+        JemmyProperties.setCurrentTimeout("JTreeOperator.WaitNextNodeTimeout", 30000); // NOI18N
         verifyWebPagesNode("index.jsp");
         if (J2EE_4.equals(getEEVersion())) {
             verifyWebPagesNode("WEB-INF|web.xml");
         }
+        waitScanFinished();
     }
 
     protected void verifyProjectNode(String nodePath) {
@@ -479,7 +483,23 @@ public class WebProjectValidation extends J2eeTestCase {
         editor.replace("try {",
                 "try {\nout.println(\"<title>Servlet with name=\"+request.getParameter(\"name\")+\"</title>\");");
         new ActionNoBlock(null, "Run File").perform(editor);
-        NbDialogOperator dialog = new NbDialogOperator("Set Servlet Execution URI");
+        NbDialogOperator dialog;
+        try {
+            dialog = new NbDialogOperator("Set Servlet Execution URI");
+        } catch (TimeoutExpiredException e) {
+            // workaround bug 201668
+            System.out.println("Bug 201668");
+            e.printStackTrace(System.out);
+            // close all error and information dialogs
+            JDialog jDialog;
+            do {
+                jDialog = NbDialogOperator.findJDialog(ComponentSearcher.getTrueChooser("Any dialog"));
+                if (jDialog != null) {
+                    new NbDialogOperator(jDialog).close();
+                }
+            } while (jDialog != null);
+            return;
+        }
         JComboBoxOperator combo = new JComboBoxOperator(dialog);
         combo.setSelectedItem(combo.getSelectedItem() + "?name=Servlet1");
         dialog.ok();

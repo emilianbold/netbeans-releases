@@ -994,8 +994,10 @@ public final class JFXProjectProperties {
             
             String prelProjDir = configCopy.get(PRELOADER_PROJECT);
             if (prelProjDir != null && isEqualIgnoreCase(prelTypeString, PreloaderSourceType.PROJECT.getString())) {
-                File prelProjDirF = new File(prelProjDir);
-                if( isTrue(configCopy.get(PRELOADER_ENABLED)) && prelProjDirF.exists() ) {
+                FileObject thisProjDir = project.getProjectDirectory();
+                FileObject fo = JFXProjectUtils.getFileObject(thisProjDir, prelProjDir);
+                File prelProjDirF = (fo == null) ? null : FileUtil.toFile(fo);                
+                if( isTrue(configCopy.get(PRELOADER_ENABLED)) && prelProjDirF != null && prelProjDirF.exists() ) {
                     FileObject srcRoot = getSrcRoot(getProject());
                     if(srcRoot != null) {
                         prelProjDirF = FileUtil.normalizeFile(prelProjDirF);
@@ -1017,8 +1019,10 @@ public final class JFXProjectProperties {
             if(preloader == null) {
                 String prelJar = configCopy.get(PRELOADER_JAR_PATH);
                 if(prelJar != null && isEqualIgnoreCase(prelTypeString, PreloaderSourceType.JAR.getString())) {
-                    File prelJarF = new File(prelJar);
-                    if( prelJarF.exists() ) {
+                    FileObject thisProjDir = project.getProjectDirectory();
+                    FileObject fo = JFXProjectUtils.getFileObject(thisProjDir, prelJar);
+                    File prelJarF = (fo == null) ? null : FileUtil.toFile(fo);                
+                    if( prelJarF != null && prelJarF.exists() ) {
                         FileObject srcRoot = getSrcRoot(getProject());
                         if(srcRoot != null) {
                             URL[] urls = new URL[1];

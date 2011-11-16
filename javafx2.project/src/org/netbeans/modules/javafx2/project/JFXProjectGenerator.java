@@ -413,18 +413,14 @@ public class JFXProjectGenerator {
             }
 
             if (preloader != null && preloader.length() > 0) { // this project uses preloader
-                String preloaderProj = FileUtil.toFile(dirFO).getParentFile().getAbsolutePath()
-                        + File.separatorChar + preloader; // NOI18N
-                //String preloaderJar = preloaderProj + "\\dist\\" + preloader + ".jar"; // NOI18N
-                String preloaderJarPath = preloaderProj + File.separatorChar + "dist" + File.separatorChar; // NOI18N
+                String preloaderProjRelative = "../" + preloader; // NOI18N
                 String preloaderJarFileName = preloader + ".jar"; // NOI18N
-                String copiedPreloaderJarPath = FileUtil.toFile(dirFO).getAbsolutePath() + File.separatorChar + "dist" + File.separatorChar + "lib" + File.separatorChar + preloaderJarFileName; // NOI18N
-                //String preloaderSrc = preloader + "\\src"; // NOI18N
+                String copiedPreloaderJarPath = "${dist.dir}/lib/${" + JFXProjectProperties.PRELOADER_JAR_FILENAME + "}"; // NOI18N
 
                 ep.setProperty(JFXProjectProperties.PRELOADER_ENABLED, "true"); // NOI18N
                 ep.setProperty(JFXProjectProperties.PRELOADER_TYPE, JFXProjectProperties.PreloaderSourceType.PROJECT.getString());
                 ep.setComment(JFXProjectProperties.PRELOADER_ENABLED, new String[]{"# " + NbBundle.getMessage(JFXProjectGenerator.class, "COMMENT_use_preloader")}, false); // NOI18N
-                ep.setProperty(JFXProjectProperties.PRELOADER_PROJECT, preloaderProj);
+                ep.setProperty(JFXProjectProperties.PRELOADER_PROJECT, preloaderProjRelative);
                 ep.setProperty(JFXProjectProperties.PRELOADER_CLASS, JavaFXProjectWizardIterator.generatePreloaderClassName(preloader)); // NOI18N
                 ep.setProperty(JFXProjectProperties.PRELOADER_JAR_PATH, copiedPreloaderJarPath);
                 ep.setProperty(JFXProjectProperties.PRELOADER_JAR_FILENAME, preloaderJarFileName);

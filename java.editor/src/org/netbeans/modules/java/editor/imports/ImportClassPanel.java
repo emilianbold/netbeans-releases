@@ -66,16 +66,19 @@ import javax.swing.DefaultListModel;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.KeyStroke;
+import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.java.source.ui.ElementIcons;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.java.editor.codegen.GeneratorUtils;
 import org.netbeans.modules.java.editor.overridden.PopupUtil;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.Exceptions;
@@ -90,13 +93,15 @@ public class ImportClassPanel extends javax.swing.JPanel {
     private JavaSource javaSource;
     private DefaultListModel model;
     private final int position;
+    private final JTextComponent target;
     
     /** Creates new form ImportClassPanel */
-    public ImportClassPanel(List<TypeElement> priviledged, List<TypeElement> denied, Font font, JavaSource javaSource, int position ) {
+    public ImportClassPanel(List<TypeElement> priviledged, List<TypeElement> denied, Font font, JavaSource javaSource, int position, JTextComponent target ) {
         // System.err.println("priviledged=" + priviledged);
         // System.err.println("denied=" + denied);
         this.javaSource = javaSource;
         this.position = position;
+        this.target = target;
         createModel(priviledged, denied);
         initComponents();
         setBackground(jList1.getBackground());
@@ -352,7 +357,8 @@ public class ImportClassPanel extends javax.swing.JPanel {
             ProgressUtils.runOffEventDispatchThread(new Runnable() {
                 public void run() {
                     try {
-                        javaSource.runModificationTask(task).commit();
+                        ModificationResult mr = javaSource.runModificationTask(task);
+                        GeneratorUtils.guardedCommit(target, mr);
                     } catch (IOException ex) {
                         Exceptions.printStackTrace(ex);
                     }

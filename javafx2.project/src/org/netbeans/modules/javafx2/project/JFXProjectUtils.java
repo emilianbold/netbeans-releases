@@ -53,6 +53,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -272,5 +273,112 @@ public final class JFXProjectUtils {
         }
         return ep.evaluator().getProperty(JFXProjectProperties.RUN_AS);
     }
-    
+
+    /**
+     * Finds the relative path to targetFile from sourceDir. 
+     * Unlike FileUtil.getRelativePath() does not require targetFile to be within sourceDir sub-tree
+     * Returns null if there is no shared parent directory except root.
+     * 
+     * @param sourceDir file/dir to which the relative path will be related
+     * @param targetFile file whose location will be determined with respect to sourceDir
+     * @return string relative path leading from sourceFile to targetFile
+     */
+    public static String getRelativePath(@NonNull final FileObject sourceDir, @NonNull final FileObject targetFile) {
+        String path = ""; //NOI18N
+        FileObject src = sourceDir;
+        FileObject tgt = targetFile;
+        String targetName = null;
+        if(!sourceDir.isFolder()) {
+            src = sourceDir.getParent();
+        }
+        if(!targetFile.isFolder()) {
+            targetName = tgt.getNameExt();
+            tgt = sourceDir.getParent();
+        }
+        LinkedList<String> srcSplit = new LinkedList<String>();
+        LinkedList<String> tgtSplit = new LinkedList<String>();
+        while(!src.isRoot()) {
+            srcSplit.addFirst(src.getName());
+            src = src.getParent();
+        }
+        while(!tgt.isRoot()) {
+            tgtSplit.addFirst(tgt.getName());
+            tgt = tgt.getParent();
+        }
+        boolean share = false;
+        while(!srcSplit.isEmpty() && !tgtSplit.isEmpty()) {
+            if(srcSplit.getFirst().equals(tgtSplit.getFirst())) {
+                srcSplit.removeFirst();
+                tgtSplit.removeFirst();
+                share = true;
+            } else {
+                break;
+            }
+        }
+        if(!share) {
+            return null;
+        }
+        for(int left = 0; left < srcSplit.size(); left++) {
+            if(left == 0) {
+                path += ".."; //NOI18N
+            } else {
+                path += "/.."; //NOI18N
+            }
+        }
+        while(!tgtSplit.isEmpty()) {
+            if(path.isEmpty()) {
+                path += tgtSplit.getFirst();
+            } else {
+                path += "/" + tgtSplit.getFirst(); //NOI18N
+            }
+            tgtSplit.removeFirst();
+        }
+        if(targetName != null) {
+            if(!path.isEmpty()) {
+                path += "/" + targetName; //NOI18N
+            } else {
+                path += targetName;
+            }
+        }
+        return path;
+    }
+
+    /**
+     * Finds the file/dir represented by relPath with respect to sourceDir. 
+     * Returns null if the file does not exist.
+     * 
+     * @param sourceDir file/dir to which the relative path is related
+     * @param relPath relative path related to sourceDir
+     * @return FileObject or null
+     */
+    public static FileObject getFileObject(@NonNull final FileObject sourceDir, @NonNull final String relPath) {
+        String split[] = relPath.split("[\\\\/]+"); //NOI18N
+        FileObject src = sourceDir;
+        String path = ""; //NOI18N
+        boolean back = true;
+        if(split[0].equals("..")) {
+            for(int i = 0; i < split.length; i++) {
+                if(back && split[i].equals("..")) { //NOI18N
+                    src = src.getParent();
+                    if(src == null) {
+                        return null;
+                    }
+                } else {
+                    if(back) {
+                        back = false;
+                        path = src.getPath();
+                    }
+                    path += "/" + split[i]; //NOI18N
+                }
+            }
+        } else {
+            path = relPath;
+        }
+        File f = new File(path);
+        if(f.exists()) {
+            return FileUtil.toFileObject(f);
+        }
+        return null;
+    }
+
 }

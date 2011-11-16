@@ -86,7 +86,7 @@ public class FastImportAction extends BaseAction {
         super(NAME);
     }
 
-    public void actionPerformed(ActionEvent evt, JTextComponent target) {
+    public void actionPerformed(final ActionEvent evt, final JTextComponent target) {
         try {
             final Rectangle carretRectangle = target.modelToView(target.getCaretPosition());
             final Font font = target.getFont();
@@ -135,7 +135,7 @@ public class FastImportAction extends BaseAction {
                     SwingUtilities.invokeLater(new Runnable() {
 
                         public void run() {
-                            ImportClassPanel panel = new ImportClassPanel(priviledged, denied, font, javaSource, position);
+                            ImportClassPanel panel = new ImportClassPanel(priviledged, denied, font, javaSource, position, target);
                             PopupUtil.showPopup(panel, "", where.x, where.y, true, carretRectangle.height);
                         }
                     });

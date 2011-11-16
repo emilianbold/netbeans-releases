@@ -124,11 +124,6 @@ public abstract class AbstractApplyHintsRefactoringPlugin extends ProgressProvid
 
     protected final void prepareElements(BatchResult candidates, ProgressHandleWrapper w, final RefactoringElementsBag refactoringElements, final boolean verify, List<MessageImpl> problems) {
         if (verify) {
-            int size = candidates.getResources().size();
-            final ProgressHandleWrapper inner = size>0?w.startNextPartWithEmbedding(size):null;
-            if (inner !=null) {
-                inner.startNextPart(size);
-            }
             BatchSearch.getVerifiedSpans(candidates, w, new BatchSearch.VerifiedSpansCallBack() {
                 public void groupStarted() {}
                 public boolean spansVerified(CompilationController wc, Resource r, Collection<? extends ErrorDescription> hints) throws Exception {
@@ -139,15 +134,11 @@ public abstract class AbstractApplyHintsRefactoringPlugin extends ProgressProvid
                     }
 
                     refactoringElements.addAll(refactoring, Utilities.createRefactoringElementImplementation(r.getResolvedFile(), spans, verify));
-                    if (inner!=null)
-                        inner.tick();
                     return true;
                 }
                 public void groupFinished() {}
                 public void cannotVerifySpan(Resource r) {
                     refactoringElements.addAll(refactoring, Utilities.createRefactoringElementImplementation(r.getResolvedFile(), prepareSpansFor(r), verify));
-                    if (inner!=null)
-                        inner.tick();
                 }
             }, problems, cancel);
         } else {
