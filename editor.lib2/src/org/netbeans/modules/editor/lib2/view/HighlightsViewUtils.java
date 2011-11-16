@@ -182,10 +182,13 @@ public class HighlightsViewUtils {
                 if (offset == -1) { // Entering view from the left.
                     retOffset = viewStartOffset;
                 } else { // Regular offset
-                    currentHit = TextHitInfo.afterOffset(offset - viewStartOffset);
-                    nextHit = textLayout.getNextRightHit(currentHit);
-                    if (nextHit != null) {
-                        retOffset = viewStartOffset + nextHit.getInsertionIndex();
+                    int index = offset - viewStartOffset;
+                    if (index >= 0 && index <= viewLength) {
+                        currentHit = TextHitInfo.afterOffset(index);
+                        nextHit = textLayout.getNextRightHit(currentHit);
+                        if (nextHit != null) {
+                            retOffset = viewStartOffset + nextHit.getInsertionIndex();
+                        } // Leave retOffset == -1
                     } // Leave retOffset == -1
                 }
                 break;
@@ -194,10 +197,13 @@ public class HighlightsViewUtils {
                 if (offset == -1) { // Entering view from the right
                     retOffset = viewStartOffset + viewLength - 1;
                 } else { // Regular offset
-                    currentHit = TextHitInfo.afterOffset(offset - viewStartOffset);
-                    nextHit = textLayout.getNextLeftHit(currentHit);
-                    if (nextHit != null) {
-                        retOffset = viewStartOffset + nextHit.getInsertionIndex();
+                    int index = offset - viewStartOffset;
+                    if (index >= 0 && index <= viewLength) {
+                        currentHit = TextHitInfo.afterOffset(index);
+                        nextHit = textLayout.getNextLeftHit(currentHit);
+                        if (nextHit != null) {
+                            retOffset = viewStartOffset + nextHit.getInsertionIndex();
+                        } // Leave retOffset == -1
                     } // Leave retOffset == -1
                 }
                 break;
