@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <!--
-*     Copyright (c) 2010 Oracle and/or its affiliates. All rights reserved.
+*     Copyright (c) 2010, 2011, Oracle and/or its affiliates. All rights reserved.
 
 Oracle and Java are registered trademarks of Oracle and/or its affiliates.
 Other names may be trademarks of their respective owners.
@@ -364,14 +364,14 @@ Other names may be trademarks of their respective owners.
 <!-- End of Persistence help -->
 
 <!-- Start of Packaged Archive project help -->
-
-    <mapID target="archiveproject_about" url="archiveproject/archiveproject_about.html" />
-    <mapID target="archiveproject-deploying" url="archiveproject/archiveproject-deploying.html" />
+<!-- commenting out pending removal of feature and topics -->
+    <!-- <mapID target="archiveproject_about" url="archiveproject/archiveproject_about.html" />
+    <mapID target="archiveproject-deploying" url="archiveproject/archiveproject-deploying.html" /> -->
     <!-- CSH -->
     <!-- New Project wiz - Packaged Archive Project, Name & Location page -->
-    <mapID target="org.netbeans.modules.j2ee.archive.wizard.DeployableWizardPanel" url="archiveproject/csh/archiveproject_new_wizard.html" />
-    <!-- Packaged Archive Project Properties - Run page (the only page for this project) -->
-    <mapID target="org.netbeans.modules.j2ee.archive.customizer.CustomizerRun" url="archiveproject/csh/archiveproject-properties-run.html" />
+    <!-- <mapID target="org.netbeans.modules.j2ee.archive.wizard.DeployableWizardPanel" url="archiveproject/csh/archiveproject_new_wizard.html" /> -->
+    <!-- Packaged Archive Project Properties - Run page (the only page for this project) --> 
+    <!-- <mapID target="org.netbeans.modules.j2ee.archive.customizer.CustomizerRun" url="archiveproject/csh/archiveproject-properties-run.html" /> -->
 
 <!-- End of Packaged Archive project help -->
 

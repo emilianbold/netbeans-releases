@@ -28,5 +28,13 @@ foreach ($arrayUsed as $key => $value) {
 HINT:Variable $key seems to be unused in its scope
 HINT:Variable $value seems to be unused in its scope
 $fnc = function($formUsed) use($lexUsed) {};
- ---
+                                -------
 HINT:Variable $fnc seems to be unused in its scope
+HINT:Variable $formUsed seems to be unused in its scope
+HINT:Variable $lexUsed seems to be unused in its scope
+function($param1) use ($field1) {return $field1;};
+          ------
+HINT:Variable $param1 seems to be unused in its scope
+function($param11) use ($field11) {return $param11;};
+                         -------
+HINT:Variable $field11 seems to be unused in its scope

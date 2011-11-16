@@ -351,7 +351,7 @@ final class CommandManager implements ActionListener {
             awtListener = new AWTEventListener() {
                 @Override
                 public void eventDispatched(AWTEvent event) {
-                    if( event.getID() == MouseEvent.MOUSE_PRESSED && event.getSource() instanceof Component
+                    if( event.getID() == MouseEvent.MOUSE_CLICKED && event.getSource() instanceof Component
                             && !(SwingUtilities.isDescendingFrom((Component)event.getSource(), getSlidedTabContainer())
                             || SwingUtilities.isDescendingFrom((Component)event.getSource(), slideBar)) ) {
                         //#159356 - make sure window slides out when clicked outside that window

@@ -65,12 +65,13 @@ public final class WLConnectionSupport {
     // full weblogic code is setting this, causing CNFE on DWP
     private static final String PORTABLE_OBJECT_PROPERTY = "javax.rmi.CORBA.PortableRemoteObjectClass"; // NOI18N
 
+    // we should hide this constructor
     public WLConnectionSupport(WLDeploymentManager deploymentManager) {
         this.deploymentManager = deploymentManager;
     }
 
     public <T> T executeAction(Callable<T> action) throws Exception {
-        synchronized (deploymentManager) {
+        synchronized (this) {
             ClassLoader originalLoader = Thread.currentThread().getContextClassLoader();
 
             String portable = System.getProperty(PORTABLE_OBJECT_PROPERTY);

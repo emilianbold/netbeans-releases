@@ -133,11 +133,6 @@ public final class JavaDataLoader extends UniFileLoader {
     protected FileObject findPrimaryFile (FileObject fo) {
 	// never recognize folders.
         if (fo.isFolder()) return null;
-        
-        // ignore templates using scripting
-        if (fo.getAttribute("template") != null && fo.getAttribute("javax.script.ScriptEngine") != null) // NOI18N
-            return null;
-
         return super.findPrimaryFile(fo);
     }
 

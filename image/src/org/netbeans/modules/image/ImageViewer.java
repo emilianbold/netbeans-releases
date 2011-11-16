@@ -63,12 +63,16 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.api.progress.ProgressUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -119,6 +123,11 @@ public class ImageViewer extends CloneableTopComponent {
     private final Collection/*<JButton>*/ toolbarButtons
                                           = new ArrayList/*<JButton>*/(11);
     
+    private Component view;
+    
+    private static final RequestProcessor RP = new RequestProcessor("Image loader", 1, true);
+    
+    private RequestProcessor.Task loadImageTask;
     
     /** Default constructor. Must be here, used during de-externalization */
     public ImageViewer () {
@@ -154,23 +163,12 @@ public class ImageViewer extends CloneableTopComponent {
         // force closing panes in all workspaces, default is in current only
         setCloseOperation(TopComponent.CLOSE_EACH);
         
-        /* try to load the image: */
-        String errMsg = loadImage(storedObject);
-        
         /* compose the whole panel: */
         JToolBar toolbar = createToolBar();
-        Component view;
-        if (storedImage != null) {
-            view = createImageView();
-        } else {
-            view = createMessagePanel(errMsg);
-            setToolbarButtonsEnabled(false);
-        }
         setLayout(new BorderLayout());
-        add(view, BorderLayout.CENTER);
         add(toolbar, BorderLayout.NORTH);
 
-        getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(ImageViewer.class).getString("ACS_ImageViewer"));        
+        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ImageViewer.class, "ACS_ImageViewer"));        
         
         nameChangeL = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
@@ -181,9 +179,10 @@ public class ImageViewer extends CloneableTopComponent {
             }
         };
         
-        obj.addPropertyChangeListener(WeakListeners.propertyChange(nameChangeL, obj));
-        
+        obj.addPropertyChangeListener(WeakListeners.propertyChange(nameChangeL, obj));        
         setFocusable(true);
+         /* try to load the image: */
+        loadImage(storedObject);
     }
 
     /**
@@ -282,22 +281,7 @@ public class ImageViewer extends CloneableTopComponent {
     /**
      */
     void updateView(final ImageDataObject imageObj) {
-        boolean wasValid = (storedImage != null);
-        String errMsg = loadImage(imageObj);
-        boolean isValid = (storedImage != null);
-        
-        if (wasValid && isValid) {
-            reloadIcon();
-            return;
-        }
-        
-        Component view = (storedImage != null) ? createImageView()
-                                               : createMessagePanel(errMsg);
-        remove(0);
-        add(view, BorderLayout.CENTER, 0);
-        if (wasValid != isValid) {
-            setToolbarButtonsEnabled(isValid);
-        }
+        loadImage(imageObj);
     }
     
     /**
@@ -321,29 +305,82 @@ public class ImageViewer extends CloneableTopComponent {
      * to field {@link #storedImage}. The field is <code>null</code>ed
      * in case of any failure.
      *
-     * @param  imageObj  <code>ImageDataObject</code> to load the image from
-     * @return  <code>null</code> if the image was loaded successfully,
-     *          or a localized error message in case of failure
+     * @param  imageObj  <code>ImageDataObject</code> to load the image from     
      */
-    private String loadImage(final ImageDataObject imageObj) {
-        String errMsg;
-        try {
-            storedImage = NBImageIcon.load(imageObj);
-            if (storedImage != null) {
-                errMsg = null;
-            } else {
-                errMsg = NbBundle.getMessage(ImageViewer.class,
-                                             "MSG_CouldNotLoad");       //NOI18N
+    private void loadImage(final ImageDataObject imageObj) {
+        loadImageTask = RP.create(new Runnable() {
+
+            public void run() {
+                ProgressHandle loadImageProgress = ProgressHandleFactory.createHandle(NbBundle.getMessage(ImageViewer.class, "LBL_LoadingImage"));
+                loadImageProgress.start();
+                try {
+                    performLoadImage(imageObj);
+                } finally {
+                    loadImageProgress.finish();
+                }
             }
-        } catch (IOException ex) {
-            storedImage = null;
-            errMsg = NbBundle.getMessage(ImageViewer.class,
-                                         "MSG_ErrorWhileLoading");      //NOI18N
-        }
-        assert (storedImage == null) != (errMsg == null);
-        return errMsg;
+        });
+        loadImageTask.schedule(0);
+      
+    }
+                
+   
+
+    protected void componentClosed() {
+        loadImageTask.cancel();
+        super.componentClosed();
     }
     
+    private void performLoadImage(final ImageDataObject imageObj) {
+        String errMsg;
+        NBImageIcon image;
+        try {            
+            image = NBImageIcon.load(imageObj);
+            if (image != null) {
+                errMsg = null;
+            } else {
+                errMsg = NbBundle.getMessage(ImageViewer.class, "MSG_CouldNotLoad");       //NOI18N
+            }
+        } catch (IOException ex) {
+            image = null;
+            errMsg = NbBundle.getMessage(ImageViewer.class, "MSG_ErrorWhileLoading");      //NOI18N
+        }
+        assert (image == null) != (errMsg == null);        
+        final NBImageIcon fImage = image;
+        final String fErrMsg = errMsg;
+        
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                showImage(fImage, fErrMsg);
+            }
+        });
+    }
+
+    private void showImage(NBImageIcon image, String errorMessage) {
+        boolean wasValid = (storedImage != null);
+        storedImage = image;
+        boolean isValid = (storedImage != null);
+
+        if (wasValid && isValid) {
+            reloadIcon();
+            return;
+        }
+        if (view != null) {
+            remove(view);
+        }
+        if (isValid) {
+            view = createImageView();
+        } else {
+            view = createMessagePanel(errorMessage);
+        }
+        add(view, BorderLayout.CENTER);
+        if (wasValid != isValid) {
+            setToolbarButtonsEnabled(isValid);
+        }
+        revalidate();
+        repaint();        
+    }
+
     /** Creates toolbar. */
     private JToolBar createToolBar() {
         // Definition of toolbar.
@@ -412,139 +449,19 @@ public class ImageViewer extends CloneableTopComponent {
         setToolTipText(FileUtil.getFileDisplayName(fo));
     }
 
-    /** Docks the table into the workspace if top component is valid.
-     *  (Top component may become invalid after deserialization)
+    /** 
      */
-    public void open(Workspace workspace){
-        if (discard()) return;
-
-        Workspace realWorkspace = (workspace == null)
-                                  ? WindowManager.getDefault().getCurrentWorkspace()
-                                  : workspace;
-        dockIfNeeded(realWorkspace);
-        boolean modeVisible = false;
-        TopComponent[] tcArray = editorMode(realWorkspace).getTopComponents();
-        for (int i = 0; i < tcArray.length; i++) {
-            if (tcArray[i].isOpened(realWorkspace)) {
-                modeVisible = true;
-                break;
-            }
+    public void open(){
+        if (discard()) {
+            return;
         }
-        if (!modeVisible) {
-            openOtherEditors(realWorkspace);
-        }
-        super.open(workspace);
-        openOnOtherWorkspaces(realWorkspace);
+        super.open();
     }
     
     /**
      */
     protected String preferredID() {
         return getClass().getName();
-    }
-
-    private void superOpen(Workspace workspace) {
-        super.open(workspace);
-    }
-
-
-    /** Utility method, opens this top component on all workspaces
-     * where editor mode is visible and which differs from given
-     * workspace.  */
-    private void openOnOtherWorkspaces(Workspace workspace) {
-        Workspace[] workspaces = WindowManager.getDefault().getWorkspaces();
-        Mode curEditorMode = null;
-        Mode tcMode = null;
-        for (int i = 0; i < workspaces.length; i++) {
-            // skip given workspace
-            if (workspaces[i].equals(workspace)) {
-                continue;
-            }
-            curEditorMode = workspaces[i].findMode(CloneableEditorSupport.EDITOR_MODE);
-            tcMode = workspaces[i].findMode(this);
-            if (
-                !isOpened(workspaces[i]) &&
-                curEditorMode != null &&
-                (
-                    tcMode == null ||
-                    tcMode.equals(curEditorMode)
-                )
-            ) {
-                // candidate for opening, but mode must be already visible
-                // (= some opened top component in it)
-                TopComponent[] tcArray = curEditorMode.getTopComponents();
-                for (int j = 0; j < tcArray.length; j++) {
-                    if (tcArray[j].isOpened(workspaces[i])) {
-                        // yep, open this top component on found workspace too
-                        pureOpen(this, workspaces[i]);
-                        break;
-                    }
-                }
-            }
-        }
-    }
-
-    /** Utility method, opens top components which are opened
-     * in editor mode on some other workspace.
-     * This method should be called only if first top component is
-     * being opened in editor mode on given workspace  */
-    private void openOtherEditors(Workspace workspace) {
-        // choose candidates for opening
-        Set topComps = new HashSet(15);
-        Workspace[] wsArray = WindowManager.getDefault().getWorkspaces();
-        Mode curEditorMode = null;
-        TopComponent[] tcArray = null;
-        for (int i = 0; i < wsArray.length; i++) {
-            curEditorMode = wsArray[i].findMode(CloneableEditorSupport.EDITOR_MODE);
-            if (curEditorMode != null) {
-                tcArray = curEditorMode.getTopComponents();
-                for (int j = 0; j < tcArray.length; j++) {
-                    if (tcArray[j].isOpened(wsArray[i])) {
-                        topComps.add(tcArray[j]);
-                    }
-                }
-            }
-        }
-        // open choosed candidates
-        for (Iterator iter = topComps.iterator(); iter.hasNext(); ) {
-            pureOpen((TopComponent)iter.next(), workspace);
-        }
-    }
-        
-    /** Utility method, calls super version of open if given
-     * top component is of Editor type, or calls regular open otherwise.
-     * The goal is to prevent from cycle open call between
-     * Editor top components  */
-    private void pureOpen(TopComponent tc,Workspace workspace) {
-        if (tc instanceof ImageViewer) {
-            ((ImageViewer)tc).dockIfNeeded(workspace);
-            ((ImageViewer)tc).superOpen(workspace);
-        } else {
-            tc.open(workspace);
-        }
-    }
-
-    /** Dock this top component to editor mode if it is not docked
-     * in some mode at this time  */
-    private void dockIfNeeded(Workspace workspace) {
-        // dock into editor mode if possible
-        Mode ourMode = workspace.findMode(this);
-        if (ourMode == null) {
-            editorMode(workspace).dockInto(this);
-        }
-    }
-
-    private Mode editorMode(Workspace workspace) {
-        Mode ourMode = workspace.findMode(this);
-        if (ourMode == null) {
-            ourMode = workspace.createMode(
-                          CloneableEditorSupport.EDITOR_MODE, getName(),
-                          CloneableEditorSupport.class.getResource(
-                              "/org/openide/resources/editorMode.gif" // NOI18N
-                          )
-                      );
-        }
-        return ourMode;
     }
     
     /** Gets HelpContext. */

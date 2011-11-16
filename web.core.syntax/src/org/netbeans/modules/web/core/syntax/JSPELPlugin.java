@@ -43,16 +43,37 @@
  */
 package org.netbeans.modules.web.core.syntax;
 
+import java.io.File;
+import java.io.IOException;
+import java.lang.String;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.text.Document;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.web.core.syntax.tld.LibraryDescriptor;
+import org.netbeans.modules.web.core.syntax.tld.LibraryDescriptorException;
+import org.netbeans.modules.web.core.syntax.tld.TldLibrary;
 import org.netbeans.modules.web.el.spi.ELPlugin;
+import org.netbeans.modules.web.el.spi.Function;
 import org.netbeans.modules.web.el.spi.ImplicitObject;
 import org.netbeans.modules.web.el.spi.ImplicitObjectType;
 import org.netbeans.modules.web.el.spi.ResourceBundle;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.JarFileSystem;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -62,6 +83,7 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service = ELPlugin.class)
 public class JSPELPlugin implements ELPlugin {
 
+    private static final Logger LOGGER = Logger.getLogger(JSPELPlugin.class.getName());
     private static final String PLUGIN_NAME = "JSP EL Plugin"; //NOI18N
     private Collection<String> MIMETYPES = Arrays.asList(new String[]{"text/x-jsp", "text/x-tag"});
 
@@ -134,6 +156,117 @@ public class JSPELPlugin implements ELPlugin {
         }
         return result;
 
+    }
+
+    @Override
+    public List<Function> getFunctions(FileObject file) {
+        List<Function> functions =  new ArrayList<Function>();
+        Document document = getDocumentForFile(file);
+        if (document == null || !(document instanceof BaseDocument)) {
+            return functions;
+        }
+
+        JspSyntaxSupport ss = JspSyntaxSupport.get(document);
+        Map prefixMapper = ss.getPrefixMapper();
+        if (prefixMapper == null || prefixMapper.isEmpty()) {
+            return functions;
+        }
+        Map<String, String> urlToPrefixMapper = transposeMap(prefixMapper);
+
+        Map<String, String[]> tagLibMappings = JspUtils.getTaglibMap(file);
+        for (Entry<String, String[]> entry : tagLibMappings.entrySet()) {
+            String url = entry.getKey();
+            if (urlToPrefixMapper.containsKey(url)) {
+                // entry.getValue[0]==jarPath, entry.getValue[1]==tldPath
+                functions.addAll(getFunctionsForUrl(
+                        entry.getValue()[0],
+                        entry.getValue()[1],
+                        urlToPrefixMapper.get(url)));
+            }
+        }
+
+        return functions;
+    }
+
+    private static Map<String, String> transposeMap(Map<String, String> original) {
+        Map<String, String> newMap = new HashMap<String, String>(original.size());
+        for (Map.Entry<String, String> entry : original.entrySet()) {
+            newMap.put(entry.getValue(), entry.getKey());
+        }
+        return newMap;
+    }
+
+    private static Document getDocumentForFile(FileObject fo) {
+        try {
+            EditorCookie ec = DataObject.find(fo).getLookup().lookup(EditorCookie.class);
+            return (ec == null) ? null : ec.getDocument();
+        } catch (DataObjectNotFoundException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+        }
+        return null;
+    }
+
+    private static List<Function> getFunctionsForUrl(String jarPath, String tldPath, String prefix) {
+        List<Function> functions = new ArrayList<Function>();
+
+        String FILE_PREFIX = "file:/"; //NOI18N
+
+        File f;
+        if (jarPath.startsWith(FILE_PREFIX)) {
+            URI u = URI.create(jarPath);
+            f = new File(u);
+        } else {
+            f = new File(jarPath);
+        }
+
+        try {
+            JarFileSystem jfs = new JarFileSystem(FileUtil.normalizeFile(f));
+            FileObject tldFile = jfs.getRoot().getFileObject(tldPath);
+            TldLibrary tldLib = TldLibrary.create(tldFile);
+
+            Iterator<Entry<String, LibraryDescriptor.Function>> iterator = tldLib.getFunctions().entrySet().iterator();
+            while (iterator.hasNext()) {
+                Entry<String, LibraryDescriptor.Function> entry = iterator.next();
+                functions.add(new Function(
+                        prefix + ":" + entry.getKey(), //NOI18N
+                        getReturnTypeForSignature(entry.getValue().getSignature()),
+                        getParametersForSignature(entry.getValue().getSignature()),
+                        getDescription(entry.getValue().getDescription(), entry.getValue().getExample())));
+            }
+        } catch (IOException ioe) {
+            LOGGER.log(Level.INFO, null, ioe);
+        } catch (LibraryDescriptorException lde) {
+            LOGGER.log(Level.INFO, null, lde);
+        }
+        return functions;
+    }
+
+    private static String getReturnTypeForSignature(String signature) {
+        String returnType = signature.substring(0, signature.indexOf(" ")); //NOI18N
+        return getSimpleNameForType(returnType.trim());
+    }
+
+    private static List<String> getParametersForSignature(String signature) {
+        List<String> params = new ArrayList<String>();
+        String paramString = signature.substring(signature.indexOf("(") + 1, signature.indexOf(")")); //NOI18N
+        for (String param : paramString.split(",")) { //NOI18N
+            params.add(getSimpleNameForType(param.trim()));
+        }
+        return params;
+    }
+
+    private static String getSimpleNameForType(String fqn) {
+        return fqn.substring(fqn.lastIndexOf(".") + 1); //NOI18N
+    }
+
+    private static String getDescription(String description, String example) {
+        return description;
+        //TODO - complete the doc with example (requires HTML escaped String)
+//        if (example.isEmpty()) {
+//            return description;
+//        } else {
+//            return description + "<br><br><font color='#ce7b00'>Example: " + example + "</font>"; //NOI18N
+//        }
     }
 
     private static class ELImplicitObject implements ImplicitObject {

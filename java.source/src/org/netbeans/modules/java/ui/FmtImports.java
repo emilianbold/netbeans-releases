@@ -447,12 +447,13 @@ public class FmtImports extends javax.swing.JPanel implements Runnable, ListSele
     private void separateStaticImportsCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_separateStaticImportsCheckBoxActionPerformed
         TableModel oldModel = importLayoutTable.getModel();
         TableModel newModel = (DefaultTableModel)createTableModel(importGroupsOrder, preferences);
+        importLayoutTable.setModel(newModel);
+        setImportLayoutTableColumnsWidth();
         for (TableModelListener l : ((DefaultTableModel)oldModel).getTableModelListeners()) {
             oldModel.removeTableModelListener(l);
             newModel.addTableModelListener(l);
+            l.tableChanged(null);
         }
-        importLayoutTable.setModel(newModel);
-        setImportLayoutTableColumnsWidth();
     }//GEN-LAST:event_separateStaticImportsCheckBoxActionPerformed
 
     private void starImportTresholdCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_starImportTresholdCheckBoxActionPerformed

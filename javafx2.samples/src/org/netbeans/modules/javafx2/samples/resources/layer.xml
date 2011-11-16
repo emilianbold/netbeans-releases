@@ -333,4 +333,10 @@
             </folder>
         </folder>
     </folder>
+    <folder name="org-netbeans-modules-javafx2-samples">
+        <folder name="OpenAfterCreated">
+            <!-- the file to open should have the same name as the template zip file -->
+            <file name="SwingInterop.url" url="nbresloc:/org/netbeans/modules/javafx2/samples/resources/SwingInteropDescription.url" />
+        </folder>
+    </folder>
 </filesystem>

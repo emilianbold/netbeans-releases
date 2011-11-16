@@ -57,6 +57,7 @@ import org.netbeans.modules.php.editor.nav.NavUtils;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.Block;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.EmptyStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.NamespaceDeclaration;
@@ -138,6 +139,13 @@ public class InvocationContextResolver {
             @Override
             boolean isExactlyIn(ASTNode lastNode) {
                 return lastNode instanceof Program;
+            }
+        },
+
+        EMPTY_STATEMENT {
+            @Override
+            boolean isExactlyIn(ASTNode lastNode) {
+                return lastNode instanceof EmptyStatement;
             }
         };
 

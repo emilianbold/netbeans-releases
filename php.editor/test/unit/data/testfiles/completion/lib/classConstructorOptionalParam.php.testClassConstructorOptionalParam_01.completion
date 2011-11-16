@@ -10,6 +10,9 @@ PACKAGE    App                             [PUBLIC]   null
 CONSTRUCTO A()                             [PUBLIC]   A
 CONSTRUCTO A()                             [PUBLIC]   A
 CONSTRUCTO a()                             [PUBLIC]   a
+PACKAGE    a                               [PUBLIC]   Test204925_06_P
+PACKAGE    a                               [PUBLIC]   Test204925_07_P
+PACKAGE    a                               [PUBLIC]   Test204925_08_P
 CLASS      A135618                         [PUBLIC]   issue135618.php
 CLASS      AA                              [PUBLIC]   Test197084.php
 CLASS      Admin                           [PUBLIC]   Admin

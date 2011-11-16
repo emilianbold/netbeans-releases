@@ -48,7 +48,7 @@ import java.util.Iterator;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.common.dd.DDHelper;
-import org.netbeans.modules.web.beans.UsageLogger;
+import org.netbeans.modules.web.beans.CdiUtil;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.filesystems.FileObject;
@@ -82,17 +82,24 @@ class BeansXmlFix implements Fix {
      */
     @Override
     public ChangeInfo implement() throws Exception {
-        Collection<FileObject> infs = CdiAnalysisResult.getBeansTargetFolder(myProject, true);
+        CdiUtil util = myProject.getLookup().lookup( CdiUtil.class);
+        Collection<FileObject> infs;
+        if ( util == null ){
+            infs= CdiUtil.getBeansTargetFolder(myProject, true);
+        }
+        else {
+            infs = util.getBeansTargetFolder(true);
+        }
         for (FileObject inf : infs) {
             if (inf != null) {
                 FileObject beansXml = inf
-                        .getFileObject(CdiAnalysisResult.BEANS_XML);
+                        .getFileObject(CdiUtil.BEANS_XML);
                 if (beansXml != null) {
                     return null;
                 }
                 DDHelper.createBeansXml(Profile.JAVA_EE_6_FULL, inf,
-                        CdiAnalysisResult.BEANS);
-                UsageLogger logger = myProject.getLookup().lookup(UsageLogger.class);
+                        CdiUtil.BEANS);
+                CdiUtil logger = myProject.getLookup().lookup(CdiUtil.class);
                 if ( logger!= null ){
                     logger.log("USG_CDI_BEANS_FIX", BeansXmlFix.class, 
                             new Object[]{myProject.getClass().getName()}, true );

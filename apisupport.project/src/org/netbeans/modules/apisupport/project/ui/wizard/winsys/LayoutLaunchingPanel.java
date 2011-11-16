@@ -79,7 +79,7 @@ implements TaskListener, Runnable, ExplorerManager.Provider {
     private Task task;
     private ProgressHandle handle;
     private ExplorerManager em;
-    private final OutlineView outlineView;
+    private OutlineView outlineView;
     
     @NbBundle.Messages({
         "CTL_FoundModes=Found modes",
@@ -94,6 +94,10 @@ implements TaskListener, Runnable, ExplorerManager.Provider {
         initComponents();
         initAccessibility();
         putClientProperty("NewFileWizard_Title", Bundle.LBL_LayoutingWizardTitle()); // NOI18N
+    }
+
+    @Override public void addNotify() {
+        super.addNotify();
         outlineView = new OutlineView(Bundle.CTL_FoundModes());
         outlineView.getOutline().setRootVisible(false);
         tree.add(outlineView);
@@ -133,11 +137,13 @@ implements TaskListener, Runnable, ExplorerManager.Provider {
 
             handle.start();
             markInvalid();
+            /* XXX what was the purpose of this? cannot do it now, we are in EQ
             try {
                 DesignSupport.existingModes(data);
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
+            */
         }
         task.addTaskListener(this);
     }
@@ -229,6 +235,7 @@ implements TaskListener, Runnable, ExplorerManager.Provider {
                 if (layer == null) {
                     throw new IOException("Cannot find layer in " + data.getProject()); // NOI18N
                 }
+                data.setSFS(layer);
                 for (FileObject m : modeDir.getChildren()) {
                     if (m.isData() && "wsmode".equals(m.getExt())) {
                         ModeNode mn = new ModeNode(m, data);

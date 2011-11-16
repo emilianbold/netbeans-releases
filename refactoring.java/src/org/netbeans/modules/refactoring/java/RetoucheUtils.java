@@ -622,7 +622,7 @@ public class RetoucheUtils {
                     ownerRoot = cp.findOwnerRoot(fo);
                 }
             }
-            if (cp != null && ownerRoot != null) {
+            if (cp != null && ownerRoot != null && FileUtil.getArchiveFile(ownerRoot)==null ) {
                 URL sourceRoot = URLMapper.findURL(ownerRoot, URLMapper.INTERNAL);
                 if (dependencies) {
                     dependentRoots.addAll(SourceUtils.getDependentRoots(sourceRoot));

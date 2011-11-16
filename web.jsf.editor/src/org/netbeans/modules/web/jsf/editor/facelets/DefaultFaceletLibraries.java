@@ -42,12 +42,14 @@
 package org.netbeans.modules.web.jsf.editor.facelets;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.web.jsf.editor.index.JsfBinaryIndexer;
 import org.netbeans.modules.web.jsfapi.api.DefaultLibraryInfo;
 import org.netbeans.modules.web.jsfapi.api.LibraryInfo;
 import org.openide.filesystems.FileObject;
@@ -85,7 +87,7 @@ public class DefaultFaceletLibraries {
         assert jsfImplJar != null;
 
         FileObject jsfImplJarFo = FileUtil.getArchiveRoot(FileUtil.toFileObject(jsfImplJar));
-        libraryDescriptorsFiles = JsfBinaryIndexer.findLibraryDescriptors(jsfImplJarFo, ".taglib.xml"); //NOI18N
+        libraryDescriptorsFiles = findLibraryDescriptors(jsfImplJarFo, ".taglib.xml"); //NOI18N
 
     }
 
@@ -125,4 +127,20 @@ public class DefaultFaceletLibraries {
         return li != null ? li.getDefaultPrefix() : null;
     }
 
+     private static Collection<FileObject> findLibraryDescriptors(FileObject classpathRoot, String suffix) {
+        Collection<FileObject> files = new ArrayList<FileObject>();
+        Enumeration<? extends FileObject> fos = classpathRoot.getChildren(true); //scan all files in the jar
+        while (fos.hasMoreElements()) {
+            FileObject file = fos.nextElement();
+            if(!file.isValid() || !file.isData()) {
+                continue;
+}
+            if (file.getNameExt().toLowerCase(Locale.US).endsWith(suffix)) { //NOI18N
+                //found library, create a new instance and cache it
+                files.add(file);
+            }
+        }
+        return files;
+    }
+    
 }

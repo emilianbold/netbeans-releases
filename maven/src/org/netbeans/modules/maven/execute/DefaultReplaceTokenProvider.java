@@ -53,6 +53,7 @@ import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.maven.classpath.MavenSourcesImpl;
@@ -107,7 +108,7 @@ public class DefaultReplaceTokenProvider implements ReplaceTokenProvider, Action
         return files.toArray(new FileObject[files.size()]);
     }
 
-    public Map<String, String> createReplacements(String actionName, Lookup lookup) {
+    @Override public Map<String, String> createReplacements(String actionName, Lookup lookup) {
         FileObject[] fos = extractFileObjectsfromLookup(lookup);
         Tuple tuple = new Tuple(null, null);
         FileObject fo = null;
@@ -122,7 +123,7 @@ public class DefaultReplaceTokenProvider implements ReplaceTokenProvider, Action
 
         if (fos.length > 0) {
             fo = fos[0];
-            Sources srcs = project.getLookup().lookup(Sources.class);
+            Sources srcs = ProjectUtils.getSources(project);
             if ("text/x-java".equals(fo.getMIMEType())) {//NOI18N
                 tuple = checkSG(srcs.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA), replaceMap, fo);
             }
@@ -194,7 +195,7 @@ public class DefaultReplaceTokenProvider implements ReplaceTokenProvider, Action
     private static class Tuple {
         final String relPath;
         final SourceGroup group;
-        public Tuple(String path, SourceGroup sg) {
+        Tuple(String path, SourceGroup sg) {
             relPath = path;
             group = sg;
         }
@@ -250,7 +251,7 @@ public class DefaultReplaceTokenProvider implements ReplaceTokenProvider, Action
 //                new FileObject[files.size()]);
 //    }
 
-    public String convert(String action, Lookup lookup) {
+    @Override public String convert(String action, Lookup lookup) {
         if (SingleMethod.COMMAND_DEBUG_SINGLE_METHOD.equals(action)) {
             return ActionProvider.COMMAND_DEBUG_TEST_SINGLE;
         }
@@ -263,15 +264,13 @@ public class DefaultReplaceTokenProvider implements ReplaceTokenProvider, Action
             if (fos.length > 0) {
                 FileObject fo = fos[0];
                 if ("text/x-java".equals(fo.getMIMEType())) {//NOI18N
-                    Sources srcs = project.getLookup().lookup(Sources.class);
+                    Sources srcs = ProjectUtils.getSources(project);
                     SourceGroup[] grp = srcs.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
                     for (int i = 0; i < grp.length; i++) {
                         String relPath = FileUtil.getRelativePath(grp[i].getRootFolder(), fo);
                         if (relPath != null) {
-                            if (!SourceUtils.isScanInProgress()) {
-                                if (SourceUtils.isMainClass(relPath.replaceFirst("[.]java$", "").replace('/', '.'), ClasspathInfo.create(fo), true)) {
-                                    return action + ".main";//NOI18N
-                                }
+                            if (SourceUtils.isMainClass(relPath.replaceFirst("[.]java$", "").replace('/', '.'), ClasspathInfo.create(fo), true)) {
+                                return action + ".main";//NOI18N
                             }
                         }
                     }

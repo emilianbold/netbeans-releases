@@ -516,6 +516,11 @@ Yes. Component can control its persistence and way how they are displayed in con
      'Maximize Window' action will be also disabled.
 </api>
 
+<api type="export" group="property" name="netbeans.winsys.tc.draganddrop_copy_disabled" category="stable">
+     Name of TopComponent's Boolean client property which disables 'copy' drag and drop action 
+     of a TopComponent when set to Boolean.TRUE.
+</api>
+
 
 <!--<api group="property" name="NamingType" type="export" category="private">
     Valid values are "BothOnlyCompName", "SDIOnlyCompName", "MDIOnlyCompName". 

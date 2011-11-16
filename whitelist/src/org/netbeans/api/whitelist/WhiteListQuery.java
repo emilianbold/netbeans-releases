@@ -50,7 +50,7 @@ import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.whitelist.WhiteListQueryImplementationMerged;
-import org.netbeans.modules.whitelist.project.WhiteListCategoryPanel;
+import org.netbeans.modules.whitelist.project.WhiteListLookupProvider;
 import org.netbeans.spi.whitelist.WhiteListQueryImplementation;
 import org.netbeans.spi.whitelist.WhiteListQueryImplementation.WhiteListImplementation;
 import org.openide.filesystems.FileObject;
@@ -97,7 +97,7 @@ public final class WhiteListQuery {
      * @param enable if true the white list is enabled if false white list is disabled
      */
     public static void enableWhiteListInProject(@NonNull Project project, @NonNull String whiteListId, boolean enable) {
-        WhiteListCategoryPanel.enableWhiteListInProject(project, whiteListId, enable);
+        WhiteListLookupProvider.enableWhiteListInProject(project, whiteListId, enable);
     }
 
     /**
@@ -108,7 +108,7 @@ public final class WhiteListQuery {
      * @since 1.1
      */
     public static boolean isWhiteListEnabledInProject(@NonNull Project project, @NonNull String whiteListId) {
-        return WhiteListCategoryPanel.isWhiteListEnabledInProject(project, whiteListId);
+        return WhiteListLookupProvider.isWhiteListEnabledInProject(project, whiteListId);
     }
 
     /**

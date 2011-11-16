@@ -80,18 +80,22 @@ public abstract class CsmRefactoringPlugin extends ProgressProviderAdapter imple
 
     protected volatile boolean cancelRequest = false;
 
+    @Override
     public Problem preCheck() {
         return null;
     }
 
+    @Override
     public Problem checkParameters() {
         return fastCheckParameters();
     }
 
+    @Override
     public Problem fastCheckParameters() {
         return null;
     }
 
+    @Override
     public final void cancelRequest() {
         cancelRequest = true;
     }
@@ -132,7 +136,7 @@ public abstract class CsmRefactoringPlugin extends ProgressProviderAdapter imple
         return outProblem.get();
     }
 
-    protected static final Problem createProblem(Problem prevProblem, boolean isFatal, String message) {
+    public static Problem createProblem(Problem prevProblem, boolean isFatal, String message) {
         Problem problem = new Problem(isFatal, message);
         if (prevProblem == null) {
             return problem;

@@ -564,16 +564,17 @@ public class FtpClient implements RemoteClient {
             preventNoOperationTimeout();
             scheduleKeepAlive();
         } catch (IOException ex) {
+            LOGGER.log(Level.FINE, "Keep-alive (NOOP/PWD) error for " + configuration.getHost(), ex);
+            keepAliveTask.cancel();
             silentDisconnect();
             WindowsJdk7WarningPanel.warn();
-            LOGGER.log(Level.FINE, "Keep-alive (NOOP/PWD) error for " + configuration.getHost(), ex);
             // #201828
             RemoteException exc = new RemoteException(NbBundle.getMessage(FtpClient.class, "MSG_FtpCannotKeepAlive", configuration.getHost()), ex, getReplyString());
             RemoteUtils.processRemoteException(exc);
         }
     }
 
-    void silentDisconnect() {
+    private void silentDisconnect() {
         try {
             disconnect();
         } catch (RemoteException ex) {
@@ -583,7 +584,7 @@ public class FtpClient implements RemoteClient {
 
     // #203987
     private void preventNoOperationTimeout() throws IOException {
-        long counter = keepAliveCounter.incrementAndGet();
+        int counter = keepAliveCounter.incrementAndGet();
         if (counter == 10) {
             keepAliveCounter.set(0);
             LOGGER.log(Level.FINE, "Keep-alive (PWD) for {0}", configuration.getHost());
@@ -687,5 +688,12 @@ public class FtpClient implements RemoteClient {
         public long getTimestamp() {
             return TimeUnit.SECONDS.convert(ftpFile.getTimestamp().getTimeInMillis() + getTimestampDiff(), TimeUnit.MILLISECONDS);
         }
+
+        @Override
+        public String toString() {
+            return "FtpFile[name: " + getName() + ", parent directory: " + getParentDirectory() + "]";
+        }
+
     }
+
 }

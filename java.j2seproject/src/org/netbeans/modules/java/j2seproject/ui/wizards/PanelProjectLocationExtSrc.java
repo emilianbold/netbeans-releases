@@ -47,6 +47,7 @@ package org.netbeans.modules.java.j2seproject.ui.wizards;
 import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
+import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -59,6 +60,7 @@ import org.openide.util.NbBundle;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
+import org.openide.*;
 
 
 /**
@@ -72,7 +74,9 @@ class PanelProjectLocationExtSrc extends SettingsPanel {
     private boolean calculatePF;
     
     private static final String DEFAULT_BUILD_SCRIPT_NAME = "build.xml";      //NOI18N
+    private static final String DEFAULT_DIST_FOLDER = "dist";                 //NOI18N
     private static final String NB_BUILD_SCRIPT_NAME = "nbbuild.xml";          //NOI18N
+    private static final String NB_DIST_NAME = "nbdist";    //NOI18N
 
     /** Creates new form PanelSourceFolders */
     PanelProjectLocationExtSrc (PanelConfigureProject panel) {
@@ -200,7 +204,7 @@ class PanelProjectLocationExtSrc extends SettingsPanel {
         }
         this.projectName.setText (projName);                
         this.projectName.selectAll();
-        String bldScrName = (String) settings.getProperty("buildScriptName");           //NOI18N
+        String bldScrName = (String) settings.getProperty(NewJ2SEProjectWizardIterator.PROP_BUILD_SCRIPT_NAME);
         if (bldScrName == null) {
             assert projLoc != null;
             bldScrName = DEFAULT_BUILD_SCRIPT_NAME;
@@ -223,7 +227,7 @@ class PanelProjectLocationExtSrc extends SettingsPanel {
         if (DEFAULT_BUILD_SCRIPT_NAME.equals(bldScrName)) {
             bldScrName = null;
         }
-        settings.putProperty("buildScriptName", bldScrName);    //NOI18N
+        settings.putProperty(NewJ2SEProjectWizardIterator.PROP_BUILD_SCRIPT_NAME, bldScrName);
     }
     
     @Override
@@ -280,9 +284,6 @@ class PanelProjectLocationExtSrc extends SettingsPanel {
                 else if ("build".equals(childName)) {    //NOI18N
                     file = NbBundle.getMessage (PanelSourceFolders.class,"TXT_BuildFolder");
                 }
-                else if ("dist".equals(childName)) {   //NOI18N
-                    file = NbBundle.getMessage (PanelSourceFolders.class,"TXT_DistFolder");
-                }
                 else if (buildScriptName.equals(childName)) {   //NOI18N
                     file = NbBundle.getMessage (PanelSourceFolders.class,"TXT_BuildXML");
                 }                
@@ -312,6 +313,40 @@ class PanelProjectLocationExtSrc extends SettingsPanel {
 
     @Override
     void validate(WizardDescriptor settings) throws WizardValidationException {
+        final File projDir = new File (projectLocation.getText());
+        String distName = (String) settings.getProperty(NewJ2SEProjectWizardIterator.PROP_DIST_FOLDER);
+        if (distName == null) {
+            distName = DEFAULT_DIST_FOLDER;
+        }
+        final File distDir = new File (projDir, distName);
+        if (distDir.exists()) {
+            final JButton okOption = new JButton(NbBundle.getMessage(PanelProjectLocationExtSrc.class, "LBL_SetFolders"));
+            okOption.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PanelProjectLocationExtSrc.class, "AN_SetFolders"));
+            okOption.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PanelProjectLocationExtSrc.class, "AD_SetFolders"));
+            final ImportFoldersPanel panel = new ImportFoldersPanel(
+                    projDir,
+                    distDir,
+                    NB_DIST_NAME,
+                    okOption);
+            final DialogDescriptor nd = new DialogDescriptor(
+                    panel,
+                    NbBundle.getMessage(PanelProjectLocationExtSrc.class, "TITLE_ImportProjectFolders"),
+                    true,
+                    new Object[] {okOption, NotifyDescriptor.CANCEL_OPTION},
+                    okOption,
+                    DialogDescriptor.DEFAULT_ALIGN,
+                    null,
+                    null);
+            if (DialogDisplayer.getDefault().notify(nd) == okOption) {
+                distName = panel.getDistFolder();
+                assert distName != null && distName.length() > 0;
+                settings.putProperty(NewJ2SEProjectWizardIterator.PROP_DIST_FOLDER, distName);
+            } else {
+                throw new WizardValidationException(projectLocation,
+                    "", //NOI18N
+                    NbBundle.getMessage(PanelProjectLocationExtSrc.class, "ERR_DistFolder"));
+            }
+        }
     }
     
     /** This method is called from within the constructor to

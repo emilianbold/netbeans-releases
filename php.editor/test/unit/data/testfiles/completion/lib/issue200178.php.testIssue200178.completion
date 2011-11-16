@@ -1,6 +1,7 @@
 Code completion result for source line:
 /**/foo|();
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+PACKAGE    Foo                             [PUBLIC]   null
 METHOD     foo($x = -5)                    [PUBLIC]   issue200178.php
 METHOD     foo()                           [PUBLIC]   issue200178.php
 ------------------------------------

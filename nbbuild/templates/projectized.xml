@@ -231,6 +231,11 @@ If you are sure you want to build with JDK 7+ anyway, use: -Dpermit.jdk7.builds=
         <releasefilescopy cluster="${cluster}"/>
     </target>
 
+    <target name="-init-startlevel">
+        <property name="module.startlevel" value="4"/>
+        <property name="check.module.startlevel" value="false"/>
+    </target>
+
     <target name="-check-for-libs.junit4">
         <condition property="build.libs.junit4">
             <not>
@@ -748,4 +753,39 @@ If you are sure you want to build with JDK 7+ anyway, use: -Dpermit.jdk7.builds=
     <target name="findbugs.delete" if="findbugs.error">
         <delete file="${report.file}" failonerror="false"/>
     </target>
+
+    <target name="patch-for-maven" depends="init" description="Patch local Maven repo's version of this module with one built from sources.">
+        <property name="maven.tmp" location="${build.dir}/mvn"/>
+        <delete dir="${maven.tmp}"/>
+        <property name="maven.tmp.nbms" location="${maven.tmp}/nbms"/>
+        <antcall target="nbm" inheritall="false">
+            <param name="build.dir" location="${maven.tmp.nbms}"/>
+        </antcall>
+        <property name="maven.tmp.install" location="${maven.tmp}/install"/>
+        <mkdir dir="${maven.tmp.install}"/>
+        <autoupdate installdir="${maven.tmp.install}">
+            <modules includes=".*"/>
+            <nbms dir="${maven.tmp.nbms}" includes="*.nbm"/>
+        </autoupdate>
+        <property name="maven.tmp.sources" location="${maven.tmp}/sources"/>
+        <antcall target="sources-zip">
+            <param name="netbeans.zipped.sources.dir" location="${maven.tmp.sources}"/>
+        </antcall>
+        <property name="maven.tmp.javadoc" location="${maven.tmp}/javadoc"/>
+        <antcall target="javadoc">
+            <param name="netbeans.javadoc.dir" location="${maven.tmp.javadoc}"/>
+        </antcall>
+        <exec executable="mvn" failonerror="true">
+            <arg value="-DforcedVersion=SNAPSHOT"/>
+            <arg value="-DdefineCluster=false"/>
+            <arg value="-DdependencyRepositoryId=netbeans-snapshot"/>
+            <arg value="-DdependencyRepositoryUrl=http://bits.netbeans.org/netbeans/trunk/maven-snapshot/"/>
+            <arg value="-DnetbeansInstallDirectory=${maven.tmp.install}"/>
+            <arg value="-DnetbeansNbmDirectory=${maven.tmp.nbms}"/>
+            <arg value="-DnetbeansSourcesDirectory=${maven.tmp.sources}"/>
+            <arg value="-DnetbeansJavadocDirectory=${maven.tmp.javadoc}"/>
+            <arg value="org.codehaus.mojo:nbm-maven-plugin:3.7-SNAPSHOT:populate-repository"/>
+        </exec>
+    </target>
+
 </project>

@@ -256,16 +256,11 @@ public class BaseDocumentEvent extends AbstractDocument.DefaultDocumentEvent {
 
         inUndo = true;
 
-        boolean notifyMod;
-        try {
-            notifyMod = doc.notifyModifyCheckStart(0, "undo() vetoed"); // NOI18N
-        } catch (BadLocationException ex) {
-            throw new CannotUndoException();
-        }
-        boolean modFinished = false;
-
         // Super of undo()
         doc.atomicLockImpl();
+        if (!doc.modifiable) {
+            throw new CannotUndoException();
+        }
         try {
             doc.incrementDocVersion();
             
@@ -280,11 +275,8 @@ public class BaseDocumentEvent extends AbstractDocument.DefaultDocumentEvent {
                 /*DEBUG*/System.err.println("UNDO in doc=" + doc);
             }
             
-            int i = edits.size();
-            if (i > 0) {
-                doc.markModsUndoneOrRedone();
-            }
-            while (i-- > 0) {
+            int i = edits.size(); // i should be > 0 since only non-empty edits are fired
+            while (--i >= 0) {
                 UndoableEdit e = (UndoableEdit)edits.elementAt(i);
                 e.undo();
             }
@@ -303,9 +295,6 @@ public class BaseDocumentEvent extends AbstractDocument.DefaultDocumentEvent {
             }
         } finally {
             doc.atomicUnlockImpl(false);
-            if (notifyMod) {
-                doc.notifyModifyCheckEnd(modFinished);
-            }
             inUndo = false;
         }
         // End super of undo()
@@ -315,21 +304,11 @@ public class BaseDocumentEvent extends AbstractDocument.DefaultDocumentEvent {
     public @Override void redo() throws CannotRedoException {
         BaseDocument doc = (BaseDocument)getDocument();
         
-        boolean notifyMod;
-        try {
-            notifyMod = doc.notifyModifyCheckStart(0, "redo() vetoed"); // NOI18N
-        } catch (BadLocationException ex) {
+        doc.atomicLockImpl();
+        if (!doc.modifiable) {
             throw new CannotRedoException();
         }
-
-        // Must atomicLock() since otherwise if "previous" is a compound edit
-        // then it would do atomic lock and then atomic unlock which would think
-        // that it's lastAtomic so it would clear the STATUS var but because of that
-        // doc.notifyModifyCheckEnd(modFinished); here would fail with NPE.
-
-        doc.atomicLockImpl();
         inRedo = true;
-        boolean modFinished = false; // Whether modification succeeded
         try {
             doc.incrementDocVersion();
 
@@ -349,10 +328,7 @@ public class BaseDocumentEvent extends AbstractDocument.DefaultDocumentEvent {
             }
             
             Enumeration cursor = edits.elements();
-            if (cursor.hasMoreElements()) {
-                doc.markModsUndoneOrRedone();
-            }
-            while (cursor.hasMoreElements()) {
+            while (cursor.hasMoreElements()) { // should be non-empty since only non-empty edits are fired
                 ((UndoableEdit)cursor.nextElement()).redo();
             }
 
@@ -366,9 +342,6 @@ public class BaseDocumentEvent extends AbstractDocument.DefaultDocumentEvent {
             }
         } finally {
             doc.atomicUnlockImpl(false);
-            if (notifyMod) {
-                doc.notifyModifyCheckEnd(modFinished);
-            }
         }
         // End super of redo()
 

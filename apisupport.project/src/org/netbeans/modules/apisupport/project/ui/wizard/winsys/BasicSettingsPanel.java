@@ -322,7 +322,7 @@ final class BasicSettingsPanel extends BasicWizardIterator.Panel {
         gridBagConstraints.insets = new java.awt.Insets(12, 6, 0, 0);
         add(cbMaximizationNotAllowed, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(redefine, "&Redefine...");
+        org.openide.awt.Mnemonics.setLocalizedText(redefine, org.openide.util.NbBundle.getMessage(BasicSettingsPanel.class, "LBL_redefine")); // NOI18N
         redefine.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 redefineActionPerformed(evt);

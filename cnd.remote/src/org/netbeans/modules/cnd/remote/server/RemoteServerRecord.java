@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.cnd.remote.server;
 
+import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -79,8 +80,6 @@ public class RemoteServerRecord implements ServerRecord {
         UNINITIALIZED, INITIALIZING, ONLINE, OFFLINE, CANCELLED;
     }
     
-    public static final String PROP_STATE_CHANGED = "stateChanged"; // NOI18N
-
     private final ExecutionEnvironment executionEnvironment;
     private final boolean editable;
     private boolean deleted;
@@ -92,6 +91,7 @@ public class RemoteServerRecord implements ServerRecord {
     private RemoteSyncFactory syncFactory;
     private boolean x11forwarding;
 //    private boolean x11forwardingPossible;
+    private PropertyChangeSupport pcs;
 
     HostInfo.OSFamily cachedOsFamily = null;
     HostInfo.CpuFamily cachedCpuFamily = null;
@@ -112,10 +112,10 @@ public class RemoteServerRecord implements ServerRecord {
         reason = null;
         deleted = false;
         this.displayName = escape(displayName);
-        
+        this.pcs = new PropertyChangeSupport(this);
         if (env.isLocal()) {
             editable = false;
-            state = State.ONLINE;
+            state = State.ONLINE;            
         } else {
             editable = true;
             state = connect ? State.UNINITIALIZED : State.OFFLINE;
@@ -181,15 +181,15 @@ public class RemoteServerRecord implements ServerRecord {
             ConnectionManager.getInstance().connectTo(executionEnvironment);
         } catch (IOException ex) {
             RemoteUtil.LOGGER.log(Level.INFO, "Error connecting to " + executionEnvironment, ex);
-            state = State.OFFLINE;
-            reason = ex.getMessage();
+            reason = ex.getMessage();            
+            setState(State.OFFLINE);
             return;
         } catch (CancellationException ex) {
-            state = State.CANCELLED;
+            setState(State.CANCELLED);
             return;
         }
         Object ostate = state;
-        state = State.INITIALIZING;
+        setState(State.INITIALIZING);
         RemoteServerSetup rss = new RemoteServerSetup(getExecutionEnvironment());
         if (!Boolean.getBoolean("cnd.remote.skip.setup")) {
             if (rss.needsSetupOrUpdate()) {
@@ -203,13 +203,13 @@ public class RemoteServerRecord implements ServerRecord {
 
         synchronized (stateLock) {
             if (rss.isCancelled()) {
-                state = State.CANCELLED;
+                setState(State.CANCELLED);
             } else if (rss.isFailed()) {
-                state = State.OFFLINE;
                 reason = rss.getReason();
+                setState(State.OFFLINE);
             } else {
                 initPathMap = true;
-                state = State.ONLINE;
+                setState(State.ONLINE);
                 if (rss.hasProblems()) {
                     problems = rss.getReason();
                 }
@@ -220,8 +220,19 @@ public class RemoteServerRecord implements ServerRecord {
         }
         if (pcs != null) {
             pcs.firePropertyChange(RemoteServerRecord.PROP_STATE_CHANGED, ostate, state);
-        }
+        }        
     }
+    
+    @Override
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        pcs.addPropertyChangeListener(listener);
+    }
+
+    @Override
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        pcs.removePropertyChangeListener(listener);
+    }
+    
 
 //    private void checkX11Forwarding() {
 //        X11ForwardingChecker x11checker = new X11ForwardingChecker(executionEnvironment);
@@ -245,7 +256,7 @@ public class RemoteServerRecord implements ServerRecord {
     public boolean resetOfflineState() {
         synchronized (stateLock) {
             if (this.state != State.INITIALIZING && state != State.ONLINE) {
-                state = State.UNINITIALIZED;
+                setState(State.UNINITIALIZED);
                 return true;
             }
         }
@@ -260,7 +271,7 @@ public class RemoteServerRecord implements ServerRecord {
     @Override
     public boolean isOnline() {
         if (state == State.ONLINE && !ConnectionManager.getInstance().isConnectedTo(executionEnvironment)) {
-            state = State.OFFLINE;
+            setState(State.OFFLINE);
         }
         return state == State.ONLINE;
     }
@@ -268,7 +279,7 @@ public class RemoteServerRecord implements ServerRecord {
     @Override
     public boolean isOffline() {
         if (state == State.ONLINE && !ConnectionManager.getInstance().isConnectedTo(executionEnvironment)) {
-            state = State.OFFLINE;
+            setState(State.OFFLINE);
         }
         return state == State.OFFLINE;
     }
@@ -381,8 +392,10 @@ public class RemoteServerRecord implements ServerRecord {
         this.syncFactory = factory;
     }
 
-    /*package*/void setState(State state) {
-        this.state = state;
+    /*package*/void setState(State newState) {
+        State oldState = this.state;
+        this.state = newState;
+        this.pcs.firePropertyChange(RemoteServerRecord.PROP_STATE_CHANGED, oldState, newState);
     }
 
     @Override

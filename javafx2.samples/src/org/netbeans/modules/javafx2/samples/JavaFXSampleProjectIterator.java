@@ -137,7 +137,7 @@ public class JavaFXSampleProjectIterator implements TemplateWizard.Iterator {
         // also open a documentation file registered for this project
         // and copy the .url file for it to the project (#71985)
         FileObject docToOpen = FileUtil.getConfigFile(
-                "org-netbeans-modules-java-examples/OpenAfterCreated/" + templateFO.getName() + ".url"); // NOI18N
+                "org-netbeans-modules-javafx2-samples/OpenAfterCreated/" + templateFO.getName() + ".url"); // NOI18N
         if (docToOpen != null) {
             docToOpen = FileUtil.copyFile(docToOpen, prjLoc, "readme"); // NOI18N
             set.add(DataObject.find(docToOpen));

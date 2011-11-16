@@ -2604,8 +2604,12 @@ public class Reformatter implements ReformatTask {
             boolean containedNewLine = false;
             int after = 0;
             do {
-                if (tokens.offset() >= endPos)
+                if (tokens.offset() >= endPos) {
+                    if (lastWSToken != null) {
+                        tokens.movePrevious();
+                    }
                     return containedNewLine;
+                }
                 switch(tokens.token().id()) {
                     case WHITESPACE:
                         lastWSToken = tokens.token();

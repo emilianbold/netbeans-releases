@@ -242,8 +242,10 @@ public class UndoRedoWrappingCooperationTest extends NbTestCase implements Clone
             assertEquals("extraEnd2: data", "abcd", d.getText(0, d.getLength()));
             ur().undo();
             endChunk(d, ce);
-            assertEquals("undo1: data", "abc", d.getText(0, d.getLength()));
-            ur().undo();
+            if (!documentSupportsUndoMergingOfWords()) {
+                assertEquals("undo1: data", "abc", d.getText(0, d.getLength()));
+                ur().undo();
+            }
             assertEquals("undo2: data", "ab", d.getText(0, d.getLength()));
             ur().undo();
             endChunk(d, ce);
@@ -252,8 +254,10 @@ public class UndoRedoWrappingCooperationTest extends NbTestCase implements Clone
             assertEquals("redo1: data", "ab", d.getText(0, d.getLength()));
             ur().redo();
             endChunk(d, ce);
-            assertEquals("redo2: data", "abc", d.getText(0, d.getLength()));
-            ur().redo();
+            if (!documentSupportsUndoMergingOfWords()) {
+                assertEquals("redo2: data", "abc", d.getText(0, d.getLength()));
+                ur().redo();
+            }
             assertEquals("redo3: data", "abcd", d.getText(0, d.getLength()));
         } finally {
             enableWarning(level);
@@ -526,6 +530,10 @@ public class UndoRedoWrappingCooperationTest extends NbTestCase implements Clone
 
         ur().undo();
         assertEquals("undo3", "", d.getText(0, d.getLength()));
+    }
+    
+    protected boolean documentSupportsUndoMergingOfWords() {
+        return false;
     }
     
     //

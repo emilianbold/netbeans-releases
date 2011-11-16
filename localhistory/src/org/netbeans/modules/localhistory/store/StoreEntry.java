@@ -205,7 +205,7 @@ public abstract class StoreEntry {
                     return zis;
                 }
             }
-            throw new FileNotFoundException();        
+            throw new FileNotFoundException("no entry in zip store file " + getStoreFile().getAbsolutePath() + " for file " + getFile());
         }                    
     }
     

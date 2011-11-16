@@ -107,6 +107,8 @@ import org.openide.util.RequestProcessor;
  */
 public class ActionMappings extends javax.swing.JPanel {
     private static final String CUSTOM_ACTION_PREFIX = "CUSTOM-"; //NOI18N
+
+    private static final RequestProcessor RP = new RequestProcessor(ActionMappings.class);
     private NbMavenProjectImpl project;
     private ModelHandle handle;
     private HashMap<String, String> titles = new HashMap<String, String>();
@@ -131,7 +133,7 @@ public class ActionMappings extends javax.swing.JPanel {
         recursiveListener = new RecursiveListener();
         depsListener = new DepsListener();
         FocusListener focus = new FocusListener() {
-            public void focusGained(FocusEvent e) {
+            @Override public void focusGained(FocusEvent e) {
                 if (e.getComponent() == txtGoals) {
                     lblHint.setText(NbBundle.getMessage(ActionMappings.class, "ActionMappings.txtGoals.hint"));
                 }
@@ -142,7 +144,7 @@ public class ActionMappings extends javax.swing.JPanel {
                     lblHint.setText(NbBundle.getMessage(ActionMappings.class, "ActinMappings.txtProperties.hint"));
                 }
             }
-            public void focusLost(FocusEvent e) {
+            @Override public void focusLost(FocusEvent e) {
                 lblHint.setText(""); //NOI18N
             }
         };
@@ -211,7 +213,7 @@ public class ActionMappings extends javax.swing.JPanel {
         loadMappings();
         clearFields();
         comboListener = new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+            @Override public void actionPerformed(ActionEvent e) {
                 clearFields();
                 loadMappings();
                 addListeners();
@@ -237,16 +239,13 @@ public class ActionMappings extends javax.swing.JPanel {
         setupConfigurations();
         loadMappings();
         addListeners();
-        RequestProcessor.getDefault().post(new Runnable() {
-            public void run() {
-
+        RP.post(new Runnable() {
+            @Override public void run() {
                 final GoalsProvider provider = Lookup.getDefault().lookup(GoalsProvider.class);
                 final Set<String> strs = provider.getAvailableGoals();
                 if (provider != null) {
                     try {
-                        @SuppressWarnings("unchecked")
-                        List<String> phases = EmbedderFactory.getProjectEmbedder().getLifecyclePhases();
-                        strs.addAll(phases);
+                        strs.addAll(EmbedderFactory.getProjectEmbedder().getLifecyclePhases());
                     } catch (Exception e) {
                         // oh wel just ignore..
                         e.printStackTrace();
@@ -260,7 +259,7 @@ public class ActionMappings extends javax.swing.JPanel {
                 final List<String> profiles = allProfiles;
 
                 SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
+                    @Override public void run() {
                         if (provider != null) {
                             goalcompleter.setValueList(strs);
                         }
@@ -483,26 +482,22 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
                 ((DefaultListModel)lstMappings.getModel()).removeElement(wr);
             }
             // try removing from model, if exists..
-            List lst = getActionMappings().getActions();
-            if (lst != null) {
-                Iterator it = lst.iterator();
-                while (it.hasNext()) {
-                    NetbeansActionMapping elem = (NetbeansActionMapping) it.next();
-                    if (mapp.getActionName().equals(elem.getActionName())) {
-                        it.remove();
-                        if (handle != null) {
-                            mapp = ActionToGoalUtils.getDefaultMapping(mapp.getActionName(), project);
-                        } else {
-                            mapp = null;
-                        }
-                        wr.setMapping(mapp);
-                        wr.setUserDefined(false);
-                        lstMappingsValueChanged(null);
-                        if (handle != null) {
-                            handle.markAsModified(getActionMappings());
-                        }
-                        break;
+            Iterator<NetbeansActionMapping> it = getActionMappings().getActions().iterator();
+            while (it.hasNext()) {
+                if (mapp.getActionName().equals(it.next().getActionName())) {
+                    it.remove();
+                    if (handle != null) {
+                        mapp = ActionToGoalUtils.getDefaultMapping(mapp.getActionName(), project);
+                    } else {
+                        mapp = null;
                     }
+                    wr.setMapping(mapp);
+                    wr.setUserDefined(false);
+                    lstMappingsValueChanged(null);
+                    if (handle != null) {
+                        handle.markAsModified(getActionMappings());
+                    }
+                    break;
                 }
             }
         }
@@ -585,16 +580,11 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
             addSingleAction("profile", model); //NOI18N
             addSingleAction("javadoc", model); //NOI18N
         }
-        List customs = getActionMappings().getActions();
-        if (customs != null) {
-            Iterator it = customs.iterator();
-            while (it.hasNext()) {
-                NetbeansActionMapping elem = (NetbeansActionMapping) it.next();
-                if (elem.getActionName().startsWith(CUSTOM_ACTION_PREFIX)) {
-                    MappingWrapper wr = new MappingWrapper(elem);
-                    model.addElement(wr);
-                    wr.setUserDefined(true);
-                }
+        for (NetbeansActionMapping elem : getActionMappings().getActions()) {
+            if (elem.getActionName().startsWith(CUSTOM_ACTION_PREFIX)) {
+                MappingWrapper wr = new MappingWrapper(elem);
+                model.addElement(wr);
+                wr.setUserDefined(true);
             }
         }
         lstMappings.setModel(model);
@@ -602,15 +592,10 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
     
     private void addSingleAction(String action, DefaultListModel model) {
         NetbeansActionMapping mapp = null;
-        List lst = getActionMappings().getActions();
-        if (lst != null) {
-            Iterator it = lst.iterator();
-            while (it.hasNext()) {
-                NetbeansActionMapping elem = (NetbeansActionMapping) it.next();
-                if (action.equals(elem.getActionName())) {
-                    mapp = elem;
-                    break;
-                }
+        for (NetbeansActionMapping elem : getActionMappings().getActions()) {
+            if (action.equals(elem.getActionName())) {
+                mapp = elem;
+                break;
             }
         }
         boolean userDefined = true;
@@ -771,11 +756,11 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
         private String action;
         private boolean userDefined = false;
         
-        public MappingWrapper(String action) {
+        MappingWrapper(String action) {
             this.action = action;
         }
         
-        public MappingWrapper(NetbeansActionMapping mapp) {
+        MappingWrapper(NetbeansActionMapping mapp) {
             action = mapp.getActionName();
             mapping = mapp;
         }
@@ -816,15 +801,15 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
     }
     
     private abstract class TextFieldListener implements DocumentListener {
-        public void insertUpdate(DocumentEvent e) {
+        @Override public void insertUpdate(DocumentEvent e) {
             doUpdate();
         }
         
-        public void removeUpdate(DocumentEvent e) {
+        @Override public void removeUpdate(DocumentEvent e) {
             doUpdate();
         }
         
-        public void changedUpdate(DocumentEvent e) {
+        @Override public void changedUpdate(DocumentEvent e) {
             doUpdate();
         }
         
@@ -908,7 +893,7 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
     }
     
     private class RecursiveListener implements ActionListener {
-        public void actionPerformed(ActionEvent e) {
+        @Override public void actionPerformed(ActionEvent e) {
             MappingWrapper map = (MappingWrapper)lstMappings.getSelectedValue();
             if (map != null) {
                 if (!map.isUserDefined()) {
@@ -933,7 +918,7 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
 
     private class DepsListener implements ActionListener {
         private boolean shown = false;
-        public void actionPerformed(ActionEvent e) {
+        @Override public void actionPerformed(ActionEvent e) {
             MappingWrapper map = (MappingWrapper)lstMappings.getSelectedValue();
             if (map != null) {
                 if (!map.isUserDefined()) {
@@ -994,7 +979,7 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
             this.area = area;
         }
 
-        public void actionPerformed(ActionEvent e) {
+        @Override public void actionPerformed(ActionEvent e) {
             String replace = TestChecker.PROP_SKIP_TEST + "=true"; //NOI18N
             String pattern = ".*" + TestChecker.PROP_SKIP_TEST + "([\\s]*=[\\s]*[\\S]+).*"; //NOI18N
             replacePattern(pattern, area, replace, true);
@@ -1009,7 +994,7 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
             this.area = area;
         }
 
-        public void actionPerformed(ActionEvent e) {
+        @Override public void actionPerformed(ActionEvent e) {
             String replace = Constants.ACTION_PROPERTY_JPDALISTEN + "=maven"; //NOI18N
             String pattern = ".*" + Constants.ACTION_PROPERTY_JPDALISTEN + "([\\s]*=[\\s]*[\\S]+).*"; //NOI18N
             replacePattern(pattern, area, replace, true);
@@ -1028,7 +1013,7 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
             this.project = prj;
         }
 
-        public void actionPerformed(ActionEvent e) {
+        @Override public void actionPerformed(ActionEvent e) {
             GoalsProvider provider = Lookup.getDefault().lookup(GoalsProvider.class);
             if (provider != null) {
                 AddPropertyDialog panel = new AddPropertyDialog(project, goals.getText());
@@ -1064,7 +1049,7 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
             this.area = area;
         }
 
-        public void actionPerformed(ActionEvent e) {
+        @Override public void actionPerformed(ActionEvent e) {
             String props = area.getText();
             String sep = "\n";//NOI18N
             if (props.endsWith("\n") || props.trim().length() == 0) {//NOI18N
@@ -1103,7 +1088,7 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
             this.key = key;
         }
 
-        public void actionPerformed(ActionEvent e) {
+        @Override public void actionPerformed(ActionEvent e) {
             try {
                 area.getDocument().insertString(area.getCaretPosition(), "${" + key + "}", null); //NOI18N
             } catch (BadLocationException ex) {
@@ -1146,21 +1131,21 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
 
     private static class NonEmptyInputLine extends NotifyDescriptor.InputLine implements DocumentListener {
 
-        public NonEmptyInputLine(String text, String title) {
+        NonEmptyInputLine(String text, String title) {
             super(text, title);
             textField.getDocument().addDocumentListener(this);
             checkValid();
         }
 
-        public void insertUpdate(DocumentEvent arg0) {
+        @Override public void insertUpdate(DocumentEvent arg0) {
             checkValid();
         }
 
-        public void removeUpdate(DocumentEvent arg0) {
+        @Override public void removeUpdate(DocumentEvent arg0) {
             checkValid();
         }
 
-        public void changedUpdate(DocumentEvent arg0) {
+        @Override public void changedUpdate(DocumentEvent arg0) {
             checkValid();
         }
 

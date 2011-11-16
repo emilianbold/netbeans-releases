@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -46,15 +46,7 @@ package org.netbeans.modules.autoupdate.services;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -62,23 +54,8 @@ import java.net.UnknownHostException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.cert.Certificate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.*;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -86,17 +63,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.CRC32;
 import org.netbeans.Module;
-import org.netbeans.api.autoupdate.InstallSupport;
 import org.netbeans.api.autoupdate.InstallSupport.Installer;
-import org.netbeans.api.autoupdate.OperationSupport.Restarter;
 import org.netbeans.api.autoupdate.InstallSupport.Validator;
-import org.netbeans.api.autoupdate.OperationContainer;
 import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
-import org.netbeans.api.autoupdate.OperationException;
-import org.netbeans.api.autoupdate.UpdateElement;
-import org.netbeans.api.autoupdate.UpdateUnit;
+import org.netbeans.api.autoupdate.OperationSupport.Restarter;
+import org.netbeans.api.autoupdate.*;
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.core.startup.Main;
 import org.netbeans.modules.autoupdate.updateprovider.NetworkAccess;
 import org.netbeans.modules.autoupdate.updateprovider.NetworkAccess.Task;
 import org.netbeans.updater.ModuleDeactivator;
@@ -105,6 +77,7 @@ import org.netbeans.updater.UpdateTracking;
 import org.netbeans.updater.UpdaterInternal;
 import org.openide.LifecycleManager;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -128,7 +101,7 @@ public class InstallSupportImpl {
     
     private Future<Boolean> runningTask;
     private final Object LOCK = new Object();
-    
+
     private static enum STEP {
         NOTSTARTED,
         DOWNLOAD,
@@ -317,6 +290,7 @@ public class InstallSupportImpl {
         assert installer != null;
         Callable<Boolean> installCallable = new Callable<Boolean>() {
             @Override
+            @SuppressWarnings("SleepWhileInLoop")
             public Boolean call() throws Exception {
                 synchronized(LOCK) {
                     assert currentStep != STEP.FINISHED : currentStep + " != STEP.FINISHED";
@@ -352,7 +326,7 @@ public class InstallSupportImpl {
                 }
                 
                 boolean needsRestart = false;
-                File targetCluster = null;
+                File targetCluster;
                 List <UpdaterInfo> updaterFiles = new ArrayList <UpdaterInfo> ();
                 
                 for (ModuleUpdateElementImpl moduleImpl : affectedModuleImpls) {
@@ -437,24 +411,33 @@ public class InstallSupportImpl {
 
                         if (progress != null) progress.switchToDeterminate (affectedModuleImpls.size ());
 
-                        Set <File> files = null;
+                        final Set <File> files;
                         synchronized(downloadedFiles) {
                             files = new HashSet <File> (downloadedFiles);
                         }
                         if (! files.isEmpty ()) {
                             try {
-                                UpdaterInternal.update(
-                                    files,
-                                    new RefreshModulesListener (progress),
-                                    NbBundle.getBranding()
-                                );
+                                FileUtil.runAtomicAction(new Runnable() {
+
+                                    @Override
+                                    public void run() {
+                                        try {
+                                            UpdaterInternal.update(
+                                                files,
+                                                new RefreshModulesListener (progress),
+                                                NbBundle.getBranding()
+                                            );
+                                        } catch (InterruptedException ex) {
+                                            Exceptions.printStackTrace(ex);
+                                        }
+                                    }
+                                });
                                 for (ModuleUpdateElementImpl impl : affectedModuleImpls) {
                                     int rerunWaitCount = 0;
                                     Module module = Utilities.toModule (impl.getCodeName(), impl.getSpecificationVersion ());
                                     for (; rerunWaitCount < 100 && module == null; rerunWaitCount++) {
                                         LOG.log(Level.FINE, "Waiting for {0}@{1} #{2}", new Object[]{ impl.getCodeName(), impl.getSpecificationVersion(), rerunWaitCount});
                                         Thread.sleep(100);
-                                        Main.getModuleSystem().refresh();
                                         module = Utilities.toModule (impl.getCodeName(), impl.getSpecificationVersion ());
                                     }
                                     if (rerunWaitCount == 100) {
@@ -860,7 +843,7 @@ public class InstallSupportImpl {
             throw new OperationException(OperationException.ERROR_TYPE.INSTALL, sb.toString());
         }
         
-        int wasVerified = 0;
+        int wasVerified;
 
         // verify
         wasVerified = verifyNbm (toUpdateImpl.getUpdateElement (), dest, progress, verified);
@@ -907,20 +890,24 @@ public class InstallSupportImpl {
         public int getContentLength() {
             return contentLength;
         }
+        @Override
         public void streamOpened(InputStream stream, int contentLength) {
             LOG.log(Level.FINEST, "Opened connection for " + source);
             this.stream = stream;
             this.contentLength = contentLength;
         }
 
+        @Override
         public void accessCanceled() {
             LOG.log(Level.INFO, "Opening connection for " + source + "was cancelled");
         }
 
+        @Override
         public void accessTimeOut() {
             LOG.log(Level.INFO, "Opening connection for " + source + "was finised due to timeout");
         }
 
+        @Override
         public void notifyException(Exception x) {
             ex = x;
         }
@@ -938,6 +925,8 @@ public class InstallSupportImpl {
                 AutoupdateSettings.getOpenConnectionTimeout(),
                 listener);
         new Thread(new Runnable() {
+            @SuppressWarnings("SleepWhileInLoop")
+            @Override
             public void run() {
                 while (true) {
                     if (task.isFinished()) {
@@ -1056,7 +1045,7 @@ public class InstallSupportImpl {
     }
     
     private int verifyNbm (UpdateElement el, File nbmFile, ProgressHandle progress, int verified) throws OperationException {
-        String res = null;
+        String res;
         try {
             verified += el.getDownloadSize ();
             if (progress != null) {
@@ -1133,6 +1122,7 @@ public class InstallSupportImpl {
     /**
      * @throws SecurityException
      */
+    @SuppressWarnings("empty-statement")
     private static void verifyEntry (JarFile jf, JarEntry je) throws IOException {
         InputStream is = null;
         try {
@@ -1144,17 +1134,16 @@ public class InstallSupportImpl {
         } finally {
             if (is != null) is.close ();
         }
-        
-        return;
     }
     
     private boolean needsRestart (boolean isUpdate, UpdateElementImpl toUpdateImpl, File dest) {
         return InstallManager.needsRestart (isUpdate, toUpdateImpl, dest);
     }
     
-    private static final class RefreshModulesListener implements PropertyChangeListener  {
+    private static final class RefreshModulesListener implements PropertyChangeListener, Runnable  {
         private ProgressHandle handle;
         private int i;
+        private PropertyChangeEvent ev;
         
         public RefreshModulesListener (ProgressHandle handle) {
             this.handle = handle;
@@ -1162,12 +1151,22 @@ public class InstallSupportImpl {
         }
         
         @Override
-        public void propertyChange(PropertyChangeEvent ev) {
+        public void propertyChange(final PropertyChangeEvent ev) {
             if (UpdaterInternal.RUNNING.equals (ev.getPropertyName ())) {
                 if (handle != null) {
                     handle.progress (i++);
                 }
             } else if (UpdaterInternal.FINISHED.equals (ev.getPropertyName ())){
+                this.ev = ev;
+                FileUtil.runAtomicAction(this);
+            } else {
+                assert false : "Unknown property " + ev.getPropertyName ();
+            }
+        }
+
+        @Override
+        public void run() {
+            for (int loop = 0; loop < 10; loop++) {
                 // XXX: the modules list should be refresh automatically when config/Modules/ changes
                 Map<File,Long> modifiedFiles = NbCollections.checkedMapByFilter(
                     (Map)ev.getNewValue(), 
@@ -1177,19 +1176,58 @@ public class InstallSupportImpl {
                 for (Map.Entry<File,Long> e : modifiedFiles.entrySet()) {
                     touch(e.getKey(), Math.max(e.getValue(), now));
                 }
-                FileUtil.getConfigRoot().refresh();
                 FileObject modulesRoot = FileUtil.getConfigFile(ModuleDeactivator.MODULES);
                 if (modulesRoot != null) {
+                    /* XXX: uncomment when #205120 fixed.
                     LOG.fine("Refreshing Modules directory"); // NOI18N
                     modulesRoot.refresh();
                     LOG.fine("Done refreshing Modules directory"); // NOI18N
-                } else {
-                    LOG.warning("No Modules directory to refresh!"); // NOI18N
+                     */
+                    LOG.fine("Refreshing whole MFS"); // NOI18N
+                    modulesRoot.refresh();
+                    try {
+                        FileUtil.getConfigRoot().getFileSystem().refresh(true);
+                    } catch (FileStateInvalidException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                    LOG.fine("Done refreshing MFS"); // NOI18N
                 }
-            } else {
-                assert false : "Unknown property " + ev.getPropertyName ();
+                boolean ok = true;
+                for (File file : modifiedFiles.keySet()) {
+                    String rel = relativePath(file, new StringBuilder());
+                    if (rel == null) {
+                        continue;
+                    }
+                    FileObject fo = FileUtil.getConfigFile(rel);
+                    if (fo == null) {
+                        LOG.log(loop < 5 ? Level.FINE : Level.WARNING, "Cannot find " + rel);
+                        ok = false;
+                        continue;
+                    }
+                    LOG.fine("Refreshing " + fo);
+                    fo.refresh();
+                }
+                if (ok) {
+                    LOG.log(loop < 5 ? Level.FINE : Level.INFO, "All was OK on " + loop + " th iteration");
+                    break;
+                }
             }
         }
+
+    }
+    
+    private static String relativePath(File f, StringBuilder sb) {
+        if (f == null) {
+            return null;
+        }
+        if (f.getName().equals("config")) {
+            return sb.toString();
+        }
+        if (sb.length() > 0) {
+            sb.insert(0, '/');
+        }
+        sb.insert(0, f.getName());
+        return relativePath(f.getParentFile(), sb);
     }
     
     private static void touch(File f, long minTime) {
