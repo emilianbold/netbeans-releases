@@ -2371,6 +2371,9 @@ class LayoutOperations implements LayoutConstants {
      */
     boolean mergeConsecutiveGaps(LayoutInterval seq, int index, int dimension) {
         assert seq.isSequential();
+        if (index < 0 || index >= seq.getSubIntervalCount()) {
+            return false;
+        }
         LayoutInterval current = seq.getSubInterval(index);
         LayoutInterval next = index+1 < seq.getSubIntervalCount() ? seq.getSubInterval(index+1) : null;
         if (next != null && current.isEmptySpace() && next.isEmptySpace()) {
@@ -2436,8 +2439,14 @@ class LayoutOperations implements LayoutConstants {
                     pref = pref2;
                 }
             }
-        } else {
+        } else if (currentMergedSize < 0
+                || LayoutInterval.getDirectNeighbor(main, LEADING, false) == null
+                || LayoutInterval.getDirectNeighbor(eaten, TRAILING, false) == null
+                || LayoutInterval.getDirectNeighbor(main, TRAILING, false) == null
+                || LayoutInterval.getDirectNeighbor(eaten, LEADING, false) == null) {
             pref = pref1 + pref2;
+        } else {
+            pref = currentMergedSize;
         }
 
         int max = main.getMaximumSize() >= Short.MAX_VALUE || eaten.getMaximumSize() >= Short.MAX_VALUE ?

@@ -512,10 +512,19 @@ class LayoutFeeder implements LayoutConstants {
                     inclusion2 = inclusions.get(0);
                     inclusions.clear();
 
-                    if (!dragger.isResizing() && newPos != null
-                            && !inclusion1.parent.isParentOf(inclusion2.parent)) {
-                        // secondary inclusion for the other than snapped edge not relevant
-                        inclusion2 = null;
+                    if (!dragger.isResizing() && newPos != null) {
+                        if (inclusion1.parent.getParent() == null && inclusion1.parent.getSubIntervalCount() == 0) {
+                            // the first inclusion parent optimized out during the second
+                            // mergeParallelInclusions [probably need a better fix]
+                            inclusion1.parent = inclusion2.parent;
+                            inclusion1.newSubGroup = inclusion2.newSubGroup;
+                            inclusion1.neighbor = inclusion2.neighbor;
+                            inclusion1.index = inclusion2.index;
+                            inclusion2 = null;
+                        } else if (!inclusion1.parent.isParentOf(inclusion2.parent)) {
+                            // secondary inclusion for the other than snapped edge not relevant
+                            inclusion2 = null;
+                        }
                     }
                 }
             }
@@ -4901,6 +4910,8 @@ class LayoutFeeder implements LayoutConstants {
 
             updateMovedOriginalNeighbor();
         }
+
+        operations.mergeConsecutiveGaps(commonSeq, index-1, dimension);
 
         best.index = index;
 

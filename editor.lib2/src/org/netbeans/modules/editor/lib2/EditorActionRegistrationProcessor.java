@@ -316,7 +316,7 @@ public final class EditorActionRegistrationProcessor extends LayerGeneratingProc
 
         // Resolve weight attribute that allows to override existing action
         int weight = annotation.weight();
-        if (weight != Integer.MIN_VALUE) {
+        if (weight != 0) {
             file.intvalue("weight", weight);
         }
 

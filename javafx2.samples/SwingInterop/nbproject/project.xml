@@ -4,6 +4,8 @@
     <configuration>
         <buildExtensions xmlns="http://www.netbeans.org/ns/ant-build-extender/1">
             <extension file="jfx-impl.xml" id="jfx">
+                <dependency dependsOn="-check-javafx" target="-init-check"/>
+                <dependency dependsOn="-javafx-check-error" target="-init-check"/>
                 <dependency dependsOn="-jfx-copylibs" target="-post-jar"/>
                 <dependency dependsOn="jfx-deployment" target="-post-jar"/>
                 <dependency dependsOn="jar" target="debug"/>

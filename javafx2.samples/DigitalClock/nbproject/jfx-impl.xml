@@ -3,6 +3,63 @@
 <project name="jfx-impl" default="jfx-deployment" basedir=".." xmlns:j2seproject1="http://www.netbeans.org/ns/j2se-project/1" xmlns:j2seproject3="http://www.netbeans.org/ns/j2se-project/3" xmlns:fx="javafx:com.sun.javafx.tools.ant">
     <description>JavaFX-specific Ant calls</description>
 
+    <target name="-check-javafx">
+        <echo message="javafx.runtime = ${javafx.runtime}" level="verbose"/>
+        <echo message="javafx.sdk = ${javafx.sdk}" level="verbose"/>
+        <condition property="javafx.runtime.defined">
+            <and>
+                <isset property="javafx.runtime"/>
+                <not><contains string="${javafx.runtime}" substring="$${platform" casesensitive="false"/></not>
+            </and>
+        </condition>
+        <condition property="javafx.sdk.defined">
+            <and>
+                <isset property="javafx.sdk"/>
+                <not><contains string="${javafx.sdk}" substring="$${platform" casesensitive="false"/></not>
+            </and>
+        </condition>
+        <condition property="javafx.platform.defined">
+            <and>
+                <isset property="javafx.runtime.defined"/>
+                <isset property="javafx.sdk.defined"/>
+            </and>
+        </condition>
+    </target>
+    
+    <target name="-javafx-missing-platform" depends="-check-javafx" unless="javafx.platform.defined">
+        <condition property="javafx.sdk.missing+default">
+            <and>
+                <equals arg1="${platform.active}" arg2="Default_JavaFX_Platform" trim="true"/>
+                <not><isset property="javafx.sdk.defined"/></not>
+            </and>
+        </condition>
+        <condition property="javafx.sdk.missing-default">
+            <and>
+                <not><equals arg1="${platform.active}" arg2="Default_JavaFX_Platform" trim="true"/></not>
+                <not><isset property="javafx.sdk.defined"/></not>
+            </and>
+        </condition>
+        <condition property="javafx.runtime.missing+default">
+            <and>
+                <equals arg1="${platform.active}" arg2="Default_JavaFX_Platform" trim="true"/>
+                <not><isset property="javafx.runtime.defined"/></not>
+            </and>
+        </condition>
+        <condition property="javafx.runtime.missing-default">
+            <and>
+                <not><equals arg1="${platform.active}" arg2="Default_JavaFX_Platform" trim="true"/></not>
+                <not><isset property="javafx.runtime.defined"/></not>
+            </and>
+        </condition>
+    </target>
+    
+    <target name="-javafx-check-error" depends="-check-javafx, -javafx-missing-platform" unless="javafx.platform.defined">
+        <fail message="Platform definition problem.${line.separator}JavaFX SDK path undefined. Check the definition of ${platform.active} in Java Platform Manager${line.separator}(or directly the properties platform.active and javafx.sdk in project.properties file).${line.separator}Note: If missing, the default JavaFX-enabled platform gets created automatically when creating a new FX Project." if="javafx.sdk.missing+default"/>
+        <fail message="Platform definition problem.${line.separator}JavaFX SDK path undefined. Check the definition of ${platform.active} in Java Platform Manager${line.separator}(or directly the properties platform.active and javafx.sdk in project.properties file)." if="javafx.sdk.missing-default"/>
+        <fail message="Platform definition problem.${line.separator}JavaFX RT path undefined. Check the definition of ${platform.active} in Java Platform Manager${line.separator}(or directly the properties platform.active and javafx.runtime in project.properties file).${line.separator}Note: If missing, the default JavaFX-enabled platform gets created automatically when creating a new FX Project." if="javafx.runtime.missing+default"/>
+        <fail message="Platform definition problem.${line.separator}JavaFX RT path undefined. Check the definition of ${platform.active} in Java Platform Manager${line.separator}(or directly the properties platform.active and javafx.runtime in project.properties file)." if="javafx.runtime.missing-default"/>
+    </target>
+    
     <target name="-init-javafx">
         <taskdef resource="com/sun/javafx/tools/ant/antlib.xml"
             uri="javafx:com.sun.javafx.tools.ant"
@@ -405,7 +462,7 @@
                                 } else {
                                     if(fx_ant_api_1_1 == "true") {
                                         var arg = app.createArgument();
-                                        arg.setName(propn);
+                                        arg.addText(propn);
                                     }
                                 }
                             }
@@ -656,7 +713,7 @@
                                 } else {
                                     if(fx_ant_api_1_1 == "true") {
                                         var arg = app.createArgument();
-                                        arg.setName(propn);
+                                        arg.addText(propn);
                                     } else {
                                         println("Warning: Unnamed parameters not supported by this version of JavaFX SDK deployment Ant tasks. Upgrade JavaFX to 2.0.2 or higher.");
                                     }

@@ -183,9 +183,9 @@ public @interface EditorActionRegistration {
      * into a generated file object in the system filesystem
      * - see {@link org.openide.filesystems.MultiFileSystem}.
      * 
-     * @return value of the weight attribute. When omitted (default value is used)
+     * @return value of the weight attribute. When omitted (default value 0 is used)
      *   then no weight attribute gets generated.
      */
-    int weight() default Integer.MIN_VALUE;
+    int weight() default 0;
 
 }
