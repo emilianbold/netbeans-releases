@@ -49,6 +49,7 @@ import com.sun.jdi.ClassNotLoadedException;
 import com.sun.jdi.ClassType;
 import com.sun.jdi.Field;
 import com.sun.jdi.IncompatibleThreadStateException;
+import com.sun.jdi.InvalidStackFrameException;
 import com.sun.jdi.InvalidTypeException;
 import com.sun.jdi.LocalVariable;
 import com.sun.jdi.Mirror;
@@ -66,6 +67,7 @@ import com.sun.source.util.Trees;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.*;
+import java.util.logging.Logger;
 
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
@@ -87,6 +89,8 @@ import org.openide.util.Exceptions;
  * @author Maros Sandor
  */
 public class EvaluationContext {
+    
+    private static final Logger logger = Logger.getLogger(EvaluationContext.class.getName());
 
     /**
      * The runtime context of a JVM is represented by a stack frame.
@@ -149,6 +153,17 @@ public class EvaluationContext {
     }
 
     public StackFrame getFrame() {
+        try {
+            frame.thread();
+        } catch (InvalidStackFrameException isex) {
+            // Update the stack frame
+            try {
+                // Refresh the stack frame
+                logger.config("Updating an invalid stack frame on "+thread.getName()+" and depth "+frameDepth);
+                frame = ThreadReferenceWrapper.frame(thread.getThreadReference(), frameDepth);
+                logger.config("... stack frame updated.");
+            } catch (Exception ex) {}
+        } catch (Exception ex) {}
         return frame;
     }
     
@@ -165,7 +180,7 @@ public class EvaluationContext {
             return contextVariable;
         } else {
             try {
-                return frame.thisObject();
+                return getFrame().thisObject();
             } catch (com.sun.jdi.InternalException iex) {
                 if (iex.errorCode() == 35) { // INVALID_SLOT, see http://www.netbeans.org/issues/show_bug.cgi?id=173327
                     return null;
