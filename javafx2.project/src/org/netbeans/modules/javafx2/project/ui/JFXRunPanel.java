@@ -82,6 +82,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.extbrowser.ExtWebBrowser;
 import org.netbeans.modules.javafx2.project.JFXProjectProperties;
 import org.netbeans.modules.javafx2.project.JFXProjectProperties.PropertiesTableModel;
+import org.netbeans.modules.javafx2.project.JFXProjectUtils;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -94,6 +95,7 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -981,17 +983,19 @@ private void buttonPreloaderActionPerformed(java.awt.event.ActionEvent evt) {//G
                 config = null;
             }
             Map<String,String> activeConfig = configs.get(config);
-            textFieldPreloader.setText(file.getAbsolutePath());
+            String relPath = JFXProjectUtils.getRelativePath(project.getProjectDirectory(), FileUtil.toFileObject(file));
+            String path = (relPath == null) ? file.getAbsolutePath() : relPath;
+            textFieldPreloader.setText(path);
             if(wizard.getSourceType() == JFXProjectProperties.PreloaderSourceType.PROJECT) {
-                activeConfig.put(JFXProjectProperties.PRELOADER_PROJECT, file.getAbsolutePath());
+                activeConfig.put(JFXProjectProperties.PRELOADER_PROJECT, path);
                 activeConfig.put(JFXProjectProperties.PRELOADER_TYPE, JFXProjectProperties.PreloaderSourceType.PROJECT.getString());
-                activeConfig.put(JFXProjectProperties.PRELOADER_JAR_PATH, "${dist.dir}" + File.separatorChar + "lib" + File.separatorChar + file.getName() + ".jar"); // NOI18N);
+                activeConfig.put(JFXProjectProperties.PRELOADER_JAR_PATH, "${dist.dir}/lib/${" + JFXProjectProperties.PRELOADER_JAR_FILENAME + "}"); // NOI18N);
                 activeConfig.put(JFXProjectProperties.PRELOADER_JAR_FILENAME, file.getName() + ".jar"); // NOI18N
             } else {
                 if(wizard.getSourceType() == JFXProjectProperties.PreloaderSourceType.JAR) {
                     activeConfig.put(JFXProjectProperties.PRELOADER_PROJECT, ""); //NOI18N
                     activeConfig.put(JFXProjectProperties.PRELOADER_TYPE, JFXProjectProperties.PreloaderSourceType.JAR.getString());
-                    activeConfig.put(JFXProjectProperties.PRELOADER_JAR_PATH, file.getAbsolutePath());
+                    activeConfig.put(JFXProjectProperties.PRELOADER_JAR_PATH, path);
                     activeConfig.put(JFXProjectProperties.PRELOADER_JAR_FILENAME, file.getName());
                 }
             }
@@ -1178,8 +1182,10 @@ private void comboBoxWebBrowserActionPerformed(java.awt.event.ActionEvent evt) {
     private void preloaderSelectionChanged(String enabled, String projectDir, String jarFilePath, String jarFileName, String cls, Map<String,String> config) {
         checkBoxPreloader.setSelected(JFXProjectProperties.isTrue(enabled));
         if(projectDir != null && !projectDir.isEmpty()) {
-            File proj = new File(projectDir);
-            if(!proj.exists() || !proj.isDirectory()) {
+            FileObject thisProjDir = project.getProjectDirectory();
+            FileObject fo = JFXProjectUtils.getFileObject(thisProjDir, projectDir);
+            File proj = (fo == null) ? null : FileUtil.toFile(fo);
+            if(proj != null && (!proj.exists() || !proj.isDirectory())) {
                 textFieldPreloader.setText(""); //NOI18N
                 jfxProps.getPreloaderClassModel().fillNoPreloaderAvailable();
             } else {
@@ -1189,7 +1195,9 @@ private void comboBoxWebBrowserActionPerformed(java.awt.event.ActionEvent evt) {
             return;
         }
         if(jarFilePath != null && jarFileName != null) {
-            File jar = new File(jarFilePath);
+            FileObject thisProjDir = project.getProjectDirectory();
+            FileObject fo = JFXProjectUtils.getFileObject(thisProjDir, jarFilePath);
+            File jar = (fo == null) ? null : FileUtil.toFile(fo);
             if(!jar.exists() || !jar.isFile()) {
                 textFieldPreloader.setText(""); //NOI18N
                 jfxProps.getPreloaderClassModel().fillNoPreloaderAvailable();
