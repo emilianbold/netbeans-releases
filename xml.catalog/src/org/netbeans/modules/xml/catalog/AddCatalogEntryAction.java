@@ -95,6 +95,7 @@ public class AddCatalogEntryAction extends NodeAction {
     private static final String PROTOCOL_HTTPS = "https://"; // NOI18N
     private static final String PROTOCOL_FILE = "file:/"; // NOI18N
     private static final String MIME_SCHEMA = "application/x-schema+xml"; // NOI18N
+    private static final String MIME_SCHEMA2 = "text/xsd+xml"; // NOI18N
 
     private static boolean isXmlSchema(String uri, String localURI) {
         // check the remote protocol, only http(s) is supported at the moment
@@ -115,7 +116,7 @@ public class AddCatalogEntryAction extends NodeAction {
         } catch (MalformedURLException ex) {
             return false;
         }
-        return MIME_SCHEMA.equals(fo.getMIMEType());
+        return MIME_SCHEMA.equals(fo.getMIMEType()) || MIME_SCHEMA2.equals(fo.getMIMEType());
     }
     
     protected boolean enable(org.openide.nodes.Node[] activatedNodes) {

@@ -44,11 +44,7 @@
 package org.netbeans.modules.xml.schema.completion.util;
 
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Stack;
-import java.util.StringTokenizer;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -63,27 +59,22 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.xml.lexer.XMLTokenId;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.xml.axi.AXIComponent;
-import org.netbeans.modules.xml.axi.AXIDocument;
-import org.netbeans.modules.xml.axi.AXIModel;
-import org.netbeans.modules.xml.axi.AXIModelFactory;
-import org.netbeans.modules.xml.axi.AXIType;
-import org.netbeans.modules.xml.axi.AbstractAttribute;
-import org.netbeans.modules.xml.axi.AbstractElement;
-import org.netbeans.modules.xml.axi.AnyAttribute;
-import org.netbeans.modules.xml.axi.AnyElement;
-import org.netbeans.modules.xml.axi.Attribute;
-import org.netbeans.modules.xml.axi.Element;
+import org.netbeans.modules.xml.axi.*;
 import org.netbeans.modules.xml.axi.datatype.Datatype;
 import org.netbeans.modules.xml.schema.completion.*;
 import org.netbeans.modules.xml.schema.completion.spi.CompletionModelProvider.CompletionModel;
 import org.netbeans.modules.xml.schema.model.Form;
+import org.netbeans.modules.xml.schema.model.GlobalElement;
+import org.netbeans.modules.xml.schema.model.SchemaComponent;
+import org.netbeans.modules.xml.schema.model.SchemaModel;
+import org.netbeans.modules.xml.schema.model.visitor.FindSubstitutions;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.windows.TopComponent;
 
 /**
- *
+ * Utility class containing methods to query the model for completion suggestions.
+ * 
  * @author Samaresh (Samaresh.Panda@Sun.Com)
  */
 public class CompletionUtil {
@@ -243,28 +234,39 @@ public class CompletionUtil {
     }
     
     /**
-     * Returns the list of child-elements for a given element.
+     * Returns the list of child elements for a given element. This includes
+     * all available substitutions for child elements from all 
+     * {@link CompletionModel}s in the specified completion context. It excludes
+     * abstract elements
+     * @param context the completion context for which to find all valid 
+     * elements for insertion
+     * @return all elements appropriate to be inserted in the specified context,
+     * or {@code null} if no parent element can be found for the specified 
+     * context.
      */
-    public static List<CompletionResultItem> getElements(
-            CompletionContextImpl context) {
+    public static List<CompletionResultItem> getElements(CompletionContextImpl context) {
         Element element = findAXIElementAtContext(context);
-        if(element == null)
+        if(element == null) {
             return null;
+        }
         
         List<CompletionResultItem> results = new ArrayList<CompletionResultItem>();
         for(AbstractElement ae: element.getChildElements()) {
             AXIComponent original = ae.getOriginal();
             if(original.getTargetNamespace() == null) {  //no namespace
                 CompletionResultItem item = createResultItem(original, null, context);
-                if(item != null)
+                if(item != null) {
                     results.add(item);
-                continue;
-            }            
-            if(original instanceof AnyElement) {
+                }
+            } else if(original instanceof AnyElement) {
                 results.addAll(substituteAny((AnyElement)original, context));
-                continue;
+            } else if(original instanceof Element) {
+                Element childElement = (Element) original;
+                if(!childElement.getAbstract()) {
+                    addNSAwareCompletionItems(original, context, null, results);
+                }
+                addSubstitutionCompletionItems(childElement, context, results);
             }
-            addNSAwareCompletionItems(original,context,null,results);
         }
         return results;
     }
@@ -329,6 +331,76 @@ public class CompletionUtil {
         }
         return result;
     }    
+        
+    /**
+     * Find all possible substitutions for the specified {@link Element} within
+     * the specified {@link CompletionContextImpl completion context}.
+     * @param forSubstitution the Element to find substitutions for.
+     * @param context the context to use to find available substitutions. All
+     * available {@link CompletionModel}s' {@link SchemaModel}s will be searched.
+     * @param results the result set to add the results to.
+     */
+    private static void addSubstitutionCompletionItems(Element forSubstitution, CompletionContextImpl context, List<CompletionResultItem> results) {
+        AXIModel model = forSubstitution.getModel();
+        String nsUri = forSubstitution.getTargetNamespace();
+        String localName = forSubstitution.getName();
+        for (CompletionModel completionModel : context.getCompletionModels()) {
+            SchemaModel schemaModel = completionModel.getSchemaModel();
+            Set<GlobalElement> substitutions = FindSubstitutions.resolveSubstitutions(schemaModel, nsUri, localName);
+            for (GlobalElement substitution : substitutions) {
+                AXIComponent substitutionElement = getAxiComponent(model, substitution);
+                addNSAwareCompletionItems(substitutionElement, context, completionModel, results);
+            }
+        }
+    }
+    
+    
+    /**
+     * Finds the {@link AXIComponent} representing the specified 
+     * {@link SchemaComponent}, from the specified {@link AXIModel}.
+     * Modified from org.netbeans.modules.xml.axi.impl.Util.lookup(), 
+     * org.netbeans.modules.xml.axi.impl.AXIModelImpl.lookup(), 
+     * and org.netbeans.modules.xml.axi.impl.AXIModelImpl.lookupFromOtherModel().
+     * @param model the model to search in to find the representation of the 
+     * specified {@link SchemaComponent}
+     * @param schemaComponent the {@link SchemaComponent} to search for a 
+     * representation of
+     * @return the AXI representation of the specified schema component, or null
+     * if no AXI representation could be found for the schema component.
+     */
+    private static AXIComponent getAxiComponent(AXIModel model, SchemaComponent schemaComponent) {
+        if(model.getSchemaModel() == schemaComponent.getModel()) {
+            return findChild(model.getRoot(), schemaComponent);
+        }
+        if(!schemaComponent.isInDocumentModel()) {
+            return null;
+        }
+        AXIModelFactory factory = AXIModelFactory.getDefault();
+        AXIModel otherModel = factory.getModel(schemaComponent.getModel());
+        return otherModel == null ? null : findChild(otherModel.getRoot(), schemaComponent);
+    }
+    
+    /**
+     * Finds an {@link AXIComponent} representation of the specified 
+     * {@link SchemaComponent}, by searching the children of the specified
+     * {@link AXIDocument}.
+     * Adapted from org.netbeans.modules.xml.axi.impl.AXIDocumentImpl.findChild().
+     * @param document the document to search through to find the representation
+     * of the specified schema component
+     * @param child the schema component whose representation to find in the 
+     * specified document
+     * @return the AXI representation of the specified schema component, from 
+     * the specified document, or {@code null} if the schema component has no
+     * representation in the children of the document.
+     */
+    private static AXIComponent findChild(AXIDocument document, SchemaComponent child) {
+        for(AXIComponent childRepresentation : document.getChildren()) {
+            if(childRepresentation.getPeer() == child) {
+                return childRepresentation;
+            }
+        }
+        return null;        
+    }
     
     private static void addNSAwareCompletionItems(AXIComponent axi, 
         CompletionContextImpl context, CompletionModel cm, List<CompletionResultItem> results) {

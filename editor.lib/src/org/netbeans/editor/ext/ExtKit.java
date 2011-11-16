@@ -47,6 +47,7 @@ package org.netbeans.editor.ext;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.prefs.Preferences;
 import javax.swing.Action;
@@ -227,7 +228,6 @@ public class ExtKit extends BaseKit {
 //        }
         actions.add(new CommentAction()); // to make ctrl-shift-T in Netbeans55 profile work
         actions.add(new UncommentAction()); // to make ctrl-shift-D in Netbeans55 profile work
-        actions.add(new BuildPopupMenuAction()); // normally gets overriden by NbEditorKit (by action registration)
                 
         return TextAction.augmentList(super.createActions(), actions.toArray(new Action[actions.size()]));
     }
@@ -264,12 +264,10 @@ public class ExtKit extends BaseKit {
     /** Called before the popup menu is shown to possibly rebuild
     * the popup menu.
     */
-    // Do not use registration since another registrationn in NbEditorKit collides with this one
-    // in generated layers xmls.
-//    @EditorActionRegistration(
-//            name = buildPopupMenuAction,
-//            shortDescription = editorBundleHash + buildPopupMenuAction
-//    )
+    @EditorActionRegistration(
+            name = buildPopupMenuAction,
+            shortDescription = editorBundleHash + buildPopupMenuAction
+    )
     public static class BuildPopupMenuAction extends BaseKitLocalizedAction {
 
         static final long serialVersionUID =4257043398248915291L;
@@ -277,6 +275,10 @@ public class ExtKit extends BaseKit {
         public BuildPopupMenuAction() {
             super(buildPopupMenuAction, NO_RECORDING);
             putValue(BaseAction.NO_KEYBINDING, Boolean.TRUE);
+        }
+        
+        public BuildPopupMenuAction(Map attrs) { // Create action without wrapper (extra properties in constructor)
+            this();
         }
 
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
@@ -443,17 +445,21 @@ public class ExtKit extends BaseKit {
 
     }
 
-//    @EditorActionRegistration(
-//            name = buildToolTipAction,
-//            shortDescription = editorBundleHash + buildToolTipAction
-//    )
+    @EditorActionRegistration(
+            name = buildToolTipAction,
+            shortDescription = editorBundleHash + buildToolTipAction
+    )
     public static class BuildToolTipAction extends BaseAction {
 
         static final long serialVersionUID =-2701131863705941250L;
 
         public BuildToolTipAction() {
-            super(NO_RECORDING);
+            super(buildToolTipAction, NO_RECORDING);
             putValue(BaseAction.NO_KEYBINDING, Boolean.TRUE);
+        }
+
+        public BuildToolTipAction(Map attrs) { // Create action without wrapper (extra properties in constructor)
+            this();
         }
 
         protected String buildText(JTextComponent target) {

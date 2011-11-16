@@ -163,6 +163,37 @@ public class JoinCatchesTest extends TestBase {
                             "}\n");
     }
 
+    public void test205167() throws Exception {
+        setSourceLevel("1.7");
+        performFixTest("test/Test.java",
+                       "package test;\n" +
+                       "import java.util.concurrent.*;\n" +
+                       "public class Test {\n" +
+                       "    public void taragui() {\n" +
+                       "        try {\n" +
+                       "            return -1;\n" +
+                       "        } catch (InterruptedException | TimeoutException e) {\n" +
+                       "            return -1;\n" +
+                       "        } catch (ExecutionException e) {\n" +
+                       "            return -1;\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}\n",
+                       "6:17-6:56:verifier:ERR_JoinCatches",
+                       "FIX_JoinCatches",
+                       ("package test;\n" +
+                        "import java.util.concurrent.*;\n" +
+                        "public class Test {\n" +
+                        "    public void taragui() {\n" +
+                        "        try {\n" +
+                        "            return -1;\n" +
+                        "        } catch (InterruptedException | TimeoutException | ExecutionException e) {\n" +
+                        "            return -1;\n" +
+                        "        }\n" +
+                        "    }\n" +
+                        "}\n").replaceAll("[\n\t ]+", " "));
+    }
+
     @Override
     protected String toDebugString(CompilationInfo info, Fix f) {
         return f.getText();

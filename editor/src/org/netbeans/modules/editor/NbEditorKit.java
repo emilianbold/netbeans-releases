@@ -211,7 +211,6 @@ public class NbEditorKit extends ExtKit implements Callable {
 //                                       new ToggleToolbarAction(),
 //                                       new NbToggleLineNumbersAction(),
                                        new NbGenerateGoToPopupAction(),
-                                       new NbBuildPopupMenuAction(),
                                    };
         return TextAction.augmentList(super.createActions(), nbEditorActions);
     }
@@ -370,12 +369,16 @@ public class NbEditorKit extends ExtKit implements Callable {
         }
     }
 
-//    @EditorActionRegistration(name = buildPopupMenuAction)
+    @EditorActionRegistration(name = buildPopupMenuAction, weight = 100)
     public static class NbBuildPopupMenuAction extends BuildPopupMenuAction {
 
         static final long serialVersionUID =-8623762627678464181L;
 
         public NbBuildPopupMenuAction() {
+        }
+
+        public NbBuildPopupMenuAction(Map attrs) { // Create action without wrapper (extra properties in super constructor)
+            super(attrs);
         }
 
         protected @Override JPopupMenu createPopupMenu(JTextComponent component) {
@@ -631,8 +634,15 @@ public class NbEditorKit extends ExtKit implements Callable {
     }
 
 
-    @EditorActionRegistration(name = buildToolTipAction)
+    @EditorActionRegistration(name = buildToolTipAction, weight = 100)
     public static class NbBuildToolTipAction extends BuildToolTipAction {
+        
+        public NbBuildToolTipAction() { // Retain public constructor for compatibility
+        }
+        
+        public NbBuildToolTipAction(Map attrs) { // Create action without wrapper (extra properties in constructor)
+            super(attrs);
+        }
 
         public @Override void actionPerformed(ActionEvent evt, JTextComponent target) {
             if (target != null) {
