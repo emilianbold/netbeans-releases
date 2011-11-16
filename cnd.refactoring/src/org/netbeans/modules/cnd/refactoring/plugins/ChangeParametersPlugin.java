@@ -380,9 +380,7 @@ public class ChangeParametersPlugin extends CsmModificationRefactoringPlugin {
             }
         }
         assert startOffset <= endOffset;
-        PositionRef startPos = ces.createPositionRef(startOffset, Bias.Forward);
-        PositionRef endPos = ces.createPositionRef(endOffset, Bias.Backward);
-        diff = new Difference(Difference.Kind.CHANGE, startPos, endPos, oldText.toString(), newText.toString(), descr); // NOI18N
+        diff = CsmRefactoringUtils.rename(startOffset, endOffset, ces, oldText.toString(), newText.toString(), descr);
 
         return diff;
     }

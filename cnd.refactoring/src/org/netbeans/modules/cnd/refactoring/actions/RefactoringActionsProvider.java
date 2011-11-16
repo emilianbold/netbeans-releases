@@ -56,6 +56,7 @@ import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmIncludeHierarchyResolver;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.refactoring.spi.CsmRenameExtraObjectsProvider;
 import org.netbeans.modules.cnd.refactoring.support.CsmContext;
 import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
 import org.netbeans.modules.cnd.utils.ui.UIGesturesSupport;
@@ -66,6 +67,7 @@ import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.openide.cookies.EditorCookie;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
+import org.openide.util.Lookup.Result;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 
@@ -92,7 +94,8 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
 
     private static final String FIND_USAGES_TRACKING = "FIND_USAGES"; // NOI18N
     private static final String RENAME_TRACKING = "RENAME"; // NOI18N
-
+    private static final Result<CsmRenameExtraObjectsProvider> providersResult = Lookup.getDefault().lookupResult(CsmRenameExtraObjectsProvider.class);
+    
     @Override
     public void doFindUsages(final Lookup lookup) {
         Runnable task;
@@ -126,8 +129,8 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
             return false;
         }
         Set<Node> nodes = new HashSet<Node>(lookup.lookupAll(Node.class));
-        // only one node can be renamed at once
-        if (nodes.size() == 1) {
+        // only one node can be renamed at once or no nodes, but csm object
+        if (nodes.size() == 1 || nodes.isEmpty()) {
             CsmObject ctx = CsmRefactoringUtils.findContextObject(lookup);
             if (CsmRefactoringUtils.isSupportedReference(ctx)) {
                 if (CsmKindUtilities.isFile(ctx)) {
@@ -138,6 +141,14 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
                     for (CsmFile csmFile : allFiles) {
                         Collection<CsmFile> includers = CsmIncludeHierarchyResolver.getDefault().getFiles(csmFile);
                         included |= !includers.isEmpty();
+                        if (!included) {
+                            for (CsmRenameExtraObjectsProvider prov : providersResult.allInstances()) {
+                                if (prov.canRename(csmFile)) {
+                                    included = true;
+                                    break;
+                                }
+                            }
+                        }
                         if (included) {
                             break;
                         }
