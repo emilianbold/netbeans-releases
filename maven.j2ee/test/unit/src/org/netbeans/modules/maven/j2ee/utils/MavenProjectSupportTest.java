@@ -44,7 +44,7 @@ package org.netbeans.modules.maven.j2ee.utils;
 import java.util.logging.Level;
 import org.netbeans.api.project.Project;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.maven.j2ee.MavenTestSupport;
+import org.netbeans.modules.maven.j2ee.JavaEEMavenTestSupport;
 
 /**
  *
@@ -77,8 +77,8 @@ public class MavenProjectSupportTest extends NbTestCase {
     protected void setUp() throws Exception {
         clearWorkDir();
         
-        project = MavenTestSupport.createMavenProject(getWorkDir());
-        MavenTestSupport.setJ2eeVersion(project, "1.6"); //NOI18N
+        project = JavaEEMavenTestSupport.createMavenWebProject(getWorkDir());
+        MavenProjectSupport.setJ2eeVersion(project, "1.6"); //NOI18N
     }
 
     
@@ -86,23 +86,23 @@ public class MavenProjectSupportTest extends NbTestCase {
         MavenProjectSupport.setServerID(project, WEBLOGIC);
         MavenProjectSupport.createDDIfRequired(project, null);
         
-        assertEquals(true, MavenTestSupport.isDDpresent(project));
+        assertEquals(true, JavaEEMavenTestSupport.isWebDDpresent(project));
     }
     
     public void testCreateDDIfRequired_nullServerPassed_glassfish() {
         MavenProjectSupport.setServerID(project, GLASSFISH);
         MavenProjectSupport.createDDIfRequired(project, null);
         
-        assertEquals(false, MavenTestSupport.isDDpresent(project));
+        assertEquals(false, JavaEEMavenTestSupport.isWebDDpresent(project));
     }
     
     public void testCreateDDIfRequired_weblogicPassed() {
         MavenProjectSupport.createDDIfRequired(project, WEBLOGIC);
-        assertEquals(true, MavenTestSupport.isDDpresent(project));
+        assertEquals(true, JavaEEMavenTestSupport.isWebDDpresent(project));
     }
     
     public void testCreateDDIfRequired_glassfishPassed() {
         MavenProjectSupport.createDDIfRequired(project, GLASSFISH);
-        assertEquals(false, MavenTestSupport.isDDpresent(project));
+        assertEquals(false, JavaEEMavenTestSupport.isWebDDpresent(project));
     }
 }
