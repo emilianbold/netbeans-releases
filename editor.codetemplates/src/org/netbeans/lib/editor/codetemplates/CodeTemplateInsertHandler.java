@@ -61,6 +61,7 @@ import javax.swing.undo.AbstractUndoableEdit;
 import javax.swing.undo.CannotUndoException;
 import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.GuardedException;
 import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
 import org.netbeans.lib.editor.codetemplates.spi.CodeTemplateInsertRequest;
@@ -377,6 +378,8 @@ public final class CodeTemplateInsertHandler implements TextRegionManagerListene
             }
             success = true;
             
+        } catch (GuardedException ge) {
+            LOG.log(Level.FINE, null, ge); // NOI18N
         } catch (BadLocationException e) {
             LOG.log(Level.WARNING, "Invalid offset", e); // NOI18N
         } finally {

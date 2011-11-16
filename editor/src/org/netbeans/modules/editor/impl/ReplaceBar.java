@@ -45,6 +45,7 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.FocusTraversalPolicy;
 import java.awt.Insets;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
@@ -62,6 +63,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.MissingResourceException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
 import javax.swing.Box;
@@ -82,6 +85,7 @@ import javax.swing.UIManager;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import javax.swing.text.BadLocationException;
+import org.netbeans.editor.GuardedException;
 import org.netbeans.modules.editor.lib2.search.EditorFindSupport;
 import org.openide.awt.Mnemonics;
 import org.openide.util.Exceptions;
@@ -91,6 +95,7 @@ import org.openide.util.NbBundle;
 public class ReplaceBar extends JPanel {
 
     private static ReplaceBar replacebarInstance = null;
+    private static final Logger LOG = Logger.getLogger(ReplaceBar.class.getName());
     private static final boolean CLOSE_ON_ENTER = Boolean.getBoolean("org.netbeans.modules.editor.search.closeOnEnter"); // NOI18N
     private static final Insets BUTTON_INSETS = new Insets(2, 1, 0, 1);
     private static final int defaultIncremantalSearchComboWidth = 200;
@@ -697,8 +702,11 @@ public class ReplaceBar extends JPanel {
             try {
                 findSupport.replace(findProps, false);
                 findSupport.find(findProps, false);
-            } catch (BadLocationException ex) {
-                Exceptions.printStackTrace(ex);
+            } catch (GuardedException ge) {  
+                LOG.log(Level.FINE, null, ge);
+                Toolkit.getDefaultToolkit().beep();
+            } catch (BadLocationException ble) {
+                LOG.log(Level.WARNING, null, ble);
             }
         }
     }

@@ -1555,10 +1555,11 @@ public class BaseKit extends DefaultEditorKit {
                                             if (lineStartOffset != newSelectionStartOffset)
                                             target.select(lineStartOffset, target.getSelectionEnd());
                                         }
-                                    } catch (GuardedException e) {
+                                    } catch (GuardedException ge) {
+                                        LOG.log(Level.FINE, null, ge);
                                         target.getToolkit().beep();
                                     } catch (BadLocationException e) {
-                                        e.printStackTrace();
+                                        LOG.log(Level.WARNING, null, e);
                                     }
                                 } else { // no selected text
                                     int dotPos = caret.getDot();
