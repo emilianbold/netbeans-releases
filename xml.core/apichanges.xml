@@ -106,25 +106,22 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
-        <change id="xml-core-initial-version">
-            <api name="general"/>
-            <summary>Initial version of the XML/Core API</summary>
-            <version major="1" minor="9.0"/>
-            <date day="1" month="9" year="2005"/>
-            <author login="pjiricka"/>
-            <compatibility>
-                <p>
-                    Not applicable, this is the first version.
-                </p>
-            </compatibility>
+        <change id="description-source-suport">
+            <api name="XMLCoreAPI"/>
+            <summary>Added support for link resolution in completion documentation</summary>
+            <version major="1" minor="31"/>
+            <date day="10" month="11" year="2011"/>
+            <author login="sdedic"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible"
+                addition="yes" deletion="no" modification="no" deprecation="no"/>
             <description>
-                <p>
-                    Initial version of the XML/Core API
-                </p>
+                Defines extension mixin interface for <code>GrammarResult</code> instances,
+                which allows to resolve links found in the description and can provide
+                URL of the description content to the system.
             </description>
-            <issue number="54465"/>
-        </change>
-
+            <class package="org.netbeans.modules.xml.api.model" name="DescriptionSource"/>
+            <issue number="199742"/>
+        </change> 
     </changes>
 
     <!-- Now the surrounding HTML text and document structure: -->
@@ -149,17 +146,16 @@ is the proper place.
 
 <p class="overviewlink"><a href="overview-summary.html">Overview</a></p>
 
-<h1>no changes</h1>
+<h1>Introduction</h1>
 
+<p>This document lists changes made to the <a href="overview-summary.html">XML Core API</a>.</p>
 
 <!-- The actual lists of changes, as summaries and details: -->
-<!--
       <hr/>
-      <standard-changelists module-code-name="org.netbeans.modules.xml.core"/>
+      <standard-changelists module-code-name="org.netbeans.modules.xml.core/2"/>
 
       <hr/><p>@FOOTER@</p>
 
--->
     </body>
   </htmlcontents>
 </apichanges>
