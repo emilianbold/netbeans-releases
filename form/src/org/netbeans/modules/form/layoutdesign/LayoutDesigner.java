@@ -2028,6 +2028,13 @@ public final class LayoutDesigner implements LayoutModel.RemoveHandler, LayoutMo
                 layoutModel.copyContainerLayout(sourceContainer, sourceToTargetId, targetContainer);
             } else { // same source and target component - don't copy, just move
                 layoutModel.moveContainerLayout(sourceContainer, targetContainer);
+                // source roots were cleared
+                LayoutInterval[] sourceRoots = getActiveLayoutRoots(sourceContainer);
+                for (int i=0; i < DIM_COUNT; i++) {
+                    if (sourceRoots[i].getCurrentSpace().isSet(i)) {
+                        propEmptyContainer(sourceRoots[i], i);
+                    }
+                }
             }
         } else { // copying part of the layout
             // collect the components, create new if needed, compute bounds, ...
