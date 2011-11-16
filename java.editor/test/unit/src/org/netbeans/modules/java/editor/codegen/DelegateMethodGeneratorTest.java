@@ -201,7 +201,7 @@ public class DelegateMethodGeneratorTest extends NbTestCase {
         ClassTree ct = info.getTrees().getTree(clazz);
         int offset = (int) (info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), ct) - 1);
         compareMethodProposals(info, DelegateMethodGenerator.getAvailableMethods(info, offset,
-                ElementHandle.create(variable)));
+                ElementHandle.create(clazz), ElementHandle.create(variable)));
     }
      
     private void compareMethodProposals(CompilationInfo info, ElementNode.Description proposal) {

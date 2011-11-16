@@ -614,7 +614,7 @@ public final class EarProjectProperties {
                         if (endex < 1) {
                             endex = path.length();
                         }
-                        contextPath = path.substring(0,endex);
+                        contextPath = "/" + path.substring(0, endex); // NOI18N
                     }
                     w.setContextRoot(contextPath);
                     mod.setWeb(w);

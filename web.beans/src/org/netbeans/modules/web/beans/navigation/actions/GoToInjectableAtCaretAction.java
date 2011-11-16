@@ -63,7 +63,7 @@ import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.ui.ElementOpen;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
-import org.netbeans.modules.web.beans.UsageLogger;
+import org.netbeans.modules.web.beans.CdiUtil;
 import org.netbeans.modules.web.beans.api.model.InjectionPointDefinitionError;
 import org.netbeans.modules.web.beans.api.model.DependencyInjectionResult;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
@@ -247,7 +247,7 @@ public class GoToInjectableAtCaretAction extends AbstractInjectableAction {
         else {
             msg = "USG_CDI_GO_TO_INJECTABLE";                 // NOI18N
         }
-        UsageLogger logger = project.getLookup().lookup(UsageLogger.class);
+        CdiUtil logger = project.getLookup().lookup(CdiUtil.class);
         if (logger != null) {
             logger.log(msg, 
                     GoToInjectableAtCaretAction.class, new Object[] { project

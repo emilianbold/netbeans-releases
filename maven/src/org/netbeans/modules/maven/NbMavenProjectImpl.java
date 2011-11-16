@@ -999,6 +999,7 @@ public final class NbMavenProjectImpl implements Project {
         private String[] filesToWatch;
         private long lastTime = 0;
         private FileObject folder;
+        private final FileChangeListener listener = FileUtil.weakFileChangeListener(this, null);
 
         /** Relative file paths to watch. */
         Updater(String... toWatch) {
@@ -1058,11 +1059,11 @@ public final class NbMavenProjectImpl implements Project {
         void attachAll(FileObject fo) {
             if (fo != null) {
                 folder = fo;
-                fo.addFileChangeListener(this);
+                fo.addFileChangeListener(listener);
                 for (String file : filesToWatch) {
                     FileObject fobj = fo.getFileObject(file);
                     if (fobj != null) {
-                        fobj.addFileChangeListener(this);
+                        fobj.addFileChangeListener(listener);
                     }
                 }
             }
@@ -1070,11 +1071,11 @@ public final class NbMavenProjectImpl implements Project {
 
         void detachAll() {
             if (folder != null) {
-                folder.removeFileChangeListener(this);
+                folder.removeFileChangeListener(listener);
                 for (String file : filesToWatch) {
                     FileObject fobj = folder.getFileObject(file);
                     if (fobj != null) {
-                        fobj.removeFileChangeListener(this);
+                        fobj.removeFileChangeListener(listener);
                     }
                 }
                 folder = null;

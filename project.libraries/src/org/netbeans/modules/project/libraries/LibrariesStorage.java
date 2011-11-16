@@ -59,10 +59,12 @@ import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.xml.parsers.ParserConfigurationException;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryTypeProvider;
 import org.openide.filesystems.FileChangeAdapter;
@@ -161,9 +163,13 @@ implements WritableLibraryProvider<LibraryImplementation>, ChangeListener {
                             LOG.warning("LibrariesStorage: Can not invoke LibraryTypeProvider.libraryCreated(), the library type provider is unknown.");  //NOI18N
                         }
                         else if (libraries.keySet().contains(impl.getName())) {
-                                LOG.warning("LibrariesStorage: Library \""
-                                    +impl.getName()+"\" is already defined, skeeping the definition from: " 
-                                    + FileUtil.getFileDisplayName(descriptorFile));
+                            LOG.log(
+                                Level.WARNING,
+                                "LibrariesStorage: Library \"{0}\" is already defined, skeeping the definition from: {1}",  //NOI18N
+                                new Object[]{
+                                    impl.getName(),
+                                    FileUtil.getFileDisplayName(descriptorFile)
+                                });
                         }
                         else {
                             if (!isUpToDate(descriptorFile)) {
@@ -177,8 +183,8 @@ implements WritableLibraryProvider<LibraryImplementation>, ChangeListener {
                     }
                 } catch (SAXException e) {
                     //The library is broken, probably edited by user
-                    //just log as warning
-                    LOG.warning(String.format("Cannot load library from file %s, reason: %s", FileUtil.getFileDisplayName(descriptorFile), e.getMessage()));
+                    //just log
+                    logBrokenLibraryDescripor(descriptorFile, e);
                 } catch (ParserConfigurationException e) {
                     Exceptions.printStackTrace(e);
                 } catch (IOException e) {
@@ -362,7 +368,7 @@ implements WritableLibraryProvider<LibraryImplementation>, ChangeListener {
             }
         } catch (SAXException e) {
             //The library is broken, probably edited by user or unknown provider (FoD), log as warning
-            LOG.warning(String.format("Cannot load library from file %s, reason: %s", FileUtil.getFileDisplayName(fo), e.getMessage()));
+            logBrokenLibraryDescripor(fo, e);
         } catch (ParserConfigurationException e) {
             Exceptions.printStackTrace(e);
         } catch (IOException e) {
@@ -416,7 +422,7 @@ implements WritableLibraryProvider<LibraryImplementation>, ChangeListener {
                 }
             } catch (SAXException se) {
                 //The library is broken, probably edited by user, log as warning
-                LOG.warning(String.format("Cannot load library from file %s, reason: %s", FileUtil.getFileDisplayName(definitionFile), se.getMessage()));
+                logBrokenLibraryDescripor(definitionFile, se);
             } catch (ParserConfigurationException pce) {
                 Exceptions.printStackTrace(pce);
             } catch (IOException ioe) {
@@ -530,6 +536,19 @@ implements WritableLibraryProvider<LibraryImplementation>, ChangeListener {
             this.libs = null;
         }
         fireLibrariesChanged();
+    }
+
+    private void logBrokenLibraryDescripor(
+        @NonNull FileObject descriptorFile,
+        @NonNull Exception cause){
+        LOG.log(
+            //log unknown library type as INFO common with FoD
+            cause instanceof LibraryDeclarationHandlerImpl.UnknownLibraryTypeException ? Level.INFO : Level.WARNING,
+            "Cannot load library from file {0}, reason: {1}",   //NOI18N
+            new Object[] {
+                FileUtil.getFileDisplayName(descriptorFile),
+                cause.getMessage()
+           });
     }
 
     private static final class Libs {

@@ -68,6 +68,7 @@ import javax.swing.Action;
 import javax.swing.JOptionPane;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CancellableTask;
@@ -727,6 +728,11 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
         public void run() {
             for (TreePathHandle handle:handles) {
                 FileObject f = handle.getFileObject();
+                if (f==null) {
+                    //ugly workaround for #205142
+                    TopComponent top = (TopComponent) EditorRegistry.lastFocusedComponent().getParent().getParent().getParent().getParent();
+                    f = top.getLookup().lookup(FileObject.class);
+                }
                 current = handle;
                 JavaSource source = JavaSource.forFileObject(f);
                 assert source != null;

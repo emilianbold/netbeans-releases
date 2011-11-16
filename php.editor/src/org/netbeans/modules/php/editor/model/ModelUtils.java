@@ -261,7 +261,7 @@ public class ModelUtils {
                 if (nameKindMatch(element.getName(), nameKind, name)) {
                     switch(kind) {
                         case QUALIFIED:
-                            //TODO: not implemented yet behaves like UNQUALIFIED for now
+                            return element.getNamespaceName().toString().endsWith(namespaceName);
                         case UNQUALIFIED:
                             return true;
                         case FULLYQUALIFIED:

@@ -206,7 +206,7 @@ public class RemoteServerList implements ServerListImplementation, ConnectionLis
         getPreferences().putInt(DEFAULT_INDEX, defaultIndex);
         firePropertyChange(ServerList.PROP_DEFAULT_RECORD, oldValue, defaultIndex);
     }
-
+    
     @Override
     public synchronized void setDefaultRecord(ServerRecord record) {
         assert record != null;

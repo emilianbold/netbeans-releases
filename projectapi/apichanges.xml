@@ -108,6 +108,29 @@ is the proper place.
 
     <changes>
 
+        <change id="SourceGroup.contains.IAE">
+            <api name="general"/>
+            <summary><code>SourceGroup.contains</code> no longer throws <code>IllegalArgumentException</code></summary>
+            <version major="1" minor="40"/>
+            <date day="15" month="11" year="2011"/>
+            <author login="jglick"/>
+            <compatibility source="compatible" binary="incompatible" modification="yes">
+                <p>
+                    Implementations previously throwing this exception should just return false now instead.
+                    Callers previously catching the exception, or making a special effort to ensure the precondition, no longer need do so.
+                </p>
+            </compatibility>
+            <description>
+                <p>
+                    For convenience and safety, the <code>contains</code> method no longer throws an unchecked exception;
+                    it proved infeasible to ensure the precondition even in the face of projects
+                    being renamed or deleted or similar dynamic changes to directory structure.
+                </p>
+            </description>
+            <class package="org.netbeans.api.project" name="SourceGroup"/>
+            <issue number="204271"/>
+        </change>
+
         <change id="ActionProviderMerger">
             <api name="general"/>
             <summary>Added <code>LookupProviderSupport.createActionProviderMerger</code> factory method</summary>

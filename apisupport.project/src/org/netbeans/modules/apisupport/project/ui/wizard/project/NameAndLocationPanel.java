@@ -45,9 +45,11 @@
 package org.netbeans.modules.apisupport.project.ui.wizard.project;
 
 import java.awt.Color;
+import java.awt.EventQueue;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.ComboBoxModel;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
@@ -60,6 +62,7 @@ import org.netbeans.modules.apisupport.project.ui.wizard.common.BasicWizardItera
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
 /**
@@ -71,6 +74,7 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
     
     private static final String PROJECT_TEMPLATES_DIR = "Templates/Project"; // NOI18N
     private static final String DEFAULT_CATEGORY_PATH = PROJECT_TEMPLATES_DIR + "/Other"; // NOI18N
+    private static final RequestProcessor RP = new RequestProcessor(NameAndLocationPanel.class);
     
     private NewProjectIterator.DataModel data;
     
@@ -184,8 +188,18 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
     }
     
     private void loadCombo() {
-        comCategory.setModel(UIUtil.createLayerPresenterComboModel(
-                data.getProject(), PROJECT_TEMPLATES_DIR));
+        comCategory.setModel(UIUtil.createComboWaitModel());
+        // XXX Utilities.attachInitJob probably better
+        RP.post(new Runnable() {
+            @Override public void run() {
+                final ComboBoxModel model = UIUtil.createLayerPresenterComboModel(data.getProject(), PROJECT_TEMPLATES_DIR);
+                EventQueue.invokeLater(new Runnable() {
+                    @Override public void run() {
+                        comCategory.setModel(model);
+                    }
+                });
+            }
+        });
     }
     
     protected HelpCtx getHelp() {

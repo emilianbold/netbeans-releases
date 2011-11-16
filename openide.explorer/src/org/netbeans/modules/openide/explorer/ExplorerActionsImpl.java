@@ -91,6 +91,8 @@ import org.openide.util.datatransfer.PasteType;
 public final class ExplorerActionsImpl {
     /** background updater of actions */
     private static final RequestProcessor RP = new RequestProcessor("Explorer Actions"); // NOI18N
+
+    private static final Logger LOG = Logger.getLogger(ExplorerActionsImpl.class.getName());
     
     /** copy action performer */
     private final CopyCutActionPerformer copyActionPerformer = new CopyCutActionPerformer(true);
@@ -332,14 +334,13 @@ public final class ExplorerActionsImpl {
             }
 
             if (node != null) {
-                try {
+                if (actionStateUpdater != null) {
                     Transferable trans = actionStateUpdater.getTransferable();
                     if (trans != null) {
                         updatePasteTypes(trans, node);
                     }
-                } catch (NullPointerException npe) {
-                    Logger.getLogger (ExplorerActionsImpl.class.getName ()).
-                        log (Level.INFO, "Caused by http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6322854", npe);
+                } else {
+                    LOG.fine("#126145: caused by http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6322854");
                 }
             }
         }
@@ -403,8 +404,7 @@ public final class ExplorerActionsImpl {
         try {
             return copyCut ? node.clipboardCopy() : node.clipboardCut();
         } catch (IOException e) {
-            Logger.getLogger(ExplorerActionsImpl.class.getName()).log(Level.WARNING, null, e);
-
+            LOG.log(Level.WARNING, null, e);
             return null;
         }
     }

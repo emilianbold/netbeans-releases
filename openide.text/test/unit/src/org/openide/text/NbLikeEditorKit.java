@@ -126,6 +126,7 @@ class NbLikeEditorKit extends DefaultEditorKit implements Callable<Void> {
         }
 
         private int changes;
+        private boolean modifiable;
         public void insertString (int offs, String str, AttributeSet a) throws BadLocationException {
             insOrRemoveOrRunnable (offs, str, a, 0, true, null);
         }
@@ -143,6 +144,9 @@ class NbLikeEditorKit extends DefaultEditorKit implements Callable<Void> {
                     run.run ();
                 } else {
                     assertOffset (offset);
+                    if (!modifiable) {
+                        throw new BadLocationException("Document modification vetoed", offset);
+                    }
                     if (insert) {
                         super.insertString (offset, str, set);
                     } else {
@@ -155,24 +159,31 @@ class NbLikeEditorKit extends DefaultEditorKit implements Callable<Void> {
             Object o = getProperty ("modificationListener");
             
             if (run != null) {
+                boolean canBeModified = notifyModified(o); // Need to notify before acquiring write-lock (that will span the whole runnable)
                 writeLock ();
+                modifiable = canBeModified;
                 int prevChanges = changes;
                 try {
                     run.run ();
                 } finally {
                     writeUnlock ();
                 }
-                if (changes > prevChanges) {
-                    try {
-                        notifyModified (o, offset);
-                    } catch (BadLocationException ex) {
-                        // ok, too bad, just ignore
+                if (changes == prevChanges) { // No changes => property chane with Boolean.FALSE
+                    if (o instanceof VetoableChangeListener) {
+                        VetoableChangeListener l = (VetoableChangeListener)o;
+                        try {
+                            l.vetoableChange (new java.beans.PropertyChangeEvent (this, "modified", null, Boolean.FALSE));
+                        } catch (java.beans.PropertyVetoException ignore) {
+                        }
                     }
                 }
             } else {
                 assertOffset (offset);
-                notifyModified (o, offset);
+                modifiable = notifyModified (o);
                 try {
+                    if (!modifiable) {
+                        throw new BadLocationException("Document modification vetoed", offset);
+                    }
                     if (insert) {
                         super.insertString (offset, str, set);
                     } else {
@@ -195,15 +206,17 @@ class NbLikeEditorKit extends DefaultEditorKit implements Callable<Void> {
             if (offset < 0) throw new BadLocationException ("", offset);
         }
         
-        private void notifyModified (Object o, int offset) throws BadLocationException {
+        private boolean notifyModified (Object o) {
+            boolean canBeModified = true;
             if (o instanceof VetoableChangeListener) {
                 VetoableChangeListener l = (VetoableChangeListener)o;
                 try {
                     l.vetoableChange (new java.beans.PropertyChangeEvent (this, "modified", null, Boolean.TRUE));
                 } catch (java.beans.PropertyVetoException ex) {
-                    throw new BadLocationException("Document modification vetoed", offset);
+                    canBeModified = false;
                 }
             }
+            return canBeModified;
         }
 
         protected void fireRemoveUpdate (javax.swing.event.DocumentEvent e) {

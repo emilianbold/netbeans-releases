@@ -892,7 +892,13 @@ public final class IndexQueryImpl implements ElementQuery.Index {
             EnumSet<PhpElementKind> typeKinds, EnumSet<PhpElementKind> memberKinds) {
         final LinkedHashSet<TypeMemberElement> directTypes = new LinkedHashSet<TypeMemberElement>();
         if (typeKinds.contains(PhpElementKind.CLASS) && (typeElement instanceof ClassElement)) {
-            QualifiedName superClassName = ((ClassElement) typeElement).getSuperClassName();
+            QualifiedName superClassName = null;
+            Collection<QualifiedName> possibleFQSuperClassNames = ((ClassElement) typeElement).getPossibleFQSuperClassNames();
+            if (possibleFQSuperClassNames.size() == 1) {
+                superClassName = possibleFQSuperClassNames.iterator().next();
+            } else {
+                superClassName = ((ClassElement) typeElement).getSuperClassName();
+            }
             if (superClassName != null) {
                 directTypes.addAll(extendedQuery.getFields(NameKind.exact(superClassName), NameKind.empty()));
                 directTypes.addAll(extendedQuery.getMethods(NameKind.exact(superClassName), NameKind.empty()));

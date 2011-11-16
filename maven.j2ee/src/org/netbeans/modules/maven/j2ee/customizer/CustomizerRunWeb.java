@@ -63,7 +63,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.maven.api.ModelUtils;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
 import org.netbeans.modules.maven.j2ee.ExecutionChecker;
-import org.netbeans.modules.maven.j2ee.LoggingUtils;
+import org.netbeans.modules.maven.j2ee.utils.LoggingUtils;
 import static org.netbeans.modules.maven.j2ee.ExecutionChecker.CLIENTURLPART;
 import org.netbeans.modules.maven.j2ee.MavenJavaEEConstants;
 import org.netbeans.modules.maven.j2ee.SessionContent;
@@ -83,7 +83,7 @@ import org.openide.util.NbBundle;
  *
  * @author  mkleint
  */
-public class CustomizerRunWeb extends AbstractCustomizer {
+public class CustomizerRunWeb extends BaseRunCustomizer {
     public static final String PROP_SHOW_IN_BROWSER = "netbeans.deploy.showBrowser"; //NOI18N
     
     private WebModule module;
@@ -435,7 +435,7 @@ public class CustomizerRunWeb extends AbstractCustomizer {
     }
 
     @Override
-    void applyChangesInAWT() {
+    public void applyChangesInAWT() {
         assert SwingUtilities.isEventDispatchThread();
         boolean bool = cbBrowser.isSelected();
         try {
@@ -451,7 +451,7 @@ public class CustomizerRunWeb extends AbstractCustomizer {
     }
 
     @Override
-    void applyChanges() {
+    public void applyChanges() {
         assert !SwingUtilities.isEventDispatchThread();
 
         //#109507 workaround

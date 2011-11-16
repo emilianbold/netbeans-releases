@@ -78,7 +78,6 @@ import org.netbeans.modules.refactoring.spi.ui.UI;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
-import org.openide.LifecycleManager;
 import org.openide.awt.Mnemonics;
 import org.openide.awt.StatusDisplayer;
 import org.openide.text.CloneableEditorSupport;
@@ -482,6 +481,7 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
                     session.doRefactoring(true);
                 } finally {
                     session.removeProgressListener(progressListener);
+                    progressListener.stop(null);
                     progressListener = null;
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
@@ -589,9 +589,7 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
 
     private void refresh(final boolean showParametersPanel) {
         checkEventThread();
-        if (!isQuery)
-            LifecycleManager.getDefault().saveAll();
-        
+
         if (showParametersPanel) {
             // create parameters panel for refactoring
             if (parametersPanel == null) {
@@ -1061,10 +1059,12 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
             });
         }
         
-        public void stop(ProgressEvent event) {
+        public void stop(final ProgressEvent event) {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    handle.finish();
+                    if (event!=null) {
+                        handle.finish();
+                    }
                     d.setVisible(false);
                 }
             });

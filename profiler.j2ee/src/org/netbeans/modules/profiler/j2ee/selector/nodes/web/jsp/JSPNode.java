@@ -82,7 +82,7 @@ public class JSPNode extends SelectorNode {
         super(jspFile.getName(), jspFile.getNameExt(), Icons.getIcon(JavaEEIcons.JSP), SelectorChildren.LEAF, parent);
         SourceCodeSelection scs = WebProjectUtils.getJSPMethodSignature(getLookup().lookup(Project.class), jspFile);
         rootMethod = new SourceCodeSelection(scs.getClassName(), scs.getMethodName(), scs.getMethodSignature());
-    }
+    }   
 
     //~ Methods ------------------------------------------------------------------------------------------------------------------
 
