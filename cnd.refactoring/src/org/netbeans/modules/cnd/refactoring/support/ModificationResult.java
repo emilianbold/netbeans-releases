@@ -350,7 +350,7 @@ public final class ModificationResult {
                 return false;
             }
             final Difference other = (Difference) obj;
-            if (this.kind != other.kind) {
+            if (this.kind != other.kind || this.kind != Kind.CHANGE) {
                 return false;
             }
             if (!equalPos(this.startPos, other.startPos)) {
