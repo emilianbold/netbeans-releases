@@ -420,14 +420,11 @@ public final class NewTCIterator extends BasicWizardIterator {
                 fileChanges.add(fileChanges.layerModifications(new CreateActionEntryOperation(name + "Action", packageName), // NOI18N
                                                            Collections.<String>emptySet()));
             }
-            // XXX use @Messages where available
-            fileChanges.add(fileChanges.bundleKey(bundlePath, "CTL_" + name + "Action",  // NOI18N
-                                    name)); //NOI18N
-
-            fileChanges.add(fileChanges.bundleKey(bundlePath, "CTL_" + name + "TopComponent",  // NOI18N
-                                    name + " Window")); //NOI18N
-            fileChanges.add(fileChanges.bundleKey(bundlePath, "HINT_" + name + "TopComponent",  // NOI18N
-                                    "This is a " + name + " window")); //NOI18N
+            if (!xmlLessTC) {
+                fileChanges.add(fileChanges.bundleKey(bundlePath, "CTL_" + name + "Action", name)); //NOI18N
+                fileChanges.add(fileChanges.bundleKey(bundlePath, "CTL_" + name + "TopComponent", name + " Window")); //NOI18N
+                fileChanges.add(fileChanges.bundleKey(bundlePath, "HINT_" + name + "TopComponent", "This is a " + name + " window")); //NOI18N
+            }
         }
         
         final Map<String, String> newModes = model.getNewModes();
