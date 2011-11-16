@@ -1598,7 +1598,10 @@ AtomicLockListener, FoldHierarchyListener {
         component.setDragEnabled(true);
     }
     
-    private int mouse2Offset(MouseEvent evt) {
+    /**
+     * Translates mouse event to text offset
+     */
+    int mouse2Offset(MouseEvent evt) {
         JTextComponent c = component;
         int offset = 0;
         if (c != null) {

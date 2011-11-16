@@ -1993,7 +1993,8 @@ class LayoutOperations implements LayoutConstants {
 
         // Add the groups in parallel with the outer gaps.
         LayoutInterval parentSeq = group.getParent();
-        if (independentEdges && !allGaps[LEADING] && !allGaps[TRAILING]) {
+        if (independentEdges && !allGaps[LEADING] && !allGaps[TRAILING]
+                && processEdge[LEADING] && processEdge[TRAILING]) {
             assert group.getSubIntervalCount() == 0;
             LayoutInterval superGroup = new LayoutInterval(PARALLEL);
             superGroup.getCurrentSpace().set(dimension, outPos[LEADING], outPos[TRAILING]);
@@ -2031,14 +2032,18 @@ class LayoutOperations implements LayoutConstants {
                 if (superGroup != null) {
                     if (superGroup != group) {
                         assert outGap.getParent() == parentSeq;
+                        boolean groupAlreadyAdded;
                         if (subSeq == null) {
                             subSeq = new LayoutInterval(SEQUENTIAL);
+                            groupAlreadyAdded = false;
+                        } else {
+                            groupAlreadyAdded = true;
                         }
                         layoutModel.removeInterval(outGap);
                         if (e == LEADING) {
                             layoutModel.addInterval(outGap, subSeq, 0);
                         }
-                        if (group.getParent() != subSeq) {
+                        if (!groupAlreadyAdded) {
                             int idx = layoutModel.removeInterval(group);
                             int subAlign = -1;
                             if (group.getSubIntervalCount() > 1) {

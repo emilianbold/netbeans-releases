@@ -925,7 +925,7 @@ public class JavaKit extends NbEditorKit {
                 if (source instanceof DataObject) {
                     FileObject fo = ((DataObject) source).getPrimaryFile();
 
-                    JavaFixAllImports.getDefault().fixAllImports(fo);
+                    JavaFixAllImports.getDefault().fixAllImports(fo, target);
                 }
             }
         }

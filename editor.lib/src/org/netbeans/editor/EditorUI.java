@@ -1671,13 +1671,21 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
             return new Color(255, 235, 235);
         }
     }
-
+    
     private void showPopupMenuForPopupTrigger(final MouseEvent evt) {
         if (component != null && evt.isPopupTrigger() && popupMenuEnabled) {
             // Postponing menu creation in order to give other listeners chance
             // to do their job. See IZ #140127 for details.
             SwingUtilities.invokeLater(new Runnable() {
                 public @Override void run() {
+                    // #205150 - must position the caret before building popup menu
+                    if (component != null) {
+                            Caret c = component.getCaret();
+                            if ((c instanceof BaseCaret)) {
+                                int offset = ((BaseCaret)c).mouse2Offset(evt);
+                                component.getCaret().setDot(offset);
+                            }
+                    }
                     showPopupMenu(evt.getX(), evt.getY());
                 }
             });
