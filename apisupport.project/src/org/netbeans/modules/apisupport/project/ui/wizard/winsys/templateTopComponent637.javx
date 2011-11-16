@@ -5,11 +5,11 @@
 
 package ${PACKAGENAME};
 
-import org.openide.util.NbBundle;
-import org.openide.windows.TopComponent;
 import org.netbeans.api.settings.ConvertAsProperties;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
+import org.openide.windows.TopComponent;
+import org.openide.util.NbBundle.Messages;
 
 <#assign PREFERRED_ID="${TEMPLATENAME}TopComponent"/>
 
@@ -32,11 +32,16 @@ import org.openide.awt.ActionReference;
     displayName = "#CTL_${TEMPLATENAME}Action",
     preferredID="${PREFERRED_ID}"
 )
+@Messages({
+    "CTL_${TEMPLATENAME}Action=${TEMPLATENAME}",
+    "CTL_${TEMPLATENAME}TopComponent=${TEMPLATENAME} Window",
+    "HINT_${TEMPLATENAME}TopComponent=This is a ${TEMPLATENAME} window"
+})
 public final class ${TEMPLATENAME}TopComponent extends TopComponent {
     public ${TEMPLATENAME}TopComponent() {
         initComponents();
-        setName(NbBundle.getMessage(${TEMPLATENAME}TopComponent.class, "CTL_${TEMPLATENAME}TopComponent"));
-        setToolTipText(NbBundle.getMessage(${TEMPLATENAME}TopComponent.class, "HINT_${TEMPLATENAME}TopComponent"));
+        setName(Bundle.CTL_${TEMPLATENAME}TopComponent());
+        setToolTipText(Bundle.HINT_${TEMPLATENAME}TopComponent());
 ${WINSYSBEHAVIOR}
     }
 
