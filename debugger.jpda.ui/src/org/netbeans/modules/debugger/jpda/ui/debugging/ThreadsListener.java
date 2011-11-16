@@ -47,6 +47,7 @@ package org.netbeans.modules.debugger.jpda.ui.debugging;
 import java.beans.Customizer;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -69,18 +70,37 @@ import org.openide.util.Exceptions;
 public class ThreadsListener extends DebuggerManagerAdapter {
 
     private static ThreadsListener instance;
+    private static PropertyChangeSupport pchs = new PropertyChangeSupport(ThreadsListener.class);
+    private static final ThreadsPropertyChangeListener tpchl = new ThreadsPropertyChangeListener();
+    
     final LinkedList<JPDAThread> currentThreadsHistory = new LinkedList();
     final BreakpointHits hits = new BreakpointHits();
     private Map<JPDADebugger, DebuggerListener> debuggerToListener = new WeakHashMap<JPDADebugger, DebuggerListener>();
     private JPDADebugger currentDebugger = null;
     private DebuggingView debuggingView;
     
+    /**
+     * Constructor for the registry only.
+     * @deprecated Do not call, use ThreadsListener.getDefault() instead.
+     */
+    @Deprecated()
     public ThreadsListener() {
         instance = this;
     }
 
+    /** Can return <code>null</code> when not initialized yet.
+     * @return The ThreadsListener instance or <code>null</code>.
+     */
     public static ThreadsListener getDefault() {
         return instance;
+    }
+    
+    public static void addPropertyChangeListener(PropertyChangeListener listener) {
+        pchs.addPropertyChangeListener(listener);
+    }
+    
+    public static void removePropertyChangeListener(PropertyChangeListener listener) {
+        pchs.removePropertyChangeListener(listener);
     }
     
     public void setDebuggingView(DebuggingView debuggingView) {
@@ -93,7 +113,11 @@ public class ThreadsListener extends DebuggerManagerAdapter {
         if (currentDebugger == deb) {
             return;
         }
+        if (currentDebugger != null) {
+            currentDebugger.getThreadsCollector().removePropertyChangeListener(tpchl);
+        }
         if (deb != null) {
+            deb.getThreadsCollector().addPropertyChangeListener(tpchl);
             JPDAThread currThread = deb.getCurrentThread();
             if (currThread != null) {
                 synchronized(currentThreadsHistory) {
@@ -101,6 +125,7 @@ public class ThreadsListener extends DebuggerManagerAdapter {
                     currentThreadsHistory.addFirst(currThread);
                 }
             }
+            
         }
         if (debuggingView == null) {
             this.currentDebugger = deb;
@@ -433,6 +458,16 @@ public class ThreadsListener extends DebuggerManagerAdapter {
 
         private synchronized Iterable<JPDAThread> getStoppedThreads() {
             return new ArrayList<JPDAThread>(stoppedThreads);
+        }
+        
+    }
+    
+    private static class ThreadsPropertyChangeListener implements PropertyChangeListener {
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            //pchs.firePropertyChange(evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
+            pchs.firePropertyChange(evt);
         }
         
     }
