@@ -60,9 +60,13 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
+import org.netbeans.modules.cnd.makeproject.api.configurations.CCCompilerConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.CCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
+import org.netbeans.modules.cnd.makeproject.api.configurations.FolderConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
+import org.netbeans.modules.cnd.makeproject.api.configurations.LinkerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
@@ -242,7 +246,20 @@ public final class NewTestActionFactory {
 
             Folder newFolder = folder.addNewFolder(true, Folder.Kind.TEST);
             newFolder.setDisplayName(newname);
+            setOptions(project, newFolder);
             MakeLogicalViewProvider.setVisible(project, newFolder);
+        }
+        
+        private void setOptions(Project project, Folder testFolder) {
+            ConfigurationDescriptorProvider cdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
+            MakeConfigurationDescriptor projectDescriptor = cdp.getConfigurationDescriptor();
+            FolderConfiguration folderConfiguration = testFolder.getFolderConfiguration(projectDescriptor.getActiveConfiguration());
+            LinkerConfiguration linkerConfiguration = folderConfiguration.getLinkerConfiguration();
+            linkerConfiguration.getOutput().setValue("${TESTDIR}/" + testFolder.getPath()); // NOI18N
+            CCompilerConfiguration cCompilerConfiguration = folderConfiguration.getCCompilerConfiguration();
+            CCCompilerConfiguration ccCompilerConfiguration = folderConfiguration.getCCCompilerConfiguration();
+            cCompilerConfiguration.getIncludeDirectories().add("."); // NOI18N
+            ccCompilerConfiguration.getIncludeDirectories().add("."); // NOI18N
         }
 
         @Override
