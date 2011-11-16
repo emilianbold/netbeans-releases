@@ -64,6 +64,10 @@ public class ALT_Bug204747Test extends LayoutTestCase {
         }
     }
 
+    /**
+     * Move jTextArea1 (in scrollpane) right of jToggleButton1 snapped at medium
+     * default gap and bottom-aligned with jCheckBox3.
+     */
     public void doChanges0() {
         ld.externalSizeChangeHappened();
 // > UPDATE CURRENT STATE
