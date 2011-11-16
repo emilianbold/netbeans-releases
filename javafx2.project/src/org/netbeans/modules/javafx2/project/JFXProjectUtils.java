@@ -375,7 +375,10 @@ public final class JFXProjectUtils {
             path = relPath;
         }
         File f = new File(path);
-        return FileUtil.toFileObject(f);
+        if(f.exists()) {
+            return FileUtil.toFileObject(f);
+        }
+        return null;
     }
 
 }

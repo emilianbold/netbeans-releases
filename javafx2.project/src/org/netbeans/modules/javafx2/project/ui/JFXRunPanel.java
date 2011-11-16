@@ -1185,7 +1185,7 @@ private void comboBoxWebBrowserActionPerformed(java.awt.event.ActionEvent evt) {
             FileObject thisProjDir = project.getProjectDirectory();
             FileObject fo = JFXProjectUtils.getFileObject(thisProjDir, projectDir);
             File proj = (fo == null) ? null : FileUtil.toFile(fo);
-            if(proj != null && (!proj.exists() || !proj.isDirectory())) {
+            if(proj == null || !proj.exists() || !proj.isDirectory()) {
                 textFieldPreloader.setText(""); //NOI18N
                 jfxProps.getPreloaderClassModel().fillNoPreloaderAvailable();
             } else {
@@ -1198,7 +1198,7 @@ private void comboBoxWebBrowserActionPerformed(java.awt.event.ActionEvent evt) {
             FileObject thisProjDir = project.getProjectDirectory();
             FileObject fo = JFXProjectUtils.getFileObject(thisProjDir, jarFilePath);
             File jar = (fo == null) ? null : FileUtil.toFile(fo);
-            if(!jar.exists() || !jar.isFile()) {
+            if(jar == null || !jar.exists() || !jar.isFile()) {
                 textFieldPreloader.setText(""); //NOI18N
                 jfxProps.getPreloaderClassModel().fillNoPreloaderAvailable();
             } else {
