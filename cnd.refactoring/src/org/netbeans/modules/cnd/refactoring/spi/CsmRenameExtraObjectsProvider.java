@@ -59,11 +59,11 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
  */
 public interface CsmRenameExtraObjectsProvider {
     /**
-     * allow to force refacroting when rename file
+     * allow to force refactoring when rename file
      * @param file
      * @return 
      */
-    boolean canRename(CsmFile file);
+    boolean needsRefactorRename(CsmFile file);
     
     /**
      * return extra objects which will be refactored as well

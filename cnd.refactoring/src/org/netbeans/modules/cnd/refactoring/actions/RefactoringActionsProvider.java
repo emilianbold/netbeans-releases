@@ -143,7 +143,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
                         included |= !includers.isEmpty();
                         if (!included) {
                             for (CsmRenameExtraObjectsProvider prov : providersResult.allInstances()) {
-                                if (prov.canRename(csmFile)) {
+                                if (prov.needsRefactorRename(csmFile)) {
                                     included = true;
                                     break;
                                 }
