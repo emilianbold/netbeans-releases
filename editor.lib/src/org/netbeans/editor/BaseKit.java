@@ -2618,6 +2618,8 @@ public class BaseKit extends DefaultEditorKit {
                             dot = textStartPos;
                         }
                     }
+                    // For partial view hierarchy check bounds
+                    dot = Math.max(dot, target.getUI().getRootView(target).getStartOffset());
                     String actionName = (String) getValue(Action.NAME);
                     boolean select = selectionBeginLineAction.equals(actionName)
                             || selectionLineFirstColumnAction.equals(actionName);
@@ -2651,6 +2653,8 @@ public class BaseKit extends DefaultEditorKit {
                 Caret caret = target.getCaret();
                 try {
                     int dot = Utilities.getRowEnd(target, caret.getDot());
+                    // For partial view hierarchy check bounds
+                    dot = Math.min(dot, target.getUI().getRootView(target).getEndOffset());
                     boolean select = selectionEndLineAction.equals(getValue(Action.NAME));
                     if (select) {
                         caret.moveDot(dot);
