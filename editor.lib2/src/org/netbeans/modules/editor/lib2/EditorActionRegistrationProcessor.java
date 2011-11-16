@@ -314,6 +314,12 @@ public final class EditorActionRegistrationProcessor extends LayerGeneratingProc
         // some tools may query FO's properties and expect it there.
         file.stringvalue(Action.NAME, actionName);
 
+        // Resolve weight attribute that allows to override existing action
+        int weight = annotation.weight();
+        if (weight != Integer.MIN_VALUE) {
+            file.intvalue("weight", weight);
+        }
+
         if (directActionCreation) {
             if (methodName != null) {
                 file.methodvalue("instanceCreate", className, methodName);

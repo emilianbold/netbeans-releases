@@ -41,16 +41,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
-/*
- * TestCatalogModel.java
- *
- * Created on April 2, 2006, 10:41 AM
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
-
 package org.netbeans.modules.xml.schema.model;
 
 import java.io.File;
@@ -60,13 +50,14 @@ import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.text.Document;
+import org.junit.rules.ExternalResource;
+import org.junit.rules.TestRule;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.BaseKit;
 import org.netbeans.modules.xml.retriever.catalog.impl.CatalogFileWrapperDOMImpl;
 import org.netbeans.modules.xml.retriever.catalog.impl.CatalogWriteModelImpl;
+import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.locator.CatalogModel;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
-import org.netbeans.modules.xml.xam.ModelSource;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -79,7 +70,6 @@ import org.openide.util.lookup.Lookups;
  *
  * @author girix
  */
-
 public class TestCatalogModel extends CatalogWriteModelImpl{
     private TestCatalogModel(File file) throws IOException{
         super(file);
@@ -233,6 +223,25 @@ public class TestCatalogModel extends CatalogWriteModelImpl{
 
     public void clearDocumentPool() {
         fileToDocumentMap = null;
+    }
+    
+    /**
+     * A JUnit {@link TestRule} that stops tests from interfering with one 
+     * another. JUnit will automatically set up/clean up the catalog when this
+     * rule is used. <br/>
+     * Usage:<br/>
+     * {@code @Rule public final TestRule catalogMaintainer = TestCatalogModel.maintainer()}
+     * @return the TestRule
+     */
+    public static TestRule maintainer() {
+        return new ExternalResource() {
+
+            @Override
+            protected void after() {
+                getDefault().clearDocumentPool();
+            }
+        
+        };
     }
 }
 

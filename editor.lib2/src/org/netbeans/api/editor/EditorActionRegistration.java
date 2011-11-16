@@ -177,5 +177,15 @@ public @interface EditorActionRegistration {
      * global mime-lookup <code>MimeLookup.getLookup(MimePath.EMPTY)</code>.
      */
     String preferencesKey() default "";
+    
+    /**
+     * Allows to make an override of an action by adding a "weight" attribute
+     * into a generated file object in the system filesystem
+     * - see {@link org.openide.filesystems.MultiFileSystem}.
+     * 
+     * @return value of the weight attribute. When omitted (default value is used)
+     *   then no weight attribute gets generated.
+     */
+    int weight() default Integer.MIN_VALUE;
 
 }

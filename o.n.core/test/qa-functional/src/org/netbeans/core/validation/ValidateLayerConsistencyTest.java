@@ -623,14 +623,6 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
             Set<String> overriders = overrides.keySet();
             String file = e.getKey();
 
-            if (file.matches("Editors/Actions/build-(popup-menu|tool-tip)[.]instance")) {
-                // Provided by editor.lib but overridden (direct dep) by editor.
-                // Seems like the editor.lib definition might be needed if editor is missing.
-                // @EditorActionRegistration does not supply a way to define a weight.
-                // So for now, just permit this special case.
-                continue;
-            }
-
             if (new HashSet<ContentAndAttrs>(overrides.values()).size() == 1) {
                 // All the same. Check whether these are parallel declarations (e.g. CND debugger vs. Java debugger), or vertical.
                 for (String overrider : overriders) {

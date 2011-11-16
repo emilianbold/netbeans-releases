@@ -45,7 +45,9 @@ package org.netbeans.modules.java.hints.jdk;
 import com.sun.source.tree.CatchTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TryTree;
+import com.sun.source.tree.UnionTypeTree;
 import com.sun.source.util.TreePath;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -171,6 +173,15 @@ public class JoinCatches {
             return NbBundle.getMessage(JoinCatches.class, "FIX_JoinCatches");
         }
 
+        private void addDisjointType(List<Tree> to, Tree type) {
+            if (type == null) return;
+            if (type.getKind() == Kind.UNION_TYPE) {
+                to.addAll(((UnionTypeTree) type).getTypeAlternatives());
+            } else {
+                to.add(type);
+            }
+        }
+
         @Override
         protected void performRewrite(WorkingCopy wc, TreePath tp, boolean canShowUI) {
             List<Tree> disjointTypes = new LinkedList<Tree>();
@@ -178,10 +189,10 @@ public class JoinCatches {
             int first = duplicates.iterator().next();
 
             duplicates.remove(first);
-            disjointTypes.add(tt.getCatches().get(first).getParameter().getType());
+            addDisjointType(disjointTypes, tt.getCatches().get(first).getParameter().getType());
 
             for (Integer d : duplicates) {
-                disjointTypes.add(tt.getCatches().get((int) d).getParameter().getType());
+                addDisjointType(disjointTypes, tt.getCatches().get((int) d).getParameter().getType());
             }
 
             List<CatchTree> newCatches = new LinkedList<CatchTree>();
