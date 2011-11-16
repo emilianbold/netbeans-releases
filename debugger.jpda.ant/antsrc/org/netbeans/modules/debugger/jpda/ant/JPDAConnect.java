@@ -68,6 +68,8 @@ public class JPDAConnect extends Task {
 
     private static final Logger logger = Logger.getLogger("org.netbeans.modules.debugger.jpda.ant"); // NOI18N
     
+    private RequestProcessor rp = new RequestProcessor("JPDAConnect", 1);
+    
     private String host = "localhost"; // NOI18N
 
     private String address;
@@ -208,7 +210,7 @@ public class JPDAConnect extends Task {
         
 
         synchronized(lock) {
-            RequestProcessor.getDefault ().post (new Runnable () {
+            rp.post (new Runnable () {
                 public void run() {
                     synchronized(lock) {
                         try {
