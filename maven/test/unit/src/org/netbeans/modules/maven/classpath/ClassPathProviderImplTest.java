@@ -42,14 +42,19 @@
 
 package org.netbeans.modules.maven.classpath;
 
+import java.net.URL;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 import org.apache.maven.artifact.Artifact;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
+import org.netbeans.modules.maven.api.classpath.ProjectSourcesClassPathProvider;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.indexer.spi.RepositoryIndexerImplementation;
@@ -200,6 +205,39 @@ public class ClassPathProviderImplTest extends NbTestCase {
         assertRoots(ClassPath.getClassPath(gsrc, ClassPath.SOURCE), src, gsrc);
         assertRoots(ClassPath.getClassPath(tsrc, ClassPath.SOURCE), tsrc, gtsrc);
         assertRoots(ClassPath.getClassPath(gtsrc, ClassPath.SOURCE), tsrc, gtsrc);
+    }
+
+    public void testArchetypeResources() throws Exception { // #189037
+        TestFileUtils.writeFile(d,
+                "pom.xml",
+                "<project xmlns='http://maven.apache.org/POM/4.0.0'>" +
+                "<modelVersion>4.0.0</modelVersion>" +
+                "<groupId>g</groupId>" +
+                "<artifactId>a</artifactId>" +
+                // unloadable during a test: "<packaging>maven-archetype</packaging>" +
+                "<version>0</version>" +
+                "</project>");
+        TestFileUtils.writeFile(d, "src/main/resources/META-INF/maven/archetype-metadata.xml", "<archetype-descriptor/>");
+        TestFileUtils.writeFile(d, "src/main/resources/archetype-resources/pom.xml", "<project/>");
+        TestFileUtils.writeFile(d, "src/main/resources/archetype-resources/src/main/java/X.java", "package $package; public class X {}");
+        Project p = ProjectManager.getDefault().findProject(d);
+        ProjectSourcesClassPathProvider pscpp = p.getLookup().lookup(ProjectSourcesClassPathProvider.class);
+        assertNotNull(pscpp);
+        ClassPath[] sourceCPs = pscpp.getProjectClassPaths(ClassPath.SOURCE);
+        assertEquals(Arrays.toString(sourceCPs), 2, sourceCPs.length); // src/main/* + src/test/*
+        List<ClassPath.Entry> entries = sourceCPs[0].entries();
+        assertEquals(entries.toString(), 4, entries.size());
+        assertEquals(entries.toString(), new URL(d.getURL(), "src/main/java/"), entries.get(0).getURL());
+        // 1, 2: scala & groovy
+        assertEquals(entries.toString(), new URL(d.getURL(), "src/main/resources/"), entries.get(3).getURL());
+        assertTrue(entries.get(3).includes("META-INF/"));
+        assertTrue(entries.get(3).includes("META-INF/maven/"));
+        assertTrue(entries.get(3).includes("META-INF/maven/archetype-metadata.xml"));
+        assertFalse(entries.get(3).includes("archetype-resources/"));
+        assertFalse(entries.get(3).includes("archetype-resources/src/"));
+        assertFalse(entries.get(3).includes("archetype-resources/src/main/"));
+        assertFalse(entries.get(3).includes("archetype-resources/src/main/java/"));
+        assertFalse(entries.get(3).includes("archetype-resources/src/main/java/X.java"));
     }
 
 }

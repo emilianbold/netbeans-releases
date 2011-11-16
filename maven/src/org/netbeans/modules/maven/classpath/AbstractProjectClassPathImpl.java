@@ -45,7 +45,6 @@ package org.netbeans.modules.maven.classpath;
 import java.beans.PropertyChangeEvent;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileUtil;
 
 import java.util.List;
@@ -60,6 +59,7 @@ import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.spi.java.classpath.FilteringPathResourceImplementation;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 
 /**
@@ -149,18 +149,42 @@ public abstract class AbstractProjectClassPathImpl implements ClassPathImplement
     abstract URI[] createPath();
     
     private List<PathResourceImplementation> getPath() {
-        List<PathResourceImplementation> base = getPath(createPath());
+        List<PathResourceImplementation> base = getPath(createPath(), new Includer() {
+            @Override public boolean includes(URL root, String resource) {
+                return AbstractProjectClassPathImpl.this.includes(root, resource);
+            }
+        });
         return Collections.<PathResourceImplementation>unmodifiableList(base);
     }
+
+    protected boolean includes(URL root, String resource) {
+        return true;
+    }
+
+    public interface Includer {
+        boolean includes(URL root, String resource);
+    }
     
-    public static  List<PathResourceImplementation> getPath(URI[] pieces) {
+    public static  List<PathResourceImplementation> getPath(URI[] pieces, final Includer includer) {
         List<PathResourceImplementation> result = new ArrayList<PathResourceImplementation>();
         for (int i = 0; i < pieces.length; i++) {
             try {
                 // XXX would be cleaner to take a File[] if that is what these all are anyway!
-                URL entry = FileUtil.urlForArchiveOrDir(new File(pieces[i]));
+                final URL entry = FileUtil.urlForArchiveOrDir(new File(pieces[i]));
                 if (entry != null) {
-                    result.add(ClassPathSupport.createResource(entry));
+                    result.add(new FilteringPathResourceImplementation() {
+                        @Override public boolean includes(URL root, String resource) {
+                            return includer != null ? includer.includes(root, resource) : true;
+                        }
+                        @Override public URL[] getRoots() {
+                            return new URL[] {entry};
+                        }
+                        @Override public ClassPathImplementation getContent() {
+                            return null;
+                        }
+                        @Override public void addPropertyChangeListener(PropertyChangeListener listener) {}
+                        @Override public void removePropertyChangeListener(PropertyChangeListener listener) {}
+                    });
                 }
             } catch (IllegalArgumentException exc) {
                 Logger.getLogger(AbstractProjectClassPathImpl.class.getName()).log(Level.INFO, "Cannot use uri " + pieces[i] + " for classpath", exc);

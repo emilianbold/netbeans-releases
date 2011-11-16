@@ -44,6 +44,7 @@ package org.netbeans.modules.maven.classpath;
 
 import java.io.File;
 import java.net.URI;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -89,6 +90,10 @@ class SourceClassPathImpl extends AbstractProjectClassPathImpl {
         URI[] uris = new URI[col.size()];
         uris = col.toArray(uris);
         return uris;        
+    }
+
+    @Override protected boolean includes(URL root, String resource) {
+        return !resource.startsWith("archetype-resources/");
     }
 
 }
