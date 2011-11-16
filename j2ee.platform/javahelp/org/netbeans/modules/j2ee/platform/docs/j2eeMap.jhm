@@ -363,18 +363,6 @@ Other names may be trademarks of their respective owners.
 
 <!-- End of Persistence help -->
 
-<!-- Start of Packaged Archive project help -->
-<!-- commenting out pending removal of feature and topics -->
-    <!-- <mapID target="archiveproject_about" url="archiveproject/archiveproject_about.html" />
-    <mapID target="archiveproject-deploying" url="archiveproject/archiveproject-deploying.html" /> -->
-    <!-- CSH -->
-    <!-- New Project wiz - Packaged Archive Project, Name & Location page -->
-    <!-- <mapID target="org.netbeans.modules.j2ee.archive.wizard.DeployableWizardPanel" url="archiveproject/csh/archiveproject_new_wizard.html" /> -->
-    <!-- Packaged Archive Project Properties - Run page (the only page for this project) --> 
-    <!-- <mapID target="org.netbeans.modules.j2ee.archive.customizer.CustomizerRun" url="archiveproject/csh/archiveproject-properties-run.html" /> -->
-
-<!-- End of Packaged Archive project help -->
-
 
 <!-- Begin Glassfish help topics -->
     <mapID target="aboutplugin"      				url="server/glassfish/general/aboutplugin.html" />
