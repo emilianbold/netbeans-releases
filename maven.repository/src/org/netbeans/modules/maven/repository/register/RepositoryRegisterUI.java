@@ -51,7 +51,8 @@ import javax.swing.SwingUtilities;
 import org.netbeans.modules.maven.indexer.api.RepositoryIndexer;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
-import org.openide.util.NbBundle;
+import static org.netbeans.modules.maven.repository.register.Bundle.*;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
@@ -274,10 +275,14 @@ public class RepositoryRegisterUI extends javax.swing.JPanel {
         txtRepoUrl.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RepositoryRegisterUI.class, "RepositoryRegisterUI.txtRepoUrl.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
+    @Messages({
+        "LBL_Repo_Path_Header=Choose Repository Directory",
+        "LBL_SELECT=Select Repository"
+    })
 private void btnBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBrowseActionPerformed
         JFileChooser chooser = new JFileChooser(lastFolder);
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        chooser.setDialogTitle(NbBundle.getMessage(RepositoryRegisterUI.class, "LBL_Repo_Path_Header", new Object[] {}));
+        chooser.setDialogTitle(LBL_Repo_Path_Header());
 
         chooser.setMultiSelectionEnabled(false);
         if (txtRepoPath.getText().trim().length() > 0) {
@@ -286,7 +291,7 @@ private void btnBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
                 chooser.setSelectedFile(fil);
             }
         }
-        int ret = chooser.showDialog(SwingUtilities.getWindowAncestor(this), NbBundle.getMessage(RepositoryRegisterUI.class, "LBL_SELECT", new Object[] {}));
+        int ret = chooser.showDialog(SwingUtilities.getWindowAncestor(this), LBL_SELECT());
         if (ret == JFileChooser.APPROVE_OPTION) {
             txtRepoPath.setText(chooser.getSelectedFile().getAbsolutePath());
             txtRepoPath.requestFocusInWindow();
@@ -357,18 +362,25 @@ private void txtRepoUrlKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:eve
               jraRemote.isSelected() ? txtRepoUrl.getText().trim() : null);
     }
 
+    @Messages({
+        "LBL_Repo_id_Error1=Repository Id can't be empty",
+        "LBL_Repo_id_Error2=Repository Id already exist",
+        "LBL_Repo_Name_Error1=Repository Name can't be empty",
+        "LBL_Repo_Path_Error=Invalid Repository Path",
+        "LBL_Repo_Url_Error=Repository URL can't be empty"
+    })
     private void validateInfo() {
         //check repo id
         if (txtRepoId.getText().trim().length() == 0) {
             btnOK.setEnabled(false);
-            lblValidate.setText(NbBundle.getMessage(RepositoryRegisterUI.class, "LBL_Repo_id_Error1"));
+            lblValidate.setText(LBL_Repo_id_Error1());
             return;
         }
         if (!modify) {
             RepositoryInfo info = RepositoryPreferences.getInstance().getRepositoryInfoById(txtRepoId.getText().trim());
             if (info != null && (info.isLocal() || info.isRemoteDownloadable())) {
                 btnOK.setEnabled(false);
-                lblValidate.setText(NbBundle.getMessage(RepositoryRegisterUI.class, "LBL_Repo_id_Error2"));
+                lblValidate.setText(LBL_Repo_id_Error2());
                 return;
             } else if (info != null && !alreadyFilled) {
                 txtRepoUrl.setText(info.getRepositoryUrl());
@@ -382,21 +394,21 @@ private void txtRepoUrlKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:eve
         //check repo name
         if (txtRepoName.getText().trim().length() == 0) {
             btnOK.setEnabled(false);
-            lblValidate.setText(NbBundle.getMessage(RepositoryRegisterUI.class, "LBL_Repo_Name_Error1"));
+            lblValidate.setText(LBL_Repo_Name_Error1());
             return;
         }
         if (jraLocal.isSelected()) {
             //check repo url
             if (txtRepoPath.getText().trim().length() == 0 || !new File(txtRepoPath.getText().trim()).exists()) {
                 btnOK.setEnabled(false);
-                lblValidate.setText(NbBundle.getMessage(RepositoryRegisterUI.class, "LBL_Repo_Path_Error"));
+                lblValidate.setText(LBL_Repo_Path_Error());
                 return;
             }
         } else {
             //check repo url
             if (txtRepoUrl.getText().trim().length() == 0) {
                 btnOK.setEnabled(false);
-                lblValidate.setText(NbBundle.getMessage(RepositoryRegisterUI.class, "LBL_Repo_Url_Error"));
+                lblValidate.setText(LBL_Repo_Url_Error());
                 return;
             }
         }
