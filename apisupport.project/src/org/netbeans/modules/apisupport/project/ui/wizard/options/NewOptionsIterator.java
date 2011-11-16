@@ -242,7 +242,9 @@ public final class NewOptionsIterator extends BasicWizardIterator {
                             "    displayName=\"#AdvancedOption_DisplayName_" + getClassNamePrefix() + "\",\n" +
                             "    keywords=\"#AdvancedOption_Keywords_" + getClassNamePrefix() + "\",\n" +
                             "    keywordsCategory=\"" + getPrimaryPanel() + "/" + getClassNamePrefix() + "\"\n" +
-                            ")\n";
+                            ")\n" +
+                            "@org.openide.util.NbBundle.Messages({\"AdvancedOption_DisplayName_" + getClassNamePrefix() + "=" + getSecondaryPanelTitle() + "\", " +
+                            "\"AdvancedOption_Keywords_" + getClassNamePrefix() + "=" + getSecondaryKeywords() + "\"})\n";
                 } else if (isAdvancedCategory()) {
                     return "<should never be used>";
                 } else {
@@ -251,7 +253,9 @@ public final class NewOptionsIterator extends BasicWizardIterator {
                             "    iconBase=\"" + getIconPath() + "\",\n" +
                             "    keywords=\"#OptionsCategory_Keywords_" + getClassNamePrefix() + "\",\n" +
                             "    keywordsCategory=\"" + getClassNamePrefix() + "\"\n" +
-                            ")\n";
+                            ")\n" +
+                            "@org.openide.util.NbBundle.Messages({\"OptionsCategory_Name_" + getClassNamePrefix() + "=" + getCategoryName() + "\", " +
+                            "\"OptionsCategory_Keywords_" + getClassNamePrefix() + "=" + getPrimaryKeywords() + "\"})";
                 }
             } else {
                 return key + "_" + getClassNamePrefix();
@@ -402,8 +406,8 @@ public final class NewOptionsIterator extends BasicWizardIterator {
             } else {
                 generateFiles(useAnnotations);
             }
-            generateBundleKeys();
             if (!useAnnotations) {
+                generateBundleKeys();
                 generateLayerEntry();
             }
             if (!isAdvanced()) {
@@ -426,7 +430,6 @@ public final class NewOptionsIterator extends BasicWizardIterator {
             }
         }
         
-        // XXX use @Messages where available
         private void generateBundleKeys() {
             String[] bundleKeys = (isAdvanced()) ? ADVANCED_BUNDLE_KEYS : CATEGORY_BUNDLE_KEYS;
             for (int i = 0; i < bundleKeys.length; i++) {
@@ -493,8 +496,12 @@ public final class NewOptionsIterator extends BasicWizardIterator {
             attrs.put("iconBase", getIconPath());
             attrs.put("keywords", "#OptionsCategory_Keywords_" + getClassNamePrefix());
             attrs.put("keywordsCategory", getClassNamePrefix());
-            files.add(files.packageInfo(getPackageName(),
-                    Collections.singletonMap("org.netbeans.spi.options.OptionsPanelController.ContainerRegistration", attrs)));
+            Map<String,Map<String,?>> annotations = new LinkedHashMap<String,Map<String,?>>();
+            annotations.put("org.netbeans.spi.options.OptionsPanelController.ContainerRegistration", attrs);
+            annotations.put("org.openide.util.NbBundle.Messages", Collections.singletonMap("value", new String[] {
+                    "OptionsCategory_Name_" + getClassNamePrefix() + "=" + getCategoryName(),
+                    "OptionsCategory_Keywords_" + getClassNamePrefix() + "=" + getPrimaryKeywords()}));
+            files.add(files.packageInfo(getPackageName(), annotations));
         }
 
         private CreatedModifiedFiles.Operation createJavaFileCopyOperation(final String templateSuffix, boolean useAnnotations) {

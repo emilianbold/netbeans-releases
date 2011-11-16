@@ -1175,7 +1175,18 @@ public final class CreatedModifiedFiles {
                                     ExpressionTree annotationTypeTree = make.QualIdent(annType);
                                     List<ExpressionTree> arguments = new ArrayList<ExpressionTree>();
                                     for (Map.Entry<String,?> attr : ann.getValue().entrySet()) {
-                                        arguments.add(make.Assignment(make.Identifier(attr.getKey()), make.Literal(attr.getValue())));
+                                        Object value = attr.getValue();
+                                        ExpressionTree expression;
+                                        if (value instanceof Object[]) {
+                                            List<ExpressionTree> expressions = new ArrayList<ExpressionTree>();
+                                            for (Object element : (Object[]) value) {
+                                                expressions.add(make.Literal(element));
+                                            }
+                                            expression = make.NewArray(null, Collections.<ExpressionTree>emptyList(), expressions);
+                                        } else {
+                                            expression = make.Literal(value);
+                                        }
+                                        arguments.add(make.Assignment(make.Identifier(attr.getKey()), expression));
                                     }
                                     anns.add(make.Annotation(annotationTypeTree, arguments));
                                 }
