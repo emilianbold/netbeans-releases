@@ -184,11 +184,16 @@ public class WebProjectValidation extends J2eeTestCase {
         serverStep.next();
         NewWebProjectSourcesStepOperator frameworkStep = new NewWebProjectSourcesStepOperator();
         frameworkStep.finish();
-        waitScanFinished();
+        frameworkStep.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 120000);
+        frameworkStep.waitClosed();
+        // wait project appear in projects view
+        // wait 30 second
+        JemmyProperties.setCurrentTimeout("JTreeOperator.WaitNextNodeTimeout", 30000); // NOI18N
         verifyWebPagesNode("index.jsp");
         if (J2EE_4.equals(getEEVersion())) {
             verifyWebPagesNode("WEB-INF|web.xml");
         }
+        waitScanFinished();
     }
 
     protected void verifyProjectNode(String nodePath) {
