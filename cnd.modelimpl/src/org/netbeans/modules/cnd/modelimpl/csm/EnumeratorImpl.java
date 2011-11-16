@@ -77,11 +77,11 @@ public final class EnumeratorImpl extends OffsetableDeclarationBase<CsmEnumerato
         this.enumerationRef = null;
     }
 
-    public static EnumeratorImpl create(AST ast, EnumImpl enumeration, boolean global) {
+    public static EnumeratorImpl create(AST ast, final CsmFile file, EnumImpl enumeration, boolean global) {
         NameHolder holder = NameHolder.createSimpleName(ast);
         EnumeratorImpl ei = new EnumeratorImpl(ast, holder, enumeration);
         postObjectCreateRegistration(global, ei);
-        holder.addReference(enumeration.getContainingFile(), ei);
+        holder.addReference(file, ei);
         return ei;
     }
 

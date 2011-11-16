@@ -794,7 +794,6 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         DISABLED_PLATFORM_MODULES.add("org.openide.io"); // NOI18N
         DISABLED_PLATFORM_MODULES.add("org.netbeans.core.output2"); // NOI18N
          */
-        DISABLED_PLATFORM_MODULES.add("org.netbeans.core.multiview"); // NOI18N
         // this one is useful only for writers of apps showing local disk
         DISABLED_PLATFORM_MODULES.add("org.netbeans.modules.favorites"); // NOI18N
         // And these are deprecated:

@@ -52,11 +52,7 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.io.File;
 import java.nio.charset.Charset;
-import javax.swing.DefaultCellEditor;
-import javax.swing.JTable;
-import javax.swing.JTextField;
-import javax.swing.ListSelectionModel;
-import javax.swing.UIManager;
+import javax.swing.*;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import javax.swing.table.TableColumn;
@@ -165,6 +161,19 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         });
         initTableVisualProperties(sourceRoots);
         initTableVisualProperties(testRoots);
+        uiProperties.addOptionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                CellEditor cellEditor = sourceRoots.getCellEditor();
+                if (cellEditor != null) {
+                    cellEditor.stopCellEditing();
+                }
+                cellEditor = testRoots.getCellEditor();
+                if (cellEditor != null) {
+                    cellEditor.stopCellEditing();
+                }
+            }
+        });
     }
     
     private class TableColumnSizeComponentAdapter extends ComponentAdapter {

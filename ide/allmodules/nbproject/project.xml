@@ -263,7 +263,7 @@ made subject to such option by the copyright holder.
                 <project>../../image</project>
                 <project>../../j2ee.ant</project>
                 <project>../../j2ee.api.ejbmodule</project>
-                <project>../../j2ee.archive</project>
+                <!-- <project>../../j2ee.archive</project> -->
                 <project>../../j2ee.clientproject</project>
                 <project>../../j2ee.common</project>
                 <project>../../j2ee.core</project>

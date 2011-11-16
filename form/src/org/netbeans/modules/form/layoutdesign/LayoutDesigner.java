@@ -311,7 +311,7 @@ public final class LayoutDesigner implements LayoutModel.RemoveHandler, LayoutMo
     }
 
     // assumes current space of component intervals set
-    private void updateCurrentSpaceOfGroups(LayoutInterval group, int dimension) {
+    private void updateCurrentSpaceOfGroups(LayoutInterval group, int dimension, int[] parentEdgePositions) {
         if (group.getSubIntervalCount() == 0) {
             return;
         }
@@ -335,6 +335,7 @@ public final class LayoutDesigner implements LayoutModel.RemoveHandler, LayoutMo
         boolean[] def = { false, false }; // edge position defined by aligned sub-interval?
         boolean[] undef = { false, false }; // aligned sub-interval not knowing edge position?
         int[] endGapSize = { -1, -1 }; // sizes of gaps at the ends of a sequence
+        int[] groupEdgePositions = getGroupPositionLimits(group, dimension, parentEdgePositions);
 
         for (int i=0; i < group.getSubIntervalCount(); i++) {
             LayoutInterval sub = group.getSubInterval(i);
@@ -361,7 +362,7 @@ public final class LayoutDesigner implements LayoutModel.RemoveHandler, LayoutMo
                 LayoutRegion subSpace = sub.getCurrentSpace();
                 if (sub.isGroup()) {
                     subSpace.reset();
-                    updateCurrentSpaceOfGroups(sub, dimension);
+                    updateCurrentSpaceOfGroups(sub, dimension, groupEdgePositions);
                 } else if (sub.isComponent() && group.getGroupAlignment() == BASELINE
                            && groupSpace.positions[dimension][BASELINE] == LayoutRegion.UNKNOWN) {
                     groupSpace.positions[dimension][BASELINE] = subSpace.positions[dimension][BASELINE];
@@ -392,7 +393,18 @@ public final class LayoutDesigner implements LayoutModel.RemoveHandler, LayoutMo
                 // no sub-interval that would not know its position.
                 groupSpace.setPos(dimension, e, space.positions[dimension][e]);
                 if (endGapSize[e] >= 0) {
-                    groupSpace.reshape(dimension, e, endGapSize[e] * d);
+                    int change = endGapSize[e] * d;
+                    int gapPos = groupSpace.positions[dimension][e] + change;
+                    int limitPos = parentEdgePositions != null ? parentEdgePositions[e] : LayoutRegion.UNKNOWN;
+                    if (limitPos != LayoutRegion.UNKNOWN && gapPos*d > limitPos*d) {
+                        // As bug 203628 shows, we can't rely on that group size
+                        // defined by fixed explicit gap is computed correctly. So we
+                        // prefer the group position be determinde from edge components.
+                        change = (limitPos - gapPos + change) * d;
+                    }
+                    if (change != 0) {
+                        groupSpace.reshape(dimension, e, change);
+                    }
                 }
             } else if (group.isParallel()) {
                 // No sub-intervals knowing its real edge position. We should be able
@@ -428,6 +440,26 @@ public final class LayoutDesigner implements LayoutModel.RemoveHandler, LayoutMo
         }
 
         completeUknownGroupPositions(group, dimension);
+    }
+
+    private static int[] getGroupPositionLimits(LayoutInterval group, int dimension, int[] parentEdgePositions) {
+        int[] pos = new int[] { LayoutRegion.UNKNOWN, LayoutRegion.UNKNOWN };
+        for (int e=LEADING; e <= TRAILING; e++) {
+            if (group.getParent() == null) {
+                pos[e] = group.getCurrentSpace().positions[dimension][e]; // root defined by the container itself
+            } else if (parentEdgePositions != null && parentEdgePositions[e] != LayoutRegion.UNKNOWN
+                    && LayoutInterval.isAlignedAtBorder(group, e)) {
+                pos[e] = parentEdgePositions[e]; // inheriting from parent
+            } else {
+                List<LayoutInterval> l = LayoutUtils.getSideComponents(group, e, true, true);
+                if (!l.isEmpty()) {
+                    pos[e] = l.get(0).getCurrentSpace().positions[dimension][e];
+                } else {
+                    pos[e] = parentEdgePositions[e]; // inheriting from parent
+                }
+            }
+        }
+        return pos;
     }
 
     private static void completeUknownGroupPositions(LayoutInterval group, int dimension) {
@@ -1112,7 +1144,7 @@ public final class LayoutDesigner implements LayoutModel.RemoveHandler, LayoutMo
                             }
                             for (int dim=0; dim < DIM_COUNT; dim++) {
                                 addingInts[dim].getCurrentSpace().set(dragger.getMovingSpace());
-                                updateCurrentSpaceOfGroups(addingInts[dim], dim);
+                                updateCurrentSpaceOfGroups(addingInts[dim], dim, null);
                             }
                             f.setUp(origSpace, unresizedOnRemove);
                             unresizedOnRemove = null;
@@ -1996,6 +2028,13 @@ public final class LayoutDesigner implements LayoutModel.RemoveHandler, LayoutMo
                 layoutModel.copyContainerLayout(sourceContainer, sourceToTargetId, targetContainer);
             } else { // same source and target component - don't copy, just move
                 layoutModel.moveContainerLayout(sourceContainer, targetContainer);
+                // source roots were cleared
+                LayoutInterval[] sourceRoots = getActiveLayoutRoots(sourceContainer);
+                for (int i=0; i < DIM_COUNT; i++) {
+                    if (sourceRoots[i].getCurrentSpace().isSet(i)) {
+                        propEmptyContainer(sourceRoots[i], i);
+                    }
+                }
             }
         } else { // copying part of the layout
             // collect the components, create new if needed, compute bounds, ...
@@ -3916,7 +3955,7 @@ public final class LayoutDesigner implements LayoutModel.RemoveHandler, LayoutMo
                 LayoutInterval root = roots[i];
                 if (updateDataAfterBuild) {
                     optimizeStructure1(root, root == defaultRoot, i);
-                    updateCurrentSpaceOfGroups(root, i); // just updating current space, no changes
+                    updateCurrentSpaceOfGroups(root, i, null); // just updating current space, no changes
                     optimizeStructure2(root, i);
                     cleanRefreshAttrs(root);
                     findContainerResizingGap(root, i);
@@ -3925,7 +3964,7 @@ public final class LayoutDesigner implements LayoutModel.RemoveHandler, LayoutMo
                         updateToActualSize(root, i, diffFromDefault != 0 ? 2 : 0);
                     }
                 } else {
-                    updateCurrentSpaceOfGroups(root, i);
+                    updateCurrentSpaceOfGroups(root, i, null);
                     collectResizingDiffs(root, i);
                 }
             }
@@ -4039,7 +4078,7 @@ public final class LayoutDesigner implements LayoutModel.RemoveHandler, LayoutMo
             destroyRedundantGroups(root);
             if (!layoutModel.getChangeMark().equals(mark)) {
                 // something changed, update again
-                updateCurrentSpaceOfGroups(root, dimension);
+                updateCurrentSpaceOfGroups(root, dimension, null);
             }
             root.setAttribute(LayoutInterval.ATTR_OPTIMIZED);
         }
@@ -4437,7 +4476,7 @@ public final class LayoutDesigner implements LayoutModel.RemoveHandler, LayoutMo
     // to be called after removing some intervals if done as part of other
     // operation that continues and needs actual spaces and size diffs up-to-date
     private void afterRemoveSpaceUpdate(LayoutInterval root, int dimension) {
-        updateCurrentSpaceOfGroups(root, dimension);
+        updateCurrentSpaceOfGroups(root, dimension, null);
         if (collectResizingDiffs(root, dimension) != 0) {
             updateToActualSize(root, dimension, 2);
         }

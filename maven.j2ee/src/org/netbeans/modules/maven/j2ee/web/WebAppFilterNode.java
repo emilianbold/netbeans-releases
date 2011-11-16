@@ -50,12 +50,10 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 
 /**
@@ -166,10 +164,10 @@ class WebAppFilterNode extends FilterNode {
         
         @Override
         protected Node[] createNodes(Node obj) {
-            DataObject dobj = obj.getLookup().lookup(DataObject.class);
+            FileObject fobj = obj.getLookup().lookup(FileObject.class);
         
-            if (dobj != null) {
-                if (!VisibilityQuery.getDefault().isVisible(dobj.getPrimaryFile())) {
+            if (fobj != null) {
+                if (!VisibilityQuery.getDefault().isVisible(fobj)) {
                     return new Node[0];
                 }
                 Node n = new WebAppFilterNode(project, obj, root, false);

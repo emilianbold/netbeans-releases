@@ -612,16 +612,17 @@ public class LayoutModel implements LayoutConstants {
             addComponent(sub, targetContainer, -1);
         }
 
-        List<LayoutInterval[]> sourceRoots = sourceContainer.getLayoutRoots();
+        List<LayoutInterval[]> transferRoots = sourceContainer.getLayoutRoots();
+        List<LayoutInterval[]> originalTargetRoots = targetContainer.getLayoutRoots();
 
         sourceContainer.setLayoutRoots(null); // clear
         LayoutEvent.Component ev = new LayoutEvent.Component(this, LayoutEvent.LAYOUT_ROOTS_CHANGED);
-        ev.setLayoutRoots(sourceContainer, sourceRoots, null);
+        ev.setLayoutRoots(sourceContainer, transferRoots, sourceContainer.getLayoutRoots());
         addChange(ev);
 
-        targetContainer.setLayoutRoots(sourceRoots);
+        targetContainer.setLayoutRoots(transferRoots);
         ev = new LayoutEvent.Component(this, LayoutEvent.LAYOUT_ROOTS_CHANGED);
-        ev.setLayoutRoots(targetContainer, null, sourceRoots);
+        ev.setLayoutRoots(targetContainer, originalTargetRoots, transferRoots);
         addChange(ev);
     }
 

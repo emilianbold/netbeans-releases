@@ -58,6 +58,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.swing.DefaultListCellRenderer;
@@ -73,6 +74,7 @@ import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.java.source.ui.ElementIcons;
+import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.java.editor.overridden.PopupUtil;
 import org.openide.awt.StatusDisplayer;
@@ -256,10 +258,15 @@ public class ImportClassPanel extends javax.swing.JPanel {
         final String fqn = name;
         
         if (fqn != null) {
-            Task<WorkingCopy> task = new Task<WorkingCopy>() {
+            final AtomicBoolean cancel = new AtomicBoolean();
+            final Task<WorkingCopy> task = new Task<WorkingCopy>() {
                 
                 public void run(final WorkingCopy wc) throws IOException {
+                    if (cancel != null && cancel.get())
+                        return ;
                     wc.toPhase(Phase.RESOLVED);
+                    if (cancel != null && cancel.get())
+                        return ;
                     TreeMaker make = wc.getTreeMaker();
                     CompilationUnitTree cut = wc.getCompilationUnit();
                     // make a copy of list
@@ -342,11 +349,15 @@ public class ImportClassPanel extends javax.swing.JPanel {
                 }
                 
             };
-            try {
-                javaSource.runModificationTask(task).commit();
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+            ProgressUtils.runOffEventDispatchThread(new Runnable() {
+                public void run() {
+                    try {
+                        javaSource.runModificationTask(task).commit();
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            }, NbBundle.getMessage(ImportClassPanel.class, "LBL_Fast_Import"), cancel, false); //NOI18N
         }
     }
             

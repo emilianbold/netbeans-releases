@@ -43,6 +43,7 @@ package org.netbeans.libs.git.jgit;
 
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.ObjectId;
+import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.revwalk.RevObject;
 import org.eclipse.jgit.revwalk.RevTag;
 import org.netbeans.libs.git.GitObjectType;
@@ -68,7 +69,11 @@ public class JGitTag implements GitTag {
         this.name = revTag.getTagName();
         this.message = revTag.getFullMessage();
         this.taggedObject = ObjectId.toString(revTag.getObject().getId());
-        this.tagger = new JGitUserInfo(revTag.getTaggerIdent());
+        PersonIdent personIdent = revTag.getTaggerIdent();
+        if (personIdent == null) {
+            personIdent = new PersonIdent("", ""); //NOI18N
+        }
+        this.tagger = new JGitUserInfo(personIdent);
         this.type = getType(revTag.getObject());
         this.lightWeight = false;
     }

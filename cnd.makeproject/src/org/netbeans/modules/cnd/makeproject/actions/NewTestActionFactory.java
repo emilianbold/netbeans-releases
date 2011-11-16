@@ -159,7 +159,10 @@ public final class NewTestActionFactory {
                     }
                 }
                 templateWizard.putProperty("project", aProject); // NOI18N
-                Set<DataObject> files = templateWizard.instantiate(DataObject.find(FileUtil.getConfigFile(test.getPath())));
+                DataObject dob = DataObject.find(FileUtil.getConfigFile(test.getPath()));
+                String title = templateWizard.getTitleFormat().format(new Object[] { dob.getNodeDelegate().getDisplayName() });
+                templateWizard.setTitle(title);
+                Set<DataObject> files = templateWizard.instantiate(dob);
                 if (files != null && !files.isEmpty()) {
                     MakeConfigurationDescriptor mkd = getMakeConfigurationDescriptor(project);
                     if (mkd != null) {

@@ -1004,7 +1004,7 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
             return null;
         }
 
-        public boolean contains(FileObject file) throws IllegalArgumentException {
+        @Override public boolean contains(FileObject file) {
             return true;
         }
 

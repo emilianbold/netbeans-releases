@@ -38,7 +38,6 @@ import java.util.Iterator;
 import java.util.Set;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmClass;
@@ -71,6 +70,7 @@ import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectRegistry;
 import org.netbeans.modules.cnd.modelutil.CsmDisplayUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.refactoring.spi.CsmRefactoringNameProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -79,7 +79,6 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Lookup;
-import org.openide.util.Lookup.Provider;
 
 /**
  *
@@ -95,18 +94,15 @@ public final class CsmRefactoringUtils {
     private CsmRefactoringUtils() {
     }
 
-    public static boolean isElementInOpenProject(FileObject f) {
-        if (f == null) {
+    public static boolean isElementInOpenProject(CsmFile csmFile) {
+        if (csmFile == null) {
             return false;
         }
-        Project p = FileOwnerQuery.getOwner(f);
+        Object p = csmFile.getProject().getPlatformProject();
         if (p != null) {
             for (NativeProject prj : NativeProjectRegistry.getDefault().getOpenProjects()) {
-                Provider project = prj.getProject();
-                if (project != null) {
-                    if (p.equals(project) || project.equals(p)) {
-                        return true;
-                    }
+                if (prj.equals(p)) {
+                    return true;
                 }
             }
         }
@@ -238,6 +234,12 @@ public final class CsmRefactoringUtils {
             // cut off destructor prefix
             if (text.startsWith("~")) { // NOI18N
                 text = text.substring(1);
+            }
+            for (CsmRefactoringNameProvider provider : Lookup.getDefault().lookupAll(CsmRefactoringNameProvider.class)) {
+                String newName = provider.getRefactoredName(element, text);
+                if (newName != null) {
+                    text = newName;
+                }
             }
         }
         return text;

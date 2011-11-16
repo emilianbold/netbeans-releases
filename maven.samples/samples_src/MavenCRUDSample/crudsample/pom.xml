@@ -92,7 +92,10 @@
   </build>
   <repositories>
     <repository>
-      <url>http://ftp.ing.umu.se/mirror/eclipse/rt/eclipselink/maven.repo/</url>
+      <!-- note that ampersands in this URL are escaped because this is in an xml file -
+            un-escape them to use in browser 
+      -->
+      <url>http://www.eclipse.org/downloads/download.php?r=1&amp;nf=1&amp;file=/rt/eclipselink/maven.repo</url>
       <id>eclipselink</id>
     </repository>
   </repositories>

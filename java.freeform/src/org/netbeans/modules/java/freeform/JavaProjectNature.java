@@ -153,10 +153,10 @@ public class JavaProjectNature implements ProjectNature {
 
 
         @Override
-        public boolean contains(final FileObject file) throws IllegalArgumentException {
+        public boolean contains(final FileObject file) {
             String path = FileUtil.getRelativePath(folder, file);
             if (path == null) {
-                throw new IllegalArgumentException(file + " not in " + folder); //NOI18N
+                return false;
             }
             if (file.isFolder()) {
                 path += "/"; // NOI18N

@@ -71,13 +71,14 @@ import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ChangeEvent;
+import javax.swing.event.UndoableEditListener;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Caret;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Position;
 import javax.swing.text.View;
 import javax.swing.plaf.TextUI;
-import javax.swing.text.Document;
+import javax.swing.text.*;
 import javax.swing.undo.UndoManager;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
@@ -568,9 +569,16 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
     }
     
     private void checkUndoManager(Document doc) {
+        // Check if there's any undo manager listening already and if so return immediately
+        if (doc instanceof AbstractDocument && ((AbstractDocument)doc).getUndoableEditListeners().length >= 1) {
+            return;
+        }
         // If there is the wrapper component the default UndoManager
         // of the document gets cleared so that only the TopComponent's one gets used.
         UndoManager undoManager = (UndoManager) doc.getProperty(BaseDocument.UNDO_MANAGER_PROP);
+        if (undoManager == null) {
+            undoManager = (UndoManager) doc.getProperty(UndoManager.class);
+        }
         if (hasExtComponent()) {
             if (undoManager != null) {
                 doc.removeUndoableEditListener(undoManager);

@@ -121,8 +121,8 @@ public class JavaFXSampleProjectGenerator {
                             } finally {
                                 in.close();
                             }
-                            props.setProperty(JavaFXPlatformUtils.PROPERTY_JAVAFX_SDK, JavaFXPlatformUtils.getJavaFXSDKPath(platformName));
-                            props.setProperty(JavaFXPlatformUtils.PROPERTY_JAVAFX_RUNTIME, JavaFXPlatformUtils.getJavaFXRuntimePath(platformName));
+                            props.setProperty(JavaFXPlatformUtils.PROPERTY_JAVAFX_SDK, JavaFXPlatformUtils.getJavaFXSDKPathReference(platformName));
+                            props.setProperty(JavaFXPlatformUtils.PROPERTY_JAVAFX_RUNTIME, JavaFXPlatformUtils.getJavaFXRuntimePathReference(platformName));
                             props.setProperty("platform.active", platformName); // NOI18N
                             
                             OutputStream out = projectProps.getOutputStream(lock);

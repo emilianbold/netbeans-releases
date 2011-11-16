@@ -147,6 +147,9 @@ public class ConvertorProcessor extends LayerGeneratingProcessor {
 
         for (Element e : env.getElementsAnnotatedWith(ConvertAsJavaBean.class)) {
             ConvertAsJavaBean reg = e.getAnnotation(ConvertAsJavaBean.class);
+            if (reg == null) {
+                continue;
+            }
             String convElem = instantiableClassOrMethod(e, false, reg);
             File f = layer(e).file("xml/memory/" + convElem.replace('.', '/'));
             f.stringvalue("settings.providerPath", "xml/lookups/NetBeans/DTD_XML_beans_1_0.instance");

@@ -144,7 +144,19 @@ public class HintsInvoker {
 
     private List<ErrorDescription> computeHints(CompilationInfo info, TreePath startAt) {
         List<HintDescription> descs = new LinkedList<HintDescription>();
-        for (Entry<HintMetadata, Collection<? extends HintDescription>> e : RulesManager.getInstance().allHints.entrySet()) {
+        Map<HintMetadata, Collection<? extends HintDescription>> allHints = new HashMap<HintMetadata, Collection<? extends HintDescription>>(RulesManager.getInstance().allHints);
+
+        long elementBasedStart = System.currentTimeMillis();
+        List<HintDescription> elementBased = new LinkedList<HintDescription>();
+
+        RulesManager.computeElementBasedHintsXXX(info, cancel, elementBased);
+        allHints.putAll(org.netbeans.modules.java.hints.jackpot.impl.refactoring.Utilities.sortByMetadata(elementBased));
+
+        long elementBasedEnd = System.currentTimeMillis();
+
+        timeLog.put("Computing Element Based Hints", elementBasedEnd - elementBasedStart);
+
+        for (Entry<HintMetadata, Collection<? extends HintDescription>> e : allHints.entrySet()) {
             HintMetadata m = e.getKey();
 
             if (!HintsSettings.isEnabled(m)) {
@@ -169,14 +181,6 @@ public class HintsInvoker {
                 }
             }
         }
-
-        long elementBasedStart = System.currentTimeMillis();
-
-        RulesManager.computeElementBasedHintsXXX(info, cancel, descs);
-
-        long elementBasedEnd = System.currentTimeMillis();
-
-        timeLog.put("Computing Element Based Hints", elementBasedEnd - elementBasedStart);
 
         List<ErrorDescription> errors = join(computeHints(info, startAt, descs, new LinkedList<MessageImpl>()));
 

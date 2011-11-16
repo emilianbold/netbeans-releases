@@ -1309,15 +1309,24 @@ public class MetaComponentCreator {
     // --------
     
     Class prepareClass(final ClassSource classSource) {
-        if (!classSource.hasEntries()) { // Just some optimization
-            return prepareClass0(classSource);
-        } else {
-            try {
-                return (Class)FormLAF.executeWithLookAndFeel(formModel,
+        Throwable error = null;
+        final FileObject formFile = FormEditor.getFormDataObject(formModel).getFormFile();
+        final String className = classSource.getClassName();
+        Class loadedClass = null;
+        try {
+            if (!ClassPathUtils.checkUserClass(className, formFile)) {
+                if (ClassPathUtils.updateProject(formFile, classSource) == null) {
+                    return null;
+                }
+            }
+            if (!classSource.hasEntries()) { // Just some optimization
+                loadedClass = ClassPathUtils.loadClass(className, formFile);
+            } else {
+                loadedClass = (Class)FormLAF.executeWithLookAndFeel(formModel,
                     new Mutex.ExceptionAction() {
                         @Override
                         public Object run() throws Exception {
-                            Class clazz = prepareClass0(classSource);
+                            Class clazz = ClassPathUtils.loadClass(className, formFile);
                             if (clazz != null) {
                                 // Force creation of the default instance in the correct L&F context
                                 BeanSupport.getDefaultInstance(clazz);
@@ -1326,31 +1335,7 @@ public class MetaComponentCreator {
                         }
                     }
                 );
-            } catch (Exception ex) {
-                // should not happen
-                ex.printStackTrace();
-                return null;
             }
-        }
-    }
-
-    private Class prepareClass0(ClassSource classSource) {
-        Throwable error = null;
-        FileObject formFile = FormEditor.getFormDataObject(formModel).getFormFile();
-        String className = classSource.getClassName();
-        Class loadedClass = null;
-        try {
-            if (!ClassPathUtils.checkUserClass(className, formFile)) {
-                if (ClassPathUtils.updateProject(formFile, classSource) == null) {
-                    return null;
-                }
-                if (FormLAF.inLAFBlock()) {
-                    // Force update to new class loader
-                    FormLAF.setUseDesignerDefaults(null);
-                    FormLAF.setUseDesignerDefaults(formModel);
-                }
-            }
-            loadedClass = ClassPathUtils.loadClass(className, formFile);
         }
         catch (Exception ex) {
             error = ex;

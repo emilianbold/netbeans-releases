@@ -124,6 +124,136 @@ public class CreateModuleXMLTest extends TestBase {
         assertEquals("Its name reflects the code name of the module", "org-my-module.xml", files[0]);
 
     }
+    
+    public void testStartLevelFailsForNormalModules() throws Exception {
+        Manifest m = createManifest ();
+        m.getMainAttributes().putValue("OpenIDE-Module", "org.my.module");
+        File aModule = generateJar(new String[0], m);
+
+        File output = new File(getWorkDir(), "output");
+
+        java.io.File f = extractString (
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+            "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
+            "  <taskdef name=\"createmodulexml\" classname=\"org.netbeans.nbbuild.CreateModuleXML\" classpath=\"${nbantext.jar}\"/>" +
+            "<target name=\"all\" >" +
+            "  <mkdir dir='" + output + "' startlevel='3'/>" +
+            "  <createmodulexml xmldir='" + output + "' >" +
+            "    <enabled dir='" + aModule.getParent() + "' >" +
+            "      <include name='" + aModule.getName() + "' />" +
+            "    </enabled>" +
+            "  </createmodulexml>" +
+            "</target>" +
+            "</project>"
+        );
+        try {
+            execute(f, new String[] { "-verbose" });
+        } catch (ExecutionError ex) {
+            // OK
+            return;
+        }
+        fail("Execution should fail");
+
+    }
+    public void testStartLevelIsIgnoredForNormalModulesWhenRequested() throws Exception {
+        Manifest m = createManifest ();
+        m.getMainAttributes().putValue("OpenIDE-Module", "org.my.module");
+        File aModule = generateJar(new String[0], m);
+
+        File output = new File(getWorkDir(), "output");
+
+        java.io.File f = extractString (
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+            "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
+            "  <taskdef name=\"createmodulexml\" classname=\"org.netbeans.nbbuild.CreateModuleXML\" classpath=\"${nbantext.jar}\"/>" +
+            "<target name=\"all\" >" +
+            "  <mkdir dir='" + output + "'/>" +
+            "  <createmodulexml xmldir='" + output + "' startlevel='3' strictcheck='false'>" +
+            "    <enabled dir='" + aModule.getParent() + "' >" +
+            "      <include name='" + aModule.getName() + "' />" +
+            "    </enabled>" +
+            "  </createmodulexml>" +
+            "</target>" +
+            "</project>"
+        );
+        execute (f, new String[] { "-verbose" });
+
+        assertTrue ("Output exists", output.exists ());
+        assertTrue ("Output directory created", output.isDirectory());
+
+        File[] files = output.listFiles();
+        assertEquals("It one file", 1, files.length);
+        assertEquals("Its name reflects the code name of the module", "org-my-module.xml", files[0].getName());
+        
+        String content = readFile(files[0]);
+        assertFalse("startlevel tag is not there: " + content, content.contains("\"startlevel\""));
+    }
+    
+    public void testStartLevelOKForBundles() throws Exception {
+        Manifest m = createManifest ();
+        m.getMainAttributes().putValue("Bundle-SymbolicName", "org.my.module");
+        File aModule = generateJar(new String[0], m);
+
+        File output = new File(getWorkDir(), "output");
+
+        java.io.File f = extractString (
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+            "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
+            "  <taskdef name=\"createmodulexml\" classname=\"org.netbeans.nbbuild.CreateModuleXML\" classpath=\"${nbantext.jar}\"/>" +
+            "<target name=\"all\" >" +
+            "  <mkdir dir='" + output + "' />" +
+            "  <createmodulexml xmldir='" + output + "' startlevel='3'>" +
+            "    <enabled dir='" + aModule.getParent() + "' >" +
+            "      <include name='" + aModule.getName() + "' />" +
+            "    </enabled>" +
+            "  </createmodulexml>" +
+            "</target>" +
+            "</project>"
+        );
+        execute (f, new String[] { "-verbose" });
+
+        assertTrue ("Output exists", output.exists ());
+        assertTrue ("Output directory created", output.isDirectory());
+
+        File[] files = output.listFiles();
+        assertEquals("It one file", 1, files.length);
+        assertEquals("Its name reflects the code name of the module", "org-my-module.xml", files[0].getName());
+        
+        String content = readFile(files[0]);
+        assertTrue("startlevel tag expected: " + content, content.contains("\"startlevel\""));
+
+    }
+    public void testEmptyStartLevelIsOKForNormalModules() throws Exception {
+        Manifest m = createManifest ();
+        m.getMainAttributes().putValue("OpenIDE-Module", "org.my.module");
+        File aModule = generateJar(new String[0], m);
+
+        File output = new File(getWorkDir(), "output");
+
+        java.io.File f = extractString (
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+            "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
+            "  <taskdef name=\"createmodulexml\" classname=\"org.netbeans.nbbuild.CreateModuleXML\" classpath=\"${nbantext.jar}\"/>" +
+            "<target name=\"all\" >" +
+            "  <mkdir dir='" + output + "'/>" +
+            "  <createmodulexml xmldir='" + output + "' startlevel=''>" +
+            "    <enabled dir='" + aModule.getParent() + "' >" +
+            "      <include name='" + aModule.getName() + "' />" +
+            "    </enabled>" +
+            "  </createmodulexml>" +
+            "</target>" +
+            "</project>"
+        );
+        execute (f, new String[] { "-verbose" });
+
+        assertTrue ("Output exists", output.exists ());
+        assertTrue ("Output directory created", output.isDirectory());
+
+        String[] files = output.list();
+        assertEquals("It one file", 1, files.length);
+        assertEquals("Its name reflects the code name of the module", "org-my-module.xml", files[0]);
+
+    }
 
     public void testGenerateUpdateTrackingMode() throws Exception {
         Manifest m = createManifest ();

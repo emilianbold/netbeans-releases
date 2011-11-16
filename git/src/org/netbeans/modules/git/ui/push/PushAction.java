@@ -75,6 +75,7 @@ import org.netbeans.modules.versioning.hooks.GitHook;
 import org.netbeans.modules.versioning.hooks.GitHookContext;
 import org.netbeans.modules.versioning.hooks.VCSHooks;
 import org.netbeans.modules.versioning.spi.VCSContext;
+import org.netbeans.modules.versioning.util.Utils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.ActionID;
@@ -103,6 +104,7 @@ public class PushAction extends SingleRepositoryAction {
         Map<String, GitRemoteConfig> remotes = info.getRemotes();
         PushWizard wiz = new PushWizard(repository, remotes);
         if (wiz.show()) {
+            Utils.logVCSExternalRepository("GIT", wiz.getPushUri()); //NOI18N
             push(repository, wiz.getPushUri(), wiz.getPushMappings(), wiz.getFetchRefSpecs());
         }
     }

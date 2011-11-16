@@ -42,6 +42,8 @@ import java.io.Writer;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Map;
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
 import javax.swing.text.Document;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
@@ -84,6 +86,13 @@ public class IndentEngineIntTest extends NbTestCase {
 
     protected void tearDown() throws Exception {
         super.tearDown();
+    }
+    
+    public void testSupportedMimeTypes() {
+        ScriptEngineManager sem = new ScriptEngineManager();
+        ScriptEngine eng = sem.getEngineByName("freemarker");
+        assertNotNull("freemarker engine is found", eng);
+        assertEquals("[text/x-freemarker]", eng.getFactory().getMimeTypes().toString());
     }
 
     public void testCreateFromTemplateUsingFreemarker() throws Exception {

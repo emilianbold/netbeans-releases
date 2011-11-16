@@ -249,11 +249,7 @@ final class TreeRootNode extends FilterNode implements PropertyChangeListener {
         }
 
         public boolean acceptFileObject(FileObject fo) {
-            try {
-                return fo.isValid() && g.contains(fo) && VisibilityQuery.getDefault().isVisible(fo);
-            } catch (IllegalArgumentException iae) {
-                return false;
-            }
+            return fo.isValid() && g.contains(fo) && VisibilityQuery.getDefault().isVisible(fo);
         }
         
     }

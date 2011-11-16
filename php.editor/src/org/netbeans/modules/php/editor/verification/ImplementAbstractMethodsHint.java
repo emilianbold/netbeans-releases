@@ -127,7 +127,11 @@ public class ImplementAbstractMethodsHint extends AbstractRule {
         for (ClassScope classScope : allClasses) {
             if (!classScope.isAbstract()) {
                 Index index = context.getIndex();
-                ElementFilter declaredMethods = ElementFilter.forExcludedNames(toNames(index.getDeclaredMethods(classScope)), PhpElementKind.METHOD);
+                Set<String> allValidMethods = new HashSet<String>();
+                Set<? extends PhpElement> validInheritedMethods = getValidInheritedMethods(index.getInheritedMethods(classScope));
+                allValidMethods.addAll(toNames(validInheritedMethods));
+                allValidMethods.addAll(toNames(index.getDeclaredMethods(classScope)));
+                ElementFilter declaredMethods = ElementFilter.forExcludedNames(allValidMethods, PhpElementKind.METHOD);
                 Set<MethodElement> accessibleMethods = declaredMethods.filter(index.getAccessibleMethods(classScope, classScope));
                 LinkedHashSet<String> methodSkeletons = new LinkedHashSet<String>();
                 MethodElement lastMethodElement = null;
@@ -148,6 +152,16 @@ public class ImplementAbstractMethodsHint extends AbstractRule {
                         retval.add(new FixInfo(classScope, methodSkeletons, lastMethodElement, newMethodsOffset, classDeclarationOffset));
                     }
                 }
+            }
+        }
+        return retval;
+    }
+
+    private Set<? extends PhpElement> getValidInheritedMethods(Set<MethodElement> inheritedMethods) {
+        Set<MethodElement> retval = new HashSet<MethodElement>();
+        for (MethodElement methodElement : inheritedMethods) {
+            if (!methodElement.isAbstract()) {
+                retval.add(methodElement);
             }
         }
         return retval;

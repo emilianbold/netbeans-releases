@@ -38,6 +38,8 @@
 package org.netbeans.modules.php.editor.actions;
 
 import java.awt.event.ActionEvent;
+import java.util.Map;
+import javax.swing.Action;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorActionRegistration;
@@ -57,10 +59,26 @@ import org.openide.util.Exceptions;
  */
 
 @EditorActionRegistration(name = ExtKit.toggleCommentAction, mimeType="text/x-php5")
-
 public class ToggleBlockCommentAction extends BaseAction{
 
     static final long serialVersionUID = -1L;
+    static final private String FORCE_COMMENT = "force-comment";    //NOI18N
+    static final private String FORCE_UNCOMMENT = "force-uncomment";    //NOI18N
+
+    public ToggleBlockCommentAction() {
+        super(ExtKit.toggleCommentAction);
+    }
+    
+    public ToggleBlockCommentAction (Map<String,?> attrs) {
+        super(null);
+        if (attrs != null) {
+            String actionName = (String)attrs.get(Action.NAME);
+            if (actionName == null) {
+                throw new IllegalArgumentException("Null Action.NAME attribute for action " + this.getClass()); // NOI18N
+            }
+            putValue(Action.NAME, actionName);
+        }
+    }
     
     @Override
     public void actionPerformed(ActionEvent evt, JTextComponent target) {
@@ -97,9 +115,13 @@ public class ToggleBlockCommentAction extends BaseAction{
                             void run() {
                                 try {
                                     if (!lineComment) {
-                                        doc.insertString(changeOffset, " " + PHPLanguage.LINE_COMMENT_PREFIX, null);
+                                        if (forceDirection(true)) {
+                                            doc.insertString(changeOffset, " " + PHPLanguage.LINE_COMMENT_PREFIX, null);
+                                        }
                                     } else {
-                                        doc.remove(changeOffset, length);
+                                        if (forceDirection(false)) {
+                                            doc.remove(changeOffset, length);
+                                        }
                                     }
                                     
                                 } catch (BadLocationException ex) {
@@ -112,8 +134,26 @@ public class ToggleBlockCommentAction extends BaseAction{
             }
         }
         if(!processedHere) {
-            (new org.netbeans.modules.csl.api.ToggleBlockCommentAction()).actionPerformed(evt, target);
+            BaseAction action = new org.netbeans.modules.csl.api.ToggleBlockCommentAction();
+            if (getValue(FORCE_COMMENT) != null) {   
+                action.putValue(FORCE_COMMENT, getValue(FORCE_COMMENT)); 
+            }
+            if (getValue(FORCE_UNCOMMENT) != null) {
+                action.putValue(FORCE_UNCOMMENT, getValue(FORCE_UNCOMMENT));
+            }
+            action.actionPerformed(evt, target);
         }
     }
     
+    private boolean forceDirection(boolean comment) {
+        Object fComment = getValue(FORCE_COMMENT);
+        Object fUncomment = getValue(FORCE_UNCOMMENT);
+        
+        Object force = comment ? fComment : fUncomment;
+        if (force instanceof Boolean) {
+            return ((Boolean)force).booleanValue();
+        }
+        return fComment == null && fUncomment == null;
+    }
 }
+

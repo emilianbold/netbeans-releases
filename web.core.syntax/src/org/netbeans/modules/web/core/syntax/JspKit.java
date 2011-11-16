@@ -96,18 +96,13 @@ import org.netbeans.spi.lexer.MutableTextInput;
 //@MimeRegistration(mimeType="text/x-jsp", service=EditorKit.class, position=1)
 public class JspKit extends NbEditorKit implements org.openide.util.HelpCtx.Provider{
 
-    private static final WeakHashMap<Document, String /* source level id */> SOURCE_LEVEL_MAP = new WeakHashMap<Document, String>();
-
     public static final String JSP_MIME_TYPE = "text/x-jsp"; // NOI18N
     public static final String TAG_MIME_TYPE = "text/x-tag"; // NOI18N
 
     /** serialVersionUID */
     private static final long serialVersionUID = 8933974837050367142L;
 
-    public static final boolean debug = false;
     private final String mimeType;
-
-    private static final String NULL_SOURCE_LEVEL = "NullSourceLevel"; //NOI18N
 
     public JspKit() {
         this(JSP_MIME_TYPE);
@@ -142,9 +137,7 @@ public class JspKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
     /** Creates a new instance of the syntax coloring parser */
     @Override
     public Syntax createSyntax(Document doc) {
-        Syntax contentSyntax   = getSyntaxForLanguage(doc, JspUtils.getContentLanguage());
-        Syntax scriptingSyntax = getSyntaxForLanguage(doc, JspUtils.getScriptingLanguage());
-        final Jsp11Syntax newSyntax = new Jsp11Syntax(contentSyntax, scriptingSyntax);
+        final Jsp11Syntax newSyntax = new Jsp11Syntax(new HtmlSyntax(), new JavaSyntax(null, true));
 
         DataObject dobj = NbEditorUtilities.getDataObject(doc);
         FileObject fobj = (dobj != null) ? dobj.getPrimaryFile() : null;
@@ -302,28 +295,6 @@ public class JspKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
             }
         }
 
-    }
-
-    public static Syntax getSyntaxForLanguage(Document doc, String language) {
-        EditorKit kit = CloneableEditorSupport.getEditorKit(language);
-        if (kit instanceof JavaKit) {
-            synchronized (SOURCE_LEVEL_MAP) {
-                String sourceLevel = SOURCE_LEVEL_MAP.get(doc);
-                if(sourceLevel == null) {
-                    JavaKit jkit = (JavaKit)kit;
-                    sourceLevel = jkit.getSourceLevel((BaseDocument)doc);
-                    if(sourceLevel == null) {
-                        sourceLevel = NULL_SOURCE_LEVEL;
-                    }
-
-                    SOURCE_LEVEL_MAP.put(doc, sourceLevel);
-                }
-                //create a special javasyntax patched for use in JSPs (fix of #55628)
-                return new JavaSyntax(sourceLevel == NULL_SOURCE_LEVEL ? null : sourceLevel, true); // instance comparation for string is ok here
-            }
-        } else {
-            return new HtmlSyntax();
-        }
     }
 
     private void initLexerColoringListener(Document doc) {

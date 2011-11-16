@@ -42,18 +42,32 @@
 
 package org.netbeans.modules.web.jsf.editor.el;
 
+import java.util.Map;
+import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
+import org.netbeans.modules.parsing.spi.Parser.Result;
+import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibraryDescriptor;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.el.spi.ELPlugin;
+import org.netbeans.modules.web.el.spi.Function;
 import org.netbeans.modules.web.el.spi.ImplicitObject;
 import org.netbeans.modules.web.el.spi.ImplicitObjectType;
 import org.netbeans.modules.web.el.spi.ResourceBundle;
 import org.netbeans.modules.web.jsf.api.editor.JSFResourceBundlesProvider;
+import org.netbeans.modules.web.jsf.editor.JsfUtils;
+import org.netbeans.modules.web.jsf.editor.facelets.DefaultFaceletLibraries;
 import static org.netbeans.modules.web.el.spi.ImplicitObjectType.*;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -64,7 +78,6 @@ import org.openide.util.lookup.ServiceProvider;
 public class FaceletsELPlugin implements ELPlugin {
 
     private static final String PLUGIN_NAME = "JSF Facelets EL Plugin"; //NOI18N
-    private static final String XHTML_MIMETYPE = "text/xhtml"; //NOI18N
 
     private Collection<ImplicitObject> IMPL_OBJECTS;
 
@@ -75,7 +88,7 @@ public class FaceletsELPlugin implements ELPlugin {
 
     @Override
     public Collection<String> getMimeTypes() {
-        return Collections.singletonList(XHTML_MIMETYPE);
+        return Collections.singletonList(JsfUtils.XHTML_MIMETYPE);
     }
 
     @Override
@@ -129,6 +142,70 @@ public class FaceletsELPlugin implements ELPlugin {
         result.add(new JsfImplicitObject("requestScope", null, SCOPE_TYPE));
         result.add(new JsfImplicitObject("viewScope", null, SCOPE_TYPE));
         return result;
+    }
+
+    @Override
+    public List<Function> getFunctions(FileObject file) {
+        List<Function> functions =  new ArrayList<Function>();
+        final Map<String, String> namespaces = new HashMap<String, String>();
+
+        try {
+            Source source = Source.create(file);
+            ParserManager.parse(Collections.singletonList(source), new UserTask() {
+
+                @Override
+                public void run(ResultIterator resultIterator) throws Exception {
+                    Result parseResult = JsfUtils.getEmbeddedParserResult(resultIterator, "text/html"); //NOI18N
+                    if (parseResult instanceof HtmlParserResult) {
+                        namespaces.putAll(((HtmlParserResult) parseResult).getNamespaces());
+                    }
+                }
+            });
+        } catch (ParseException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
+        Map<String, FaceletsLibraryDescriptor> librariesDescriptors = DefaultFaceletLibraries.getInstance().getLibrariesDescriptors();
+        for (Map.Entry<String, FaceletsLibraryDescriptor> entry : librariesDescriptors.entrySet()) {
+            String currentPrefix = namespaces.get(entry.getKey());
+            if (currentPrefix != null) {
+                functions.addAll(getFunctionsFromDescriptor(entry.getValue(), currentPrefix));
+            }
+        }
+
+        return functions;
+    }
+
+     private static List<Function> getFunctionsFromDescriptor(FaceletsLibraryDescriptor descriptor, String prefix) {
+        List<Function> functions = new ArrayList<Function>();
+        for (Map.Entry<String, org.netbeans.modules.web.jsfapi.api.Function> entry : descriptor.getFunctions().entrySet()) {
+            org.netbeans.modules.web.jsfapi.api.Function function = entry.getValue();
+            functions.add(new Function(
+                    prefix + ":" + function.getName(),
+                    getReturnTypeForSignature(function.getSignature()),
+                    getParametersForSignature(function.getSignature()),
+                    function.getDescription()));
+        }
+
+        return functions;
+    }
+
+    private static String getReturnTypeForSignature(String signature) {
+        String returnType = signature.substring(0, signature.indexOf(" ")); //NOI18N
+        return getSimpleNameForType(returnType.trim());
+    }
+
+    private static List<String> getParametersForSignature(String signature) {
+        List<String> params = new ArrayList<String>();
+        String paramString = signature.substring(signature.indexOf("(") + 1, signature.indexOf(")")); //NOI18N
+        for (String param : paramString.split(",")) { //NOI18N
+            params.add(getSimpleNameForType(param.trim()));
+        }
+        return params;
+    }
+
+    private static String getSimpleNameForType(String fqn) {
+        return fqn.substring(fqn.lastIndexOf(".") + 1); //NOI18N
     }
 
     static class FacesContextObject extends JsfImplicitObject {

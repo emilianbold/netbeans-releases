@@ -45,9 +45,11 @@
 package org.netbeans.modules.apisupport.project.ui.wizard.wizard;
 
 import java.awt.Component;
+import java.awt.EventQueue;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
+import javax.swing.ComboBoxModel;
 import javax.swing.JFileChooser;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
@@ -61,6 +63,7 @@ import org.netbeans.modules.apisupport.project.ui.wizard.common.BasicWizardItera
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
 /**
@@ -74,7 +77,7 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
     
     private static final String TEMPLATES_DIR = "Templates"; // NOI18N
     private static final String DEFAULT_CATEGORY_PATH = TEMPLATES_DIR + "/Other"; // NOI18N
-    
+    private static final RequestProcessor RP = new RequestProcessor(NameIconLocationPanel.class);
     
     static {
         PURE_TEMPLATES_FILTER.put("template", true); // NOI18N
@@ -144,8 +147,18 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
         iconButton.setVisible(isFileTemplate);
         iconTxt.setVisible(isFileTemplate);
         if (isFileTemplate && !categoriesLoaded) {
-            category.setModel(UIUtil.createLayerPresenterComboModel(
-                    data.getProject(), TEMPLATES_DIR, PURE_TEMPLATES_FILTER));
+            category.setModel(UIUtil.createComboWaitModel());
+            // XXX Utilities.attachInitJob probably better
+            RP.post(new Runnable() {
+                @Override public void run() {
+                    final ComboBoxModel model = UIUtil.createLayerPresenterComboModel(data.getProject(), TEMPLATES_DIR, PURE_TEMPLATES_FILTER);
+                    EventQueue.invokeLater(new Runnable() {
+                        @Override public void run() {
+                            category.setModel(model);
+                        }
+                    });
+                }
+            });
             categoriesLoaded = true;
         }
         if (firstTime) {

@@ -144,6 +144,7 @@ import static org.netbeans.spi.project.support.ant.GeneratedFilesHelper.FLAG_MOD
 import static org.netbeans.spi.project.support.ant.GeneratedFilesHelper.FLAG_OLD_PROJECT_XML;
 import static org.netbeans.spi.project.support.ant.GeneratedFilesHelper.FLAG_OLD_STYLESHEET;
 import static org.netbeans.spi.project.support.ant.GeneratedFilesHelper.FLAG_UNKNOWN;
+import org.netbeans.spi.whitelist.support.WhiteListQueryMergerSupport;
 /**
  * Represents one plain J2SE project.
  * @author Jesse Glick, et al.
@@ -393,7 +394,8 @@ public final class J2SEProject implements Project {
             LookupMergerSupport.createJFBLookupMerger(),
             QuerySupport.createBinaryForSourceQueryImplementation(this.sourceRoots, this.testRoots, this.helper, this.evaluator()), //Does not use APH to get/put properties/cfgdata
             QuerySupport.createAnnotationProcessingQuery(this.helper, this.evaluator(), ProjectProperties.ANNOTATION_PROCESSING_ENABLED, ProjectProperties.ANNOTATION_PROCESSING_ENABLED_IN_EDITOR, ProjectProperties.ANNOTATION_PROCESSING_RUN_ALL_PROCESSORS, ProjectProperties.ANNOTATION_PROCESSING_PROCESSORS_LIST, ProjectProperties.ANNOTATION_PROCESSING_SOURCE_OUTPUT, ProjectProperties.ANNOTATION_PROCESSING_PROCESSOR_OPTIONS),
-            LookupProviderSupport.createActionProviderMerger()
+            LookupProviderSupport.createActionProviderMerger(),
+            WhiteListQueryMergerSupport.createWhiteListQueryMerger()
         );
         lookup = base; // in case LookupProvider's call Project.getLookup
         return LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-java-j2seproject/Lookup"); //NOI18N

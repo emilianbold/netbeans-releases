@@ -64,7 +64,16 @@ public class JavaElementFoldManagerTaskFactory extends EditorAwareJavaSourceTask
     }
 
     public CancellableTask<CompilationInfo> createTask(FileObject file) {
-        return JavaElementFoldManager.JavaElementFoldTask.getTask(file);
+        final CancellableTask<CompilationInfo> t = JavaElementFoldManager.JavaElementFoldTask.getTask(file);
+
+        return new CancellableTask<CompilationInfo>() {
+            @Override public void cancel() {
+                t.cancel();
+            }
+            @Override public void run(CompilationInfo parameter) throws Exception {
+                t.run(parameter);
+            }
+        };
     }
 
     public static void doRefresh(FileObject file) {

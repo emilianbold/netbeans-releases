@@ -744,6 +744,12 @@ public class Flow {
 
         public Boolean visitContinue(ContinueTree node, Void p) {
             StatementTree loop = info.getTreeUtilities().getBreakContinueTarget(getCurrentPath());
+
+            if (loop == null) {
+                super.visitContinue(node, p);
+                return null;
+            }
+
             Tree resumePoint;
 
             if (loop.getKind() == Kind.LABELED_STATEMENT) {

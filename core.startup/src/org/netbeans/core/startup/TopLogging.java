@@ -987,6 +987,9 @@ public final class TopLogging {
             if (e.getClass().getName().endsWith(".ExitSecurityException")) { // NOI18N
                 return;
             }
+            if (e instanceof ThreadDeath) {
+                return;
+            }
             g.log(Level.SEVERE, null, e);
         }
     } // end of AWTHandler

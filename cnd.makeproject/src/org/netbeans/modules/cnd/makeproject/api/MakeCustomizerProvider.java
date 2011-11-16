@@ -329,12 +329,13 @@ public class MakeCustomizerProvider implements CustomizerProvider {
                 ((MakeConfigurationDescriptor) projectDescriptor).checkForChangedTestRoots(oldTestRoots, newTestRoots);
                 ((MakeConfigurationDescriptor) projectDescriptor).checkConfigurations(oldActive, newActive);
             }
-            if (currentCommand.equals(COMMAND_APPLY)) {
-                makeCustomizer.refresh();
-            }
             if (!currentCommand.equals(COMMAND_CANCEL)) {
                 fireActionEvent(new ActionEvent(project, 0, currentCommand));
             }
+            if (currentCommand.equals(COMMAND_APPLY)) {
+                makeCustomizer.refresh();
+            }
+            
         }
     }
 

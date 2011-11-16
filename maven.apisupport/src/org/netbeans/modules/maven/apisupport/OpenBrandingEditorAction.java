@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.maven.apisupport;
 
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
@@ -74,6 +75,7 @@ import org.openide.util.EditableProperties;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
+import org.openide.util.RequestProcessor;
 
 /**
  * Opens branding editor window for 'branding' sub-project of a Maven app suite.
@@ -87,22 +89,32 @@ import org.openide.util.NbBundle.Messages;
 public class OpenBrandingEditorAction extends AbstractAction implements ContextAwareAction {
 
     private final Lookup context;
+    private static final RequestProcessor RP = new RequestProcessor(OpenBrandingEditorAction.class);
 
     public OpenBrandingEditorAction() {
         this( Lookup.EMPTY );
     }
 
     private OpenBrandingEditorAction( Lookup context ) {
-        super( LBL_OpenBrandingEditor() ); //NOI18N
+        super(LBL_OpenBrandingEditor());
         putValue(DynamicMenuContent.HIDE_WHEN_DISABLED, true);
         this.context = context;
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        Project project = context.lookup(Project.class);
-        MavenProject mavenProject = project.getLookup().lookup(NbMavenProject.class).getMavenProject();
-        BrandingUtils.openBrandingEditor(mavenProject.getName(), project, createBrandingModel(project, brandingPath(mavenProject)));
+        RP.post(new Runnable() {
+            @Override public void run() {
+                final Project project = context.lookup(Project.class);
+                final MavenProject mavenProject = project.getLookup().lookup(NbMavenProject.class).getMavenProject();
+                final BrandingModel model = createBrandingModel(project, brandingPath(mavenProject));
+                EventQueue.invokeLater(new Runnable() {
+                    @Override public void run() {
+                        BrandingUtils.openBrandingEditor(mavenProject.getName(), project, model);
+                    }
+                });
+            }
+        });
     }
 
     @Override

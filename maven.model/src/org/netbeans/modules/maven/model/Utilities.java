@@ -190,6 +190,8 @@ public class Utilities {
                     BaseDocument doc = getDocument(dobj);
                     if (doc != null) {
                         items.add(doc);
+                    } else {
+                        logger.log(Level.WARNING, "no Document found for {0}", dobj);
                     }
                 } catch (IOException x) {
                     logger.log(Level.SEVERE, x.getMessage());
@@ -261,7 +263,7 @@ public class Utilities {
                 logger.log(Level.FINE, "saving changes in {0}", dobj);
                 save.save();
             } else {
-                logger.log(Level.FINE, "no changes in {0}", dobj);
+                logger.log(Level.FINE, "no changes in {0} where modified={1}", new Object[] {dobj, dobj.isModified()});
             }
         }
     }

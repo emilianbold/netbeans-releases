@@ -93,7 +93,8 @@ public class CompletionJListOperatorTest extends JellyTestCase {
     }
 
     public void testCompletionDot() throws Exception {
-        eo.txtEditorPane().typeKey('.');
+        eo.makeComponentVisible();
+        eo.typeKey('.');
 
         CompletionJListOperator lrComplOp = new CompletionJListOperator();
         lrComplOp.getCompletionItems();
@@ -112,8 +113,8 @@ public class CompletionJListOperatorTest extends JellyTestCase {
     }
 
     public void testCompletionInvoke() throws Exception {
+        eo.makeComponentVisible();
         eo.insert(".");
-        eo.requestFocus();
 
         CompletionJListOperator lrComplOp = CompletionJListOperator.showCompletion();
         lrComplOp.getCompletionItems();

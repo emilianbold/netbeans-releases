@@ -69,6 +69,7 @@ made subject to such option by the copyright holder.
     <filter pattern="http://core\.netbeans\.org/windowsystem/.*html.*" accept="true"/>
     <!-- UI specifications -->
     <filter pattern="http://ui\.netbeans\.org/docs/hi/javamdr/.*" accept="true"/>
+    <filter pattern="http://ui.netbeans.org/docs/ui/VersioningSpecification.*" accept="true"/>
     <filter pattern="http://ui\.netbeans\.org/docs/ui/code_folding/cf_uispec\.html" accept="true"/>
     <!-- is used in generated question from arch.xml -->
     <filter pattern="http://www\.netbeans\.org/community/guidelines/q-evangelism\.html" accept="true"/>
