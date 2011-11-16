@@ -364,6 +364,7 @@ private void txtRepoUrlKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:eve
 
     @Messages({
         "LBL_Repo_id_Error1=Repository Id can't be empty",
+        "LBL_Repo_id_slash=Slashes (/) not allowed in Repository ID",
         "LBL_Repo_id_Error2=Repository Id already exist",
         "LBL_Repo_Name_Error1=Repository Name can't be empty",
         "LBL_Repo_Path_Error=Invalid Repository Path",
@@ -371,13 +372,19 @@ private void txtRepoUrlKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:eve
     })
     private void validateInfo() {
         //check repo id
-        if (txtRepoId.getText().trim().length() == 0) {
+        String id = txtRepoId.getText().trim();
+        if (id.length() == 0) {
             btnOK.setEnabled(false);
             lblValidate.setText(LBL_Repo_id_Error1());
             return;
         }
+        if (id.indexOf('/') != -1) {
+            btnOK.setEnabled(false);
+            lblValidate.setText(LBL_Repo_id_slash());
+            return;
+        }
         if (!modify) {
-            RepositoryInfo info = RepositoryPreferences.getInstance().getRepositoryInfoById(txtRepoId.getText().trim());
+            RepositoryInfo info = RepositoryPreferences.getInstance().getRepositoryInfoById(id);
             if (info != null && (info.isLocal() || info.isRemoteDownloadable())) {
                 btnOK.setEnabled(false);
                 lblValidate.setText(LBL_Repo_id_Error2());
