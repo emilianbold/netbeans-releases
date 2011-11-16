@@ -62,6 +62,7 @@ import javax.tools.ToolProvider;
 import org.dom4j.DocumentException;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.AnnotationConfiguration;
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -687,7 +688,14 @@ public class HQLEditorController {
             logger.info("CNF. Processing .. " + className);
 
             try {
-                JavaCompiler javaCompiler = ToolProvider.getSystemJavaCompiler();
+                JavaCompiler javaCompiler = null;
+                ClassLoader orig = Thread.currentThread().getContextClassLoader();
+                try {
+                    Thread.currentThread().setContextClassLoader(ClasspathInfo.class.getClassLoader());
+                    javaCompiler = ToolProvider.getSystemJavaCompiler();
+                } finally {
+                    Thread.currentThread().setContextClassLoader(orig);
+                }
                 StandardJavaFileManager fileManager = javaCompiler.getStandardFileManager(null, null, null);
                 className = className.replace(".", File.separator);
 
