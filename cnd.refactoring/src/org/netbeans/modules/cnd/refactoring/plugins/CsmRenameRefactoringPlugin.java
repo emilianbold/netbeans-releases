@@ -48,7 +48,6 @@ import org.netbeans.modules.refactoring.api.Problem;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
-import javax.swing.text.Position.Bias;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.services.CsmVirtualInfoQuery;
@@ -66,7 +65,6 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 
 import org.openide.text.CloneableEditorSupport;
-import org.openide.text.PositionRef;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -284,53 +282,14 @@ public class CsmRenameRefactoringPlugin extends CsmModificationRefactoringPlugin
         String newName = refactoring.getNewName();
         for (CsmReference ref : sortedRefs) {
             String oldText = ref.getText().toString();
-            final CsmObject referencedObject = ref.getReferencedObject();
-            if (CsmKindUtilities.isFile(referencedObject)) {
-                final CsmObject owner = ref.getOwner();
-                assert CsmKindUtilities.isInclude(owner) : "include directive is expected " + owner;
-                FileObject file = CsmUtilities.getFileObject((CsmFile)referencedObject);
-                if (file != null) {
-                    // check if include directive really contains file name and not macro expression
-                    String fileNameExt = file.getNameExt();
-                    final int lastIndexOf = oldText.lastIndexOf(fileNameExt);
-                    if (lastIndexOf > 0) {
-                        String fileName = file.getName();
-                        String descr = NbBundle.getMessage(CsmRenameRefactoringPlugin.class, "UpdateInclude", oldText);
-                        String inclString = oldText.substring(0, lastIndexOf) + newName + oldText.substring(lastIndexOf + fileName.length());
-                        Difference diff = rename(ref, ces, oldText, inclString, descr);
-                        assert diff != null;
-                        mr.addDifference(fo, diff);                    
-                    }
-                }
-            } else {
-                String descr = getDescription(ref, oldText);
-                Difference diff = rename(ref, ces, oldText, newName, descr);
+            String newText = CsmRefactoringUtils.getReplaceText(ref, newName);
+            if (newText != null) {
+                String descr = CsmRefactoringUtils.getReplaceDescription(ref);
+                Difference diff = CsmRefactoringUtils.rename(ref.getStartOffset(), ref.getEndOffset(), ces, oldText, newText, descr);
                 assert diff != null;
                 mr.addDifference(fo, diff);
             }
         }
-    }
-
-    private String getDescription(CsmReference ref, String targetName) {
-        boolean decl = CsmReferenceResolver.getDefault().isKindOf(ref, EnumSet.of(CsmReferenceKind.DECLARATION, CsmReferenceKind.DEFINITION));
-        String out = NbBundle.getMessage(CsmRenameRefactoringPlugin.class, decl ? "UpdateDeclRef" : "UpdateRef", targetName);
-        return out;
-    }
-
-    private Difference rename(CsmReference ref, CloneableEditorSupport ces,
-            String oldName, String newName, String descr) {
-        if (oldName == null) {
-            oldName = ref.getText().toString();
-        }
-        if (newName == null) {
-            newName = refactoring.getNewName();
-        }
-        assert oldName != null;
-        assert newName != null;
-        PositionRef startPos = ces.createPositionRef(ref.getStartOffset(), Bias.Forward);
-        PositionRef endPos = ces.createPositionRef(ref.getEndOffset(), Bias.Backward);
-        Difference diff = new Difference(Difference.Kind.CHANGE, startPos, endPos, oldName, newName, descr);
-        return diff;
     }
 
     private Collection<CsmReference> getExtraRenameModificationsInFile(Collection<? extends CsmObject> objs, CsmFile csmFile, Set<CsmReferenceKind> kinds) {
