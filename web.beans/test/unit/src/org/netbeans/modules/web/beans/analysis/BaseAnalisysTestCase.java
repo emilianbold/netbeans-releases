@@ -90,6 +90,20 @@ public abstract class BaseAnalisysTestCase extends JavaSourceTestCase {
         }
         
     };
+    
+    protected static final ResultProcessor WARNINGS_PROCESSOR = new ResultProcessor (){
+
+        @Override
+        public void process( TestProblems result ) {
+            Set<Element> elements = result.getErrors().keySet();
+            String msg = "";
+            if ( !elements.isEmpty()) {
+                msg = result.getErrors().values().iterator().next();
+            }
+            assertTrue(  "Expected no errors, but found :" +msg , elements.isEmpty() );
+        }
+        
+    };
 
     public BaseAnalisysTestCase( String testName ) {
         super(testName);
