@@ -1,4 +1,4 @@
-org.openide.filesystems.Repository.getDefault().getDefaultFileSystem().findResource($p)
+org.openide.filesystems.Repository.getDefault().getDefaultFileSystem().findResource($p) :: $p instanceof java.lang.String
 =>
 org.openide.filesystems.FileUtil.getConfigFile($p)
 ;;
