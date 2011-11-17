@@ -66,14 +66,15 @@ import org.netbeans.modules.maven.dependencies.CheckNode;
 import org.netbeans.modules.maven.dependencies.CheckNodeListener;
 import org.netbeans.modules.maven.dependencies.CheckRenderer;
 import org.netbeans.validation.api.Problems;
-import org.netbeans.validation.api.Validator;
-import org.netbeans.validation.api.builtin.Validators;
 import org.netbeans.validation.api.ui.ValidationGroup;
-import org.netbeans.validation.api.ui.ValidationListener;
 import org.openide.DialogDescriptor;
 import org.openide.NotificationLineSupport;
 import org.openide.util.ImageUtilities;
 import static org.netbeans.modules.maven.actions.Bundle.*;
+import org.netbeans.validation.api.AbstractValidator;
+import org.netbeans.validation.api.ValidatorUtils;
+import org.netbeans.validation.api.builtin.stringvalidation.StringValidators;
+import org.netbeans.validation.api.ui.swing.SwingValidationGroup;
 import org.openide.util.NbBundle.Messages;
 
 /**
@@ -90,7 +91,7 @@ public class CreateLibraryPanel extends javax.swing.JPanel {
     CreateLibraryPanel(DependencyNode root) {
         initComponents();
         DefaultComboBoxModel mdl = new DefaultComboBoxModel();
-        txtName.putClientProperty(ValidationListener.CLIENT_PROP_NAME, NAME_Library());
+        SwingValidationGroup.setComponentName(txtName, NAME_Library());
 
         for (LibraryManager manager : LibraryManager.getOpenManagers()) {
             mdl.addElement(manager);
@@ -99,7 +100,7 @@ public class CreateLibraryPanel extends javax.swing.JPanel {
         comManager.addActionListener(new ActionListener() {
             public @Override void actionPerformed(ActionEvent e) {
                 if (vg != null) {
-                    vg.validateAll();
+                    vg.performValidation();
                 }
             }
 
@@ -130,9 +131,9 @@ public class CreateLibraryPanel extends javax.swing.JPanel {
         this.dd = dd;
         vg = ValidationGroup.create(new NotificationLineSupportAdapter(line), new DialogDescriptorAdapter(dd));
         vg.add(txtName,
-                    Validators.merge(true,
-                        Validators.REQUIRE_NON_EMPTY_STRING,
-//                        Validators.REQUIRE_VALID_FILENAME,
+                    ValidatorUtils.merge(
+                        StringValidators.REQUIRE_NON_EMPTY_STRING,
+//                        StringValidators.REQUIRE_VALID_FILENAME,
                         new LibraryNameExists()
                     ));
     }
@@ -307,16 +308,17 @@ public class CreateLibraryPanel extends javax.swing.JPanel {
         return 0;
     }
 
-    private class LibraryNameExists implements Validator<String> {
+    private class LibraryNameExists extends AbstractValidator<String> {
+        LibraryNameExists() {
+            super(String.class);
+        }
         @Messages("ERR_NameExists=Library with given name already exists.")
-        public @Override boolean validate(Problems problems, String compName, String model) {
+        public @Override void validate(Problems problems, String compName, String model) {
             LibraryManager manager = (LibraryManager) comManager.getSelectedItem();
             String currentName = model.trim();
             if (manager.getLibrary(currentName) != null) {
                 problems.add(ERR_NameExists());
-                return false;
             }
-            return true;
         }
     }
 

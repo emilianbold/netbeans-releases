@@ -83,11 +83,14 @@ import static org.netbeans.modules.maven.newproject.Bundle.*;
 import org.netbeans.modules.maven.options.MavenOptionController;
 import org.netbeans.modules.maven.options.MavenSettings;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
+import org.netbeans.validation.api.AbstractValidator;
 import org.netbeans.validation.api.Problems;
-import org.netbeans.validation.api.Validator;
-import org.netbeans.validation.api.builtin.Validators;
+import org.netbeans.validation.api.ValidatorUtils;
+import org.netbeans.validation.api.builtin.stringvalidation.StringValidators;
 import org.netbeans.validation.api.ui.ValidationGroup;
 import org.netbeans.validation.api.ui.ValidationListener;
+import org.netbeans.validation.api.ui.ValidationUI;
+import org.netbeans.validation.api.ui.swing.SwingValidationGroup;
 import org.openide.WizardDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileUtil;
@@ -144,12 +147,12 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
 
         initComponents();
 
-        projectLocationTextField.putClientProperty(ValidationListener.CLIENT_PROP_NAME, VAL_projectLocationTextField());
-        projectNameTextField.putClientProperty(ValidationListener.CLIENT_PROP_NAME, VAL_projectNameTextField());
-        txtArtifactId.putClientProperty(ValidationListener.CLIENT_PROP_NAME, VAL_ArtifactId());
-        txtVersion.putClientProperty(ValidationListener.CLIENT_PROP_NAME, VAL_Version());
-        txtGroupId.putClientProperty(ValidationListener.CLIENT_PROP_NAME, VAL_GroupId());
-        txtPackage.putClientProperty(ValidationListener.CLIENT_PROP_NAME, VAL_Package());
+        SwingValidationGroup.setComponentName(projectLocationTextField, VAL_projectLocationTextField());
+        SwingValidationGroup.setComponentName(projectNameTextField, VAL_projectNameTextField());
+        SwingValidationGroup.setComponentName(txtArtifactId, VAL_ArtifactId());
+        SwingValidationGroup.setComponentName(txtVersion, VAL_Version());
+        SwingValidationGroup.setComponentName(txtGroupId, VAL_GroupId());
+        SwingValidationGroup.setComponentName(txtPackage, VAL_Package());
 
         // Register listener on the textFields to make the automatic updates
         projectNameTextField.getDocument().addDocumentListener(this);
@@ -171,16 +174,16 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
         vg.add(txtGroupId, MavenValidators.createGroupIdValidators());
         vg.add(txtArtifactId, MavenValidators.createArtifactIdValidators());
         vg.add(txtVersion, MavenValidators.createVersionValidators());
-        vg.add(txtPackage, Validators.JAVA_PACKAGE_NAME);
-        vg.add(projectNameTextField, Validators.merge(true,
+        vg.add(txtPackage, StringValidators.JAVA_PACKAGE_NAME);
+        vg.add(projectNameTextField, ValidatorUtils.merge(
                 MavenValidators.createArtifactIdValidators(),
-                Validators.REQUIRE_VALID_FILENAME
+                StringValidators.REQUIRE_VALID_FILENAME
               ));
 
-        vg.add(projectLocationTextField, Validators.merge(true,
-//                        Validators.FILE_MUST_BE_DIRECTORY,
-                new Validator<String>() {
-                    public boolean validate(Problems problems, String compName, String model) {
+        vg.add(projectLocationTextField, 
+//                        ValidatorUtils.merge(Validators.FILE_MUST_BE_DIRECTORY,
+                new AbstractValidator<String>(String.class) {
+                    @Override public void validate(Problems problems, String compName, String model) {
                         File fil = FileUtil.normalizeFile(new File(model));
                         File projLoc = fil;
                         while (projLoc != null && !projLoc.exists()) {
@@ -188,41 +191,36 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
                         }
                         if (projLoc == null || !projLoc.canWrite()) {
                             problems.add(ERR_Project_Folder_cannot_be_created());
-                            return false;
+                            return;
                         }
                         if (FileUtil.toFileObject(projLoc) == null) {
                             problems.add(ERR_Project_Folder_is_not_valid_path());
-                            return false;
+                            return;
                         }
                         //#167136
                         if (Utilities.isWindows() && fil.getAbsolutePath().startsWith("\\\\")) {
                             problems.add(ERR_Project_Folder_is_UNC());
-                            return false;
                         }
-                        return true;
                     }
-                }));
+                });
 
-        vg.add(new ValidationListener() {
+        vg.addItem(new ValidationListener<Void>(Void.class, ValidationUI.NO_OP, null) {
             @Override
-            protected boolean validate(Problems problems) {
+            protected void performValidation(Problems problems) {
                 boolean tooOld = isMavenTooOld();
                 btnSetupNewer.setVisible(tooOld);
                 if (tooOld) {
                     problems.add(ERR_old_maven(getCommandLineMavenVersion()));
-                    return false;
+                    return;
                 }
                 File destFolder = FileUtil.normalizeFile(new File(new File(projectLocationTextField.getText().trim()), projectNameTextField.getText().trim()).getAbsoluteFile());
                 File[] kids = destFolder.listFiles();
                 if (destFolder.exists() && kids != null && kids.length > 0) {
                     // Folder exists and is not empty
                     problems.add(ERR_Project_Folder_exists());
-                    return false;
                 }
-
-                return true;
             }
-        });
+        }, true);
 
     }
     
@@ -447,7 +445,7 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
 
     private void btnSetupNewerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSetupNewerActionPerformed
         OptionsDisplayer.getDefault().open(OptionsDisplayer.ADVANCED + "/" + MavenOptionController.OPTIONS_SUBPATH); //NOI18N
-        panel.getValidationGroup().validateAll();
+        panel.getValidationGroup().performValidation();
     }//GEN-LAST:event_btnSetupNewerActionPerformed
     
     
@@ -537,7 +535,7 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
         }
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                panel.getValidationGroup().removeValidationGroup(vg);
+                panel.getValidationGroup().remove(vg);
             }
         });
     }
@@ -581,7 +579,7 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
         }
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                panel.getValidationGroup().addValidationGroup(vg, true);
+                panel.getValidationGroup().addItem(vg, true);
             }
         });
     }
@@ -769,7 +767,7 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
             changedPackage = txtPackage.getText().trim().length() != 0;
         }
         if (vg != null) {
-            vg.validateAll(); // Notify that the panel changed
+            vg.performValidation(); // Notify that the panel changed
         }
     }
     
@@ -826,7 +824,7 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
             SwingUtilities.invokeLater(this);
         } else {
             // phase two, inside EQ thread
-            vg.validateAll();
+            vg.performValidation();
         }
     }
 
