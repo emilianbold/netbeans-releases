@@ -89,6 +89,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
+import org.netbeans.api.actions.Savable;
 
 public class UseNbBundleMessages extends AbstractHint {
 
@@ -378,6 +379,12 @@ public class UseNbBundleMessages extends AbstractHint {
                     } finally {
                         os.close();
                     }
+                }
+                Savable save = DataObject.find(src).getLookup().lookup(Savable.class);
+                if (save != null) {
+                    save.save();
+                } else {
+                    // XXX sometimes does not appear here reliably, why?
                 }
                 return null;
             }
