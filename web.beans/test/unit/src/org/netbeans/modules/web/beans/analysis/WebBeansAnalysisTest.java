@@ -641,4 +641,123 @@ public class WebBeansAnalysisTest extends BaseAnalisysTestCase {
         
         runAnalysis( goodFile, NO_ERRORS_PROCESSOR );
     }
+    
+    //=======================================================================
+    //
+    //  FieldModelAnalyzer - ScopedFieldAnalyzer
+    //
+    //=======================================================================
+    public void testScopedProducerField() throws IOException {
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Scope1.java",
+                "package foo; " +
+                " import javax.inject.Scope; "+
+                " import java.lang.annotation.Retention; "+
+                " import java.lang.annotation.RetentionPolicy; "+
+                " import java.lang.annotation.Target; " +
+                " import java.lang.annotation.ElementType; "+
+                " @Retention(RetentionPolicy.RUNTIME) "+
+                " @Target({ElementType.METHOD,ElementType.FIELD, ElementType.TYPE}) "+
+                " @Scope "+
+                " public @interface Scope1 { "+
+                "}");
+        
+        FileObject errorFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz.java",
+                "package foo; " +
+                "import javax.enterprise.inject.Produces; "+
+                " public class Clazz<T>  { "+
+                " @Produces @Scope1 T producerField; "+
+                "}");
+        
+        FileObject goodFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz1.java",
+                "package foo; " +
+                "import javax.enterprise.inject.Produces; "+
+                " public class Clazz1<T>  { "+
+                " @Produces T producerField; "+
+                "}");
+        
+        FileObject goodFile1 = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz2.java",
+                "package foo; " +
+                " public class Clazz2<T>  { "+
+                " private T field; "+
+                "}");
+        
+        ResultProcessor processor = new ResultProcessor (){
+
+            @Override
+            public void process( TestProblems result ) {
+                checkFieldElement(result, "foo.Clazz", "producerField");
+            }
+            
+        };
+        runAnalysis(errorFile , processor);
+        
+        runAnalysis( goodFile, NO_ERRORS_PROCESSOR );
+        runAnalysis( goodFile1, NO_ERRORS_PROCESSOR );
+    }
+    
+    //=======================================================================
+    //
+    //  FieldModelAnalyzer - InjectionPointAnalyzer
+    //
+    //=======================================================================
+    
+    /*
+     * InjectionPointAnalyzer.checkInjectionPointMetadata
+     */
+    public void testInjectionPointMetadata() throws IOException {
+        getUtilities().createQualifier("Qualifier1");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Scope1.java",
+                "package foo; " +
+                " import javax.inject.Scope; "+
+                " import java.lang.annotation.Retention; "+
+                " import java.lang.annotation.RetentionPolicy; "+
+                " import java.lang.annotation.Target; " +
+                " import java.lang.annotation.ElementType; "+
+                " @Retention(RetentionPolicy.RUNTIME) "+
+                " @Target({ElementType.METHOD,ElementType.FIELD, ElementType.TYPE}) "+
+                " @Scope "+
+                " public @interface Scope1 { "+
+                "}");
+        
+        FileObject errorFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz.java",
+                "package foo; " +
+                "import javax.enterprise.inject.spi.InjectionPoint; "+
+                "import javax.inject.Inject; "+
+                " @Scope1 "+
+                " public class Clazz  { "+
+                " @Inject InjectionPoint injectionMeta; "+
+                "}");
+        
+        FileObject goodFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz1.java",
+                "package foo; " +
+                "import javax.enterprise.inject.spi.InjectionPoint; "+
+                "import javax.inject.Inject; "+
+                " public class Clazz1  { "+
+                " @Inject InjectionPoint injectionMeta; "+
+                "}");
+        
+        FileObject goodFile1 = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz2.java",
+                "package foo; " +
+                "import javax.enterprise.inject.spi.InjectionPoint; "+
+                "import javax.inject.Inject; "+
+                " @Scope1 "+
+                " public class Clazz2  { "+
+                " @Inject @Qualifier1 InjectionPoint injectionMeta; "+
+                "}");
+        
+        ResultProcessor processor = new ResultProcessor (){
+
+            @Override
+            public void process( TestProblems result ) {
+                checkFieldElement(result, "foo.Clazz", "injectionMeta");
+            }
+            
+        };
+        runAnalysis(errorFile , processor);
+        
+        runAnalysis( goodFile, WARNINGS_PROCESSOR );
+        runAnalysis( goodFile1, WARNINGS_PROCESSOR );
+    }
+    
 }
