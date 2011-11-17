@@ -1,0 +1,4 @@
+'Node.getCookie is obsolete':
+   $this.getCookie($class) :: $this instanceof org.openide.nodes.Node && $class instanceof java.lang.Class
+=> $this.getLookup().lookup($class)
+;;

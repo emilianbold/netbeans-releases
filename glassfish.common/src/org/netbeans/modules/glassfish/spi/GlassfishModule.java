@@ -129,8 +129,8 @@ public interface GlassfishModule {
         STOPPING,
         STOPPED,
         STOPPED_JVM_BP,
-        STOPPED_JVM_PROFILER
-    }
+        STOPPED_JVM_PROFILER,
+        UNKNOWN}
     
     /**
      * Enum for the current state of a server operation (e.g start, stop, deploy)

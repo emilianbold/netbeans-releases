@@ -43,24 +43,24 @@
  */
 package org.netbeans.modules.javacard.options;
 
-import org.netbeans.modules.javacard.common.Utils;
-import org.netbeans.validation.api.Problem;
-import org.openide.util.NbBundle;
-
+import javax.swing.JLabel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 import org.netbeans.modules.javacard.common.GuiUtils;
+import org.netbeans.modules.javacard.common.Utils;
+import org.netbeans.validation.api.Problem;
 import org.netbeans.validation.api.Validator;
-import org.netbeans.validation.api.builtin.Validators;
+import org.netbeans.validation.api.builtin.stringvalidation.StringValidators;
 import org.netbeans.validation.api.conversion.Converter;
-import org.netbeans.validation.api.ui.ValidationGroup;
 import org.netbeans.validation.api.ui.ValidationUI;
+import org.netbeans.validation.api.ui.swing.SwingValidationGroup;
+import org.openide.util.NbBundle;
 
 final class JavacardOptions extends javax.swing.JPanel implements ValidationUI, DocumentListener {
 
     private final JavacardOptionsPanelController controller;
-    private final ValidationGroup group = ValidationGroup.create(this);
+    private final SwingValidationGroup group = SwingValidationGroup.create(this);
 
     @SuppressWarnings("unchecked") //NOI18N
     JavacardOptions(JavacardOptionsPanelController controller) {
@@ -69,11 +69,11 @@ final class JavacardOptions extends javax.swing.JPanel implements ValidationUI, 
         GuiUtils.filterNonHexadecimalKeys(jTextField1);
         
         Validator<Document> v = Converter.find(String.class, Document.class).convert(
-                Validators.REQUIRE_NON_EMPTY_STRING.trim(),
-                Validators.NO_WHITESPACE.trim(),
-                Validators.VALID_HEXADECIMAL_NUMBER.trim(),
-                Validators.trimString(Validators.maxLength(10)),
-                Validators.trimString(Validators.minLength(10)));
+                StringValidators.REQUIRE_NON_EMPTY_STRING.trim(),
+                StringValidators.NO_WHITESPACE.trim(),
+                StringValidators.VALID_HEXADECIMAL_NUMBER.trim(),
+                StringValidators.trimString(StringValidators.maxLength(10)),
+                StringValidators.trimString(StringValidators.minLength(10)));
 
         group.add(jTextField1, v);
         jTextField1.setText (jLabel1.getText());
@@ -102,7 +102,7 @@ final class JavacardOptions extends javax.swing.JPanel implements ValidationUI, 
         jLabel1 = new javax.swing.JLabel();
         jTextField1 = new javax.swing.JTextField();
         jLabel2 = new javax.swing.JLabel();
-        problemLabel = group.createProblemLabel();
+        problemLabel = (JLabel) group.createProblemLabel();
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, NbBundle.getMessage(JavacardOptions.class, "JavacardOptions.jLabel1.text")); // NOI18N
 
@@ -176,11 +176,11 @@ final class JavacardOptions extends javax.swing.JPanel implements ValidationUI, 
         change();
     }
 
-    public void clearProblem() {
+    @Override public void clearProblem() {
         valid = true;
     }
 
-    public void setProblem(Problem arg0) {
+    @Override public void showProblem(Problem arg0) {
         valid = false;
     }
 }

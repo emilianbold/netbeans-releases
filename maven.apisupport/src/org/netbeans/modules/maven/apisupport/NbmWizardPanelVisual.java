@@ -55,9 +55,10 @@ import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
-import org.netbeans.validation.api.builtin.Validators;
+import org.netbeans.validation.api.ValidatorUtils;
+import org.netbeans.validation.api.builtin.stringvalidation.StringValidators;
 import org.netbeans.validation.api.ui.ValidationGroup;
-import org.netbeans.validation.api.ui.ValidationListener;
+import org.netbeans.validation.api.ui.swing.SwingValidationGroup;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
@@ -85,11 +86,11 @@ public class NbmWizardPanelVisual extends javax.swing.JPanel {
         isApp = NbmWizardIterator.NB_APP_ARCH.equals(panel.getArchetype());
         isSuite = NbmWizardIterator.NB_SUITE_ARCH.equals(panel.getArchetype());
         if (isApp || isSuite) {
-            vg.add(txtAddModule, Validators.merge(true,
+            vg.add(txtAddModule, ValidatorUtils.merge(
                     MavenValidators.createArtifactIdValidators(),
-                    Validators.REQUIRE_VALID_FILENAME
+                    StringValidators.REQUIRE_VALID_FILENAME
                     ));
-            txtAddModule.putClientProperty(ValidationListener.CLIENT_PROP_NAME, "NetBeans Module ArtifactId");
+            SwingValidationGroup.setComponentName(txtAddModule, /* XXX I18N */"NetBeans Module ArtifactId");
         } else {
             cbAddModule.setVisible(false);
             txtAddModule.setVisible(false);
@@ -213,7 +214,7 @@ public class NbmWizardPanelVisual extends javax.swing.JPanel {
     private void cbAddModuleActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbAddModuleActionPerformed
         // TODO add your handling code here:
         txtAddModule.setEnabled(cbAddModule.isSelected());
-        vg.validateAll();
+        vg.performValidation();
 }//GEN-LAST:event_cbAddModuleActionPerformed
 
     private void versionComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_versionComboActionPerformed
@@ -253,7 +254,7 @@ public class NbmWizardPanelVisual extends javax.swing.JPanel {
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {
-                    panel.getValidationGroup().removeValidationGroup(vg);
+                    panel.getValidationGroup().remove(vg);
                 }
             });
          }
@@ -276,7 +277,7 @@ public class NbmWizardPanelVisual extends javax.swing.JPanel {
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {
-                    panel.getValidationGroup().addValidationGroup(vg, true);
+                    panel.getValidationGroup().addItem(vg, true);
                 }
             });
         }

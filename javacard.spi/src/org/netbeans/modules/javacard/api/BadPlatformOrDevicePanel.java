@@ -54,7 +54,7 @@ import org.netbeans.api.validation.adapters.DialogBuilder;
 import org.netbeans.modules.javacard.spi.PlatformAndDeviceProvider;
 import org.netbeans.modules.javacard.spi.ProjectKind;
 import org.netbeans.modules.javacard.spi.impl.TempPlatformAndDeviceProvider;
-import org.netbeans.validation.api.ui.ValidationGroup;
+import org.netbeans.validation.api.ui.swing.SwingValidationGroup;
 import org.openide.DialogDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
@@ -121,7 +121,7 @@ public class BadPlatformOrDevicePanel extends JPanel implements ActionListener {
         return provider;
     }
 
-    public ValidationGroup getValidationGroup() {
+    public SwingValidationGroup getValidationGroup() {
         return pnl.getValidationGroup();
     }
 

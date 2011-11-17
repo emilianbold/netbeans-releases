@@ -135,12 +135,12 @@ public class JCProjectCategoryProvider implements ProjectCustomizer.CompositeCat
             this.category = category;
         }
 
-        public void clearProblem() {
+        @Override public void clearProblem() {
             category.setValid(true);
             category.setErrorMessage(null);
         }
 
-        public void setProblem(Problem prblm) {
+        @Override public void showProblem(Problem prblm) {
             category.setValid(prblm.isFatal());
             category.setErrorMessage(prblm.getMessage());
         }
