@@ -199,7 +199,7 @@ public final class DialogBuilder {
             dlg.setAdditionalOptions(options);
         }
         if (optionType != null) {
-            if (optionType != optionType.CLOSE) {
+            if (optionType != ButtonSet.CLOSE) {
                 dlg.setOptionType(optionType.getDialogDisplayerConstant());
             } else {
                 dlg.setOptions(new Object[]{NbBundle.getMessage(DialogBuilder.class,
