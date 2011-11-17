@@ -1,0 +1,24 @@
+'Lookup.lookupAll can be used instead':
+   $this.lookup(new org.openide.util.Lookup.Template($class)).allInstances() :: $this instanceof org.openide.util.Lookup && $class instanceof java.lang.Class
+=> $this.lookupAll($class)
+;;
+
+'Lookup.lookupResult can be used instead':
+   $this.lookup(new org.openide.util.Lookup.Template($class)) :: $this instanceof org.openide.util.Lookup && $class instanceof java.lang.Class && !parentMatches("$_.allInstances")
+=> $this.lookupResult($class)
+;;
+
+'Lookup.lookupAll can be used instead':
+   $this.lookup(new org.openide.util.Lookup.Template<$T>($class)).allInstances() :: $this instanceof org.openide.util.Lookup && $class instanceof java.lang.Class
+=> $this.lookupAll($class)
+;;
+
+'Lookup.lookupResult can be used instead':
+   $this.lookup(new org.openide.util.Lookup.Template<$T>($class)) :: $this instanceof org.openide.util.Lookup && $class instanceof java.lang.Class && !parentMatches("$_.allInstances")
+=> $this.lookupResult($class)
+;;
+
+'Lookup.Template() is deprecated':
+   new org.openide.util.Lookup.Template()
+=> new org.openide.util.Lookup.Template<Object>(java.lang.Object.class)
+;;

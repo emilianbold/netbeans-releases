@@ -1,0 +1,4 @@
+'DataObject.getCookie is obsolete':
+   $this.getCookie($class) :: $this instanceof org.openide.loaders.DataObject && $class instanceof java.lang.Class
+=> $this.getLookup().lookup($class)
+;;
