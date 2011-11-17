@@ -503,6 +503,11 @@ public class CdiTestUtilities {
                 "@Target({METHOD}) "+      
                 "public @interface PostActivate  {" +
                 "}");
+        
+        TestUtilities.copyStringToFileObject(mySourceRoot, "javax/enterprise/inject/spi/InjectionPoint.java",
+                "package javax.enterprise.inject.spi; " +
+                "public interface InjectionPoint  {" +
+                "}");
     }
     
     private FileObject mySourceRoot;
