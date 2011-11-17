@@ -46,8 +46,8 @@ package org.netbeans.api.validation.adapters;
 import java.awt.Component;
 import java.awt.event.ActionListener;
 import javax.swing.JLabel;
-import org.netbeans.validation.api.ui.ValidationGroup;
-import org.netbeans.validation.api.ui.ValidationPanel;
+import org.netbeans.validation.api.ui.swing.SwingValidationGroup;
+import org.netbeans.validation.api.ui.swing.ValidationPanel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;
@@ -71,7 +71,7 @@ public final class DialogBuilder {
     private ButtonSet optionType;
     private ActionListener al;
     private Object[] closingOptions;
-    private ValidationGroup validationGroup;
+    private SwingValidationGroup validationGroup;
 
     public DialogBuilder(Class<?> clazz) {
         this(clazz.getName());
@@ -145,7 +145,7 @@ public final class DialogBuilder {
         return this;
     }
 
-    public DialogBuilder setValidationGroup(ValidationGroup group) {
+    public DialogBuilder setValidationGroup(SwingValidationGroup group) {
         this.validationGroup = group;
         return this;
     }

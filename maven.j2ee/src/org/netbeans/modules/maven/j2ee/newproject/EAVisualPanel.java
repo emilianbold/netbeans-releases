@@ -43,7 +43,6 @@
 package org.netbeans.modules.maven.j2ee.newproject;
 
 import java.io.File;
-import javax.swing.DefaultComboBoxModel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
@@ -53,9 +52,10 @@ import org.netbeans.modules.maven.api.MavenValidators;
 import org.netbeans.modules.maven.api.archetype.ProjectInfo;
 import org.netbeans.modules.maven.j2ee.newproject.archetype.J2eeArchetypeFactory;
 import static org.netbeans.modules.maven.j2ee.newproject.Bundle.*;
-import org.netbeans.validation.api.builtin.Validators;
+import org.netbeans.validation.api.ValidatorUtils;
+import org.netbeans.validation.api.builtin.stringvalidation.StringValidators;
 import org.netbeans.validation.api.ui.ValidationGroup;
-import org.netbeans.validation.api.ui.ValidationListener;
+import org.netbeans.validation.api.ui.swing.SwingValidationGroup;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle.Messages;
 
@@ -78,17 +78,17 @@ public final class EAVisualPanel extends JPanel  {
         addArtifactIdValidatorFor(tfEar);
         addArtifactIdValidatorFor(tfEjb);
         
-        tfWeb.putClientProperty(ValidationListener.CLIENT_PROP_NAME, "Web ArtifactId");
-        tfEar.putClientProperty(ValidationListener.CLIENT_PROP_NAME, "Ear ArtifactId");
-        tfEjb.putClientProperty(ValidationListener.CLIENT_PROP_NAME, "Ejb ArtifactId");
+        SwingValidationGroup.setComponentName(tfWeb, "Web ArtifactId");
+        SwingValidationGroup.setComponentName(tfEar, "Ear ArtifactId");
+        SwingValidationGroup.setComponentName(tfEjb, "Ejb ArtifactId");
 
         getAccessibleContext().setAccessibleDescription(LBL_EESettings());
     }
     
     private void addArtifactIdValidatorFor(JTextField textField) {
         vg.add(textField, 
-            Validators.merge(true, MavenValidators.createArtifactIdValidators(), 
-            Validators.REQUIRE_VALID_FILENAME
+            ValidatorUtils.merge(MavenValidators.createArtifactIdValidators(),
+            StringValidators.REQUIRE_VALID_FILENAME
         ));
     }
     
@@ -103,7 +103,7 @@ public final class EAVisualPanel extends JPanel  {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                panel.getValidationGroup().addValidationGroup(vg, true);
+                panel.getValidationGroup().addItem(vg, true);
             }
         });
     }
@@ -124,7 +124,7 @@ public final class EAVisualPanel extends JPanel  {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                panel.getValidationGroup().removeValidationGroup(vg);
+                panel.getValidationGroup().remove(vg);
             }
         });
     }
@@ -167,7 +167,7 @@ public final class EAVisualPanel extends JPanel  {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                panel.getValidationGroup().removeValidationGroup(vg);
+                panel.getValidationGroup().remove(vg);
             }
         });
     }
@@ -311,13 +311,13 @@ public final class EAVisualPanel extends JPanel  {
     private void chkEjbActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chkEjbActionPerformed
         // TODO add your handling code here:
         tfEjb.setEnabled(chkEjb.isSelected());
-        vg.validateAll();
+        vg.performValidation();
     }//GEN-LAST:event_chkEjbActionPerformed
 
     private void chkWebActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chkWebActionPerformed
         // TODO add your handling code here:
         tfWeb.setEnabled(chkWeb.isSelected());
-        vg.validateAll();
+        vg.performValidation();
     }//GEN-LAST:event_chkWebActionPerformed
 
     private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed

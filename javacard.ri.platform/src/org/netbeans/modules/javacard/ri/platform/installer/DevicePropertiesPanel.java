@@ -85,12 +85,13 @@ import org.netbeans.modules.javacard.common.Utils;
 import org.netbeans.modules.javacard.spi.Card;
 import org.netbeans.modules.javacard.spi.JavacardPlatform;
 import org.netbeans.modules.javacard.spi.capabilities.PortProvider;
+import org.netbeans.validation.api.AbstractValidator;
 import org.netbeans.validation.api.Severity;
 import org.netbeans.validation.api.Validator;
-import org.netbeans.validation.api.builtin.Validators;
+import org.netbeans.validation.api.builtin.stringvalidation.StringValidators;
 import org.netbeans.validation.api.conversion.Converter;
-import org.netbeans.validation.api.ui.ValidationGroup;
 import org.netbeans.validation.api.ui.ValidationUI;
+import org.netbeans.validation.api.ui.swing.SwingValidationGroup;
 import org.openide.awt.HtmlRenderer;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -101,7 +102,7 @@ public class DevicePropertiesPanel extends JPanel implements DocumentListener, F
 
     private final ChangeSupport supp = new ChangeSupport(this);
     private boolean updating;
-    private ValidationGroup group = ValidationGroup.create(this);
+    private SwingValidationGroup group = SwingValidationGroup.create(this);
     private final ComboEditor ceditor = new ComboEditor();
     @SuppressWarnings("unchecked") //NOI18N
     public void run() {
@@ -163,11 +164,11 @@ public class DevicePropertiesPanel extends JPanel implements DocumentListener, F
         initHostModel();
         Validator<Document> portvalidator = Converter.find(String.class, 
                 Document.class).convert(
-                Validators.REQUIRE_NON_EMPTY_STRING.trim(),
-                Validators.REQUIRE_VALID_INTEGER.trim(),
-                Validators.REQUIRE_NON_NEGATIVE_NUMBER.trim(),
-                Validators.trimString(
-                Validators.numberRange(1, 65535)),
+                StringValidators.REQUIRE_NON_EMPTY_STRING.trim(),
+                StringValidators.REQUIRE_VALID_INTEGER.trim(),
+                StringValidators.REQUIRE_NON_NEGATIVE_NUMBER.trim(),
+                StringValidators.trimString(
+                StringValidators.numberRange(1, 65535)),
                 new PortOverlapValidator());
 
         int httpPort = Integer.parseInt(httpPortTextField.getText());
@@ -179,25 +180,25 @@ public class DevicePropertiesPanel extends JPanel implements DocumentListener, F
         group.add (proxy2cjcrePortTextField, portvalidator);
         group.add (proxy2idePortTextField, portvalidator);
         final RemoteVsLocalhostMismatchValidator remoteValidator = new RemoteVsLocalhostMismatchValidator();
-        group.add (cardManagerUrlField, Validators.REQUIRE_NON_EMPTY_STRING.forString(false),
-                Validators.MAY_NOT_START_WITH_DIGIT.forString(false), Validators.URL_MUST_BE_VALID.forString(false),
+        group.add (cardManagerUrlField, StringValidators.REQUIRE_NON_EMPTY_STRING,
+                StringValidators.MAY_NOT_START_WITH_DIGIT, StringValidators.URL_MUST_BE_VALID,
                 remoteValidator);
-        group.add (serverUrlField, Validators.REQUIRE_NON_EMPTY_STRING.forString(false),
-                Validators.MAY_NOT_START_WITH_DIGIT.forString(false), Validators.URL_MUST_BE_VALID.forString(false),
+        group.add (serverUrlField, StringValidators.REQUIRE_NON_EMPTY_STRING,
+                StringValidators.MAY_NOT_START_WITH_DIGIT, StringValidators.URL_MUST_BE_VALID,
                 remoteValidator);
         Validator<Document> v = Converter.find(String.class, Document.class).convert(new PortMismatchValidator());
-        group.add (new AbstractButton[] { remoteCheckbox }, new Validator<ButtonModel[]>() {
-            public boolean validate(Problems prblms, String string, ButtonModel[] t) {
-                return remoteValidator.validate(prblms, string, t[0].isSelected() + "");
+        group.add (new AbstractButton[] { remoteCheckbox }, new AbstractValidator<ButtonModel[]>(ButtonModel[].class) {
+            public void validate(Problems prblms, String string, ButtonModel[] t) {
+                remoteValidator.validate(prblms, string, t[0].isSelected() + "");
             }
         });
         group.add (httpPortTextField, v);
         group.add (serverUrlField, v);
         group.add (httpPortTextField, v);
-        group.add (hostComboBox, Validators.REQUIRE_NON_EMPTY_STRING,
-                Validators.HOST_NAME_OR_IP_ADDRESS.forString(true), remoteValidator);
+        group.add (hostComboBox, StringValidators.REQUIRE_NON_EMPTY_STRING,
+                StringValidators.HOST_NAME_OR_IP_ADDRESS, remoteValidator);
         hostComboBox.setEditor(ceditor);
-        group.add (ceditor.field, Validators.REQUIRE_NON_EMPTY_STRING, Validators.HOST_NAME_OR_IP_ADDRESS);
+        group.add (ceditor.field, StringValidators.REQUIRE_NON_EMPTY_STRING, StringValidators.HOST_NAME_OR_IP_ADDRESS);
         for (Component c : getComponents()) {
             localizeName (c);
         }
@@ -223,7 +224,7 @@ public class DevicePropertiesPanel extends JPanel implements DocumentListener, F
             if (inSetItem) return;
             inSetItem = true;
             try {
-                group.modifyComponents(new Runnable() {
+                group.runWithValidationSuspended(new Runnable() {
                     public void run() {
                         try {
                             field.setText (value == null ? "" : value.toString()); //NOI18N
@@ -290,14 +291,14 @@ public class DevicePropertiesPanel extends JPanel implements DocumentListener, F
         }
     }
 
-    public ValidationGroup getValidationGroup() {
+    public SwingValidationGroup getValidationGroup() {
         return group;
     }
 
     @Override
     public void addNotify() {
         super.addNotify();
-        group.validateAll();
+        group.performValidation();
     }
 
     public DevicePropertiesPanel() {
@@ -311,18 +312,20 @@ public class DevicePropertiesPanel extends JPanel implements DocumentListener, F
     }
 
     private void initializeComponent() {
-        group.modifyComponents(this);
+        group.runWithValidationSuspended(this);
     }
 
-    private class PortMismatchValidator implements Validator<String> {
-
-        public boolean validate(Problems p, String compName, String model) {
+    private class PortMismatchValidator extends AbstractValidator<String> {
+        PortMismatchValidator() {
+            super(String.class);
+        }
+        @Override public void validate(Problems p, String compName, String model) {
             String httpPortString = httpPortTextField.getText();
             int portVal;
             try {
                 portVal = Integer.parseInt (httpPortString.trim());
             } catch (NumberFormatException e) {
-                return true;
+                return;
             }
             int cmPort;
             int serverUrlPort;
@@ -332,20 +335,20 @@ public class DevicePropertiesPanel extends JPanel implements DocumentListener, F
                 cmPort = cmUrl.getPort();
                 serverUrlPort = servUrl.getPort();
             } catch (MalformedURLException e) {
-                return true;
+                return;
             }
             if (cmPort != portVal || serverUrlPort != portVal) {
                 p.add (new Problem (NbBundle.getMessage(DevicePropertiesPanel.class,
                         "MSG_SERVER_PORT_PROBLEM", compName, model), Severity.WARNING)); //NOI18N
-                return false;
             }
-            return true;
         }
     }
 
-    private class RemoteVsLocalhostMismatchValidator implements Validator <String> {
-
-        public boolean validate(Problems pblms, String compName, String value) {
+    private class RemoteVsLocalhostMismatchValidator extends AbstractValidator<String> {
+        RemoteVsLocalhostMismatchValidator() {
+            super(String.class);
+        }
+        @Override public void validate(Problems pblms, String compName, String value) {
             boolean setToLocal = !remoteCheckbox.isSelected();
             boolean mismatch = (containsLocalhostReference(cardManagerUrlField.getText()) ||
                     containsLocalhostReference(serverUrlField.getText())) && !setToLocal;
@@ -353,7 +356,6 @@ public class DevicePropertiesPanel extends JPanel implements DocumentListener, F
                 pblms.add(NbBundle.getMessage(RemoteVsLocalhostMismatchValidator.class,
                         "WARN_REMOTE_LOCAL_MISMATCH"), Severity.WARNING); //NOI18N
             }
-            return !mismatch;
         }
 
         private boolean containsLocalhostReference (String val) {
@@ -362,9 +364,11 @@ public class DevicePropertiesPanel extends JPanel implements DocumentListener, F
         }
     }
 
-    private class PortOverlapValidator implements Validator <String> {
-
-        public boolean validate(Problems problems, String arg1, String model) {
+    private class PortOverlapValidator extends AbstractValidator<String> {
+        PortOverlapValidator() {
+            super(String.class);
+        }
+        @Override public void validate(Problems problems, String arg1, String model) {
             Set<Integer> others = new HashSet<Integer>();
             JTextField[] relevant = new JTextField[] { httpPortTextField,
                 proxy2cjcrePortTextField, proxy2idePortTextField,
@@ -388,10 +392,8 @@ public class DevicePropertiesPanel extends JPanel implements DocumentListener, F
                     problems.add (NbBundle.getMessage(DevicePropertiesPanel.class, 
                             "ERR_PORT_USED_TWICE", i)); //NOI18N
                 }
-                return result;
             } catch (NumberFormatException e) {
                 //do nothing
-                return true;
             }
         }
 
@@ -641,7 +643,7 @@ public class DevicePropertiesPanel extends JPanel implements DocumentListener, F
 
     public boolean isAllDataValid() {
         try {
-            Problem p = group.validateAll();
+            Problem p = group.performValidation();
             return p == null || !p.isFatal();
         } catch (StackOverflowError err) {
             //Stack overflow error in java.util.regex.Pattern - need to
@@ -1095,7 +1097,7 @@ public class DevicePropertiesPanel extends JPanel implements DocumentListener, F
             return;
         }
         remoteBoxManuallyChanged = true;
-        group.validateAll();
+        group.performValidation();
     }//GEN-LAST:event_onRemoteCheckboxChanged
 
     private void hostComboChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_hostComboChanged
@@ -1170,7 +1172,7 @@ public class DevicePropertiesPanel extends JPanel implements DocumentListener, F
                 final URL newSurl = new URL (sUrl.getProtocol(), host, port, sUrl.getFile());
                 final URL newCurl = new URL (cUrl.getProtocol(), host, port, cUrl.getFile());
                 final boolean local = "localhost".compareToIgnoreCase(host) == 0 || "127.0.0.1".equals(host); //NOI18N
-                group.modifyComponents(new Runnable() {
+                group.runWithValidationSuspended(new Runnable() {
                     public void run() {
                         serverUrlField.setText (newSurl.toString());
                         cardManagerUrlField.setText(newCurl.toString());
@@ -1180,7 +1182,7 @@ public class DevicePropertiesPanel extends JPanel implements DocumentListener, F
                         }
                     }
                 });
-                group.validateAll();
+                group.performValidation();
             } catch (NumberFormatException ex) {
                 //do nothing
             } catch (MalformedURLException ex) {
@@ -1207,11 +1209,11 @@ public class DevicePropertiesPanel extends JPanel implements DocumentListener, F
         //do nothing
     }
 
-    public void clearProblem() {
+    @Override public void clearProblem() {
         fireChange();
     }
 
-    public void setProblem(Problem p) {
+    @Override public void showProblem(Problem p) {
         fireChange();
     }
 

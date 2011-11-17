@@ -46,7 +46,6 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.maven.api.archetype.Archetype;
 import static org.netbeans.modules.maven.newproject.Bundle.*;
-import org.netbeans.validation.api.Problem;
 import org.netbeans.validation.api.ui.ValidationGroup;
 import org.openide.WizardDescriptor;
 import org.openide.util.ChangeSupport;
@@ -117,7 +116,7 @@ public class BasicWizardPanel implements WizardDescriptor.FinishablePanel<Wizard
     }
     
     public @Override boolean isValid() {
-        return validationGroup.validateAll().equals(Problem.NO_PROBLEM);
+        return validationGroup.performValidation() == null;
     }
     
 }

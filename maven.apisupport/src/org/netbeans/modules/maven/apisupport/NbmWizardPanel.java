@@ -45,7 +45,6 @@ package org.netbeans.modules.maven.apisupport;
 import java.awt.Component;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.maven.api.archetype.Archetype;
-import org.netbeans.validation.api.Problem;
 import org.netbeans.validation.api.ui.ValidationGroup;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
@@ -114,7 +113,7 @@ public class NbmWizardPanel implements WizardDescriptor.FinishablePanel<WizardDe
     @Override
     public boolean isValid() {
         getComponent();
-        return validationGroup.validateAll().equals(Problem.NO_PROBLEM);
+        return validationGroup.performValidation() == null;
     }
     
 }
