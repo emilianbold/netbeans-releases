@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -110,7 +110,9 @@ public class Hk2InstanceNode extends AbstractNode implements ChangeListener { //
 
     public Hk2InstanceNode(final GlassfishInstance instance, boolean isFullNode) {
         this(instance, new InstanceContent(), isFullNode);
-        instance.getCommonSupport().refresh();
+        if (isFullNode) {
+            instance.getCommonSupport().refresh();
+        }
     }
     
     private Hk2InstanceNode(final GlassfishInstance instance, final InstanceContent ic, boolean isFullNode) {
