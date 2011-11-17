@@ -321,6 +321,7 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
                                 ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, e);
                                 this.description.setText(null);
                             }
+                            description.setCaretPosition(0);
                         }
                         else {
                             this.description.setText(null);
