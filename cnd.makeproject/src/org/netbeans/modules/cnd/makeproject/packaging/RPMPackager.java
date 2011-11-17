@@ -251,10 +251,15 @@ public class RPMPackager implements PackagerDescriptor {
             bw.write("# Create RPM Package\n"); // NOI18N
             bw.write("cd \"${TOP}\"\n"); // NOI18N
             bw.write("LOG_FILE=${NBTMPDIR}/../${OUTPUT_BASENAME}.log\n"); // NOI18N
-            bw.write(packagingConfiguration.getToolValue() + " " + packagingConfiguration.getOptionsValue() + " -bb ${SPEC_FILE} > ${LOG_FILE}\n"); // NOI18N
+            if (packagingConfiguration.getOptionsValue().contains("--buildroot")) {
+                bw.write(packagingConfiguration.getToolValue() + " " + packagingConfiguration.getOptionsValue() + " -bb ${SPEC_FILE} > ${LOG_FILE}\n"); // NOI18N
+            } else {
+                bw.write(packagingConfiguration.getToolValue() + " --buildroot ${TOP}/${NBTMPDIR} " + packagingConfiguration.getOptionsValue() + " -bb ${SPEC_FILE} > ${LOG_FILE}\n"); // NOI18N
+            }
+            bw.write("makeDirectory " + "\"" + "${NBTMPDIR}" + "\"" + "\n"); // NOI18N
             bw.write("checkReturnCode\n"); // NOI18N
             bw.write("cat ${LOG_FILE}\n"); // NOI18N
-            bw.write("RPM_PATH=`cat $LOG_FILE | grep .rpm | tail -1 |awk -F: '{ print $2 }'`\n"); // NOI18N
+            bw.write("RPM_PATH=`cat $LOG_FILE | grep '\\.rpm' | tail -1 |awk -F: '{ print $2 }'`\n"); // NOI18N
             bw.write("RPM_NAME=`basename ${RPM_PATH}`\n"); // NOI18N
             bw.write("mv ${RPM_PATH} " + packagingConfiguration.getOutputValue() + "\n"); // NOI18N
             bw.write("checkReturnCode\n"); // NOI18N
