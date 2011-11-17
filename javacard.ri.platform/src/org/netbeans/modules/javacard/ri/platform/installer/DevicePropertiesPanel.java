@@ -189,7 +189,7 @@ public class DevicePropertiesPanel extends JPanel implements DocumentListener, F
         Validator<Document> v = Converter.find(String.class, Document.class).convert(new PortMismatchValidator());
         group.add (new AbstractButton[] { remoteCheckbox }, new AbstractValidator<ButtonModel[]>(ButtonModel[].class) {
             public void validate(Problems prblms, String string, ButtonModel[] t) {
-                remoteValidator.validate(prblms, string, t[0].isSelected() + "");
+                remoteValidator.validate(prblms, string, (t.length > 0 && t[0].isSelected()) + "");
             }
         });
         group.add (httpPortTextField, v);
