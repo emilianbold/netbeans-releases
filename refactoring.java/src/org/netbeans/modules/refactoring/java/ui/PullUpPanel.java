@@ -226,7 +226,7 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
                 }
             }, true);
         } catch (IOException ioe) {
-            throw (RuntimeException) new RuntimeException().initCause(ioe);
+            throw new RuntimeException(ioe);
         }
         initialized = true;
     }
@@ -272,7 +272,7 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
                 }
             }, true);
         } catch (IOException ioe) {
-            throw (RuntimeException) new RuntimeException().initCause(ioe);
+            throw new RuntimeException(ioe);
         }
         // return the array of selected members
         return (MemberInfo[]) list.toArray(new MemberInfo[list.size()]);
@@ -405,7 +405,7 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
                     try {
                         info.toPhase(JavaSource.Phase.RESOLVED);
                     } catch (IOException ioe) {
-                        throw (RuntimeException) new RuntimeException().initCause(ioe);
+                        throw new RuntimeException(ioe);
                     }
                     Map map = new HashMap();
                     // go through the passed classes, collect all members from them and
@@ -490,7 +490,7 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
                 }
             }, true);
             } catch (IOException ioe) {
-                throw (RuntimeException) new RuntimeException().initCause(ioe);
+                throw new RuntimeException(ioe);
             }
             // fire event to repaint the table
             this.fireTableDataChanged();
@@ -529,7 +529,7 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
                         try {
                             info.toPhase(JavaSource.Phase.RESOLVED);
                         } catch (IOException ioe) {
-                            throw (RuntimeException) new RuntimeException().initCause(ioe);
+                            throw new RuntimeException(ioe);
                         }
                         if (targetType != anItem) {
                             targetType = ((MemberInfo) anItem);
@@ -556,7 +556,7 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
                     }
                 }, true);
             } catch (IOException ioe) {
-                throw (RuntimeException) new RuntimeException().initCause(ioe);
+                throw new RuntimeException(ioe);
             }
         }
 

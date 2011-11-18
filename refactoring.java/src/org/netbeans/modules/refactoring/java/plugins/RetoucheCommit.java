@@ -85,7 +85,7 @@ public class RetoucheCommit implements Transaction {
                     try {
                         id.restore();
                     } catch (IOException ex) {
-                        throw (RuntimeException) new RuntimeException().initCause(ex);
+                        throw new RuntimeException(ex);
                     }
                 }
             } else {
@@ -103,7 +103,7 @@ public class RetoucheCommit implements Transaction {
             }
             
         } catch (IOException ex) {
-            throw (RuntimeException) new RuntimeException().initCause(ex);
+            throw new RuntimeException(ex);
         }
     }
     
@@ -113,7 +113,7 @@ public class RetoucheCommit implements Transaction {
             try {
                 id.restore();
             } catch (IOException ex) {
-                throw (RuntimeException) new RuntimeException().initCause(ex);
+                throw new RuntimeException(ex);
             }
         }
         boolean localStored = false;
