@@ -181,6 +181,14 @@ public abstract class BaseAnalisysTestCase extends JavaSourceTestCase {
                 false);
     }
     
+    protected void checkFieldElement(Map<Element,String> map  , String enclosingClass, 
+            String expectedName )
+    {
+        ElementMatcher matcher = new SimpleNameMatcher( expectedName );
+        checkElement(map, enclosingClass, matcher, VariableElement.class, 
+                false);
+    }
+    
     protected void checkMethodElement(TestProblems result , String enclosingClass, 
             String expectedName )
     {
