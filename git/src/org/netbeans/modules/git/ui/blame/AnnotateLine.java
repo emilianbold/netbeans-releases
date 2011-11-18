@@ -64,6 +64,7 @@ public class AnnotateLine {
     private final File    file;
     private final String  content;
     private final int     lineNum;
+    private final int sourceLine;
 
     
     /**
@@ -80,6 +81,7 @@ public class AnnotateLine {
             committer = null;
             content = fakeItem;
             file = null;
+            sourceLine = -1;
         } else {
             revision = lineDetails.getRevisionInfo();
             author = lineDetails.getAuthor() == null ? lineDetails.getCommitter() : lineDetails.getAuthor();
@@ -91,6 +93,7 @@ public class AnnotateLine {
             }
             content = cont;
             file = lineDetails.getSourceFile();
+            sourceLine = lineDetails.getSourceLine();
         }
         lineNum = lineNumber;
     }
@@ -128,6 +131,13 @@ public class AnnotateLine {
      */
     public int getLineNum() {
         return lineNum;
+    }
+
+    /**
+     * Returns the line's number in the previous source file. It's 0 based.
+     */
+    public int getSourceLineNum () {
+        return sourceLine;
     }
 
     /**

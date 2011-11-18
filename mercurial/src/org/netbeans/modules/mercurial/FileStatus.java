@@ -53,13 +53,18 @@ import java.io.File;
 public class FileStatus {
     private File mFile;
     private boolean mbCopied;
+    private final File originalFile;
     
-    public FileStatus(File file, boolean isCopied){
+    public FileStatus(File file, File original){
         mFile = file;
-        mbCopied = isCopied;
+        this.originalFile = original;
+        mbCopied = original != null;
     }
     public File getFile(){
         return mFile;
+    }
+    public File getOriginalFile(){
+        return originalFile;
     }
     public boolean isCopied(){
         return mbCopied;

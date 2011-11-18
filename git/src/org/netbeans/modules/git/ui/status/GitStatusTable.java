@@ -49,19 +49,23 @@ import org.netbeans.modules.versioning.util.status.VCSStatusTableModel;
 import org.netbeans.modules.versioning.util.status.VCSStatusTable;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.util.EnumSet;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JTable;
+import javax.swing.KeyStroke;
 import javax.swing.table.DefaultTableCellRenderer;
+import org.netbeans.modules.git.FileInformation;
 import org.netbeans.modules.git.FileInformation.Status;
 import org.netbeans.modules.git.GitModuleConfig;
 import org.netbeans.modules.git.ui.actions.AddAction;
 import org.netbeans.modules.git.ui.checkout.CheckoutPathsAction;
 import org.netbeans.modules.git.ui.checkout.RevertChangesAction;
 import org.netbeans.modules.git.ui.commit.CommitAction;
+import org.netbeans.modules.git.ui.commit.DeleteLocalAction;
 import org.netbeans.modules.git.ui.conflicts.ResolveConflictsAction;
 import org.netbeans.modules.git.ui.diff.DiffAction;
 import org.netbeans.modules.versioning.util.FilePathCellRenderer;
@@ -96,6 +100,9 @@ class GitStatusTable extends VCSStatusTable<GitStatusNode> {
         properties[1] = new ColumnDescriptor<String>(GitStatusNode.GitStatusProperty.NAME, String.class, GitStatusNode.GitStatusProperty.DISPLAY_NAME, GitStatusNode.GitStatusProperty.DESCRIPTION);
         properties[2] = new ColumnDescriptor<String>(GitStatusNode.PathProperty.NAME, String.class, GitStatusNode.PathProperty.DISPLAY_NAME, GitStatusNode.PathProperty.DESCRIPTION);
         tableModel.setProperties(properties);
+        getTable().getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
+                KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0), "DeleteAction");
+        getTable().getActionMap().put("DeleteAction", SystemAction.get(DeleteLocalAction.class));
     }
         
     @Override
@@ -118,12 +125,17 @@ class GitStatusTable extends VCSStatusTable<GitStatusNode> {
 
         GitStatusNode[] selectedNodes = getSelectedNodes();
         boolean displayAdd = false;
+        boolean allLocallyNew = true;
         for (GitStatusNode node : selectedNodes) {
+            FileInformation info = node.getFileNode().getInformation();
             // is there any change between index and WT?
-            if (node.getFileNode().getInformation().containsStatus(EnumSet.of(Status.NEW_INDEX_WORKING_TREE,
+            if (info.containsStatus(EnumSet.of(Status.NEW_INDEX_WORKING_TREE,
                     Status.IN_CONFLICT,
                     Status.MODIFIED_INDEX_WORKING_TREE))) {
                 displayAdd = true;
+            }
+            if (!info.containsStatus(EnumSet.of(Status.NEW_HEAD_INDEX, Status.NEW_HEAD_WORKING_TREE))) {
+                allLocallyNew = false;
             }
         }
         if (displayAdd) {
@@ -131,6 +143,11 @@ class GitStatusTable extends VCSStatusTable<GitStatusNode> {
             Mnemonics.setLocalizedText(item, item.getText());
         }
         
+        if (allLocallyNew) {
+            SystemAction systemAction = SystemAction.get(DeleteLocalAction.class);
+            item = menu.add(new SystemActionBridge(systemAction, NbBundle.getMessage(DeleteLocalAction.class, "CTL_PopupMenuItem_Delete"))); //NOI18N
+            Mnemonics.setLocalizedText(item, item.getText());
+        }
         item = menu.add(new SystemActionBridge(SystemAction.get(RevertChangesAction.class), NbBundle.getMessage(CheckoutPathsAction.class, "LBL_RevertChangesAction_PopupName"))); //NOI18N
         Mnemonics.setLocalizedText(item, item.getText());
         item = menu.add(new SystemActionBridge(SystemAction.get(CheckoutPathsAction.class), NbBundle.getMessage(CheckoutPathsAction.class, "LBL_CheckoutPathsAction_PopupName"))); //NOI18N
