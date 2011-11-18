@@ -43,6 +43,7 @@
  */
 package org.netbeans.core.windows.design;
 
+import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.openide.util.NbBundle;
@@ -198,16 +199,31 @@ final class DesignViewComponent extends TopComponent implements DocumentListener
 
     @Override
     public void insertUpdate(DocumentEvent e) {
-        modeNameActionPerformed(null);
+        SwingUtilities.invokeLater( new Runnable() {
+            @Override
+            public void run() {
+                modeNameActionPerformed(null);
+            }
+        });
     }
 
     @Override
     public void removeUpdate(DocumentEvent e) {
-        modeNameActionPerformed(null);
+        SwingUtilities.invokeLater( new Runnable() {
+            @Override
+            public void run() {
+                modeNameActionPerformed(null);
+            }
+        });
     }
 
     @Override
     public void changedUpdate(DocumentEvent e) {
-        modeNameActionPerformed(null);
+        SwingUtilities.invokeLater( new Runnable() {
+            @Override
+            public void run() {
+                modeNameActionPerformed(null);
+            }
+        });
     }
 }
