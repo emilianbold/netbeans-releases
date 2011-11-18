@@ -40,7 +40,7 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.css.indexing;
+package org.netbeans.modules.css.indexing.api;
 
 import org.netbeans.junit.NbTestCase;
 

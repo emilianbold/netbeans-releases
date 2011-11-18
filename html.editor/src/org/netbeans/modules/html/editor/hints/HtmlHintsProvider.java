@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.html.editor.hints;
 
+import org.netbeans.modules.html.editor.hints.css.HtmlCssHints;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -50,16 +51,10 @@ import java.util.Map;
 import java.util.Set;
 import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
-import javax.swing.text.JTextComponent;
-import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.editor.ext.html.parser.SyntaxTreeBuilder;
-import org.netbeans.editor.ext.html.parser.api.AstNode;
 import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
 import org.netbeans.editor.ext.html.parser.api.SyntaxAnalyzerResult;
-import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
-import org.netbeans.lib.editor.codetemplates.api.CodeTemplateManager;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintFix;
@@ -133,6 +128,9 @@ public class HtmlHintsProvider implements HintsProvider {
             }
         }
 
+        //add html-css related hints
+        HtmlCssHints.computeHints(manager, context, hints);
+        
     }
 
     private static List<HintFix> generateSetDefaultHtmlVersionHints(Project project, Document doc, boolean xhtml) {
