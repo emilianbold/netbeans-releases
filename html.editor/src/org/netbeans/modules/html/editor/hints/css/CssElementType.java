@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,30 +37,15 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.css.indexing;
-
-import org.netbeans.junit.NbTestCase;
+package org.netbeans.modules.html.editor.hints.css;
 
 /**
  *
- * @author mfukala@netbeans.org
+ * @author marekfukala
  */
-public class CssIndexTest extends NbTestCase {
-
-    public CssIndexTest(String name) {
-        super(name);
-    }
+ enum CssElementType {
+    ID, CLASS
     
-    public void testEncodeValueForRegexp() {
-        assertEquals("", CssIndex.encodeValueForRegexp(""));
-        assertEquals("a", CssIndex.encodeValueForRegexp("a"));
-        assertEquals("\\\\", CssIndex.encodeValueForRegexp("\\"));
-        assertEquals("a\\*b", CssIndex.encodeValueForRegexp("a*b"));
-        assertEquals("a\\\\b", CssIndex.encodeValueForRegexp("a\\b"));
-        assertEquals("\\.\\^\\$\\[\\]\\{\\}\\(\\)", CssIndex.encodeValueForRegexp(".^$[]{}()"));
-    }
-
 }

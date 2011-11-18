@@ -39,73 +39,28 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.editor;
 
-import java.io.IOException;
-import java.util.WeakHashMap;
-import javax.swing.text.Document;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.csl.api.DataLoadersBridge;
-import org.netbeans.modules.css.indexing.api.CssIndex;
-import org.netbeans.modules.parsing.api.Source;
-import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
+package org.netbeans.modules.css.indexing.api;
+
+import org.netbeans.junit.NbTestCase;
 
 /**
  *
  * @author mfukala@netbeans.org
  */
-public class CssProjectSupport {
+public class CssIndexTest extends NbTestCase {
 
-    private static final WeakHashMap<Project, CssProjectSupport> INSTANCIES = new WeakHashMap<Project, CssProjectSupport>();
-
-    public static CssProjectSupport findFor(Source source) {
-	FileObject fo = source.getFileObject();
-	if (fo == null) {
-	    return null;
-	} else {
-	    return findFor(fo);
-	}
+    public CssIndexTest(String name) {
+        super(name);
+    }
+    
+    public void testEncodeValueForRegexp() {
+        assertEquals("", CssIndex.encodeValueForRegexp(""));
+        assertEquals("a", CssIndex.encodeValueForRegexp("a"));
+        assertEquals("\\\\", CssIndex.encodeValueForRegexp("\\"));
+        assertEquals("a\\*b", CssIndex.encodeValueForRegexp("a*b"));
+        assertEquals("a\\\\b", CssIndex.encodeValueForRegexp("a\\b"));
+        assertEquals("\\.\\^\\$\\[\\]\\{\\}\\(\\)", CssIndex.encodeValueForRegexp(".^$[]{}()"));
     }
 
-    public static CssProjectSupport findFor(Document doc) {
-	return findFor(DataLoadersBridge.getDefault().getFileObject(doc));
-    }
-
-    public static CssProjectSupport findFor(FileObject fo) {
-	try {
-	    Project p = FileOwnerQuery.getOwner(fo);
-	    if (p == null) {
-		return null;
-	    }
-            synchronized (INSTANCIES) {
-		CssProjectSupport instance = INSTANCIES.get(p);
-		if (instance == null) {
-		    instance = new CssProjectSupport(p);
-		    INSTANCIES.put(p, instance);
-		}
-                return instance;
-	    }
-	} catch (IOException ex) {
-	    Exceptions.printStackTrace(ex);
-	}
-
-	return null;
-    }
-    private Project project;
-    private CssIndex index;
-
-    public CssProjectSupport(Project project) throws IOException {
-	this.project = project;
-	this.index = CssIndex.create(project);
-    }
-
-    public CssIndex getIndex() {
-	return index;
-    }
-
-    public Project getProject() {
-	return project;
-    }
 }

@@ -251,7 +251,7 @@ public class RPMPackager implements PackagerDescriptor {
             bw.write("# Create RPM Package\n"); // NOI18N
             bw.write("cd \"${TOP}\"\n"); // NOI18N
             bw.write("LOG_FILE=${NBTMPDIR}/../${OUTPUT_BASENAME}.log\n"); // NOI18N
-            if (packagingConfiguration.getOptionsValue().contains("--buildroot")) {
+            if (packagingConfiguration.getOptionsValue().contains("--buildroot")) { // NOI18N
                 bw.write(packagingConfiguration.getToolValue() + " " + packagingConfiguration.getOptionsValue() + " -bb ${SPEC_FILE} > ${LOG_FILE}\n"); // NOI18N
             } else {
                 bw.write(packagingConfiguration.getToolValue() + " --buildroot ${TOP}/${NBTMPDIR} " + packagingConfiguration.getOptionsValue() + " -bb ${SPEC_FILE} > ${LOG_FILE}\n"); // NOI18N
