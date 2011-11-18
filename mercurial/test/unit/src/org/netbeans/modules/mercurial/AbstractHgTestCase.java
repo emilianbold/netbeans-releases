@@ -137,7 +137,7 @@ public abstract class AbstractHgTestCase extends NbTestCase {
         List<File> filesToAdd = new ArrayList<File>();
         FileInformation status;
         for (File file : files) {
-            if(findStatus(HgCommand.getStatus(repository, Collections.singletonList(file)),
+            if(findStatus(HgCommand.getStatus(repository, Collections.singletonList(file), null, null),
                     FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY)) {
                 filesToAdd.add(file);
             }
@@ -164,7 +164,7 @@ public abstract class AbstractHgTestCase extends NbTestCase {
     }
     
     protected  void assertStatus(File f, int status) throws HgException, IOException {
-        FileInformation s = HgCommand.getStatus(getWorkTreeDir(), Collections.singletonList(f)).get(f);
+        FileInformation s = HgCommand.getStatus(getWorkTreeDir(), Collections.singletonList(f), null, null).get(f);
         if (status == FileInformation.STATUS_VERSIONED_UPTODATE) {
             assertEquals(s, null);
         } else {

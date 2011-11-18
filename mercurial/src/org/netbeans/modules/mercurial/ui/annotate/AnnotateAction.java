@@ -212,6 +212,7 @@ public class AnnotateAction extends ContextAction {
         }
         if (logs == null) return;
         fillCommitMessages(lines, logs);
+        ab.setAnnotatedRevision(revision);
         ab.setLogs(logs);
         ab.annotationLines(file, Arrays.asList(lines));
     }
@@ -256,11 +257,12 @@ public class AnnotateAction extends ContextAction {
         final int GROUP_AUTHOR = 1;
         final int GROUP_REVISION = 2;
         final int GROUP_FILENAME = 3;
-        final int GROUP_CONTENT = 4;
+        final int GROUP_LINE_NUMBER = 4;
+        final int GROUP_CONTENT = 5;
         
         List<AnnotateLine> lines = new ArrayList<AnnotateLine>();
         int i = 0;
-        Pattern p = Pattern.compile("^\\s*(\\S+\\b)\\s+(\\d+)\\s+(\\b\\S*):\\s(.*)$"); //NOI18N
+        Pattern p = Pattern.compile("^\\s*(\\S+\\b)\\s+(\\d+)\\s+(\\b\\S*):(\\d+):\\s(.*)$"); //NOI18N
         for (String line : annotations) {
             i++;
             Matcher m = p.matcher(line);
@@ -273,6 +275,11 @@ public class AnnotateAction extends ContextAction {
                 anLine.setAuthor(m.group(GROUP_AUTHOR));
                 anLine.setRevision(m.group(GROUP_REVISION));
                 anLine.setFileName(m.group(GROUP_FILENAME));
+                try {
+                    anLine.setPrevLineNum(Integer.parseInt(m.group(GROUP_LINE_NUMBER)));
+                } catch (NumberFormatException ex) {
+                    anLine.setPrevLineNum(-1);
+                }
                 anLine.setContent(m.group(GROUP_CONTENT));
             }
             anLine.setLineNum(i);

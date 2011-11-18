@@ -423,7 +423,7 @@ class FilesystemHandler extends VCSInterceptor {
                         } else if (status != null && (status.getTextStatus().equals(SVNStatusKind.UNVERSIONED)
                                 || status.getTextStatus().equals(SVNStatusKind.IGNORED))) { // ignored file CAN'T be moved via svn
                             // check if the file wasn't just deleted in this session
-                            revertDeleted(client, toStatus, to, false);
+                            revertDeleted(client, toStatus, to, true);
 
                             if(!copyFile(from, to)) {
                                 Subversion.LOG.log(Level.INFO, "Cannot copy file {0} to {1}", new Object[] {from, to});
@@ -733,10 +733,13 @@ class FilesystemHandler extends VCSInterceptor {
                 if(checkParents) {
                     // we have a file scheduled for deletion but it's going to be created again,
                     // => it's parent folder can't stay deleted either
-                    List<File> deletedParents = getDeletedParents(file, client);
+                    final List<File> deletedParents = getDeletedParents(file, client);
                     // XXX JAVAHL client.revert(deletedParents.toArray(new File[deletedParents.size()]), false);
                     for (File parent : deletedParents) {
                         client.revert(parent, false);
+                    }
+                    if (!deletedParents.isEmpty()) {
+                        Subversion.getInstance().getStatusCache().refreshAsync(deletedParents.toArray(new File[deletedParents.size()]));
                     }
                 }
 
@@ -803,14 +806,14 @@ class FilesystemHandler extends VCSInterceptor {
                             // otherwise svn move should be invoked
 
                             // check if the file wasn't just deleted in this session
-                            revertDeleted(client, toStatus, to, false);
+                            revertDeleted(client, toStatus, to, true);
 
                             client.revert(from, true);
                             moved = from.renameTo(to);
                         } else if (status != null && (status.getTextStatus().equals(SVNStatusKind.UNVERSIONED)
                                 || status.getTextStatus().equals(SVNStatusKind.IGNORED))) { // ignored file CAN'T be moved via svn
                             // check if the file wasn't just deleted in this session
-                            revertDeleted(client, toStatus, to, false);
+                            revertDeleted(client, toStatus, to, true);
 
                             moved = from.renameTo(to);
                         } else if (parentIgnored) {
