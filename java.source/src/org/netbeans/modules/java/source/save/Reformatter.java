@@ -3307,6 +3307,7 @@ public class Reformatter implements ReformatTask {
                                // 4 - after throws tag, 5 - exception description, 6 - after pre tag, 7 - after other tag
                 int currWSOffset = -1;
                 int lastWSOffset = -1;
+                int identStart = -1;
                 boolean afterText = false;
                 boolean insideTag = false;
                 Pair<Integer, Integer> toAdd = null;
@@ -3359,21 +3360,8 @@ public class Reformatter implements ReformatTask {
                                 marks.add(toAdd);
                                 toAdd = null;
                             }
-                            if (state == 1) {
-                                int len = javadocTokens.token().length();
-                                if (len > maxParamNameLength)
-                                    maxParamNameLength = len;
-                                if (cs.alignJavadocParameterDescriptions())
-                                    toAdd = Pair.of(javadocTokens.offset() + len - offset, 2);
-                                state = 2;
-                            } else if (state == 4) {
-                                int len = javadocTokens.token().length();
-                                if (len > maxExcNameLength)
-                                    maxExcNameLength = len;
-                                if (cs.alignJavadocExceptionDescriptions())
-                                    toAdd = Pair.of(javadocTokens.offset() + len - offset, 4);
-                                state = 5;
-                            }
+                            if (identStart < 0 && (state == 1 || state == 4))
+                                identStart = javadocTokens.offset() - offset;
                             lastWSOffset = currWSOffset = -1;
                             afterText = true;
                             break;
@@ -3382,6 +3370,7 @@ public class Reformatter implements ReformatTask {
                             CharSequence cseq = javadocTokens.token().text();
                             int nlNum = 1;
                             int insideTagEndOffset = -1;
+                            boolean addNow = false;
                             for (int i = cseq.length(); i >= 0; i--) {
                                 if (i == 0) {
                                     if (lastWSOffset < 0)
@@ -3399,6 +3388,8 @@ public class Reformatter implements ReformatTask {
                                         if (toAdd != null) {
                                             marks.add(toAdd);
                                             toAdd = null;
+                                        } else {
+                                            addNow = true;
                                         }
                                         if (insideTag && c == '}') {
                                             insideTagEndOffset = javadocTokens.offset() + i - offset - 1;
@@ -3411,6 +3402,27 @@ public class Reformatter implements ReformatTask {
                                         afterText = true;
                                     }
                                 }
+                            }
+                            if (currWSOffset >= 0 && identStart >= 0) {
+                                int len = currWSOffset - identStart;
+                                if (state == 1) {
+                                    if (len > maxParamNameLength)
+                                        maxParamNameLength = len;
+                                    if (cs.alignJavadocParameterDescriptions())
+                                        toAdd = Pair.of(currWSOffset, 2);
+                                    state = 2;
+                                } else if (state == 4) {
+                                    if (len > maxExcNameLength)
+                                        maxExcNameLength = len;
+                                    if (cs.alignJavadocExceptionDescriptions())
+                                        toAdd = Pair.of(currWSOffset, 4);
+                                    state = 5;
+                                }
+                                if (addNow && toAdd != null) {
+                                    marks.add(toAdd);
+                                    toAdd = null;
+                                }
+                                identStart = -1;
                             }
                             if (insideTagEndOffset >= 0)
                                 marks.add(Pair.of(insideTagEndOffset, 6));
