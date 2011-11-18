@@ -215,7 +215,7 @@ public class PushDownPanel extends JPanel implements CustomRefactoringPanel {
             
             }, true);
         } catch (IOException ioe) {
-            throw (RuntimeException) new RuntimeException().initCause(ioe);
+            throw new RuntimeException(ioe);
         }
         parent.stateChanged(null);
         initialized = true;
