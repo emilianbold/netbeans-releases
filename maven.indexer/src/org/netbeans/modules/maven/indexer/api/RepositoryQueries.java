@@ -392,7 +392,7 @@ public final class RepositoryQueries {
      * query, it should remove itself from the list of observers by calling
      * <code>queryRequest.deleteObserver(requester)</code>.
      * 
-     * @throws BooleanQuery.TooManyClauses This runtime exception can be thrown if given query is too
+     * @throws org.apache.lucene.search.BooleanQuery.TooManyClauses This runtime exception can be thrown if given query is too
      * general and such search can't be executed as it would probably end with
      * OutOfMemoryException. Callers should either assure that no such dangerous
      * queries are constructed or catch BooleanQuery.TooManyClauses and act
