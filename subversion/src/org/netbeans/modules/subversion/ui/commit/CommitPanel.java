@@ -376,6 +376,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
         jScrollPane1.setViewportView(messageTextArea);
         messageTextArea.getAccessibleContext().setAccessibleName(getMessage("ACSN_CommitForm_Message")); // NOI18N
         messageTextArea.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_CommitForm_Message")); // NOI18N
+        messageTextArea.addMouseListener(new CommitMessageMouseAdapter());
 
         Mnemonics.setLocalizedText(filesSectionButton, getMessage("LBL_CommitDialog_FilesToCommit")); // NOI18N
         Mnemonics.setLocalizedText(filesLabel, getMessage("CTL_CommitForm_FilesToCommit")); // NOI18N
