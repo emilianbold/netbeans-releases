@@ -312,7 +312,12 @@ public class CssFileModel {
 
         private Entry getImportedEntry(Node node) {
             //@import "resources/global.css";
-            Node token = NodeUtil.getChildTokenNode(node, CssTokenId.STRING);
+            Node resourceIdentifier = NodeUtil.getChildByType(node, NodeType.resourceIdentifier);
+            if(resourceIdentifier == null) {
+                return null;
+            }
+            
+            Node token = NodeUtil.getChildTokenNode(resourceIdentifier, CssTokenId.STRING);
             if (token != null) {
                 CharSequence image = token.image();
                 boolean quoted = WebUtils.isValueQuoted(image);
@@ -323,7 +328,7 @@ public class CssFileModel {
             }
 
             //@import url("another.css");
-            token = NodeUtil.getChildTokenNode(node, CssTokenId.URL);
+            token = NodeUtil.getChildTokenNode(resourceIdentifier, CssTokenId.URI);
             if (token != null) {
                 Matcher m = URI_PATTERN.matcher(token.image());
                 if (m.matches()) {
