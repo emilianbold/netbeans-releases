@@ -41,9 +41,8 @@
  */
 package org.netbeans.modules.maven.repository;
 
-import java.awt.BorderLayout;
 import java.awt.Image;
-import java.awt.event.ActionListener;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -55,72 +54,76 @@ import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import org.apache.lucene.search.BooleanQuery;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
-import org.netbeans.modules.maven.indexer.api.QueryField;
 import org.netbeans.modules.maven.indexer.api.QueryRequest;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.explorer.ExplorerManager;
-import org.openide.explorer.view.BeanTreeView;
+import static org.netbeans.modules.maven.repository.Bundle.*;
+import org.openide.actions.DeleteAction;
 import org.openide.nodes.AbstractNode;
+import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
-import org.openide.util.lookup.AbstractLookup;
-import org.openide.util.lookup.InstanceContent;
+import org.openide.util.actions.SystemAction;
 
 /**
  *
  * @author  mkleint
  */
-public class FindResultsPanel extends javax.swing.JPanel implements ExplorerManager.Provider, Observer {
+public class FindResultsNode extends AbstractNode {
 
-    private BeanTreeView btv;
-    private ExplorerManager manager;
-    private ActionListener close;
-    private DialogDescriptor dd;
+    private final QueryRequest queryRequest;
     
-    private QueryRequest queryRequest;
-    private ResultsRootNode resultsRootNode;
-    
-    private static final RequestProcessor queryRP = new RequestProcessor(FindResultsPanel.class.getName(), 10);
-
-    private FindResultsPanel() {
-        initComponents();
-        btv = new BeanTreeView();
-        btv.setRootVisible(false);
-        manager = new ExplorerManager();
-        queryRequest = null;
-        resultsRootNode = new ResultsRootNode();
-        manager.setRootContext(resultsRootNode);
-        add(btv, BorderLayout.CENTER);
+    private static final RequestProcessor queryRP = new RequestProcessor(FindResultsNode.class.getName(), 10);
+    FindResultsNode(QueryRequest queryRequest) {
+        super(Children.create(new FindResultsChildren(queryRequest), true));
+        this.queryRequest = queryRequest;
+        setDisplayName(queryRequest.getQueryFields().get(0).getValue());
+        setIconBaseWithExtension("org/netbeans/modules/maven/repository/FindInRepo.png");
     }
 
-    FindResultsPanel(ActionListener actionListener, DialogDescriptor d) {
-        this();
-        close = actionListener;
-        dd = d;
+    @Override public boolean canDestroy() {
+        return true;
     }
 
-    void find(final List<QueryField> fields) {
+    @Override public void destroy() throws IOException {
+        M2RepositoryBrowser.remove(queryRequest);
+    }
 
-        if (null != queryRequest) {
+    @Override public Action[] getActions(boolean context) {
+        return new Action[] {SystemAction.get(DeleteAction.class)};
+    }
+
+    // XXX clumsy, use a real key instead (NBGroupInfo?) and replace no results/too general nodes with status line notifications
+    private static class FindResultsChildren extends ChildFactory.Detachable<Node> implements Observer {
+
+        private final QueryRequest queryRequest;
+        private List<Node> nodes;
+
+        FindResultsChildren(QueryRequest queryRequest) {
+            this.queryRequest = queryRequest;
+        }
+
+        @Override protected Node createNodeForKey(Node key) {
+            return key;
+        }
+
+        @Override protected void addNotify() {
+            queryRequest.addObserver(this);
+        }
+
+        @Override protected void removeNotify() {
             queryRequest.deleteObserver(this);
         }
 
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                resultsRootNode.setOneChild(getSearchingNode());
-            }
-        });
-
-        queryRequest = new QueryRequest(fields, RepositoryPreferences.getInstance().getRepositoryInfos(), this);
-        
+        @Override protected boolean createKeys(List<Node> toPopulate) {
+            if (nodes != null) {
+                toPopulate.addAll(nodes);
+            } else {
         queryRP.post(new Runnable() {
 
             public void run() {
@@ -129,7 +132,7 @@ public class FindResultsPanel extends javax.swing.JPanel implements ExplorerMana
                 } catch (BooleanQuery.TooManyClauses exc) {
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
-                            resultsRootNode.setOneChild(getTooGeneralNode());
+                            nodes = Collections.singletonList(getTooGeneralNode());
                         }
                     });
                 } catch (final OutOfMemoryError oome) {
@@ -141,76 +144,15 @@ public class FindResultsPanel extends javax.swing.JPanel implements ExplorerMana
                     // trying to indicate the condition to the user here
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
-                            resultsRootNode.setOneChild(getTooGeneralNode());
+                            nodes = Collections.singletonList(getTooGeneralNode());
                         }
                     });
                 }
             }
         });
     }
-
-    /** This method is called from within the constructor to
-     * initialize the form.
-     * WARNING: Do NOT modify this code. The content of this method is
-     * always regenerated by the Form Editor.
-     */
-    @SuppressWarnings("unchecked")
-    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
-    private void initComponents() {
-
-        jToolBar1 = new javax.swing.JToolBar();
-        btnModify = new javax.swing.JButton();
-        btnClose = new javax.swing.JButton();
-
-        setLayout(new java.awt.BorderLayout());
-
-        jToolBar1.setFloatable(false);
-        jToolBar1.setRollover(true);
-
-        org.openide.awt.Mnemonics.setLocalizedText(btnModify, org.openide.util.NbBundle.getMessage(FindResultsPanel.class, "FindResultsPanel.btnModify.text")); // NOI18N
-        btnModify.setFocusable(false);
-        btnModify.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        btnModify.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        btnModify.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnModifyActionPerformed(evt);
-            }
-        });
-        jToolBar1.add(btnModify);
-
-        org.openide.awt.Mnemonics.setLocalizedText(btnClose, org.openide.util.NbBundle.getMessage(FindResultsPanel.class, "FindResultsPanel.btnClose.text")); // NOI18N
-        btnClose.setFocusable(false);
-        btnClose.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        btnClose.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        btnClose.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnCloseActionPerformed(evt);
-            }
-        });
-        jToolBar1.add(btnClose);
-
-        add(jToolBar1, java.awt.BorderLayout.PAGE_START);
-    }// </editor-fold>//GEN-END:initComponents
-
-private void btnCloseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCloseActionPerformed
-    if (null != queryRequest) {
-        queryRequest.deleteObserver(this);
-    }
-    if (close != null) {
-        close.actionPerformed(evt);
-    }
-}//GEN-LAST:event_btnCloseActionPerformed
-
-private void btnModifyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnModifyActionPerformed
-    Object ret = DialogDisplayer.getDefault().notify(dd);
-    if (ret == DialogDescriptor.OK_OPTION) {
-        find(((FindInRepoPanel) dd.getMessage()).getQuery());
-    }
-}//GEN-LAST:event_btnModifyActionPerformed
-
-    public ExplorerManager getExplorerManager() {
-        return manager;
-    }
+            return true; // XXX queryRequest.isFinished() unsuitable here
+        }
 
     @Override
     public void update(Observable o, Object arg) {
@@ -250,15 +192,13 @@ private void btnModifyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
             if (keyList.size() > 0) { // some results available
                 
                 Map<String, Node> currentNodes = new HashMap<String, Node>();
-                for (Node nd : resultsRootNode.getChildren().getNodes()) {
+                if (nodes != null) {
+                for (Node nd : nodes) {
                     currentNodes.put(nd.getName(), nd);
+                }
                 }
                 List<Node> newNodes = new ArrayList<Node>(keyList.size());
 
-                // still searching?
-                if (null!=queryRequest && !queryRequest.isFinished())
-                    newNodes.add(getSearchingNode());
-                
                 for (String key : keyList) {
                     Node nd;
                     nd = currentNodes.get(key);
@@ -270,12 +210,15 @@ private void btnModifyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
                     newNodes.add(nd);
                 }
                 
-                resultsRootNode.setNewChildren(newNodes);
+                nodes = newNodes;
+                refresh(false);
             } else if (null!=queryRequest && !queryRequest.isFinished()) { // still searching, no results yet
-                resultsRootNode.setOneChild(getSearchingNode());
+                nodes = Collections.emptyList();
             } else { // finished searching with no results
-                resultsRootNode.setOneChild(getNoResultsNode());
+                nodes = Collections.singletonList(getNoResultsNode());
             }
+    }
+
     }
 
     private static class ArtifactNode extends AbstractNode {
@@ -344,8 +287,9 @@ private void btnModifyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         }
     }
 
-    private static Node noResultsNode, searchingNode, tooGeneralNode;
+    private static Node noResultsNode, tooGeneralNode;
 
+    @Messages("LBL_Node_Empty=No matching items")
     private static Node getNoResultsNode() {
         if (noResultsNode == null) {
             AbstractNode nd = new AbstractNode(Children.LEAF) {
@@ -362,7 +306,7 @@ private void btnModifyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
             };
             nd.setName("Empty"); //NOI18N
 
-            nd.setDisplayName(NbBundle.getMessage(FindResultsPanel.class, "LBL_Node_Empty")); //NOI18N
+            nd.setDisplayName(LBL_Node_Empty()); //NOI18N
 
             noResultsNode = nd;
         }
@@ -370,30 +314,7 @@ private void btnModifyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         return new FilterNode (noResultsNode, Children.LEAF);
     }
 
-    private static Node getSearchingNode() {
-        if (searchingNode == null) {
-            AbstractNode nd = new AbstractNode(Children.LEAF) {
-
-                @Override
-                public Image getIcon(int arg0) {
-                    return ImageUtilities.loadImage("org/netbeans/modules/maven/repository/wait.gif"); //NOI18N
-                    }
-
-                @Override
-                public Image getOpenedIcon(int arg0) {
-                    return getIcon(arg0);
-                }
-            };
-            nd.setName("Searching"); //NOI18N
-
-            nd.setDisplayName(NbBundle.getMessage(FindResultsPanel.class, "LBL_Node_Searching")); //NOI18N
-
-            searchingNode = nd;
-        }
-
-        return new FilterNode (searchingNode, Children.LEAF);
-    }
-
+    @Messages("LBL_Node_TooGeneral=Too general query")
     private static Node getTooGeneralNode() {
         if (tooGeneralNode == null) {
             AbstractNode nd = new AbstractNode(Children.LEAF) {
@@ -410,7 +331,7 @@ private void btnModifyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
             };
             nd.setName("Too General"); //NOI18N
 
-            nd.setDisplayName(NbBundle.getMessage(FindResultsPanel.class, "LBL_Node_TooGeneral")); //NOI18N
+            nd.setDisplayName(LBL_Node_TooGeneral()); //NOI18N
 
             tooGeneralNode = nd;
         }
@@ -418,67 +339,5 @@ private void btnModifyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         return new FilterNode (tooGeneralNode, Children.LEAF);
     }
 
-    private class ResultsRootNode extends AbstractNode {
-
-        private ResultsRootChildren resultsChildren;
-
-        public ResultsRootNode() {
-            this(new InstanceContent());
-        }
-
-        private ResultsRootNode(InstanceContent content) {
-            super (new ResultsRootChildren(), new AbstractLookup(content));
-            content.add(this);
-            this.resultsChildren = (ResultsRootChildren) getChildren();
-        }
-
-        public void setOneChild(Node n) {
-            List<Node> ch = new ArrayList<Node>(1);
-            ch.add(n);
-            setNewChildren(ch);
-        }
-        
-        public void setNewChildren(List<Node> ch) {
-            resultsChildren.setNewChildren (ch);
-        }
-    }
     
-    private class ResultsRootChildren extends Children.Keys<Node> {
-        
-        List<Node> myNodes;
-
-        public ResultsRootChildren() {
-            myNodes = Collections.EMPTY_LIST;
-        }
-
-        private void setNewChildren(List<Node> ch) {
-            myNodes = ch;
-            refreshList();
-        }
-
-        @Override
-        protected void addNotify() {
-            refreshList();
-        }
-
-        private void refreshList() {
-            List<Node> keys = new ArrayList();
-            for (Node node : myNodes) {
-                keys.add(node);
-            }
-            setKeys(keys);
-        }
-
-        @Override
-        protected Node[] createNodes(Node key) {
-            return new Node[] { key };
-        }
-
-    }
-    
-    // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton btnClose;
-    private javax.swing.JButton btnModify;
-    private javax.swing.JToolBar jToolBar1;
-    // End of variables declaration//GEN-END:variables
 }
