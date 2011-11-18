@@ -903,4 +903,103 @@ public class WebBeansAnalysisTest extends BaseAnalisysTestCase {
         };
         runAnalysis(errorFile4 , processor);
     }
+    
+    /*
+     * InjectionPointAnalyzer.analyzeDecoratedBeans 
+     */
+    public void testDecoratedBean() throws IOException {
+        getUtilities().createQualifier("Qualifier1");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Iface1.java",
+                "package foo; " +
+                " public interface Iface1 { "+
+                "}");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/DecoratedBean1.java",
+                "package foo; " +
+                " @Qualifier1 "+
+                " public final class DecoratedBean1 implements Iface1 { "+
+                "}");
+        
+        FileObject errorFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz.java",
+                "package foo; " +
+                "import javax.inject.Inject; "+
+                "import javax.decorator.Delegate; "+
+                "import javax.decorator.Decorator; "+
+                " @Decorator "+
+                " public class Clazz implements Iface1 { "+
+                " @Qualifier1 @Inject @Delegate Iface1 delegate; "+
+                "}");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Iface2.java",
+                "package foo; " +
+                " public interface Iface2 { "+
+                " void method();"+
+                "}");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/DecoratedBean2.java",
+                "package foo; " +
+                " @Qualifier1 "+
+                " public class DecoratedBean2 implements Iface2 { "+
+                " public final void method() {  } "+
+                " private final void op() { } "+
+                "}");
+        
+        FileObject errorFile1 = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz1.java",
+                "package foo; " +
+                "import javax.inject.Inject; "+
+                "import javax.decorator.Delegate; "+
+                "import javax.decorator.Decorator; "+
+                " @Decorator "+
+                " public class Clazz1 implements Iface2 { "+
+                " @Qualifier1 @Inject @Delegate Iface2 delegate; "+
+                " public void method() {  } "+
+                " private final void op() {  } "+
+                "}");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Iface3.java",
+                "package foo; " +
+                " public interface Iface3 { "+
+                "}");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/DecoratedBean3.java",
+                "package foo; " +
+                "import javax.inject.Inject; "+
+                " @Qualifier1 "+
+                " public class DecoratedBean3 implements Iface3 { "+
+                "}");
+        
+        FileObject goodFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz2.java",
+                "package foo; " +
+                "import javax.inject.Inject; "+
+                "import javax.decorator.Delegate; "+
+                "import javax.decorator.Decorator; "+
+                " @Decorator "+
+                " public class Clazz2 implements Iface3 { "+
+                " @Qualifier1 @Inject @Delegate Iface3 delegate; "+
+                "}");
+        
+        ResultProcessor processor = new ResultProcessor (){
+
+            @Override
+            public void process( TestProblems result ) {
+                checkFieldElement(result, "foo.Clazz", "delegate");
+            }
+            
+        };
+        runAnalysis(errorFile , processor);
+        
+        processor = new ResultProcessor (){
+
+            @Override
+            public void process( TestProblems result ) {
+                checkFieldElement(result, "foo.Clazz1", "delegate");
+            }
+            
+        };
+        runAnalysis(errorFile1 , processor);
+        
+        runAnalysis( goodFile, NO_ERRORS_PROCESSOR );
+        
+    }
 }
