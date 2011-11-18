@@ -74,6 +74,11 @@ public class FileModel2Test extends TraceModelTestBase {
         getTraceModel().setDumpPPState(true);
     }
 
+    public void test205270() throws Exception {
+        // #205270 - R-value references breaks code model parser
+        performTest("iz205270.cc");
+    }
+    
     public void test199899() throws Exception {
         // #199899 - Parser fails on Solaris Studio specific keywords        
         performTest("iz199899.c");
