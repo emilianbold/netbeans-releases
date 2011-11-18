@@ -508,6 +508,11 @@ public class CdiTestUtilities {
                 "package javax.enterprise.inject.spi; " +
                 "public interface InjectionPoint  {" +
                 "}");
+        
+        TestUtilities.copyStringToFileObject(mySourceRoot, "javax/enterprise/context/spi/Context.java",
+                "package javax.enterprise.context.spi; " +
+                "public interface Context  {" +
+                "}");
     }
     
     private FileObject mySourceRoot;
