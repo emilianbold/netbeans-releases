@@ -760,4 +760,147 @@ public class WebBeansAnalysisTest extends BaseAnalisysTestCase {
         runAnalysis( goodFile1, WARNINGS_PROCESSOR );
     }
     
+    /*
+     * InjectionPointAnalyzer.checkResult : typesafe resolution checks 
+     */
+    public void testInjectableResult() throws IOException {
+        getUtilities().createQualifier("Qualifier1");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Iface.java",
+                "package foo; " +
+                " public interface Iface  { "+
+                "}");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/ImplClass.java",
+                "package foo; " +
+                " public class ImplClass  implements Iface { "+
+                "}");
+        
+        FileObject errorFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz.java",
+                "package foo; " +
+                "import javax.inject.Inject; "+
+                " public class Clazz { "+
+                " @Inject @Qualifier1 Iface injectioPoint; "+
+                "}");
+        
+        FileObject goodFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz1.java",
+                "package foo; " +
+                "import javax.inject.Inject; "+
+                " public class Clazz1 { "+
+                " @Inject Iface injectioPoint; "+
+                "}");
+        
+        FileObject goodFile1 = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz2.java",
+                "package foo; " +
+                "import javax.inject.Inject; "+
+                "import javax.enterprise.context.spi.Context; "+
+                " public class Clazz2 { "+
+                " @Inject Context injectioPoint; "+
+                "}");
+        
+        ResultProcessor processor = new ResultProcessor (){
+
+            @Override
+            public void process( TestProblems result ) {
+                checkFieldElement(result.getWarings(), "foo.Clazz", "injectioPoint");
+            }
+            
+        };
+        runAnalysis(errorFile , processor);
+        
+        runAnalysis( goodFile, NO_ERRORS_PROCESSOR );
+        runAnalysis( goodFile1, NO_ERRORS_PROCESSOR );
+    }
+    
+    /*
+     * InjectionPointAnalyzer.checkResult : defenition errors ( DefinitionErrorResult impl ) 
+     */
+    public void testDefinitionErrorResult() throws IOException {
+        FileObject errorFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz.java",
+                "package foo; " +
+                "import javax.inject.Inject; "+
+                " public class Clazz { "+
+                " @Inject int injectioPoint=0; "+
+                "}");
+        
+        FileObject errorFile1 = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz1.java",
+                "package foo; " +
+                "import javax.inject.Inject; "+
+                " public class Clazz1 { "+
+                " static @Inject int injectioPoint; "+
+                "}");
+        
+        FileObject errorFile2 = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz2.java",
+                "package foo; " +
+                "import javax.inject.Inject; "+
+                " public class Clazz2 { "+
+                " final @Inject int injectioPoint; "+
+                "}");
+        
+        FileObject errorFile3 = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz3.java",
+                "package foo; " +
+                "import javax.inject.Inject; "+
+                "import javax.enterprise.inject.Produces; "+
+                " public class Clazz3 { "+
+                " @Produces @Inject int injectioPoint; "+
+                "}");
+        
+        FileObject errorFile4 = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz4.java",
+                "package foo; " +
+                "import javax.inject.Inject; "+
+                "import javax.enterprise.inject.Produces; "+
+                " public class Clazz4<T> { "+
+                " @Inject T injectioPoint; "+
+                "}");
+        
+        ResultProcessor processor = new ResultProcessor (){
+
+            @Override
+            public void process( TestProblems result ) {
+                checkFieldElement(result, "foo.Clazz", "injectioPoint");
+            }
+            
+        };
+        runAnalysis(errorFile , processor);
+        
+        processor = new ResultProcessor (){
+
+            @Override
+            public void process( TestProblems result ) {
+                checkFieldElement(result, "foo.Clazz1", "injectioPoint");
+            }
+            
+        };
+        runAnalysis(errorFile1 , processor);
+        
+        processor = new ResultProcessor (){
+
+            @Override
+            public void process( TestProblems result ) {
+                checkFieldElement(result, "foo.Clazz2", "injectioPoint");
+            }
+            
+        };
+        runAnalysis(errorFile2 , processor);
+        
+        processor = new ResultProcessor (){
+
+            @Override
+            public void process( TestProblems result ) {
+                checkFieldElement(result, "foo.Clazz3", "injectioPoint");
+            }
+            
+        };
+        runAnalysis(errorFile3 , processor);
+        
+        processor = new ResultProcessor (){
+
+            @Override
+            public void process( TestProblems result ) {
+                checkFieldElement(result, "foo.Clazz4", "injectioPoint");
+            }
+            
+        };
+        runAnalysis(errorFile4 , processor);
+    }
 }
