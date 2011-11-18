@@ -185,7 +185,7 @@ public class Three1Configuration extends Hk2Configuration implements DeploymentC
                 createDefaultSunDD(sunDDFile);
             }
         }
-        FileObject retVal = FileUtil.toFileObject(sunDDFile);
+        FileObject retVal = FileUtil.toFileObject(FileUtil.normalizeFile(sunDDFile));
         if (null == retVal) {
             String fn = sunDDFile.getName();
             if (fn.contains(GLASSFISH_DASH) && null != sunDDFile.getParentFile()) {
