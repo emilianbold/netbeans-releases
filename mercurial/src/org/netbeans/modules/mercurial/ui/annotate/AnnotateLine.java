@@ -43,7 +43,7 @@
  */
 package org.netbeans.modules.mercurial.ui.annotate;
 
-import java.util.*;
+import java.util.Date;
 
 /**
  * One line of annotation, this is copied from CVS so that other support classes stay the same.
@@ -58,7 +58,8 @@ public class AnnotateLine {
     private String  file;
     private Date    date;
     private String  content;
-    private int     lineNum;
+    private int     lineNum = -1; // default is unknown
+    private int prevLineNum;
 
     private String commitMessage;
     
@@ -187,5 +188,16 @@ public class AnnotateLine {
 
     public void setCanBeRolledBack(boolean canBeRolledBack) {
         this.canBeRolledBack = canBeRolledBack;
+    }
+
+    public int getPreviousLineNumber () {
+        return prevLineNum;
+    }
+
+    /**
+     * Sets the previous line's number.
+     */
+    public void setPrevLineNum (int lineNum) {
+        this.prevLineNum = lineNum;
     }
 }

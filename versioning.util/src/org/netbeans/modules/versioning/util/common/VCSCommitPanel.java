@@ -97,6 +97,8 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import static java.awt.Component.CENTER_ALIGNMENT;
 import static java.awt.Component.LEFT_ALIGNMENT;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import static javax.swing.BorderFactory.createEmptyBorder;
 import static javax.swing.BoxLayout.Y_AXIS;
 import static javax.swing.BoxLayout.X_AXIS;
@@ -104,6 +106,7 @@ import static javax.swing.SwingConstants.SOUTH;
 import static javax.swing.SwingConstants.WEST;
 import static javax.swing.SwingConstants.EAST;
 import static javax.swing.LayoutStyle.ComponentPlacement.RELATED;
+import org.openide.awt.TabbedPaneFactory;
 
 /**
  *
@@ -111,7 +114,7 @@ import static javax.swing.LayoutStyle.ComponentPlacement.RELATED;
  * @author  Tomas Stupka
  * @author  Marian Petras
  */
-public abstract class VCSCommitPanel<F extends VCSFileNode> extends AutoResizingPanel implements PreferenceChangeListener, TableModelListener, ChangeListener {
+public abstract class VCSCommitPanel<F extends VCSFileNode> extends AutoResizingPanel implements PreferenceChangeListener, TableModelListener, ChangeListener, PropertyChangeListener {
 
     public static final String PROP_COMMIT_EXCLUSIONS       = "commitExclusions";    // NOI18N
     
@@ -134,12 +137,14 @@ public abstract class VCSCommitPanel<F extends VCSFileNode> extends AutoResizing
     private final VCSCommitParameters parameters;
     private final Map<String, VCSCommitFilter> filters = new LinkedHashMap<String, VCSCommitFilter>();
     private final VCSCommitDiffProvider diffProvider;
+    private final VCSCommitPanelModifier modifier;
 
     /** Creates new form CommitPanel */
     public VCSCommitPanel(VCSCommitTable table, VCSCommitParameters parameters, Preferences preferences, Collection<? extends VCSHook> hooks, VCSHookContext hooksContext, List<VCSCommitFilter> filters, VCSCommitDiffProvider diffProvider) {
         this.parameters = parameters;
         this.commitTable = table;
         this.diffProvider = diffProvider;
+        this.modifier = table.getCommitModifier();
         
         parameters.addChangeListener(this);
         
@@ -261,16 +266,16 @@ public abstract class VCSCommitPanel<F extends VCSFileNode> extends AutoResizing
      */
     // <editor-fold defaultstate="collapsed" desc="UI Layout Code">
     private void initComponents(Collection<? extends VCSHook> hooks, VCSHookContext hooksContext) {
-        org.openide.awt.Mnemonics.setLocalizedText(commitButton, org.openide.util.NbBundle.getMessage(VCSCommitPanel.class, "CTL_Commit_Action_Commit"));
-        commitButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(VCSCommitPanel.class, "ACSN_Commit_Action_Commit"));
-        commitButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(VCSCommitPanel.class, "ACSD_Commit_Action_Commit"));
+        org.openide.awt.Mnemonics.setLocalizedText(commitButton, modifier.getMessage(VCSCommitPanelModifier.BundleMessage.COMMIT_BUTTON_LABEL));
+        commitButton.getAccessibleContext().setAccessibleName(modifier.getMessage(VCSCommitPanelModifier.BundleMessage.COMMIT_BUTTON_ACCESSIBLE_NAME));
+        commitButton.getAccessibleContext().setAccessibleDescription(modifier.getMessage(VCSCommitPanelModifier.BundleMessage.COMMIT_BUTTON_ACCESSIBLE_DESCRIPTION));
         
-        org.openide.awt.Mnemonics.setLocalizedText(cancelButton, org.openide.util.NbBundle.getMessage(VCSCommitPanel.class, "CTL_Commit_Action_Cancel"));
-        cancelButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(VCSCommitPanel.class, "ACSN_Commit_Action_Cancel"));
-        cancelButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(VCSCommitPanel.class, "ACSD_Commit_Action_Cancel"));        
+        org.openide.awt.Mnemonics.setLocalizedText(cancelButton, org.openide.util.NbBundle.getMessage(VCSCommitPanel.class, "CTL_Commit_Action_Cancel")); //NOI18N
+        cancelButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(VCSCommitPanel.class, "ACSN_Commit_Action_Cancel")); //NOI18N
+        cancelButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(VCSCommitPanel.class, "ACSD_Commit_Action_Cancel"));//NOI18N
         
-        getAccessibleContext().setAccessibleName(getMessage("ACSN_CommitDialog"));        // NOI18N
-        getAccessibleContext().setAccessibleDescription(getMessage("ACSD_CommitDialog")); // NOI18N
+        getAccessibleContext().setAccessibleName(modifier.getMessage(VCSCommitPanelModifier.BundleMessage.PANEL_ACCESSIBLE_NAME));
+        getAccessibleContext().setAccessibleDescription(modifier.getMessage(VCSCommitPanelModifier.BundleMessage.PANEL_ACCESSIBLE_DESCRIPTION));
         
         basePanel.setBorder(createEmptyBorder(10,             // top
                                     getContainerGap(WEST),    // left
@@ -429,16 +434,19 @@ public abstract class VCSCommitPanel<F extends VCSFileNode> extends AutoResizing
         boolean newDiff = false;
         for (VCSFileNode node : nodes) {
             if (tabbedPane == null) {
-                tabbedPane = new JTabbedPane(JTabbedPane.TOP, JTabbedPane.SCROLL_TAB_LAYOUT);
-                 tabbedPane.addTab(NbBundle.getMessage(VCSCommitPanel.class, "CTL_CommitDialog_Tab_Commit"), basePanel); //NOI18N
+                tabbedPane = TabbedPaneFactory.createCloseButtonTabbedPane();
+                tabbedPane.addPropertyChangeListener(this);
+                 tabbedPane.addTab(modifier.getMessage(VCSCommitPanelModifier.BundleMessage.TABS_MAIN_NAME), basePanel);
                  tabbedPane.setPreferredSize(basePanel.getPreferredSize());
                  add(tabbedPane);
                  tabbedPane.addChangeListener(this);                
             }
             File file = node.getFile();
             JComponent component = diffProvider.getDiffComponent(file); 
-            if (component != null) {                
-                tabbedPane.addTab(file.getName(), component);
+            if (component != null) {
+                if (tabbedPane.indexOfComponent(component) == -1) {
+                    tabbedPane.addTab(file.getName(), component);
+                }
                 tabbedPane.setSelectedComponent(component);
                 tabbedPane.requestFocusInWindow();
                 newDiff = true;
@@ -450,6 +458,21 @@ public abstract class VCSCommitPanel<F extends VCSFileNode> extends AutoResizing
         }
     }
 
+    @Override
+    public void propertyChange (PropertyChangeEvent evt) {
+        if (TabbedPaneFactory.PROP_CLOSE.equals(evt.getPropertyName())) {
+            JComponent comp = (JComponent) evt.getNewValue();
+            removeTab(comp);
+        }
+    }
+    
+    private void removeTab (JComponent comp) {
+        if (basePanel != comp && tabbedPane != null && tabbedPane.getTabCount() > 1) {
+            tabbedPane.remove(comp);
+            revalidate();
+        }
+    }
+
     /**
      * Returns true if trying to commit from the commit tab or the user confirmed his action
      * @return
@@ -457,8 +480,8 @@ public abstract class VCSCommitPanel<F extends VCSFileNode> extends AutoResizing
     boolean canCommit() {
         boolean result = true;
         if (tabbedPane != null && tabbedPane.getSelectedComponent() != basePanel) {
-            NotifyDescriptor nd = new NotifyDescriptor(NbBundle.getMessage(VCSCommitPanel.class, "MSG_CommitDialog_CommitFromDiff"), //NOI18N
-                    NbBundle.getMessage(VCSCommitPanel.class, "LBL_CommitDialog_CommitFromDiff"), //NOI18N
+            NotifyDescriptor nd = new NotifyDescriptor(modifier.getMessage(VCSCommitPanelModifier.BundleMessage.MESSAGE_FINISHING_FROM_DIFF),
+                    modifier.getMessage(VCSCommitPanelModifier.BundleMessage.MESSAGE_FINISHING_FROM_DIFF_TITLE),
                     NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.QUESTION_MESSAGE, null, NotifyDescriptor.YES_OPTION);
             result = NotifyDescriptor.YES_OPTION == DialogDisplayer.getDefault().notify(nd);
         }
@@ -466,11 +489,13 @@ public abstract class VCSCommitPanel<F extends VCSFileNode> extends AutoResizing
     }
 
     public boolean open(VCSContext context, HelpCtx helpCtx) {
-       
         String contentTitle = Utils.getContextDisplayName(context);
-        
+        return open(context, helpCtx, org.openide.util.NbBundle.getMessage(VCSCommitPanel.class, "CTL_CommitDialog_Title", contentTitle)); // NOI18N
+    }
+
+    public boolean open(VCSContext context, HelpCtx helpCtx, String title) {
         final DialogDescriptor dd = new DialogDescriptor(this,
-              org.openide.util.NbBundle.getMessage(VCSCommitPanel.class, "CTL_CommitDialog_Title", contentTitle), // NOI18N
+              title,
               true,
               new Object[] {commitButton, cancelButton},
               commitButton,
@@ -531,6 +556,10 @@ public abstract class VCSCommitPanel<F extends VCSFileNode> extends AutoResizing
             al.actionPerformed(new ActionEvent(cancelButton, ActionEvent.ACTION_PERFORMED, null));
         }
         return dd.getValue() == commitButton;
+    }
+
+    VCSCommitPanelModifier getModifier () {
+        return modifier;
     }
       
 }

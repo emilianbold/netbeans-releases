@@ -86,7 +86,7 @@ import org.netbeans.modules.css.editor.module.spi.CompletionContext;
 import org.netbeans.modules.css.editor.module.spi.Property;
 import org.netbeans.modules.css.editor.module.spi.Utilities;
 import org.netbeans.modules.css.editor.properties.parser.ValueGrammarElement;
-import org.netbeans.modules.css.indexing.CssIndex;
+import org.netbeans.modules.css.indexing.api.CssIndex;
 import org.netbeans.modules.css.lib.api.CssTokenId;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.NodeType;

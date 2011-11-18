@@ -85,6 +85,7 @@ import java.util.*;
 import java.util.logging.Level;
 import org.netbeans.modules.mercurial.ui.add.AddAction;
 import org.netbeans.modules.mercurial.ui.commit.CommitAction;
+import org.netbeans.modules.mercurial.ui.commit.DeleteLocalAction;
 import org.netbeans.modules.mercurial.ui.update.ResolveConflictsAction;
 import org.netbeans.modules.versioning.util.SystemActionBridge;
 import org.netbeans.swing.etable.ETable;
@@ -177,6 +178,9 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
                 showPopup(org.netbeans.modules.versioning.util.Utils.getPositionForPopup(table));
             }
         });
+        table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
+                KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0), "DeleteAction");
+        table.getActionMap().put("DeleteAction", SystemAction.get(DeleteLocalAction.class));
     }
 
     void setDefaultColumnSizes() {
@@ -420,14 +424,23 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
         menu.addSeparator();
 
         boolean allLocallyDeleted = true;
+        boolean allLocallyNew = true;
         FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
         Set<File> files = HgUtils.getCurrentContext(null).getRootFiles();
         
         for (File file : files) {
             FileInformation info = cache.getStatus(file);
+            if ((info.getStatus() & DeleteLocalAction.LOCALLY_DELETABLE_MASK) == 0 ) {
+                allLocallyNew = false;
+            }
             if (info.getStatus() != FileInformation.STATUS_VERSIONED_DELETEDLOCALLY && info.getStatus() != FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY) {
                 allLocallyDeleted = false;
             }
+        }
+        if (allLocallyNew) {
+            SystemAction systemAction = SystemAction.get(DeleteLocalAction.class);
+            item = menu.add(new SystemActionBridge(systemAction, actionString("CTL_PopupMenuItem_Delete"))); //NOI18N
+            Mnemonics.setLocalizedText(item, item.getText());
         }
         if (allLocallyDeleted) {
             item = menu.add(new SystemActionBridge(SystemAction.get(RevertModificationsAction.class), actionString("CTL_PopupMenuItem_RevertDelete"))); //NOI18N
