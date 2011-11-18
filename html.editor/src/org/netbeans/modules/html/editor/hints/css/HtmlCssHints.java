@@ -76,12 +76,12 @@ public class HtmlCssHints {
     public static void computeHints(HintsManager manager, RuleContext context, List<Hint> hints) {
         HtmlParserResult result = (HtmlParserResult) context.parserResult;
         FileObject file = result.getSnapshot().getSource().getFileObject();
-        if(file == null) {
-            return ;
+        if (file == null) {
+            return;
         }
         Project project = FileOwnerQuery.getOwner(file);
-        if(project == null) {
-            return ;
+        if (project == null) {
+            return;
         }
         try {
             AstNodeUtils.visitChildren(result.root(), new HintsAstNodeVisitor(context, file, project, hints), AstNode.NodeType.OPEN_TAG);
@@ -95,35 +95,32 @@ public class HtmlCssHints {
         private final RuleContext context;
         private final List<Hint> hints;
         private final FileObject file;
-        private final DependenciesGraph deps;
         private final Collection<FileObject> referredFiles;
         private final Map<FileObject, Collection<String>> ids, classes;
-        
         private final Map<String, Collection<FileObject>> ids2files;
         private final Map<String, Collection<FileObject>> classes2files;
-
 
         public HintsAstNodeVisitor(RuleContext context, FileObject file, Project project, List<Hint> hints) throws IOException {
             this.context = context;
             this.file = file;
             this.hints = hints;
             CssIndex index = CssIndex.create(project);
-            deps = index.getDependencies(file);
+            DependenciesGraph deps = index.getDependencies(file);
             referredFiles = deps.getAllReferedFiles();
-            
+
             ids = index.findAll(RefactoringElementType.ID);
             classes = index.findAll(RefactoringElementType.CLASS);
-            
+
             ids2files = createReversedMap(ids);
             classes2files = createReversedMap(classes);
         }
-        
+
         private static Map<String, Collection<FileObject>> createReversedMap(Map<FileObject, Collection<String>> file2elements) {
             Map<String, Collection<FileObject>> map = new HashMap<String, Collection<FileObject>>();
-            for(FileObject file : file2elements.keySet()) {
-                for(String element : file2elements.get(file)) {
+            for (FileObject file : file2elements.keySet()) {
+                for (String element : file2elements.get(file)) {
                     Collection<FileObject> files = map.get(element);
-                    if(files == null) {
+                    if (files == null) {
                         files = new HashSet<FileObject>();
                     }
                     files.add(file);
@@ -132,7 +129,7 @@ public class HtmlCssHints {
             }
             return map;
         }
-        
+
         @Override
         public void visit(AstNode node) {
             for (Attribute id : node.getAttributes(new AstNode.AttributeFilter() {
@@ -141,32 +138,46 @@ public class HtmlCssHints {
                 public boolean accepts(Attribute attribute) {
                     return ID_ATTR_NAME.equalsIgnoreCase(attribute.name());
                 }
-                
             })) {
-                //all files containing the id declaration
-                Collection<FileObject> filesWithTheId = ids2files.get(id.unquotedValue());
-                
-                //all referred files with the id declaration
-                Collection<FileObject> referredFilesWithTheId = new LinkedList<FileObject>();
-                if(filesWithTheId != null) {
-                    filesWithTheId.remove(file); 
-                    referredFilesWithTheId.addAll(filesWithTheId);
-                    referredFilesWithTheId.retainAll(referredFiles);
+                processElements(id, CssElementType.ID, ids2files);
+            }
+            for (Attribute id : node.getAttributes(new AstNode.AttributeFilter() {
+
+                @Override
+                public boolean accepts(Attribute attribute) {
+                    return CLASS_ATTR_NAME.equalsIgnoreCase(attribute.name());
                 }
-                
-                if(referredFilesWithTheId.isEmpty()) {
-                    //unknown id
-                    hints.add(new MissingCssId(context, getAttributeValueOffsetRange(id), filesWithTheId));
-                }
+            })) {
+                processElements(id, CssElementType.CLASS, classes2files);
             }
 
         }
+
+        private void processElements(Attribute attribute, CssElementType elementType, Map<String, Collection<FileObject>> elements2files) {
+            //all files containing the id declaration
+            Collection<FileObject> filesWithTheId = elements2files.get(attribute.unquotedValue());
+
+            //all referred files with the id declaration
+            Collection<FileObject> referredFilesWithTheId = new LinkedList<FileObject>();
+            if (filesWithTheId != null) {
+                filesWithTheId.remove(file);
+                referredFilesWithTheId.addAll(filesWithTheId);
+                referredFilesWithTheId.retainAll(referredFiles);
+            }
+
+            if (referredFilesWithTheId.isEmpty()) {
+                //unknown id
+                hints.add(new MissingCssElement(elementType,
+                        context,
+                        getAttributeValueOffsetRange(attribute),
+                        filesWithTheId));
+            }
+        }
     }
-    
+
     private static OffsetRange getAttributeValueOffsetRange(Attribute attr) {
         int from = attr.unqotedValueOffset();
         int to = from + attr.unquotedValue().length();
         return new OffsetRange(from, to);
     }
-    
 }

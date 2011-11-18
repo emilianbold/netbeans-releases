@@ -45,12 +45,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import javax.swing.SwingUtilities;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.JTextComponent;
-import org.netbeans.api.editor.EditorRegistry;
-import org.netbeans.editor.BaseAction;
-import org.netbeans.modules.csl.api.CslActions;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.csl.api.HintSeverity;
@@ -65,17 +59,28 @@ import org.openide.util.NbBundle;
  *
  * @author mfukala@netbeans.org
  */
-public class MissingCssId extends Hint {
+public class MissingCssElement extends Hint {
+    
+    private static final String MSG_MISSING_CSS_ID = NbBundle.getMessage(MissingCssElement.class, "MSG_MissingCssId");
+    private static final String MSG_MISSING_CSS_CLASS = NbBundle.getMessage(MissingCssElement.class, "MSG_MissingCssClass");
 
-    private static final String DISPLAYNAME = NbBundle.getMessage(MissingCssId.class, "MSG_MissingCssId");
-
-    public MissingCssId(RuleContext context, OffsetRange range, Collection<FileObject> foundInFiles) {
-        super(new MissingCssIdRule(),
-                DISPLAYNAME,
+    MissingCssElement(CssElementType type, RuleContext context, OffsetRange range, Collection<FileObject> foundInFiles) {
+        super(new MissingCssElementRule(type),
+                getMessage(type),
                 context.parserResult.getSnapshot().getSource().getFileObject(),
                 range,
                 getFixes(foundInFiles, context),
                 10);
+    }
+    
+    private static String getMessage(CssElementType type) {
+        switch(type) {
+            case ID:
+                return MSG_MISSING_CSS_ID;
+            case CLASS:
+                return MSG_MISSING_CSS_CLASS;
+        }
+        throw new IllegalStateException();
     }
     
     private static List<HintFix> getFixes(Collection<FileObject> foundInFiles, RuleContext context) {
@@ -88,7 +93,7 @@ public class MissingCssId extends Hint {
         for(FileObject file : foundInFiles) {
             String path = WebUtils.getRelativePath(sourceFile, file);
             fixes.add(new AddStylesheetLinkHintFix(
-                    String.format("Add reference to containing stylesheet %s", path), 
+                    NbBundle.getMessage(MissingCssElement.class, "MSG_AddStyleSheetLink", path), 
                     sourceFile,
                     file,
                     context));
@@ -96,7 +101,13 @@ public class MissingCssId extends Hint {
         return fixes;
     }
 
-    private static class MissingCssIdRule implements Rule {
+    private static class MissingCssElementRule implements Rule {
+
+        private CssElementType type;
+        
+        public MissingCssElementRule(CssElementType type) {
+            this.type = type;
+        }
 
         @Override
         public boolean appliesTo(RuleContext context) {
@@ -105,7 +116,7 @@ public class MissingCssId extends Hint {
 
         @Override
         public String getDisplayName() {
-            return DISPLAYNAME;
+            return getMessage(type);
         }
 
         @Override
