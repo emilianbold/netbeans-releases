@@ -3630,6 +3630,7 @@ postfix_cv_qualifier
 protected
 unnamed_ptr_operator
 	:	(	AMPERSAND 	{is_address = true;}
+                |       AND {is_address = true;} // r-value reference
 		|	literal_cdecl 
 		|	literal_near
 		|	literal_far 
@@ -3642,6 +3643,7 @@ unnamed_ptr_operator
 
 ptr_operator
 	:	(	AMPERSAND 	{is_address = true;}
+                |       AND {is_address = true;} // r-value reference
 		|	literal_cdecl 
 		|	literal_near
 		|	literal_far 
