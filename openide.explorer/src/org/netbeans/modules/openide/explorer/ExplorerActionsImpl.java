@@ -764,7 +764,11 @@ public final class ExplorerActionsImpl {
         }
 
         private void updateTrans() {
-            Transferable t = getClipboard().getContents(ExplorerActionsImpl.this);
+            Clipboard clipboard = getClipboard();
+            if (clipboard == null) {
+                return;
+            }
+            Transferable t = clipboard.getContents(ExplorerActionsImpl.this);
             synchronized (this) {
                 trans = t;
             }
