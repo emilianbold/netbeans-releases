@@ -419,7 +419,7 @@ class FilesystemInterceptor extends VCSInterceptor {
     private Collection<File> checkLockedRepositories (Collection<File> additionalFilesToRefresh, boolean keepCached) {
         List<File> retval = new LinkedList<File>();
         // at first sort the files under repositories
-        Map<File, Set<File>> sortedFiles = sortByRepository(additionalFilesToRefresh);
+        Map<File, Set<File>> sortedFiles = GitUtils.sortByRepository(additionalFilesToRefresh);
         for (Map.Entry<File, Set<File>> e : sortedFiles.entrySet()) {
             Set<File> alreadyPlanned = lockedRepositories.get(e.getKey());
             if (alreadyPlanned == null) {
@@ -446,22 +446,6 @@ class FilesystemInterceptor extends VCSInterceptor {
             }
         }
         return retval;
-    }
-
-    private Map<File, Set<File>> sortByRepository (Collection<File> files) {
-        Map<File, Set<File>> sorted = new HashMap<File, Set<File>>(5);
-        for (File f : files) {
-            File repository = Git.getInstance().getRepositoryRoot(f);
-            if (repository != null) {
-                Set<File> repoFiles = sorted.get(repository);
-                if (repoFiles == null) {
-                    repoFiles = new HashSet<File>();
-                    sorted.put(repository, repoFiles);
-                }
-                repoFiles.add(f);
-            }
-        }
-        return sorted;
     }
 
     private class LockedRepositoryRefreshTask implements Runnable {
