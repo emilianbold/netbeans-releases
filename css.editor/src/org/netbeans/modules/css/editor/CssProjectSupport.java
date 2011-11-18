@@ -47,7 +47,7 @@ import javax.swing.text.Document;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.csl.api.DataLoadersBridge;
-import org.netbeans.modules.css.indexing.CssIndex;
+import org.netbeans.modules.css.indexing.api.CssIndex;
 import org.netbeans.modules.parsing.api.Source;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
