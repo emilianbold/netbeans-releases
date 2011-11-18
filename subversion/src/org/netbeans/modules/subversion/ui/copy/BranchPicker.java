@@ -83,11 +83,13 @@ class BranchPicker {
     private static final String PREFIX_BRANCHES = "branches"; //NOI18N
     private static final String PREFIX_TAGS = "tags"; //NOI18N
     private SvnProgressSupport loadingSupport;
+    private final String branchesFolderPrefix;
 
-    public BranchPicker (RepositoryFile repositoryFile) {
+    public BranchPicker (RepositoryFile repositoryFile, String branchesFolderPrefix) {
         this.repositoryFile = repositoryFile;
+        this.branchesFolderPrefix = branchesFolderPrefix;
         this.panel = new BranchPickerPanel();
-        this.panel.lstBranches.setCellRenderer(new Renderer());
+        this.panel.lstBranches.setCellRenderer(new Renderer(branchesFolderPrefix));
     }
 
     boolean openDialog () {
@@ -144,7 +146,7 @@ class BranchPicker {
                             return;
                         }
                         try {
-                            entries.put(pathName, client.getList(repositoryFile.getRepositoryUrl().appendPath(pathName), SVNRevision.HEAD, false));
+                            entries.put(pathName, client.getList(repositoryFile.getRepositoryUrl().appendPath(branchesFolderPrefix + pathName), SVNRevision.HEAD, false));
                         } catch (SVNClientException ex) {
                             if (SvnClientExceptionHandler.isWrongURLInRevision(ex.getMessage())) {
                                 entries.put(pathName, new ISVNDirEntry[0]);
@@ -161,12 +163,12 @@ class BranchPicker {
                                 DefaultListModel model = new DefaultListModel();
                                 model.addElement(ITEM_BRANCHES);
                                 for (ISVNDirEntry e : entries.get(PREFIX_BRANCHES)) {
-                                    model.addElement(PREFIX_BRANCHES + "/" + e.getPath()); //NOI18N
+                                    model.addElement(branchesFolderPrefix + PREFIX_BRANCHES + "/" + e.getPath()); //NOI18N
                                 }
                                 model.addElement(ITEM_SEP);
                                 model.addElement(ITEM_TAGS);
                                 for (ISVNDirEntry e : entries.get(PREFIX_TAGS)) {
-                                    model.addElement(PREFIX_TAGS + "/" + e.getPath()); //NOI18N
+                                    model.addElement(branchesFolderPrefix + PREFIX_TAGS + "/" + e.getPath()); //NOI18N
                                 }
                                 panel.lstBranches.setModel(model);
                             }
@@ -177,20 +179,26 @@ class BranchPicker {
                 }
             }
         };
-        supp.start(Subversion.getInstance().getRequestProcessor(repositoryFile.getRepositoryUrl()), repositoryFile.getRepositoryUrl(), 
+        // null as the repository root prevents logging in the output window
+        supp.start(Subversion.getInstance().getRequestProcessor(repositoryFile.getRepositoryUrl()), null, 
                 NbBundle.getMessage(BranchPicker.class, "BranchPickerPanel.loading.progress")); //NOI18N
         loadingSupport = supp;
     }
     
     private static class Renderer extends DefaultListCellRenderer {
+        private final String branchesFolderPrefix;
 
+        public Renderer (String branchesFolderPrefix) {
+            this.branchesFolderPrefix = branchesFolderPrefix;
+        }
+        
         @Override
         public Component getListCellRendererComponent (JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             if (value == ITEM_BRANCHES || value == ITEM_TAGS) {
                 value = "<html><strong>" + value + "</strong></html>"; //NOI18N
             } else {
                 String sValue = (String) value;
-                for (String pref : new String[] { PREFIX_BRANCHES + "/", PREFIX_TAGS + "/" }) {
+                for (String pref : new String[] { branchesFolderPrefix + PREFIX_BRANCHES + "/", branchesFolderPrefix + PREFIX_TAGS + "/" }) {
                     if (sValue.startsWith(pref)) {
                         value = "<html>" + pref + "<strong>" + sValue.substring(pref.length()) + "</strong></html>"; //NOI18N
                     }

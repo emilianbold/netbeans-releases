@@ -51,32 +51,32 @@ import org.openide.util.NbBundle;
  */
 public abstract class VCSCommitOptions {
 
-    public static final VCSCommitOptions COMMIT = new Commit("CTL_CommitOption_Commit"); // NOI18N
-    public static final VCSCommitOptions COMMIT_REMOVE = new Commit("CTL_CommitOption_CommitRemove"); // NOI18N
-    public static final VCSCommitOptions EXCLUDE = new Commit("CTL_CommitOption_Exclude"); // NOI18N
+    public static final VCSCommitOptions COMMIT = new Commit(NbBundle.getMessage(VCSCommitOptions.class, "CTL_CommitOption_Commit")); // NOI18N
+    public static final VCSCommitOptions COMMIT_REMOVE = new Commit(NbBundle.getMessage(VCSCommitOptions.class, "CTL_CommitOption_CommitRemove")); // NOI18N
+    public static final VCSCommitOptions EXCLUDE = new Commit(NbBundle.getMessage(VCSCommitOptions.class, "CTL_CommitOption_Exclude")); // NOI18N
     
-    private final String bundleKey;
+    private final String label;
 
-    private VCSCommitOptions(String bundleKey) {
-        this.bundleKey = bundleKey;
+    private VCSCommitOptions (String label) {
+        this.label = label;
     }
 
     @Override
     public String toString() {
-        return NbBundle.getMessage(VCSCommitOptions.class, bundleKey);
+        return label;
     }
     
-    static class Add extends VCSCommitOptions {
+    public static class Add extends VCSCommitOptions {
         
-        public Add(String bundleKey) {
-            super(bundleKey);
+        public Add(String label) {
+            super(label);
         }
     }
 
-    static class Commit extends VCSCommitOptions {
+    public static class Commit extends VCSCommitOptions {
         
-        public Commit(String bundleKey) {
-            super(bundleKey);
+        public Commit(String label) {
+            super(label);
         }
     }
 }

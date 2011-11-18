@@ -81,19 +81,19 @@ public class StatusTest extends AbstractHgTestCase {
         
         // assert status given from cli
         assertStatus(folder, FileInformation.STATUS_VERSIONED_UPTODATE);
-        Map<File, FileInformation> m = HgCommand.getStatus(getWorkTreeDir(), Collections.singletonList(folder));
+        Map<File, FileInformation> m = HgCommand.getStatus(getWorkTreeDir(), Collections.singletonList(folder), null, null);
         assertEquals(0, m.keySet().size());
                 
         // hg move the folder
         File folderenamed = new File(getWorkTreeDir(), "folderenamed");
         HgCommand.doRename(getWorkTreeDir(), folder, folderenamed, null);
 
-        m = HgCommand.getStatus(getWorkTreeDir(), Collections.singletonList(folder));
+        m = HgCommand.getStatus(getWorkTreeDir(), Collections.singletonList(folder), null, null);
         assertEquals(3, m.keySet().size());
         for (File file : m.keySet()) {
             assertStatus(file, FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY);    
         }        
-        m = HgCommand.getStatus(getWorkTreeDir(), Collections.singletonList(folderenamed));
+        m = HgCommand.getStatus(getWorkTreeDir(), Collections.singletonList(folderenamed), null, null);
         assertEquals(3, m.keySet().size());        
         for (File file : m.keySet()) {
             assertStatus(file, FileInformation.STATUS_VERSIONED_ADDEDLOCALLY);    
@@ -112,19 +112,19 @@ public class StatusTest extends AbstractHgTestCase {
         
         // assert status given from cli
         assertStatus(file1, FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY);
-        Map<File, FileInformation> m = HgCommand.getStatus(getWorkTreeDir(), Collections.singletonList(folder));
+        Map<File, FileInformation> m = HgCommand.getStatus(getWorkTreeDir(), Collections.singletonList(folder), null, null);
         assertEquals(2, m.keySet().size());
         assertEquals(FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY, m.get(file1).getStatus());
         assertEquals(FileInformation.STATUS_VERSIONED_ADDEDLOCALLY, m.get(file2).getStatus());
         assertTrue(m.get(file2).getStatus(null).isCopied());
 
         // assert status given from cli
-        m = HgCommand.getStatus(getWorkTreeDir(), Collections.singletonList(file1));
+        m = HgCommand.getStatus(getWorkTreeDir(), Collections.singletonList(file1), null, null);
         assertEquals(1, m.keySet().size());
         assertEquals(FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY, m.get(file1).getStatus());
 
         // assert status given from cli
-        m = HgCommand.getStatus(getWorkTreeDir(), Collections.singletonList(file2));
+        m = HgCommand.getStatus(getWorkTreeDir(), Collections.singletonList(file2), null, null);
         assertEquals(1, m.keySet().size());
         assertEquals(FileInformation.STATUS_VERSIONED_ADDEDLOCALLY, m.get(file2).getStatus());
         assertTrue(m.get(file2).getStatus(null).isCopied());
