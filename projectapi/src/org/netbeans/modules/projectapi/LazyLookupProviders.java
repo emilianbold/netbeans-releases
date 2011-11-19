@@ -76,7 +76,7 @@ public class LazyLookupProviders {
             public Lookup createAdditionalLookup(final Lookup lkp) {
                 return new ProxyLookup() {
                     Collection<String> serviceNames = Arrays.asList(((String) attrs.get("service")).split(",")); // NOI18N
-                    protected @Override void beforeLookup(Template<?> template) {
+                    @Override protected synchronized void beforeLookup(Template<?> template) {
                         if (serviceNames != null && serviceNames.contains(template.getType().getName())) { // NOI18N
                             Class<?> service = template.getType();
                             try {

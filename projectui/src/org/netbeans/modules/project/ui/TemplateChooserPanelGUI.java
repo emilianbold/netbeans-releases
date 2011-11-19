@@ -49,9 +49,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JLabel;
@@ -67,6 +65,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataShadow;
+import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
@@ -267,8 +266,26 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
     // End of variables declaration//GEN-END:variables
 
     // private static final Comparator NATURAL_NAME_SORT = Collator.getInstance();
-    
-    private final class TemplateChildren extends Children.Keys<DataFolder> implements ActionListener {
+
+    private enum Visibility {HIDE, LEAF, CATEGORY}
+    private final class TemplateKey {
+        final DataObject d;
+        final Visibility visibility;
+        TemplateKey(DataObject d, Visibility visibility) {
+            this.d = d;
+            this.visibility = visibility;
+        }
+        @Override public boolean equals(Object o) {
+            if (!(o instanceof TemplateKey)) {
+                return false;
+            }
+            return d == ((TemplateKey) o).d && visibility == ((TemplateKey) o).visibility;
+        }
+        @Override public int hashCode() {
+            return d.hashCode();
+        }
+    }
+    private final class TemplateChildren extends ChildFactory.Detachable<TemplateKey> implements ActionListener {
         
         private final DataFolder folder;
         
@@ -276,48 +293,52 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
             this.folder = folder;
         }
         
-        protected void addNotify() {
-            super.addNotify();
+        @Override protected void addNotify() {
             projectsComboBox.addActionListener( this );
-            updateKeys();
         }
         
-        protected void removeNotify() {
-            setKeys(Collections.<DataFolder>emptySet());
+        @Override protected void removeNotify() {
             projectsComboBox.removeActionListener( this );
-            super.removeNotify();
         }
-        
-        private void updateKeys() {
-            List<DataFolder> l = new ArrayList<DataFolder>();
-            for (DataObject d : folder.getChildren()) {
-                if (isFolderOfTemplates(d)) {
-                    l.add((DataFolder) d);
-                }
+
+        @Override protected boolean createKeys(List<TemplateKey> keys) {
+            DataObject[] kids = folder.getChildren();
+            int alreadyAdded = keys.size();
+            if (alreadyAdded >= kids.length) {
+                return true;
             }
-            setKeys(l);
-        }
-        
-        protected Node[] createNodes(DataFolder d) {
-            boolean haveChildren = false;
-            for (DataObject child : d.getChildren()) {
-                if (isFolderOfTemplates(child)) {
-                    haveChildren = true;
-                    break;
+            DataObject d = kids[alreadyAdded];
+            Visibility v;
+            if (isFolderOfTemplates(d)) {
+                v = Visibility.LEAF;
+                for (DataObject child : ((DataFolder) d).getChildren()) {
+                    if (isFolderOfTemplates(child)) {
+                        v = Visibility.CATEGORY;
+                        break;
+                    }
                 }
-            }
-            if (!haveChildren) {
-                return new Node[] {new FilterNode(d.getNodeDelegate(), Children.LEAF )};
             } else {
-                return new Node[] {new FilterNode(d.getNodeDelegate(), new TemplateChildren(d))};
+                v = Visibility.HIDE;
+            }
+            keys.add(new TemplateKey(d, v));
+            return false;
+        }
+        
+        @Override protected Node createNodeForKey(TemplateKey k) {
+            switch (k.visibility) {
+            case CATEGORY:
+                return new FilterNode(k.d.getNodeDelegate(), Children.create(new TemplateChildren((DataFolder) k.d), true));
+            case LEAF:
+                return new FilterNode(k.d.getNodeDelegate(), Children.LEAF);
+            default:
+                return null;
             }
         }
         
-        public void actionPerformed (ActionEvent event) {
+        @Override public void actionPerformed (ActionEvent event) {
             final String cat = getCategoryName ();
             String template =  ((TemplatesPanelGUI)TemplateChooserPanelGUI.this.templatesPanel).getSelectedTemplateName();
-            this.setKeys(Collections.<DataFolder>emptySet());
-            this.updateKeys ();
+            refresh(false);
             setCategory (cat);
             ((TemplatesPanelGUI)TemplateChooserPanelGUI.this.templatesPanel).setSelectedTemplateByName(template);
         }
@@ -337,8 +358,24 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
         
     }
     
-    
-    private final class FileChildren extends Children.Keys<DataObject> {
+    private final class FileKey {
+        final DataObject d;
+        final boolean visible;
+        FileKey(DataObject d, boolean visible) {
+            this.d = d;
+            this.visible = visible;
+        }
+        @Override public boolean equals(Object o) {
+            if (!(o instanceof FileKey)) {
+                return false;
+            }
+            return d == ((FileKey) o).d && visible == ((FileKey) o).visible;
+        }
+        @Override public int hashCode() {
+            return d.hashCode();
+        }
+    }
+    private final class FileChildren extends ChildFactory<FileKey> {
         
         private DataFolder root;
                 
@@ -347,24 +384,27 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
             assert this.root != null : "Root can not be null";  //NOI18N
         }
         
-        protected void addNotify () {
-            this.setKeys (this.root.getChildren());
-        }
-        
-        protected void removeNotify () {
-            this.setKeys (new DataObject[0]);
-        }
-        
-        protected Node[] createNodes(DataObject dobj) {
+        @Override protected boolean createKeys(List<FileKey> keys) {
+            DataObject[] kids = root.getChildren();
+            int alreadyAdded = keys.size();
+            if (alreadyAdded >= kids.length) {
+                return true;
+            }
+            DataObject dobj = kids[alreadyAdded];
             if (isTemplate(dobj) && OpenProjectList.isRecommended(getProject(), dobj.getPrimaryFile())) {
                 if (dobj instanceof DataShadow) {
-                    dobj = ((DataShadow)dobj).getOriginal();
+                    dobj = ((DataShadow) dobj).getOriginal();
                 }
-                return new Node[] { new FilterNode(dobj.getNodeDelegate(), Children.LEAF) };
+                keys.add(new FileKey(dobj, true));
             } else {
-                return new Node[0];
+                keys.add(new FileKey(dobj, false));
             }
-        }        
+            return false;
+        }
+
+        @Override protected Node createNodeForKey(FileKey key) {
+            return key.visible ? new FilterNode(key.d.getNodeDelegate(), Children.LEAF) : null;
+        }
         
     }
     
@@ -372,11 +412,11 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
     final class FileChooserBuilder implements TemplatesPanelGUI.Builder {
         
         public Children createCategoriesChildren(DataFolder folder) {
-            return new TemplateChildren (folder);
+            return Children.create(new TemplateChildren(folder), true);
         }
         
         public Children createTemplatesChildren(DataFolder folder) {
-            return new FileChildren (folder);
+            return Children.create(new FileChildren(folder), true);
         }
         
         public void fireChange() {

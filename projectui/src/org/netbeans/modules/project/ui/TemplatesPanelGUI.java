@@ -97,6 +97,7 @@ import org.openide.nodes.NodeOp;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle.Messages;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -121,6 +122,7 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
     public static final String TARGET_TEMPLATE = "targetTemplate";          //NOI18N
     private static final String ATTR_INSTANTIATING_DESC = "instantiatingWizardURL"; //NOI18N
     private static final Image PLEASE_WAIT_ICON = ImageUtilities.loadImage ("org/netbeans/modules/project/ui/resources/wait.gif"); // NOI18N
+    private static final RequestProcessor RP = new RequestProcessor(TemplatesPanelGUI.class);
     
     private Builder firer;
 
@@ -154,25 +156,19 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
 
     public void setSelectedCategoryByName (final String categoryName) {
         if (categoryName != null) {
-            try {
-                ((org.netbeans.modules.project.ui.TemplatesPanelGUI.ExplorerProviderPanel) this.categoriesPanel).setSelectedNode(categoryName);
-                //expand explicitly selected category
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override public void run() {
-                        Node[] sel = ((ExplorerProviderPanel)categoriesPanel).getSelectedNodes();
-                        if (sel.length == 1) {
-                            ((CategoriesPanel) categoriesPanel).btv.expandNode(sel[0]);
-                        }
+            ((org.netbeans.modules.project.ui.TemplatesPanelGUI.ExplorerProviderPanel) this.categoriesPanel).setSelectedNode(categoryName);
+            //expand explicitly selected category
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override public void run() {
+                    Node[] sel = ((ExplorerProviderPanel)categoriesPanel).getSelectedNodes();
+                    if (sel.length == 1) {
+                        ((CategoriesPanel) categoriesPanel).btv.expandNode(sel[0]);
                     }
-                });
-            }
-            catch (NodeNotFoundException ex) {
-                // if categoryName is null then select first category leastwise
-                ((CategoriesPanel)this.categoriesPanel).selectFirstCategory ();
-            }
+                }
+            });
         } else {
             // if categoryName is null then select first category leastwise
-            ((CategoriesPanel)this.categoriesPanel).selectFirstCategory ();
+            ((CategoriesPanel)this.categoriesPanel).selectFirst ();
         }
     }
     
@@ -187,18 +183,13 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
         SwingUtilities.invokeLater (new Runnable () {
             @Override public void run () {
                 if (templateName != null) {
-                    try {
-                        tempExplorer.setSelectedNode(templateName);
-                    }
-                    catch (NodeNotFoundException ex) {
-                        //ignore here..
-                    }
+                    tempExplorer.setSelectedNode(templateName);
                     if (tempExplorer.getSelectionPath() == null) {
                         presetTemplateName = null;
-                        tempExplorer.selectFirstTemplate();
+                        tempExplorer.selectFirst();
                     }
                 } else {
-                    tempExplorer.selectFirstTemplate ();
+                    tempExplorer.selectFirst ();
                 }
             }
         });
@@ -489,23 +480,29 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
             this.manager.setSelectedNodes(nodes);
         }
         
-        public void setSelectedNode (String path) throws NodeNotFoundException {
+        public void setSelectedNode (String path) {
             if (path == null) {
                 return;
             }
             StringTokenizer tk = new StringTokenizer (path,"/");    //NOI18N
-            String[] names = new String[tk.countTokens()];
+            final String[] names = new String[tk.countTokens()];
             for (int i=0;tk.hasMoreTokens();i++) {
                 names[i] = tk.nextToken();
             }
-            try {
-                Node node = NodeOp.findPath(this.manager.getRootContext(),names);
-                if (node != null) {
-                    this.manager.setSelectedNodes(new Node[] {node});
+            RP.post(new Runnable() {
+                @Override public void run() {
+                    try {
+                        Node node = NodeOp.findPath(manager.getRootContext(), names);
+                        if (node != null) {
+                            setSelectedNodes(new Node[] {node});
+                        }
+                    } catch (PropertyVetoException e) {
+                        //Skip it, not important
+                    } catch (NodeNotFoundException x) {
+                        // OK, never mind
+                    }
                 }
-            } catch (PropertyVetoException e) {
-                //Skip it, not important
-            }
+            });
         }
         
         public String getSelectionPath () {
@@ -580,19 +577,29 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
         void addDefaultActionListener( ActionListener al ) {
             //do nothing by default
         }
+
+        public void selectFirst() {
+            RP.post(new Runnable() {
+                @Override public void run() {
+                    Children ch = getRootNode().getChildren();
+                    // XXX what is the best way to wait for >0 node to appear without necessarily waiting for them all?
+                    if (/*blocks*/ch.getNodesCount(true) > 0 && /*last minute*/getSelectedNodes().length == 0) {
+                        try {
+                            getExplorerManager().setSelectedNodes(new Node[] {ch.getNodeAt(0)});
+                        } catch (PropertyVetoException ex) {
+                            // ignore, race condition
+                        }
+                    }
+                }
+            });
+        }
+
     }
 
 
     private static class CategoriesBeanTreeView extends BeanTreeView {
         CategoriesBeanTreeView() {
             this.tree.setEditable(false);
-        }
-        public void selectFirstCategory () {
-            SwingUtilities.invokeLater (new Runnable () {
-                @Override public void run() {
-                    tree.setSelectionRow (0);
-                }
-            });
         }
     }
 
@@ -621,10 +628,6 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
             return this.btv;
         }
         
-        public void selectFirstCategory () {
-            btv.selectFirstCategory ();
-        }
-
     }
     
     private static class TemplatesListView extends ListView implements ActionListener {
@@ -664,17 +667,6 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
             return this.list;
         }
         
-        public void selectFirstTemplate () {
-            try {
-                Children ch = getExplorerManager ().getRootContext ().getChildren ();
-                if (ch.getNodesCount () > 0) {
-                    getExplorerManager ().setSelectedNodes (new Node[] { ch.getNodes ()[0] });
-                }
-            } catch (PropertyVetoException pve) {
-                // doesn't matter, can ignore it
-            }
-        }
-
         @Override
         void addDefaultActionListener( ActionListener al ) {
             createComponent();
