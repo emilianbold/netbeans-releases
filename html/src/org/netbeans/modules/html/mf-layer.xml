@@ -298,6 +298,8 @@ made subject to such option by the copyright holder.
 
     </folder>
 
+    <folder name="XHTMLPalette"/>
+
     <folder name="OptionsExport">
         <folder name="Advanced">
             <file name="HTMLPalette">
