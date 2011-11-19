@@ -42,7 +42,6 @@
 
 package org.openide.awt;
 
-import java.awt.EventQueue;
 import java.util.Collection;
 import javax.swing.Action;
 import javax.swing.KeyStroke;
@@ -102,7 +101,6 @@ public abstract class AcceleratorBinding {
         private Collection<? extends AcceleratorBinding> all;
 
         Iter() {
-            assert !EventQueue.isDispatchThread() : "Don't initialize in AWT thread!";
             result = Lookup.getDefault().lookupResult(AcceleratorBinding.class);
             resultChanged(null);
             result.addLookupListener(this);
