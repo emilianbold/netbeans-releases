@@ -986,4 +986,39 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         }
     }
 
+    /* XXX too many failures for now, some spurious; use regex, or look for unloc files/folders with loc siblings?
+    public void testLocalizedFolderNames() throws Exception {
+        List<String> warnings = new ArrayList<String>();
+        for (String folder : new String[] {
+            "Actions", // many legit failures!
+            "OptionsDialog/Actions", // XXX #71280
+            "Menu",
+            "Toolbars",
+            "org-netbeans-modules-java-hints/rules/hints",
+            "Editors/FontsColors", // XXX exclude .../Defaults
+            "Keymaps",
+            "FormDesignerPalette", // XXX match any *Palette?
+            "HTMLPalette",
+            "XHTMLPalette",
+            "JSPPalette",
+            "SVGXMLPalette",
+            "OptionsExport",
+            // "Projects/.../Customizer",
+            "QuickSearch",
+            "Templates", // XXX exclude Privileged, Recent, Services
+        }) {
+            FileObject root = FileUtil.getConfigFile(folder);
+            if (root == null) {
+                continue;
+            }
+            for (FileObject d : NbCollections.iterable(root.getFolders(true))) {
+                if (d.getAttribute("displayName") == null && d.getAttribute("SystemFileSystem.localizingBundle") == null) {
+                    warnings.add("No displayName for " + d.getPath());
+                }
+            }
+        }
+        assertNoErrors("Some folders need a localized display name", warnings);
+    }
+    */
+
 }
