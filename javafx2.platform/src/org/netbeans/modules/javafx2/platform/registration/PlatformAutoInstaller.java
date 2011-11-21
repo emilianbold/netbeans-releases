@@ -133,11 +133,14 @@ public class PlatformAutoInstaller implements Runnable {
         }
 
         // Create java platform instance and register JavaFX platform extension
-        JavaPlatform platform = Utils.createJavaFXPlatform(Utils.DEFAULT_FX_PLATFORM_NAME, sdkPath, runtimePath, null, null);
+        JavaPlatform platform = null;
+        try {
+            platform = Utils.createJavaFXPlatform(Utils.DEFAULT_FX_PLATFORM_NAME, sdkPath, runtimePath, null, null);
+        } catch (Exception ex) {
+            LOGGER.log(Level.WARNING, "Can't create Java Platform instance: {0}", ex); // NOI18N
+        }
         if (platform != null) {
             LOGGER.log(Level.INFO, "JavaFX Platform instance has been successfully registered: {0}", platform); // NOI18N
-        } else {
-            LOGGER.log(Level.WARNING, "Can't create Java FX Platform for {0}", sdkPath); // NOI18N
         }
     }
 
