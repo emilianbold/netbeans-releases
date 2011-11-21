@@ -156,5 +156,31 @@ made subject to such option by the copyright holder.
             </file>
         </folder>
     </folder>
-
+    
+    <folder name="Navigator">
+        <folder name="Panels">
+            <folder name="image">
+                <folder name="png">
+                     <file name="org-netbeans-modules-image-navigation-ImageNavigatorPanel.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.image.navigation.Bundle"/>
+                    </file>
+                </folder>
+                <folder name="jpeg">
+                     <file name="org-netbeans-modules-image-navigation-ImageNavigatorPanel.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.image.navigation.Bundle"/>
+                    </file>
+                </folder>
+                <folder name="bmp">
+                     <file name="org-netbeans-modules-image-navigation-ImageNavigatorPanel.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.image.navigation.Bundle"/>
+                    </file>
+                </folder>
+                <folder name="gif">
+                     <file name="org-netbeans-modules-image-navigation-ImageNavigatorPanel.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.image.navigation.Bundle"/>
+                    </file>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
 </filesystem>
