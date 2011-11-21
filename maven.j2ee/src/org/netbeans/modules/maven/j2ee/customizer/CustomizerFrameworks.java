@@ -55,6 +55,7 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionListener;
@@ -124,10 +125,17 @@ public class CustomizerFrameworks extends JPanel implements ApplyChangesCustomiz
 
     @Override
     public void applyChanges() {
-        WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
-        for (int i = 0; i < newExtenders.size(); i++) {
-            newExtenders.get(i).extend(webModule);
-        }
+        final WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
+        // Called in EDT to prevent deadlocks, see issue #204427 for more details.
+        SwingUtilities.invokeLater(new Runnable() {
+
+            @Override
+            public void run() {
+                for (int i = 0; i < newExtenders.size(); i++) {
+                    newExtenders.get(i).extend(webModule);
+                }
+            }
+        });
         doUIandUsageLogging();
 
         for (WebModuleExtender webModuleExtender : existingExtenders) {
