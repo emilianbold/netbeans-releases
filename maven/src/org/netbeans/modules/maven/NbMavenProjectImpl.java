@@ -206,13 +206,6 @@ public final class NbMavenProjectImpl implements Project {
         profileHandler = new ProjectProfileHandlerImpl(this, auxiliary);
         configProvider = new M2ConfigProvider(this, auxiliary, profileHandler);
         cppProvider = new ClassPathProviderImpl(this);
-//        configEnabler = new ConfigurationProviderEnabler(this, auxiliary, profileHandler);
-//        if (!SwingUtilities.isEventDispatchThread()) {
-//            //#155766 sor of ugly, as not all (but the majority for sure) projects need
-//            // a loaded maven project. But will protect from accidental loading in AWT
-//            // thread.
-//            getOriginalMavenProject();
-//        }
     }
 
     public File getPOMFile() {
@@ -495,9 +488,7 @@ public final class NbMavenProjectImpl implements Project {
     }
 
     public String getArtifactRelativeRepositoryPath(@NonNull Artifact artifact) {
-        //        embedder.setLocalRepositoryDirectory(FileUtil.toFile(getRepositoryRoot()));
-        String toRet = getEmbedder().getLocalRepository().pathOf(artifact);
-        return toRet;
+        return getEmbedder().getLocalRepository().pathOf(artifact);
     }
 
     public MavenEmbedder getEmbedder() {
