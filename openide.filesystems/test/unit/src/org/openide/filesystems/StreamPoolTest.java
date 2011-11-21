@@ -45,15 +45,12 @@
 package org.openide.filesystems;
 
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
+import java.util.logging.Level;
 import org.netbeans.junit.*;
 
 public class StreamPoolTest extends NbTestCase {
-    private FileSystem lfs;
+    private TestFileSystem lfs;
     private FileObject testFo;
 
     public StreamPoolTest(String name) {
@@ -76,6 +73,7 @@ public class StreamPoolTest extends NbTestCase {
 
 
     public void testDontExcludeWhenExceptionFromClose() throws Exception {
+        lfs.throwEx = true;
         OutputStream os = testFo.getOutputStream();
         os.write(10);
         try {
@@ -90,9 +88,32 @@ public class StreamPoolTest extends NbTestCase {
         assertEquals("Up until the end", -1, is.read());
         is.close();
     }
+    public void testDontPrintInterruptedException() throws Exception {
+        OutputStream os = testFo.getOutputStream();
+        os.write(10);
+        CharSequence log = Log.enable("", Level.INFO);
+        Thread.currentThread().interrupt();
+        InputStream is = testFo.getInputStream();
+        assertTrue("Remains interrupted", Thread.interrupted());
+        
+        if (log.toString().contains("InterruptedException")) {
+            fail("No interrupted exceptions printed:\n" + log);
+        }
+        try {
+            is.read();
+            fail("Cannot read, file is locked");
+        } catch (FileAlreadyLockedException ex) {
+            assertNotNull("OK", ex);
+        }
+        
+        is.close();
+        os.close();
+    }
 
 
     private static final class TestFileSystem extends LocalFileSystem {
+        boolean throwEx;
+        
         TestFileSystem (File dir) throws Exception {
             super ();
             setRootDirectory(dir);
@@ -107,7 +128,9 @@ public class StreamPoolTest extends NbTestCase {
 
                 @Override
                 public void close() throws IOException {
-                    throw new IOException("Always thrown.");
+                    if (throwEx) {
+                        throw new IOException("Always thrown.");
+                    }
                 }
             };
         }
