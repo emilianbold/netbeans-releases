@@ -1240,4 +1240,128 @@ public class WebBeansAnalysisTest extends BaseAnalisysTestCase {
         runAnalysis( goodFile, NO_ERRORS_PROCESSOR );
         
     }
+    
+    //=======================================================================
+    //
+    //  MethodModelAnalyzer - InterceptedMethodAnalyzer
+    //
+    //=======================================================================
+    public void testInterceptedMethod() throws IOException {
+        getUtilities().initEnterprise();
+        getUtilities().createInterceptorBinding("IBinding1");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/IBinding2.java",
+                "package foo; " +
+                "import static java.lang.annotation.ElementType.TYPE; "+
+                "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
+                "import javax.enterprise.inject.*; "+
+                "import javax.inject.*; "+
+                "import java.lang.annotation.*; "+
+                "import javax.interceptor.*; "+
+                "@InterceptorBinding " +
+                "@Retention(RUNTIME) "+
+                "@Target({TYPE}) "+
+                "public @interface IBinding2  {} ");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/ICeptor.java",
+                "package foo; " +
+                " import javax.interceptor.Interceptor; "+
+                " @Interceptor @IBinding1 "+
+                " public class ICeptor { "+
+                "}");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/ICeptor1.java",
+                "package foo; " +
+                " import javax.interceptor.Interceptor; "+
+                " @Interceptor @IBinding2 "+
+                " public class ICeptor1 { "+
+                "}");
+        
+        FileObject errorFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz.java",
+                "package foo; " +
+                "import javax.ejb.PostActivate; "+
+                " public class Clazz { "+
+                " @IBinding1 "+
+                " @PostActivate "+
+                " public void method(){} "+
+                "}");
+        
+        FileObject errorFile1 = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz1.java",
+                "package foo; " +
+                " public class Clazz1 { "+
+                " @IBinding1 "+
+                " public final void method(){} "+
+                "}");
+        
+        FileObject errorFile2 = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz2.java",
+                "package foo; " +
+                " public final class Clazz2 { "+
+                " @IBinding1 "+
+                " public void method(){} "+
+                "}");
+        
+        FileObject goodFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz3.java",
+                "package foo; " +
+                "import javax.ejb.PrePassivate; "+
+                " @IBinding2 "+
+                " public class Clazz3 { "+
+                " @PrePassivate "+
+                " public void method(){} "+
+                " @IBinding1 "+
+                " private final void method1(){} "+
+                "}");
+        
+        FileObject goodFile1 = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz4.java",
+                "package foo; " +
+                " public final class Clazz4 { "+
+                " public void method(){} "+
+                "}");
+        
+        FileObject goodFile2 = TestUtilities.copyStringToFileObject(srcFO, "foo/ICeptor2.java",
+                "package foo; " +
+                " import javax.interceptor.Interceptor; "+
+                " @Interceptor @IBinding2 "+
+                " public final class ICeptor2 { "+
+                " public final void method(){} "+
+                "}");
+        
+        
+        ResultProcessor processor = new ResultProcessor (){
+
+            @Override
+            public void process( TestProblems result ) {
+                checkMethodElement(result.getWarings(), "foo.Clazz", "method");
+                checkMethodElement(result, "foo.Clazz", "method");
+            }
+            
+        };
+        runAnalysis(errorFile , processor);
+        
+        processor = new ResultProcessor (){
+
+            @Override
+            public void process( TestProblems result ) {
+                checkMethodElement(result, "foo.Clazz1", "method");
+                assertEquals( "Unexpected warings found", 0, result.getWarings().size());
+            }
+            
+        };
+        runAnalysis(errorFile1 , processor);
+        
+        processor = new ResultProcessor (){
+
+            @Override
+            public void process( TestProblems result ) {
+                checkMethodElement(result, "foo.Clazz2", "method");
+                assertEquals( "Unexpected warings found", 0, result.getWarings().size());
+            }
+            
+        };
+        runAnalysis(errorFile2 , processor);
+        
+        runAnalysis(goodFile, NO_ERRORS_PROCESSOR);
+        runAnalysis(goodFile1, NO_ERRORS_PROCESSOR);
+        runAnalysis(goodFile2, NO_ERRORS_PROCESSOR);
+    }
+    
 }
