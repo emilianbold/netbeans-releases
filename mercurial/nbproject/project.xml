@@ -131,7 +131,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.17.4.1</specification-version>
+                        <specification-version>1.18.0.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

@@ -148,6 +148,7 @@ public class HgCommand {
 
     private static final String HG_REVERT_CMD = "revert"; // NOI18N
     private static final String HG_REVERT_NOBACKUP_CMD = "--no-backup"; // NOI18N
+    private static final String HG_PURGE_CMD = "purge"; // NOI18N
     private static final String HG_ADD_CMD = "add"; // NOI18N
 
     private static final String HG_TIP_CONST = "tip"; // NOI18N
@@ -2326,6 +2327,38 @@ public class HgCommand {
         };
         list = runWithoutIndexing(callable, revertFiles, HG_REVERT_CMD);
         if (!list.isEmpty() && isErrorNoChangeNeeded(list.get(0)))
+            handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_REVERT_FAILED"), logger);
+    }
+
+    /**
+     * Removes newly added files and folders under revertFiles
+     * @param repository
+     * @param revertFiles
+     * @param logger
+     * @throws HgException 
+     */
+    public static void doPurge (File repository, List<File> revertFiles, OutputLogger logger) throws HgException {
+        if (repository == null) return;
+
+        final List<String> command = new ArrayList<String>();
+
+        command.add(getHgCommand());
+        command.add(HG_PURGE_CMD);
+        command.add(HG_OPT_REPOSITORY);
+        command.add(repository.getAbsolutePath());
+
+        for (File f : revertFiles){
+            command.add(f.getAbsolutePath());
+        }
+        List<String> list;
+        Callable<List<String>> callable = new Callable<List<String>>() {
+            @Override
+            public List<String> call() throws Exception {
+                return exec(command);
+            }
+        };
+        list = runWithoutIndexing(callable, revertFiles, HG_PURGE_CMD);
+        if (!list.isEmpty())
             handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_REVERT_FAILED"), logger);
     }
 
