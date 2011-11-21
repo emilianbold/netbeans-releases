@@ -91,7 +91,7 @@ public class RepositoryTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        Jira.getInstance(); // force JiraCorePlugin init
+        JiraTestUtil.initClient(getWorkDir());
         JiraTestUtil.cleanProject(JiraTestUtil.getRepositoryConnector(), JiraTestUtil.getTaskRepository(), JiraTestUtil.getClient(), JiraTestUtil.getProject(JiraTestUtil.getClient()));
     }
 
