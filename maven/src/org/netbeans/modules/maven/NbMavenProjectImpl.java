@@ -83,12 +83,10 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingException;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.queries.VisibilityQuery;
 import static org.netbeans.modules.maven.Bundle.*;
 import org.netbeans.modules.maven.api.Constants;
@@ -122,14 +120,13 @@ import org.netbeans.modules.maven.queries.MavenForBinaryQueryImpl;
 import org.netbeans.modules.maven.queries.MavenSharabilityQueryImpl;
 import org.netbeans.modules.maven.queries.MavenSourceLevelImpl;
 import org.netbeans.modules.maven.queries.MavenTestForSourceImpl;
+import org.netbeans.modules.maven.queries.RecommendedTemplatesImpl;
 import org.netbeans.modules.maven.spi.nodes.SpecialIcon;
 import org.netbeans.spi.java.project.support.LookupMergerSupport;
 import org.netbeans.spi.project.LookupMerger;
 import org.netbeans.spi.project.ProjectState;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.LookupProviderSupport;
-import org.netbeans.spi.project.ui.PrivilegedTemplates;
-import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
 import org.netbeans.spi.queries.SharabilityQueryImplementation;
 import org.openide.filesystems.FileAttributeEvent;
@@ -885,12 +882,6 @@ public final class NbMavenProjectImpl implements Project {
                     new ReactorChecker(),
                     new PrereqCheckerMerger(),
                     new TestChecker(),
-                    new RecommendedTemplates() {
-
-                        public String[] getRecommendedTypes() {
-                            return new String[]{"scala-classes"}; //NOI18N
-                        }
-                    }
                 });
         return staticLookup;
     }
@@ -1072,157 +1063,6 @@ public final class NbMavenProjectImpl implements Project {
                 }
                 folder = null;
             }
-        }
-    }
-
-    private static final class RecommendedTemplatesImpl
-            implements RecommendedTemplates, PrivilegedTemplates {
-
-        private static final String[] JAR_APPLICATION_TYPES = new String[]{
-            "java-classes", // NOI18N
-            "java-main-class", // NOI18N
-            "java-forms", // NOI18N
-            "gui-java-application", // NOI18N
-            "java-beans", // NOI18N
-            "oasis-XML-catalogs", // NOI18N
-            "XML", // NOI18N
-            "web-service-clients", // NOI18N
-            "REST-clients", // NOI18N
-            "wsdl", // NOI18N
-            // "servlet-types",     // NOI18N
-            // "web-types",         // NOI18N
-            "junit", // NOI18N
-            // "MIDP",              // NOI18N
-            "simple-files" // NOI18N
-        };
-        private static final String[] JAR_PRIVILEGED_NAMES = new String[]{
-            "Templates/Classes/Class.java", // NOI18N
-            "Templates/Classes/Package", // NOI18N
-            "Templates/Classes/Interface.java", // NOI18N
-            "Templates/GUIForms/JPanel.java", // NOI18N
-            "Templates/GUIForms/JFrame.java", // NOI18N
-            "Templates/WebServices/WebServiceClient" // NOI18N
-        };
-        private static final String[] POM_APPLICATION_TYPES = new String[]{
-            "XML", // NOI18N
-            "simple-files" // NOI18N
-        };
-        private static final String[] POM_PRIVILEGED_NAMES = new String[]{
-            "Templates/XML/XMLWizard", // NOI18N
-            "Templates/Other/Folder" // NOI18N
-        };
-        private static final String[] ALL_TYPES = new String[]{
-            "java-classes", // NOI18N
-            "java-main-class", // NOI18N
-            "java-forms", // NOI18N
-            "java-beans", // NOI18N
-            "j2ee-types", // NOI18N
-            "gui-java-application", // NOI18N
-            "java-beans", // NOI18N
-            "oasis-XML-catalogs", // NOI18N
-            "XML", // NOI18N
-            "ant-script", // NOI18N
-            "ant-task", // NOI18N
-            //            "web-services",         // NOI18N
-            "web-service-clients", // NOI18N
-            "REST-clients", // NOI18N
-            "wsdl", // NOI18N
-            "servlet-types", // NOI18N
-            "web-types", // NOI18N
-            "junit", // NOI18N
-            // "MIDP",              // NOI18N
-            "simple-files", // NOI18N
-            "ear-types", // NOI18N
-        };
-        private static final String[] GENERIC_WEB_TYPES = new String[]{
-            "java-classes", // NOI18N
-            "java-main-class", // NOI18N
-            "java-beans", // NOI18N
-            "oasis-XML-catalogs", // NOI18N
-            "XML", // NOI18N
-            "wsdl", // NOI18N
-            "junit", // NOI18N
-            "simple-files" // NOI18N
-        };
-        private static final String[] GENERIC_EJB_TYPES = new String[]{
-            "java-classes", // NOI18N
-            "wsdl", // NOI18N
-            "java-beans", // NOI18N
-            "java-main-class", // NOI18N
-            "oasis-XML-catalogs", // NOI18N
-            "XML", // NOI18N
-            "junit", // NOI18N
-            "simple-files" // NOI18N
-        };
-        private static final String[] GENERIC_EAR_TYPES = new String[]{
-            "XML", //NOPMD      // NOI18N
-            "wsdl", //NOPMD       // NOI18N
-            "simple-files" //NOPMD       // NOI18N
-        };
-        private final List<String> prohibited;
-        private final NbMavenProjectImpl project;
-
-        RecommendedTemplatesImpl(NbMavenProjectImpl proj) {
-            project = proj;
-            prohibited = new ArrayList<String>();
-            prohibited.add(NbMavenProject.TYPE_EAR);
-            prohibited.add(NbMavenProject.TYPE_EJB);
-            prohibited.add(NbMavenProject.TYPE_WAR);
-            prohibited.add(NbMavenProject.TYPE_NBM);
-            prohibited.add(NbMavenProject.TYPE_OSGI);
-        }
-
-        @Override
-        public String[] getRecommendedTypes() {
-            String packaging = project.getProjectWatcher().getPackagingType();
-            if (packaging == null) {
-                packaging = NbMavenProject.TYPE_JAR;
-            }
-            packaging = packaging.trim();
-            if (NbMavenProject.TYPE_POM.equals(packaging)) {
-                if (ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA).length > 0) {
-                    return JAR_APPLICATION_TYPES; // #192735
-                }
-                return POM_APPLICATION_TYPES;
-            }
-            if (NbMavenProject.TYPE_JAR.equals(packaging)) {
-                return JAR_APPLICATION_TYPES;
-            }
-
-            if (NbMavenProject.TYPE_WAR.equals(packaging)) {
-                return GENERIC_WEB_TYPES;
-            }
-            if (NbMavenProject.TYPE_EJB.equals(packaging)) {
-                return GENERIC_EJB_TYPES;
-            }
-            if (NbMavenProject.TYPE_EAR.equals(packaging)) {
-                return GENERIC_EAR_TYPES;
-            }
-
-            if (prohibited.contains(packaging)) {
-                return new String[0];
-            }
-
-            // If packaging is unknown, any type of sources is recommanded.
-            //TODO in future we probably can try to guess based on what plugins are
-            // defined in the lifecycle.
-            return ALL_TYPES;
-        }
-
-        @Override
-        public String[] getPrivilegedTemplates() {
-            String packaging = project.getProjectWatcher().getPackagingType();
-            if (packaging == null) {
-                packaging = NbMavenProject.TYPE_JAR;
-            }
-            packaging = packaging.trim();
-            if (NbMavenProject.TYPE_POM.equals(packaging)) {
-                return POM_PRIVILEGED_NAMES;
-            }
-            if (prohibited.contains(packaging)) {
-                return new String[0];
-            }
-            return JAR_PRIVILEGED_NAMES;
         }
     }
 
