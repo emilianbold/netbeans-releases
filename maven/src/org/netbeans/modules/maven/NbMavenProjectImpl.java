@@ -487,27 +487,6 @@ public final class NbMavenProjectImpl implements Project {
         FileUtil.refreshFor(file);
     }
 
-    @Messages("LBL_NoProjectName=<Maven project with no name>")
-    public String getDisplayName() {
-        String displayName = projectInfo.getDisplayName();
-        if (displayName == null) {
-            displayName = LBL_NoProjectName();
-        }
-        return displayName;
-    }
-
-    @Messages("LBL_DefaultDescription=A Maven-based project")
-    public String getShortDescription() {
-        String desc = null;
-        if (desc == null) {
-            desc = getOriginalMavenProject().getDescription();
-        }
-        if (desc == null) {
-            desc = LBL_DefaultDescription();
-        }
-        return desc;
-    }
-
     /** Begin listening to pom.xml changes. */
     void attachUpdater() {
         projectFolderUpdater.attachAll(getProjectDirectory());
@@ -913,7 +892,7 @@ public final class NbMavenProjectImpl implements Project {
             "# {0} - dir basename", "LBL_misconfigured_project={0} [unloadable]",
             "TXT_Maven_project_at=Maven project at {0}"
         })
-        @Override public String getDisplayName() {
+        @Override public @NonNull String getDisplayName() {
             MavenProject pr = NbMavenProjectImpl.this.getOriginalMavenProject();
             if (NbMavenProject.isErrorPlaceholder(pr)) {
                 return LBL_misconfigured_project(getProjectDirectory().getNameExt());
