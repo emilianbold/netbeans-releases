@@ -87,27 +87,18 @@ import org.netbeans.modules.maven.configurations.M2ConfigProvider;
 import org.netbeans.modules.maven.configurations.ProjectProfileHandlerImpl;
 import org.netbeans.modules.maven.cos.CosChecker;
 import org.netbeans.modules.maven.customizer.CustomizerProviderImpl;
-import org.netbeans.modules.maven.debug.DebuggerChecker;
 import org.netbeans.modules.maven.debug.MavenDebuggerImpl;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.embedder.MavenEmbedder;
 import org.netbeans.modules.maven.execute.AbstractMavenExecutor;
-import org.netbeans.modules.maven.execute.BackwardCompatibilityWithMevenideChecker;
 import org.netbeans.modules.maven.execute.DefaultReplaceTokenProvider;
-import org.netbeans.modules.maven.execute.PrereqCheckerMerger;
-import org.netbeans.modules.maven.execute.ReactorChecker;
 import org.netbeans.modules.maven.operations.OperationsImpl;
 import org.netbeans.modules.maven.problems.ProblemReporterImpl;
-import org.netbeans.modules.maven.queries.Info;
-import org.netbeans.modules.maven.queries.MavenAnnotationProcessingQueryImpl;
 import org.netbeans.modules.maven.queries.MavenBinaryForSourceQueryImpl;
 import org.netbeans.modules.maven.queries.MavenFileEncodingQueryImpl;
 import org.netbeans.modules.maven.queries.MavenFileLocator;
 import org.netbeans.modules.maven.queries.MavenForBinaryQueryImpl;
 import org.netbeans.modules.maven.queries.MavenSharabilityQueryImpl;
-import org.netbeans.modules.maven.queries.MavenSourceLevelImpl;
-import org.netbeans.modules.maven.queries.MavenTestForSourceImpl;
-import org.netbeans.modules.maven.queries.RecommendedTemplatesImpl;
 import org.netbeans.spi.java.project.support.LookupMergerSupport;
 import org.netbeans.spi.project.ProjectState;
 import org.netbeans.spi.project.support.LookupProviderSupport;
@@ -422,10 +413,6 @@ public final class NbMavenProjectImpl implements Project {
         userFolderUpdater.detachAll();
     }
 
-    public String getName() {
-        return getOriginalMavenProject().getId().replace(':', '_');
-    }
-
     /**
      * The root directory of the project where the POM resides.
      */
@@ -681,10 +668,8 @@ public final class NbMavenProjectImpl implements Project {
     private Lookup createBasicLookup() {
         CPExtender extender = new CPExtender(this);
         Lookup staticLookup = Lookups.fixed(
-                    new Info(this),
                     this,
                     fileObject,
-                    new CacheDirProvider(this),
                     new MavenForBinaryQueryImpl(this),
                     new MavenBinaryForSourceQueryImpl(this),
                     new ActionProviderImpl(this),
@@ -697,23 +682,15 @@ public final class NbMavenProjectImpl implements Project {
                     new LogicalViewProviderImpl(this),
                     cppProvider,
                     new MavenSharabilityQueryImpl(this),
-                    new MavenTestForSourceImpl(this),
-                    ////            new MavenFileBuiltQueryImpl(this),
                     new SubprojectProviderImpl(this, watcher),
-                    new RecommendedTemplatesImpl(this),
-                    new MavenSourceLevelImpl(this),
-                    new MavenAnnotationProcessingQueryImpl(this),
                     problemReporter,
                     watcher,
                     new MavenFileEncodingQueryImpl(this),
                     new TemplateAttrProvider(this),
-                    //operations
                     new OperationsImpl(this, state),
-                    //                    configEnabler,
                     new MavenDebuggerImpl(this),
                     new DefaultReplaceTokenProvider(this),
                     new MavenFileLocator(this),
-                    // default mergers..        
                     UILookupMergerSupport.createProjectOpenHookMerger(new ProjectOpenedHookImpl(this)),
                     UILookupMergerSupport.createPrivilegedTemplatesMerger(),
                     UILookupMergerSupport.createRecommendedTemplatesMerger(),
@@ -721,14 +698,9 @@ public final class NbMavenProjectImpl implements Project {
                     ProjectClassPathModifier.extenderForModifier(this),
                     extender,
                     LookupMergerSupport.createClassPathModifierMerger(),
-                    new BackwardCompatibilityWithMevenideChecker(),
-                    new DebuggerChecker(),
                     new CosChecker(this),
                     CosChecker.createResultChecker(),
-                    CosChecker.createCoSHook(this),
-                    new ReactorChecker(),
-                    new PrereqCheckerMerger(),
-                    new TestChecker());
+                    CosChecker.createCoSHook(this));
         return staticLookup;
     }
 

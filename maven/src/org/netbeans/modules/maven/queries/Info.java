@@ -50,25 +50,28 @@ import org.apache.maven.project.MavenProject;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
-import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import static org.netbeans.modules.maven.queries.Bundle.*;
 import org.netbeans.modules.maven.spi.nodes.SpecialIcon;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle.Messages;
 
+@ProjectServiceProvider(service=ProjectInformation.class, projectType="org-netbeans-modules-maven")
 public final class Info implements ProjectInformation, PropertyChangeListener {
 
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
-    private final NbMavenProjectImpl project;
+    private final Project project;
+    private final NbMavenProject nbmp;
 
-    public Info(final NbMavenProjectImpl project) {
+    public Info(final Project project) {
         this.project = project;
-        project.getProjectWatcher().addPropertyChangeListener(this);
+        nbmp = project.getLookup().lookup(NbMavenProject.class);
+        nbmp.addPropertyChangeListener(this);
     }
 
     @Override public String getName() {
-        return project.getName();
+        return nbmp.getMavenProject().getId().replace(':', '_');
     }
 
     @Messages({
@@ -76,7 +79,7 @@ public final class Info implements ProjectInformation, PropertyChangeListener {
         "TXT_Maven_project_at=Maven project at {0}"
     })
     @Override public @NonNull String getDisplayName() {
-        MavenProject pr = project.getOriginalMavenProject();
+        MavenProject pr = nbmp.getMavenProject();
         if (NbMavenProject.isErrorPlaceholder(pr)) {
             return LBL_misconfigured_project(project.getProjectDirectory().getNameExt());
         }

@@ -44,7 +44,9 @@ package org.netbeans.modules.maven;
 
 import java.io.IOException;
 import org.netbeans.api.annotations.common.SuppressWarnings;
+import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.CacheDirectoryProvider;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.Places;
@@ -54,10 +56,12 @@ import org.openide.modules.Places;
  * directory space of the currently running IDE.
  * @author mkleint
  */
+@ProjectServiceProvider(service=CacheDirectoryProvider.class, projectType="org-netbeans-modules-maven")
 public class CacheDirProvider implements CacheDirectoryProvider {
-    private final NbMavenProjectImpl project;
+    
+    private final Project project;
 
-    CacheDirProvider(NbMavenProjectImpl prj) {
+    public CacheDirProvider(Project prj) {
         project = prj;
     }
 

@@ -47,13 +47,14 @@ import java.util.List;
 import java.util.logging.Logger;
 import org.netbeans.modules.maven.api.execute.PrerequisitesChecker;
 import org.netbeans.modules.maven.api.execute.RunConfig;
-import org.netbeans.modules.maven.options.MavenSettings;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.util.Exceptions;
 
 /**
  *
  * @author mkleint
  */
+@ProjectServiceProvider(service=PrerequisitesChecker.class, projectType="org-netbeans-modules-maven")
 public class BackwardCompatibilityWithMevenideChecker implements PrerequisitesChecker {
     private static Logger LOG = Logger.getLogger(BackwardCompatibilityWithMevenideChecker.class.getName());
 

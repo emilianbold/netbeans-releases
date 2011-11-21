@@ -54,6 +54,7 @@ import org.openide.util.Lookup;
  * of the list.
  * @author mkleint
  */
+@LookupMerger.Registration(projectType="org-netbeans-modules-maven")
 public class PrereqCheckerMerger implements LookupMerger<PrerequisitesChecker> {
 
     public Class<PrerequisitesChecker> getMergeableClass() {

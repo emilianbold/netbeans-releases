@@ -46,8 +46,10 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
-import org.netbeans.modules.maven.NbMavenProjectImpl;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.spi.java.queries.MultipleRootsUnitTestForSourceQueryImplementation;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -56,19 +58,20 @@ import org.openide.filesystems.FileUtil;
  * JUnit tests queries.
  * @author  Milos Kleint
  */
+@ProjectServiceProvider(service=MultipleRootsUnitTestForSourceQueryImplementation.class, projectType="org-netbeans-modules-maven")
 public class MavenTestForSourceImpl implements MultipleRootsUnitTestForSourceQueryImplementation {
     
                                                           
-    private final NbMavenProjectImpl project;
-    /** Creates a new instance of MavenTestForSourceImpl */
-    public MavenTestForSourceImpl(NbMavenProjectImpl proj) {
+    private final Project project;
+
+    public MavenTestForSourceImpl(Project proj) {
         project = proj;
     }
 
 
     public URL[] findUnitTests(FileObject fileObject) {
         try {
-            String str = project.getOriginalMavenProject().getBuild().getTestSourceDirectory();
+            String str = project.getLookup().lookup(NbMavenProject.class).getMavenProject().getBuild().getTestSourceDirectory();
             if (str != null) {
                 File fl = FileUtil.normalizeFile(new File(str));
                 File param = FileUtil.toFile(fileObject);
@@ -90,7 +93,7 @@ public class MavenTestForSourceImpl implements MultipleRootsUnitTestForSourceQue
 
     public URL[] findSources(FileObject fileObject) {
         try {
-            String str = project.getOriginalMavenProject().getBuild().getSourceDirectory();
+            String str = project.getLookup().lookup(NbMavenProject.class).getMavenProject().getBuild().getSourceDirectory();
             if (str != null) {
                 File fl = FileUtil.normalizeFile(new File(str));
                 File param = FileUtil.toFile(fileObject);

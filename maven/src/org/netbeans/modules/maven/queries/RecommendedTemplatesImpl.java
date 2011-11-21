@@ -45,12 +45,14 @@ package org.netbeans.modules.maven.queries;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
 
+@ProjectServiceProvider(service={RecommendedTemplates.class, PrivilegedTemplates.class}, projectType="org-netbeans-modules-maven")
 public final class RecommendedTemplatesImpl implements RecommendedTemplates, PrivilegedTemplates {
 
     private static final String[] JAR_APPLICATION_TYPES = {
@@ -131,9 +133,9 @@ public final class RecommendedTemplatesImpl implements RecommendedTemplates, Pri
     };
 
     private final List<String> prohibited;
-    private final NbMavenProjectImpl project;
+    private final Project project;
     
-    public RecommendedTemplatesImpl(NbMavenProjectImpl proj) {
+    public RecommendedTemplatesImpl(Project proj) {
         project = proj;
         prohibited = new ArrayList<String>();
         prohibited.add(NbMavenProject.TYPE_EAR);
@@ -144,7 +146,7 @@ public final class RecommendedTemplatesImpl implements RecommendedTemplates, Pri
     }
     
     @Override public String[] getRecommendedTypes() {
-        String packaging = project.getProjectWatcher().getPackagingType();
+        String packaging = project.getLookup().lookup(NbMavenProject.class).getPackagingType();
         if (packaging == null) {
             packaging = NbMavenProject.TYPE_JAR;
         }
@@ -181,7 +183,7 @@ public final class RecommendedTemplatesImpl implements RecommendedTemplates, Pri
     }
     
     @Override public String[] getPrivilegedTemplates() {
-        String packaging = project.getProjectWatcher().getPackagingType();
+        String packaging = project.getLookup().lookup(NbMavenProject.class).getPackagingType();
         if (packaging == null) {
             packaging = NbMavenProject.TYPE_JAR;
         }
