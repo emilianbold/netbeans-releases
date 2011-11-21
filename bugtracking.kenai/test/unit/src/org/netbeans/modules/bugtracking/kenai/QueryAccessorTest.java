@@ -79,6 +79,7 @@ public class QueryAccessorTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+        System.setProperty("netbeans.t9y.throwOnClientError", "true");
         System.setProperty("netbeans.user", getWorkDir().getAbsolutePath());
         try {
             System.setProperty("kenai.com.url","https://testjava.net");
@@ -118,8 +119,8 @@ public class QueryAccessorTest extends NbTestCase {
 
         for (QueryResultHandle r : results) {
             if(r.getResultType() == QueryResultHandle.ResultType.ALL_CHANGES_RESULT) {
-                Integer.parseInt(r.getText()); // just an integer value without text
-                return;
+                int i = Integer.parseInt(r.getText()); // just an integer value without text
+                assertTrue(i > 0);
             }
         }
         fail("no all changes result");

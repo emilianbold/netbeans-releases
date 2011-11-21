@@ -221,6 +221,10 @@ public class BugzillaExecutor {
     }
 
     static void notifyErrorMessage(String msg) {
+        if("true".equals(System.getProperty("netbeans.t9y.throwOnClientError", "false"))) {
+            Bugzilla.LOG.info(msg);
+            throw new AssertionError(msg);
+        }
         NotifyDescriptor nd =
                 new NotifyDescriptor(
                     msg,
