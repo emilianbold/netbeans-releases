@@ -131,6 +131,26 @@ public class CdiTestUtilities {
                 "@Retention(RUNTIME) "+
                 "@Target({ElementType.TYPE}) "+          
                 "public @interface Stateless  {}");
+        
+        TestUtilities.copyStringToFileObject(mySourceRoot, "javax/ejb/PostActivate.java",
+                "package javax.ejb; " +
+                "import static java.lang.annotation.ElementType; "+
+                "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
+                "import java.lang.annotation.*; "+
+                "import java.lang.annotation.RetentionPolicy; "+
+                "@Retention(RUNTIME) "+
+                "@Target({ElementType.METHOD}) "+          
+                "public @interface PostActivate  {}");
+        
+        TestUtilities.copyStringToFileObject(mySourceRoot, "javax/ejb/PrePassivate.java",
+                "package javax.ejb; " +
+                "import static java.lang.annotation.ElementType; "+
+                "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
+                "import java.lang.annotation.*; "+
+                "import java.lang.annotation.RetentionPolicy; "+
+                "@Retention(RUNTIME) "+
+                "@Target({ElementType.METHOD}) "+          
+                "public @interface PrePassivate  {}");
     }
     
     public  void initAnnotations() throws IOException{

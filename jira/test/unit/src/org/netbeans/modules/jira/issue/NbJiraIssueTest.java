@@ -54,6 +54,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
@@ -133,7 +134,7 @@ public class NbJiraIssueTest extends NbTestCase {
 
     @Override
     protected void setUp() throws Exception {
-        Jira.getInstance(); // force JiraCorePlugin init
+        JiraTestUtil.initClient(getWorkDir());
         if (config == null) {
             config = getRepository().getConfiguration();
         }
@@ -359,6 +360,7 @@ public class NbJiraIssueTest extends NbTestCase {
         String newType = getAnotherType(type);
         affectedVersions = setVersions(affectedVersions);
         fixedVersions = setVersions(fixedVersions);
+        Collections.sort(fixedVersions);
         components = setComponents(components);
         issue.setFieldValue(NbJiraIssue.IssueField.ESTIMATE, Long.toString(newEstimate));
         issue.setFieldValue(NbJiraIssue.IssueField.PRIORITY, newPriority);
@@ -378,6 +380,7 @@ public class NbJiraIssueTest extends NbTestCase {
         List<String> newAffectedVersions = issue.getFieldValues(NbJiraIssue.IssueField.AFFECTSVERSIONS);
         assertEquals(affectedVersions, newAffectedVersions);
         List<String> newFixedVersions = issue.getFieldValues(NbJiraIssue.IssueField.FIXVERSIONS);
+        Collections.sort(newFixedVersions);
         assertEquals(fixedVersions, newFixedVersions);
         List<String> newComponents = issue.getFieldValues(NbJiraIssue.IssueField.COMPONENT);
         assertEquals(components, newComponents);

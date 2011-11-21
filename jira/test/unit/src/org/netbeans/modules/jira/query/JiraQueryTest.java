@@ -74,7 +74,7 @@ public class JiraQueryTest extends NbTestCase {
     
     @Override
     protected void setUp() throws Exception {    
-        Jira.getInstance(); // force JiraCorePlugin init
+        JiraTestUtil.initClient(getWorkDir());
         // need this to initialize cache -> server defined status values & co
 //        getClient().getCache().refreshDetails(JiraTestUtil.nullProgressMonitor);
         JiraTestUtil.cleanProject(JiraTestUtil.getRepositoryConnector(), JiraTestUtil.getTaskRepository(), JiraTestUtil.getClient(), JiraTestUtil.getProject(JiraTestUtil.getClient()));
@@ -124,7 +124,7 @@ public class JiraQueryTest extends NbTestCase {
     }
 
     private void executeFilter(JiraFilter fd, int issuesCount) {
-        JiraQuery q = new JiraQuery("vole", JiraTestUtil.getRepository(), fd);
+        JiraQuery q = new JiraQuery("testfilter", JiraTestUtil.getRepository(), fd);
         q.refresh();        
         Issue[] issues = q.getIssues();
         assertNotNull(issues);

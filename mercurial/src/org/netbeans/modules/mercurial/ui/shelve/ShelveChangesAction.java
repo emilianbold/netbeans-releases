@@ -52,6 +52,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import javax.swing.Action;
+import javax.swing.BoxLayout;
+import javax.swing.JCheckBox;
+import javax.swing.JPanel;
 import org.netbeans.modules.mercurial.FileInformation;
 import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.HgProgressSupport;
@@ -105,7 +108,7 @@ public class ShelveChangesAction extends ContextAction {
             return;
         }
         HgShelveChangesSupport supp = new HgShelveChangesSupport();
-        if (supp.prepare()) {
+        if (supp.open()) {
             RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root);
             supp.startAsync(rp, root, ctx);
         }
@@ -115,7 +118,29 @@ public class ShelveChangesAction extends ContextAction {
         private HgProgressSupport support;
         private OutputLogger logger;
         private Set<File> filteredRoots;
+        private final JPanel optionsPanel;
+        private final JCheckBox doBackupChxBox;
+        private final JCheckBox doPurgeChxBox;
+        private boolean doBackup;
+        private boolean doPurge;
 
+        public HgShelveChangesSupport () {
+            doBackupChxBox = new JCheckBox();
+            org.openide.awt.Mnemonics.setLocalizedText(doBackupChxBox, org.openide.util.NbBundle.getMessage(ShelveChangesAction.class, "ShelvePanel.doBackupChxBox.text")); //NOI18N
+            doBackupChxBox.setToolTipText(org.openide.util.NbBundle.getMessage(ShelveChangesAction.class, "ShelvePanel.doBackupChxBox.desc")); //NOI18N
+            doBackupChxBox.getAccessibleContext().setAccessibleDescription(doBackupChxBox.getToolTipText());
+            doBackupChxBox.setSelected(HgModuleConfig.getDefault().getBackupOnRevertModifications());
+            doPurgeChxBox = new JCheckBox();
+            org.openide.awt.Mnemonics.setLocalizedText(doPurgeChxBox, org.openide.util.NbBundle.getMessage(ShelveChangesAction.class, "ShelvePanel.doPurgeChxBox.text")); //NOI18N
+            doPurgeChxBox.setToolTipText(org.openide.util.NbBundle.getMessage(ShelveChangesAction.class, "ShelvePanel.doPurgeChxBox.desc")); //NOI18N
+            doPurgeChxBox.getAccessibleContext().setAccessibleDescription(doPurgeChxBox.getToolTipText());
+            doPurgeChxBox.setSelected(HgModuleConfig.getDefault().isRemoveNewFilesOnRevertModifications());
+            optionsPanel = new JPanel();
+            optionsPanel.setLayout(new BoxLayout(optionsPanel, BoxLayout.Y_AXIS));
+            optionsPanel.add(doBackupChxBox);
+            optionsPanel.add(doPurgeChxBox);
+        }
+        
         @Override
         protected void exportPatch (File toFile, File commonParent) throws IOException {
             support.setDisplayName(NbBundle.getMessage(ShelveChangesAction.class, "MSG_ShelveChanges.progress.exporting")); //NOI18N
@@ -135,7 +160,7 @@ public class ShelveChangesAction extends ContextAction {
                 Set<File> roots = e.getValue();
                 if (!roots.isEmpty()) {
                     support.setDisplayName(NbBundle.getMessage(ShelveChangesAction.class, "MSG_ShelveChanges.progress.reverting", root.getName())); //NOI18N
-                    RevertModificationsAction.performRevert(root, null, roots.toArray(new File[roots.size()]), HgModuleConfig.getDefault().getBackupOnRevertModifications(), logger);
+                    RevertModificationsAction.performRevert(root, null, roots.toArray(new File[roots.size()]), doBackup, doPurge, logger);
                 }
             }
         }
@@ -155,6 +180,17 @@ public class ShelveChangesAction extends ContextAction {
                 }
             };
             support.start(rp, root, NbBundle.getMessage(ShelveChangesAction.class, "LBL_ShelveChanges_Progress")); //NOI18N
+        }
+
+        private boolean open () {
+            boolean retval = prepare(optionsPanel);
+            if (retval) {
+                doBackup = doBackupChxBox.isSelected();
+                doPurge = doPurgeChxBox.isSelected();
+                HgModuleConfig.getDefault().setBackupOnRevertModifications(doBackup);
+                HgModuleConfig.getDefault().setRemoveNewFilesOnRevertModifications(doPurge);
+            }
+            return retval;
         }
     };
     

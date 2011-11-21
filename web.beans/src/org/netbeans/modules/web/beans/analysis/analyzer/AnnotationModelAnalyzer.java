@@ -49,7 +49,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 
-import org.netbeans.modules.web.beans.analysis.analyzer.ModelAnalyzer.Result;
 import org.netbeans.modules.web.beans.analysis.analyzer.annotation.InterceptorBindingAnalyzer;
 import org.netbeans.modules.web.beans.analysis.analyzer.annotation.StereotypeAnalyzer;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;

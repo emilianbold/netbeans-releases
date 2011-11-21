@@ -72,7 +72,7 @@ import org.openide.util.NbBundle;
  *
  * @author ondra
  */
-@ActionID(id = "org.netbeans.modules.mercurial.ui.queues.QFinishPatchesAction", category = "Mercurial Queues")
+@ActionID(id = "org.netbeans.modules.mercurial.ui.queues.QFinishPatchesAction", category = "Mercurial/Queues")
 @ActionRegistration(displayName = "#CTL_MenuItem_QFinishPatches")
 public class QFinishPatchesAction extends ContextAction {
 

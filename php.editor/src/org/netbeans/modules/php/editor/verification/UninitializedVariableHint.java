@@ -178,6 +178,7 @@ public class UninitializedVariableHint extends AbstractRule {
         public void visit(Assignment node) {
             VariableBase leftHandSide = node.getLeftHandSide();
             initializeVariableBase(leftHandSide);
+            scan(node.getRightHandSide());
         }
 
         @Override

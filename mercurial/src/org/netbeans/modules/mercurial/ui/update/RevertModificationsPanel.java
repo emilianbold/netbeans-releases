@@ -43,8 +43,8 @@
  */
 package org.netbeans.modules.mercurial.ui.update;
 
-import java.awt.BorderLayout;
 import java.io.File;
+import javax.swing.BoxLayout;
 import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 import org.netbeans.modules.mercurial.HgModuleConfig;
@@ -58,6 +58,7 @@ import org.openide.util.NbBundle;
 public class RevertModificationsPanel extends ChangesetPickerPanel {
 
     private JCheckBox doBackupChxBox;
+    private JCheckBox doPurgeChxBox;
 
     /** Creates new form ReverModificationsPanel */
     public RevertModificationsPanel (File repo, File[] files) {
@@ -68,6 +69,10 @@ public class RevertModificationsPanel extends ChangesetPickerPanel {
     
     public boolean isBackupRequested() {
         return doBackupChxBox.isSelected();
+    }
+
+    boolean isPurgeRequested () {
+        return doPurgeChxBox.isSelected();
     }
 
     @Override
@@ -83,8 +88,16 @@ public class RevertModificationsPanel extends ChangesetPickerPanel {
         org.openide.awt.Mnemonics.setLocalizedText(doBackupChxBox, org.openide.util.NbBundle.getMessage(RevertModificationsPanel.class, "RevertModificationsPanel.doBackupChxBox.text")); // NOI18N
         boolean doBackup = HgModuleConfig.getDefault().getBackupOnRevertModifications();
         doBackupChxBox.setSelected(doBackup);
-        JPanel optionsPanel = new JPanel(new BorderLayout());
-        optionsPanel.add(doBackupChxBox, BorderLayout.NORTH);
+        doPurgeChxBox = new JCheckBox();
+        org.openide.awt.Mnemonics.setLocalizedText(doPurgeChxBox, org.openide.util.NbBundle.getMessage(RevertModificationsPanel.class, "RevertModificationsPanel.doPurgeChxBox.text")); // NOI18N
+        doPurgeChxBox.setToolTipText(org.openide.util.NbBundle.getMessage(RevertModificationsPanel.class, "RevertModificationsPanel.doPurgeChxBox.desc")); // NOI18N
+        doPurgeChxBox.getAccessibleContext().setAccessibleDescription(doPurgeChxBox.getToolTipText());
+        boolean doPurge = HgModuleConfig.getDefault().isRemoveNewFilesOnRevertModifications();
+        doPurgeChxBox.setSelected(doPurge);
+        JPanel optionsPanel = new JPanel();
+        optionsPanel.setLayout(new BoxLayout(optionsPanel, BoxLayout.Y_AXIS));
+        optionsPanel.add(doBackupChxBox);
+        optionsPanel.add(doPurgeChxBox);
         optionsPanel.setBorder(new javax.swing.border.EmptyBorder(0, 0, 0, 0));
         setOptionsPanel(optionsPanel, null);
     }

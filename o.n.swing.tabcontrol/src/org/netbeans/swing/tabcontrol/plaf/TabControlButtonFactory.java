@@ -45,6 +45,7 @@
 package org.netbeans.swing.tabcontrol.plaf;
 
 import java.awt.Component;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
@@ -52,6 +53,7 @@ import java.awt.event.MouseEvent;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.JButton;
+import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
@@ -62,6 +64,7 @@ import org.netbeans.swing.tabcontrol.TabListPopupAction;
 import org.netbeans.swing.tabcontrol.WinsysInfoForTabbedContainer;
 import org.netbeans.swing.tabcontrol.event.TabActionEvent;
 import org.openide.util.ImageUtilities;
+import org.openide.windows.WindowManager;
 
 /**
  * A factory to create tab control buttons.
@@ -217,6 +220,16 @@ public class TabControlButtonFactory {
                 return java.util.ResourceBundle.getBundle("org/netbeans/swing/tabcontrol/plaf/Bundle").getString("Tip_Pin");
             return java.util.ResourceBundle.getBundle("org/netbeans/swing/tabcontrol/plaf/Bundle").getString("Tip_Minimize_Window");
         }
+        
+        @Override
+        public void addNotify() {
+            super.addNotify();
+            //#205194 - cannot minimize floating tab
+            Window w = SwingUtilities.getWindowAncestor( displayer );
+            boolean isFloating = w != WindowManager.getDefault().getMainWindow();
+            if( isFloating )
+                setVisible( false );
+        }
     }
     
     
@@ -241,6 +254,16 @@ public class TabControlButtonFactory {
         @Override
         public String getToolTipText() {
             return java.util.ResourceBundle.getBundle("org/netbeans/swing/tabcontrol/plaf/Bundle").getString("Tip_Minimize_Window_Group"); //NOI18N
+        }
+        
+        @Override
+        public void addNotify() {
+            super.addNotify();
+            //#205194 - cannot minimize floating tab group
+            Window w = SwingUtilities.getWindowAncestor( displayer );
+            boolean isFloating = w != WindowManager.getDefault().getMainWindow();
+            if( isFloating )
+                setVisible( false );
         }
     }
     

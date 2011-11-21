@@ -46,7 +46,12 @@ package org.netbeans.modules.mercurial.ui.log;
 import java.awt.EventQueue;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import java.io.File;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
+import org.netbeans.modules.mercurial.FileStatus;
+import org.netbeans.modules.mercurial.FileStatusCache;
+import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.WorkingCopyInfo;
 import org.netbeans.modules.mercurial.ui.branch.HgBranch;
 import org.netbeans.modules.mercurial.util.HgUtils;
@@ -78,12 +83,12 @@ public class LogAction extends SearchHistoryAction {
             @Override
             public void run () {
                 File repositoryRoot = getRepositoryRoot(context);
-                final File[] files = getFiles(context, repositoryRoot);
+                final File[] files = replaceCopiedFiles(getFiles(context, repositoryRoot));
                 if (files == null) {
                     return;
                 }
                 outputSearchContextTab(repositoryRoot, files, "MSG_Log_Title");
-                final boolean startSearch = files != null && (files.length == 1 && files[0].isFile() || files.length > 1 && Utils.shareCommonDataObject(files));
+                final boolean startSearch = files != null && (files.length == 1 && !files[0].isDirectory() || files.length > 1 && Utils.shareCommonDataObject(files));
                 final String branchName;
                 HgLogMessage[] parents = WorkingCopyInfo.getInstance(repositoryRoot).getWorkingCopyParents();
                 if (parents.length == 1) {
@@ -107,6 +112,22 @@ public class LogAction extends SearchHistoryAction {
                         }
                     }
                 });
+            }
+
+            private File[] replaceCopiedFiles (File[] files) {
+                if (files == null) {
+                    return null;
+                }
+                Set<File> originalFiles = new LinkedHashSet<File>(files.length);
+                FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
+                for (File file : files) {
+                    FileStatus st = cache.getStatus(file).getStatus(null);
+                    if (st != null && st.isCopied() && st.getOriginalFile() != null) {
+                        file = st.getOriginalFile();
+                    }
+                    originalFiles.add(file);
+                }
+                return originalFiles.toArray(new File[originalFiles.size()]);
             }
         }, 0);
     }
