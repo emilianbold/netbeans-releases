@@ -273,11 +273,12 @@ public final class JavaElementHandler {
                             break;
                         }
                     }
-                    if (j >= 0 && j < typeParameters.length) {
-                        typeString = typeParameters[j];
-                    } else {
+// FIXME why we were doing this for signatures ??
+//                    if (j >= 0 && j < typeParameters.length) {
+//                        typeString = typeParameters[j];
+//                    } else {
                         typeString = types.erasure(type).toString();
-                    }
+//                    }
                 } else {
                     typeString = type.toString();
                 }

@@ -8,5 +8,6 @@ CLASS      AbstractMap                                null
 CLASS      AbstractQueue                              null
 CLASS      AbstractSequentialList                     null
 CLASS      AbstractSet                                null
+CLASS      ArrayDeque                                 null
 CLASS      ArrayList                                  null
 CLASS      Arrays                                     null

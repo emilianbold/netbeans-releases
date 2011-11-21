@@ -87,6 +87,7 @@ public class DuplicatesCompletionTest extends GroovyTestBase {
         checkCompletion(TEST_BASE + "b/B.groovy", "class B extends A^ {", true);
     }
 
+    // TESTFAIL x
     public void testDuplicates2() throws Exception {
         checkCompletion(TEST_BASE + "c/C.groovy", "class C extends a.A^ {", true);
     }

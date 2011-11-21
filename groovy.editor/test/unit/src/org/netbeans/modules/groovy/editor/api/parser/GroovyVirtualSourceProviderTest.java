@@ -78,15 +78,16 @@ public class GroovyVirtualSourceProviderTest extends GroovyTestBase {
         CharSequence charSequence = generator.generateClass(classNodes.get(0));
         assertEquals(
                 "import groovy.util.*;\n" +
-                "import java.util.*;\n" +
-                "import java.io.*;\n" +
                 "import java.lang.*;\n" +
                 "import groovy.lang.*;\n" +
+                "import java.util.*;\n" +
+                "import java.io.*;\n" +
                 "import java.net.*;\n" +
                 "\n" +
                 "public class Foo\n" +
                 "  extends java.lang.Object  implements\n" +
                 "    groovy.lang.GroovyObject {\n" +
+                "public Foo() {}\n" +
                 "public java.lang.Object method1() { return null;}\n" +
                 "public java.lang.Object getClosure1() { return null;}\n" +
                 "public void setClosure1(java.lang.Object value) { }\n" +
@@ -108,10 +109,10 @@ public class GroovyVirtualSourceProviderTest extends GroovyTestBase {
         CharSequence charSequence = generator.generateClass(classNodes.get(0));
         assertEquals(
                 "import groovy.util.*;\n" +
-                "import java.util.*;\n" +
-                "import java.io.*;\n" +
                 "import java.lang.*;\n" +
                 "import groovy.lang.*;\n" +
+                "import java.util.*;\n" +
+                "import java.io.*;\n" +
                 "import java.net.*;\n" +
                 "\n" +
                 "public class Test\n" +
@@ -138,15 +139,16 @@ public class GroovyVirtualSourceProviderTest extends GroovyTestBase {
         CharSequence charSequence = generator.generateClass(classNodes.get(0));
         assertEquals(
                 "import groovy.util.*;\n" +
-                "import java.util.*;\n" +
-                "import java.io.*;\n" +
                 "import java.lang.*;\n" +
                 "import groovy.lang.*;\n" +
+                "import java.util.*;\n" +
+                "import java.io.*;\n" +
                 "import java.net.*;\n" +
                 "\n" +
                 "public class Foo\n" +
                 "  extends java.lang.Object  implements\n" +
                 "    groovy.lang.GroovyObject {\n" +
+                "public Foo() {}\n" +
                 "public static java.util.List<java.lang.String> get() { return (java.util.List<java.lang.String>)null;}\n" +
                 "}\n", charSequence);
     }
@@ -165,17 +167,19 @@ public class GroovyVirtualSourceProviderTest extends GroovyTestBase {
 
         GroovyVirtualSourceProvider.JavaStubGenerator generator = new GroovyVirtualSourceProvider.JavaStubGenerator();
         CharSequence charSequence = generator.generateClass(classNodes.get(0));
-        assertEquals("import groovy.util.*;\n" +
-                "import java.util.*;\n" +
-                "import java.io.*;\n" +
+        assertEquals(
+                "import groovy.util.*;\n" +
                 "import java.lang.*;\n" +
-                "import javax.swing.*;\n" +
                 "import groovy.lang.*;\n" +
+                "import java.util.*;\n" +
+                "import javax.swing.*;\n" +
+                "import java.io.*;\n" +
                 "import java.net.*;\n" +
                 "\n" +
                 "public class MyTest\n" +
                 "  extends javax.swing.JPanel  implements\n" +
                 "    groovy.lang.GroovyObject {\n" +
+                "public MyTest() {}\n" +
                 "public javax.swing.JPanel getPanel() { return (javax.swing.JPanel)null;}\n" +
                 "}\n", charSequence);
     }
@@ -199,27 +203,30 @@ public class GroovyVirtualSourceProviderTest extends GroovyTestBase {
 
         GroovyVirtualSourceProvider.JavaStubGenerator generator = new GroovyVirtualSourceProvider.JavaStubGenerator();
         CharSequence charSequence = generator.generateClass(classNodes.get(0));
-        assertEquals("import groovy.util.*;\n"+
-                "import java.util.*;\n" +
-                "import java.io.*;\n" +
+        assertEquals(
+                "import groovy.util.*;\n"+
                 "import java.lang.*;\n" +
                 "import groovy.lang.*;\n" +
+                "import java.util.*;\n" +
+                "import java.io.*;\n" +
                 "import java.net.*;\n" +
                 "\n" +
                 "public class PostService\n" +
                 "  extends java.lang.Object  implements\n" +
                 "    groovy.lang.GroovyObject {\n" +
+                "public PostService() {}\n" +
                 "public java.lang.Object serviceMethod() throws PostException { return null;}\n" +
                 "public boolean getTransactional() { return (boolean)false;}\n" +
                 "public void setTransactional(boolean value) { }\n" +
                 "}\n", charSequence);
 
         charSequence = generator.generateClass(classNodes.get(1));
-        assertEquals("import groovy.util.*;\n" +
-                "import java.util.*;\n" +
-                "import java.io.*;\n" +
+        assertEquals(
+                "import groovy.util.*;\n" +
                 "import java.lang.*;\n" +
                 "import groovy.lang.*;\n" +
+                "import java.util.*;\n" +
+                "import java.io.*;\n" +
                 "import java.net.*;\n" +
                 "\n" +
                 "public class PostException\n" +
@@ -250,16 +257,18 @@ public class GroovyVirtualSourceProviderTest extends GroovyTestBase {
 
         GroovyVirtualSourceProvider.JavaStubGenerator generator = new GroovyVirtualSourceProvider.JavaStubGenerator();
         CharSequence charSequence = generator.generateClass(classNodes.get(0));
-        assertEquals("import groovy.util.*;\n" +
-                "import java.util.*;\n" +
-                "import java.io.*;\n" +
+        assertEquals(
+                "import groovy.util.*;\n" +
                 "import java.lang.*;\n" +
                 "import groovy.lang.*;\n" +
+                "import java.util.*;\n" +
+                "import java.io.*;\n" +
                 "import java.net.*;\n" +
                 "\n" +
                 "public class MyTest\n" +
                 "  extends java.lang.Object  implements\n" +
                 "    groovy.lang.GroovyObject {\n" +
+                "public MyTest() {}\n" +
                 "public void test1() throws java.lang.RuntimeException { }\n" +
                 "public void test2() throws java.lang.Exception { }\n" +
                 "public java.lang.Object test3() throws java.lang.RuntimeException { return null;}\n" +

@@ -86,6 +86,7 @@ import org.codehaus.groovy.ast.Variable;
 import org.codehaus.groovy.ast.expr.ArgumentListExpression;
 import org.codehaus.groovy.ast.expr.ClassExpression;
 import org.codehaus.groovy.ast.expr.ClosureExpression;
+import org.codehaus.groovy.ast.expr.ConstantExpression;
 import org.codehaus.groovy.ast.expr.DeclarationExpression;
 import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.RangeExpression;
@@ -1880,16 +1881,12 @@ public class CompletionHandler implements CodeCompletionHandler {
             }
 
             // this returns a list of String's of wildcard-like included types.
-            List<String> importsPkg = mn.getImportPackages();
+            List<ImportNode> importNodes = mn.getStarImports();
 
-            for (String wildcardImport : importsPkg) {
-                LOG.log(Level.FINEST, "From getImportPackages() : {0} ", wildcardImport);
-                if (wildcardImport.endsWith(".")) {
-                    wildcardImport = wildcardImport.substring(0, wildcardImport.length() - 1);
-                }
+            for (ImportNode wildcardImport : importNodes) {
+                LOG.log(Level.FINEST, "From getImportPackages() : {0} ", wildcardImport.getText());
 
-                localDefaultImports.add(wildcardImport);
-
+                localDefaultImports.add(wildcardImport.getPackageName());
             }
 
         }
@@ -2147,6 +2144,12 @@ public class CompletionHandler implements CodeCompletionHandler {
                 } catch (ClassNotFoundException ex) {
                     expression.setType(
                             new ClassNode("groovy.lang.Range", ClassNode.ACC_PUBLIC | ClassNode.ACC_INTERFACE, null)); // NOI18N
+                }
+            // FIXME report issue
+            } else if (expression instanceof ConstantExpression) {
+                ConstantExpression constantExpression = (ConstantExpression) expression;
+                if (!constantExpression.isNullExpression()) {
+                    constantExpression.setType(new ClassNode(constantExpression.getValue().getClass()));
                 }
             }
             request.declaringClass = expression.getType();

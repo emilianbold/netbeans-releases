@@ -15,6 +15,7 @@ CLASS      AllTestSuite                               null
 CLASS      AntBuilder                                 null
 CLASS      Appendable                                 null
 CLASS      ArithmeticException                        null
+CLASS      ArrayDeque                                 null
 CLASS      ArrayIndexOutOfBoundsException             null
 CLASS      ArrayList                                  null
 CLASS      ArrayStoreException                        null
