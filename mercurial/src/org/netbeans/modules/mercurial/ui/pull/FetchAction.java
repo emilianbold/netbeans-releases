@@ -64,6 +64,7 @@ import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.netbeans.modules.mercurial.ui.merge.MergeAction;
 import org.netbeans.modules.mercurial.ui.repository.HgURL;
 import org.openide.DialogDescriptor;
+import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
@@ -148,8 +149,15 @@ public class FetchAction extends ContextAction {
             try {
                 pullSource = new HgURL(pullSourceString);
             } catch (URISyntaxException ex) {
-                Mercurial.LOG.log(Level.INFO, null, ex);
-                return;
+                File sourceRoot = new File(root, pullSourceString);
+                if (sourceRoot.isDirectory()) {
+                    pullSource = new HgURL(FileUtil.normalizeFile(sourceRoot));
+                } else {
+                    String msg = NbBundle.getMessage(FetchAction.class, "MSG_DEFAULT_PULL_INVALID", pullSourceString); //NOI18N
+                    DialogDisplayer.getDefault().notify(new DialogDescriptor.Message(msg));
+                    Mercurial.LOG.log(Level.INFO, null, ex);
+                    return;
+                }
             }
 
             List<String> list;

@@ -78,6 +78,7 @@ import org.netbeans.modules.mercurial.ui.repository.HgURL;
 import org.openide.DialogDescriptor;
 import org.openide.nodes.Node;
 import static org.netbeans.modules.mercurial.util.HgUtils.isNullOrEmpty;
+import org.openide.filesystems.FileUtil;
 
 /**
  * Pull action for mercurial:
@@ -214,8 +215,13 @@ public class PullAction extends ContextAction {
         try {
             pullSource = new HgURL(pullSourceString);
         } catch (URISyntaxException ex) {
-            notifyDefaultPullUrlInvalid(pullSourceString, ex.getReason(), logger);
-            return;
+            File sourceRoot = new File(root, pullSourceString);
+            if (sourceRoot.isDirectory()) {
+                pullSource = new HgURL(FileUtil.normalizeFile(sourceRoot));
+            } else {
+                notifyDefaultPullUrlInvalid(pullSourceString, ex.getReason(), logger);
+                return;
+            }
         }
 
         // We assume that if fromPrjName is null that it is a remote pull.
