@@ -317,6 +317,26 @@ public class ModificationResultTest extends NbTestCase {
         }
     }
 
+    public void testCRLF197538() throws Exception {
+        prepareTest("test\r\ntest\r\ntest\r\n");
+
+        PositionRef start1 = ces.createPositionRef(5, Bias.Forward);
+        PositionRef end1 = ces.createPositionRef(9, Bias.Forward);
+        ModificationResult.Difference diff1 = new ModificationResult.Difference(ModificationResult.Difference.Kind.CHANGE, start1, end1, "test", "abcde");
+        PositionRef start2 = ces.createPositionRef(10, Bias.Forward);
+        PositionRef end2 = ces.createPositionRef(13, Bias.Forward);
+        ModificationResult.Difference diff2 = new ModificationResult.Difference(ModificationResult.Difference.Kind.CHANGE, start2, end2, "tes", "a");
+
+        ModificationResult result = new ModificationResult(null);
+
+        result.diffs = new HashMap<FileObject, List<ModificationResult.Difference>>();
+        result.diffs.put(testFile, Arrays.asList(diff1, diff2));
+
+        result.commit();
+
+        assertEquals("test\r\nabcde\r\nat\r\n", testFile.asText());
+    }
+
     public void testFilteringCommitToFile189203a() throws Exception {
         TestUtil.setJavaFileFilter(new JavaFileFilterImplementationImpl());
         try {

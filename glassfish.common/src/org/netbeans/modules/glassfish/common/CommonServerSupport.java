@@ -288,10 +288,19 @@ public class CommonServerSupport implements GlassfishModule2, RefreshModulesCook
                     File destdirFile = FileUtil.toFile(destdir);
                     properties.put(DOMAINS_FOLDER_ATTR, destdirFile.getAbsolutePath());
                     retVal = destdirFile.getAbsolutePath();
-                    CreateDomain cd = new CreateDomain("anonymous", "", // NOI18N
-                            new File(properties.get(GlassfishModule.GLASSFISH_FOLDER_ATTR)),
-                            properties, GlassfishInstanceProvider.getEe6(), false, true, "INSTALL_ROOT_KEY"); // NOI18N
-                    cd.start();
+                    // getEe6() eventually creates a call to getDomainsRoot()... which can lead to a deadlock
+                    //  forcing the call to happen after getDomainsRoot returns will 
+                    // prevent the deadlock.
+                    RequestProcessor.getDefault().post(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            CreateDomain cd = new CreateDomain("anonymous", "", // NOI18N
+                                    new File(properties.get(GlassfishModule.GLASSFISH_FOLDER_ATTR)),
+                                    properties, GlassfishInstanceProvider.getEe6(), false, true, "INSTALL_ROOT_KEY"); // NOI18N
+                            cd.start();
+                        }
+                    }, 100);
                 }
             }
         }
@@ -777,7 +786,7 @@ public class CommonServerSupport implements GlassfishModule2, RefreshModulesCook
                     
                     if((currentState == ServerState.STOPPED || currentState == ServerState.UNKNOWN) && isRunning) {
                         setServerState(ServerState.RUNNING);
-                    } else if(currentState == ServerState.RUNNING && !isRunning) {
+                    } else if((currentState == ServerState.RUNNING || currentState == ServerState.UNKNOWN) && !isRunning) {
                         setServerState(ServerState.STOPPED);
                     } else if(currentState == ServerState.STOPPED_JVM_PROFILER && isRunning) {
                         setServerState(ServerState.RUNNING);

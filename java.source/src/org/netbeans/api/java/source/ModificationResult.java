@@ -583,20 +583,26 @@ public final class ModificationResult {
 
         @Override
         public int read(char[] cbuf, int off, int len) throws IOException {
-            len = delegate.read(cbuf, off, len);
+            int read;
+            int j;
             
-            int j = 0;
-            for (int i = off; i < off + len; i++) {
-                if (cbuf[i] != '\r') {
-                    cbuf[j++] = cbuf[i];
-                    if (beforeFirstLine && cbuf[i] == '\n') {
+            do {
+                read = delegate.read(cbuf, off, len);
+                j = 0;
+
+                for (int i = off; i < off + read; i++) {
+                    if (cbuf[i] != '\r') {
+                        cbuf[j++] = cbuf[i];
+                        if (beforeFirstLine && cbuf[i] == '\n') {
+                            beforeFirstLine = false;
+                        }
+                    } else if (beforeFirstLine) {
+                        hasReturnChar[0] = true;
                         beforeFirstLine = false;
                     }
-                } else if (beforeFirstLine) {
-                    hasReturnChar[0] = true;
-                    beforeFirstLine = false;
                 }
-            }
+            } while (j == 0 && read > 0);
+            
             return j;
         }
 
