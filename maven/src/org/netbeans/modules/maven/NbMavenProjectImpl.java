@@ -63,8 +63,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.AbstractAction;
-import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.SwingUtilities;
 import org.apache.maven.artifact.Artifact;
@@ -134,16 +132,12 @@ import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
 import org.netbeans.spi.queries.SharabilityQueryImplementation;
-import org.openide.awt.ActionID;
-import org.openide.awt.ActionReference;
-import org.openide.awt.ActionRegistration;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.ContextAwareAction;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
@@ -165,7 +159,7 @@ public final class NbMavenProjectImpl implements Project {
     public static final String PROP_RESOURCE = "RESOURCES"; //NOI18N
 
     private static final Logger LOG = Logger.getLogger(NbMavenProjectImpl.class.getName());
-    private static RequestProcessor RELOAD_RP = new RequestProcessor("Maven project reloading", 1); //NOI18N
+    public static final RequestProcessor RELOAD_RP = new RequestProcessor("Maven project reloading", 1); //NOI18N
     private FileObject fileObject;
     private FileObject folderFileObject;
     private final File projectFile;
@@ -1229,52 +1223,6 @@ public final class NbMavenProjectImpl implements Project {
                 return new String[0];
             }
             return JAR_PRIVILEGED_NAMES;
-        }
-    }
-
-    @SuppressWarnings("serial")
-    @ActionID(id = "org.netbeans.modules.maven.refresh", category = "Project")
-    @ActionRegistration(displayName = "#ACT_Reload_Project")
-    @ActionReference(position = 1700, path = "Projects/org-netbeans-modules-maven/Actions")
-    @Messages("ACT_Reload_Project=Reload POM")
-    public static class RefreshAction extends AbstractAction implements ContextAwareAction {
-
-        private final Lookup context;
-
-        public RefreshAction() {
-            this(Lookup.EMPTY);
-        }
-
-        @Messages("ACT_Reload_Projects=Reload {0} POMs")
-        private RefreshAction(Lookup lkp) {
-            context = lkp;
-            Collection<? extends NbMavenProjectImpl> col = context.lookupAll(NbMavenProjectImpl.class);
-            if (col.size() > 1) {
-                putValue(Action.NAME, ACT_Reload_Projects(col.size()));
-            } else {
-                putValue(Action.NAME, ACT_Reload_Project());
-            }
-        }
-
-        @Override
-        public void actionPerformed(java.awt.event.ActionEvent event) {
-            //#166919 - need to run in RP to prevent RPing later in fireProjectReload()
-            RELOAD_RP.post(new Runnable() {
-
-                @Override
-                public void run() {
-                    EmbedderFactory.resetCachedEmbedders();
-                    for (NbMavenProjectImpl prj : context.lookupAll(NbMavenProjectImpl.class)) {
-                        NbMavenProject.fireMavenProjectReload(prj);
-                    }
-                }
-            });
-
-        }
-
-        @Override
-        public Action createContextAwareInstance(Lookup actionContext) {
-            return new RefreshAction(actionContext);
         }
     }
 
