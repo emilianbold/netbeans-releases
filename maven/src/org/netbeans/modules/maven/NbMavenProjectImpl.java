@@ -53,7 +53,6 @@ import java.lang.ref.SoftReference;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -74,7 +73,6 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.VisibilityQuery;
 import static org.netbeans.modules.maven.Bundle.*;
@@ -111,12 +109,9 @@ import org.netbeans.modules.maven.queries.MavenSourceLevelImpl;
 import org.netbeans.modules.maven.queries.MavenTestForSourceImpl;
 import org.netbeans.modules.maven.queries.RecommendedTemplatesImpl;
 import org.netbeans.spi.java.project.support.LookupMergerSupport;
-import org.netbeans.spi.project.LookupMerger;
 import org.netbeans.spi.project.ProjectState;
-import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.LookupProviderSupport;
 import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
-import org.netbeans.spi.queries.SharabilityQueryImplementation;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -125,7 +120,6 @@ import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
-import org.openide.util.Lookup.Template;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.NbCollections;
 import org.openide.util.RequestProcessor;
@@ -147,14 +141,12 @@ public final class NbMavenProjectImpl implements Project {
     private FileObject fileObject;
     private FileObject folderFileObject;
     private final File projectFile;
+    private final Lookup basicLookup;
     private final Lookup lookup;
     private final Updater projectFolderUpdater;
     private final Updater userFolderUpdater;
     private Reference<MavenProject> project;
     private ProblemReporterImpl problemReporter;
-    private final Info projectInfo;
-    private final MavenSharabilityQueryImpl sharability;
-    private final SubprojectProviderImpl subs;
     private final @NonNull NbMavenProject watcher;
     private final ProjectState state;
     private final M2ConfigProvider configProvider;
@@ -192,11 +184,7 @@ public final class NbMavenProjectImpl implements Project {
         this.projectFile = FileUtil.normalizeFile(FileUtil.toFile(projectFO));
         fileObject = projectFO;
         folderFileObject = folder;
-        sharability = new MavenSharabilityQueryImpl(this);
         watcher = ACCESSOR.createWatcher(this);
-        projectInfo = new Info(this);
-        subs = new SubprojectProviderImpl(this, watcher);
-        lookup = new LazyLookup(this, watcher, projectInfo, sharability, subs, fileObject);
         projectFolderUpdater = new Updater("nb-configuration.xml", "pom.xml");
         userFolderUpdater = new Updater("settings.xml");
         state = projectState;
@@ -206,6 +194,9 @@ public final class NbMavenProjectImpl implements Project {
         profileHandler = new ProjectProfileHandlerImpl(this, auxiliary);
         configProvider = new M2ConfigProvider(this, auxiliary, profileHandler);
         cppProvider = new ClassPathProviderImpl(this);
+        // @PSP's and the like, and PackagingProvider impls, may check project lookup for e.g. NbMavenProject, so init lookup in two stages:
+        basicLookup = createBasicLookup();
+        lookup = LookupProviderSupport.createCompositeLookup(new PackagingTypeDependentLookup(watcher, basicLookup), "Projects/org-netbeans-modules-maven/Lookup");
     }
 
     public File getPOMFile() {
@@ -652,41 +643,7 @@ public final class NbMavenProjectImpl implements Project {
 
     @Override
     public Lookup getLookup() {
-        return lookup;
-    }
-
-    // in 6.5 the ProjectInformation icon is used in project open dialog.
-    // however we don't want this call to initiate the comple lookup of the project
-    //as that's time consuming and suboptimal to do for all projects in the filechooser.
-    private class LazyLookup extends ProxyLookup {
-
-        private Lookup lookup;
-        boolean initialized = false;
-
-        LazyLookup(Project ths, NbMavenProject watcher, ProjectInformation info,
-                SharabilityQueryImplementation shara, SubprojectProvider subs, FileObject projectFO) {
-            setLookups(Lookups.fixed(ths, watcher, info, shara, subs, projectFO));
-        }
-
-        protected @Override void beforeLookup(Template<?> template) {
-            synchronized (this) {
-            if (!initialized
-                    && (!(ProjectInformation.class.equals(template.getType())
-                    || NbMavenProject.class.equals(template.getType())
-                    || NbMavenProjectImpl.class.equals(template.getType())
-                    || Project.class.equals(template.getType())
-                    || SharabilityQueryImplementation.class.equals(template.getType())
-                    || SubprojectProvider.class.equals(template.getType())))) {
-                initialized = true;
-                lookup = createBasicLookup();
-                setLookups(lookup);
-                Lookup lkp = LookupProviderSupport.createCompositeLookup(new PackagingTypeDependentLookup(watcher, lookup), "Projects/org-netbeans-modules-maven/Lookup");
-                assert checkForForbiddenMergers(lkp) : "Cannot have a LookupMerger for ProjectInformation or SharabilityQueryImplementation";
-                setLookups(lkp); //NOI18N
-            }
-            }
-            super.beforeLookup(template);
-        }
+        return lookup != null ? lookup : basicLookup;
     }
 
     private static class PackagingTypeDependentLookup extends ProxyLookup implements PropertyChangeListener {
@@ -721,31 +678,10 @@ public final class NbMavenProjectImpl implements Project {
         }
     }
 
-    //to be called from assert,
-    // chekc for items we optimize for at startup.
-    private boolean checkForForbiddenMergers(Lookup lkp) {
-        Collection<? extends LookupMerger> res = lkp.lookupAll(LookupMerger.class);
-        for (LookupMerger lm : res) {
-            if (ProjectInformation.class.equals(lm.getMergeableClass())) {
-                return false;
-            }
-            if (SharabilityQueryImplementation.class.equals(lm.getMergeableClass())) {
-                return false;
-            }
-            if (SubprojectProvider.class.equals(lm.getMergeableClass())) {
-                return false;
-            }
-            if (NbMavenProject.class.equals(lm.getMergeableClass())) {
-                return false;
-            }
-        }
-        return true;
-    }
-
     private Lookup createBasicLookup() {
         CPExtender extender = new CPExtender(this);
-        Lookup staticLookup = Lookups.fixed(new Object[]{
-                    projectInfo,
+        Lookup staticLookup = Lookups.fixed(
+                    new Info(this),
                     this,
                     fileObject,
                     new CacheDirProvider(this),
@@ -760,10 +696,10 @@ public final class NbMavenProjectImpl implements Project {
                     new CustomizerProviderImpl(this),
                     new LogicalViewProviderImpl(this),
                     cppProvider,
-                    sharability,
+                    new MavenSharabilityQueryImpl(this),
                     new MavenTestForSourceImpl(this),
                     ////            new MavenFileBuiltQueryImpl(this),
-                    subs,
+                    new SubprojectProviderImpl(this, watcher),
                     new RecommendedTemplatesImpl(this),
                     new MavenSourceLevelImpl(this),
                     new MavenAnnotationProcessingQueryImpl(this),
@@ -792,8 +728,7 @@ public final class NbMavenProjectImpl implements Project {
                     CosChecker.createCoSHook(this),
                     new ReactorChecker(),
                     new PrereqCheckerMerger(),
-                    new TestChecker(),
-                });
+                    new TestChecker());
         return staticLookup;
     }
 
