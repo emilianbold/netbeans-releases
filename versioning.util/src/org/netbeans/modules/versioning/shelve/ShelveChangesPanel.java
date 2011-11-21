@@ -43,6 +43,9 @@
  */
 package org.netbeans.modules.versioning.shelve;
 
+import javax.swing.JPanel;
+import javax.swing.border.EmptyBorder;
+
 /**
  *
  * @author ondra
@@ -52,8 +55,14 @@ class ShelveChangesPanel extends javax.swing.JPanel {
     /**
      * Creates new form ShelveChangesPanel
      */
-    public ShelveChangesPanel () {
+    public ShelveChangesPanel (JPanel options) {
         initComponents();
+        if (options == null) {
+            optionsPanel.setVisible(false);
+        } else {
+            options.setBorder(new EmptyBorder(0, 0, 0, 0));
+            optionsPanel.add(options);
+        }
     }
 
     /** This method is called from within the constructor to
@@ -67,6 +76,7 @@ class ShelveChangesPanel extends javax.swing.JPanel {
 
         lblPatchName = new javax.swing.JLabel();
         jLabel1 = new javax.swing.JLabel();
+        optionsPanel = new javax.swing.JPanel();
 
         lblPatchName.setLabelFor(txtPatchName);
         org.openide.awt.Mnemonics.setLocalizedText(lblPatchName, org.openide.util.NbBundle.getMessage(ShelveChangesPanel.class, "ShelveChangesPanel.lblPatchName.text")); // NOI18N
@@ -80,6 +90,9 @@ class ShelveChangesPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(ShelveChangesPanel.class, "ShelveChangesPanel.jLabel1.text")); // NOI18N
         jLabel1.setEnabled(false);
 
+        optionsPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(ShelveChangesPanel.class, "LBL_ShelveChangesPanel.optionsPanel.title"))); // NOI18N
+        optionsPanel.setLayout(new javax.swing.BoxLayout(optionsPanel, javax.swing.BoxLayout.LINE_AXIS));
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -87,10 +100,11 @@ class ShelveChangesPanel extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(optionsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(lblPatchName)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(txtPatchName, javax.swing.GroupLayout.DEFAULT_SIZE, 328, Short.MAX_VALUE))
+                        .addComponent(txtPatchName))
                     .addComponent(lblError)
                     .addComponent(jLabel1))
                 .addContainerGap())
@@ -104,6 +118,8 @@ class ShelveChangesPanel extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lblPatchName)
                     .addComponent(txtPatchName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(optionsPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(lblError)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -113,6 +129,7 @@ class ShelveChangesPanel extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel1;
     final javax.swing.JLabel lblError = new javax.swing.JLabel();
     private javax.swing.JLabel lblPatchName;
+    private javax.swing.JPanel optionsPanel;
     final javax.swing.JTextField txtPatchName = new javax.swing.JTextField();
     // End of variables declaration//GEN-END:variables
 }

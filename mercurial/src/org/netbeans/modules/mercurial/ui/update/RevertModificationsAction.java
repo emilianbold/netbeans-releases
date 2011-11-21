@@ -54,6 +54,7 @@ import org.netbeans.modules.mercurial.FileInformation;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.HgException;
+import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.netbeans.modules.mercurial.ui.repository.ChangesetPickerPanel;
 import org.openide.DialogDisplayer;
@@ -116,12 +117,15 @@ public class RevertModificationsAction extends ContextAction {
         }
         final String revStr = revertModifications.getSelectionRevision();
         final boolean doBackup = revertModifications.isBackupRequested();
+        final boolean removeNewFiles = revertModifications.isRemoveNewFilesRequested();
+        HgModuleConfig.getDefault().setRemoveNewFilesOnRevertModifications(removeNewFiles);
+        HgModuleConfig.getDefault().setBackupOnRevertModifications(doBackup);
 
         RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(repository);
         HgProgressSupport support = new HgProgressSupport() {
             @Override
             public void perform() {
-                performRevert(repository, revStr, files, doBackup, this.getLogger());
+                performRevert(repository, revStr, files, doBackup, removeNewFiles, this.getLogger());
             }
         };
         support.start(rp, repository, org.openide.util.NbBundle.getMessage(UpdateAction.class, "MSG_Revert_Progress")); // NOI18N
@@ -131,16 +135,16 @@ public class RevertModificationsAction extends ContextAction {
         List<File> revertFiles = new ArrayList<File>();
         revertFiles.add(file);        
 
-        performRevert(repository, revStr, revertFiles, doBackup, logger);
+        performRevert(repository, revStr, revertFiles, doBackup, false, logger);
     }
     
-    public static void performRevert(File repository, String revStr, File[] files, boolean doBackup, OutputLogger logger) {
+    public static void performRevert(File repository, String revStr, File[] files, boolean doBackup, boolean removeNewFiles, OutputLogger logger) {
         List<File> revertFiles = new ArrayList<File>();
         revertFiles.addAll(Arrays.asList(files));
-        performRevert(repository, revStr, revertFiles, doBackup, logger);
+        performRevert(repository, revStr, revertFiles, doBackup, removeNewFiles, logger);
     }
     
-    public static void performRevert(File repository, String revStr, List<File> revertFiles, boolean doBackup, OutputLogger logger) {
+    public static void performRevert(File repository, String revStr, List<File> revertFiles, boolean doBackup, boolean removeNewFiles, OutputLogger logger) {
         try{
             logger.outputInRed(
                     NbBundle.getMessage(RevertModificationsAction.class,
@@ -184,6 +188,9 @@ public class RevertModificationsAction extends ContextAction {
             logger.output(""); // NOI18N
 
             HgCommand.doRevert(repository, revertFiles, revStr, doBackup, logger);
+            if (removeNewFiles) {
+                HgCommand.doPurge(repository, revertFiles, logger);
+            }
             FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
             File[] conflictFiles = cache.listFiles(revertFiles.toArray(new File[0]), FileInformation.STATUS_VERSIONED_CONFLICT);
             if (conflictFiles.length != 0) {

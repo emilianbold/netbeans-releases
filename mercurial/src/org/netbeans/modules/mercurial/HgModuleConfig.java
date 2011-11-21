@@ -108,6 +108,7 @@ public class HgModuleConfig {
     private static final String DEFAULT_EXPORT_FILENAME = "%b_%r_%h";                                  // NOI18N
     private static final HgModuleConfig INSTANCE = new HgModuleConfig();
     private static final String KEY_SEARCH_ON_BRANCH = "searchOnBranch.enabled."; //NOI18N
+    private static final String KEY_REMOVE_NEW_FILES_ON_REVERT = "removeNewFilesOnRevert"; //NOI18N
     
     private static String userName;
 
@@ -648,6 +649,14 @@ public class HgModuleConfig {
 
     public void setSearchOnBranchEnabled (String branchName, boolean enabled) {
         getPreferences().putBoolean(KEY_SEARCH_ON_BRANCH + branchName, enabled);
+    }
+
+    public boolean isRemoveNewFilesOnRevertModifications () {
+        return getPreferences().getBoolean(KEY_REMOVE_NEW_FILES_ON_REVERT, true);
+    }
+
+    public void setRemoveNewFilesOnRevertModifications (boolean flag) {
+        getPreferences().putBoolean(KEY_REMOVE_NEW_FILES_ON_REVERT, flag);
     }
     
     synchronized Set<String> getCommitExclusions() {
