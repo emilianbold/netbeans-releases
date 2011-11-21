@@ -100,7 +100,6 @@ import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.maven.api.problem.ProblemReport;
 import org.netbeans.modules.maven.classpath.CPExtender;
 import org.netbeans.modules.maven.classpath.ClassPathProviderImpl;
-import org.netbeans.modules.maven.classpath.MavenSourcesImpl;
 import org.netbeans.modules.maven.configurations.M2ConfigProvider;
 import org.netbeans.modules.maven.configurations.ProjectProfileHandlerImpl;
 import org.netbeans.modules.maven.cos.CosChecker;
@@ -863,7 +862,6 @@ public final class NbMavenProjectImpl implements Project {
                     new MavenTestForSourceImpl(this),
                     ////            new MavenFileBuiltQueryImpl(this),
                     subs,
-                    new MavenSourcesImpl(this),
                     new RecommendedTemplatesImpl(this),
                     new MavenSourceLevelImpl(this),
                     new MavenAnnotationProcessingQueryImpl(this),

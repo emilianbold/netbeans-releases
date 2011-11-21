@@ -64,6 +64,7 @@ import org.apache.maven.project.MavenProject;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
@@ -79,6 +80,7 @@ import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import static org.netbeans.modules.maven.classpath.Bundle.*;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.util.NbBundle.Messages;
 
 /**
@@ -87,6 +89,7 @@ import org.openide.util.NbBundle.Messages;
  * IMHO at least..
  * @author  Milos Kleint
  */
+@ProjectServiceProvider(service={Sources.class, SourceGroupModifierImplementation.class}, projectType="org-netbeans-modules-maven")
 public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementation {
     public static final String TYPE_OTHER = "Resources"; //NOI18N
     public static final String TYPE_TEST_OTHER = "TestResources"; //NOI18N
@@ -118,10 +121,9 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
     
     private final Object lock = new Object();
     
-    
-    /** Creates a new instance of MavenSourcesImpl */
-    public MavenSourcesImpl(NbMavenProjectImpl proj) {
-        project = proj;
+    public MavenSourcesImpl(Project proj) {
+        project = proj.getLookup().lookup(NbMavenProjectImpl.class);
+        assert project != null : proj;
         javaGroup = new TreeMap<String, SourceGroup>();
         genSrcGroup = new TreeMap<File, SourceGroup>();
         otherMainGroups = new TreeMap<File, OtherGroup>();
