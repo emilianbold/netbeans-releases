@@ -53,6 +53,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.problem.ProblemReport;
@@ -116,7 +117,7 @@ public class MavenProjectNode extends AbstractNode {
 
     @Override
     public String getDisplayName() {
-        return project.getDisplayName();
+        return ProjectUtils.getInformation(project).getDisplayName();
     }
 
     public @Override String getHtmlDisplayName() {
@@ -161,6 +162,7 @@ public class MavenProjectNode extends AbstractNode {
         "TXT_FailedProjectLoadingDesc=This project could not be loaded by the NetBeans integration. "
             + "That usually means something is wrong with your pom.xml, or plugins are missing. "
             + "Select \"Show and Resolve Problems\" from the project's context menu for additional information.",
+        "LBL_DefaultDescription=A Maven-based project",
         "DESC_Project1=Location:",
         "DESC_Project2=GroupId:",
         "DESC_Project3=ArtifactId:",
@@ -177,7 +179,10 @@ public class MavenProjectNode extends AbstractNode {
             desc = TXT_FailedProjectLoadingDesc();
         } else {
             //TODO escape the short description
-            desc = project.getShortDescription();
+            desc = project.getOriginalMavenProject().getDescription();
+            if (desc == null) {
+                desc = LBL_DefaultDescription();
+            }
         }
         buf.append("<html><i>").append(DESC_Project1()).append("</i><b> ").append(FileUtil.getFileDisplayName(project.getProjectDirectory())).append("</b><br><i>"); //NOI18N
         if (!errorPlaceholder) {
