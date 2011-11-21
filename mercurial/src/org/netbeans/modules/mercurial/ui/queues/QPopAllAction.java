@@ -55,7 +55,7 @@ import org.openide.util.actions.SystemAction;
  *
  * @author ondra
  */
-@ActionID(id = "org.netbeans.modules.mercurial.ui.queues.QPopAllPatchesAction", category = "Mercurial Queues")
+@ActionID(id = "org.netbeans.modules.mercurial.ui.queues.QPopAllPatchesAction", category = "Mercurial/Queues")
 @ActionRegistration(displayName = "#CTL_MenuItem_QPopAllPatches")
 public class QPopAllAction extends ContextAction {
 

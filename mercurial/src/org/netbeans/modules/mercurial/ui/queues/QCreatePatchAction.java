@@ -59,7 +59,7 @@ import org.openide.util.Mutex.Action;
  *
  * @author ondra
  */
-@ActionID(id = "org.netbeans.modules.mercurial.ui.queues.QCreatePatchAction", category = "Mercurial Queues")
+@ActionID(id = "org.netbeans.modules.mercurial.ui.queues.QCreatePatchAction", category = "Mercurial/Queues")
 @ActionRegistration(displayName = "#CTL_MenuItem_QCreatePatch")
 public class QCreatePatchAction extends CreateRefreshAction {
 
