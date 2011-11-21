@@ -44,6 +44,9 @@
 
 package org.netbeans.modules.db.explorer;
 
+
+
+
 import java.awt.Dialog;
 import java.awt.Dimension;
 import java.beans.PropertyChangeListener;
@@ -54,36 +57,22 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
-import org.netbeans.lib.ddl.CommandNotSupportedException;
-import org.openide.util.Lookup;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
-
-import org.openide.util.NbBundle;
-
-import org.netbeans.lib.ddl.DBConnection;
-import org.netbeans.lib.ddl.DDLException;
 import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.api.keyring.Keyring;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.lib.ddl.CommandNotSupportedException;
+import org.netbeans.lib.ddl.DBConnection;
+import org.netbeans.lib.ddl.DDLException;
 import org.netbeans.lib.ddl.impl.Specification;
-
 import org.netbeans.modules.db.ExceptionListener;
 import org.netbeans.modules.db.explorer.action.ConnectAction;
 import org.netbeans.modules.db.explorer.dlg.ConnectProgressDialog;
@@ -100,10 +89,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
-import org.openide.util.Mutex;
-import org.openide.util.Parameters;
-import org.openide.util.RequestProcessor;
+import org.openide.util.*;
 import org.openide.util.RequestProcessor.Task;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -1184,7 +1170,7 @@ public final class DatabaseConnection implements DBConnection {
         }
         children = databasesNode.getChildren().getNodes();
         for (Node node : children) {
-            if (node.getName().equals(getName())) {
+            if (node.getDisplayName().equals(getDisplayName())) {
                 connectionNode = node;
                 break;
             }
@@ -1197,7 +1183,6 @@ public final class DatabaseConnection implements DBConnection {
             }
         } catch (PropertyVetoException e) {
             Exceptions.printStackTrace(e);
-            return;
         }
     }
     
