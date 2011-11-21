@@ -259,7 +259,13 @@ public abstract class BaseAnalisysTestCase extends JavaSourceTestCase {
     protected void checkParamElement(TestProblems result , String enclosingClass, 
             String methodName , String paramName )
     {
-        Set<Element> elements = result.getErrors().keySet();
+        checkParamElement(result.getErrors(), enclosingClass, methodName, paramName);
+    }
+    
+    protected void checkParamElement(Map<Element,String> map, String enclosingClass, 
+            String methodName , String paramName )
+    {
+        Set<Element> elements = map.keySet();
         Set<Element> classElements = new HashSet<Element>();
         TypeElement enclosingClazz = null;
         ExecutableElement method = null;

@@ -65,5 +65,8 @@ class ClassName {
 
 }
 
+$a = $b = 5;
+foobar($b);
+
 //END
 ?>

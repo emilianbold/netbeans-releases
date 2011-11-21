@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,11 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -39,55 +34,38 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.beans.analysis.analyzer;
+package org.netbeans.spi.extexecution;
 
-import java.util.LinkedList;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import javax.lang.model.element.Element;
-import javax.lang.model.element.TypeElement;
-
-import org.netbeans.modules.web.beans.analysis.analyzer.annotation.InterceptorBindingAnalyzer;
-import org.netbeans.modules.web.beans.analysis.analyzer.annotation.StereotypeAnalyzer;
-import org.netbeans.modules.web.beans.api.model.WebBeansModel;
-
+import org.netbeans.modules.extexecution.ProcessBuilderAccessor;
 
 /**
- * @author ads
+ * The factory allowing SPI implementors of {@link ProcessBuilderImplementation}
+ * to create its API instances {@link org.netbeans.api.extexecution.ProcessBuilder}.
  *
+ * @author Petr Hejl
+ * @since 1.28
  */
-public class AnnotationModelAnalyzer implements ModelAnalyzer {
+public class ProcessBuilderFactory {
 
-    @Override
-    public void analyze( Element element, TypeElement parent,
-            WebBeansModel model, AtomicBoolean cancel, 
-            Result result )
-    {
-        TypeElement subject = (TypeElement) element;
-        for( AnnotationAnalyzer analyzer : ANALYZERS ){
-            if ( cancel.get() ){
-                return;
-            }
-            analyzer.analyze( subject, model, cancel, result );
-        }
-    }
-    
-    public interface AnnotationAnalyzer {
-        public static final String INCORRECT_RUNTIME = "ERR_IncorrectRuntimeRetention"; //NOI18N
-        
-        void analyze( TypeElement element , WebBeansModel model,
-                AtomicBoolean cancel, 
-                Result result );
+    private ProcessBuilderFactory() {
+        super();
     }
 
-    private static final List<AnnotationAnalyzer> ANALYZERS = 
-        new LinkedList<AnnotationAnalyzer>(); 
-    
-    static {
-        ANALYZERS.add( new StereotypeAnalyzer());
-        ANALYZERS.add( new InterceptorBindingAnalyzer() );
+    /**
+     * Creates the instance of {@link org.netbeans.api.extexecution.ProcessBuilder}
+     * from its SPI representation.
+     *
+     * @param impl SPI representation
+     * @param description human readable description of the builder
+     * @return the API instance
+     */
+    public static org.netbeans.api.extexecution.ProcessBuilder createProcessBuilder(
+            ProcessBuilderImplementation impl, String description) {
+        return ProcessBuilderAccessor.getDefault().createProcessBuilder(impl, description);
     }
-
 }

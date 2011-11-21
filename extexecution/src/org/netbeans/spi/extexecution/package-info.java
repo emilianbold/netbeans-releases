@@ -25,8 +25,9 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * Contributor(s):
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -40,54 +41,11 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.beans.analysis.analyzer;
-
-import java.util.LinkedList;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import javax.lang.model.element.Element;
-import javax.lang.model.element.TypeElement;
-
-import org.netbeans.modules.web.beans.analysis.analyzer.annotation.InterceptorBindingAnalyzer;
-import org.netbeans.modules.web.beans.analysis.analyzer.annotation.StereotypeAnalyzer;
-import org.netbeans.modules.web.beans.api.model.WebBeansModel;
-
 
 /**
- * @author ads
+ * The support SPI for creation of external processes.
  *
+ * @see org.netbeans.spi.extexecution.ProcessBuilderImplementation
  */
-public class AnnotationModelAnalyzer implements ModelAnalyzer {
+package org.netbeans.spi.extexecution;
 
-    @Override
-    public void analyze( Element element, TypeElement parent,
-            WebBeansModel model, AtomicBoolean cancel, 
-            Result result )
-    {
-        TypeElement subject = (TypeElement) element;
-        for( AnnotationAnalyzer analyzer : ANALYZERS ){
-            if ( cancel.get() ){
-                return;
-            }
-            analyzer.analyze( subject, model, cancel, result );
-        }
-    }
-    
-    public interface AnnotationAnalyzer {
-        public static final String INCORRECT_RUNTIME = "ERR_IncorrectRuntimeRetention"; //NOI18N
-        
-        void analyze( TypeElement element , WebBeansModel model,
-                AtomicBoolean cancel, 
-                Result result );
-    }
-
-    private static final List<AnnotationAnalyzer> ANALYZERS = 
-        new LinkedList<AnnotationAnalyzer>(); 
-    
-    static {
-        ANALYZERS.add( new StereotypeAnalyzer());
-        ANALYZERS.add( new InterceptorBindingAnalyzer() );
-    }
-
-}
