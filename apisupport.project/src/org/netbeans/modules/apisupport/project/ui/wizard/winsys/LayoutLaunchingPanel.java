@@ -266,7 +266,7 @@ implements TaskListener, Runnable, ExplorerManager.Provider {
         outlineView.setVisible(true);
         progress.invalidate();
         outlineView.invalidate();
-        validateTree();
+        validate();
     }
 
     @Override
