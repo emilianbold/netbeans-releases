@@ -192,7 +192,7 @@ public final class FolderObj extends BaseFileObj {
                     final FileNaming foFileName = ((BaseFileObj)fo).getFileName();
                     if (!fo.isValid()) {
                         final Level level = counter < 10 ? Level.FINE : Level.WARNING;
-                        LOG.log(level, "Invalid fileObject {0}, trying again for {1}", new Object[] { fo, counter }); // NOI18N
+                        LOG.log(level, "Invalid fileObject {0}, trying again for {1} with {2}", new Object[] { fo, counter, onlyExisting }); // NOI18N
                         continue LOOP;
                     }
                     if (fileName != foFileName && counter < 10) {
