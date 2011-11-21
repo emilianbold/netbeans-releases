@@ -126,28 +126,11 @@ public final class LookupProviderSupport {
 
     private static class SourcesImpl implements Sources, ChangeListener, LookupListener {
         private final ChangeSupport changeSupport = new ChangeSupport(this);
-        private Lookup.Result<Sources> delegates;
-        private Collection<Sources> currentDelegates = new ArrayList<Sources>();
+        private final Lookup.Result<Sources> delegates;
+        private Collection<Sources> currentDelegates;
         
-        public SourcesImpl(Lookup lookup) {
-            if (currentDelegates.size() > 0) {
-                for (Sources old : currentDelegates) {
-                    old.removeChangeListener(this);
-                }
-                currentDelegates.clear();
-            }
-            if (delegates != null) {
-                delegates.removeLookupListener(this);
-            }
-            Lookup.Result<Sources> srcs = lookup.lookupResult(Sources.class);
-            for (Sources ns : srcs.allInstances()) {
-                assert ns != this;
-                ns.addChangeListener(this);
-                currentDelegates.add(ns);
-            }
-            srcs.addLookupListener(this);
-            delegates = srcs;
-            changeSupport.fireChange();
+        SourcesImpl(Lookup lookup) {
+            delegates = lookup.lookupResult(Sources.class);
         }
 
         public @Override SourceGroup[] getSourceGroups(String type) {
@@ -168,12 +151,28 @@ public final class LookupProviderSupport {
             return result.toArray(new SourceGroup[result.size()]);
         }
 
-        public @Override void addChangeListener(ChangeListener listener) {
+        @Override public synchronized void addChangeListener(ChangeListener listener) {
+            if (!changeSupport.hasListeners()) {
+                currentDelegates = new ArrayList<Sources>(delegates.allInstances());
+                for (Sources ns : currentDelegates) {
+                    assert ns != this;
+                    ns.addChangeListener(this);
+                }
+                delegates.addLookupListener(this);
+            }
             changeSupport.addChangeListener(listener);
         }
 
-        public @Override void removeChangeListener(ChangeListener listener) {
+        @Override public synchronized void removeChangeListener(ChangeListener listener) {
             changeSupport.removeChangeListener(listener);
+            if (!changeSupport.hasListeners() && currentDelegates != null) {
+                for (Sources ns : currentDelegates) {
+                    assert ns != this;
+                    ns.removeChangeListener(this);
+                }
+                currentDelegates = null;
+                delegates.removeLookupListener(this);
+            }
         }
 
         public @Override void stateChanged(ChangeEvent e) {
@@ -181,15 +180,17 @@ public final class LookupProviderSupport {
         }
 
         public @Override void resultChanged(LookupEvent ev) {
-            if (currentDelegates.size() > 0) {
-                for (Sources old : currentDelegates) {
-                    old.removeChangeListener(this);
+            synchronized (this) {
+                if (currentDelegates != null) {
+                    for (Sources old : currentDelegates) {
+                        old.removeChangeListener(this);
+                    }
+                    currentDelegates.clear();
+                    for (Sources ns : delegates.allInstances()) {
+                        ns.addChangeListener(this);
+                        currentDelegates.add(ns);
+                    }
                 }
-                currentDelegates.clear();
-            }
-            for (Sources ns : delegates.allInstances()) {
-                ns.addChangeListener(this);
-                currentDelegates.add(ns);
             }
             changeSupport.fireChange();
         }
