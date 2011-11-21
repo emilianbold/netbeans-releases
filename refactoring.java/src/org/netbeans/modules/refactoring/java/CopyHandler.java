@@ -141,11 +141,18 @@ final class CopyHandler implements OperationListener {
         if (cp == null) {
             return;
         }
-        String pkgName = cp.getResourceName(copyFO.getParent(), '.', false);
-        try {
-            renameFO(js, pkgName, copyFO.getName(), origFO.getName());
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+        ClassPath origCp = ClassPath.getClassPath(origFO, ClassPath.SOURCE);
+        String pkgName = cp.getResourceName(copyFO.getParent(), '.', false);    //NOI18N
+        if (origCp == null ||
+            !pkgName.equals(origCp.getResourceName(origFO.getParent(), '.', false)) ||  //NOI18N
+            !copyFO.getName().equals(origFO.getName())) {
+            try {
+                renameFO(js, pkgName, copyFO.getName(), origFO.getName());
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (RuntimeException re) {
+                Exceptions.printStackTrace(re);
+            }
         }
     }
 
