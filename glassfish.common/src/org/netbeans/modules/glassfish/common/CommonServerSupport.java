@@ -786,7 +786,7 @@ public class CommonServerSupport implements GlassfishModule2, RefreshModulesCook
                     
                     if((currentState == ServerState.STOPPED || currentState == ServerState.UNKNOWN) && isRunning) {
                         setServerState(ServerState.RUNNING);
-                    } else if(currentState == ServerState.RUNNING && !isRunning) {
+                    } else if((currentState == ServerState.RUNNING || currentState == ServerState.UNKNOWN) && !isRunning) {
                         setServerState(ServerState.STOPPED);
                     } else if(currentState == ServerState.STOPPED_JVM_PROFILER && isRunning) {
                         setServerState(ServerState.RUNNING);
