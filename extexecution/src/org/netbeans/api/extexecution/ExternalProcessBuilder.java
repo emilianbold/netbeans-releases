@@ -64,11 +64,13 @@ import org.openide.util.Parameters;
 import org.openide.util.Utilities;
 
 /**
- * Utility class to make the external process creation easier.
+ * Utility class to make the local external process creation easier.
  * <p>
  * Builder handle command, working directory, <code>PATH</code> variable and HTTP proxy.
  * <p>
  * This class is <i>immutable</i>.
+ * <p>
+ * Also see {@link ProcessBuilder#getLocal()}.
  *
  * @author Petr Hejl
  * @see #call()
@@ -278,7 +280,7 @@ public final class ExternalProcessBuilder implements Callable<Process> {
         List<String> args = buildArguments();
         commandList.addAll(args);
 
-        ProcessBuilder pb = new ProcessBuilder(commandList.toArray(new String[commandList.size()]));
+        java.lang.ProcessBuilder pb = new java.lang.ProcessBuilder(commandList.toArray(new String[commandList.size()]));
         if (workingDirectory != null) {
             pb.directory(workingDirectory);
         }
@@ -301,7 +303,7 @@ public final class ExternalProcessBuilder implements Callable<Process> {
      * @param pb the ProcessBuilder to log.
      * @param level the level for logging.
      */
-    private void logProcess(final Level level, final ProcessBuilder pb) {
+    private void logProcess(final Level level, final java.lang.ProcessBuilder pb) {
 
         if (!LOGGER.isLoggable(level)) {
             return;
@@ -406,7 +408,7 @@ public final class ExternalProcessBuilder implements Callable<Process> {
         return sb.toString();
     }
 
-    private void adjustProxy(ProcessBuilder pb) {
+    private void adjustProxy(java.lang.ProcessBuilder pb) {
         String proxy = getNetBeansHttpProxy();
         if (proxy != null) {
             Map<String, String> env = pb.environment();
