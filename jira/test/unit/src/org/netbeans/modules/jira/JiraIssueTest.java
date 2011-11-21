@@ -42,10 +42,7 @@
 
 package org.netbeans.modules.jira;
 
-import com.atlassian.connector.eclipse.internal.jira.core.JiraAttribute;
-import com.atlassian.connector.eclipse.internal.jira.core.JiraClientFactory;
-import com.atlassian.connector.eclipse.internal.jira.core.JiraRepositoryConnector;
-import com.atlassian.connector.eclipse.internal.jira.core.WorkLogConverter;
+import com.atlassian.connector.eclipse.internal.jira.core.*;
 import com.atlassian.connector.eclipse.internal.jira.core.model.Attachment;
 import com.atlassian.connector.eclipse.internal.jira.core.model.IssueType;
 import com.atlassian.connector.eclipse.internal.jira.core.model.JiraAction;
@@ -94,8 +91,8 @@ public class JiraIssueTest extends NbTestCase {
     }
 
     @Override
-    protected void setUp() throws Exception {    
-        Jira.getInstance(); // force JiraCorePlugin init
+    protected void setUp() throws Exception { 
+        JiraTestUtil.initClient(getWorkDir());
         BugtrackingManager.getInstance();
         // need this to initialize cache -> server defined status values & co
         getClient().getCache().refreshDetails(JiraTestUtil.nullProgressMonitor);
