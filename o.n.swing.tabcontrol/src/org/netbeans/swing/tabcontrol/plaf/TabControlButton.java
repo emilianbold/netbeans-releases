@@ -88,7 +88,7 @@ public abstract class TabControlButton extends JButton {
     public static final int STATE_ROLLOVER = 3;
     
     private int buttonId;
-    private TabDisplayer displayer;
+    protected final TabDisplayer displayer;
     private boolean showBorder;
     private boolean superConstructorsCompleted = false;
             
