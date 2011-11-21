@@ -71,6 +71,7 @@ import org.openide.windows.TopComponent;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.netbeans.modules.mercurial.FileStatus;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.text.NbDocument;
@@ -166,9 +167,15 @@ public class AnnotateAction extends ContextAction {
         HgProgressSupport support = new HgProgressSupport() {
             @Override
             public void perform() {
+                File annotatedFile = file;
+                FileStatus st = Mercurial.getInstance().getFileStatusCache().getStatus(file).getStatus(null);
+                if (st != null && st.isCopied() && st.getOriginalFile() != null) {
+                    annotatedFile = st.getOriginalFile();
+                    ab.setReferencedFile(annotatedFile);
+                }
                 if (revision != null) {
                     // showing annotations from past, the referenced file differs from the one being displayed
-                    ab.setReferencedFile(file);
+                    ab.setReferencedFile(annotatedFile);
                 }
                 OutputLogger logger = getLogger();
                 logger.outputInRed(
@@ -177,7 +184,7 @@ public class AnnotateAction extends ContextAction {
                 logger.outputInRed(
                         NbBundle.getMessage(AnnotateAction.class,
                         "MSG_ANNOTATE_TITLE_SEP")); // NOI18N
-                computeAnnotations(repository, file, this, ab, revision);
+                computeAnnotations(repository, annotatedFile, this, ab, revision);
                 logger.output("\t" + file.getAbsolutePath()); // NOI18N
                 logger.outputInRed(
                         NbBundle.getMessage(AnnotateAction.class,

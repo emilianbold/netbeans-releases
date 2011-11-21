@@ -42,10 +42,7 @@
 
 package org.netbeans.modules.jira;
 
-import com.atlassian.connector.eclipse.internal.jira.core.IJiraConstants;
-import com.atlassian.connector.eclipse.internal.jira.core.JiraAttribute;
-import com.atlassian.connector.eclipse.internal.jira.core.JiraClientFactory;
-import com.atlassian.connector.eclipse.internal.jira.core.JiraRepositoryConnector;
+import com.atlassian.connector.eclipse.internal.jira.core.*;
 import com.atlassian.connector.eclipse.internal.jira.core.model.Component;
 import com.atlassian.connector.eclipse.internal.jira.core.model.IssueType;
 import com.atlassian.connector.eclipse.internal.jira.core.model.JiraFilter;
@@ -58,6 +55,7 @@ import com.atlassian.connector.eclipse.internal.jira.core.model.filter.ProjectFi
 import com.atlassian.connector.eclipse.internal.jira.core.service.JiraClient;
 import com.atlassian.connector.eclipse.internal.jira.core.service.JiraException;
 import com.atlassian.connector.eclipse.internal.jira.core.util.JiraUtil;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -268,10 +266,18 @@ public class JiraTestUtil {
         return null;
     }
 
-    public static JiraClient getClient() {
-        if(client == null) {
+    public static void initClient(File workDir) {
+        try {
             client = JiraClientFactory.getDefault().getJiraClient(getTaskRepository());
-        }
+        } catch (IllegalStateException e) {
+            // lests asume it's not initialized yet
+            JiraCorePlugin.initialize(new File(workDir, "jiraservercache"));
+            client = JiraClientFactory.getDefault().getJiraClient(getTaskRepository());
+        }            
+    }
+    
+    public static JiraClient getClient() {
+        assert client != null : "invoke init client first";
         return client;
     }
 

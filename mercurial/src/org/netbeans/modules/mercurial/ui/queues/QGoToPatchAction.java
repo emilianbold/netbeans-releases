@@ -62,7 +62,7 @@ import org.openide.util.NbBundle;
  *
  * @author ondra
  */
-@ActionID(id = "org.netbeans.modules.mercurial.ui.queues.QGoToPatchAction", category = "Mercurial Queues")
+@ActionID(id = "org.netbeans.modules.mercurial.ui.queues.QGoToPatchAction", category = "Mercurial/Queues")
 @ActionRegistration(displayName = "#CTL_MenuItem_QGoToPatch")
 public class QGoToPatchAction extends ContextAction {
 

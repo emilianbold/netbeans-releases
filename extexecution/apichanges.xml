@@ -105,6 +105,7 @@ is the proper place.
         <apidef name="extexecution_api_input">External Execution Input API</apidef>
         <apidef name="extexecution_api_print">External Execution Input Printing API</apidef>
         <apidef name="extexecution_spi_destroy">External Execution Process Destroy SPI</apidef>
+        <apidef name="extexecution_spi">External Execution SPI</apidef>
         <!-- etc. -->
     </apidefs>
 
@@ -112,6 +113,22 @@ is the proper place.
 
     <changes>
 
+        <change>
+            <api name="extexecution_api"/>
+            <summary>New API/SPI to abstract process builder</summary>
+            <version major="1" minor="28"/>
+            <date day="21" month="11" year="2011"/>
+            <author login="phejl"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible"/>
+            <description>
+                New API/SPI classes to allow different implementations
+                of process builders.
+            </description>
+            <class package="org.netbeans.api.extexecution" name="ProcessBuilder"/>
+            <class package="org.netbeans.spi.extexecution" name="ProcessBuilderFactory"/>
+            <class package="org.netbeans.spi.extexecution" name="ProcessBuilderImplementation"/>
+            <issue number="205104"/>
+        </change>
         <change>
             <api name="extexecution_api"/>
             <summary>New API method to avoid reset of custom IO</summary>

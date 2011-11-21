@@ -90,6 +90,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
+import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.Include;
 import org.netbeans.modules.php.editor.parser.astnodes.InfixExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.InfixExpression.OperatorType;
@@ -732,8 +733,9 @@ public class VariousUtils {
         } else if (varBase instanceof StaticMethodInvocation) {
             StaticMethodInvocation staticMethodInvocation = (StaticMethodInvocation) varBase;
             String className = null;
-            if (!(staticMethodInvocation.getClassName() instanceof Variable)) {
-                className = CodeUtils.extractQualifiedName(staticMethodInvocation.getClassName());
+            Expression classNameExpression = staticMethodInvocation.getClassName();
+            if (classNameExpression instanceof Identifier || classNameExpression instanceof NamespaceName) {
+                className = CodeUtils.extractQualifiedName(classNameExpression);
             }
             String methodName = CodeUtils.extractFunctionName(staticMethodInvocation.getMethod());
 

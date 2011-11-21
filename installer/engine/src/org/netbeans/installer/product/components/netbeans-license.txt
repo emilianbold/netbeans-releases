@@ -1,4 +1,4 @@
-NETBEANS IDE 7.1 Beta ("Product")
+NETBEANS IDE 7.1 ("Product")
 
 Oracle licenses NetBeans IDE under the CDDL v 1.0 (CDDL) or
 GNU General Public License version 2 (GPL), both of which
@@ -15,7 +15,7 @@ of the third party technology license agreement specified
 and not under either the CDDL or GPL.
 
 Please review the list of libraries and licenses provided
-for use. This license file contains five distinct licenses.
+for use. This license file contains six distinct licenses.
 
 Unless specified below, the use of NetBeans IDE and
 components from the GlassFish runtime are governed by the
@@ -24,7 +24,7 @@ with Classpath Exception ("GPLv2 with Classpath Exception")
 or the Common Development and Distribution License ("CDDL").
 The Product also contains components  which are governed
 exclusively by the terms of the GPLv2 with Classpath
-Exception (e.g. components from OpenJDK) .
+Exception (e.g. components from OpenJDK).
 
 LICENSE #1: GPLv2 with Classpath Exception. 
 
