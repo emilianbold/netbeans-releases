@@ -43,7 +43,6 @@ package org.netbeans.modules.maven;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -62,7 +61,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.Icon;
 import javax.swing.SwingUtilities;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DefaultArtifact;
@@ -102,6 +100,7 @@ import org.netbeans.modules.maven.execute.PrereqCheckerMerger;
 import org.netbeans.modules.maven.execute.ReactorChecker;
 import org.netbeans.modules.maven.operations.OperationsImpl;
 import org.netbeans.modules.maven.problems.ProblemReporterImpl;
+import org.netbeans.modules.maven.queries.Info;
 import org.netbeans.modules.maven.queries.MavenAnnotationProcessingQueryImpl;
 import org.netbeans.modules.maven.queries.MavenBinaryForSourceQueryImpl;
 import org.netbeans.modules.maven.queries.MavenFileEncodingQueryImpl;
@@ -111,7 +110,6 @@ import org.netbeans.modules.maven.queries.MavenSharabilityQueryImpl;
 import org.netbeans.modules.maven.queries.MavenSourceLevelImpl;
 import org.netbeans.modules.maven.queries.MavenTestForSourceImpl;
 import org.netbeans.modules.maven.queries.RecommendedTemplatesImpl;
-import org.netbeans.modules.maven.spi.nodes.SpecialIcon;
 import org.netbeans.spi.java.project.support.LookupMergerSupport;
 import org.netbeans.spi.project.LookupMerger;
 import org.netbeans.spi.project.ProjectState;
@@ -126,7 +124,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
-import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Lookup.Template;
 import org.openide.util.NbBundle.Messages;
@@ -195,9 +192,9 @@ public final class NbMavenProjectImpl implements Project {
         this.projectFile = FileUtil.normalizeFile(FileUtil.toFile(projectFO));
         fileObject = projectFO;
         folderFileObject = folder;
-        projectInfo = new Info();
         sharability = new MavenSharabilityQueryImpl(this);
         watcher = ACCESSOR.createWatcher(this);
+        projectInfo = new Info(this);
         subs = new SubprojectProviderImpl(this, watcher);
         lookup = new LazyLookup(this, watcher, projectInfo, sharability, subs, fileObject);
         projectFolderUpdater = new Updater("nb-configuration.xml", "pom.xml");
@@ -422,7 +419,6 @@ public final class NbMavenProjectImpl implements Project {
             project = new SoftReference<MavenProject>(prj);
         }
         ACCESSOR.doFireReload(watcher);
-        projectInfo.reset();
         problemReporter.doBaseProblemChecks(getOriginalMavenProject());
     }
 
@@ -808,74 +804,6 @@ public final class NbMavenProjectImpl implements Project {
                     new TestChecker(),
                 });
         return staticLookup;
-    }
-
-    private final class Info implements ProjectInformation {
-
-        private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
-
-        Info() {
-        }
-
-        public void reset() {
-            firePropertyChange(ProjectInformation.PROP_DISPLAY_NAME);
-            pcs.firePropertyChange(ProjectInformation.PROP_ICON, null, getIcon());
-        }
-
-        void firePropertyChange(String prop) {
-            pcs.firePropertyChange(prop, null, null);
-        }
-
-        @Override
-        public String getName() {
-            String toReturn = NbMavenProjectImpl.this.getName();
-            return toReturn;
-        }
-
-        
-        @Messages({
-            "# {0} - dir basename", "LBL_misconfigured_project={0} [unloadable]",
-            "TXT_Maven_project_at=Maven project at {0}"
-        })
-        @Override public @NonNull String getDisplayName() {
-            MavenProject pr = NbMavenProjectImpl.this.getOriginalMavenProject();
-            if (NbMavenProject.isErrorPlaceholder(pr)) {
-                return LBL_misconfigured_project(getProjectDirectory().getNameExt());
-            }
-            String toReturn = pr.getName();
-            if (toReturn == null) {
-                String grId = pr.getGroupId();
-                String artId = pr.getArtifactId();
-                if (grId != null && artId != null) {
-                    toReturn = grId + ":" + artId; //NOI18N
-
-                } else {
-                    toReturn = TXT_Maven_project_at(NbMavenProjectImpl.this.getProjectDirectory().getPath());
-                }
-            }
-            return toReturn;
-        }
-
-        @Override
-        public Icon getIcon() {
-            SpecialIcon special = getLookup().lookup(SpecialIcon.class);
-            return special != null ? special.getIcon() : ImageUtilities.loadImageIcon("org/netbeans/modules/maven/resources/Maven2Icon.gif", true);
-        }
-
-        @Override
-        public Project getProject() {
-            return NbMavenProjectImpl.this;
-        }
-
-        @Override
-        public void addPropertyChangeListener(PropertyChangeListener listener) {
-            pcs.addPropertyChangeListener(listener);
-        }
-
-        @Override
-        public void removePropertyChangeListener(PropertyChangeListener listener) {
-            pcs.removePropertyChangeListener(listener);
-        }
     }
 
     //MEVENIDE-448 seems to help against creation of duplicate project instances
