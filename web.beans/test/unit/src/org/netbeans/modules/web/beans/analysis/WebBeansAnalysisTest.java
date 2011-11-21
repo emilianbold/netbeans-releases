@@ -45,6 +45,7 @@ package org.netbeans.modules.web.beans.analysis;
 import java.io.IOException;
 
 import org.netbeans.modules.j2ee.metadata.model.support.TestUtilities;
+import org.netbeans.modules.web.beans.analysis.analyzer.method.InjectionPointParameterAnalyzer;
 import org.openide.filesystems.FileObject;
 
 
@@ -994,6 +995,243 @@ public class WebBeansAnalysisTest extends BaseAnalisysTestCase {
             @Override
             public void process( TestProblems result ) {
                 checkFieldElement(result, "foo.Clazz1", "delegate");
+            }
+            
+        };
+        runAnalysis(errorFile1 , processor);
+        
+        runAnalysis( goodFile, NO_ERRORS_PROCESSOR );
+        
+    }
+    
+    //=======================================================================
+    //
+    //  MethodModelAnalyzer - ScopedMethodAnalyzer
+    //
+    //=======================================================================
+    public void testScopedProducerMethod() throws IOException {
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Scope1.java",
+                "package foo; " +
+                " import javax.inject.Scope; "+
+                " import java.lang.annotation.Retention; "+
+                " import java.lang.annotation.RetentionPolicy; "+
+                " import java.lang.annotation.Target; " +
+                " import java.lang.annotation.ElementType; "+
+                " @Retention(RetentionPolicy.RUNTIME) "+
+                " @Target({ElementType.METHOD,ElementType.FIELD, ElementType.TYPE}) "+
+                " @Scope "+
+                " public @interface Scope1 { "+
+                "}");
+        
+        FileObject errorFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz.java",
+                "package foo; " +
+                "import javax.enterprise.inject.Produces; "+
+                " public class Clazz<T>  { "+
+                " @Produces @Scope1 T producerMethod(){ return null; } "+
+                "}");
+        
+        FileObject goodFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz1.java",
+                "package foo; " +
+                "import javax.enterprise.inject.Produces; "+
+                " public class Clazz1<T>  { "+
+                " @Produces T producerMethod(){ return null; } "+
+                "}");
+        
+        FileObject goodFile1 = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz2.java",
+                "package foo; " +
+                " public class Clazz2<T>  { "+
+                " private T method(){ return null; } "+
+                "}");
+        
+        ResultProcessor processor = new ResultProcessor (){
+
+            @Override
+            public void process( TestProblems result ) {
+                checkMethodElement(result, "foo.Clazz", "producerMethod");
+            }
+            
+        };
+        runAnalysis(errorFile , processor);
+        
+        runAnalysis( goodFile, NO_ERRORS_PROCESSOR );
+        runAnalysis( goodFile1, NO_ERRORS_PROCESSOR );
+    }
+    
+    //=======================================================================
+    //
+    //  MethodModelAnalyzer - InjectionPointParameterAnalyzer
+    //
+    //=======================================================================
+    
+    /*
+     * InjectionPointParameterAnalyzer.checkResult : typesafe resolution checks 
+     */
+    public void testInjectableParamResult() throws IOException {
+        getUtilities().createQualifier("Qualifier1");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Iface.java",
+                "package foo; " +
+                " public interface Iface  { "+
+                "}");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/ImplClass.java",
+                "package foo; " +
+                " public class ImplClass  implements Iface { "+
+                "}");
+        
+        FileObject errorFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz.java",
+                "package foo; " +
+                "import javax.inject.Inject; "+
+                " public class Clazz { "+
+                " @Inject void method(@Qualifier1 Iface injectionPoint ){} "+
+                "}");
+        
+        FileObject goodFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz1.java",
+                "package foo; " +
+                "import javax.inject.Inject; "+
+                " public class Clazz1 { "+
+                " @Inject void method(Iface injectioPoint){} "+
+                "}");
+        
+        FileObject goodFile1 = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz2.java",
+                "package foo; " +
+                "import javax.inject.Inject; "+
+                "import javax.enterprise.context.spi.Context; "+
+                " public class Clazz2 { "+
+                " @Inject void method( Context injectioPoint) {} "+
+                "}");
+        
+        ResultProcessor processor = new ResultProcessor (){
+
+            @Override
+            public void process( TestProblems result ) {
+                checkParamElement( result.getWarings(), "foo.Clazz", "method", 
+                        "injectionPoint");
+                assertEquals( "Found unexpected errors", 0, result.getErrors().size());
+            }
+            
+        };
+        runAnalysis(errorFile , processor);
+        
+        runAnalysis( goodFile, NO_ERRORS_PROCESSOR );
+        runAnalysis( goodFile1, NO_ERRORS_PROCESSOR );
+    }
+    
+    /*
+     * InjectionPointParameterAnalyzer.checkResult : defenition errors ( DefinitionErrorResult impl ) 
+     */
+    public void testParamDefinitionErrorResult() throws IOException {
+        
+        FileObject errorFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz1.java",
+                "package foo; " +
+                "import javax.inject.Inject; "+
+                "import javax.enterprise.inject.Produces; "+
+                " public class Clazz1<T> { "+
+                " @Inject void method( T injectioPoint ){} "+
+                "}");
+        
+        ResultProcessor processor = new ResultProcessor (){
+
+            @Override
+            public void process( TestProblems result ) {
+                checkParamElement(result, "foo.Clazz1", "method", "injectioPoint");
+            }
+            
+        };
+        runAnalysis(errorFile , processor);
+        
+    }
+    
+    /*
+     * InjectionPointAnalyzer.analyzeDecoratedBeans 
+     */
+    public void testParamDecoratedBean() throws IOException {
+        getUtilities().createQualifier("Qualifier1");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Iface1.java",
+                "package foo; " +
+                " public interface Iface1 { "+
+                "}");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/DecoratedBean1.java",
+                "package foo; " +
+                " @Qualifier1 "+
+                " public final class DecoratedBean1 implements Iface1 { "+
+                "}");
+        
+        FileObject errorFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz.java",
+                "package foo; " +
+                "import javax.inject.Inject; "+
+                "import javax.decorator.Delegate; "+
+                "import javax.decorator.Decorator; "+
+                " @Decorator "+
+                " public class Clazz implements Iface1 { "+
+                " @Inject void init( @Qualifier1 @Delegate Iface1 delegate){} "+
+                "}");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Iface2.java",
+                "package foo; " +
+                " public interface Iface2 { "+
+                " void method();"+
+                "}");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/DecoratedBean2.java",
+                "package foo; " +
+                " @Qualifier1 "+
+                " public class DecoratedBean2 implements Iface2 { "+
+                " public final void method() {  } "+
+                " private final void op() { } "+
+                "}");
+        
+        FileObject errorFile1 = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz1.java",
+                "package foo; " +
+                "import javax.inject.Inject; "+
+                "import javax.decorator.Delegate; "+
+                "import javax.decorator.Decorator; "+
+                " @Decorator "+
+                " public class Clazz1 implements Iface2 { "+
+                " @Inject void init ( @Qualifier1 @Delegate Iface2 delegate) {} "+
+                " public void method() {  } "+
+                " private final void op() {  } "+
+                "}");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Iface3.java",
+                "package foo; " +
+                " public interface Iface3 { "+
+                "}");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/DecoratedBean3.java",
+                "package foo; " +
+                "import javax.inject.Inject; "+
+                " @Qualifier1 "+
+                " public class DecoratedBean3 implements Iface3 { "+
+                "}");
+        
+        FileObject goodFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz2.java",
+                "package foo; " +
+                "import javax.inject.Inject; "+
+                "import javax.decorator.Delegate; "+
+                "import javax.decorator.Decorator; "+
+                " @Decorator "+
+                " public class Clazz2 implements Iface3 { "+
+                " @Inject void init( @Qualifier1 @Delegate Iface3 delegate){} "+
+                "}");
+        
+        ResultProcessor processor = new ResultProcessor (){
+
+            @Override
+            public void process( TestProblems result ) {
+                checkParamElement(result, "foo.Clazz", "init", "delegate");
+            }
+            
+        };
+        runAnalysis(errorFile , processor);
+        
+        processor = new ResultProcessor (){
+
+            @Override
+            public void process( TestProblems result ) {
+                checkParamElement(result, "foo.Clazz1", "init", "delegate");
             }
             
         };
