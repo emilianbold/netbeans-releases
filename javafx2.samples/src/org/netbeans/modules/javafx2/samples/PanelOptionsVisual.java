@@ -46,6 +46,8 @@ package org.netbeans.modules.javafx2.samples;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.ComboBoxModel;
 import javax.swing.JPanel;
 import javax.swing.ListCellRenderer;
@@ -68,6 +70,8 @@ import org.openide.util.WeakListeners;
  */
 // TODO mnemonics
 public class PanelOptionsVisual extends JPanel implements TaskListener {
+
+    private static final Logger LOGGER = Logger.getLogger("javafx"); // NOI18N
 
     private PanelConfigureProject panel;
 
@@ -224,19 +228,7 @@ public class PanelOptionsVisual extends JPanel implements TaskListener {
     // End of variables declaration//GEN-END:variables
 
     private void checkPlatforms() {
-        JavaPlatform[] platforms = JavaPlatformManager.getDefault().getInstalledPlatforms();
-        boolean fxPlatformExists = false;
-        for (JavaPlatform javaPlatform : platforms) {
-            if (JavaFXPlatformUtils.isJavaFXEnabled(javaPlatform)) {
-                fxPlatformExists = true;
-                break;
-            }
-        }
-        
-        if (!fxPlatformExists) {
-            if (task != null) {
-                task.removeTaskListener(this);
-            }
+        if (!JavaFXPlatformUtils.isThereAnyJavaFXPlatform()) {
             task = RequestProcessor.getDefault().create(detectPlatformTask);
             task.addTaskListener(this);
             task.schedule(0);
@@ -259,6 +251,7 @@ public class PanelOptionsVisual extends JPanel implements TaskListener {
                 }
             }
         });
+        this.task.removeTaskListener(this);
         this.task = null;
     }
     
@@ -278,7 +271,11 @@ public class PanelOptionsVisual extends JPanel implements TaskListener {
 
         @Override
         public void run() {
-            platform = JavaFXPlatformUtils.createDefaultJavaFXPlatform();
+            try {
+                platform = JavaFXPlatformUtils.createDefaultJavaFXPlatform();
+            } catch (Exception ex) {
+                LOGGER.log(Level.WARNING, "Can't create Java Platform instance: {0}", ex); // NOI18N
+            }
         }
     }
     

@@ -42,6 +42,7 @@
 package org.netbeans.modules.javafx2.platform.api;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -49,6 +50,7 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.modules.javafx2.platform.PlatformPropertiesHandler;
 import org.netbeans.modules.javafx2.platform.Utils;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -182,13 +184,30 @@ public final class JavaFXPlatformUtils {
     }
     
     /**
+     * Determines whether any JavaFX enabled platform exist
+     * 
+     * @return is there any JavaFX platform
+     */
+    public static boolean isThereAnyJavaFXPlatform() {
+        JavaPlatform[] platforms = JavaPlatformManager.getDefault().getInstalledPlatforms();
+        for (JavaPlatform javaPlatform : platforms) {
+            if (JavaFXPlatformUtils.isJavaFXEnabled(javaPlatform)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    /**
      * Creates new default JavaFX platform
      * 
      * @return instance of created JavaFX Platform, or null if creation was
      * not successful: such platform already exists or IO exception has occurred
+     * @throws IOException if the platform was invalid or its definition could not be stored
+     * @throws IllegalArgumentException if a default JavaFX Platform already exists
      */
     @CheckForNull
-    public static JavaPlatform createDefaultJavaFXPlatform() {
+    public static JavaPlatform createDefaultJavaFXPlatform() throws IOException, IllegalArgumentException {
         String sdkPath = null;
         String runtimePath = null;
         String javadocPath = null;
