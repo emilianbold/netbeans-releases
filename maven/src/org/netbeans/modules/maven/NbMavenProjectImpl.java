@@ -58,7 +58,6 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.MissingResourceException;
 import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
@@ -68,19 +67,11 @@ import javax.swing.SwingUtilities;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
-import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
-import org.apache.maven.artifact.resolver.ArtifactResolutionException;
 import org.apache.maven.cli.MavenCli;
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenExecutionResult;
-import org.apache.maven.model.Plugin;
 import org.apache.maven.model.Resource;
-import org.apache.maven.model.building.ModelBuildingException;
-import org.apache.maven.model.building.ModelProblem;
-import org.apache.maven.model.resolution.UnresolvableModelException;
-import org.apache.maven.plugin.PluginResolutionException;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.project.ProjectBuildingException;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
@@ -111,7 +102,6 @@ import org.netbeans.modules.maven.execute.PrereqCheckerMerger;
 import org.netbeans.modules.maven.execute.ReactorChecker;
 import org.netbeans.modules.maven.operations.OperationsImpl;
 import org.netbeans.modules.maven.problems.ProblemReporterImpl;
-import org.netbeans.modules.maven.problems.SanityBuildAction;
 import org.netbeans.modules.maven.queries.MavenAnnotationProcessingQueryImpl;
 import org.netbeans.modules.maven.queries.MavenBinaryForSourceQueryImpl;
 import org.netbeans.modules.maven.queries.MavenFileEncodingQueryImpl;
@@ -366,7 +356,7 @@ public final class NbMavenProjectImpl implements Project {
              MavenExecutionResult res = getEmbedder().readProjectWithDependencies(req);
              newproject = res.getProject();
             if (res.hasExceptions()) {
-                reportExceptions(res);
+                problemReporter.reportExceptions(res);
             }
         } catch (RuntimeException exc) {
             //guard against exceptions that are not processed by the embedder
@@ -410,51 +400,6 @@ public final class NbMavenProjectImpl implements Project {
         newproject.setDescription(LBL_Incomplete_Project_Desc());
         newproject.setFile(projectFile);
         return newproject;
-    }
-
-    @Messages({
-        "TXT_Artifact_Resolution_problem=Artifact Resolution problem",
-        "TXT_Artifact_Not_Found=Artifact Not Found",
-        "TXT_Cannot_Load_Project=Unable to properly load project"
-    })
-    private void reportExceptions(MavenExecutionResult res) throws MissingResourceException {
-        for (Throwable e : res.getExceptions()) {
-            LOG.log(Level.FINE, "Error on loading project " + projectFile, e); //NOI18N
-            String msg = e.getMessage();
-            if (e instanceof ArtifactResolutionException) { // XXX when does this occur?
-                ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_HIGH,
-                        TXT_Artifact_Resolution_problem(), msg, null);
-                problemReporter.addReport(report);
-                problemReporter.addMissingArtifact(((ArtifactResolutionException) e).getArtifact());
-            } else if (e instanceof ArtifactNotFoundException) { // XXX when does this occur?
-                ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_HIGH,
-                        TXT_Artifact_Not_Found(), msg, null);
-                problemReporter.addReport(report);
-                problemReporter.addMissingArtifact(((ArtifactNotFoundException) e).getArtifact());
-            } else if (e instanceof ProjectBuildingException) {
-                problemReporter.addReport(new ProblemReport(ProblemReport.SEVERITY_HIGH,
-                        TXT_Cannot_Load_Project(), msg, new SanityBuildAction(this)));
-                if (e.getCause() instanceof ModelBuildingException) {
-                    ModelBuildingException mbe = (ModelBuildingException) e.getCause();
-                    for (ModelProblem mp : mbe.getProblems()) {
-                        if (mp.getException() instanceof UnresolvableModelException) {
-                            // Probably obsoleted by ProblemReporterImpl.checkParent, but just in case:
-                            UnresolvableModelException ume = (UnresolvableModelException) mp.getException();
-                            problemReporter.addMissingArtifact(getEmbedder().createProjectArtifact(ume.getGroupId(), ume.getArtifactId(), ume.getVersion()));
-                        } else if (mp.getException() instanceof PluginResolutionException) {
-                            Plugin plugin = ((PluginResolutionException) mp.getException()).getPlugin();
-                            // XXX this is not actually accurate; should rather pick out the ArtifactResolutionException & ArtifactNotFoundException inside
-                            problemReporter.addMissingArtifact(getEmbedder().createArtifact(plugin.getGroupId(), plugin.getArtifactId(), plugin.getVersion(), "jar"));
-                        }
-                    }
-                }
-            } else {
-                LOG.log(Level.INFO, "Exception thrown while loading maven project at " + getProjectDirectory(), e); //NOI18N
-                ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_HIGH,
-                        "Error reading project model", msg, null);
-                problemReporter.addReport(report);
-            }
-        }
     }
 
     public void fireProjectReload() {
