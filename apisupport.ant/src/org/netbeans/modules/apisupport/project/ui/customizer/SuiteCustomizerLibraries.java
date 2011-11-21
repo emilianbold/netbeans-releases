@@ -330,8 +330,12 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
     }
 
     private void refreshModules() {
+        NbPlatform plaf = getProperties().getActivePlatform();
+        if (plaf == null) {
+            return;
+        }
         // create platform modules children first
-        platformModules = getProperties().getActivePlatform().getSortedModules();
+        platformModules = plaf.getSortedModules();
         initNodes();
         Set<String> disabledModuleCNB = new HashSet<String>(Arrays.asList(getProperties().getDisabledModules()));
         Set<String> enabledClusters = new HashSet<String>(Arrays.asList(getProperties().getEnabledClusters()));
