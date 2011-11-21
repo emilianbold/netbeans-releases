@@ -55,9 +55,12 @@ import javax.swing.JComponent;
 import javax.swing.Popup;
 import javax.swing.PopupFactory;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.event.MouseInputListener;
 import org.netbeans.swing.popupswitcher.SwitcherTable;
 import org.netbeans.swing.popupswitcher.SwitcherTableItem;
+import org.openide.awt.StatusDisplayer;
 
 /**
  * Represents Popup for "Document switching" which is shown after an user clicks
@@ -66,7 +69,7 @@ import org.netbeans.swing.popupswitcher.SwitcherTableItem;
  * @author mkrauskopf
  */
 final class ButtonPopupSwitcher
-        implements MouseInputListener, AWTEventListener {
+        implements MouseInputListener, AWTEventListener, ListSelectionListener {
     
     /**
      * Reference to the popup object currently showing the default instance, if
@@ -131,6 +134,7 @@ final class ButtonPopupSwitcher
         invokingComponent.addMouseMotionListener(this);
         pTable.addMouseListener(this);
         pTable.addMouseMotionListener(this);
+        pTable.getSelectionModel().addListSelectionListener( this );
         
         Toolkit.getDefaultToolkit().addAWTEventListener(this,
                 AWTEvent.MOUSE_EVENT_MASK
@@ -164,6 +168,7 @@ final class ButtonPopupSwitcher
     private synchronized void hideCurrentPopup() {
         pTable.removeMouseListener(this);
         pTable.removeMouseMotionListener(this);
+        pTable.getSelectionModel().removeListSelectionListener( this );
         Toolkit.getDefaultToolkit().removeAWTEventListener(this);
         if (invokingComponent != null) {
             invokingComponent.removeMouseListener(this);
@@ -179,6 +184,12 @@ final class ButtonPopupSwitcher
             shown = false;
             currentSwitcher = null;
         }
+    }
+
+    @Override
+    public void valueChanged( ListSelectionEvent e ) {
+        SwitcherTableItem item = pTable.getSelectedItem();
+        StatusDisplayer.getDefault().setStatusText( null == item ? null : item.getDescription() );
     }
     
     /**
