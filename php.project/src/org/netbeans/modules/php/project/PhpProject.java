@@ -465,7 +465,7 @@ public final class PhpProject implements Project {
             // web root directory not set, return sources
             return getSourcesDirectory();
         }
-        FileObject webRootDir = helper.resolveFileObject(webRootProperty);
+        FileObject webRootDir = getSourcesDirectory().getFileObject(webRootProperty);
         if (webRootDir != null) {
             return webRootDir;
         }
