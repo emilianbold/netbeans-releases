@@ -4,12 +4,16 @@
     <import file="../nbbuild/templates/projectized.xml"/>
     
     <!-- for generationg lexer and parser, uncomment the tasks and set up the right classpath -->
-    
-    <!--<target name="gen-lexer" >
-        <jflex file="tools/Php5ColoringScanner.flex" 
-        destdir="src" 
+
+    <taskdef name="jflex"
+        classname="JFlex.anttask.JFlexTask"
+        classpath="/home/sickboy/software/jflex/lib/JFlex.jar" />
+
+    <target name="gen-lexer" >
+        <jflex file="tools/JavaScriptColoringScanner.flex"
+        destdir="src"
         skel="tools/skeleton.netbeans"/>
-    </target>-->
+    </target>
     
 </project>
 
