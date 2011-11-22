@@ -51,6 +51,7 @@ import org.netbeans.modules.maven.nodes.MavenProjectNode;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.java.project.support.ui.PackageView;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -69,17 +70,20 @@ import org.openidex.search.SearchInfoFactory;
  * provider of logical view, meaning the top node in the projects tab.
  * @author  Milos Kleint
  */
+@ProjectServiceProvider(service=LogicalViewProvider.class, projectType="org-netbeans-modules-maven")
 public class LogicalViewProviderImpl implements LogicalViewProvider {
-    private final NbMavenProjectImpl project;
-    /** Creates a new instance of LogicalViewProviderImpl */
-    public LogicalViewProviderImpl(NbMavenProjectImpl proj) {
-        project = proj;
+
+    private final Project proj;
+
+    public LogicalViewProviderImpl(Project proj) {
+        this.proj = proj;
     }
     
     /**
      * create the root node for maven projects..
      */
     public Node createLogicalView() {
+        NbMavenProjectImpl project = proj.getLookup().lookup(NbMavenProjectImpl.class);
         return new MavenProjectNode(createLookup(project), project);
     }
     

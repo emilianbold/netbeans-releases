@@ -52,14 +52,12 @@ import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeList;
-import org.openide.filesystems.FileUtil;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -108,13 +106,7 @@ public class SourcesNodeFactory implements NodeFactory {
                     return null;
                 }
                 AbstractNode erroNode = new AbstractNode(Children.LEAF);
-                ProjectInformation info = owner.getLookup().lookup(ProjectInformation.class);
-                String prjText;
-                if (info != null) {
-                    prjText = info.getDisplayName();
-                } else {
-                    prjText = FileUtil.getFileDisplayName(owner.getProjectDirectory());
-                }
+                String prjText = ProjectUtils.getInformation(owner).getDisplayName();
                 erroNode.setDisplayName(NbBundle.getMessage(SourcesNodeFactory.class, "ERR_WrongSG", group.getDisplayName(), prjText));
                 return erroNode;
             }

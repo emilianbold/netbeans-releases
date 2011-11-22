@@ -45,8 +45,8 @@ import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.output.OutputProcessor;
 import org.netbeans.modules.maven.api.output.OutputUtils;
 import org.netbeans.modules.maven.api.output.OutputVisitor;
-import org.netbeans.modules.maven.classpath.ClassPathProviderImpl;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.maven.api.classpath.ProjectSourcesClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.windows.OutputListener;
 
@@ -71,8 +71,7 @@ public class ExecPluginOutputListenerProvider implements OutputProcessor {
     }
     
     public void processLine(String line, OutputVisitor visitor) {
-        ClassPathProviderImpl cpp = project.getLookup().lookup(ClassPathProviderImpl.class);
-        ClassPath[] cp = cpp.getProjectClassPaths(ClassPath.EXECUTE);
+        ClassPath[] cp = project.getLookup().lookup(ProjectSourcesClassPathProvider.class).getProjectClassPaths(ClassPath.EXECUTE);
         OutputListener list = OutputUtils.matchStackTraceLine(line, ClassPathSupport.createProxyClassPath(cp));
         if (list != null) {
             visitor.setOutputListener(list);

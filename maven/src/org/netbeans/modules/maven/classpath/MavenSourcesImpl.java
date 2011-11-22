@@ -65,8 +65,8 @@ import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.queries.SharabilityQuery;
@@ -191,7 +191,7 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
     public @Override SourceGroup[] getSourceGroups(String str) {
         if (Sources.TYPE_GENERIC.equals(str)) {
             return new SourceGroup[] { GenericSources.group(project, project.getProjectDirectory(), NAME_PROJECTROOT, 
-                    project.getLookup().lookup(ProjectInformation.class).getDisplayName(), null, null) };
+                    ProjectUtils.getInformation(project).getDisplayName(), null, null) };
         }
         if (JavaProjectConstants.SOURCES_TYPE_JAVA.equals(str)) {
             List<SourceGroup> toReturn = new ArrayList<SourceGroup>();

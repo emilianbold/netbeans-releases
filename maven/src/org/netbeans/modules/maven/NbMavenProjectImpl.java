@@ -80,25 +80,14 @@ import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
+import org.netbeans.modules.maven.api.execute.ActiveJ2SEPlatformProvider;
 import org.netbeans.modules.maven.api.problem.ProblemReport;
-import org.netbeans.modules.maven.classpath.CPExtender;
-import org.netbeans.modules.maven.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.maven.configurations.M2ConfigProvider;
 import org.netbeans.modules.maven.configurations.ProjectProfileHandlerImpl;
-import org.netbeans.modules.maven.cos.CosChecker;
-import org.netbeans.modules.maven.customizer.CustomizerProviderImpl;
-import org.netbeans.modules.maven.debug.MavenDebuggerImpl;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.embedder.MavenEmbedder;
 import org.netbeans.modules.maven.execute.AbstractMavenExecutor;
-import org.netbeans.modules.maven.execute.DefaultReplaceTokenProvider;
-import org.netbeans.modules.maven.operations.OperationsImpl;
 import org.netbeans.modules.maven.problems.ProblemReporterImpl;
-import org.netbeans.modules.maven.queries.MavenBinaryForSourceQueryImpl;
-import org.netbeans.modules.maven.queries.MavenFileEncodingQueryImpl;
-import org.netbeans.modules.maven.queries.MavenFileLocator;
-import org.netbeans.modules.maven.queries.MavenForBinaryQueryImpl;
-import org.netbeans.modules.maven.queries.MavenSharabilityQueryImpl;
 import org.netbeans.spi.java.project.support.LookupMergerSupport;
 import org.netbeans.spi.project.ProjectState;
 import org.netbeans.spi.project.support.LookupProviderSupport;
@@ -139,11 +128,7 @@ public final class NbMavenProjectImpl implements Project {
     private Reference<MavenProject> project;
     private ProblemReporterImpl problemReporter;
     private final @NonNull NbMavenProject watcher;
-    private final ProjectState state;
     private final M2ConfigProvider configProvider;
-    private final ClassPathProviderImpl cppProvider;
-//    private ConfigurationProviderEnabler configEnabler;
-    private final M2AuxilaryConfigImpl auxiliary;
     private final @NonNull MavenProjectPropsImpl auxprops;
     private ProjectProfileHandlerImpl profileHandler;
     @org.netbeans.api.annotations.common.SuppressWarnings("MS_SHOULD_BE_FINAL")
@@ -178,15 +163,13 @@ public final class NbMavenProjectImpl implements Project {
         watcher = ACCESSOR.createWatcher(this);
         projectFolderUpdater = new Updater("nb-configuration.xml", "pom.xml");
         userFolderUpdater = new Updater("settings.xml");
-        state = projectState;
         problemReporter = new ProblemReporterImpl(this);
-        auxiliary = new M2AuxilaryConfigImpl(this);
+        M2AuxilaryConfigImpl auxiliary = new M2AuxilaryConfigImpl(this);
         auxprops = new MavenProjectPropsImpl(auxiliary, this);
         profileHandler = new ProjectProfileHandlerImpl(this, auxiliary);
         configProvider = new M2ConfigProvider(this, auxiliary, profileHandler);
-        cppProvider = new ClassPathProviderImpl(this);
         // @PSP's and the like, and PackagingProvider impls, may check project lookup for e.g. NbMavenProject, so init lookup in two stages:
-        basicLookup = createBasicLookup();
+        basicLookup = createBasicLookup(projectState, auxiliary);
         lookup = LookupProviderSupport.createCompositeLookup(new PackagingTypeDependentLookup(watcher, basicLookup), "Projects/org-netbeans-modules-maven/Lookup");
     }
 
@@ -279,7 +262,10 @@ public final class NbMavenProjectImpl implements Project {
     // the properties of the platform to properly resolve stuff like com.sun.boot.class.path
     public Map<? extends String,? extends String> createSystemPropsForPropertyExpressions() {
         Map<String,String> props = NbCollections.checkedMapByCopy(cloneStaticProps(), String.class, String.class, true);
-        props.putAll(cppProvider.getJavaPlatform().getSystemProperties());
+        ActiveJ2SEPlatformProvider platformProvider = getLookup().lookup(ActiveJ2SEPlatformProvider.class);
+        if (platformProvider != null) { // may be null inside PackagingProvider
+            props.putAll(platformProvider.getJavaPlatform().getSystemProperties());
+        }
         props.putAll(configProvider.getActiveConfiguration().getProperties());
         return props;
     }
@@ -665,43 +651,24 @@ public final class NbMavenProjectImpl implements Project {
         }
     }
 
-    private Lookup createBasicLookup() {
-        CPExtender extender = new CPExtender(this);
-        Lookup staticLookup = Lookups.fixed(
+    private Lookup createBasicLookup(ProjectState state, M2AuxilaryConfigImpl auxiliary) {
+        return Lookups.fixed(
                     this,
                     fileObject,
-                    new MavenForBinaryQueryImpl(this),
-                    new MavenBinaryForSourceQueryImpl(this),
-                    new ActionProviderImpl(this),
                     auxiliary,
                     auxprops,
                     new MavenProjectPropsImpl.Merger(auxprops),
                     profileHandler,
                     configProvider,
-                    new CustomizerProviderImpl(this),
-                    new LogicalViewProviderImpl(this),
-                    cppProvider,
-                    new MavenSharabilityQueryImpl(this),
-                    new SubprojectProviderImpl(this, watcher),
                     problemReporter,
                     watcher,
-                    new MavenFileEncodingQueryImpl(this),
-                    new TemplateAttrProvider(this),
-                    new OperationsImpl(this, state),
-                    new MavenDebuggerImpl(this),
-                    new DefaultReplaceTokenProvider(this),
-                    new MavenFileLocator(this),
-                    UILookupMergerSupport.createProjectOpenHookMerger(new ProjectOpenedHookImpl(this)),
+                    state,
+                    UILookupMergerSupport.createProjectOpenHookMerger(null),
                     UILookupMergerSupport.createPrivilegedTemplatesMerger(),
                     UILookupMergerSupport.createRecommendedTemplatesMerger(),
                     LookupProviderSupport.createSourcesMerger(),
                     ProjectClassPathModifier.extenderForModifier(this),
-                    extender,
-                    LookupMergerSupport.createClassPathModifierMerger(),
-                    new CosChecker(this),
-                    CosChecker.createResultChecker(),
-                    CosChecker.createCoSHook(this));
-        return staticLookup;
+                    LookupMergerSupport.createClassPathModifierMerger());
     }
 
     //MEVENIDE-448 seems to help against creation of duplicate project instances
