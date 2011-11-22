@@ -155,6 +155,16 @@
     zzLexicalState = YYINITIAL;
   }
 
+  /**
+   * Refills the input buffer.
+   *
+   * @return      <code>false</code>, iff there was new input.
+   *
+   * @exception   java.io.IOException  if any I/O-Error occurs
+   */
+  private boolean zzRefill() throws java.io.IOException {
+    return true;
+  }
 
   /**
    * Returns the current lexical state.
@@ -263,21 +273,21 @@
     int zzAction;
 
     // cached fields:
-    //int zzCurrentPosL;
-    //int zzMarkedPosL;
-    //int zzEndReadL = zzEndRead;
-    //char [] zzBufferL = zzBuffer;
+    int zzCurrentPosL;
+    int zzMarkedPosL;
+    int zzEndReadL = zzEndRead;
+    char [] zzBufferL = zzBuffer;
     char [] zzCMapL = ZZ_CMAP;
 
 --- local declarations
 
     while (true) {
-      //zzMarkedPosL = zzMarkedPos;
+      zzMarkedPosL = zzMarkedPos;
 
 --- start admin (line, char, col count)
       zzAction = -1;
 
-      //zzCurrentPosL = zzCurrentPos = zzStartRead = zzMarkedPosL;
+      zzCurrentPosL = zzCurrentPos = zzStartRead = zzMarkedPosL;
       int tokenLength = 0;
   
 --- start admin (lexstate etc)
