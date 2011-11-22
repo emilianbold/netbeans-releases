@@ -60,10 +60,12 @@ import javax.swing.filechooser.FileSystemView;
 import javax.swing.filechooser.FileView;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.modules.remote.support.RemoteLogger;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import sun.nio.cs.FastCharsetProvider;
 
 /**
  *
@@ -230,6 +232,13 @@ public final class FileChooserBuilder {
 
         @Override
         public void setCurrentDirectory(File dir) {
+            if (!(dir instanceof FileObjectBasedFile)) {
+                String path = dir.getPath().replace('\\', FileSystemProvider.getFileSeparatorChar(env)); //NOI18N
+                FileObject fo = FileSystemProvider.getFileObject(env, path);
+                if (fo != null) {
+                    dir = new FileObjectBasedFile(env, fo);
+                }
+            }
             super.setCurrentDirectory(dir);
         }
 
