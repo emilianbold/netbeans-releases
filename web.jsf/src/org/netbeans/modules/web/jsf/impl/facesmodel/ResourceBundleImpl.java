@@ -72,16 +72,26 @@ public class ResourceBundleImpl extends IdentifiableDescriptionGroupImpl impleme
         visitor.visit(this);
     }
 
+    /**
+     * Gets base-name of the faces-config-application-resource-bundleType.
+     * @return trimmed base-name if any, {@code null} otherwise
+     */
     public String getBaseName() {
-        return getChildElementText(JSFConfigQNames.BASE_NAME.getQName(getNamespaceURI()));
+        String baseName = getChildElementText(JSFConfigQNames.BASE_NAME.getQName(getNamespaceURI()));
+        return ElementTypeHelper.pickFullyQualifiedClassType(baseName);
     }
 
     public void setBaseName(String baseName) {
         setChildElementText(BASE_NAME, baseName, JSFConfigQNames.BASE_NAME.getQName(getNamespaceURI()));
     }
 
+    /**
+     * Gets var of the faces-config-application-resource-bundleType.
+     * @return trimmed var if any, {@code null} otherwise
+     */
     public String getVar() {
-        return getChildElementText(JSFConfigQNames.VAR.getQName(getNamespaceURI()));
+        String var = getChildElementText(JSFConfigQNames.VAR.getQName(getNamespaceURI()));
+        return ElementTypeHelper.pickString(var);
     }
 
     public void setVar(String var) {
