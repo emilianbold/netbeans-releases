@@ -7,7 +7,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 
 %public
 %class JavaScriptColoringLexer
-%type JavaScriptTokenId
+%type JsTokenId
 %function nextToken
 %unicode
 %caseless
@@ -18,7 +18,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
             // backup eof
             input.backup(1);
             //and return the text as error token
-            return PHPTokenId.UNKNOWN_TOKEN;
+            return JsTokenId.UNKNOWN_TOKEN;
         } else {
             return null;
         }
@@ -119,7 +119,7 @@ SStringCharacter = [^\r\n\'\\]
   "false"                        |
 
   /* null literal */
-  "null"                         { return JavaScriptTokenId.KEYWORD; }
+  "null"                         { return JsTokenId.KEYWORD; }
 
   /* standard / builtin functions */
   "Infinity"                     |
@@ -133,7 +133,7 @@ SStringCharacter = [^\r\n\'\\]
   "isNaN"                        |
   "parseFloat"                   |
   "parseInt"                     |
-  "unescape"                     { return JavaScriptTokenId.KEYWORD2; }
+  "unescape"                     { return JsTokenId.KEYWORD2; }
 
   /* Built-in Types*/
   "Array"                        |
@@ -144,17 +144,17 @@ SStringCharacter = [^\r\n\'\\]
   "Object"                       |
   "RegExp"                       |
   "String"                       |
-  {Identifier} ":"               { return JavaScriptTokenId.TYPE; }
+  {Identifier} ":"               { return JsTokenId.TYPE; }
 
 
   /* operators */
 
-  "("                            { return JavaScriptTokenId.OPERATOR_LPARAN; }
-  ")"                            { return JavaScriptTokenId.OPERATOR_RPARAN; }
-  "{"                            { return JavaScriptTokenId.OPERATOR_LCURLY; }
-  "}"                            { return JavaScriptTokenId.OPERATOR_RCURLY; }
-  "["                            { return JavaScriptTokenId.OPERATOR_LBRACKET; }
-  "]"                            { return JavaScriptTokenId.OPERATOR_RBRACKET; }
+  "("                            { return JsTokenId.OPERATOR_LPARAN; }
+  ")"                            { return JsTokenId.OPERATOR_RPARAN; }
+  "{"                            { return JsTokenId.OPERATOR_LCURLY; }
+  "}"                            { return JsTokenId.OPERATOR_RCURLY; }
+  "["                            { return JsTokenId.OPERATOR_LBRACKET; }
+  "]"                            { return JsTokenId.OPERATOR_RBRACKET; }
   ";"                            |
   ","                            |
   "."                            |
@@ -194,7 +194,7 @@ SStringCharacter = [^\r\n\'\\]
   "%="                           |
   "<<="                          |
   ">>="                          |
-  ">>>="                         { return JavaScriptTokenId.OPERATOR; }
+  ">>>="                         { return JsTokenId.OPERATOR; }
 
   /* string literal */
   \"                             {
@@ -222,23 +222,23 @@ SStringCharacter = [^\r\n\'\\]
 
   {FloatLiteral}                 |
   {DoubleLiteral}                |
-  {DoubleLiteral}[dD]            { return JavaScriptTokenId.NUMBER; }
+  {DoubleLiteral}[dD]            { return JsTokenId.NUMBER; }
 
   /* comments */
-  {Comment}                      { return JavaScriptTokenId.COMMENT; }
+  {Comment}                      { return JsTokenId.COMMENT; }
 
   /* whitespace */
   {WhiteSpace}                   { }
 
   /* identifiers */
-  {Identifier}                   { return JavaScriptTokenId.IDENTIFIER; }
+  {Identifier}                   { return JsTokenId.IDENTIFIER; }
 }
 
 <STRING> {
   \"                             {
                                      yybegin(YYINITIAL);
                                      // length also includes the trailing quote
-                                     return JavaScriptTokenId.STRING; //token(TokenType.STRING, tokenStart, tokenLength + 1);
+                                     return JsTokenId.STRING; //token(TokenType.STRING, tokenStart, tokenLength + 1);
                                  }
 
   {StringCharacter}+             { tokenLength += yylength(); }
@@ -255,7 +255,7 @@ SStringCharacter = [^\r\n\'\\]
   \'                             {
                                      yybegin(YYINITIAL);
                                      // length also includes the trailing quote
-                                     return JavaScriptTokenId.STRING; //token(TokenType.STRING, tokenStart, tokenLength + 1);
+                                     return JsTokenId.STRING; //token(TokenType.STRING, tokenStart, tokenLength + 1);
                                  }
 
   {SStringCharacter}+            { tokenLength += yylength(); }

@@ -55,23 +55,42 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 /**
  *
  * @author Petr Pisl
+ * @author Petr Hejl
  */
 public enum JsTokenId implements TokenId {
-    FAKE (null, "identifier"),
-    WHITESPACE(null, "whitespace");
-    
-    public static final String JAVASCRIPT_MIME_TYPE = "text/javascript"; // NOI18N    
-     
+    UNKNOWN_TOKEN(null, "error"), // NOI18N
+    WHITESPACE(null, "whitespace"), // NOI18N
+
+    OPERATOR_LPARAN("(", "operator"), // NOI18N
+    OPERATOR_RPARAN(")", "operator"), // NOI18N
+    OPERATOR_LCURLY("{", "operator"), // NOI18N
+    OPERATOR_RCURLY("}", "operator"), // NOI18N
+    OPERATOR_LBRACKET("[", "operator"), // NOI18N
+    OPERATOR_RBRACKET("]", "operator"), // NOI18N
+
+    NUMBER(null, "constant"), // NOI18N
+    COMMENT(null, "comment"), // NOI18N
+    IDENTIFIER(null, "identifier"), // NOI18N
+    STRING(null, "string"), // NOI18N
+
+    // FIXME
+    KEYWORD(null, "keyword"), // NOI18N
+    KEYWORD2(null, "keyword"), // NOI18N
+    TYPE(null, "keyword"), // NOI18N
+    OPERATOR(null, "operator"); // NOI18N
+
+    public static final String JAVASCRIPT_MIME_TYPE = "text/javascript"; // NOI18N
+
     private final String fixedText;
     private final String primaryCategory;
 
-    
+
 
     JsTokenId(String fixedText, String primaryCategory) {
         this.fixedText = fixedText;
         this.primaryCategory = primaryCategory;
     }
-    
+
     public String fixedText() {
         return fixedText;
     }
@@ -80,7 +99,7 @@ public enum JsTokenId implements TokenId {
     public String primaryCategory() {
         return primaryCategory;
     }
-    
+
      private static final Language<JsTokenId> language =
         new LanguageHierarchy<JsTokenId>() {
                 protected String mimeType() {
@@ -117,7 +136,7 @@ public enum JsTokenId implements TokenId {
                     return null; // No embedding
                 }
             }.language();
-     
+
      public static Language<JsTokenId> language() {
         return language;
     }
