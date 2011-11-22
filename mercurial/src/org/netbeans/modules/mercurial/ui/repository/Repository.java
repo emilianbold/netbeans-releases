@@ -55,14 +55,24 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.io.File;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.Vector;
+import java.util.logging.Level;
 import javax.swing.ComboBoxEditor;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -72,10 +82,14 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.mercurial.HgModuleConfig;
+import org.netbeans.modules.mercurial.Mercurial;
+import org.netbeans.modules.mercurial.config.HgConfigFiles;
 import org.netbeans.modules.mercurial.ui.repository.HgURL.Scheme;
+import org.netbeans.modules.mercurial.util.HgRepositoryContextCache;
 import org.netbeans.modules.versioning.util.DialogBoundsPreserver;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -115,16 +129,24 @@ public class Repository implements ActionListener, FocusListener, ItemListener {
     private JTextComponent urlComboEditor;
     private Document urlDoc, usernameDoc, passwordDoc, tunnelCmdDoc;
     private boolean urlBeingSelectedFromPopup = false;
+    private final File root;
+    private Map<String, String> storedPaths = Collections.<String, String>emptyMap();
 
     public Repository(int modeMask, String titleLabel, boolean bPushPull) {
+        this(modeMask, titleLabel, bPushPull, null);
+    }
+
+    public Repository(int modeMask, String titleLabel, boolean bPushPull, File repositoryRoot) {
         
         this.modeMask = modeMask;
+        this.root = repositoryRoot;
         
         initPanel();
         
         repositoryPanel.titleLabel.setText(titleLabel);
                                         
         repositoryPanel.urlComboBox.setEnabled(isSet(FLAG_URL_ENABLED));        
+        repositoryPanel.urlComboBox.setRenderer(new UrlRenderer());
         repositoryPanel.tunnelHelpLabel.setVisible(isSet(FLAG_SHOW_HINTS));
         repositoryPanel.tipLabel.setVisible(isSet(FLAG_SHOW_HINTS));
         
@@ -306,6 +328,11 @@ public class Repository implements ActionListener, FocusListener, ItemListener {
         urlComboEditor.selectAll();
     }
 
+    private static final Set<String> SKIPPED_PATHS = new HashSet<String>(Arrays.asList(HgConfigFiles.HG_DEFAULT_PULL, 
+            HgConfigFiles.HG_DEFAULT_PULL_VALUE, 
+            HgConfigFiles.HG_DEFAULT_PUSH, 
+            HgConfigFiles.HG_DEFAULT_PUSH_VALUE));
+    
     private Vector<?> createPresetComboEntries() {
         assert repositoryPanel.urlComboBox.isEditable();
 
@@ -314,7 +341,44 @@ public class Repository implements ActionListener, FocusListener, ItemListener {
         List<RepositoryConnection> recentUrls = HgModuleConfig.getDefault().getRecentUrls();
         Scheme[] schemes = HgURL.Scheme.values();
 
-        result = new Vector<Object>(recentUrls.size() + schemes.length);
+        // acquire stored paths
+        List<String> pathNames = Collections.<String>emptyList();
+        storedPaths = Collections.<String, String>emptyMap();
+        if (root != null) {
+            Map<String, String> paths = HgRepositoryContextCache.getInstance().getPathValues(root);
+            for (Iterator<Map.Entry<String, String>> it = paths.entrySet().iterator(); it.hasNext(); ) {
+                Map.Entry<String, String> e = it.next();
+                String storedUrl = e.getValue();
+                boolean remove = true;
+                if (!storedUrl.isEmpty()) {
+                    try {
+                        remove = false;
+                        HgURL hgUrl = new HgURL(storedUrl);
+                    } catch (URISyntaxException ex) {
+                        // maybe it's a relative path
+                        File f = FileUtil.normalizeFile(new File(root, storedUrl));
+                        if (f.isDirectory()) {
+                            // directory exists, it's ok path
+                            e.setValue(f.getAbsolutePath());
+                        } else {
+                            Mercurial.LOG.log(Level.INFO, "Repository: Unknown stored path {0}:{1}", new Object[] { e.getKey(), storedUrl }); //NOI18N
+                            // we do not need such entry
+                            remove = true;
+                        }
+                    }
+                }
+                if (remove) {
+                    it.remove();
+                }
+            }
+            pathNames = new ArrayList<String>(paths.keySet());
+            pathNames.removeAll(SKIPPED_PATHS);
+            Collections.sort(pathNames);
+            storedPaths = paths;
+        }
+
+        result = new Vector<Object>(recentUrls.size() + schemes.length + pathNames.size());
+        result.addAll(pathNames);
         result.addAll(recentUrls);
         for (Scheme scheme : schemes) {
             result.add(createURIPrefixForScheme(scheme));
@@ -370,7 +434,14 @@ public class Repository implements ActionListener, FocusListener, ItemListener {
      * Fast url syntax check. It can invalidate the whole step
      */
     private void quickValidateUrl() {
-        String errMsg = HgURL.validateQuickly(getUrlString());
+        String toValidate = getUrlString();
+        String errMsg;
+        if (storedPaths.containsValue(toValidate)) {
+            // path is among stored paths from config file, it was validated in combo urls setup
+            errMsg = null;
+        } else {
+            errMsg = HgURL.validateQuickly(toValidate);
+        }
         if (errMsg == null) {
             setValid();
         } else {
@@ -472,7 +543,12 @@ public class Repository implements ActionListener, FocusListener, ItemListener {
      * @return null on failure
      */
     public String getUrlString() {
-        return urlComboEditor.getText().trim();
+        String value = urlComboEditor.getText().trim();
+        String storedUrl = storedPaths.get(value);
+        if (storedUrl != null) {
+            value = storedUrl;
+        }
+        return value;
     }
 
     private String getUsername() {
@@ -713,6 +789,21 @@ public class Repository implements ActionListener, FocusListener, ItemListener {
 
     private boolean isSet(int flag) {
         return (modeMask & flag) != 0;
+    }
+
+    private class UrlRenderer extends DefaultListCellRenderer {
+
+        @Override
+        public Component getListCellRendererComponent (JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            if (value instanceof String) {
+                String url = storedPaths.get((String) value);
+                if (url != null) {
+                    value = value + " (" + url + ")"; //NOI18N
+                }
+            }
+            return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+        }
+
     }
     
 }

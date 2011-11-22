@@ -63,9 +63,12 @@ import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.spi.queries.ForeignClassBundler;
 import org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation;
+import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation2;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -74,14 +77,15 @@ import org.openide.filesystems.FileUtil;
  * SourceForBinary and JavadocForBinary query impls.
  * @author  Milos Kleint 
  */
+@ProjectServiceProvider(service={SourceForBinaryQueryImplementation.class, SourceForBinaryQueryImplementation2.class, JavadocForBinaryQueryImplementation.class}, projectType="org-netbeans-modules-maven")
 public class MavenForBinaryQueryImpl implements SourceForBinaryQueryImplementation2,
         JavadocForBinaryQueryImplementation {
     
-    private final NbMavenProjectImpl project;
+    private final Project p;
     private final HashMap<String, BinResult> map;
-    /** Creates a new instance of MavenSourceForBinaryQueryImpl */
-    public MavenForBinaryQueryImpl(NbMavenProjectImpl proj) {
-        project = proj;
+
+    public MavenForBinaryQueryImpl(Project proj) {
+        p = proj;
         map = new HashMap<String, BinResult>();
         NbMavenProject.addPropertyChangeListener(proj, new PropertyChangeListener() {
             public @Override void propertyChange(PropertyChangeEvent event) {
@@ -150,6 +154,7 @@ public class MavenForBinaryQueryImpl implements SourceForBinaryQueryImplementati
      */
     @SuppressWarnings("DMI_BLOCKING_METHODS_ON_URL")
     private int checkURL(URL url) {
+        NbMavenProjectImpl project = p.getLookup().lookup(NbMavenProjectImpl.class);
         if ("file".equals(url.getProtocol())) { //NOI18N
             // true for directories.
             if (url.equals(FileUtil.urlForArchiveOrDir(project.getProjectWatcher().getOutputDirectory(false)))) {
@@ -181,6 +186,7 @@ public class MavenForBinaryQueryImpl implements SourceForBinaryQueryImplementati
     }
     
     private FileObject[] getSrcRoot() {
+        NbMavenProjectImpl project = p.getLookup().lookup(NbMavenProjectImpl.class);
         Collection<FileObject> toReturn = new LinkedHashSet<FileObject>();
         for (String item : project.getOriginalMavenProject().getCompileSourceRoots()) {
             FileObject fo = FileUtilities.convertStringToFileObject(item);
@@ -226,6 +232,7 @@ public class MavenForBinaryQueryImpl implements SourceForBinaryQueryImplementati
     }
     
     private FileObject[] getTestSrcRoot() {
+        NbMavenProjectImpl project = p.getLookup().lookup(NbMavenProjectImpl.class);
         Collection<FileObject> toReturn = new LinkedHashSet<FileObject>();
         for (String item : project.getOriginalMavenProject().getTestCompileSourceRoots()) {
             FileObject fo = FileUtilities.convertStringToFileObject(item);
@@ -329,7 +336,7 @@ public class MavenForBinaryQueryImpl implements SourceForBinaryQueryImplementati
         }
 
         @Override public boolean preferSources() {
-            return project.getLookup().lookup(ForeignClassBundler.class).preferSources();
+            return p.getLookup().lookup(ForeignClassBundler.class).preferSources();
         }
         
     }

@@ -71,10 +71,18 @@ public class TemplateProcessor extends LayerGeneratingProcessor {
             return false;
         }
         for (Element e : roundEnv.getElementsAnnotatedWith(TemplateRegistration.class)) {
-            process(e, e.getAnnotation(TemplateRegistration.class));
+            TemplateRegistration r = e.getAnnotation(TemplateRegistration.class);
+            if (r == null) {
+                continue;
+            }
+            process(e, r);
         }
         for (Element e : roundEnv.getElementsAnnotatedWith(TemplateRegistrations.class)) {
-            for (TemplateRegistration t : e.getAnnotation(TemplateRegistrations.class).value()) {
+            TemplateRegistrations rr = e.getAnnotation(TemplateRegistrations.class);
+            if (rr == null) {
+                continue;
+            }
+            for (TemplateRegistration t : rr.value()) {
                 process(e, t);
             }
         }

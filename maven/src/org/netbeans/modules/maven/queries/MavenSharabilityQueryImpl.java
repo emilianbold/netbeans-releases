@@ -45,10 +45,12 @@ import java.io.File;
 import java.util.Collection;
 import org.apache.maven.model.Build;
 import org.apache.maven.project.MavenProject;
-import org.netbeans.modules.maven.NbMavenProjectImpl;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.configurations.M2ConfigProvider;
 import org.netbeans.modules.maven.configurations.M2Configuration;
 import org.netbeans.api.queries.SharabilityQuery;
+import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.queries.SharabilityQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -57,11 +59,12 @@ import org.openide.filesystems.FileUtil;
  *
  * @author  Milos Kleint
  */
+@ProjectServiceProvider(service=SharabilityQueryImplementation.class, projectType="org-netbeans-modules-maven")
 public class MavenSharabilityQueryImpl implements SharabilityQueryImplementation {
     
-    private final NbMavenProjectImpl project;
+    private final Project project;
 
-    public MavenSharabilityQueryImpl(NbMavenProjectImpl proj) {
+    public MavenSharabilityQueryImpl(Project proj) {
         project = proj;
     }
     
@@ -106,7 +109,7 @@ public class MavenSharabilityQueryImpl implements SharabilityQueryImplementation
 
         //this part is slow if invoked on built project that is not opened (needs to load the embedder)
         //can it be replaced with code not touching the embedder?
-        MavenProject proj = project.getOriginalMavenProject();
+        MavenProject proj = project.getLookup().lookup(NbMavenProject.class).getMavenProject();
         Build build = proj.getBuild();
         if (build != null && build.getDirectory() != null) {
             File target = new File(build.getDirectory());
