@@ -86,23 +86,11 @@ final class StreamPool extends Object {
     throws FileNotFoundException {
         InputStream retVal = null;
 
-        long till = System.currentTimeMillis() + 2000;
-        final StreamPool waiter = get(fo);
-        boolean interrupted = false;
         synchronized (StreamPool.class) {
-            for (;;) {
-                try {
-                    long delay = till - System.currentTimeMillis();
-                    if (delay <= 0) {
-                        break;
-                    }
-                    waiter.waitForOutputStreamsClosed(fo, delay);
-                    retVal = new NotifyInputStream(fo);
-                    waiter.iStream().add(retVal);
-                    get(fo.getFileSystem()).iStream().add(retVal);
-                } catch (InterruptedException e) {
-                    interrupted = true;
-                }
+            if (get(fo).waitForOutputStreamsClosed(fo, 2000)) {
+                retVal = new NotifyInputStream(fo);
+                get(fo).iStream().add(retVal);
+                get(fo.getFileSystem()).iStream().add(retVal);
             }
         }
 
@@ -114,14 +102,10 @@ final class StreamPool extends Object {
                         @Override
                         public int read() throws IOException {
                             FileAlreadyLockedException alreadyLockedEx = new FileAlreadyLockedException(fo.getPath());
-                            waiter.annotate(alreadyLockedEx);
+                            get(fo).annotate(alreadyLockedEx);
                             throw alreadyLockedEx;
                         }
                     };
-        }
-        
-        if (interrupted) {
-            Thread.currentThread().interrupt();
         }
 
         return retVal;
@@ -144,15 +128,12 @@ final class StreamPool extends Object {
         OutputStream retVal = null;
 
         synchronized (StreamPool.class) {
-            try {
-                get(fo).waitForInputStreamsClosed(fo, 2000);
-                get(fo).waitForOutputStreamsClosed(fo, 2000);
-
+            if (get(fo).waitForInputStreamsClosed(fo, 2000) &&
+                get(fo).waitForOutputStreamsClosed(fo, 2000)
+            ) {
                 retVal = new NotifyOutputStream(fo, fireFileChanged);
                 get(fo).oStream().add(retVal);
                 get(fo.getFileSystem()).oStream().add(retVal);
-            } catch (InterruptedException e) {
-                LOG.log(Level.INFO, null, e);
             }
         }
 
@@ -235,39 +216,54 @@ final class StreamPool extends Object {
     /**
      * @return  true if there is any InputStream that was not closed yet  */
     public boolean isInputStreamOpen() {
-        return (iStreams != null) && !iStreams.isEmpty();
+        return isStreamOpen(iStreams);
     }
-
-    private void waitForInputStreamsClosed(FileObject fo, int timeInMs)
-    throws InterruptedException {
-        synchronized (StreamPool.class) {
-            if (isInputStreamOpen()) {
-                StreamPool.class.wait(timeInMs);
-
-                if (isInputStreamOpen()) {
-                    throw new InterruptedException(fo.getPath());
-                }
-            }
-        }
-    }
-
-    private void waitForOutputStreamsClosed(FileObject fo, long timeInMs)
-    throws InterruptedException {
-        synchronized (StreamPool.class) {
-            if (isOutputStreamOpen()) {
-                StreamPool.class.wait(timeInMs);
-
-                if (isOutputStreamOpen()) {
-                    throw new InterruptedException(fo.getPath());
-                }
-            }
-        }
-    }
-
     /**
      * @return  true if there is any OutputStream that was not closed yet  */
     public boolean isOutputStreamOpen() {
-        return (oStreams != null) && !oStreams.isEmpty();
+        return isStreamOpen(oStreams);
+    }
+
+    private boolean waitForInputStreamsClosed(FileObject fo, int timeInMs) {
+        return waitForStreams(fo, timeInMs, iStreams);
+    }
+    
+    private boolean waitForOutputStreamsClosed(FileObject fo, int timeInMs) {
+        return waitForStreams(fo, timeInMs, oStreams);
+    }
+           
+    private static boolean waitForStreams(FileObject fo, int timeInMs, Set<?> streams) {
+        synchronized (StreamPool.class) {
+            if (isStreamOpen(streams)) {
+                long till = System.currentTimeMillis() + timeInMs;
+                boolean interrupted = false;
+                for (;;) {
+                    long wait = till - System.currentTimeMillis();
+                    if (wait <= 0) {
+                        break;
+                    }
+                    try {
+                        StreamPool.class.wait(wait);
+                        break;
+                    } catch (InterruptedException ex) {
+                        interrupted = true;
+                        continue;
+                    }
+                }
+                if (interrupted) {
+                    Thread.currentThread().interrupt();
+                }
+                if (isStreamOpen(streams)) {
+                    LOG.log(Level.FINE, "Open streams {0} for {1}", new Object[]{streams, fo});
+                    return false;
+                }
+            }
+            return true;
+        }
+    }
+    
+    private static boolean isStreamOpen(Set<?> set) {
+        return (set != null) && !set.isEmpty();
     }
 
     /** All next methods are private (Not visible outside this class)*/
