@@ -100,6 +100,7 @@ public class WebProjectTest extends NbTestCase {
     public void testWebPropertiesEvaluator() throws Exception {
         File f = new File(getDataDir().getAbsolutePath(), "projects/WebApplication1");
         FileObject projdir = FileUtil.toFileObject(f);
+        System.setProperty("netbeans.user", "memory");
         Project webProject = ProjectManager.getDefault().findProject(projdir);
         WebPropertyEvaluator evaluator = webProject.getLookup().lookup(WebPropertyEvaluator.class);
         assertNotNull("Property evaluatero is null", evaluator);
