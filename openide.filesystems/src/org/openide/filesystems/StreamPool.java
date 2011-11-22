@@ -86,14 +86,23 @@ final class StreamPool extends Object {
     throws FileNotFoundException {
         InputStream retVal = null;
 
+        long till = System.currentTimeMillis() + 2000;
+        final StreamPool waiter = get(fo);
+        boolean interrupted = false;
         synchronized (StreamPool.class) {
-            try {
-                get(fo).waitForOutputStreamsClosed(fo, 2000);
-                retVal = new NotifyInputStream(fo);
-                get(fo).iStream().add(retVal);
-                get(fo.getFileSystem()).iStream().add(retVal);
-            } catch (InterruptedException e) {
-                LOG.log(Level.INFO, null, e);
+            for (;;) {
+                try {
+                    long delay = till - System.currentTimeMillis();
+                    if (delay <= 0) {
+                        break;
+                    }
+                    waiter.waitForOutputStreamsClosed(fo, delay);
+                    retVal = new NotifyInputStream(fo);
+                    waiter.iStream().add(retVal);
+                    get(fo.getFileSystem()).iStream().add(retVal);
+                } catch (InterruptedException e) {
+                    interrupted = true;
+                }
             }
         }
 
@@ -105,10 +114,14 @@ final class StreamPool extends Object {
                         @Override
                         public int read() throws IOException {
                             FileAlreadyLockedException alreadyLockedEx = new FileAlreadyLockedException(fo.getPath());
-                            get(fo).annotate(alreadyLockedEx);
+                            waiter.annotate(alreadyLockedEx);
                             throw alreadyLockedEx;
                         }
                     };
+        }
+        
+        if (interrupted) {
+            Thread.currentThread().interrupt();
         }
 
         return retVal;
@@ -238,7 +251,7 @@ final class StreamPool extends Object {
         }
     }
 
-    private void waitForOutputStreamsClosed(FileObject fo, int timeInMs)
+    private void waitForOutputStreamsClosed(FileObject fo, long timeInMs)
     throws InterruptedException {
         synchronized (StreamPool.class) {
             if (isOutputStreamOpen()) {
