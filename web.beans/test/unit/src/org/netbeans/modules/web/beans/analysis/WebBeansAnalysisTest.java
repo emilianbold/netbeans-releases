@@ -1647,4 +1647,114 @@ public class WebBeansAnalysisTest extends BaseAnalisysTestCase {
         runAnalysis(goodFile, NO_ERRORS_PROCESSOR);
         runAnalysis(goodFile1, NO_ERRORS_PROCESSOR);
     }
+    
+    //=======================================================================
+    //
+    //  AnnotationModelAnalyzer - InterceptorBindingAnalyzer
+    //
+    //=======================================================================
+    
+    public void testInterceptorBinding() throws IOException {
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/TypeBinding.java",
+                "package foo; " +
+                "import static java.lang.annotation.ElementType.METHOD; "+
+                "import static java.lang.annotation.ElementType.TYPE; "+
+                "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
+                "import javax.enterprise.inject.*; "+
+                "import javax.inject.*; "+
+                "import java.lang.annotation.*; "+
+                "import javax.interceptor.*; "+
+                "@InterceptorBinding " +
+                "@Retention(RUNTIME) "+
+                "@Target({TYPE}) "+
+                "public @interface TypeBinding  {} ");
+        
+        FileObject errorFile1 = TestUtilities.copyStringToFileObject(srcFO, "foo/IBinding1.java",
+                "package foo; " +
+                "import static java.lang.annotation.ElementType.METHOD; "+
+                "import static java.lang.annotation.ElementType.TYPE; "+
+                "import static java.lang.annotation.RetentionPolicy.SOURCE; "+
+                "import javax.enterprise.inject.*; "+
+                "import javax.inject.*; "+
+                "import java.lang.annotation.*; "+
+                "import javax.interceptor.*; "+
+                "@InterceptorBinding " +
+                "@Retention(SOURCE) "+
+                "@Target({TYPE, METHOD}) "+
+                "public @interface IBinding1  {} ");
+        
+        FileObject errorFile2 = TestUtilities.copyStringToFileObject(srcFO, "foo/IBinding2.java",
+                "package foo; " +
+                "import static java.lang.annotation.ElementType.METHOD; "+
+                "import static java.lang.annotation.ElementType.TYPE; "+
+                "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
+                "import javax.enterprise.inject.*; "+
+                "import javax.inject.*; "+
+                "import java.lang.annotation.*; "+
+                "import javax.interceptor.*; "+
+                "@InterceptorBinding " +
+                "@Retention(RUNTIME) "+
+                "@Target({METHOD}) "+
+                "public @interface IBinding2  {} ");
+        
+        FileObject errorFile3 = TestUtilities.copyStringToFileObject(srcFO, "foo/IBinding3.java",
+                "package foo; " +
+                "import static java.lang.annotation.ElementType.METHOD; "+
+                "import static java.lang.annotation.ElementType.TYPE; "+
+                "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
+                "import javax.enterprise.inject.*; "+
+                "import javax.inject.*; "+
+                "import java.lang.annotation.*; "+
+                "import javax.interceptor.*; "+
+                "@InterceptorBinding " +
+                "@Retention(RUNTIME) "+
+                "@Target({TYPE, METHOD}) "+
+                " @TypeBinding "+
+                "public @interface IBinding3  {} ");
+        
+        FileObject goodFile = TestUtilities.copyStringToFileObject(srcFO, "foo/IBinding4.java",
+                "package foo; " +
+                "import static java.lang.annotation.ElementType.METHOD; "+
+                "import static java.lang.annotation.ElementType.TYPE; "+
+                "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
+                "import javax.enterprise.inject.*; "+
+                "import javax.inject.*; "+
+                "import java.lang.annotation.*; "+
+                "import javax.interceptor.*; "+
+                "@InterceptorBinding " +
+                "@Retention(RUNTIME) "+
+                "@Target({TYPE}) "+
+                " @TypeBinding "+
+                "public @interface IBinding4  {} ");
+        
+        ResultProcessor processor = new ResultProcessor (){
+            @Override
+            public void process( TestProblems result ) {
+                checkTypeElement(result, "foo.IBinding1");
+            }
+                        
+        };
+        runAnalysis(errorFile1 , processor);
+        
+        processor = new ResultProcessor (){
+            @Override
+            public void process( TestProblems result ) {
+                checkTypeElement(result, "foo.IBinding2");
+            }
+                        
+        };
+        runAnalysis(errorFile2 , processor);
+        
+        processor = new ResultProcessor (){
+            @Override
+            public void process( TestProblems result ) {
+                checkTypeElement(result, "foo.IBinding3");
+            }
+                        
+        };
+        runAnalysis(errorFile3 , processor);
+        
+        runAnalysis(goodFile, NO_ERRORS_PROCESSOR);
+    }
 }
