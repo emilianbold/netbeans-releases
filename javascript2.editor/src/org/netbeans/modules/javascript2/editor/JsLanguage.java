@@ -53,7 +53,7 @@ import org.openide.windows.TopComponent;
 public class JsLanguage extends DefaultLanguageConfig {
     
     @MultiViewElement.Registration(displayName = "#LBL_JSEditorTab",
-        iconBase = "org/netbeans/modules/javascript/editing/javascript.png",
+        iconBase = "org/netbeans/modules/javascript2/editor/resources/javascript.png",
         persistenceType = TopComponent.PERSISTENCE_ONLY_OPENED,
         preferredID = "css.source",
         mimeType = "text/javascript",
