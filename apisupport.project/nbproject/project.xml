@@ -353,7 +353,6 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.maven.apisupport</friend>
                 <package>org.netbeans.modules.apisupport.project.api</package>
                 <package>org.netbeans.modules.apisupport.project.spi</package>
-                <package>org.netbeans.modules.apisupport.project.ui.wizard.spi</package>
             </friend-packages>
         </data>
     </configuration>
