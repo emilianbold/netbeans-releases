@@ -94,28 +94,31 @@ class SystemEventListenerImpl extends IdentifiableComponentImpl implements
                 JSFConfigQNames.SYSTEM_EVENT_LISTENER_CLASS.getQName(getNamespaceURI()));
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.jsf.api.metamodel.SystemEventListener#getSourceClass()
+    /**
+     * Gets source-class of the faces-config-system-event-listenerType.
+     * @return trimmed source-class if any, {@code null} otherwise
      */
     public String getSourceClass() {
-        return getChildElementText(
-                JSFConfigQNames.SOURCE_CLASS.getQName(getNamespaceURI()));
+        String sourceClass = getChildElementText(JSFConfigQNames.SOURCE_CLASS.getQName(getNamespaceURI()));
+        return ElementTypeHelper.pickFullyQualifiedClassType(sourceClass);
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.jsf.api.metamodel.SystemEventListener#getSystemEventClass()
+    /**
+     * Gets system-event-class of the faces-config-system-event-listenerType.
+     * @return trimmed system-event-class if any, {@code null} otherwise
      */
     public String getSystemEventClass() {
-        return getChildElementText(
-                JSFConfigQNames.SYSTEM_EVENT_CLASS.getQName(getNamespaceURI()));
+        String systemEventClass = getChildElementText(JSFConfigQNames.SYSTEM_EVENT_CLASS.getQName(getNamespaceURI()));
+        return ElementTypeHelper.pickFullyQualifiedClassType(systemEventClass);
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.jsf.api.metamodel.SystemEventListener#getSystemEventListenerClass()
+    /**
+     * Gets system-event-listener-class of the faces-config-system-event-listenerType.
+     * @return trimmed system-event-listener-class if any, {@code null} otherwise
      */
     public String getSystemEventListenerClass() {
-        return getChildElementText(
-                JSFConfigQNames.SYSTEM_EVENT_LISTENER_CLASS.getQName(getNamespaceURI()));
+        String systemEventListenerClass = getChildElementText(JSFConfigQNames.SYSTEM_EVENT_LISTENER_CLASS.getQName(getNamespaceURI()));
+        return ElementTypeHelper.pickFullyQualifiedClassType(systemEventListenerClass);
     }
 
     /* (non-Javadoc)

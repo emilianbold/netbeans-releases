@@ -90,9 +90,14 @@ class NavigationRuleImpl extends IdentifiableDescriptionGroupImpl implements Nav
     public void removeNavigationCase(NavigationCase navigationCase) {
         removeChild(NAVIGATION_CASE, navigationCase);
     }
-    
+
+    /**
+     * Gets from-view-id of the faces-config-navigation-ruleType.
+     * @return trimmed from-view-id if any, {@code null} otherwise
+     */
     public String getFromViewId() {
-        return getChildElementText(JSFConfigQNames.FROM_VIEW_ID.getQName(getNamespaceURI()));
+        String fromViewId = getChildElementText(JSFConfigQNames.FROM_VIEW_ID.getQName(getNamespaceURI()));
+        return ElementTypeHelper.pickFacesConfigFromViewIdType(fromViewId);
     }
     
     public void setFromViewId(String fromView) {

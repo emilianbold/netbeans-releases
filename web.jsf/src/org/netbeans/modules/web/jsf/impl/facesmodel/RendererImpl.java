@@ -82,12 +82,13 @@ class RendererImpl extends IdentifiableDescriptionGroupImpl implements
         insertAtIndex( FACET, facet, index, Facet.class);
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.jsf.api.facesmodel.FacesRenderer#getComponentFamily()
+    /**
+     * Gets component-family of the faces-config-rendererType.
+     * @return trimmed component-family if any, {@code null} otherwise
      */
     public String getComponentFamily() {
-        return getChildElementText(
-                JSFConfigQNames.COMPONENT_FAMILY.getQName(getNamespaceURI()));
+        String componentFamily = getChildElementText(JSFConfigQNames.COMPONENT_FAMILY.getQName(getNamespaceURI()));
+        return ElementTypeHelper.pickString(componentFamily);
     }
 
     /* (non-Javadoc)
@@ -128,20 +129,22 @@ class RendererImpl extends IdentifiableDescriptionGroupImpl implements
                 JSFConfigQNames.RENDERER_TYPE.getQName(getNamespaceURI()));
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.jsf.api.metamodel.Renderer#getRendererClass()
+    /**
+     * Gets renderer-class of the faces-config-rendererType.
+     * @return trimmed renderer-class if any, {@code null} otherwise
      */
     public String getRendererClass() {
-        return getChildElementText(
-                JSFConfigQNames.RENDERER_CLASS.getQName(getNamespaceURI()));
+        String rendererClass = getChildElementText(JSFConfigQNames.RENDERER_CLASS.getQName(getNamespaceURI()));
+        return ElementTypeHelper.pickFullyQualifiedClassType(rendererClass);
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.jsf.api.metamodel.Renderer#getRendererType()
+    /**
+     * Gets renderer-type of the faces-config-rendererType.
+     * @return trimmed renderer-type if any, {@code null} otherwise
      */
     public String getRendererType() {
-        return getChildElementText(
-                JSFConfigQNames.RENDERER_TYPE.getQName(getNamespaceURI()));
+        String rendererType = getChildElementText(JSFConfigQNames.RENDERER_TYPE.getQName(getNamespaceURI()));
+        return ElementTypeHelper.pickString(rendererType);
     }
 
     /* (non-Javadoc)

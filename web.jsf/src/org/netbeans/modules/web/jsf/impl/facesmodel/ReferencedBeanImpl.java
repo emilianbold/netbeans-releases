@@ -67,20 +67,22 @@ class ReferencedBeanImpl extends IdentifiableDescriptionGroupImpl implements
         super(model, createElementNS(model, JSFConfigQNames.REFERENCED_BEAN));
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.jsf.api.facesmodel.ReferencedBean#getReferencedBeanClass()
+    /**
+     * Gets referenced-bean-class of the faces-config-referenced-beanType.
+     * @return trimmed referenced-bean-class if any, {@code null} otherwise
      */
     public String getReferencedBeanClass() {
-        return getChildElementText(
-                JSFConfigQNames.REFERENCED_BEAN_CLASS.getQName(getNamespaceURI()));
+        String beanClass = getChildElementText(JSFConfigQNames.REFERENCED_BEAN_CLASS.getQName(getNamespaceURI()));
+        return ElementTypeHelper.pickFullyQualifiedClassType(beanClass);
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.jsf.api.facesmodel.ReferencedBean#getReferencedBeanName()
+    /**
+     * Gets referenced-bean-name of the faces-config-referenced-beanType.
+     * @return trimmed referenced-bean-name if any, {@code null} otherwise
      */
     public String getReferencedBeanName() {
-        return getChildElementText(
-                JSFConfigQNames.REFERENCED_BEAN_NAME.getQName(getNamespaceURI()));
+        String beanName = getChildElementText(JSFConfigQNames.REFERENCED_BEAN_NAME.getQName(getNamespaceURI()));
+        return ElementTypeHelper.pickJavaIdentifierType(beanName);
     }
 
     /* (non-Javadoc)

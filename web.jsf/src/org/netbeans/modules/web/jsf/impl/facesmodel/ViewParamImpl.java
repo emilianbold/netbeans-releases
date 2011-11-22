@@ -65,20 +65,22 @@ class ViewParamImpl extends IdentifiableComponentImpl implements ViewParam {
         super(model, createElementNS(model, JSFConfigQNames.VIEW_PARAM));
     }
     
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.jsf.api.facesmodel.ViewParam#getName()
+    /**
+     * Gets name of the faces-config-redirect-viewParamType.
+     * @return trimmed name if any, {@code null} otherwise
      */
     public String getName() {
-        return getChildElementText(
-                JSFConfigQNames.NAME.getQName(getNamespaceURI()));
+        String name = getChildElementText(JSFConfigQNames.NAME.getQName(getNamespaceURI()));
+        return ElementTypeHelper.pickString(name);
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.jsf.api.facesmodel.ViewParam#getValue()
+    /**
+     * Gets value of the faces-config-redirect-viewParamType.
+     * @return trimmed value if any, {@code null} otherwise
      */
     public String getValue() {
-        return getChildElementText(
-                JSFConfigQNames.VALUE.getQName(getNamespaceURI()));
+        String value = getChildElementText(JSFConfigQNames.VALUE.getQName(getNamespaceURI()));
+        return ElementTypeHelper.pickString(value);
     }
 
     /* (non-Javadoc)
