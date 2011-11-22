@@ -103,7 +103,7 @@ final class RemoteTransferFile extends TransferFile {
         }
         String relativePath = absolutePath.substring(baseDirectory.length());
         if (relativePath.startsWith(REMOTE_PATH_SEPARATOR)) {
-            // happens for base directory "/", see #205399
+            // happens for base directory different from "/", see #205399
             relativePath = relativePath.substring(REMOTE_PATH_SEPARATOR.length());
         }
         return relativePath;
@@ -172,7 +172,7 @@ final class RemoteTransferFile extends TransferFile {
                 // does not apply for base directory "/", see #205399
                 parentDirectory = parentDirectory + REMOTE_PATH_SEPARATOR;
             }
-            return  parentDirectory + getName();
+            return parentDirectory + getName();
         }
     }
 
