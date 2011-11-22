@@ -275,25 +275,25 @@ public final class JFXProjectUtils {
     }
 
     /**
-     * Finds the relative path to targetFile from sourceDir. 
-     * Unlike FileUtil.getRelativePath() does not require targetFile to be within sourceDir sub-tree
+     * Finds the relative path to targetFO from sourceFO. 
+     * Unlike FileUtil.getRelativePath() does not require targetFO to be within sourceFO sub-tree
      * Returns null if there is no shared parent directory except root.
      * 
-     * @param sourceDir file/dir to which the relative path will be related
-     * @param targetFile file whose location will be determined with respect to sourceDir
-     * @return string relative path leading from sourceFile to targetFile
+     * @param sourceFO file/dir to which the relative path will be related
+     * @param targetFO file whose location will be determined with respect to sourceFO
+     * @return string relative path leading from sourceFO to targetFO
      */
-    public static String getRelativePath(@NonNull final FileObject sourceDir, @NonNull final FileObject targetFile) {
+    public static String getRelativePath(@NonNull final FileObject sourceFO, @NonNull final FileObject targetFO) {
         String path = ""; //NOI18N
-        FileObject src = sourceDir;
-        FileObject tgt = targetFile;
+        FileObject src = sourceFO;
+        FileObject tgt = targetFO;
         String targetName = null;
-        if(!sourceDir.isFolder()) {
-            src = sourceDir.getParent();
+        if(!src.isFolder()) {
+            src = src.getParent();
         }
-        if(!targetFile.isFolder()) {
+        if(!tgt.isFolder()) {
             targetName = tgt.getNameExt();
-            tgt = sourceDir.getParent();
+            tgt = tgt.getParent();
         }
         LinkedList<String> srcSplit = new LinkedList<String>();
         LinkedList<String> tgtSplit = new LinkedList<String>();
