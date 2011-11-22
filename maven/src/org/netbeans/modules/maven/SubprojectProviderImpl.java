@@ -57,6 +57,7 @@ import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.queries.MavenFileOwnerQueryImpl;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -69,17 +70,16 @@ import org.openide.util.WeakListeners;
  * and can be build as one unit. Uses maven multiproject infrastructure. (maven.multiproject.includes)
  * @author  Milos Kleint
  */
+@ProjectServiceProvider(service=SubprojectProvider.class, projectType="org-netbeans-modules-maven")
 public class SubprojectProviderImpl implements SubprojectProvider {
 
-    private final NbMavenProjectImpl project;
-    private final NbMavenProject watcher;
+    private final Project project;
     private final ChangeSupport cs = new ChangeSupport(this);
     private final ChangeListener listener2;
     private final PropertyChangeListener propertyChange;
 
-    public SubprojectProviderImpl(NbMavenProjectImpl proj, NbMavenProject watcher) {
+    public SubprojectProviderImpl(Project proj) {
         project = proj;
-        this.watcher = watcher;
         propertyChange = new PropertyChangeListener() {
             @Override public void propertyChange(PropertyChangeEvent evt) {
                 if (NbMavenProjectImpl.PROP_PROJECT.equals(evt.getPropertyName())) {
@@ -102,7 +102,7 @@ public class SubprojectProviderImpl implements SubprojectProvider {
         Set<Project> projects = new HashSet<Project>();
         File basedir = FileUtil.toFile(project.getProjectDirectory());
         try {
-            addProjectModules(basedir, projects, project.getOriginalMavenProject().getModules());
+            addProjectModules(basedir, projects, project.getLookup().lookup(NbMavenProject.class).getMavenProject().getModules());
         } catch (InterruptedException x) {
             // can be interrupted in the open project dialog..
             return Collections.emptySet();
@@ -113,7 +113,7 @@ public class SubprojectProviderImpl implements SubprojectProvider {
     }
 
     private void addKnownOwners(Set<Project> resultset) {
-        List<Artifact> compileArtifacts = project.getOriginalMavenProject().getCompileArtifacts();
+        List<Artifact> compileArtifacts = project.getLookup().lookup(NbMavenProject.class).getMavenProject().getCompileArtifacts();
         for (Artifact ar : compileArtifacts) {
             File f = ar.getFile();
             if (f != null) {
@@ -189,7 +189,7 @@ public class SubprojectProviderImpl implements SubprojectProvider {
 
     @Override public synchronized void addChangeListener(ChangeListener changeListener) {
         if (!cs.hasListeners()) {
-            watcher.addPropertyChangeListener(propertyChange);
+            project.getLookup().lookup(NbMavenProject.class).addPropertyChangeListener(propertyChange);
         }
         cs.addChangeListener(changeListener);
     }
@@ -197,7 +197,7 @@ public class SubprojectProviderImpl implements SubprojectProvider {
     @Override public synchronized void removeChangeListener(ChangeListener changeListener) {
         cs.removeChangeListener(changeListener);
         if (!cs.hasListeners()) {
-            watcher.removePropertyChangeListener(propertyChange);
+            project.getLookup().lookup(NbMavenProject.class).removePropertyChangeListener(propertyChange);
         }
     }
 

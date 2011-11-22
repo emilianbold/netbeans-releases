@@ -60,6 +60,7 @@ import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.spi.project.CopyOperationImplementation;
 import org.netbeans.spi.project.DeleteOperationImplementation;
 import org.netbeans.spi.project.MoveOperationImplementation;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.ProjectState;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
@@ -71,13 +72,13 @@ import org.openide.util.NbBundle;
  * makes sure the project is removed from the possible module section of the parent..
  * @author mkleint
  */
+@ProjectServiceProvider(service={DeleteOperationImplementation.class, MoveOperationImplementation.class, CopyOperationImplementation.class}, projectType="org-netbeans-modules-maven")
 public class OperationsImpl implements DeleteOperationImplementation, MoveOperationImplementation, CopyOperationImplementation {
-    protected final NbMavenProjectImpl project;
-    private ProjectState state;
-    /** Creates a new instance of AbstractOperation */
-    public OperationsImpl(NbMavenProjectImpl proj, ProjectState state) {
+
+    private final Project project;
+
+    public OperationsImpl(Project proj) {
         project = proj;
-        this.state = state;
     }
     
     
@@ -131,7 +132,7 @@ public class OperationsImpl implements DeleteOperationImplementation, MoveOperat
     
     @Override
     public void notifyDeleted() throws IOException {
-        state.notifyDeleted();
+        project.getLookup().lookup(ProjectState.class).notifyDeleted();
     }
     
     @Override
@@ -143,7 +144,7 @@ public class OperationsImpl implements DeleteOperationImplementation, MoveOperat
     public void notifyMoved(Project original, File originalLoc, final String newName) throws IOException {
         if (original == null) {
             //old project call..
-            state.notifyDeleted();
+            project.getLookup().lookup(ProjectState.class).notifyDeleted();
             return;
         } else {
             if (original.getProjectDirectory().equals(project.getProjectDirectory())) {

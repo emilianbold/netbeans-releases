@@ -78,11 +78,12 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
+import org.netbeans.modules.maven.api.classpath.ProjectSourcesClassPathProvider;
+import org.netbeans.modules.maven.api.execute.ActiveJ2SEPlatformProvider;
 import org.netbeans.modules.maven.api.execute.ExecutionResultChecker;
 import org.netbeans.modules.maven.api.execute.LateBoundPrerequisitesChecker;
 import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.classpath.AbstractProjectClassPathImpl;
-import org.netbeans.modules.maven.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.maven.classpath.RuntimeClassPathImpl;
 import org.netbeans.modules.maven.classpath.TestRuntimeClassPathImpl;
 import org.netbeans.modules.maven.configurations.M2ConfigProvider;
@@ -91,6 +92,7 @@ import org.netbeans.modules.maven.customizer.RunJarPanel;
 import org.netbeans.modules.maven.execute.DefaultReplaceTokenProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.SingleMethod;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.execution.ExecutorTask;
@@ -102,26 +104,12 @@ import org.openide.util.Exceptions;
  *
  * @author mkleint
  */
+@ProjectServiceProvider(service={PrerequisitesChecker.class, LateBoundPrerequisitesChecker.class}, projectType="org-netbeans-modules-maven")
 public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesChecker {
 
     static final String NB_COS = ".netbeans_automatic_build"; //NOI18N
     private static final String RUN_MAIN = ActionProvider.COMMAND_RUN_SINGLE + ".main"; //NOI18N
     private static final String DEBUG_MAIN = ActionProvider.COMMAND_DEBUG_SINGLE + ".main"; //NOI18N
-
-
-    public static ExecutionResultChecker createResultChecker() {
-        return new COSExChecker();
-    }
-
-    public static ProjectOpenedHook createCoSHook(Project prj) {
-        return new CosPOH(prj);
-    }
-
-    private final Project project;
-
-    public CosChecker(Project prj) {
-        this.project = prj;
-    }
 
     public boolean checkRunConfig(RunConfig config) {
         if (config.getProject() == null) {
@@ -270,8 +258,7 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
                 if (RUN_MAIN.equals(actionName) ||
                     DEBUG_MAIN.equals(actionName)) {
                     FileObject selected = config.getSelectedFileObject();
-                    ClassPathProviderImpl cpp = config.getProject().getLookup().lookup(ClassPathProviderImpl.class);
-                    ClassPath srcs = cpp.getProjectSourcesClassPath(ClassPath.SOURCE);
+                    ClassPath srcs = config.getProject().getLookup().lookup(ProjectSourcesClassPathProvider.class).getProjectSourcesClassPath(ClassPath.SOURCE);
                     String path = srcs.getResourceName(selected);
                     if (path == null) {
                         //#160776 only files on source classpath pass through
@@ -300,8 +287,7 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
                     }
                 }
                 //make sure to run with the proper jdk
-                ClassPathProviderImpl cpp = config.getProject().getLookup().lookup(ClassPathProviderImpl.class);
-                params.put(JavaRunner.PROP_PLATFORM, cpp.getJavaPlatform());
+                params.put(JavaRunner.PROP_PLATFORM, config.getProject().getLookup().lookup(ActiveJ2SEPlatformProvider.class).getJavaPlatform());
 
                 //#168551
                 params.put("maven.disableSources", Boolean.TRUE); //NOI18N
@@ -371,7 +357,7 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
 
             //#
             FileObject selected = config.getSelectedFileObject();
-            ClassPathProviderImpl cpp = config.getProject().getLookup().lookup(ClassPathProviderImpl.class);
+            ProjectSourcesClassPathProvider cpp = config.getProject().getLookup().lookup(ProjectSourcesClassPathProvider.class);
             ClassPath srcs = cpp.getProjectSourcesClassPath(ClassPath.SOURCE);
             ClassPath[] cps = cpp.getProjectClassPaths(ClassPath.SOURCE);
             ClassPath testcp = ClassPathSupport.createProxyClassPath(cps);
@@ -424,7 +410,7 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
             params.put(JavaRunner.PROP_EXECUTE_FILE, selected);
 
             //make sure to run with the proper jdk
-            params.put(JavaRunner.PROP_PLATFORM, cpp.getJavaPlatform());
+            params.put(JavaRunner.PROP_PLATFORM, config.getProject().getLookup().lookup(ActiveJ2SEPlatformProvider.class).getJavaPlatform());
             
             List<String> jvmProps = new ArrayList<String>();
             Set<String> jvmPropNames = new HashSet<String>();
@@ -773,11 +759,12 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
         }
     }
 
-    static class CosPOH extends ProjectOpenedHook {
+    @ProjectServiceProvider(service=ProjectOpenedHook.class, projectType="org-netbeans-modules-maven")
+    public static class CosPOH extends ProjectOpenedHook {
 
         private final Project project;
 
-        CosPOH(Project prj) {
+        public CosPOH(Project prj) {
             project = prj;
         }
 
@@ -799,7 +786,8 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
         }
     }
 
-    private static class COSExChecker implements ExecutionResultChecker {
+    @ProjectServiceProvider(service=ExecutionResultChecker.class, projectType="org-netbeans-modules-maven")
+    public static class COSExChecker implements ExecutionResultChecker {
 
         public void executionResult(RunConfig config, ExecutionContext res, int resultCode) {
             // after each build put the Cos stamp in the output folder to have
