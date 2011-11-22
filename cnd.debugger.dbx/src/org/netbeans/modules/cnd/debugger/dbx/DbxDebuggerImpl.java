@@ -2045,6 +2045,10 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
         return variableByKey(variables, lhs);
     }
 
+    public void contAtInst(String addr) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
     class WatchesEnableLatch extends EnableLatch {
 	protected void setEnabled(boolean enable) {
 	    dbx.display_notify(0, enable);
