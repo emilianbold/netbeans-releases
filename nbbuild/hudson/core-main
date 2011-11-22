@@ -19,6 +19,7 @@ apisupport.harness,\
 apisupport.osgidemo,\
 apisupport.paintapp,\
 apisupport.project,\
+apisupport.wizards,\
 autoupdate.services,\
 autoupdate.ui,\
 core.execution,\

@@ -53,15 +53,10 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Locale;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -101,11 +96,6 @@ public class LayerUtils {
 
     private LayerUtils() {}
 
-    /**
-     * Suffix of hidden files.
-     */
-    public static final String HIDDEN = "_hidden"; //NOI18N
-    
     /**
      * Find a resource path for a project.
      * @param project a module project
@@ -191,18 +181,6 @@ public class LayerUtils {
         return new URL("nbresloc:/" + bundleName.replace('.', '/') + ".properties");
     }
 
-    /**
-     * Constructs suitable bundle key for localizing file object with given path.
-     * Intended for localizing layer files/folders.
-     * @param filePath Path as returned from {@link org.openide.filesystems.FileObject.getPath()}, i.e. with forwared slashes ('/')
-     * @return Bundle key for given file path.
-     */
-    public static String generateBundleKeyForFile(String filePath) {
-        // might result in the same key for filles that differ in replaced chars, but probably good enough;
-        // otherwise may check for duplicates and add "_n" when properties are passed as param
-        return filePath.replaceAll("[^-a-zA-Z0-9_./]", "");    // NOI18N
-    }
-
     // E.g. for name 'foo_f4j_ce_ja', should produce list:
     // 'foo', 'foo_ja', 'foo_f4j', 'foo_f4j_ja', 'foo_f4j_ce'
     // Will actually produce:
@@ -233,50 +211,6 @@ public class LayerUtils {
             List<String> l = new LinkedList<String>(l1);
             l.addAll(l2);
             return l;
-        }
-    }
-    
-    private static final Set<String> XML_LIKE_TYPES = new HashSet<String>();
-    static {
-        XML_LIKE_TYPES.add(".settings"); // NOI18N
-        XML_LIKE_TYPES.add(".wstcref"); // NOI18N
-        XML_LIKE_TYPES.add(".wsmode"); // NOI18N
-        XML_LIKE_TYPES.add(".wsgrp"); // NOI18N
-        XML_LIKE_TYPES.add(".wsmgr"); // NOI18N
-    }
-    /**
-     * Find the name of the external file that will be generated for a given
-     * layer path if it is created with contents.
-     * @param parent parent folder, or null
-     * @param layerPath full path in layer
-     * @return a simple file name
-     */
-    public static String findGeneratedName(FileObject parent, String layerPath) {
-        Matcher m = Pattern.compile("(.+/)?([^/.]+)(\\.[^/]+)?").matcher(layerPath); // NOI18N
-        if (!m.matches()) {
-            throw new IllegalArgumentException(layerPath);
-        }
-        String base = m.group(2);
-        String ext = m.group(3);
-        if (ext == null) {
-            ext = "";
-        } else if (ext.equals(".java")) { // NOI18N
-            ext = "_java"; // NOI18N
-        } else if (XML_LIKE_TYPES.contains(ext)) {
-            String upper = ext.substring(1,2).toUpperCase(Locale.ENGLISH);
-            base = base + upper + ext.substring(2);
-            ext = ".xml"; // NOI18N
-        }
-        String name = base + ext;
-        if (parent == null || parent.getFileObject(name) == null) {
-            return name;
-        } else {
-            for (int i = 1; true; i++) {
-                name = base + '_' + i + ext;
-                if (parent.getFileObject(name) == null) {
-                    return name;
-                }
-            }
         }
     }
     
