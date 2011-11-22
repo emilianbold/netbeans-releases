@@ -30,17 +30,12 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
     protected int tokenLength;
     protected int offset;
 
-    private boolean asp_tags = false;
     private StateStack stack = new StateStack();
-
-    private boolean short_tags_allowed;
 
     private LexerInput input;
 
-    public JavaScriptColoringLexer(LexerRestartInfo info, boolean short_tags_allowed, boolean asp_tags_allowed) {
+    public JavaScriptColoringLexer(LexerRestartInfo info) {
         this.input = info.input();
-        this.asp_tags = asp_tags_allowed;
-        this.short_tags_allowed = short_tags_allowed;
 
         if(info.state() != null) {
             //reset state
@@ -60,15 +55,11 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
         /** the current lexical state */
         final int zzLexicalState;
 
-        final boolean shortTag;
-        final boolean aspTag;
 
-        LexerState (StateStack stack, int zzState, int zzLexicalState, boolean shortTag, boolean aspTag) {
+        LexerState (StateStack stack, int zzState, int zzLexicalState) {
             this.stack = stack;
             this.zzState = zzState;
             this.zzLexicalState = zzLexicalState;
-            this.shortTag = shortTag;
-            this.aspTag = aspTag;
         }
 
         @Override
@@ -84,9 +75,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
             LexerState state = (LexerState) obj;
             return (this.stack.equals(state.stack)
                 && (this.zzState == state.zzState)
-                && (this.zzLexicalState == state.zzLexicalState)
-                && (this.shortTag == state.shortTag)
-                && (this.aspTag == state.aspTag));
+                && (this.zzLexicalState == state.zzLexicalState));
         }
 
         @Override
@@ -102,7 +91,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
     }
 
     public LexerState getState() {
-        return new LexerState(stack.createClone(), zzState, zzLexicalState, short_tags_allowed, asp_tags);
+        return new LexerState(stack.createClone(), zzState, zzLexicalState);
     }
 
     public void setState(LexerState state) {
