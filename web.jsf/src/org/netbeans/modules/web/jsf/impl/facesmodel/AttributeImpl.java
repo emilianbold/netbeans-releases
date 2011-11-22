@@ -78,7 +78,7 @@ class AttributeImpl extends IdentifiableDescriptionGroupImpl implements ConfigAt
      */
     public String getAttributeName() {
         return getChildElementText(
-                JSFConfigQNames.ATTRIBUTE_CLASS.getQName(getNamespaceURI()));
+                JSFConfigQNames.ATTRIBUTE_NAME.getQName(getNamespaceURI()));
     }
 
     /* (non-Javadoc)
