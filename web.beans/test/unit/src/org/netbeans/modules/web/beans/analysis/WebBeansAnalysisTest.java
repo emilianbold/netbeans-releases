@@ -1364,4 +1364,287 @@ public class WebBeansAnalysisTest extends BaseAnalisysTestCase {
         runAnalysis(goodFile2, NO_ERRORS_PROCESSOR);
     }
     
+    //=======================================================================
+    //
+    //  AnnotationModelAnalyzer - StereotypeAnalyzer
+    //
+    //=======================================================================
+    
+    /*
+     * StereotypeAnalyzer.analyzeScope
+     */
+    public void testScopedStereotype() throws IOException {
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Scope1.java",
+                "package foo; " +
+                " import javax.inject.Scope; "+
+                " import java.lang.annotation.Retention; "+
+                " import java.lang.annotation.RetentionPolicy; "+
+                " import java.lang.annotation.Target; " +
+                " import java.lang.annotation.ElementType; "+
+                " @Retention(RetentionPolicy.RUNTIME) "+
+                " @Target({ElementType.METHOD,ElementType.FIELD, ElementType.TYPE}) "+
+                " @Scope "+
+                " public @interface Scope1 { "+
+                "}");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Scope2.java",
+                "package foo; " +
+                " import javax.inject.Scope; "+
+                " import java.lang.annotation.Retention; "+
+                " import java.lang.annotation.RetentionPolicy; "+
+                " import java.lang.annotation.Target; " +
+                " import java.lang.annotation.ElementType; "+
+                " @Retention(RetentionPolicy.RUNTIME) "+
+                " @Target({ElementType.METHOD,ElementType.FIELD, ElementType.TYPE}) "+
+                " @Scope "+
+                " public @interface Scope2 { "+
+                "}");
+        
+        FileObject errorFile =  TestUtilities.copyStringToFileObject(srcFO, "foo/Stereotype1.java",
+                "package foo; " +
+                "import javax.enterprise.inject.*; "+
+                "import static java.lang.annotation.ElementType.METHOD; "+
+                "import static java.lang.annotation.ElementType.FIELD; "+
+                "import static java.lang.annotation.ElementType.TYPE; "+
+                "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
+                "import java.lang.annotation.*; "+
+                "@Target({METHOD, FIELD, TYPE}) "+
+                "@Retention(RUNTIME) "+
+                "@Stereotype "+
+                " @Scope1 @Scope2 "+
+                "public @interface Stereotype1 {}" );
+        
+        FileObject errorFile1 =  TestUtilities.copyStringToFileObject(srcFO, "foo/Stereotype2.java",
+                "package foo; " +
+                "import javax.enterprise.inject.*; "+
+                "import static java.lang.annotation.ElementType.METHOD; "+
+                "import static java.lang.annotation.ElementType.FIELD; "+
+                "import static java.lang.annotation.ElementType.TYPE; "+
+                "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
+                "import java.lang.annotation.*; "+
+                "@Target({METHOD, FIELD, TYPE}) "+
+                "@Retention(RUNTIME) "+
+                "@Stereotype "+
+                " @Stereotype3 @Stereotype4 "+
+                "public @interface Stereotype2 {}" );
+        
+        FileObject goodFile =  TestUtilities.copyStringToFileObject(srcFO, "foo/Stereotype3.java",
+                "package foo; " +
+                "import javax.enterprise.inject.*; "+
+                "import static java.lang.annotation.ElementType.METHOD; "+
+                "import static java.lang.annotation.ElementType.FIELD; "+
+                "import static java.lang.annotation.ElementType.TYPE; "+
+                "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
+                "import java.lang.annotation.*; "+
+                "@Target({METHOD, FIELD, TYPE}) "+
+                "@Retention(RUNTIME) "+
+                "@Stereotype "+
+                " @Scope1 "+
+                "public @interface Stereotype3 {}" );
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Stereotype4.java",
+                "package foo; " +
+                "import javax.enterprise.inject.*; "+
+                "import static java.lang.annotation.ElementType.METHOD; "+
+                "import static java.lang.annotation.ElementType.FIELD; "+
+                "import static java.lang.annotation.ElementType.TYPE; "+
+                "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
+                "import java.lang.annotation.*; "+
+                "@Target({METHOD, FIELD, TYPE}) "+
+                "@Retention(RUNTIME) "+
+                "@Stereotype "+
+                " @Scope2 "+
+                "public @interface Stereotype4 {}" );
+        
+        ResultProcessor processor = new ResultProcessor (){
+
+            @Override
+            public void process( TestProblems result ) {
+                checkTypeElement(result, "foo.Stereotype1");
+            }
+            
+        };
+        runAnalysis(errorFile , processor);
+        
+        processor = new ResultProcessor (){
+
+            @Override
+            public void process( TestProblems result ) {
+                checkTypeElement(result, "foo.Stereotype2");
+            }
+            
+        };
+        runAnalysis(errorFile1 , processor);
+        
+        runAnalysis(goodFile, NO_ERRORS_PROCESSOR);
+    }
+    
+    /*
+     * StereotypeAnalyzer. checkName, checkDefinition, checkInterceptorBindings, checkTransitiveStereotypes
+     */
+    public void testStereotype() throws IOException {
+        getUtilities().createInterceptorBinding("IBinding1");
+        FileObject errorFile =  TestUtilities.copyStringToFileObject(srcFO, "foo/Stereotype1.java",
+                "package foo; " +
+                "import javax.enterprise.inject.*; "+
+                "import static java.lang.annotation.ElementType.METHOD; "+
+                "import static java.lang.annotation.ElementType.FIELD; "+
+                "import static java.lang.annotation.ElementType.TYPE; "+
+                "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
+                "import java.lang.annotation.*; "+
+                "import javax.inject.Named; "+
+                "@Target({METHOD, FIELD, TYPE}) "+
+                "@Retention(RUNTIME) "+
+                "@Stereotype "+
+                " @Named(\"name\") " +
+                "public @interface Stereotype1 {}" );
+        
+        FileObject errorFile1 =  TestUtilities.copyStringToFileObject(srcFO, "foo/Stereotype2.java",
+                "package foo; " +
+                "import javax.enterprise.inject.*; "+
+                "import static java.lang.annotation.ElementType.METHOD; "+
+                "import static java.lang.annotation.ElementType.FIELD; "+
+                "import static java.lang.annotation.ElementType.TYPE; "+
+                "import static java.lang.annotation.RetentionPolicy.SOURCE; "+
+                "import java.lang.annotation.*; "+
+                "@Target({METHOD, FIELD, TYPE}) "+
+                "@Retention(SOURCE) "+
+                "@Stereotype "+
+                "public @interface Stereotype2 {}" );
+        
+        FileObject errorFile2 =  TestUtilities.copyStringToFileObject(srcFO, "foo/Stereotype3.java",
+                "package foo; " +
+                "import javax.enterprise.inject.*; "+
+                "import static java.lang.annotation.ElementType.METHOD; "+
+                "import static java.lang.annotation.ElementType.FIELD; "+
+                "import static java.lang.annotation.ElementType.TYPE; "+
+                "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
+                "import java.lang.annotation.*; "+
+                "@Target({METHOD, TYPE}) "+
+                "@Retention(RUNTIME) "+
+                "@Stereotype "+
+                "public @interface Stereotype3 {}" );
+        
+        FileObject errorFile3 =  TestUtilities.copyStringToFileObject(srcFO, "foo/Stereotype4.java",
+                "package foo; " +
+                "import javax.enterprise.inject.*; "+
+                "import static java.lang.annotation.ElementType.METHOD; "+
+                "import static java.lang.annotation.ElementType.FIELD; "+
+                "import static java.lang.annotation.ElementType.TYPE; "+
+                "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
+                "import java.lang.annotation.*; "+
+                "@Target({METHOD, FIELD, TYPE}) "+
+                "@Retention(RUNTIME) "+
+                "@Stereotype "+
+                " @IBinding1 "+
+                "public @interface Stereotype4 {}" );
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/TypeStereotype.java",
+                "package foo; " +
+                "import javax.enterprise.inject.*; "+
+                "import static java.lang.annotation.ElementType.METHOD; "+
+                "import static java.lang.annotation.ElementType.FIELD; "+
+                "import static java.lang.annotation.ElementType.TYPE; "+
+                "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
+                "import java.lang.annotation.*; "+
+                "import javax.inject.Named; "+
+                "@Target({TYPE}) "+
+                "@Retention(RUNTIME) "+
+                "@Stereotype "+
+                "public @interface TypeStereotype {}" );
+        
+        FileObject errorFile4 =  TestUtilities.copyStringToFileObject(srcFO, "foo/Stereotype5.java",
+                "package foo; " +
+                "import javax.enterprise.inject.*; "+
+                "import static java.lang.annotation.ElementType.METHOD; "+
+                "import static java.lang.annotation.ElementType.FIELD; "+
+                "import static java.lang.annotation.ElementType.TYPE; "+
+                "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
+                "import java.lang.annotation.*; "+
+                "@Target({METHOD, FIELD, TYPE}) "+
+                "@Retention(RUNTIME) "+
+                "@Stereotype "+
+                " @TypeStereotype "+
+                "public @interface Stereotype5 {}" );
+        
+        FileObject goodFile =  TestUtilities.copyStringToFileObject(srcFO, "foo/GoodStereotype1.java",
+                "package foo; " +
+                "import javax.enterprise.inject.*; "+
+                "import static java.lang.annotation.ElementType.METHOD; "+
+                "import static java.lang.annotation.ElementType.FIELD; "+
+                "import static java.lang.annotation.ElementType.TYPE; "+
+                "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
+                "import java.lang.annotation.*; "+
+                "import javax.inject.Named; "+
+                "@Target({METHOD, FIELD, TYPE}) "+
+                "@Retention(RUNTIME) "+
+                "@Stereotype "+
+                " @Named " +
+                "public @interface GoodStereotype1 {}" );
+        
+        FileObject goodFile1 =  TestUtilities.copyStringToFileObject(srcFO, "foo/GoodStereotype2.java",
+                "package foo; " +
+                "import javax.enterprise.inject.*; "+
+                "import static java.lang.annotation.ElementType.METHOD; "+
+                "import static java.lang.annotation.ElementType.FIELD; "+
+                "import static java.lang.annotation.ElementType.TYPE; "+
+                "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
+                "import java.lang.annotation.*; "+
+                "import javax.inject.Named; "+
+                "@Target({TYPE}) "+
+                "@Retention(RUNTIME) "+
+                "@Stereotype "+
+                " @Named " +
+                " @IBinding1 "+
+                "public @interface GoodStereotype2 {}" );
+        
+        ResultProcessor processor = new ResultProcessor (){
+            @Override
+            public void process( TestProblems result ) {
+                checkTypeElement(result, "foo.Stereotype1");
+            }
+                        
+        };
+        runAnalysis(errorFile , processor);
+        
+        processor = new ResultProcessor (){
+            @Override
+            public void process( TestProblems result ) {
+                checkTypeElement(result, "foo.Stereotype2");
+            }
+                        
+        };
+        runAnalysis(errorFile1 , processor);
+        
+        processor = new ResultProcessor (){
+            @Override
+            public void process( TestProblems result ) {
+                checkTypeElement(result, "foo.Stereotype3");
+            }
+                        
+        };
+        runAnalysis(errorFile2 , processor);
+        
+        processor = new ResultProcessor (){
+            @Override
+            public void process( TestProblems result ) {
+                checkTypeElement(result, "foo.Stereotype4");
+            }
+                        
+        };
+        runAnalysis(errorFile3 , processor);
+        
+        processor = new ResultProcessor (){
+            @Override
+            public void process( TestProblems result ) {
+                checkTypeElement(result, "foo.Stereotype5");
+            }
+                        
+        };
+        runAnalysis(errorFile4 , processor);
+        
+        runAnalysis(goodFile, NO_ERRORS_PROCESSOR);
+        runAnalysis(goodFile1, NO_ERRORS_PROCESSOR);
+    }
 }
