@@ -128,4 +128,28 @@ public class RemoteTransferFileTest extends NbTestCase {
         }
     }
 
+    public void testRemotePath1() {
+        RemoteClientImplementation remoteClient = new RemoteClient("/");
+        RemoteFile remoteFile1 = new RemoteFileImpl("readme.txt", "/", true);
+        RemoteTransferFile transferFile1 = new RemoteTransferFile(remoteFile1, null, remoteClient);
+        assertEquals("/readme.txt", transferFile1.getAbsolutePath());
+        assertEquals("readme.txt", transferFile1.getRemotePath());
+        RemoteFile remoteFile2 = new RemoteFileImpl("readme.txt", "/mydir", true);
+        RemoteTransferFile transferFile2 = new RemoteTransferFile(remoteFile2, null, remoteClient);
+        assertEquals("/mydir/readme.txt", transferFile2.getAbsolutePath());
+        assertEquals("mydir/readme.txt", transferFile2.getRemotePath());
+    }
+
+    public void testRemotePath2() {
+        RemoteClientImplementation remoteClient = new RemoteClient("/subdir");
+        RemoteFile remoteFile1 = new RemoteFileImpl("readme.txt", "/subdir", true);
+        RemoteTransferFile transferFile1 = new RemoteTransferFile(remoteFile1, null, remoteClient);
+        assertEquals("/subdir/readme.txt", transferFile1.getAbsolutePath());
+        assertEquals("readme.txt", transferFile1.getRemotePath());
+        RemoteFile remoteFile2 = new RemoteFileImpl("readme.txt", "/subdir/mydir", true);
+        RemoteTransferFile transferFile2 = new RemoteTransferFile(remoteFile2, null, remoteClient);
+        assertEquals("/subdir/mydir/readme.txt", transferFile2.getAbsolutePath());
+        assertEquals("mydir/readme.txt", transferFile2.getRemotePath());
+    }
+
 }

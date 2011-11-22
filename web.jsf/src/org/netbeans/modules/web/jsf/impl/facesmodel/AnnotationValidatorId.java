@@ -56,11 +56,12 @@ class AnnotationValidatorId implements ValidatorId {
         myText = text;
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.jsf.api.metamodel.ValidatorId#getText()
+    /**
+     * Gets validator-id text.
+     * @return trimmed validator-id text if any, {@code null} otherwise
      */
     public String getText() {
-        return myText;
+        return ElementTypeHelper.pickString(myText);
     }
     
     /* (non-Javadoc)
