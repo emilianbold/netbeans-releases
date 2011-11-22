@@ -299,6 +299,9 @@ public final class ActionProcessor extends LayerGeneratingProcessor {
                 continue;
             }
             ActionReference ref = e.getAnnotation(ActionReference.class);
+            if (ref == null) {
+                continue;
+            }
             ActionID id = e.getAnnotation(ActionID.class);
             if (id != null) {
                 processReferences(e, ref, id);
@@ -311,6 +314,9 @@ public final class ActionProcessor extends LayerGeneratingProcessor {
                 continue;
             }
             ActionReferences refs = e.getAnnotation(ActionReferences.class);
+            if (refs == null) {
+                continue;
+            }
             if (e.getKind() != ElementKind.PACKAGE) {
                 ActionID id = e.getAnnotation(ActionID.class);
                 if (id == null) {
