@@ -46,6 +46,7 @@ import java.io.File;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -60,6 +61,7 @@ import org.apache.tools.ant.module.spi.AntSession;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.gsf.testrunner.api.RerunHandler;
 import org.netbeans.modules.gsf.testrunner.api.RerunType;
 import org.netbeans.modules.gsf.testrunner.api.TestSession;
@@ -147,8 +149,15 @@ public class JUnitExecutionManager implements RerunHandler{
             }
         } else {
             Project project = testSession.getProject();
-            ActionProvider actionProvider = project.getLookup().lookup(ActionProvider.class);
-            actionProvider.invokeAction(targets[0], lookup);
+            if(ProjectManager.getDefault().isValid(project)) {
+                ActionProvider actionProvider = project.getLookup().lookup(ActionProvider.class);
+                if (actionProvider != null) {
+                    if (Arrays.asList(actionProvider.getSupportedActions()).contains(targets[0])
+                            && actionProvider.isActionEnabled(targets[0], lookup)) {
+                        actionProvider.invokeAction(targets[0], lookup);
+                    }
+                }
+            }
         }
     }
 
