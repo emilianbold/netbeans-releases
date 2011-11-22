@@ -25,22 +25,185 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 %eofval}
 
 %{
-    /**
-     * Create an empty lexer, yyrset will be called later to reset and assign
-     * the reader
-     */
-    public JavaScriptColoringLexer() {
-        super();
+
+    protected String heredoc = null;
+    protected int heredoc_len = 0;
+    private boolean asp_tags = false;
+    private StateStack stack = new StateStack();
+
+    private boolean short_tags_allowed;
+
+    private LexerInput input;
+
+    /*public PhpLexer5(int state){
+        initialize(state);
+    }*/
+    /*public void reset(char array[], int offset, int length) {
+        this.zzBuffer = array;
+        this.zzCurrentPos = offset;
+        this.zzMarkedPos = offset;
+        this.zzPushbackPos = offset;
+        this.yychar = offset;
+        this.zzEndRead = offset + length;
+        this.zzStartRead = offset;
+        this.zzAtEOF = zzCurrentPos >= zzEndRead;
+        this.firstPos = offset;
     }
 
-    @Override
-    public int yychar() {
-        return yychar;
+
+
+    public void reset(java.io.Reader  reader, char[] buffer, int[] parameters){
+    	this.zzReader = reader;
+    	this.zzBuffer = buffer;
+    	this.zzMarkedPos = parameters[0];
+    	this.zzPushbackPos = parameters[1];
+    	this.zzCurrentPos = parameters[2];
+    	this.zzStartRead = parameters[3];
+    	this.zzEndRead = parameters[4];
+    	this.yyline = parameters[5];
+    	initialize(parameters[6]);
+    }
+    */
+        public JavaScriptColoringLexer(LexerRestartInfo info, boolean short_tags_allowed, boolean asp_tags_allowed, boolean inPHP) {
+            this.input = info.input();
+            this.asp_tags = asp_tags_allowed;
+            this.short_tags_allowed = short_tags_allowed;
+
+            if(info.state() != null) {
+                //reset state
+                setState((LexerState)info.state());
+            } else {
+                //initial state
+                if (inPHP) {
+                    zzState = zzLexicalState = ST_PHP_IN_SCRIPTING;
+                }
+                else {
+                    zzState = zzLexicalState = YYINITIAL;
+                }
+                stack.clear();
+            }
+
+        }
+
+        public static final class LexerState  {
+            final StateStack stack;
+            /** the current state of the DFA */
+            final int zzState;
+            /** the current lexical state */
+            final int zzLexicalState;
+            /** remember the heredoc */
+            final String heredoc;
+            /** and the lenght of */
+            final int heredoc_len;
+
+            final boolean shortTag;
+            final boolean aspTag;
+
+            LexerState (StateStack stack, int zzState, int zzLexicalState, String heredoc, int heredoc_len, boolean shortTag, boolean aspTag) {
+                this.stack = stack;
+                this.zzState = zzState;
+                this.zzLexicalState = zzLexicalState;
+                this.heredoc = heredoc;
+                this.heredoc_len = heredoc_len;
+                this.shortTag = shortTag;
+                this.aspTag = aspTag;
+            }
+
+            @Override
+            public boolean equals(Object obj) {
+                if (this == obj) {
+			return true;
+		}
+
+		if (obj == null || obj.getClass() != this.getClass()) {
+			return false;
+		}
+
+                LexerState state = (LexerState) obj;
+                return (this.stack.equals(state.stack)
+                    && (this.zzState == state.zzState)
+                    && (this.zzLexicalState == state.zzLexicalState)
+                    && (this.heredoc_len == state.heredoc_len)
+                    && (this.shortTag == state.shortTag)
+                    && (this.aspTag == state.aspTag)
+                    && ((this.heredoc == null && state.heredoc == null) || (this.heredoc != null && state.heredoc != null && this.heredoc.equals(state.heredoc))));
+            }
+
+            @Override
+            public int hashCode() {
+                int hash = 11;
+                hash = 31 * hash + this.zzState;
+                hash = 31 * hash + this.zzLexicalState;
+                if (stack != null) {
+                    hash = 31 * hash + this.stack.hashCode();
+                }
+                hash = 31 * hash + this.heredoc_len;
+                if (heredoc != null) {
+                    hash = 31 * hash + this.heredoc.hashCode();
+                }
+                return hash;
+            }
+        }
+
+        public LexerState getState() {
+            return new LexerState(stack.createClone(), zzState, zzLexicalState, heredoc, heredoc_len, short_tags_allowed, asp_tags);
+        }
+
+        public void setState(LexerState state) {
+            this.stack.copyFrom(state.stack);
+            this.zzState = state.zzState;
+            this.zzLexicalState = state.zzLexicalState;
+            this.heredoc = state.heredoc;
+            this.heredoc_len = state.heredoc_len;
+        }
+
+     protected boolean isHeredocState(int state){
+    	    	return state == ST_PHP_HEREDOC || state == ST_PHP_START_HEREDOC || state == ST_PHP_END_HEREDOC || state == ST_PHP_NOWDOC;
     }
 
-    private static final byte PARAN     = 1;
-    private static final byte BRACKET   = 2;
-    private static final byte CURLY     = 3;
+    public int[] getParamenters(){
+    	return new int[]{zzMarkedPos, zzPushbackPos, zzCurrentPos, zzStartRead, zzEndRead, yyline, zzLexicalState};
+    }
+
+    protected int getZZLexicalState() {
+        return zzLexicalState;
+    }
+
+    protected int getZZMarkedPos() {
+        return zzMarkedPos;
+    }
+
+    protected int getZZEndRead() {
+        return zzEndRead;
+    }
+
+    public char[] getZZBuffer() {
+        return zzBuffer;
+    }
+
+    protected int getZZStartRead() {
+    	return this.zzStartRead;
+    }
+
+    protected int getZZPushBackPosition() {
+    	return this.zzPushbackPos;
+    }
+
+    protected void pushBack(int i) {
+            yypushback(i);
+    }
+
+    protected void popState() {
+            yybegin(stack.popStack());
+    }
+
+    protected void pushState(final int state) {
+            stack.pushStack(getZZLexicalState());
+            yybegin(state);
+    }
+
+
+ // End user code
 
 %}
 
