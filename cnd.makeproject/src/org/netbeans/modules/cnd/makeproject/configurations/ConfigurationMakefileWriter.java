@@ -762,23 +762,7 @@ public class ConfigurationMakefileWriter {
 
                     String output = testLinkerConfiguration.getOutputValue();
 
-                    List<LinkerConfiguration> linkerConfigurations = new ArrayList<LinkerConfiguration>();
-                    linkerConfigurations.add(testLinkerConfiguration);
-//                    LinkerConfiguration linkerConfiguration = conf.getLinkerConfiguration();
-//                    if(linkerConfiguration != null) {
-//                        linkerConfigurations.add(linkerConfiguration);
-//                    }
-                    Folder parentFolder = folder.getParent();
-                    while (parentFolder != null) {
-                        FolderConfiguration folderConfiguration = parentFolder.getFolderConfiguration(conf);
-                        if (folderConfiguration != null) {
-                            LinkerConfiguration linkerConfiguration = folderConfiguration.getLinkerConfiguration();
-                            if (linkerConfiguration != null) {
-                                linkerConfigurations.add(linkerConfiguration);
-                            }
-                        }
-                        parentFolder = parentFolder.getParent();
-                    }
+                    List<LinkerConfiguration> linkerConfigurations = getLinkerConfigurations(folder, conf);
 
                     CompilerSet cs = conf.getCompilerSet().getCompilerSet();
                     output = CppUtils.normalizeDriveLetter(cs, output);
@@ -840,6 +824,34 @@ public class ConfigurationMakefileWriter {
             }
         }
     }
+    
+    private static List<LinkerConfiguration> getLinkerConfigurations(Folder test, MakeConfiguration conf) {
+        List<LinkerConfiguration> linkerConfigurations = new ArrayList<LinkerConfiguration>();
+        if(test == null || conf == null) {
+            return linkerConfigurations;
+        }
+        getLinkerConfigurations(linkerConfigurations, test, conf);
+        return linkerConfigurations;
+    }
+
+    private static void getLinkerConfigurations(List<LinkerConfiguration> confs, Folder folder, MakeConfiguration conf) {
+        if(folder == null) {
+            return;
+        }
+        FolderConfiguration folderConfiguration = folder.getFolderConfiguration(conf);
+        if(folderConfiguration == null) {
+            return;
+        }
+        LinkerConfiguration testLinkerConfiguration = folderConfiguration.getLinkerConfiguration();
+        if(testLinkerConfiguration == null) {
+            return;
+        }
+        Folder parentFolder = folder.getParent();
+        if (parentFolder != null) {
+            getLinkerConfigurations(confs, parentFolder, conf);
+        }
+        confs.add(testLinkerConfiguration);
+    }    
 
     public static void writeArchiveTarget(MakeConfigurationDescriptor projectDescriptor, MakeConfiguration conf, Writer bw) throws IOException {
         CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
