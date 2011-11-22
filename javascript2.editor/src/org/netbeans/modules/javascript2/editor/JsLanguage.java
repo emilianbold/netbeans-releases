@@ -41,6 +41,7 @@ import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.csl.spi.LanguageRegistration;
+import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
 
@@ -68,7 +69,7 @@ public class JsLanguage extends DefaultLanguageConfig {
 
     @Override
     public org.netbeans.api.lexer.Language getLexerLanguage() {
-        return null;
+        return JsTokenId.language();
     }
 
     @Override

@@ -5,7 +5,7 @@
     
     <!-- for generationg lexer and parser, uncomment the tasks and set up the right classpath -->
 
-    <taskdef name="jflex"
+<!--    <taskdef name="jflex"
         classname="JFlex.anttask.JFlexTask"
         classpath="/home/sickboy/software/jflex/lib/JFlex.jar" />
 
@@ -13,7 +13,7 @@
         <jflex file="tools/JavaScriptColoringScanner.flex"
         destdir="src"
         skel="tools/skeleton.netbeans"/>
-    </target>
+    </target>-->
     
 </project>
 

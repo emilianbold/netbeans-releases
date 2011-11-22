@@ -118,8 +118,7 @@ public enum JsTokenId implements TokenId {
                 }
 
                 protected Lexer<JsTokenId> createLexer(LexerRestartInfo<JsTokenId> info) {
-                    //return JsLexer.create(info);
-                    return null;
+                    return JsLexer.create(info, true);
                 }
 
                 @Override
