@@ -149,20 +149,22 @@ class ComponentImpl extends IdentifiableDescriptionGroupImpl implements
         visitor.visit( this );
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.jsf.api.metamodel.Component#getComponentClass()
+    /**
+     * Gets component-class of the faces-config-componentType.
+     * @return trimmed component-class if any, {@code null} otherwise
      */
     public String getComponentClass() {
-        return getChildElementText(
-                JSFConfigQNames.COMPONENT_CLASS.getQName(getNamespaceURI()));
+        String componentClass = getChildElementText(JSFConfigQNames.COMPONENT_CLASS.getQName(getNamespaceURI()));
+        return ElementTypeHelper.pickFullyQualifiedClassType(componentClass);
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.jsf.api.metamodel.Component#getComponentType()
+    /**
+     * Gets component-type of the faces-config-componentType.
+     * @return trimmed component-type if any, {@code null} otherwise
      */
     public String getComponentType() {
-        return getChildElementText(
-                JSFConfigQNames.COMPONENT_TYPE.getQName(getNamespaceURI()));
+        String componentType = getChildElementText(JSFConfigQNames.COMPONENT_TYPE.getQName(getNamespaceURI()));
+        return ElementTypeHelper.pickString(componentType);
     }
     
     protected List<String> getSortedListOfLocalNames(){

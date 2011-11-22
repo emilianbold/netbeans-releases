@@ -77,35 +77,40 @@ class ConverterImpl extends IdentifiableDescriptionGroupImpl implements Converte
     ConverterImpl(JSFConfigModelImpl model) {
         this(model, createElementNS(model, JSFConfigQNames.CONVERTER));
     }
-    
+
+    /**
+     * Gets converter-class of the faces-config-converterType.
+     * @return trimmed converter-class if any, {@code null} otherwise
+     */
     public String getConverterClass() {
         String className = getChildElementText(JSFConfigQNames.CONVERTER_CLASS.getQName(getNamespaceURI()));
-        if (className != null) {
-            className = className.trim();
-        }
-
-        return className;
+        return ElementTypeHelper.pickFullyQualifiedClassType(className);
     }
     
     public void setConverterClass(String value) {
         setChildElementText(CONVERTER_CLASS, value, JSFConfigQNames.CONVERTER_CLASS.getQName(getNamespaceURI()));
     }
-    
+
+    /**
+     * Gets converter-for-class of the faces-config-converterType.
+     * @return trimmed converter-for-class if any, {@code null} otherwise
+     */
     public String getConverterForClass() {
         String className = getChildElementText(JSFConfigQNames.CONVERTER_FOR_CLASS.getQName(getNamespaceURI()));
-        if (className != null) {
-            className = className.trim();
-        }
-
-        return className;
+        return ElementTypeHelper.pickFullyQualifiedClassType(className);
     }
     
     public void setConverterForClass(String value) {
         setChildElementText(CONVERTER_FOR_CLASS, value, JSFConfigQNames.CONVERTER_FOR_CLASS.getQName(getNamespaceURI()));
     }
-    
+
+    /**
+     * Gets converter-id of the faces-config-converterType.
+     * @return trimmed converter-id if any, {@code null} otherwise
+     */
     public String getConverterId() {
-        return getChildElementText(JSFConfigQNames.CONVERTER_ID.getQName(getNamespaceURI()));
+        String converterId = getChildElementText(JSFConfigQNames.CONVERTER_ID.getQName(getNamespaceURI()));
+        return ElementTypeHelper.pickString(converterId);
     }
     
     public void setConverterId(String value) {

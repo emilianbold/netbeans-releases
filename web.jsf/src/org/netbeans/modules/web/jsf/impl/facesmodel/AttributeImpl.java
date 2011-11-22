@@ -65,20 +65,22 @@ class AttributeImpl extends IdentifiableDescriptionGroupImpl implements ConfigAt
         this(model, createElementNS(model, JSFConfigQNames.ATTRIBUTE));
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.jsf.api.facesmodel.ConfigAttribute#getAttributeClass()
+    /**
+     * Gets attribute-class of the attributeType.
+     * @return trimmed attribute-class if any, {@code null} otherwise
      */
     public String getAttributeClass() {
-        return getChildElementText(
-                JSFConfigQNames.ATTRIBUTE_CLASS.getQName(getNamespaceURI()));
+        String attributeClass = getChildElementText(JSFConfigQNames.ATTRIBUTE_CLASS.getQName(getNamespaceURI()));
+        return ElementTypeHelper.pickFullyQualifiedClassType(attributeClass);
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.jsf.api.facesmodel.ConfigAttribute#getAttributeName()
+    /**
+     * Gets attribute-name of the attributeType.
+     * @return trimmed attribute-name if any, {@code null} otherwise
      */
     public String getAttributeName() {
-        return getChildElementText(
-                JSFConfigQNames.ATTRIBUTE_CLASS.getQName(getNamespaceURI()));
+        String attributeName = getChildElementText(JSFConfigQNames.ATTRIBUTE_NAME.getQName(getNamespaceURI()));
+        return ElementTypeHelper.pickString(attributeName);
     }
 
     /* (non-Javadoc)
