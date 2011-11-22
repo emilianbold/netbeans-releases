@@ -65,20 +65,22 @@ class MapEntriesImpl extends IdentifiableComponentImpl implements MapEntries {
         super(model, createElementNS(model, JSFConfigQNames.MAP_ENTRIES));
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.jsf.api.facesmodel.MapEntries#getKeyClass()
+    /**
+     * Gets key-class of the faces-config-map-entriesType.
+     * @return trimmed key-class if any, {@code null} otherwise
      */
     public String getKeyClass() {
-        return getChildElementText(
-                JSFConfigQNames.KEY_CLASS.getQName(getNamespaceURI()));
+        String keyClass = getChildElementText(JSFConfigQNames.KEY_CLASS.getQName(getNamespaceURI()));
+        return ElementTypeHelper.pickFullyQualifiedClassType(keyClass);
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.jsf.api.facesmodel.MapEntries#getValueClass()
+    /**
+     * Gets value-class of the faces-config-map-entriesType.
+     * @return trimmed value-class if any, {@code null} otherwise
      */
     public String getValueClass() {
-        return getChildElementText(
-                JSFConfigQNames.VALUE_CLASS.getQName(getNamespaceURI()));
+        String valueClass = getChildElementText(JSFConfigQNames.VALUE_CLASS.getQName(getNamespaceURI()));
+        return ElementTypeHelper.pickFacesConfigValueClassType(valueClass);
     }
 
     /* (non-Javadoc)

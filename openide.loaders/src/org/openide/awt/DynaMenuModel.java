@@ -59,6 +59,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
+import javax.swing.UIManager;
 import org.openide.filesystems.FileObject;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
@@ -311,6 +312,10 @@ class DynaMenuModel {
     /** Removes icons from all direct menu items of this menu.
      * Not recursive, */
     private List<JComponent> alignVertically(List<JComponent> menuItems) {
+        //#204646 - some L&Fs show check boxes and action icons in the same menu column (e.g. Vista l&f)
+        //so do not use blank icons in such cases
+        if( !UIManager.getBoolean( "Nb.MenuBar.VerticalAlign" ) ) //NOI18N
+            return menuItems;
         List<JComponent> result = new ArrayList<JComponent>(menuItems.size());
         JMenuItem curItem = null;
         for (JComponent obj: menuItems) {
