@@ -95,7 +95,7 @@ public class PushOtherAction extends ContextAction {
         int repositoryModeMask = Repository.FLAG_URL_ENABLED | Repository.FLAG_SHOW_HINTS | Repository.FLAG_SHOW_PROXY;
         String title = org.openide.util.NbBundle.getMessage(CloneRepositoryWizardPanel.class, "CTL_Repository_Location");       // NOI18N
         final JButton pushButton = new JButton();
-        final Repository repository = new Repository(repositoryModeMask, title, true);
+        final Repository repository = new Repository(repositoryModeMask, title, true, root);
         repository.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
                 pushButton.setEnabled(repository.isValid());
