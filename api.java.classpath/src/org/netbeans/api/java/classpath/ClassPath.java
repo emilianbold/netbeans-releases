@@ -782,6 +782,12 @@ public final class ClassPath {
                                     l.setLevel(Level.FINEST);
                                     LOG.log(Level.WARNING, "Root is not folder {0}; about to refresh", _root); // NOI18N
                                     _root.refresh();
+                                    FileObject parent = _root.getParent();
+                                    if (parent != null) {
+                                        LOG.log(Level.WARNING, "Refreshing its parent {0}", parent); // NOI18N
+                                        FileObject[] arr = parent.getChildren();
+                                        parent.refresh();
+                                    }
                                 } finally {
                                     l.setLevel(prev);
                                     LOG.warning("End of refresh"); // NOI18N

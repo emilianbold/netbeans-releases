@@ -603,14 +603,14 @@ public abstract class BaseFileObj extends FileObject {
         
         FileEventImpl parentFe = null;
         if (parent != null && pListeners != null) {
-            parentFe = new FileEventImpl(parent, this, expected);
+            parentFe = new FileEventImpl(parent, this, expected, 0);
         }
         if (parentFe != null) {
             final FileEventImpl fe = new FileEventImpl(this, parentFe);
             fireFileDataCreatedEvent(getListeners(), fe);
             parent.fireFileDataCreatedEvent(pListeners, parentFe);
         } else {
-            final FileEventImpl fe = new FileEventImpl(this, this, expected);
+            final FileEventImpl fe = new FileEventImpl(this, this, expected, 0);
             fireFileDataCreatedEvent(getListeners(), fe);
         }
         stopWatch.stop();
@@ -627,14 +627,14 @@ public abstract class BaseFileObj extends FileObject {
 
         FileEventImpl parentFe = null;
         if (parent != null && pListeners != null) {
-            parentFe = new FileEventImpl(parent, this, expected);
+            parentFe = new FileEventImpl(parent, this, expected, 0);
         }
         if (parentFe != null) {
             final FileEventImpl fe = new FileEventImpl(this, parentFe);
             fireFileFolderCreatedEvent(getListeners(), fe);
             parent.fireFileFolderCreatedEvent(pListeners, parentFe);
         } else {
-            final FileEventImpl fe = new FileEventImpl(this, this, expected);
+            final FileEventImpl fe = new FileEventImpl(this, this, expected, 0);
             fireFileFolderCreatedEvent(getListeners(), fe);
         }
         stopWatch.stop();
@@ -652,14 +652,14 @@ public abstract class BaseFileObj extends FileObject {
         
         FileEventImpl parentFe = null;
         if (parent != null && pListeners != null) {
-            parentFe = new FileEventImpl(parent, this, expected);
+            parentFe = new FileEventImpl(parent, this, expected, lastModified().getTime());
         }
         if (parentFe != null) {
             final FileEventImpl fe = new FileEventImpl(this, parentFe);
             fireFileChangedEvent(getListeners(), fe);
             parent.fireFileChangedEvent(pListeners, parentFe);
         } else {
-            final FileEventImpl fe = new FileEventImpl(this, this, expected);
+            final FileEventImpl fe = new FileEventImpl(this, this, expected, lastModified().getTime());
             fireFileChangedEvent(getListeners(), fe);
         }
         stopWatch.stop();
@@ -675,14 +675,14 @@ public abstract class BaseFileObj extends FileObject {
         
         FileEventImpl parentFe = null;
         if (parent != null && pListeners != null) {
-            parentFe = new FileEventImpl(parent, this, expected);
+            parentFe = new FileEventImpl(parent, this, expected, 0);
         }
         if (parentFe != null) {
             final FileEventImpl fe = new FileEventImpl(this, parentFe);
             fireFileDeletedEvent(getListeners(), fe);
             parent.fireFileDeletedEvent(pListeners, parentFe);
         } else {
-            final FileEventImpl fe = new FileEventImpl(this, this, expected);
+            final FileEventImpl fe = new FileEventImpl(this, this, expected, 0);
             fireFileDeletedEvent(getListeners(), fe);
         }
         stopWatch.stop();
@@ -1025,12 +1025,12 @@ public abstract class BaseFileObj extends FileObject {
             return next;
         }        
         
-        public FileEventImpl(FileObject src, FileObject file, boolean expected) {
-            super(src, file, expected);
+        public FileEventImpl(FileObject src, FileObject file, boolean expected, long time) {
+            super(src, file, expected, time);
         }
         
         public FileEventImpl(FileObject src, FileEventImpl next) {
-            super(src, next.getFile(), next.isExpected());
+            super(src, next.getFile(), next.isExpected(), next.getTime());
             this.next = next;
         }
     }
