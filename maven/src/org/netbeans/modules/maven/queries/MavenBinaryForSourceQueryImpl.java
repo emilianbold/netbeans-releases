@@ -56,7 +56,10 @@ import org.apache.maven.project.MavenProject;
 import org.netbeans.api.annotations.common.SuppressWarnings;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.api.java.queries.BinaryForSourceQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.spi.java.queries.BinaryForSourceQueryImplementation;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 
@@ -65,11 +68,13 @@ import org.openide.util.Exceptions;
  * @author mkleint
  */
 @SuppressWarnings("DMI_COLLECTION_OF_URLS")
+@ProjectServiceProvider(service=BinaryForSourceQueryImplementation.class, projectType="org-netbeans-modules-maven")
 public class MavenBinaryForSourceQueryImpl implements BinaryForSourceQueryImplementation {
-    private final NbMavenProjectImpl project;
+
+    private final Project project;
     private final Map<URL,Res> results;
     
-    public MavenBinaryForSourceQueryImpl(NbMavenProjectImpl prj) {
+    public MavenBinaryForSourceQueryImpl(Project prj) {
         project = prj;
         results = new HashMap<URL, Res>();
     }
@@ -80,37 +85,9 @@ public class MavenBinaryForSourceQueryImpl implements BinaryForSourceQueryImplem
         }
         if ("file".equals(url.getProtocol())) { //NOI18N
             try {
-                Res toReturn = null;
                 File fil = new File(url.toURI());
                 fil = FileUtil.normalizeFile(fil);
-                MavenProject mav = project.getOriginalMavenProject();
-                String src = mav.getBuild() != null ? mav.getBuild().getSourceDirectory() : null;
-                String testSrc = mav.getBuild() != null ? mav.getBuild().getTestSourceDirectory() : null;
-                File srcFile = src != null ? FileUtil.normalizeFile(new File(src)) : null;
-                File testSrcFile = testSrc != null ? FileUtil.normalizeFile(new File(testSrc)) : null;
-                toReturn = checkRoot(fil, srcFile, testSrcFile);
-                if (toReturn == null) {
-                    for (URI gen : project.getGeneratedSourceRoots(false)) {
-                        toReturn = checkRoot(fil, gen, null);
-                        if (toReturn != null) {
-                            break;
-                        }
-                    }
-                }
-                if (toReturn == null) {
-                    for (URI gen : project.getGeneratedSourceRoots(true)) {
-                        toReturn = checkRoot(fil, null, gen);
-                        if (toReturn != null) {
-                            break;
-                        }
-                    }
-                }
-                if (toReturn == null) {
-                    toReturn = checkRoot(fil, project.getScalaDirectory(false), project.getScalaDirectory(true));
-                }
-                if (toReturn == null) {
-                    toReturn = checkRoot(fil, project.getGroovyDirectory(false), project.getGroovyDirectory(true));
-                }
+                Res toReturn = findFor(fil);
                 if (toReturn != null) {
                     results.put(url, toReturn);
                 }
@@ -123,12 +100,42 @@ public class MavenBinaryForSourceQueryImpl implements BinaryForSourceQueryImplem
         return null;
     }
 
+    private Res findFor(File fil) {
+        MavenProject mav = project.getLookup().lookup(NbMavenProject.class).getMavenProject();
+        String src = mav.getBuild() != null ? mav.getBuild().getSourceDirectory() : null;
+        String testSrc = mav.getBuild() != null ? mav.getBuild().getTestSourceDirectory() : null;
+        File srcFile = src != null ? FileUtil.normalizeFile(new File(src)) : null;
+        File testSrcFile = testSrc != null ? FileUtil.normalizeFile(new File(testSrc)) : null;
+        Res toReturn = checkRoot(fil, srcFile, testSrcFile);
+        if (toReturn != null) {
+            return toReturn;
+        }
+        NbMavenProjectImpl impl = project.getLookup().lookup(NbMavenProjectImpl.class);
+        for (URI gen : impl.getGeneratedSourceRoots(false)) {
+            toReturn = checkRoot(fil, gen, null);
+            if (toReturn != null) {
+                return toReturn;
+            }
+        }
+        for (URI gen : impl.getGeneratedSourceRoots(true)) {
+            toReturn = checkRoot(fil, null, gen);
+            if (toReturn != null) {
+                return toReturn;
+            }
+        }
+        toReturn = checkRoot(fil, impl.getScalaDirectory(false), impl.getScalaDirectory(true));
+        if (toReturn != null) {
+            return toReturn;
+        }
+        return checkRoot(fil, impl.getGroovyDirectory(false), impl.getGroovyDirectory(true));
+    }
+
     private Res checkRoot(File root, File source, File test) {
         if (source != null && source.equals(root)) {
-            return new Res(false, project);
+            return new Res(false, project.getLookup().lookup(NbMavenProject.class));
         }
         if (test != null && test.equals(root)) {
-            return new Res(true, project);
+            return new Res(true, project.getLookup().lookup(NbMavenProject.class));
         }
         return null;
     }
@@ -142,16 +149,16 @@ public class MavenBinaryForSourceQueryImpl implements BinaryForSourceQueryImplem
     
     private static class Res implements BinaryForSourceQuery.Result {
         private final List<ChangeListener> listeners = new ArrayList<ChangeListener>();
-        private NbMavenProjectImpl project;
+        private NbMavenProject project;
         private boolean isTest;
-        Res(boolean test, NbMavenProjectImpl prj) {
+        Res(boolean test, NbMavenProject prj) {
             isTest = test;
             project = prj;
 
         }
         
         public @Override URL[] getRoots() {
-            return new URL[] {FileUtil.urlForArchiveOrDir(project.getProjectWatcher().getOutputDirectory(isTest))};
+            return new URL[] {FileUtil.urlForArchiveOrDir(project.getOutputDirectory(isTest))};
         }   
 
         public @Override void addChangeListener(ChangeListener changeListener) {

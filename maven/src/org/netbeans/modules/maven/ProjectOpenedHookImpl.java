@@ -64,7 +64,6 @@ import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.model.Repository;
-import org.netbeans.modules.maven.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.maven.queries.MavenFileOwnerQueryImpl;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
@@ -72,12 +71,14 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.modules.maven.api.classpath.ProjectSourcesClassPathProvider;
 import org.netbeans.modules.maven.cos.CopyResourcesOnSave;
 import org.netbeans.modules.maven.indexer.api.RepositoryIndexer;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.options.MavenSettings;
 import org.netbeans.modules.maven.problems.BatchProblemNotifier;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -97,12 +98,13 @@ import org.xml.sax.InputSource;
  * @author  Milos Kleint
  */
 @SuppressWarnings("ClassWithMultipleLoggers")
-class ProjectOpenedHookImpl extends ProjectOpenedHook {
+@ProjectServiceProvider(service=ProjectOpenedHook.class, projectType="org-netbeans-modules-maven")
+public class ProjectOpenedHookImpl extends ProjectOpenedHook {
     private static final String PROP_BINARIES_CHECKED = "binariesChecked";
     private static final String PROP_JAVADOC_CHECKED = "javadocChecked";
     private static final String PROP_SOURCE_CHECKED = "sourceChecked";
    
-    private final NbMavenProjectImpl project;
+    private final Project proj;
     private List<URI> uriReferences = new ArrayList<URI>();
 
     // ui logging
@@ -115,8 +117,8 @@ class ProjectOpenedHookImpl extends ProjectOpenedHook {
     private static final Logger LOGGER = Logger.getLogger(ProjectOpenedHookImpl.class.getName());
     private static final AtomicBoolean checkedIndices = new AtomicBoolean();
     
-    ProjectOpenedHookImpl(NbMavenProjectImpl proj) {
-        project = proj;
+    public ProjectOpenedHookImpl(Project proj) {
+        this.proj = proj;
     }
 
     @Messages("UI_MAVEN_PROJECT_OPENED=A Maven project was opened. Appending the project's packaging type.")
@@ -124,8 +126,9 @@ class ProjectOpenedHookImpl extends ProjectOpenedHook {
         checkBinaryDownloads();
         checkSourceDownloads();
         checkJavadocDownloads();
+        NbMavenProjectImpl project = proj.getLookup().lookup(NbMavenProjectImpl.class);
         project.attachUpdater();
-        registerWithSubmodules(FileUtil.toFile(project.getProjectDirectory()), new HashSet<File>());
+        registerWithSubmodules(FileUtil.toFile(proj.getProjectDirectory()), new HashSet<File>());
         Set<URI> uris = new HashSet<URI>();
         uris.addAll(Arrays.asList(project.getSourceRoots(false)));
         uris.addAll(Arrays.asList(project.getSourceRoots(true)));
@@ -137,7 +140,7 @@ class ProjectOpenedHookImpl extends ProjectOpenedHook {
         File rootDir = new File(rootUri);
         for (URI uri : uris) {
             if (FileUtilities.getRelativePath(rootDir, new File(uri)) == null) {
-                FileOwnerQuery.markExternalOwner(uri, project, FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
+                FileOwnerQuery.markExternalOwner(uri, proj, FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
                 //TODO we do not handle properly the case when someone changes a
                 // ../../src path to ../../src2 path in the lifetime of the project.
                 uriReferences.add(uri);
@@ -145,7 +148,7 @@ class ProjectOpenedHookImpl extends ProjectOpenedHook {
         }
         
         // register project's classpaths to GlobalPathRegistry
-        ClassPathProviderImpl cpProvider = project.getLookup().lookup(org.netbeans.modules.maven.classpath.ClassPathProviderImpl.class);
+        ProjectSourcesClassPathProvider cpProvider = proj.getLookup().lookup(ProjectSourcesClassPathProvider.class);
         GlobalPathRegistry.getDefault().register(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
         GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, cpProvider.getProjectClassPaths(ClassPath.SOURCE));
         GlobalPathRegistry.getDefault().register(ClassPath.COMPILE, cpProvider.getProjectClassPaths(ClassPath.COMPILE));
@@ -243,9 +246,10 @@ class ProjectOpenedHookImpl extends ProjectOpenedHook {
 
     protected @Override void projectClosed() {
         uriReferences.clear();
+        NbMavenProjectImpl project = proj.getLookup().lookup(NbMavenProjectImpl.class);
         project.detachUpdater();
         // unregister project's classpaths to GlobalPathRegistry
-        ClassPathProviderImpl cpProvider = project.getLookup().lookup(org.netbeans.modules.maven.classpath.ClassPathProviderImpl.class);
+        ProjectSourcesClassPathProvider cpProvider = proj.getLookup().lookup(ProjectSourcesClassPathProvider.class);
         GlobalPathRegistry.getDefault().unregister(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
         GlobalPathRegistry.getDefault().unregister(ClassPath.SOURCE, cpProvider.getProjectClassPaths(ClassPath.SOURCE));
         GlobalPathRegistry.getDefault().unregister(ClassPath.COMPILE, cpProvider.getProjectClassPaths(ClassPath.COMPILE));
@@ -261,8 +265,8 @@ class ProjectOpenedHookImpl extends ProjectOpenedHook {
            return;
        }
 
-       NbMavenProject watcher = project.getLookup().lookup(NbMavenProject.class);
-       Preferences prefs = ProjectUtils.getPreferences(project, NbMavenProject.class, false);
+       NbMavenProject watcher = proj.getLookup().lookup(NbMavenProject.class);
+       Preferences prefs = ProjectUtils.getPreferences(proj, NbMavenProject.class, false);
        if (ds.equals(MavenSettings.DownloadStrategy.EVERY_OPEN)) {
             watcher.synchronousDependencyDownload();
             prefs.putBoolean(PROP_BINARIES_CHECKED, true);
@@ -291,8 +295,8 @@ class ProjectOpenedHookImpl extends ProjectOpenedHook {
            return;
        }
 
-       NbMavenProject watcher = project.getLookup().lookup(NbMavenProject.class);
-       Preferences prefs = ProjectUtils.getPreferences(project, NbMavenProject.class, false);
+       NbMavenProject watcher = proj.getLookup().lookup(NbMavenProject.class);
+       Preferences prefs = ProjectUtils.getPreferences(proj, NbMavenProject.class, false);
        if (ds.equals(MavenSettings.DownloadStrategy.EVERY_OPEN)) {
             watcher.triggerSourceJavadocDownload(true);
             prefs.putBoolean(PROP_JAVADOC_CHECKED, true);
@@ -321,8 +325,8 @@ class ProjectOpenedHookImpl extends ProjectOpenedHook {
            return;
        }
 
-       NbMavenProject watcher = project.getLookup().lookup(NbMavenProject.class);
-       Preferences prefs = ProjectUtils.getPreferences(project, NbMavenProject.class, false);
+       NbMavenProject watcher = proj.getLookup().lookup(NbMavenProject.class);
+       Preferences prefs = ProjectUtils.getPreferences(proj, NbMavenProject.class, false);
        if (ds.equals(MavenSettings.DownloadStrategy.EVERY_OPEN)) {
             watcher.triggerSourceJavadocDownload(false);
             prefs.putBoolean(PROP_SOURCE_CHECKED, true);

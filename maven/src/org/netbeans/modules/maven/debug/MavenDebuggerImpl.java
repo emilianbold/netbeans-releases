@@ -48,6 +48,7 @@ import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.spi.debug.MavenDebugger;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.InputOutput;
@@ -56,6 +57,7 @@ import org.openide.windows.InputOutput;
  *
  * @author mkleint
  */
+@ProjectServiceProvider(service=MavenDebugger.class, projectType="org-netbeans-modules-maven")
 public class MavenDebuggerImpl implements MavenDebugger {
     private final Project nbproject;
     
