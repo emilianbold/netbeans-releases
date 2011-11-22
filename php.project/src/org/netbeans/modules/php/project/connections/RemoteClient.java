@@ -789,7 +789,17 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
                 } else {
                     transferFailed(transferInfo, file, getOperationFailureMessage(Operation.DOWNLOAD, file.getName()));
                     try {
-                        FileUtil.toFileObject(FileUtil.normalizeFile(tmpLocalFile)).delete();
+                        FileObject tmpFo = FileUtil.toFileObject(FileUtil.normalizeFile(tmpLocalFile));
+                        if (tmpFo == null) {
+                            // # 181129
+                            LOGGER.log(Level.WARNING, "Cannot delete local temporary file {0}, its file object is null (file exists: {1})",
+                                    new Object[] {tmpLocalFile, tmpLocalFile.exists()});
+                            if (tmpLocalFile.exists()) {
+                                tmpLocalFile.delete();
+                            }
+                        } else {
+                            tmpFo.delete();
+                        }
                         if (LOGGER.isLoggable(Level.FINE)) {
                             LOGGER.fine(String.format("Unsuccessfully downloaded file %s deleted: TRUE", tmpLocalFile));
                         }

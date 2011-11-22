@@ -66,20 +66,22 @@ class PropertyImpl extends IdentifiableDescriptionGroupImpl implements Property
         this(model, createElementNS(model, JSFConfigQNames.PROPERTY));
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.jsf.api.facesmodel.Property#getPropertyClass()
+    /**
+     * Gets property-class of the faces-config-propertyType.
+     * @return trimmed property-class if any, {@code null} otherwise
      */
     public String getPropertyClass() {
-        return getChildElementText(
-                JSFConfigQNames.PROPERTY_CLASS.getQName(getNamespaceURI()));
+        String propertyClass = getChildElementText(JSFConfigQNames.PROPERTY_CLASS.getQName(getNamespaceURI()));
+        return ElementTypeHelper.pickJavaTypeType(propertyClass);
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.jsf.api.facesmodel.Property#getPropertyName()
+    /**
+     * Gets property-class of the faces-config-propertyType.
+     * @return trimmed property-class if any, {@code null} otherwise
      */
     public String getPropertyName() {
-        return getChildElementText(
-                JSFConfigQNames.PROPERTY_NAME.getQName(getNamespaceURI()));
+        String propertyName = getChildElementText(JSFConfigQNames.PROPERTY_NAME.getQName(getNamespaceURI()));
+        return ElementTypeHelper.pickString(propertyName);
     }
 
     /* (non-Javadoc)

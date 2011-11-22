@@ -55,9 +55,12 @@ import javax.swing.JComponent;
 import javax.swing.Popup;
 import javax.swing.PopupFactory;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.event.MouseInputListener;
 import org.netbeans.swing.popupswitcher.SwitcherTable;
 import org.netbeans.swing.popupswitcher.SwitcherTableItem;
+import org.openide.awt.StatusDisplayer;
 
 /**
  * Represents Popup for "Document switching" which is shown after an user clicks
@@ -66,7 +69,7 @@ import org.netbeans.swing.popupswitcher.SwitcherTableItem;
  * @author mkrauskopf
  */
 final class ButtonPopupSwitcher
-        implements MouseInputListener, AWTEventListener {
+        implements MouseInputListener, AWTEventListener, ListSelectionListener {
     
     /**
      * Reference to the popup object currently showing the default instance, if
@@ -131,6 +134,7 @@ final class ButtonPopupSwitcher
         invokingComponent.addMouseMotionListener(this);
         pTable.addMouseListener(this);
         pTable.addMouseMotionListener(this);
+        pTable.getSelectionModel().addListSelectionListener( this );
         
         Toolkit.getDefaultToolkit().addAWTEventListener(this,
                 AWTEvent.MOUSE_EVENT_MASK
@@ -164,6 +168,7 @@ final class ButtonPopupSwitcher
     private synchronized void hideCurrentPopup() {
         pTable.removeMouseListener(this);
         pTable.removeMouseMotionListener(this);
+        pTable.getSelectionModel().removeListSelectionListener( this );
         Toolkit.getDefaultToolkit().removeAWTEventListener(this);
         if (invokingComponent != null) {
             invokingComponent.removeMouseListener(this);
@@ -179,6 +184,12 @@ final class ButtonPopupSwitcher
             shown = false;
             currentSwitcher = null;
         }
+    }
+
+    @Override
+    public void valueChanged( ListSelectionEvent e ) {
+        SwitcherTableItem item = pTable.getSelectedItem();
+        StatusDisplayer.getDefault().setStatusText( null == item ? null : item.getDescription() );
     }
     
     /**
@@ -313,9 +324,77 @@ final class ButtonPopupSwitcher
             }
         } else if (event instanceof KeyEvent) {
             if (event.getID() == KeyEvent.KEY_PRESSED) {
-                Toolkit.getDefaultToolkit().removeAWTEventListener(this);
-                hideCurrentPopup();
+                if( !changeSelection( (KeyEvent)event ) ) {
+                    Toolkit.getDefaultToolkit().removeAWTEventListener(this);
+                    hideCurrentPopup();
+                } else {
+                    ((KeyEvent)event).consume();
+                }
             }
         }
+    }
+    
+    /**
+     * Allow keyboard navigation in document dropdown list.
+     * 
+     * @param event
+     * @return 
+     */
+    private boolean changeSelection( KeyEvent event ) {
+        int key = event.getKeyCode();
+        int selRow = pTable.getSelectedRow();
+        int selCol = pTable.getSelectedColumn();
+        if( selRow < 0 )
+            selRow = 0;
+        if( selCol < 0 )
+            selCol = 0;
+        boolean switched = true;
+        switch( key ) {
+            case KeyEvent.VK_LEFT:
+                selCol--;
+                if( selCol < 0 ) {
+                    selCol = pTable.getColumnCount()-1;
+                }
+                break;
+            case KeyEvent.VK_RIGHT:
+                selCol++;
+                if( selCol > pTable.getColumnCount()-1 ) {
+                    selCol = 0;
+                }
+                break;
+            case KeyEvent.VK_DOWN:
+                selRow++;
+                if( selRow > pTable.getRowCount()-1 ) {
+                    selCol++;
+                    selRow = 0;
+                    if( selCol > pTable.getColumnCount()-1 ) {
+                        selCol = 0;
+                    }
+                }
+                break;
+            case KeyEvent.VK_UP:
+                selRow--;
+                if( selRow < 0 ) {
+                    selCol--;
+                    selRow = pTable.getRowCount()-1;
+                    if( selCol < 0 ) {
+                        selCol = pTable.getColumnCount()-1;
+                    }
+                }
+                break;
+            case KeyEvent.VK_ENTER:
+                final SwitcherTableItem item = pTable.getSelectedItem();
+                if (item != null) {
+                    item.activate();
+                    hideCurrentPopup();
+                }
+                break;
+            default:
+                switched = false;
+        }
+        if( switched ) {
+            pTable.changeSelection( selRow, selCol, false, false );
+        }
+        return switched;
     }
 }
