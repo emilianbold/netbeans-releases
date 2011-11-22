@@ -71,6 +71,7 @@ import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
+import org.netbeans.installer.utils.applications.JavaFXUtils;
 import org.netbeans.installer.utils.applications.JavaUtils;
 import org.netbeans.installer.utils.applications.NetBeansUtils;
 import org.netbeans.installer.utils.exceptions.InitializationException;
@@ -79,6 +80,7 @@ import org.netbeans.installer.utils.helper.Dependency;
 import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.helper.ExecutionMode;
 import org.netbeans.installer.utils.helper.Status;
+import org.netbeans.installer.utils.helper.Version;
 import org.netbeans.installer.utils.helper.swing.NbiButton;
 import org.netbeans.installer.utils.helper.swing.NbiCheckBox;
 import org.netbeans.installer.utils.helper.swing.NbiFrame;
@@ -112,6 +114,7 @@ public class NbWelcomePanel extends ErrorMessagePanel {
     private static BundleType type;
     private List <Product> lastChosenProducts;
     private String lastWarningMessage;
+    private static String bundledproduct_name;
 
     public NbWelcomePanel() {
         setProperty(TITLE_PROPERTY,
@@ -123,21 +126,24 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                 DEFAULT_TEXT_PANE_CONTENT_TYPE);
         type = BundleType.getType(
                 System.getProperty(WELCOME_PAGE_TYPE_PROPERTY));
+
+        if(type.equals(BundleType.BUNDLEDPRODUCT)) {
+            bundledproduct_name = System.getProperty(WELCOME_PAGE_BUNDLEDPRODUCT_NAME_PROPERTY);
+        }
         
-        setProperty(WELCOME_TEXT_HEADER_PROPERTY,
-                (type.isJDKBundle() ?
-                    DEFAULT_WELCOME_TEXT_HEADER_JDK :
-                    (type.equals(BundleType.JAVA_TOOLS) ? 
-                           DEFAULT_WELCOME_TEXT_HEADER_JTB : 
-                           (type.equals(BundleType.MYSQL) ? 
-                                  DEFAULT_WELCOME_TEXT_HEADER_MYSQL : 
-                                       DEFAULT_WELCOME_TEXT_HEADER ))));
+        setProperty(WELCOME_TEXT_HEADER_PROPERTY,                
+                (type.equals(BundleType.JAVA_TOOLS) ?
+                       DEFAULT_WELCOME_TEXT_HEADER_JTB :
+                       (type.equals(BundleType.MYSQL) ?
+                              DEFAULT_WELCOME_TEXT_HEADER_MYSQL :
+                           (type.equals(BundleType.BUNDLEDPRODUCT)) ?
+                                DEFAULT_WELCOME_TEXT_HEADER_BUNDLEDPRODUCT :
+                                   DEFAULT_WELCOME_TEXT_HEADER )));
         
         setProperty(WELCOME_TEXT_DETAILS_PROPERTY,
                 ResourceUtils.getString(NbWelcomePanel.class,
                 WELCOME_TEXT_HEADER_APPENDING_PROPERTY + "." + type ));
-        
-        
+                
         setProperty(WELCOME_TEXT_GROUP_TEMPLATE_PROPERTY,
                 DEFAULT_WELCOME_TEXT_GROUP_TEMPLATE);
         setProperty(WELCOME_TEXT_PRODUCT_INSTALLED_TEMPLATE_PROPERTY,
@@ -260,8 +266,8 @@ public class NbWelcomePanel extends ErrorMessagePanel {
         // bundled registry contains only one element - registry root, this means
         // that we're running without any bundle, hence not filtering is required;
         // additionally, we should not be suggesting to install tomcat by default,
-        // thus we should correct it's initial status
-        Product bundledJdkProductSkip = null;
+        // thus we should correct it's initial status        
+        Product bundledProductSkip = null;
         if (bundledRegistry.getNodes().size() > 1) {
             for (Product product: defaultRegistry.getProducts()) {
                 if (bundledRegistry.getProduct(
@@ -274,67 +280,87 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                     }
                 } else if (product.getUid().equals("tomcat") &&
                         (product.getStatus() == Status.TO_BE_INSTALLED)) {
+                    BundleType tp = BundleType.getType(System.getProperty(
+                            WELCOME_PAGE_TYPE_PROPERTY));
                     boolean stateFileUsed = System.getProperty(
                             Registry.SOURCE_STATE_FILE_PATH_PROPERTY) != null;
                     boolean sysPropInstallLocation = System.getProperty(product.getUid() + 
 				StringUtils.DOT + 
 				Product.INSTALLATION_LOCATION_PROPERTY) == null;
-                    if(!stateFileUsed && sysPropInstallLocation) {
+                    if(!stateFileUsed && sysPropInstallLocation &&
+                            (tp.equals(BundleType.CUSTOMIZE) || tp.equals(BundleType.JAVA))) {
                         product.setStatus(Status.NOT_INSTALLED);
-                    }
-                } else if(type.isJDKBundle() && product.getUid().equals("jdk")) { // current checking product in global registry is jdk
-                    if(product.getStatus() == Status.TO_BE_INSTALLED && 
+                    }                               
+                }  else if(type.equals(BundleType.BUNDLEDPRODUCT) && product.getUid().equals(bundledproduct_name)) { 
+                    // current checking product in global registry is "bundledproduct_name", i.e jdk, javafxsdk, weblogic
+                    if(product.getStatus() == Status.TO_BE_INSTALLED &&
                         ExecutionMode.getCurrentExecutionMode() == ExecutionMode.NORMAL) {
-                        // check if jdk is already installed                        
-                        if(JavaUtils.findJDKHome(product.getVersion())!=null) {
+                        // check if bundledproduct is already installed (i.e from another installer)
+                        if(bundledProductAlreadyInstalled(product)) {
                             product.setStatus(Status.NOT_INSTALLED);
                             product.setVisible(false);
-                            setProperty(JDK_INSTALLED_TEXT_PROPERTY,
-                                    StringUtils.format(DEFAULT_JDK_INSTALLED_TEXT, product.getDisplayName()));
-                            bundledJdkProductSkip = product;                            
+                            setProperty(BUNDLEDPRODUCT_INSTALLED_TEXT_PROPERTY,
+                                    StringUtils.format(DEFAULT_BUNDLEDPRODUCT_INSTALLED_TEXT, product.getDisplayName()));
+                            bundledProductSkip = product;
                         } else {
                             // do not allow installation under non-admin user on windows
                             try {
-                                if(SystemUtils.isWindows() && !SystemUtils.isCurrentUserAdmin()) {
+                                if(doesBundledProductNeedPermissions(product) &&
+                                        SystemUtils.isWindows() && !SystemUtils.isCurrentUserAdmin()) {
                                     product.setStatus(Status.NOT_INSTALLED);
                                     product.setVisible(false);
-                                    setProperty(JDK_UNSUFFICIENT_PERMISSIONS_PROPERTY,
-                                            DEFAULT_JDK_UNSUFFICIENT_PERMISSIONS_TEXT);
-                                    bundledJdkProductSkip = product;
+                                    setProperty(BUNDLEDPRODUCT_UNSUFFICIENT_PERMISSIONS_PROPERTY,
+                                            StringUtils.format(DEFAULT_BUNDLEDPRODUCT_UNSUFFICIENT_PERMISSIONS_TEXT,product.getDisplayName()));
+                                    bundledProductSkip = product;
                                 }
                             } catch (NativeException e){
                                 LogManager.log(e);
                             }
                         }
-                    } else if(product.getStatus() == Status.INSTALLED && //installed
+                    } else if(product.getStatus() == Status.INSTALLED && //have been installed by NBI installer
                             bundledRegistry.getProduct(
                             product.getUid(),product.getVersion())!=null){ //and it is the same product
-                        setProperty(JDK_INSTALLED_TEXT_PROPERTY,
-                                StringUtils.format(DEFAULT_JDK_INSTALLED_TEXT,
+                        setProperty(BUNDLEDPRODUCT_INSTALLED_TEXT_PROPERTY,
+                                StringUtils.format(DEFAULT_BUNDLEDPRODUCT_INSTALLED_TEXT,
                                 product.getDisplayName()));
-                        bundledJdkProductSkip = product;
+                        bundledProductSkip = product;
+                    } else if(product.getStatus() == Status.NOT_INSTALLED && //product filtered out by platform (for win 86/64)
+                            bundledRegistry.getProduct(
+                            product.getUid(),product.getVersion())!=null &&
+                            !SystemUtils.getCurrentPlatform().isCompatibleWith(product.getPlatforms().get(0))) {
+                        setProperty(BUNDLEDPRODUCT_NOT_COMPATIBLE_TEXT_PROPERTY,
+                                StringUtils.format(DEFAULT_BUNDLEDPRODUCT_NOT_COMPATIBLE_TEXT_PROPERTY,
+                                product.getDisplayName()));
+                        bundledProductSkip = product;                                                    
                     }
                 }
             }
         }
-        final List <Product> toInstall = defaultRegistry.getProductsToInstall();
-        if (bundledJdkProductSkip != null) {            
+     
+        final List <Product> toInstall = defaultRegistry.getProductsToInstall();               
+       
+        if (bundledProductSkip != null) {
             if (toInstall.isEmpty()) {
-                if (getProperty(JDK_INSTALLED_TEXT_PROPERTY) != null) {
-                    setProperty(JDK_EVERYTHING_INSTALLED_TEXT_PROPERTY,
-                            StringUtils.format(DEFAULT_JDK_EVERYTHING_INSTALLED_TEXT,
-                            bundledJdkProductSkip.getDisplayName()));
-                } else if (getProperty(JDK_UNSUFFICIENT_PERMISSIONS_PROPERTY) != null) {
-                    setProperty(JDK_EVERYTHING_INSTALLED_UNSUFFICIENT_PERMISSIONS_TEXT_PROPERTY,
-                            StringUtils.format(DEFAULT_JDK_EVERYTHING_INSTALLED_UNSUFFICIENT_PERMISSIONS_TEXT,
-                            bundledJdkProductSkip.getDisplayName()));
+                if (getProperty(BUNDLEDPRODUCT_INSTALLED_TEXT_PROPERTY) != null) {
+                    setProperty(BUNDLEDPRODUCT_EVERYTHING_INSTALLED_TEXT_PROPERTY,
+                            StringUtils.format(DEFAULT_BUNDLEDPRODUCT_EVERYTHING_INSTALLED_TEXT,
+                            bundledProductSkip.getDisplayName()));
+                } else if (getProperty(BUNDLEDPRODUCT_UNSUFFICIENT_PERMISSIONS_PROPERTY) != null) {
+                    setProperty(BUNDLEDPRODUCT_EVERYTHING_INSTALLED_UNSUFFICIENT_PERMISSIONS_TEXT_PROPERTY,
+                            StringUtils.format(DEFAULT_BUNDLEDPRODUCT_EVERYTHING_INSTALLED_UNSUFFICIENT_PERMISSIONS_TEXT,
+                            bundledProductSkip.getDisplayName()));
+                } else if (getProperty(BUNDLEDPRODUCT_NOT_COMPATIBLE_TEXT_PROPERTY) != null) {
+                        setProperty(BUNDLEDPRODUCT_NOT_COMPATIBLE_NETBEANS_INSTALLED_TEXT_PROPERTY,
+                        StringUtils.format(DEFAULT_BUNDLEDPRODUCT_NOT_COMPATIBLE_NETBEANS_INSTALLED_TEXT_PROPERTY,
+                            bundledProductSkip.getDisplayName()));
                 }
-            } 
+            }
         }
-        if(toInstall.size()==1 && toInstall.get(0).getUid().equals("jdk")) { // install only JDK
-                setProperty(JDK_NETBEANS_INSTALLED_TEXT_PROPERTY, 
-                        DEFAULT_JDK_NETBEANS_INSTALLED_TEXT);
-        }
+        if(toInstall.size()==1 && toInstall.get(0).getUid().equals(bundledproduct_name)) { // install only bundledproduct
+                setProperty(BUNDLEDPRODUCT_NETBEANS_INSTALLED_TEXT_PROPERTY,
+                        StringUtils.format(DEFAULT_BUNDLEDPRODUCT_NETBEANS_INSTALLED_TEXT,
+                        toInstall.get(0).getDisplayName()));
+        }                        
         registriesFiltered = true;
     }
     
@@ -503,16 +529,20 @@ public class NbWelcomePanel extends ErrorMessagePanel {
         }
       
         @Override
-        protected void initialize() {            
+        protected void initialize() {              
             StringBuilder welcomeText = new StringBuilder();
-            String header = StringUtils.format(panel.getProperty(WELCOME_TEXT_HEADER_PROPERTY));
-            if(type.isJDKBundle()) {
-                for(Product product : panel.getBundledRegistry().getProducts("jdk")) {
+            String header = StringUtils.format(panel.getProperty(WELCOME_TEXT_HEADER_PROPERTY));            
+            
+            if(type.equals(BundleType.BUNDLEDPRODUCT)) {
+                for(Product product : panel.getBundledRegistry().getProducts(bundledproduct_name)) {
                     header = StringUtils.format(header, product.getDisplayName());
+                    panel.setProperty(WELCOME_TEXT_DETAILS_PROPERTY,
+                            StringUtils.format(panel.getProperty(WELCOME_TEXT_DETAILS_PROPERTY),
+                            product.getDisplayName()));
                     break;
                 }
-            }
-            
+            }            
+
             welcomeText.append(header);
             welcomeText.append(panel.getProperty(WELCOME_TEXT_FOOTER_PROPERTY));
             textPane.setContentType(
@@ -521,21 +551,27 @@ public class NbWelcomePanel extends ErrorMessagePanel {
             StringBuilder detailsText = new StringBuilder(
                     panel.getProperty(WELCOME_TEXT_OPENTAG_PROPERTY));
             boolean warningIcon = false;
-            if(panel.getProperty(JDK_EVERYTHING_INSTALLED_TEXT_PROPERTY)!=null) {
-                detailsText.append(panel.getProperty(JDK_EVERYTHING_INSTALLED_TEXT_PROPERTY));
+            if(panel.getProperty(BUNDLEDPRODUCT_EVERYTHING_INSTALLED_TEXT_PROPERTY)!=null) {
+                detailsText.append(panel.getProperty(BUNDLEDPRODUCT_EVERYTHING_INSTALLED_TEXT_PROPERTY));
                 warningIcon = true;
-            } else if(panel.getProperty(JDK_EVERYTHING_INSTALLED_UNSUFFICIENT_PERMISSIONS_TEXT_PROPERTY)!=null) {
-                detailsText.append(panel.getProperty(JDK_EVERYTHING_INSTALLED_UNSUFFICIENT_PERMISSIONS_TEXT_PROPERTY));
+            } else if(panel.getProperty(BUNDLEDPRODUCT_EVERYTHING_INSTALLED_UNSUFFICIENT_PERMISSIONS_TEXT_PROPERTY)!=null) {
+                detailsText.append(panel.getProperty(BUNDLEDPRODUCT_EVERYTHING_INSTALLED_UNSUFFICIENT_PERMISSIONS_TEXT_PROPERTY));
                 warningIcon = true;
-            } else if(panel.getProperty(JDK_NETBEANS_INSTALLED_TEXT_PROPERTY)!=null) {
-                detailsText.append(panel.getProperty(JDK_NETBEANS_INSTALLED_TEXT_PROPERTY));
+            } else if(panel.getProperty(BUNDLEDPRODUCT_NOT_COMPATIBLE_NETBEANS_INSTALLED_TEXT_PROPERTY)!=null) {
+                detailsText.append(panel.getProperty(BUNDLEDPRODUCT_NOT_COMPATIBLE_NETBEANS_INSTALLED_TEXT_PROPERTY));
                 warningIcon = true;
-            } else if(panel.getProperty(JDK_INSTALLED_TEXT_PROPERTY)!=null) {
-                detailsText.append(panel.getProperty(JDK_INSTALLED_TEXT_PROPERTY));
+            } else if(panel.getProperty(BUNDLEDPRODUCT_NETBEANS_INSTALLED_TEXT_PROPERTY)!=null) {
+                detailsText.append(panel.getProperty(BUNDLEDPRODUCT_NETBEANS_INSTALLED_TEXT_PROPERTY));
                 warningIcon = true;
-            } else if(panel.getProperty(JDK_UNSUFFICIENT_PERMISSIONS_PROPERTY)!=null) {
-                detailsText.append(panel.getProperty(JDK_UNSUFFICIENT_PERMISSIONS_PROPERTY));
+            } else if(panel.getProperty(BUNDLEDPRODUCT_INSTALLED_TEXT_PROPERTY)!=null) {
+                detailsText.append(panel.getProperty(BUNDLEDPRODUCT_INSTALLED_TEXT_PROPERTY));
                 warningIcon = true;
+            } else if(panel.getProperty(BUNDLEDPRODUCT_UNSUFFICIENT_PERMISSIONS_PROPERTY)!=null) {
+                detailsText.append(panel.getProperty(BUNDLEDPRODUCT_UNSUFFICIENT_PERMISSIONS_PROPERTY));
+                warningIcon = true;
+            } else if(panel.getProperty(BUNDLEDPRODUCT_NOT_COMPATIBLE_TEXT_PROPERTY)!=null) {
+                detailsText.append(panel.getProperty(BUNDLEDPRODUCT_NOT_COMPATIBLE_TEXT_PROPERTY));
+                warningIcon = true;           
             } else {
                 detailsText.append(panel.getProperty(WELCOME_TEXT_DETAILS_PROPERTY));
             }
@@ -558,15 +594,14 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                 if (node instanceof Product) {
                     final Product product = (Product) node;
                     final String productUid = product.getUid();
-
                     if (product.getStatus() == Status.INSTALLED) {
-                        if(type.equals(BundleType.CUSTOMIZE) || type.equals(BundleType.CUSTOMIZE_JDK) || type.equals(BundleType.JAVA)) {
+                        if(type.equals(BundleType.CUSTOMIZE) || type.equals(BundleType.JAVA)) {
                             welcomeText.append(StringUtils.format(
                                     panel.getProperty(WELCOME_TEXT_PRODUCT_INSTALLED_TEMPLATE_PROPERTY),
                                     node.getDisplayName()));
                         }
                     } else if (product.getStatus() == Status.TO_BE_INSTALLED) {
-                        if(type.equals(BundleType.CUSTOMIZE) || type.equals(BundleType.CUSTOMIZE_JDK) || type.equals(BundleType.JAVA)) {
+                        if(type.equals(BundleType.CUSTOMIZE) || type.equals(BundleType.JAVA)) {
                             welcomeText.append(StringUtils.format(
                                     panel.getProperty(WELCOME_TEXT_PRODUCT_NOT_INSTALLED_TEMPLATE_PROPERTY),
                                     node.getDisplayName()));
@@ -591,7 +626,7 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                             new ProductFilter(Status.INSTALLED)));
                     
                     if (node.hasChildren(filter)) {
-                        if(type.equals(BundleType.CUSTOMIZE) || type.equals(BundleType.CUSTOMIZE_JDK) || type.equals(BundleType.JAVA)) {
+                        if(type.equals(BundleType.CUSTOMIZE) || type.equals(BundleType.JAVA)) {
                             welcomeText.append(StringUtils.format(
                                     panel.getProperty(WELCOME_TEXT_GROUP_TEMPLATE_PROPERTY),
                                     node.getDisplayName()));
@@ -809,7 +844,7 @@ public class NbWelcomePanel extends ErrorMessagePanel {
             NbiTextPane separatorPane =  new NbiTextPane();
             BundleType type = BundleType.getType(
                     System.getProperty(WELCOME_PAGE_TYPE_PROPERTY));
-            if(!type.equals(BundleType.JAVAEE) && !type.equals(BundleType.JAVAEE_JDK) && !type.equals(BundleType.RUBY) &&
+            if(!type.equals(BundleType.JAVAEE) && !type.equals(BundleType.RUBY) &&
                     !type.equals(BundleType.JAVA_TOOLS) && !type.equals(BundleType.MYSQL)) {
                 add(scrollPane, new GridBagConstraints(
                         1, dy++,                           // x, y
@@ -826,7 +861,7 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                         if(product.getUid().equals("glassfish") ||
                                 product.getUid().equals("glassfish-mod") ||
                                 product.getUid().equals("glassfish-mod-sun") ||
-                                product.getUid().equals("tomcat") ||
+                                product.getUid().equals("tomcat") ||                             
 				product.getUid().equals("mysql")) {
                             final NbiCheckBox chBox;
                             
@@ -940,7 +975,7 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                 customizeButton.setOpaque(false);
             }
             
-            if(type.equals(BundleType.CUSTOMIZE) || type.equals(BundleType.CUSTOMIZE_JDK) || type.equals(BundleType.JAVA) ||
+            if(type.equals(BundleType.CUSTOMIZE) || type.equals(BundleType.JAVA) ||
                     type.equals(BundleType.JAVA_TOOLS)) {
                 customizeButton.setVisible(true);
             } else {
@@ -974,7 +1009,6 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                 final List<RegistryNode> list,
                 final RegistryNode parent) {
             final List<RegistryNode> groups = new LinkedList<RegistryNode>();
-            
             for (RegistryNode node: parent.getChildren()) {
                 if (!node.isVisible()) {
                     continue;
@@ -985,7 +1019,6 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                             ((Product) node).getPlatforms())) {
                         continue;
                     }
-                    
                     list.add(node);
                 }
                 
@@ -1019,16 +1052,10 @@ public class NbWelcomePanel extends ErrorMessagePanel {
         CND("cnd"),
         PHP("php"),
         JAVAFX("javafx"),
-        CUSTOMIZE("customize"),
-        JAVASE_JDK("javase.jdk"),
-        JAVAEE_JDK("javaee.jdk"),
-        JAVAME_JDK("javame.jdk"),
-        RUBY_JDK("ruby.jdk"),
-        CND_JDK("cnd.jdk"),
-        PHP_JDK("php.jdk"),
-        CUSTOMIZE_JDK("customize.jdk"),
+        CUSTOMIZE("customize"),        
         JAVA_TOOLS("java.tools"),
-	MYSQL("mysql");
+	MYSQL("mysql"),
+        BUNDLEDPRODUCT("bundledproduct");
         
         private String name;
         private BundleType(String s) {
@@ -1048,7 +1075,11 @@ public class NbWelcomePanel extends ErrorMessagePanel {
             return name;
         }
         public boolean isJDKBundle() {
-            return name.endsWith(".jdk");
+            return (name.equals("bundledproduct") && bundledproduct_name.contains("jdk"))
+                    || name.endsWith(".jdk");
+        }
+        public boolean isWebLogicBundle() {
+            return (name.equals("bundledproduct") && bundledproduct_name.contains("weblogic"));
         }
         public String getNetBeansBundleId() {
             if(isJDKBundle()) {
@@ -1057,6 +1088,8 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                 return "NBEETOOLS";
             } else if(this.equals(MYSQL)) {
                 return "NBMYSQL";
+            } else if(isWebLogicBundle()) {
+                return "NBWEBLOGIC";                
             } else if(this.equals(JAVAFX)) {
                 return "NB";
             } else {
@@ -1064,11 +1097,40 @@ public class NbWelcomePanel extends ErrorMessagePanel {
             }
         }
     }
+
+    private boolean bundledProductAlreadyInstalled(Product product) {
+        if(product.getUid().equals("jdk")) {
+            boolean result = JavaUtils.findJDKHome(product.getVersion())!= null;
+            if(product.getProperty(FXSDK_VERSION) != null) {
+                result = result &&
+                    JavaFXUtils.isJavaFXSDKInstalled(null, Version.getVersion(product.getProperty(FXSDK_VERSION)));
+            }
+            return result;
+        } else if(product.getUid().equals("weblogic")) {
+            return false; // research if it is possible to know if WL is already installed by standalone installer
+        }        
+        return false;
+    }
+
+    private boolean doesBundledProductNeedPermissions(Product product) {
+         if(product.getUid().equals("weblogic")) {
+            return true;
+         } else if(product.getUid().equals("jdk")) {
+            return true;  
+         } 
+         return false;
+    }
+
+
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
+
+    public static final String FXSDK_VERSION =
+            "{fxsdk-version}"; // NOI18N
+
     public static final String DEFAULT_TITLE =
             ResourceUtils.getString(NbWelcomePanel.class,
-            "NWP.title");
+            "NWP.title"); // NOI18N
     public static final String DEFAULT_DESCRIPTION =
             ResourceUtils.getString(NbWelcomePanel.class,
             "NWP.description"); // NOI18N
@@ -1092,18 +1154,22 @@ public class NbWelcomePanel extends ErrorMessagePanel {
     public static final String CUSTOMIZE_BUTTON_TEXT_PROPERTY =
             "customize.button.text"; // NOI18N
     public static final String INSTALLATION_SIZE_LABEL_TEXT_PROPERTY =
-            "installation.size.label.text"; // NOI18N
-    
-    public static final String JDK_INSTALLED_TEXT_PROPERTY =
-            "jdk.already.installed.text";//NOI18N
-    public static final String JDK_EVERYTHING_INSTALLED_TEXT_PROPERTY =
-            "jdk.everything.installed.text";//NOI18N
-    public static final String JDK_EVERYTHING_INSTALLED_UNSUFFICIENT_PERMISSIONS_TEXT_PROPERTY = 
-            "jdk.everything.installed.unsufficient.permissions.text";//NOI18N
-    public static final String JDK_NETBEANS_INSTALLED_TEXT_PROPERTY = 
-            "jdk.netbeans.installed.text";//NOI18N
-    public static final String JDK_UNSUFFICIENT_PERMISSIONS_PROPERTY =
-            "jdk.unsufficient.permissions";//NOI18N
+            "installation.size.label.text"; // NOI18N    
+
+    public static final String BUNDLEDPRODUCT_INSTALLED_TEXT_PROPERTY =
+            "bundledproduct.already.installed.text";//NOI18N
+    public static final String BUNDLEDPRODUCT_EVERYTHING_INSTALLED_TEXT_PROPERTY =
+            "bundledproduct.everything.installed.text";//NOI18N
+    public static final String BUNDLEDPRODUCT_EVERYTHING_INSTALLED_UNSUFFICIENT_PERMISSIONS_TEXT_PROPERTY =
+            "bundledproduct.everything.installed.unsufficient.permissions.text";//NOI18N
+    public static final String BUNDLEDPRODUCT_NETBEANS_INSTALLED_TEXT_PROPERTY =
+            "bundledproduct.netbeans.installed.text";//NOI18N
+    public static final String BUNDLEDPRODUCT_UNSUFFICIENT_PERMISSIONS_PROPERTY =
+            "bundledproduct.unsufficient.permissions";//NOI18N
+    public static final String BUNDLEDPRODUCT_NOT_COMPATIBLE_TEXT_PROPERTY =
+            "bundledproduct.not.installable.text";//NOI18N
+    public static final String BUNDLEDPRODUCT_NOT_COMPATIBLE_NETBEANS_INSTALLED_TEXT_PROPERTY =
+            "bundledproduct.not.installable.netbeans.installed.text";//NOI18N
     
     public static final String DEFAULT_TEXT_PANE_CONTENT_TYPE =
             ResourceUtils.getString(NbWelcomePanel.class,
@@ -1111,15 +1177,15 @@ public class NbWelcomePanel extends ErrorMessagePanel {
     public static final String DEFAULT_WELCOME_TEXT_HEADER =
             ResourceUtils.getString(NbWelcomePanel.class,
             "NWP.welcome.text.header"); // NOI18N
-    public static final String DEFAULT_WELCOME_TEXT_HEADER_JDK =
-            ResourceUtils.getString(NbWelcomePanel.class,
-            "NWP.welcome.text.header.jdk"); // NOI18N
     public static final String DEFAULT_WELCOME_TEXT_HEADER_JTB =
             ResourceUtils.getString(NbWelcomePanel.class,
             "NWP.welcome.text.header.jtb"); // NOI18N
     public static final String DEFAULT_WELCOME_TEXT_HEADER_MYSQL =
             ResourceUtils.getString(NbWelcomePanel.class,
             "NWP.welcome.text.header.nbgfmysql"); // NOI18N
+    public static final String DEFAULT_WELCOME_TEXT_HEADER_BUNDLEDPRODUCT =
+            ResourceUtils.getString(NbWelcomePanel.class,
+            "NWP.welcome.text.header.nbbundledproduct"); // NOI18N
 
 
     public static final String WELCOME_TEXT_HEADER_APPENDING_PROPERTY =
@@ -1127,6 +1193,9 @@ public class NbWelcomePanel extends ErrorMessagePanel {
     
     public static final String WELCOME_PAGE_TYPE_PROPERTY =
             "NWP.welcome.page.type";
+
+    public static final String WELCOME_PAGE_BUNDLEDPRODUCT_NAME_PROPERTY =
+            "NWP.welcome.page.bundledproduct.name";
     
     public static final String DEFAULT_WELCOME_TEXT_GROUP_TEMPLATE =
             ResourceUtils.getString(NbWelcomePanel.class,
@@ -1148,23 +1217,29 @@ public class NbWelcomePanel extends ErrorMessagePanel {
             "NWP.customize.button.text"); // NOI18N
     public static final String DEFAULT_INSTALLATION_SIZE_LABEL_TEXT =
             ResourceUtils.getString(NbWelcomePanel.class,
-            "NWP.installation.size.label.text"); // NOI18N
-    
-    public static final String DEFAULT_JDK_INSTALLED_TEXT =
+            "NWP.installation.size.label.text"); // NOI18N      
+
+    public static final String DEFAULT_BUNDLEDPRODUCT_INSTALLED_TEXT =
             ResourceUtils.getString(NbWelcomePanel.class,
-            "NWP.jdk.installed.text"); // NOI18N
-    public static final String DEFAULT_JDK_EVERYTHING_INSTALLED_TEXT =
+            "NWP.bundledproduct.installed.text"); // NOI18N
+    public static final String DEFAULT_BUNDLEDPRODUCT_EVERYTHING_INSTALLED_TEXT =
             ResourceUtils.getString(NbWelcomePanel.class,
-            "NWP.jdk.everything.installed.text"); // NOI18N
-    public static final String DEFAULT_JDK_EVERYTHING_INSTALLED_UNSUFFICIENT_PERMISSIONS_TEXT = 
+            "NWP.bundledproduct.everything.installed.text"); // NOI18N
+    public static final String DEFAULT_BUNDLEDPRODUCT_EVERYTHING_INSTALLED_UNSUFFICIENT_PERMISSIONS_TEXT =
             ResourceUtils.getString(NbWelcomePanel.class,
-            "NWP.jdk.everything.installed.admin.warning.text"); // NOI18N
-    public static final String DEFAULT_JDK_NETBEANS_INSTALLED_TEXT = 
+            "NWP.bundledproduct.everything.installed.admin.warning.text"); // NOI18N
+    public static final String DEFAULT_BUNDLEDPRODUCT_NETBEANS_INSTALLED_TEXT =
             ResourceUtils.getString(NbWelcomePanel.class,
-            "NWP.jdk.netbeans.installed.text");//NOI18N
-    public static final String DEFAULT_JDK_UNSUFFICIENT_PERMISSIONS_TEXT =
+            "NWP.bundledproduct.netbeans.installed.text");//NOI18N
+    public static final String DEFAULT_BUNDLEDPRODUCT_UNSUFFICIENT_PERMISSIONS_TEXT =
             ResourceUtils.getString(NbWelcomePanel.class,
-            "NWP.welcome.admin.warning.text");//NOI18N
+            "NWP.bundledproduct.welcome.admin.warning.text");//NOI18N
+    public static final String DEFAULT_BUNDLEDPRODUCT_NOT_COMPATIBLE_TEXT_PROPERTY =
+            ResourceUtils.getString(NbWelcomePanel.class,
+            "NWP.bundledproduct.not.installable.text");//NOI18N
+    public static final String DEFAULT_BUNDLEDPRODUCT_NOT_COMPATIBLE_NETBEANS_INSTALLED_TEXT_PROPERTY =
+           ResourceUtils.getString(NbWelcomePanel.class,
+            "NWP.bundledproduct.not.installable.netbeans.installed.text");//NOI18N
     
     
     public static final String CUSTOMIZE_TITLE_PROPERTY =

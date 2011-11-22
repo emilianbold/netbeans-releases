@@ -343,10 +343,17 @@
 	<set property="nb.bundles.output.dir"
              value="${output.dir}/bundles"/>
 
+    <set property="weblogic.bundle.files.suffix"
+         value="${nb.files.prefix}${nb.build.suffix}"/>
+
+    <set property="weblogic.bundle.files.suffix"
+         value="nb-7_1"/>
+
         <condition property="do.build.jdk">
              <or>
 	         <equals arg1="${build.jdk5}" arg2="1"/>
                  <equals arg1="${build.jdk6}" arg2="1"/>
+                 <equals arg1="${build.jdk7}" arg2="1"/>
              </or>
         </condition>
         <condition property="do.build.jdk5">
@@ -355,6 +362,9 @@
         <condition property="do.build.jdk6">
 	     <equals arg1="${build.jdk6}" arg2="1"/>
         </condition>
+        <condition property="do.build.jdk7">
+	     <equals arg1="${build.jdk7}" arg2="1"/>
+        </condition>
         <condition property="do.build.netbeans">
 	     <equals arg1="${build.netbeans.bundles}" arg2="1"/>
         </condition>
@@ -362,6 +372,10 @@
         <condition property="do.build.mysql">
 	     <equals arg1="${build.mysql}" arg2="1"/>
         </condition>
+        
+        <condition property="do.build.weblogic">
+	     <equals arg1="${build.weblogic}" arg2="1"/>
+        </condition>        
 
         <condition property="do.build.javafx">
 	     <equals arg1="${build.javafx}" arg2="1"/>
@@ -387,6 +401,9 @@
 
 	<set property="tomcat.version"      value="7.0.22"/>
 	<set property="tomcat.full.version" value="${tomcat.version}.0.0"/>
+        
+        <set property="weblogic.version"      value="10.3.5"/>
+	<set property="weblogic.full.version" value="${weblogic.version}.0.0"/>
 
 
 	<set property="glassfish.milestone.number" value="31"/>
@@ -591,6 +608,13 @@ openesb.build.number.real=${openesb.build.number.real}
 	</echo>
 	-->
 
+        <if property="do.build.weblogic">
+	<!-- WebLogic properties -->
+        <echo file="${environment.properties}" append="true">
+weblogic.full.version=${weblogic.full.version}
+weblogic.version=${weblogic.version}
+        </echo>
+        </if>
         <if property="do.build.jtb">
 	<!-- SJSAM properties -->
         <echo file="${environment.properties}" append="true">
@@ -682,7 +706,7 @@ jarsigner.storepass=${jarsigner.storepass}
                 <!-- tomcat -->
 		<include name="**/tomcat*"/>
                 <exclude name="**/tomcat*${tomcat.full.version}*"/>
-
+                
 		<!-- wtk -->
                 <exclude name="**/wtk*"/>
                 <exclude name="**/javamesdk*"/>
@@ -723,7 +747,15 @@ jarsigner.storepass=${jarsigner.storepass}
         	    </fileset>
 	        </delete>
 	</if>
-
+	<if property="do.build.weblogic">  
+		<delete failonerror="false">
+        	    <fileset dir="${nbi.cache.dir}/packaged">         
+                        <!-- weblogic -->
+                        <include name="**/weblogic*"/>
+                        <exclude name="**/weblogic*${weblogic.full.version}*"/>
+        	    </fileset>
+	        </delete>                
+        </if>
     </target>
 
 
@@ -760,6 +792,7 @@ jarsigner.storepass=${jarsigner.storepass}
 	<antcall target="build-nbmysql-components"/>
         <antcall target="build-javatools-components"/>
         <antcall target="build-nbjdk-components"/>
+        <antcall target="build-nbweblogic-components"/>        
 
         <!--<antcall target="export-temp-registry"/>-->
         
@@ -789,6 +822,12 @@ jarsigner.storepass=${jarsigner.storepass}
 	    <param name="build.list" value="nb-base nb-javase nb-javaee runtimes-group glassfish mysql mysql-connector"/>
         </antcall>
     </target>
+    <target name="build-nbweblogic-components" if="do.build.weblogic">
+	<set property="netbeans.group.uid" value=""/>
+        <antcall target="build-list">
+	    <param name="build.list" value="nb-base nb-javase nb-javaee runtimes-group weblogic"/>
+        </antcall>
+    </target>    
 
     <target name="build-netbeans-components" if="do.build.netbeans">
 	<set property="netbeans.group.uid" value=""/>
@@ -800,7 +839,7 @@ jarsigner.storepass=${jarsigner.storepass}
     <target name="build-nbjdk-components" if="do.build.jdk">
 	<set property="netbeans.group.uid" value=""/>
         <antcall target="build-list">
-	     <param name="build.list" value="nb-base nb-javase jdk5 jdk6"/>
+	     <param name="build.list" value="nb-base nb-javase jdk5 jdk6 jdk7"/>
         </antcall>
     </target>
 
@@ -827,11 +866,13 @@ jarsigner.storepass=${jarsigner.storepass}
         <antcall target="generate-mysql-bundles"/>
         <antcall target="generate-jdk-bundles"/>
         <antcall target="generate-javatoolsbundle-bundles"/>
+        <antcall target="generate-weblogic-bundles"/>        
     </target>
 
     <target name="generate-jdk-bundles" depends="init-jdk-bundles,init-bundled-jvms" if="do.build.jdk">	
 	<antcall target="generate-jdk5-bundles"/>
         <antcall target="generate-jdk6-bundles"/>
+        <antcall target="generate-jdk7-bundles"/>
     </target>
 
     <target name="build-core-engine">
@@ -854,7 +895,7 @@ jarsigner.storepass=${jarsigner.storepass}
     </target>
 
     <target name="build-netbeans-engine">        
-        <echo message="BUILDING NETBEANS ENGINE =================================="/>
+        <echo message="BUILDING NETBEANS ENGINE =================================="/>        
         <ant dir="${nbi.netbeans.dir}/infra/build/engine" target="release-all">
             <property 
                 name="basedir" 
@@ -1152,6 +1193,13 @@ jarsigner.storepass=${jarsigner.storepass}
         </antcall>
     </target>
 
+    <target name="build-weblogic">
+	<antcall target="build-runtime-product">
+	    <param name="component.uid" value="weblogic"/>
+        </antcall>
+    </target>
+
+
     <target name="build-sjsas">        
 	<antcall target="build-runtime-product">
 	    <param name="component.uid" value="sjsas"/>
@@ -1225,6 +1273,12 @@ jarsigner.storepass=${jarsigner.storepass}
      <target name="build-jdk6" if="do.build.jdk6">
 	<antcall target="build-jdk-product">
 	    <param name="jdk.build.file" value="build_jdk6.xml"/>
+	</antcall>
+     </target>
+
+     <target name="build-jdk7" if="do.build.jdk7">
+	<antcall target="build-jdk-product">
+	    <param name="jdk.build.file" value="build_jdk7.xml"/>
 	</antcall>
      </target>
 
@@ -2116,6 +2170,7 @@ jarsigner.storepass=${jarsigner.storepass}
         </create-bundle>
     </target>
 
+ 
 
     <target name="generate-mysql-bundles" depends="init-mysql-bundles" if="do.build.mysql">
 	<antcall target="generate-mysql-bundle">
@@ -2172,10 +2227,20 @@ jarsigner.storepass=${jarsigner.storepass}
     <target name="generate-jdk6-bundles" if="do.build.jdk6">
         <!-- JavaSE + JDK6 bundles -->
 	<antcall target="generate-jdk-bundle-single">
-	    <param name="jdk.bundle.files.prefix"     value="jdk-6u25"/>
-	    <param name="jdk.full.version"            value="1.6.0.25.4"/>
+	    <param name="jdk.bundle.files.prefix"     value="jdk-6u30"/>
+	    <param name="jdk.full.version"            value="1.6.0.30.12"/>
             <param name="bundled.jvm.file.prefix"     value="jre-6u20"/>
 	    <param name="license.resource"            value="$S{nbi.overall.license.jdk6.resource}"/>
+	</antcall>
+    </target>
+
+    <target name="generate-jdk7-bundles" if="do.build.jdk7">
+        <!-- JavaSE + JDK7 bundles -->
+	<antcall target="generate-jdk-bundle-single">
+	    <param name="jdk.bundle.files.prefix"     value="jdk-7u2"/>
+	    <param name="jdk.full.version"            value="1.7.0.2.13"/>
+            <param name="bundled.jvm.file.prefix"     value="jre-7"/>
+	    <param name="license.resource"            value="$S{nbi.overall.license.jdk7.resource}"/>
 	</antcall>
     </target>
 
@@ -2186,7 +2251,8 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-base"   version="${nb.full.version}"/>
             <component uid="nb-javase" version="${nb.full.version}"/>
 	    <component uid="jdk"       version="${jdk.full.version}"/>
-	    <bundleProperty name="${welcome.type}" value="javase.jdk"/>
+            <bundleProperty name="${bundledproduct.name}" value="jdk"/>
+	    <bundleProperty name="${welcome.type}" value="bundledproduct"/>
 	    <!--
             <bundleProperty name="nbi.overall.license.resource" value="${license.resource}"/>
 	    -->
@@ -2217,6 +2283,76 @@ jarsigner.storepass=${jarsigner.storepass}
 		<param name="bundled.jvm.file.suffix"   value="solaris-sparc.sh"/>
 	</antcall>
     </target>
+
+
+<!--start WLBundle-->
+
+
+    <target name="init-weblogic-bundles"  if="do.build.weblogic">
+	<set property="weblogic.output.dir"
+             value="${nb.bundles.output.dir}/weblogic"/>
+
+        <mkdir dir="${weblogic.output.dir}"/>        
+        <property name="engine.dist.file.name" value="nbi-engine.jar"/>
+        <antcall target="build-netbeans-engine">
+		<param name="netbeans.engine.branding.kit" value="weblogic"/>
+	</antcall>
+    </target>
+
+    <target name="generate-weblogic-bundles" depends="init-weblogic-bundles" if="do.build.weblogic">
+        <property name="bundledproduct.name" value="NWP.welcome.page.bundledproduct.name"/>
+	<antcall target="generate-weblogic-bundle-single">
+	    <param name="weblogic.bundle.files.prefix"     value="weblogic_12g"/>	   
+    	    <!--param name="license.resource"            value="$S{nbi.overall.license.weblogic.resource}"/-->
+	</antcall>
+    </target>
+
+    <target name="generate-weblogic-bundle-single">
+	<set property="bundle.dmg.name"    value="NetBeans and WebLogic Bundle"/>
+	<antcall target="generate-weblogic-bundle">
+		<param name="bundle.platform"  value="windows"/>
+		<param name="bundle.extension" value="exe"/>
+	</antcall>
+	<antcall target="generate-weblogic-bundle">
+		<param name="bundle.platform"  value="linux"/>
+		<param name="bundle.extension" value="sh"/>
+	</antcall>
+	<!--antcall target="generate-weblogic-bundle">
+	    <param name="bundle.platform"  value="solaris-x86"/>
+	    <param name="bundle.extension" value="sh"/>
+        </antcall>
+	<antcall target="generate-weblogic-bundle">
+	    <param name="bundle.platform"  value="solaris-sparc"/>
+	    <param name="bundle.extension" value="sh"/>
+        </antcall-->
+	<antcall target="generate-weblogic-bundle">
+               <param name="bundle.platform"  value="macosx-x86"/>
+               <param name="bundle.extension" value="zip"/>
+        </antcall>        
+    </target>
+
+    <target name="generate-weblogic-bundle">
+        <property name="bundle.prefix"
+                  value="${weblogic.output.dir}/${weblogic.bundle.files.prefix}-${weblogic.bundle.files.suffix}-${bundle.platform}${nb.build.suffix}"/>
+        <create-bundle root="${output.dir}/registry-temp"
+                       platform="${bundle.platform}"
+                       target="${bundle.prefix}.${bundle.extension}">
+            <component uid="nb-base"         version="${nb.full.version}"/>
+            <component uid="nb-javase"       version="${nb.full.version}"/>            
+            <component uid="nb-javaee"       version="${nb.full.version}"/>            
+            <component uid="weblogic"        version="${weblogic.full.version}"/>
+            <bundleProperty name="${bundledproduct.name}" value="weblogic"/>
+	    <bundleProperty name="${welcome.type}" value="bundledproduct"/>
+	    <!--
+            <bundleProperty name="nbi.overall.license.resource" value="${license.resource}"/>
+	    -->
+        </create-bundle>
+	<antcall target="convert-weblogic-bundle"/>
+    </target>
+  
+    <target name="convert-weblogic-bundle" depends="convert-zip-to-dmg"/>
+
+<!--end-->
 
 
     <target name="zip-to-tgz">

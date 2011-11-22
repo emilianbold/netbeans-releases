@@ -46,6 +46,7 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -65,6 +66,7 @@ import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
+import org.netbeans.installer.utils.XMLUtils;
 import org.netbeans.installer.utils.applications.NetBeansUtils;
 import org.netbeans.installer.utils.exceptions.InitializationException;
 import org.netbeans.installer.utils.exceptions.NativeException;
@@ -85,12 +87,17 @@ import org.netbeans.installer.wizard.components.panels.ErrorMessagePanel.ErrorMe
 import org.netbeans.installer.wizard.containers.SwingContainer;
 import org.netbeans.installer.wizard.ui.SwingUi;
 import org.netbeans.installer.wizard.ui.WizardUi;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 /**
  *
  * @author Kirill Sorokin
  */
 public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
+    private boolean removeNBInstallationLocation = false;
+    private boolean removeNBUserDir = false;
+    private File userDir;
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
     public NbPreInstallSummaryPanel() {
@@ -161,6 +168,8 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
     public void initialize() {
         final List<Product> toInstall =
                 Registry.getInstance().getProductsToInstall();
+        final List<Product> toUnInstall =
+                Registry.getInstance().getProductsToUninstall();
         
         if (toInstall.size() > 0) {
             setProperty(NEXT_BUTTON_TEXT_PROPERTY, DEFAULT_NEXT_BUTTON_TEXT);
@@ -169,8 +178,67 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
             setProperty(NEXT_BUTTON_TEXT_PROPERTY, DEFAULT_NEXT_BUTTON_TEXT_UNINSTALL);
             setProperty(DESCRIPTION_PROPERTY, DEFAULT_DESCRIPTION_UNINSTALL);
         }
+        
+        for (Product product : toUnInstall) {
+            if (product.getUid().equals(NB_BASE_UID)) {
+                File installLocation = product.getInstallationLocation();
+                try {
+                    removeNBInstallationLocation = FileUtils.canWrite(installLocation) &&
+                            areThereNewFiles(installLocation);
+                    userDir = NetBeansUtils.getNetBeansUserDirFile(installLocation);
+                    removeNBUserDir = (FileUtils.exists(userDir) && FileUtils.canWrite(userDir));
+                }catch (IOException ioe) {
+                    LogManager.log(ioe);
+                }
+            }
+        }       
     }
-    
+
+    private boolean doRemoveNBInstallationLocation() {
+        return removeNBInstallationLocation;
+    }
+
+    private boolean doRemoveNBUserDir() {
+        return removeNBUserDir;
+    }
+
+    private File getUserDir() {
+        return userDir;
+    }
+
+
+
+    private boolean areThereNewFiles(final File installLocation) throws IOException {
+        LogManager.log("areThereNewFiles:  location "  + installLocation);
+        List<File> installedFiles = new LinkedList<File>();
+        FilesList existentFilesList = FileUtils.listFiles(installLocation);
+
+        for (Product product : Registry.getInstance().getProductsToUninstall()) {
+            LogManager.log("Taking product " + product.getUid());
+            if(product.getUid().startsWith("nb-")) {
+                // load the installed files list for this product
+                try {
+                    File installedFilesList = product.getInstalledFilesList();
+                    if(installedFilesList.exists()) {
+                        FilesList list = new FilesList().loadXmlGz(installedFilesList);
+                        LogManager.log("loading files list for " + product.getUid());
+                        installedFiles.addAll(list.toList());
+                    }
+                } catch (XMLException e) {
+                    LogManager.log(ErrorLevel.WARNING,
+                            "Error loading file list for " + product.getUid());
+                    return false;
+                }
+            }
+        }
+        boolean result = !installedFiles.containsAll(existentFilesList.toList());
+        existentFilesList.toList().removeAll(installedFiles);
+        LogManager.log("installedFiles " + Arrays.toString(installedFiles.toArray()));
+        LogManager.log("existentFilesList after removal " + Arrays.toString(existentFilesList.toList().toArray()));
+        LogManager.log("areThereNewFiles returned " + result);
+        return result;
+    }
+
     /////////////////////////////////////////////////////////////////////////////////
     // Inner Classes
     public static class NbPreInstallSummaryPanelUi extends ErrorMessagePanelUi {
@@ -448,54 +516,47 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
 
             for (Product product : Registry.getInstance().getProductsToUninstall()) {                
                 if (product.getUid().equals(NB_BASE_UID)) {
-                    try {
-                        File installLocation = product.getInstallationLocation();
-
-                        if(areThereNewFiles(installLocation)) {
-                            foldersToRemove.setVisible(true);
-                            removeInstalldirCheckbox.setText(
-                                        StringUtils.format(
-                                        panel.getProperty(REMOVE_NETBEANS_INSTALLDIR_CHECKBOX_PROPERTY),
-                                        installLocation.getAbsolutePath()));
-                            removeInstalldirCheckbox.setBorder(new EmptyBorder(0, 0, 0, 0));
-                            removeInstalldirCheckbox.setVisible(true);
-
-                            removeInstalldirPane.setVisible(true);
-                            removeInstalldirPane.setContentType("text/html");
-                            removeInstalldirPane.setText(
-                                    panel.getProperty(REMOVE_NETBEANS_INSTALLDIR_TEXT_PROPERTY));
-                        }
-   
-                        File userDir = NetBeansUtils.getNetBeansUserDirFile(installLocation);
-                        if (FileUtils.exists(userDir) && FileUtils.canWrite(userDir)) {
-                            foldersToRemove.setVisible(true);
-                            removeUserdirCheckbox.setText(
+                    File installLocation = product.getInstallationLocation();
+                    if(component.doRemoveNBInstallationLocation()) {
+                        foldersToRemove.setVisible(true);
+                        removeInstalldirCheckbox.setText(
                                     StringUtils.format(
-                                    panel.getProperty(REMOVE_NETBEANS_USERDIR_CHECKBOX_PROPERTY),
-                                    userDir.getAbsolutePath()));
-                            removeUserdirCheckbox.setBorder(new EmptyBorder(0, 0, 0, 0));
-                            removeUserdirCheckbox.setVisible(true);
+                                    panel.getProperty(REMOVE_NETBEANS_INSTALLDIR_CHECKBOX_PROPERTY),
+                                    installLocation.getAbsolutePath()));
+                        removeInstalldirCheckbox.setBorder(new EmptyBorder(0, 0, 0, 0));
+                        removeInstalldirCheckbox.setVisible(true);
 
-                            removeUserdirPane.setVisible(true);
-                            removeUserdirPane.setContentType("text/html");
-                            removeUserdirPane.addHyperlinkListener(BrowserUtils.createHyperlinkListener());
-
-                            String name = product.getDisplayName();
-                            try {
-                                name = product.getLogic().getSystemDisplayName();
-                            } catch (InitializationException e) {
-                            }
-
-                            removeUserdirPane.setText(
-                                    StringUtils.format(
-                                    panel.getProperty(REMOVE_NETBEANS_USERDIR_TEXT_PROPERTY),
-                                    name, panel.getProperty(REMOVE_NETBEANS_USERDIR_LINK_PROPERTY)));
-
-                        }
-                        break;
-                    } catch (IOException e) {
-                        LogManager.log(e);
+                        removeInstalldirPane.setVisible(true);
+                        removeInstalldirPane.setContentType("text/html");
+                        removeInstalldirPane.setText(
+                                panel.getProperty(REMOVE_NETBEANS_INSTALLDIR_TEXT_PROPERTY));
                     }
+
+                    if (component.doRemoveNBUserDir()) {
+                        foldersToRemove.setVisible(true);
+                        removeUserdirCheckbox.setText(
+                                StringUtils.format(
+                                panel.getProperty(REMOVE_NETBEANS_USERDIR_CHECKBOX_PROPERTY),
+                                component.userDir.getAbsolutePath()));
+                        removeUserdirCheckbox.setBorder(new EmptyBorder(0, 0, 0, 0));
+                        removeUserdirCheckbox.setVisible(true);
+
+                        removeUserdirPane.setVisible(true);
+                        removeUserdirPane.setContentType("text/html");
+                        removeUserdirPane.addHyperlinkListener(BrowserUtils.createHyperlinkListener());
+
+                        String name = product.getDisplayName();
+                        try {
+                            name = product.getLogic().getSystemDisplayName();
+                        } catch (InitializationException e) {
+                        }
+                        removeUserdirPane.setText(
+                                StringUtils.format(
+                                panel.getProperty(REMOVE_NETBEANS_USERDIR_TEXT_PROPERTY),
+                                name, panel.getProperty(REMOVE_NETBEANS_USERDIR_LINK_PROPERTY)));
+
+                    }
+                    break;
                 }
             }
 
@@ -506,30 +567,7 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
             //}            
             super.initialize();
         }
-
-
-        private boolean areThereNewFiles(final File installLocation) throws IOException {
-            List<File> installedFiles = new LinkedList<File>();
-            for (Product product : Registry.getInstance().getProductsToUninstall()) {
-                if(product.getUid().startsWith("nb-")) {
-                    // load the installed files list for this product
-                    try {
-                        File installedFilesList = product.getInstalledFilesList();
-                        if(installedFilesList.exists()) {
-                            FilesList list = new FilesList().loadXmlGz(installedFilesList);
-                            installedFiles.addAll(list.toList());
-                        }
-                    } catch (XMLException e) {
-                        LogManager.log(ErrorLevel.WARNING,
-                                "Error loading file list for " + product.getUid());
-                        return false;
-                    }
-                }
-            }            
-            FilesList existentFilesList = FileUtils.listFiles(installLocation);                       
-            return !installedFiles.containsAll(existentFilesList.toList());
-        }
-
+        
         @Override
         protected String validateInput() {
             try {
@@ -714,6 +752,29 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
             }
             return result;
         }
+        private List<String> getRegisteredWebLogicLocations(File nbLocation) throws IOException {
+            //temporary solution
+            File f = new File(nbLocation, "nb/config/J2EE/InstalledServers/.nbattrs");
+            List<String> result = new ArrayList<String>();
+            if (f.exists()) {
+                try {
+                    List<String> list = FileUtils.readStringList(f, "utf-8");
+                    for (String s : list) {
+                        String prefix = "<attr name=\"serverRoot\" stringvalue=\"";
+                        String prefix2 = "wlserver";
+                        if (s.indexOf(prefix) != -1 && s.indexOf(prefix2) != -1) {
+                            String path = s.substring(s.indexOf(prefix) + prefix.length());
+                            String url = path.substring(0, path.lastIndexOf(prefix2));                            
+                            LogManager.log("Adding URL : " + url);
+                            result.add(url);                            
+                        }
+                    }
+                } catch (IOException e) {
+                    LogManager.log("Cannot read file " + f, e);
+                }
+            }
+            return result;
+        }        
 
         // private //////////////////////////////////////////////////////////////////
         private void initComponents() {
@@ -806,6 +867,10 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
                         List<String> tomcatLocations = getRegisteredTomcatLocations(installLocation);
                         if (!tomcatLocations.isEmpty()) {
                             addProductCheckBox(Registry.getInstance().getProducts("tomcat"), tomcatLocations);
+                        } 
+                        List<String> weblogicLocations = getRegisteredWebLogicLocations(installLocation);
+                        if (!weblogicLocations.isEmpty()) {
+                            addProductCheckBox(Registry.getInstance().getProducts("weblogic"), weblogicLocations);
                         }                        
                         addProductCheckBox(Registry.getInstance().getProducts("mysql"), null);
 
@@ -897,7 +962,7 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
 
             removeUserdirCheckbox.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    System.setProperty(REMOVE_NETBEANS_USERDIR_PROPERTY,
+                    System.setProperty(REMOVE_NETBEANS_USERDIR_PROPERTY, 
                             "" + removeUserdirCheckbox.isSelected());
                 }
             });
