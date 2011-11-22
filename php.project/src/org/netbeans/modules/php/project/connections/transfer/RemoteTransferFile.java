@@ -101,8 +101,12 @@ final class RemoteTransferFile extends TransferFile {
         if (absolutePath.equals(baseDirectory)) {
             return REMOTE_PROJECT_ROOT;
         }
-        // +1 => remove '/' from the beginning of the relative path
-        return absolutePath.substring(baseDirectory.length() + REMOTE_PATH_SEPARATOR.length());
+        String relativePath = absolutePath.substring(baseDirectory.length());
+        if (relativePath.startsWith(REMOTE_PATH_SEPARATOR)) {
+            // happens for base directory "/", see #205399
+            relativePath = relativePath.substring(REMOTE_PATH_SEPARATOR.length());
+        }
+        return relativePath;
     }
 
     @Override
@@ -161,9 +165,14 @@ final class RemoteTransferFile extends TransferFile {
         }
     }
 
-    private String getAbsolutePath() {
+    String getAbsolutePath() {
         synchronized (file) {
-            return getParentDirectory() + REMOTE_PATH_SEPARATOR + getName();
+            String parentDirectory = getParentDirectory();
+            if (!parentDirectory.endsWith(REMOTE_PATH_SEPARATOR)) {
+                // does not apply for base directory "/", see #205399
+                parentDirectory = parentDirectory + REMOTE_PATH_SEPARATOR;
+            }
+            return  parentDirectory + getName();
         }
     }
 
