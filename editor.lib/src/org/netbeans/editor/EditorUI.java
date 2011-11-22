@@ -1681,7 +1681,7 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
                     // #205150 - must position the caret before building popup menu
                     if (component != null) {
                             Caret c = component.getCaret();
-                            if ((c instanceof BaseCaret)) {
+                            if ((c instanceof BaseCaret) && !Utilities.isSelectionShowing(c)) {
                                 int offset = ((BaseCaret)c).mouse2Offset(evt);
                                 component.getCaret().setDot(offset);
                             }
