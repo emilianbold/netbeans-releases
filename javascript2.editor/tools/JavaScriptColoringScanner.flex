@@ -6,23 +6,13 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 %%
 
 %public
+%final
 %class JavaScriptColoringLexer
 %type JsTokenId
 %function nextToken
 %unicode
 %caseless
 %char
-
-%eofval{
-       if(input.readLength() > 0) {
-            // backup eof
-            input.backup(1);
-            //and return the text as error token
-            return JsTokenId.UNKNOWN_TOKEN;
-        } else {
-            return null;
-        }
-%eofval}
 
 %{
 
@@ -35,6 +25,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
     private LexerInput input;
 
     public JavaScriptColoringLexer(LexerRestartInfo info) {
+        this(new LexerInputReader(info.input()));
         this.input = info.input();
 
         if(info.state() != null) {
@@ -45,7 +36,6 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
             zzState = zzLexicalState = YYINITIAL;
             stack.clear();
         }
-
     }
 
     public static final class LexerState  {
@@ -90,6 +80,34 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
         }
     }
 
+    private static final class LexerInputReader extends java.io.Reader {
+
+        private final LexerInput input;
+
+        public LexerInputReader(LexerInput input) {
+            this.input = input;
+        }
+
+        @Override
+        public void close() throws java.io.IOException {
+            // noop
+        }
+
+        @Override
+        public int read(char[] cbuf, int off, int len) throws java.io.IOException {
+            if (len <= 0) {
+                throw new IllegalArgumentException("Length of buffer must be positive integer");
+            }
+            int read = input.read();
+            if (read == LexerInput.EOF) {
+                return -1;
+            }
+            cbuf[off] = (char) read;
+            return 1;
+        }
+
+    }
+
     public LexerState getState() {
         return new LexerState(stack.createClone(), zzState, zzLexicalState);
     }
@@ -99,48 +117,6 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
         this.zzState = state.zzState;
         this.zzLexicalState = state.zzLexicalState;
     }
-
-    public int[] getParamenters(){
-    	return new int[]{zzMarkedPos, zzPushbackPos, zzCurrentPos, zzStartRead, zzEndRead, yyline, zzLexicalState};
-    }
-
-    protected int getZZLexicalState() {
-        return zzLexicalState;
-    }
-
-    protected int getZZMarkedPos() {
-        return zzMarkedPos;
-    }
-
-    protected int getZZEndRead() {
-        return zzEndRead;
-    }
-
-    public char[] getZZBuffer() {
-        return zzBuffer;
-    }
-
-    protected int getZZStartRead() {
-    	return this.zzStartRead;
-    }
-
-    protected int getZZPushBackPosition() {
-    	return this.zzPushbackPos;
-    }
-
-    protected void pushBack(int i) {
-            yypushback(i);
-    }
-
-    protected void popState() {
-            yybegin(stack.popStack());
-    }
-
-    protected void pushState(final int state) {
-            stack.pushStack(getZZLexicalState());
-            yybegin(state);
-    }
-
 
  // End user code
 
@@ -330,7 +306,7 @@ SStringCharacter = [^\r\n\'\\]
   {Comment}                      { return JsTokenId.COMMENT; }
 
   /* whitespace */
-  {WhiteSpace}                   { }
+  {WhiteSpace}                   { return JsTokenId.WHITESPACE; }
 
   /* identifiers */
   {Identifier}                   { return JsTokenId.IDENTIFIER; }
@@ -339,8 +315,9 @@ SStringCharacter = [^\r\n\'\\]
 <STRING> {
   \"                             {
                                      yybegin(YYINITIAL);
+                                     tokenLength++;
                                      // length also includes the trailing quote
-                                     return JsTokenId.STRING; //token(TokenType.STRING, tokenStart, tokenLength + 1);
+                                     return JsTokenId.STRING; //token(TokenType.STRING, tokenStart, tokenLength);
                                  }
 
   {StringCharacter}+             { tokenLength += yylength(); }
@@ -356,8 +333,9 @@ SStringCharacter = [^\r\n\'\\]
 <SSTRING> {
   \'                             {
                                      yybegin(YYINITIAL);
+                                     tokenLength++;
                                      // length also includes the trailing quote
-                                     return JsTokenId.STRING; //token(TokenType.STRING, tokenStart, tokenLength + 1);
+                                     return JsTokenId.STRING; //token(TokenType.STRING, tokenStart, tokenLength);
                                  }
 
   {SStringCharacter}+            { tokenLength += yylength(); }
@@ -371,5 +349,5 @@ SStringCharacter = [^\r\n\'\\]
 }
 
 /* error fallback */
-.|\n                             {  }
-<<EOF>>                          { return null; }
+.|\n                             { }
+<<EOF>>                          { return JsTokenId.UNKNOWN_TOKEN; }
