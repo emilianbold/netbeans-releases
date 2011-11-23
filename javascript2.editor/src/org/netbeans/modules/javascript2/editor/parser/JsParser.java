@@ -37,12 +37,16 @@
  */
 package org.netbeans.modules.javascript2.editor.parser;
 
+import com.oracle.nashorn.ir.FunctionNode;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Task;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.SourceModificationEvent;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -50,6 +54,8 @@ import org.netbeans.modules.parsing.spi.SourceModificationEvent;
  */
 public class JsParser extends Parser {
 
+    private static final Logger LOGGER = Logger.getLogger(JsParser.class.getName());
+    
     private JsParserResult lastResult = null;
     
     public JsParser() {
@@ -58,7 +64,42 @@ public class JsParser extends Parser {
     
     @Override
     public void parse(Snapshot snapshot, Task task, SourceModificationEvent event) throws ParseException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        long startTime = System.currentTimeMillis();
+        try {
+            JsErrorManager errorManager = new JsErrorManager();
+            lastResult = parseSource(snapshot, Sanitize.NONE, errorManager);
+        } catch (Exception ex) {
+            LOGGER.log (Level.FINE, "Exception during parsing: {0}", ex);
+            // TODO create empty result
+            lastResult = new JsParserResult(snapshot, null);
+        }
+        long endTime = System.currentTimeMillis();        
+        LOGGER.log(Level.FINE, "Parsing took: {0}ms source: {1}", new Object[]{endTime - startTime, snapshot.getSource().getFileObject().getNameExt()}); //NOI18N
+    }
+    
+    private JsParserResult parseSource(Snapshot snapshot, final Sanitize sanitizing, JsErrorManager errorHandler) throws Exception {
+        long startTime = System.currentTimeMillis();
+        String scriptName = snapshot.getSource().getFileObject().getNameExt();
+        String text = snapshot.getText().toString();
+        
+        com.oracle.nashorn.runtime.Source source = new com.oracle.nashorn.runtime.Source(scriptName, text);
+        com.oracle.nashorn.runtime.Options options = new com.oracle.nashorn.runtime.Options("nashorn");
+        options.process(new String[]{
+            "--parse-only=true", 
+            //"--print-parse=true",    
+            "--debug-lines=false"});
+        JsErrorManager errorManager = new JsErrorManager();
+        errorManager.setLimit(0);
+        com.oracle.nashorn.runtime.Context contextN = new com.oracle.nashorn.runtime.Context(options, errorManager);
+        com.oracle.nashorn.runtime.Context.setContext(contextN);
+        com.oracle.nashorn.codegen.Compiler compiler = new com.oracle.nashorn.codegen.Compiler(source, contextN);
+        com.oracle.nashorn.parser.Parser parser = new com.oracle.nashorn.parser.Parser(compiler);
+        com.oracle.nashorn.ir.FunctionNode node = parser.parse(com.oracle.nashorn.codegen.CompilerConstants.runScriptName);
+        
+        JsParserResult result = new JsParserResult(snapshot, node);
+        long endTime = System.currentTimeMillis();        
+//        LOGGER.log(Level.FINE, "Parsing took: {0}ms source: {1}", new Object[]{endTime - startTime, scriptname}); //NOI18N
+        return result;
     }
 
     @Override
@@ -68,12 +109,46 @@ public class JsParser extends Parser {
 
     @Override
     public void addChangeListener(ChangeListener changeListener) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        LOGGER.log(Level.FINE, "Adding changeListener: {0}", changeListener); //NOI18N)
     }
 
     @Override
     public void removeChangeListener(ChangeListener changeListener) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        LOGGER.log(Level.FINE, "Removing changeListener: {0}", changeListener); //NOI18N)
+    }
+
+
+    
+    
+    /** Attempts to sanitize the input buffer */
+    public static enum Sanitize {
+        /** Perform no sanitization */
+        NONE,
+        /** Remove current error token */
+        SYNTAX_ERROR_CURRENT,
+        /** Remove token before error */
+        SYNTAX_ERROR_PREVIOUS,
+        /** remove line with error */
+        SYNTAX_ERROR_PREVIOUS_LINE,
+        /** try to delete the whole block, where is the error*/
+        SYNTAX_ERROR_BLOCK,
+        /** Try to remove the trailing . or :: at the caret line */
+        EDITED_DOT, 
+        /** Try to remove the trailing . or :: at the error position, or the prior
+         * line, or the caret line */
+        ERROR_DOT, 
+        /** Try to remove the initial "if" or "unless" on the block
+         * in case it's not terminated
+         */
+        BLOCK_START,
+        /** Try to cut out the error line */
+        ERROR_LINE, 
+        /** Try to cut out the current edited line, if known */
+        EDITED_LINE,
+        /** Attempt to fix missing } */
+        MISSING_CURLY,
+        /** Try to fix incomplete 'require("' function for FS code complete */
+        REQUIRE_FUNCTION_INCOMPLETE,
     }
     
 }

@@ -42,6 +42,8 @@ import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.csl.spi.LanguageRegistration;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.editor.parser.JsParser;
+import org.netbeans.modules.parsing.spi.Parser;
 import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
 
@@ -76,5 +78,12 @@ public class JsLanguage extends DefaultLanguageConfig {
     public String getDisplayName() {
         return "JavaScript"; //NOI18N
     }
+
+    @Override
+    public Parser getParser() {
+        return new JsParser();
+    }
+    
+    
     
 }

@@ -37,44 +37,43 @@
  */
 package org.netbeans.modules.javascript2.editor.parser;
 
-import com.oracle.nashorn.ir.FunctionNode;
-import java.util.Collections;
-import java.util.List;
-import org.netbeans.modules.csl.api.Error;
-import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.parsing.api.Snapshot;
+import com.oracle.nashorn.runtime.ErrorManager;
+import com.oracle.nashorn.runtime.Source;
 
 /**
  *
  * @author Petr Pisl
  */
-public class JsParserResult extends ParserResult {
+public class JsErrorManager extends ErrorManager {
 
-    private FunctionNode root;
-    private List<Error> errors;
-    
-    public JsParserResult(Snapshot snapshot, FunctionNode root) {
-        super(snapshot);
-        this.root = root;
-        this.errors = Collections.<Error>emptyList();
-    }
-    
     @Override
-    public List<? extends Error> getDiagnostics() {
-        return errors;
+    public void error(String message, Source source, int line, int column, long token) {
+//        super.error(message, source, line, column, token);
     }
 
     @Override
-    protected void invalidate() {
-        
-    }
-    
-    public FunctionNode getRoot() {
-        return root;
+    public void error(String message, Source source, long token) {
+//        super.error(message, source, token);
     }
 
-    public void setErrors(List<Error> errors) {
-        this.errors = errors;
+    @Override
+    public void error(String message) {
+//        super.error(message);
+    }
+
+    @Override
+    public void warning(String message, Source source, int line, int column, long token) {
+//        super.warning(message, source, line, column, token);
+    }
+
+    @Override
+    public void warning(String message, Source source, long token) {
+//        super.warning(message, source, token);
+    }
+
+    @Override
+    public void warning(String message) {
+//        super.warning(message);
     }
     
 }
