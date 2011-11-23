@@ -77,11 +77,9 @@ public class JsLexer implements Lexer<JsTokenId> {
         try {
             JsTokenId tokenId = scanner.nextToken();
             Token<JsTokenId> token = null;
-            if (tokenId == null) 
-                tokenId = JsTokenId.UNKNOWN_TOKEN;
             if (tokenId != null) {
                 token = tokenFactory.createToken(tokenId);
-            } 
+            }
             return token;
         } catch (IOException ex) {
             Logger.getLogger(JsLexer.class.getName()).log(Level.SEVERE, null, ex);
