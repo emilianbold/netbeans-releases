@@ -55,6 +55,8 @@ public class ImagePreviewPanel extends JPanel {
     public void setImage(BufferedImage image) {
         this.image = image;
         this.setBackground(Color.WHITE);
+        this.revalidate();
+        this.repaint();
     }
 
     protected void paintComponent(Graphics g) {

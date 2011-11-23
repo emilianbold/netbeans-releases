@@ -42,9 +42,12 @@
 package org.netbeans.modules.image.action;
 
 import java.awt.Desktop;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.util.List;
 import java.util.logging.Logger;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReferences;
@@ -52,42 +55,28 @@ import org.openide.awt.ActionRegistration;
 import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
-import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.NbBundle.Messages;
-import org.openide.util.actions.NodeAction;
 
 /*
  * This action opens external image editor (system default) for given image
  */
 @ActionID(category = "Images",
 id = "org.netbeans.modules.image.action.ExternalEditAction")
-@ActionRegistration(displayName = "#CTL_ExternalEditAction")
+@ActionRegistration(displayName = "#LBL_ExternalEdit")
 @ActionReferences({})
-@Messages("CTL_ExternalEditAction=Open in editor")
-public final class ExternalEditAction extends NodeAction {
+public final class ExternalEditAction implements ActionListener {
+    private final List<FileObject> list;
 
+    public ExternalEditAction(List<FileObject> list) {
+        this.list = list;
+    }
+    
     @Override
-    protected void performAction(Node[] activatedNodes) {
+    public void actionPerformed(ActionEvent e) {
         boolean showInBrowser = true;
-        for (int i = 0; i < activatedNodes.length; i++) {
-            Node node = activatedNodes[i];
-
-            //lookup image file to edit
+        for (FileObject imageFO : list) {
             File imageFile;
-            final FileObject imageFO = node.getLookup().lookup(FileObject.class);
-            if (imageFO != null) {
-                imageFile = FileUtil.toFile(imageFO);
-            } else {
-                final DataObject imageDO = activatedNodes[0].getLookup().lookup(DataObject.class);
-                if (imageDO != null) {
-                    imageFile = FileUtil.toFile(imageDO.getPrimaryFile());
-                } else {
-                    continue;
-                }
-            }
+            imageFile = FileUtil.toFile(imageFO);
             if (imageFile == null) {
                 continue;
             }
@@ -114,20 +103,5 @@ public final class ExternalEditAction extends NodeAction {
                 }
             }
         }
-    }
-
-    @Override
-    protected boolean enable(Node[] activatedNodes) {
-        return true;
-    }
-
-    @Override
-    public String getName() {
-        return NbBundle.getMessage(ExternalEditAction.class, "LBL_ExternalEdit");
-    }
-
-    @Override
-    public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
     }
 }
