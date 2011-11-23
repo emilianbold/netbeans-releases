@@ -45,67 +45,6 @@ made subject to such option by the copyright holder.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
 <filesystem>
-    <folder name="Templates">
-        <folder name="NetBeansModuleDevelopment">
-            <attr name="displayName" bundlevalue="org.netbeans.modules.apisupport.project.ui.wizard.common.Bundle#NetBeansModuleDevelopment"/>
-            <attr name="position" intvalue="200"/>
-        </folder>
-        <folder name="NetBeansModuleDevelopment-files"> <!-- XXX later could be made visible (just need localized labels) -->
-            <attr name="position" intvalue="0"/>
-            <attr name="simple" boolvalue="false"/>
-            <file name="callableSystemAction.java" url="../wizard/action/callableSystemAction.javx"/>
-            <file name="actionListener.java" url="../wizard/action/actionListener.javx"/>
-            <file name="cookieAction.java" url="../wizard/action/cookieAction.javx"/>
-            <file name="contextAction.java" url="../wizard/action/contextAction.javx"/>
-            <file name="codeGenerator.java" url="../wizard/codegenerator/codeGenerator.javx"/>
-            <file name="quickSearch.java" url="../wizard/quicksearch/quickSearch.javx"/>
-            <file name="contextProvider.java" url="../wizard/codegenerator/contextProvider.javx"/>
-            <file name="template_myplugin-helpset.xml" url="../wizard/javahelp/template_myplugin-helpset.xml"/>
-            <file name="template_myplugin.xml" url="../wizard/javahelp/template_myplugin.hs"/>
-            <file name="template_myplugin-idx.xml" url="../wizard/javahelp/template_myplugin-idx.xml"/>
-            <file name="template_myplugin-map.xml" url="../wizard/javahelp/template_myplugin-map.jhm"/>
-            <file name="template_myplugin-toc.xml" url="../wizard/javahelp/template_myplugin-toc.xml"/>
-            <file name="template_myplugin-about.html" url="../wizard/javahelp/template_myplugin-about.html"/>
-            <file name="libdescriptemplate.xml" url="../wizard/librarydescriptor/libdescriptemplate.xml"/>
-            <file name="templateDataLoader.java" url="../wizard/loader/templateDataLoader.javx"/>
-            <file name="templateDataLoaderBeanInfo.java" url="../wizard/loader/templateDataLoaderBeanInfo.javx"/>
-            <file name="templateDataNode.java" url="../wizard/loader/templateDataNode.javx"/>
-            <file name="templateDataObject.java" url="../wizard/loader/templateDataObject.javx"/>
-            <file name="templateDataObjectWithLookup.java" url="../wizard/loader/templateDataObjectWithLookup.javx"/>
-            <file name="templateDataObjectMulti.java" url="../wizard/loader/templateDataObjectMulti.javx"/>
-            <file name="templateDataObjectMultiForm.java" url="../wizard/loader/templateDataObjectMultiVisual.javx"/>
-            <file name="templateDataObjectMultiForm.form" url="../wizard/loader/templateDataObjectMultiVisual.forx"/>
-            <file name="templateDataObjectInLayer.java" url="../wizard/loader/templateDataObjectInLayer.javx"/>
-            <file name="templateNew1" url="../wizard/loader/templateNew1"/>
-            <file name="templateNew2" url="../wizard/loader/templateNew2"/>
-            <file name="templateresolver.xml" url="../wizard/loader/templateresolver.xml"/>
-            <file name="moduleInstall.java" url="../wizard/moduleinstall/moduleInstall.javx"/>
-            <file name="moduleActivator.java" url="../wizard/moduleinstall/moduleActivator.javx"/>
-            <file name="template_mypluginOptionsPanelController.java" url="../wizard/options/template_mypluginOptionsPanelController"/>
-            <file name="template_mypluginPanel.java" url="../wizard/options/template_mypluginPanel"/>
-            <file name="template_myplugin_formPanel.form" url="../wizard/options/template_myplugin_formPanel"/>
-            <file name="templateDescription.html" url="../wizard/project/templateDescription.html"/>
-            <file name="templatePanelVisual.form" url="../wizard/project/templatePanelVisual.frmx"/>
-            <file name="templatePanelVisual.java" url="../wizard/project/templatePanelVisual.javx"/>
-            <file name="templateWizardIterator.java" url="../wizard/project/templateWizardIterator.javx"/>
-            <file name="templateWizardPanel.java" url="../wizard/project/templateWizardPanel.javx"/>
-            <file name="update_center.xml" url="../wizard/updatecenter/update_center.xml"/>
-            <file name="templateAction.java" url="../wizard/winsys/templateAction.javx"/>
-            <file name="templateSettings.xml" url="../wizard/winsys/templateSettings.xml"/>
-            <file name="templateTopComponent.form" url="../wizard/winsys/templateTopComponent.frmx"/>
-            <file name="templateTopComponent.java" url="../wizard/winsys/templateTopComponent.javx"/>
-            <file name="templateTopComponentAnno.java" url="../wizard/winsys/templateTopComponentAnno.javx"/>
-            <file name="templateTopComponent637.java" url="../wizard/winsys/templateTopComponent637.javx"/>
-            <file name="templateWstcref.xml" url="../wizard/winsys/templateWstcref.xml"/>
-            <file name="instantiatingIterator.java" url="../wizard/wizard/instantiatingIterator.javx"/>
-            <file name="sampleAction.java" url="../wizard/wizard/sampleAction.javx"/>
-            <file name="visualPanel.form" url="../wizard/wizard/visualPanel.forx"/>
-            <file name="visualPanel.java" url="../wizard/wizard/visualPanel.javx"/>
-            <file name="wizardDescription.html" url="../wizard/wizard/wizardDescription.html"/>
-            <file name="wizardIterator.java" url="../wizard/wizard/wizardIterator.javx"/>
-            <file name="wizardPanel.java" url="../wizard/wizard/wizardPanel.javx"/>
-        </folder>
-    </folder>
     <folder name="Services">
         <folder name="Hidden">
             <folder name="CatalogProvider">
@@ -116,12 +55,12 @@ made subject to such option by the copyright holder.
         <folder name="MIMEResolver">
             <file name="org-netbeans-modules-apisupport-layer-resolver.xml" url="LayerResolver.xml">
                 <attr name="displayName" bundlevalue="org.netbeans.modules.apisupport.project.api.Bundle#LayerResolver.xml"/>
-                <attr name="icon" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/layerObject.gif"/>
+                <attr name="icon" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/spi/layerObject.gif"/>
                 <attr name="position" intvalue="320"/>
             </file>
             <file name="org-netbeans-modules-apisupport-hidden-resolver.xml" url="hidden-resolver.xml">
                 <attr name="displayName" bundlevalue="org.netbeans.modules.apisupport.project.layers.Bundle#LBL_hidden_files"/>
-                <attr name="icon" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/layerObject.gif"/>
+                <attr name="icon" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/spi/layerObject.gif"/>
                 <attr name="position" intvalue="97447"/> <!-- late, to avoid capture of foo_hidden.jar etc. -->
             </file>
         </folder>
@@ -163,7 +102,7 @@ made subject to such option by the copyright holder.
                         <attr name="instanceCreate" methodvalue="org.openide.loaders.DataLoaderPool.factory"/>
                         <attr name="dataObjectClass" stringvalue="org.netbeans.modules.apisupport.project.layers.HiddenDataObject"/>
                         <attr name="mimeType" stringvalue="application/x-netbeans-hidden"/>
-                        <attr name="iconBase" stringvalue="org/netbeans/modules/apisupport/project/ui/resources/layerObject.gif"/>
+                        <attr name="iconBase" stringvalue="org/netbeans/modules/apisupport/project/spi/layerObject.gif"/>
                     </file>
                 </folder>
             </folder>
@@ -242,7 +181,7 @@ made subject to such option by the copyright holder.
                         <attr name="mimeType" stringvalue="text/x-netbeans-layer+xml"/>
                         <attr name="dataObjectClass" stringvalue="org.netbeans.modules.apisupport.project.layers.LayerDataObject"/>
                         <attr name="displayName" bundlevalue="org.netbeans.modules.apisupport.project.api.Bundle#LayerResolver.xml"/>
-                        <attr name="iconBase" stringvalue="org/netbeans/modules/apisupport/project/ui/resources/layerObject.gif"/>
+                        <attr name="iconBase" stringvalue="org/netbeans/modules/apisupport/project/spi/layerObject.gif"/>
                     </file>
                 </folder>
             </folder>

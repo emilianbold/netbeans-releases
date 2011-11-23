@@ -82,7 +82,9 @@ public final class TopComponentProcessor extends LayerGeneratingProcessor {
     protected boolean handleProcess(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) throws LayerGenerationException {
         for (Element e : roundEnv.getElementsAnnotatedWith(TopComponent.Registration.class)) {
             TopComponent.Registration reg = e.getAnnotation(TopComponent.Registration.class);
-            assert reg != null;
+            if (reg == null) {
+                continue;
+            }
             
             Description info = findInfo(e);
             if (info == null) {
