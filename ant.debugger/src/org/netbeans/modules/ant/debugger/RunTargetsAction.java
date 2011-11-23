@@ -247,7 +247,7 @@ public final class RunTargetsAction extends SystemAction implements ContextAware
     /**
      * Action handler for a menu item representing one target.
      */
-    private static final class TargetMenuItemHandler implements ActionListener, Runnable {
+    static final class TargetMenuItemHandler implements ActionListener, Runnable {
         
         private final AntProjectCookie project;
         private final String target;
