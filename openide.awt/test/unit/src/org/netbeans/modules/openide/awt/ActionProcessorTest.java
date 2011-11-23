@@ -339,13 +339,20 @@ public class ActionProcessorTest extends NbTestCase {
         assertEquals("Global Action not called, there is no fallback", 0, Callback.cnt);
     }
 
+    public static final class NumberLike {
+        final int x;
+        NumberLike(int x) {
+            this.x = x;
+        }
+    }
+
     @ActionID(category = "Tools", id = "on.int")
     @ActionRegistration(displayName = "#OnInt")
     public static final class Context implements ActionListener {
         private final int context;
         
-        public Context(Integer context) {
-            this.context = context;
+        public Context(NumberLike context) {
+            this.context = context.x;
         }
 
         static int cnt;
@@ -370,13 +377,14 @@ public class ActionProcessorTest extends NbTestCase {
         InstanceContent ic = new InstanceContent();
         AbstractLookup lkp = new AbstractLookup(ic);
         Action clone = a.createContextAwareInstance(lkp);
-        ic.add(10);
+        NumberLike ten = new NumberLike(10);
+        ic.add(ten);
 
         assertEquals("Number lover!", clone.getValue(Action.NAME));
         clone.actionPerformed(new ActionEvent(this, 300, ""));
         assertEquals("Global Action not called", 10, Context.cnt);
 
-        ic.remove(10);
+        ic.remove(ten);
         clone.actionPerformed(new ActionEvent(this, 200, ""));
         assertEquals("Global Action stays same", 10, Context.cnt);
     }
@@ -389,9 +397,9 @@ public class ActionProcessorTest extends NbTestCase {
         id="on.numbers"
     )
     public static final class MultiContext implements ActionListener {
-        private final List<Number> context;
+        private final List<NumberLike> context;
 
-        public MultiContext(List<Number> context) {
+        public MultiContext(List<NumberLike> context) {
             this.context = context;
         }
 
@@ -399,8 +407,8 @@ public class ActionProcessorTest extends NbTestCase {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            for (Number n : context) {
-                cnt += n.intValue();
+            for (NumberLike n : context) {
+                cnt += n.x;
             }
         }
 
@@ -419,18 +427,20 @@ public class ActionProcessorTest extends NbTestCase {
         InstanceContent ic = new InstanceContent();
         AbstractLookup lkp = new AbstractLookup(ic);
         Action clone = a.createContextAwareInstance(lkp);
-        ic.add(10);
-        ic.add(3L);
+        NumberLike ten = new NumberLike(10);
+        NumberLike three = new NumberLike(3);
+        ic.add(ten);
+        ic.add(three);
 
         assertEquals("Number lover!", clone.getValue(Action.NAME));
         clone.actionPerformed(new ActionEvent(this, 300, ""));
         assertEquals("Global Action not called", 13, MultiContext.cnt);
 
-        ic.remove(10);
+        ic.remove(ten);
         clone.actionPerformed(new ActionEvent(this, 200, ""));
         assertEquals("Adds 3", 16, MultiContext.cnt);
 
-        ic.remove(3L);
+        ic.remove(three);
         assertFalse("It is disabled", clone.isEnabled());
         clone.actionPerformed(new ActionEvent(this, 200, ""));
         assertEquals("No change", 16, MultiContext.cnt);

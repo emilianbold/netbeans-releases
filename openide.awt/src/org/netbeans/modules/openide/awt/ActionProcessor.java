@@ -376,7 +376,7 @@ public final class ActionProcessor extends LayerGeneratingProcessor {
             if (dt.getTypeArguments().isEmpty()) {
                 throw new LayerGenerationException("Use List<SomeType>", ee);
             }
-            f.stringvalue("type", dt.getTypeArguments().get(0).toString());
+            f.stringvalue("type", binaryName(dt.getTypeArguments().get(0)));
             f.methodvalue("delegate", "org.openide.awt.Actions", "inject");
             f.stringvalue("injectable", processingEnv.getElementUtils().getBinaryName((TypeElement) e).toString());
             f.stringvalue("selectionType", "ANY");
@@ -387,11 +387,19 @@ public final class ActionProcessor extends LayerGeneratingProcessor {
             throw new LayerGenerationException("No type parameters allowed in ", ee);
         }
 
-        f.stringvalue("type", ve.asType().toString());
+        f.stringvalue("type", binaryName(ve.asType()));
         f.methodvalue("delegate", "org.openide.awt.Actions", "inject");
         f.stringvalue("injectable", processingEnv.getElementUtils().getBinaryName((TypeElement)e).toString());
         f.stringvalue("selectionType", "EXACTLY_ONE");
         f.methodvalue("instanceCreate", "org.openide.awt.Actions", "context");
+    }
+    private String binaryName(TypeMirror t) {
+        Element e = processingEnv.getTypeUtils().asElement(t);
+        if (e != null && (e.getKind().isClass() || e.getKind().isInterface())) {
+            return processingEnv.getElementUtils().getBinaryName((TypeElement) e).toString();
+        } else {
+            return t.toString(); // fallback - might not always be right
+        }
     }
 
     private boolean isAssignable(TypeMirror first, TypeMirror snd) {
