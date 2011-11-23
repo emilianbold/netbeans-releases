@@ -65,7 +65,7 @@ final class NetigsoModule extends Module {
 
     private final File jar;
     private final Manifest manifest;
-    private int startLevel;
+    private int startLevel = -1;
 
     public NetigsoModule(Manifest mani, File jar, ModuleManager mgr, Events ev, Object history, boolean reloadable, boolean autoload, boolean eager) throws IOException {
         super(mgr, ev, history, reloadable, autoload, eager);
@@ -224,7 +224,7 @@ final class NetigsoModule extends Module {
 
     @Override
     final int getStartLevelImpl() {
-        return startLevel;
+        return startLevel == -1 ? NetigsoFramework.getDefault().defaultStartLevel() : startLevel;
     }
 
     final void setStartLevel(int startLevel) {
