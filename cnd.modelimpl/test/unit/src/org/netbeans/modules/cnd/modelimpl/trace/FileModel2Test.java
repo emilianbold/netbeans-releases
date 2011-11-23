@@ -414,4 +414,9 @@ public class FileModel2Test extends TraceModelTestBase {
         performTest("bug204497.cpp");
     }
     
+    public void testBug205292() throws Exception {
+        // Bug 205292 - parserhg status fails on declspec construction
+        performTest("bug205292.cpp");
+    }
+    
 }
