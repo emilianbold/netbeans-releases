@@ -15,17 +15,11 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 %char
 
 %{
-
-    protected int tokenStart;
-    protected int tokenLength;
-    protected int offset;
-
     private StateStack stack = new StateStack();
 
     private LexerInput input;
 
     public JavaScriptColoringLexer(LexerRestartInfo info) {
-        this(new LexerInputReader(info.input()));
         this.input = info.input();
 
         if(info.state() != null) {
@@ -78,34 +72,6 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
             }
             return hash;
         }
-    }
-
-    private static final class LexerInputReader extends java.io.Reader {
-
-        private final LexerInput input;
-
-        public LexerInputReader(LexerInput input) {
-            this.input = input;
-        }
-
-        @Override
-        public void close() throws java.io.IOException {
-            // noop
-        }
-
-        @Override
-        public int read(char[] cbuf, int off, int len) throws java.io.IOException {
-            if (len <= 0) {
-                throw new IllegalArgumentException("Length of buffer must be positive integer");
-            }
-            int read = input.read();
-            if (read == LexerInput.EOF) {
-                return -1;
-            }
-            cbuf[off] = (char) read;
-            return 1;
-        }
-
     }
 
     public LexerState getState() {
@@ -277,14 +243,10 @@ SStringCharacter = [^\r\n\'\\]
   /* string literal */
   \"                             {
                                     yybegin(STRING);
-                                    tokenStart = yychar;
-                                    tokenLength = 1;
                                  }
 
   \'                             {
                                     yybegin(SSTRING);
-                                    tokenStart = yychar;
-                                    tokenLength = 1;
                                  }
 
   /* numeric literals */
@@ -315,36 +277,32 @@ SStringCharacter = [^\r\n\'\\]
 <STRING> {
   \"                             {
                                      yybegin(YYINITIAL);
-                                     tokenLength++;
-                                     // length also includes the trailing quote
-                                     return JsTokenId.STRING; //token(TokenType.STRING, tokenStart, tokenLength);
+                                     return JsTokenId.STRING;
                                  }
 
-  {StringCharacter}+             { tokenLength += yylength(); }
+  {StringCharacter}+             { }
 
-  \\[0-3]?{OctDigit}?{OctDigit}  { tokenLength += yylength(); }
+  \\[0-3]?{OctDigit}?{OctDigit}  { }
 
   /* escape sequences */
 
-  \\.                            { tokenLength += 2; }
+  \\.                            { }
   {LineTerminator}               { yybegin(YYINITIAL);  }
 }
 
 <SSTRING> {
   \'                             {
                                      yybegin(YYINITIAL);
-                                     tokenLength++;
-                                     // length also includes the trailing quote
-                                     return JsTokenId.STRING; //token(TokenType.STRING, tokenStart, tokenLength);
+                                     return JsTokenId.STRING;
                                  }
 
-  {SStringCharacter}+            { tokenLength += yylength(); }
+  {SStringCharacter}+            { }
 
-  \\[0-3]?{OctDigit}?{OctDigit}  { tokenLength += yylength(); }
+  \\[0-3]?{OctDigit}?{OctDigit}  { }
 
   /* escape sequences */
 
-  \\.                            { tokenLength += 2; }
+  \\.                            { }
   {LineTerminator}               { yybegin(YYINITIAL);  }
 }
 
