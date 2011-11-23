@@ -116,6 +116,15 @@ public abstract class NetigsoFramework {
         return getClass().getClassLoader();
     }
 
+    /** Default start level for all bundles that don't specify any own.
+     * 
+     * @since 2.44.2
+     * @return 
+     */
+    protected int defaultStartLevel() {
+        return 0;
+    }
+    
     //
     // Access to Archive
     //
