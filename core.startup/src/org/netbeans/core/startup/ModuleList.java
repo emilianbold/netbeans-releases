@@ -95,6 +95,7 @@ import org.openide.modules.InstalledFileLocator;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
 import org.openide.util.Utilities;
 import org.openide.util.WeakSet;
 import org.openide.xml.EntityCatalog;
@@ -1550,15 +1551,23 @@ final class ModuleList implements Stamps.Updater {
         }
     }
 
-    private class ReadInitial implements AtomicAction {
-
+    private class ReadInitial implements AtomicAction, Runnable {
         private final Set<Module> read;
+        private volatile Task task;
 
         public ReadInitial(Set<Module> read) {
             this.read = read;
         }
 
-        public void run() throws IOException {
+        @Override
+        public void run() {
+            if (task != null) {
+                init();
+                return;
+            }
+            task = RequestProcessor.getDefault().create(this);
+            task.schedule(0);
+            
             Map<String, Map<String, Object>> cache = readCache();
             String[] names;
             if (cache != null) {
@@ -1679,7 +1688,7 @@ final class ModuleList implements Stamps.Updater {
             }
             ev.log(Events.FINISH_READ, read);
             // Handle changes in the Modules/ folder on disk by parsing & applying them.
-            init();
+            task.waitFinished();
         }
     }
     
