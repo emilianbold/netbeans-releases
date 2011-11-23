@@ -43,6 +43,8 @@
 package org.netbeans.modules.cnd.source;
 
 import java.io.IOException;
+import java.util.Map;
+import java.util.WeakHashMap;
 import org.netbeans.modules.cnd.source.spi.CndCookieProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -62,14 +64,27 @@ public final class CppEditorSupportProvider extends CndCookieProvider {
         SourceDataObject sdao = (SourceDataObject) dao;
         ic.add(sdao, staticFactory);
     }
+    
+    static void notifyClosed(DataObject dobj) {
+        staticFactory.notifyClosed(dobj);
+    }
 
-    private static class CppEditorSupportFactory implements Convertor<SourceDataObject, CppEditorSupport> {
+    static class CppEditorSupportFactory implements Convertor<SourceDataObject, CppEditorSupport> {
+        // FIXUP for IZ 202681, if we do not keep a reference to CppEditorSupport it will
+        // be released and a new instance will be created due to MultiView peer deserialization
+        private final Map<DataObject, CppEditorSupport> cache = new WeakHashMap<DataObject, CppEditorSupport>();
+                
         public CppEditorSupportFactory() {
         }
 
         @Override
-        public CppEditorSupport convert(SourceDataObject obj) {
-            return new CppEditorSupport(obj);
+        public synchronized CppEditorSupport convert(SourceDataObject obj) {
+            CppEditorSupport res = cache.get(obj);
+            if (res == null) {
+                res = new CppEditorSupport(obj);
+                cache.put(obj, res);
+            }
+            return res;
         }
 
         @Override
@@ -85,6 +100,10 @@ public final class CppEditorSupportProvider extends CndCookieProvider {
         @Override
         public String displayName(SourceDataObject obj) {
             return id(obj);
+        }
+
+        private synchronized void notifyClosed(DataObject dobj) {
+            cache.remove(dobj);
         }
     }
 
