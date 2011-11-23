@@ -404,6 +404,9 @@ final class LibraryStartVisualPanel extends NewTemplateVisualPanel {
         int ret = chooser.showDialog(this, getMessage("LBL_Select"));
         if (ret == JFileChooser.APPROVE_OPTION) {
             File[] files =  chooser.getSelectedFiles();
+            if (files.length == 0) {
+                return;
+            }
             String path = "";
             for (int i = 0; i < files.length; i++) {
                 path = path + files[i] + ( i == files.length - 1 ? "" : File.pathSeparator);

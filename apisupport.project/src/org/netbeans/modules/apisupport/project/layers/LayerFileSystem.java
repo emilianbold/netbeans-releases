@@ -40,6 +40,7 @@ package org.netbeans.modules.apisupport.project.layers;
 
 import java.io.IOException;
 import java.util.Locale;
+import org.netbeans.modules.apisupport.project.spi.LayerUtil;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.MultiFileSystem;
@@ -67,7 +68,7 @@ public class LayerFileSystem extends MultiFileSystem {
 
     @Override
     protected FileSystem createWritableOn(String name) throws IOException {
-        if( name.endsWith(LayerUtils.HIDDEN) ) {
+        if( name.endsWith(LayerUtil.HIDDEN) ) {
             FileObject fo = findResource(name);
             if( null != fo ) {
                 try {

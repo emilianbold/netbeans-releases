@@ -56,6 +56,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.apisupport.project.api.Util;
 import org.netbeans.modules.apisupport.project.api.LayerHandle;
+import org.netbeans.modules.apisupport.project.spi.LayerUtil;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
@@ -261,7 +262,7 @@ public final class LayerNode extends FilterNode implements Node.Cookie {
                         }
                         boolean deleted = false;
                         for( FileObject fo : files ) {
-                            if( fo.getNameExt().endsWith(LayerUtils.HIDDEN) ) {
+                            if( fo.getNameExt().endsWith(LayerUtil.HIDDEN) ) {
                                 deleted = true;
                                 break;
                             }

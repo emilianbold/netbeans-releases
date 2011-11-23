@@ -81,8 +81,6 @@ public final class Util {
     
     public static final ErrorManager err = ErrorManager.getDefault().getInstance("org.netbeans.modules.apisupport.project"); // NOI18N
     
-    private static final String SFS_VALID_PATH_RE = "(\\p{Alnum}|\\/|_)+"; // NOI18N
-    
     /**
      * Convenience method for loading {@link EditableProperties} from a {@link
      * FileObject}. New items will alphabetizied by key.
@@ -157,10 +155,6 @@ public final class Util {
         }
     }
 
-    public static boolean isValidSFSPath(final String path) {
-        return path.matches(SFS_VALID_PATH_RE);
-    }
-    
     public static @CheckForNull Manifest getManifest(@NullAllowed FileObject manifestFO) {
         if (manifestFO != null) {
             try {

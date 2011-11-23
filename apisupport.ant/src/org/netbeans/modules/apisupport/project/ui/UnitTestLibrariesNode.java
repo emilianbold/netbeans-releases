@@ -76,6 +76,7 @@ import org.netbeans.modules.apisupport.project.ProjectXMLManager;
 import org.netbeans.modules.apisupport.project.ui.customizer.AddModulePanel;
 import org.netbeans.modules.apisupport.project.ui.customizer.EditTestDependencyPanel;
 import org.netbeans.modules.apisupport.project.ModuleDependency;
+import org.netbeans.modules.apisupport.project.api.UIUtil;
 import org.netbeans.modules.apisupport.project.ui.customizer.SingleModuleProperties;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.modules.apisupport.project.universe.ModuleList;
@@ -201,9 +202,6 @@ final class UnitTestLibrariesNode extends AbstractNode {
     
     private static final class LibrariesChildren extends Children.Keys<TestModuleDependency> implements AntProjectListener {
         
-        private static final String LIBRARIES_ICON =
-                "org/netbeans/modules/apisupport/project/ui/resources/libraries.gif"; // NOI18N
-        
         static final Action REMOVE_DEPENDENCY_ACTION = new RemoveDependencyAction();
         
         private final String testType;
@@ -314,7 +312,7 @@ final class UnitTestLibrariesNode extends AbstractNode {
         
         private Icon getLibrariesIcon() {
             if (librariesIcon == null) {
-                librariesIcon = ImageUtilities.loadImageIcon(LIBRARIES_ICON, true);
+                librariesIcon = ImageUtilities.loadImageIcon(UIUtil.LIBRARIES_ICON, true);
             }
             return librariesIcon;
         }
