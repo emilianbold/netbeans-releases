@@ -39,47 +39,21 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.libs.git.jgit.factory;
-
-import java.io.File;
-import java.io.IOException;
-import org.netbeans.libs.git.GitException;
-import org.netbeans.libs.git.jgit.AbstractGitTestCase;
-import org.netbeans.libs.git.GitClientFactory;
+package org.netbeans.libs.git;
 
 /**
  *
  * @author ondra
  */
-public class CreateClientTest extends AbstractGitTestCase {
+public final class ApiUtils {
 
-    private File workDir;
-
-    public CreateClientTest (String name) throws IOException {
-        super(name);
+    public static void clearRepositoryPool (GitClientFactory factory) {
+        factory.clearRepositoryPool();
     }
     
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        workDir = getWorkingDirectory();
+    private ApiUtils () {
+        
     }
     
-    public void testCorruptedConfigNoEndingLine () throws Exception {
-        File gitFolder = new File(workDir, ".git");
-        File newLocation = new File(workDir.getParentFile(), "newFolder");
-        newLocation.mkdirs();
-        gitFolder.renameTo(new File(newLocation, ".git"));
-        gitFolder = new File(newLocation, ".git");
-        String content = read(new File(gitFolder, "config"));
-        write(new File(gitFolder, "config"), content + "[remote \"origin\"]\n	puttykeyfile = ");
-        try {
-            GitClientFactory.getInstance().getClient(newLocation);
-            fail("Should fail");
-        } catch (GitException ex) {
-            assertEquals("It seems the config file for the repository at [" + newLocation.getAbsolutePath() + "] is corrupted.\nEnsure it ends with empty line.", ex.getMessage());
-        }
-        write(new File(gitFolder, "config"), read(new File(gitFolder, "config")) + "\n");
-    }
     
 }

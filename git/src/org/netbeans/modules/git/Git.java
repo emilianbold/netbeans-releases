@@ -197,7 +197,7 @@ public final class Git {
         if (repositoryFolder != null) {
             repository = repositoryFolder;
         }
-        GitClient client = GitClientFactory.getInstance(null).getClient(repository);
+        GitClient client = GitClientFactory.getInstance().getClient(repository);
         client.setCallback(new CredentialsCallback());
         GitClientInvocationHandler handler = new GitClientInvocationHandler(client, repository);
         handler.setProgressSupport(progressSupport);
