@@ -1660,7 +1660,7 @@ declaration_specifiers [boolean allowTypedef, boolean noTypeId]
         |   LITERAL_typename
         |   LITERAL_friend {fd=true;}
         |   literal_stdcall
-        |       (options {greedy=true;} : attribute_specification!)
+        |   (options {greedy=true;} : type_attribute_specification!)
         )*
     ) 
     (
