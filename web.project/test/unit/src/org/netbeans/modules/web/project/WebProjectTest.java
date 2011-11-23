@@ -45,21 +45,19 @@
 package org.netbeans.modules.web.project;
 
 import java.io.File;
-import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
+import java.util.Collection;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.project.uiapi.ProjectOpenedTrampoline;
 import org.netbeans.modules.web.project.api.WebPropertyEvaluator;
-import org.netbeans.modules.web.project.test.TestUtil;
-import org.netbeans.modules.web.project.ui.WebLogicalViewProvider;
+import org.netbeans.spi.project.support.ant.AntBasedProjectType;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.nodes.Node;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.test.MockLookup;
 
 /**
  * @author Martin Krauskopf, Radko Najman
@@ -75,8 +73,20 @@ public class WebProjectTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        TestUtil.makeScratchDir(this);
-        serverID = TestUtil.registerSunAppServer(this);
+        MockLookup.init();
+        Collection<? extends AntBasedProjectType> all = Lookups.forPath("Services/AntBasedProjectTypes").lookupAll(AntBasedProjectType.class);
+        MockLookup.setInstances(
+                all.iterator().next(),
+                new org.netbeans.modules.projectapi.SimpleFileOwnerQueryImplementation()
+                );
+//        TestUtil.makeScratchDir(this);
+//        serverID = TestUtil.registerSunAppServer(this);
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        MockLookup.setLookup(Lookup.EMPTY);
+        super.tearDown();
     }
     
 //    // see #99077, #70052
@@ -100,7 +110,6 @@ public class WebProjectTest extends NbTestCase {
     public void testWebPropertiesEvaluator() throws Exception {
         File f = new File(getDataDir().getAbsolutePath(), "projects/WebApplication1");
         FileObject projdir = FileUtil.toFileObject(f);
-        System.setProperty("netbeans.user", "memory");
         Project webProject = ProjectManager.getDefault().findProject(projdir);
         WebPropertyEvaluator evaluator = webProject.getLookup().lookup(WebPropertyEvaluator.class);
         assertNotNull("Property evaluatero is null", evaluator);
