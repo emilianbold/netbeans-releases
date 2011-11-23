@@ -44,7 +44,6 @@ package org.netbeans.libs.git;
 
 import java.io.File;
 import java.util.Date;
-import org.openide.util.Parameters;
 
 /**
  *
@@ -74,10 +73,13 @@ public final class SearchCriteria {
 
     /**
      * files cannot be set to <code>null</code>
-     * @param files 
+     * @param files must not be null
+     * @throws IllegalArgumentException if files is null
      */
-    public void setFiles (File[] files) {
-        Parameters.notNull("files", files);
+    public void setFiles (File[] files) throws IllegalArgumentException {
+        if (files == null) {
+            throw new IllegalArgumentException("Parameter files cannot be null"); //NOI18N
+        }
         this.files = files;
     }
 
