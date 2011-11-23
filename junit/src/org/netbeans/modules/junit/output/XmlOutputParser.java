@@ -483,7 +483,7 @@ final class XmlOutputParser extends DefaultHandler {
             line = line.substring(0, logPos);
         }
 
-        Matcher matcher = regexp.getComparisonPattern().matcher(line);
+        Matcher matcher = regexp.getComparisonPattern().matcher(line.replaceAll("\n", "")); // NOI18N
         if (matcher.matches()){
             tr.setComparisonFailure(
                     new Trouble.ComparisonFailure(
