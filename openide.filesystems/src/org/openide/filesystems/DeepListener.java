@@ -189,9 +189,11 @@ implements FileChangeListener, Runnable, Callable<Boolean> {
             return false;
         }
         final DeepListener other = (DeepListener) obj;
-        FileChangeListener thisListener = get();
-        FileChangeListener otherListener = other.get();
-        if (thisListener != otherListener && (thisListener == null || !thisListener.equals(otherListener))) {
+        if (this.path != other.path && (this.path == null || !this.path.equals(other.path))) {
+            return false;
+        }
+        final FileChangeListener ref = this.get();
+        if (ref != other.get() && (ref == null || !ref.equals(other.get()))) {
             return false;
         }
         return true;
