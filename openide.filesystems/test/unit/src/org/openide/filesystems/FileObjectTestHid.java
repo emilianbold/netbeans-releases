@@ -385,6 +385,10 @@ public class FileObjectTestHid extends TestBaseHid {
                     assertNotNull("Child found", ch);
 
                     changed = ch.asText();
+                    long delta = fe.getTime() - ch.lastModified().getTime();
+                    if (delta > 0) {
+                        fail("File event should always have a lower time stamp than the created file. The diff: " + delta);
+                    }
                     notifyAll();
                 } catch (IOException ex) {
                     throw new IllegalStateException(ex);
@@ -417,6 +421,44 @@ public class FileObjectTestHid extends TestBaseHid {
         l.waitEvents();
         assertEquals("Right content when changed", "Ahoj", l.changed);
         assertEquals("Right content when created", "Ahoj", l.dataCreated);
+    }
+    
+    public void testLastModifiedAndEventGetTime() throws Exception {
+        checkSetUp();
+        FileObject f;
+        try {
+            f = getTestFolder1(root).createFolder("EventGetTime");
+        } catch (IOException iex) {
+            fsAssert("If read only FS, then OK to fail",
+            fs.isReadOnly());
+            return;
+        }
+        final FileObject fold = f;
+        
+        class L extends FileChangeAdapter {
+            Long time;
+            @Override
+            public void fileChanged(FileEvent fe) {
+                assertNull("Only one event expected", time);
+                time = fe.getTime();
+            }
+        }
+        
+        FileObject ch = fold.createData("child.txt");
+        L l = new L();
+        fold.addFileChangeListener(l);
+        assertEquals("One child", 1, fold.getChildren().length);
+        
+        OutputStream os = ch.getOutputStream();
+        os.write("Ahoj".getBytes());
+        os.close();
+        
+        assertNotNull("Event has been delivered", l.time);
+        long delta = ch.lastModified().getTime() - l.time;
+        
+        if (delta < 0) {
+            fail("Event creation time should be lower or equal than actual file time stamp: " + delta);
+        }
     }
     
     /** Test of copy method, of class org.openide.filesystems.FileObject. */
