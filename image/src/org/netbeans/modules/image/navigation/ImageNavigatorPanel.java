@@ -45,10 +45,15 @@ import java.util.Iterator;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.swing.JComponent;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.image.ImageDataObject;
 import org.netbeans.spi.navigator.NavigatorPanel;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.*;
 
 /**
@@ -74,46 +79,109 @@ public class ImageNavigatorPanel implements NavigatorPanel {
      * listener to context changes
      */
     private LookupListener contextListener;
+    /**
+     * Listens for changes on image file.
+     */
+    private FileChangeListener fileChangeListener;
+    private long lastSaveTime = -1;
+    private DataObject currentDataObject;
     private static final RequestProcessor WORKER = new RequestProcessor(ImageNavigatorPanel.class.getName());
 
+    @Override
     public String getDisplayName() {
         return NbBundle.getMessage(ImageNavigatorPanel.class, "Navigator_DisplayName");
     }
 
+    @Override
     public String getDisplayHint() {
         return NbBundle.getMessage(ImageNavigatorPanel.class, "Navigator_DisplayHint");
     }
 
+    @Override
     public JComponent getComponent() {
+        if (lastSaveTime == -1) {
+            lastSaveTime = System.currentTimeMillis();
+        }
         if (panelUI == null) {
             panelUI = new ImagePreviewPanel();
         }
         return panelUI;
     }
 
+    @Override
     public void panelActivated(Lookup context) {
         // lookup context and listen to result to get notified about context changes
         currentContext = context.lookup(MY_DATA);
         currentContext.addLookupListener(getContextListener());
         // get actual data and recompute content
         Collection data = currentContext.allInstances();
-        setNewContent(data);
+        currentDataObject = getDataObject(data);
+        if (currentDataObject == null) {
+            return;
+        }
+        if (fileChangeListener == null) {
+            fileChangeListener = new ImageFileChangeAdapter();
+        }
+        currentDataObject.getPrimaryFile().addFileChangeListener(fileChangeListener);
+        setNewContent(currentDataObject);
     }
 
+    @Override
     public void panelDeactivated() {
         currentContext.removeLookupListener(getContextListener());
         currentContext = null;
+        currentDataObject.getPrimaryFile().removeFileChangeListener(fileChangeListener);
+        currentDataObject = null;
     }
 
+    @Override
     public Lookup getLookup() {
         // go with default activated Node strategy
         return null;
     }
 
-    private void setNewContent(Collection newData) {
+    private void setNewContent(final DataObject dataObject) {
+        if (dataObject == null) {
+            return;
+        }
+
+        WORKER.post(new Runnable() {
+
+            @Override
+            public void run() {
+                InputStream inputStream;
+                try {
+                    FileObject fileObject = dataObject.getPrimaryFile();
+                    if (fileObject == null) {
+                        return;
+                    }
+                    inputStream = fileObject.getInputStream();
+                    if (inputStream == null) {
+                        return;
+                    }
+                    final BufferedImage image = ImageIO.read(inputStream);
+                    if (panelUI == null) {
+                        getComponent();
+                    }
+                    
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            panelUI.setImage(image);                    
+                        }
+                    });
+                    inputStream.close();
+                } catch (IOException ex) {
+                    Logger.getLogger(ImageNavigatorPanel.class.getName()).info(NbBundle.getMessage(ImageNavigatorPanel.class, "ERR_IOFile"));
+                }
+            }
+        });
+
+    }
+
+    private DataObject getDataObject(Collection data) {
         DataObject dataObject = null;
-        InputStream inputStream = null;
-        Iterator it = newData.iterator();
+        Iterator it = data.iterator();
         while (it.hasNext()) {
             Object o = it.next();
             if (o instanceof DataObject) {
@@ -121,37 +189,12 @@ public class ImageNavigatorPanel implements NavigatorPanel {
                 break;
             }
         }
-        if (dataObject == null) {
-            return;
-        }
-        try {
-            FileObject fileObject = dataObject.getPrimaryFile();
-            if(fileObject == null){
-                return;
-            }
-            inputStream = fileObject.getInputStream();
-            if(inputStream == null){
-                return;
-            }
-            final BufferedImage image = ImageIO.read(inputStream);
-            if (panelUI == null) {
-                getComponent();
-            }
-            WORKER.post(new Runnable() {
-
-                public void run() {
-                    panelUI.setImage(image);
-                    panelUI.revalidate();
-                    panelUI.repaint();
-                }
-            });
-            inputStream.close();
-        } catch (IOException ex) {
-             Logger.getLogger(ImageNavigatorPanel.class.getName()).info(NbBundle.getMessage(ImageNavigatorPanel.class, "ERR_IOFile"));
-        }
+        return dataObject;
     }
 
-    /** Accessor for listener to context */
+    /**
+     * Accessor for listener to context
+     */
     private LookupListener getContextListener() {
         if (contextListener == null) {
             contextListener = new ContextListener();
@@ -159,12 +202,39 @@ public class ImageNavigatorPanel implements NavigatorPanel {
         return contextListener;
     }
 
-    /** Listens to changes of context and triggers proper action */
+    /**
+     * Listens to changes of context and triggers proper action
+     */
     private class ContextListener implements LookupListener {
 
+        @Override
         public void resultChanged(LookupEvent ev) {
             Collection data = ((Lookup.Result) ev.getSource()).allInstances();
-            setNewContent(data);
+            currentDataObject = getDataObject(data);
+            setNewContent(currentDataObject);
+        }
+    }
+
+    private class ImageFileChangeAdapter extends FileChangeAdapter {
+
+        @Override
+        public void fileChanged(final FileEvent fe) {
+            if (fe.getTime() > lastSaveTime) {
+                lastSaveTime = System.currentTimeMillis();
+
+                // Refresh image viewer
+                SwingUtilities.invokeLater(new Runnable() {
+
+                    public void run() {
+                        try {
+                            currentDataObject = DataObject.find(fe.getFile());
+                            setNewContent(currentDataObject);
+                        } catch (DataObjectNotFoundException ex) {
+                            Logger.getLogger(ImageNavigatorPanel.class.getName()).info(NbBundle.getMessage(ImageNavigatorPanel.class, "ERR_DataObject"));
+                        }
+                    }
+                });
+            }
         }
     }
 }
