@@ -519,7 +519,7 @@ public class VariousUtils {
 
     private static QualifiedName createQuery(String semiTypeName, final Scope scope) {
         final QualifiedName query = QualifiedName.create(semiTypeName);
-        return query.toNamespaceName().append(translateSpecialClassName(scope, query.getName()));
+        return query.toNamespaceName(query.getKind().isFullyQualified()).append(translateSpecialClassName(scope, query.getName()));
     }
 
     public static Stack<? extends ModelElement> getElemenst(FileScope topScope, final VariableScope varScope, String semiTypeName, int offset) throws IllegalStateException {
@@ -1304,7 +1304,7 @@ public class VariousUtils {
                         segments.add(origName.get(i));
                     }
                     qualifiedName = QualifiedName.create(true, segments);
-                } else if (qualifiedName.getKind() == QualifiedNameKind.UNQUALIFIED) {
+                } else if (qualifiedName.getKind() != QualifiedNameKind.FULLYQUALIFIED) {
                     qualifiedName = inScope.getNamespaceName().append(qualifiedName);
                 }
             }
