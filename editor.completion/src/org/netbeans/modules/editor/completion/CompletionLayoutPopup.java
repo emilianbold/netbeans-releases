@@ -105,15 +105,6 @@ abstract class CompletionLayoutPopup {
         }
     }
     
-    /**
-     * Return true if this popup should be focusable (there is a focusable
-     * component in it). The popupFactory.getPopup() will use non-null parent
-     * editor pane in such case.
-     */
-    protected boolean isFocusable() {
-        return false; // By default not focusable
-    }
-    
     public final boolean isDisplayAboveCaret() {
         return displayAboveCaret;
     }
@@ -300,7 +291,7 @@ abstract class CompletionLayoutPopup {
         // to click on its scrollbars etc. will cause the window to be hidden,
         // so force a heavyweight parent by passing in owner==null. (#96717)
         
-        JTextComponent owner = Utilities.isMac() ? null : layout.getEditorComponent();
+        JTextComponent owner = layout.getEditorComponent();
         if(owner != null && owner.getClientProperty("ForceHeavyweightCompletionPopup") != null) {
             owner = null;
         }
@@ -310,7 +301,7 @@ abstract class CompletionLayoutPopup {
             popupBounds.y -= 10;
         }
         
-        popup = factory.getPopup(isFocusable() ? null : owner, contComp, popupBounds.x, popupBounds.y);
+        popup = factory.getPopup(owner, contComp, popupBounds.x, popupBounds.y);
         popup.show();
 
         this.popupBounds = popupBounds;

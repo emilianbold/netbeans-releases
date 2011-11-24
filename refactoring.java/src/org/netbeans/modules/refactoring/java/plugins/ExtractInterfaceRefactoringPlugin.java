@@ -167,7 +167,7 @@ public final class ExtractInterfaceRefactoringPlugin extends JavaRefactoringPlug
             bag.add(refactoring, new CreateInterfaceElement(refactoring, primFile.getParent(), classHandle));
             UpdateClassTask.create(bag, primFile, refactoring, classHandle);
         } catch (IOException ex) {
-            throw (RuntimeException) new RuntimeException().initCause(ex);
+            throw new RuntimeException(ex);
         }
         return null;
     }
