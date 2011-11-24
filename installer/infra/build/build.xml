@@ -402,7 +402,7 @@
 	<set property="tomcat.version"      value="7.0.22"/>
 	<set property="tomcat.full.version" value="${tomcat.version}.0.0"/>
         
-        <set property="weblogic.version"      value="10.3.5"/>
+        <set property="weblogic.version"      value="12.1.1"/>
 	<set property="weblogic.full.version" value="${weblogic.version}.0.0"/>
 
 
