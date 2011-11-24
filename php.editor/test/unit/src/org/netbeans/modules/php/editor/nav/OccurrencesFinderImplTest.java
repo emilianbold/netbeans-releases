@@ -404,39 +404,39 @@ public class OccurrencesFinderImplTest extends TestBase {
     public void testIssue197283_06() throws Exception {
         checkOccurrences(getTestPath(), "$y = new $another^Obj();", true);
     }
-    
+
     public void testIssue203419_01() throws Exception {
         checkOccurrences(getTestPath(), "class MyClass20^3419", true);
     }
-    
+
     public void testIssue203419_02() throws Exception {
         checkOccurrences(getTestPath(), "* @var \\test\\sub\\MyClass203^419", true);
     }
-    
+
     public void testIssue203419_03() throws Exception {
         checkOccurrences(getTestPath(), "public function test2(MyClass^203419 $param) {", true);
     }
-    
+
     public void testIssue203419_04() throws Exception {
         checkOccurrences(getTestPath(), "$v1 = new \\test\\sub\\MyClass20^3419();", true);
     }
-    
+
     public void testIssue203419_05() throws Exception {
         checkOccurrences(getTestPath(), "$v2 = new MyClass203^419();", true);
     }
-    
+
     public void testIssue203419_06() throws Exception {
         checkOccurrences(getTestPath(), "$v3 = new sub\\MyClass20^3419();", true);
     }
-    
+
     public void testIssue203419_07() throws Exception {
         checkOccurrences(getTestPath(), "$v4 = new baf\\MyClass203^419();", true);
     }
-    
+
     public void testIssue204433_01() throws Exception {
         checkOccurrences(getTestPath(), "$form = new Edit^Form();", true);
     }
-    
+
     public void testIssue204433_02() throws Exception {
         checkOccurrences(getTestPath(), "$form = new E^F()", true);
     }
