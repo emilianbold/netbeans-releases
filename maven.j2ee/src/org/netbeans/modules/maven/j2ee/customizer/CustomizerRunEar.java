@@ -45,19 +45,13 @@ package org.netbeans.modules.maven.j2ee.customizer;
 import java.io.IOException;
 import org.netbeans.modules.maven.api.customizer.ModelHandle;
 import static org.netbeans.modules.maven.j2ee.customizer.CustomizerRunWeb.PROP_SHOW_IN_BROWSER;
-import org.netbeans.modules.maven.j2ee.POHImpl;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.Ear;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.maven.j2ee.utils.LoggingUtils;
-import org.netbeans.modules.maven.j2ee.SessionContent;
 import org.openide.util.Exceptions;
 
 
-/**
- *
- * @author  mkleint
- */
 public class CustomizerRunEar extends BaseRunCustomizer {
 
     private Ear module;
@@ -101,15 +95,7 @@ public class CustomizerRunEar extends BaseRunCustomizer {
 
     @Override
     public void applyChanges() {
-        //#109507 workaround
-        SessionContent sc = project.getLookup().lookup(SessionContent.class);
-        if (listener.getValue() != null) {
-            sc.setServerInstanceId(null);
-        }
-        //TODO - not sure this is necessary since the PoHImpl listens on project changes.
-        //any save of the project shall effectively cause the module server change..
-        POHImpl poh = project.getLookup().lookup(POHImpl.class);
-        poh.hackModuleServerChange(true);
+        changeServer(comServer);
     }
 
     /** This method is called from within the constructor to

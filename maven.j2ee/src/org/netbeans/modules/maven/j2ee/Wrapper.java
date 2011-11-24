@@ -50,9 +50,9 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedExcept
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.maven.api.customizer.ModelHandle;
 import org.netbeans.modules.maven.api.customizer.support.ComboBoxUpdater;
+import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.Properties;
-import org.openide.util.Exceptions;
 
 /**
  * a ui wrapper for server instances..
@@ -81,7 +81,7 @@ public class Wrapper {
         if (ExecutionChecker.DEV_NULL.equals(serverInstanceId)) {
             return ExecutionChecker.DEV_NULL;
         }
-        return POHImpl.privateGetServerId(serverInstanceId);
+        return MavenProjectSupport.obtainServerID(serverInstanceId);
     }
 
     public String getSessionServerInstanceId() {
