@@ -45,6 +45,7 @@ import org.netbeans.jellytools.actions.*;
 import org.netbeans.jellytools.modules.web.nodes.WebPagesNode;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JListOperator;
@@ -208,12 +209,14 @@ public class JsfFunctionalTest extends WebProjectValidationEE5 {
         newFileWizard.selectFileType("JSF Faces Configuration");
         newFileWizard.next();
         newFileWizard.finish();
-        getFacesConfig();
+        getFacesConfig().close();
     }
 
     /** Test adding JSF Managed Bean from faces-config.xml. */
     public void testAddManagedBean() {
         EditorOperator editor = getFacesConfig();
+        // sometimes Insert menu item is not available so we need to wait a bit
+        new EventTool().waitNoEvent(500);
         Action addBeanAction = new ActionNoBlock(null, "Insert|Managed Bean...");
         addBeanAction.perform(editor);
         AddManagedBeanOperator addBeanOper = new AddManagedBeanOperator();
