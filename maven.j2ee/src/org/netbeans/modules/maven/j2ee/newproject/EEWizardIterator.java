@@ -46,13 +46,15 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Set;
 import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.templates.TemplateRegistration;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.maven.api.archetype.Archetype;
 import org.netbeans.modules.maven.api.archetype.ArchetypeWizards;
 import org.netbeans.modules.maven.api.archetype.ProjectInfo;
-import org.netbeans.modules.maven.j2ee.POHImpl;
 import org.netbeans.modules.maven.j2ee.newproject.archetype.J2eeArchetypeFactory;
+import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
 import org.netbeans.validation.api.ui.ValidationGroup;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -107,13 +109,10 @@ public class EEWizardIterator extends BaseWizardIterator {
         
         Set<FileObject> projects = ArchetypeWizards.openProjects(rootFile, rootFile);
         for (FileObject projectFile : projects) {
-            saveSettingsToNbConfiguration(projectFile);
+            Project project = ProjectManager.getDefault().findProject(projectFile);
             
-            /* #202662 This is another ugly hack causes by POHImpl.hackModuleServerChange. We need to setup context 
-             * path to some default value, but there is no way to do that when wizard is finishing because there is no
-             * server set to the project. In that case this need to be done when project is opened, but it is important
-             * to do so only once to allow user to set empty context value in the future */
-            POHImpl.setNewlyCreated(true);
+            saveSettingsToNbConfiguration(projectFile);
+            MavenProjectSupport.changeServer(project, true);
         }
         
         return projects;

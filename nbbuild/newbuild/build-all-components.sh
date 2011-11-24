@@ -69,17 +69,6 @@ if [ $ERROR_CODE != 0 ]; then
     #TEST_CODE=1;
 fi
 
-for TEST_SUITE in mobility.project j2ee.kit; do
-    ant -f ${TEST_SUITE}/build.xml -Dtest.config=uicommit -Dbuild.test.qa-functional.results.dir=$NB_ALL/nbbuild/build/test/results -Dcontinue.after.failing.tests=true -Dtest-qa-functional-sys-prop.com.sun.aas.installRoot=/space/glassfishv3/glassfish -Dtest-qa-functional-sys-prop.http.port=8080 -Dtest-qa-functional-sys-prop.wtk.dir=/space test
-    ERROR_CODE=$?
-
-    create_test_result "test.$TEST_SUITE" "Tests $TEST_SUITE" $ERROR_CODE
-    if [ $ERROR_CODE != 0 ]; then
-        echo "ERROR: $ERROR_CODE - ${TEST_SUITE}  failed"
-        #TEST_CODE=1;
-    fi
-done
-
 if [ -n $WORKSPACE ]; then
     cp -r $NB_ALL/nbbuild/build/test/results $WORKSPACE
 fi

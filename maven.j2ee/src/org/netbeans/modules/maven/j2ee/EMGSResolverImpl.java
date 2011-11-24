@@ -62,6 +62,8 @@ import org.netbeans.modules.j2ee.persistence.dd.PersistenceMetadata;
 import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
 import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.ContainerManagedJTANonInjectableInWeb;
+import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
@@ -70,9 +72,14 @@ import org.openide.util.Exceptions;
  * 
  * @author mkleint
  */
+@ProjectServiceProvider(service = EntityManagerGenerationStrategyResolver.class, projectType = {
+    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_WAR,
+    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_EJB
+})
 public class EMGSResolverImpl implements EntityManagerGenerationStrategyResolver {
 
-   public Class<? extends EntityManagerGenerationStrategy> resolveStrategy(FileObject target) {
+    @Override
+    public Class<? extends EntityManagerGenerationStrategy> resolveStrategy(FileObject target) {
 
         PersistenceUnit persistenceUnit = getPersistenceUnit(target);
         String jtaDataSource = persistenceUnit.getJtaDataSource();

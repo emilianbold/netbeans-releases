@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,29 +37,56 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.maven.j2ee.web;
 
-package org.netbeans.modules.maven.j2ee;
-
+import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
+import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarFactory;
+import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarProvider;
+import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarsInProject;
+import org.netbeans.modules.j2ee.spi.ejbjar.support.EjbJarSupport;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.spi.project.ProjectServiceProvider;
+import org.openide.filesystems.FileObject;
 
-@ProjectServiceProvider(service = SessionContent.class, projectType = {
-    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_WAR,
-    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_EJB,
-    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_EAR,
-    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_APPCLIENT
-})
-public class SessionContent {
-    private String serverInstanceID;
+/**
+ *
+ * @author Martin Janicek
+ */
+@ProjectServiceProvider(service = {EjbJarProvider.class, EjbJarsInProject.class}, projectType = {"org-netbeans-modules-maven/" + NbMavenProject.TYPE_WAR})
+public class AdditionalWebProvider implements EjbJarProvider, EjbJarsInProject {
+    
+    private final EjbJarProvider webEjbJarProvider;
+    private final EjbJarsInProject ejbJarsInProject;
 
+    
+    public AdditionalWebProvider(Project project) {
+        WebModuleProviderImpl moduleProvider = project.getLookup().lookup(WebModuleProviderImpl.class);
+        Profile profile = moduleProvider.getModuleImpl().getJ2eeProfile();
+        
+        if (Profile.JAVA_EE_6_WEB.equals(profile) || Profile.JAVA_EE_6_FULL.equals(profile)) {
+            WebEjbJarImpl webEjbJarImpl = new WebEjbJarImpl(moduleProvider.getModuleImpl(), project);
+            EjbJar apiEjbJar = EjbJarFactory.createEjbJar(webEjbJarImpl);
 
-    public String getServerInstanceId() {
-        return serverInstanceID;
+            webEjbJarProvider = EjbJarSupport.createEjbJarProvider(project, apiEjbJar);
+            ejbJarsInProject = EjbJarSupport.createEjbJarsInProject(apiEjbJar);
+        } else {
+            webEjbJarProvider = null;
+            ejbJarsInProject = null;
+        }
+        
     }
 
-    public void setServerInstanceId(String id) {
-        serverInstanceID = id;
+    @Override
+    public EjbJar findEjbJar(FileObject file) {
+        return webEjbJarProvider.findEjbJar(file);
+    }
+
+    @Override
+    public EjbJar[] getEjbJars() {
+        return ejbJarsInProject.getEjbJars();
     }
 }

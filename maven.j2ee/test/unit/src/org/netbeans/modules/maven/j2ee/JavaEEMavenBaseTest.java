@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,29 +37,49 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.maven.j2ee;
 
-import org.netbeans.modules.maven.api.NbMavenProject;
-import org.netbeans.spi.project.ProjectServiceProvider;
+import java.util.logging.Level;
+import org.netbeans.api.project.Project;
+import org.netbeans.junit.NbTestCase;
 
-@ProjectServiceProvider(service = SessionContent.class, projectType = {
-    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_WAR,
-    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_EJB,
-    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_EAR,
-    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_APPCLIENT
-})
-public class SessionContent {
-    private String serverInstanceID;
-
-
-    public String getServerInstanceId() {
-        return serverInstanceID;
+/**
+ * Base class for Java EE maven tests. Encapsulate basic stuff needed in every test case such as creating new project
+ * in a proper folder, setting logger and so on.
+ * 
+ * @author Martin Janicek
+ */
+public class JavaEEMavenBaseTest extends NbTestCase {
+    
+    protected Project project;
+    
+    
+    public JavaEEMavenBaseTest(String name) {
+        super(name);
     }
-
-    public void setServerInstanceId(String id) {
-        serverInstanceID = id;
+    
+    @Override
+    protected Level logLevel() {
+        return Level.FINE;
+    }
+    
+    @Override
+    protected String logRoot() {
+        return "org.netbeans.modules.maven.j2ee"; //NOI18N
+    }
+    
+    @Override
+    protected void setUp() throws Exception {
+        clearWorkDir();
+        
+        project = JavaEEMavenTestSupport.createMavenWebProject(getWorkDir());
+    }
+    
+    public void testBaseClassFakeTest() {
+        // This test is here just because there has to be at least one test in NbTestCase subclass (to be honest I
+        // don't have a clue why it's implemented like that). But for possibility to have an abstract base class for 
+        // a set of different test classes this need to be here. Weeeird!
     }
 }

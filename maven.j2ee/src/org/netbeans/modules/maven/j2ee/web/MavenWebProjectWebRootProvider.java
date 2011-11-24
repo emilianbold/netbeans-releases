@@ -43,15 +43,18 @@
 package org.netbeans.modules.maven.j2ee.web;
 
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.common.spi.ProjectWebRootProvider;
 import org.netbeans.modules.web.spi.webmodule.WebModuleProvider;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author marekfukala
  */
+@ProjectServiceProvider(service = ProjectWebRootProvider.class, projectType = {"org-netbeans-modules-maven/" + NbMavenProject.TYPE_WAR})
 public class MavenWebProjectWebRootProvider implements ProjectWebRootProvider {
 
     private WebModuleProvider webModuleProvider;
