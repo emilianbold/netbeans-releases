@@ -98,6 +98,7 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
     //GUI Builder
     private TemplatesPanelGUI.Builder builder;
     private Project project;
+    private String[] projectRecommendedTypes;
     private String category;
     private String template;
     private boolean isWarmUp = true;
@@ -119,6 +120,7 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
         boolean wf;
         synchronized (this) {
             this.project = p;
+            this.projectRecommendedTypes = OpenProjectList.getRecommendedTypes(p);
             this.category = category;
             this.template = template;
             wf = this.isWarmUp;
@@ -336,6 +338,7 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
         }
         
         @Override public void actionPerformed (ActionEvent event) {
+            projectRecommendedTypes = OpenProjectList.getRecommendedTypes(getProject());
             final String cat = getCategoryName ();
             String template =  ((TemplatesPanelGUI)TemplateChooserPanelGUI.this.templatesPanel).getSelectedTemplateName();
             refresh(false);
@@ -391,7 +394,7 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
                 return true;
             }
             DataObject dobj = kids[alreadyAdded];
-            if (isTemplate(dobj) && OpenProjectList.isRecommended(getProject(), dobj.getPrimaryFile())) {
+            if (isTemplate(dobj) && OpenProjectList.isRecommended(projectRecommendedTypes, dobj.getPrimaryFile())) {
                 if (dobj instanceof DataShadow) {
                     dobj = ((DataShadow) dobj).getOriginal();
                 }
@@ -503,26 +506,23 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
         }
         
         DataFolder f = (DataFolder) folder;
-        if (!OpenProjectList.isRecommended(p, f.getPrimaryFile())) {
+        if (!OpenProjectList.isRecommended(projectRecommendedTypes, f.getPrimaryFile())) {
             // Eg. Licenses folder.
             //see #102508
             return false;
         }
         DataObject[] ch = f.getChildren ();
-        boolean ok = false;
         for (int i = 0; i < ch.length; i++) {
-            if (isTemplate (ch[i]) && OpenProjectList.isRecommended(p, ch[i].getPrimaryFile ())) {
+            if (isTemplate (ch[i]) && OpenProjectList.isRecommended(projectRecommendedTypes, ch[i].getPrimaryFile ())) {
                 // XXX: how to filter link to Package template in each java types folder?
                 if (!(ch[i] instanceof DataShadow)) {
-                    ok = true;
-                    break;
+                    return true;
                 }
             } else if (ch[i] instanceof DataFolder && hasChildren (p, ch[i])) {
-                    ok = true;
-                    break;
+                return true;
             }
         }
-        return ok;
+        return false;
         
         // simplied but more counts
         //return new FileChildren (p, (DataFolder) folder).getNodesCount () > 0;
