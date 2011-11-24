@@ -3,8 +3,26 @@
     <import file="../nbbuild/templates/projectized.xml"/>
     <target name="jar">
         <jar jarfile="${cluster}/${module.jar}">
-            <zipfileset src="external/geronimo-activation-1.1-spec-1.0.jar"/>
-            <zipfileset src="external/geronimo-activation-2.0.2.jar"/>
+            <zipfileset src="external/geronimo-activation-1.1-spec-1.0.jar">
+                <exclude name="**/LICENSE.txt"/>
+                <exclude name="**/NOTICE.txt"/>
+            </zipfileset>    
+            <zipfileset src="external/geronimo-activation-2.0.2.jar">
+                <exclude name="**/LICENSE.txt"/>
+                <exclude name="**/NOTICE.txt"/>
+            </zipfileset>               
+            <zipfileset file="external/geronimo-activation-1.1-spec-1.0.jar" fullpath="META-INF/NOTICE-geronimo-activation-1.1-spec.txt">
+                <include name="**/NOTICE.txt"/>
+            </zipfileset>
+            <zipfileset src="external/geronimo-activation-1.1-spec-1.0.jar" fullpath="META-INF/LICENSE-geronimo-activation-1.1-spec.txt">
+                <include name="**/LICENSE.txt"/>
+            </zipfileset>
+            <zipfileset src="external/geronimo-activation-2.0.2.jar" fullpath="META-INF/NOTICE-geronimo-activation-2.0.2.txt">
+                <include name="**/NOTICE.txt"/>
+            </zipfileset>              
+            <zipfileset src="external/geronimo-activation-2.0.2.jar" fullpath="META-INF/LICENSE-geronimo-activation-2.0.2.txt">
+                <include name="**/LICENSE.txt"/>
+            </zipfileset>               
             <manifest>
                 <attribute name="Bundle-SymbolicName" value="javax.activation"/>
                 <attribute name="Bundle-Version" value="1.1.0"/>
