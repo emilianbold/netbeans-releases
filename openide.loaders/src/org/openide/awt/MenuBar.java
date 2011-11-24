@@ -58,6 +58,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
@@ -187,6 +188,11 @@ public class MenuBar extends JMenuBar implements Externalizable {
         }
     }
 
+    @Override
+    public int getMenuCount() {
+        menuBarFolder.waitFinished();
+        return super.getMenuCount();
+    }
     
     public @Override void addImpl (Component c, Object constraint, int idx) {
         //Issue 17559, Apple's screen menu bar implementation blindly casts
@@ -524,6 +530,23 @@ public class MenuBar extends JMenuBar implements Externalizable {
                 Mutex.EVENT.readAccess(this);
             }
         }
+        @Override
+        public int getItemCount() {
+            doInitialize();
+            return super.getItemCount();
+        }
+
+        @Override
+        public int getMenuComponentCount() {
+            doInitialize();
+            return super.getMenuComponentCount();
+        }
+
+        @Override
+        public Component[] getMenuComponents() {
+            doInitialize();
+            return super.getMenuComponents();
+        }
         
         protected @Override boolean processKeyBinding(KeyStroke ks,
                                         KeyEvent e,
@@ -611,7 +634,7 @@ public class MenuBar extends JMenuBar implements Externalizable {
         public void nodeDestroyed (NodeEvent ev) {}
             
         private boolean selected = false;
-
+    
         /* Used on Mac only where setPopupMenuVisible does not work */
         public void stateChanged(ChangeEvent event) {
             if (Utilities.isMac()) {
