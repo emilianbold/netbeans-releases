@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,29 +37,21 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.maven.j2ee;
 
-import org.netbeans.modules.maven.api.NbMavenProject;
-import org.netbeans.spi.project.ProjectServiceProvider;
-
-@ProjectServiceProvider(service = SessionContent.class, projectType = {
-    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_WAR,
-    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_EJB,
-    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_EAR,
-    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_APPCLIENT
-})
-public class SessionContent {
-    private String serverInstanceID;
-
-
-    public String getServerInstanceId() {
-        return serverInstanceID;
-    }
-
-    public void setServerInstanceId(String id) {
-        serverInstanceID = id;
-    }
+/**
+ * Constants used in various Maven project tests
+ * @author Martin Janicek
+ */
+public class JavaEEMavenTestConstants {
+    
+    public static final String WEB_INF = "WEB-INF"; //NOI18N
+    public static final String WEB_XML = "web.xml"; //NOI18N
+    
+    public static final String WEBLOGIC = "WebLogic"; //NOI18N
+    public static final String GLASSFISH = "gfv3ee6"; //NOI18N
+    public static final String TOMCAT = "Tomcat"; //NOI18N
+    public static final String JBOSS = "JBoss"; //NOI18N
 }

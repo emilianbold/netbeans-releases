@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.templates.TemplateRegistration;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
@@ -54,6 +55,7 @@ import org.netbeans.modules.maven.api.archetype.Archetype;
 import org.netbeans.modules.maven.api.archetype.ArchetypeWizards;
 import org.netbeans.modules.maven.api.archetype.ProjectInfo;
 import org.netbeans.modules.maven.j2ee.newproject.archetype.J2eeArchetypeFactory;
+import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
 import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.POMModel;
@@ -105,7 +107,10 @@ public class EAWizardIterator extends BaseWizardIterator {
             // We don't want to set server in pom.xml for pom-packaging module
             String projectDirName = projectFile.getName();
             if (projectDirName.endsWith("-ejb") || projectDirName.endsWith("-ear") || projectDirName.endsWith("-web")) { // NOI18N
-                saveServerToPom(ProjectManager.getDefault().findProject(projectFile));
+                Project project = ProjectManager.getDefault().findProject(projectFile);
+                saveServerToPom(project);
+                
+                MavenProjectSupport.changeServer(project, true);
             }
         }
         
