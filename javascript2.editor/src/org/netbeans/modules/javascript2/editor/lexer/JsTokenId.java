@@ -61,17 +61,18 @@ public enum JsTokenId implements TokenId {
     UNKNOWN_TOKEN(null, "error"), // NOI18N
     WHITESPACE(null, "whitespace"), // NOI18N
 
+    NUMBER(null, "constant"), // NOI18N
+    COMMENT(null, "comment"), // NOI18N
+    IDENTIFIER(null, "identifier"), // NOI18N
+    STRING(null, "string"), // NOI18N
+
     OPERATOR_LPARAN("(", "operator"), // NOI18N
     OPERATOR_RPARAN(")", "operator"), // NOI18N
     OPERATOR_LCURLY("{", "operator"), // NOI18N
     OPERATOR_RCURLY("}", "operator"), // NOI18N
     OPERATOR_LBRACKET("[", "operator"), // NOI18N
     OPERATOR_RBRACKET("]", "operator"), // NOI18N
-
-    NUMBER(null, "constant"), // NOI18N
-    COMMENT(null, "comment"), // NOI18N
-    IDENTIFIER(null, "identifier"), // NOI18N
-    STRING(null, "string"), // NOI18N
+    OPERATOR_SEMICOLON(";", "operator"), // NOI18N
 
     KEYWORD_BREAK("break", "keyword"), // NOI18N
     KEYWORD_CASE("case", "keyword"), // NOI18N

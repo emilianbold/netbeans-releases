@@ -213,7 +213,7 @@ SStringCharacter = [^\r\n\'\\]
   "}"                            { return JsTokenId.OPERATOR_RCURLY; }
   "["                            { return JsTokenId.OPERATOR_LBRACKET; }
   "]"                            { return JsTokenId.OPERATOR_RBRACKET; }
-  ";"                            |
+  ";"                            { return JsTokenId.OPERATOR_SEMICOLON; }
   ","                            |
   "."                            |
   "="                            |
