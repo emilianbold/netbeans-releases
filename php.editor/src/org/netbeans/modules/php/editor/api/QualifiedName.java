@@ -193,7 +193,7 @@ public class QualifiedName {
         return new QualifiedName(false, Collections.singletonList(name));
     }
     public static QualifiedName createFullyQualified(String name, String namespaceName) {
-        List<String> list = new ArrayList<String>();        
+        List<String> list = new ArrayList<String>();
         if (name.startsWith("\\") || name.endsWith("\\")) {//NOI18N
             throw new IllegalArgumentException();
         }
