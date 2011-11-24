@@ -671,7 +671,9 @@ public class MenuBar extends JMenuBar implements Externalizable {
         }
         
 	private void doInitialize() {
-        slave.waitFinishedSuper();
+        if (slave != null) {
+            slave.waitFinishedSuper();
+        }
 	}
 	    
 	/** This class can be used to update a <code>JMenu</code> instance
