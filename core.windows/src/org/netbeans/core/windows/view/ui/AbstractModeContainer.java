@@ -46,15 +46,12 @@
 package org.netbeans.core.windows.view.ui;
 
 
-import java.lang.reflect.Field;
 import org.netbeans.core.windows.Constants;
-import org.netbeans.core.windows.ModeImpl;
 import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.core.windows.view.ModeContainer;
 import org.netbeans.core.windows.view.ModeView;
 import org.netbeans.core.windows.view.dnd.TopComponentDroppable;
 import org.netbeans.core.windows.view.dnd.WindowDnDManager;
-import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
 
 import javax.swing.*;

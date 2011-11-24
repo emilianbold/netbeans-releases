@@ -45,15 +45,12 @@ package org.netbeans.swing.tabcontrol.plaf;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import javax.swing.Timer;
 import javax.swing.event.ListDataEvent;
-import org.netbeans.swing.tabcontrol.TabData;
 import org.netbeans.swing.tabcontrol.event.ArrayDiff;
 import org.netbeans.swing.tabcontrol.event.ComplexListDataEvent;
 import org.netbeans.swing.tabcontrol.event.VeryComplexListDataEvent;
