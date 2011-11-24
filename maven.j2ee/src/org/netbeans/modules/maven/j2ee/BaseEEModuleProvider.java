@@ -50,6 +50,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.j2ee.customizer.CustomizerRunWeb;
+import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
 
 /**
  *
@@ -68,7 +69,6 @@ public abstract class BaseEEModuleProvider extends J2eeModuleProvider {
     public BaseEEModuleProvider(Project project) {
         this.project = project;
         this.mavenProject = project.getLookup().lookup(NbMavenProject.class);
-        this.copyOnSave = new CopyOnSave(project, this);
         this.changeReporter = new ModuleChangeReporterImpl();
     }
     
@@ -87,10 +87,17 @@ public abstract class BaseEEModuleProvider extends J2eeModuleProvider {
     
     @Override
     public DeployOnSaveSupport getDeployOnSaveSupport() {
-        return copyOnSave;
+        return getCopyOnSave();
     }
     
     public CopyOnSave getCopyOnSaveSupport() {
+        return getCopyOnSave();
+    }
+    
+    private CopyOnSave getCopyOnSave() {
+        if (copyOnSave != null) {
+            copyOnSave = project.getLookup().lookup(CopyOnSave.class);
+        }
         return copyOnSave;
     }
     
@@ -106,12 +113,10 @@ public abstract class BaseEEModuleProvider extends J2eeModuleProvider {
     public void setServerInstanceID(String newId) {
         String oldId = null;
         if (serverInstanceID != null) {
-            oldId = POHImpl.privateGetServerId(serverInstanceID);
+            oldId = MavenProjectSupport.obtainServerID(serverInstanceID);
         }
         serverInstanceID = newId;
-        if (oldId != null) {
-            fireServerChange(oldId, getServerID());            
-        }
+        fireServerChange(oldId, getServerID());            
     }
     
     /** 
@@ -122,7 +127,7 @@ public abstract class BaseEEModuleProvider extends J2eeModuleProvider {
      */
     @Override
     public String getServerInstanceID() {
-        if (serverInstanceID != null && POHImpl.privateGetServerId(serverInstanceID) != null) {
+        if (serverInstanceID != null && MavenProjectSupport.obtainServerID(serverInstanceID) != null) {
             return serverInstanceID;
         }
         return ExecutionChecker.DEV_NULL;
@@ -135,7 +140,7 @@ public abstract class BaseEEModuleProvider extends J2eeModuleProvider {
     @Override
     public String getServerID() {
         if (serverInstanceID != null) {
-            String serverID = POHImpl.privateGetServerId(serverInstanceID);
+            String serverID = MavenProjectSupport.obtainServerID(serverInstanceID);
             if (serverID != null) {
                 return serverID;
             }

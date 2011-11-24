@@ -45,26 +45,10 @@ package org.netbeans.modules.maven.j2ee;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.maven.api.NbMavenProject;
-import org.netbeans.modules.maven.j2ee.ear.EarModuleProviderImpl;
-import org.netbeans.modules.maven.j2ee.ejb.EjbModuleProviderImpl;
-import org.netbeans.modules.maven.j2ee.web.WebModuleProviderImpl;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
-import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarFactory;
-import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarProvider;
-import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarsInProject;
-import org.netbeans.modules.j2ee.spi.ejbjar.support.EjbJarSupport;
-import org.netbeans.modules.maven.j2ee.appclient.AppClientModuleProviderImpl;
-import org.netbeans.modules.maven.j2ee.ejb.EjbEntRefContainerImpl;
-import org.netbeans.modules.maven.j2ee.web.EntRefContainerImpl;
-import org.netbeans.modules.maven.j2ee.web.MavenWebProjectWebRootProvider;
-import org.netbeans.modules.maven.j2ee.web.WebEjbJarImpl;
-import org.netbeans.modules.maven.j2ee.web.WebReplaceTokenProvider;
 import org.netbeans.modules.web.jsfapi.spi.JsfSupportHandle;
 import org.netbeans.spi.project.LookupProvider;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -73,218 +57,60 @@ import org.openide.util.lookup.InstanceContent;
  * extending the default maven project lookup.
  * @author  Milos Kleint
  */
-@LookupProvider.Registration(projectType="org-netbeans-modules-maven")
-public class J2eeLookupProvider implements LookupProvider {
+@LookupProvider.Registration(projectType={
+    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_WAR,
+    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_EJB,
+    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_APPCLIENT,
+    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_EAR,
+    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_OSGI
+})
+public class J2eeLookupProvider implements LookupProvider, PropertyChangeListener {
+
+    private Project project;
+    private InstanceContent ic;
     
-    /** Creates a new instance of J2eeLookupProvider */
-    public J2eeLookupProvider() {
-    }
     
     @Override
     public Lookup createAdditionalLookup(Lookup baseLookup) {
-        Project project = baseLookup.lookup(Project.class);
-        assert project != null;
-
-        InstanceContent ic = new InstanceContent();
-        ic.add(new J2EEPrerequisitesChecker());
-        ic.add(new J2eeMavenSourcesImpl(project));
-        ic.add(new ExecutionChecker(project));
-        ic.add(new SessionContent());
-        Provider prov = new Provider(project, ic);
-        POHImpl p = new POHImpl(project, prov);
-        ic.add(p);
-        ic.add(new POHImpl.Hook(p));
-        ic.add(new ContainerCPModifierImpl(project));
-        return prov;
+        project = baseLookup.lookup(Project.class);
+        ic = new InstanceContent();
+        changeAdditionalLookups();
+        
+        NbMavenProject.addPropertyChangeListener(project, this);
+        
+        return new AbstractLookup(ic);
     }
     
-    public static class Provider extends AbstractLookup implements  PropertyChangeListener {
-        private final Project project;
-        private final InstanceContent content;
-        private String lastType = NbMavenProject.TYPE_JAR;
-        private Object lastInstance = null;
-        private CopyOnSave copyOnSave;
-        private final WebReplaceTokenProvider replacer;
-        private final EntRefContainerImpl webEnt;
-        private final EjbEntRefContainerImpl ejbEnt;
-        private final JPAStuffImpl jpa;
-        private final EMGSResolverImpl resolver;
-        private final MavenPersistenceProviderSupplier supplier;
-        private EjbJarProvider webEjbJarProvider;
-        private EjbJarsInProject ejbJarsInProject;
-        private MavenWebProjectWebRootProvider webRootProvider;
-        private JsfSupportHandle jsfSupportHandle;
-
-        public Provider(Project proj, InstanceContent cont) {
-            super(cont);
-            project = proj;
-            content = cont;
-            replacer = new WebReplaceTokenProvider(proj);
-            webEnt = new EntRefContainerImpl(proj);
-            ejbEnt = new EjbEntRefContainerImpl(proj);
-            jpa = new JPAStuffImpl(proj);
-            resolver = new EMGSResolverImpl();
-            supplier = new MavenPersistenceProviderSupplier(proj);
-            webRootProvider = new MavenWebProjectWebRootProvider(project);
-            jsfSupportHandle = new JsfSupportHandle();
-
-            checkJ2ee();
-            NbMavenProject.addPropertyChangeListener(project, this);
+    @Override
+    public void propertyChange(PropertyChangeEvent propertyChangeEvent) {
+        if (NbMavenProject.PROP_PROJECT.equals(propertyChangeEvent.getPropertyName())) {
+            changeAdditionalLookups();
         }
+    }
+    
+    private void changeAdditionalLookups() {
+        NbMavenProject watcher = project.getLookup().lookup(NbMavenProject.class);
+        String packaging = watcher.getPackagingType();
         
-        public void propertyChange(PropertyChangeEvent propertyChangeEvent) {
-            if (NbMavenProject.PROP_PROJECT.equals(propertyChangeEvent.getPropertyName())) {
-                checkJ2ee();
-            }
+        if (isWebSupported(packaging)) {
+            ic.add(new JsfSupportHandle());
         }
-        
-        private void checkJ2ee() {
-            NbMavenProject watcher = project.getLookup().lookup(NbMavenProject.class);
-            String packaging = watcher.getPackagingType();
-            doCheckJ2ee(packaging);
-        }
-        
-        public void hackModuleServerChange() {
-            //#109507 use reflection on J2eeModuleProvider.resetConfigSupport()
-            doCheckJ2ee(null);
-            checkJ2ee();
-        }
+    }
 
-        private boolean isWebSupported(String packaging) {
-            if ("war".equals(packaging)) { // NOI18N
+    private boolean isWebSupported(String packaging) {
+        if ("war".equals(packaging)) { // NOI18N
+            return true;
+        }
+        // #179584
+        // if it is bundle packaging type but a valid "src/main/webapp" exists
+        // then provide lookup content as for web application so that code
+        // completion etc. works
+        if ("bundle".equals(packaging)) { // NOI18N
+            NbMavenProject proj = project.getLookup().lookup(NbMavenProject.class);
+            if (new File(proj.getWebAppDirectory()).exists()) {
                 return true;
             }
-            // #179584
-            // if it is bundle packaging type but a valid "src/main/webapp" exists
-            // then provide lookup content as for web application so that code
-            // completion etc. works
-            if ("bundle".equals(packaging)) { // NOI18N
-                NbMavenProject proj = project.getLookup().lookup(NbMavenProject.class);
-                if (new File(proj.getWebAppDirectory()).exists()) {
-                    return true;
-                }
-            }
-            return false;
         }
-        
-        private void doCheckJ2ee(String packaging) {
-            if (packaging == null) {
-                packaging = NbMavenProject.TYPE_JAR;
-            }
-            if (copyOnSave != null && !isWebSupported(packaging)) {
-                try {
-                    copyOnSave.cleanup();
-                } catch (FileStateInvalidException ex) {
-                    ex.printStackTrace();
-                }
-                content.remove(copyOnSave);
-                copyOnSave = null;
-            }
-            if (isWebSupported(packaging) && !lastType.equals(packaging)) {
-                removeInstances();
-                WebModuleProviderImpl prov = new WebModuleProviderImpl(project);
-                lastInstance = prov;
-                content.add(lastInstance);
-                content.add(replacer);
-                content.add(webEnt);
-                content.add(jpa);
-                content.add(resolver);
-                content.add(supplier);
-                content.add(webRootProvider);
-                content.add(jsfSupportHandle);
-                //j2ee 6 stuff..
-                Profile prf = prov.getModuleImpl().getJ2eeProfile();
-                if (Profile.JAVA_EE_6_WEB.equals(prf) || Profile.JAVA_EE_6_FULL.equals(prf)) {
-                    WebEjbJarImpl webEjbJarImpl = new WebEjbJarImpl(prov.getModuleImpl(), project);
-                    EjbJar apiEjbJar = EjbJarFactory.createEjbJar(webEjbJarImpl);
-                    webEjbJarProvider = EjbJarSupport.createEjbJarProvider(project, apiEjbJar);
-                    ejbJarsInProject = EjbJarSupport.createEjbJarsInProject(apiEjbJar);
-                    content.add(webEjbJarProvider);
-                    content.add(ejbJarsInProject);
-                }
-                copyOnSave = prov.getCopyOnSaveSupport();
-                try {
-                    copyOnSave.initialize();
-                } catch (FileStateInvalidException ex) {
-                    ex.printStackTrace();
-                }
-                content.add(copyOnSave);
-            } else if (NbMavenProject.TYPE_EAR.equals(packaging) && !lastType.equals(packaging)) {
-                removeInstances();
-                lastInstance = new EarModuleProviderImpl(project);
-                content.add(lastInstance);
-                content.add(((EarModuleProviderImpl)lastInstance).getEarImplementation());
-            } else if (NbMavenProject.TYPE_EJB.equals(packaging) && !lastType.equals(packaging)) {
-                removeInstances();
-                EjbModuleProviderImpl prov = new EjbModuleProviderImpl(project);
-                lastInstance = prov;
-                content.add(lastInstance);
-                content.add(jpa);
-                content.add(ejbEnt);
-                content.add(resolver);
-                content.add(supplier);
-                copyOnSave = prov.getCopyOnSaveSupport();
-                try {
-                    copyOnSave.initialize();
-                } catch (FileStateInvalidException ex) {
-                    ex.printStackTrace();
-                }
-                content.add(copyOnSave);
-            } else if (NbMavenProject.TYPE_APPCLIENT.equals(packaging) && !lastType.equals(packaging)) {
-                removeInstances();
-                
-                AppClientModuleProviderImpl prov = new AppClientModuleProviderImpl(project);
-                lastInstance = prov;
-                content.add(lastInstance);
-                
-                content.add(jpa);
-                //content.add(ejbEnt);
-                //content.add(resolver);
-                content.add(supplier);
-                
-                copyOnSave = prov.getCopyOnSaveSupport();
-                try {
-                    copyOnSave.initialize();
-                } catch (FileStateInvalidException ex) {
-                    ex.printStackTrace();
-                }
-                content.add(copyOnSave);
-            } else if (lastInstance != null && !(
-                    isWebSupported(packaging) || 
-                    NbMavenProject.TYPE_EJB.equals(packaging) || 
-                    NbMavenProject.TYPE_APPCLIENT.equals(packaging) || 
-                    NbMavenProject.TYPE_EAR.equals(packaging)))
-            {
-                removeInstances();
-
-                lastInstance = null;
-            }
-            lastType = packaging;
-        }
-        
-        private void removeInstances() {
-            if (lastInstance != null) {
-                if (lastInstance instanceof EarModuleProviderImpl) {
-                    content.remove(((EarModuleProviderImpl)lastInstance).getEarImplementation());
-                }
-                content.remove(lastInstance);
-            }
-            content.remove(replacer);
-            content.remove(webEnt);
-            content.remove(ejbEnt);
-            content.remove(jpa);
-            content.remove(resolver);
-            content.remove(supplier);
-            content.remove(webRootProvider);
-            content.remove(jsfSupportHandle);
-            if (webEjbJarProvider != null) {
-                content.remove(webEjbJarProvider);
-                webEjbJarProvider = null;
-            }
-            if (ejbJarsInProject != null) {
-                content.remove(ejbJarsInProject);
-                ejbJarsInProject = null;
-            }
-        }
+        return false;
     }
 }

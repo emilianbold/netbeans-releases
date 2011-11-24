@@ -93,6 +93,7 @@ import org.netbeans.modules.maven.j2ee.MavenJavaEEConstants;
 import org.netbeans.modules.maven.spi.debug.AdditionalDebuggedProjects;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.spi.project.AuxiliaryProperties;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -104,22 +105,21 @@ import org.xml.sax.SAXException;
  * implementation of ear related netbeans functionality
  * @author Milos Kleint 
  */
-class EarImpl implements EarImplementation, EarImplementation2,
+public class EarImpl implements EarImplementation, EarImplementation2,
         J2eeApplicationImplementation2,
         ModuleChangeReporter,
         AdditionalDebuggedProjects {
 
     private Project project;
-    private EarModuleProviderImpl provider;
+    private J2eeModuleProvider provider;
     private MetadataModel<ApplicationMetadata> metadataModel;
     private final NbMavenProject mavenproject;
 
-    /** Creates a new instance of EarImpl */
-    EarImpl(Project proj, EarModuleProviderImpl prov) {
-        project = proj;
-        mavenproject = project.getLookup().lookup(NbMavenProject.class);
 
-        provider = prov;
+    public EarImpl(Project project, J2eeModuleProvider provider) {
+        this.project = project;
+        this.provider = provider;
+        this.mavenproject = project.getLookup().lookup(NbMavenProject.class);
     }
 
     public Profile getJ2eeProfile() {
@@ -421,7 +421,7 @@ class EarImpl implements EarImplementation, EarImplementation2,
                         if (!found) {
                             // FIXME obviously J2EE platform version is wrong and won't really work
                             // if this j2ee module will be used (it has to be module version such as 2.4, 2.5 for web)
-                            J2eeModule mod = J2eeModuleFactory.createJ2eeModule(new NonProjectJ2eeModule(a, getJ2eePlatformVersion(), provider));
+                            J2eeModule mod = J2eeModuleFactory.createJ2eeModule(new NonProjectJ2eeModule(a, getJ2eePlatformVersion()));
                             EarImpl.MavenModule m = findMavenModule(a, mm);
                             J2eeModule module = J2eeModuleFactory.createJ2eeModule(new ProxyJ2eeModule(mod, m, fileNameMapping));
                             //#162173 respect order in pom configuration.. shall we?

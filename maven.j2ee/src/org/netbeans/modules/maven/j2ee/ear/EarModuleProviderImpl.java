@@ -66,8 +66,9 @@ import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarFactory;
 import org.netbeans.modules.maven.api.classpath.ProjectSourcesClassPathProvider;
 import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.j2ee.ExecutionChecker;
-import org.netbeans.modules.maven.j2ee.POHImpl;
 import org.netbeans.modules.maven.j2ee.customizer.CustomizerRunWeb;
+import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -75,23 +76,19 @@ import org.openide.filesystems.FileUtil;
  * provider for ear specific functionality
  * @author  Milos Kleint
  */
-
+@ProjectServiceProvider(service = {EarModuleProviderImpl.class, EarProvider.class, J2eeModuleProvider.class}, projectType = {"org-netbeans-modules-maven/" + NbMavenProject.TYPE_EAR})
 public class EarModuleProviderImpl extends J2eeApplicationProvider implements EarProvider  {
     
     private EarImpl earimpl;
     private Project project;
     private String serverInstanceID;
     private J2eeModule j2eemodule;
-
-    private NbMavenProject mavenproject;
     
     private final DeployOnSaveSupport deployOnSaveSupport = new DeployOnSaveSupportProxy();
 
     
-    /** Creates a new instance of MavenEarProvider */
     public EarModuleProviderImpl(Project proj) {
         project = proj;
-        mavenproject = project.getLookup().lookup(NbMavenProject.class);
         earimpl = new EarImpl(project, this);
     }
     
@@ -104,6 +101,7 @@ public class EarModuleProviderImpl extends J2eeApplicationProvider implements Ea
         return RunUtils.hasApplicationCompileOnSaveEnabled(project) && !CustomizerRunWeb.isDeployOnSave(project);
     }
     
+    @Override
     public Ear findEar(FileObject file) {
         Project proj = FileOwnerQuery.getOwner(file);
         if (proj != null) {
@@ -123,6 +121,7 @@ public class EarModuleProviderImpl extends J2eeApplicationProvider implements Ea
      * @param uri the child module URI within the J2EE application.
      * @return J2eeModuleProvider object
      */
+    @Override
     public J2eeModuleProvider getChildModuleProvider(String uri) {
 //        System.out.println("!!!give me module with uri=" + uri);
         return null;
@@ -133,6 +132,7 @@ public class EarModuleProviderImpl extends J2eeApplicationProvider implements Ea
      * 
      * @return array of J2eeModuleProvider objects.
      */
+    @Override
     public J2eeModuleProvider[] getChildModuleProviders() {
         List<J2eeModuleProvider> provs = new ArrayList<J2eeModuleProvider>();
         for (Project prj : earimpl.getProjects()) {
@@ -144,6 +144,7 @@ public class EarModuleProviderImpl extends J2eeApplicationProvider implements Ea
         return provs.toArray(new J2eeModuleProvider[0]);
     }
 
+    @Override
     public synchronized J2eeModule getJ2eeModule() {
         if (j2eemodule == null) {
             j2eemodule = J2eeModuleFactory.createJ2eeApplication(earimpl);
@@ -152,6 +153,7 @@ public class EarModuleProviderImpl extends J2eeApplicationProvider implements Ea
     }
 
 
+    @Override
     public ModuleChangeReporter getModuleChangeReporter() {
         return earimpl;
     }
@@ -192,20 +194,19 @@ public class EarModuleProviderImpl extends J2eeApplicationProvider implements Ea
         return null;
     }
 
-    public void setServerInstanceID(String string) {
-       String oldone = null;
+    @Override
+    public void setServerInstanceID(String newID) {
+       String oldID = null;
         if (serverInstanceID != null) {
-            oldone = POHImpl.privateGetServerId(serverInstanceID);
+            oldID = MavenProjectSupport.obtainServerID(serverInstanceID);
         }
-        serverInstanceID = string;
-        if (oldone != null) {
-            fireServerChange(oldone, getServerID());            
-        }
+        serverInstanceID = newID;
+        fireServerChange(oldID, getServerID());  
     }
     
     @Override
     public String getServerInstanceID() {
-        if (serverInstanceID != null && POHImpl.privateGetServerId(serverInstanceID) != null) {
+        if (serverInstanceID != null && MavenProjectSupport.obtainServerID(serverInstanceID) != null) {
             return serverInstanceID;
         }
         return ExecutionChecker.DEV_NULL;
@@ -214,9 +215,9 @@ public class EarModuleProviderImpl extends J2eeApplicationProvider implements Ea
     @Override
     public String getServerID() {
         if (serverInstanceID != null) {
-            String tr = POHImpl.privateGetServerId(serverInstanceID);
-            if (tr != null) {
-                return tr;
+            String serverID = MavenProjectSupport.obtainServerID(serverInstanceID);
+            if (serverID != null) {
+                return serverID;
             }
         }
         return ExecutionChecker.DEV_NULL;
@@ -289,6 +290,7 @@ public class EarModuleProviderImpl extends J2eeApplicationProvider implements Ea
             super();
         }
 
+        @Override
         public synchronized void addArtifactListener(ArtifactListener listener) {
             //copyOnSaveSupport.addArtifactListener(listener);
 
@@ -307,6 +309,7 @@ public class EarModuleProviderImpl extends J2eeApplicationProvider implements Ea
             }
         }
 
+        @Override
         public synchronized void removeArtifactListener(ArtifactListener listener) {
             //copyOnSaveSupport.removeArtifactListener(listener);
 
@@ -324,6 +327,7 @@ public class EarModuleProviderImpl extends J2eeApplicationProvider implements Ea
             }
         }
 
+        @Override
         public boolean containsIdeArtifacts() {
             for (J2eeModuleProvider provider : getChildModuleProviders()) {
                 DeployOnSaveSupport support = provider.getDeployOnSaveSupport();
@@ -337,6 +341,7 @@ public class EarModuleProviderImpl extends J2eeApplicationProvider implements Ea
         }
 
         
+        @Override
         public void artifactsUpdated(Iterable<Artifact> artifacts) {
             List<ArtifactListener> toFire = null;
             synchronized (this) {

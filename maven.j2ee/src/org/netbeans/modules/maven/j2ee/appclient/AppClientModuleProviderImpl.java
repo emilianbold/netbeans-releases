@@ -50,14 +50,15 @@ import java.util.Iterator;
 import java.util.List;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.classpath.ProjectSourcesClassPathProvider;
 import org.netbeans.modules.maven.j2ee.BaseEEModuleProvider;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
-/**
- *
- */
+@ProjectServiceProvider(service = {AppClientModuleProviderImpl.class, J2eeModuleProvider.class}, projectType = {"org-netbeans-modules-maven/" + NbMavenProject.TYPE_APPCLIENT})
 public class AppClientModuleProviderImpl extends BaseEEModuleProvider {
     
     private AppClientImpl appClientImpl;
