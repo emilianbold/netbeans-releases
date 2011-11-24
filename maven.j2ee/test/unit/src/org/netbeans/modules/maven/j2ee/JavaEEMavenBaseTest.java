@@ -39,36 +39,47 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.maven.j2ee.utils;
+package org.netbeans.modules.maven.j2ee;
 
-import org.junit.Test;
-import org.openide.util.NbBundle;
-import static org.junit.Assert.*;
+import java.util.logging.Level;
+import org.netbeans.api.project.Project;
+import org.netbeans.junit.NbTestCase;
 
 /**
+ * Base class for Java EE maven tests. Encapsulate basic stuff needed in every test case such as creating new project
+ * in a proper folder, setting logger and so on.
  * 
  * @author Martin Janicek
  */
-public class LoggingUtilsTest {
+public class JavaEEMavenBaseTest extends NbTestCase {
     
-    @Test
-    public void getInstanceTest() {
-        LoggingUtils.logUI(LoggingUtilsTest.class, "UI_LOG_MESSAGE", new Object[] {});
-        LoggingUtils.logUI(LoggingUtilsTest.class, "UI_LOG_MESSAGE", new Object[] {}, "maven");
-        LoggingUtils.logUI(NbBundle.getBundle(LoggingUtilsTest.class), "UI_LOG_MESSAGE", new Object[] {});
-        LoggingUtils.logUI(NbBundle.getBundle(LoggingUtilsTest.class), "UI_LOG_MESSAGE", new Object[] {}, "maven");
+    protected Project project;
+    
+    
+    public JavaEEMavenBaseTest(String name) {
+        super(name);
+    }
+    
+    @Override
+    protected Level logLevel() {
+        return Level.FINE;
+    }
+    
+    @Override
+    protected String logRoot() {
+        return "org.netbeans.modules.maven.j2ee"; //NOI18N
+    }
+    
+    @Override
+    protected void setUp() throws Exception {
+        clearWorkDir();
         
-        LoggingUtils.logUsage(LoggingUtilsTest.class, "USG_LOG_MESSAGE", new Object[] {});
-        LoggingUtils.logUsage(LoggingUtilsTest.class, "USG_LOG_MESSAGE", new Object[] {}, "maven");
-        LoggingUtils.logUsage(NbBundle.getBundle(LoggingUtilsTest.class), "USG_LOG_MESSAGE", new Object[] {});
-        LoggingUtils.logUsage(NbBundle.getBundle(LoggingUtilsTest.class), "USG_LOG_MESSAGE", new Object[] {}, "maven");
-        
-        assertEquals("org.netbeans.ui", LoggingUtils.createUiLogger(null).getName());
-        assertEquals("org.netbeans.ui", LoggingUtils.createUiLogger("").getName());
-        assertEquals("org.netbeans.ui.metrics", LoggingUtils.createUsageLogger(null).getName());
-        assertEquals("org.netbeans.ui.metrics", LoggingUtils.createUsageLogger("").getName());
-        
-        assertEquals("org.netbeans.ui.maven", LoggingUtils.createUiLogger("maven").getName());
-        assertEquals("org.netbeans.ui.metrics.maven", LoggingUtils.createUsageLogger("maven").getName());
+        project = JavaEEMavenTestSupport.createMavenWebProject(getWorkDir());
+    }
+    
+    public void testBaseClassFakeTest() {
+        // This test is here just because there has to be at least one test in NbTestCase subclass (to be honest I
+        // don't have a clue why it's implemented like that). But for possibility to have an abstract base class for 
+        // a set of different test classes this need to be here. Weeeird!
     }
 }

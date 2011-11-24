@@ -47,23 +47,19 @@ import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.j2ee.common.dd.DDHelper;
-import org.netbeans.modules.maven.j2ee.model.NbConfiguration;
 import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.test.TestFileUtils;
 
 /**
- * Utility class for Java EE Maven tests. Allows to easily create projects of different types (Ejb, War, EA, Package)
- * and offers various methods for creating/updating pom.xml, nb-configuration.xml etc.
+ * Utility class for Java EE Maven tests. Allows to easily create projects of different types (Ejb, War, EA, Package).
+ * Offers various methods for creating/updating pom.xml, nb-configuration.xml etc.
  * 
  * @author Martin Janicek
  */
 public class JavaEEMavenTestSupport {
  
-    public static final String WEB_INF = "WEB-INF"; //NOI18N
-    public static final String WEB_XML = "web.xml"; //NOI18N
-    
     private static final StringBuilder sb = new StringBuilder();
     
     
@@ -205,12 +201,16 @@ public class JavaEEMavenTestSupport {
      * @param projectDir root directory of the project
      * @return created project with structure described above
      */
+    public static Project createMavenEAProject(File projectDir) {
+        return createMavenEAProject(FileUtil.toFileObject(projectDir));
+    }
+    
     public static Project createMavenEAProject(FileObject projectDir) {
         try {
             String name = projectDir.getName();
-            FileObject ear = FileUtil.createFolder(projectDir, name + "ear"); //NOI18N
-            FileObject ejb = FileUtil.createFolder(projectDir, name + "ejb"); //NOI18N
-            FileObject web = FileUtil.createFolder(projectDir, name + "web"); //NOI18N
+            FileObject ear = FileUtil.createFolder(projectDir, name + "-ear"); //NOI18N
+            FileObject ejb = FileUtil.createFolder(projectDir, name + "-ejb"); //NOI18N
+            FileObject web = FileUtil.createFolder(projectDir, name + "-web"); //NOI18N
 
             createMavenEarProject(ear);
             createMavenEjbProject(ejb);
@@ -301,17 +301,15 @@ public class JavaEEMavenTestSupport {
         return createNbConfigContent(null);
     }
     
-    private static String createNbConfigContent(NbConfiguration nbConfiguration) {
+    private static String createNbConfigContent(String compileOnSave) {
         sb.delete(0, sb.length());
         sb.append("<project-shared-configuration>"); //NOI18N
         sb.append("    <properties xmlns=\"http://www.netbeans.org/ns/maven-properties-data/1\">"); //NOI18N
         
-        if (nbConfiguration != null) {
-            if (nbConfiguration.compileOnSave != null) {
-                sb.append("<netbeans.compile.on.save>"); //NOI18N
-                sb.append(nbConfiguration.compileOnSave);
-                sb.append("</netbeans.compile.on.save>"); //NOI18N
-            }
+        if (compileOnSave != null) {
+            sb.append("<netbeans.compile.on.save>"); //NOI18N
+            sb.append(compileOnSave);
+            sb.append("</netbeans.compile.on.save>"); //NOI18N
         }
         
         sb.append("    </properties>"); //NOI18N
@@ -324,13 +322,13 @@ public class JavaEEMavenTestSupport {
         FileObject src = projectDir.getFileObject("src"); //NOI18N
         FileObject main = src.getFileObject("main"); //NOI18N
         FileObject webapp = main.getFileObject("webapp"); //NOI18N
-        FileObject webInf = webapp.getFileObject(WEB_INF);
+        FileObject webInf = webapp.getFileObject(JavaEEMavenTestConstants.WEB_INF);
         
         if (webInf == null) {
             return false;
         }
         
-        return webInf.getFileObject(WEB_XML) != null ? true : false;
+        return webInf.getFileObject(JavaEEMavenTestConstants.WEB_XML) != null ? true : false;
     }
     
     public static boolean isWebDDpresent(Project project) {

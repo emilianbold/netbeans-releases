@@ -39,36 +39,19 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.maven.j2ee.utils;
-
-import org.junit.Test;
-import org.openide.util.NbBundle;
-import static org.junit.Assert.*;
+package org.netbeans.modules.maven.j2ee;
 
 /**
- * 
+ * Constants used in various Maven project tests
  * @author Martin Janicek
  */
-public class LoggingUtilsTest {
+public class JavaEEMavenTestConstants {
     
-    @Test
-    public void getInstanceTest() {
-        LoggingUtils.logUI(LoggingUtilsTest.class, "UI_LOG_MESSAGE", new Object[] {});
-        LoggingUtils.logUI(LoggingUtilsTest.class, "UI_LOG_MESSAGE", new Object[] {}, "maven");
-        LoggingUtils.logUI(NbBundle.getBundle(LoggingUtilsTest.class), "UI_LOG_MESSAGE", new Object[] {});
-        LoggingUtils.logUI(NbBundle.getBundle(LoggingUtilsTest.class), "UI_LOG_MESSAGE", new Object[] {}, "maven");
-        
-        LoggingUtils.logUsage(LoggingUtilsTest.class, "USG_LOG_MESSAGE", new Object[] {});
-        LoggingUtils.logUsage(LoggingUtilsTest.class, "USG_LOG_MESSAGE", new Object[] {}, "maven");
-        LoggingUtils.logUsage(NbBundle.getBundle(LoggingUtilsTest.class), "USG_LOG_MESSAGE", new Object[] {});
-        LoggingUtils.logUsage(NbBundle.getBundle(LoggingUtilsTest.class), "USG_LOG_MESSAGE", new Object[] {}, "maven");
-        
-        assertEquals("org.netbeans.ui", LoggingUtils.createUiLogger(null).getName());
-        assertEquals("org.netbeans.ui", LoggingUtils.createUiLogger("").getName());
-        assertEquals("org.netbeans.ui.metrics", LoggingUtils.createUsageLogger(null).getName());
-        assertEquals("org.netbeans.ui.metrics", LoggingUtils.createUsageLogger("").getName());
-        
-        assertEquals("org.netbeans.ui.maven", LoggingUtils.createUiLogger("maven").getName());
-        assertEquals("org.netbeans.ui.metrics.maven", LoggingUtils.createUsageLogger("maven").getName());
-    }
+    public static final String WEB_INF = "WEB-INF"; //NOI18N
+    public static final String WEB_XML = "web.xml"; //NOI18N
+    
+    public static final String WEBLOGIC = "WebLogic"; //NOI18N
+    public static final String GLASSFISH = "gfv3ee6"; //NOI18N
+    public static final String TOMCAT = "Tomcat"; //NOI18N
+    public static final String JBOSS = "JBoss"; //NOI18N
 }
