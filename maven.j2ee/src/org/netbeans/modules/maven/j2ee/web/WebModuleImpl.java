@@ -42,23 +42,17 @@
 
 package org.netbeans.modules.maven.j2ee.web;
 
-import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 import org.apache.maven.project.MavenProject;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.j2ee.dd.spi.webservices.WebservicesMetadataModelFactory;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
-import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.classpath.ProjectSourcesClassPathProvider;
 import org.netbeans.modules.maven.j2ee.J2eeMavenSourcesImpl;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
@@ -76,6 +70,7 @@ import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleImplementation2;
 import org.netbeans.modules.maven.api.FileUtilities;
+import org.netbeans.modules.maven.j2ee.BaseEEModuleImpl;
 import org.netbeans.modules.maven.j2ee.MavenJavaEEConstants;
 import org.netbeans.modules.web.spi.webmodule.WebModuleImplementation2;
 import org.netbeans.spi.project.AuxiliaryProperties;
@@ -87,24 +82,34 @@ import org.openide.util.Exceptions;
  * war/webapp related apis implementation..
  * @author  Milos Kleint 
  */
-public class WebModuleImpl implements WebModuleImplementation2, J2eeModuleImplementation2 {
-    private Project project;
-    private WebModuleProviderImpl provider;
+public class WebModuleImpl extends BaseEEModuleImpl implements WebModuleImplementation2, J2eeModuleImplementation2 {
+
+    private static final String WEB_INF = "WEB-INF"; //NOI18N
     private MetadataModel<WebAppMetadata> webAppMetadataModel;
     private MetadataModel<WebAppMetadata> webAppAnnMetadataModel;
     private MetadataModel<WebservicesMetadata> webservicesMetadataModel;
-    
     private boolean inplace = false;
-    private NbMavenProject mavenproject;
 
-    public static final String WEB_INF = "WEB-INF"; //NOI18N
 
-    public WebModuleImpl(Project proj, WebModuleProviderImpl prov) {
-        project = proj;
-        mavenproject = project.getLookup().lookup(NbMavenProject.class);
-        provider = prov;
+    public WebModuleImpl(Project project, WebModuleProviderImpl provider) {
+        super(project, provider, "web.xml", J2eeModule.WEB_XML); //NOI18N
     }
     
+        
+    @Override
+    public J2eeModule.Type getModuleType() {
+        return J2eeModule.Type.WAR;
+    }
+    
+    @Override
+    public FileObject getArchive() throws IOException {
+        return getArchive(Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_WAR, "war", "war");
+    }
+    
+    /*****************************
+     *  WebModule related methods
+     *****************************/
+    @Override
     public FileObject getWebInf() {
         FileObject root = getDocumentBase();
         if (root != null) {
@@ -128,6 +133,16 @@ public class WebModuleImpl implements WebModuleImplementation2, J2eeModuleImplem
         return null;
     }
     
+    @Override
+    public FileObject getDocumentBase() {
+        Sources srcs = ProjectUtils.getSources(project);
+        SourceGroup[] grp = srcs.getSourceGroups(J2eeMavenSourcesImpl.TYPE_DOC_ROOT);
+        if (grp.length > 0) {
+            return grp[0].getRootFolder();
+        }
+        return null;
+    }
+    
     /**
      * to be used to denote that a war:inplace goal is used to build the web app.
      */
@@ -135,6 +150,7 @@ public class WebModuleImpl implements WebModuleImplementation2, J2eeModuleImplem
         this.inplace = inplace;
     }
 
+    @Override
     public Profile getJ2eeProfile() {
         Profile propProfile = getPropertyJ2eeProfile();
         Profile descriptorProfile = getDescriptorJ2eeProfile();
@@ -170,8 +186,6 @@ public class WebModuleImpl implements WebModuleImplementation2, J2eeModuleImplem
         return null;
     }
 
-
-
     public Profile getDescriptorJ2eeProfile() {
         DDProvider prov = DDProvider.getDefault();
         FileObject dd = getDeploymentDescriptor();
@@ -198,39 +212,24 @@ public class WebModuleImpl implements WebModuleImplementation2, J2eeModuleImplem
         }
     }
 
-    
-    public FileObject getDocumentBase() {
-        Sources srcs = ProjectUtils.getSources(project);
-        SourceGroup[] grp = srcs.getSourceGroups(J2eeMavenSourcesImpl.TYPE_DOC_ROOT);
-        if (grp.length > 0) {
-            return grp[0].getRootFolder();
-        }
-//        System.out.println("NO DOCUMENT BASE!!! " + project.getProjectDirectory());
-        return null;
+    @Override
+    public File getDDFile(final String path) {
+        URI webappDir = mavenproject.getWebAppDirectory();
+        File file = new File(new File(webappDir), path);
+        
+        return FileUtil.normalizeFile(file);
     }
     
-    File getDDFile(final String path) {
-        String webxmlDefined = PluginPropertyUtils.getPluginProperty(project,
-                Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_WAR, //NOI18N
-                "webXml", "war"); //NOI18N
-        if (webxmlDefined != null) {
-            //TODO custom location.. relative or absolute? what the *&#! is the default resolved to?
-        }
-        URI dir = mavenproject.getWebAppDirectory();
-        File fil = new File(new File(dir), path);
-        fil = FileUtil.normalizeFile(fil);
-        return fil;
-    }
-    
+    @Override
     public FileObject getDeploymentDescriptor() {
         File dd = getDDFile(J2eeModule.WEB_XML);
-//        System.out.println("getDDFIle=" + dd);
         if (dd != null) {
             return FileUtil.toFileObject(dd);
         }
         return null;
     }
     
+    @Override
     public String getContextPath() {
         Profile prof = getJ2eeProfile();
         // #170528the javaee6 level might not have a descriptor,
@@ -246,8 +245,7 @@ public class WebModuleImpl implements WebModuleImplementation2, J2eeModuleImplem
                 // TODO #95280: inform the user that the context root cannot be retrieved
             }        
         }
-        String toRet =  "/" + mavenproject.getMavenProject().getArtifactId(); //NOI18N
-        return toRet;
+        return "/" + mavenproject.getMavenProject().getArtifactId(); //NOI18N;
     }
     
     public void setContextPath(String newPath) {
@@ -266,16 +264,7 @@ public class WebModuleImpl implements WebModuleImplementation2, J2eeModuleImplem
         }
     } 
     
-    
-    public boolean isValid() {
-        //TODO any checks necessary?
-        return true;
-    }
-    
-    //88888888888888888888888888888888888888888888888888888888888888888888888888
-    // methods of j2eeModule
-    //88888888888888888888888888888888888888888888888888888888888888888888888888
-    
+    @Override
     public String getModuleVersion() {
         WebApp wapp = getWebApp ();
         String version = null;
@@ -288,54 +277,19 @@ public class WebModuleImpl implements WebModuleImplementation2, J2eeModuleImplem
         return version;
     }
     
-    public J2eeModule.Type getModuleType() {
-        return J2eeModule.Type.WAR;
-    }
-    
-    /**
-     * @inherit
-     */
-    public String getUrl() {
-        String toRet =  "/" + mavenproject.getMavenProject().getBuild().getFinalName(); //NOI18N
-        return toRet;
-    }
-    
-    /**
-     * @inherit
-     */
-    public FileObject getArchive() throws IOException {
-        //TODO get the correct values for the plugin properties..
-        MavenProject proj = mavenproject.getMavenProject();
-        //MEVENIDE-591 - find the lcoation according to plugin config
-        String loc = proj.getBuild().getDirectory();
-        String finalName = PluginPropertyUtils.getPluginProperty(project,
-                Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_WAR, //NOI18N
-                "warName", "war"); //NOI18N        
-        if (finalName == null) {
-            finalName = proj.getBuild().getFinalName();
-        }
-        
-        File fil = FileUtil.normalizeFile(new File(loc, finalName + ".war")); //NOI18N
-//        System.out.println("get archive=" + fil);
-        return FileUtil.toFileObject(fil);
-    }
-
-    /**
-     * @inherit
-     *
-     * according to sharold@netbeans.org this should return the iterator over
-     * non-warred file, meaning from the expanded webapp. weird.
-     */
-    public Iterator getArchiveContents() throws IOException {
-        
-//        System.out.println("get archive content");
-        FileObject fo = getContentDirectory();
-        if (fo != null) {
-            return new ContentIterator(fo);
+    private WebApp getWebApp () {
+        try {
+            FileObject deploymentDescriptor = getDeploymentDescriptor ();
+            if(deploymentDescriptor != null) {
+                return DDProvider.getDefault().getDDRoot(deploymentDescriptor);
+            }
+        } catch (java.io.IOException e) {
+            ErrorManager.getDefault ().log (e.getLocalizedMessage ());
         }
         return null;
-    }
-    
+    }    
+
+    @Override
     public FileObject getContentDirectory() throws IOException {
         FileObject fo;
         if (inplace) {
@@ -359,148 +313,7 @@ public class WebModuleImpl implements WebModuleImplementation2, J2eeModuleImplem
         return fo;
     }
     
-    
-    private WebApp getWebApp () {
-        try {
-            FileObject deploymentDescriptor = getDeploymentDescriptor ();
-            if(deploymentDescriptor != null) {
-                return DDProvider.getDefault().getDDRoot(deploymentDescriptor);
-            }
-        } catch (java.io.IOException e) {
-            org.openide.ErrorManager.getDefault ().log (e.getLocalizedMessage ());
-        }
-        return null;
-    }    
-    
-    //TODO this probably also adds test sources.. is that correct?
-    /**
-     * @inherit
-     * @return
-     */
-    @SuppressWarnings("deprecation")
-    public FileObject[] getJavaSources() {
-        Sources srcs = ProjectUtils.getSources(project);
-        SourceGroup[] gr = srcs.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-        List<FileObject> toRet = new ArrayList<FileObject>();
-        if (gr != null) {
-            for (int i = 0; i < gr.length; i++) {
-                toRet.add(gr[i].getRootFolder());
-            }
-        }
-        return toRet.toArray(new FileObject[toRet.size()]);
-    }
-    
-    
-    // inspired by netbeans' webmodule codebase, not really sure what is the point
-    // of the iterator..
-    private static final class ContentIterator implements Iterator {
-        private ArrayList<FileObject> ch;
-        private FileObject root;
-        
-        private ContentIterator(FileObject f) {
-            this.ch = new ArrayList<FileObject>();
-            ch.add(f);
-            this.root = f;
-        }
-        
-        public boolean hasNext() {
-            return ! ch.isEmpty();
-        }
-        
-        public Object next() {
-            FileObject f = ch.get(0);
-            ch.remove(0);
-            if (f.isFolder()) {
-                f.refresh();
-                FileObject[] chArr = f.getChildren();
-                for (int i = 0; i < chArr.length; i++) {
-                    ch.add(chArr [i]);
-                }
-            }
-            return new FSRootRE(root, f);
-        }
-        
-        public void remove() {
-            throw new UnsupportedOperationException();
-        }
-        
-    }
-    
-    private static final class FSRootRE implements J2eeModule.RootedEntry {
-        private FileObject f;
-        private FileObject root;
-        
-        FSRootRE(FileObject rt, FileObject fo) {
-            f = fo;
-            root = rt;
-        }
-        
-        public FileObject getFileObject() {
-            return f;
-        }
-        
-        public String getRelativePath() {
-            return FileUtil.getRelativePath(root, f);
-        }
-    }
-
-    /**
-     * Returns the module resource directory, or null if the module has no resource
-     * directory.
-     * 
-     * @return the module resource directory, or null if the module has no resource
-     *         directory.
-     */
-
-    public File getResourceDirectory() {
-        //TODO .. in ant projects equals to "setup" directory.. what's it's use?
-        File toRet = new File(FileUtil.toFile(project.getProjectDirectory()), "src" + File.separator + "main" + File.separator + "setup"); //NOI18N
-        return toRet;
-    }
-
-    /**
-     * Returns source deployment configuration file path for the given deployment 
-     * configuration file name.
-     *
-     * @param name file name of the deployment configuration file, WEB-INF/sun-web.xml
-     *        for example.
-     * 
-     * @return absolute path to the deployment configuration file, or null if the
-     *         specified file name is not known to this J2eeModule.
-     */
-    public File getDeploymentConfigurationFile(String name) {
-       if (name == null) {
-            return null;
-        }
-        if ("web.xml".equals(name)) { //NOI18N
-            name = J2eeModule.WEB_XML;
-        } else {
-            String path = provider.getConfigSupport().getContentRelativePath(name);
-            if (path != null) {
-                name = path;
-            }
-        }
-        return getDDFile(name);
-    }
-
-   /**
-     * Add a PropertyChangeListener to the listener list.
-     * 
-     * @param listener PropertyChangeListener
-     */
-    public void addPropertyChangeListener(PropertyChangeListener arg0) {
-        //TODO..
-    }
-    
-    /**
-     * Remove a PropertyChangeListener from the listener list.
-     * 
-     * @param listener PropertyChangeListener
-     */
-    public void removePropertyChangeListener(PropertyChangeListener arg0) {
-        //TODO..
-    }
-
+    @Override
     public <T> MetadataModel<T> getMetadataModel(Class<T> type) {
         if (type == WebAppMetadata.class) {
             @SuppressWarnings("unchecked") // NOI18N
@@ -514,6 +327,7 @@ public class WebModuleImpl implements WebModuleImplementation2, J2eeModuleImplem
         return null;
     }
     
+    @Override
     public synchronized MetadataModel<WebAppMetadata> getMetadataModel() {
         if (webAppMetadataModel == null) {
             FileObject ddFO = getDeploymentDescriptor();
@@ -546,8 +360,6 @@ public class WebModuleImpl implements WebModuleImplementation2, J2eeModuleImplem
         return webservicesMetadataModel;
     }
 
-    /** Deployment descriptor (WEB-INF/webservices.xml file) of the web module.
-     */
     private FileObject getWebServicesDeploymentDescriptor() {
         FileObject root = getDocumentBase();
         if (root != null) {
