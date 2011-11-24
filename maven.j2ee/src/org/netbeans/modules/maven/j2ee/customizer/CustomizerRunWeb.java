@@ -199,8 +199,13 @@ public class CustomizerRunWeb extends BaseRunCustomizer {
         isDebugCompatible = checkMapping(debug);
         isProfileCompatible = checkMapping(profile);
 
-        oldUrl = isRunCompatible ? run.getProperties().get(CLIENTURLPART) :
-                                   debug.getProperties().get(CLIENTURLPART);
+        if (isRunCompatible) {
+            if (run != null) {
+                oldUrl = run.getProperties().get(CLIENTURLPART);
+            } else if (debug != null) {
+                oldUrl = debug.getProperties().get(CLIENTURLPART);
+            }
+        }
         
         if (oldUrl != null) {
             txtRelativeUrl.setText(oldUrl);
