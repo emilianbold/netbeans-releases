@@ -862,6 +862,7 @@ jarsigner.storepass=${jarsigner.storepass}
 
     <target name="generate-bundles">
 	<property name="welcome.type" value="NWP.welcome.page.type"/>
+	<property name="bundledproduct.name" value="NWP.welcome.page.bundledproduct.name"/>
         <antcall target="generate-netbeans-bundles"/>
         <antcall target="generate-mysql-bundles"/>
         <antcall target="generate-jdk-bundles"/>
@@ -2300,7 +2301,6 @@ jarsigner.storepass=${jarsigner.storepass}
     </target>
 
     <target name="generate-weblogic-bundles" depends="init-weblogic-bundles" if="do.build.weblogic">
-        <property name="bundledproduct.name" value="NWP.welcome.page.bundledproduct.name"/>
 	<antcall target="generate-weblogic-bundle-single">
 	    <param name="weblogic.bundle.files.prefix"     value="weblogic_12g"/>	   
     	    <!--param name="license.resource"            value="$S{nbi.overall.license.weblogic.resource}"/-->
