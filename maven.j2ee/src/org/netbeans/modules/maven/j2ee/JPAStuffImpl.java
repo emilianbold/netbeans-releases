@@ -66,7 +66,9 @@ import org.netbeans.modules.j2ee.persistence.spi.moduleinfo.JPAModuleInfo;
 import org.netbeans.modules.j2ee.persistence.spi.server.ServerStatusProvider2;
 import org.netbeans.modules.javaee.specs.support.api.JpaProvider;
 import org.netbeans.modules.javaee.specs.support.api.JpaSupport;
+import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.j2ee.web.WebModuleProviderImpl;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.util.ChangeSupport;
 
 /**
@@ -75,13 +77,18 @@ import org.openide.util.ChangeSupport;
  * 
  * @author Milos Kleint
  */
-class JPAStuffImpl implements JPAModuleInfo, JPADataSourcePopulator,
+@ProjectServiceProvider(service = {JPAModuleInfo.class, JPADataSourcePopulator.class, JPADataSourceProvider.class, ServerStatusProvider2.class}, projectType = {
+    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_WAR,
+    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_EJB,
+    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_APPCLIENT
+})
+public class JPAStuffImpl implements JPAModuleInfo, JPADataSourcePopulator,
         JPADataSourceProvider, ServerStatusProvider2 {
     
     private final Project project;
     private ChangeSupport support = new ChangeSupport(this);
     
-    JPAStuffImpl(Project project) {
+    public JPAStuffImpl(Project project) {
         this.project = project;
     }
     
@@ -106,7 +113,7 @@ class JPAStuffImpl implements JPAModuleInfo, JPADataSourcePopulator,
         }
         WebModuleProviderImpl im2 = project.getLookup().lookup(WebModuleProviderImpl.class);
         if (im2 != null) {
-            return im2.getWebModuleImplementation().getModuleVersion();
+            return im2.getModuleImpl().getModuleVersion();
         }
         throw new IllegalStateException("Wrong placement of JPAModuleInfo in maven project " + project.getProjectDirectory());
     }

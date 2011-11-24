@@ -54,6 +54,7 @@ import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.support.GenericSources;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
@@ -61,29 +62,36 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
- * Implementation of Sources interface for maven projects in the j2ee area
+ * Implementation of Sources interface for Java EE Maven projects
  * @author  Milos Kleint
  */
+@ProjectServiceProvider(service = Sources.class, projectType={
+    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_WAR,
+    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_EJB,
+    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_APPCLIENT,
+    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_EAR
+})
 public class J2eeMavenSourcesImpl implements Sources {
     
     public static final String TYPE_DOC_ROOT="doc_root"; //NOI18N
     public static final String TYPE_WEB_INF="web_inf"; //NOI18N
     
+    private final Object lock = new Object();
     private final Project project;
+    private final NbMavenProject mavenproject;
     private final List<ChangeListener> listeners;
     
     private SourceGroup webDocSrcGroup;
+
     
-    private final Object lock = new Object();
-    private NbMavenProject mavenproject;
-    
-    
-    /** Creates a new instance of MavenSourcesImpl */
-    public J2eeMavenSourcesImpl(Project proj) {
-        project = proj;
-        mavenproject = project.getLookup().lookup(NbMavenProject.class);
-        listeners = new ArrayList<ChangeListener>();
+    public J2eeMavenSourcesImpl(Project project) {
+        this.project = project;
+        this.mavenproject = project.getLookup().lookup(NbMavenProject.class);
+        this.listeners = new ArrayList<ChangeListener>();
+        
         NbMavenProject.addPropertyChangeListener(project, new PropertyChangeListener() {
+            
+            @Override
             public void propertyChange(PropertyChangeEvent event) {
                 if (NbMavenProject.PROP_PROJECT.equals(event.getPropertyName())) {
                     checkChanges(true);
@@ -126,25 +134,27 @@ public class J2eeMavenSourcesImpl implements Sources {
         }
     }
     
+    @Override
     public void addChangeListener(ChangeListener changeListener) {
         synchronized (listeners) {
             listeners.add(changeListener);
         }
     }
     
+    @Override
     public void removeChangeListener(ChangeListener changeListener) {
         synchronized (listeners) {
             listeners.remove(changeListener);
         }
     }
     
+    @Override
     public SourceGroup[] getSourceGroups(String str) {
         if (TYPE_DOC_ROOT.equals(str)) {
             return createWebDocRoot();
         }
         return new SourceGroup[0];
     }
-    
     
     private SourceGroup[] createWebDocRoot() {
         FileObject folder = FileUtilities.convertURItoFileObject(mavenproject.getWebAppDirectory());
@@ -159,8 +169,6 @@ public class J2eeMavenSourcesImpl implements Sources {
             return new SourceGroup[0];
         }
     }
-    
-    
     
     /**
      * consult the SourceGroup cache, return true if anything changed..

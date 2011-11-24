@@ -2300,6 +2300,7 @@ public class FortranParserEx {
         org.netbeans.modules.cnd.antlr.Token t;
         int chanel = 0;
         int type = 0;
+        CharStream stream = null;
 
         public MyToken(org.netbeans.modules.cnd.antlr.Token t) {
 //            if(t.getType() == APTTokenTypes.EOF) {
@@ -2359,11 +2360,11 @@ public class FortranParserEx {
         }
 
         public CharStream getInputStream() {
-            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+            return stream;
         }
 
-        public void setInputStream(CharStream arg0) {
-            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+        public void setInputStream(CharStream s) {
+            stream = s;
         }
 
         @Override
