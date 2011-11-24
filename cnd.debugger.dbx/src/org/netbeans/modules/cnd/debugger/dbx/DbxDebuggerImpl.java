@@ -2046,7 +2046,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
     }
 
     public void contAtInst(String addr) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException("Not supported yet.");// NOI18N
     }
 
     class WatchesEnableLatch extends EnableLatch {
