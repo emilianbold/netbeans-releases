@@ -280,7 +280,7 @@ public class QualifiedName {
         return append(createUnqualifiedName(name));
     }
     public QualifiedName append(QualifiedName qualifiedName) {
-        return append(qualifiedName, false);
+        return append(qualifiedName, getKind().isFullyQualified());
     }
     private  QualifiedName append(QualifiedName qualifiedName, boolean isFullyQualified) {
         LinkedList<String> list = isDefaultNamespace() ? new LinkedList<String>() : new LinkedList<String>(getSegments());

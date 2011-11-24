@@ -362,7 +362,7 @@ public class OccurrencesFinderImplTest extends TestBase {
     }
 
     public void testIssue200399_01() throws Exception {
-        checkOccurrences(getTestPath(), "function functionName(Character\\Ma^nager", true);
+        checkOccurrences(getTestPath(), "function functionName(\\Character\\Ma^nager", true);
     }
 
     public void testIssue201671() throws Exception {
