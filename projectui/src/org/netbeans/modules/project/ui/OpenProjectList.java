@@ -1268,8 +1268,6 @@ public final class OpenProjectList {
         
         final ArrayList<FileObject> result = new ArrayList<FileObject>(NUM_TEMPLATES);
         
-        RecommendedTemplates rt = project.getLookup().lookup( RecommendedTemplates.class );
-        String rtNames[] = rt == null ? new String[0] : rt.getRecommendedTypes();
         PrivilegedTemplates pt = priv != null ? priv : project.getLookup().lookup( PrivilegedTemplates.class );
         String ptNames[] = pt == null ? null : pt.getPrivilegedTemplates();        
         final ArrayList<String> privilegedTemplates = new ArrayList<String>( Arrays.asList( pt == null ? new String[0]: ptNames ) );
@@ -1281,6 +1279,7 @@ public final class OpenProjectList {
             
             ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
                 public @Override Void run() {
+                String[] rtNames = getRecommendedTypes(project);
                 Iterator<String> it = getRecentTemplates().iterator();
                 for( int i = 0; i < NUM_TEMPLATES && it.hasNext(); i++ ) {
                     String templateName = it.next();
@@ -1288,12 +1287,9 @@ public final class OpenProjectList {
                     if ( fo == null ) {
                         it.remove(); // Does not exists remove
                     }
-                    else if ( isRecommended( project, fo ) ) {
+                    else if ( isRecommended( rtNames, fo ) ) {
                         result.add( fo );
                         privilegedTemplates.remove( templateName ); // Not to have it twice
-                    }
-                    else {
-                        continue;
                     }
                 }
                 return null;
@@ -1314,9 +1310,9 @@ public final class OpenProjectList {
         return result;
                
     }
-    
-    static boolean isRecommended (Project p, FileObject primaryFile) {
-        if (getRecommendedTypes (p) == null || getRecommendedTypes (p).length == 0) {
+
+    static boolean isRecommended (String[] recommendedTypes, FileObject primaryFile) {
+        if (recommendedTypes == null || recommendedTypes.length == 0) {
             // if no recommendedTypes are supported (i.e. freeform) -> disaply all templates
             return true;
         }
@@ -1324,14 +1320,13 @@ public final class OpenProjectList {
         Object o = primaryFile.getAttribute ("templateCategory"); // NOI18N
         if (o != null) {
             assert o instanceof String : primaryFile + " attr templateCategory = " + o;
-            boolean ok = false;
+            List<String> recommendedTypesList = Arrays.asList(recommendedTypes);
             for (String category : getCategories((String) o)) {
-                if (Arrays.asList (getRecommendedTypes (p)).contains (category)) {
-                    ok = true;
-                    break;
+                if (recommendedTypesList.contains (category)) {
+                    return true;
                 }
             }
-            return ok;
+            return false;
         } else {
             // issue 44871, if attr 'templateCategorized' is not set => all is ok
             // no category set, ok display it
@@ -1339,7 +1334,12 @@ public final class OpenProjectList {
         }
     }
 
-    private static String[] getRecommendedTypes (Project project) {
+    /**
+     * Returns list of recommended template types for project. Do not call in
+     * loop because it may scan project files to resolve its type which is time
+     * consuming.
+     */
+    static String[] getRecommendedTypes(Project project) {
         if (project == null) {
             return null;
         }
