@@ -62,19 +62,25 @@ import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.Repository;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileObject;
 
-/**
- *
- * @author mkleint
- */
+
+@ProjectServiceProvider(service = ContainerClassPathModifier.class, projectType={
+    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_WAR,
+    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_EJB,
+    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_APPCLIENT,
+    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_EAR
+})
 public class ContainerCPModifierImpl implements ContainerClassPathModifier {
     private final Project project;
 
+    
     public ContainerCPModifierImpl(Project prj) {
         project = prj;
     }
 
+    @Override
     public void extendClasspath(final FileObject file, final String[] symbolicNames) {
         if (symbolicNames == null) {
             return;
@@ -82,6 +88,8 @@ public class ContainerCPModifierImpl implements ContainerClassPathModifier {
         final Boolean[] added = new Boolean[1];
         added[0] = Boolean.FALSE;
         ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
+            
+            @Override
             public void performOperation(POMModel model) {
                 Map<String, Item> items = createItemList();
                 ProjectSourcesClassPathProvider prv = project.getLookup().lookup(ProjectSourcesClassPathProvider.class);

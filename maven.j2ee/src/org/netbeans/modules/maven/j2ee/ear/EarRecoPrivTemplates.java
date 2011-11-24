@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,29 +37,40 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.maven.j2ee;
+package org.netbeans.modules.maven.j2ee.ear;
 
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.spi.project.ProjectServiceProvider;
+import org.netbeans.spi.project.ui.PrivilegedTemplates;
+import org.netbeans.spi.project.ui.RecommendedTemplates;
 
-@ProjectServiceProvider(service = SessionContent.class, projectType = {
-    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_WAR,
-    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_EJB,
-    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_EAR,
-    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_APPCLIENT
-})
-public class SessionContent {
-    private String serverInstanceID;
-
-
-    public String getServerInstanceId() {
-        return serverInstanceID;
+/**
+ * Maven Recommended and Privileged templates implementation for EAR applications
+ * 
+ * @author Martin Janicek
+ */
+@ProjectServiceProvider(service={RecommendedTemplates.class, PrivilegedTemplates.class}, projectType={"org-netbeans-modules-maven/" + NbMavenProject.TYPE_EAR})
+public class EarRecoPrivTemplates implements RecommendedTemplates, PrivilegedTemplates {
+    
+    private static final String[] EAR_RECOMMENDED_TYPES = new String[] {
+        "ear-types",                     // NOI18N
+    };
+    
+    private static final String[] EAR_PRIVILEGED_NAMES = new String[] {
+        "Templates/J2EE/ApplicationXml", //NOI18N
+        "Templates/Other/Folder"         //NOI18N
+    };
+    
+    
+    @Override
+    public String[] getRecommendedTypes() {
+        return EAR_RECOMMENDED_TYPES;
     }
-
-    public void setServerInstanceId(String id) {
-        serverInstanceID = id;
+    
+    @Override
+    public String[] getPrivilegedTemplates() {
+        return EAR_PRIVILEGED_NAMES;
     }
 }
