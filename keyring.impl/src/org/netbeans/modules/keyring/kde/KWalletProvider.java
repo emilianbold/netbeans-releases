@@ -82,7 +82,7 @@ public class KWalletProvider implements KeyringProvider{
     @Override
     public char[] read(String key){
         if (updateHandler()){
-            CommandResult result = runCommand("readPassword", handler, getApplicationName(), key.toCharArray(), getApplicationName(true));
+            CommandResult result = runCommand("readPassword", handler, getApplicationName(), key.toCharArray(), getApplicationName());
             if (result.exitCode != 0){
                 warning("read action returned not 0 exitCode");
             }
@@ -98,7 +98,7 @@ public class KWalletProvider implements KeyringProvider{
         //it by default and I don't want to do it by adding new fields to kwallet
         if (updateHandler()){
             CommandResult result = runCommand("writePassword", handler , getApplicationName()
-                    , key.toCharArray(), password , getApplicationName(true));
+                    , key.toCharArray(), password , getApplicationName());
             if (result.exitCode != 0 || (new String(result.retVal)).equals("-1")){
                 warning("save action failed");
             }
@@ -111,7 +111,7 @@ public class KWalletProvider implements KeyringProvider{
     public void delete(String key){
         if (updateHandler()){
             CommandResult result = runCommand("removeEntry" ,handler,
-            getApplicationName() , key.toCharArray() , getApplicationName(true));
+            getApplicationName() , key.toCharArray() , getApplicationName());
              if (result.exitCode != 0  || (new String(result.retVal)).equals("-1")){
                 warning("delete action failed");
             }
@@ -141,7 +141,7 @@ public class KWalletProvider implements KeyringProvider{
             //but many people currently use buggy kwallet
             return false;
         }
-        result = runCommand("open", localWallet , "0".toCharArray(), getApplicationName(true));
+        result = runCommand("open", localWallet , "0".toCharArray(), getApplicationName());
         if(result.exitCode == 2) { 
             warning("time out happened while accessing KWallet");
             //don't try to open KWallet anymore until bug https://bugs.kde.org/show_bug.cgi?id=259229 is fixed
@@ -217,17 +217,7 @@ public class KWalletProvider implements KeyringProvider{
     }    
 
     private char[] getApplicationName(){
-        return getApplicationName(false);
-    }
-
-    private char[] getApplicationName(boolean version){
-        String appName;
-        try {
-            appName = MessageFormat.format(NbBundle.getBundle("org.netbeans.core.windows.view.ui.Bundle").getString("CTL_MainWindow_Title_No_Project"),version ? System.getProperty("netbeans.buildnumber"):"");
-        } catch (MissingResourceException x) {
-            appName = "NetBeans"+(version? " "+System.getProperty("netbeans.buildnumber"):"");
-        }
-        return appName.toCharArray();
+        return "NetBeans IDE".toCharArray(); // NOI18N
     }
 
     private void warning(String descr) {
