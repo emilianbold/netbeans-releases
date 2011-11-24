@@ -136,7 +136,6 @@ public enum JsTokenId implements TokenId {
     KEYWORD_FALSE("false", "keyword"), // NOI18N
     KEYWORD_NULL("null", "keyword"), // NOI18N
 
-    TYPE(null, "keyword"), // NOI18N
     OPERATOR(null, "operator"); // NOI18N
 
     public static final String JAVASCRIPT_MIME_TYPE = "text/javascript"; // NOI18N

@@ -201,10 +201,6 @@ SStringCharacter = [^\r\n\'\\]
   /* null literal */
   "null"                         { return JsTokenId.KEYWORD_NULL; }
 
-  /* Built-in Types*/
-  {Identifier} ":"               { return JsTokenId.TYPE; }
-
-
   /* operators */
 
   "("                            { return JsTokenId.OPERATOR_LPARAN; }
