@@ -519,7 +519,6 @@ public final class CompilationInfoImpl {
                 this.affectedErrors = new ArrayList<Diagnostic<? extends JavaFileObject>>(tail.size());
                 for (Iterator<Entry<Integer,Collection<Diagnostic<? extends JavaFileObject>>>> it = tail.entrySet().iterator(); it.hasNext();) {
                     Entry<Integer, Collection<Diagnostic<? extends JavaFileObject>>> e = it.next();
-                    it.remove();
                     for (Diagnostic<? extends JavaFileObject> d : e.getValue()) {
                         final JCDiagnostic diagnostic = (JCDiagnostic) d;
                         if (diagnostic == null) {
@@ -527,6 +526,7 @@ public final class CompilationInfoImpl {
                         }
                         this.affectedErrors.add(new D (diagnostic));
                     }
+                    it.remove();
                 }
             }
             else {
