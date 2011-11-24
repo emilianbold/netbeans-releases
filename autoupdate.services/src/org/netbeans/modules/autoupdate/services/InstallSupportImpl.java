@@ -1047,36 +1047,32 @@ public class InstallSupportImpl {
     private int verifyNbm (UpdateElement el, File nbmFile, ProgressHandle progress, int verified) throws OperationException {
         String res;
         try {
+            // get trusted certificates
+            List<Certificate> trustedCerts = new ArrayList<Certificate> ();
+            for (KeyStore ks : Utilities.getKeyStore ()) {
+                trustedCerts.addAll (Utilities.getCertificates (ks));
+            }
+            // load user certificates
+            KeyStore ks = Utilities.loadKeyStore ();
+            if (ks != null) {
+                trustedCerts.addAll (Utilities.getCertificates (ks));
+            }
+            
             verified += el.getDownloadSize ();
             if (progress != null) {
                 progress.progress (el.getDisplayName (), verified < wasDownloaded ? verified : wasDownloaded);
             }
-            Collection<Certificate> nbmCerts = getNbmCertificates (nbmFile);
-            assert nbmCerts != null;
-            if (nbmCerts.size () > 0) {
+            Collection<Certificate> nbmCerts = Utilities.getNbmCertificates (nbmFile);
+            if (nbmCerts != null && nbmCerts.size () > 0) {
                 certs.put (el, nbmCerts);
             }
-            if (nbmCerts.isEmpty()) {
-                res = "UNSIGNED";
-            } else {
-                List<Certificate> trustedCerts = new ArrayList<Certificate> ();
-                UpdateElementImpl impl = Trampoline.API.impl(el);
-                for (KeyStore ks : Utilities.getKeyStore ()) {
-                    trustedCerts.addAll (getCertificates (ks));
-                }
-                // load user certificates
-                KeyStore ks = Utilities.loadKeyStore ();
-                if (ks != null) {
-                    trustedCerts.addAll (getCertificates (ks));
-                }
-                if (trustedCerts.containsAll (nbmCerts)) {
-                    res = "TRUSTED";
-                    trusted.add (impl);
-                    signed.add (impl);
-                } else {
-                    res = "UNTRUSTED";
-                    signed.add (impl);
-                }
+            res = Utilities.verifyCertificates(nbmCerts, trustedCerts);
+            UpdateElementImpl impl = Trampoline.API.impl(el);
+            if (Utilities.TRUSTED.equals(res) || Utilities.N_A.equals(res)) {
+                trusted.add (impl);
+                signed.add (impl);
+            } else if (Utilities.UNTRUSTED.equals(res)) {
+                signed.add (impl);
             }
         } catch (IOException ioe) {
             LOG.log (Level.INFO, ioe.getMessage (), ioe);
@@ -1092,48 +1088,6 @@ public class InstallSupportImpl {
         
         LOG.log (Level.FINE, "NBM " + nbmFile + " was verified as " + res);
         return el.getDownloadSize ();
-    }
-    
-    private static Collection<Certificate> getCertificates (KeyStore keyStore) throws KeyStoreException {
-        List<Certificate> certs = new ArrayList<Certificate> ();
-        for (String alias: Collections.list (keyStore.aliases ())) {
-            certs.add (keyStore.getCertificate (alias));
-        }
-        return certs;
-    }
-    
-    private static Collection<Certificate> getNbmCertificates (File nbmFile) throws IOException {
-        Set<Certificate> certs = new HashSet<Certificate>();
-        JarFile jf = new JarFile(nbmFile);
-        try {
-            for (JarEntry entry : Collections.list(jf.entries())) {
-                verifyEntry(jf, entry);
-                if (entry.getCertificates() != null) {
-                    certs.addAll(Arrays.asList(entry.getCertificates()));
-                }
-            }
-        } finally {
-            jf.close();
-        }
-
-        return certs;
-    }
-    
-    /**
-     * @throws SecurityException
-     */
-    @SuppressWarnings("empty-statement")
-    private static void verifyEntry (JarFile jf, JarEntry je) throws IOException {
-        InputStream is = null;
-        try {
-            is = jf.getInputStream (je);
-            byte[] buffer = new byte[8192];
-            int n;
-            int c = 0;
-            while ((n = is.read (buffer, 0, buffer.length)) != -1);
-        } finally {
-            if (is != null) is.close ();
-        }
     }
     
     private boolean needsRestart (boolean isUpdate, UpdateElementImpl toUpdateImpl, File dest) {
