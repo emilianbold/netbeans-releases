@@ -52,18 +52,18 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarFactory;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarProvider;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarsInProject;
+import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.classpath.ProjectSourcesClassPathProvider;
 import org.netbeans.modules.maven.j2ee.BaseEEModuleProvider;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
-/**
- *
- */
-
+@ProjectServiceProvider(service = {EjbModuleProviderImpl.class, J2eeModuleProvider.class, EjbJarProvider.class, EjbJarsInProject.class}, projectType = {"org-netbeans-modules-maven/" + NbMavenProject.TYPE_EJB})
 public class EjbModuleProviderImpl extends BaseEEModuleProvider implements EjbJarProvider, EjbJarsInProject  {
     
     private EjbJarImpl ejbimpl;
@@ -72,16 +72,19 @@ public class EjbModuleProviderImpl extends BaseEEModuleProvider implements EjbJa
     
     public EjbModuleProviderImpl(Project project) {
         super(project);
-        ejbimpl = new EjbJarImpl(project, this);
     }
 
     @Override
     public EjbJarImpl getModuleImpl() {
+        if (ejbimpl == null) {
+            ejbimpl = new EjbJarImpl(project, this);
+        }
         return ejbimpl;
     }
     
     @Override
     public EjbJar findEjbJar(FileObject file) {
+        getModuleImpl();
         Project proj = FileOwnerQuery.getOwner (file);
         if (proj != null) {
             proj = proj.getLookup().lookup(Project.class);
@@ -128,6 +131,7 @@ public class EjbModuleProviderImpl extends BaseEEModuleProvider implements EjbJa
 
     @Override
     public EjbJar[] getEjbJars() {
+        getModuleImpl();
         if (ejbimpl.isValid()) {
             if (apiEjbJar == null) {
                 apiEjbJar =  EjbJarFactory.createEjbJar(ejbimpl);

@@ -52,14 +52,19 @@ import java.util.List;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.maven.j2ee.web.WebModuleProviderImpl;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.execute.LateBoundPrerequisitesChecker;
 import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.util.Exceptions;
 
-/**
- *
- * @author mkleint
- */
+
+@ProjectServiceProvider(service = {PrerequisitesChecker.class, LateBoundPrerequisitesChecker.class}, projectType={
+    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_WAR,
+    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_EJB,
+    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_APPCLIENT,
+    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_EAR
+})
 public class J2EEPrerequisitesChecker implements PrerequisitesChecker, LateBoundPrerequisitesChecker {
 
     private List applicableActions = Arrays.asList(new String[] {
@@ -69,10 +74,8 @@ public class J2EEPrerequisitesChecker implements PrerequisitesChecker, LateBound
         ActionProvider.COMMAND_DEBUG_SINGLE + ".deploy"
     });
     
-    /** Creates a new instance of J2EEPrerequisitesChecker */
-    public J2EEPrerequisitesChecker() {
-    }
 
+    @Override
     public boolean checkRunConfig(RunConfig config) {
         String actionName = config.getActionName();
         if (!applicableActions.contains(actionName)) {

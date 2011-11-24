@@ -84,6 +84,7 @@ import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.pom.Dependency;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.spi.project.AuxiliaryProperties;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
@@ -91,6 +92,7 @@ import org.openide.util.Exceptions;
  *
  * @author Milos Kleint
  */
+@ProjectServiceProvider(service = EnterpriseReferenceContainer.class, projectType = {"org-netbeans-modules-maven/" + NbMavenProject.TYPE_WAR})
 public class EntRefContainerImpl implements EnterpriseReferenceContainer {
     
     private Project project;
@@ -101,10 +103,12 @@ public class EntRefContainerImpl implements EnterpriseReferenceContainer {
         project = p;
     }
     
+    @Override
     public String addEjbLocalReference(EjbReference localRef, EjbReference.EjbRefIType refType, String ejbRefName, FileObject referencingFile, String referencingClass) throws IOException {
         return addReference(localRef, refType, ejbRefName, true, referencingFile, referencingClass);
     }
     
+    @Override
     public String addEjbReference(EjbReference ref, EjbReference.EjbRefIType refType, String ejbRefName, FileObject referencingFile, String referencingClass) throws IOException {
         return addReference(ref, refType, ejbRefName, false, referencingFile, referencingClass);
     }
@@ -114,6 +118,7 @@ public class EntRefContainerImpl implements EnterpriseReferenceContainer {
 
         MetadataModel<EjbJarMetadata> ejbReferenceMetadataModel = ejbReference.getEjbModule().getMetadataModel();
         String ejbName = ejbReferenceMetadataModel.runReadAction(new MetadataModelAction<EjbJarMetadata, String>() {
+            @Override
             public String run(EjbJarMetadata metadata) throws Exception {
                 return metadata.findByEjbClass(ejbReference.getEjbClass()).getEjbName();
             }
@@ -190,11 +195,13 @@ public class EntRefContainerImpl implements EnterpriseReferenceContainer {
         return refName;
     }
     
+    @Override
     public String getServiceLocatorName() {
         AuxiliaryProperties props = project.getLookup().lookup(AuxiliaryProperties.class);
         return props.get(SERVICE_LOCATOR_PROPERTY, true);
     }
     
+    @Override
     public void setServiceLocatorName(String serviceLocator) throws IOException {
         AuxiliaryProperties props = project.getLookup().lookup(AuxiliaryProperties.class);
         props.put(SERVICE_LOCATOR_PROPERTY, serviceLocator, true);
@@ -244,6 +251,7 @@ public class EntRefContainerImpl implements EnterpriseReferenceContainer {
         }
     }
     
+    @Override
     public String addResourceRef(ResourceReference ref, FileObject referencingFile, String referencingClass) throws IOException {
         WebApp wa = getWebApp();
         if (wa == null) {
@@ -286,6 +294,7 @@ public class EntRefContainerImpl implements EnterpriseReferenceContainer {
         return resourceRefName;
     }
     
+    @Override
     public String addDestinationRef(MessageDestinationReference ref, FileObject referencingFile, String referencingClass) throws IOException {
         try {
             // do not add if there is already an existing destination ref (see #85673)

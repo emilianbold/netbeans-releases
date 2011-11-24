@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.maven.j2ee.web;
 
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleImplementation2;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -54,12 +53,14 @@ import java.util.List;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.classpath.ProjectSourcesClassPathProvider;
 import org.netbeans.modules.maven.j2ee.BaseEEModuleProvider;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.spi.webmodule.WebModuleFactory;
 import org.netbeans.modules.web.spi.webmodule.WebModuleProvider;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -69,6 +70,7 @@ import org.openide.util.Exceptions;
  * web module provider implementation for maven2 project type.
  * @author  Milos Kleint 
  */
+@ProjectServiceProvider(service = {WebModuleProviderImpl.class, WebModuleProvider.class, J2eeModuleProvider.class}, projectType = {"org-netbeans-modules-maven/" + NbMavenProject.TYPE_WAR})
 public class WebModuleProviderImpl extends BaseEEModuleProvider implements WebModuleProvider {
     
     private WebModuleImpl implementation;
@@ -77,19 +79,22 @@ public class WebModuleProviderImpl extends BaseEEModuleProvider implements WebMo
     
     public WebModuleProviderImpl(Project project) {
         super(project);
-        implementation = new WebModuleImpl(project, this);
     }
     
     @Override
     public WebModuleImpl getModuleImpl() {
+        if (implementation == null) {
+            implementation = new WebModuleImpl(project, this);
+        }
         return implementation;
     }
     
     @Override
     public WebModule findWebModule(FileObject fileObject) {
-        if (implementation != null && implementation.isValid()) {
+        WebModuleImpl impl = getModuleImpl();
+        if (impl != null && impl.isValid()) {
             if (module == null) {
-                module = WebModuleFactory.createWebModule(implementation);
+                module = WebModuleFactory.createWebModule(impl);
             }
             return module;
         }
