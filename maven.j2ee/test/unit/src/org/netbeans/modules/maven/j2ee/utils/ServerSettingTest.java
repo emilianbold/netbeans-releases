@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,29 +37,58 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.maven.j2ee.utils;
 
-package org.netbeans.modules.maven.j2ee;
+import org.netbeans.modules.maven.j2ee.JavaEEMavenBaseTest;
+import org.netbeans.modules.maven.j2ee.SessionContent;
 
-import org.netbeans.modules.maven.api.NbMavenProject;
-import org.netbeans.spi.project.ProjectServiceProvider;
-
-@ProjectServiceProvider(service = SessionContent.class, projectType = {
-    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_WAR,
-    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_EJB,
-    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_EAR,
-    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_APPCLIENT
-})
-public class SessionContent {
-    private String serverInstanceID;
-
-
-    public String getServerInstanceId() {
-        return serverInstanceID;
+/**
+ *
+ * @author Martin Janicek
+ */
+public class ServerSettingTest extends JavaEEMavenBaseTest {
+    
+    public ServerSettingTest(String name) {
+        super(name);
     }
-
-    public void setServerInstanceId(String id) {
-        serverInstanceID = id;
+    
+    public void testObtainServerIDs_withSetSessionID() {
+        SessionContent session = project.getLookup().lookup(SessionContent.class);
+        session.setServerInstanceId("SessionServerID"); // NOI18N
+        
+        String[] serverIDs = MavenProjectSupport.obtainServerIds(project);
+        
+        assertEquals("SessionServerID", serverIDs[0]); // NOI18N
+        assertNull(serverIDs[1]);
+    }
+    
+    public void testObtainServerIDs_withSetServerInstanceID() {
+        MavenProjectSupport.setServerInstanceID(project, "InstanceServerID"); // NOI18N
+        
+        String[] serverIDs = MavenProjectSupport.obtainServerIds(project);
+        
+        assertEquals("InstanceServerID", serverIDs[0]); // NOI18N
+        assertNull(serverIDs[1]);
+    }
+    
+    public void testObtainServerIDs_withSetServerID() {
+        MavenProjectSupport.setServerID(project, "ServerID"); // NOI18N
+        
+        String[] serverIDs = MavenProjectSupport.obtainServerIds(project);
+        
+        assertNull(serverIDs[0]);
+        assertEquals("ServerID", serverIDs[1]); // NOI18N
+    }
+    
+    public void testObtainServerIDs_withSetServerAndServerInstanceID() {
+        MavenProjectSupport.setServerInstanceID(project, "InstanceServerID"); // NOI18N
+        MavenProjectSupport.setServerID(project, "ServerID"); // NOI18N
+        
+        String[] serverIDs = MavenProjectSupport.obtainServerIds(project);
+        
+        assertEquals("InstanceServerID", serverIDs[0]); // NOI18N
+        assertNull(serverIDs[1]);
     }
 }
