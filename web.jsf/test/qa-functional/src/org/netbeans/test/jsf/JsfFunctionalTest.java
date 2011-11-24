@@ -128,7 +128,6 @@ public class JsfFunctionalTest extends WebProjectValidationEE5 {
      * - check index.xhtml is opened
      */
     public void testNewJSFWebProject() throws IOException {
-        final String serverNodeName = getServerNode(Server.GLASSFISH).getText();
         NewProjectWizardOperator projectWizard = NewProjectWizardOperator.invoke();
         String category = Bundle.getStringTrimmed(
                 "org.netbeans.modules.web.core.Bundle",
@@ -143,7 +142,6 @@ public class JsfFunctionalTest extends WebProjectValidationEE5 {
         nameStep.txtProjectLocation().typeText(PROJECT_LOCATION);
         nameStep.next();
         NewWebProjectServerSettingsStepOperator serverStep = new NewWebProjectServerSettingsStepOperator();
-        serverStep.selectServer(serverNodeName);
         serverStep.selectJavaEEVersion(getEEVersion());
         serverStep.next();
 
@@ -337,9 +335,7 @@ public class JsfFunctionalTest extends WebProjectValidationEE5 {
         lop.setProjectLocation(getDataDir().getCanonicalPath());
         lop.next();
 
-        String serverNodeName = getServerNode(Server.GLASSFISH).getText();
         NewWebProjectServerSettingsStepOperator serverStep = new NewWebProjectServerSettingsStepOperator();
-        serverStep.selectServer(serverNodeName);
         serverStep.selectJavaEEVersion(getEEVersion());
         serverStep.finish();
 
