@@ -135,59 +135,73 @@ SStringCharacter = [^\r\n\'\\]
 <YYINITIAL> {
 
   /* keywords */
-  "break"                        |
-  "case"                         |
-  "catch"                        |
-  "continue"                     |
-  "do"                           |
-  "else"                         |
-  "finally"                      |
-  "for"                          |
-  "default"                      |
-  "delete"                       |
-  "new"                          |
-  "goto"                         |
-  "if"                           |
-  "switch"                       |
-  "return"                       |
-  "while"                        |
-  "this"                         |
-  "try"                          |
-  "var"                          |
-  "function"                     |
-  "with"                         |
-  "in"                           |
+  "break"                        { return JsTokenId.KEYWORD_BREAK; }
+  "case"                         { return JsTokenId.KEYWORD_CASE; }
+  "catch"                        { return JsTokenId.KEYWORD_CATCH; }
+  "continue"                     { return JsTokenId.KEYWORD_CONTINUE; }
+  "default"                      { return JsTokenId.KEYWORD_DEFAULT; }
+  "delete"                       { return JsTokenId.KEYWORD_DELETE; }
+  "do"                           { return JsTokenId.KEYWORD_DO; }
+  "else"                         { return JsTokenId.KEYWORD_ELSE; }
+  "finally"                      { return JsTokenId.KEYWORD_FINALLY; }
+  "for"                          { return JsTokenId.KEYWORD_FOR; }
+  "function"                     { return JsTokenId.KEYWORD_FUNCTION; }
+  "if"                           { return JsTokenId.KEYWORD_IF; }
+  "in"                           { return JsTokenId.KEYWORD_IN; }
+  "instanceof"                   { return JsTokenId.KEYWORD_INSTANCEOF; }
+  "new"                          { return JsTokenId.KEYWORD_NEW; }
+  "return"                       { return JsTokenId.KEYWORD_RETURN; }
+  "switch"                       { return JsTokenId.KEYWORD_SWITCH; }
+  "this"                         { return JsTokenId.KEYWORD_THIS; }
+  "throw"                        { return JsTokenId.KEYWORD_THROW; }
+  "try"                          { return JsTokenId.KEYWORD_TRY; }
+  "typeof"                       { return JsTokenId.KEYWORD_TYPEOF; }
+  "var"                          { return JsTokenId.KEYWORD_VAR; }
+  "void"                         { return JsTokenId.KEYWORD_VOID; }
+  "while"                        { return JsTokenId.KEYWORD_WHILE; }
+  "with"                         { return JsTokenId.KEYWORD_WITH; }
+
+  /* reserved keywords */
+  "abstract"                     { return JsTokenId.RESERVED_ABSTRACT; }
+  "boolean"                      { return JsTokenId.RESERVED_BOOLEAN; }
+  "byte"                         { return JsTokenId.RESERVED_BYTE; }
+  "char"                         { return JsTokenId.RESERVED_CHAR; }
+  "class"                        { return JsTokenId.RESERVED_CLASS; }
+  "const"                        { return JsTokenId.RESERVED_CONST; }
+  "debugger"                     { return JsTokenId.RESERVED_DEBUGGER; }
+  "double"                       { return JsTokenId.RESERVED_DOUBLE; }
+  "enum"                         { return JsTokenId.RESERVED_ENUM; }
+  "export"                       { return JsTokenId.RESERVED_EXPORT; }
+  "extends"                      { return JsTokenId.RESERVED_EXTENDS; }
+  "final"                        { return JsTokenId.RESERVED_FINAL; }
+  "float"                        { return JsTokenId.RESERVED_FLOAT; }
+  "goto"                         { return JsTokenId.RESERVED_GOTO; }
+  "implements"                   { return JsTokenId.RESERVED_IMPLEMENTS; }
+  "import"                       { return JsTokenId.RESERVED_IMPORT; }
+  "int"                          { return JsTokenId.RESERVED_INT; }
+  "interface"                    { return JsTokenId.RESERVED_INTERFACE; }
+  "long"                         { return JsTokenId.RESERVED_LONG; }
+  "native"                       { return JsTokenId.RESERVED_NATIVE; }
+  "package"                      { return JsTokenId.RESERVED_PACKAGE; }
+  "private"                      { return JsTokenId.RESERVED_PRIVATE; }
+  "protected"                    { return JsTokenId.RESERVED_PROTECTED; }
+  "public"                       { return JsTokenId.RESERVED_PUBLIC; }
+  "short"                        { return JsTokenId.RESERVED_SHORT; }
+  "static"                       { return JsTokenId.RESERVED_STATIC; }
+  "super"                        { return JsTokenId.RESERVED_SUPER; }
+  "synchronized"                 { return JsTokenId.RESERVED_SYNCHRONIZED; }
+  "throws"                       { return JsTokenId.RESERVED_THROWS; }
+  "transient"                    { return JsTokenId.RESERVED_TRANSIENT; }
+  "volatile"                     { return JsTokenId.RESERVED_VOLATILE; }
 
   /* boolean literals */
-  "true"                         |
-  "false"                        |
+  "true"                         { return JsTokenId.KEYWORD_TRUE; }
+  "false"                        { return JsTokenId.KEYWORD_FALSE; }
 
   /* null literal */
-  "null"                         { return JsTokenId.KEYWORD; }
-
-  /* standard / builtin functions */
-  "Infinity"                     |
-  "NaN"                          |
-  "undefined"                    |
-  "decodeURI"                    |
-  "encodeURIComponent"           |
-  "escape"                       |
-  "eval"                         |
-  "isFinite"                     |
-  "isNaN"                        |
-  "parseFloat"                   |
-  "parseInt"                     |
-  "unescape"                     { return JsTokenId.KEYWORD2; }
+  "null"                         { return JsTokenId.KEYWORD_NULL; }
 
   /* Built-in Types*/
-  "Array"                        |
-  "Boolean"                      |
-  "Date"                         |
-  "Math"                         |
-  "Number"                       |
-  "Object"                       |
-  "RegExp"                       |
-  "String"                       |
   {Identifier} ":"               { return JsTokenId.TYPE; }
 
 
@@ -308,4 +322,13 @@ SStringCharacter = [^\r\n\'\\]
 
 /* error fallback */
 .|\n                             { }
-<<EOF>>                          { return JsTokenId.UNKNOWN_TOKEN; }
+<<EOF>>                          {
+    if (input.readLength() > 0) {
+        // backup eof
+        input.backup(1);
+        //and return the text as error token
+        return JsTokenId.UNKNOWN_TOKEN;
+    } else {
+        return null;
+    }
+}
