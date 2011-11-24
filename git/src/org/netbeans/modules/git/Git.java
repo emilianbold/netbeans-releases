@@ -43,12 +43,10 @@
 package org.netbeans.modules.git;
 
 import org.netbeans.modules.git.client.GitProgressSupport;
-import org.netbeans.modules.git.client.GitClientInvocationHandler;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -58,11 +56,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.libs.git.GitClient;
-import org.netbeans.libs.git.GitClientFactory;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.modules.git.client.CredentialsCallback;
+import org.netbeans.modules.git.client.GitClient;
 import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
@@ -197,12 +194,9 @@ public final class Git {
         if (repositoryFolder != null) {
             repository = repositoryFolder;
         }
-        GitClient client = GitClientFactory.getInstance().getClient(repository);
+        GitClient client = new GitClient(repository, progressSupport, handleAuthenticationIssues);
         client.setCallback(new CredentialsCallback());
-        GitClientInvocationHandler handler = new GitClientInvocationHandler(client, repository);
-        handler.setProgressSupport(progressSupport);
-        handler.setHandleAuthenticationIssues(handleAuthenticationIssues);
-        return (GitClient) Proxy.newProxyInstance(GitClient.class.getClassLoader(), new Class[] { GitClient.class }, handler);
+        return client;
     }
 
     public RequestProcessor getRequestProcessor() {

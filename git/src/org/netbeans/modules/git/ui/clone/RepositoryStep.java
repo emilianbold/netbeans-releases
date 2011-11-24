@@ -45,7 +45,7 @@ package org.netbeans.modules.git.ui.clone;
 import java.awt.EventQueue;
 import org.netbeans.modules.git.ui.repository.remote.RemoteRepository;
 import javax.swing.event.ChangeEvent;
-import org.netbeans.libs.git.GitClient;
+import org.netbeans.modules.git.client.GitClient;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.modules.git.ui.wizards.AbstractWizardPanel;
 import java.awt.event.ActionEvent;

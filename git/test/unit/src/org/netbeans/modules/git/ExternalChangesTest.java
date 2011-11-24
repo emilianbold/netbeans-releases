@@ -53,7 +53,7 @@ import org.netbeans.junit.MockServices;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.modules.git.FileInformation.Status;
-import org.netbeans.modules.git.client.GitClientInvocationHandler;
+import org.netbeans.modules.git.client.GitClient;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
 import org.netbeans.modules.versioning.VersioningAnnotationProvider;
 import org.netbeans.modules.versioning.VersioningManager;
@@ -139,7 +139,7 @@ public class ExternalChangesTest extends AbstractGitTestCase {
         waitForInitialScan();
         assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.NEW_HEAD_INDEX));
 
-        Logger logger = Logger.getLogger(GitClientInvocationHandler.class.getName());
+        Logger logger = Logger.getLogger(GitClient.class.getName());
         logger.setLevel(Level.ALL);
         final boolean[] refreshed = new boolean[1];
         logger.addHandler(new Handler() {
@@ -202,7 +202,7 @@ public class ExternalChangesTest extends AbstractGitTestCase {
         waitForInitialScan();
         assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.NEW_HEAD_INDEX));
 
-        Logger logger = Logger.getLogger(GitClientInvocationHandler.class.getName());
+        Logger logger = Logger.getLogger(GitClient.class.getName());
         logger.setLevel(Level.ALL);
         final boolean[] refreshed = new boolean[1];
         logger.addHandler(new Handler() {

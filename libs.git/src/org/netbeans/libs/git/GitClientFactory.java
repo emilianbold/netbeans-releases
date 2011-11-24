@@ -46,7 +46,6 @@ import java.io.File;
 import java.util.Map;
 import java.util.WeakHashMap;
 import org.eclipse.jgit.transport.SshSessionFactory;
-import org.netbeans.libs.git.jgit.JGitClient;
 import org.netbeans.libs.git.jgit.JGitRepository;
 import org.netbeans.libs.git.jgit.JGitSshSessionFactory;
 
@@ -99,7 +98,7 @@ public final class GitClientFactory {
     }
 
     private GitClient createClient (JGitRepository repository) {
-        return new JGitClient(repository);
+        return new GitClient(repository);
     }
 
 }

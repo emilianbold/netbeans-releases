@@ -45,9 +45,9 @@ package org.netbeans.modules.git;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.progress.ProgressMonitor;
+import org.netbeans.modules.git.client.GitClient;
 import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.util.Utils;
 
