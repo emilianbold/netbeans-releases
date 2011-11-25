@@ -240,8 +240,8 @@ public final class InternalHandle {
             LOG.log(Level.WARNING, "Cannot finish a task that was never started at {0}", findCaller()); //NOI18N
             return;
         }
+        // handle is already finished, just return
         if (state == STATE_FINISHED) {
-            LOG.log(Level.WARNING, "Cannot call finish twice on a handle at {0}", findCaller()); //NOI18N          
             return;
         }
         state = STATE_FINISHED;
