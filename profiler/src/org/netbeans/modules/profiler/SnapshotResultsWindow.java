@@ -179,6 +179,7 @@ public final class SnapshotResultsWindow extends TopComponent {
     private SavePerformer savePerformer = new SavePerformer();
     private SnapshotPanel displayedPanel;
     private String tabName = ""; // NOI18N // default
+    private SnapshotListener listener;
     private boolean forcedClose = false;
 
     //~ Constructors -------------------------------------------------------------------------------------------------------------
@@ -222,7 +223,8 @@ public final class SnapshotResultsWindow extends TopComponent {
 
                 break;
         }
-        Lookup.getDefault().lookup(SnapshotListener.class).setDelegate(this);
+        listener = Lookup.getDefault().lookup(SnapshotListener.class);
+        listener.setDelegate(this);
     }
 
     //~ Methods ------------------------------------------------------------------------------------------------------------------
