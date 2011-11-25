@@ -66,6 +66,7 @@ public class ProgressProviderAdapter implements ProgressProvider {
      * @param listener The listener to register.
      *
      */
+    @Override
     public synchronized void addProgressListener(ProgressListener listener) {
         if (progressSupport == null ) {
             progressSupport = new ProgressSupport();
@@ -77,6 +78,7 @@ public class ProgressProviderAdapter implements ProgressProvider {
      * @param listener The listener to remove.
      *
      */
+    @Override
     public synchronized void removeProgressListener(ProgressListener listener) {
         if (progressSupport != null ) {
             progressSupport.removeProgressListener(listener); 

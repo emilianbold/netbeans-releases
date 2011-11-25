@@ -89,6 +89,7 @@ public final class RefactoringContextActionsProvider
         this.fileObjectList = fileObjectList;
     }
 
+    @Override
     public RefactoringContextActionsProvider createInstance(List<FileObject> fileObjectList) {
         return new RefactoringContextActionsProvider(fileObjectList);
     }

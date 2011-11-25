@@ -55,28 +55,34 @@ import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
  * @author Martin Matula, Jan Becicka
  */
 final class AccessorImpl extends APIAccessor {
+    @Override
     public Collection<GuardedBlockHandler> getGBHandlers(AbstractRefactoring refactoring) {
         assert refactoring != null;
         return refactoring.getGBHandlers();
     }
     
+    @Override
     public boolean hasPluginsWithProgress(AbstractRefactoring refactoring) {
         return refactoring.pluginsWithProgress!=null && !refactoring.pluginsWithProgress.isEmpty();
     }
 
+    @Override
     public Problem chainProblems(Problem p, Problem p1) {
         return AbstractRefactoring.chainProblems(p, p1);
     }
     
+    @Override
     public ProblemDetails createProblemDetails(ProblemDetailsImplementation pdi) {
         assert pdi != null;
         return new ProblemDetails(pdi);
     }
 
+    @Override
     public boolean isCommit(RefactoringSession session) {
         return session.realcommit;
     }
 
+    @Override
     public RefactoringElementImplementation getRefactoringElementImplementation(RefactoringElement el) {
         return el.impl;
     }

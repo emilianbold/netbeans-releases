@@ -68,6 +68,7 @@ import org.openide.util.Lookup;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.refactoring.spi.RefactoringPluginFactory.class, position=50)
 public class FileHandlingFactory implements RefactoringPluginFactory {
    
+    @Override
     public RefactoringPlugin createInstance(AbstractRefactoring refactoring) {
         Lookup look = refactoring.getRefactoringSource();
         Collection<? extends FileObject> o = look.lookupAll(FileObject.class);

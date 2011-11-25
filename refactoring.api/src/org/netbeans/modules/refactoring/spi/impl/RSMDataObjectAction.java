@@ -69,28 +69,34 @@ public class RSMDataObjectAction extends SystemAction implements Menu, Popup, Co
     
     private static final RenameAction renameAction = SystemAction.get(RenameAction.class);
     
+    @Override
     public void actionPerformed(ActionEvent ev) {
         // do nothing -- should never be called
     }
     
+    @Override
     public String getName() {
         return (String) action.getValue(Action.NAME);
     }
     
+    @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
         // If you will provide context help then use:
         // return new HelpCtx(RSMEditorActionAction.class);
     }
     
+    @Override
     public JMenuItem getMenuPresenter() {
         return action.getMenuPresenter();
     }
     
+    @Override
     public JMenuItem getPopupPresenter() {
         return action.getPopupPresenter();
     }
     
+    @Override
     public Action createContextAwareInstance(Lookup actionContext) {
         if (ActionsImplementationFactory.canRename(actionContext)) {
             return this;

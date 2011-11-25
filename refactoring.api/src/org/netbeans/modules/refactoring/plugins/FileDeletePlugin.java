@@ -74,10 +74,12 @@ public class FileDeletePlugin implements RefactoringPlugin {
         this.refactoring = refactoring;
     }
     
+    @Override
     public Problem preCheck() {
         return null;
     }
     
+    @Override
     public Problem prepare(RefactoringElementsBag elements) {
         for (FileObject fo: refactoring.getRefactoringSource().lookupAll(FileObject.class)) {
                 elements.addFileChange(refactoring, new DeleteFile(fo, elements));
@@ -85,14 +87,17 @@ public class FileDeletePlugin implements RefactoringPlugin {
         return null;
     }
     
+    @Override
     public Problem fastCheckParameters() {
         return null;
     }
         
+    @Override
     public Problem checkParameters() {
         return null;
     }
 
+    @Override
     public void cancelRequest() {
     }
     //TODO: Move out this inner class
@@ -110,15 +115,18 @@ public class FileDeletePlugin implements RefactoringPlugin {
             this.filename = fo.getNameExt();
             this.session = session;
         }
+        @Override
         public String getText() {
             return NbBundle.getMessage(FileDeletePlugin.class, "TXT_DeleteFile", filename);
         }
 
+        @Override
         public String getDisplayText() {
             return getText();
         }
 
         BackupFacility.Handle id;
+        @Override
         public void performChange() {
             try {
                 FileObject fo = URLMapper.findFileObject(res);
@@ -134,6 +142,7 @@ public class FileDeletePlugin implements RefactoringPlugin {
             }
         }
         
+        @Override
         public void undoChange() {
             try {
                 id.restore();
@@ -142,14 +151,17 @@ public class FileDeletePlugin implements RefactoringPlugin {
             }
         }
 
+        @Override
         public Lookup getLookup() {
             return Lookup.EMPTY;
         }
 
+        @Override
         public FileObject getParentFile() {
             return URLMapper.findFileObject(res);
         }
 
+        @Override
         public PositionBounds getPosition() {
             return null;
         }

@@ -189,6 +189,7 @@ public final class UndoManager extends FileChangeAdapter implements DocumentList
                 try {
                     SwingUtilities.invokeAndWait(new Runnable() {
 
+                        @Override
                         public void run() {
                             registerListeners();
                         }
@@ -334,6 +335,7 @@ public final class UndoManager extends FileChangeAdapter implements DocumentList
             final Document d = ces.getDocument();
             if (d!=null) {
                 NbDocument.runAtomic((StyledDocument)d, new Runnable() {
+                    @Override
                     public void run() {
                         synchronized(allCES) {
                             if (allCES.add(ces)) {
@@ -517,13 +519,16 @@ public final class UndoManager extends FileChangeAdapter implements DocumentList
     
     // DocumentListener .........................................................
     
+    @Override
     public void changedUpdate(DocumentEvent e) {
     }
 
+    @Override
     public void insertUpdate(DocumentEvent e) {        
         invalidate(documentToCES.get(e.getDocument()));
     }
 
+    @Override
     public void removeUpdate(DocumentEvent e) {
         invalidate(documentToCES.get(e.getDocument()));
     }
@@ -596,15 +601,18 @@ public final class UndoManager extends FileChangeAdapter implements DocumentList
             this.change = change;
         }
         
+        @Override
         public void undo() {
             change.undoRefactoring(false);
         }
         
+        @Override
         public void redo() {
             change.doRefactoring(false);
         }
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (OpenProjects.PROPERTY_OPEN_PROJECTS.equals(evt.getPropertyName())) {
             Set<Project> p = new HashSet<Project>(projects);

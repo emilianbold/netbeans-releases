@@ -89,6 +89,7 @@ public class SafeDeleteAction extends RefactoringGlobalAction implements Extende
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }
     
+    @Override
     public final void performAction(Lookup context) {
         ActionsImplementationFactory.doDelete(context);
         if (LOGGER.isLoggable(Level.FINEST)) {
@@ -106,6 +107,7 @@ public class SafeDeleteAction extends RefactoringGlobalAction implements Extende
         return false;
     }
 
+    @Override
     protected boolean enable(Lookup context) {
         return true;
     }
@@ -127,6 +129,7 @@ public class SafeDeleteAction extends RefactoringGlobalAction implements Extende
     }
     
     private boolean regularDelete = false;
+    @Override
     public boolean delete(final Node[] nodes) {
         if (nodes.length < 2 && ActionsImplementationFactory.canDelete(getLookup(nodes))) {
             if (java.awt.EventQueue.isDispatchThread()) {
@@ -135,6 +138,7 @@ public class SafeDeleteAction extends RefactoringGlobalAction implements Extende
                 regularDelete = false;
             } else {
                 SwingUtilities.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         regularDelete = true;
                         performAction(nodes);
@@ -162,6 +166,7 @@ public class SafeDeleteAction extends RefactoringGlobalAction implements Extende
                 if (doConfirm(nodes)) {
                     try {
                         FileUtil.runAtomicAction(new FileSystem.AtomicAction() {
+                            @Override
                             public void run() throws IOException {
                                 for (int i = 0; i < nodes.length; i++) {
                                     try {

@@ -65,6 +65,7 @@ import org.openide.util.lookup.InstanceContent;
 @org.openide.util.lookup.ServiceProvider(service=org.openide.loaders.FolderRenameHandler.class)
 public class FolderRenameHandlerImpl implements FolderRenameHandler {
 
+    @Override
     public void handleRename(DataFolder folder, String newName) {
         InstanceContent ic = new InstanceContent();
         ic.add(folder.getNodeDelegate());

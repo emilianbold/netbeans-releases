@@ -76,18 +76,22 @@ public final class RefactoringContextAction extends AbstractAction implements Co
         this.context = context;
     }
 
+    @Override
     public void actionPerformed(ActionEvent e) {
         throw new UnsupportedOperationException("Not supported."); // NOI18N
     }
 
+    @Override
     public Action createContextAwareInstance(Lookup actionContext) {
         return new RefactoringContextAction(actionContext);
     }
 
+    @Override
     public JMenuItem getMenuPresenter() {
         return new InlineMenu(context, false);
     }
 
+    @Override
     public JMenuItem getPopupPresenter() {
         return new InlineMenu(context, true);
     }
@@ -103,10 +107,12 @@ public final class RefactoringContextAction extends AbstractAction implements Co
             this.popup = popup;
         }
 
+        @Override
         public JComponent[] getMenuPresenters() {
             return createMenuItems();
         }
 
+        @Override
         public JComponent[] synchMenuPresenters(JComponent[] items) {
             JComponent[] comps = new JComponent[1];
             for (JComponent item : items) {

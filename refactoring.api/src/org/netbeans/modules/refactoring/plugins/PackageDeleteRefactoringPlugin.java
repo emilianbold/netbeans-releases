@@ -80,6 +80,7 @@ public class PackageDeleteRefactoringPlugin implements RefactoringPlugin{
        refactoring = safeDeleteRefactoring;
     }
 
+    @Override
     public Problem prepare(RefactoringElementsBag refactoringElements) {
         Lookup lkp = refactoring.getRefactoringSource();
         NonRecursiveFolder folder = lkp.lookup(NonRecursiveFolder.class);
@@ -94,18 +95,22 @@ public class PackageDeleteRefactoringPlugin implements RefactoringPlugin{
         return null;
     }
 
+    @Override
     public Problem preCheck() {
         return null;
     }
 
+    @Override
     public Problem checkParameters() {
         return null;
     }
 
+    @Override
     public Problem fastCheckParameters() {
         return null;
     }
 
+    @Override
     public void cancelRequest() {
     }
 
@@ -172,6 +177,7 @@ public class PackageDeleteRefactoringPlugin implements RefactoringPlugin{
             dir = FileUtil.toFile(dirFileObject);
         }
 
+        @Override
         public void performChange() {
             try {
                 dirFileObject.delete();
@@ -189,19 +195,23 @@ public class PackageDeleteRefactoringPlugin implements RefactoringPlugin{
             }
         }
         
+        @Override
         public String getText() {
             return NbBundle.getMessage(FileDeletePlugin.class, "TXT_DeleteFolder", 
                     dirFileObject.getNameExt());
         }
 
+        @Override
         public String getDisplayText() {
             return getText();
         }
 
+        @Override
         public Lookup getLookup() {
             return Lookup.EMPTY;
         }
 
+        @Override
         public FileObject getParentFile() {
             try {
                 return URLMapper.findFileObject(dirFileObject.getURL());
@@ -211,6 +221,7 @@ public class PackageDeleteRefactoringPlugin implements RefactoringPlugin{
             }
         }
 
+        @Override
         public PositionBounds getPosition() {
             return null;
         }
@@ -239,6 +250,7 @@ public class PackageDeleteRefactoringPlugin implements RefactoringPlugin{
             }
         }
         
+        @Override
         public void performChange() {
             FileObject root = srcGroup.getRootFolder();
             FileObject parent = folder.getFolder().getParent();
@@ -264,22 +276,27 @@ public class PackageDeleteRefactoringPlugin implements RefactoringPlugin{
             }
         }
         
+        @Override
         public String getText() {
             return NbBundle.getMessage(FileDeletePlugin.class, "TXT_DeletePackage", dir.getName());
         }
 
+        @Override
         public String getDisplayText() {
             return getText();
         }
 
+        @Override
         public Lookup getLookup() {
             return Lookup.EMPTY;
         }
 
+        @Override
         public FileObject getParentFile() {
             return URLMapper.findFileObject(res);
         }
 
+        @Override
         public PositionBounds getPosition() {
             return null;
         }
