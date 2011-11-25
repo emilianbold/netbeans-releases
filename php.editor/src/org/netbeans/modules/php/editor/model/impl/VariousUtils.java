@@ -1261,7 +1261,8 @@ public class VariousUtils {
     }
 
     public static QualifiedName getFullyQualifiedName(QualifiedName qualifiedName, int offset, Scope inScope) {
-        if(qualifiedName.getKind() != QualifiedNameKind.FULLYQUALIFIED) {
+        if(qualifiedName.getKind() != QualifiedNameKind.FULLYQUALIFIED && !qualifiedName.getName().equalsIgnoreCase("self")
+                && !qualifiedName.getName().equalsIgnoreCase("static") && !qualifiedName.getName().equalsIgnoreCase("parent")) { //NOI18N
             while (inScope != null && !(inScope instanceof NamespaceScope)) {
                 inScope = inScope.getInScope();
             }
@@ -1305,7 +1306,7 @@ public class VariousUtils {
                     }
                     qualifiedName = QualifiedName.create(true, segments);
                 } else if (qualifiedName.getKind() != QualifiedNameKind.FULLYQUALIFIED) {
-                    qualifiedName = inScope.getNamespaceName().append(qualifiedName);
+                    qualifiedName = QualifiedName.createFullyQualified(qualifiedName.toString(), inScope.getNamespaceName().toString());
                 }
             }
         }

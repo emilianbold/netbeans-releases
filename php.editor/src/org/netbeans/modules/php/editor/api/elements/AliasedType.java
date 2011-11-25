@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.php.editor.api.elements;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Set;
 import org.netbeans.modules.php.editor.api.AliasedName;
 import org.netbeans.modules.php.editor.api.QualifiedName;
@@ -76,5 +78,10 @@ public class AliasedType extends AliasedElement implements TypeElement {
     @Override
     public final boolean isInterface() {
         return getRealType().isInterface();
+    }
+
+    @Override
+    public Collection<QualifiedName> getFQSuperInterfaceNames() {
+        return Collections.<QualifiedName>emptyList();
     }
 }

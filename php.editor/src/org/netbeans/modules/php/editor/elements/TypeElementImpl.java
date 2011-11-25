@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.php.editor.elements;
 
+import java.util.Collection;
 import java.util.Set;
 import org.netbeans.modules.php.editor.api.PhpModifiers;
 import org.netbeans.modules.php.editor.api.ElementQuery;
@@ -56,6 +57,7 @@ import org.netbeans.modules.php.editor.api.QualifiedName;
 public abstract class TypeElementImpl extends FullyQualifiedElementImpl implements TypeElement {
     private final PhpModifiers modifiers;
     private final Set<QualifiedName> superInterfaces;
+    private final Collection<QualifiedName> fqSuperInterfaces;
     /**
      * @param constants might be null which means not initialized (so will be loaded later)
      * @param constants might be null which means not initialized (so will be loaded later)
@@ -64,12 +66,14 @@ public abstract class TypeElementImpl extends FullyQualifiedElementImpl implemen
             final QualifiedName qualifiedName,
             final int offset,
             final Set<QualifiedName> ifaceNames,
+            final Collection<QualifiedName> fqSuperInterfaces,
             final int flags,
             final String fileUrl,
             final ElementQuery elementQuery) {
         super(qualifiedName.toName().toString(), qualifiedName.toNamespaceName().toString(), fileUrl, offset, elementQuery);
         this.superInterfaces = ifaceNames;
         this.modifiers = PhpModifiers.fromBitMask(flags);
+        this.fqSuperInterfaces = fqSuperInterfaces;
     }
 
     @Override
@@ -81,6 +85,11 @@ public abstract class TypeElementImpl extends FullyQualifiedElementImpl implemen
     @Override
     public final Set<QualifiedName> getSuperInterfaces() {
         return superInterfaces;
+    }
+
+    @Override
+    public Collection<QualifiedName> getFQSuperInterfaceNames() {
+        return fqSuperInterfaces;
     }
 
     @Override

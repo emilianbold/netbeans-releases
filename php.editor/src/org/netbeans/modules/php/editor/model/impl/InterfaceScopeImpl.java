@@ -66,7 +66,6 @@ class InterfaceScopeImpl extends TypeScopeImpl implements InterfaceScope {
     }
 
     InterfaceScopeImpl(IndexScope inScope, InterfaceElement indexedIface) {
-        //TODO: in idx is no info about ifaces
         super(inScope, indexedIface);
     }
 
@@ -168,6 +167,18 @@ class InterfaceScopeImpl extends TypeScopeImpl implements InterfaceScope {
                 sb.append(",");
             }
             sb.append(iface);
+        }
+        if (!superInterfaces.isEmpty()) {
+            sb.append("|"); //NOI18N
+            StringBuilder fqIfaceSb = new StringBuilder();
+            Collection<QualifiedName> fQSuperInterfaceNames = getFQSuperInterfaceNames();
+            for (QualifiedName fQSuperInterfaceName : fQSuperInterfaceNames) {
+                if (fqIfaceSb.length() > 0) {
+                    fqIfaceSb.append(",");//NOI18N
+                }
+                fqIfaceSb.append(fQSuperInterfaceName.toString());//NOI18N
+            }
+            sb.append(fqIfaceSb);
         }
         sb.append(";");//NOI18N
         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(this);
