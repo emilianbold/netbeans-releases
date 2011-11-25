@@ -164,6 +164,7 @@ public class ActionInvocationTest extends NbTestCase {
         super(name);
     }
     
+    @Override
     protected void setUp() throws IOException, Exception {
         try {
             super.setUp();
@@ -188,6 +189,7 @@ public class ActionInvocationTest extends NbTestCase {
         ic.add(node);
         final Action rename = RefactoringActionsFactory.renameAction().createContextAwareInstance(lookup);
         SwingUtilities.invokeAndWait(new Runnable() {
+            @Override
             public void run() {
                 if (rename.isEnabled()) {
                     rename.actionPerformed(RefactoringActionsFactory.DEFAULT_EVENT);
@@ -209,6 +211,7 @@ public class ActionInvocationTest extends NbTestCase {
         ic.add(node);
         final Action move = RefactoringActionsFactory.moveAction().createContextAwareInstance(lookup);
         SwingUtilities.invokeAndWait(new Runnable() {
+            @Override
             public void run() {
                 if (move.isEnabled()) {
                     move.actionPerformed(RefactoringActionsFactory.DEFAULT_EVENT);
@@ -268,11 +271,14 @@ public class ActionInvocationTest extends NbTestCase {
         public static RefactoringUI rui;
         private Object toReturn;
         
+        @Override
         public java.awt.Dialog createDialog(org.openide.DialogDescriptor descriptor) {
             JDialog dialog = new JDialog() {
+                @Override
                 public void setVisible(boolean visible) {
                 }
                 
+                @Override
                 public void show() {
                 }
             };
@@ -293,6 +299,7 @@ public class ActionInvocationTest extends NbTestCase {
             return dialog;
         }
         
+        @Override
         public Object notify(org.openide.NotifyDescriptor descriptor) {
             assertNull (options);
             assertNotNull(toReturn);

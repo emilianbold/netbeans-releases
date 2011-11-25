@@ -83,6 +83,7 @@ class CheckNodeListener implements MouseListener, KeyListener {
         this.isQuery = isQuery;
     }
 
+    @Override
     public void mouseClicked(MouseEvent e) {
         // todo (#pf): we need to solve problem between click and double
         // click - click should be possible only on the check box area
@@ -173,21 +174,27 @@ class CheckNodeListener implements MouseListener, KeyListener {
         }
     }
     
+    @Override
     public void keyTyped(KeyEvent e) {
     }
 
+    @Override
     public void keyReleased(KeyEvent e) {
     }
 
+    @Override
     public void mouseEntered(MouseEvent e) {
     }
 
+    @Override
     public void mouseExited(MouseEvent e) {
     }
 
+    @Override
     public void mouseReleased(MouseEvent e) {
     }
 
+    @Override
     public void mousePressed(MouseEvent event) {
         JTree tree = (JTree) event.getSource();
         int x = event.getX();
@@ -229,6 +236,7 @@ class CheckNodeListener implements MouseListener, KeyListener {
         menu.show(c, x, y);
     }
     
+    @Override
     public void keyPressed(KeyEvent e) {
         int keyCode = e.getKeyCode();
         if (keyCode == KeyEvent.VK_SPACE) {

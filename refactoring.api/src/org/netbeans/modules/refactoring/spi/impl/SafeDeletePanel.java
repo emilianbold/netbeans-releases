@@ -83,9 +83,11 @@ public class SafeDeletePanel extends JPanel implements CustomRefactoringPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     // End of variables declaration//GEN-END:variables
 
+    @Override
     public void initialize() {
     }
     
+    @Override
     public Component getComponent() {
         return this;
     }

@@ -68,6 +68,7 @@ import org.openide.util.lookup.InstanceContent;
 @org.openide.util.lookup.ServiceProvider(service=org.openide.util.datatransfer.ExClipboard.Convertor.class)
 public class ClipboardConvertor implements Convertor {
     
+    @Override
     public Transferable convert(Transferable t) {
         Node[] nodes = NodeTransfer.nodes(t, NodeTransfer.CLIPBOARD_CUT);
         
@@ -120,6 +121,7 @@ public class ClipboardConvertor implements Convertor {
             this.d=d;
         }
         
+        @Override
         public PasteType[] types(Node target) {
             RefactoringPasteType refactoringPaste = new RefactoringPasteType(delegate, target);
             if (refactoringPaste.canHandle())
@@ -138,8 +140,10 @@ public class ClipboardConvertor implements Convertor {
                     return false;
                 return (Boolean) refactor.getValue("applicable"); //NOI18N
             }
+            @Override
             public Transferable paste() throws IOException {
                 SwingUtilities.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         if (refactor!=null) {
                             refactor.actionPerformed(null);
@@ -148,6 +152,7 @@ public class ClipboardConvertor implements Convertor {
                 });
                 return null;
             }
+            @Override
             public String getName() {
                 return NbBundle.getMessage(Util.class,"Actions/Refactoring") + " " + refactor.getValue(Action.NAME);
             }

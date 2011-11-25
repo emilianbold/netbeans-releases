@@ -71,23 +71,28 @@ public class FileCopyPlugin implements RefactoringPlugin {
         this.refactoring = refactoring;
     }
     
+    @Override
     public Problem preCheck() {
         return null;
     }
     
+    @Override
     public Problem prepare(RefactoringElementsBag elements) {
         elements.add(refactoring, new CopyFile(refactoring.getRefactoringSource().lookup(FileObject.class), elements.getSession()));
         return null;
     }
     
+    @Override
     public Problem fastCheckParameters() {
         return null;
     }
     
+    @Override
     public Problem checkParameters() {
         return null;
     }
     
+    @Override
     public void cancelRequest() {
     }
     
@@ -100,14 +105,17 @@ public class FileCopyPlugin implements RefactoringPlugin {
             this.fo = fo;
             this.session = session;
         }
+        @Override
         public String getText() {            
             return NbBundle.getMessage(FileCopyPlugin.class, "TXT_CopyFile", fo.getNameExt());
         }
         
+        @Override
         public String getDisplayText() {
             return getText();
         }
         
+        @Override
         public void performChange() {
             try {
                 FileObject fo = FileHandlingFactory.getOrCreateFolder(refactoring.getTarget().lookup(URL.class));
@@ -132,14 +140,17 @@ public class FileCopyPlugin implements RefactoringPlugin {
             }
         }
         
+        @Override
         public Lookup getLookup() {
             return Lookup.EMPTY;
         }
         
+        @Override
         public FileObject getParentFile() {
             return fo;
         }
         
+        @Override
         public PositionBounds getPosition() {
             return null;
         }

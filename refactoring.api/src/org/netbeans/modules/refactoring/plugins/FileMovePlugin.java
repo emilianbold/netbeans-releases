@@ -73,10 +73,12 @@ public class FileMovePlugin implements RefactoringPlugin {
         this.refactoring = refactoring;
     }
     
+    @Override
     public Problem preCheck() {
         return null;
     }
     
+    @Override
     public Problem prepare(RefactoringElementsBag elements) {
         for (FileObject o: refactoring.getRefactoringSource().lookupAll(FileObject.class)) {
             elements.addFileChange(refactoring, new MoveFile(o, elements));
@@ -84,14 +86,17 @@ public class FileMovePlugin implements RefactoringPlugin {
         return null;
     }
     
+    @Override
     public Problem fastCheckParameters() {
         return null;
     }
         
+    @Override
     public Problem checkParameters() {
         return null;
     }
 
+    @Override
     public void cancelRequest() {
     }
     
@@ -101,16 +106,19 @@ public class FileMovePlugin implements RefactoringPlugin {
         public MoveFile(FileObject fo, RefactoringElementsBag session) {
             this.fo = fo;
         }
+        @Override
         public String getText() {
             return NbBundle.getMessage(FileMovePlugin.class, "TXT_MoveFile", fo.getNameExt());
         }
 
+        @Override
         public String getDisplayText() {
             return getText();
         }
         
         DataFolder sourceFolder;
         DataObject source;
+        @Override
         public void performChange() {
             try {
                 FileObject target = FileHandlingFactory.getOrCreateFolder(refactoring.getTarget().lookup(URL.class));
@@ -134,6 +142,7 @@ public class FileMovePlugin implements RefactoringPlugin {
             }
         }
         
+        @Override
         public void undoChange() {
             try {
                 source.move(sourceFolder);
@@ -144,14 +153,17 @@ public class FileMovePlugin implements RefactoringPlugin {
             }
         }
 
+        @Override
         public Lookup getLookup() {
             return Lookup.EMPTY;
         }
 
+        @Override
         public FileObject getParentFile() {
             return fo;
         }
 
+        @Override
         public PositionBounds getPosition() {
             return null;
         }
