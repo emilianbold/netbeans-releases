@@ -108,6 +108,22 @@ is the proper place.
 
 <changes>
 
+    <change id="tabstate_isdisplayable">
+      <api name="tabcontrol"/>
+      <summary>Added isDisplayable() method to TabState class.</summary>
+      <version major="1" minor="31"/>
+      <date day="25" month="11" year="2011"/>
+      <author login="saubrecht"/>
+      <compatibility addition="yes" binary="compatible" deprecation="no"/>
+      <description>
+        <p>There is a new method <code>boolean isDisplayable()</code> in 
+        <code>TabState</code> class which returns <code>true</code> if the tab
+        container is connected to component hierarchy, <code>false</code> otherwise.</p>
+      </description>
+      <class package="org.netbeans.swing.tabcontrol.plaf" name="TabState"/>
+      <issue number="205421"/>
+    </change>
+
     <change id="restore_group_button_ui">
       <api name="tabcontrol"/>
       <summary>Allow custom UI for 'restore window group' button.</summary>

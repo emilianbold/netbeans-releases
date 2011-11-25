@@ -471,12 +471,17 @@ public abstract class TabState {
     
     private Timer alarmTimer = null;
     private boolean attentionToggle = false;
-    private final void startAlarmTimer() {
+    private void startAlarmTimer() {
         if (alarmTimer == null) {
             ActionListener al = new ActionListener() {
+                @Override
                 public void actionPerformed (ActionEvent ae) {
+                    if( !isDisplayable() ) {
+                        //#205421 - stop the timer if the TabbedContainer isn't 
+                        //in component hierarchy anymore to avoid memory leaks
+                        stopAlarmTimer();
+                    }
                     attentionToggle = !attentionToggle;
-                    Timer timer = (Timer) ae.getSource();
                     for (Iterator i=alarmTabs.iterator(); i.hasNext();) {
                         repaintTab (((Integer) i.next()).intValue());
                     }
@@ -487,7 +492,18 @@ public abstract class TabState {
         }
         alarmTimer.start();
     }
-    
+
+    /**
+     * Check if the tab container is displayable, i.e. connected to component hierarchy.
+     * The default implementation in this class always returns true.
+     * @return True if the tab container this TabState is associated with is
+     * still in component hierarchy, false otherwise.
+     * @since 1.31
+     */
+    protected boolean isDisplayable() {
+        return true;
+    }
+
     private final void stopAlarmTimer() {
         if (alarmTimer != null && alarmTimer.isRunning()) {
             alarmTimer.stop();
