@@ -190,7 +190,9 @@ public class MenuBar extends JMenuBar implements Externalizable {
 
     @Override
     public int getMenuCount() {
-        menuBarFolder.waitFinished();
+        if (menuBarFolder != null) {
+            menuBarFolder.waitFinished();
+        }
         return super.getMenuCount();
     }
     
