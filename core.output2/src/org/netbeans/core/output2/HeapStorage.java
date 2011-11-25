@@ -57,12 +57,18 @@ class HeapStorage implements Storage {
 
     public Storage toFileMapStorage() throws IOException {
         FileMapStorage result = new FileMapStorage();
-        result.write(getReadBuffer(0, size));
+        BufferResource<ByteBuffer> br = getReadBuffer(0, size);
+        result.write(br.getBuffer());
+        br.releaseBuffer();
         return result;
     }
 
-    public ByteBuffer getReadBuffer(int start, int length) throws IOException {
-        return ByteBuffer.wrap(bytes, start, Math.min(length, bytes.length - start));
+    @Override
+    public BufferResource<ByteBuffer> getReadBuffer(
+            final int start, final int length) throws IOException {
+
+        return new HeapBufferResource(ByteBuffer.wrap(
+                bytes, start, Math.min(length, bytes.length - start)));
     }
 
     public ByteBuffer getWriteBuffer(int length) throws IOException {
@@ -102,5 +108,24 @@ class HeapStorage implements Storage {
 
     public boolean isClosed() {
         return closed;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+ 
+    private class HeapBufferResource implements BufferResource<ByteBuffer> {
+
+        private ByteBuffer buffer;
+
+        public HeapBufferResource(ByteBuffer buffer) {
+            this.buffer = buffer;
+        }
+
+        @Override
+        public ByteBuffer getBuffer() {
+            return buffer;
+        }
+
+        @Override
+        public void releaseBuffer() {
+            this.buffer = null;
+        }
     }
 }

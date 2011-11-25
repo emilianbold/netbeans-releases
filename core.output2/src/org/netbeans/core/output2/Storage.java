@@ -60,15 +60,16 @@ import java.nio.ByteBuffer;
  */
 interface Storage {
     /**
-     * Get a ByteBuffer for reading over the storage, starting at the specified byte position and containing the
-     * specified number of bytes
+     * Get a BufferResource for reading over the storage,
+     * starting at the specified byte position and containing the
+     * specified number of bytes.
      *
      * @param start The start byte
      * @param length How many bytes
      * @return A byte buffer
      * @throws IOException if there is a problem reading or allocating the buffer
      */
-    public ByteBuffer getReadBuffer (int start, int length) throws IOException;
+    public BufferResource<ByteBuffer> getReadBuffer (int start, int length) throws IOException;
     /**
      * Get a buffer for <strong>appending</strong> <code>length</code> bytes to the stored data.  Note that
      * writing into the returned buffer does not automatically write to the file - the returned buffer should
