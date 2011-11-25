@@ -132,11 +132,13 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
             int fileStart = toByteIndex(start);
             int byteCount = toByteIndex(end - start);
             try {
-                CharBuffer chb = getStorage().getReadBuffer(fileStart, byteCount).asCharBuffer();
+                BufferResource<ByteBuffer> br = getStorage().getReadBuffer(fileStart, byteCount);
+                CharBuffer chb = br.getBuffer().asCharBuffer();
                 //#68386 satisfy the request as much as possible, but if there's not enough remaining
                 // content, not much we can do..
                 int len = Math.min(end - start, chb.remaining());
                 chb.get(chars, 0, len);
+                br.releaseBuffer();
                 return chars;
             } catch (Exception e) {
                 handleException (e);
@@ -145,7 +147,7 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
         }
     }
 
-    CharBuffer getCharBuffer(int start, int len) {
+    BufferResource<CharBuffer> getCharBuffer(int start, int len) {
         if (len < 0 || start < 0) {
             throw new IllegalArgumentException ("Illogical text range from " + start + " to " + (start + len));
         }
@@ -162,7 +164,7 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
                     "but storage is only " + available + " bytes long");
             }
             try {
-                return getStorage().getReadBuffer(fileStart, byteCount).asCharBuffer();
+                return new CharBufferResource(getStorage().getReadBuffer(fileStart, byteCount));
             } catch (Exception e) {
                 return null;
             }
@@ -170,8 +172,11 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
     }
 
     public String getText (int start, int end) {
-        CharBuffer cb = getCharBuffer(start, end - start);
-        return cb != null ? cb.toString() : new String(new char[end - start]);
+        BufferResource<CharBuffer> br = getCharBuffer(start, end - start);
+        CharBuffer cb = br.getBuffer();
+        String s = cb != null ? cb.toString() : new String(new char[end - start]);
+        br.releaseBuffer();
+        return s;
     }
 
     void onDispose(int lastStorageSize) {
@@ -783,13 +788,15 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
             for (int i = 0; i < getLineCount(); i++) {
                 int lineStart = getCharLineStart(i);
                 int lineLength = length(i);
-                CharBuffer cb = getCharBuffer(lineStart, lineLength);
+                BufferResource<CharBuffer> br = getCharBuffer(lineStart, lineLength);
+                CharBuffer cb = br.getBuffer();
                 ByteBuffer bb = encoder.encode(cb);
                 ch.write(bb);
                 if (i != getLineCount() - 1) {
                     lsbb.rewind();
                     ch.write(lsbb);
                 }
+                br.releaseBuffer();
             }
             ch.close();
         } finally {
@@ -875,6 +882,7 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
             pattern = pattern.toLowerCase();
         }
         while (true) {
+            BufferResource<ByteBuffer> br = null;
             int size = getCharCount() - start;
             if (size > MAX_FIND_SIZE) {
                 int l = getLineAt(start + MAX_FIND_SIZE);
@@ -884,11 +892,18 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
             }
             CharBuffer buff = null;
             try {
-                buff = storage.getReadBuffer(toByteIndex(start), toByteIndex(size)).asCharBuffer();
+                br = storage.getReadBuffer(toByteIndex(start), toByteIndex(size));
+                buff = br.getBuffer().asCharBuffer();
             } catch (IOException ex) {
+                if (br != null) {
+                    br.releaseBuffer();
+                }
                 Exceptions.printStackTrace(ex);
             }
             if (buff == null) {
+                if (br != null) {
+                    br.releaseBuffer();
+                }
                 break;
             }
             if (regExp) {
@@ -897,16 +912,19 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
                 }
                 Matcher matcher = this.pattern.matcher(buff);
                 if (matcher.find()) {
+                    br.releaseBuffer();
                     return new int[]{start + matcher.start(), start + matcher.end()};
                 }
             } else {
                 int idx = matchCase ? buff.toString().indexOf(pattern)
                         : buff.toString().toLowerCase().indexOf(pattern);
                 if (idx != -1) {
+                    br.releaseBuffer();
                     return new int[] {start + idx, start + idx + pattern.length()};
                 }
             }
             start += buff.length();
+            br.releaseBuffer();
         }
         return null;
     }
@@ -934,13 +952,21 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
             if (start == end) {
                 break;
             }
+            BufferResource<ByteBuffer> br = null;
             CharBuffer buff = null;
             try {
-                buff = storage.getReadBuffer(toByteIndex(start), toByteIndex(end - start)).asCharBuffer();
+                br = storage.getReadBuffer(toByteIndex(start), toByteIndex(end - start));
+                buff = br.getBuffer().asCharBuffer();
             } catch (IOException ex) {
+                if (br != null) {
+                    br.releaseBuffer();
+                }
                 Exceptions.printStackTrace(ex);
             }
             if (buff == null) {
+                if (br != null) {
+                    br.releaseBuffer();
+                }
                 break;
             }
             if (regExp) {
@@ -955,15 +981,18 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
                     mEnd = matcher.end();
                 }
                 if (mStart != -1) {
+                    br.releaseBuffer();
                     return new int[]{start + mStart, start + mEnd};
                 }
             } else {
                 int idx = matchCase ? buff.toString().lastIndexOf(pattern)
                         : buff.toString().toLowerCase().lastIndexOf(pattern);
                 if (idx != -1) {
+                    br.releaseBuffer();
                     return new int[] {start + idx, start + idx + pattern.length()};
                 }
             }
+            br.releaseBuffer();
         }
         return null;
     }
@@ -1085,6 +1114,32 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
                 tabLength += tabLengthSums.get(n - 1);
             }
             tabLengthSums.add(tabLength);
+        }
+    }
+
+    /**
+     * Character buffer resource for a Byte buffer resource. At most one
+     * CharBufferResource can exists for a ByteBufferResource.
+     */
+    private class CharBufferResource implements BufferResource<CharBuffer> {
+
+        private BufferResource<ByteBuffer> parentResource;
+        private CharBuffer cb;
+
+        public CharBufferResource(BufferResource<ByteBuffer> parentResource) {
+            this.parentResource = parentResource;
+            this.cb = parentResource.getBuffer().asCharBuffer();
+        }
+
+        @Override
+        public CharBuffer getBuffer() {
+            return cb;
+        }
+
+        @Override
+        public void releaseBuffer() {
+            cb = null;
+            parentResource.releaseBuffer();
         }
     }
 }

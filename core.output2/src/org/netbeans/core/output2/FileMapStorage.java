@@ -49,11 +49,8 @@ import org.openide.util.NbBundle;
 import java.io.*;
 import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
-import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Set;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
@@ -89,7 +86,7 @@ class FileMapStorage implements Storage {
     private ByteBuffer master;
     /** A byte getWriteBuffer mapped to the contents of the output file, from which
      * content is read. */
-    private ByteBuffer contents;
+    private MappedBufferResource contents;
     /** The number of bytes from the file that have been are currently mapped
      * into the contents ByteBuffer.  This will be checked on calls that read,
      * and if more than the currently mapped bytes are requested, the
@@ -104,10 +101,6 @@ class FileMapStorage implements Storage {
      * The currently in use buffer.
      */
     private ByteBuffer buffer = null;
-    /**
-     * All mapped file buffers.
-     */
-    private List<MappedByteBuffer> mappedBuffers = null;
     /**
      * The number of bytes that have been written.
      */
@@ -130,8 +123,8 @@ class FileMapStorage implements Storage {
             @Override
             public void run() {
                 for (FileMapStorage fms : undisposed) {
-                    for (MappedByteBuffer mbb : fms.mappedBuffers) {
-                        unmap(mbb);
+                    if (fms.contents != null) {
+                        fms.contents.releaseBuffer();
                     }
                     if (fms.fileChannel != null && fms.fileChannel.isOpen()) {
                         try {
@@ -161,7 +154,6 @@ class FileMapStorage implements Storage {
         buffer = null;
         bytesWritten = 0;
         closed = true;
-        mappedBuffers = new LinkedList<MappedByteBuffer>();
         addUndisposed(this);
     }
 
@@ -284,21 +276,20 @@ class FileMapStorage implements Storage {
         }
         final FileChannel oldChannel = fileChannel;
         final File oldFile = outfile;
-        final List<MappedByteBuffer> oldMappedBuffers = mappedBuffers;
+        final MappedBufferResource oldContents = contents;
         fileChannel = null;
         closed = true;
         outfile = null;
         buffer = null;
         contents = null;
-        mappedBuffers = null;
 
         if (oldChannel != null || oldFile != null) {
             RP.post(new Runnable() {
 
                 public void run() {
                     try {
-                        for (MappedByteBuffer mbb : oldMappedBuffers) {
-                            unmap(mbb);
+                        if (oldContents != null) {
+                            oldContents.releaseBuffer();
                         }
                         if (oldChannel != null && oldChannel.isOpen()) {
                             oldChannel.close();
@@ -337,10 +328,12 @@ class FileMapStorage implements Storage {
      * output file.  This is optimized to possibly map more of the output file
      * into memory if it is not already mapped.
      */
-    public ByteBuffer getReadBuffer(int start, int byteCount) throws IOException {
+    public BufferResource<ByteBuffer> getReadBuffer(int start, int byteCount)
+            throws IOException {
+
         ByteBuffer cont;
         synchronized (this) {
-            cont = this.contents;
+            cont = this.contents == null ? null : this.contents.getBuffer();
             if (cont == null || start + byteCount > mappedRange || start < mappedStart) {
                 FileChannel ch = fileChannel();
                 mappedStart = Math.max((long)0, start - (MAX_MAP_RANGE /2));
@@ -350,15 +343,14 @@ class FileMapStorage implements Storage {
                 try {
                     try {
                         cont = ch.map(FileChannel.MapMode.READ_ONLY, mappedStart, mappedRange - mappedStart);
-                        addMappedBuffer((MappedByteBuffer) cont);
-                        this.contents = cont;
+                        updateContents(cont);
                     } catch (IOException ioe) {
                         Logger.getAnonymousLogger().info("Failed to memory map output file for reading. Trying to read it normally."); //NOI18N
 
                         // Memory mapping failed, fallback to non-mapped
                         cont = ByteBuffer.allocate((int) (mappedRange - mappedStart));
                         ch.read(cont, mappedStart);
-                        this.contents = cont;
+                        updateContents(cont);
                     }
                 } catch (IOException ioe) {
                     Logger.getAnonymousLogger().info("Failed to read output file. Start:" + start + " bytes reqd=" + //NOI18N
@@ -376,12 +368,20 @@ class FileMapStorage implements Storage {
         }
         int limit = Math.min(cont.limit(), byteCount);
         try {
-            return (ByteBuffer) cont.slice().limit(limit);
+            return new ChildBufferResource((ByteBuffer)cont.slice().limit(limit), this.contents);
         } catch (Exception e) {
             throw new IllegalStateException ("Error setting limit to " + limit //NOI18N
             + " contents size = " + cont.limit() + " requested: read " + //NOI18N
             "buffer from " + start + " to be " + byteCount + " bytes"); //NOI18N
         }
+    }
+
+    private void updateContents(ByteBuffer buffer) {
+        if (this.contents != null) {
+            this.contents.decRefs();
+        }
+        this.contents = new MappedBufferResource(buffer);
+        this.contents.incRefs();
     }
 
     public synchronized int size() {
@@ -408,15 +408,73 @@ class FileMapStorage implements Storage {
         return fileChannel == null || closed;
     }
 
-    private synchronized void addMappedBuffer(MappedByteBuffer mappedBuffer) {
-        this.mappedBuffers.add(mappedBuffer);
-    }
-
     private static synchronized void addUndisposed(FileMapStorage fms) {
         undisposed.add(fms);
     }
 
     private static synchronized void removeUndisposed(FileMapStorage fms) {
         undisposed.remove(fms);
+    }
+
+    private class ChildBufferResource implements BufferResource<ByteBuffer> {
+
+        private ByteBuffer buffer;
+        private MappedBufferResource parentResource;
+
+        public ChildBufferResource(
+                ByteBuffer buffer, MappedBufferResource parentResource) {
+
+            this.buffer = buffer;
+            this.parentResource = parentResource;
+            this.parentResource.incRefs();
+        }
+
+        @Override
+        public ByteBuffer getBuffer() {
+            return buffer;
+        }
+
+        @Override
+        public void releaseBuffer() {
+            buffer = null;
+            parentResource.decRefs();
+        }
+    }
+
+    private class MappedBufferResource
+            implements BufferResource<ByteBuffer> {
+
+        private int refs = 0;
+        private ByteBuffer buffer;
+
+        public MappedBufferResource(ByteBuffer buffer) {
+            this.buffer = buffer;
+        }
+
+        @Override
+        public void releaseBuffer() {
+            if (buffer != null) {
+                unmap(buffer);
+                buffer = null;
+            }
+        }
+
+        @Override
+        public ByteBuffer getBuffer() {
+            return buffer;
+        }
+
+        synchronized void incRefs() {
+            refs++;
+        }
+
+        synchronized void decRefs() {
+            refs--;
+            assert refs >= 0;
+            if (refs == 0) {
+                unmap(buffer);
+                buffer = null;
+            }
+        }
     }
 }
