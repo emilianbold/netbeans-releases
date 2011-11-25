@@ -218,7 +218,7 @@ public class DiffStreamSource extends StreamSource {
                     boolean isBase = file.equals(baseFile);
                     try {
                         File rf = VersionsCache.getInstance().getFileRevision(file, revision);
-                        if (rf == null) {
+                        if (rf == null || !rf.exists()) {
                             remoteFile = null;
                             return;
                         }
