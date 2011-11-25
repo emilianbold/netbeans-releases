@@ -381,8 +381,8 @@ made subject to such option by the copyright holder.
         </condition>
     </target>
 
-    <target name="-debug-javaws-debuggee" depends="-init-debug-args">
-        <exec executable="${java.home}/bin/javaws">
+    <target name="-debug-javaws-debuggee" depends="-init-debug-args,-init-platform">
+        <exec executable="${platform.home}/bin/javaws">
             <env key="JAVAWS_VM_ARGS" value="${debug-args-line} -Xrunjdwp:transport=${debug-transport},address=${jpda.address}"/>
             <arg value="-wait"/>
             <arg file="${jnlp.dest.dir}/${jnlp.file}"/>
