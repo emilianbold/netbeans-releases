@@ -203,52 +203,52 @@ SStringCharacter = [^\r\n\'\\]
 
   /* operators */
 
-  "("                            { return JsTokenId.OPERATOR_LPARAN; }
-  ")"                            { return JsTokenId.OPERATOR_RPARAN; }
-  "{"                            { return JsTokenId.OPERATOR_LCURLY; }
-  "}"                            { return JsTokenId.OPERATOR_RCURLY; }
-  "["                            { return JsTokenId.OPERATOR_LBRACKET; }
-  "]"                            { return JsTokenId.OPERATOR_RBRACKET; }
+  "("                            { return JsTokenId.OPERATOR_LEFT_PARAN; }
+  ")"                            { return JsTokenId.OPERATOR_RIGHT_PARAN; }
+  "{"                            { return JsTokenId.OPERATOR_LEFT_CURLY; }
+  "}"                            { return JsTokenId.OPERATOR_RIGHT_CURLY; }
+  "["                            { return JsTokenId.OPERATOR_LEFT_BRACKET; }
+  "]"                            { return JsTokenId.OPERATOR_RIGHT_BRACKET; }
   ";"                            { return JsTokenId.OPERATOR_SEMICOLON; }
-  ","                            |
-  "."                            |
-  "="                            |
-  ">"                            |
-  "<"                            |
-  "!"                            |
-  "~"                            |
-  "?"                            |
-  ":"                            |
-  "=="                           |
-  "<="                           |
-  ">="                           |
-  "!="                           |
-  "&&"                           |
-  "||"                           |
-  "++"                           |
-  "--"                           |
-  "+"                            |
-  "-"                            |
-  "*"                            |
-  "/"                            |
-  "&"                            |
-  "|"                            |
-  "^"                            |
-  "%"                            |
-  "<<"                           |
-  ">>"                           |
-  ">>>"                          |
-  "+="                           |
-  "-="                           |
-  "*="                           |
-  "/="                           |
-  "&="                           |
-  "|="                           |
-  "^="                           |
-  "%="                           |
-  "<<="                          |
-  ">>="                          |
-  ">>>="                         { return JsTokenId.OPERATOR; }
+  ","                            { return JsTokenId.OPERATOR_COMMA; }
+  "."                            { return JsTokenId.OPERATOR_DOT; }
+  "="                            { return JsTokenId.OPERATOR_ASSIGNMENT; }
+  ">"                            { return JsTokenId.OPERATOR_GREATER; }
+  "<"                            { return JsTokenId.OPERATOR_LOWER; }
+  "!"                            { return JsTokenId.OPERATOR_NOT; }
+  "~"                            { return JsTokenId.OPERATOR_BITWISE_NOT; }
+  "?"                            { return JsTokenId.OPERATOR_TERNARY; }
+  ":"                            { return JsTokenId.OPERATOR_COLON; }
+  "=="                           { return JsTokenId.OPERATOR_EQUALS; }
+  "<="                           { return JsTokenId.OPERATOR_LOWER_EQUALS; }
+  ">="                           { return JsTokenId.OPERATOR_GREATER_EQUALS; }
+  "!="                           { return JsTokenId.OPERATOR_NOT_EQUALS; }
+  "&&"                           { return JsTokenId.OPERATOR_AND; }
+  "||"                           { return JsTokenId.OPERATOR_OR; }
+  "++"                           { return JsTokenId.OPERATOR_INCREMENT; }
+  "--"                           { return JsTokenId.OPERATOR_DECREMENT; }
+  "+"                            { return JsTokenId.OPERATOR_PLUS; }
+  "-"                            { return JsTokenId.OPERATOR_MINUS; }
+  "*"                            { return JsTokenId.OPERATOR_MULTIPLICATION; }
+  "/"                            { return JsTokenId.OPERATOR_DIVISION; }
+  "&"                            { return JsTokenId.OPERATOR_BITWISE_AND; }
+  "|"                            { return JsTokenId.OPERATOR_BITWISE_OR; }
+  "^"                            { return JsTokenId.OPERATOR_BITWISE_XOR; }
+  "%"                            { return JsTokenId.OPERATOR_MODULUS; }
+  "<<"                           { return JsTokenId.OPERATOR_LEFT_SHIFT_ARITHMETIC; }
+  ">>"                           { return JsTokenId.OPERATOR_RIGHT_SHIFT_ARITHMETIC; }
+  ">>>"                          { return JsTokenId.OPERATOR_RIGHT_SHIFT; }
+  "+="                           { return JsTokenId.OPERATOR_PLUS_ASSIGNMENT; }
+  "-="                           { return JsTokenId.OPERATOR_MINUS_ASSIGNMENT; }
+  "*="                           { return JsTokenId.OPERATOR_MULTIPLICATION_ASSIGNMENT; }
+  "/="                           { return JsTokenId.OPERATOR_DIVISION_ASSIGNMENT; }
+  "&="                           { return JsTokenId.OPERATOR_BITWISE_AND_ASSIGNMENT; }
+  "|="                           { return JsTokenId.OPERATOR_BITWISE_OR_ASSIGNMENT; }
+  "^="                           { return JsTokenId.OPERATOR_BITWISE_XOR_ASSIGNMENT; }
+  "%="                           { return JsTokenId.OPERATOR_MODULUS_ASSIGNMENT; }
+  "<<="                          { return JsTokenId.OPERATOR_LEFT_SHIFT_ARITHMETIC_ASSIGNMENT; }
+  ">>="                          { return JsTokenId.OPERATOR_RIGHT_SHIFT_ARITHMETIC_ASSIGNMENT; }
+  ">>>="                         { return JsTokenId.OPERATOR_RIGHT_SHIFT_ASSIGNMENT; }
 
   /* string literal */
   \"                             {

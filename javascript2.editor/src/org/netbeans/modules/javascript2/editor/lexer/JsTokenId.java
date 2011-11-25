@@ -66,13 +66,52 @@ public enum JsTokenId implements TokenId {
     IDENTIFIER(null, "identifier"), // NOI18N
     STRING(null, "string"), // NOI18N
 
-    OPERATOR_LPARAN("(", "operator"), // NOI18N
-    OPERATOR_RPARAN(")", "operator"), // NOI18N
-    OPERATOR_LCURLY("{", "operator"), // NOI18N
-    OPERATOR_RCURLY("}", "operator"), // NOI18N
-    OPERATOR_LBRACKET("[", "operator"), // NOI18N
-    OPERATOR_RBRACKET("]", "operator"), // NOI18N
+    OPERATOR_LEFT_PARAN("(", "operator"), // NOI18N
+    OPERATOR_RIGHT_PARAN(")", "operator"), // NOI18N
+    OPERATOR_LEFT_CURLY("{", "operator"), // NOI18N
+    OPERATOR_RIGHT_CURLY("}", "operator"), // NOI18N
+    OPERATOR_LEFT_BRACKET("[", "operator"), // NOI18N
+    OPERATOR_RIGHT_BRACKET("]", "operator"), // NOI18N
     OPERATOR_SEMICOLON(";", "operator"), // NOI18N
+    OPERATOR_COMMA(",", "operator"), // NOI18N
+    OPERATOR_DOT(".", "operator"), // NOI18N
+    OPERATOR_ASSIGNMENT("=", "operator"), // NOI18N
+    OPERATOR_GREATER(">", "operator"), // NOI18N
+    OPERATOR_LOWER("<", "operator"), // NOI18N
+    OPERATOR_NOT("!", "operator"), // NOI18N
+    OPERATOR_BITWISE_NOT("~", "operator"), // NOI18N
+    OPERATOR_TERNARY("?", "operator"), // NOI18N
+    OPERATOR_COLON(":", "operator"), // NOI18N
+    OPERATOR_EQUALS("==", "operator"), // NOI18N
+    OPERATOR_LOWER_EQUALS("<=", "operator"), // NOI18N
+    OPERATOR_GREATER_EQUALS(">=", "operator"), // NOI18N
+    OPERATOR_NOT_EQUALS("!=", "operator"), // NOI18N
+    OPERATOR_AND("&&", "operator"), // NOI18N
+    OPERATOR_OR("||", "operator"), // NOI18N
+    OPERATOR_INCREMENT("++", "operator"), // NOI18N
+    OPERATOR_DECREMENT("--", "operator"), // NOI18N
+    OPERATOR_PLUS("+", "operator"), // NOI18N
+    OPERATOR_MINUS("-", "operator"), // NOI18N
+    OPERATOR_MULTIPLICATION("*", "operator"), // NOI18N
+    OPERATOR_DIVISION("/", "operator"), // NOI18N
+    OPERATOR_BITWISE_AND("&", "operator"), // NOI18N
+    OPERATOR_BITWISE_OR("|", "operator"), // NOI18N
+    OPERATOR_BITWISE_XOR("^", "operator"), // NOI18N
+    OPERATOR_MODULUS("%", "operator"), // NOI18N
+    OPERATOR_LEFT_SHIFT_ARITHMETIC("<<", "operator"), // NOI18N
+    OPERATOR_RIGHT_SHIFT_ARITHMETIC(">>", "operator"), // NOI18N
+    OPERATOR_RIGHT_SHIFT(">>>", "operator"), // NOI18N
+    OPERATOR_PLUS_ASSIGNMENT("+=", "operator"), // NOI18N
+    OPERATOR_MINUS_ASSIGNMENT("-=", "operator"), // NOI18N
+    OPERATOR_MULTIPLICATION_ASSIGNMENT("*=", "operator"), // NOI18N
+    OPERATOR_DIVISION_ASSIGNMENT("/=", "operator"), // NOI18N
+    OPERATOR_BITWISE_AND_ASSIGNMENT("&=", "operator"), // NOI18N
+    OPERATOR_BITWISE_OR_ASSIGNMENT("|=", "operator"), // NOI18N
+    OPERATOR_BITWISE_XOR_ASSIGNMENT("^=", "operator"), // NOI18N
+    OPERATOR_MODULUS_ASSIGNMENT("%=", "operator"), // NOI18N
+    OPERATOR_LEFT_SHIFT_ARITHMETIC_ASSIGNMENT("<<=", "operator"), // NOI18N
+    OPERATOR_RIGHT_SHIFT_ARITHMETIC_ASSIGNMENT(">>=", "operator"), // NOI18N
+    OPERATOR_RIGHT_SHIFT_ASSIGNMENT(">>>=", "operator"), // NOI18N
 
     KEYWORD_BREAK("break", "keyword"), // NOI18N
     KEYWORD_CASE("case", "keyword"), // NOI18N
@@ -134,9 +173,7 @@ public enum JsTokenId implements TokenId {
 
     KEYWORD_TRUE("true", "keyword"), // NOI18N
     KEYWORD_FALSE("false", "keyword"), // NOI18N
-    KEYWORD_NULL("null", "keyword"), // NOI18N
-
-    OPERATOR(null, "operator"); // NOI18N
+    KEYWORD_NULL("null", "keyword"); // NOI18N
 
     public static final String JAVASCRIPT_MIME_TYPE = "text/javascript"; // NOI18N
 
