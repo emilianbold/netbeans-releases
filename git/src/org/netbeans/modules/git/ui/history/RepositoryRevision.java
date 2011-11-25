@@ -47,7 +47,7 @@ import java.io.File;
 import java.text.DateFormat;
 import java.util.*;
 import org.netbeans.libs.git.GitBranch;
-import org.netbeans.libs.git.GitClient;
+import org.netbeans.modules.git.client.GitClient;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitFileInfo;
 import org.netbeans.libs.git.GitFileInfo.Status;

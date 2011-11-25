@@ -786,6 +786,13 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
             if (field instanceof ReflectionVariable) {
                 return;
             }
+            if (field instanceof ArrayAccess) {
+                ArrayAccess arrayAccess = (ArrayAccess) field;
+                VariableBase name = arrayAccess.getName();
+                if (name instanceof ReflectionVariable) {
+                    return;
+                }
+            }
         }
         if (showAssertFor185229) {
             final FileObject fileObject = fileScope.getFileObject();

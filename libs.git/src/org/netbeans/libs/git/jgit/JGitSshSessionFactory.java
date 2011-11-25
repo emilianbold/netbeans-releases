@@ -57,12 +57,12 @@ import org.eclipse.jgit.util.FS;
  *
  * @author ondra
  */
-class JGitSshSessionFactory extends JschConfigSessionFactory {
+public class JGitSshSessionFactory extends JschConfigSessionFactory {
 
     private OpenSshConfig sshConfig;
     private static SshSessionFactory INSTANCE;
 
-    static synchronized SshSessionFactory getDefault () {
+    public static synchronized SshSessionFactory getDefault () {
         if (INSTANCE == null) {
             INSTANCE = new JGitSshSessionFactory();
         }

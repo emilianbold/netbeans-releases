@@ -63,6 +63,7 @@ import org.netbeans.modules.maven.j2ee.ExecutionChecker;
 import org.netbeans.modules.maven.j2ee.MavenJavaEEConstants;
 import org.netbeans.modules.maven.j2ee.SessionContent;
 import org.netbeans.modules.maven.j2ee.Wrapper;
+import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
 
 /**
  *
@@ -73,7 +74,7 @@ public abstract class BaseRunCustomizer extends JPanel implements ApplyChangesCu
     protected Project project;
     protected ModelHandle handle;
     protected CheckBoxUpdater deployOnSaveUpdater;
-    protected ComboBoxUpdater<Wrapper> listener;
+    protected ComboBoxUpdater<Wrapper> serverModelUpdater;
     
 
     public BaseRunCustomizer(ModelHandle handle, Project project) {
@@ -81,6 +82,22 @@ public abstract class BaseRunCustomizer extends JPanel implements ApplyChangesCu
         this.project = project;
     }
     
+    protected void changeServer(JComboBox selectedServerComboBox) {
+        SessionContent sc = project.getLookup().lookup(SessionContent.class);
+        if (serverModelUpdater.getValue() != null) {
+            sc.setServerInstanceId(null);
+        }
+        
+        Wrapper selectedServer = (Wrapper) selectedServerComboBox.getSelectedItem();
+        // User is trying to set <No Server> option
+        if (ExecutionChecker.DEV_NULL.equals(selectedServer.getServerInstanceID())) {
+            MavenProjectSupport.setServerID(project, null);
+            MavenProjectSupport.setServerInstanceID(project, null);
+            MavenProjectSupport.setOldServerInstanceID(project, null);
+        }
+        
+        MavenProjectSupport.changeServer(project, false);
+    }
     
     protected void initDeployOnSaveComponent(final JCheckBox dosCheckBox, final JLabel dosDescription) {
         deployOnSaveUpdater = new CheckBoxUpdater(dosCheckBox) {
@@ -124,7 +141,7 @@ public abstract class BaseRunCustomizer extends JPanel implements ApplyChangesCu
     }
     
     protected void initServerComponent(JComboBox serverComboBox, JLabel serverLabel) {
-        listener = Wrapper.createComboBoxUpdater(handle, serverComboBox, serverLabel);
+        serverModelUpdater = Wrapper.createComboBoxUpdater(handle, serverComboBox, serverLabel);
     }
     
     private void updateDoSEnablement(JCheckBox dosCheckBox, JLabel dosDescription) {

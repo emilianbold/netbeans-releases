@@ -609,6 +609,11 @@ public abstract class BasicTabDisplayerUI extends AbstractTabDisplayerUI {
             displayer.repaint(scratch.x, scratch.y, scratch.width,
                               scratch.height);
         }
+
+        @Override
+        public boolean isDisplayable() {
+            return displayer.isDisplayable();
+        }
     }
     
     @Override

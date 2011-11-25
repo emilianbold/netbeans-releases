@@ -50,7 +50,7 @@ import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.DocumentEvent;
-import org.netbeans.libs.git.GitClient;
+import org.netbeans.modules.git.client.GitClient;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.project.FileOwnerQuery;

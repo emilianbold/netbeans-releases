@@ -54,7 +54,7 @@ import org.netbeans.libs.git.GitClientCallback;
  *
  * @author ondra
  */
-class JGitCredentialsProvider extends CredentialsProvider {
+public class JGitCredentialsProvider extends CredentialsProvider {
     private final GitClientCallback callback;
     private static final Logger LOG = Logger.getLogger(JGitCredentialsProvider.class.getName());
 

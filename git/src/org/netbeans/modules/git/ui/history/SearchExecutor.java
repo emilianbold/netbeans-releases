@@ -51,7 +51,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.*;
 import org.netbeans.libs.git.GitBranch;
-import org.netbeans.libs.git.GitClient;
+import org.netbeans.modules.git.client.GitClient;
 import org.netbeans.libs.git.GitRevisionInfo;
 import org.netbeans.libs.git.GitTag;
 import org.netbeans.libs.git.SearchCriteria;

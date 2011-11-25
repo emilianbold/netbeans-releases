@@ -56,6 +56,8 @@ import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.libs.git.GitClient;
+import org.netbeans.libs.git.GitClientFactory;
+import org.netbeans.libs.git.ApiUtils;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitStatus;
 import org.netbeans.libs.git.GitStatus.Status;
@@ -171,16 +173,16 @@ public class AbstractGitTestCase extends NbTestCase {
         repository.create(true);
 
         if (createLocalClone()) {
-            JGitClientFactory fact = JGitClientFactory.getInstance();
+            GitClientFactory fact = GitClientFactory.getInstance();
             fact.getClient(wc).init(ProgressMonitor.NULL_PROGRESS_MONITOR);
-            Field f = JGitClientFactory.class.getDeclaredField("repositoryPool");
+            Field f = GitClientFactory.class.getDeclaredField("repositoryPool");
             f.setAccessible(true);
             localRepository = ((Map<File, JGitRepository>) f.get(fact)).get(wc);
         }
     }
 
     protected GitClient getClient (File repository) throws GitException {
-        return JGitClientFactory.getInstance().getClient(repository);
+        return GitClientFactory.getInstance().getClient(repository);
     }
 
     protected void add (File... files) throws GitException {
@@ -212,7 +214,7 @@ public class AbstractGitTestCase extends NbTestCase {
     }
     
     protected void clearRepositoryPool() throws NoSuchFieldException, IllegalArgumentException, IllegalArgumentException, IllegalAccessException {
-        JGitClientFactory.getInstance().clearRepositoryPool();
+        ApiUtils.clearRepositoryPool(GitClientFactory.getInstance());
     }
 
     protected static class Monitor extends ProgressMonitor.DefaultProgressMonitor implements FileListener {
@@ -264,7 +266,7 @@ public class AbstractGitTestCase extends NbTestCase {
         }
     }
     
-    public static JGitClientFactory getJGitClientFactory() {
-        return JGitClientFactory.getInstance();
+    public static GitClientFactory getGitClientFactory() {
+        return GitClientFactory.getInstance();
     }
 }

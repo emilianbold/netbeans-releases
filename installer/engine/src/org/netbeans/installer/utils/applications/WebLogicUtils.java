@@ -115,6 +115,7 @@ public class WebLogicUtils {
         commands.add("-Dweblogic.management.GenerateDefaultConfig=true");
         commands.add("-Dweblogic.management.username=" + username);
         commands.add("-Dweblogic.management.password=" + adminPassword);                
+        commands.add("-Djava.endorsed.dirs=" + new File(wlLocation, "modules" + File.separator + "endorsed").getAbsolutePath());
         commands.add("weblogic.Server");
 //        %JAVA_HOME%\bin\java.exe 
 //        -Xmx1024m -XX:MaxPermSize=128m -classpath=$CLASSPATH -Dweblogic.Domain=domainname -Dweblogic.management.GenerateDefaultConfig=true
@@ -348,7 +349,7 @@ public class WebLogicUtils {
     public static final int DELTA_DELAY = 5; // NOMAGI    
     
     private static final String SERVER_RUNNING_TAG = 
-            "Server started in RUNNING mode"; // NOI18N
+            "The server started in RUNNING mode"; // NOI18N
     private static final String MW_HOME = 
             "MW_HOME"; // NOI18N
     private static final String JAVA_HOME = 

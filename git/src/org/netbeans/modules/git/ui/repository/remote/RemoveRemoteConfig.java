@@ -43,7 +43,7 @@
 package org.netbeans.modules.git.ui.repository.remote;
 
 import java.io.File;
-import org.netbeans.libs.git.GitClient;
+import org.netbeans.modules.git.client.GitClient;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitClientExceptionHandler;

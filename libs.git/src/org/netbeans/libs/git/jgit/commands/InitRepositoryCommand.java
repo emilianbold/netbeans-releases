@@ -44,10 +44,11 @@ package org.netbeans.libs.git.jgit.commands;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.MessageFormat;
 import org.eclipse.jgit.lib.Repository;
 import org.netbeans.libs.git.GitException;
+import org.netbeans.libs.git.jgit.Utils;
 import org.netbeans.libs.git.progress.ProgressMonitor;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -67,7 +68,7 @@ public class InitRepositoryCommand extends GitCommand {
     protected boolean prepareCommand () throws GitException {
         boolean repositoryExists = getRepository().getDirectory().exists();
         if (repositoryExists) {
-            String message = NbBundle.getMessage(InitRepositoryCommand.class, "MSG_Error_RepositoryExists", getRepository().getWorkTree()); //NOI18N
+            String message = MessageFormat.format(Utils.getBundle(InitRepositoryCommand.class).getString("MSG_Error_RepositoryExists"), getRepository().getWorkTree()); //NOI18N
             monitor.preparationsFailed(message);
             throw new GitException(message);
         }
@@ -79,7 +80,7 @@ public class InitRepositoryCommand extends GitCommand {
         Repository repository = getRepository();
         try {
             if (!(workDir.exists() || workDir.mkdirs())) {
-                throw new GitException(NbBundle.getMessage(InitRepositoryCommand.class, "MSG_Exception_CannotCreateFolder", workDir.getAbsolutePath())); //NOI18N
+                throw new GitException(MessageFormat.format(Utils.getBundle(InitRepositoryCommand.class).getString("MSG_Exception_CannotCreateFolder"), workDir.getAbsolutePath())); //NOI18N
             }
             repository.create();
         } catch (IllegalStateException ex) {

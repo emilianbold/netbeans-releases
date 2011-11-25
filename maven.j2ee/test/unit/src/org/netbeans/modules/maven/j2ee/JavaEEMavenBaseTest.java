@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,63 +37,49 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.maven.j2ee;
 
-package org.netbeans.libs.git.jgit;
-
-import java.io.File;
-import java.util.Map;
-import java.util.WeakHashMap;
-import org.eclipse.jgit.transport.SshSessionFactory;
-import org.netbeans.libs.git.GitClient;
-import org.netbeans.libs.git.GitClientFactory;
-import org.netbeans.libs.git.GitException;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.ServiceProvider;
-import org.openide.util.lookup.ServiceProviders;
+import java.util.logging.Level;
+import org.netbeans.api.project.Project;
+import org.netbeans.junit.NbTestCase;
 
 /**
- *
- * @author ondra
+ * Base class for Java EE maven tests. Encapsulate basic stuff needed in every test case such as creating new project
+ * in a proper folder, setting logger and so on.
+ * 
+ * @author Martin Janicek
  */
-@ServiceProviders(value = { @ServiceProvider(service=GitClientFactory.class), @ServiceProvider(service=JGitClientFactory.class) })
-public final class JGitClientFactory extends GitClientFactory {
-
-    private static JGitClientFactory instance;
-    private final Map<File, JGitRepository> repositoryPool;
-
-    public JGitClientFactory () {
-        repositoryPool = new WeakHashMap<File, JGitRepository>(5);
-    }
-
-    static synchronized JGitClientFactory getInstance () {
-        if (instance == null) {
-            instance = Lookup.getDefault().lookup(JGitClientFactory.class);
-        }
-        return instance;
-    }
-
-    void clearRepositoryPool() {
-        synchronized(repositoryPool) {
-            repositoryPool.clear();
-        }
+public class JavaEEMavenBaseTest extends NbTestCase {
+    
+    protected Project project;
+    
+    
+    public JavaEEMavenBaseTest(String name) {
+        super(name);
     }
     
     @Override
-    public GitClient getClient (File repositoryLocation) throws GitException {
-        synchronized (repositoryPool) {
-            JGitRepository repository = repositoryPool.get(repositoryLocation);
-            if (repository == null) {
-                // careful about keeping the reference to the repositoryRoot, rather create a new instance
-                repositoryPool.put(repositoryLocation, repository = new JGitRepository(new File(repositoryLocation.getParentFile(), repositoryLocation.getName())));
-            }
-            SshSessionFactory.setInstance(JGitSshSessionFactory.getDefault());
-            return createClient(repository);
-        }
+    protected Level logLevel() {
+        return Level.FINE;
     }
-
-    private GitClient createClient (JGitRepository repository) {
-        return new JGitClient(repository);
+    
+    @Override
+    protected String logRoot() {
+        return "org.netbeans.modules.maven.j2ee"; //NOI18N
+    }
+    
+    @Override
+    protected void setUp() throws Exception {
+        clearWorkDir();
+        
+        project = JavaEEMavenTestSupport.createMavenWebProject(getWorkDir());
+    }
+    
+    public void testBaseClassFakeTest() {
+        // This test is here just because there has to be at least one test in NbTestCase subclass (to be honest I
+        // don't have a clue why it's implemented like that). But for possibility to have an abstract base class for 
+        // a set of different test classes this need to be here. Weeeird!
     }
 }

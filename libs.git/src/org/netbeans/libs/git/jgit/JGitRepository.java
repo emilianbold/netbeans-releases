@@ -53,11 +53,9 @@ import org.eclipse.jgit.lib.Repository;
  * @author ondra
  */
 public final class JGitRepository {
-    private final File location;
     private final Repository repository;
 
     public JGitRepository (File location) throws GitException {
-        this.location = location;
         this.repository = getRepository(location);
     }
 
@@ -75,7 +73,7 @@ public final class JGitRepository {
         }
     }
 
-    Repository getRepository () {
+    public Repository getRepository () {
         return repository;
     }
 }
