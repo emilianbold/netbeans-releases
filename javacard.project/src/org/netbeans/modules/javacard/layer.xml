@@ -43,7 +43,6 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 
 -->
-
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
 <filesystem>
     <folder name="Services">
@@ -69,49 +68,49 @@ made subject to such option by the copyright holder.
         <folder name="Project">
             <!-- The main project types of Java Card 3.0 -->
             <folder name="javacard">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.Bundle"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.javacard.Bundle#Templates/Project/javacard"/>
                 <attr name="position" intvalue="471"/>
 
                 <file name="capproject.properties" url="templates/cap-project-template.properties">
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.Bundle"/>
+                    <attr name="displayName" bundlevalue="org.netbeans.modules.javacard.Bundle#Templates/Project/javacard/capproject.properties"/>
+                    <attr name="iconBase" stringvalue="org/netbeans/modules/javacard/spi/resources/capproject.png"/>
                     <attr name="position" intvalue="100"/>
-                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/javacard/spi/resources/capproject.png"/>
                     <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.javacard.wizard.ProjectWizardIterator.create"/>
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javacard/resources/CapProjectDescription.html"/>
                     <attr name="projectType" stringvalue="CLASSIC_APPLET"/>
                     <attr name="template" boolvalue="true"/>
                 </file>
                 <file name="eapproject.properties" url="templates/eap-project-template.properties">
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.Bundle"/>
+                    <attr name="displayName" bundlevalue="org.netbeans.modules.javacard.Bundle#Templates/Project/javacard/eapproject.properties"/>
+                    <attr name="iconBase" stringvalue="org/netbeans/modules/javacard/spi/resources/eapproject.png"/>
                     <attr name="position" intvalue="300"/>
-                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/javacard/spi/resources/eapproject.png"/>
                     <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.javacard.wizard.ProjectWizardIterator.create"/>
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javacard/resources/EapProjectDescription.html"/>
                     <attr name="projectType" stringvalue="EXTENDED_APPLET"/>
                     <attr name="template" boolvalue="true"/>
                 </file>
                 <file name="clslibproject.properties" url="templates/clslib-project-template.properties">
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.Bundle"/>
+                    <attr name="displayName" bundlevalue="org.netbeans.modules.javacard.Bundle#Templates/Project/javacard/clslibproject.properties"/>
+                    <attr name="iconBase" stringvalue="org/netbeans/modules/javacard/spi/resources/clslibproject.png"/>
                     <attr name="position" intvalue="400"/>
-                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/javacard/spi/resources/clslibproject.png"/>
                     <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.javacard.wizard.ProjectWizardIterator.create"/>
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javacard/resources/ClsLibProjectDescription.html"/>
                     <attr name="projectType" stringvalue="CLASSIC_LIBRARY"/>
                     <attr name="template" boolvalue="true"/>
                 </file>
                 <file name="extlibproject.properties" url="templates/extlib-project-template.properties">
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.Bundle"/>
+                    <attr name="displayName" bundlevalue="org.netbeans.modules.javacard.Bundle#Templates/Project/javacard/extlibproject.properties"/>
+                    <attr name="iconBase" stringvalue="org/netbeans/modules/javacard/spi/resources/extlibproject.png"/>
                     <attr name="position" intvalue="500"/>
-                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/javacard/spi/resources/extlibproject.png"/>
                     <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.javacard.wizard.ProjectWizardIterator.create"/>
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javacard/resources/ExtLibProjectDescription.html"/>
                     <attr name="projectType" stringvalue="EXTENSION_LIBRARY"/>
                     <attr name="template" boolvalue="true"/>
                 </file>
                 <file name="webproject.properties" url="templates/web-project-template.properties">
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.Bundle"/>
+                    <attr name="displayName" bundlevalue="org.netbeans.modules.javacard.Bundle#Templates/Project/javacard/webproject.properties"/>
+                    <attr name="iconBase" stringvalue="org/netbeans/modules/javacard/spi/resources/webproject.png"/>
                     <attr name="position" intvalue="600"/>
-                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/javacard/spi/resources/webproject.png"/>
                     <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.javacard.wizard.ProjectWizardIterator.create"/>
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javacard/resources/WebProjectDescription.html"/>
                     <attr name="projectType" stringvalue="WEB"/>
@@ -122,34 +121,37 @@ made subject to such option by the copyright holder.
 
         <!-- Templates for "New file..." wizards specific for Java Card 3.0 -->
         <folder name="javacard">
+            <attr name="displayName" bundlevalue="org.netbeans.modules.javacard.Bundle#Templates/javacard"/>
             <attr name="position" intvalue="571"/>
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.Bundle"/>
             <file name="Servlet.java" url="templates/Servlet.template">
+                <attr name="displayName" bundlevalue="org.netbeans.modules.javacard.templates.Bundle#Templates/javacard/Servlet.java"/>
+                <attr name="iconBase" stringvalue="org/netbeans/modules/java/resources/class.gif"/>
                 <attr name="template" boolvalue="true"/>
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.templates.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javacard/templates/ServletDescription.html"/>
                 <attr name="instantiatingIterator" newvalue="org.netbeans.modules.javacard.templates.ServletWizardIterator"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="position" intvalue="100"/>
+                <attr name="templateCategory" stringvalue="javacard"/>
             </file>
             <file name="ExtendedApplet.java" url="templates/ExtendedApplet.template">
+                <attr name="displayName" bundlevalue="org.netbeans.modules.javacard.templates.Bundle#Templates/javacard/ExtendedApplet.java"/>
+                <attr name="iconBase" stringvalue="org/netbeans/modules/java/resources/class.gif"/>
                 <attr name="template" boolvalue="true"/>
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.templates.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javacard/templates/ExtendedAppletDescription.html"/>
                 <attr name="instantiatingIterator" newvalue="org.netbeans.modules.javacard.templates.ClassicAppletWizardIterator"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="position" intvalue="200"/>
+                <attr name="templateCategory" stringvalue="javacard"/>
             </file>
             <file name="ClassicApplet.java" url="templates/ClassicApplet.template">
+                <attr name="displayName" bundlevalue="org.netbeans.modules.javacard.templates.Bundle#Templates/javacard/ClassicApplet.java"/>
+                <attr name="iconBase" stringvalue="org/netbeans/modules/java/resources/class.gif"/>
                 <attr name="template" boolvalue="true"/>
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.templates.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javacard/templates/ClassicAppletDescription.html"/>
                 <attr name="instantiatingIterator" newvalue="org.netbeans.modules.javacard.templates.ClassicAppletWizardIterator"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="position" intvalue="300"/>
+                <attr name="templateCategory" stringvalue="javacard"/>
             </file>
         </folder>
     </folder>
@@ -168,35 +170,35 @@ made subject to such option by the copyright holder.
             </folder>
             <folder name="Customizer">
                 <file name="Sources.instance">
+                    <attr name="displayName" bundlevalue="org.netbeans.modules.javacard.templates.Bundle#Projects/org-netbeans-modules-javacard-webproject/Customizer/Sources.instance"/>
                     <attr name="position" intvalue="0"/>
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.javacard.project.customizer.JCProjectCategoryProvider.create"/>
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.templates.Bundle"/>
                 </file>
                 <file name="Dependencies.instance">
+                    <attr name="displayName" bundlevalue="org.netbeans.modules.javacard.templates.Bundle#Projects/org-netbeans-modules-javacard-webproject/Customizer/Dependencies.instance"/>
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.javacard.project.customizer.JCProjectCategoryProvider.create"/>
                     <attr name="position" intvalue="200"/>
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.templates.Bundle"/>
                 </file>
                 <file name="Web.instance">
+                    <attr name="displayName" bundlevalue="org.netbeans.modules.javacard.templates.Bundle#Projects/org-netbeans-modules-javacard-webproject/Customizer/Web.instance"/>
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.javacard.project.customizer.JCProjectCategoryProvider.create"/>
                     <attr name="position" intvalue="300"/>
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.templates.Bundle"/>
                 </file>
                 <folder name="Build">
                     <attr name="position" intvalue="400"/>
                     <file name="Compiling.instance">
-                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.Bundle"/>
+                        <attr name="displayName" bundlevalue="org.netbeans.modules.javacard.Bundle#Projects/org-netbeans-modules-javacard-webproject/Customizer/Build/Compiling.instance"/>
                         <attr name="position" intvalue="100"/>
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.javacard.project.customizer.JCProjectCategoryProvider.create"/>
                     </file>
                     <file name="Security.instance">
-                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.Bundle"/>
+                        <attr name="displayName" bundlevalue="org.netbeans.modules.javacard.Bundle#Projects/org-netbeans-modules-javacard-webproject/Customizer/Build/Security.instance"/>
                         <attr name="position" intvalue="300"/>
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.javacard.project.customizer.JCProjectCategoryProvider.create"/>
                     </file>
                 </folder>
                 <file name="Run.instance">
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.templates.Bundle"/>
+                    <attr name="displayName" bundlevalue="org.netbeans.modules.javacard.templates.Bundle#Projects/org-netbeans-modules-javacard-webproject/Customizer/Run.instance"/>
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.javacard.project.customizer.JCProjectCategoryProvider.create"/>
                     <attr name="position" intvalue="500"/>
                 </file>
@@ -227,21 +229,21 @@ made subject to such option by the copyright holder.
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.javacard.project.customizer.JCProjectCategoryProvider.create"/>
                 </file>
                 <folder name="Build">
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.Bundle"/>
+                    <attr name="displayName" bundlevalue="org.netbeans.modules.javacard.Bundle#Projects/org-netbeans-modules-javacard-eapproject/Customizer/Build"/>
                     <attr name="position" intvalue="400"/>
                     <file name="Compiling.instance">
-                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.Bundle"/>
+                        <attr name="displayName" bundlevalue="org.netbeans.modules.javacard.Bundle#Projects/org-netbeans-modules-javacard-eapproject/Customizer/Build/Compiling.instance"/>
                         <attr name="position" intvalue="100"/>
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.javacard.project.customizer.JCProjectCategoryProvider.create"/>
                     </file>
                     <file name="Security.instance">
-                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.Bundle"/>
+                        <attr name="displayName" bundlevalue="org.netbeans.modules.javacard.Bundle#Projects/org-netbeans-modules-javacard-eapproject/Customizer/Build/Security.instance"/>
                         <attr name="position" intvalue="200"/>
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.javacard.project.customizer.JCProjectCategoryProvider.create"/>
                     </file>
                 </folder>
                 <file name="Run.instance">
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.Bundle"/>
+                    <attr name="displayName" bundlevalue="org.netbeans.modules.javacard.Bundle#Projects/org-netbeans-modules-javacard-eapproject/Customizer/Run.instance"/>
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.javacard.project.customizer.JCProjectCategoryProvider.create"/>
                     <attr name="position" intvalue="500"/>
                 </file>
@@ -261,41 +263,41 @@ made subject to such option by the copyright holder.
             </folder>
             <folder name="Customizer">
                 <file name="Sources.instance">
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.Bundle"/>
+                    <attr name="displayName" bundlevalue="org.netbeans.modules.javacard.Bundle#Projects/org-netbeans-modules-javacard-capproject/Customizer/Sources.instance"/>
                     <attr name="position" intvalue="0"/>
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.javacard.project.customizer.JCProjectCategoryProvider.create"/>
                 </file>
                 <file name="Dependencies.instance">
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.Bundle"/>
+                    <attr name="displayName" bundlevalue="org.netbeans.modules.javacard.Bundle#Projects/org-netbeans-modules-javacard-capproject/Customizer/Dependencies.instance"/>
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.javacard.project.customizer.JCProjectCategoryProvider.create"/>
                     <attr name="position" intvalue="200"/>
                 </file>
                 <file name="Applets.instance">
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.Bundle"/>
+                    <attr name="displayName" bundlevalue="org.netbeans.modules.javacard.Bundle#Projects/org-netbeans-modules-javacard-capproject/Customizer/Applets.instance"/>
                     <attr name="position" intvalue="300"/>
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.javacard.project.customizer.JCProjectCategoryProvider.create"/>
                 </file>
                 <folder name="Build">
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.Bundle"/>
+                    <attr name="displayName" bundlevalue="org.netbeans.modules.javacard.Bundle#Projects/org-netbeans-modules-javacard-capproject/Customizer/Build"/>
                     <attr name="position" intvalue="400"/>
                     <file name="Compiling.instance">
-                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.Bundle"/>
+                        <attr name="displayName" bundlevalue="org.netbeans.modules.javacard.Bundle#Projects/org-netbeans-modules-javacard-capproject/Customizer/Build/Compiling.instance"/>
                         <attr name="position" intvalue="100"/>
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.javacard.project.customizer.JCProjectCategoryProvider.create"/>
                     </file>
                     <file name="Packaging.instance">
-                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.Bundle"/>
+                        <attr name="displayName" bundlevalue="org.netbeans.modules.javacard.Bundle#Projects/org-netbeans-modules-javacard-capproject/Customizer/Build/Packaging.instance"/>
                         <attr name="position" intvalue="200"/>
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.javacard.project.customizer.JCProjectCategoryProvider.create"/>
                     </file>
                     <file name="Security.instance">
-                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.Bundle"/>
+                        <attr name="displayName" bundlevalue="org.netbeans.modules.javacard.Bundle#Projects/org-netbeans-modules-javacard-capproject/Customizer/Build/Security.instance"/>
                         <attr name="position" intvalue="300"/>
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.javacard.project.customizer.JCProjectCategoryProvider.create"/>
                     </file>
                 </folder>
                 <file name="Run.instance">
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.Bundle"/>
+                    <attr name="displayName" bundlevalue="org.netbeans.modules.javacard.Bundle#Projects/org-netbeans-modules-javacard-capproject/Customizer/Run.instance"/>
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.javacard.project.customizer.JCProjectCategoryProvider.create"/>
                     <attr name="position" intvalue="500"/>
                 </file>
@@ -315,30 +317,30 @@ made subject to such option by the copyright holder.
             </folder>
             <folder name="Customizer">
                 <file name="Sources.instance">
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.Bundle"/>
+                    <attr name="displayName" bundlevalue="org.netbeans.modules.javacard.Bundle#Projects/org-netbeans-modules-javacard-extlibproject/Customizer/Sources.instance"/>
                     <attr name="position" intvalue="100"/>
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.javacard.project.customizer.JCProjectCategoryProvider.create"/>
                 </file>
                 <file name="Dependencies.instance">
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.Bundle"/>
+                    <attr name="displayName" bundlevalue="org.netbeans.modules.javacard.Bundle#Projects/org-netbeans-modules-javacard-extlibproject/Customizer/Dependencies.instance"/>
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.javacard.project.customizer.JCProjectCategoryProvider.create"/>
                     <attr name="position" intvalue="200"/>
                 </file>
                 <folder name="Build">
                     <attr name="position" intvalue="300"/>
                     <file name="Compiling.instance">
-                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.Bundle"/>
+                        <attr name="displayName" bundlevalue="org.netbeans.modules.javacard.Bundle#Projects/org-netbeans-modules-javacard-extlibproject/Customizer/Build/Compiling.instance"/>
                         <attr name="position" intvalue="100"/>
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.javacard.project.customizer.JCProjectCategoryProvider.create"/>
                     </file>
                     <file name="Security.instance">
-                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.Bundle"/>
+                        <attr name="displayName" bundlevalue="org.netbeans.modules.javacard.Bundle#Projects/org-netbeans-modules-javacard-extlibproject/Customizer/Build/Security.instance"/>
                         <attr name="position" intvalue="300"/>
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.javacard.project.customizer.JCProjectCategoryProvider.create"/>
                     </file>
                 </folder>
                 <file name="Run.instance">
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.Bundle"/>
+                    <attr name="displayName" bundlevalue="org.netbeans.modules.javacard.Bundle#Projects/org-netbeans-modules-javacard-extlibproject/Customizer/Run.instance"/>
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.javacard.project.customizer.JCProjectCategoryProvider.create"/>
                     <attr name="position" intvalue="400"/>
                 </file>
@@ -368,17 +370,17 @@ made subject to such option by the copyright holder.
                 <folder name="Build">
                     <attr name="position" intvalue="300"/>
                     <file name="Compiling.instance">
-                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.Bundle"/>
+                        <attr name="displayName" bundlevalue="org.netbeans.modules.javacard.Bundle#Projects/org-netbeans-modules-javacard-clslibproject/Customizer/Build/Compiling.instance"/>
                         <attr name="position" intvalue="100"/>
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.javacard.project.customizer.JCProjectCategoryProvider.create"/>
                     </file>
                     <file name="Packaging.instance">
-                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.Bundle"/>
+                        <attr name="displayName" bundlevalue="org.netbeans.modules.javacard.Bundle#Projects/org-netbeans-modules-javacard-clslibproject/Customizer/Build/Packaging.instance"/>
                         <attr name="position" intvalue="200"/>
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.javacard.project.customizer.JCProjectCategoryProvider.create"/>
                     </file>
                     <file name="Security.instance">
-                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.Bundle"/>
+                        <attr name="displayName" bundlevalue="org.netbeans.modules.javacard.Bundle#Projects/org-netbeans-modules-javacard-clslibproject/Customizer/Build/Security.instance"/>
                         <attr name="position" intvalue="300"/>
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.javacard.project.customizer.JCProjectCategoryProvider.create"/>
                     </file>

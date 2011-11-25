@@ -99,7 +99,7 @@ made subject to such option by the copyright holder.
                 <attr name="template" boolvalue="true"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javafx2/project/templates/FXMain.html"/>
-                <attr name="templateCategory" stringvalue="java-main-class"/>
+                <attr name="templateCategory" stringvalue="javafx"/>
             </file>
 
             <file name="FXPreloader.java" url="templates/FXPreloader.template">
@@ -110,7 +110,7 @@ made subject to such option by the copyright holder.
                 <attr name="template" boolvalue="true"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javafx2/project/templates/FXPreloader.html"/>
-                <attr name="templateCategory" stringvalue="java-main-class"/>
+                <attr name="templateCategory" stringvalue="javafx"/>
             </file>
 
             <file name="FXML.java" url="templates/FXML_java_1.template">
@@ -121,6 +121,7 @@ made subject to such option by the copyright holder.
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javafx2/project/templates/FXML.html"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.javafx2.project.FXMLTemplateWizardIterator.create"/>
+                <attr name="templateCategory" stringvalue="javafx"/>
             </file>
 
             <file name="FXML.fxml" url="templates/FXML_fxml.template">
