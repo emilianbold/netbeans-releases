@@ -5,10 +5,13 @@ Code completion result for source line:
 METHOD     add(E)                          [PUBLIC]   boolean
 METHOD     add(int, E)                     [PUBLIC]   void
 METHOD     addAll(Collection<? extends E>  [PUBLIC]   boolean
+METHOD     addAll(Object[])                           boolean
 METHOD     addAll(int, Collection<? exten  [PUBLIC]   boolean
+METHOD     addAll(int, Object)                        boolean
 METHOD     addShutdownHook(Closure)                   void
 METHOD     any()                                      boolean
 METHOD     any(Closure)                               boolean
+METHOD     asBoolean()                                boolean
 METHOD     asImmutable()                              List
 METHOD     asList()                                   List
 METHOD     asSynchronized()                           List

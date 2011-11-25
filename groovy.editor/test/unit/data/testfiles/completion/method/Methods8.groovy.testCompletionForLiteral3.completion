@@ -2,7 +2,9 @@ Code completion result for source line:
 "".c|
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
+METHOD     capitalize()                               String
 METHOD     center(Number)                             String
+METHOD     center(Number, CharSequence)               CharSequence
 METHOD     center(Number, String)                     String
 METHOD     charAt(int)                     [PUBLIC]   char
 METHOD     codePointAt(int)                [PUBLIC]   int
@@ -11,6 +13,7 @@ METHOD     codePointCount(int, int)        [PUBLIC]   int
 METHOD     collect(Closure)                           List
 METHOD     collect(Collection, Closure)               Collection
 METHOD     compareTo(String)               [PUBLIC]   int
+METHOD     compareTo(T)                    [PUBLIC]   int
 METHOD     compareToIgnoreCase(String)     [PUBLIC]   int
 METHOD     concat(String)                  [PUBLIC]   String
 METHOD     contains(CharSequence)          [PUBLIC]   boolean
@@ -19,6 +22,7 @@ METHOD     contentEquals(CharSequence)     [PUBLIC]   boolean
 METHOD     contentEquals(StringBuffer)     [PUBLIC]   boolean
 METHOD     copyValueOf(char[])             [STATIC,   String
 METHOD     copyValueOf(char[], int, int)   [STATIC,   String
+METHOD     count(CharSequence)                        int
 METHOD     count(String)                              int
 FIELD      CASE_INSENSITIVE_ORDER          [STATIC,   Comparator<String>
 FIELD      class                                      Class

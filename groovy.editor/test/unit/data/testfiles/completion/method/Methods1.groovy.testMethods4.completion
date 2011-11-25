@@ -5,12 +5,14 @@ new URL("http://google.com").|getPr
 METHOD     addShutdownHook(Closure)                   void
 METHOD     any()                                      boolean
 METHOD     any(Closure)                               boolean
+METHOD     asBoolean()                                boolean
 METHOD     asType(Class)                              Object
 METHOD     collect(Closure)                           List
 METHOD     collect(Collection, Closure)               Collection
 METHOD     dump()                                     String
 METHOD     each(Closure)                              Object
 METHOD     eachByte(Closure)                          void
+METHOD     eachByte(int, Closure)                     void
 METHOD     eachLine(Closure)                          Object
 METHOD     eachLine(String,  int, Closure             Object
 METHOD     eachLine(String, Closure)                  Object
@@ -19,7 +21,13 @@ METHOD     eachWithIndex(Closure)                     Object
 METHOD     equals(Object)                  [PUBLIC]   boolean
 METHOD     every()                                    boolean
 METHOD     every(Closure)                             boolean
+METHOD     filterLine(Closure)                        Writable
+METHOD     filterLine(String, Closure)                Writable
+METHOD     filterLine(Writer, Closure)                void
+METHOD     filterLine(Writer, String, Clo             void
+METHOD     find()                                     Object
 METHOD     find(Closure)                              Object
+METHOD     findAll()                                  Collection
 METHOD     findAll(Closure)                           Collection
 METHOD     findIndexOf(Closure)                       int
 METHOD     findIndexOf(int, Closure)                  int
@@ -27,9 +35,12 @@ METHOD     findIndexValues(Closure)                   List
 METHOD     findIndexValues(Number, Closur             List
 METHOD     findLastIndexOf(Closure)                   int
 METHOD     findLastIndexOf(int, Closure)              int
+METHOD     findResult(Closure)                        Object
+METHOD     findResult(Object, Closure)                Object
 METHOD     getAt(String)                              Object
 METHOD     getAuthority()                  [PUBLIC]   String
-METHOD     getClass()                      [PUBLIC]   Class<? extends Object>
+METHOD     getBytes()                                 byte[]
+METHOD     getClass()                      [PUBLIC]   Class<?>
 METHOD     getContent()                    [PUBLIC]   Object
 METHOD     getContent(Class[])             [PUBLIC]   Object
 METHOD     getDefaultPort()                [PUBLIC]   int
@@ -44,8 +55,11 @@ METHOD     getProtocol()                   [PUBLIC]   String
 METHOD     getQuery()                      [PUBLIC]   String
 METHOD     getRef()                        [PUBLIC]   String
 METHOD     getText()                                  String
+METHOD     getText(Map)                               String
+METHOD     getText(Map, String)                       String
 METHOD     getText(String)                            String
 METHOD     getUserInfo()                   [PUBLIC]   String
+METHOD     grep()                                     Collection
 METHOD     grep(Object)                               Collection
 METHOD     hasProperty(String)                        MetaProperty
 METHOD     hashCode()                      [PUBLIC]   int
@@ -58,7 +72,10 @@ METHOD     isCase(Object)                             boolean
 METHOD     iterator()                                 Iterator
 METHOD     metaClass(Closure)                         MetaClass
 METHOD     newInputStream()                           BufferedInputStream
+METHOD     newInputStream(Map)                        BufferedInputStream
 METHOD     newReader()                                BufferedReader
+METHOD     newReader(Map)                             BufferedReader
+METHOD     newReader(Map, String)                     BufferedReader
 METHOD     newReader(String)                          BufferedReader
 METHOD     notify()                        [PUBLIC]   void
 METHOD     notifyAll()                     [PUBLIC]   void
@@ -73,6 +90,8 @@ METHOD     println()                                  void
 METHOD     println(Object)                            void
 METHOD     println(PrintWriter)                       void
 METHOD     putAt(String, Object)                      void
+METHOD     readLines()                                List
+METHOD     readLines(String)                          List
 METHOD     respondsTo(String)                         List
 METHOD     respondsTo(String, Object)                 List
 METHOD     sameFile(URL)                   [PUBLIC]   boolean
@@ -81,6 +100,10 @@ METHOD     setURLStreamHandlerFactory(URL  [STATIC,   void
 METHOD     sleep(long)                                void
 METHOD     sleep(long, Closure)                       void
 METHOD     split(Closure)                             Collection
+METHOD     splitEachLine(Pattern, Closure             Object
+METHOD     splitEachLine(Pattern, String,             Object
+METHOD     splitEachLine(String, Closure)             Object
+METHOD     splitEachLine(String, String,              Object
 METHOD     sprintf(String, Object)                    String
 METHOD     sprintf(String, Object)                    String
 METHOD     toExternalForm()                [PUBLIC]   String

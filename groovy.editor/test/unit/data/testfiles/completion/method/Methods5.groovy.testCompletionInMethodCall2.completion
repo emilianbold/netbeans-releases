@@ -2,6 +2,7 @@ Code completion result for source line:
 new File("something").c|
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
+METHOD     canExecute()                    [PUBLIC]   boolean
 METHOD     canRead()                       [PUBLIC]   boolean
 METHOD     canWrite()                      [PUBLIC]   boolean
 METHOD     collect(Closure)                           List
