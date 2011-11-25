@@ -66,8 +66,9 @@ public class JsParser extends Parser {
     public void parse(Snapshot snapshot, Task task, SourceModificationEvent event) throws ParseException {
         long startTime = System.currentTimeMillis();
         try {
-            JsErrorManager errorManager = new JsErrorManager();
+            JsErrorManager errorManager = new JsErrorManager(snapshot.getSource().getFileObject());
             lastResult = parseSource(snapshot, Sanitize.NONE, errorManager);
+            lastResult.setErrors(errorManager.getErrors());
         } catch (Exception ex) {
             LOGGER.log (Level.FINE, "Exception during parsing: {0}", ex);
             // TODO create empty result
@@ -77,7 +78,7 @@ public class JsParser extends Parser {
         LOGGER.log(Level.FINE, "Parsing took: {0}ms source: {1}", new Object[]{endTime - startTime, snapshot.getSource().getFileObject().getNameExt()}); //NOI18N
     }
     
-    private JsParserResult parseSource(Snapshot snapshot, final Sanitize sanitizing, JsErrorManager errorHandler) throws Exception {
+    private JsParserResult parseSource(Snapshot snapshot, final Sanitize sanitizing, JsErrorManager errorManager) throws Exception {
         long startTime = System.currentTimeMillis();
         String scriptName = snapshot.getSource().getFileObject().getNameExt();
         String text = snapshot.getText().toString();
@@ -88,7 +89,7 @@ public class JsParser extends Parser {
             "--parse-only=true", 
             //"--print-parse=true",    
             "--debug-lines=false"});
-        JsErrorManager errorManager = new JsErrorManager();
+        
         errorManager.setLimit(0);
         com.oracle.nashorn.runtime.Context contextN = new com.oracle.nashorn.runtime.Context(options, errorManager);
         com.oracle.nashorn.runtime.Context.setContext(contextN);
