@@ -559,6 +559,11 @@ public class PHPIndexTest extends TestBase {
     public void testGetDirectIncludes() {
     }
 
+    @Test
+    public void testGetClassesWithNsInterfaces() throws Exception {
+        checkIndexer(getTestPath());
+    }
+
     @Override
     protected FileObject[] createSourceClassPathsForTest() {
         final File folder = new File(getDataDir(), getTestFolderPath());

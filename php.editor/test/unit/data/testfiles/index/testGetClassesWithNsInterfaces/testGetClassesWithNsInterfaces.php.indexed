@@ -1,0 +1,49 @@
+
+
+Document 0
+Searchable Keys:
+
+Not Searchable Keys:
+
+
+Document 1
+Searchable Keys:
+  clz : nonsclassname;NoNsClassName;132;;No\Ns;NsInterfaceName|\NsFoo\NsBar\NsInterfaceName;1;
+  superiface : nsinterfacename;NsInterfaceName;NsFoo\NsBar
+  top : nonsclassname
+
+Not Searchable Keys:
+
+
+Document 2
+Searchable Keys:
+  identifier_used : no;
+  identifier_used : nonsclassname;
+  identifier_used : ns;
+  identifier_used : nsbar;
+  identifier_used : nsbar;
+  identifier_used : nsfoo;
+  identifier_used : nsfoo;
+  identifier_used : nsinterfacename;
+  identifier_used : nsinterfacename;
+  identifier_used : nsinterfacename;
+
+Not Searchable Keys:
+
+
+Document 3
+Searchable Keys:
+  iface : nsinterfacename;NsInterfaceName;44;;NsFoo\NsBar;
+  top : nsinterfacename
+
+Not Searchable Keys:
+
+
+Document 4
+Searchable Keys:
+  ns : ns;Ns;No;
+  ns : nsbar;NsBar;NsFoo;
+  top : no\ns
+  top : nsfoo\nsbar
+
+Not Searchable Keys:
