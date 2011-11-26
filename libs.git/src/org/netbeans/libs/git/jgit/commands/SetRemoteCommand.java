@@ -51,7 +51,6 @@ import org.eclipse.jgit.transport.RemoteConfig;
 import org.eclipse.jgit.transport.URIish;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitRemoteConfig;
-import org.netbeans.libs.git.jgit.JGitClient;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 
 /**
@@ -66,7 +65,7 @@ public class SetRemoteCommand extends GitCommand {
     private static final String KEY_FETCH = "fetch"; //NOI18N
     private static final String KEY_PUSH = "push"; //NOI18N
     
-    public SetRemoteCommand (Repository repository, GitRemoteConfig remoteConfig, ProgressMonitor monitor, JGitClient aThis) {
+    public SetRemoteCommand (Repository repository, GitRemoteConfig remoteConfig, ProgressMonitor monitor) {
         super(repository, monitor);
         this.remote = remoteConfig;
     }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,58 +37,23 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-
-package org.netbeans.libs.git.jgit.commands;
-
-import java.text.MessageFormat;
-import org.eclipse.jgit.lib.Repository;
-import org.netbeans.libs.git.GitException;
-import org.netbeans.libs.git.jgit.Utils;
-import org.netbeans.libs.git.progress.ProgressMonitor;
+package org.netbeans.libs.git;
 
 /**
  *
  * @author ondra
  */
-public abstract class GitCommand {
-    private final Repository repository;
-    private final ProgressMonitor monitor;
-    protected static final String EMPTY_ROOTS = Utils.getBundle(GitCommand.class).getString("MSG_Error_NoFiles"); //NOI18N
+public final class ApiUtils {
 
-    protected GitCommand (Repository repository, ProgressMonitor monitor) {
-        this.repository = repository;
-        this.monitor = monitor;
+    public static void clearRepositoryPool (GitClientFactory factory) {
+        factory.clearRepositoryPool();
     }
-
-    public final void execute () throws GitException {
-        if (prepareCommand()) {
-            try {
-                monitor.started(getCommandDescription());
-                run();
-            } finally {
-                monitor.finished();
-            }
-        }
+    
+    private ApiUtils () {
+        
     }
-
-    protected abstract void run () throws GitException;
-
-    protected boolean prepareCommand () throws GitException {
-        boolean repositoryExists = repository.getDirectory().exists();
-        if (!repositoryExists) {
-            String message = MessageFormat.format(Utils.getBundle(GitCommand.class).getString("MSG_Error_RepositoryDoesNotExist"), repository.getWorkTree()); //NOI18N
-            monitor.preparationsFailed(message);
-            throw new GitException(message);
-        }
-        return repositoryExists;
-    }
-
-    protected Repository getRepository () {
-        return repository;
-    }
-
-    protected abstract String getCommandDescription ();
+    
     
 }

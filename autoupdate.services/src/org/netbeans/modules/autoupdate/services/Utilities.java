@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -119,6 +119,10 @@ import org.xml.sax.SAXException;
  * @author Jiri Rechtacek, Radek Matous
  */
 public class Utilities {
+    public static final String UNSIGNED = "UNSIGNED";
+    public static final String N_A = "N/A";
+    public static final String TRUSTED = "TRUSTED";
+    public static final String UNTRUSTED = "UNTRUSTED";
 
     private Utilities() {}
 
@@ -164,6 +168,67 @@ public class Utilities {
         }
         
         return kss;
+    }
+    
+    public static String verifyCertificates(Collection<Certificate> archiveCertificates, Collection<Certificate> trustedCertificates) {
+        if (archiveCertificates == null) {
+            return N_A;
+        }
+        if (! archiveCertificates.isEmpty()) {
+            Collection<Certificate> c = new HashSet<Certificate>(trustedCertificates);
+            c.retainAll(archiveCertificates);
+            if (! c.isEmpty()) {
+            //if (trustedCertificates.containsAll(archiveCertificates)) {
+                return TRUSTED;
+            } else {
+                return UNTRUSTED;
+            }
+        }
+        return UNSIGNED;
+    }
+    
+    public static Collection<Certificate> getCertificates (KeyStore keyStore) throws KeyStoreException {
+        List<Certificate> certs = new ArrayList<Certificate> ();
+        for (String alias: Collections.list (keyStore.aliases ())) {
+            certs.add (keyStore.getCertificate (alias));
+        }
+        return certs;
+    }
+    
+    public static Collection<Certificate> getNbmCertificates (File nbmFile) throws IOException {
+        Set<Certificate> certs = new HashSet<Certificate>();
+        JarFile jf = new JarFile(nbmFile);
+        boolean empty = true;
+        try {
+            for (JarEntry entry : Collections.list(jf.entries())) {
+                verifyEntry(jf, entry);
+                if (!entry.getName().startsWith("META-INF/")) {
+                    empty = false;
+                    if (entry.getCertificates() != null) {
+                        certs.addAll(Arrays.asList(entry.getCertificates()));
+                    }
+                }
+            }
+        } finally {
+            jf.close();
+        }
+
+        return empty ? null : certs;
+    }
+    
+    /**
+     * @throws SecurityException
+     */
+    @SuppressWarnings("empty-statement")
+    private static void verifyEntry (JarFile jf, JarEntry je) throws IOException {
+        InputStream is = null;
+        try {
+            is = jf.getInputStream (je);
+            byte[] buffer = new byte[8192];
+            while ((is.read (buffer, 0, buffer.length)) != -1);
+        } finally {
+            if (is != null) is.close ();
+        }
     }
     
     static private class KeyStoreProviderListener implements LookupListener {

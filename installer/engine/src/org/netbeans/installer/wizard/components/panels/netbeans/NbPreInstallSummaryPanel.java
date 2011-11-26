@@ -108,6 +108,8 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
         
         setProperty(INSTALLATION_FOLDER_PROPERTY,
                 DEFAULT_INSTALLATION_FOLDER);
+        setProperty(INSTALLATION_FOLDERS_PROPERTY,
+                DEFAULT_INSTALLATION_FOLDERS);
         setProperty(INSTALLATION_FOLDER_NETBEANS_PROPERTY,
                 DEFAULT_INSTALLATION_FOLDER_NETBEANS);
         setProperty(UNINSTALL_LIST_LABEL_TEXT_PROPERTY,
@@ -386,7 +388,22 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
             // add top-level components like nb-base, glassfish, tomcat, jdk
             for (Product product: registry.getProductsToInstall()) {
                 try {
-                    if (product.getLogic().registerInSystem() || product.getUid().equals("jdk") || product.getUid().equals("mysql")) {
+                    if ( product.getUid().equals("jdk") && 
+                            product.getProperty(FXSDK_INSTALLATION_LOCATION_PROPERTY) != null) {
+                        String property = panel.getProperty(                               
+                                    INSTALLATION_FOLDERS_PROPERTY);
+                        text.append(StringUtils.LF);
+                        text.append(StringUtils.format(property,
+                                product.getDisplayName()));
+                        text.append(StringUtils.LF);
+                        text.append("    " + product.getInstallationLocation());
+                        text.append(StringUtils.LF);                         
+                        text.append("    " + product.getProperty(FXSDK_INSTALLATION_LOCATION_PROPERTY));
+                        text.append(StringUtils.LF);                         
+                        //text.append("    " + product.getProperty(FXRT_INSTALLATION_LOCATION_PROPERTY));
+                        //text.append(StringUtils.LF);
+                    } else if (product.getLogic().registerInSystem() ||
+                            product.getUid().equals("jdk") || product.getUid().equals("mysql")) {
                         String property = panel.getProperty(
                                 product.getUid().equals(NB_BASE_UID) ?
                                     INSTALLATION_FOLDER_NETBEANS_PROPERTY :
@@ -396,7 +413,7 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
                                 product.getDisplayName()));
                         text.append(StringUtils.LF);
                         text.append("    " + product.getInstallationLocation());
-                        text.append(StringUtils.LF);                        
+                        text.append(StringUtils.LF); 
                     }
                 } catch (InitializationException e) {
                     ErrorManager.notifyError(
@@ -1031,8 +1048,16 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
     
 /////////////////////////////////////////////////////////////////////////////////
 // Constants
+
+    public static final String FXSDK_INSTALLATION_LOCATION_PROPERTY =
+            "fxsdk.installation.location"; // NOI18N
+    public static final String FXRT_INSTALLATION_LOCATION_PROPERTY =
+            "fxrt.installation.location"; // NOI18N
+
     public static final String INSTALLATION_FOLDER_PROPERTY =
             "installation.folder"; // NOI18N
+    public static final String INSTALLATION_FOLDERS_PROPERTY =
+            "installation.folders"; // NOI18N
     public static final String INSTALLATION_FOLDER_NETBEANS_PROPERTY =
             "installation.folder.netbeans"; // NOI18N
     public static final String UNINSTALL_LIST_LABEL_TEXT_PROPERTY =
@@ -1095,6 +1120,9 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
     public static final String DEFAULT_INSTALLATION_FOLDER =
             ResourceUtils.getString(NbPreInstallSummaryPanel.class,
             "NPrISP.installation.folder"); // NOI18N
+    public static final String DEFAULT_INSTALLATION_FOLDERS =
+            ResourceUtils.getString(NbPreInstallSummaryPanel.class,
+            "NPrISP.installation.folders"); // NOI18N
     public static final String DEFAULT_INSTALLATION_FOLDER_NETBEANS =
             ResourceUtils.getString(NbPreInstallSummaryPanel.class,
             "NPrISP.installation.folder.netbeans"); // NOI18N

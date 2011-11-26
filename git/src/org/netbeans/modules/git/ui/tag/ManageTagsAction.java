@@ -46,7 +46,7 @@ import java.io.File;
 import java.util.Map;
 import java.util.logging.Logger;
 import org.netbeans.libs.git.GitBranch;
-import org.netbeans.libs.git.GitClient;
+import org.netbeans.modules.git.client.GitClient;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitTag;
 import org.netbeans.modules.git.Git;

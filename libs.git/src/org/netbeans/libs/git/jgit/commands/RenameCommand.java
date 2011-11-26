@@ -43,11 +43,12 @@
 package org.netbeans.libs.git.jgit.commands;
 
 import java.io.File;
+import java.text.MessageFormat;
 import org.eclipse.jgit.lib.Repository;
 import org.netbeans.libs.git.GitException;
+import org.netbeans.libs.git.jgit.Utils;
 import org.netbeans.libs.git.progress.FileListener;
 import org.netbeans.libs.git.progress.ProgressMonitor;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -71,17 +72,17 @@ public class RenameCommand extends MoveTreeCommand {
         boolean retval = super.prepareCommand();
         if (retval) {
             if (source.equals(getRepository().getWorkTree())) {
-                throw new GitException(NbBundle.getMessage(RenameCommand.class, "MSG_Exception_CannotMoveWT", source.getAbsolutePath())); //NOI18N
+                throw new GitException(MessageFormat.format(Utils.getBundle(RenameCommand.class).getString("MSG_Exception_CannotMoveWT"), source.getAbsolutePath())); //NOI18N
             }
             if (!source.exists() && !after) {
-                throw new GitException(NbBundle.getMessage(RenameCommand.class, "MSG_Exception_SourceDoesNotExist", source.getAbsolutePath())); //NOI18N
+                throw new GitException(MessageFormat.format(Utils.getBundle(RenameCommand.class).getString("MSG_Exception_SourceDoesNotExist"), source.getAbsolutePath())); //NOI18N
             }
             if (target.exists()) {
                 if (!after) {
-                    throw new GitException(NbBundle.getMessage(RenameCommand.class, "MSG_Exception_TargetExists", target.getAbsolutePath())); //NOI18N
+                    throw new GitException(MessageFormat.format(Utils.getBundle(RenameCommand.class).getString("MSG_Exception_TargetExists"), target.getAbsolutePath())); //NOI18N
                 }
             } else if (after) {
-                throw new GitException(NbBundle.getMessage(RenameCommand.class, "MSG_Exception_TargetDoesNotExist", target.getAbsolutePath())); //NOI18N
+                throw new GitException(MessageFormat.format(Utils.getBundle(RenameCommand.class).getString("MSG_Exception_TargetDoesNotExist"), target.getAbsolutePath())); //NOI18N
             }
         }
         return retval;
