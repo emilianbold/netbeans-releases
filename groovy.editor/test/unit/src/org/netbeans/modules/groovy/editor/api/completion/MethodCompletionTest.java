@@ -156,7 +156,7 @@ public class MethodCompletionTest extends GroovyTestBase {
         checkCompletion(TEST_BASE + "" + "Methods11.groovy", "def name='Petr'.^", false);
     }
 
-    // FIXME this test randomly fails
+    // FIXME randomly fails
 //    @RandomlyFails
 //    public void testCompletionInsideFor2() throws Exception {
 //        checkCompletion(TEST_BASE + "" + "Methods9.groovy", "for (String other in [1:\"Alice\", 2:\"Bob\"].^", false);

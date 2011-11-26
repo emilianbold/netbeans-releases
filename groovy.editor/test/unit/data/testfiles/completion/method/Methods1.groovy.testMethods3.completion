@@ -4,7 +4,8 @@ new URL("http://google.com").get|Pr
 ------------------------------------
 METHOD     getAt(String)                              Object
 METHOD     getAuthority()                  [PUBLIC]   String
-METHOD     getClass()                      [PUBLIC]   Class<? extends Object>
+METHOD     getBytes()                                 byte[]
+METHOD     getClass()                      [PUBLIC]   Class<?>
 METHOD     getContent()                    [PUBLIC]   Object
 METHOD     getContent(Class[])             [PUBLIC]   Object
 METHOD     getDefaultPort()                [PUBLIC]   int
@@ -19,5 +20,7 @@ METHOD     getProtocol()                   [PUBLIC]   String
 METHOD     getQuery()                      [PUBLIC]   String
 METHOD     getRef()                        [PUBLIC]   String
 METHOD     getText()                                  String
+METHOD     getText(Map)                               String
+METHOD     getText(Map, String)                       String
 METHOD     getText(String)                            String
 METHOD     getUserInfo()                   [PUBLIC]   String
