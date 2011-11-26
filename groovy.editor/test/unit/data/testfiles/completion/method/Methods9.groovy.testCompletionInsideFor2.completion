@@ -5,22 +5,31 @@ for (String other in [1:"Alice", 2:"Bob"].|) {
 METHOD     addShutdownHook(Closure)                   void
 METHOD     any()                                      boolean
 METHOD     any(Closure)                               boolean
+METHOD     asBoolean()                                boolean
 METHOD     asImmutable()                              Map
 METHOD     asSynchronized()                           Map
 METHOD     asType(Class)                              Object
 METHOD     clear()                         [PUBLIC]   void
 METHOD     collect(Closure)                           List
 METHOD     collect(Collection, Closure)               Collection
+METHOD     collectEntries(Closure)                    Map
+METHOD     collectEntries(Map, Closure)               Map
 METHOD     containsKey(Object)             [PUBLIC]   boolean
 METHOD     containsValue(Object)           [PUBLIC]   boolean
+METHOD     count(Closure)                             Number
+METHOD     countBy(Closure)                           Map
+METHOD     drop(int)                                  Map
 METHOD     dump()                                     String
 METHOD     each(Closure)                              Map
-METHOD     eachWithIndex(Closure)                     Object
+METHOD     eachWithIndex(Closure)                     Map
 METHOD     entrySet()                      [PUBLIC]   Set<Entry<K, V>>
+METHOD     equals(Map)                                boolean
 METHOD     equals(Object)                  [PUBLIC]   boolean
 METHOD     every()                                    boolean
 METHOD     every(Closure)                             boolean
+METHOD     find()                                     Object
 METHOD     find(Closure)                              Entry
+METHOD     findAll()                                  Collection
 METHOD     findAll(Closure)                           Map
 METHOD     findIndexOf(Closure)                       int
 METHOD     findIndexOf(int, Closure)                  int
@@ -28,22 +37,29 @@ METHOD     findIndexValues(Closure)                   List
 METHOD     findIndexValues(Number, Closur             List
 METHOD     findLastIndexOf(Closure)                   int
 METHOD     findLastIndexOf(int, Closure)              int
+METHOD     findResult(Closure)                        Object
+METHOD     findResult(Object, Closure)                Object
+METHOD     findResults(Closure)                       Collection
 METHOD     get(Object)                     [PUBLIC]   V
 METHOD     get(Object, Object)                        Object
 METHOD     getAt(Object)                              Object
 METHOD     getAt(String)                              Object
-METHOD     getClass()                      [PUBLIC]   Class<? extends Object>
+METHOD     getClass()                      [PUBLIC]   Class<?>
 METHOD     getMetaClass()                             MetaClass
 METHOD     getMetaPropertyValues()                    List
 METHOD     getProperties()                            Map
+METHOD     grep()                                     Collection
 METHOD     grep(Object)                               Collection
 METHOD     groupBy(Closure)                           Map
+METHOD     groupBy(List)                              Map
+METHOD     groupBy(Object[])                          Map
 METHOD     groupEntriesBy(Closure)                    Map
 METHOD     hasProperty(String)                        MetaProperty
 METHOD     hashCode()                      [PUBLIC]   int
 METHOD     identity(Closure)                          Object
 METHOD     inject(Object, Closure)                    Object
 METHOD     inspect()                                  String
+METHOD     intersect(Map)                             Map
 METHOD     invokeMethod(String, Object)               Object
 METHOD     is(Object)                                 boolean
 METHOD     isCase(Object)                             boolean
@@ -51,7 +67,11 @@ METHOD     isEmpty()                       [PUBLIC]   boolean
 METHOD     iterator()                                 Iterator
 METHOD     keySet()                        [PUBLIC]   Set<K>
 METHOD     leftShift(Map$Entry)                       Map
+METHOD     leftShift(Map)                             Map
+METHOD     max(Closure)                               Entry
 METHOD     metaClass(Closure)                         MetaClass
+METHOD     min(Closure)                               Entry
+METHOD     minus(Map)                                 Map
 METHOD     notify()                        [PUBLIC]   void
 METHOD     notifyAll()                     [PUBLIC]   void
 METHOD     plus(Collection)                           Map
@@ -71,17 +91,22 @@ METHOD     putAt(String, Object)                      void
 METHOD     remove(Object)                  [PUBLIC]   V
 METHOD     respondsTo(String)                         List
 METHOD     respondsTo(String, Object)                 List
+METHOD     reverseEach(Closure)                       Map
 METHOD     setMetaClass(MetaClass)                    void
 METHOD     size()                          [PUBLIC]   int
 METHOD     sleep(long)                                void
 METHOD     sleep(long, Closure)                       void
+METHOD     sort()                                     Map
 METHOD     sort(Closure)                              Map
+METHOD     sort(Comparator)                           Map
 METHOD     split(Closure)                             Collection
 METHOD     spread()                                   SpreadMap
 METHOD     sprintf(String, Object)                    String
 METHOD     sprintf(String, Object)                    String
 METHOD     subMap(Collection)                         Map
+METHOD     take(int)                                  Map
 METHOD     toMapString()                              String
+METHOD     toMapString(int)                           String
 METHOD     toSpreadMap()                              SpreadMap
 METHOD     toString()                                 String
 METHOD     use(Class, Closure)                        Object
@@ -92,5 +117,6 @@ METHOD     wait()                          [PUBLIC]   void
 METHOD     wait(long)                      [PUBLIC]   void
 METHOD     wait(long, int)                 [PUBLIC]   void
 METHOD     with(Closure)                              Object
+METHOD     withDefault(Closure)                       Map
 FIELD      class                                      Class
 FIELD      empty                                      boolean

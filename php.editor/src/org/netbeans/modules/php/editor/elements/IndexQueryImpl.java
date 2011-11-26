@@ -923,7 +923,14 @@ public final class IndexQueryImpl implements ElementQuery.Index {
             }
         }
         if (typeKinds.contains(PhpElementKind.IFACE)) {
-            for (QualifiedName iface : typeElement.getSuperInterfaces()) {
+            Collection<QualifiedName> interfaceNames = null;
+            Collection<QualifiedName> fQSuperInterfaceNames = typeElement.getFQSuperInterfaceNames();
+            if (!fQSuperInterfaceNames.isEmpty()) {
+                interfaceNames = fQSuperInterfaceNames;
+            } else {
+                interfaceNames = typeElement.getSuperInterfaces();
+            }
+            for (QualifiedName iface : interfaceNames) {
                 directTypes.addAll(extendedQuery.getFields(NameKind.exact(iface), NameKind.empty()));
                 directTypes.addAll(extendedQuery.getMethods(NameKind.exact(iface), NameKind.empty()));
                 directTypes.addAll(extendedQuery.getTypeConstants(NameKind.exact(iface), NameKind.empty()));

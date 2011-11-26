@@ -280,15 +280,12 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                     }
                 } else if (product.getUid().equals("tomcat") &&
                         (product.getStatus() == Status.TO_BE_INSTALLED)) {
-                    BundleType tp = BundleType.getType(System.getProperty(
-                            WELCOME_PAGE_TYPE_PROPERTY));
                     boolean stateFileUsed = System.getProperty(
                             Registry.SOURCE_STATE_FILE_PATH_PROPERTY) != null;
                     boolean sysPropInstallLocation = System.getProperty(product.getUid() + 
 				StringUtils.DOT + 
 				Product.INSTALLATION_LOCATION_PROPERTY) == null;
-                    if(!stateFileUsed && sysPropInstallLocation &&
-                            (tp.equals(BundleType.CUSTOMIZE) || tp.equals(BundleType.JAVA))) {
+                    if(!stateFileUsed && sysPropInstallLocation) {
                         product.setStatus(Status.NOT_INSTALLED);
                     }                               
                 }  else if(type.equals(BundleType.BUNDLEDPRODUCT) && product.getUid().equals(bundledproduct_name)) { 

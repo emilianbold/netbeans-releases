@@ -230,15 +230,17 @@ public abstract class FileMapper {
 
         @Override
         public String worldToEngine(String path) {
-            if (path == null) {
-                return null;
-            }
-            String res =  WindowsSupport.getInstance().convertToMSysPath(path);
-            if (res != null) {
-                return res;
-            } else {
-                return path;
-            }
+            // See IZ 205418, MinGW gdb sometimes does not understand this path form...
+            return path;
+//            if (path == null) {
+//                return null;
+//            }
+//            String res =  WindowsSupport.getInstance().convertToMSysPath(path);
+//            if (res != null) {
+//                return res;
+//            } else {
+//                return path;
+//            }
         }
 
     }

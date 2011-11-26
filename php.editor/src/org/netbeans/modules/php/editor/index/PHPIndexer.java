@@ -228,17 +228,13 @@ public final class PHPIndexer extends EmbeddingIndexer {
                 QualifiedName superClassName = classScope.getSuperClassName();
                 if (superClassName != null) {
                     final String name = superClassName.getName();
-                    //final String namespaceName = superClassName.toNamespaceName().toString();
-                    Collection<QualifiedName> namespaceNames = VariousUtils.getPossibleFQN(superClassName, classScope.getOffset(), (NamespaceScope)classScope.getInScope());
-                    final String namespaceName = ModelUtils.getFirst(namespaceNames).getNamespaceName();
+                    final String namespaceName = VariousUtils.getFullyQualifiedName(superClassName, classScope.getOffset(), (NamespaceScope)classScope.getInScope()).getNamespaceName();
                     classDocument.addPair(FIELD_SUPER_CLASS, String.format("%s;%s;%s", name.toLowerCase(), name, namespaceName), true, true);//NOI18N
                 }
                 Set<QualifiedName> superInterfaces = classScope.getSuperInterfaces();
                 for (QualifiedName superIfaceName : superInterfaces) {
                     final String name = superIfaceName.getName();
-                    //final String namespaceName = superIfaceName.toNamespaceName().toString();
-                    Collection<QualifiedName> namespaceNames = VariousUtils.getPossibleFQN(superIfaceName, classScope.getOffset(), (NamespaceScope)classScope.getInScope());
-                    final String namespaceName = ModelUtils.getFirst(namespaceNames).getNamespaceName();
+                    final String namespaceName = VariousUtils.getFullyQualifiedName(superIfaceName, classScope.getOffset(), (NamespaceScope)classScope.getInScope()).getNamespaceName();
                     classDocument.addPair(FIELD_SUPER_IFACE, String.format("%s;%s;%s", name.toLowerCase(), name, namespaceName), true, true);//NOI18N
                 }
                 classDocument.addPair(FIELD_TOP_LEVEL, classScope.getName().toLowerCase(), true, true);

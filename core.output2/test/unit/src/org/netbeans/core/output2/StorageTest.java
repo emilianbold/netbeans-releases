@@ -47,6 +47,7 @@ package org.netbeans.core.output2;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
 import java.util.Arrays;
 import junit.framework.TestCase;
 import org.openide.util.Exceptions;
@@ -78,8 +79,10 @@ public class StorageTest extends TestCase {
     // #85050
     public void testMMappedFileCanBeDeleted() throws Exception {
         write(filemap, "Test text");
-        ByteBuffer b = filemap.getReadBuffer(0, 10);
+        BufferResource<ByteBuffer> br = filemap.getReadBuffer(0, 10);
+        ByteBuffer b = br.getBuffer();
         String s = b.asCharBuffer().toString();
+        br.releaseBuffer();
         File f = ((FileMapStorage) filemap).getOutputFile();
         assertTrue("Memory mapped file should be created", f.exists());
         filemap.dispose();
@@ -91,8 +94,10 @@ public class StorageTest extends TestCase {
 
         for (int i = 0; i < 10; i++) {
             int fwrite = write(filemap, "A string");
-            ByteBuffer fbuf = filemap.getReadBuffer(fwrite, filemap.size() - fwrite);
+            BufferResource<ByteBuffer> br = filemap.getReadBuffer(fwrite, filemap.size() - fwrite);
+            ByteBuffer fbuf = br.getBuffer();
             assertNotNull(fbuf);
+            br.releaseBuffer();
         }
         File f = ((FileMapStorage) filemap).getOutputFile();
         filemap.dispose();
@@ -160,8 +165,12 @@ public class StorageTest extends TestCase {
             assertEquals (hwrite, fwrite);
             assertEquals(heap.isClosed(), filemap.isClosed());
             assertEquals(heap.size(), filemap.size());
-            ByteBuffer hbuf = heap.getReadBuffer(hwrite, heap.size() - hwrite);
-            ByteBuffer fbuf = filemap.getReadBuffer(hwrite, filemap.size() - fwrite);
+            BufferResource<ByteBuffer> hbufRef = heap.getReadBuffer(hwrite, heap.size() - hwrite);
+            BufferResource<ByteBuffer> fbufRef = filemap.getReadBuffer(hwrite, filemap.size() - fwrite);
+            ByteBuffer hbuf = hbufRef.getBuffer();
+            ByteBuffer fbuf = fbufRef.getBuffer();
+            hbufRef.releaseBuffer();
+            fbufRef.releaseBuffer();
         }
     }
     

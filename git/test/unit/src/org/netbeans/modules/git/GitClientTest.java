@@ -43,7 +43,6 @@
 package org.netbeans.modules.git;
 
 import org.netbeans.modules.git.client.GitProgressSupport;
-import org.netbeans.modules.git.client.GitClientInvocationHandler;
 import org.netbeans.modules.git.client.GitCanceledException;
 import java.io.File;
 import java.lang.reflect.Field;
@@ -51,6 +50,7 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -58,11 +58,11 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.progress.FileListener;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.libs.git.progress.ProgressMonitor.DefaultProgressMonitor;
+import org.netbeans.modules.git.client.GitClient;
 import org.netbeans.modules.versioning.util.IndexingBridge;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
@@ -72,11 +72,11 @@ import org.openide.util.RequestProcessor.Task;
  *
  * @author ondra
  */
-public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
+public class GitClientTest extends AbstractGitTestCase {
     private Logger indexingLogger;
     private Logger invocationHandlerLogger;
 
-    public GitClientInvocationHandlerTest(String name) {
+    public GitClientTest(String name) {
         super(name);
     }
 
@@ -87,9 +87,9 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
         Field f = IndexingBridge.class.getDeclaredField("LOG");
         f.setAccessible(true);
         indexingLogger = (Logger) f.get(bridge);
-        f = GitClientInvocationHandler.class.getDeclaredField("LOG");
+        f = GitClient.class.getDeclaredField("LOG");
         f.setAccessible(true);
-        invocationHandlerLogger = (Logger) f.get(GitClientInvocationHandler.class);
+        invocationHandlerLogger = (Logger) f.get(GitClient.class);
     }
 
     /**
@@ -154,11 +154,11 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
                 "reset",
                 "revert",
                 "clean"));
-        Field f = GitClientInvocationHandler.class.getDeclaredField("INDEXING_BRIDGE_COMMANDS");
+        Field f = GitClient.class.getDeclaredField("INDEXING_BRIDGE_COMMANDS");
         f.setAccessible(true);
-        Set<String> actualIBCommands = (Set<String>) f.get(GitClientInvocationHandler.class);
+        Set<String> actualIBCommands = (Set<String>) f.get(GitClient.class);
 
-        Method[] methods = GitClient.class.getDeclaredMethods();
+        Method[] methods = getClientMethods();
         Arrays.sort(methods, new Comparator<Method>() {
             @Override
             public int compare(Method o1, Method o2) {
@@ -262,11 +262,11 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
                 "setRemote",
                 "push",
                 "unignore"));
-        Field f = GitClientInvocationHandler.class.getDeclaredField("WORKING_TREE_READ_ONLY_COMMANDS");
+        Field f = GitClient.class.getDeclaredField("WORKING_TREE_READ_ONLY_COMMANDS");
         f.setAccessible(true);
-        Set<String> actualReadOnlyMethods = (Set<String>) f.get(GitClientInvocationHandler.class);
+        Set<String> actualReadOnlyMethods = (Set<String>) f.get(GitClient.class);
 
-        Method[] methods = GitClient.class.getDeclaredMethods();
+        Method[] methods = getClientMethods();
         Arrays.sort(methods, new Comparator<Method>() {
             @Override
             public int compare(Method o1, Method o2) {
@@ -351,11 +351,11 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
                 "removeRemote",
                 "revert",
                 "setRemote"));
-        Field f = GitClientInvocationHandler.class.getDeclaredField("NEED_REPOSITORY_REFRESH_COMMANDS");
+        Field f = GitClient.class.getDeclaredField("NEED_REPOSITORY_REFRESH_COMMANDS");
         f.setAccessible(true);
-        Set<String> actualMethods = (Set<String>) f.get(GitClientInvocationHandler.class);
+        Set<String> actualMethods = (Set<String>) f.get(GitClient.class);
 
-        Method[] methods = GitClient.class.getDeclaredMethods();
+        Method[] methods = getClientMethods();
         Arrays.sort(methods, new Comparator<Method>() {
             @Override
             public int compare(Method o1, Method o2) {
@@ -432,11 +432,11 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
                 "listRemoteTags",
                 "pull",
                 "push"));
-        Field f = GitClientInvocationHandler.class.getDeclaredField("NETWORK_COMMANDS");
+        Field f = GitClient.class.getDeclaredField("NETWORK_COMMANDS");
         f.setAccessible(true);
-        Set<String> actualNetworkCommands = (Set<String>) f.get(GitClientInvocationHandler.class);
+        Set<String> actualNetworkCommands = (Set<String>) f.get(GitClient.class);
 
-        Method[] methods = GitClient.class.getDeclaredMethods();
+        Method[] methods = getClientMethods();
         Arrays.sort(methods, new Comparator<Method>() {
             @Override
             public int compare(Method o1, Method o2) {
@@ -577,11 +577,11 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
                 "removeRemote",
                 "setCallback",
                 "setRemote"));
-        Field f = GitClientInvocationHandler.class.getDeclaredField("PARALLELIZABLE_COMMANDS");
+        Field f = GitClient.class.getDeclaredField("PARALLELIZABLE_COMMANDS");
         f.setAccessible(true);
-        Set<String> actualParallelizableCommands = (Set<String>) f.get(GitClientInvocationHandler.class);
+        Set<String> actualParallelizableCommands = (Set<String>) f.get(GitClient.class);
 
-        Method[] methods = GitClient.class.getDeclaredMethods();
+        Method[] methods = getClientMethods();
         Arrays.sort(methods, new Comparator<Method>() {
             @Override
             public int compare(Method o1, Method o2) {
@@ -942,6 +942,12 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
         expectedMessages.add("Git Add - " + file.getName());
         expectedMessages.add("Git Add - " + file2.getName());
         assertEquals(expectedMessages, h.progressMessages);
+    }
+
+    private Method[] getClientMethods () {
+        Set<Method> methods = new LinkedHashSet<Method>(Arrays.asList(org.netbeans.libs.git.GitClient.class.getMethods()));
+        methods.removeAll(Arrays.asList(Object.class.getMethods()));
+        return methods.toArray(new Method[methods.size()]);
     }
 
     private static class InhibitListener implements FileListener {

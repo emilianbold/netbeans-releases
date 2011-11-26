@@ -45,7 +45,7 @@ package org.netbeans.modules.git.ui.fetch;
 import java.io.File;
 import java.util.List;
 import java.util.Map;
-import org.netbeans.libs.git.GitClient;
+import org.netbeans.modules.git.client.GitClient;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitRemoteConfig;
 import org.netbeans.libs.git.GitTransportUpdate;

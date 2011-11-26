@@ -200,7 +200,7 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin {
                 }
             }, true);
         } catch (IOException ioe) {
-            throw (RuntimeException) new RuntimeException().initCause(ioe);
+            throw new RuntimeException(ioe);
         }
         return set;
     }

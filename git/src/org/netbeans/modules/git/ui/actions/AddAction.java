@@ -43,10 +43,10 @@
 package org.netbeans.modules.git.ui.actions;
 
 import java.io.File;
-import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.modules.git.FileInformation;
 import org.netbeans.modules.git.Git;
+import org.netbeans.modules.git.client.GitClient;
 import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.utils.GitUtils;

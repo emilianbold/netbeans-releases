@@ -307,7 +307,7 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
             bag.add(refactoring, new CreateSuperclassElement(refactoring, primFile.getParent(), classHandle));
             UpdateClassTask.create(bag, primFile, refactoring, classHandle);
         } catch (IOException ex) {
-            throw (RuntimeException) new RuntimeException().initCause(ex);
+            throw new RuntimeException(ex);
         }
         return null;
     }

@@ -2,6 +2,8 @@ Code completion result for source line:
 n|o
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
+CLASS      NavigableMap                               null
+CLASS      NavigableSet                               null
 CLASS      NegativeArraySizeException                 null
 CLASS      NetPermission                              null
 CLASS      NetworkInterface                           null
