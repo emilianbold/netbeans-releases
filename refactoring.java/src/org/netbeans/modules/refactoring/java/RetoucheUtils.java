@@ -473,7 +473,7 @@ public class RetoucheUtils {
             source.runUserActionTask(ff=new SuperTypesTask(handle), true);
             return ff.getFileObjects();
         } catch (IOException ex) {
-            throw (RuntimeException) new RuntimeException().initCause(ex);
+            throw new RuntimeException(ex);
         }    
     }
     
@@ -536,7 +536,7 @@ public class RetoucheUtils {
             source.runUserActionTask(ff=new CompilerTask(tph), true);
             return ff.getElementHandle();
         } catch (IOException ex) {
-            throw (RuntimeException) new RuntimeException().initCause(ex);
+            throw new RuntimeException(ex);
         }    
     }
     
@@ -548,7 +548,7 @@ public class RetoucheUtils {
             source.runUserActionTask(ff=new CompilerTask(tph), true);
             return ff.getElementKind();
         } catch (IOException ex) {
-            throw (RuntimeException) new RuntimeException().initCause(ex);
+            throw new RuntimeException(ex);
         }    
     }
     
@@ -561,7 +561,7 @@ public class RetoucheUtils {
             source.runUserActionTask(ff=new CompilerTask(tph), true);
             return ff.getSimpleName();
         } catch (IOException ex) {
-            throw (RuntimeException) new RuntimeException().initCause(ex);
+            throw new RuntimeException(ex);
         }    
     }
     
@@ -574,7 +574,7 @@ public class RetoucheUtils {
             source.runUserActionTask(ff=new CompilerTask(handle), true);
             return ff.getFileObject();
         } catch (IOException ex) {
-            throw (RuntimeException) new RuntimeException().initCause(ex);
+            throw new RuntimeException(ex);
         }
     }
     
@@ -586,7 +586,7 @@ public class RetoucheUtils {
             source.runUserActionTask(ff=new CompilerTask(tph), true);
             return ff.getQualifiedName();
         } catch (IOException ex) {
-            throw (RuntimeException) new RuntimeException().initCause(ex);
+            throw new RuntimeException(ex);
         }    
     }
     
@@ -598,7 +598,7 @@ public class RetoucheUtils {
             source.runUserActionTask(ff=new CompilerTask(tph, fqn), true);
             return ff.typeExist();
         } catch (IOException ex) {
-            throw (RuntimeException) new RuntimeException().initCause(ex);
+            throw new RuntimeException(ex);
         }    
     }
     
@@ -867,7 +867,7 @@ public class RetoucheUtils {
             try {
                 cc.toPhase(JavaSource.Phase.RESOLVED);
             } catch (IOException ex) {
-                throw (RuntimeException) new RuntimeException().initCause(ex);
+                throw new RuntimeException(ex);
             }
             Element el = handle.resolveElement(cc);
             if (el == null) {
@@ -934,7 +934,7 @@ public class RetoucheUtils {
             try {
                 cc.toPhase(JavaSource.Phase.RESOLVED);
             } catch (IOException ex) {
-                throw (RuntimeException) new RuntimeException().initCause(ex);
+                throw new RuntimeException(ex);
             }
             Element el = handle.resolveElement(cc);
             files = elementsToFile(getSuperTypes((TypeElement) el, cc, true), cc.getClasspathInfo());

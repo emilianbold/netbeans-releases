@@ -322,7 +322,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
             try {
                 source.runUserActionTask(task, true);
             } catch (IOException ioe) {
-                throw (RuntimeException) new RuntimeException().initCause(ioe);
+                throw new RuntimeException(ioe);
             }
             initialized = true;
     }

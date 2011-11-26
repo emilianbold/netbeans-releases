@@ -155,7 +155,7 @@ public class SafeDeletePanel extends JPanel implements CustomRefactoringPanel {
                   }
               }, true);
           } catch (IOException ioe) {
-              throw (RuntimeException) new RuntimeException().initCause(ioe);
+              throw new RuntimeException(ioe);
           }
           if (regulardelete) {
               labelText = NbBundle.getMessage(SafeDeletePanel.class, "LBL_SafeDel_RegularDeleteElement",name[0]);

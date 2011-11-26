@@ -168,6 +168,7 @@ public abstract class BackupFacility {
             this.handle = handles;
             this.instance = instance;
         }
+        @Override
         public void restore() throws IOException {
             for (long l:handle) {
                 instance.restore(l);
@@ -189,6 +190,7 @@ public abstract class BackupFacility {
         private DefaultImpl() {
         }
         
+        @Override
         public Handle backup(FileObject ... file) throws IOException {
             ArrayList<Long> list = new ArrayList<Long>();
             for (FileObject f:file) {
@@ -293,6 +295,7 @@ public abstract class BackupFacility {
             }
         }
         
+        @Override
         public void clear() {
             for(BackupEntry entry: map.values()) {
                 entry.file.delete();
