@@ -56,6 +56,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 
 /** Special module for representing OSGi bundles 
  * @author Jaroslav Tulach
@@ -224,7 +225,7 @@ final class NetigsoModule extends Module {
 
     @Override
     final int getStartLevelImpl() {
-        return startLevel == -1 ? NetigsoFramework.getDefault().defaultStartLevel() : startLevel;
+        return startLevel == -1 ? Lookup.getDefault().lookup(NetigsoFramework.class).defaultStartLevel() : startLevel;
     }
 
     final void setStartLevel(int startLevel) {
