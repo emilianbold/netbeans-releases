@@ -282,9 +282,9 @@ public class CsmRenameRefactoringPlugin extends CsmModificationRefactoringPlugin
         String newName = refactoring.getNewName();
         for (CsmReference ref : sortedRefs) {
             String oldText = ref.getText().toString();
-            String newText = CsmRefactoringUtils.getReplaceText(ref, newName);
+            String newText = CsmRefactoringUtils.getReplaceText(ref, newName, refactoring);
             if (newText != null) {
-                String descr = CsmRefactoringUtils.getReplaceDescription(ref);
+                String descr = CsmRefactoringUtils.getReplaceDescription(ref, refactoring);
                 Difference diff = CsmRefactoringUtils.rename(ref.getStartOffset(), ref.getEndOffset(), ces, oldText, newText, descr);
                 assert diff != null;
                 mr.addDifference(fo, diff);
