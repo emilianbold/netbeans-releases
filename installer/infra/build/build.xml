@@ -2387,7 +2387,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <bundleProperty name="nbi.overall.license.resource" value="${license.resource}"/>
 	    -->
         </create-bundle>
-	<antcall target="convert-weblogic-bundle"/>
+	<!--antcall target="convert-weblogic-bundle"/-->
     </target>
   
     <target name="convert-weblogic-bundle" depends="convert-zip-to-dmg"/>
