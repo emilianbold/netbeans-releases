@@ -42,6 +42,7 @@ import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.exceptions.NativeException;
 import org.netbeans.installer.utils.helper.Platform;
+import org.netbeans.installer.utils.helper.PlatformConstants;
 import org.netbeans.installer.utils.helper.Version;
 import org.netbeans.installer.utils.system.WindowsNativeUtils;
 import static org.netbeans.installer.utils.system.windows.WindowsRegistry.HKLM;
@@ -51,22 +52,23 @@ public class JavaFXUtils {
     /////////////////////////////////////////////////////////////////////////////////
     // Static
   
-    public static boolean isJavaFXSDKInstalled(Platform arch, Version version) {
-        return isJavaFXInstalled(arch, version, FXSDK_KEY, VERSION);
+    public static boolean isJavaFXSDKInstalled(Platform platform, Version version) {
+        return isJavaFXInstalled(platform, version, FXSDK_KEY, VERSION);
     }
-    public static boolean isJavaFXRuntimeInstalled(Platform arch, Version version) {
-        return isJavaFXInstalled(arch, version, FXRUNTIME_KEY, FX_VERSION);
+    public static boolean isJavaFXRuntimeInstalled(Platform platform, Version version) {
+        return isJavaFXInstalled(platform, version, FXRUNTIME_KEY, FX_VERSION);
     }      
 
     /////////////////////////////////////////////////////////////////////////////////
 
-    private static boolean isJavaFXInstalled(Platform arch, Version version, String productKey, String versionKey) {
+    private static boolean isJavaFXInstalled(Platform platform, Version version, String productKey, String versionKey) {
         boolean result = false;
         try {
             if(SystemUtils.isWindows()) {
+                String arch = platform.getHardwareArch();
                 WindowsRegistry winreg = ((WindowsNativeUtils) SystemUtils.getNativeUtils()).getWindowsRegistry();
-                if(winreg.isAlternativeModeSupported() && arch != null) {
-                    final int mode = arch.equals(Platform.WINDOWS_X86)? WindowsRegistry.MODE_32BIT:
+                if(arch != null && winreg.isAlternativeModeSupported()) {
+                    final int mode = arch.equals(PlatformConstants.HARDWARE_X86)? WindowsRegistry.MODE_32BIT:
                         WindowsRegistry.MODE_64BIT;
                     LogManager.log("... changing registry mode to: " + mode);
                     winreg.setMode(mode);

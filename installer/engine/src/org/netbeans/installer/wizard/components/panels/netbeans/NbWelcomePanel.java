@@ -268,6 +268,7 @@ public class NbWelcomePanel extends ErrorMessagePanel {
         // additionally, we should not be suggesting to install tomcat by default,
         // thus we should correct it's initial status        
         Product bundledProductSkip = null;
+        Product bundledProductToInstall = null;
         if (bundledRegistry.getNodes().size() > 1) {
             for (Product product: defaultRegistry.getProducts()) {
                 if (bundledRegistry.getProduct(
@@ -330,14 +331,30 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                                 product.getDisplayName()));
                         bundledProductSkip = product;                                                    
                     }
+                    bundledProductToInstall = (bundledProductSkip == null)? product : null;
+                } else if (product.getUid().equals("javafxsdk")) {
+                     if(product.getStatus() == Status.TO_BE_INSTALLED &&
+                        ExecutionMode.getCurrentExecutionMode() == ExecutionMode.NORMAL &&
+                        bundledProductAlreadyInstalled(product)) { // check if javafxsdk is already installed (i.e from another installer)
+                            product.setStatus(Status.NOT_INSTALLED);
+                            product.setVisible(false);
+                    }
                 }
             }
         }
-     
-        final List <Product> toInstall = defaultRegistry.getProductsToInstall();               
-       
-        if (bundledProductSkip != null) {
-            if (toInstall.isEmpty()) {
+        LogManager.log("... bundledProductSkip = " + bundledProductSkip);
+        LogManager.log("... bundledProductToInstall = " + bundledProductToInstall);
+
+        if (bundledProductSkip != null) { //do not install bundledproduct
+            final Product javafxsdk = getJavaFXSDKProduct();
+            if(type.isJDKBundle() && javafxsdk != null) { //do not install javafxsdk as well
+                // dont't install JavaFX if JDK is already installed or there is no permissions for its installation
+                javafxsdk.setStatus(bundledProductSkip.getStatus());
+                javafxsdk.setVisible(bundledProductSkip.isVisible());
+                LogManager.log("... Skipping JavaFX installation");
+            }
+
+            if (defaultRegistry.getProductsToInstall().isEmpty()) {
                 if (getProperty(BUNDLEDPRODUCT_INSTALLED_TEXT_PROPERTY) != null) {
                     setProperty(BUNDLEDPRODUCT_EVERYTHING_INSTALLED_TEXT_PROPERTY,
                             StringUtils.format(DEFAULT_BUNDLEDPRODUCT_EVERYTHING_INSTALLED_TEXT,
@@ -353,11 +370,30 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                 }
             }
         }
-        if(toInstall.size()==1 && toInstall.get(0).getUid().equals(bundledproduct_name)) { // install only bundledproduct
+            
+        final List <Product> toInstall = defaultRegistry.getProductsToInstall();
+
+        if(bundledProductToInstall != null) { // bundled product will be installed
+            LogManager.log("... bundledProductToInstall != null: " + bundledProductToInstall.getUid());
+            boolean nbToInstall = false;
+            for(Product productToInstall : toInstall) {
+                if(productToInstall.getUid().equals("nb-base")) {
+                    nbToInstall = true;
+                    break;
+                }
+            }
+            if(!nbToInstall) {//install only bundledproduct, NetBeans is already installed
+                LogManager.log("... NetBeans is already installed, install only bundled product");
+                 setProperty(BUNDLEDPRODUCT_NETBEANS_INSTALLED_TEXT_PROPERTY,
+                        StringUtils.format(DEFAULT_BUNDLEDPRODUCT_NETBEANS_INSTALLED_TEXT,
+                        bundledProductToInstall.getDisplayName()));
+            }
+        }
+        /*if(toInstall.size()==1 && toInstall.get(0).getUid().equals(bundledproduct_name)) { // install only bundledproduct
                 setProperty(BUNDLEDPRODUCT_NETBEANS_INSTALLED_TEXT_PROPERTY,
                         StringUtils.format(DEFAULT_BUNDLEDPRODUCT_NETBEANS_INSTALLED_TEXT,
                         toInstall.get(0).getDisplayName()));
-        }                        
+        }*/
         registriesFiltered = true;
     }
     
@@ -548,6 +584,7 @@ public class NbWelcomePanel extends ErrorMessagePanel {
             StringBuilder detailsText = new StringBuilder(
                     panel.getProperty(WELCOME_TEXT_OPENTAG_PROPERTY));
             boolean warningIcon = false;
+            boolean installFXSDKMessage = false;
             if(panel.getProperty(BUNDLEDPRODUCT_EVERYTHING_INSTALLED_TEXT_PROPERTY)!=null) {
                 detailsText.append(panel.getProperty(BUNDLEDPRODUCT_EVERYTHING_INSTALLED_TEXT_PROPERTY));
                 warningIcon = true;
@@ -557,10 +594,7 @@ public class NbWelcomePanel extends ErrorMessagePanel {
             } else if(panel.getProperty(BUNDLEDPRODUCT_NOT_COMPATIBLE_NETBEANS_INSTALLED_TEXT_PROPERTY)!=null) {
                 detailsText.append(panel.getProperty(BUNDLEDPRODUCT_NOT_COMPATIBLE_NETBEANS_INSTALLED_TEXT_PROPERTY));
                 warningIcon = true;
-            } else if(panel.getProperty(BUNDLEDPRODUCT_NETBEANS_INSTALLED_TEXT_PROPERTY)!=null) {
-                detailsText.append(panel.getProperty(BUNDLEDPRODUCT_NETBEANS_INSTALLED_TEXT_PROPERTY));
-                warningIcon = true;
-            } else if(panel.getProperty(BUNDLEDPRODUCT_INSTALLED_TEXT_PROPERTY)!=null) {
+            }  else if(panel.getProperty(BUNDLEDPRODUCT_INSTALLED_TEXT_PROPERTY)!=null) {
                 detailsText.append(panel.getProperty(BUNDLEDPRODUCT_INSTALLED_TEXT_PROPERTY));
                 warningIcon = true;
             } else if(panel.getProperty(BUNDLEDPRODUCT_UNSUFFICIENT_PERMISSIONS_PROPERTY)!=null) {
@@ -569,9 +603,29 @@ public class NbWelcomePanel extends ErrorMessagePanel {
             } else if(panel.getProperty(BUNDLEDPRODUCT_NOT_COMPATIBLE_TEXT_PROPERTY)!=null) {
                 detailsText.append(panel.getProperty(BUNDLEDPRODUCT_NOT_COMPATIBLE_TEXT_PROPERTY));
                 warningIcon = true;           
+            } else if(panel.getProperty(BUNDLEDPRODUCT_NETBEANS_INSTALLED_TEXT_PROPERTY)!=null) {
+                detailsText.append(panel.getProperty(BUNDLEDPRODUCT_NETBEANS_INSTALLED_TEXT_PROPERTY));
+                warningIcon = true;
+                installFXSDKMessage = true;
             } else {
-                detailsText.append(panel.getProperty(WELCOME_TEXT_DETAILS_PROPERTY));
+                detailsText.append(panel.getProperty(WELCOME_TEXT_DETAILS_PROPERTY));                
+                installFXSDKMessage = true;                
             }
+
+            //For JDK and JavaFX SDK bundle
+            final Product javafxsdk = panel.getJavaFXSDKProduct();
+            if(type.isJDKBundle() && javafxsdk != null && installFXSDKMessage) {
+                if(javafxsdk.getStatus().equals(Status.TO_BE_INSTALLED)) { //install jdk && javafxsdk
+                    LogManager.log("... JavaFX SDK will be installed");
+                    detailsText.append(StringUtils.format(panel.getProperty(DEFAULT_FXSDK_TO_BE_INSTALLED_TEXT_PROPERTY),
+                            javafxsdk.getDisplayName()));
+                } else { //install jdk but do not install javafxsdk
+                    LogManager.log("... JavaFX SDK is already installed");
+                    detailsText.append(StringUtils.format(panel.getProperty(DEFAULT_FXSDK_ALREADY_INSTALLED_TEXT_PROPERTY),
+                            javafxsdk.getDisplayName()));
+                }
+            }
+            /////////////////////////////////
             detailsTextPane.setContentType(
                     panel.getProperty(TEXT_PANE_CONTENT_TYPE_PROPERTY));
             
@@ -1075,6 +1129,7 @@ public class NbWelcomePanel extends ErrorMessagePanel {
             return (name.equals("bundledproduct") && bundledproduct_name.contains("jdk"))
                     || name.endsWith(".jdk");
         }
+
         public boolean isWebLogicBundle() {
             return (name.equals("bundledproduct") && bundledproduct_name.contains("weblogic"));
         }
@@ -1097,12 +1152,10 @@ public class NbWelcomePanel extends ErrorMessagePanel {
 
     private boolean bundledProductAlreadyInstalled(Product product) {
         if(product.getUid().equals("jdk")) {
-            boolean result = JavaUtils.findJDKHome(product.getVersion())!= null;
-            if(product.getProperty(FXSDK_VERSION) != null) {
-                result = result &&
-                    JavaFXUtils.isJavaFXSDKInstalled(null, Version.getVersion(product.getProperty(FXSDK_VERSION)));
-            }
-            return result;
+            return JavaUtils.findJDKHome(product.getVersion())!= null;
+        } else if(product.getUid().equals("javafxsdk")) {
+            return JavaFXUtils.isJavaFXSDKInstalled(product.getPlatforms().get(0),
+                    product.getVersion());
         } else if(product.getUid().equals("weblogic")) {
             return false; // research if it is possible to know if WL is already installed by standalone installer
         }        
@@ -1118,13 +1171,15 @@ public class NbWelcomePanel extends ErrorMessagePanel {
          return false;
     }
 
+    private Product getJavaFXSDKProduct() {
+        List<Product> products = bundledRegistry.getProducts("javafxsdk");
+        LogManager.log("... no JavaFX SDK is found in bundled registry: " + products.isEmpty());
+        return (products.isEmpty())? null : products.get(0);
+    }
+
 
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
-
-    public static final String FXSDK_VERSION =
-            "{fxsdk-version}"; // NOI18N
-
     public static final String DEFAULT_TITLE =
             ResourceUtils.getString(NbWelcomePanel.class,
             "NWP.title"); // NOI18N
@@ -1237,6 +1292,13 @@ public class NbWelcomePanel extends ErrorMessagePanel {
     public static final String DEFAULT_BUNDLEDPRODUCT_NOT_COMPATIBLE_NETBEANS_INSTALLED_TEXT_PROPERTY =
            ResourceUtils.getString(NbWelcomePanel.class,
             "NWP.bundledproduct.not.installable.netbeans.installed.text");//NOI18N
+
+    public static final String DEFAULT_FXSDK_TO_BE_INSTALLED_TEXT_PROPERTY =
+            ResourceUtils.getString(NbWelcomePanel.class,
+            "NWP.javafxsdk.to.be.installed"); // NOI18N
+    public static final String DEFAULT_FXSDK_ALREADY_INSTALLED_TEXT_PROPERTY =
+            ResourceUtils.getString(NbWelcomePanel.class,
+            "NWP.javafxsdk.already.installed"); // NOI18N
     
     
     public static final String CUSTOMIZE_TITLE_PROPERTY =
