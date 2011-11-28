@@ -43,6 +43,7 @@
 package org.netbeans.modules.sendopts;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.HashSet;
 import java.util.Map;
@@ -51,24 +52,42 @@ import org.netbeans.api.sendopts.CommandException;
 import org.netbeans.spi.sendopts.Env;
 import org.netbeans.spi.sendopts.Option;
 import org.netbeans.spi.sendopts.OptionProcessor;
+import org.netbeans.spi.sendopts.annotations.PostProcess;
 
 /** Processor that is configured from a map, usually from a layer.
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 final class DefaultProcessor extends OptionProcessor {
-    private final String longName;
     private final String clazz;
     private final String field;
-    private final char shortName;
-    private final String type;
+    private final Option option;
+    private final Type type;
 
-    private DefaultProcessor(String type, String f, String c, Character shortName, String longName) {
+    private DefaultProcessor(
+        String type, String f, String c,
+        Character shortName, String longName, 
+        String displayName, String description
+    ) {
         this.field = f;
         this.clazz = c;
-        this.shortName = shortName.charValue();
-        this.longName = longName;
-        this.type = type;
+        this.type = Type.valueOf(type);
+        Option o = null;
+        switch (this.type) {
+            case withoutArgument: o = Option.withoutArgument(shortName, longName); break;
+            case requiredArgument: o = Option.requiredArgument(shortName, longName); break;
+            case additionalArguments: o = Option.additionalArguments(shortName, longName); break;
+            default: assert false;
+        }
+        if (displayName != null) {
+            String[] arr = displayName.split("#"); // NOI18N
+            o = Option.displayName(o, arr[0], arr[1]);
+        }
+        if (description != null) {
+            String[] arr = description.split("#"); // NOI18N
+            o = Option.shortDescription(o, arr[0], arr[1]);
+        }
+        this.option = o;
     }
     
     static DefaultProcessor create(Map<?,?> map) {
@@ -77,22 +96,16 @@ final class DefaultProcessor extends OptionProcessor {
         Character shortName = (Character) map.get("shortName");
         String longName = (String) map.get("longName");
         String type = (String) map.get("type");
-        return new DefaultProcessor(type, f, c, shortName, longName);
+        String displayName = (String)map.get("displayName");
+        String description = (String)map.get("shortDescription");
+        return new DefaultProcessor(type, f, c, shortName, longName, displayName, description);
     }
     
 
     @Override
     protected Set<Option> getOptions() {
         Set<Option> set = new HashSet<Option>();
-        if (type.equals("withoutArgument")) { // NOI18N
-            set.add(Option.withoutArgument(shortName, longName));
-        } else if (type.equals("requiredArgument")) { // NOI18N
-            set.add(Option.requiredArgument(shortName, longName));
-        } else if (type.equals("additionalArguments")) { // NOI18N
-            set.add(Option.additionalArguments(shortName, longName));
-        } else {
-            assert false : "Type " + type;
-        }
+        set.add(option);
         return set;
     }
 
@@ -102,14 +115,19 @@ final class DefaultProcessor extends OptionProcessor {
             Class<?> realClazz = Class.forName(clazz);
             Field realField = realClazz.getDeclaredField(field);
             realField.setAccessible(true);
-            if (type.equals("withoutArgument")) {
-                if ((realField.getModifiers() & Modifier.STATIC) != 0) {
-                    realField.setBoolean(null, true);
-                }
+            switch (type) {
+                case withoutArgument:
+                    realField.setBoolean(null, true); break;
+                case requiredArgument:
+                    realField.set(null, optionValues.values().iterator().next()[0]); break;
+                case additionalArguments:
+                    realField.set(null, optionValues.values().iterator().next()); break;
             }
-            if (type.equals("requiredArgument")) {
-                if ((realField.getModifiers() & Modifier.STATIC) != 0) {
-                    realField.set(null, optionValues.values().iterator().next()[0]);
+            for (Method method : realClazz.getDeclaredMethods()) {
+                if (method.getAnnotation(PostProcess.class) != null) {
+                    method.setAccessible(true);
+                    method.invoke(null);
+                    break;
                 }
             }
             
@@ -118,4 +136,7 @@ final class DefaultProcessor extends OptionProcessor {
         }
     }
 
+    private static enum Type {
+        withoutArgument, requiredArgument, additionalArguments;
+    }
 }

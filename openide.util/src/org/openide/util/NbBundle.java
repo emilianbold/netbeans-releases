@@ -823,7 +823,7 @@ public class NbBundle extends Object {
      * @since org.openide.util 8.10
      */
     @Retention(RetentionPolicy.SOURCE)
-    @Target({ElementType.PACKAGE, ElementType.TYPE, ElementType.METHOD, ElementType.CONSTRUCTOR})
+    @Target({ElementType.PACKAGE, ElementType.FIELD, ElementType.TYPE, ElementType.METHOD, ElementType.CONSTRUCTOR})
     public @interface Messages {
         /**
          * List of key/value pairs.

@@ -48,8 +48,7 @@ import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.*;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
@@ -83,16 +82,23 @@ public final class OptionAnnotationProcessor extends LayerGeneratingProcessor {
         ArrayType stringArray = processingEnv.getTypeUtils().getArrayType(stringType);
         int cnt = 0;
         for (Element e : roundEnv.getElementsAnnotatedWith(Option.class)) {
+            if (!e.getModifiers().contains(Modifier.STATIC)) {
+                throw new LayerGenerationException("@Option can be applied only to static fields", e);
+            }
+            
             Option o = e.getAnnotation(Option.class);
             Description d = e.getAnnotation(Description.class);
             
             File f;
-            f = layer(e).file("Services/OptionProcessors/" + processingEnv.getElementUtils().getBinaryName((TypeElement)e.getEnclosingElement()).toString().replace('.', '-') + ".instance");
+            final String typeName = processingEnv.getElementUtils().getBinaryName((TypeElement)e.getEnclosingElement()).toString().replace('.', '-');
+            f = layer(e).file("Services/OptionProcessors/" + typeName + "-" + e.getSimpleName() + ".instance");
             f.methodvalue("instanceCreate", DefaultProcessor.class.getName(), "create");
             f.stringvalue("field", e.getSimpleName().toString());
             f.stringvalue("class", processingEnv.getElementUtils().getBinaryName((TypeElement)e.getEnclosingElement()).toString());
             f.charvalue("shortName", o.shortName());
-            f.stringvalue("longName", o.longName());
+            if (!o.longName().isEmpty()) {
+                f.stringvalue("longName", o.longName());
+            }
             if (boolType == e.asType()) {
                 f.stringvalue("type", "withoutArgument");
             } else if (stringType == e.asType()) {
@@ -105,8 +111,8 @@ public final class OptionAnnotationProcessor extends LayerGeneratingProcessor {
                 f.stringvalue("type", "additionalArguments");
             }
             if (d != null) {
-                f.bundlevalue("displayName", d.displayName());
-                f.bundlevalue("shortDescription", d.shortDescription());
+                writeBundle(f, "displayName", d.displayName(), e);
+                writeBundle(f, "shortDescription", d.shortDescription(), e);
             }
             f.write();
             
@@ -115,4 +121,21 @@ public final class OptionAnnotationProcessor extends LayerGeneratingProcessor {
         return true;
     }
 
+    private static void writeBundle(File f, String key, String value, Element e) throws LayerGenerationException {
+        // test first
+        f.bundlevalue(key, value);
+        
+        if (value.startsWith("#")) {
+            Element referenceElement = e;
+            while (referenceElement != null && referenceElement.getKind() != ElementKind.PACKAGE) {
+                referenceElement = referenceElement.getEnclosingElement();
+            }
+            if (referenceElement == null) {
+                throw new LayerGenerationException("No reference element to determine package in '" + value + "'", e);
+            }
+            value = ((PackageElement) referenceElement).getQualifiedName() + ".Bundle" + value;
+        }
+        
+        f.stringvalue(key, value);
+    }
 }

@@ -46,7 +46,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import javax.xml.ws.soap.MTOM;
 import org.netbeans.api.sendopts.CommandException;
 import org.netbeans.api.sendopts.CommandLine;
 import org.netbeans.junit.NbTestCase;
@@ -75,6 +74,7 @@ public class OptionTest extends NbTestCase {
         enabled = false;
         withParam = null;
         additionalParams = null;
+        methodCalled = false;
     }
 
     public void testParseEnabled() throws Exception {
@@ -140,15 +140,15 @@ public class OptionTest extends NbTestCase {
     @Description(displayName="#NAME", shortDescription="#SHORT")
     @Option(shortName='a', longName="additional")
     @NbBundle.Messages({
-        "NAME=Jmeno", 
-        "SHORT=Kratke"
+        "NAME=AddOnParams", 
+        "SHORT=ShortHelp"
     })
     public static String[] additionalParams;
     
 
-    private boolean methodCalled;
+    private static boolean methodCalled;
     @PostProcess
-    private void callMeAfterArgumentsAreSet() {
+    private static void callMeAfterArgumentsAreSet() {
         methodCalled = true;
     } 
     
