@@ -365,6 +365,9 @@
         <condition property="do.build.jdk7">
 	     <equals arg1="${build.jdk7}" arg2="1"/>
         </condition>
+        <condition property="do.build.javafxsdk">
+	     <equals arg1="${build.jdk7}" arg2="1"/>
+        </condition>
         <condition property="do.build.netbeans">
 	     <equals arg1="${build.netbeans.bundles}" arg2="1"/>
         </condition>
@@ -405,6 +408,8 @@
         <set property="weblogic.version"      value="12.1.1"/>
 	<set property="weblogic.full.version" value="${weblogic.version}.0.0"/>
 
+        <set property="javafx.version"      value="2.0.2"/>
+	<set property="javafx.full.version" value="${javafx.version}.0.0"/>
 
 	<set property="glassfish.milestone.number" value="31"/>
 	<set property="glassfish.milestone.number.real" value="31g"/>
@@ -710,7 +715,8 @@ jarsigner.storepass=${jarsigner.storepass}
 		<!-- wtk -->
                 <exclude name="**/wtk*"/>
                 <exclude name="**/javamesdk*"/>
-                <exclude name="**/javafxsdk*"/>
+                <include name="**/javafxsdk*"/>
+                <include name="**/javafxsdk*${javafxsdk.full.version}"/>
 
 		<!-- JDK -->
                 <exclude name="**/jdk*"/>
@@ -839,7 +845,7 @@ jarsigner.storepass=${jarsigner.storepass}
     <target name="build-nbjdk-components" if="do.build.jdk">
 	<set property="netbeans.group.uid" value=""/>
         <antcall target="build-list">
-	     <param name="build.list" value="nb-base nb-javase jdk5 jdk6 jdk7"/>
+	     <param name="build.list" value="nb-base nb-javase jdk5 jdk6 jdk7 javafxsdk"/>
         </antcall>
     </target>
 
@@ -1145,6 +1151,12 @@ jarsigner.storepass=${jarsigner.storepass}
         </antcall>
     </target>
 
+    <target name="build-javafxsdk" if="do.build.javafxsdk">
+	<antcall target="build-product">
+	    <param name="component.uid" value="javafxsdk"/>
+            <param name="release.parent.uid" value=""/>
+        </antcall>
+    </target>
 
     <target name="build-glassfish">        
 	<antcall target="build-runtime-product">
@@ -1199,7 +1211,6 @@ jarsigner.storepass=${jarsigner.storepass}
 	    <param name="component.uid" value="weblogic"/>
         </antcall>
     </target>
-
 
     <target name="build-sjsas">        
 	<antcall target="build-runtime-product">
@@ -2245,22 +2256,6 @@ jarsigner.storepass=${jarsigner.storepass}
 	</antcall>
     </target>
 
-    <target name="generate-jdk-bundle"  depends="get-bundled-jvm">
-        <create-bundle root="${output.dir}/registry-temp" 
-                       platform="${bundle.platform}" 
-                       target="${jdk.output.dir}/${jdk.bundle.files.prefix}-${jdk.bundle.files.suffix}-${bundle.platform}${nb.build.suffix}${bundle.extension}">
-            <component uid="nb-base"   version="${nb.full.version}"/>
-            <component uid="nb-javase" version="${nb.full.version}"/>
-	    <component uid="jdk"       version="${jdk.full.version}"/>
-            <bundleProperty name="${bundledproduct.name}" value="jdk"/>
-	    <bundleProperty name="${welcome.type}" value="bundledproduct"/>
-	    <!--
-            <bundleProperty name="nbi.overall.license.resource" value="${license.resource}"/>
-	    -->
-	    <property name="nbi.bundled.jvm.file" value="${jvm.cache.dir}/${bundled.jvm.file.prefix}-${bundled.jvm.file.suffix}"/>
-        </create-bundle>
-    </target>
-
     <target name="generate-jdk-bundle-single">
 	<antcall target="generate-jdk-bundle">
 		<param name="bundle.platform"           value="windows"/>
@@ -2283,6 +2278,51 @@ jarsigner.storepass=${jarsigner.storepass}
 		<param name="bundle.extension"		value=".sh"/>
 		<param name="bundled.jvm.file.suffix"   value="solaris-sparc.sh"/>
 	</antcall>
+    </target>
+
+    <target name="generate-jdk-bundle"  depends="get-bundled-jvm">
+        <property name="bundle.prefix"
+                      value="${jdk.output.dir}/${jdk.bundle.files.prefix}-${jdk.bundle.files.suffix}-${bundle.platform}${nb.build.suffix}"/>
+
+        <condition property="do.include.javafxsdk" value="true" else="false">
+            <and>
+            <contains string="${bundle.platform}" substring="windows"/>
+            <equals arg1="${build.jdk7}" arg2="1"/>
+            </and>
+        </condition>
+
+        <if property="do.include.javafxsdk" value="true">
+            <create-bundle root="${output.dir}/registry-temp"
+                           platform="${bundle.platform}"
+                           target="${bundle.prefix}${bundle.extension}">
+                <component uid="nb-base"   version="${nb.full.version}"/>
+                <component uid="nb-javase" version="${nb.full.version}"/>
+                <component uid="jdk"       version="${jdk.full.version}"/>
+                <component uid="javafxsdk" version="${javafxsdk.full.version}"/>
+                <bundleProperty name="${bundledproduct.name}" value="jdk"/>
+                <bundleProperty name="${welcome.type}" value="bundledproduct"/>
+                <!--
+                <bundleProperty name="nbi.overall.license.resource" value="${license.resource}"/>
+                -->
+                <property name="nbi.bundled.jvm.file" value="${jvm.cache.dir}/${bundled.jvm.file.prefix}-${bundled.jvm.file.suffix}"/>
+            </create-bundle>
+        </if>
+
+        <if property="do.include.javafxsdk" value="false">
+            <create-bundle root="${output.dir}/registry-temp"
+                           platform="${bundle.platform}"
+                           target="${bundle.prefix}${bundle.extension}">
+                <component uid="nb-base"   version="${nb.full.version}"/>
+                <component uid="nb-javase" version="${nb.full.version}"/>
+                <component uid="jdk"       version="${jdk.full.version}"/>
+                <bundleProperty name="${bundledproduct.name}" value="jdk"/>
+                <bundleProperty name="${welcome.type}" value="bundledproduct"/>
+                <!--
+                <bundleProperty name="nbi.overall.license.resource" value="${license.resource}"/>
+                -->
+                <property name="nbi.bundled.jvm.file" value="${jvm.cache.dir}/${bundled.jvm.file.prefix}-${bundled.jvm.file.suffix}"/>
+            </create-bundle>
+        </if>
     </target>
 
 
@@ -2308,7 +2348,7 @@ jarsigner.storepass=${jarsigner.storepass}
     </target>
 
     <target name="generate-weblogic-bundle-single">
-	<set property="bundle.dmg.name"    value="NetBeans and WebLogic Bundle"/>
+	<!--set property="bundle.dmg.name"    value="NetBeans and WebLogic Bundle"/-->
 	<antcall target="generate-weblogic-bundle">
 		<param name="bundle.platform"  value="windows"/>
 		<param name="bundle.extension" value="exe"/>
@@ -2317,18 +2357,18 @@ jarsigner.storepass=${jarsigner.storepass}
 		<param name="bundle.platform"  value="linux"/>
 		<param name="bundle.extension" value="sh"/>
 	</antcall>
-	<!--antcall target="generate-weblogic-bundle">
+	<antcall target="generate-weblogic-bundle">
 	    <param name="bundle.platform"  value="solaris-x86"/>
 	    <param name="bundle.extension" value="sh"/>
         </antcall>
 	<antcall target="generate-weblogic-bundle">
 	    <param name="bundle.platform"  value="solaris-sparc"/>
 	    <param name="bundle.extension" value="sh"/>
-        </antcall-->
-	<antcall target="generate-weblogic-bundle">
+        </antcall>
+	<!--antcall target="generate-weblogic-bundle">
                <param name="bundle.platform"  value="macosx-x86"/>
                <param name="bundle.extension" value="zip"/>
-        </antcall>        
+        </antcall-->
     </target>
 
     <target name="generate-weblogic-bundle">

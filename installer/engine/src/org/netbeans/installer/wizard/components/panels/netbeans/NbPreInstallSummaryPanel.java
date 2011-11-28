@@ -327,7 +327,8 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
                     junitPresent = (jUnitAccepted != null  && jUnitAccepted.equals("true"));
                 }
                 try {
-                    if (product.getLogic().registerInSystem() || product.getUid().equals("jdk") || product.getUid().equals("mysql")) {
+                    if (product.getLogic().registerInSystem() || product.getUid().equals("jdk")
+			    || product.getUid().equals("mysql") || product.getUid().equals("javafxsdk")) {
                         nbBasePresent = product.getUid().equals(NB_BASE_UID) ? true : nbBasePresent;
                     } else {
                         if (product.getUid().startsWith("nb-")) {
@@ -388,8 +389,7 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
             // add top-level components like nb-base, glassfish, tomcat, jdk
             for (Product product: registry.getProductsToInstall()) {
                 try {
-                    if ( product.getUid().equals("jdk") && 
-                            product.getProperty(FXSDK_INSTALLATION_LOCATION_PROPERTY) != null) {
+                    if (product.getUid().equals("javafxsdk")) {
                         String property = panel.getProperty(                               
                                     INSTALLATION_FOLDERS_PROPERTY);
                         text.append(StringUtils.LF);
@@ -398,10 +398,8 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
                         text.append(StringUtils.LF);
                         text.append("    " + product.getInstallationLocation());
                         text.append(StringUtils.LF);                         
-                        text.append("    " + product.getProperty(FXSDK_INSTALLATION_LOCATION_PROPERTY));
-                        text.append(StringUtils.LF);                         
-                        //text.append("    " + product.getProperty(FXRT_INSTALLATION_LOCATION_PROPERTY));
-                        //text.append(StringUtils.LF);
+                        text.append("    " + product.getProperty(JAVAFX_RUNTIME_INSTALLATION_LOCATION_PROPERTY));
+                        text.append(StringUtils.LF);
                     } else if (product.getLogic().registerInSystem() ||
                             product.getUid().equals("jdk") || product.getUid().equals("mysql")) {
                         String property = panel.getProperty(
@@ -1049,10 +1047,8 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
 /////////////////////////////////////////////////////////////////////////////////
 // Constants
 
-    public static final String FXSDK_INSTALLATION_LOCATION_PROPERTY =
-            "fxsdk.installation.location"; // NOI18N
-    public static final String FXRT_INSTALLATION_LOCATION_PROPERTY =
-            "fxrt.installation.location"; // NOI18N
+    public static final String JAVAFX_RUNTIME_INSTALLATION_LOCATION_PROPERTY =
+            "javafx.runtime.installation.location"; // NOI18N
 
     public static final String INSTALLATION_FOLDER_PROPERTY =
             "installation.folder"; // NOI18N

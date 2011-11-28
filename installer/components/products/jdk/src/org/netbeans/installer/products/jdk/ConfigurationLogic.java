@@ -44,6 +44,8 @@ import java.io.FileFilter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.installer.product.Registry;
+import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.product.components.ProductConfigurationLogic;
@@ -255,6 +257,24 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             }
         }
     }
+
+
+    private Product getJavaFXSDKProduct() {
+            Registry bundledRegistry = new Registry();
+            try {
+                final String bundledRegistryUri = System.getProperty(
+                        Registry.BUNDLED_PRODUCT_REGISTRY_URI_PROPERTY);
+
+                bundledRegistry.loadProductRegistry(
+                        (bundledRegistryUri != null) ? bundledRegistryUri : Registry.DEFAULT_BUNDLED_PRODUCT_REGISTRY_URI);
+            } catch (InitializationException e) {
+                LogManager.log("Cannot load bundled registry", e);
+            }
+            LogManager.log("... checking if javafxsdk is bundled");
+            final List<Product> fxsdkProducts = bundledRegistry.getProducts("javafxsdk");
+            return (fxsdkProducts.isEmpty())? null : fxsdkProducts.get(0);
+    }
+
     private ExecutionResults runJDKInstallerWindows(File location,
             File installer, Progress progress,
             final boolean isFullSilentInstaller,
@@ -284,12 +304,17 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                     ERROR_INSTALL_JDK_ERROR_KEY),e);
         }
         final File logFile = getLog("jdk_install");
-        
+        LogManager.log("... JDK installation log file : " + logFile);
         final String loggingOption = (logFile!=null) ?
             "/log " + BACK_SLASH + QUOTE  + logFile.getAbsolutePath()  + BACK_SLASH + QUOTE +" ":
             EMPTY_STRING;
-        final String installLocationOption = "/qn /norestart INSTALLDIR=" + BACK_SLASH + QUOTE + location + BACK_SLASH + QUOTE;
-        LogManager.log("... JDK installation log file : " + logFile);
+        String installLocationOption = "/qn /norestart INSTALLDIR=" + BACK_SLASH + QUOTE + location + BACK_SLASH + QUOTE;
+        final Product javafxsdk=getJavaFXSDKProduct();
+        if( javafxsdk != null) {
+            LogManager.log("... javafxsdk is found");
+            installLocationOption += " INSTALLDIRFXSDK=" + BACK_SLASH + QUOTE + javafxsdk.getInstallationLocation() + BACK_SLASH + QUOTE +
+                                     " INSTALLDIRFXRT=" + BACK_SLASH + QUOTE + javafxsdk.getProperty("javafx.runtime.installation.location") + BACK_SLASH + QUOTE;
+        }
         
         String [] commands = new String [] {
             installer.getAbsolutePath(),
