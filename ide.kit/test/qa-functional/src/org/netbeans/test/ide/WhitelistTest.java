@@ -114,8 +114,8 @@ public class WhitelistTest extends JellyTestCase {
         
         NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(
             WhitelistTest.class
-        ).clusters(".*").honorAutoloadEager(true).
-        enableModules(".*").reuseUserDir(stage > 1);        
+        ).clusters("(?!ergonomics).*").honorAutoloadEager(true).reuseUserDir(stage > 1)
+        .enableClasspathModules(false).addStartupArgument("--branding", "nb");
         
         conf = conf.addTest("testWhitelist" + stage);
         
