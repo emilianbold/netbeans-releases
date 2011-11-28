@@ -71,7 +71,7 @@ import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.modules.git.FileInformation.Status;
 import org.netbeans.modules.git.ui.ignore.IgnoreAction;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
-import org.netbeans.modules.versioning.VersioningAnnotationProvider;
+import org.netbeans.modules.versioning.core.VersioningAnnotationProvider;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.netbeans.spi.queries.SharabilityQueryImplementation;

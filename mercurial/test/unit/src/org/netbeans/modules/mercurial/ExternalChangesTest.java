@@ -57,7 +57,7 @@ import java.util.logging.LogRecord;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.project.uiapi.OpenProjectsTrampoline;
-import org.netbeans.modules.versioning.VersioningManager;
+import org.netbeans.modules.versioning.core.VersioningManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.RequestProcessor;

@@ -55,8 +55,8 @@ import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.modules.git.FileInformation.Status;
 import org.netbeans.modules.git.client.GitClientInvocationHandler;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
-import org.netbeans.modules.versioning.VersioningAnnotationProvider;
-import org.netbeans.modules.versioning.VersioningManager;
+import org.netbeans.modules.versioning.core.VersioningAnnotationProvider;
+import org.netbeans.modules.versioning.core.VersioningManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
