@@ -84,10 +84,14 @@ final class DefaultProcessor extends OptionProcessor {
     @Override
     protected Set<Option> getOptions() {
         Set<Option> set = new HashSet<Option>();
-        if (type.equals("withoutArgument")) {
+        if (type.equals("withoutArgument")) { // NOI18N
             set.add(Option.withoutArgument(shortName, longName));
-        } else {
+        } else if (type.equals("requiredArgument")) { // NOI18N
             set.add(Option.requiredArgument(shortName, longName));
+        } else if (type.equals("additionalArguments")) { // NOI18N
+            set.add(Option.additionalArguments(shortName, longName));
+        } else {
+            assert false : "Type " + type;
         }
         return set;
     }

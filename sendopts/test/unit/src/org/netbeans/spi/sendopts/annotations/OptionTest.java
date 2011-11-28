@@ -42,11 +42,16 @@
 
 package org.netbeans.spi.sendopts.annotations;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import javax.xml.ws.soap.MTOM;
 import org.netbeans.api.sendopts.CommandException;
 import org.netbeans.api.sendopts.CommandLine;
 import org.netbeans.junit.NbTestCase;
+import org.openide.util.NbBundle;
+import org.openide.util.test.AnnotationProcessorTestUtils;
 
 /**
  *
@@ -110,6 +115,14 @@ public class OptionTest extends NbTestCase {
         assertEquals("no", additionalParams[0]);
         assertEquals("Param", additionalParams[1]);
     }
+    public void testParseLongAdditional() throws CommandException {
+        cmd.process("no", "--additional", "Param");
+        assertFalse("enabled not set", enabled);
+        assertNotNull("additionalParams set", additionalParams);
+        assertEquals("two", 2, additionalParams.length);
+        assertEquals("no", additionalParams[0]);
+        assertEquals("Param", additionalParams[1]);
+    }
     public void testHelp() throws CommandException {
         StringWriter w = new StringWriter();
         cmd.usage(new PrintWriter(w));
@@ -125,7 +138,11 @@ public class OptionTest extends NbTestCase {
     static String withParam;
     
     @Description(displayName="#NAME", shortDescription="#SHORT")
-    @Option(shortName='a')
+    @Option(shortName='a', longName="additional")
+    @NbBundle.Messages({
+        "NAME=Jmeno", 
+        "SHORT=Kratke"
+    })
     public static String[] additionalParams;
     
 
@@ -134,6 +151,24 @@ public class OptionTest extends NbTestCase {
     private void callMeAfterArgumentsAreSet() {
         methodCalled = true;
     } 
+    
+    public void testCheckForStatic() throws IOException {
+        clearWorkDir();
+        AnnotationProcessorTestUtils.makeSource(getWorkDir(), "test.A", 
+            "import org.netbeans.spi.sendopts.annotations.Option;\n" +
+            "public class A {\n" +
+            "  @Option(shortName='a')" +
+            "  public String nonStatic;" +
+            "}\n"
+        );
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        boolean r = AnnotationProcessorTestUtils.runJavac(getWorkDir(), null, getWorkDir(), null, os);
+        assertFalse("Compilation has to fail:\n" + os, r);
+        if (!os.toString().contains("static")) {
+            fail(os.toString());
+        }
+    }
+    
 }
 
 

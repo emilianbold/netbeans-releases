@@ -50,10 +50,10 @@ import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import org.netbeans.spi.sendopts.OptionProcessor;
 import org.netbeans.spi.sendopts.annotations.Description;
 import org.netbeans.spi.sendopts.annotations.Option;
 import org.openide.filesystems.annotations.LayerBuilder.File;
@@ -80,40 +80,35 @@ public final class OptionAnnotationProcessor extends LayerGeneratingProcessor {
     protected boolean handleProcess(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) throws LayerGenerationException {
         PrimitiveType boolType = processingEnv.getTypeUtils().getPrimitiveType(TypeKind.BOOLEAN);
         TypeMirror stringType = processingEnv.getElementUtils().getTypeElement("java.lang.String").asType();
+        ArrayType stringArray = processingEnv.getTypeUtils().getArrayType(stringType);
         int cnt = 0;
         for (Element e : roundEnv.getElementsAnnotatedWith(Option.class)) {
             Option o = e.getAnnotation(Option.class);
             Description d = e.getAnnotation(Description.class);
             
+            File f;
+            f = layer(e).file("Services/OptionProcessors/" + processingEnv.getElementUtils().getBinaryName((TypeElement)e.getEnclosingElement()).toString().replace('.', '-') + ".instance");
+            f.methodvalue("instanceCreate", DefaultProcessor.class.getName(), "create");
+            f.stringvalue("field", e.getSimpleName().toString());
+            f.stringvalue("class", processingEnv.getElementUtils().getBinaryName((TypeElement)e.getEnclosingElement()).toString());
+            f.charvalue("shortName", o.shortName());
+            f.stringvalue("longName", o.longName());
             if (boolType == e.asType()) {
-                File f;
-                f = layer(e).file("Services/OptionProcessors/" + processingEnv.getElementUtils().getBinaryName((TypeElement)e.getEnclosingElement()).toString().replace('.', '-') + ".instance");
-                f.methodvalue("instanceCreate", DefaultProcessor.class.getName(), "create");
                 f.stringvalue("type", "withoutArgument");
-                f.stringvalue("field", e.getSimpleName().toString());
-                f.stringvalue("class", processingEnv.getElementUtils().getBinaryName((TypeElement)e.getEnclosingElement()).toString());
-                f.charvalue("shortName", o.shortName());
-                f.stringvalue("longName", o.longName());
-                if (d != null) {
-                    f.bundlevalue("displayName", d.displayName());
-                    f.bundlevalue("shortDescription", d.shortDescription());
-                }
-                f.write();
             } else if (stringType == e.asType()) {
-                File f;
-                f = layer(e).file("Services/OptionProcessors/x.instance");
-                f.methodvalue("instanceCreate", DefaultProcessor.class.getName(), "create");
                 f.stringvalue("type", "requiredArgument");
-                f.stringvalue("field", e.getSimpleName().toString());
-                f.stringvalue("class", processingEnv.getElementUtils().getBinaryName((TypeElement) e.getEnclosingElement()).toString());
-                f.charvalue("shortName", o.shortName());
-                f.stringvalue("longName", o.longName());
-                if (d != null) {
-                    f.bundlevalue("displayName", d.displayName());
-                    f.bundlevalue("shortDescription", d.shortDescription());
+            } else {
+                
+                if (!stringArray.equals(e.asType())) {
+                    throw new LayerGenerationException("Field type has to be either boolean, String or String[]!", e);
                 }
-                f.write();
+                f.stringvalue("type", "additionalArguments");
             }
+            if (d != null) {
+                f.bundlevalue("displayName", d.displayName());
+                f.bundlevalue("shortDescription", d.shortDescription());
+            }
+            f.write();
             
             cnt++;
         }
