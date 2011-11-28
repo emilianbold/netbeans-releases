@@ -44,6 +44,8 @@
 package org.netbeans.modules.refactoring.java.ui;
 
 import java.awt.Component;
+import java.util.EnumSet;
+import javax.lang.model.element.ElementKind;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.Icon;
 import javax.swing.JList;
@@ -60,6 +62,15 @@ import org.netbeans.modules.refactoring.java.api.MemberInfo;
  * @author Martin Matula, Jan Becicka
  */
 public final class UIUtilities {
+
+    /**
+     * Element.Kind values allowed to be used when calling ElementHandle.create
+     *
+     * @see javax.lang.model.element.ElementKind
+     * @see org.netbeans.api.java.source.ElementHandle
+     */
+    public static EnumSet allowedElementKinds = EnumSet.of(ElementKind.PACKAGE, ElementKind.CLASS, ElementKind.INTERFACE, ElementKind.ENUM, ElementKind.ANNOTATION_TYPE, ElementKind.METHOD, ElementKind.CONSTRUCTOR, ElementKind.INSTANCE_INIT, ElementKind.STATIC_INIT, ElementKind.FIELD, ElementKind.ENUM_CONSTANT);
+
     // not to be instantiated
     private UIUtilities() {
     }
