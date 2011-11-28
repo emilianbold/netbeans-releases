@@ -69,7 +69,7 @@ public final class UIUtilities {
      * @see javax.lang.model.element.ElementKind
      * @see org.netbeans.api.java.source.ElementHandle
      */
-    public static EnumSet allowedElementKinds = EnumSet.of(ElementKind.PACKAGE, ElementKind.CLASS, ElementKind.INTERFACE, ElementKind.ENUM, ElementKind.ANNOTATION_TYPE, ElementKind.METHOD, ElementKind.CONSTRUCTOR, ElementKind.INSTANCE_INIT, ElementKind.STATIC_INIT, ElementKind.FIELD, ElementKind.ENUM_CONSTANT);
+    public static EnumSet allowedElementKinds = EnumSet.of(ElementKind.PACKAGE, ElementKind.CLASS, ElementKind.INTERFACE, ElementKind.ENUM, ElementKind.ANNOTATION_TYPE, ElementKind.METHOD, ElementKind.CONSTRUCTOR, ElementKind.INSTANCE_INIT, ElementKind.STATIC_INIT, ElementKind.FIELD, ElementKind.ENUM_CONSTANT, ElementKind.TYPE_PARAMETER);
 
     // not to be instantiated
     private UIUtilities() {
