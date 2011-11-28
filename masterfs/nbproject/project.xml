@@ -72,7 +72,7 @@ made subject to such option by the copyright holder.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>7.37</specification-version>
+                        <specification-version>7.53.2</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

@@ -49,6 +49,21 @@ made subject to such option by the copyright holder.
         <apidef name="filesystems">Filesystems API</apidef>
     </apidefs>
     <changes>
+        <change id="FileEvent.4.constructor">
+            <api name="filesystems"/>
+            <summary>Detailed FileEvent constructor</summary>
+            <version major="7" minor="53" subminor="2"/>
+            <date day="22" month="11" year="2011"/>
+            <author login="jtulach"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>New <code>FileEvent</code> constructor allowing specification
+                of expected state as well as time.
+                </p>
+            </description>
+            <class package="org.openide.filesystems" name="FileEvent"/>
+            <issue number="203477"/>
+        </change>
         <change id="FileObject.getMIMEType...">
             <api name="filesystems"/>
             <summary>FileObject.getMIMEType(String... withinMIMETypes)</summary>
