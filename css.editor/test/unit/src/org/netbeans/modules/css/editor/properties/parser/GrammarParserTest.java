@@ -39,22 +39,31 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.editor.module.main;
+package org.netbeans.modules.css.editor.properties.parser;
+
+import java.util.Collections;
+import org.netbeans.modules.css.editor.module.CssModuleSupport;
+import org.netbeans.modules.css.editor.module.main.CssModuleTestBase;
+import org.netbeans.modules.css.editor.module.spi.Property;
+import static org.junit.Assert.*;
 
 /**
- * XXX the grammar parser chars escaping needs to be fixed! - see the modified (invalid) grammar definition
  *
- * @author mfukala@netbeans.org
+ * @author marekfukala
  */
-public class GridPositioningModuleTest extends CssModuleTestBase {
-    
-    public GridPositioningModuleTest(String testName) {
-        super(testName);
+public class GrammarParserTest extends CssModuleTestBase {
+
+    public GrammarParserTest(String name) {
+        super(name);
     }
     
-    public void testProperties() {
-        assertPropertyValues("grid-rows", "4.5em (1em 4.5em)", "20px", "10%");
-        assertPropertyValues("grid-columns", "10px", "50%");   
+    public void testCanParserGrammarOfAllProperties() {
+        for (Property property : CssModuleSupport.getProperties()) {
+            PropertyModel model = new PropertyModel(property.getName(), Collections.singletonList(property));
+            assertNotNull(GrammarParser.parse(model.getGrammar()));
+            
+        }
     }
+    
     
 }

@@ -334,7 +334,7 @@ public abstract class CssCompletionItem implements CompletionProposal {
 
         @Override
         public String getRhsHtml(HtmlFormatter formatter) {
-            return "<font color=999999>" + origin + "</font>"; //NOI18N
+            return "<font color=999999>" + (origin == null ? "" : origin) + "</font>"; //NOI18N
         }
     }
     private static final byte COLOR_ICON_SIZE = 16; //px
