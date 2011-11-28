@@ -1,0 +1,185 @@
+--- JavaScriptColoringLexer.java	2011-11-23 17:30:23.000000000 +0100
++++ JavaScriptColoringLexer_fixed.java	2011-11-23 17:26:20.000000000 +0100
+@@ -715,61 +715,6 @@
+     }
+     return map;
+   }
+-
+-
+-  /**
+-   * Refills the input buffer.
+-   *
+-   * @return      <code>false</code>, iff there was new input.
+-   * 
+-   * @exception   java.io.IOException  if any I/O-Error occurs
+-   */
+-  private boolean zzRefill() throws java.io.IOException {
+-
+-    /* first: make room (if you can) */
+-    if (zzStartRead > 0) {
+-      System.arraycopy(zzBuffer, zzStartRead,
+-                       zzBuffer, 0,
+-                       zzEndRead-zzStartRead);
+-
+-      /* translate stored positions */
+-      zzEndRead-= zzStartRead;
+-      zzCurrentPos-= zzStartRead;
+-      zzMarkedPos-= zzStartRead;
+-      zzStartRead = 0;
+-    }
+-
+-    /* is the buffer big enough? */
+-    if (zzCurrentPos >= zzBuffer.length) {
+-      /* if not: blow it up */
+-      char newBuffer[] = new char[zzCurrentPos*2];
+-      System.arraycopy(zzBuffer, 0, newBuffer, 0, zzBuffer.length);
+-      zzBuffer = newBuffer;
+-    }
+-
+-    /* finally: fill the buffer with new input */
+-    int numRead = zzReader.read(zzBuffer, zzEndRead,
+-                                            zzBuffer.length-zzEndRead);
+-
+-    if (numRead > 0) {
+-      zzEndRead+= numRead;
+-      return false;
+-    }
+-    // unlikely but not impossible: read 0 characters, but not at end of stream    
+-    if (numRead == 0) {
+-      int c = zzReader.read();
+-      if (c == -1) {
+-        return true;
+-      } else {
+-        zzBuffer[zzEndRead++] = (char) c;
+-        return false;
+-      }     
+-    }
+-
+-	// numRead < 0
+-    return true;
+-  }
+-
+     
+   /**
+    * Closes the input stream.
+@@ -827,7 +772,7 @@
+    * Returns the text matched by the current regular expression.
+    */
+   public final String yytext() {
+-    return new String( zzBuffer, zzStartRead, zzMarkedPos-zzStartRead );
++    return input.readText().toString();
+   }
+ 
+ 
+@@ -843,7 +788,7 @@
+    * @return the character at position pos
+    */
+   public final char yycharat(int pos) {
+-    return zzBuffer[zzStartRead+pos];
++    return input.readText().charAt(pos);
+   }
+ 
+ 
+@@ -851,7 +796,7 @@
+    * Returns the length of the matched text region.
+    */
+   public final int yylength() {
+-    return zzMarkedPos-zzStartRead;
++    return input.readLength();
+   }
+ 
+ 
+@@ -894,7 +839,7 @@
+     if ( number > yylength() )
+       zzScanError(ZZ_PUSHBACK_2BIG);
+ 
+-    zzMarkedPos -= number;
++    input.backup(number);
+   }
+ 
+ 
+@@ -926,39 +871,23 @@
+       yychar+= zzMarkedPosL-zzStartRead;
+ 
+       zzAction = -1;
+-
+-      zzCurrentPosL = zzCurrentPos = zzStartRead = zzMarkedPosL;
++      int tokenLength = 0;
+   
+       zzState = ZZ_LEXSTATE[zzLexicalState];
+ 
+ 
+       zzForAction: {
+         while (true) {
+-    
+-          if (zzCurrentPosL < zzEndReadL)
+-            zzInput = zzBufferL[zzCurrentPosL++];
+-          else if (zzAtEOF) {
+-            zzInput = YYEOF;
+-            break zzForAction;
+-          }
+-          else {
+-            // store back cached positions
+-            zzCurrentPos  = zzCurrentPosL;
+-            zzMarkedPos   = zzMarkedPosL;
+-            boolean eof = zzRefill();
+-            // get translated positions and possibly new buffer
+-            zzCurrentPosL  = zzCurrentPos;
+-            zzMarkedPosL   = zzMarkedPos;
+-            zzBufferL      = zzBuffer;
+-            zzEndReadL     = zzEndRead;
+-            if (eof) {
++
++          zzInput = input.read();
++
++          if(zzInput == LexerInput.EOF) {
++              //end of input reached
+               zzInput = YYEOF;
+               break zzForAction;
+-            }
+-            else {
+-              zzInput = zzBufferL[zzCurrentPosL++];
+-            }
++              //notice: currently LexerInput.EOF == YYEOF
+           }
++
+           int zzNext = zzTransL[ zzRowMapL[zzState] + zzCMapL[zzInput] ];
+           if (zzNext == -1) break zzForAction;
+           zzState = zzNext;
+@@ -966,7 +895,7 @@
+           int zzAttributes = zzAttrL[zzState];
+           if ( (zzAttributes & 1) == 1 ) {
+             zzAction = zzState;
+-            zzMarkedPosL = zzCurrentPosL;
++            tokenLength = input.readLength();
+             if ( (zzAttributes & 8) == 8 ) break zzForAction;
+           }
+ 
+@@ -974,7 +903,9 @@
+       }
+ 
+       // store back cached position
+-      zzMarkedPos = zzMarkedPosL;
++      if(zzInput != YYEOF) {
++         input.backup(input.readLength() - tokenLength);
++      }
+ 
+       switch (zzAction < 0 ? zzAction : ZZ_ACTION[zzAction]) {
+         case 7: 
+@@ -1057,9 +988,14 @@
+         default: 
+           if (zzInput == YYEOF && zzStartRead == zzCurrentPos) {
+             zzAtEOF = true;
+-              {
++            if (input.readLength() > 0) {
++                // backup eof
++                input.backup(1);
++                //and return the text as error token
+                 return JsTokenId.UNKNOWN_TOKEN;
+-              }
++            } else {
++                return null;
++            }
+           } 
+           else {
+             zzScanError(ZZ_NO_MATCH);
