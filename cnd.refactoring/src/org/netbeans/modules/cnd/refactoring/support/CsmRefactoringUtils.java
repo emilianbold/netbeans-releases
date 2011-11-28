@@ -69,6 +69,7 @@ import org.netbeans.modules.cnd.modelutil.CsmDisplayUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.refactoring.spi.CsmRefactoringNameProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -221,9 +222,9 @@ public final class CsmRefactoringUtils {
 
     private static final Lookup.Result<CsmRefactoringNameProvider> renameProviders = Lookup.getDefault().lookupResult(CsmRefactoringNameProvider.class);
     
-    public static String getReplaceText(CsmReference ref, String newName) {
+    public static String getReplaceText(CsmReference ref, String newName, AbstractRefactoring refactoring) {
         for (CsmRefactoringNameProvider provider : renameProviders.allInstances()) {
-            String newText = provider.getReplaceText(ref, newName);
+            String newText = provider.getReplaceText(ref, newName, refactoring);
             if (newText != null) {
                 newName = newText;
             }
@@ -231,9 +232,9 @@ public final class CsmRefactoringUtils {
         return newName;
     }
     
-    public static String getReplaceDescription(CsmReference ref) {
+    public static String getReplaceDescription(CsmReference ref, AbstractRefactoring refactoring) {
         for (CsmRefactoringNameProvider provider : renameProviders.allInstances()) {
-            String descr = provider.getReplaceDescription(ref);
+            String descr = provider.getReplaceDescription(ref, refactoring);
             if (descr != null) {
                 return descr;
             }
@@ -544,7 +545,7 @@ public final class CsmRefactoringUtils {
         }
 
         @Override
-        public String getReplaceText(CsmReference ref, String newText) {
+        public String getReplaceText(CsmReference ref, String newText, AbstractRefactoring refactoring) {
             String out = null;
             final CsmObject referencedObject = ref.getReferencedObject();
             if (CsmKindUtilities.isFile(referencedObject)) {
@@ -566,7 +567,7 @@ public final class CsmRefactoringUtils {
         }
 
         @Override
-        public String getReplaceDescription(CsmReference ref) {
+        public String getReplaceDescription(CsmReference ref, AbstractRefactoring refactoring) {
             String out = null;
             final CsmObject referencedObject = ref.getReferencedObject();
             if (CsmKindUtilities.isFile(referencedObject)) {
