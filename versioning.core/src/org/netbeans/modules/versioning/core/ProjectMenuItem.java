@@ -61,8 +61,8 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.modules.versioning.core.spi.VCSSystemProvider.Annotator;
 import org.netbeans.modules.versioning.fileproxy.api.VCSFileProxy;
+import org.netbeans.modules.versioning.fileproxy.spi.VCSAnnotator;
 import org.openide.awt.Actions;
 import org.openide.filesystems.FileObject;
 
@@ -166,9 +166,9 @@ public class ProjectMenuItem extends AbstractAction implements Presenter.Popup {
             if (owner instanceof DelegatingVCS) {
                 actions = ((DelegatingVCS) owner).getInitActions(ctx);
             } else {
-                Annotator an = owner.getAnnotator();
+                VCSAnnotator an = owner.getAnnotator();
                 if (an == null) return null; 
-                actions = an.getActions(ctx, Annotator.ActionDestination.PopupMenu);
+                actions = an.getActions(ctx, VCSAnnotator.ActionDestination.PopupMenu);
             }
         }
         JComponent [] items = new JComponent[actions.length];

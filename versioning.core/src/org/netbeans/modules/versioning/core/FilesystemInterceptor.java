@@ -50,9 +50,9 @@ import java.io.IOException;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.versioning.core.spi.VCSSystemProvider.Interceptor;
 import org.netbeans.modules.versioning.core.spi.VCSSystemProvider.VersioningSystem;
 import org.netbeans.modules.versioning.fileproxy.api.VCSFileProxy;
+import org.netbeans.modules.versioning.fileproxy.spi.VCSInterceptor;
 
 /**
  * Plugs into IDE filesystem and delegates file operations to registered versioning systems.
@@ -381,8 +381,8 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
         VersioningSystem lh = needsLH(forMethods) ? master.getLocalHistory(file, !fo.isFolder()) : null;
         VersioningSystem vs = master.getOwner(file, !fo.isFolder());
 
-        Interceptor vsInterceptor = vs != null ? vs.getInterceptor() : null;
-        Interceptor lhInterceptor = lh != null ? lh.getInterceptor() : null;
+        VCSInterceptor vsInterceptor = vs != null ? vs.getInterceptor() : null;
+        VCSInterceptor lhInterceptor = lh != null ? lh.getInterceptor() : null;
 
         if (vsInterceptor == null && lhInterceptor == null) return nullDelegatingInterceptor;
 
@@ -411,10 +411,10 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
         isDirectory = isDirectory != null ? isDirectory : false;
         
         VersioningSystem vs = master.getOwner(file, isFile);
-        Interceptor vsInterceptor = vs != null ? vs.getInterceptor() : nullInterceptor;
+        VCSInterceptor vsInterceptor = vs != null ? vs.getInterceptor() : nullInterceptor;
 
         VersioningSystem lhvs = needsLH(forMethods) ? master.getLocalHistory(file, isFile) : null;
-        Interceptor localHistoryInterceptor = lhvs != null ? lhvs.getInterceptor() : nullInterceptor;
+        VCSInterceptor localHistoryInterceptor = lhvs != null ? lhvs.getInterceptor() : nullInterceptor;
 
         return new DelegatingInterceptor(vsInterceptor, localHistoryInterceptor, file, null, isDirectory);
     }
@@ -423,10 +423,10 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
         if (from == null || to == null) return nullDelegatingInterceptor;
 
         VersioningSystem vs = master.getOwner(from);
-        Interceptor vsInterceptor = vs != null ? vs.getInterceptor() : nullInterceptor;
+        VCSInterceptor vsInterceptor = vs != null ? vs.getInterceptor() : nullInterceptor;
 
         VersioningSystem lhvs = needsLH(forMethods) ? master.getLocalHistory(from) : null;
-        Interceptor localHistoryInterceptor = lhvs != null ? lhvs.getInterceptor() : nullInterceptor;
+        VCSInterceptor localHistoryInterceptor = lhvs != null ? lhvs.getInterceptor() : nullInterceptor;
 
         return new DelegatingInterceptor(vsInterceptor, localHistoryInterceptor, from, to, false);
     }
@@ -434,7 +434,7 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
     private DelegatingInterceptor getRefreshInterceptor (VCSFileProxy dir) {
         if (dir == null) return nullDelegatingInterceptor;
         VersioningSystem vs = master.getOwner(dir);
-        Interceptor Interceptor = vs != null ? vs.getInterceptor() : nullInterceptor;
+        VCSInterceptor Interceptor = vs != null ? vs.getInterceptor() : nullInterceptor;
         return new DelegatingInterceptor(Interceptor, nullInterceptor, dir, null, true);
     }
 
@@ -454,7 +454,7 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
         public boolean delete(File file) {  throw new UnsupportedOperationException();  }
     };
 
-    private final Interceptor nullInterceptor = new Interceptor() {
+    private final VCSInterceptor nullInterceptor = new VCSInterceptor() {
 
         @Override
         public boolean isMutable(VCSFileProxy file) {
@@ -520,7 +520,7 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
         public void beforeEdit(VCSFileProxy file) {}
 
         @Override
-        public long refreshRecursively(VCSFileProxy dir, long lastTimeStamp, List<VCSFileProxy> children) {
+        public long refreshRecursively(VCSFileProxy dir, long lastTimeStamp, List<? super VCSFileProxy> children) {
             return -1;
         }
     };
@@ -532,9 +532,9 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
 
     private class DelegatingInterceptor implements DeleteHandler {
 
-        final Collection<Interceptor> interceptors;
-        final Interceptor  interceptor;
-        final Interceptor  lhInterceptor;
+        final Collection<VCSInterceptor> interceptors;
+        final VCSInterceptor  interceptor;
+        final VCSInterceptor  lhInterceptor;
         final VCSFileProxy            file;
         final VCSFileProxy            to;
         private final boolean isDirectory;
@@ -542,10 +542,10 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
         private IOHandler copyHandler;
 
         private DelegatingInterceptor() {
-            this((Interceptor) null, null, null, null, false);
+            this((VCSInterceptor) null, null, null, null, false);
         }
 
-        public DelegatingInterceptor(Interceptor interceptor, Interceptor lhInterceptor, VCSFileProxy file, VCSFileProxy to, boolean isDirectory) {
+        public DelegatingInterceptor(VCSInterceptor interceptor, VCSInterceptor lhInterceptor, VCSFileProxy file, VCSFileProxy to, boolean isDirectory) {
             this.interceptor = interceptor != null ? interceptor : nullInterceptor;
             this.interceptors = Collections.singleton(this.interceptor);
             this.lhInterceptor = lhInterceptor != null ? lhInterceptor : nullInterceptor;
@@ -555,7 +555,7 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
         }
 
         // TODO: special hotfix for #95243
-        public DelegatingInterceptor(Collection<Interceptor> interceptors, Interceptor lhInterceptor, VCSFileProxy file, VCSFileProxy to, boolean isDirectory) {
+        public DelegatingInterceptor(Collection<VCSInterceptor> interceptors, VCSInterceptor lhInterceptor, VCSFileProxy file, VCSFileProxy to, boolean isDirectory) {
             this.interceptors = interceptors != null && interceptors.size() > 0 ? interceptors : Collections.singleton(nullInterceptor);
             this.interceptor = this.interceptors.iterator().next();
             this.lhInterceptor = lhInterceptor != null ? lhInterceptor : nullInterceptor;

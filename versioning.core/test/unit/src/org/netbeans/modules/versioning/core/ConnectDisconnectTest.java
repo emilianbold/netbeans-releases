@@ -48,10 +48,10 @@ import java.util.ArrayList;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.versioning.fileproxy.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.spi.VCSSystemProvider;
-import org.netbeans.modules.versioning.core.spi.VCSSystemProvider.Annotator;
-import org.netbeans.modules.versioning.core.spi.VCSSystemProvider.Interceptor;
 import org.netbeans.modules.versioning.core.spi.VCSSystemProvider.VersioningSystem;
-import org.netbeans.modules.versioning.core.spi.VCSSystemProvider.VisibilityQuery;
+import org.netbeans.modules.versioning.fileproxy.spi.VCSAnnotator;
+import org.netbeans.modules.versioning.fileproxy.spi.VCSInterceptor;
+import org.netbeans.modules.versioning.fileproxy.spi.VCSVisibilityQuery;
 import org.netbeans.modules.versioning.fileproxy.spi.VersioningSupport;
 import org.netbeans.spi.queries.CollocationQueryImplementation;
 import org.openide.util.NbPreferences;
@@ -258,12 +258,12 @@ public class ConnectDisconnectTest extends NbTestCase {
         }
 
         @Override
-        public Annotator getAnnotator() {
+        public VCSAnnotator getAnnotator() {
             return null;
         }
 
         @Override
-        public Interceptor getInterceptor() {
+        public VCSInterceptor getInterceptor() {
             return null;
         }
 
@@ -276,7 +276,7 @@ public class ConnectDisconnectTest extends NbTestCase {
         }
 
         @Override
-        public VisibilityQuery getVisibility() {
+        public VCSVisibilityQuery getVisibility() {
             return null;
         }
 

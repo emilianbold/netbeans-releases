@@ -65,8 +65,8 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.logging.Logger;
-import org.netbeans.modules.versioning.core.spi.VCSSystemProvider.Annotator;
 import org.netbeans.modules.versioning.fileproxy.api.VCSFileProxy;
+import org.netbeans.modules.versioning.fileproxy.spi.VCSAnnotator;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -164,7 +164,7 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
             return actions.toArray(new Action [actions.size()]);
         } 
         
-        Annotator an = null;
+        VCSAnnotator an = null;
         if (vs != null) {
             an = vs.getAnnotator();
         }
@@ -273,7 +273,7 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
             public void setSelected(boolean selected) {
                 if (selected && popupContructed == false) {
                     // lazy submenu construction
-                    Action [] actions = system.getAnnotator().getActions(context, Annotator.ActionDestination.PopupMenu);
+                    Action [] actions = system.getAnnotator().getActions(context, VCSAnnotator.ActionDestination.PopupMenu);
                     for (int i = 0; i < actions.length; i++) {
                         Action action = actions[i];
                         if (action == null) {
@@ -643,7 +643,7 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
             return retval;
         }
 
-        private T annotate(Annotator annotator, T initialValue, VCSContext context) {
+        private T annotate(VCSAnnotator annotator, T initialValue, VCSContext context) {
             if (ANNOTATION_TYPE_LABEL.equals(type)) {
                 return (T) annotator.annotateName((String) initialValue, context);
             } else if (ANNOTATION_TYPE_ICON.equals(type)) {
@@ -660,7 +660,7 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
             if (LOG.isLoggable(Level.FINEST)) {
                 LOG.log(Level.FINEST, "{0}.annotate for {1}", new Object[] {type, files}); //NOI18N
             }
-            Annotator an = null;
+            VCSAnnotator an = null;
 
             try {
                 if (files.isEmpty()) {

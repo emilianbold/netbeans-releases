@@ -41,12 +41,12 @@
  */
 package org.netbeans.modules.versioning.core;
 
+import com.sun.tools.javac.comp.Annotate.Annotator;
 import java.awt.Image;
+import java.awt.PopupMenu;
 import org.netbeans.modules.versioning.core.spi.VCSSystemProvider;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -56,15 +56,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import javax.swing.Action;
+import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.versioning.fileproxy.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.fileproxy.spi.VCSContext;
 import org.netbeans.modules.versioning.fileproxy.spi.VCSInterceptor;
-import org.netbeans.modules.versioning.core.spi.VCSSystemProvider.Annotator;
-import org.netbeans.modules.versioning.core.spi.VCSSystemProvider.Interceptor;
-import org.netbeans.modules.versioning.core.spi.VCSSystemProvider.VisibilityQuery;
 import org.netbeans.modules.versioning.fileproxy.spi.VCSVisibilityQuery;
 import org.netbeans.modules.versioning.fileproxy.spi.VersioningSystem;
 import org.netbeans.modules.versioning.fileproxy.api.VCSFileProxy;
+import org.netbeans.modules.versioning.fileproxy.spi.VCSAnnotator.ActionDestination;
 import org.netbeans.modules.versioning.fileproxy.spi.VersioningSupport;
 import org.netbeans.spi.queries.CollocationQueryImplementation;
 import org.openide.util.ContextAwareAction;
@@ -92,7 +91,6 @@ public class DelegatingVCS extends VersioningSystem implements VCSSystemProvider
     }
     private Annotator annotator;
     private VisibilityQuery visibilityQuery;
-    private Interceptor interceptor;
     
     private DelegatingVCS(Map<?, ?> map) {
         this.map = map;
@@ -229,147 +227,18 @@ public class DelegatingVCS extends VersioningSystem implements VCSSystemProvider
     }
 
     @Override
-    public Annotator getAnnotator() {
-        if(annotator == null && getDelegate().getVCSAnnotator() != null) {
-            annotator = new VCSSystemProvider.Annotator() {
-                @Override
-                public String annotateName(String name, VCSContext context) {
-                    return getDelegate().getVCSAnnotator().annotateName(name, context);
-                }
-                @Override
-                public Image annotateIcon(Image icon, VCSContext context) {
-                    return getDelegate().getVCSAnnotator().annotateIcon(icon, context);
-                }
-                @Override
-                public Action[] getActions(VCSContext context, ActionDestination destination) {
-                    VCSAnnotator.ActionDestination ad;
-                    switch(destination) {
-                        case MainMenu:
-                            ad = VCSAnnotator.ActionDestination.MainMenu;
-                            break;
-                        case PopupMenu:
-                            ad = VCSAnnotator.ActionDestination.PopupMenu;
-                            break;
-                        default:
-                            throw new IllegalStateException();
-                    }
-                    return getDelegate().getVCSAnnotator().getActions(context, ad);
-                }
-            };
-        }
-        return annotator;
+    public VCSAnnotator getAnnotator() {
+        return getDelegate().getVCSAnnotator();
     }
     
     @Override
-    public VisibilityQuery getVisibility() { 
-        if(visibilityQuery == null && getDelegate().getVisibilityQuery() != null) {
-            visibilityQuery = new VisibilityQuery() {
-                @Override
-                public boolean isVisible(VCSFileProxy file) {
-                    return getDelegate().getVisibilityQuery().isVisible(file);
-                }
-            };
-        }
-        return visibilityQuery;
+    public VCSVisibilityQuery getVisibility() { 
+        return getDelegate().getVisibilityQuery();
     }
     
     @Override
-    public Interceptor getInterceptor() {
-        if(interceptor == null && getDelegate().getVCSInterceptor() != null) {
-            interceptor = new Interceptor() {
-
-                @Override
-                public boolean isMutable(VCSFileProxy file) {
-                    return getDelegate().getVCSInterceptor().isMutable(file);
-                }
-
-                @Override
-                public Object getAttribute(VCSFileProxy file, String attrName) {
-                    return getDelegate().getVCSInterceptor().getAttribute(file, attrName);
-                }
-
-                @Override
-                public boolean beforeDelete(VCSFileProxy file) {
-                    return getDelegate().getVCSInterceptor().beforeDelete(file);
-                }
-
-                @Override
-                public void doDelete(VCSFileProxy file) throws IOException {
-                    getDelegate().getVCSInterceptor().doDelete(file);
-                }
-
-                @Override
-                public void afterDelete(VCSFileProxy file) {
-                    getDelegate().getVCSInterceptor().afterDelete(file);
-                }
-
-                @Override
-                public boolean beforeMove(VCSFileProxy from, VCSFileProxy to) {
-                    return getDelegate().getVCSInterceptor().beforeMove(from, to);
-                }
-
-                @Override
-                public void doMove(VCSFileProxy from, VCSFileProxy to) throws IOException {
-                    getDelegate().getVCSInterceptor().doMove(from, to);
-                }
-
-                @Override
-                public void afterMove(VCSFileProxy from, VCSFileProxy to) {
-                    getDelegate().getVCSInterceptor().afterMove(from, to);
-                }
-
-                @Override
-                public boolean beforeCopy(VCSFileProxy from, VCSFileProxy to) {
-                    return getDelegate().getVCSInterceptor().beforeCopy(from, to);
-                }
-
-                @Override
-                public void doCopy(VCSFileProxy from, VCSFileProxy to) throws IOException {
-                    getDelegate().getVCSInterceptor().doCopy(from, to);
-                }
-
-                @Override
-                public void afterCopy(VCSFileProxy from, VCSFileProxy to) {
-                    getDelegate().getVCSInterceptor().afterCopy(from, to);
-                }
-
-                @Override
-                public boolean beforeCreate(VCSFileProxy file, boolean isDirectory) {
-                    return getDelegate().getVCSInterceptor().beforeCreate(file, isDirectory);
-                }
-
-                @Override
-                public void doCreate(VCSFileProxy file, boolean isDirectory) throws IOException {
-                    getDelegate().getVCSInterceptor().doCreate(file, isDirectory);
-                }
-
-                @Override
-                public void afterCreate(VCSFileProxy file) {
-                    getDelegate().getVCSInterceptor().afterCreate(file);
-                }
-
-                @Override
-                public void afterChange(VCSFileProxy file) {
-                    getDelegate().getVCSInterceptor().afterChange(file);
-                }
-
-                @Override
-                public void beforeChange(VCSFileProxy file) {
-                    getDelegate().getVCSInterceptor().beforeChange(file);
-                }
-
-                @Override
-                public void beforeEdit(VCSFileProxy file) {
-                    getDelegate().getVCSInterceptor().beforeEdit(file);
-                }
-
-                @Override
-                public long refreshRecursively(VCSFileProxy dir, long lastTimeStamp, List<VCSFileProxy> children) {
-                    return getDelegate().getVCSInterceptor().refreshRecursively(dir, lastTimeStamp, children);
-                }
-            };
-        }
-        return interceptor;
+    public VCSInterceptor getInterceptor() {
+        return getDelegate().getVCSInterceptor();
     }
     
     boolean isMetadataFile(VCSFileProxy file) {
@@ -395,9 +264,9 @@ public class DelegatingVCS extends VersioningSystem implements VCSSystemProvider
         return metadataFolderNames;
     }
     
-    Action[] getActions(VCSContext ctx, Annotator.ActionDestination actionDestination) {
+    Action[] getActions(VCSContext ctx, VCSAnnotator.ActionDestination actionDestination) {
         if(map == null || isAlive()) {
-            Annotator annotator = getAnnotator();
+            VCSAnnotator annotator = getAnnotator();
             return annotator != null ? annotator.getActions(ctx, actionDestination) : new Action[0];
         } else {
             Action[] ia = getInitActions(ctx);

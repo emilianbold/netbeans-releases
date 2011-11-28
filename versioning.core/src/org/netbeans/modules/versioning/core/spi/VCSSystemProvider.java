@@ -41,15 +41,12 @@
  */
 package org.netbeans.modules.versioning.core.spi;
 
-import java.awt.Image;
 import java.beans.PropertyChangeListener;
-import java.io.File;
-import java.io.IOException;
 import java.util.Collection;
-import java.util.List;
-import javax.swing.Action;
 import org.netbeans.modules.versioning.fileproxy.api.VCSFileProxy;
-import org.netbeans.modules.versioning.fileproxy.spi.VCSContext;
+import org.netbeans.modules.versioning.fileproxy.spi.VCSAnnotator;
+import org.netbeans.modules.versioning.fileproxy.spi.VCSInterceptor;
+import org.netbeans.modules.versioning.fileproxy.spi.VCSVisibilityQuery;
 import org.netbeans.spi.queries.CollocationQueryImplementation;
 import org.openide.util.LookupListener;
 
@@ -71,19 +68,17 @@ public abstract class VCSSystemProvider<S> {
         
         public Object getProp(String key);
 
-//        void putProperty(String key, Object value);
-
         public VCSFileProxy getTopmostManagedAncestor(VCSFileProxy file);
 
-        public Annotator getAnnotator();
+        public VCSAnnotator getAnnotator();
 
-        public Interceptor getInterceptor();
+        public VCSInterceptor getInterceptor();
 
         public void getOriginalFile(VCSFileProxy workingCopy, VCSFileProxy originalFile);
 
         public CollocationQueryImplementation getCollocationQueryImplementation();
 
-        public VisibilityQuery getVisibility();
+        public VCSVisibilityQuery getVisibility();
 
         public void addPropertyCL(PropertyChangeListener listener);
 
@@ -92,40 +87,4 @@ public abstract class VCSSystemProvider<S> {
         public boolean isExcluded(VCSFileProxy file);
         
     }
-    
-    public interface VisibilityQuery {
-        boolean isVisible(VCSFileProxy file);
-    }
-    
-    public interface Annotator {
-        public enum ActionDestination { MainMenu, PopupMenu }; 
-
-        public String annotateName(String name, VCSContext context);
-
-        public Image annotateIcon(Image icon, VCSContext context);
-                
-        public Action[] getActions(VCSContext context, ActionDestination destination);
-    }
-    
-    public interface Interceptor {
-        public boolean isMutable(VCSFileProxy file);
-        public Object getAttribute(VCSFileProxy file, String attrName);
-        public boolean beforeDelete(VCSFileProxy file);
-        public void doDelete(VCSFileProxy file) throws IOException;
-        public void afterDelete(VCSFileProxy file);
-        public boolean beforeMove(VCSFileProxy from, VCSFileProxy to);
-        public void doMove(VCSFileProxy from, VCSFileProxy to) throws IOException;
-        public void afterMove(VCSFileProxy from, VCSFileProxy to);
-        public boolean beforeCopy(VCSFileProxy from, VCSFileProxy to);
-        public void doCopy(VCSFileProxy from, VCSFileProxy to) throws IOException;
-        public void afterCopy(VCSFileProxy from, VCSFileProxy to);
-        public boolean beforeCreate(VCSFileProxy file, boolean isDirectory);
-        public void doCreate(VCSFileProxy file, boolean isDirectory) throws IOException;
-        public void afterCreate(VCSFileProxy file);
-        public void afterChange(VCSFileProxy file);
-        public void beforeChange(VCSFileProxy file);
-        public void beforeEdit(VCSFileProxy file);
-        public long refreshRecursively(VCSFileProxy dir, long lastTimeStamp, List<VCSFileProxy> children);
-    }
-    
 }

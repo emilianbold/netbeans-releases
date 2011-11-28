@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.versioning.core;
 
+import com.sun.tools.javac.comp.Annotate.Annotator;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.awt.Mnemonics;
 import org.openide.windows.TopComponent;
@@ -53,10 +54,9 @@ import javax.swing.*;
 import javax.swing.event.MenuListener;
 import javax.swing.event.MenuEvent;
 import java.awt.event.ActionEvent;
-import java.io.File;
 import java.util.*;
-import org.netbeans.modules.versioning.core.spi.VCSSystemProvider.Annotator;
 import org.netbeans.modules.versioning.fileproxy.api.VCSFileProxy;
+import org.netbeans.modules.versioning.fileproxy.spi.VCSAnnotator;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
@@ -98,7 +98,7 @@ public class VersioningMainMenu extends AbstractAction implements DynamicMenuCon
 
             if (vs.length == 1) {
                 if (vs[0].getAnnotator() != null) {
-                    List<JComponent> systemItems = actionsToItems(vs[0].getAnnotator().getActions(ctx, Annotator.ActionDestination.MainMenu));
+                    List<JComponent> systemItems = actionsToItems(vs[0].getAnnotator().getActions(ctx, VCSAnnotator.ActionDestination.MainMenu));
                     items.addAll(systemItems);
                 }
                 items.addAll(actionsToItems(appendAdditionalActions(ctx, vs[0], new Action[0])));
@@ -156,7 +156,7 @@ public class VersioningMainMenu extends AbstractAction implements DynamicMenuCon
     private void constructMenu (JMenu menu, VersioningSystem system, VCSContext ctx, boolean isRegularVCS) {
         Action[] actions = null;
         if (system.getAnnotator() != null) {
-            actions = system.getAnnotator().getActions(ctx, Annotator.ActionDestination.MainMenu);
+            actions = system.getAnnotator().getActions(ctx, VCSAnnotator.ActionDestination.MainMenu);
         }
         if (isRegularVCS) {
             actions = appendAdditionalActions(ctx, system, actions);

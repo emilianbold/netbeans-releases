@@ -54,9 +54,9 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.regex.Pattern;
 import javax.swing.event.ChangeEvent;
-import org.netbeans.modules.versioning.core.spi.VCSSystemProvider;
 import org.netbeans.modules.versioning.core.spi.VCSSystemProvider.VersioningSystem;
 import org.netbeans.modules.versioning.fileproxy.api.VCSFileProxy;
+import org.netbeans.modules.versioning.fileproxy.spi.VCSVisibilityQuery;
 import org.netbeans.spi.queries.VisibilityQueryImplementation2;
 import org.openide.filesystems.FileObject;
 import org.openide.util.RequestProcessor;
@@ -194,7 +194,7 @@ public class VcsVisibilityQueryImplementation implements VisibilityQueryImplemen
             boolean visible = true;
             VersioningSystem system = VersioningManager.getInstance().getOwner(file, !file.isDirectory());
             if (system != null) {
-                VCSSystemProvider.VisibilityQuery vqi = system.getVisibility();
+                VCSVisibilityQuery vqi = system.getVisibility();
                 if(vqi == null) {
                     visible = true;
                 } else {

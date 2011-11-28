@@ -41,29 +41,23 @@
  */
 package org.netbeans.modules.versioning;
 
+import com.sun.tools.javac.comp.Annotate.Annotator;
 import java.awt.Image;
 import org.netbeans.modules.versioning.core.spi.VCSSystemProvider;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
-import org.netbeans.modules.versioning.spi.VCSAnnotator;
-import org.netbeans.modules.versioning.core.spi.VCSSystemProvider.Annotator;
-import org.netbeans.modules.versioning.core.spi.VCSSystemProvider.Interceptor;
-import org.netbeans.modules.versioning.core.spi.VCSSystemProvider.VisibilityQuery;
-import org.netbeans.modules.versioning.spi.VersioningSystem;
+import org.netbeans.modules.versioning.fileproxy.spi.VCSAnnotator;
+import org.netbeans.modules.versioning.fileproxy.spi.VersioningSystem;
+import org.netbeans.modules.versioning.fileproxy.spi.VCSInterceptor;
 import org.netbeans.modules.versioning.fileproxy.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.VersioningManager;
+import org.netbeans.modules.versioning.fileproxy.spi.VCSVisibilityQuery;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.netbeans.spi.queries.CollocationQueryImplementation;
 import org.openide.util.ContextAwareAction;
@@ -91,9 +85,9 @@ public class DelegatingVCS extends org.netbeans.modules.versioning.fileproxy.spi
     public static DelegatingVCS create(Map<?, ?> map) {
         return new DelegatingVCS(map);
     }
-    private Annotator annotator;
-    private VisibilityQuery visibilityQuery;
-    private Interceptor interceptor;
+    private VCSAnnotator annotator;
+    private VCSVisibilityQuery visibilityQuery;
+    private VCSInterceptor interceptor;
     
     private DelegatingVCS(Map<?, ?> map) {
         this.map = map;
@@ -232,9 +226,9 @@ public class DelegatingVCS extends org.netbeans.modules.versioning.fileproxy.spi
     }
 
     @Override
-    public Annotator getAnnotator() {
+    public VCSAnnotator getAnnotator() {
         if(annotator == null && getDelegate().getVCSAnnotator() != null) {
-            annotator = new VCSSystemProvider.Annotator() {
+            annotator = new VCSAnnotator() {
                 @Override
                 public String annotateName(String name, org.netbeans.modules.versioning.fileproxy.spi.VCSContext context) {
                     return getDelegate().getVCSAnnotator().annotateName(name, Accessor.IMPL.createVCSContext(context));
@@ -245,13 +239,13 @@ public class DelegatingVCS extends org.netbeans.modules.versioning.fileproxy.spi
                 }
                 @Override
                 public Action[] getActions(org.netbeans.modules.versioning.fileproxy.spi.VCSContext context, ActionDestination destination) {
-                    VCSAnnotator.ActionDestination ad;
+                    org.netbeans.modules.versioning.spi.VCSAnnotator.ActionDestination ad;
                     switch(destination) {
                         case MainMenu:
-                            ad = VCSAnnotator.ActionDestination.MainMenu;
+                            ad = org.netbeans.modules.versioning.spi.VCSAnnotator.ActionDestination.MainMenu;
                             break;
                         case PopupMenu:
-                            ad = VCSAnnotator.ActionDestination.PopupMenu;
+                            ad = org.netbeans.modules.versioning.spi.VCSAnnotator.ActionDestination.PopupMenu;
                             break;
                         default:
                             throw new IllegalStateException();
@@ -264,9 +258,9 @@ public class DelegatingVCS extends org.netbeans.modules.versioning.fileproxy.spi
     }
     
     @Override
-    public VisibilityQuery getVisibility() { 
+    public VCSVisibilityQuery getVisibility() { 
         if(visibilityQuery == null && getDelegate().getVisibilityQuery() != null) {
-            visibilityQuery = new VisibilityQuery() {
+            visibilityQuery = new VCSVisibilityQuery() {
                 @Override
                 public boolean isVisible(VCSFileProxy proxy) {
                     return getDelegate().getVisibilityQuery().isVisible(proxy.toFile());
@@ -277,9 +271,9 @@ public class DelegatingVCS extends org.netbeans.modules.versioning.fileproxy.spi
     }
     
     @Override
-    public Interceptor getInterceptor() {
+    public VCSInterceptor getInterceptor() {
         if(interceptor == null && getDelegate().getVCSInterceptor() != null) {
-            interceptor = new Interceptor() {
+            interceptor = new VCSInterceptor() {
 
                 @Override
                 public boolean isMutable(VCSFileProxy file) {
@@ -366,11 +360,13 @@ public class DelegatingVCS extends org.netbeans.modules.versioning.fileproxy.spi
                     getDelegate().getVCSInterceptor().beforeEdit(file.toFile());
                 }
 
+                
                 @Override
-                public long refreshRecursively(VCSFileProxy dir, long lastTimeStamp, List<VCSFileProxy> children) {
+                public long refreshRecursively(VCSFileProxy dir, long lastTimeStamp, List<? super VCSFileProxy> children) {
                     List<? super File> files = new ArrayList<File>(children.size());
-                    for (VCSFileProxy file : children) {
-                        files.add(file.toFile());
+                    for (Iterator<? super VCSFileProxy> it = children.iterator(); it.hasNext();) {
+                        VCSFileProxy fileProxy = (VCSFileProxy) it.next();
+                        files.add(fileProxy.toFile());
                     }
                     return getDelegate().getVCSInterceptor().refreshRecursively(dir.toFile(), lastTimeStamp, files);
                 }
@@ -402,9 +398,9 @@ public class DelegatingVCS extends org.netbeans.modules.versioning.fileproxy.spi
         return metadataFolderNames;
     }
     
-    Action[] getActions(org.netbeans.modules.versioning.fileproxy.spi.VCSContext ctx, Annotator.ActionDestination actionDestination) {
+    Action[] getActions(org.netbeans.modules.versioning.fileproxy.spi.VCSContext ctx, VCSAnnotator.ActionDestination actionDestination) {
         if(map == null || isAlive()) {
-            Annotator annotator = getAnnotator();
+            VCSAnnotator annotator = getAnnotator();
             return annotator != null ? annotator.getActions(ctx, actionDestination) : new Action[0];
         } else {
             Action[] ia = getInitActions(ctx);
