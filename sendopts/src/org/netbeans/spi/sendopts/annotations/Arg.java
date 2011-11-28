@@ -47,15 +47,36 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-/** Marks a static field in a class as on option and assigns it a short,
+/** Marks a non-static field in a class as on option and assigns it a short,
  * or long name. Usually used together with {@link Description} which provides
- * human readable explantation of the option's behavior.
+ * human readable explantation of the option's behavior. The field should be
+ * public and the class should have public default constructor. Following 
+ * line defines an option without any arguments: 
+ * <pre>
+ * &#064;{@link Arg}(shortName='o') public boolean usedWithO;
+ * </pre>
+ * if such option is present on a command line, the value of the 
+ * <code>usedWithO</code> field is set to <code>true</code>. Otherwise its
+ * value remains unchanged (e.g. <code>false</code>).
+ * <p>
+ * One can also annotate a {@link String} field which then becomes 
+ * an option with a {@link org.netbeans.spi.sendopts.Arg#requiredArgument(char, java.lang.String) required argument}:
+ * <pre>
+ * &#064;{@link Arg}(shortName='r') public String requiredArg;
+ * </pre>
+ * If one annotates a field where an array of {@link String strings} can be 
+ * assigned, such option will then contain all 
+ * {@link org.netbeans.spi.sendopts.Arg#additionalArguments(char, java.lang.String) additional arguments}
+ * made available:
+ * <pre>
+ * &#064;{@link Arg}(shortName='r') public String[] additionaArgs;
+ * </pre>
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-@Retention(RetentionPolicy.SOURCE)
+@Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
-public @interface Option {
+public @interface Arg {
     /** One character name of the option. Will be prefixed with single <em>-</em> 
      when used on command line. */
     char shortName() default org.netbeans.spi.sendopts.Option.NO_SHORT_NAME;

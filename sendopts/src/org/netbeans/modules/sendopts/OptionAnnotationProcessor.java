@@ -54,7 +54,7 @@ import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.spi.sendopts.annotations.Description;
-import org.netbeans.spi.sendopts.annotations.Option;
+import org.netbeans.spi.sendopts.annotations.Arg;
 import org.openide.filesystems.annotations.LayerBuilder.File;
 import org.openide.filesystems.annotations.LayerGeneratingProcessor;
 import org.openide.filesystems.annotations.LayerGenerationException;
@@ -71,7 +71,7 @@ public final class OptionAnnotationProcessor extends LayerGeneratingProcessor {
     @Override
     public Set<String> getSupportedAnnotationTypes() {
         Set<String> set = new HashSet<String>();
-        set.add(Option.class.getName());
+        set.add(Arg.class.getName());
         return set;
     }
 
@@ -80,43 +80,57 @@ public final class OptionAnnotationProcessor extends LayerGeneratingProcessor {
         PrimitiveType boolType = processingEnv.getTypeUtils().getPrimitiveType(TypeKind.BOOLEAN);
         TypeMirror stringType = processingEnv.getElementUtils().getTypeElement("java.lang.String").asType();
         ArrayType stringArray = processingEnv.getTypeUtils().getArrayType(stringType);
-        int cnt = 0;
-        for (Element e : roundEnv.getElementsAnnotatedWith(Option.class)) {
-            if (!e.getModifiers().contains(Modifier.STATIC)) {
-                throw new LayerGenerationException("@Option can be applied only to static fields", e);
+
+        Set<TypeElement> processors = new HashSet<TypeElement>();
+        for (Element e : roundEnv.getElementsAnnotatedWith(Arg.class)) {
+            if (e.getModifiers().contains(Modifier.STATIC)) {
+                throw new LayerGenerationException("@Option can be applied only to non-static fields", e);
+            }
+            if (!e.getModifiers().contains(Modifier.PUBLIC)) {
+                throw new LayerGenerationException("@Option can be applied only to public fields", e);
+            }
+            if (e.getModifiers().contains(Modifier.FINAL)) {
+                throw new LayerGenerationException("@Option can be applied only to non-final fields", e);
             }
             
-            Option o = e.getAnnotation(Option.class);
-            Description d = e.getAnnotation(Description.class);
-            
-            File f;
-            final String typeName = processingEnv.getElementUtils().getBinaryName((TypeElement)e.getEnclosingElement()).toString().replace('.', '-');
-            f = layer(e).file("Services/OptionProcessors/" + typeName + "-" + e.getSimpleName() + ".instance");
+            processors.add(TypeElement.class.cast(e.getEnclosingElement()));
+        }
+        
+        for (TypeElement te : processors) {
+            int cnt = 1;
+            final String typeName = processingEnv.getElementUtils().getBinaryName(te).toString().replace('.', '-');
+            File f = layer(te).file("Services/OptionProcessors/" + typeName + ".instance");
             f.methodvalue("instanceCreate", DefaultProcessor.class.getName(), "create");
-            f.stringvalue("field", e.getSimpleName().toString());
-            f.stringvalue("class", processingEnv.getElementUtils().getBinaryName((TypeElement)e.getEnclosingElement()).toString());
-            f.charvalue("shortName", o.shortName());
-            if (!o.longName().isEmpty()) {
-                f.stringvalue("longName", o.longName());
-            }
-            if (boolType == e.asType()) {
-                f.stringvalue("type", "withoutArgument");
-            } else if (stringType == e.asType()) {
-                f.stringvalue("type", "requiredArgument");
-            } else {
-                
-                if (!stringArray.equals(e.asType())) {
-                    throw new LayerGenerationException("Field type has to be either boolean, String or String[]!", e);
+            f.stringvalue("class", processingEnv.getElementUtils().getBinaryName(te).toString());
+            for (Element e : te.getEnclosedElements()) {
+                Arg o = e.getAnnotation(Arg.class);
+                if (o == null) {
+                    continue;
                 }
-                f.stringvalue("type", "additionalArguments");
-            }
-            if (d != null) {
-                writeBundle(f, "displayName", d.displayName(), e);
-                writeBundle(f, "shortDescription", d.shortDescription(), e);
-            }
+                Description d = e.getAnnotation(Description.class);
+
+                f.charvalue(cnt + ".shortName", o.shortName());
+                if (!o.longName().isEmpty()) {
+                    f.stringvalue(cnt + ".longName", o.longName());
+                }
+                if (boolType == e.asType()) {
+                    f.stringvalue(cnt + ".type", "withoutArgument");
+                } else if (stringType == e.asType()) {
+                    f.stringvalue(cnt + ".type", "requiredArgument");
+                } else {
+
+                    if (!stringArray.equals(e.asType())) {
+                        throw new LayerGenerationException("Field type has to be either boolean, String or String[]!", e);
+                    }
+                    f.stringvalue(cnt + ".type", "additionalArguments");
+                }
+                if (d != null) {
+                    writeBundle(f, cnt + ".displayName", d.displayName(), e);
+                    writeBundle(f, cnt + ".shortDescription", d.shortDescription(), e);
+                }
+                cnt++;
+            }            
             f.write();
-            
-            cnt++;
         }
         return true;
     }

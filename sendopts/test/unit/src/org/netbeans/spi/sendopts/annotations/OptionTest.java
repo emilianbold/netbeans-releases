@@ -70,16 +70,13 @@ public class OptionTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         cmd = CommandLine.getDefault();
-    
-        enabled = false;
-        withParam = null;
-        additionalParams = null;
-        methodCalled = false;
+        methodCalled = null;
     }
 
     public void testParseEnabled() throws Exception {
         cmd.process("-e");
-        assertTrue("enabled set", enabled);
+        assertNotNull("options processed", methodCalled);
+        assertTrue("enabled set", methodCalled.enabled);
     }
 
     public void testParseEnabledWithParamFails() {
@@ -89,14 +86,14 @@ public class OptionTest extends NbTestCase {
         } catch (CommandException ex) {
             // oK
         }
-        assertFalse("enabled not set", enabled);
+        assertNull("parse not finished, enabled not set", methodCalled);
     }
 
     public void testParseWithParam() throws CommandException {
         cmd.process("-pParam");
-        assertFalse("enabled not set", enabled);
-        assertEquals("Param", withParam);
-        assertTrue("Method called", methodCalled);
+        assertNotNull("Method called", methodCalled);
+        assertFalse("enabled not set", methodCalled.enabled);
+        assertEquals("Param", methodCalled.withParam);
     }
     public void testParseWithoutParamFails() throws CommandException {
         try {
@@ -104,24 +101,26 @@ public class OptionTest extends NbTestCase {
             fail("Missing param for -p");
         } catch (CommandException ex) {
             // OK
-            assertFalse("No method called", methodCalled);
+            assertNull("No method called", methodCalled);
         }
     }
     public void testParseAdditionalParam() throws CommandException {
         cmd.process("no", "-a", "Param");
-        assertFalse("enabled not set", enabled);
-        assertNotNull("additionalParams set", additionalParams);
-        assertEquals("two", 2, additionalParams.length);
-        assertEquals("no", additionalParams[0]);
-        assertEquals("Param", additionalParams[1]);
+        assertNotNull("Called", methodCalled);
+        assertFalse("enabled not set", methodCalled.enabled);
+        assertNotNull("additionalParams set", methodCalled.additionalParams);
+        assertEquals("two", 2, methodCalled.additionalParams.length);
+        assertEquals("no", methodCalled.additionalParams[0]);
+        assertEquals("Param", methodCalled.additionalParams[1]);
     }
     public void testParseLongAdditional() throws CommandException {
         cmd.process("no", "--additional", "Param");
-        assertFalse("enabled not set", enabled);
-        assertNotNull("additionalParams set", additionalParams);
-        assertEquals("two", 2, additionalParams.length);
-        assertEquals("no", additionalParams[0]);
-        assertEquals("Param", additionalParams[1]);
+        assertNotNull("Called", methodCalled);
+        assertFalse("enabled not set", methodCalled.enabled);
+        assertNotNull("additionalParams set", methodCalled.additionalParams);
+        assertEquals("two", 2, methodCalled.additionalParams.length);
+        assertEquals("no", methodCalled.additionalParams[0]);
+        assertEquals("Param", methodCalled.additionalParams[1]);
     }
     public void testHelp() throws CommandException {
         StringWriter w = new StringWriter();
@@ -130,35 +129,37 @@ public class OptionTest extends NbTestCase {
         assertTrue("contains short help:\n" + w, w.toString().contains(("ShortHelp")));
     }
 
-    
-    @Option(shortName='e')
-    private static boolean enabled;
-    
-    @Option(shortName='p')
-    static String withParam;
-    
-    @Description(displayName="#NAME", shortDescription="#SHORT")
-    @Option(shortName='a', longName="additional")
-    @NbBundle.Messages({
-        "NAME=AddOnParams", 
-        "SHORT=ShortHelp"
-    })
-    public static String[] additionalParams;
+        @NbBundle.Messages({
+            "NAME=AddOnParams", 
+            "SHORT=ShortHelp"
+        })
+    public static final class SampleOptions implements Runnable {
+        @Arg(shortName='e')
+        public boolean enabled;
+
+        @Arg(shortName='p')
+        public String withParam;
+
+        @Description(displayName="#NAME", shortDescription="#SHORT")
+        @Arg(shortName='a', longName="additional")
+        public String[] additionalParams;
+        
+        @Override
+        public void run() {
+            methodCalled = this;
+        }
+    }
     
 
-    private static boolean methodCalled;
-    @PostProcess
-    private static void callMeAfterArgumentsAreSet() {
-        methodCalled = true;
-    } 
+    private static SampleOptions methodCalled;
     
     public void testCheckForStatic() throws IOException {
         clearWorkDir();
         AnnotationProcessorTestUtils.makeSource(getWorkDir(), "test.A", 
-            "import org.netbeans.spi.sendopts.annotations.Option;\n" +
+            "import org.netbeans.spi.sendopts.annotations.Arg;\n" +
             "public class A {\n" +
-            "  @Option(shortName='a')" +
-            "  public String nonStatic;" +
+            "  @Arg(shortName='a')" +
+            "  public static String Static;" +
             "}\n"
         );
         ByteArrayOutputStream os = new ByteArrayOutputStream();

@@ -113,6 +113,7 @@ made subject to such option by the copyright holder.
             <public-packages>
                 <package>org.netbeans.api.sendopts</package>
                 <package>org.netbeans.spi.sendopts</package>
+                <package>org.netbeans.spi.sendopts.annotations</package>
             </public-packages>
         </data>
     </configuration>

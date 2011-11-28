@@ -43,16 +43,16 @@
 package org.netbeans.modules.sendopts;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.HashSet;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.sendopts.CommandException;
 import org.netbeans.spi.sendopts.Env;
 import org.netbeans.spi.sendopts.Option;
 import org.netbeans.spi.sendopts.OptionProcessor;
-import org.netbeans.spi.sendopts.annotations.PostProcess;
+import org.netbeans.spi.sendopts.annotations.Arg;
 
 /** Processor that is configured from a map, usually from a layer.
  *
@@ -60,20 +60,18 @@ import org.netbeans.spi.sendopts.annotations.PostProcess;
  */
 final class DefaultProcessor extends OptionProcessor {
     private final String clazz;
-    private final String field;
-    private final Option option;
-    private final Type type;
+    private final Set<Option> options;
 
     private DefaultProcessor(
-        String type, String f, String c,
-        Character shortName, String longName, 
-        String displayName, String description
+        String clazz, Set<Option> arr
     ) {
-        this.field = f;
-        this.clazz = c;
-        this.type = Type.valueOf(type);
+        this.clazz = clazz;
+        this.options = Collections.unmodifiableSet(arr);
+    }
+
+    private static Option createOption(String type, Character shortName, String longName, String displayName, String description) {
         Option o = null;
-        switch (this.type) {
+        switch (Type.valueOf(type)) {
             case withoutArgument: o = Option.withoutArgument(shortName, longName); break;
             case requiredArgument: o = Option.requiredArgument(shortName, longName); break;
             case additionalArguments: o = Option.additionalArguments(shortName, longName); break;
@@ -87,56 +85,104 @@ final class DefaultProcessor extends OptionProcessor {
             String[] arr = description.split("#"); // NOI18N
             o = Option.shortDescription(o, arr[0], arr[1]);
         }
-        this.option = o;
+        return o;
     }
     
     static DefaultProcessor create(Map<?,?> map) {
-        String f = (String) map.get("field");
         String c = (String) map.get("class");
-        Character shortName = (Character) map.get("shortName");
-        String longName = (String) map.get("longName");
-        String type = (String) map.get("type");
-        String displayName = (String)map.get("displayName");
-        String description = (String)map.get("shortDescription");
-        return new DefaultProcessor(type, f, c, shortName, longName, displayName, description);
+        Set<Option> arr = new LinkedHashSet<Option>();
+        for (int cnt = 1; ; cnt++) {
+            Character shortName = (Character) map.get(cnt + ".shortName");
+            String longName = (String) map.get(cnt + ".longName");
+            if (shortName == null && longName == null) {
+                break;
+            }
+            String type = (String) map.get(cnt + ".type");
+            String displayName = (String)map.get(cnt + ".displayName");
+            String description = (String)map.get(cnt + ".shortDescription");
+            arr.add(createOption(type, shortName, longName, displayName, description));
+        }
+        return new DefaultProcessor(c, arr);
     }
     
 
     @Override
     protected Set<Option> getOptions() {
-        Set<Option> set = new HashSet<Option>();
-        set.add(option);
-        return set;
+        return options;
     }
 
     @Override
     protected void process(Env env, Map<Option, String[]> optionValues) throws CommandException {
         try {
             Class<?> realClazz = Class.forName(clazz);
-            Field realField = realClazz.getDeclaredField(field);
-            realField.setAccessible(true);
-            switch (type) {
-                case withoutArgument:
-                    realField.setBoolean(null, true); break;
-                case requiredArgument:
-                    realField.set(null, optionValues.values().iterator().next()[0]); break;
-                case additionalArguments:
-                    realField.set(null, optionValues.values().iterator().next()); break;
+            Object instance = realClazz.newInstance();
+            Map<Option,Field> map = processFields(realClazz, options);
+            for (Map.Entry<Option, String[]> entry : optionValues.entrySet()) {
+                final Option option = entry.getKey();
+                Type type = Type.valueOf(option);
+                Field f = map.get(option);
+                switch (type) {
+                    case withoutArgument:
+                        f.setBoolean(instance, true); break;
+                    case requiredArgument:
+                        f.set(instance, entry.getValue()[0]); break;
+                    case additionalArguments:
+                        f.set(instance, entry.getValue()); break;
+                }
             }
-            for (Method method : realClazz.getDeclaredMethods()) {
-                if (method.getAnnotation(PostProcess.class) != null) {
-                    method.setAccessible(true);
-                    method.invoke(null);
+            if (instance instanceof Runnable) {
+                ((Runnable)instance).run();
+            }
+        } catch (Exception exception) {
+            throw (CommandException)new CommandException(10, exception.getLocalizedMessage()).initCause(exception);
+        }
+    }
+    
+    private static Map<Option,Field> processFields(Class<?> type, Set<Option> options) {
+        Map<Option,Field> map = new HashMap<Option, Field>();
+        for (Field f : type.getFields()) {
+            Arg arg = f.getAnnotation(Arg.class);
+            if (arg == null) {
+                continue;
+            }
+            Option o = null;
+            for (Option c : options) {
+                int shortN = OptionImpl.Trampoline.DEFAULT.getShortName(c);
+                String longN = OptionImpl.Trampoline.DEFAULT.getLongName(c);
+                
+                if (shortN == arg.shortName() && equalStrings(longN, arg)) {
+                    o = c;
                     break;
                 }
             }
-            
-        } catch (Exception exception) {
-            throw (CommandException)new CommandException(10, exception.getLocalizedMessage()).initCause(exception);
+            assert o != null : "No option for field " + f + " options: " + options;
+            map.put(o, f);
+        }
+        assert map.size() == options.size() : "Map " + map + " Options " + options;
+        return map;
+    }
+    private static boolean equalStrings(String longN, Arg arg) {
+        if (longN == null) {
+            return arg.longName().isEmpty();
+        } else {
+            return longN.equals(arg.longName());
         }
     }
 
     private static enum Type {
         withoutArgument, requiredArgument, additionalArguments;
+        
+        public static Type valueOf(Option o) {
+            OptionImpl impl = OptionImpl.Trampoline.DEFAULT.impl(o);
+            switch (impl.argumentType) {
+                case 0: return withoutArgument;
+                case 1: return requiredArgument;
+                case 2: assert false;
+                case 3: return additionalArguments;
+                case 4: assert false;
+            }
+            assert false;
+            return null;
+        }
     }
 }
