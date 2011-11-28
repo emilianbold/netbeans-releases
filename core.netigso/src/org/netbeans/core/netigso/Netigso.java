@@ -101,6 +101,7 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
     private Framework framework;
     private ClassLoader frameworkLoader;
     private NetigsoActivator activator;
+    private Integer defaultStartLevel;
 
     Framework getFramework() {
         return framework;
@@ -220,6 +221,14 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
         } catch (BundleException ex) {
             LOG.log(Level.WARNING, "Cannot start Container" + framework, ex);
         }
+    }
+
+    @Override
+    protected int defaultStartLevel() {
+        if (defaultStartLevel == null) {
+            defaultStartLevel = Integer.parseInt(NbBundle.getMessage(Netigso.class, "DEFAULT_BUNDLE_START_LEVEL"));
+        }
+        return defaultStartLevel;
     }
 
     @Override

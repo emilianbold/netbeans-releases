@@ -56,6 +56,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 
 /** Special module for representing OSGi bundles 
  * @author Jaroslav Tulach
@@ -65,7 +66,7 @@ final class NetigsoModule extends Module {
 
     private final File jar;
     private final Manifest manifest;
-    private int startLevel;
+    private int startLevel = -1;
 
     public NetigsoModule(Manifest mani, File jar, ModuleManager mgr, Events ev, Object history, boolean reloadable, boolean autoload, boolean eager) throws IOException {
         super(mgr, ev, history, reloadable, autoload, eager);
@@ -224,7 +225,7 @@ final class NetigsoModule extends Module {
 
     @Override
     final int getStartLevelImpl() {
-        return startLevel;
+        return startLevel == -1 ? Lookup.getDefault().lookup(NetigsoFramework.class).defaultStartLevel() : startLevel;
     }
 
     final void setStartLevel(int startLevel) {
