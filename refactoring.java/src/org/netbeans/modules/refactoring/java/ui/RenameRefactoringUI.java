@@ -45,6 +45,7 @@ package org.netbeans.modules.refactoring.java.ui;
 
 import java.io.IOException;
 import java.text.MessageFormat;
+import java.util.EnumSet;
 import java.util.StringTokenizer;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -98,8 +99,9 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass, 
         this.handle = handle;
         this.refactoring = new RenameRefactoring(Lookups.singleton(handle));
         Element element = handle.resolveElement(info);
-        if (!(element.getKind() == ElementKind.LOCAL_VARIABLE || element.getKind() == ElementKind.PARAMETER))
+        if (UIUtilities.allowedElementKinds.contains(element.getKind())) {
             elementHandle = ElementHandle.create(element);
+        }
         oldName = element.getSimpleName().toString();
         if (element.getModifiers().contains(Modifier.PRIVATE)) {
             refactoring.getContext().add(RetoucheUtils.getClasspathInfoFor(false, handle.getFileObject()));
@@ -115,8 +117,9 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass, 
             this.handle = handle;
             this.refactoring = new RenameRefactoring(Lookups.fixed(file, handle));
             Element element = handle.resolveElement(info);
-            if (!(element.getKind() == ElementKind.LOCAL_VARIABLE || element.getKind() == ElementKind.PARAMETER))
+            if (UIUtilities.allowedElementKinds.contains(element.getKind())) {
                 elementHandle = ElementHandle.create(element);
+            }
             oldName = element.getSimpleName().toString();
         } else {
             this.refactoring = new RenameRefactoring(Lookups.fixed(file));
@@ -140,8 +143,9 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass, 
         if (handle!=null) {
             this.refactoring = new RenameRefactoring(Lookups.fixed(jmiObject, handle));
             Element element = handle.resolveElement(info);
-            if (!(element.getKind() == ElementKind.LOCAL_VARIABLE || element.getKind() == ElementKind.PARAMETER))
+            if (UIUtilities.allowedElementKinds.contains(element.getKind())) {
                 elementHandle = ElementHandle.create(element);
+            }
         } else {
             this.refactoring = new RenameRefactoring(Lookups.fixed(jmiObject));
         }
