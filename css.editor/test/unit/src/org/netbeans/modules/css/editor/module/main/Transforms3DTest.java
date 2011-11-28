@@ -41,29 +41,24 @@
  */
 package org.netbeans.modules.css.editor.module.main;
 
-import org.netbeans.modules.parsing.spi.ParseException;
-
 /**
  *
  * @author mfukala@netbeans.org
  */
-public class ListsAndCountersModuleTest extends CssModuleTestBase {
+public class Transforms3DTest extends CssModuleTestBase {
 
-    public ListsAndCountersModuleTest(String testName) {
+    public Transforms3DTest(String testName) {
         super(testName);
     }
-
+  
     public void testProperties() {
-        assertPropertyDeclaration("list-style: upper-roman inside ");
-        assertPropertyDeclaration("list-style: circle outside");
-        assertPropertyDeclaration("list-style: lower-alpha");
-
-        assertPropertyDeclaration("list-style-image: url(\"http://www.example.com/ellipse.png\")");
-
+        assertPropertyValues("backface-visibility", "visible", "hidden");
+        assertPropertyValues("perspective", "none", "5");
+        
+        assertPropertyValues("perspective-origin", "10%", "5px", "left", "center", "right");
+        assertPropertyValues("perspective-origin", "10% 20px", "5px 5%", "left top", "center 10%", "left bottom");
+        
+        assertPropertyValues("transform", "none", "rotate(10deg)");
     }
-
-    public void testMarkerPseudoElementCompletion() throws ParseException {
-        checkCC("div::| ", arr("marker"), Match.CONTAINS);
-        checkCC("li::mar| ", arr("marker"), Match.CONTAINS);
-    }
+    
 }
