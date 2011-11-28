@@ -1052,7 +1052,7 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
             if (path == null) {
                 // ??? - #103711: null cannot be returned because the icon 
                 // must be annotated; general package icon is returned instead
-                return ImageUtilities.loadImage("org/netbeans/spi/java/project/support/ui/package.gif"); // NOI18N
+                return ImageUtilities.loadImage(PackageDisplayUtils.PACKAGE);
             }
             return PackageDisplayUtils.getIcon(folder, path.replace('/', '.'), isLeaf() );
         }
