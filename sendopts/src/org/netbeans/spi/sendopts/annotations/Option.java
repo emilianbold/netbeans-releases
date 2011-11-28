@@ -47,13 +47,20 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-/**
+/** Marks a static field in a class as on option and assigns it a short,
+ * or long name. Usually used together with {@link Description} which provides
+ * human readable explantation of the option's behavior.
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-@Retention(RetentionPolicy.RUNTIME)
+@Retention(RetentionPolicy.SOURCE)
 @Target(ElementType.FIELD)
 public @interface Option {
+    /** One character name of the option. Will be prefixed with single <em>-</em> 
+     when used on command line. */
     char shortName() default org.netbeans.spi.sendopts.Option.NO_SHORT_NAME;
+    /** Multi character name. Needs to be prefixed with <em>--</em> on the command
+     * line.
+     */
     String longName() default "";
 }
