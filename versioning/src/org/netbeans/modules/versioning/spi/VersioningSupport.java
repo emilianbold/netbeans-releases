@@ -43,13 +43,15 @@
  */
 package org.netbeans.modules.versioning.spi;
 
-import org.netbeans.modules.versioning.VersioningManager;
-import org.netbeans.modules.versioning.FlatFolder;
+import org.netbeans.modules.versioning.core.VersioningManager;
+import org.netbeans.modules.versioning.core.FlatFolder;
 import org.openide.util.NbPreferences;
 
 import java.io.File;
 import java.util.prefs.Preferences;
-import org.netbeans.modules.versioning.Utils;
+import org.netbeans.modules.versioning.fileproxy.api.VCSFileProxy;
+import org.netbeans.modules.versioning.DelegatingVCS;
+import org.netbeans.modules.versioning.core.spi.VCSSystemProvider;
 
 /**
  * Collection of utility methods for Versioning systems implementors. 
@@ -85,7 +87,15 @@ public final class VersioningSupport {
      * @return VersioningSystem a system that owns (manages) the file or null if the file is not versioned
      */
     public static VersioningSystem getOwner(File file) {
-        return VersioningManager.getInstance().getOwner(file);
+        VCSSystemProvider.VersioningSystem owner = VersioningManager.getInstance().getOwner(VCSFileProxy.createFileProxy(file));
+        if(owner != null) {
+            if(owner.getDelegate() instanceof DelegatingVCS) {
+                return ((DelegatingVCS)owner.getDelegate()).getDelegate();
+            } else {
+                return (VersioningSystem) owner.getDelegate();
+            }
+        } 
+        return null;
     }
 
     /**
@@ -96,7 +106,7 @@ public final class VersioningSupport {
      * @return true if the File represents a flat folder (eg a java package), false otherwise
      */
     public static boolean isFlat(File file) {
-        return file instanceof FlatFolder;
+        return file instanceof FlatFolder; // XXX delegate to fileproxy
     }
 
     /**
@@ -135,15 +145,7 @@ public final class VersioningSupport {
      * @return true if the given folder is excluded from version control, false otherwise
      */
     public static boolean isExcluded (File folder) {
-        // forbid scanning for UNC paths \\ or \\computerName
-        if (folder.getPath().startsWith("\\\\")) { //NOI18N
-            return folder.getParent() == null || folder.getParent().equals("\\\\"); //NOI18N
-        }
-        for (File unversionedFolder : Utils.getUnversionedFolders()) {
-            if (Utils.isAncestorOrEqual(unversionedFolder, folder)) {
-                return true;
-            }
-        }
-        return false;
+        VCSFileProxy proxy = VCSFileProxy.createFileProxy(folder);
+        return proxy != null ? org.netbeans.modules.versioning.fileproxy.spi.VersioningSupport.isExcluded(proxy) : null;
     }
 }

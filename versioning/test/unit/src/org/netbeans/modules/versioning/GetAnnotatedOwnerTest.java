@@ -43,9 +43,11 @@
  */
 package org.netbeans.modules.versioning;
 
+import org.netbeans.modules.versioning.core.VersioningManager;
 import java.io.File;
 import java.io.IOException;
-import org.netbeans.modules.versioning.spi.VersioningSystem;
+import org.netbeans.modules.versioning.core.spi.VCSSystemProvider;
+import org.netbeans.modules.versioning.fileproxy.api.VCSFileProxy;
 import org.netbeans.modules.versioning.spi.testvcs.TestAnnotatedVCS;
 import org.openide.util.test.MockLookup;
 
@@ -83,8 +85,7 @@ public class GetAnnotatedOwnerTest extends GetOwnerTest {
         f.createNewFile();
         
         assertNull(TestAnnotatedVCS.INSTANCE);
-        
-        VersioningSystem owner = VersioningManager.getInstance().getOwner(f);
+        VCSSystemProvider.VersioningSystem owner = VersioningManager.getInstance().getOwner(VCSFileProxy.createFileProxy(f));
         assertNull(owner);
         
         assertNull(TestAnnotatedVCS.INSTANCE);

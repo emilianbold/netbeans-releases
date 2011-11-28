@@ -138,7 +138,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.javafx.source</friend>
                 <friend>org.netbeans.modules.parsing.api</friend>
                 <friend>org.netbeans.modules.parsing.lucene</friend>
-                <friend>org.netbeans.modules.versioning</friend>
+                <friend>org.netbeans.modules.versioning.core</friend>
                 <package>org.netbeans.modules.masterfs.providers</package>
             </friend-packages>
         </data>
