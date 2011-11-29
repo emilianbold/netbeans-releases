@@ -44,9 +44,9 @@ package org.netbeans.modules.maven.j2ee;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.File;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
 import org.netbeans.modules.web.jsfapi.spi.JsfSupportHandle;
 import org.netbeans.spi.project.LookupProvider;
 import org.openide.util.Lookup;
@@ -59,9 +59,6 @@ import org.openide.util.lookup.InstanceContent;
  */
 @LookupProvider.Registration(projectType={
     "org-netbeans-modules-maven/" + NbMavenProject.TYPE_WAR,
-    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_EJB,
-    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_APPCLIENT,
-    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_EAR,
     "org-netbeans-modules-maven/" + NbMavenProject.TYPE_OSGI
 })
 public class J2eeLookupProvider implements LookupProvider, PropertyChangeListener {
@@ -92,25 +89,9 @@ public class J2eeLookupProvider implements LookupProvider, PropertyChangeListene
         NbMavenProject watcher = project.getLookup().lookup(NbMavenProject.class);
         String packaging = watcher.getPackagingType();
         
-        if (isWebSupported(packaging)) {
+        ic = new InstanceContent();
+        if (MavenProjectSupport.isWebSupported(project, packaging)) {
             ic.add(new JsfSupportHandle());
         }
-    }
-
-    private boolean isWebSupported(String packaging) {
-        if ("war".equals(packaging)) { // NOI18N
-            return true;
-        }
-        // #179584
-        // if it is bundle packaging type but a valid "src/main/webapp" exists
-        // then provide lookup content as for web application so that code
-        // completion etc. works
-        if ("bundle".equals(packaging)) { // NOI18N
-            NbMavenProject proj = project.getLookup().lookup(NbMavenProject.class);
-            if (new File(proj.getWebAppDirectory()).exists()) {
-                return true;
-            }
-        }
-        return false;
     }
 }
