@@ -617,11 +617,11 @@ public class NbWelcomePanel extends ErrorMessagePanel {
             if(type.isJDKBundle() && javafxsdk != null && installFXSDKMessage) {
                 if(javafxsdk.getStatus().equals(Status.TO_BE_INSTALLED)) { //install jdk && javafxsdk
                     LogManager.log("... JavaFX SDK will be installed");
-                    detailsText.append(StringUtils.format(panel.getProperty(DEFAULT_FXSDK_TO_BE_INSTALLED_TEXT_PROPERTY),
+                    detailsText.append(StringUtils.format(DEFAULT_ADDITIONAL_PRODUCT_TO_BE_INSTALLED_TEXT_PROPERTY,
                             javafxsdk.getDisplayName()));
                 } else { //install jdk but do not install javafxsdk
                     LogManager.log("... JavaFX SDK is already installed");
-                    detailsText.append(StringUtils.format(panel.getProperty(DEFAULT_FXSDK_ALREADY_INSTALLED_TEXT_PROPERTY),
+                    detailsText.append(StringUtils.format(DEFAULT_ADDITIONAL_PRODUCT_ALREADY_INSTALLED_TEXT_PROPERTY,
                             javafxsdk.getDisplayName()));
                 }
             }
@@ -1293,12 +1293,12 @@ public class NbWelcomePanel extends ErrorMessagePanel {
            ResourceUtils.getString(NbWelcomePanel.class,
             "NWP.bundledproduct.not.installable.netbeans.installed.text");//NOI18N
 
-    public static final String DEFAULT_FXSDK_TO_BE_INSTALLED_TEXT_PROPERTY =
+    public static final String DEFAULT_ADDITIONAL_PRODUCT_TO_BE_INSTALLED_TEXT_PROPERTY =
             ResourceUtils.getString(NbWelcomePanel.class,
-            "NWP.javafxsdk.to.be.installed"); // NOI18N
-    public static final String DEFAULT_FXSDK_ALREADY_INSTALLED_TEXT_PROPERTY =
+            "NWP.additional.product.to.be.installed"); // NOI18N
+    public static final String DEFAULT_ADDITIONAL_PRODUCT_ALREADY_INSTALLED_TEXT_PROPERTY =
             ResourceUtils.getString(NbWelcomePanel.class,
-            "NWP.javafxsdk.already.installed"); // NOI18N
+            "NWP.additional.product.already.installed"); // NOI18N
     
     
     public static final String CUSTOMIZE_TITLE_PROPERTY =
