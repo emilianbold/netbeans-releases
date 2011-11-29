@@ -138,7 +138,7 @@ public class JavaFXSDKPanel extends DestinationPanel {
             }
 
 
-            @Override
+            /*@Override
             protected String getWarningMessage() {
                 String msg = super.getWarningMessage();
 
@@ -148,27 +148,7 @@ public class JavaFXSDKPanel extends DestinationPanel {
                     }
                 }
                 return msg;
-            }
-
-
-           /* @Override
-            protected String validateInput() {
-                String errorMessage = super.validateInput();
-
-                if (errorMessage == null) {
-                    if(!isSuitableJDKInstalled()) {
-                           errorMessage = StringUtils.format(component.getProperty(ERROR_SDK_CANNOT_BE_INSTALLED_PROPERTY));
-                     }
-
-                }
-
-                if (errorMessage != null) {
-                    return errorMessage;
-                }
-
-                return null;
             }*/
-
 
             // private //////////////////////////////////////////////////////////////////
             private void initComponents() {

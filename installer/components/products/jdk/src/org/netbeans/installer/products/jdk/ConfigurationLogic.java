@@ -61,6 +61,7 @@ import org.netbeans.installer.utils.exceptions.InstallationException;
 import org.netbeans.installer.utils.exceptions.NativeException;
 import org.netbeans.installer.utils.exceptions.UninstallationException;
 import org.netbeans.installer.utils.helper.EnvironmentScope;
+import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.helper.ExecutionResults;
 import org.netbeans.installer.utils.helper.FilesList;
 import org.netbeans.installer.utils.helper.NbiThread;
@@ -308,12 +309,14 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         final String loggingOption = (logFile!=null) ?
             "/log " + BACK_SLASH + QUOTE  + logFile.getAbsolutePath()  + BACK_SLASH + QUOTE +" ":
             EMPTY_STRING;
-        String installLocationOption = "/qn /norestart INSTALLDIR=" + BACK_SLASH + QUOTE + location + BACK_SLASH + QUOTE;
+        String installLocationOption = "/qn /norestart INSTALLDIR=" + 
+                BACK_SLASH + QUOTE + convertPathNamesToShort(location.getAbsolutePath()) + BACK_SLASH + QUOTE;
         final Product javafxsdk=getJavaFXSDKProduct();
         if( javafxsdk != null) {
             LogManager.log("... javafxsdk is found");
-            installLocationOption += " INSTALLDIRFXSDK=" + BACK_SLASH + QUOTE + javafxsdk.getInstallationLocation() + BACK_SLASH + QUOTE +
-                                     " INSTALLDIRFXRT=" + BACK_SLASH + QUOTE + javafxsdk.getProperty("javafx.runtime.installation.location") + BACK_SLASH + QUOTE;
+            installLocationOption += " INSTALLDIRFXSDK=" + 
+                    BACK_SLASH + QUOTE + convertPathNamesToShort(javafxsdk.getInstallationLocation().getAbsolutePath()) + BACK_SLASH + QUOTE;
+                                    // " INSTALLDIRFXRT=" + BACK_SLASH + QUOTE + javafxsdk.getProperty("javafx.runtime.installation.location") + BACK_SLASH + QUOTE;
         }
         
         String [] commands = new String [] {
@@ -886,6 +889,27 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             
         }
         return id;
+    }
+
+     private static String convertPathNamesToShort(String path){
+        File pathConverter = new File(SystemUtils.getTempDirectory(), "pathConverter.cmd");
+        String result = path;
+        List <String> commands = new ArrayList <String> ();
+        commands.add("@echo off");
+        commands.add("set JPATH=" + path);
+        commands.add("for %%i in (\"%JPATH%\") do set JPATH=%%~fsi");
+        commands.add("echo %JPATH%");
+        try{
+            FileUtils.writeStringList(pathConverter, commands);
+            ExecutionResults res=SystemUtils.executeCommand(pathConverter.getAbsolutePath());
+            FileUtils.deleteFile(pathConverter);
+            result = res.getStdOut().trim();
+        } catch(IOException ioe) {
+            LogManager.log(ErrorLevel.WARNING,
+                    "Failed to convert " + path + " to a path with short names only." +
+                     "\n Exception is thrown " + ioe);
+        }
+        return result;
     }
     
     private ExecutionResults runJDKUninstallerWindows(Progress progress, File location) throws UninstallationException {

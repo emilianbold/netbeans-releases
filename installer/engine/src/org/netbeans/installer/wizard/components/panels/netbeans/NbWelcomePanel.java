@@ -1172,7 +1172,7 @@ public class NbWelcomePanel extends ErrorMessagePanel {
     }
 
     private Product getJavaFXSDKProduct() {
-        List<Product> products = bundledRegistry.getProducts("javafxsdk");
+        List<Product> products = defaultRegistry.getProducts("javafxsdk");
         final Product javafxsdk = (products.isEmpty())? null : products.get(0);
         if(javafxsdk != null) {
             LogManager.log("... found javafxsdk product: " + javafxsdk.getDisplayName() +
