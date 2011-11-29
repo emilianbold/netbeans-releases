@@ -42,8 +42,7 @@
 package org.netbeans.modules.web.jsf.editor.index;
 
 import java.io.IOException;
-import java.util.Collections;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
@@ -57,7 +56,6 @@ import org.netbeans.modules.parsing.spi.indexing.ConstrainedBinaryIndexer;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
-import org.netbeans.modules.web.jsf.editor.JsfUtils;
 import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibraryDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -67,12 +65,14 @@ import org.openide.util.Exceptions;
  *
  * @author marekfukala
  */
-@ConstrainedBinaryIndexer.Registration(mimeType = {JsfUtils.XHTML_MIMETYPE, JsfUtils.TLD_MIMETYPE, JsfUtils.XML_MIMETYPE},
+@ConstrainedBinaryIndexer.Registration(
+namePattern = ".*\\.tld|.*\\.taglib\\.xml",
 indexVersion = JsfBinaryIndexer.INDEXER_VERSION,
-indexerName = JsfBinaryIndexer.INDEXER_NAME) //NOI18N
+indexerName = JsfBinaryIndexer.INDEXER_NAME)
 public class JsfBinaryIndexer extends ConstrainedBinaryIndexer {
 
     private static final Logger LOGGER = Logger.getLogger(JsfBinaryIndexer.class.getSimpleName());
+    private static final String CONTENT_UNKNOWN = "content/unknown";    //NOI18N
     static final int INDEXER_VERSION = 8; //NOI18N
     static final String INDEXER_NAME = "jsfBinary"; //NOI18N
 
@@ -84,11 +84,11 @@ public class JsfBinaryIndexer extends ConstrainedBinaryIndexer {
             return;
         }
 
-        processTlds(files.get(JsfUtils.TLD_MIMETYPE), context);
+        processTlds(files.get(CONTENT_UNKNOWN), context);
 
-        processFaceletsLibraryDescriptors(files.get(JsfUtils.XML_MIMETYPE), context);
+        processFaceletsLibraryDescriptors(files.get(CONTENT_UNKNOWN), context);
 
-        processFaceletsCompositeLibraries(files.get(JsfUtils.XHTML_MIMETYPE), context);
+        processFaceletsCompositeLibraries(files.get(CONTENT_UNKNOWN), context);
 
     }
 
@@ -96,7 +96,7 @@ public class JsfBinaryIndexer extends ConstrainedBinaryIndexer {
         if(files == null) {
             return ;
         }
-        for (FileObject file : files) {
+        for (FileObject file : findLibraryDescriptors(files, JsfIndexSupport.TLD_LIB_SUFFIX)) {
             try {
                 String namespace = FaceletsLibraryDescriptor.parseNamespace(file.getInputStream(), "taglib", "uri");
                 if (namespace != null) {
@@ -114,7 +114,7 @@ public class JsfBinaryIndexer extends ConstrainedBinaryIndexer {
         if(files == null) {
             return ;
         }
-        for (FileObject file : files) {
+        for (FileObject file : findLibraryDescriptors(files,JsfIndexSupport.FACELETS_LIB_SUFFIX)) {
             //no special mimetype for facelet library descriptor AFAIK
             if (file.getNameExt().endsWith(JsfIndexSupport.FACELETS_LIB_SUFFIX)) {
                 try {
@@ -174,6 +174,16 @@ public class JsfBinaryIndexer extends ConstrainedBinaryIndexer {
             Exceptions.printStackTrace(ex);
         }
 
+    }
+    public static Collection<FileObject> findLibraryDescriptors(Iterable<? extends FileObject> fos, String suffix) {
+        Collection<FileObject> files = new ArrayList<FileObject>();
+        for (FileObject file : fos) {
+            if (file.getNameExt().toLowerCase(Locale.US).endsWith(suffix)) { //NOI18N
+                //found library, create a new instance and cache it
+                files.add(file);
+            }
+        }
+        return files;
     }
 
 }

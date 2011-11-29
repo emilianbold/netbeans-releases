@@ -131,23 +131,27 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
             }
             int fileStart = toByteIndex(start);
             int byteCount = toByteIndex(end - start);
+            BufferResource<ByteBuffer> br = null;
             try {
-                BufferResource<ByteBuffer> br = getStorage().getReadBuffer(fileStart, byteCount);
+                br = getStorage().getReadBuffer(fileStart, byteCount);
                 CharBuffer chb = br.getBuffer().asCharBuffer();
                 //#68386 satisfy the request as much as possible, but if there's not enough remaining
                 // content, not much we can do..
                 int len = Math.min(end - start, chb.remaining());
                 chb.get(chars, 0, len);
-                br.releaseBuffer();
                 return chars;
             } catch (Exception e) {
                 handleException (e);
                 return new char[0];
+            } finally {
+                if (br != null) {
+                    br.releaseBuffer();
+                }
             }
         }
     }
 
-    BufferResource<CharBuffer> getCharBuffer(int start, int len) {
+    private BufferResource<CharBuffer> getCharBuffer(int start, int len) {
         if (len < 0 || start < 0) {
             throw new IllegalArgumentException ("Illogical text range from " + start + " to " + (start + len));
         }
@@ -163,20 +167,31 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
                     fileStart + " to " + (fileStart + byteCount) + " requested, " +
                     "but storage is only " + available + " bytes long");
             }
+            BufferResource<ByteBuffer> readBuffer = null;
             try {
-                return new CharBufferResource(getStorage().getReadBuffer(fileStart, byteCount));
+                readBuffer = getStorage().getReadBuffer(fileStart, byteCount);
+                return new CharBufferResource(readBuffer);
             } catch (Exception e) {
+                if (readBuffer != null) {
+                    readBuffer.releaseBuffer();
+                }
                 return null;
             }
         }
     }
 
-    public String getText (int start, int end) {
+    @Override
+    public String getText(int start, int end) {
         BufferResource<CharBuffer> br = getCharBuffer(start, end - start);
-        CharBuffer cb = br.getBuffer();
-        String s = cb != null ? cb.toString() : new String(new char[end - start]);
-        br.releaseBuffer();
-        return s;
+        try {
+            CharBuffer cb = br.getBuffer();
+            String s = cb != null ? cb.toString() : new String(new char[end - start]);
+            return s;
+        } finally {
+            if (br != null) {
+                br.releaseBuffer();
+            }
+        }
     }
 
     void onDispose(int lastStorageSize) {
@@ -788,15 +803,21 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
             for (int i = 0; i < getLineCount(); i++) {
                 int lineStart = getCharLineStart(i);
                 int lineLength = length(i);
-                BufferResource<CharBuffer> br = getCharBuffer(lineStart, lineLength);
-                CharBuffer cb = br.getBuffer();
-                ByteBuffer bb = encoder.encode(cb);
-                ch.write(bb);
-                if (i != getLineCount() - 1) {
-                    lsbb.rewind();
-                    ch.write(lsbb);
+                BufferResource<CharBuffer> br = getCharBuffer(lineStart,
+                        lineLength);
+                try {
+                    CharBuffer cb = br.getBuffer();
+                    ByteBuffer bb = encoder.encode(cb);
+                    ch.write(bb);
+                    if (i != getLineCount() - 1) {
+                        lsbb.rewind();
+                        ch.write(lsbb);
+                    }
+                } finally {
+                    if (br != null) {
+                        br.releaseBuffer();
+                    }
                 }
-                br.releaseBuffer();
             }
             ch.close();
         } finally {
@@ -892,39 +913,39 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
             }
             CharBuffer buff = null;
             try {
-                br = storage.getReadBuffer(toByteIndex(start), toByteIndex(size));
-                buff = br.getBuffer().asCharBuffer();
-            } catch (IOException ex) {
+                try {
+                    br = storage.getReadBuffer(toByteIndex(start), toByteIndex(size));
+                    buff = br.getBuffer().asCharBuffer();
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                if (buff == null) {
+                    break;
+                }
+                if (regExp) {
+                    if (this.pattern == null) {
+                        this.pattern = matchCase
+                                ? Pattern.compile(pattern)
+                                : Pattern.compile(pattern,
+                                Pattern.CASE_INSENSITIVE);
+                    }
+                    Matcher matcher = this.pattern.matcher(buff);
+                    if (matcher.find()) {
+                        return new int[]{start + matcher.start(), start + matcher.end()};
+                    }
+                } else {
+                    int idx = matchCase ? buff.toString().indexOf(pattern)
+                            : buff.toString().toLowerCase().indexOf(pattern);
+                    if (idx != -1) {
+                        return new int[]{start + idx, start + idx + pattern.length()};
+                    }
+                }
+                start += buff.length();
+            } finally {
                 if (br != null) {
                     br.releaseBuffer();
                 }
-                Exceptions.printStackTrace(ex);
             }
-            if (buff == null) {
-                if (br != null) {
-                    br.releaseBuffer();
-                }
-                break;
-            }
-            if (regExp) {
-                if (this.pattern == null) {
-                    this.pattern =  matchCase ? Pattern.compile(pattern) : Pattern.compile(pattern, Pattern.CASE_INSENSITIVE);
-                }
-                Matcher matcher = this.pattern.matcher(buff);
-                if (matcher.find()) {
-                    br.releaseBuffer();
-                    return new int[]{start + matcher.start(), start + matcher.end()};
-                }
-            } else {
-                int idx = matchCase ? buff.toString().indexOf(pattern)
-                        : buff.toString().toLowerCase().indexOf(pattern);
-                if (idx != -1) {
-                    br.releaseBuffer();
-                    return new int[] {start + idx, start + idx + pattern.length()};
-                }
-            }
-            start += buff.length();
-            br.releaseBuffer();
         }
         return null;
     }
@@ -953,46 +974,45 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
                 break;
             }
             BufferResource<ByteBuffer> br = null;
-            CharBuffer buff = null;
             try {
-                br = storage.getReadBuffer(toByteIndex(start), toByteIndex(end - start));
-                buff = br.getBuffer().asCharBuffer();
-            } catch (IOException ex) {
+                CharBuffer buff = null;
+                try {
+                    br = storage.getReadBuffer(toByteIndex(start), toByteIndex(end - start));
+                    buff = br.getBuffer().asCharBuffer();
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                if (buff == null) {
+                    break;
+                }
+                if (regExp) {
+                    if (this.pattern == null) {
+                        this.pattern = matchCase
+                                ? Pattern.compile(pattern)
+                                : Pattern.compile(pattern, Pattern.CASE_INSENSITIVE);
+                    }
+                    Matcher matcher = this.pattern.matcher(buff);
+                    int mStart = -1;
+                    int mEnd = -1;
+                    while (matcher.find()) {
+                        mStart = matcher.start();
+                        mEnd = matcher.end();
+                    }
+                    if (mStart != -1) {
+                        return new int[]{start + mStart, start + mEnd};
+                    }
+                } else {
+                    int idx = matchCase ? buff.toString().lastIndexOf(pattern)
+                            : buff.toString().toLowerCase().lastIndexOf(pattern);
+                    if (idx != -1) {
+                        return new int[]{start + idx, start + idx + pattern.length()};
+                    }
+                }
+            } finally {
                 if (br != null) {
                     br.releaseBuffer();
                 }
-                Exceptions.printStackTrace(ex);
             }
-            if (buff == null) {
-                if (br != null) {
-                    br.releaseBuffer();
-                }
-                break;
-            }
-            if (regExp) {
-                if (this.pattern == null) {
-                    this.pattern =  matchCase ? Pattern.compile(pattern) : Pattern.compile(pattern, Pattern.CASE_INSENSITIVE);
-                }
-                Matcher matcher = this.pattern.matcher(buff);
-                int mStart = -1;
-                int mEnd = -1;
-                while (matcher.find()) {
-                    mStart = matcher.start();
-                    mEnd = matcher.end();
-                }
-                if (mStart != -1) {
-                    br.releaseBuffer();
-                    return new int[]{start + mStart, start + mEnd};
-                }
-            } else {
-                int idx = matchCase ? buff.toString().lastIndexOf(pattern)
-                        : buff.toString().toLowerCase().lastIndexOf(pattern);
-                if (idx != -1) {
-                    br.releaseBuffer();
-                    return new int[] {start + idx, start + idx + pattern.length()};
-                }
-            }
-            br.releaseBuffer();
         }
         return null;
     }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,51 +34,51 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- */
-package org.netbeans.modules.refactoring.java.ui;
-
-import org.netbeans.modules.refactoring.java.ui.JavaActionsImplementationFactory;
-import org.openide.awt.ActionID;
-import org.openide.awt.ActionReference;
-import org.openide.awt.ActionRegistration;
-import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
-
-/** Action that invokes Pull Up refactoring.
  *
- * @author Jan Becicka
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-@ActionID(id = "org.netbeans.modules.refactoring.java.api.ui.PullUpAction", category = "Refactoring")
-@ActionRegistration(displayName = "#LBL_PullUp_Action")
-@ActionReference(path = "Editors/text/x-java/RefactoringActions" , name = "PullUpAction", position = 500)
-public class PullUpAction extends JavaRefactoringGlobalAction {
 
-    /**
-     * Creates a new instance of PullUpAction
-     */
-    public PullUpAction() {
-        super(NbBundle.getMessage(PullUpAction.class, "LBL_PullUp_Action"), null);
-        putValue("noIconInMenu", Boolean.TRUE); // NOI18N
-    }
-    
-    @Override
-    public final void performAction(Lookup context) {
-        JavaActionsImplementationFactory.doPullUp(context);
-    }
-    
-    @Override
-    public org.openide.util.HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
+package org.netbeans.modules.maven.queries;
+
+import java.io.File;
+import java.net.URL;
+import java.util.prefs.Preferences;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.NbPreferences;
+
+/**
+ * Utility to maintain sources and Javadoc associated with JARs outside the repo (#205649).
+ */
+class SourceJavadocByHash {
+
+    private static Preferences node(boolean javadoc) {
+        return NbPreferences.forModule(SourceJavadocByHash.class).node(javadoc ? "attachedJavadoc" : "attachedSource");
     }
 
-    @Override
-    protected boolean asynchronous() {
-        return false;
+    public static void register(@NonNull URL root, @NonNull File result, boolean javadoc) {
+        node(javadoc).put(root.toString(), result.getAbsolutePath());
     }
 
-    @Override
-    protected boolean enable(Lookup context) {
-        return JavaActionsImplementationFactory.canPullUp(context);
+    public static @CheckForNull File find(@NonNull URL root, boolean javadoc) {
+        String k = root.toString();
+        Preferences n = node(javadoc);
+        String v = n.get(k, null);
+        if (v == null) {
+            return null;
+        }
+        File f = FileUtil.normalizeFile(new File(v));
+        if (f.isFile()) {
+            return f;
+        } else {
+            n.remove(k);
+            return null;
+        }
     }
+
+    private SourceJavadocByHash() {}
+
 }

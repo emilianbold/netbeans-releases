@@ -78,7 +78,6 @@ public class J2eeMavenSourcesImpl implements Sources {
     
     private final Object lock = new Object();
     private final Project project;
-    private final NbMavenProject mavenproject;
     private final List<ChangeListener> listeners;
     
     private SourceGroup webDocSrcGroup;
@@ -86,7 +85,6 @@ public class J2eeMavenSourcesImpl implements Sources {
     
     public J2eeMavenSourcesImpl(Project project) {
         this.project = project;
-        this.mavenproject = project.getLookup().lookup(NbMavenProject.class);
         this.listeners = new ArrayList<ChangeListener>();
         
         NbMavenProject.addPropertyChangeListener(project, new PropertyChangeListener() {
@@ -103,6 +101,7 @@ public class J2eeMavenSourcesImpl implements Sources {
     private void checkChanges(boolean synchronous) {
         boolean changed = false;
         synchronized (lock) {
+            NbMavenProject mavenproject = project.getLookup().lookup(NbMavenProject.class);
             MavenProject mp = mavenproject.getMavenProject();
             FileObject fo = null;
             if (mp != null) {
@@ -157,7 +156,7 @@ public class J2eeMavenSourcesImpl implements Sources {
     }
     
     private SourceGroup[] createWebDocRoot() {
-        FileObject folder = FileUtilities.convertURItoFileObject(mavenproject.getWebAppDirectory());
+        FileObject folder = FileUtilities.convertURItoFileObject(project.getLookup().lookup(NbMavenProject.class).getWebAppDirectory());
         SourceGroup grp = null;
         synchronized (lock) {
             checkWebDocGroupCache(folder);

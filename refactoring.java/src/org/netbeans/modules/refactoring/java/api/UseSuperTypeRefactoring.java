@@ -126,9 +126,11 @@ public final class UseSuperTypeRefactoring extends AbstractRefactoring{
         try{
             javaSrc.runUserActionTask(new CancellableTask<CompilationController>() {
                 
+                @Override
                 public void cancel() {
                 }
                 
+                @Override
                 public void run(CompilationController complController) throws IOException {
                     
                     complController.toPhase(Phase.ELEMENTS_RESOLVED);
@@ -203,6 +205,7 @@ public final class UseSuperTypeRefactoring extends AbstractRefactoring{
     //Compares two types alphabetically based on their fully qualified name
     private static class TypeMirrorComparator implements Comparator<TypeMirror>{
 
+        @Override
         public int compare(TypeMirror type1, TypeMirror type2) {
             return type1.toString().compareTo(type2.toString());
         }

@@ -151,6 +151,6 @@ public class GroupGrammarElement extends GrammarElement {
 
     @Override
     public String toString() {
-        return String.format("[%s%s]", getType().name().charAt(0), index); //NOI18N
+        return new StringBuilder().append('[').append(getType().name().charAt(0)).append(index).append(']').toString(); //NOI18N
     }
 }

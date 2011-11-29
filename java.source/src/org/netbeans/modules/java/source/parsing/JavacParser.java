@@ -695,6 +695,8 @@ public class JavacParser extends Parser {
         options.add("-g:vars");  // NOI18N, Make the compiler to maintain local variables table
         options.add("-source");  // NOI18N
         options.add(validatedSourceLevel.name);
+        options.add("-XDdiags=-source");  // NOI18N
+        options.add("-XDdiagsFormat=%L%m|%L%m|%L%m");  // NOI18N
         boolean aptEnabled = aptUtils != null && aptUtils.aptEnabledOnScan() && (backgroundCompilation || aptUtils.aptEnabledInEditor())
                 && !ClasspathInfoAccessor.getINSTANCE().getCachedClassPath(cpInfo, PathKind.SOURCE).entries().isEmpty();
         Collection<? extends Processor> processors = null;
