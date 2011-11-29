@@ -354,7 +354,7 @@ public class LuceneIndex implements Index {
                 memDir = null;
             }
             if (optimize) {
-                out.optimize(false);
+                out.optimize();
             }
         } catch (RuntimeException e) {
             throw Exceptions.attachMessage(e, "Lucene Index Folder: " + dirCache.folder.getAbsolutePath());
@@ -720,6 +720,9 @@ public class LuceneIndex implements Index {
 
 
         synchronized void refreshReader() throws IOException {
+            if (IndexWriter.isLocked(fsDir)) {
+                IndexWriter.unlock(fsDir);
+            }
             try {
                 if (cachePolicy.hasMemCache()) {
                     close(false);
