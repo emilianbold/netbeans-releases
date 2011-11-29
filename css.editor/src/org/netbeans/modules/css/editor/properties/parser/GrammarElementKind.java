@@ -39,31 +39,14 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.editor.module.main;
-
-import org.netbeans.modules.parsing.spi.ParseException;
+package org.netbeans.modules.css.editor.properties.parser;
 
 /**
  *
- * @author mfukala@netbeans.org
+ * @author marekfukala
  */
-public class ListsAndCountersModuleTest extends CssModuleTestBase {
-
-    public ListsAndCountersModuleTest(String testName) {
-        super(testName);
-    }
-
-    public void testProperties() {
-        assertPropertyDeclaration("list-style: upper-roman inside ");
-        assertPropertyDeclaration("list-style: circle outside");
-        assertPropertyDeclaration("list-style: lower-alpha");
-
-        assertPropertyDeclaration("list-style-image: url(\"http://www.example.com/ellipse.png\")");
-
-    }
-
-    public void testMarkerPseudoElementCompletion() throws ParseException {
-        checkCC("div::| ", arr("marker"), Match.CONTAINS);
-        checkCC("li::mar| ", arr("marker"), Match.CONTAINS);
-    }
+public enum GrammarElementKind {
+    
+    VALUE, GROUP
+    
 }

@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.refactoring.spi;
 
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
+import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 
 /**
  *
@@ -62,14 +63,16 @@ public interface CsmRefactoringNameProvider {
      * adjust new text for reference to be used as replacement text.
      * @param ref reference to be refactored
      * @param newText current calculated text to adjust if needed
+     * @param refactoring current refactoring
      * @return adjusted new text or null if no name adjusting done by provider
      */
-    public String getReplaceText(CsmReference ref, String newText);
+    public String getReplaceText(CsmReference ref, String newText, AbstractRefactoring refactoring);
 
     /**
      * provides rename description.
      * @param ref reference to be refactored
+     * @param refactoring current refactoring
      * @return description or null if not known by this ref
      */
-    public String getReplaceDescription(CsmReference ref);
+    public String getReplaceDescription(CsmReference ref, AbstractRefactoring refactoring);
 }
