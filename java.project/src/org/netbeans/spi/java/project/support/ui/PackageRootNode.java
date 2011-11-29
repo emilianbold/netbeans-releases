@@ -57,6 +57,7 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.Action;
 import javax.swing.Icon;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.openide.actions.FileSystemAction;
@@ -101,7 +102,7 @@ import org.openidex.search.Utils;
  */
 final class PackageRootNode extends AbstractNode implements Runnable, FileStatusListener {
 
-    static Image PACKAGE_BADGE = ImageUtilities.loadImage("org/netbeans/spi/java/project/support/ui/packageBadge.gif"); // NOI18N
+    static final @StaticResource String PACKAGE_BADGE = "org/netbeans/spi/java/project/support/ui/packageBadge.gif";
     static final RequestProcessor PKG_VIEW_RP = new RequestProcessor(PackageRootNode.class.getName(),1);
     private static Action actions[]; 
         
@@ -363,7 +364,7 @@ final class PackageRootNode extends AbstractNode implements Runnable, FileStatus
         if ( icon == null ) {
             image = opened ? getDataFolderNodeDelegate().getOpenedIcon( type ) : 
                              getDataFolderNodeDelegate().getIcon( type );
-            image = ImageUtilities.mergeImages(image, PACKAGE_BADGE, 7, 7);
+            image = ImageUtilities.mergeImages(image, ImageUtilities.loadImage(PACKAGE_BADGE), 7, 7);
         }
         else {
             image = ImageUtilities.icon2Image(icon);
