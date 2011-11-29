@@ -110,6 +110,8 @@ public class ArchetypeWizards {
     /**
      * Wizard iterator using a predetermined archetype.
      * @since 2.28
+     * @see TemplateRegistration
+     * @see #TEMPLATE_FOLDER
      */
     public static WizardDescriptor.InstantiatingIterator<?> definedArchetype(String groupId, String artifactId, String version, @NullAllowed String repository) {
         Archetype arch = new Archetype();
