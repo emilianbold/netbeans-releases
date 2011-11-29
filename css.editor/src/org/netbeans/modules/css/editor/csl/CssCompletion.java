@@ -241,7 +241,7 @@ public class CssCompletion implements CodeCompletionHandler {
     private List<CompletionProposal> wrapPropertyValues(CompletionContext context,
             String prefix,
             Property propertyDescriptor,
-            Collection<GrammarElement> props,
+            Collection<ValueGrammarElement> props,
             int anchor,
             boolean addSemicolon,
             boolean addSpaceBeforeItem,
@@ -334,10 +334,10 @@ public class CssCompletion implements CodeCompletionHandler {
         return filtered;
     }
 
-    private Collection<GrammarElement> filterElements(Collection<GrammarElement> values, String propertyNamePrefix) {
+    private Collection<ValueGrammarElement> filterElements(Collection<ValueGrammarElement> values, String propertyNamePrefix) {
         propertyNamePrefix = propertyNamePrefix.toLowerCase();
-        List<GrammarElement> filtered = new ArrayList<GrammarElement>();
-        for (GrammarElement value : values) {
+        List<ValueGrammarElement> filtered = new ArrayList<ValueGrammarElement>();
+        for (ValueGrammarElement value : values) {
             if (value.toString().toLowerCase().startsWith(propertyNamePrefix)) {
                 filtered.add(value);
             }
@@ -912,9 +912,9 @@ public class CssCompletion implements CodeCompletionHandler {
 
                 PropertyValue propVal = new PropertyValue(prop, expressionText);
 
-                Collection<GrammarElement> alts = propVal.alternatives();
+                Collection<ValueGrammarElement> alts = propVal.getAlternatives();
 
-                Collection<GrammarElement> filteredByPrefix = filterElements(alts, prefix);
+                Collection<ValueGrammarElement> filteredByPrefix = filterElements(alts, prefix);
 
                 int completionItemInsertPosition = prefix.trim().length() == 0
                         ? context.getCaretOffset()
@@ -935,7 +935,7 @@ public class CssCompletion implements CodeCompletionHandler {
 
                 completionProposals.addAll(wrapPropertyValues(context,
                         prefix,
-                        prop.getPropertyDescriptor(),
+                        prop.getProperty(),
                         filteredByPrefix,
                         completionItemInsertPosition,
                         false,
@@ -951,6 +951,7 @@ public class CssCompletion implements CodeCompletionHandler {
 
         } else if (nodeType == NodeType.term
                 || nodeType == NodeType.expr
+                || nodeType == NodeType.operator
                 || (nodeType == NodeType.error
                 && node.parent().type() == NodeType.declaration)) {
             //value cc with prefix
@@ -992,19 +993,22 @@ public class CssCompletion implements CodeCompletionHandler {
 
             Node property = result[0];
 
-            Property propertyDescriptor = CssModuleSupport.getProperty(property.image().toString());
-            if (propertyDescriptor == null) {
-                return;
+            String propertyName = property.image().toString();
+            PropertyModel propertyModel = CssModuleSupport.getPropertyModel(propertyName);
+            if(propertyModel == null) {
+                return ;
             }
-
-            String expressionText;
-            if (nodeType == NodeType.term) {
-                Node expression = node.parent();
-                expressionText = expression.image().toString();
-            } else {
-                //error skip decl - no expression to parse
-                expressionText = "";
-            }
+            
+            //text from the node start to the embedded anchor offset (=embedded caret offset - prefix length)
+            
+            Node expressionNode = 
+                    (nodeType == NodeType.term || nodeType == NodeType.operator) 
+                    ? node.parent() 
+                    : node;
+            
+            String expressionText = context.getSnapshot().getText().subSequence(
+                    expressionNode.from(), 
+                    context.getEmbeddedAnchorOffset()).toString();
 
             //use just the current line, if the expression spans to multiple
             //lines it is likely because of parsing error
@@ -1013,12 +1017,11 @@ public class CssCompletion implements CodeCompletionHandler {
                 expressionText = expressionText.substring(0, eolIndex);
             }
 
-            PropertyModel propertyModel = CssModuleSupport.getPropertyModel(propertyDescriptor.getName());
             PropertyValue propVal = new PropertyValue(propertyModel, expressionText);
 
-            Collection<GrammarElement> alts = propVal.alternatives();
+            Collection<ValueGrammarElement> alts = propVal.getAlternatives();
 
-            Collection<GrammarElement> filteredByPrefix = filterElements(alts, prefix);
+            Collection<ValueGrammarElement> filteredByPrefix = filterElements(alts, prefix);
 
             int completionItemInsertPosition = prefix.trim().length() == 0
                     ? context.getCaretOffset()
@@ -1047,7 +1050,7 @@ public class CssCompletion implements CodeCompletionHandler {
 
             completionProposals.addAll(wrapPropertyValues(context,
                     prefix,
-                    propertyDescriptor,
+                    propertyModel.getProperty(),
                     filteredByPrefix,
                     completionItemInsertPosition,
                     false,

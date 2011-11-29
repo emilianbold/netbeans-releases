@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.css.editor.properties.parser;
 
+import java.util.Collection;
+import java.util.Iterator;
 import org.netbeans.modules.css.editor.module.spi.Property;
 
 /**
@@ -51,22 +53,55 @@ import org.netbeans.modules.css.editor.module.spi.Property;
 public class PropertyModel {
     
     private GroupGrammarElement values;
-    private Property pd;
+    private Collection<Property> properties;
+    private String grammar;
+    private String propertyName;
     
     
-    public PropertyModel(Property pd) {
-        this.pd = pd;
+    public PropertyModel(String propertyName, Collection<Property> properties) {
+        assert !properties.isEmpty();
+        this.propertyName = propertyName;
+        this.properties = properties;
     }
     
-    public Property getPropertyDescriptor() {
-        return pd;
+    public Collection<Property> getProperties() {
+        return properties;
+    }
+    
+    public Property getProperty() {
+        return properties.iterator().next();
     }
         
     public synchronized GroupGrammarElement values() {
         if(values == null) {
-            values = GrammarParser.parse(pd.getValueGrammar(), pd.getName());
+            values = GrammarParser.parse(getGrammar(), propertyName);
         } 
         return values;
     }    
+    
+    public synchronized String getGrammar() {
+        if(grammar == null) {
+            if(properties.size() == 1) {
+                return getProperty().getValueGrammar(); //nothing to merge
+            }
+            StringBuilder sb = new StringBuilder();
+            //the resulting grammar is a set of all property grammars
+            for(Iterator<Property> i = getProperties().iterator(); i.hasNext();) {
+                Property p = i.next();
+                sb.append(" [ ");
+                sb.append(p.getValueGrammar());
+                sb.append(" ] ");
+                if(i.hasNext()) {
+                    sb.append(" | "); //NOI18N
+                }
+            }
+            grammar = sb.toString();
+        }
+        return grammar;
+    }
+
+    public String getPropertyName() {
+        return propertyName;
+    }
     
 }

@@ -60,6 +60,7 @@ import java.util.Enumeration;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import org.openide.util.Enumerations;
 import org.openide.util.UserQuestionException;
@@ -1056,6 +1057,42 @@ public abstract class FileObject extends Object implements Serializable {
         }
 
         return true;
+    }
+
+    static final String REMOVE_WRITABLES_ATTR = "removeWritables";
+
+    /**
+     * Checks whether this file can be reverted to a pristine state.
+     * @return whether {@link #revert} might do something
+     * @since 7.55
+     */
+    public final boolean canRevert() {
+        return getAttribute(REMOVE_WRITABLES_ATTR) instanceof Callable<?>;
+    }
+
+    /**
+     * Revert this file to a pristine state.
+     * Generally only meaningful for files on the system filesystem (layers + user directory):
+     * if the file is defined in a layer but modified in the user directory, it is reset;
+     * if it is defined only in the user directory, it is deleted.
+     * If {@link #canRevert} is false, does nothing.
+     * Note that while content can be reset, it may not be possible to reset attributes.
+     * <p>Implementors: for historical reasons this method checks {@link #getAttribute}
+     * for a special attribute named {@code removeWritables} which must be of type
+     * {@link Callable Callable<Void>}. If present, the file is considered modified.
+     * @since 7.55
+     */
+    public final void revert() throws IOException {
+        Object v = getAttribute(REMOVE_WRITABLES_ATTR);
+        if (v instanceof Callable<?>) {
+            try {
+                ((Callable<?>) v).call();
+            } catch (IOException x) {
+                throw x;
+            } catch (Exception x) {
+                throw new IOException(x);
+            }
+        }
     }
 
     /** Should check for external modifications. For folders it should reread

@@ -82,11 +82,17 @@ public class AdditionalWebProvider implements EjbJarProvider, EjbJarsInProject {
 
     @Override
     public EjbJar findEjbJar(FileObject file) {
-        return webEjbJarProvider.findEjbJar(file);
+        if (webEjbJarProvider != null) {
+            return webEjbJarProvider.findEjbJar(file);
+        }
+        return null;
     }
 
     @Override
     public EjbJar[] getEjbJars() {
-        return ejbJarsInProject.getEjbJars();
+        if (ejbJarsInProject != null) {
+            return ejbJarsInProject.getEjbJars();
+        }
+        return null;
     }
 }

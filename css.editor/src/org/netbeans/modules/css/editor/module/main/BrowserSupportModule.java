@@ -54,6 +54,7 @@ import org.netbeans.modules.css.editor.module.spi.HelpResolver;
 import org.netbeans.modules.css.editor.module.spi.Property;
 import org.netbeans.modules.css.editor.module.spi.PropertySupportResolver;
 import org.netbeans.modules.css.editor.module.spi.PropertySupportResolver.Factory;
+import org.netbeans.modules.css.editor.properties.parser.PropertyModel;
 import org.openide.util.NbBundle;
 
 /**
@@ -105,10 +106,10 @@ public class BrowserSupportModule extends CssEditorModule implements CssModule {
                 if(property.getName().startsWith(getBrowser().getVendorSpecificPropertyPrefix())) {
                     //try to delegate to the corresponding standard property help
                     String standardPropertyName = property.getName().substring(getBrowser().getVendorSpecificPropertyPrefix().length());
-                    Property standardProperty = CssModuleSupport.getProperty(standardPropertyName);
-                    if(standardProperty != null) {
+                    PropertyModel standardPropertyModel = CssModuleSupport.getPropertyModel(standardPropertyName);
+                    if(standardPropertyModel != null) {
                         StandardPropertiesHelpResolver resolver = new StandardPropertiesHelpResolver();
-                        String help = resolver.getHelp(standardProperty);
+                        String help = resolver.getHelp(standardPropertyModel.getProperty());
                         if(help != null) {
                             return help;
                         }

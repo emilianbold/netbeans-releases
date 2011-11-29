@@ -39,31 +39,68 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.editor.module.main;
+package org.netbeans.lib.profiler.results;
 
-import org.netbeans.modules.parsing.spi.ParseException;
+import java.util.ResourceBundle;
 
 /**
  *
- * @author mfukala@netbeans.org
+ * @author Jiri Sedlacek
  */
-public class ListsAndCountersModuleTest extends CssModuleTestBase {
-
-    public ListsAndCountersModuleTest(String testName) {
-        super(testName);
+public final class FilterSortSupport {
+    
+    public static final String FILTERED_OUT_LBL;
+    
+    static {
+        ResourceBundle messages = ResourceBundle.getBundle("org.netbeans.lib.profiler.results.Bundle"); // NOI18N
+        FILTERED_OUT_LBL = messages.getString("FilteringSupport_FilteredOutLbl"); //NOI18N
     }
-
-    public void testProperties() {
-        assertPropertyDeclaration("list-style: upper-roman inside ");
-        assertPropertyDeclaration("list-style: circle outside");
-        assertPropertyDeclaration("list-style: lower-alpha");
-
-        assertPropertyDeclaration("list-style-image: url(\"http://www.example.com/ellipse.png\")");
-
+    
+    public static boolean passesFilter(Configuration info, String nodeName) {
+        return passesFilter(info.getFilterString(), info.getFilterType(), nodeName);
     }
-
-    public void testMarkerPseudoElementCompletion() throws ParseException {
-        checkCC("div::| ", arr("marker"), Match.CONTAINS);
-        checkCC("li::mar| ", arr("marker"), Match.CONTAINS);
+    
+    public static boolean passesFilter(String filter, int filterType, String nodeName) {
+        if (filter == null || filter.isEmpty()) return true;
+        return !nodeName.contains(filter);
     }
+    
+    
+    public static final class Configuration {
+        
+        private int sortBy;
+        private boolean sortOrder;
+        private String filterString;
+        private int filterType;
+        
+        
+        public int getSortBy() {
+            return sortBy;
+        }
+        
+        public boolean getSortOrder() {
+            return sortOrder;
+        }
+        
+        public String getFilterString() {
+            return filterString;
+        }
+        
+        public int getFilterType() {
+           return filterType;
+        }
+        
+        
+        public void setSortInfo(int sortBy, boolean sortOrder) {
+            this.sortBy = sortBy;
+            this.sortOrder = sortOrder;
+        }
+        
+        public void setFilterInfo(String filterString, int filterType) {
+            this.filterString = filterString;
+            this.filterType = filterType;
+        }
+        
+    }
+   
 }

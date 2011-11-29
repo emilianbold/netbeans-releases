@@ -46,17 +46,13 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
 import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
-import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
-import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
-import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 
 /**
  * Misc. utiliy finctions
@@ -64,7 +60,6 @@ import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
  */
 public class RemoteUtil {
 
-    private static final Map<ExecutionEnvironment, String> homeDirs = new LinkedHashMap<ExecutionEnvironment, String>();
     public static final Logger LOGGER = Logger.getLogger("cnd.remote.logger"); //NOI18N
 
     public static class PrefixedLogger {
@@ -85,50 +80,6 @@ public class RemoteUtil {
     }
 
     private RemoteUtil() {}
-
-//    public static void log(String prefix, Level level, String format, Object... args) {
-//        if (LOGGER.isLoggable(level)) {
-//            String text = String.format(format, args);
-//            LOGGER.log(level, String.format("%s: ", text));
-//        }
-//    }
-
-    /** 
-     * Returns home directory for the given host
-     * NB: this is a LONG RUNNING method - never call from UI thread
-     */
-    public static String getHomeDirectory(ExecutionEnvironment execEnv) {
-        CndUtils.assertNonUiThread();
-        String dir = null;
-        // it isn't worth doing smart synchronization here
-        synchronized(homeDirs) {
-            // we cache nulls as well
-            if (homeDirs.containsKey(execEnv)) {
-                return homeDirs.get(execEnv);
-            }
-        }
-        try { // FIXUP: remove this try/catch as soon as in NPE in execution is fixed
-            if (Boolean.getBoolean("cnd.emulate.null.home.dir")) { // to emulate returning null //NOI18N
-                return null;
-            }
-            // NB: it's important that /bin/pwd is called since it always reports resolved path
-            // while shell's pwd result depend on shell
-            ExitStatus res = ProcessUtils.execute(execEnv, "sh", "-c", "cd; /bin/pwd"); // NOI18N
-            if (res.isOK()) {
-                String s = res.output;
-                if (HostInfoProvider.fileExists(execEnv, s)) {
-                    dir = s;
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        synchronized(homeDirs) {
-            // we cache nulls as well
-            homeDirs.put(execEnv, dir);            
-        }
-        return dir;
-    }
 
     /**
      * FIXUP: * Need this hack for Cloud stuff:

@@ -125,14 +125,14 @@ public class CssAnalyser {
                             //we are no able to identify the templating semantic
                             if (!Css3Utils.containsGeneratedCode(valueImage)) {
                                 PropertyValue pv = new PropertyValue(property, valueImage);
-                                if (!pv.success()) {
+                                if (!pv.isResolved()) {
                                     String errorMsg = null;
                                     if (pv instanceof CustomErrorMessageProvider) {
                                         errorMsg = ((CustomErrorMessageProvider) pv).customErrorMessage();
                                     }
 
                                     //error in property 
-                                    String unexpectedToken = pv.left().get(pv.left().size() - 1);
+                                    String unexpectedToken = pv.getUnresolvedTokens().get(pv.getUnresolvedTokens().size() - 1);
 
                                     if(isNonCss21CompatiblePropertyValue(unexpectedToken)) {
                                         return false;

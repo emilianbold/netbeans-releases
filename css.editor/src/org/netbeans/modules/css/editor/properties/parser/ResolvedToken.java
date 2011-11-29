@@ -39,31 +39,61 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.editor.module.main;
-
-import org.netbeans.modules.parsing.spi.ParseException;
+package org.netbeans.modules.css.editor.properties.parser;
 
 /**
  *
- * @author mfukala@netbeans.org
+ * @author marekfukala
  */
-public class ListsAndCountersModuleTest extends CssModuleTestBase {
+public class ResolvedToken {
+    
+    private String token;
+    private GrammarElement grammarElement;
 
-    public ListsAndCountersModuleTest(String testName) {
-        super(testName);
+    public ResolvedToken(String token, GrammarElement GrammarElement) {
+        this.token = token;
+        this.grammarElement = GrammarElement;
     }
 
-    public void testProperties() {
-        assertPropertyDeclaration("list-style: upper-roman inside ");
-        assertPropertyDeclaration("list-style: circle outside");
-        assertPropertyDeclaration("list-style: lower-alpha");
-
-        assertPropertyDeclaration("list-style-image: url(\"http://www.example.com/ellipse.png\")");
-
+    public String token() {
+        return token;
     }
 
-    public void testMarkerPseudoElementCompletion() throws ParseException {
-        checkCC("div::| ", arr("marker"), Match.CONTAINS);
-        checkCC("li::mar| ", arr("marker"), Match.CONTAINS);
+    public GrammarElement getGrammarElement() {
+        return grammarElement;
     }
+
+    @Override
+    public String toString() {
+        return grammarElement.path();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final ResolvedToken other = (ResolvedToken) obj;
+        if ((this.token == null) ? (other.token != null) : !this.token.equals(other.token)) {
+            return false;
+        }
+        if (this.grammarElement != other.grammarElement && (this.grammarElement == null || !this.grammarElement.equals(other.grammarElement))) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 97 * hash + (this.token != null ? this.token.hashCode() : 0);
+        hash = 97 * hash + (this.grammarElement != null ? this.grammarElement.hashCode() : 0);
+        return hash;
+    }
+    
+    
+    
 }

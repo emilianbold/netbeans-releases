@@ -48,6 +48,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -85,7 +86,8 @@ public class CssModuleSupport {
 
     private static final Logger LOGGER = Logger.getLogger(CssModuleSupport.class.getSimpleName());
     //TODO possibly add support for refreshing the cached data based on css module changes in the lookup
-    private static final AtomicReference<Map<String, Property>> PROPERTIES = new AtomicReference<Map<String, Property>>();
+    private static final AtomicReference<Map<String, Collection<Property>>> PROPERTIES_MAP = new AtomicReference<Map<String, Collection<Property>>>();
+    private static final AtomicReference<Collection<Property>> PROPERTIES = new AtomicReference<Collection<Property>>();
     private static final Map<String, PropertyModel> PROPERTY_MODELS = new HashMap<String, PropertyModel>();
 
     public static Collection<? extends CssEditorModule> getModules() {
@@ -247,31 +249,59 @@ public class CssModuleSupport {
     }
 
     public static Collection<Property> getProperties() {
-        PROPERTIES.compareAndSet(null, loadProperties());
-        return PROPERTIES.get().values();
+        PROPERTIES.compareAndSet(null, createAllPropertiesCollection());
+        return PROPERTIES.get();
+    }
+    
+    /**
+     * @return map of property name to collection of Property impls.
+     */
+    public static Map<String, Collection<Property>> getPropertiesMap() {
+        PROPERTIES_MAP.compareAndSet(null, loadProperties());
+        return PROPERTIES_MAP.get();
+    }
+    
+    private static Collection<Property> createAllPropertiesCollection() {
+        Collection<Property> all = new LinkedList<Property>();
+        for(Collection<Property> props : getPropertiesMap().values()) {
+            all.addAll(props);
+        }
+        return all;
     }
 
-    private static Map<String, Property> loadProperties() {
-        Map<String, Property> all = new HashMap<String, Property>();
+    //property name to set of Property impls - one name may be mapped to more properties
+    private static Map<String, Collection<Property>> loadProperties() {
+        Map<String, Collection<Property>> all = new HashMap<String, Collection<Property>>();
         for (CssEditorModule module : getModules()) {
             for (Property pd : module.getProperties()) {
-                Property original = all.put(pd.getName(), pd);
-                if (original != null) {
-                    //TODO - add support for more property values for one property name
-                    //LOGGER.warning(String.format("Duplicate property %s found, offending css module: %s", pd.getName(), module));
+                String propertyName = pd.getName();
+                Collection<Property> props = all.get(propertyName);
+                if(props == null) {
+                    props = new LinkedList<Property>();
+                    all.put(propertyName, props);
                 }
+                if(!GrammarParser.isArtificialElementName(propertyName)) {
+                    //standart (visible) properties cannot be duplicated
+                    if(!props.isEmpty()) {
+                        LOGGER.warning(String.format("Duplicate property %s found, "
+                                + "offending css module: %s", pd.getName(), pd.getCssModule())); //NOI18N
+                        for(Property p : props) {
+                            LOGGER.warning(String.format("Existing property found"
+                                + " in css module: %s", p.getCssModule())); //NOI18N
+                        }
+                    }
+                }
+                props.add(pd);
             }
         }
         return all;
     }
 
-    public static Property getProperty(String propertyName) {
-        return getProperty(propertyName, false);
+    public static Collection<Property> getProperties(String propertyName) {
+        return getProperties(propertyName, false);
     }
     
-    public static Property getProperty(String propertyName, boolean allowToGetInvisibleProperties) {
-        PROPERTIES.compareAndSet(null, loadProperties());
-
+    public static Collection<Property> getProperties(String propertyName, boolean allowToGetInvisibleProperties) {
         //try to resolve the refered element name with the at-sign prefix so
         //the property appearance may contain link to appearance, which in fact
         //will be resolved as the @appearance property:
@@ -280,17 +310,17 @@ public class CssModuleSupport {
         //@appearance=...
         //
         StringBuilder sb = new StringBuilder().append(GrammarParser.INVISIBLE_PROPERTY_PREFIX).append(propertyName);
-        Property invisibleProperty = PROPERTIES.get().get(sb.toString());
+        Collection<Property> invisibleProperty = getPropertiesMap().get(sb.toString());
         
-        return allowToGetInvisibleProperties && invisibleProperty != null ? invisibleProperty : PROPERTIES.get().get(propertyName);
+        return allowToGetInvisibleProperties && invisibleProperty != null ? invisibleProperty : PROPERTIES_MAP.get().get(propertyName);
     }
 
     public static PropertyModel getPropertyModel(String name) {
         synchronized (PROPERTY_MODELS) {
             PropertyModel model = PROPERTY_MODELS.get(name);
             if (model == null) {
-                Property pd = getProperty(name);
-                model = pd != null ? new PropertyModel(pd) : null;
+                Collection<Property> properties = getProperties(name);
+                model = properties != null ? new PropertyModel(name, properties) : null;
                 PROPERTY_MODELS.put(name, model);
             }
             return model;
