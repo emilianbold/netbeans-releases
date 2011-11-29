@@ -318,6 +318,8 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
                         fileItem.addActionListener(menuListener);
                         fileItem.putClientProperty(TEMPLATE_PROPERTY, null);
                         menuItem.add(fileItem);
+                        // #205616 - need to refresh please wait node
+                        menuItem.getPopupMenu().pack();
                     }
                 });
             }
