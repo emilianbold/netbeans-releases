@@ -39,20 +39,33 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.hudson.php;
 
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.io.IOException;
+import java.util.List;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.hudson.php.support.Target;
 import org.netbeans.modules.hudson.spi.HudsonSCM;
 import org.netbeans.modules.hudson.spi.ProjectHudsonJobCreatorFactory;
 import org.netbeans.modules.hudson.spi.ProjectHudsonJobCreatorFactory.ConfigurationStatus;
 import org.netbeans.modules.hudson.spi.ProjectHudsonJobCreatorFactory.Helper;
 import org.netbeans.modules.hudson.spi.ProjectHudsonJobCreatorFactory.ProjectHudsonJobCreator;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
+import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -66,11 +79,13 @@ public class HudsonJobCreator extends JPanel implements ProjectHudsonJobCreator 
 
     private final PhpModule phpModule;
     private final HudsonSCM.Configuration scm;
+    private final List<Target> targets;
 
 
     public HudsonJobCreator(PhpModule phpModule) {
         this.phpModule = phpModule;
         scm = Helper.prepareSCM(FileUtil.toFile(phpModule.getProjectDirectory()));
+        targets = initComponents();
     }
 
     @Override
@@ -138,10 +153,83 @@ public class HudsonJobCreator extends JPanel implements ProjectHudsonJobCreator 
         return doc;
     }
 
+    private List<Target> initComponents() {
+        setLayout(new GridBagLayout());
+
+        List<Target> allTargets = Target.all();
+        int i = 0;
+        for (final Target target : allTargets) {
+            initTargetComponent(i++, target);
+        }
+        finishLayout(i++);
+        return allTargets;
+    }
+
+    @NbBundle.Messages("HudsonJobCreator.checkbox.a11y=Run Ant target: {0}")
+    private void initTargetComponent(final int row, final Target target) {
+        // checkbox
+        JCheckBox checkBox = new JCheckBox();
+        checkBox.setSelected(target.isSelected());
+        checkBox.setEnabled(target.isEnabled());
+        Mnemonics.setLocalizedText(checkBox, target.getTitleWithMnemonic());
+        checkBox.getAccessibleContext().setAccessibleDescription(Bundle.HudsonJobCreator_checkbox_a11y(target.getName()));
+        checkBox.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                target.setSelected(e.getStateChange() == ItemEvent.SELECTED);
+            }
+        });
+        // combo?
+        List<String> options = target.getOptions();
+        final JComboBox combo = options != null ? new JComboBox() : null;
+        if (combo != null) {
+            combo.setModel(new DefaultComboBoxModel(options.toArray(new String[options.size()])));
+            checkBox.addItemListener(new ItemListener() {
+                @Override
+                public void itemStateChanged(ItemEvent e) {
+                    combo.setEnabled(e.getStateChange() == ItemEvent.SELECTED);
+                }
+            });
+            combo.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    target.setSelectedOption((String) combo.getSelectedItem());
+                }
+            });
+        }
+        // placement
+        GridBagConstraints gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = row;
+        gridBagConstraints.anchor = GridBagConstraints.LINE_START;
+        if (combo != null) {
+            gridBagConstraints.insets = new Insets(3, 0, 0, 0);
+        }
+        add(checkBox, gridBagConstraints);
+        if (combo != null) {
+            gridBagConstraints = new GridBagConstraints();
+            gridBagConstraints.gridx = 1;
+            gridBagConstraints.gridy = row;
+            gridBagConstraints.insets = new Insets(2, 2, 0, 5);
+            add(combo, gridBagConstraints);
+        }
+    }
+
+    private void finishLayout(final int i) {
+        JLabel spaceHolder = new JLabel();
+        GridBagConstraints gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = i;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        add(spaceHolder, gridBagConstraints);
+    }
+
     //~ Inner classes
 
     @ServiceProvider(service=ProjectHudsonJobCreatorFactory.class, position=300)
     public static class Factory implements ProjectHudsonJobCreatorFactory {
+
         @Override
         public ProjectHudsonJobCreator forProject(Project project) {
             PhpModule phpModule = project.getLookup().lookup(PhpModule.class);
@@ -151,6 +239,7 @@ public class HudsonJobCreator extends JPanel implements ProjectHudsonJobCreator 
             }
             return new HudsonJobCreator(phpModule);
         }
+
     }
 
 }
