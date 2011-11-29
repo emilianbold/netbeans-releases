@@ -87,7 +87,7 @@ public final class JavaPluginUtils {
         }
         FileObject file = SourceUtils.getFile(el,info.getClasspathInfo());
         // RefactoringUtils.isFromLibrary already checked file for null
-        if (!RefactoringUtils.isElementInOpenProject(file)) {
+        if (!RefactoringUtils.isFileInOpenProject(file)) {
             preCheckProblem =new Problem(true, NbBundle.getMessage(
                     JavaPluginUtils.class,
                     "ERR_ProjectNotOpened",

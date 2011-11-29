@@ -100,6 +100,12 @@ public class RefactoringUtils {
     private static final Logger LOG = Logger.getLogger(RefactoringUtils.class.getName());
     private static final RequestProcessor RP = new RequestProcessor(RefactoringUtils.class.getName(), 1, false, false);
     
+    /**
+     * Get all overriding methods for given ExecutableElement
+     * @param e
+     * @param info
+     * @return
+     */
     public static Collection<ExecutableElement> getOverridenMethods(ExecutableElement e, CompilationInfo info) {
         return getOverridenMethods(e, info.getElementUtilities().enclosingTypeElement(e), info);
     }
@@ -189,16 +195,20 @@ public class RefactoringUtils {
         return result;
     }
 
+    /**
+     * 
+     * @param f
+     * @return true if f is java 
+     */
     public static boolean isJavaFile(FileObject f) {
         return JAVA_MIME_TYPE.equals(FileUtil.getMIMEType(f, JAVA_MIME_TYPE));
     }
 
-    public static boolean isElementInOpenProject(FileObject f) {
-        if (f==null)
-            return false;
-        Project p = FileOwnerQuery.getOwner(f);
-        return isOpenProject(p);
-    }
+    /**
+     * @param element
+     * @param info
+     * @return true if given element comes from library
+     */
     public static boolean isFromLibrary(Element element, ClasspathInfo info) {
         FileObject file = SourceUtils.getFile(element, info);
         if (file==null) {
@@ -208,6 +218,11 @@ public class RefactoringUtils {
         return FileUtil.getArchiveFile(file)!=null;
     }
 
+    /**
+     * is given name valid package name
+     * @param name
+     * @return
+     */
     public static boolean isValidPackageName(String name) {
         if (name.endsWith(".")) //NOI18N
             return false;
@@ -224,6 +239,11 @@ public class RefactoringUtils {
         return true;
     }
     
+    /**
+     * 
+     * @param f
+     * @return true if given file is in open project
+     */
     public static boolean isFileInOpenProject(FileObject file) {
         assert file != null;
         Project p = FileOwnerQuery.getOwner(file);
@@ -233,6 +253,11 @@ public class RefactoringUtils {
         return isOpenProject(p);
     }
     
+    /**
+     * Is given file on any source classpath?
+     * @param fo
+     * @return
+     */
     public static boolean isOnSourceClasspath(FileObject fo) {
         Project p = FileOwnerQuery.getOwner(fo);
         if (p==null) 
@@ -255,15 +280,30 @@ public class RefactoringUtils {
         //return ClassPath.getClassPath(fo, ClassPath.SOURCE)!=null;
     }
 
+    /**
+     * Is given file a root of source classpath?
+     * @param fo
+     * @return
+     */
     public static boolean isClasspathRoot(FileObject fo) {
         ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
         return cp != null ? fo.equals(cp.findOwnerRoot(fo)) : false;
     }
     
+    /**
+     * Is the given file "java" && in open projects && on source classpath?
+     * @param file
+     * @return
+     */
     public static boolean isRefactorable(FileObject file) {
         return file!=null && isJavaFile(file) && isFileInOpenProject(file) && isOnSourceClasspath(file);
     }
     
+    /**
+     * returns package name for given folder. Folder must be on source classpath
+     * @param folder
+     * @return 
+     */
     public static String getPackageName(FileObject folder) {
         assert folder.isFolder() : "argument must be folder";
         ClassPath cp = ClassPath.getClassPath(folder, ClassPath.SOURCE);
@@ -274,6 +314,11 @@ public class RefactoringUtils {
         return cp.getResourceName(folder, '.', false);
     }
     
+    /**
+     * get package name for given CompilationUnitTree
+     * @param unit
+     * @return 
+     */
     public static String getPackageName(CompilationUnitTree unit) {
         assert unit!=null;
         ExpressionTree name = unit.getPackageName();
@@ -284,6 +329,11 @@ public class RefactoringUtils {
         return name.toString();
     }
     
+    /**
+     * get package name for given url. 
+     * @param url
+     * @return
+     */
     public static String getPackageName(URL url) {
         File f = null;
         try {
@@ -329,6 +379,12 @@ public class RefactoringUtils {
         }
     }
     
+    /**
+     * 
+     * @param url
+     * @return
+     * @throws IOException
+     */
     public static FileObject getClassPathRoot(URL url) throws IOException {
         FileObject result = URLMapper.findFileObject(url);
         File f;
@@ -344,6 +400,12 @@ public class RefactoringUtils {
         return ClassPath.getClassPath(result, ClassPath.SOURCE).findOwnerRoot(result);
     }
     
+    /**
+     * Get all supertypes for given type
+     * @param type
+     * @param info
+     * @return
+     */
     public static Collection<TypeElement> getSuperTypes(TypeElement type, CompilationInfo info) {
         Collection<TypeElement> result = new HashSet<TypeElement>();
         LinkedList<TypeElement> l = new LinkedList<TypeElement>();
@@ -362,6 +424,13 @@ public class RefactoringUtils {
         return result;
     }
     
+    /**
+     * TODO: should be removed
+     * @param handle
+     * @return
+     * @deprecated
+     */
+    @Deprecated
     public static Collection<FileObject> getSuperTypesFiles(TreePathHandle handle) {
         try {
             SuperTypesTask ff;
@@ -373,6 +442,13 @@ public class RefactoringUtils {
         }    
     }
     
+    /**
+     * get supertypes of given types
+     * @param type
+     * @param info
+     * @param sourceOnly true if only types defined in open project should be searched
+     * @return 
+     */
     public static Collection<TypeElement> getSuperTypes(TypeElement type, CompilationInfo info, boolean sourceOnly) {
         if (!sourceOnly)
             return getSuperTypes(type, info);
