@@ -42,6 +42,7 @@
 package org.netbeans.modules.maven.j2ee.utils;
 
 import java.awt.event.ActionEvent;
+import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.logging.Level;
@@ -196,6 +197,23 @@ public class MavenProjectSupport {
                 NbBundle.getMessage(MavenProjectSupport.class, "MSG_LibProblem_Description"),
                 new ServerLibraryAction(project));
         return libProblem;
+    }
+    
+    public static boolean isWebSupported(Project project, String packaging) {
+        if ("war".equals(packaging)) { // NOI18N
+            return true;
+        }
+        // #179584
+        // if it is bundle packaging type but a valid "src/main/webapp" exists
+        // then provide lookup content as for web application so that code
+        // completion etc. works
+        if ("bundle".equals(packaging)) { // NOI18N
+            NbMavenProject proj = project.getLookup().lookup(NbMavenProject.class);
+            if (new File(proj.getWebAppDirectory()).exists()) {
+                return true;
+            }
+        }
+        return false;
     }
     
     /**
