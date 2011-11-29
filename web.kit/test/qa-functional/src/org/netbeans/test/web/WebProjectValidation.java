@@ -671,13 +671,27 @@ public class WebProjectValidation extends J2eeTestCase {
         int startCaretPos = eOperator.txtEditorPane().getCaretPosition();
         NavigatorOperator navigatorOperator = NavigatorOperator.invokeNavigator();
         assertNotNull(navigatorOperator);
-        JTreeOperator treeOperator = navigatorOperator.getTree();
+        final JTreeOperator treeOperator = navigatorOperator.getTree();
         TreeModel model = treeOperator.getModel();
         Object root = model.getRoot();
         assertNotNull(root);
-        if (root.toString() != null && root.toString().contains("Wait")) {
-            new EventTool().waitNoEvent(3000);
-        }
+        // wait until please wait node dismiss
+        treeOperator.waitState(new ComponentChooser() {
+
+            @Override
+            public boolean checkComponent(Component comp) {
+                Object root = treeOperator.getModel().getRoot();
+                if (root.toString() != null) {
+                    return !root.toString().contains("Wait");
+                }
+                return true;
+            }
+
+            @Override
+            public String getDescription() {
+                return "nodes initialized";
+            }
+        });
         dumpNode(model, root, 0);
         assertEquals(1, treeOperator.getChildCount(root));
         Object htmlChild = treeOperator.getChild(root, 0);//HTML

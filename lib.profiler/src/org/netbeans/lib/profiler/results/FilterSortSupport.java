@@ -39,71 +39,68 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.editor.module.main;
+package org.netbeans.lib.profiler.results;
 
-import java.net.URL;
-import org.netbeans.modules.css.editor.module.spi.Browser;
+import java.util.ResourceBundle;
 
 /**
  *
- * @author mfukala@netbeans.org
+ * @author Jiri Sedlacek
  */
-public class DefaultBrowser extends Browser {
-
-    private static final String DEFAULT_ICONS_LOCATION = "/org/netbeans/modules/css/resources/icons/"; //NOI18N
+public final class FilterSortSupport {
     
-    private String iconBase;
-    private String name, vendor, vendorSpecificPropertyId, renderingEngineId;
-    private URL active, inactive;
-
-    public DefaultBrowser(String name, String vendor, String renderingEngineId, String vendorSpecificPropertyPrefix, String iconBase) {
-        this.name = name;
-        this.vendor = vendor;
-        this.renderingEngineId = renderingEngineId;
-        this.vendorSpecificPropertyId = vendorSpecificPropertyPrefix;
-        this.iconBase = iconBase;
+    public static final String FILTERED_OUT_LBL;
+    
+    static {
+        ResourceBundle messages = ResourceBundle.getBundle("org.netbeans.lib.profiler.results.Bundle"); // NOI18N
+        FILTERED_OUT_LBL = messages.getString("FilteringSupport_FilteredOutLbl"); //NOI18N
     }
-
-    @Override
-    public String getName() {
-        return name;
+    
+    public static boolean passesFilter(Configuration info, String nodeName) {
+        return passesFilter(info.getFilterString(), info.getFilterType(), nodeName);
     }
-
-    @Override
-    public String getVendor() {
-        return vendor;
+    
+    public static boolean passesFilter(String filter, int filterType, String nodeName) {
+        if (filter == null || filter.isEmpty()) return true;
+        return !nodeName.contains(filter);
     }
-
-    @Override
-    public synchronized URL getActiveIcon() {
-        if(active == null) {
-            active = DefaultBrowser.class.getResource(
-                DEFAULT_ICONS_LOCATION + iconBase + ".png"); //NOI18N
+    
+    
+    public static final class Configuration {
+        
+        private int sortBy;
+        private boolean sortOrder;
+        private String filterString;
+        private int filterType;
+        
+        
+        public int getSortBy() {
+            return sortBy;
         }
-        return active;
-    }
-
-    @Override
-    public synchronized URL getInactiveIcon() {
-        if(inactive == null) {
-            inactive = DefaultBrowser.class.getResource(
-                DEFAULT_ICONS_LOCATION + iconBase + "-disabled.png"); //NOI18N
+        
+        public boolean getSortOrder() {
+            return sortOrder;
         }
-        return inactive;
+        
+        public String getFilterString() {
+            return filterString;
+        }
+        
+        public int getFilterType() {
+           return filterType;
+        }
+        
+        
+        public void setSortInfo(int sortBy, boolean sortOrder) {
+            this.sortBy = sortBy;
+            this.sortOrder = sortOrder;
+        }
+        
+        public void setFilterInfo(String filterString, int filterType) {
+            this.filterString = filterString;
+            this.filterType = filterType;
+        }
+        
     }
-
-    @Override
-    public String getDescription() {
-        return new StringBuilder().append(getVendor()).append(' ').append(getName()).toString();
-    }
-
-    @Override
-    public String getVendorSpecificPropertyId() {
-        return vendorSpecificPropertyId;
-    }
-
-    @Override
-    public String getRenderingEngineId() {
-        return renderingEngineId;
-    }
+   
 }

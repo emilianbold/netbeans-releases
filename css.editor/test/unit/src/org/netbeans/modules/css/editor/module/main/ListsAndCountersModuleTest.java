@@ -55,7 +55,7 @@ public class ListsAndCountersModuleTest extends CssModuleTestBase {
 
     public void testProperties() {
         assertPropertyDeclaration("list-style: upper-roman inside ");
-        assertPropertyDeclaration("list-style: circle outside)");
+        assertPropertyDeclaration("list-style: circle outside");
         assertPropertyDeclaration("list-style: lower-alpha");
 
         assertPropertyDeclaration("list-style-image: url(\"http://www.example.com/ellipse.png\")");

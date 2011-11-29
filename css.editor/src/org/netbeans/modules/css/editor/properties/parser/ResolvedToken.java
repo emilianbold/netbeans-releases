@@ -39,71 +39,61 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.editor.module.main;
-
-import java.net.URL;
-import org.netbeans.modules.css.editor.module.spi.Browser;
+package org.netbeans.modules.css.editor.properties.parser;
 
 /**
  *
- * @author mfukala@netbeans.org
+ * @author marekfukala
  */
-public class DefaultBrowser extends Browser {
-
-    private static final String DEFAULT_ICONS_LOCATION = "/org/netbeans/modules/css/resources/icons/"; //NOI18N
+public class ResolvedToken {
     
-    private String iconBase;
-    private String name, vendor, vendorSpecificPropertyId, renderingEngineId;
-    private URL active, inactive;
+    private String token;
+    private GrammarElement grammarElement;
 
-    public DefaultBrowser(String name, String vendor, String renderingEngineId, String vendorSpecificPropertyPrefix, String iconBase) {
-        this.name = name;
-        this.vendor = vendor;
-        this.renderingEngineId = renderingEngineId;
-        this.vendorSpecificPropertyId = vendorSpecificPropertyPrefix;
-        this.iconBase = iconBase;
+    public ResolvedToken(String token, GrammarElement GrammarElement) {
+        this.token = token;
+        this.grammarElement = GrammarElement;
+    }
+
+    public String token() {
+        return token;
+    }
+
+    public GrammarElement getGrammarElement() {
+        return grammarElement;
     }
 
     @Override
-    public String getName() {
-        return name;
+    public String toString() {
+        return grammarElement.path();
     }
 
     @Override
-    public String getVendor() {
-        return vendor;
-    }
-
-    @Override
-    public synchronized URL getActiveIcon() {
-        if(active == null) {
-            active = DefaultBrowser.class.getResource(
-                DEFAULT_ICONS_LOCATION + iconBase + ".png"); //NOI18N
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
         }
-        return active;
-    }
-
-    @Override
-    public synchronized URL getInactiveIcon() {
-        if(inactive == null) {
-            inactive = DefaultBrowser.class.getResource(
-                DEFAULT_ICONS_LOCATION + iconBase + "-disabled.png"); //NOI18N
+        if (getClass() != obj.getClass()) {
+            return false;
         }
-        return inactive;
+        final ResolvedToken other = (ResolvedToken) obj;
+        if ((this.token == null) ? (other.token != null) : !this.token.equals(other.token)) {
+            return false;
+        }
+        if (this.grammarElement != other.grammarElement && (this.grammarElement == null || !this.grammarElement.equals(other.grammarElement))) {
+            return false;
+        }
+        return true;
     }
 
     @Override
-    public String getDescription() {
-        return new StringBuilder().append(getVendor()).append(' ').append(getName()).toString();
+    public int hashCode() {
+        int hash = 7;
+        hash = 97 * hash + (this.token != null ? this.token.hashCode() : 0);
+        hash = 97 * hash + (this.grammarElement != null ? this.grammarElement.hashCode() : 0);
+        return hash;
     }
-
-    @Override
-    public String getVendorSpecificPropertyId() {
-        return vendorSpecificPropertyId;
-    }
-
-    @Override
-    public String getRenderingEngineId() {
-        return renderingEngineId;
-    }
+    
+    
+    
 }

@@ -49,12 +49,15 @@ package org.netbeans.modules.css.editor.properties.parser;
  * @author mfukala@netbeans.org
  */
 public abstract class GrammarElement {
+    
     private GroupGrammarElement parent;
     private String path;
 
     public GrammarElement(GroupGrammarElement parent) {
         this.parent = parent;
     }
+    
+    public abstract GrammarElementKind getKind();
     
     private int minimum_occurances = 1;
     private int maximum_occurances = 1;
@@ -73,6 +76,10 @@ public abstract class GrammarElement {
 
     public int getMinimumOccurances() {
         return minimum_occurances;
+    }
+    
+    public boolean isOptional() {
+        return getMinimumOccurances() == 0;
     }
 
     public GroupGrammarElement parent() {
