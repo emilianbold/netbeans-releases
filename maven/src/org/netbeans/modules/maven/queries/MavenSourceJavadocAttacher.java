@@ -78,26 +78,40 @@ public class MavenSourceJavadocAttacher implements SourceJavadocAttacherImplemen
     }
 
     @Messages({"# {0} - artifact ID", "attaching=Attaching {0}"})
-    private boolean attach(@NonNull URL root, @NonNull final AttachmentListener listener, final boolean javadoc) throws IOException {
+    private boolean attach(@NonNull final URL root, @NonNull final AttachmentListener listener, final boolean javadoc) throws IOException {
         File file = FileUtil.archiveOrDirForURL(root);
         if (file == null) {
             return false;
         }
-        final String[] coordinates = MavenFileOwnerQueryImpl.findCoordinates(file);
-        if (coordinates == null) {
+        String[] coordinates = MavenFileOwnerQueryImpl.findCoordinates(file);
+        final boolean byHash = coordinates == null;
+        List<NBVersionInfo> candidates;
+        if (!byHash) {
+            candidates = RepositoryQueries.getRecords(coordinates[0], coordinates[1], coordinates[2], null);
+        } else if (file.isFile()) {
+            candidates = RepositoryQueries.findBySHA1(file, null);
+        } else {
             return false;
         }
-        for (NBVersionInfo version : RepositoryQueries.getRecords(coordinates[0], coordinates[1], coordinates[2], null)) {
-            if (javadoc ? !version.isJavadocExists() : !version.isSourcesExists()) {
-                return false;
+        NBVersionInfo defined = null;
+        for (NBVersionInfo nbvi : candidates) {
+            if (javadoc ? nbvi.isJavadocExists() : nbvi.isSourcesExists()) {
+                defined = nbvi;
+                break;
             }
+        }
+        final NBVersionInfo _defined;
+        if (defined != null) {
+            _defined = defined;
+        } else {
+            return false;
         }
         RP.post(new Runnable() {
             @Override public void run() {
                 boolean attached = false;
                 try {
                     MavenEmbedder online = EmbedderFactory.getOnlineEmbedder();
-                    Artifact art = online.createArtifactWithClassifier(coordinates[0], coordinates[1], coordinates[2], "jar", javadoc ? "javadoc" : "sources");
+                    Artifact art = online.createArtifactWithClassifier(_defined.getGroupId(), _defined.getArtifactId(), _defined.getVersion(), "jar", javadoc ? "javadoc" : "sources");
                     AggregateProgressHandle hndl = AggregateProgressFactory.createHandle(Bundle.attaching(art.getId()),
                         new ProgressContributor[] {AggregateProgressFactory.createProgressContributor("attach")},
                         ProgressTransferListener.cancellable(), null);
@@ -105,15 +119,19 @@ public class MavenSourceJavadocAttacher implements SourceJavadocAttacherImplemen
                     try {
                         hndl.start();
                         List<ArtifactRepository> repos = new ArrayList<ArtifactRepository>();
-                        // XXX is there some way to determine from local metadata which remote repo it is from? (i.e. API to read _maven.repositories)
+                        // XXX should this be limited to _defined.getRepoId()?
                         for (RepositoryInfo info : RepositoryPreferences.getInstance().getRepositoryInfos()) {
                             if (info.isRemoteDownloadable()) {
                                 repos.add(EmbedderFactory.createRemoteRepository(online, info.getRepositoryUrl(), info.getId()));
                             }
                         }
                         online.resolve(art, repos, online.getLocalRepository());
-                        if (art.getFile().isFile()) {
+                        File result = art.getFile();
+                        if (result.isFile()) {
                             attached = true;
+                            if (byHash) {
+                                SourceJavadocByHash.register(root, result, javadoc);
+                            }
                         }
                     } catch (ThreadDeath d) {
                     } catch (AbstractArtifactResolutionException x) {
