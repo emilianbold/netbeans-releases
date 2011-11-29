@@ -261,6 +261,10 @@
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
+                        <code-name-base>org.netbeans.modules.versioning.core</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
                         <code-name-base>org.openide.util.lookup</code-name-base>
                         <compile-dependency/>
                         <test/>
