@@ -207,7 +207,7 @@ public class JavaFXSDKPanel extends DestinationPanel {
                     LogManager.log("... SDK Panel: javaInfo arch: " + javaInfo.getArch());                    
                     if(isJDK &&
                            //platformArch == null in case if Platform is WINDOWS and not null if x86/x64 is set
-                          (platformArch == null || javaArch.matches(platformArch)) &&
+                         (platformArch == null || javaArch.matches(platformArch)) &&
                           javaVersion.newerOrEquals(Version.getVersion("1.6.0.24.0")) ) {
                         LogManager.log("... This java is suitable for JavaFX SDK");
                         product.setStatus(Status.TO_BE_INSTALLED);

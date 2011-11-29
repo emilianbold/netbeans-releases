@@ -442,7 +442,7 @@ public class JavaUtils {
                 // if the version was created successfully, then we can provide a
                 // JavaInfo object
                 if (version != null) {
-                    return new JavaInfo(version, vendor, nonFinal);
+                    return new JavaInfo(version, vendor, osArch, nonFinal);
                 }
             } else {
                 LogManager.log("... different lines number [" + lines.length + "]");
@@ -460,17 +460,25 @@ public class JavaUtils {
         private String vendor;
         
         private boolean nonFinal;
+        private String arch;
         
         public JavaInfo(Version version, String vendor) {
             this.version = version;
             this.vendor = vendor;
             
             this.nonFinal = false;
+            this.arch = "";
         }
         
         public JavaInfo(Version version, String vendor, boolean nonFinal) {
             this(version, vendor);
             
+            this.nonFinal = nonFinal;
+        }
+
+        public JavaInfo(Version version, String vendor, String arch, boolean nonFinal) {
+            this(version, vendor);
+            this.arch = arch;
             this.nonFinal = nonFinal;
         }
         
@@ -484,6 +492,10 @@ public class JavaUtils {
         
         public boolean isNonFinal() {
             return nonFinal;
+        }
+        public String getArch() {
+            arch = arch.contains("64")? "x64" : arch;
+            return arch;
         }
     }
     
