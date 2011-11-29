@@ -45,7 +45,7 @@ package org.netbeans.modules.versioning.spi;
 
 
 import java.io.File;
-import org.netbeans.modules.versioning.VcsVisibilityQueryImplementation;
+import org.netbeans.modules.versioning.core.VcsVisibilityQueryImplementation;
 import org.netbeans.spi.queries.VisibilityQueryImplementation2;
 
 /**
