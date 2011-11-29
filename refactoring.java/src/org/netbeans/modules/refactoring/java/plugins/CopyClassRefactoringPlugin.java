@@ -58,7 +58,7 @@ import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.SingleCopyRefactoring;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
@@ -106,17 +106,17 @@ public class CopyClassRefactoringPlugin extends JavaRefactoringPlugin {
         try {
             target.toURI();
         } catch (URISyntaxException ex) {
-            return createProblem(null, true, NbBundle.getMessage(CopyClassRefactoringPlugin.class, "ERR_InvalidPackage",RetoucheUtils.getPackageName(target)));
+            return createProblem(null, true, NbBundle.getMessage(CopyClassRefactoringPlugin.class, "ERR_InvalidPackage",RefactoringUtils.getPackageName(target)));
         }
         FileObject fo = target != null ? URLMapper.findFileObject(target) : null;
         if (fo == null) {
             return createProblem(null, true, NbBundle.getMessage(CopyClassRefactoringPlugin.class, "ERR_TargetFolderNotSet"));
         }
-        if (!RetoucheUtils.isOnSourceClasspath(fo)) {
+        if (!RefactoringUtils.isOnSourceClasspath(fo)) {
             return createProblem(null, true, NbBundle.getMessage(CopyClassRefactoringPlugin.class, "ERR_TargetFolderNotJavaPackage"));
         }
-        String targetPackageName = RetoucheUtils.getPackageName(target);
-        if (!RetoucheUtils.isValidPackageName(targetPackageName)) {
+        String targetPackageName = RefactoringUtils.getPackageName(target);
+        if (!RefactoringUtils.isValidPackageName(targetPackageName)) {
             String msg = new MessageFormat(NbBundle.getMessage(CopyClassRefactoringPlugin.class, "ERR_InvalidPackage")).format(
                 new Object[] {targetPackageName}
             );
@@ -166,14 +166,14 @@ public class CopyClassRefactoringPlugin extends JavaRefactoringPlugin {
             return null;
         }
         public String getTargetPackageName() {
-            return RetoucheUtils.getPackageName(refactoring.getTarget().lookup(URL.class));
+            return RefactoringUtils.getPackageName(refactoring.getTarget().lookup(URL.class));
         }
 
         public void performChange() {
             try {
-                FileObject fo = RetoucheUtils.getOrCreateFolder(refactoring.getTarget().lookup(URL.class));
+                FileObject fo = RefactoringUtils.getOrCreateFolder(refactoring.getTarget().lookup(URL.class));
                 FileObject source = refactoring.getRefactoringSource().lookup(FileObject.class);
-                String oldPackage = RetoucheUtils.getPackageName(source.getParent());
+                String oldPackage = RefactoringUtils.getPackageName(source.getParent());
                 
                 FileObject newOne = refactoring.getContext().lookup(FileObject.class);
                 if (newOne == null) {

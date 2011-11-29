@@ -85,7 +85,7 @@ import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.plugins.FindUsagesVisitor;
 import org.netbeans.modules.refactoring.java.plugins.JavaWhereUsedQueryPlugin;
 import org.openide.cookies.EditorCookie;
@@ -231,14 +231,14 @@ final class CallHierarchyTasks {
                 TreePathHandle sourceToQuery = elmDesc.getSourceToQuery();
                 
                 // validate source
-                if (RetoucheUtils.getElementHandle(sourceToQuery) == null) {
+                if (RefactoringUtils.getElementHandle(sourceToQuery) == null) {
                     elmDesc.setBroken();
                 } else {
                     ClasspathInfo cpInfo;
                     if (searchAll) {
-                        cpInfo = RetoucheUtils.getClasspathInfoFor(true, sourceToQuery.getFileObject());
+                        cpInfo = RefactoringUtils.getClasspathInfoFor(true, sourceToQuery.getFileObject());
                     } else {
-                        cpInfo = RetoucheUtils.getClasspathInfoFor(false, elmDesc.selection.getFileObject());
+                        cpInfo = RefactoringUtils.getClasspathInfoFor(false, elmDesc.selection.getFileObject());
                     }
 
                     Set<FileObject> relevantFiles = null;
@@ -285,7 +285,7 @@ final class CallHierarchyTasks {
         
         public void cancel() {
             isCanceled.set(true);
-            RetoucheUtils.cancel = true;
+            RefactoringUtils.cancel = true;
         }
         
         private boolean isCanceled() {

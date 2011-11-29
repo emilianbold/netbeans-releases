@@ -56,7 +56,7 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.openide.util.HelpCtx;
@@ -174,7 +174,7 @@ public final class EncapsulateFieldUI implements RefactoringUI {
         }
         
         // neither interface, annotation type nor annonymous declaration
-        TreePath tpencloser = RetoucheUtils.findEnclosingClass(javac, selectedField, true, false, true, false, false);
+        TreePath tpencloser = RefactoringUtils.findEnclosingClass(javac, selectedField, true, false, true, false, false);
 
         if (tpencloser == null) {
             return null;

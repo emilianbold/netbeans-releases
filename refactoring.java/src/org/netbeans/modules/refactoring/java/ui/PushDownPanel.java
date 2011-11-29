@@ -65,7 +65,7 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreePathHandle;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.MemberInfo;
 import org.netbeans.modules.refactoring.java.api.PushDownRefactoring;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
@@ -142,7 +142,7 @@ public class PushDownPanel extends JPanel implements CustomRefactoringPanel {
                 TypeElement sourceTypeElement = (TypeElement) handle.resolveElement(controller);
                 sourceKind = sourceTypeElement.getKind();
                 for (TypeMirror tm:sourceTypeElement.getInterfaces()) {
-                    l.add(MemberInfo.create(RetoucheUtils.typeToElement(tm, controller), controller, MemberInfo.Group.IMPLEMENTS));
+                    l.add(MemberInfo.create(RefactoringUtils.typeToElement(tm, controller), controller, MemberInfo.Group.IMPLEMENTS));
                 }
                 for (Element m: sourceTypeElement.getEnclosedElements()) {
                     if (m.getKind() == ElementKind.CONSTRUCTOR || m.getKind() == ElementKind.STATIC_INIT || m.getKind() == ElementKind.INSTANCE_INIT) {

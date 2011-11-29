@@ -62,7 +62,7 @@ import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.api.ProgressListener;
 import org.netbeans.modules.refactoring.api.ProgressEvent;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.EncapsulateFieldRefactoring;
 import org.netbeans.modules.refactoring.java.plugins.EncapsulateFieldRefactoringPlugin.EncapsulateDesc;
 import org.netbeans.modules.refactoring.java.plugins.EncapsulateFieldRefactoringPlugin.Encapsulator;
@@ -163,7 +163,7 @@ public final class EncapsulateFieldsPlugin extends JavaRefactoringPlugin {
             return null;
         }
 
-        TreePath clazz = RetoucheUtils.findEnclosingClass(javac, selectedField, true, false, true, false, false);
+        TreePath clazz = RefactoringUtils.findEnclosingClass(javac, selectedField, true, false, true, false, false);
         TypeElement clazzElm = (TypeElement) javac.getTrees().getElement(clazz);
         preCheckProblem = JavaPluginUtils.isSourceElement(clazzElm, javac);
         if (preCheckProblem != null) {

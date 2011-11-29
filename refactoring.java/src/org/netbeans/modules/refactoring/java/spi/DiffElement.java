@@ -52,7 +52,7 @@ import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementati
 import org.netbeans.modules.refactoring.java.ui.tree.ElementGripFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.text.PositionBounds;
-import static org.netbeans.modules.refactoring.java.RetoucheUtils.*;
+import static org.netbeans.modules.refactoring.java.RefactoringUtils.*;
 import org.openide.text.PositionRef;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;

@@ -93,7 +93,7 @@ import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.java.spi.DiffElement;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.ExtractSuperclassRefactoring;
 import org.netbeans.modules.refactoring.java.api.MemberInfo;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
@@ -313,7 +313,7 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
     }
     
     private static List<TypeMirror> findUsedGenericTypes(CompilationInfo javac, TypeElement javaClass,ExtractSuperclassRefactoring refactoring) {
-        List<TypeMirror> typeArgs = RetoucheUtils.resolveTypeParamsAsTypes(javaClass.getTypeParameters());
+        List<TypeMirror> typeArgs = RefactoringUtils.resolveTypeParamsAsTypes(javaClass.getTypeParameters());
         if (typeArgs.isEmpty())
             return typeArgs;
         
@@ -322,7 +322,7 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
         
         // check super class
         TypeMirror superClass = javaClass.getSuperclass();
-        RetoucheUtils.findUsedGenericTypes(typeUtils, typeArgs, used, superClass);
+        RefactoringUtils.findUsedGenericTypes(typeUtils, typeArgs, used, superClass);
         
         MemberInfo[] members = refactoring.getMembers();
         for (int i = 0; i < members.length && !typeArgs.isEmpty(); i++) {
@@ -332,11 +332,11 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
                 ElementHandle<ExecutableElement> handle = (ElementHandle<ExecutableElement>) members[i].getElementHandle();
                 ExecutableElement elm = handle.resolve(javac);
             
-                RetoucheUtils.findUsedGenericTypes(typeUtils, typeArgs, used, elm.getReturnType());
+                RefactoringUtils.findUsedGenericTypes(typeUtils, typeArgs, used, elm.getReturnType());
 
                 for (Iterator<? extends VariableElement> paramIter = elm.getParameters().iterator(); paramIter.hasNext() && !typeArgs.isEmpty();) {
                     VariableElement param = paramIter.next();
-                    RetoucheUtils.findUsedGenericTypes(typeUtils, typeArgs, used, param.asType());
+                    RefactoringUtils.findUsedGenericTypes(typeUtils, typeArgs, used, param.asType());
                 }
             } else if (members[i].getGroup() == MemberInfo.Group.FIELD) {
                 if (members[i].getModifiers().contains(Modifier.STATIC)) {
@@ -347,17 +347,17 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
                 ElementHandle<VariableElement> handle = (ElementHandle<VariableElement>) members[i].getElementHandle();
                 VariableElement elm = handle.resolve(javac);
                 TypeMirror asType = elm.asType();
-                RetoucheUtils.findUsedGenericTypes(typeUtils, typeArgs, used, asType);
+                RefactoringUtils.findUsedGenericTypes(typeUtils, typeArgs, used, asType);
             } else if (members[i].getGroup() == MemberInfo.Group.IMPLEMENTS) {
                 // check implements
                 TypeMirrorHandle handle = (TypeMirrorHandle) members[i].getElementHandle();
                 TypeMirror implemetz = handle.resolve(javac);
-                RetoucheUtils.findUsedGenericTypes(typeUtils, typeArgs, used, implemetz);
+                RefactoringUtils.findUsedGenericTypes(typeUtils, typeArgs, used, implemetz);
             }
             // do not check fields since static fields cannot use type parameter of the enclosing class
         }
         
-        return RetoucheUtils.filterTypes(typeArgs, used);
+        return RefactoringUtils.filterTypes(typeArgs, used);
     }
     
     // --- REFACTORING ELEMENTS ------------------------------------------------
@@ -498,7 +498,7 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
                     MethodTree methodTree = wc.getTrees().getTree(elm);
                     if (member.isMakeAbstract() && !elm.getModifiers().contains(Modifier.ABSTRACT)) {
                         methodTree = make.Method(
-                                RetoucheUtils.makeAbstract(make, methodTree.getModifiers()),
+                                RefactoringUtils.makeAbstract(make, methodTree.getModifiers()),
                                 methodTree.getName(),
                                 methodTree.getReturnType(),
                                 methodTree.getTypeParameters(),
@@ -507,7 +507,7 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
                                 (BlockTree) null,
                                 null);
                         methodTree = genUtils.importFQNs(methodTree);
-                        RetoucheUtils.copyJavadoc(elm, methodTree, wc);
+                        RefactoringUtils.copyJavadoc(elm, methodTree, wc);
                     } else {
                         methodTree = genUtils.importComments(methodTree, wc.getTrees().getPath(elm).getCompilationUnit());
                         methodTree = genUtils.importFQNs(methodTree);
@@ -530,7 +530,7 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
             makeAbstract |= ((DeclaredType) sourceTypeElm.getSuperclass()).asElement().getModifiers().contains(Modifier.ABSTRACT);
             
             ModifiersTree classModifiersTree = makeAbstract
-                    ? RetoucheUtils.makeAbstract(make, classTree.getModifiers())
+                    ? RefactoringUtils.makeAbstract(make, classTree.getModifiers())
                     : classTree.getModifiers();
             classModifiersTree = genUtils.importFQNs(classModifiersTree);
             

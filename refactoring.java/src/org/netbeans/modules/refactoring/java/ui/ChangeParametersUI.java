@@ -57,7 +57,7 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.ChangeParametersRefactoring;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
@@ -102,8 +102,8 @@ public class ChangeParametersUI implements RefactoringUI {
     public String getDescription() {
         String msg = NbBundle.getMessage(ChangeParametersUI.class, 
                                         "DSC_ChangeParsRootNode"); // NOI18N
-        String name = RetoucheUtils.getSimpleName(refactoredObj);
-        boolean isMethod = RetoucheUtils.getElementKind(refactoredObj).equals(ElementKind.METHOD);
+        String name = RefactoringUtils.getSimpleName(refactoredObj);
+        boolean isMethod = RefactoringUtils.getElementKind(refactoredObj).equals(ElementKind.METHOD);
         return new MessageFormat(msg).format(new Object[] { 
             name,
             NbBundle.getMessage(ChangeParametersUI.class, "DSC_ChangeParsRootNode" + (isMethod ? "Method" : "Constr")),

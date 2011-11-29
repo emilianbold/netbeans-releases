@@ -55,7 +55,7 @@ import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.SafeDeleteRefactoring;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUIBypass;
@@ -94,7 +94,7 @@ public class SafeDeleteUI implements RefactoringUI, RefactoringUIBypass{
     public SafeDeleteUI(FileObject[] selectedElements, Collection<TreePathHandle> handles, boolean regulardelete) {
         this.elementsToDelete = selectedElements;
         refactoring = new SafeDeleteRefactoring(new ProxyLookup(Lookups.fixed(elementsToDelete), Lookups.fixed(handles.toArray(new Object[handles.size()]))));
-        refactoring.getContext().add(RetoucheUtils.getClasspathInfoFor(selectedElements));
+        refactoring.getContext().add(RefactoringUtils.getClasspathInfoFor(selectedElements));
         this.regulardelete = regulardelete;
     }
 
@@ -106,12 +106,12 @@ public class SafeDeleteUI implements RefactoringUI, RefactoringUIBypass{
     public SafeDeleteUI(TreePathHandle[] selectedElements) {
         this.elementsToDelete = selectedElements;
         refactoring = new SafeDeleteRefactoring(Lookups.fixed(elementsToDelete));
-        refactoring.getContext().add(RetoucheUtils.getClasspathInfoFor(selectedElements[0]));
+        refactoring.getContext().add(RefactoringUtils.getClasspathInfoFor(selectedElements[0]));
     }
 
     public SafeDeleteUI(NonRecursiveFolder nonRecursiveFolder, boolean regulardelete) {
         refactoring = new SafeDeleteRefactoring(Lookups.fixed(nonRecursiveFolder));
-        refactoring.getContext().add(RetoucheUtils.getClasspathInfoFor(nonRecursiveFolder.getFolder()));
+        refactoring.getContext().add(RefactoringUtils.getClasspathInfoFor(nonRecursiveFolder.getFolder()));
         this.regulardelete = regulardelete;
     }
     

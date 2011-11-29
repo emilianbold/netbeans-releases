@@ -54,7 +54,7 @@ import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.ui.ElementHeaders;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.MemberInfo;
 import org.netbeans.modules.refactoring.java.api.PushDownRefactoring;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
@@ -97,7 +97,7 @@ public class PushDownRefactoringUI implements RefactoringUI {
             TreePathHandle sourceType = TreePathHandle.create(tp, info);
             description = ElementHeaders.getHeader(tp, info, ElementHeaders.NAME);
             refactoring = new PushDownRefactoring(sourceType);
-            refactoring.getContext().add(RetoucheUtils.getClasspathInfoFor(sourceType));
+            refactoring.getContext().add(RefactoringUtils.getClasspathInfoFor(sourceType));
         } else {
             // put the unresolvable selection to refactoring,
             // user notification is provided by PushDownRefactoringPlugin.preCheck

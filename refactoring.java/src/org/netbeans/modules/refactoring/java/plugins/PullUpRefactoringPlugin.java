@@ -61,7 +61,7 @@ import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.ProgressEvent;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.MemberInfo;
 import org.netbeans.modules.refactoring.java.api.PullUpRefactoring;
 import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
@@ -118,7 +118,7 @@ public final class PullUpRefactoringPlugin extends JavaRefactoringPlugin {
                 return new Problem(true, NbBundle.getMessage(PushDownRefactoringPlugin.class, "ERR_PushDown_InvalidSource", treePathHandle, elm)); // NOI18N
             }
             TypeElement e  = (TypeElement) elm;
-            Collection<TypeElement> superTypes = RetoucheUtils.getSuperTypes(e, cc, true);
+            Collection<TypeElement> superTypes = RefactoringUtils.getSuperTypes(e, cc, true);
             List<MemberInfo> minfo = new LinkedList<MemberInfo>();
             for (TypeElement el: superTypes) {
                 MemberInfo<ElementHandle<TypeElement>> memberInfo = MemberInfo.create(el, cc);
@@ -191,7 +191,7 @@ public final class PullUpRefactoringPlugin extends JavaRefactoringPlugin {
         try {
             cc.toPhase(JavaSource.Phase.RESOLVED);
             TypeElement sourceType = (TypeElement) refactoring.getSourceType().resolveElement(cc);
-            Collection<TypeElement> supers = RetoucheUtils.getSuperTypes(sourceType, cc);
+            Collection<TypeElement> supers = RefactoringUtils.getSuperTypes(sourceType, cc);
             TypeElement targetType = refactoring.getTargetType().resolve(cc);
             MemberInfo<ElementHandle<? extends Element>>[] members = refactoring.getMembers();
 
@@ -246,7 +246,7 @@ public final class PullUpRefactoringPlugin extends JavaRefactoringPlugin {
                     //                        }
                     // #3 - check if the member already exists in the target class
 
-                    if (RetoucheUtils.elementExistsIn(targetType, member, cc)) {
+                    if (RefactoringUtils.elementExistsIn(targetType, member, cc)) {
                         return createProblem(problems, true, NbBundle.getMessage(PullUpRefactoringPlugin.class, "ERR_PullUp_MemberAlreadyExists", member.getSimpleName())); // NOI18N
                     }
 
@@ -274,8 +274,8 @@ public final class PullUpRefactoringPlugin extends JavaRefactoringPlugin {
         ClasspathInfo cpInfo = getClasspathInfo(refactoring);
         
         Set<FileObject> a = new HashSet<FileObject>();
-        a.addAll(RetoucheUtils.getSuperTypesFiles(refactoring.getSourceType()));
-        a.add(RetoucheUtils.getFileObject(treePathHandle));
+        a.addAll(RefactoringUtils.getSuperTypesFiles(refactoring.getSourceType()));
+        a.add(RefactoringUtils.getFileObject(treePathHandle));
         fireProgressListenerStart(ProgressEvent.START, a.size());
         TransformTask task = new TransformTask(new PullUpTransformer(refactoring), treePathHandle);
         Problem problem = createAndAddElements(a, task, refactoringElements, refactoring, cpInfo);
