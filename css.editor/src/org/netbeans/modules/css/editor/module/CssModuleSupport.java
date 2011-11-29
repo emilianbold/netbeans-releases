@@ -42,18 +42,7 @@
 package org.netbeans.modules.css.editor.module;
 
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Logger;
 import javax.swing.text.Document;
@@ -62,16 +51,7 @@ import org.netbeans.modules.csl.api.CompletionProposal;
 import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.StructureItem;
-import org.netbeans.modules.css.editor.module.spi.Browser;
-import org.netbeans.modules.css.editor.module.spi.CompletionContext;
-import org.netbeans.modules.css.editor.module.spi.CssEditorModule;
-import org.netbeans.modules.css.editor.module.spi.EditorFeatureContext;
-import org.netbeans.modules.css.editor.module.spi.FeatureCancel;
-import org.netbeans.modules.css.editor.module.spi.FeatureContext;
-import org.netbeans.modules.css.editor.module.spi.FutureParamTask;
-import org.netbeans.modules.css.editor.module.spi.HelpResolver;
-import org.netbeans.modules.css.editor.module.spi.Property;
-import org.netbeans.modules.css.editor.module.spi.PropertySupportResolver;
+import org.netbeans.modules.css.editor.module.spi.*;
 import org.netbeans.modules.css.editor.properties.parser.GrammarParser;
 import org.netbeans.modules.css.editor.properties.parser.PropertyModel;
 import org.netbeans.modules.css.lib.api.NodeVisitor;
@@ -249,16 +229,24 @@ public class CssModuleSupport {
     }
 
     public static Collection<Property> getProperties() {
-        PROPERTIES.compareAndSet(null, createAllPropertiesCollection());
-        return PROPERTIES.get();
+        synchronized (PROPERTIES) {
+            if(PROPERTIES.get() == null) {
+                PROPERTIES.set(createAllPropertiesCollection());
+            }
+            return PROPERTIES.get();
+        }
     }
     
     /**
      * @return map of property name to collection of Property impls.
      */
     public static Map<String, Collection<Property>> getPropertiesMap() {
-        PROPERTIES_MAP.compareAndSet(null, loadProperties());
-        return PROPERTIES_MAP.get();
+        synchronized (PROPERTIES_MAP) {
+            if(PROPERTIES_MAP.get() == null) {
+                PROPERTIES_MAP.set(loadProperties());
+            }
+            return PROPERTIES_MAP.get();
+        }
     }
     
     private static Collection<Property> createAllPropertiesCollection() {
