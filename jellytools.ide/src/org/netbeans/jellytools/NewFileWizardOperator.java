@@ -165,6 +165,7 @@ public class NewFileWizardOperator extends WizardOperator {
      * @param filetype name of file type to select (exact name - not substring)
      */
     public void selectFileType(String filetype) {
+        lstFileTypes().waitItem(filetype, 0);
         lstFileTypes().selectItem(filetype);
     }
     
