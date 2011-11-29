@@ -180,6 +180,7 @@ public class FindUsagesVisitor extends FindVisitor {
                     return;
                 }
                 Iterator iter = workingCopy.getElementUtilities().getMembers(el.asType(),new ElementUtilities.ElementAcceptor() {
+                    @Override
                     public boolean accept(Element e, TypeMirror type) {
                         return id.equals(e.getSimpleName());
                     }

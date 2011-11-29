@@ -73,13 +73,14 @@ import org.openide.util.lookup.InstanceContent;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.java.project.support.ui.PackageRenameHandler.class)
 public class PackageRenameHandlerImpl implements PackageRenameHandler {
 
+    @Override
     public void handleRename(Node node, String newName) {
         DataFolder dob = (DataFolder) node.getCookie(DataObject.class);
         FileObject fo = dob.getPrimaryFile();
         if (node.isLeaf()) {
             //rename empty package and don't try to do any refactoring
             try {
-                if (!RetoucheUtils.isValidPackageName(newName)) {
+                if (!RefactoringUtils.isValidPackageName(newName)) {
                     String msg = new MessageFormat(NbBundle.getMessage(RenameRefactoringPlugin.class,"ERR_InvalidPackage")).format(
                             new Object[] {newName}
                     );

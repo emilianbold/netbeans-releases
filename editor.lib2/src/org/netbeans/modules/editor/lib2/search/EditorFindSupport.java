@@ -263,7 +263,7 @@ public final class EditorFindSupport {
             getFindProperties().putAll(propsToAdd);
         }
         //highlight will not be updated on empty properties
-        if (propsToAdd.get(FIND_BLOCK_SEARCH_END) != null) {
+        if (propsToAdd.get(FIND_WHAT) != null) {
             firePropertyChange(null, null, null);
         }
     }

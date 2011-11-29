@@ -65,6 +65,7 @@ public class TreeElementFactoryImpl implements TreeElementFactoryImplementation 
         instance = this;
     }
     
+    @Override
     public TreeElement getTreeElement(Object o) {
         TreeElement result = null;
         if (o instanceof SourceGroup) {
@@ -108,6 +109,7 @@ public class TreeElementFactoryImpl implements TreeElementFactoryImplementation 
         return result;
     }
 
+    @Override
     public void cleanUp() {
         map.clear();
         ElementGripFactory.getDefault().cleanUp();

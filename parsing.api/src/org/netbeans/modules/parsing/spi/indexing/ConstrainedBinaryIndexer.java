@@ -62,8 +62,9 @@ public abstract class ConstrainedBinaryIndexer {
 
     /**
      * Indexes given binary root.
-     * @param files the files passed the mime type constrain check, categorized
-     * by the mime types.
+     * @param files the files passed the file name and mime type constrain check,
+     * categorized by the mime types. When only file name check is done the files
+     * are passed with the mime type <code>content/unknown</code>
      * @param context of indexer, contains information about index storage, indexed root.
      */
     protected abstract void index(
@@ -152,11 +153,23 @@ public abstract class ConstrainedBinaryIndexer {
         /**
          * One or more mime types that have to be present inside of the binary
          * to enable this indexer. Use
-         * <code>{}</code> if the mime type check should be skipped.
+         * <code>{}</code> if the mime type check should be skipped. The mime
+         * type check can be expensive especially for mime types which require
+         * file reading, for such mime types consider to prefer name pattern.
          *
          * @return one or more mimetypes this indexer processing
          */
         String[] mimeType() default {};
+
+        /**
+         * Regular expression of file names which have to be present
+         * inside of the binary to enable this indexer. Use
+         * <code>""</code> if the file name check should be skipped.
+         *
+         * @return file name regular expression this indexer processing
+         * @since 1.50
+         */
+        String namePattern() default "";    //NOI18N
     }
 
     private static BinaryIndexerFactory create(final Map<String,Object> params) {

@@ -829,9 +829,10 @@ final class ViewBuilder {
         
         // Schedule repaints based on current docView allocation.
         // For valid firstReplace the current impl repaints whole line.
+        // When deltaY > 0 it must repaint the newly added area too
         docViewRect.y = startY;
         double endRepaintY = (deltaY != 0d) 
-                ? docViewRect.getMaxY() 
+                ? docViewRect.getMaxY() + Math.max(0d, deltaY)
                 : endY;
         docViewRect.height = endRepaintY - docViewRect.y;
         docView.op.notifyRepaint(docView.op.extendToVisibleWidth(docViewRect));

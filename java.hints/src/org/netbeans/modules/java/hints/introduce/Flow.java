@@ -762,6 +762,9 @@ public class Flow {
                     break;
                 case FOR_LOOP:
                     resumePoint = ((ForLoopTree) loop).getCondition();
+                    if (resumePoint == null) {
+                        resumePoint = ((ForLoopTree) loop).getStatement();
+                    }
                     break;
                 case DO_WHILE_LOOP:
                     resumePoint = ((DoWhileLoopTree) loop).getCondition();

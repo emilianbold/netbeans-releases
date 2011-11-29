@@ -43,6 +43,7 @@ package org.netbeans.modules.parsing.impl.indexing;
 
 import java.net.URL;
 import java.util.*;
+import java.util.regex.Pattern;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.parsing.spi.indexing.BinaryIndexer;
@@ -64,8 +65,10 @@ public final class ProxyBinaryIndexerFactory extends BinaryIndexerFactory {
     private static final String ATTR_INDEXER_VERSION = "version";   //NOI18N
     private static final String ATTR_REQUIRED_RES = "requiredResource"; //NOI18N
     private static final String ATTR_REQUIRED_MIME = "mimeType";    //NOI18N
+    private static final String ATTR_NAME_PATTERN = "namePattern";    //NOI18N
     private static final String PROP_CHECKED = "ProxyBinaryIndexerFactory_checked";  //NOI18N
     private static final String PROP_MATCHED_FILES = "ProxyBinaryIndexerFactory_matchedFiles";  //NOI18N
+    private static final String MIME_UNKNOWN = "content/unknown";   //NOI18N
 
     private final Map<String,Object> params;
     private final String indexerName;
@@ -146,6 +149,8 @@ public final class ProxyBinaryIndexerFactory extends BinaryIndexerFactory {
         final String[] requiredResources = s == null ? null : s.split(","); //NOI18N
         s = (String) params.get(ATTR_REQUIRED_MIME);
         final String[] mimeTypes = s == null ? null : s.split(",");         //NOI18N
+        s = (String) params.get(ATTR_NAME_PATTERN);
+        final Pattern pattern = s == null ? null : Pattern.compile(s);
         try {
             if (requiredResources != null) {
                 boolean found = false;
@@ -159,20 +164,32 @@ public final class ProxyBinaryIndexerFactory extends BinaryIndexerFactory {
                     return null;
                 }
             }
-            if (mimeTypes != null) {
+            if (mimeTypes != null || pattern != null) {
                 final Enumeration<? extends FileObject> fos = root.getChildren(true);
-                final Set<String> mimeTypesSet = new HashSet<String>(Arrays.asList(mimeTypes));
+                final Set<String> mimeTypesSet = mimeTypes == null ?
+                        null :
+                        new HashSet<String>(Arrays.asList(mimeTypes));
                 while (fos.hasMoreElements()) {
                     final FileObject f = fos.nextElement();
-                    final String mt = f.getMIMEType(mimeTypes);
-                    if (mimeTypesSet.contains(mt)) {
-                        Queue<FileObject> q = matchedFiles.get(mt);
-                        if (q == null) {
-                            q = new ArrayDeque<FileObject>();
-                            matchedFiles.put(mt, q);
+                    if (pattern != null) {
+                        final String name = f.getNameExt();
+                        if (!pattern.matcher(name).matches()) {
+                            continue;
                         }
-                        q.offer(f);
                     }
+                    String mt = MIME_UNKNOWN;
+                    if (mimeTypes != null) {
+                        mt = f.getMIMEType(mimeTypes);
+                        if (!mimeTypesSet.contains(mt)) {
+                            continue;
+                        }
+                    }
+                    Queue<FileObject> q = matchedFiles.get(mt);
+                    if (q == null) {
+                        q = new ArrayDeque<FileObject>();
+                        matchedFiles.put(mt, q);
+                    }
+                    q.offer(f);
                 }
                 if (matchedFiles.isEmpty()) {
                     return null;

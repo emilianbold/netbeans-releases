@@ -45,8 +45,10 @@ package org.netbeans.modules.java.source.parsing;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.tools.javac.api.ClientCodeWrapper.Trusted;
+import com.sun.tools.javac.api.DiagnosticFormatter;
 import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.util.JCDiagnostic;
+import com.sun.tools.javac.util.Log;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -67,6 +69,7 @@ import javax.tools.Diagnostic.Kind;
 import javax.tools.DiagnosticListener;
 import javax.tools.JavaFileObject;
 import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.CompilationInfo.CacheClearPolicy;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -243,7 +246,7 @@ public final class CompilationInfoImpl {
             return null;
         }
     }
-    
+
     /**
      * Returns the errors in the file represented by the {@link JavaSource}.
      * @return an list of {@link Diagnostic} 
@@ -264,14 +267,22 @@ public final class CompilationInfoImpl {
         List<Diagnostic> localErrors = new ArrayList<Diagnostic>(errorsSize +
                 (partialReparseErrors == null ? 0 : partialReparseErrors.size()) + 
                 (affectedErrors == null ? 0 : affectedErrors.size()));
+        DiagnosticFormatter<JCDiagnostic> formatter = Log.instance(javacTask.getContext()).getDiagnosticFormatter();
+        
         for (Collection<Diagnostic<? extends JavaFileObject>> err : errors) {
-            localErrors.addAll(err);
+            for (Diagnostic<? extends JavaFileObject> d : err) {
+                localErrors.add(RichDiagnostic.wrap(d, formatter));
+            }
         }
         if (partialReparseErrors != null) {
-            localErrors.addAll (partialReparseErrors);
+            for (Diagnostic<? extends JavaFileObject> d : partialReparseErrors) {
+                localErrors.add(RichDiagnostic.wrap(d, formatter));
+            }
         }
         if (affectedErrors != null) {
-            localErrors.addAll (affectedErrors);
+            for (Diagnostic<? extends JavaFileObject> d : affectedErrors) {
+                localErrors.add(RichDiagnostic.wrap(d, formatter));
+            }
         }
         return localErrors;
     }
@@ -612,6 +623,70 @@ public final class CompilationInfoImpl {
                 return this.delegate.getMessage(locale);
             }
             
+        }
+    }
+
+    private static final class RichDiagnostic implements Diagnostic {
+
+        private final JCDiagnostic delegate;
+        private final DiagnosticFormatter<JCDiagnostic> formatter;
+
+        public RichDiagnostic(JCDiagnostic delegate, DiagnosticFormatter<JCDiagnostic> formatter) {
+            this.delegate = delegate;
+            this.formatter = formatter;
+        }
+
+        @Override
+        public Kind getKind() {
+            return delegate.getKind();
+        }
+
+        @Override
+        public Object getSource() {
+            return delegate.getSource();
+        }
+
+        @Override
+        public long getPosition() {
+            return delegate.getPosition();
+        }
+
+        @Override
+        public long getStartPosition() {
+            return delegate.getStartPosition();
+        }
+
+        @Override
+        public long getEndPosition() {
+            return delegate.getEndPosition();
+        }
+
+        @Override
+        public long getLineNumber() {
+            return delegate.getLineNumber();
+        }
+
+        @Override
+        public long getColumnNumber() {
+            return delegate.getColumnNumber();
+        }
+
+        @Override
+        public String getCode() {
+            return delegate.getCode();
+        }
+
+        @Override
+        public String getMessage(Locale locale) {
+            return formatter.format(delegate, locale);
+        }
+
+        public static Diagnostic wrap(Diagnostic d, DiagnosticFormatter<JCDiagnostic> df) {
+            if (d instanceof JCDiagnostic) {
+                return new RichDiagnostic((JCDiagnostic) d, df);
+            } else {
+                return d;
+            }
         }
     }
 }

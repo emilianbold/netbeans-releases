@@ -81,7 +81,7 @@ public class CheckReturnValueHint {
 
         if (!found && !checkReturnValueForJDKMethods((ExecutableElement) invoked)) return null;
 
-        String displayName = NbBundle.getMessage(CheckReturnValueHint.class, "ERR_org.netbeans.modules.java.hints.CheckReturnValueHint");
+        String displayName = NbBundle.getMessage(CheckReturnValueHint.class, "ERR_org.netbeans.modules.java.hints.bugs.CheckReturnValueHint");
         
         return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), displayName);
     }

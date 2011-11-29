@@ -95,6 +95,9 @@ public final class IndexerRegistrationProcessor extends LayerGeneratingProcessor
                 if (reg.mimeType().length > 0) {
                     f.stringvalue("mimeType", list(reg.mimeType(), e)); //NOI18N
                 }
+                if (reg.namePattern().length() > 0) {
+                    f.stringvalue("namePattern", reg.namePattern()); //NOI18N
+                }
                 f.stringvalue("name", indexerName);         //NOI18N
                 f.intvalue("version", reg.indexVersion());  //NOI18N
                 f.write();

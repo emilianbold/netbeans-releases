@@ -87,7 +87,7 @@ import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.java.spi.DiffElement;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.ExtractInterfaceRefactoring;
 import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
@@ -160,6 +160,7 @@ public final class ExtractInterfaceRefactoringPlugin extends JavaRefactoringPlug
         return null;
     }
 
+    @Override
     public Problem prepare(RefactoringElementsBag bag) {
         FileObject primFile = refactoring.getSourceType().getFileObject();
         try {
@@ -172,6 +173,7 @@ public final class ExtractInterfaceRefactoringPlugin extends JavaRefactoringPlug
         return null;
     }
     
+    @Override
     protected JavaSource getJavaSource(Phase p) {
         return JavaSource.forFileObject(refactoring.getSourceType().getFileObject());
     }
@@ -289,7 +291,7 @@ public final class ExtractInterfaceRefactoringPlugin extends JavaRefactoringPlug
      * @return type parameters to extract
      */
     private static List<TypeMirror> findUsedGenericTypes(ExtractInterfaceRefactoring refactoring, CompilationInfo javac, TypeElement javaClass) {
-        List<TypeMirror> typeArgs = RetoucheUtils.resolveTypeParamsAsTypes(javaClass.getTypeParameters());
+        List<TypeMirror> typeArgs = RefactoringUtils.resolveTypeParamsAsTypes(javaClass.getTypeParameters());
         if (typeArgs.isEmpty())
             return typeArgs;
         
@@ -302,11 +304,11 @@ public final class ExtractInterfaceRefactoringPlugin extends JavaRefactoringPlug
             ElementHandle<ExecutableElement> handle = methodIter.next();
             ExecutableElement elm = handle.resolve(javac);
             
-            RetoucheUtils.findUsedGenericTypes(typeUtils, typeArgs, used, elm.getReturnType());
+            RefactoringUtils.findUsedGenericTypes(typeUtils, typeArgs, used, elm.getReturnType());
             
             for (Iterator<? extends VariableElement> paramIter = elm.getParameters().iterator(); paramIter.hasNext() && !typeArgs.isEmpty();) {
                 VariableElement param = paramIter.next();
-                RetoucheUtils.findUsedGenericTypes(typeUtils, typeArgs, used, param.asType());
+                RefactoringUtils.findUsedGenericTypes(typeUtils, typeArgs, used, param.asType());
             }
         }
         
@@ -314,10 +316,10 @@ public final class ExtractInterfaceRefactoringPlugin extends JavaRefactoringPlug
         for (Iterator<TypeMirrorHandle<TypeMirror>> it = refactoring.getImplements().iterator(); it.hasNext() && !typeArgs.isEmpty();) {
             TypeMirrorHandle<TypeMirror> handle = it.next();
             TypeMirror implemetz = handle.resolve(javac);
-            RetoucheUtils.findUsedGenericTypes(typeUtils, typeArgs, used, implemetz);
+            RefactoringUtils.findUsedGenericTypes(typeUtils, typeArgs, used, implemetz);
         }
 
-        return RetoucheUtils.filterTypes(typeArgs, used);
+        return RefactoringUtils.filterTypes(typeArgs, used);
     }
 
     // --- REFACTORING ELEMENTS ------------------------------------------------
@@ -341,6 +343,7 @@ public final class ExtractInterfaceRefactoringPlugin extends JavaRefactoringPlug
 
         // --- SimpleRefactoringElementImpl methods ----------------------------------
         
+        @Override
         public void performChange() {
             try {
                 FileObject folderFO = URLMapper.findFileObject(folderURL);
@@ -383,22 +386,27 @@ public final class ExtractInterfaceRefactoringPlugin extends JavaRefactoringPlug
             }
         }
         
+        @Override
         public String getText() {
             return NbBundle.getMessage(ExtractInterfaceRefactoringPlugin.class, "TXT_ExtractInterface_CreateIfc", ifcName); // NOI18N
         }
 
+        @Override
         public String getDisplayText() {
             return getText();
         }
 
+        @Override
         public FileObject getParentFile() {
             return URLMapper.findFileObject(folderURL);
         }
 
+        @Override
         public PositionBounds getPosition() {
             return null;
         }
     
+        @Override
         public Lookup getLookup() {
             FileObject fo = ifcURL == null? null: URLMapper.findFileObject(ifcURL);
             return fo != null? Lookups.singleton(fo): Lookup.EMPTY;
@@ -406,10 +414,12 @@ public final class ExtractInterfaceRefactoringPlugin extends JavaRefactoringPlug
         
         // --- CancellableTask methods ----------------------------------
         
+        @Override
         public void cancel() {
             
         }
 
+        @Override
         public void run(WorkingCopy wc) throws Exception {
             wc.toPhase(JavaSource.Phase.RESOLVED);
             ClassTree interfaceTree = findInterface(wc, ifcName);
@@ -450,7 +460,7 @@ public final class ExtractInterfaceRefactoringPlugin extends JavaRefactoringPlug
                         tree.getType(),
                         tree.getInitializer());
                 newVarTree = genUtils.importFQNs(newVarTree);
-                RetoucheUtils.copyJavadoc(memberElm, newVarTree, wc);
+                RefactoringUtils.copyJavadoc(memberElm, newVarTree, wc);
                 members.add(newVarTree);
             }
             // add newmethods
@@ -470,7 +480,7 @@ public final class ExtractInterfaceRefactoringPlugin extends JavaRefactoringPlug
                         (BlockTree) null,
                         null);
                 newMethodTree = genUtils.importFQNs(newMethodTree);
-                RetoucheUtils.copyJavadoc(memberElm, newMethodTree, wc);
+                RefactoringUtils.copyJavadoc(memberElm, newMethodTree, wc);
                 members.add(newMethodTree);
             }
             // add super interfaces
@@ -541,9 +551,11 @@ public final class ExtractInterfaceRefactoringPlugin extends JavaRefactoringPlug
             bag.registerTransaction(createTransaction(Collections.singletonList(modification)));
         }
         
+        @Override
         public void cancel() {
         }
 
+        @Override
         public void run(WorkingCopy wc) throws Exception {
             wc.toPhase(JavaSource.Phase.RESOLVED);
             TypeElement clazz = this.sourceType.resolve(wc);

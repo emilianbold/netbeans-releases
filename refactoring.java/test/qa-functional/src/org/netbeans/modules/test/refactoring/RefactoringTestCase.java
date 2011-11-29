@@ -246,6 +246,7 @@ public abstract class RefactoringTestCase extends JellyTestCase {
                         
         Collections.<Object>sort(al,new Comparator() {
 
+            @Override
             public int compare(Object o1, Object o2) {
                 return hashMap.get(o1).compareTo(hashMap.get(o2));
             }
@@ -263,10 +264,12 @@ public abstract class RefactoringTestCase extends JellyTestCase {
             JemmyProperties.setCurrentTimeout("Waiter.WaitingTime", 3000);
             new Waiter(new Waitable() {
 
+                @Override
                 public Object actionProduced(Object parent) {
                     return ((Node) parent).isChildPresent(finalFileName) ? Boolean.TRUE : null;
                 }
 
+                @Override
                 public String getDescription() {
                     return ("Waiting for the tree to load.");
                 }
