@@ -39,18 +39,18 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.versioning.core.spi;
+package org.netbeans.modules.versioning.core.filesystem.api;
 
+import org.netbeans.modules.versioning.core.spi.*;
 import java.io.IOException;
 import java.util.*;
 import org.netbeans.modules.versioning.fileproxy.api.VCSFileProxy;
-import org.openide.filesystems.*;
 
 /**
  *
  * @author Tomas Stupka
  */
-public interface VCSFileSystemProvider {
+public final class VCSFilesystemInterceptor {
 
     // ==================================================================================================
     // QUERIES
@@ -61,7 +61,9 @@ public interface VCSFileSystemProvider {
      * @param file
      * @return 
      */
-    public boolean canWrite(VCSFileProxy file);
+    public boolean canWrite(VCSFileProxy file) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 
     /**
      * Returns the given files files attribute
@@ -69,62 +71,89 @@ public interface VCSFileSystemProvider {
      * @param attrName
      * @return 
      */
-    public Object getAttribute(VCSFileProxy file, String attrName);
-
+    public Object getAttribute(VCSFileProxy file, String attrName) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+    
     // ==================================================================================================
     // CHANGE
     // ==================================================================================================
 
-    public void beforeChange(VCSFileProxy file);
+    public void beforeChange(VCSFileProxy file) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
     
-    public void fileChanged(VCSFileProxy file);
+    public void fileChanged(VCSFileProxy file) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 
     // ==================================================================================================
     // DELETE
     // ==================================================================================================
 
-    public DeleteHandler getDeleteHandler(VCSFileProxy file);
+    public DeleteHandler getDeleteHandler(VCSFileProxy file) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 
-    public void deleteSuccess(VCSFileProxy file);
+    public void deleteSuccess(VCSFileProxy file) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 
-    public void deletedExternally(VCSFileProxy file);
+    public void deletedExternally(VCSFileProxy file) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
    
     // ==================================================================================================
     // CREATE
     // ==================================================================================================
 
-    public void beforeCreate(VCSFileProxy parent, String name, boolean isFolder);
+    public void beforeCreate(VCSFileProxy parent, String name, boolean isFolder) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 
-    public void createFailure(VCSFileProxy parent, String name, boolean isFolder);
+    public void createFailure(VCSFileProxy parent, String name, boolean isFolder) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 
-    public void createSuccess(VCSFileProxy fo);
+    public void createSuccess(VCSFileProxy fo) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 
-    public void createdExternally(VCSFileProxy fo);
+    public void createdExternally(VCSFileProxy fo) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 
     // ==================================================================================================
     // MOVE
     // ==================================================================================================
 
-    public IOHandler getMoveHandler(VCSFileProxy from, VCSFileProxy to);
+    public IOHandler getMoveHandler(VCSFileProxy from, VCSFileProxy to) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 
-    public IOHandler getRenameHandler(VCSFileProxy from, String newName);
+    public IOHandler getRenameHandler(VCSFileProxy from, String newName) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 
-    public void moveSuccess(VCSFileProxy from, VCSFileProxy to);
+    public void afterMove(VCSFileProxy from, VCSFileProxy to) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 
-    public void fileRenamed(FileRenameEvent fe);
-
-    public void fileAttributeChanged(FileAttributeEvent fe);
-
-        
     // ==================================================================================================
     // COPY
     // ==================================================================================================
 
-    public IOHandler getCopyHandler(VCSFileProxy from, VCSFileProxy to);
+    public IOHandler getCopyHandler(VCSFileProxy from, VCSFileProxy to) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 
-    public void beforeCopy(VCSFileProxy from, VCSFileProxy to);
+    public void beforeCopy(VCSFileProxy from, VCSFileProxy to) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
     
-    public void copySuccess(VCSFileProxy from, VCSFileProxy to);
+    public void copySuccess(VCSFileProxy from, VCSFileProxy to) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 
     // ==================================================================================================
     // MISC
@@ -136,9 +165,13 @@ public interface VCSFileSystemProvider {
      *
      * @param fo a VCSFileProxy
      */
-    public void fileLocked(VCSFileProxy fo);
+    public void fileLocked(VCSFileProxy fo) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 
-    public long refreshRecursively(VCSFileProxy dir, long lastTimeStamp, List<? super VCSFileProxy> children);
+    public long refreshRecursively(VCSFileProxy dir, long lastTimeStamp, List<? super VCSFileProxy> children) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
     
     // ==================================================================================================
     // HANDLERS
@@ -162,5 +195,5 @@ public interface VCSFileSystemProvider {
          */
         boolean delete(VCSFileProxy file); // XXX IOException ?
     }    
-    
+
 }
