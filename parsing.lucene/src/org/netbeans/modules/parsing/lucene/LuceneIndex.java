@@ -69,12 +69,7 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.FieldSelector;
 import org.apache.lucene.document.FieldSelectorResult;
-import org.apache.lucene.index.CorruptIndexException;
-import org.apache.lucene.index.FilterIndexReader;
-import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.IndexWriter;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.index.TermEnum;
+import org.apache.lucene.index.*;
 import org.apache.lucene.search.Collector;
 import org.apache.lucene.search.DefaultSimilarity;
 import org.apache.lucene.search.IndexSearcher;
@@ -682,7 +677,9 @@ public class LuceneIndex implements Index {
             hit();
             //Issue #149757 - logging
             try {
-                return new IndexWriter (this.fsDir, analyzer, create, IndexWriter.MaxFieldLength.LIMITED);
+                final IndexWriter iw = new IndexWriter (this.fsDir, analyzer, create, IndexWriter.MaxFieldLength.LIMITED);
+                iw.setMergeScheduler(new SerialMergeScheduler());
+                return iw;
             } catch (IOException ioe) {
                 throw annotateException (ioe);
             }
