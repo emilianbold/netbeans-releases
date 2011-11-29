@@ -99,6 +99,7 @@ public class ChangeParametersUI implements RefactoringUI {
                 : null;
     }
     
+    @Override
     public String getDescription() {
         String msg = NbBundle.getMessage(ChangeParametersUI.class, 
                                         "DSC_ChangeParsRootNode"); // NOI18N
@@ -111,6 +112,7 @@ public class ChangeParametersUI implements RefactoringUI {
        });
     }
     
+    @Override
     public CustomRefactoringPanel getPanel(ChangeListener parent) {
         if (panel == null) {
             //TODO:
@@ -120,10 +122,12 @@ public class ChangeParametersUI implements RefactoringUI {
         return panel;
     }
     
+    @Override
     public AbstractRefactoring getRefactoring() {
         return refactoring;
     }
 
+    @Override
     public boolean isQuery() {
         return false;
     }
@@ -156,22 +160,27 @@ public class ChangeParametersUI implements RefactoringUI {
         return problem;
     }
     
+    @Override
     public String getName() {
         return NbBundle.getMessage(ChangeParametersUI.class, "LBL_ChangeMethodSignature");
     }
     
+    @Override
     public Problem checkParameters() {
         return setParameters(true);
     }
 
+    @Override
     public Problem setParameters() {
         return setParameters(false);
     }
     
+    @Override
     public boolean hasParameters() {
         return true;
     }
     
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(ChangeParametersUI.class);
     }

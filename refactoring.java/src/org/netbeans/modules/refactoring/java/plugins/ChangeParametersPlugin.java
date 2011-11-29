@@ -168,10 +168,12 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin {
         try {
             source.runUserActionTask(new CancellableTask<CompilationController>() {
                 
+                @Override
                 public void cancel() {
                     throw new UnsupportedOperationException("Not supported yet."); // NOI18N
                 }
                 
+                @Override
                 public void run(CompilationController info) throws Exception {
                     final ClassIndex idx = info.getClasspathInfo().getClassIndex();
                     info.toPhase(JavaSource.Phase.RESOLVED);
@@ -206,6 +208,7 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin {
     }
     
     
+    @Override
     public Problem prepare(RefactoringElementsBag elements) {
         Set<FileObject> a = getRelevantFiles();
         fireProgressListenerStart(ProgressEvent.START, a.size() + 1);
@@ -233,6 +236,7 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin {
         return problem != null ? problem : changeParamsTransformer.getProblem();
     }
     
+    @Override
     protected JavaSource getJavaSource(JavaRefactoringPlugin.Phase p) {
         switch(p) {
             case CHECKPARAMETERS:

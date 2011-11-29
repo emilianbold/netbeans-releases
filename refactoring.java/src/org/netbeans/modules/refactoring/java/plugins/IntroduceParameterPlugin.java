@@ -175,10 +175,12 @@ public class IntroduceParameterPlugin extends JavaRefactoringPlugin {
         try {
             source.runUserActionTask(new CancellableTask<CompilationController>() {
 
+                @Override
                 public void cancel() {
                     throw new UnsupportedOperationException("Not supported yet."); // NOI18N
                 }
 
+                @Override
                 public void run(CompilationController info) throws Exception {
                     final ClassIndex idx = info.getClasspathInfo().getClassIndex();
                     info.toPhase(JavaSource.Phase.RESOLVED);
@@ -333,6 +335,7 @@ public class IntroduceParameterPlugin extends JavaRefactoringPlugin {
         return ret;
     }
 
+    @Override
     protected JavaSource getJavaSource(JavaRefactoringPlugin.Phase p) {
         switch (p) {
             case CHECKPARAMETERS:
@@ -446,10 +449,12 @@ public class IntroduceParameterPlugin extends JavaRefactoringPlugin {
                 JavaSource source = JavaSource.forFileObject(treePathHandle.getFileObject());
                 source.runUserActionTask(new CancellableTask<CompilationController>() {
 
+                    @Override
                     public void run(org.netbeans.api.java.source.CompilationController info) {
                         p[0] = initDelegate(info);
                     }
 
+                    @Override
                     public void cancel() {
                     }
                 }, true);

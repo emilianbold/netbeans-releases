@@ -96,10 +96,12 @@ public final class EncapsulateFieldUI implements RefactoringUI {
         refactoring = new EncapsulateFieldsRefactoring(Arrays.asList(handles));
     }
     
+    @Override
     public boolean isQuery() {
         return false;
     }
 
+    @Override
     public CustomRefactoringPanel getPanel(ChangeListener parent) {
         if (panel == null) {
             Collection selectedObjects = refactoring.getRefactoringSource().lookup(Collection.class);
@@ -123,10 +125,12 @@ public final class EncapsulateFieldUI implements RefactoringUI {
         }
     }
 
+    @Override
     public AbstractRefactoring getRefactoring() {
         return refactoring;
     }
 
+    @Override
     public String getDescription() {
         String name = panel.getClassname();
 //        name = "<anonymous>"; // NOI18N
@@ -135,22 +139,27 @@ public final class EncapsulateFieldUI implements RefactoringUI {
                 );
     }
 
+    @Override
     public String getName() {
         return NbBundle.getMessage(EncapsulateFieldUI.class, "LBL_EncapsulateFields");
     }
     
+    @Override
     public Problem checkParameters() {
         return setParameters(true);
     }
     
+    @Override
     public Problem setParameters() {
         return setParameters(false);
     }
 
+    @Override
     public boolean hasParameters() {
         return true;
     }
     
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(EncapsulateFieldUI.class);
     }

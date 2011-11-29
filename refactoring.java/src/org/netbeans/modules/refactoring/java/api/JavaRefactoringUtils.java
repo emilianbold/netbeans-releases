@@ -334,10 +334,12 @@ public final class JavaRefactoringUtils {
         }
 
         boolean cancelled;
+        @Override
         public void cancel() {
             cancelled = true;
         }
 
+        @Override
         public void run(CompilationController cc) throws Exception {
             if (cancelled) return;
             cc.toPhase(Phase.RESOLVED);

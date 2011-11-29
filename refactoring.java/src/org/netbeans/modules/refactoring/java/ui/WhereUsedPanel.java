@@ -144,6 +144,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
                 break;
             case 2:
                 NonRecursiveFolder nonRecursiveFolder = new NonRecursiveFolder() {
+            @Override
                     public FileObject getFolder() {
                         return packageFolder;
                     }
@@ -174,15 +175,18 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         return RefactoringUtils.getOverridenMethods(m, info);
     }
     
+    @Override
     public void initialize() {
         if (initialized) return;
         JavaSource source = JavaSource.forFileObject(element.getFileObject());
         final Project p = FileOwnerQuery.getOwner(element.getFileObject());
         CancellableTask<CompilationController> task =new CancellableTask<CompilationController>() {
+            @Override
             public void cancel() {
                 throw new UnsupportedOperationException("Not supported yet."); // NOI18N
             }
             
+            @Override
             public void run(CompilationController info) throws Exception {
                 info.toPhase(Phase.RESOLVED);
                 String m_isBaseClassText = null;
@@ -266,6 +270,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
                 }
 
                 SwingUtilities.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         remove(classesPanel);
                         remove(methodsPanel);
@@ -330,6 +335,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         public JLabelRenderer () {
             setOpaque(true);
         }
+        @Override
         public Component getListCellRendererComponent(
                 JList list,
                 Object value,
@@ -423,6 +429,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
                         } else {
                             toRet.add((T) new NonRecursiveFolder() {
 
+                                @Override
                                 public FileObject getFolder() {
                                     return f;
                                 }
@@ -473,6 +480,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         return newElement;
     }
     
+    @Override
     public void requestFocus() {
         super.requestFocus();
     }
@@ -765,6 +773,7 @@ private void m_usagesStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRS
         return searchInComments.isSelected();
     }
 
+    @Override
     public Component getComponent() {
         return this;
     }

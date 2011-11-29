@@ -89,6 +89,7 @@ public final class PullUpRefactoringPlugin extends JavaRefactoringPlugin {
         this.treePathHandle = refactoring.getSourceType();
     }
 
+    @Override
     protected JavaSource getJavaSource(Phase p) {
         switch (p) {
         default: 
@@ -270,6 +271,7 @@ public final class PullUpRefactoringPlugin extends JavaRefactoringPlugin {
         return null;
     }
     
+    @Override
     public Problem prepare(RefactoringElementsBag refactoringElements) {
         ClasspathInfo cpInfo = getClasspathInfo(refactoring);
         

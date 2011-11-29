@@ -110,10 +110,12 @@ public class WhereUsedQueryUI implements RefactoringUI, Openable {
     }
     
 
+    @Override
     public boolean isQuery() {
         return true;
     }
 
+    @Override
     public CustomRefactoringPanel getPanel(ChangeListener parent) {
         if (panel == null) {
             panel = new WhereUsedPanel(name, element, parent);
@@ -121,6 +123,7 @@ public class WhereUsedQueryUI implements RefactoringUI, Openable {
         return panel;
     }
 
+    @Override
     public org.netbeans.modules.refactoring.api.Problem setParameters() {
         query.putValue(query.SEARCH_IN_COMMENTS,panel.isSearchInComments());
 //        query.putValue(query., name);
@@ -151,6 +154,7 @@ public class WhereUsedQueryUI implements RefactoringUI, Openable {
         query.putValue(WhereUsedQuery.FIND_REFERENCES,panel.isClassFindUsages());
     }
     
+    @Override
     public org.netbeans.modules.refactoring.api.Problem checkParameters() {
         if (kind == ElementKind.METHOD) {
             setForMethod();
@@ -162,10 +166,12 @@ public class WhereUsedQueryUI implements RefactoringUI, Openable {
             return null;
     }
 
+    @Override
     public org.netbeans.modules.refactoring.api.AbstractRefactoring getRefactoring() {
         return query!=null?query:delegate;
     }
 
+    @Override
     public String getDescription() {
         if (panel!=null) {
             if ((kind == ElementKind.INTERFACE) || (kind == ElementKind.CLASS)) {
@@ -212,16 +218,19 @@ public class WhereUsedQueryUI implements RefactoringUI, Openable {
     }
 
 
+    @Override
     public String getName() {
         return new MessageFormat(NbBundle.getMessage(WhereUsedPanel.class, "LBL_UsagesOf")).format (
                     new Object[] {name}
                 );
     }
     
+    @Override
     public boolean hasParameters() {
         return true;
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(WhereUsedQueryUI.class);
     }

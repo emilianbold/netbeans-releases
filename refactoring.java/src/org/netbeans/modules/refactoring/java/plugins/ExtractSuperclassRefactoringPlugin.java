@@ -131,6 +131,7 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
         this.refactoring = refactoring;
     }
 
+    @Override
     protected JavaSource getJavaSource(Phase p) {
         return JavaSource.forFileObject(refactoring.getSourceType().getFileObject());
     }
@@ -301,6 +302,7 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
         
     }
 
+    @Override
     public Problem prepare(RefactoringElementsBag bag) {
         FileObject primFile = refactoring.getSourceType().getFileObject();
         try {
@@ -378,6 +380,7 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
 
         // --- SimpleRefactoringElementImpl methods ----------------------------------
         
+        @Override
         public void performChange() {
             try {
                 FileObject folderFO = URLMapper.findFileObject(folderURL);
@@ -420,22 +423,27 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
             }
         }
         
+        @Override
         public String getText() {
             return NbBundle.getMessage(ExtractInterfaceRefactoringPlugin.class, "TXT_ExtractSC_CreateSC", superClassName); // NOI18N
         }
 
+        @Override
         public String getDisplayText() {
             return getText();
         }
 
+        @Override
         public FileObject getParentFile() {
             return URLMapper.findFileObject(folderURL);
         }
 
+        @Override
         public PositionBounds getPosition() {
             return null;
         }
     
+        @Override
         public Lookup getLookup() {
             FileObject fo = superClassURL == null? null: URLMapper.findFileObject(superClassURL);
             return fo != null? Lookups.singleton(fo): Lookup.EMPTY;
@@ -443,10 +451,12 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
         
         // --- CancellableTask methods ----------------------------------
         
+        @Override
         public void cancel() {
             
         }
 
+        @Override
         public void run(WorkingCopy wc) throws Exception {
             wc.toPhase(JavaSource.Phase.RESOLVED);
             ClassTree classTree = findClass(wc, superClassName);
@@ -672,9 +682,11 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
             bag.registerTransaction(createTransaction(Collections.singletonList(modification)));
         }
         
+        @Override
         public void cancel() {
         }
 
+        @Override
         public void run(WorkingCopy wc) throws Exception {
             wc.toPhase(JavaSource.Phase.RESOLVED);
             TypeElement clazz = this.sourceType.resolve(wc);

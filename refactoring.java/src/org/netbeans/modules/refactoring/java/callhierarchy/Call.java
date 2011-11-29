@@ -130,18 +130,22 @@ final class Call implements CallDescriptor {
         return model;
     }
 
+    @Override
     public String getDisplayName() {
         return displayName;
     }
 
+    @Override
     public String getHtmlDisplayName() {
         return htmlDisplayName;
     }
 
+    @Override
     public Icon getIcon() {
         return icon;
     }
 
+    @Override
     public boolean isLeaf() {
         return leaf;
     }
@@ -170,6 +174,7 @@ final class Call implements CallDescriptor {
                 : declaration != null ? declaration : selection;
     }
 
+    @Override
     public void open() {
         if (occurrences != null && !occurrences.isEmpty()) {
             occurrences.get(0).open();
@@ -418,6 +423,7 @@ final class Call implements CallDescriptor {
 
                             EventQueue.invokeLater(new Runnable() {
 
+                                @Override
                                 public void run() {
                                     ec.getOpenedPanes()[0].setSelectionStart(begin);
                                     ec.getOpenedPanes()[0].setSelectionEnd(end);

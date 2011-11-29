@@ -95,20 +95,24 @@ public class MoveClassUI implements RefactoringUI, RefactoringUIBypass {
         this.refactoring.getContext().add(RefactoringUtils.getClasspathInfoFor(javaObject.getPrimaryFile()));
     }
     
+    @Override
     public String getName() {
         return getString ("LBL_MoveClass");
     }
      
+    @Override
     public String getDescription() {
         return new MessageFormat(getString("DSC_MoveClass")).format(
                 new Object[] {javaObject.getName(), packageName()}
         );
     }
     
+    @Override
     public boolean isQuery() {
         return false;
     }
         
+    @Override
     public CustomRefactoringPanel getPanel(ChangeListener parent) {
         if (panel == null) {
             String pkgName = targetFolder!=null?getPackageName(targetFolder):getPackageName(javaObject.getPrimaryFile().getParent());
@@ -150,29 +154,36 @@ public class MoveClassUI implements RefactoringUI, RefactoringUIBypass {
         }
     }
     
+    @Override
     public Problem checkParameters() {
         return setParameters(true);
     }
     
+    @Override
     public Problem setParameters() {
         return setParameters(false);
     }
     
+    @Override
     public AbstractRefactoring getRefactoring() {
         return refactoring;
     }
     
+    @Override
     public boolean hasParameters() {
         return true;
     }
     
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(MoveClassUI.class);
     }
 
+    @Override
     public boolean isRefactoringBypassRequired() {
         return !panel.isUpdateReferences();
     }
+    @Override
     public void doRefactoringBypass() throws IOException {
         pasteType.paste();
     }

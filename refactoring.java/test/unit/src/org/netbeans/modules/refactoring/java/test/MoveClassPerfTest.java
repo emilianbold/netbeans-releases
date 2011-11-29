@@ -97,6 +97,7 @@ public class MoveClassPerfTest extends RefPerfTestCase {
 
         src.runWhenScanFinished(new Task<CompilationController>() {
 
+            @Override
             public void run(CompilationController controller) throws Exception {
                 controller.toPhase(JavaSource.Phase.RESOLVED);
                 TypeElement klass = controller.getElements().getTypeElement(REFACTORED_OBJ);

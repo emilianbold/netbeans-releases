@@ -256,11 +256,13 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
             this.rs = rs;
         }
         
+        @Override
         public void showDetails(Action callback, Cancellable parent) {
             parent.cancel();
             UI.openRefactoringUI(ui, rs, callback);
         }
         
+        @Override
         public String getDetailsHint() {
             return getString("LBL_ShowUsages");
         }
@@ -320,9 +322,11 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
             }
             try {
                 source.runUserActionTask(new CancellableTask<CompilationController>() {
+                    @Override
                     public void cancel() {
                         
                     }
+                    @Override
                     public void run(CompilationController co) throws Exception {
                         co.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                         CompilationUnitTree cut = co.getCompilationUnit();
@@ -437,10 +441,12 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
         try {
             javaSrc.runUserActionTask(new CancellableTask<CompilationController>(){
 
+                @Override
                 public void cancel() {
                     //No op
                 }
 
+                @Override
                 public void run(CompilationController compilationController) throws Exception {
                     ExecutableElement execElem = (ExecutableElement) methodHandle.resolveElement(compilationController);
                     TypeElement type = (TypeElement) execElem.getEnclosingElement();

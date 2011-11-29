@@ -54,6 +54,7 @@ public class MovePopupAction implements TestAction {
     
     public static final String popupPath = "Refactor|Move...";
 
+    @Override
     public void perform(Object parameter) {
         perform((EditorOperator)parameter);
     }

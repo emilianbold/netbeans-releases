@@ -93,12 +93,15 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
         if(editable) nameField.requestFocus();
         else textCheckBox.requestFocus();
         nameField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
             public void changedUpdate(DocumentEvent event) {
                 RenamePanel.this.parent.stateChanged(null);
             }
+            @Override
             public void insertUpdate(DocumentEvent event) {
                 RenamePanel.this.parent.stateChanged(null);
             }
+            @Override
             public void removeUpdate(DocumentEvent event) {
                 RenamePanel.this.parent.stateChanged(null);
             }
@@ -110,6 +113,7 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
     
     private boolean initialized = false;
     
+    @Override
     public void initialize() {
         if (initialized) {
             return;
@@ -120,10 +124,12 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
             JavaSource source = JavaSource.forFileObject(handle.getFileObject());
             CancellableTask<CompilationController> task = new CancellableTask<CompilationController>() {
 
+                @Override
                 public void cancel() {
                     throw new UnsupportedOperationException("Not supported yet."); // NOI18N
                 }
 
+                @Override
                 public void run(CompilationController info) throws Exception {
                     if(RefactoringUtils.getElementKind(handle) == ElementKind.FIELD) {
                         VariableElement element = (VariableElement) handle.resolveElement(info);
@@ -139,6 +145,7 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
                         if (hasGetters) {
                             SwingUtilities.invokeLater(new Runnable() {
 
+                                @Override
                                 public void run() {
                                     renameGettersAndCheckersCheckBox.setVisible(true);
                                 }
@@ -183,6 +190,7 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
                 if(locator.getFileType(location.getFileObject()) == TestLocator.FileType.TEST) {
                     SwingUtilities.invokeLater(new Runnable() {
 
+                        @Override
                         public void run() {
                             renameTestClassCheckBox.setVisible(true);
                         }
@@ -192,6 +200,7 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
         }
     }
     
+    @Override
     public void requestFocus() {
         if(nameField.isEnabled()) nameField.requestFocus();
         else textCheckBox.requestFocus();
@@ -346,6 +355,7 @@ private void renameTestClassCheckBoxStateChanged(javax.swing.event.ChangeEvent e
         return renameGettersAndCheckersCheckBox.isSelected();
     }
 
+    @Override
     public Component getComponent() {
         return this;
     }

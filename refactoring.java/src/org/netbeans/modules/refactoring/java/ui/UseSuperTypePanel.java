@@ -112,13 +112,16 @@ public class UseSuperTypePanel extends JPanel implements CustomRefactoringPanel 
         superTypeList.setSelectedIndex(0);
     }
 
+    @Override
     public void requestFocus() {
         superTypeList.requestFocus();
     }
     
+    @Override
     public void initialize() {
     }
     
+    @Override
     public Component getComponent(){
         return this;
     }

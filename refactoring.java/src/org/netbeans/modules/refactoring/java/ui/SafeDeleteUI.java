@@ -121,11 +121,13 @@ public class SafeDeleteUI implements RefactoringUI, RefactoringUIBypass{
      * @return Returns the result of fastCheckParameters of the
      * underlying refactoring
      */
+    @Override
     public org.netbeans.modules.refactoring.api.Problem checkParameters() {
         refactoring.setCheckInComments(panel.isSearchInComments());
         return refactoring.fastCheckParameters();
     }
     
+    @Override
     public String getDescription() {
         //TODO: Check bounds here. Might throw an OutofBoundsException otherwise.
 //        if (elementsToDelete[0] instanceof JavaClass) {
@@ -151,16 +153,19 @@ public class SafeDeleteUI implements RefactoringUI, RefactoringUIBypass{
         return NbBundle.getMessage(SafeDeleteUI.class, "DSC_SafeDel", elementsToDelete); // NOI18N
     }
     
+    @Override
     public org.openide.util.HelpCtx getHelpCtx() {
         
         return new HelpCtx(SafeDeleteUI.class.getName());
     }
     
+    @Override
     public String getName() {
         
         return NbBundle.getMessage(SafeDeleteUI.class, "LBL_SafeDel"); // NOI18N
     }
     
+    @Override
     public CustomRefactoringPanel getPanel(ChangeListener parent) {
         //TODO:Do you want to just use Arrays.asList?
         if(panel == null)
@@ -168,11 +173,13 @@ public class SafeDeleteUI implements RefactoringUI, RefactoringUIBypass{
         return panel;
     }
     
+    @Override
     public AbstractRefactoring getRefactoring() {
         
         return refactoring;
     }
     
+    @Override
     public boolean hasParameters() {
         
         return true;
@@ -181,10 +188,12 @@ public class SafeDeleteUI implements RefactoringUI, RefactoringUIBypass{
      * Returns false, since this refactoring is not a query.
      * @return false
      */
+    @Override
     public boolean isQuery() {
         return false;
     }
     
+    @Override
     public Problem setParameters() {
         refactoring.setCheckInComments(panel.isSearchInComments());
         return refactoring.checkParameters();
@@ -192,10 +201,12 @@ public class SafeDeleteUI implements RefactoringUI, RefactoringUIBypass{
     
     //Helper methods------------------
     
+    @Override
     public boolean isRefactoringBypassRequired() {
         return panel.isRegularDelete();
     }
 
+    @Override
     public void doRefactoringBypass() throws IOException {
         RequestProcessor.getDefault().post(new Runnable() {
 

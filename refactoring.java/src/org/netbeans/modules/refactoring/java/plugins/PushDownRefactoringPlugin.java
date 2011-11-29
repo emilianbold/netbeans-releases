@@ -80,6 +80,7 @@ public final class PushDownRefactoringPlugin extends JavaRefactoringPlugin {
         treePathHandle = refactoring.getSourceType();
     }
     
+    @Override
     protected JavaSource getJavaSource(Phase p) {
         //TODO: wrong classpath
         switch (p) {
@@ -155,6 +156,7 @@ public final class PushDownRefactoringPlugin extends JavaRefactoringPlugin {
         return set;
     }    
     
+    @Override
     public Problem prepare(RefactoringElementsBag refactoringElements) {
         Set<FileObject> a = getRelevantFiles(treePathHandle);
         fireProgressListenerStart(ProgressEvent.START, a.size());

@@ -110,6 +110,7 @@ public class CopyClassPanel extends JPanel implements ActionListener, DocumentLi
     }
     
     private boolean initialized = false;
+    @Override
     public void initialize() {
         if (initialized)
             return ;
@@ -123,6 +124,7 @@ public class CopyClassPanel extends JPanel implements ActionListener, DocumentLi
         
         EventQueue.invokeLater(new Runnable() {
 
+            @Override
             public void run() {
                 newNameTextField.setText(newName);
                 newNameTextField.setSelectionStart(0);
@@ -146,6 +148,7 @@ public class CopyClassPanel extends JPanel implements ActionListener, DocumentLi
         // Determine the extension
     }
     
+    @Override
     public void requestFocus() {
         newNameTextField.requestFocus();
     }
@@ -309,6 +312,7 @@ private void isUpdateReferencesActionPerformed(java.awt.event.ActionEvent evt) {
 
     // ActionListener implementation -------------------------------------------
         
+    @Override
     public void actionPerformed(ActionEvent e) {
         if (projectsComboBox == e.getSource()) {
             project = (Project) projectsComboBox.getSelectedItem();
@@ -324,14 +328,17 @@ private void isUpdateReferencesActionPerformed(java.awt.event.ActionEvent evt) {
     
     // DocumentListener implementation -----------------------------------------
     
+    @Override
     public void changedUpdate(DocumentEvent e) {                
         fireChange();        
     }    
     
+    @Override
     public void insertUpdate(DocumentEvent e) {
         fireChange();        
     }
     
+    @Override
     public void removeUpdate(DocumentEvent e) {
         fireChange();        
     }
@@ -393,6 +400,7 @@ private void isUpdateReferencesActionPerformed(java.awt.event.ActionEvent evt) {
         }
     }
     
+    @Override
     public Component getComponent() {
         return this;
     }

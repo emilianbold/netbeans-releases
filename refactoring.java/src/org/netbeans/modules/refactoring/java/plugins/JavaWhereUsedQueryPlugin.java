@@ -92,6 +92,7 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
         this.refactoring = refactoring;
     }
     
+    @Override
     protected JavaSource getJavaSource(Phase p) {
         switch (p) {
         default: 
@@ -239,9 +240,11 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
         source = createSource(file, cpInfo, tph);
         //XXX: This is slow!
         CancellableTask<CompilationController> task = new CancellableTask<CompilationController>() {
+            @Override
             public void cancel() {
             }
             
+            @Override
             public void run(CompilationController info) throws Exception {
                 info.toPhase(JavaSource.Phase.RESOLVED);
                 final Element el = tph.resolveElement(info);
@@ -258,12 +261,15 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
                         packageSet.add(resourceName);
                     }
                     searchScopeType.add(new SearchScopeType() {
+                        @Override
                         public Set<? extends String> getPackages() {
                             return packageSet;
                         }
+                        @Override
                         public boolean isSources() {
                             return true;
                         }
+                        @Override
                         public boolean isDependencies() {
                             return false;
                         }
@@ -340,6 +346,7 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
     }
     
     //@Override
+    @Override
     public Problem prepare(final RefactoringElementsBag elements) {
         fireProgressListenerStart(ProgressEvent.START, -1);
         Set<FileObject> a = getRelevantFiles(refactoring.getRefactoringSource().lookup(TreePathHandle.class));
@@ -442,10 +449,12 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
             this.elements = elements;
         }
 
+        @Override
         public void cancel() {
             cancelled=true;
         }
 
+        @Override
         public void run(WorkingCopy compiler) throws IOException {
             if (cancelled)
                 return ;

@@ -821,10 +821,12 @@ public class RefactoringUtils {
             typeToCheck = fqn;
         }
         
+        @Override
         public void cancel() {
             
         }
         
+        @Override
         public void run(CompilationController cc) {
             try {
                 cc.toPhase(JavaSource.Phase.RESOLVED);
@@ -888,10 +890,12 @@ public class RefactoringUtils {
             this.handle = handle;
         }
         
+        @Override
         public void cancel() {
             
         }
         
+        @Override
         public void run(CompilationController cc) {
             try {
                 cc.toPhase(JavaSource.Phase.RESOLVED);
@@ -928,6 +932,7 @@ public class RefactoringUtils {
         if (SourceUtils.isScanInProgress()) {
             final ActionPerformer ap = new ActionPerformer(runnable);
             ActionListener listener = new ActionListener() {
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     ap.cancel();
                     waitTask.cancel();
@@ -975,6 +980,7 @@ public class RefactoringUtils {
             return cancel;
         }
         
+        @Override
         public void run() {
             try {
                 SourceUtils.waitScanFinished();
@@ -982,6 +988,7 @@ public class RefactoringUtils {
                 Exceptions.printStackTrace(ie);
             }
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     if (!cancel) {
                         if (waitDialog != null) {

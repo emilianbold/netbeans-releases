@@ -127,15 +127,18 @@ public class PushDownPanel extends JPanel implements CustomRefactoringPanel {
         this.parent = parent;
     }
     
+    @Override
     public void initialize() {
         if (initialized) return;
         final TreePathHandle handle = refactoring.getSourceType();
         JavaSource source = JavaSource.forFileObject(handle.getFileObject());
         try {
             source.runUserActionTask(new CancellableTask<CompilationController>() {
+                @Override
             public void cancel() {
             }
             
+                @Override
             public void run(CompilationController controller) throws Exception {
                 controller.toPhase(JavaSource.Phase.RESOLVED);
                 List<MemberInfo<? extends ElementHandle<? extends Element>>> l = new ArrayList();
@@ -172,6 +175,7 @@ public class PushDownPanel extends JPanel implements CustomRefactoringPanel {
                     // override the extractText method to add "implements " prefix to the text
                     // in case the value is instance of MultipartId (i.e. it represents an interface
                     // name from implements clause)
+                        @Override
                     protected String extractText(Object value) {
                         String displayValue = super.extractText(value);
                         
@@ -186,6 +190,7 @@ public class PushDownPanel extends JPanel implements CustomRefactoringPanel {
                 // 2. be disabled for static methods
                 // 3. be disabled and checked for methods if the target type is an interface
                 membersTable.getColumnModel().getColumn(2).setCellRenderer(new UIUtilities.BooleanTableCellRenderer(membersTable) {
+                        @Override
                     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
                         // make the checkbox checked (even if "Make Abstract" is not set)
                         // for non-static methods if the target type is an interface
@@ -277,31 +282,38 @@ public class PushDownPanel extends JPanel implements CustomRefactoringPanel {
     // End of variables declaration//GEN-END:variables
     private class TableModel extends AbstractTableModel {
         
+        @Override
         public int getColumnCount() {
             return COLUMN_NAMES.length;
         }
 
+        @Override
         public String getColumnName(int column) {
             return UIUtilities.getColumnName(NbBundle.getMessage(PushDownPanel.class, COLUMN_NAMES[column]));
         }
 
+        @Override
         public Class getColumnClass(int columnIndex) {
             return COLUMN_CLASSES[columnIndex];
         }
 
+        @Override
         public int getRowCount() {
             return members.length;
         }
 
+        @Override
         public Object getValueAt(int rowIndex, int columnIndex) {
             return members[rowIndex][columnIndex];
         }
 
+        @Override
         public void setValueAt(Object value, int rowIndex, int columnIndex) {
             members[rowIndex][columnIndex] = value;
             parent.stateChanged(null);
         }
 
+        @Override
         public boolean isCellEditable(int rowIndex, int columnIndex) {
             if (columnIndex == 2) {
                 // column 2 is editable only in case of non-static methods
@@ -318,6 +330,7 @@ public class PushDownPanel extends JPanel implements CustomRefactoringPanel {
         }
     }
 
+    @Override
     public Component getComponent() {
         return this;
     }

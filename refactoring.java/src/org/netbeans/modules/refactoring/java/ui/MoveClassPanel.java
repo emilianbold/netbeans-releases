@@ -112,6 +112,7 @@ public class MoveClassPanel extends JPanel implements ActionListener, DocumentLi
     }
     
     private boolean initialized = false;
+    @Override
     public void initialize() {
         if (initialized)
             return ;
@@ -136,6 +137,7 @@ public class MoveClassPanel extends JPanel implements ActionListener, DocumentLi
         // Determine the extension
     }
     
+    @Override
     public void requestFocus() {
         packageComboBox.requestFocus();
     }
@@ -285,6 +287,7 @@ private void updateReferencesCheckBoxItemStateChanged(java.awt.event.ItemEvent e
 
     // ActionListener implementation -------------------------------------------
         
+    @Override
     public void actionPerformed(ActionEvent e) {
         if (projectsComboBox == e.getSource()) {
             project = (Project) projectsComboBox.getSelectedItem();
@@ -300,14 +303,17 @@ private void updateReferencesCheckBoxItemStateChanged(java.awt.event.ItemEvent e
     
     // DocumentListener implementation -----------------------------------------
     
+    @Override
     public void changedUpdate(DocumentEvent e) {                
         fireChange();        
     }    
     
+    @Override
     public void insertUpdate(DocumentEvent e) {
         fireChange();        
     }
     
+    @Override
     public void removeUpdate(DocumentEvent e) {
         fireChange();        
     }
@@ -367,6 +373,7 @@ private void updateReferencesCheckBoxItemStateChanged(java.awt.event.ItemEvent e
         }
         
         // #89393: GTK needs name to render cell renderer "natively"
+        @Override
         public String getName() {
             String name = super.getName();
             return name == null ? "ComboBox.renderer" : name;  // NOI18N
@@ -376,6 +383,7 @@ private void updateReferencesCheckBoxItemStateChanged(java.awt.event.ItemEvent e
     /** Groups combo renderer, used also in CopyClassPanel */
     static class GroupCellRenderer extends BaseCellRenderer {
         
+        @Override
         public Component getListCellRendererComponent(
             JList list,
             Object value,
@@ -411,6 +419,7 @@ private void updateReferencesCheckBoxItemStateChanged(java.awt.event.ItemEvent e
     /** Projects combo renderer, used also in CopyClassPanel */
     static class ProjectCellRenderer extends BaseCellRenderer {
         
+        @Override
         public Component getListCellRendererComponent(
             JList list,
             Object value,
@@ -445,6 +454,7 @@ private void updateReferencesCheckBoxItemStateChanged(java.awt.event.ItemEvent e
         
         private static Comparator COLLATOR = Collator.getInstance();
         
+        @Override
         public int compare(Object o1, Object o2) {
             
             if ( !( o1 instanceof Project ) ) {
@@ -461,6 +471,7 @@ private void updateReferencesCheckBoxItemStateChanged(java.awt.event.ItemEvent e
         }
     }    
 
+    @Override
     public Component getComponent() {
         return this;
     }

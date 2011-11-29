@@ -396,6 +396,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
         EditorCookie ec = lookup.lookup(EditorCookie.class);
         if (RefactoringActionsProvider.isFromEditor(ec)) {
             task = new RefactoringActionsProvider.TextComponentTask(ec){
+                @Override
                 protected RefactoringUI createRefactoringUI(TreePathHandle selectedElement,
                                                             int startOffset,
                                                             int endOffset,
@@ -489,6 +490,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
         }
         if (ec != null) {
             task = new RefactoringActionsProvider.TextComponentTask(ec) {
+                @Override
                 protected RefactoringUI createRefactoringUI(TreePathHandle selectedElement,
                         int startOffset,
                         int endOffset,
@@ -569,6 +571,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
         EditorCookie ec = lookup.lookup(EditorCookie.class);
         if (ec != null) {
             task = new RefactoringActionsProvider.TextComponentTask(ec) {
+                @Override
                 protected RefactoringUI createRefactoringUI(TreePathHandle selectedElement,
                         int startOffset,
                         int endOffset,
@@ -716,6 +719,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
         if (ec!=null) {
             task = new RefactoringActionsProvider.TextComponentTask(ec) {
 
+                @Override
                 protected RefactoringUI createRefactoringUI(TreePathHandle selectedElement,
                         int startOffset,
                         int endOffset,

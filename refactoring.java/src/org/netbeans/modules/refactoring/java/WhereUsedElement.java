@@ -81,10 +81,12 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation {
             ElementGripFactory.getDefault().put(parentFile, tp, info);
     }
 
+    @Override
     public String getDisplayText() {
         return displayText;
     }
 
+    @Override
     public Lookup getLookup() {
         Object composite = ElementGripFactory.getDefault().get(parentFile, bounds.getBegin().getOffset());
         if (composite==null) 
@@ -92,17 +94,21 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation {
         return Lookups.singleton(composite);
     }
 
+    @Override
     public PositionBounds getPosition() {
         return bounds;
     }
 
+    @Override
     public String getText() {
         return displayText;
     }
 
+    @Override
     public void performChange() {
     }
 
+    @Override
     public FileObject getParentFile() {
         return parentFile;
     }

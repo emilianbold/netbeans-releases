@@ -174,6 +174,7 @@ final class CallHierarchyTasks {
             this.isCallerGraph = isCallerGraph;
         }
 
+        @Override
         public void run(CompilationController javac) throws Exception {
             TreePath tpath = null;
             Element method = null;
@@ -224,6 +225,7 @@ final class CallHierarchyTasks {
             this.searchAll = searchAll;
         }
         
+        @Override
         public void run() {
             try {
                 notifyRunning(true);
@@ -272,6 +274,7 @@ final class CallHierarchyTasks {
             try {
                 EventQueue.invokeAndWait(new Runnable() {
 
+                    @Override
                     public void run() {
                         CallHierarchyTopComponent.findInstance().setRunningState(isRunning);
                     }
@@ -283,6 +286,7 @@ final class CallHierarchyTasks {
             }
         }
         
+        @Override
         public void cancel() {
             isCanceled.set(true);
             RefactoringUtils.cancel = true;
@@ -295,6 +299,7 @@ final class CallHierarchyTasks {
             return isCanceled.get();
         }
         
+        @Override
         public void run(WorkingCopy javac) throws Exception {
             if (javac.toPhase(JavaSource.Phase.RESOLVED) != JavaSource.Phase.RESOLVED) {
                 return;
@@ -434,6 +439,7 @@ final class CallHierarchyTasks {
             this.resultHandler = resultHandler;
         }
         
+        @Override
         public void run() {
             try {
                 JavaSource js = JavaSource.forFileObject(elmDesc.getSourceToQuery().getFileObject());
@@ -446,6 +452,7 @@ final class CallHierarchyTasks {
             }
         }
 
+        @Override
         public void run(CompilationController javac) throws Exception {
             javac.toPhase(JavaSource.Phase.RESOLVED);
             TreePath resolved = elmDesc.getSourceToQuery().resolve(javac);
@@ -534,6 +541,7 @@ final class CallHierarchyTasks {
             this.selection = selection;
         }
 
+        @Override
         public int compareTo(OccurrencesDesc o) {
             return order - o.order;
         }
@@ -563,38 +571,47 @@ final class CallHierarchyTasks {
             this.enclosing = enclosing;
         }
         
+        @Override
         public TypeMirror asType() {
             throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
 
+        @Override
         public ElementKind getKind() {
             return isStatic ? ElementKind.STATIC_INIT : ElementKind.INSTANCE_INIT;
         }
 
+        @Override
         public List<? extends AnnotationMirror> getAnnotationMirrors() {
             throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
 
+        @Override
         public <A extends Annotation> A getAnnotation(Class<A> annotationType) {
             throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
 
+        @Override
         public Set<Modifier> getModifiers() {
             return isStatic ? STATICM : Collections.<Modifier>emptySet();
         }
 
+        @Override
         public Name getSimpleName() {
             return null;
         }
 
+        @Override
         public Element getEnclosingElement() {
             return enclosing;
         }
 
+        @Override
         public List<? extends Element> getEnclosedElements() {
             return Collections.emptyList();
         }
 
+        @Override
         public <R, P> R accept(ElementVisitor<R, P> v, P p) {
             throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }

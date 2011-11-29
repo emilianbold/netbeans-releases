@@ -140,6 +140,7 @@ public final class UIUtilities {
      */
     public static class JavaElementTableCellRenderer extends DefaultTableCellRenderer {
 
+        @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             super.getTableCellRendererComponent(table, extractText(value), isSelected, hasFocus, row, column);
             if (value instanceof MemberInfo) {
@@ -177,6 +178,7 @@ public final class UIUtilities {
      */
     public static class JavaElementListCellRenderer extends DefaultListCellRenderer {
 
+        @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             super.getListCellRendererComponent(list, extractText(value), index, isSelected, cellHasFocus);
             if (value instanceof MemberInfo) {
@@ -224,6 +226,7 @@ public final class UIUtilities {
             this.label = label;
         }
 
+        @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             TableCellRenderer rend = value == null || !table.getModel().isCellEditable(row, column)
                     ? label : checkbox;

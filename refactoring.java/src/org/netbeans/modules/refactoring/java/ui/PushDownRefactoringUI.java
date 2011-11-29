@@ -107,10 +107,12 @@ public class PushDownRefactoringUI implements RefactoringUI {
     
     // --- IMPLEMENTATION OF RefactoringUI INTERFACE ---------------------------
     
+    @Override
     public boolean isQuery() {
         return false;
     }
 
+    @Override
     public CustomRefactoringPanel getPanel(ChangeListener parent) {
         if (panel == null) {
             panel = new PushDownPanel(refactoring, initialMembers, parent);
@@ -118,32 +120,39 @@ public class PushDownRefactoringUI implements RefactoringUI {
         return panel;
     }
 
+    @Override
     public Problem setParameters() {
         captureParameters();
         return refactoring.checkParameters();
     }
     
+    @Override
     public Problem checkParameters() {
         captureParameters();
         return refactoring.fastCheckParameters();
     }
 
+    @Override
     public AbstractRefactoring getRefactoring() {
         return refactoring;
     }
 
+    @Override
     public String getDescription() {
         return NbBundle.getMessage(PushDownRefactoringUI.class, "DSC_PushDown", description); // NOI18N
     }
 
+    @Override
     public String getName() {
         return NbBundle.getMessage(PushDownRefactoringUI.class, "LBL_PushDown"); // NOI18N
     }
 
+    @Override
     public boolean hasParameters() {
         return true;
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(PushDownRefactoringUI.class.getName());
     }

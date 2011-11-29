@@ -109,6 +109,7 @@ public class FindSubclassesTest extends RefPerfTestCase {
         final CharSequence[] symbolName = new CharSequence[1];
         src.runWhenScanFinished(new Task<CompilationController>() {
 
+            @Override
             public void run(CompilationController controller) throws Exception {
                 controller.toPhase(JavaSource.Phase.RESOLVED);
                 TypeElement klass = controller.getElements().getTypeElement("simplej2seapp.Main");

@@ -96,6 +96,7 @@ public class OpenDocumentsPerfTest extends RefPerfTestCase {
         
         src.runWhenScanFinished(new Task<CompilationController>() {
 
+            @Override
             public void run(CompilationController controller) throws Exception {
                 controller.toPhase(JavaSource.Phase.RESOLVED);
                 TypeElement klass = controller.getElements().getTypeElement("bsh.This");

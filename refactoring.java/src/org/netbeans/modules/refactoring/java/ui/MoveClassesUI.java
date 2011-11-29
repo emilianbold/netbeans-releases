@@ -113,18 +113,22 @@ public class MoveClassesUI implements RefactoringUI, RefactoringUIBypass {
         }
     }
     
+    @Override
     public String getName() {
         return getString ("LBL_MoveClasses");
     }
      
+    @Override
     public String getDescription() {
         return getName();
     }
     
+    @Override
     public boolean isQuery() {
         return false;
     }
         
+    @Override
     public CustomRefactoringPanel getPanel(ChangeListener parent) {
         if (panel == null) {
             String pkgName = null;
@@ -177,14 +181,17 @@ public class MoveClassesUI implements RefactoringUI, RefactoringUIBypass {
         }
     }
     
+    @Override
     public Problem checkParameters() {
         return setParameters(true);
     }
     
+    @Override
     public Problem setParameters() {
         return setParameters(false);
     }
     
+    @Override
     public AbstractRefactoring getRefactoring() {
         if (refactoring == null) {
             if (disable) {
@@ -222,17 +229,21 @@ public class MoveClassesUI implements RefactoringUI, RefactoringUIBypass {
         return result;
     }
  
+    @Override
     public boolean hasParameters() {
         return true;
     }
     
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(MoveClassesUI.class);
     }
 
+    @Override
     public boolean isRefactoringBypassRequired() {
         return !panel.isUpdateReferences();
     }
+    @Override
     public void doRefactoringBypass() throws IOException {
         pasteType.paste();
     }

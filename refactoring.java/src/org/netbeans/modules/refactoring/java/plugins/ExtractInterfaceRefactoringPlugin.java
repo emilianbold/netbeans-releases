@@ -160,6 +160,7 @@ public final class ExtractInterfaceRefactoringPlugin extends JavaRefactoringPlug
         return null;
     }
 
+    @Override
     public Problem prepare(RefactoringElementsBag bag) {
         FileObject primFile = refactoring.getSourceType().getFileObject();
         try {
@@ -172,6 +173,7 @@ public final class ExtractInterfaceRefactoringPlugin extends JavaRefactoringPlug
         return null;
     }
     
+    @Override
     protected JavaSource getJavaSource(Phase p) {
         return JavaSource.forFileObject(refactoring.getSourceType().getFileObject());
     }
@@ -341,6 +343,7 @@ public final class ExtractInterfaceRefactoringPlugin extends JavaRefactoringPlug
 
         // --- SimpleRefactoringElementImpl methods ----------------------------------
         
+        @Override
         public void performChange() {
             try {
                 FileObject folderFO = URLMapper.findFileObject(folderURL);
@@ -383,22 +386,27 @@ public final class ExtractInterfaceRefactoringPlugin extends JavaRefactoringPlug
             }
         }
         
+        @Override
         public String getText() {
             return NbBundle.getMessage(ExtractInterfaceRefactoringPlugin.class, "TXT_ExtractInterface_CreateIfc", ifcName); // NOI18N
         }
 
+        @Override
         public String getDisplayText() {
             return getText();
         }
 
+        @Override
         public FileObject getParentFile() {
             return URLMapper.findFileObject(folderURL);
         }
 
+        @Override
         public PositionBounds getPosition() {
             return null;
         }
     
+        @Override
         public Lookup getLookup() {
             FileObject fo = ifcURL == null? null: URLMapper.findFileObject(ifcURL);
             return fo != null? Lookups.singleton(fo): Lookup.EMPTY;
@@ -406,10 +414,12 @@ public final class ExtractInterfaceRefactoringPlugin extends JavaRefactoringPlug
         
         // --- CancellableTask methods ----------------------------------
         
+        @Override
         public void cancel() {
             
         }
 
+        @Override
         public void run(WorkingCopy wc) throws Exception {
             wc.toPhase(JavaSource.Phase.RESOLVED);
             ClassTree interfaceTree = findInterface(wc, ifcName);
@@ -541,9 +551,11 @@ public final class ExtractInterfaceRefactoringPlugin extends JavaRefactoringPlug
             bag.registerTransaction(createTransaction(Collections.singletonList(modification)));
         }
         
+        @Override
         public void cancel() {
         }
 
+        @Override
         public void run(WorkingCopy wc) throws Exception {
             wc.toPhase(JavaSource.Phase.RESOLVED);
             TypeElement clazz = this.sourceType.resolve(wc);

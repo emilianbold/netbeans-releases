@@ -88,14 +88,17 @@ public final class EncapsulateFieldsPlugin extends JavaRefactoringPlugin {
     private final EncapsulateFieldsRefactoring refactoring;
     
     private ProgressListener listener = new ProgressListener() {
+        @Override
         public void start(ProgressEvent event) {
             fireProgressListenerStart(event.getOperationType(),event.getCount());
         }
 
+        @Override
         public void step(ProgressEvent event) {
             fireProgressListenerStep();
         }
 
+        @Override
        public void stop(ProgressEvent event) {
             fireProgressListenerStop();
         }
@@ -186,6 +189,7 @@ public final class EncapsulateFieldsPlugin extends JavaRefactoringPlugin {
         return new Problem(true, NbBundle.getMessage(EncapsulateFieldsPlugin.class, "ERR_EncapsulateNoFields", clazzElm.getQualifiedName()));
     }
     
+    @Override
     public Problem prepare(RefactoringElementsBag elements) {
         Problem problem = null;
         Set<FileObject> references = new HashSet<FileObject>();

@@ -126,6 +126,7 @@ public class FindUsagesTest extends NbTestCase {
         }, false).get();
         setParameters(wuq, true, true, false, false, false, false);
         final NonRecursiveFolder package1 = new NonRecursiveFolder() {
+            @Override
             public FileObject getFolder() {
                 return projectDir.getFileObject("/src/package1");
             }
@@ -179,6 +180,7 @@ public class FindUsagesTest extends NbTestCase {
 
         setParameters(wuq, true, true, false, false, false, false);
         final NonRecursiveFolder package1 = new NonRecursiveFolder() {
+            @Override
             public FileObject getFolder() {
                 return projectDir.getFileObject("/src/package1");
             }
@@ -279,6 +281,7 @@ public class FindUsagesTest extends NbTestCase {
         setParameters(wuq, true, false, false, false, false, true);
         
         final NonRecursiveFolder simplej2seapp = new NonRecursiveFolder() {
+            @Override
             public FileObject getFolder() {
                 return projectDir.getFileObject("/src/simplej2seapp");
             }
@@ -324,6 +327,7 @@ public class FindUsagesTest extends NbTestCase {
         doRefactoring("test204305", wuq, 1);
         
         final NonRecursiveFolder simplej2seapp = new NonRecursiveFolder() {
+            @Override
             public FileObject getFolder() {
                 return projectDir.getFileObject("/src/simplej2seapp");
             }

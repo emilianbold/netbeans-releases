@@ -120,15 +120,18 @@ public abstract class JavaRefactoringPlugin extends ProgressProviderAdapter impl
 
     protected abstract JavaSource getJavaSource(Phase p);
 
+    @Override
     public Problem preCheck() {
         cancelRequest = false;
         return workingTask.run(Phase.PRECHECK);
     }
 
+    @Override
     public Problem checkParameters() {
         return workingTask.run(Phase.CHECKPARAMETERS);
     }
 
+    @Override
     public Problem fastCheckParameters() {
         return workingTask.run(Phase.FASTCHECKPARAMETERS);
     }
@@ -153,6 +156,7 @@ public abstract class JavaRefactoringPlugin extends ProgressProviderAdapter impl
 //        return problem;
 //    }
     
+    @Override
     public void cancelRequest() {
         cancelRequest = true;
         if (currentTask!=null) {
@@ -333,6 +337,7 @@ public abstract class JavaRefactoringPlugin extends ProgressProviderAdapter impl
             return problem;
         }
 
+        @Override
         public void run(CompilationController javac) throws Exception {
             switch(whatRun) {
             case PRECHECK:
@@ -360,9 +365,11 @@ public abstract class JavaRefactoringPlugin extends ProgressProviderAdapter impl
             this.treePathHandle = searchedItem;
         }
         
+        @Override
         public void cancel() {
         }
         
+        @Override
         public void run(WorkingCopy compiler) throws IOException {
             try {
                 try {

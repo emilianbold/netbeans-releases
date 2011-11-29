@@ -148,6 +148,7 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
         this.refactoring = refactoring;
     }
 
+    @Override
     protected JavaSource getJavaSource(Phase p) {
         TreePathHandle handle = sourceType != null? sourceType: refactoring.getSourceType();
         FileObject fo = handle.getFileObject();
@@ -425,6 +426,7 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
         return name.toString();
     }
     
+    @Override
     public Problem prepare(RefactoringElementsBag bag) {
         
         fireProgressListenerStart(AbstractRefactoring.PREPARE, 9);
@@ -636,6 +638,7 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
         
         private static final class SortMethodsByNameComparator implements Comparator<MethodTree> {
 
+            @Override
             public int compare(MethodTree o1, MethodTree o2) {
                 String n1 = o1.getName().toString();
                 String n2 = o2.getName().toString();

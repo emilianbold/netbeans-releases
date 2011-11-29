@@ -97,12 +97,14 @@ public class UseSuperTypeRefactoringPlugin extends JavaRefactoringPlugin {
      * Prepares the underlying where used query & checks
      * for the visibility of the target type.
      */
+    @Override
     public Problem prepare(RefactoringElementsBag refactoringElements) {
         TreePathHandle subClassHandle = refactoring.getTypeElement();
         replaceSubtypeUsages(subClassHandle, refactoringElements);
         return null;
     }
 
+    @Override
     protected JavaSource getJavaSource(Phase p) {
         switch (p) {
             default:
@@ -151,7 +153,9 @@ public class UseSuperTypeRefactoringPlugin extends JavaRefactoringPlugin {
         JavaSource javaSrc = JavaSource.forFileObject(subClassHandle.getFileObject());
         try {
             javaSrc.runUserActionTask(new CancellableTask<CompilationController>() {
+                @Override
                 public void cancel() { }
+                @Override
                 public void run(CompilationController complController) throws IOException {
                     complController.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
 
@@ -200,9 +204,11 @@ public class UseSuperTypeRefactoringPlugin extends JavaRefactoringPlugin {
             this.superClassHandle = superClassHandle;
         }
 
+        @Override
         public void cancel() {
         }
 
+        @Override
         public void run(WorkingCopy compiler) throws Exception {
             try {
                 if (compiler.toPhase(JavaSource.Phase.RESOLVED) != JavaSource.Phase.RESOLVED) {

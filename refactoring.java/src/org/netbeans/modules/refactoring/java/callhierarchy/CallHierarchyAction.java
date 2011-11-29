@@ -85,6 +85,7 @@ public final class CallHierarchyAction extends JavaRefactoringGlobalAction {
         RefactoringUtils.invokeAfterScanFinished(task, getName());
     }
 
+    @Override
     protected boolean enable(Lookup context) {
         Collection<? extends Node> nodes = new HashSet<Node>(context.lookupAll(Node.class));
         if (nodes.size() != 1) {

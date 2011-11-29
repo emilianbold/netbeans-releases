@@ -89,10 +89,12 @@ public class CopyClassRefactoringUI implements RefactoringUI, RefactoringUIBypas
     
     // --- IMPLEMENTATION OF RefactoringUI INTERFACE ---------------------------
     
+    @Override
     public boolean isQuery() {
         return false;
     }
 
+    @Override
     public CustomRefactoringPanel getPanel(ChangeListener parent) {
         if (panel == null) {
             FileObject target = targetFolder!=null?targetFolder:resource.getParent();
@@ -106,11 +108,13 @@ public class CopyClassRefactoringUI implements RefactoringUI, RefactoringUIBypas
         return panel;
     }
 
+    @Override
     public Problem setParameters() {
         setupRefactoring();
         return refactoring.checkParameters();
     }
     
+    @Override
     public Problem checkParameters() {
         if (panel==null)
             return null;
@@ -134,30 +138,37 @@ public class CopyClassRefactoringUI implements RefactoringUI, RefactoringUIBypas
         refactoring.setTarget(target);
     }
 
+    @Override
     public AbstractRefactoring getRefactoring() {
         return refactoring;
     }
 
+    @Override
     public String getDescription() {
         return NbBundle.getMessage(CopyClassRefactoringUI.class, "DSC_CopyClass", refactoring.getNewName()); // NOI18N
     }
 
+    @Override
     public String getName() {
         return NbBundle.getMessage(CopyClassRefactoringUI.class, "LBL_CopyClass"); // NOI18N
     }
 
+    @Override
     public boolean hasParameters() {
         return true;
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(CopyClassRefactoringUI.class.getName());
     }
+    @Override
     public boolean isRefactoringBypassRequired() {
         if (panel==null)
             return false;
         return !panel.isUpdateReferences();
     }
+    @Override
     public void doRefactoringBypass() throws IOException {
         RequestProcessor.getDefault().post(new Runnable() {
 

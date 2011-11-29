@@ -54,10 +54,12 @@ final class OverriddenAbsMethodFinder implements CancellableTask<CompilationCont
         methodHandle = methodPathHandle;
     }
 
+    @Override
     public void cancel() {
         
     }
 
+    @Override
     public void run(CompilationController compilationController) throws Exception {
         ExecutableElement implementingMethod = (ExecutableElement) 
                 methodHandle.resolveElement(compilationController);

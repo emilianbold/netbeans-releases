@@ -90,6 +90,7 @@ public class UseSuperTypeRefactoringUI implements RefactoringUI{
      * Returns the name of the refactoring
      * @return 
      */
+    @Override
     public String getName() {
         return NbBundle.getMessage(UseSuperTypeRefactoringUI.class, "LBL_UseSuperType"); // NOI18N
     }
@@ -98,6 +99,7 @@ public class UseSuperTypeRefactoringUI implements RefactoringUI{
      * Returns the description of the refactoring
      * @return 
      */
+    @Override
     public String getDescription() {
         return NbBundle.getMessage(UseSuperTypeRefactoringUI.class, "DSC_UseSuperType", refactoring.getTypeElement()); // NOI18N
     }
@@ -106,6 +108,7 @@ public class UseSuperTypeRefactoringUI implements RefactoringUI{
      * return false
      * @return 
      */
+    @Override
     public boolean isQuery() {
         return false;
     }
@@ -114,6 +117,7 @@ public class UseSuperTypeRefactoringUI implements RefactoringUI{
      * Sets the target super type on the underlying refactoring
      * @return 
      */
+    @Override
     public Problem setParameters() {
         superType = panel.getSuperType();
         refactoring.setTargetSuperType(superType);
@@ -124,6 +128,7 @@ public class UseSuperTypeRefactoringUI implements RefactoringUI{
      * Calls fastCheckParameters on the underlying refactoring
      * @return 
      */
+    @Override
     public Problem checkParameters() {
         superType = panel.getSuperType();
         refactoring.setTargetSuperType(superType);
@@ -134,6 +139,7 @@ public class UseSuperTypeRefactoringUI implements RefactoringUI{
      * Returns true
      * @return 
      */
+    @Override
     public boolean hasParameters() {
         return true;
     }
@@ -142,6 +148,7 @@ public class UseSuperTypeRefactoringUI implements RefactoringUI{
      * Returns the use super type refactoring
      * @return 
      */
+    @Override
     public AbstractRefactoring getRefactoring() {
         return refactoring;
     }
@@ -150,10 +157,12 @@ public class UseSuperTypeRefactoringUI implements RefactoringUI{
      * Returns the relevant Helpctx
      * @return 
      */
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(UseSuperTypeRefactoringUI.class.getName());
     }
     
+    @Override
     public CustomRefactoringPanel getPanel(ChangeListener parent) {
         if(panel == null)
             panel = new UseSuperTypePanel(refactoring);

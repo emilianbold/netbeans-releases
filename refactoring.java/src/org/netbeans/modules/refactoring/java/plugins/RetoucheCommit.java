@@ -78,6 +78,7 @@ public class RetoucheCommit implements Transaction {
         this.results = results;
     }
     
+    @Override
     public void commit() {
         try {
             if (commited) {
@@ -108,6 +109,7 @@ public class RetoucheCommit implements Transaction {
     }
     
     private boolean newFilesStored = false;
+    @Override
     public void rollback() {
         for (BackupFacility.Handle id:ids) {
             try {

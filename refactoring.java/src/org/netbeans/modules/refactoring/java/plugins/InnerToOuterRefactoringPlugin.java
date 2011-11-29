@@ -78,6 +78,7 @@ public class InnerToOuterRefactoringPlugin extends JavaRefactoringPlugin {
         this.treePathHandle = refactoring.getRefactoringSource().lookup(TreePathHandle.class);
     }
 
+    @Override
     protected JavaSource getJavaSource(Phase p) {
         switch (p) {
         case PRECHECK:
@@ -205,6 +206,7 @@ public class InnerToOuterRefactoringPlugin extends JavaRefactoringPlugin {
         return set;
     }
     
+    @Override
     public Problem prepare(RefactoringElementsBag refactoringElements) {
         Set<FileObject> a = getRelevantFiles();
         fireProgressListenerStart(ProgressEvent.START, a.size());

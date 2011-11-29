@@ -90,6 +90,7 @@ public class CopyClassRefactoringPlugin extends JavaRefactoringPlugin {
         this.refactoring = refactoring;
     }
     
+    @Override
     protected JavaSource getJavaSource(Phase p) {
         return JavaSource.forFileObject(refactoring.getRefactoringSource().lookup(FileObject.class));
     }
@@ -138,6 +139,7 @@ public class CopyClassRefactoringPlugin extends JavaRefactoringPlugin {
         return null;
     }
 
+    @Override
     public Problem prepare(RefactoringElementsBag refactoringElements) {
         refactoringElements.add(refactoring, new CopyClass());
         return null;
@@ -148,20 +150,24 @@ public class CopyClassRefactoringPlugin extends JavaRefactoringPlugin {
         public CopyClass () {
         }
         
+        @Override
         public String getText() {
             return getDisplayText ();
         }
     
+        @Override
         public String getDisplayText() {
             return new MessageFormat (NbBundle.getMessage(CopyClassRefactoringPlugin.class, "TXT_CopyClassToPackage")).format ( // NOI18N
                 new Object[] {refactoring.getNewName(), getTargetPackageName(), getParentFile().getName()}
             );
         }
 
+        @Override
         public Lookup getLookup() {
             return Lookup.EMPTY;
         }
 
+        @Override
         public PositionBounds getPosition() {
             return null;
         }
@@ -169,6 +175,7 @@ public class CopyClassRefactoringPlugin extends JavaRefactoringPlugin {
             return RefactoringUtils.getPackageName(refactoring.getTarget().lookup(URL.class));
         }
 
+        @Override
         public void performChange() {
             try {
                 FileObject fo = RefactoringUtils.getOrCreateFolder(refactoring.getTarget().lookup(URL.class));
@@ -201,6 +208,7 @@ public class CopyClassRefactoringPlugin extends JavaRefactoringPlugin {
             
         }
 
+        @Override
         public FileObject getParentFile() {
             return refactoring.getRefactoringSource().lookup(FileObject.class);
         }
@@ -218,9 +226,11 @@ public class CopyClassRefactoringPlugin extends JavaRefactoringPlugin {
             
         }
 
+        @Override
         public void cancel() {
         }
 
+        @Override
         public void run(WorkingCopy compiler) throws IOException {
             compiler.toPhase(JavaSource.Phase.RESOLVED);
             CompilationUnitTree cu = compiler.getCompilationUnit();
