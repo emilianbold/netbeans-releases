@@ -54,8 +54,10 @@ import org.netbeans.api.progress.aggregate.ProgressContributor;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.embedder.MavenEmbedder;
 import org.netbeans.modules.maven.embedder.exec.ProgressTransferListener;
+import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
+import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
 import org.netbeans.spi.java.queries.SourceJavadocAttacherImplementation;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle.Messages;
@@ -84,6 +86,11 @@ public class MavenSourceJavadocAttacher implements SourceJavadocAttacherImplemen
         final String[] coordinates = MavenFileOwnerQueryImpl.findCoordinates(file);
         if (coordinates == null) {
             return false;
+        }
+        for (NBVersionInfo version : RepositoryQueries.getRecords(coordinates[0], coordinates[1], coordinates[2], null)) {
+            if (javadoc ? !version.isJavadocExists() : !version.isSourcesExists()) {
+                return false;
+            }
         }
         RP.post(new Runnable() {
             @Override public void run() {
