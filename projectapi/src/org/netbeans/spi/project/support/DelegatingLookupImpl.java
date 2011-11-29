@@ -113,7 +113,6 @@ class DelegatingLookupImpl extends ProxyLookup implements LookupListener, Change
     }
 
     private void doDelegate() {
-        Lookup fixed, filtered;
         synchronized (results) {
             for (Lookup.Result<?> r : results) {
                 r.removeLookupListener(this);
@@ -172,10 +171,10 @@ class DelegatingLookupImpl extends ProxyLookup implements LookupListener, Change
                 result.addLookupListener(this);
                 results.add(result);
             }
-            filtered = Lookups.exclude(unmergedLookup, filteredClasses.toArray(new Class<?>[filteredClasses.size()]));
-            fixed = Lookups.fixed(mergedInstances.toArray(new Object[mergedInstances.size()]));
+            Lookup filtered = Lookups.exclude(unmergedLookup, filteredClasses.toArray(new Class<?>[filteredClasses.size()]));
+            Lookup fixed = Lookups.fixed(mergedInstances.toArray(new Object[mergedInstances.size()]));
+            setLookups(fixed, filtered);
         }
-        setLookups(fixed, filtered);
     }
 
     private static class UnmergedLookup extends ProxyLookup {

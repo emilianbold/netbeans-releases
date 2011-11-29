@@ -53,6 +53,7 @@ import java.net.URISyntaxException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -63,7 +64,12 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import org.apache.maven.artifact.repository.ArtifactRepository;
+import org.apache.maven.model.Model;
+import org.apache.maven.model.ModelBase;
+import org.apache.maven.model.Parent;
+import org.apache.maven.model.Profile;
 import org.apache.maven.model.Repository;
+import org.apache.maven.model.io.ModelReader;
 import org.netbeans.modules.maven.queries.MavenFileOwnerQueryImpl;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
@@ -73,6 +79,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.classpath.ProjectSourcesClassPathProvider;
 import org.netbeans.modules.maven.cos.CopyResourcesOnSave;
+import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.indexer.api.RepositoryIndexer;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
@@ -87,9 +94,6 @@ import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
-import org.openide.xml.XMLUtil;
-import org.w3c.dom.Element;
-import org.xml.sax.InputSource;
 
 /**
  * openhook implementation, register global classpath and also
@@ -358,32 +362,31 @@ public class ProjectOpenedHookImpl extends ProjectOpenedHook {
         if (!pom.isFile()) {
             return;
         }
-        Element project;
+        ModelReader reader = EmbedderFactory.getProjectEmbedder().lookupComponent(ModelReader.class);
+        Model model;
         try {
-            project = XMLUtil.parse(new InputSource(pom.toURI().toString()), false, false, XMLUtil.defaultErrorHandler(), null).getDocumentElement();
-        } catch (Exception x) {
+            model = reader.read(pom, Collections.singletonMap(ModelReader.IS_STRICT, false));
+        } catch (IOException x) {
             LOGGER.log(Level.FINE, "could not parse " + pom, x);
             return;
         }
-        Element parent = XMLUtil.findElement(project, "parent", null);
-        Element groupIdE = XMLUtil.findElement(project, "groupId", null);
-        if (groupIdE == null) {
-            groupIdE = XMLUtil.findElement(parent, "groupId", null);
-            if (groupIdE == null) {
-                LOGGER.log(Level.WARNING, "no groupId in {0}", pom);
-                return;
-            }
+        Parent parent = model.getParent();
+        String groupId = model.getGroupId();
+        if (groupId == null && parent != null) {
+            groupId = parent.getGroupId();
         }
-        String groupId = XMLUtil.findText(groupIdE);
-        Element artifactIdE = XMLUtil.findElement(project, "artifactId", null);
-        if (artifactIdE == null) {
-            artifactIdE = XMLUtil.findElement(parent, "artifactId", null);
-            if (artifactIdE == null) {
-                LOGGER.log(Level.WARNING, "no artifactId in {0}", pom);
-                return;
-            }
+        if (groupId == null) {
+            LOGGER.log(Level.WARNING, "no groupId in {0}", pom);
+            return;
         }
-        String artifactId = XMLUtil.findText(artifactIdE);
+        String artifactId = model.getArtifactId();
+        if (artifactId == null && parent != null) {
+            artifactId = parent.getArtifactId();
+        }
+        if (artifactId == null) {
+            LOGGER.log(Level.WARNING, "no artifactId in {0}", pom);
+            return;
+        }
         if (groupId.contains("${") || artifactId.contains("${")) {
             LOGGER.log(Level.FINE, "Unevaluated groupId/artifactId in {0}", basedir);
             FileObject basedirFO = FileUtil.toFileObject(basedir);
@@ -413,24 +416,15 @@ public class ProjectOpenedHookImpl extends ProjectOpenedHook {
                 LOGGER.log(Level.FINE, null, x);
             }
         }
-        scanForSubmodulesIn(project, basedir, registered);
-        Element profiles = XMLUtil.findElement(project, "profiles", null);
-        if (profiles != null) {
-            for (Element profile : XMLUtil.findSubElements(profiles)) {
-                if (profile.getTagName().equals("profile")) {
-                    scanForSubmodulesIn(profile, basedir, registered);
-                }
-            }
+        scanForSubmodulesIn(model, basedir, registered);
+        model.getProfiles();
+        for (Profile profile : model.getProfiles()) {
+            scanForSubmodulesIn(profile, basedir, registered);
         }
     }
-    private static void scanForSubmodulesIn(Element projectOrProfile, File basedir, Set<File> registered) throws IllegalArgumentException {
-        Element modules = XMLUtil.findElement(projectOrProfile, "modules", null);
-        if (modules != null) {
-            for (Element module : XMLUtil.findSubElements(modules)) {
-                if (module.getTagName().equals("module")) {
-                    registerWithSubmodules(FileUtilities.resolveFilePath(basedir, XMLUtil.findText(module)), registered);
-                }
-            }
+    private static void scanForSubmodulesIn(ModelBase projectOrProfile, File basedir, Set<File> registered) throws IllegalArgumentException {
+        for (String module : projectOrProfile.getModules()) {
+            registerWithSubmodules(FileUtilities.resolveFilePath(basedir, module), registered);
         }
     }
 
