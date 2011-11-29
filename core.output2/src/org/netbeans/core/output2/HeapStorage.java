@@ -58,9 +58,14 @@ class HeapStorage implements Storage {
     public Storage toFileMapStorage() throws IOException {
         FileMapStorage result = new FileMapStorage();
         BufferResource<ByteBuffer> br = getReadBuffer(0, size);
-        result.write(br.getBuffer());
-        br.releaseBuffer();
-        return result;
+        try {
+            result.write(br.getBuffer());
+            return result;
+        } finally {
+            if (br != null) {
+                br.releaseBuffer();
+            }
+        }
     }
 
     @Override

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,46 +37,48 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.maven.profiler.impl;
+package org.netbeans.modules.maven.queries;
 
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.maven.api.NbMavenProject;
-import org.netbeans.modules.profiler.categorization.api.CategoryBuilder;
-import org.netbeans.spi.project.ProjectServiceProvider;
-import org.openide.util.Lookup;
+import java.io.File;
+import java.net.URL;
+import java.util.prefs.Preferences;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.NbPreferences;
 
 /**
- *
- * @author Jaroslav Bachorik
+ * Utility to maintain sources and Javadoc associated with JARs outside the repo (#205649).
  */
-@ProjectServiceProvider(service=CategoryBuilder.class, projectType={
-    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_JAR,
-    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_WAR,
-    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_EJB,
-    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_NBM
-})
-public class MavenCategoryBuilder extends CategoryBuilder {
+class SourceJavadocByHash {
 
-    public MavenCategoryBuilder(Project proj, Lookup lkp) {
-        super(proj, findProjectId(lkp));
+    private static Preferences node(boolean javadoc) {
+        return NbPreferences.forModule(SourceJavadocByHash.class).node(javadoc ? "attachedJavadoc" : "attachedSource");
     }
 
-    private static String findProjectId(Lookup lkp) {
-        NbMavenProject mp = lkp.lookup(NbMavenProject.class);
-        String mpType = mp.getPackagingType();
-        if (mpType.equals(NbMavenProject.TYPE_JAR)) {
-            return "org-netbeans-modules-java-j2seproject";
-        } else if (mpType.equals(NbMavenProject.TYPE_WAR)) {
-            return "org-netbeans-modules-web-project";
-        } else if (mpType.equals(NbMavenProject.TYPE_EJB)) {
-            return "org-netbeans-modules-j2ee-ejbjarproject";
-        } else if (mpType.equals(NbMavenProject.TYPE_NBM)) {
-            return "org-netbeans-modules-apisupport-project";
+    public static void register(@NonNull URL root, @NonNull File result, boolean javadoc) {
+        node(javadoc).put(root.toString(), result.getAbsolutePath());
+    }
+
+    public static @CheckForNull File find(@NonNull URL root, boolean javadoc) {
+        String k = root.toString();
+        Preferences n = node(javadoc);
+        String v = n.get(k, null);
+        if (v == null) {
+            return null;
         }
-        return "";
+        File f = FileUtil.normalizeFile(new File(v));
+        if (f.isFile()) {
+            return f;
+        } else {
+            n.remove(k);
+            return null;
+        }
     }
+
+    private SourceJavadocByHash() {}
 
 }
