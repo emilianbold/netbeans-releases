@@ -112,11 +112,11 @@ public class HudsonJobCreator extends JPanel implements ProjectHudsonJobCreator 
             return Helper.noSCMError();
         }
         // XXX check ppw setup and if error - add extra button to open IDE options
-        FileObject buildXml = phpModule.getProjectDirectory().getFileObject("build.xml");
+        FileObject buildXml = phpModule.getProjectDirectory().getFileObject("build.xml"); // NOI18N
         if (buildXml != null && buildXml.isData()) {
             return ConfigurationStatus.withError(Bundle.MsgBuildXmlExists());
         }
-        FileObject phpUnitConfig = phpModule.getProjectDirectory().getFileObject("phpunit.xml.dist");
+        FileObject phpUnitConfig = phpModule.getProjectDirectory().getFileObject("phpunit.xml.dist"); // NOI18N
         if (phpUnitConfig != null && phpUnitConfig.isData()) {
             return ConfigurationStatus.withError(Bundle.MsgPhpUnitConfigExists());
         }
