@@ -76,21 +76,29 @@ public class LazyLookupProviders {
             public Lookup createAdditionalLookup(final Lookup lkp) {
                 return new ProxyLookup() {
                     Collection<String> serviceNames = Arrays.asList(((String) attrs.get("service")).split(",")); // NOI18N
-                    @Override protected synchronized void beforeLookup(Template<?> template) {
-                        if (serviceNames != null && serviceNames.contains(template.getType().getName())) { // NOI18N
-                            Class<?> service = template.getType();
-                            try {
-                                Object instance = loadPSPInstance((String) attrs.get("class"), (String) attrs.get("method"), lkp); // NOI18N
-                                if (!service.isInstance(instance)) {
-                                    // JRE #6456938: Class.cast currently throws an exception without details.
-                                    throw new ClassCastException("Instance of " + instance.getClass() + " unassignable to " + service);
+                    @Override protected void beforeLookup(Template<?> template) {
+                        synchronized (this) {
+                            if (serviceNames == null || !serviceNames.contains(template.getType().getName())) {
+                                return;
+                            }
+                        }
+                        Class<?> service = template.getType();
+                        try {
+                            Object instance = loadPSPInstance((String) attrs.get("class"), (String) attrs.get("method"), lkp); // NOI18N
+                            if (!service.isInstance(instance)) {
+                                // JRE #6456938: Class.cast currently throws an exception without details.
+                                throw new ClassCastException("Instance of " + instance.getClass() + " unassignable to " + service);
+                            }
+                            synchronized (this) {
+                                if (serviceNames == null) {
+                                    return;
                                 }
                                 setLookups(Lookups.singleton(instance));
                                 serviceNames = null;
-                            } catch (Exception x) {
-                                Exceptions.attachMessage(x, "while loading from " + attrs);
-                                Exceptions.printStackTrace(x);
                             }
+                        } catch (Exception x) {
+                            Exceptions.attachMessage(x, "while loading from " + attrs);
+                            Exceptions.printStackTrace(x);
                         }
                     }
                 };
