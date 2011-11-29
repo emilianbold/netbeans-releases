@@ -58,6 +58,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.logging.Level;
@@ -167,6 +168,7 @@ public class Operator {
             params [1] = null;
             params [2] = null;
             AWTGrabHandler awtGrabHandler = new AWTGrabHandler(debugger);
+            SuspendCount suspendCount = new SuspendCount();
 
        loop: for (;;) {
                  try {
@@ -288,6 +290,7 @@ public class Operator {
                                     logger.finer("Suspend count of "+thref+" is "+sc+"."+((sc > 1) ? "Reducing to one." : ""));
                                 }
                                 while (sc-- > 1) {
+                                    suspendCount.add(thref);
                                     ThreadReferenceWrapper.resume(thref);
                                 }
                             } catch (ObjectCollectedExceptionWrapper e) {
@@ -367,6 +370,10 @@ public class Operator {
                          }
                          logger.fine("Resuming the event set = "+resume);
                          if (resume) {
+                             int sc = suspendCount.removeSuspendCountFor(thref);
+                             while (sc-- > 1) {
+                                 ThreadReferenceWrapper.suspend(thref);
+                             }
                              try {
                                 EventSetWrapper.resume(eventSet);
                              } catch (IllegalThreadStateExceptionWrapper itex) {
@@ -471,6 +478,10 @@ public class Operator {
                          logger.fine("  resume = "+resume+", startEventOnly = "+startEventOnly);
                      }
 
+                     int sc = suspendCount.removeSuspendCountFor(thref);
+                     while (sc-- > 1) {
+                         ThreadReferenceWrapper.suspend(thref);
+                     }
                      // Notify the resume under eventAccessLock so that nobody can get in between,
                      // which would result in resuming the thread twice.
                      if (!resume) { // notify about the suspend if not resumed.
@@ -887,4 +898,46 @@ public class Operator {
         }
     }
     
+    private static final class SuspendCount {
+        
+        private final Map<ThreadReference, MutableInteger> threads = new WeakHashMap<ThreadReference, MutableInteger>();
+        
+        public synchronized void add(ThreadReference t) {
+            MutableInteger i = threads.get(t);
+            if (i == null) {
+                i = new MutableInteger(1);
+                threads.put(t, i);
+            }
+            i.i++;
+        }
+        
+        public synchronized int getSuspendCountFor(ThreadReference t) {
+            MutableInteger i = threads.get(t);
+            if (i == null) {
+                return 0;
+            } else {
+                return i.i;
+            }
+        }
+        
+        public synchronized int removeSuspendCountFor(ThreadReference t) {
+            MutableInteger i = threads.remove(t);
+            if (i == null) {
+                return 0;
+            } else {
+                return i.i;
+            }
+        }
+        
+        private static final class MutableInteger {
+            
+            public int i;
+            
+            public MutableInteger(int i) {
+                this.i = i;
+            }
+            
+        }
+    }
+
 }
