@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.versioning.fileproxy.api;
 
-//import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;÷
 import org.openide.filesystems.FileObject;
 
 /**
@@ -64,8 +63,6 @@ public interface VCSFileProxyOperations {
     String getAbsolutePath(VCSFileProxy file);
     
     boolean exists(VCSFileProxy file);
-
-//    ExecutionEnvironment getExecutionEnvironment();
 
     VCSFileProxy normalize(VCSFileProxy file);
 
