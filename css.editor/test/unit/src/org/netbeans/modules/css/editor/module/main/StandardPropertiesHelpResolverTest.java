@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.css.editor.module.main;
 
+import java.util.Collection;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.junit.NbTestCase;
@@ -120,8 +121,10 @@ public class StandardPropertiesHelpResolverTest extends NbTestCase {
     
     private String assertPropertyHelp(String propertyName) {
         StandardPropertiesHelpResolver instance = new StandardPropertiesHelpResolver();
-        Property property = CssModuleSupport.getProperty(propertyName);
-        assertNotNull(property);
+        Collection<Property> properties = CssModuleSupport.getProperties(propertyName);
+        assertNotNull(properties);
+        assertFalse(properties.isEmpty());
+        Property property = properties.iterator().next();
         String helpContent = instance.getHelp(property);
 //        System.out.println(helpContent);
         

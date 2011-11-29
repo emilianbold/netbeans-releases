@@ -61,6 +61,7 @@ import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.css.indexing.api.CssIndex;
 import org.netbeans.modules.css.refactoring.api.RefactoringElementType;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
+import org.netbeans.modules.html.editor.hints.EmbeddingUtil;
 import org.netbeans.modules.web.common.api.DependenciesGraph;
 import org.openide.filesystems.FileObject;
 
@@ -169,15 +170,15 @@ public class HtmlCssHints {
                 //unknown id
                 hints.add(new MissingCssElement(elementType,
                         context,
-                        getAttributeValueOffsetRange(attribute),
+                        getAttributeValueOffsetRange(attribute, context),
                         filesWithTheId));
             }
         }
     }
 
-    private static OffsetRange getAttributeValueOffsetRange(Attribute attr) {
+    private static OffsetRange getAttributeValueOffsetRange(Attribute attr, RuleContext context) {
         int from = attr.unqotedValueOffset();
         int to = from + attr.unquotedValue().length();
-        return new OffsetRange(from, to);
+        return EmbeddingUtil.convertToDocumentOffsets(from, to, context.parserResult.getSnapshot());
     }
 }

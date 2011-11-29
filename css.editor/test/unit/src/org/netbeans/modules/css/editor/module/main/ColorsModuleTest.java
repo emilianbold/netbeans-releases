@@ -68,56 +68,56 @@ public class ColorsModuleTest extends CslTestBase {
 
     public void testTextValues() {
         PropertyModel p = CssModuleSupport.getPropertyModel("color");
-        assertTrue(new PropertyValue(p, "red").success());
-        assertTrue(new PropertyValue(p, "buttonface").success());
+        assertTrue(new PropertyValue(p, "red").isResolved());
+        assertTrue(new PropertyValue(p, "buttonface").isResolved());
     }
 
     public void testRGBValues() {
         PropertyModel p = CssModuleSupport.getPropertyModel("color");
-        assertTrue(new PropertyValue(p, "rgb(10,20,30)").success());
-        assertTrue(new PropertyValue(p, "rgb(10%,20,30)").success());
-        assertFalse(new PropertyValue(p, "rgb(,20,30)").success());
-        assertFalse(new PropertyValue(p, "rgb(10,x,30)").success());
+        assertTrue(new PropertyValue(p, "rgb(10,20,30)").isResolved());
+        assertTrue(new PropertyValue(p, "rgb(10%,20,30)").isResolved());
+        assertFalse(new PropertyValue(p, "rgb(,20,30)").isResolved());
+        assertFalse(new PropertyValue(p, "rgb(10,x,30)").isResolved());
 
     }
 
     public void testHashValues() {
         PropertyModel p = CssModuleSupport.getPropertyModel("color");
-        assertTrue(new PropertyValue(p, "#ffaa00").success());
-        assertTrue(new PropertyValue(p, "#fb0").success());
-        assertFalse(new PropertyValue(p, "#fa001").success());
+        assertTrue(new PropertyValue(p, "#ffaa00").isResolved());
+        assertTrue(new PropertyValue(p, "#fb0").isResolved());
+        assertFalse(new PropertyValue(p, "#fa001").isResolved());
     }
 
     public void testRGBaValues() {
         PropertyModel p = CssModuleSupport.getPropertyModel("color");
-        assertTrue(new PropertyValue(p, "rgba(255,0,0,1)").success());
-        assertTrue(new PropertyValue(p, "rgba(100%,0%,0%,1)").success());
-        assertTrue(new PropertyValue(p, "rgba(0,0,255,0.5)").success());
+        assertTrue(new PropertyValue(p, "rgba(255,0,0,1)").isResolved());
+        assertTrue(new PropertyValue(p, "rgba(100%,0%,0%,1)").isResolved());
+        assertTrue(new PropertyValue(p, "rgba(0,0,255,0.5)").isResolved());
     }
     
 
     public void testHSLValues() {
         PropertyModel p = CssModuleSupport.getPropertyModel("color");
-        assertTrue(new PropertyValue(p, "hsl(0, 100%, 50%)").success());
-        assertTrue(new PropertyValue(p, "hsl(120, 100%, 50%").success());
-        assertTrue(new PropertyValue(p, "hsl(120, 100%, 25%)").success());
-        assertTrue(new PropertyValue(p, "hsl(120, 100%, 75%)").success());
-        assertTrue(new PropertyValue(p, "hsl(120, 75%, 75%)").success());
-        assertTrue(new PropertyValue(p, "hsl(120, 100%, 50%)").success());
+        assertTrue(new PropertyValue(p, "hsl(0, 100%, 50%)").isResolved());
+        assertTrue(new PropertyValue(p, "hsl(120, 100%, 50%)").isResolved());
+        assertTrue(new PropertyValue(p, "hsl(120, 100%, 25%)").isResolved());
+        assertTrue(new PropertyValue(p, "hsl(120, 100%, 75%)").isResolved());
+        assertTrue(new PropertyValue(p, "hsl(120, 75%, 75%)").isResolved());
+        assertTrue(new PropertyValue(p, "hsl(120, 100%, 50%)").isResolved());
     }
     
     public void testHSLaValues() {
         PropertyModel p = CssModuleSupport.getPropertyModel("color");
-        assertTrue(new PropertyValue(p, "hsla(120, 100%, 50%, 1)").success());
-        assertTrue(new PropertyValue(p, "hsla(240, 100%, 50%, 0.5)").success());
-        assertTrue(new PropertyValue(p, "hsla(30, 100%, 50%, 0.1)").success());
+        assertTrue(new PropertyValue(p, "hsla(120, 100%, 50%, 1)").isResolved());
+        assertTrue(new PropertyValue(p, "hsla(240, 100%, 50%, 0.5)").isResolved());
+        assertTrue(new PropertyValue(p, "hsla(30, 100%, 50%, 0.1)").isResolved());
     }
     
     public void testSpecialValues() {
         PropertyModel p = CssModuleSupport.getPropertyModel("color");
 //        assertTrue(new PropertyValue(p, "inherit").success());
-        assertTrue(new PropertyValue(p, "currentColor").success());
-        assertTrue(new PropertyValue(p, "transparent").success());
+        assertTrue(new PropertyValue(p, "currentColor").isResolved());
+        assertTrue(new PropertyValue(p, "transparent").isResolved());
     }
     
     

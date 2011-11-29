@@ -39,31 +39,49 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.editor.module.main;
+package org.netbeans.modules.css.editor.properties.parser;
 
-import org.netbeans.modules.parsing.spi.ParseException;
+import java.util.Stack;
+import org.netbeans.modules.css.editor.module.main.CssModuleTestBase;
 
 /**
  *
- * @author mfukala@netbeans.org
+ * @author marekfukala
  */
-public class ListsAndCountersModuleTest extends CssModuleTestBase {
+public class TokenizerTest extends CssModuleTestBase {
 
-    public ListsAndCountersModuleTest(String testName) {
-        super(testName);
+    public TokenizerTest(String name) {
+        super(name);
+    }
+    
+  public void testFillStack() {
+        Stack<String> stack = Tokenizer.tokenize("bla , ble bli,blo,,blu bly,oh/eh//uh");
+//        dumpList(stack);
+        assertEquals(17, stack.size());
     }
 
-    public void testProperties() {
-        assertPropertyDeclaration("list-style: upper-roman inside ");
-        assertPropertyDeclaration("list-style: circle outside");
-        assertPropertyDeclaration("list-style: lower-alpha");
-
-        assertPropertyDeclaration("list-style-image: url(\"http://www.example.com/ellipse.png\")");
-
+    public void testFillStackWithQuotedValues() {
+        Stack<String> stack = Tokenizer.tokenize("'Times New Roman',serif");
+//        dumpList(stack); 
+        assertEquals(3, stack.size());
     }
 
-    public void testMarkerPseudoElementCompletion() throws ParseException {
-        checkCC("div::| ", arr("marker"), Match.CONTAINS);
-        checkCC("li::mar| ", arr("marker"), Match.CONTAINS);
+    public void testFillStackWithBraces() {
+        Stack<String> stack = Tokenizer.tokenize("rect(20,30,40)");
+//        dumpList(stack);
+        assertEquals(8, stack.size());
     }
+
+    public void testFillStackWithNewLine() {
+        Stack<String> stack = Tokenizer.tokenize("marek jitka \n");
+//        dumpList(stack);
+        assertEquals(2, stack.size());
+    }
+    
+     public void testFillStackWithURL() {
+        Stack<String> stack = Tokenizer.tokenize("url(http://www.redballs.com/redball.png)");
+//        dumpList(stack);
+        assertEquals(4, stack.size());
+    }
+     
 }
