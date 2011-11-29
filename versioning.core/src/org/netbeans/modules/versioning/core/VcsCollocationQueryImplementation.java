@@ -44,7 +44,7 @@
 package org.netbeans.modules.versioning.core;
 
 import org.netbeans.spi.queries.CollocationQueryImplementation;
-import org.netbeans.modules.versioning.core.spi.VCSSystemProvider.VersioningSystem;
+import org.netbeans.modules.versioning.core.util.VCSSystemProvider.VersioningSystem;
 
 import java.io.File;
 import org.netbeans.modules.versioning.fileproxy.api.VCSFileProxy;

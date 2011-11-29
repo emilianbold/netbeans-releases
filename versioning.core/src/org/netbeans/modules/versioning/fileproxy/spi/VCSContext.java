@@ -66,8 +66,8 @@ import java.lang.ref.WeakReference;
 import java.lang.ref.Reference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.versioning.core.spi.VCSSystemProvider;
-import org.netbeans.modules.versioning.core.spi.VCSSystemProvider.VersioningSystem;
+import org.netbeans.modules.versioning.core.util.VCSSystemProvider;
+import org.netbeans.modules.versioning.core.util.VCSSystemProvider.VersioningSystem;
 import org.netbeans.modules.versioning.fileproxy.api.VCSFileProxy;
 
 /**

@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.versioning.core.spi;
+package org.netbeans.modules.versioning.core.util;
 
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
@@ -51,7 +51,10 @@ import org.netbeans.spi.queries.CollocationQueryImplementation;
 import org.openide.util.LookupListener;
 
 /**
- *
+ * Provides VersioningSystem implementations for {@link org.netbeans.modules.versioning.spi.VersioningSystem} 
+ * and {@link org.netbeans.modules.versioning.fileproxy.spi.VersioningSystem}
+ * 
+ * VCS internal use only. Not to be implemented by clients.
  * @author Tomas Stupka
  */
 public abstract class VCSSystemProvider {

@@ -57,7 +57,7 @@ import org.netbeans.api.editor.fold.FoldHierarchyEvent;
 import org.netbeans.api.diff.*;
 import org.netbeans.spi.diff.DiffProvider;
 import org.netbeans.modules.editor.errorstripe.privatespi.MarkProvider;
-import org.netbeans.modules.versioning.core.spi.VCSSystemProvider.VersioningSystem;
+import org.netbeans.modules.versioning.core.util.VCSSystemProvider.VersioningSystem;
 import org.netbeans.modules.versioning.core.VersioningManager;
 import org.netbeans.modules.versioning.core.Utils;
 import org.openide.ErrorManager;

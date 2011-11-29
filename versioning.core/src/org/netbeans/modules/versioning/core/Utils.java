@@ -43,7 +43,7 @@
  */
 package org.netbeans.modules.versioning.core;
 
-import org.netbeans.modules.versioning.core.spi.VCSSystemProvider;
+import org.netbeans.modules.versioning.core.util.VCSSystemProvider;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Lookup;

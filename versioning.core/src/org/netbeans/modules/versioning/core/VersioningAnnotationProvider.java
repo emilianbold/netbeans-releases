@@ -46,7 +46,7 @@ package org.netbeans.modules.versioning.core;
 import java.util.Map.Entry;
 import org.netbeans.modules.masterfs.providers.InterceptionListener;
 import org.netbeans.modules.masterfs.providers.AnnotationProvider;
-import org.netbeans.modules.versioning.core.spi.VCSSystemProvider.VersioningSystem;
+import org.netbeans.modules.versioning.core.util.VCSSystemProvider.VersioningSystem;
 import org.netbeans.modules.versioning.fileproxy.spi.VCSContext;
 import org.openide.filesystems.*;
 import org.openide.util.actions.SystemAction;

@@ -57,7 +57,7 @@ import javax.swing.JList;
 import org.netbeans.modules.versioning.core.Utils;
 import org.netbeans.modules.versioning.core.VersioningConfig;
 import org.netbeans.modules.versioning.core.VersioningManager;
-import org.netbeans.modules.versioning.core.spi.VCSSystemProvider.VersioningSystem;
+import org.netbeans.modules.versioning.core.util.VCSSystemProvider.VersioningSystem;
 import org.netbeans.modules.versioning.fileproxy.api.VCSFileProxy;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.util.Lookup;

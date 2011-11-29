@@ -54,7 +54,7 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.regex.Pattern;
 import javax.swing.event.ChangeEvent;
-import org.netbeans.modules.versioning.core.spi.VCSSystemProvider.VersioningSystem;
+import org.netbeans.modules.versioning.core.util.VCSSystemProvider.VersioningSystem;
 import org.netbeans.modules.versioning.fileproxy.api.VCSFileProxy;
 import org.netbeans.modules.versioning.fileproxy.spi.VCSVisibilityQuery;
 import org.netbeans.spi.queries.VisibilityQueryImplementation2;

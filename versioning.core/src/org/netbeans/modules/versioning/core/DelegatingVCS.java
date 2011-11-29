@@ -44,7 +44,7 @@ package org.netbeans.modules.versioning.core;
 import com.sun.tools.javac.comp.Annotate.Annotator;
 import java.awt.Image;
 import java.awt.PopupMenu;
-import org.netbeans.modules.versioning.core.spi.VCSSystemProvider;
+import org.netbeans.modules.versioning.core.util.VCSSystemProvider;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;

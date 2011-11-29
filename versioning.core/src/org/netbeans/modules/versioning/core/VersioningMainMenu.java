@@ -47,7 +47,7 @@ import com.sun.tools.javac.comp.Annotate.Annotator;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.awt.Mnemonics;
 import org.openide.windows.TopComponent;
-import org.netbeans.modules.versioning.core.spi.VCSSystemProvider.VersioningSystem;
+import org.netbeans.modules.versioning.core.util.VCSSystemProvider.VersioningSystem;
 import org.netbeans.modules.versioning.fileproxy.spi.VCSContext;
 
 import javax.swing.*;

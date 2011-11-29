@@ -43,15 +43,14 @@
  */
 package org.netbeans.modules.versioning.spi;
 
-import org.netbeans.modules.versioning.core.VersioningManager;
-import org.netbeans.modules.versioning.core.FlatFolder;
 import org.openide.util.NbPreferences;
 
 import java.io.File;
 import java.util.prefs.Preferences;
 import org.netbeans.modules.versioning.fileproxy.api.VCSFileProxy;
 import org.netbeans.modules.versioning.DelegatingVCS;
-import org.netbeans.modules.versioning.core.spi.VCSSystemProvider;
+import org.netbeans.modules.versioning.core.util.VCSSystemProvider;
+import org.netbeans.modules.versioning.core.util.Utils;
 
 /**
  * Collection of utility methods for Versioning systems implementors. 
@@ -87,7 +86,7 @@ public final class VersioningSupport {
      * @return VersioningSystem a system that owns (manages) the file or null if the file is not versioned
      */
     public static VersioningSystem getOwner(File file) {
-        VCSSystemProvider.VersioningSystem owner = VersioningManager.getInstance().getOwner(VCSFileProxy.createFileProxy(file));
+        VCSSystemProvider.VersioningSystem owner = Utils.getOwner(VCSFileProxy.createFileProxy(file));
         if(owner != null) {
             if(owner.getDelegate() instanceof DelegatingVCS) {
                 return ((DelegatingVCS)owner.getDelegate()).getDelegate();
@@ -106,7 +105,7 @@ public final class VersioningSupport {
      * @return true if the File represents a flat folder (eg a java package), false otherwise
      */
     public static boolean isFlat(File file) {
-        return file instanceof FlatFolder; // XXX delegate to fileproxy
+        return Utils.isFlat(file);
     }
 
     /**
@@ -117,7 +116,7 @@ public final class VersioningSupport {
      * @return File a flat file representing given abstract path
      */
     public static File getFlat(String path) {
-        return new FlatFolder(path);
+        return Utils.getFlat(path);
     }
     
     /**
@@ -126,7 +125,7 @@ public final class VersioningSupport {
      * see
      */
     public static void versionedRootsChanged() {
-        VersioningManager.getInstance().versionedRootsChanged();
+        Utils.versionedRootsChanged();
     }
 
     /**

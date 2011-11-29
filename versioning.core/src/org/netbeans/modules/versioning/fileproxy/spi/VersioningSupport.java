@@ -50,7 +50,7 @@ import org.openide.util.NbPreferences;
 import java.util.prefs.Preferences;
 import org.netbeans.modules.versioning.core.DelegatingVCS;
 import org.netbeans.modules.versioning.core.Utils;
-import org.netbeans.modules.versioning.core.spi.VCSSystemProvider;
+import org.netbeans.modules.versioning.core.util.VCSSystemProvider;
 
 /**
  * Collection of utility methods for Versioning systems implementors. 

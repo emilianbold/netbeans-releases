@@ -43,7 +43,7 @@ package org.netbeans.modules.versioning;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import org.netbeans.modules.versioning.core.spi.VCSSystemProvider;
+import org.netbeans.modules.versioning.core.util.VCSSystemProvider;
 import org.openide.util.Lookup;
 import org.openide.util.LookupListener;
 
@@ -51,7 +51,7 @@ import org.openide.util.LookupListener;
  *
  * @author tomas
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.versioning.core.spi.VCSSystemProvider.class)
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.versioning.core.util.VCSSystemProvider.class)
 public class FileBasedVCSProvider extends VCSSystemProvider {
 
     /**

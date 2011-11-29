@@ -50,7 +50,7 @@ import org.openide.util.NbBundle;
 import org.openide.nodes.Node;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.windows.TopComponent;
-import org.netbeans.modules.versioning.core.spi.VCSSystemProvider.VersioningSystem;
+import org.netbeans.modules.versioning.core.util.VCSSystemProvider.VersioningSystem;
 import org.netbeans.modules.versioning.fileproxy.spi.VCSContext;
 import org.netbeans.modules.diff.PatchAction;
 

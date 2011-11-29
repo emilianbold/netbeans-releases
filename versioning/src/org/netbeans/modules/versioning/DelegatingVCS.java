@@ -41,9 +41,8 @@
  */
 package org.netbeans.modules.versioning;
 
-import com.sun.tools.javac.comp.Annotate.Annotator;
 import java.awt.Image;
-import org.netbeans.modules.versioning.core.spi.VCSSystemProvider;
+import org.netbeans.modules.versioning.core.util.VCSSystemProvider;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
@@ -52,11 +51,11 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
+import org.netbeans.modules.versioning.core.util.Utils;
 import org.netbeans.modules.versioning.fileproxy.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.fileproxy.spi.VersioningSystem;
 import org.netbeans.modules.versioning.fileproxy.spi.VCSInterceptor;
 import org.netbeans.modules.versioning.fileproxy.api.VCSFileProxy;
-import org.netbeans.modules.versioning.core.VersioningManager;
 import org.netbeans.modules.versioning.fileproxy.spi.VCSVisibilityQuery;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.netbeans.spi.queries.CollocationQueryImplementation;
@@ -107,10 +106,9 @@ public class DelegatingVCS extends org.netbeans.modules.versioning.fileproxy.spi
     }
 
     public org.netbeans.modules.versioning.spi.VersioningSystem getDelegate() {
-        VersioningManager manager = VersioningManager.getInstance();
         synchronized(DELEGATE_LOCK) {
             if(delegate == null) {
-                manager.flushNullOwners();   
+                Utils.flushNullOwners();   
                 delegate = (org.netbeans.modules.versioning.spi.VersioningSystem) map.get("delegate");                  // NOI18N
                 if(delegate != null) {
                     synchronized(support) {

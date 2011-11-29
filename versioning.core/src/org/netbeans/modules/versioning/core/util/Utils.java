@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,55 +34,54 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.versioning;
+package org.netbeans.modules.versioning.core.util;
 
-import org.netbeans.modules.versioning.core.VersioningManager;
 import java.io.File;
-import java.io.IOException;
-import org.netbeans.modules.versioning.core.util.VCSSystemProvider.VersioningSystem;
+import org.netbeans.modules.versioning.core.FlatFolder;
+import org.netbeans.modules.versioning.core.VcsVisibilityQueryImplementation;
+import org.netbeans.modules.versioning.core.VersioningManager;
 import org.netbeans.modules.versioning.fileproxy.api.VCSFileProxy;
-import org.netbeans.modules.versioning.spi.testvcs.TestAnnotatedVCS;
-import org.openide.util.test.MockLookup;
 
-public class GetAnnotatedOwnerTest extends GetOwnerTest {
+/**
+ *
+ * @author Tomas Stupka
+ */
+public final class Utils {
+    public static String EVENT_ANNOTATIONS_CHANGED = VersioningManager.EVENT_ANNOTATIONS_CHANGED;
+    public static String EVENT_STATUS_CHANGED = VersioningManager.EVENT_STATUS_CHANGED;
+    public static String EVENT_VERSIONED_ROOTS = VersioningManager.EVENT_VERSIONED_ROOTS;
     
-    public GetAnnotatedOwnerTest(String testName) {
-        super(testName);
+    public static void flushNullOwners() {
+        VersioningManager.getInstance().flushNullOwners();
+    }
+    
+    public static void fireVisibilityChanged() {
+        VcsVisibilityQueryImplementation vq = VcsVisibilityQueryImplementation.getInstance();
+        if(vq != null) {
+            // was touched from outside - lets fire the change
+            vq.fireVisibilityChanged();
+        }        
+    }
+    
+    public static void versionedRootsChanged() {
+        VersioningManager.getInstance().versionedRootsChanged();
+    }
+    
+    public static VCSSystemProvider.VersioningSystem getOwner(VCSFileProxy proxy) {
+        return VersioningManager.getInstance().getOwner(proxy);        
+    }
+ 
+    public static boolean isFlat(File file) {
+        return file instanceof FlatFolder; // XXX delegate to fileproxy
     }
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        MockLookup.setLayersAndInstances();
-    }
-    
-    protected File getVersionedFolder() {
-        if (versionedFolder == null) {
-            versionedFolder = new File(dataRootDir, "workdir/root-" + TestAnnotatedVCS.VERSIONED_FOLDER_SUFFIX);
-            versionedFolder.mkdirs();
-            new File(versionedFolder, TestAnnotatedVCS.TEST_VCS_METADATA).mkdirs();
-        }
-        return versionedFolder;
-    }
-    
-    @Override
-    protected Class getVCS() {
-        return TestAnnotatedVCS.class;
+    public static File getFlat(String path) {
+        return new FlatFolder(path);
     }
 
-    public void testVCSSystemDoesntAwakeOnUnrelatedGetOwner() throws IOException {
-        
-        assertNull(TestAnnotatedVCS.INSTANCE);
-        
-        File f = new File(getUnversionedFolder(), "sleepingfile");
-        f.createNewFile();
-        
-        assertNull(TestAnnotatedVCS.INSTANCE);
-        VersioningSystem owner = VersioningManager.getInstance().getOwner(VCSFileProxy.createFileProxy(f));
-        assertNull(owner);
-        
-        assertNull(TestAnnotatedVCS.INSTANCE);
-    }
-    
 }

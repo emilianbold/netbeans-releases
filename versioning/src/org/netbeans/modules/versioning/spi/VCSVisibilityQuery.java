@@ -45,7 +45,7 @@ package org.netbeans.modules.versioning.spi;
 
 
 import java.io.File;
-import org.netbeans.modules.versioning.core.VcsVisibilityQueryImplementation;
+import org.netbeans.modules.versioning.core.util.Utils;
 import org.netbeans.spi.queries.VisibilityQueryImplementation2;
 
 /**
@@ -67,10 +67,6 @@ public abstract class VCSVisibilityQuery {
      * Notify a visibility change
      */
     protected final void fireVisibilityChanged() {
-        VcsVisibilityQueryImplementation vq = VcsVisibilityQueryImplementation.getInstance();
-        if(vq != null) {
-            // was touched from outside - lets fire the change
-            vq.fireVisibilityChanged();
-        }
+        Utils.fireVisibilityChanged();
     }
 }

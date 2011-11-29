@@ -39,9 +39,8 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.versioning.core.filesystem.api;
+package org.netbeans.modules.versioning.core.fs.api;
 
-import org.netbeans.modules.versioning.core.spi.*;
 import java.io.IOException;
 import java.util.*;
 import org.netbeans.modules.versioning.fileproxy.api.VCSFileProxy;

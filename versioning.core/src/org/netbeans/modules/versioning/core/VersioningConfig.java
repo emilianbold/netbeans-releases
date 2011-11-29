@@ -55,7 +55,7 @@ import java.util.logging.Logger;
 import org.openide.util.NbPreferences;
 
 import java.util.prefs.Preferences;
-import org.netbeans.modules.versioning.core.spi.VCSSystemProvider.VersioningSystem;
+import org.netbeans.modules.versioning.core.util.VCSSystemProvider.VersioningSystem;
 import org.netbeans.modules.versioning.fileproxy.api.VCSFileProxy;
 
 /**

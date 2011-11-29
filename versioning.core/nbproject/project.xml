@@ -255,8 +255,7 @@ made subject to such option by the copyright holder.
             </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.versioning</friend>
-                <package>org.netbeans.modules.versioning.core</package>
-                <package>org.netbeans.modules.versioning.core.spi</package>
+                <package>org.netbeans.modules.versioning.core.util</package>
                 <package>org.netbeans.modules.versioning.fileproxy.api</package>
                 <package>org.netbeans.modules.versioning.fileproxy.spi</package>
             </friend-packages>
