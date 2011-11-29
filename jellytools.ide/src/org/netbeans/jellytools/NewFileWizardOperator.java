@@ -164,8 +164,24 @@ public class NewFileWizardOperator extends WizardOperator {
     /** Selects given file type
      * @param filetype name of file type to select (exact name - not substring)
      */
-    public void selectFileType(String filetype) {
-        lstFileTypes().waitItem(filetype, 0);
+    public void selectFileType(final String filetype) {
+        // need to wait for item before selecting it
+        try {
+            new Waiter(new Waitable() {
+
+                @Override
+                public Object actionProduced(Object param) {
+                    return lstFileTypes().findItemIndex(filetype) != -1 ? Boolean.TRUE : null;
+                }
+
+                @Override
+                public String getDescription() {
+                    return ("Wait item available");
+                }
+            }).waitAction(null);
+        } catch (InterruptedException e) {
+            throw new JemmyException("Interrupted.", e);
+        }
         lstFileTypes().selectItem(filetype);
     }
     
