@@ -91,10 +91,10 @@ public class ThreadsTableModel implements TableModel, Constants {
             if (THREAD_SUSPENDED_COLUMN_ID.equals (columnID)) {
                 JPDAThreadGroup group = (JPDAThreadGroup) row;
                 JPDAThread[] threads = group.getThreads ();
-                boolean suspended = true;
+                boolean suspended = false;
                 for (JPDAThread t : threads) {
-                    if (!t.isSuspended()) {
-                        suspended = false;
+                    if (t.isSuspended()) {
+                        suspended = true;
                         break;
                     }
                 }
