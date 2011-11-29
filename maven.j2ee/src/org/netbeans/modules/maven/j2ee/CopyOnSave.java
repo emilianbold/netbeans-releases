@@ -73,16 +73,12 @@ import org.openide.util.Exceptions;
 public class CopyOnSave implements AdditionalDestination, J2eeModuleProvider.DeployOnSaveSupport {
 
     private Project project;
-    private J2eeModuleProvider provider;
     boolean active = false;
-    private NbMavenProject mavenproject;
     private final List<ArtifactListener> listeners = new ArrayList<ArtifactListener>();
 
 
     public CopyOnSave(Project project) {
         this.project = project;
-        this.provider = project.getLookup().lookup(J2eeModuleProvider.class);
-        this.mavenproject = project.getLookup().lookup(NbMavenProject.class);
     }
 
     public void initialize() throws FileStateInvalidException {
@@ -116,11 +112,11 @@ public class CopyOnSave implements AdditionalDestination, J2eeModuleProvider.Dep
     }
 
     protected J2eeModule getJ2eeModule() {
-        return provider.getJ2eeModule();
+        return project.getLookup().lookup(J2eeModuleProvider.class).getJ2eeModule();
     }
     
     protected J2eeModuleProvider getJ2eeModuleProvider() {
-        return provider;
+        return project.getLookup().lookup(J2eeModuleProvider.class);
     }
 
     protected Project getProject() {
@@ -232,6 +228,6 @@ public class CopyOnSave implements AdditionalDestination, J2eeModuleProvider.Dep
     private static final String NB_COS = ".netbeans_automatic_build"; //NOI18N
     @Override
     public boolean containsIdeArtifacts() {
-        return new File(mavenproject.getOutputDirectory(false), NB_COS).exists();
+        return new File(project.getLookup().lookup(NbMavenProject.class).getOutputDirectory(false), NB_COS).exists();
     }
 }
