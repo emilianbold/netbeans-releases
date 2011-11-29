@@ -108,8 +108,15 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
     public static final String NAME_GENERATED_SOURCE = "6GeneratedSourceRoot"; //NOI18N
     public static final String NAME_GENERATED_TEST_SOURCE = "7GeneratedSourceRoot"; //NOI18N
     
-    private final NbMavenProjectImpl project;
+    private final Project proj;
     private final ChangeSupport cs = new ChangeSupport(this);
+    private final PropertyChangeListener pcl = new PropertyChangeListener() {
+        public @Override void propertyChange(PropertyChangeEvent event) {
+            if (NbMavenProjectImpl.PROP_PROJECT.equals(event.getPropertyName())) {
+                checkChanges(true, true);
+            }
+        }
+    };
     
     private Map<String, SourceGroup> javaGroup;
     private Map<File, SourceGroup> genSrcGroup;
@@ -122,24 +129,19 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
     private final Object lock = new Object();
     
     public MavenSourcesImpl(Project proj) {
-        project = proj.getLookup().lookup(NbMavenProjectImpl.class);
-        assert project != null : proj;
+        this.proj = proj;
         javaGroup = new TreeMap<String, SourceGroup>();
         genSrcGroup = new TreeMap<File, SourceGroup>();
         otherMainGroups = new TreeMap<File, OtherGroup>();
         otherTestGroups = new TreeMap<File, OtherGroup>();
         groovyGroup = new TreeMap<String, SourceGroup>();
         scalaGroup = new TreeMap<String, SourceGroup>();
-
-        NbMavenProject.addPropertyChangeListener(project, new PropertyChangeListener() {
-            public @Override void propertyChange(PropertyChangeEvent event) {
-                if (NbMavenProjectImpl.PROP_PROJECT.equals(event.getPropertyName())) {
-                    checkChanges(true, true);
-                }
-            }
-        });
     }
     
+    private NbMavenProjectImpl project() {
+        return proj.getLookup().lookup(NbMavenProjectImpl.class);
+    }
+
     @Messages({
         "SG_Sources=Source Packages",
         "SG_Test_Sources=Test Packages",
@@ -151,6 +153,7 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
     private void checkChanges(boolean fireChanges, boolean checkAlsoNonJavaStuff) {
         boolean changed = false;
         synchronized (lock) {
+            NbMavenProjectImpl project = project();
             MavenProject mp = project.getOriginalMavenProject();
             FileObject folder = FileUtilities.convertStringToFileObject(mp.getBuild().getSourceDirectory());
             changed = changed | checkSourceGroupCache(folder, NAME_SOURCE, SG_Sources(), javaGroup);
@@ -181,17 +184,23 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
     }
 
     public @Override void addChangeListener(ChangeListener changeListener) {
+        if (!cs.hasListeners()) {
+            NbMavenProject.addPropertyChangeListener(project(), pcl);
+        }
         cs.addChangeListener(changeListener);
     }
     
     public @Override void removeChangeListener(ChangeListener changeListener) {
         cs.removeChangeListener(changeListener);
+        if (!cs.hasListeners()) {
+            NbMavenProject.removePropertyChangeListener(project(), pcl);
+        }
     }
     
     public @Override SourceGroup[] getSourceGroups(String str) {
         if (Sources.TYPE_GENERIC.equals(str)) {
-            return new SourceGroup[] { GenericSources.group(project, project.getProjectDirectory(), NAME_PROJECTROOT, 
-                    ProjectUtils.getInformation(project).getDisplayName(), null, null) };
+            return new SourceGroup[] { GenericSources.group(proj, proj.getProjectDirectory(), NAME_PROJECTROOT, 
+                    ProjectUtils.getInformation(proj).getDisplayName(), null, null) };
         }
         if (JavaProjectConstants.SOURCES_TYPE_JAVA.equals(str)) {
             List<SourceGroup> toReturn = new ArrayList<SourceGroup>();
@@ -218,7 +227,7 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
             // TODO not all these are probably resources.. maybe need to split in 2 groups..
             boolean test = TYPE_TEST_OTHER.equals(str);
             List<SourceGroup> toReturn = new ArrayList<SourceGroup>();
-            File[] roots = project.getOtherRoots(test);
+            File[] roots = project().getOtherRoots(test);
             synchronized (lock) {
                 // don't fire event synchronously..
                 checkOtherGroupsCache(roots, test);
@@ -264,7 +273,7 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
 
     @Messages("SG_Project_Resources=Project Resources")
     private SourceGroup[] getOrCreateResourceSourceGroup(boolean test, boolean create) {
-        URI[] uris = project.getResources(test);
+        URI[] uris = project().getResources(test);
         if (uris.length > 0) {
             List<URI> virtuals = new ArrayList<URI>();
             List<SourceGroup> existing = new ArrayList<SourceGroup>();
@@ -273,7 +282,7 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
                 if (fo == null) {
                     virtuals.add(u);
                 } else {
-                    existing.add(GenericSources.group(project, fo, "resources",  //NOI18N
+                    existing.add(GenericSources.group(proj, fo, "resources",  //NOI18N
                         SG_Project_Resources(), null, null));
                 }
             }
@@ -285,7 +294,7 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
                 }
-                existing.add(GenericSources.group(project, fo, "resources",  //NOI18N
+                existing.add(GenericSources.group(proj, fo, "resources",  //NOI18N
                     SG_Project_Resources(), null, null));
             }
             //TODO we should probably add includes/excludes to source groups.
@@ -311,12 +320,12 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
         }
         boolean changed = false;
         if (group == null) {
-            group = GenericSources.group(project, root, name, displayName, null, null);
+            group = GenericSources.group(proj, root, name, displayName, null, null);
             groups.put(name, group);
             changed = true;
         } else {
             if (!group.getRootFolder().equals(root)) {
-                group = GenericSources.group(project, root, name, displayName, null, null);
+                group = GenericSources.group(proj, root, name, displayName, null, null);
                 groups.put(name, group);
                 changed = true;
             }
@@ -329,7 +338,7 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
         boolean changed = false;
         List<File> checked = new ArrayList<File>();
         for (boolean test : new boolean[] {false, true}) {
-            for (URI u : project.getGeneratedSourceRoots(test)) {
+            for (URI u : project().getGeneratedSourceRoots(test)) {
                 File file = FileUtil.normalizeFile(new File(u));
                 FileObject folder = FileUtil.toFileObject(file);
                 changed |= checkGeneratedGroupCache(folder, file, file.getName(), test);
@@ -367,12 +376,12 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
         String name = (test ? NAME_GENERATED_TEST_SOURCE : NAME_GENERATED_SOURCE) + nameSuffix;
         String displayName = test ? SG_Generated_Test_Sources(nameSuffix) : SG_Generated_Sources(nameSuffix);
         if (group == null) {
-            group = new GeneratedGroup(project, root, name, displayName);
+            group = new GeneratedGroup(project(), root, name, displayName);
             genSrcGroup.put(rootFile, group);
             changed = true;
         } else {
             if (!group.getRootFolder().isValid() || !group.getRootFolder().equals(root)) {
-                group = new GeneratedGroup(project, root, name, displayName);
+                group = new GeneratedGroup(project(), root, name, displayName);
                 genSrcGroup.put(rootFile, group);
                 changed = true;
             }
@@ -385,7 +394,7 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
         Set<File> toRemove = new HashSet<File>(test ? otherTestGroups.keySet() : otherMainGroups.keySet());
         toRemove.removeAll(Arrays.asList(roots));
 
-        URI[] res = project.getResources(test);
+        URI[] res = project().getResources(test);
         Set<File> resources = new HashSet<File>();
         for (URI ur : res) {
             resources.add(new File(ur));
@@ -420,7 +429,7 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
         boolean changed = false;
         if (grp == null || !grp.getRootFolder().isValid() || !grp.getRootFolder().equals(root) ||
                 isResourceNow != wasResourceBefore) {
-            grp = new OtherGroup(project, root, "Resource" + (test ? "Test":"Main") + root.getNameExt(), root.getName(), test); //NOI18N
+            grp = new OtherGroup(project(), root, "Resource" + (test ? "Test":"Main") + root.getNameExt(), root.getName(), test); //NOI18N
             map.put(rootFile, grp);
             changed = true;
         }
@@ -429,7 +438,7 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
 
     public @Override SourceGroup createSourceGroup(String type, String hint) {
         assert type != null;
-        MavenProject mp = project.getOriginalMavenProject();
+        MavenProject mp = project().getOriginalMavenProject();
         File folder = null;
         if (JavaProjectConstants.SOURCES_TYPE_RESOURCES.equals(type)) {
             boolean main = JavaProjectConstants.SOURCES_HINT_MAIN.equals(hint);
@@ -449,18 +458,18 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
         }
         if (TYPE_GROOVY.equals(type)) {
             if (JavaProjectConstants.SOURCES_HINT_MAIN.equals(hint)) {
-                folder = new File(project.getGroovyDirectory(false));
+                folder = new File(project().getGroovyDirectory(false));
             }
             if (JavaProjectConstants.SOURCES_HINT_TEST.equals(hint)) {
-                folder = new File(project.getGroovyDirectory(true));
+                folder = new File(project().getGroovyDirectory(true));
             }
         }
         if (TYPE_SCALA.equals(type)) {
             if (JavaProjectConstants.SOURCES_HINT_MAIN.equals(hint)) {
-                folder = new File(project.getScalaDirectory(false));
+                folder = new File(project().getScalaDirectory(false));
             }
             if (JavaProjectConstants.SOURCES_HINT_TEST.equals(hint)) {
-                folder = new File(project.getScalaDirectory(true));
+                folder = new File(project().getScalaDirectory(true));
             }
         }
         if (folder != null) {

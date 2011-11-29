@@ -43,12 +43,18 @@
 package org.netbeans.modules.projectapi;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.WeakHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.LookupMerger;
@@ -68,6 +74,9 @@ public class LazyLookupProviders {
 
     private LazyLookupProviders() {}
 
+    private static final Map<Lookup,ThreadLocal<Member>> INSIDE_LOAD = new WeakHashMap<Lookup,ThreadLocal<Member>>();
+    private static final Collection<Member> WARNED = Collections.synchronizedSet(new HashSet<Member>());
+
     /**
      * @see ProjectServiceProvider
      */
@@ -77,6 +86,7 @@ public class LazyLookupProviders {
                 return new ProxyLookup() {
                     Collection<String> serviceNames = Arrays.asList(((String) attrs.get("service")).split(",")); // NOI18N
                     @Override protected void beforeLookup(Template<?> template) {
+                        safeToLoad();
                         synchronized (this) {
                             if (serviceNames == null || !serviceNames.contains(template.getType().getName())) {
                                 return;
@@ -101,6 +111,19 @@ public class LazyLookupProviders {
                             Exceptions.printStackTrace(x);
                         }
                     }
+                    private void safeToLoad() {
+                        ThreadLocal<Member> memberRef;
+                        synchronized (INSIDE_LOAD) {
+                            memberRef = INSIDE_LOAD.get(lkp);
+                        }
+                        if (memberRef == null) {
+                            return;
+                        }
+                        Member member = memberRef.get();
+                        if (member != null && WARNED.add(member)) {
+                            Logger.getLogger(LazyLookupProviders.class.getName()).log(Level.WARNING, null, new IllegalStateException("may not call Project.getLookup().lookup(...) inside " + member.getName() + " registered under @ProjectServiceProvider"));
+                        }
+                    }
                 };
             }
         };
@@ -111,11 +134,23 @@ public class LazyLookupProviders {
             loader = Thread.currentThread().getContextClassLoader();
         }
         Class<?> clazz = loader.loadClass(implName);
+        ThreadLocal<Member> member;
+        synchronized (INSIDE_LOAD) {
+            member = INSIDE_LOAD.get(lkp);
+            if (member == null) {
+                INSIDE_LOAD.put(lkp, member = new ThreadLocal<Member>());
+            }
+        }
         if (methodName == null) {
             for (Constructor c : clazz.getConstructors()) {
                 Object[] vals = valuesFor(c.getParameterTypes(), lkp);
                 if (vals != null) {
-                    return c.newInstance(vals);
+                    member.set(c);
+                    try {
+                        return c.newInstance(vals);
+                    } finally {
+                        member.remove();
+                    }
                 }
             }
         } else {
@@ -125,7 +160,12 @@ public class LazyLookupProviders {
                 }
                 Object[] vals = valuesFor(m.getParameterTypes(), lkp);
                 if (vals != null) {
-                    return m.invoke(null, vals);
+                    member.set(m);
+                    try {
+                        return m.invoke(null, vals);
+                    } finally {
+                        member.remove();
+                    }
                 }
             }
         }

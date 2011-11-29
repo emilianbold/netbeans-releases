@@ -58,35 +58,41 @@ import org.openide.filesystems.FileObject;
  */
 @ProjectServiceProvider(service = {EjbJarProvider.class, EjbJarsInProject.class}, projectType = {"org-netbeans-modules-maven/" + NbMavenProject.TYPE_WAR})
 public class AdditionalWebProvider implements EjbJarProvider, EjbJarsInProject {
-    
-    private final EjbJarProvider webEjbJarProvider;
-    private final EjbJarsInProject ejbJarsInProject;
 
+    private final Project project;
     
     public AdditionalWebProvider(Project project) {
+        this.project = project;
+    }
+    
+    private EjbJar apiEjbJar() {
         WebModuleProviderImpl moduleProvider = project.getLookup().lookup(WebModuleProviderImpl.class);
         Profile profile = moduleProvider.getModuleImpl().getJ2eeProfile();
-        
         if (Profile.JAVA_EE_6_WEB.equals(profile) || Profile.JAVA_EE_6_FULL.equals(profile)) {
             WebEjbJarImpl webEjbJarImpl = new WebEjbJarImpl(moduleProvider.getModuleImpl(), project);
-            EjbJar apiEjbJar = EjbJarFactory.createEjbJar(webEjbJarImpl);
-
-            webEjbJarProvider = EjbJarSupport.createEjbJarProvider(project, apiEjbJar);
-            ejbJarsInProject = EjbJarSupport.createEjbJarsInProject(apiEjbJar);
+            return EjbJarFactory.createEjbJar(webEjbJarImpl);
         } else {
-            webEjbJarProvider = null;
-            ejbJarsInProject = null;
+            return null;
         }
-        
     }
 
     @Override
     public EjbJar findEjbJar(FileObject file) {
-        return webEjbJarProvider.findEjbJar(file);
+        EjbJar apiEjbJar = apiEjbJar();
+        if (apiEjbJar != null) {
+            return EjbJarSupport.createEjbJarProvider(project, apiEjbJar).findEjbJar(file);
+        } else {
+            return null;
+        }
     }
 
     @Override
     public EjbJar[] getEjbJars() {
-        return ejbJarsInProject.getEjbJars();
+        EjbJar apiEjbJar = apiEjbJar();
+        if (apiEjbJar != null) {
+            return EjbJarSupport.createEjbJarsInProject(apiEjbJar).getEjbJars();
+        } else {
+            return new EjbJar[0];
+        }
     }
 }

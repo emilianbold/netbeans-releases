@@ -55,6 +55,7 @@ import org.netbeans.modules.j2ee.persistence.spi.PersistenceScopeProvider;
 import org.netbeans.modules.j2ee.persistence.spi.PersistenceScopesProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
 import org.openide.util.WeakListeners;
 
 /**
@@ -78,7 +79,7 @@ public class MavenPersistenceProvider implements PersistenceLocationProvider,
     /**
      * Creates a new instance of MavenPersistenceProvider
      */
-    public MavenPersistenceProvider(Project proj)
+    public MavenPersistenceProvider(Project proj, Lookup lkp)
     {
         locProvider    = new PersistenceLocationProviderImpl(proj);
         scopeProvider  = new PersistenceScopeProviderImpl(locProvider, proj);
@@ -88,7 +89,7 @@ public class MavenPersistenceProvider implements PersistenceLocationProvider,
         propChangeSupport.addPropertyChangeListener(scopesProvider);
                 
         //TODO add FileChangeListener on persistence.xml
-        NbMavenProject watcher = proj.getLookup().lookup(NbMavenProject.class);
+        NbMavenProject watcher = lkp.lookup(NbMavenProject.class);
         watcher.addWatchedPath(PersistenceLocationProviderImpl.DEF_PERSISTENCE);
         watcher.addWatchedPath(PersistenceLocationProviderImpl.ALT_PERSISTENCE);
         watcher.addPropertyChangeListener(WeakListeners.propertyChange(res, watcher));

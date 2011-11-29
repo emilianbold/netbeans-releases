@@ -62,16 +62,13 @@ public final class Info implements ProjectInformation, PropertyChangeListener {
 
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     private final Project project;
-    private final NbMavenProject nbmp;
 
     public Info(final Project project) {
         this.project = project;
-        nbmp = project.getLookup().lookup(NbMavenProject.class);
-        nbmp.addPropertyChangeListener(this);
     }
 
     @Override public String getName() {
-        return nbmp.getMavenProject().getId().replace(':', '_');
+        return project.getLookup().lookup(NbMavenProject.class).getMavenProject().getId().replace(':', '_');
     }
 
     @Messages({
@@ -79,7 +76,7 @@ public final class Info implements ProjectInformation, PropertyChangeListener {
         "TXT_Maven_project_at=Maven project at {0}"
     })
     @Override public @NonNull String getDisplayName() {
-        MavenProject pr = nbmp.getMavenProject();
+        MavenProject pr = project.getLookup().lookup(NbMavenProject.class).getMavenProject();
         if (NbMavenProject.isErrorPlaceholder(pr)) {
             return LBL_misconfigured_project(project.getProjectDirectory().getNameExt());
         }
@@ -106,11 +103,17 @@ public final class Info implements ProjectInformation, PropertyChangeListener {
     }
     
     @Override public void addPropertyChangeListener(PropertyChangeListener listener) {
+        if (!pcs.hasListeners(null)) {
+            project.getLookup().lookup(NbMavenProject.class).addPropertyChangeListener(this);
+        }
         pcs.addPropertyChangeListener(listener);
     }
     
     @Override public void removePropertyChangeListener(PropertyChangeListener listener) {
         pcs.removePropertyChangeListener(listener);
+        if (!pcs.hasListeners(null)) {
+            project.getLookup().lookup(NbMavenProject.class).removePropertyChangeListener(this);
+        }
     }
 
     @Override public void propertyChange(PropertyChangeEvent evt) {
