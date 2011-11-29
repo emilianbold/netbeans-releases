@@ -98,7 +98,7 @@ import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.EncapsulateFieldRefactoring;
 import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
 import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
@@ -499,10 +499,10 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
             if (fieldEncloserAccessibility == Modifier.PUBLIC
                     && (fieldAccessibility.contains(Modifier.PUBLIC) || fieldAccessibility.contains(Modifier.PROTECTED))) {
                 // search project and dependencies
-                cpinfo = RetoucheUtils.getClasspathInfoFor(true, source);
+                cpinfo = RefactoringUtils.getClasspathInfoFor(true, source);
             } else {
                 // search project
-                cpinfo = RetoucheUtils.getClasspathInfoFor(false, source);
+                cpinfo = RefactoringUtils.getClasspathInfoFor(false, source);
             }
             ClassIndex index = cpinfo.getClassIndex();
             refs = index.getResources(fieldEncloserHandle, EnumSet.of(ClassIndex.SearchKind.FIELD_REFERENCES), EnumSet.of(ClassIndex.SearchScope.SOURCE));

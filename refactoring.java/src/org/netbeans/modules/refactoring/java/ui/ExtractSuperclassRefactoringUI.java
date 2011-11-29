@@ -51,7 +51,7 @@ import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.ui.ElementHeaders;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.ExtractSuperclassRefactoring;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
@@ -74,7 +74,7 @@ public class ExtractSuperclassRefactoringUI implements RefactoringUI {
     public static ExtractSuperclassRefactoringUI create(TreePathHandle selectedHandle, CompilationInfo info) {
         TreePath path = selectedHandle.resolve(info);
 
-        path = RetoucheUtils.findEnclosingClass(info, path, true, false, false, false, false);
+        path = RefactoringUtils.findEnclosingClass(info, path, true, false, false, false, false);
 
         if (path != null) {
             return new ExtractSuperclassRefactoringUI(path, info);

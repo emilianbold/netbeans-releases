@@ -77,7 +77,7 @@ import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.ui.ElementHeaders;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.MemberInfo;
 import org.netbeans.modules.refactoring.java.api.PullUpRefactoring;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
@@ -154,7 +154,7 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
                 public void run(CompilationController controller) throws Exception {
                     controller.toPhase(JavaSource.Phase.RESOLVED);
                     // retrieve supertypes (will be used in the combo)
-                    Collection<TypeElement> supertypes = RetoucheUtils.getSuperTypes((TypeElement)handle.resolveElement(controller), controller, true);
+                    Collection<TypeElement> supertypes = RefactoringUtils.getSuperTypes((TypeElement)handle.resolveElement(controller), controller, true);
                     List<MemberInfo> minfo = new LinkedList<MemberInfo>();
                     for (Element e: supertypes) {
                         MemberInfo<ElementHandle<Element>> memberInfo = MemberInfo.create(e, controller);
@@ -414,7 +414,7 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
                     for (int i = 0; i < classes.length; i++) {
                         // collect interface names
                         for (TypeMirror tm: ((TypeElement) (classes[i].getElementHandle().resolve(info))).getInterfaces()) {
-                            MemberInfo ifcName = MemberInfo.create(RetoucheUtils.typeToElement(tm, info), info, MemberInfo.Group.IMPLEMENTS);
+                            MemberInfo ifcName = MemberInfo.create(RefactoringUtils.typeToElement(tm, info), info, MemberInfo.Group.IMPLEMENTS);
                             map.put(ifcName, new Object[] {Boolean.FALSE, ifcName, null});
                         }
                         // collect fields, methods and inner classes

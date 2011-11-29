@@ -59,7 +59,7 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.TypeMirrorHandle;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.ui.tree.ElementGripFactory;
 import org.openide.filesystems.FileObject;
 
@@ -77,7 +77,7 @@ public final class JavaRefactoringUtils {
      * @return collection of ExecutableElements which are overidden by 'method'
      */
     public static Collection<ExecutableElement> getOverriddenMethods(ExecutableElement method, CompilationInfo info) {
-        return RetoucheUtils.getOverridenMethods (method, info);
+        return RefactoringUtils.getOverridenMethods (method, info);
     }
 
     /**
@@ -86,7 +86,7 @@ public final class JavaRefactoringUtils {
      * @return collection of ExecutableElements which overrides 'method'
      */
     public static Collection<ExecutableElement> getOverridingMethods(ExecutableElement method, CompilationInfo info) {
-        return RetoucheUtils.getOverridingMethods(method, info);
+        return RefactoringUtils.getOverridingMethods(method, info);
     }
 
     /**
@@ -96,7 +96,7 @@ public final class JavaRefactoringUtils {
      * @return 
      */
     public static boolean isOnSourceClasspath(FileObject fo) {
-        return RetoucheUtils.isOnSourceClasspath(fo);
+        return RefactoringUtils.isOnSourceClasspath(fo);
     }
 
     /**
@@ -105,7 +105,7 @@ public final class JavaRefactoringUtils {
      * @return 
      */
     public static boolean isRefactorable(FileObject file) {
-        return RetoucheUtils.isRefactorable(file) && file.canWrite() && file.canRead();
+        return RefactoringUtils.isRefactorable(file) && file.canWrite() && file.canRead();
     }
 
     /**
@@ -116,7 +116,7 @@ public final class JavaRefactoringUtils {
      * @return 
      */
     public static Collection<TypeElement> getSuperTypes(TypeElement type, CompilationInfo info, boolean sourceOnly) {
-        return RetoucheUtils.getSuperTypes(type, info);
+        return RefactoringUtils.getSuperTypes(type, info);
     }
 
     /**
@@ -136,11 +136,11 @@ public final class JavaRefactoringUtils {
      * @return path to the enclosing ClassTree
      */
     public static TreePath findEnclosingClass(CompilationInfo javac, TreePath path, boolean isClass, boolean isInterface, boolean isEnum, boolean isAnnotation, boolean isAnonymous) {
-        return RetoucheUtils.findEnclosingClass(javac, path, isClass, isInterface, isEnum, isAnnotation, isAnonymous);
+        return RefactoringUtils.findEnclosingClass(javac, path, isClass, isInterface, isEnum, isAnnotation, isAnonymous);
     }
 
     public static List<TypeMirror> elementsToTypes(List<? extends Element> typeParams) {
-        return RetoucheUtils.resolveTypeParamsAsTypes(typeParams);
+        return RefactoringUtils.resolveTypeParamsAsTypes(typeParams);
     }
 
 //    /**
@@ -152,11 +152,11 @@ public final class JavaRefactoringUtils {
 //     * @param tm parametrized type to analyze
 //     */
 //    public static void findUsedGenericTypes(Types utils, List<TypeMirror> typeArgs, List<TypeMirror> result, TypeMirror tm) {
-//        RetoucheUtils.findUsedGenericTypes(utils, typeArgs, result, tm);
+//        RefactoringUtils.findUsedGenericTypes(utils, typeArgs, result, tm);
 //    }
 
     public static ClasspathInfo getClasspathInfoFor(FileObject ... files) {
-        return RetoucheUtils.getClasspathInfoFor(files);
+        return RefactoringUtils.getClasspathInfoFor(files);
     }
 
     //From here down is useful stuff from contrib/refactorings

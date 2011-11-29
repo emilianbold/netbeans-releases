@@ -56,7 +56,7 @@ import javax.lang.model.element.*;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.MemberInfo;
 import org.netbeans.modules.refactoring.java.api.MemberInfo.Group;
 import org.netbeans.modules.refactoring.java.api.PullUpRefactoring;
@@ -138,7 +138,7 @@ public class PullUpTransformer extends RefactoringVisitor {
                                 (BlockTree) null,
                                 (ExpressionTree)method.getDefaultValue());
                         nju = genUtils.importFQNs(nju);
-                        RetoucheUtils.copyJavadoc(methodElm, nju, workingCopy);
+                        RefactoringUtils.copyJavadoc(methodElm, nju, workingCopy);
                         njuClass = genUtils.insertClassMember(njuClass, nju);
                         rewrite(tree, njuClass);
                     } else {                        
@@ -159,7 +159,7 @@ public class PullUpTransformer extends RefactoringVisitor {
                                         oldOne.getThrows(),
                                         oldOne.getBody(),
                                         (ExpressionTree) oldOne.getDefaultValue());
-                                RetoucheUtils.copyJavadoc(methodElm, m, workingCopy);
+                                RefactoringUtils.copyJavadoc(methodElm, m, workingCopy);
                                 njuClass = genUtils.insertClassMember(njuClass, m);
                             } else if (members[i].getGroup() == Group.FIELD) {
                                 VariableTree oldOne = (VariableTree) newMethodTree;
@@ -168,7 +168,7 @@ public class PullUpTransformer extends RefactoringVisitor {
                                         oldOne.getName(),
                                         oldOne.getType(),
                                         oldOne.getInitializer());
-                                RetoucheUtils.copyJavadoc(methodElm, m, workingCopy);
+                                RefactoringUtils.copyJavadoc(methodElm, m, workingCopy);
                                 njuClass = genUtils.insertClassMember(njuClass, m);
                             } else if (members[i].getGroup() == Group.TYPE) {
                                 ClassTree oldOne = (ClassTree) newMethodTree;
@@ -206,7 +206,7 @@ public class PullUpTransformer extends RefactoringVisitor {
                                         break;
                                 }
                                                                 
-                                RetoucheUtils.copyJavadoc(methodElm, m, workingCopy);
+                                RefactoringUtils.copyJavadoc(methodElm, m, workingCopy);
                                 njuClass = genUtils.insertClassMember(njuClass, m);
                                 
                             }
@@ -227,7 +227,7 @@ public class PullUpTransformer extends RefactoringVisitor {
             }
             try {
                 if (imports.size() > 0) {
-                    CompilationUnitTree newCut = RetoucheUtils.addImports(workingCopy.getCompilationUnit(), imports, make);
+                    CompilationUnitTree newCut = RefactoringUtils.addImports(workingCopy.getCompilationUnit(), imports, make);
                     rewrite(workingCopy.getCompilationUnit(), newCut);
                 }
             } catch (IOException ex) {

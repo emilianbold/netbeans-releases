@@ -55,7 +55,7 @@ import org.netbeans.api.java.source.*;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.ProgressEvent;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.PushDownRefactoring;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.openide.filesystems.FileObject;
@@ -150,8 +150,8 @@ public final class PushDownRefactoringPlugin extends JavaRefactoringPlugin {
         ClasspathInfo cpInfo = getClasspathInfo(refactoring);
         ClassIndex idx = cpInfo.getClassIndex();
         Set<FileObject> set = new HashSet<FileObject>();
-        set.add(RetoucheUtils.getFileObject(handle));
-        set.addAll(idx.getResources(RetoucheUtils.getElementHandle(handle), EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS),EnumSet.of(ClassIndex.SearchScope.SOURCE)));
+        set.add(RefactoringUtils.getFileObject(handle));
+        set.addAll(idx.getResources(RefactoringUtils.getElementHandle(handle), EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS),EnumSet.of(ClassIndex.SearchScope.SOURCE)));
         return set;
     }    
     

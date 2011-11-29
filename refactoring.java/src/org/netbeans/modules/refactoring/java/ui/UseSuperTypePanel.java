@@ -56,7 +56,7 @@ import javax.swing.ListSelectionModel;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.ui.ElementIcons;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.UseSuperTypeRefactoring;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.openide.util.NbBundle;
@@ -85,7 +85,7 @@ public class UseSuperTypePanel extends JPanel implements CustomRefactoringPanel 
         initComponents();
         TreePathHandle subType = (TreePathHandle) refactoring.getTypeElement();
         String title = null;
-        String className = RetoucheUtils.getSimpleName(subType);
+        String className = RefactoringUtils.getSimpleName(subType);
         title = NbBundle.getMessage(UseSuperTypePanel.class, "LBL_UseSyperTypeTitle", className);
         setName(title);
         superTypeList.setCellRenderer(new DefaultListCellRenderer() {

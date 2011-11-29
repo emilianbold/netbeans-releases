@@ -51,7 +51,7 @@ import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.ui.ElementHeaders;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.ExtractInterfaceRefactoring;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
@@ -77,7 +77,7 @@ public final class ExtractInterfaceRefactoringUI implements RefactoringUI {
     public static ExtractInterfaceRefactoringUI create(TreePathHandle selectedElement, CompilationInfo info) {
         TreePath path = selectedElement.resolve(info);
 
-        path = RetoucheUtils.findEnclosingClass(info, path, true, true, true, true, false);
+        path = RefactoringUtils.findEnclosingClass(info, path, true, true, true, true, false);
 
         if (path != null) {
             return new ExtractInterfaceRefactoringUI(path, info);

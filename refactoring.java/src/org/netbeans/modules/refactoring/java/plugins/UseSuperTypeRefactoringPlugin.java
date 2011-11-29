@@ -58,7 +58,7 @@ import org.netbeans.api.java.source.*;
 import org.netbeans.api.java.source.ModificationResult.Difference;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.spi.DiffElement;
 import org.netbeans.modules.refactoring.java.api.UseSuperTypeRefactoring;
 import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
@@ -156,7 +156,7 @@ public class UseSuperTypeRefactoringPlugin extends JavaRefactoringPlugin {
                     complController.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
 
                     FileObject fo = subClassHandle.getFileObject();
-                    ClasspathInfo classpathInfo = RetoucheUtils.getClasspathInfoFor(true, true, fo) ;
+                    ClasspathInfo classpathInfo = RefactoringUtils.getClasspathInfoFor(true, true, fo) ;
                     
                     ClassIndex clsIndx = classpathInfo.getClassIndex();
                     TypeElement javaClassElement = (TypeElement) subClassHandle.

@@ -51,7 +51,7 @@ import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.RefactoringPluginFactory;
@@ -106,7 +106,7 @@ public class PackageRename implements RefactoringPluginFactory{
         
         public Problem fastCheckParameters() {
             String newName = refactoring.getNewName();
-            if (!RetoucheUtils.isValidPackageName(newName)) {
+            if (!RefactoringUtils.isValidPackageName(newName)) {
                 String msg = new MessageFormat(NbBundle.getMessage(RenameRefactoringPlugin.class, "ERR_InvalidPackage")).format(
                         new Object[] {newName}
                 );

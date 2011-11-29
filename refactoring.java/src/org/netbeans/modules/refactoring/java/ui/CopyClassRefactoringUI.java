@@ -49,7 +49,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.SingleCopyRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.ui.CopyClassPanel;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
@@ -98,7 +98,7 @@ public class CopyClassRefactoringUI implements RefactoringUI, RefactoringUIBypas
             FileObject target = targetFolder!=null?targetFolder:resource.getParent();
             panel = new CopyClassPanel(parent,
                     getName() + " - " + resource.getName(), // NOI18N
-                    RetoucheUtils.getPackageName(target), 
+                    RefactoringUtils.getPackageName(target), 
                     target,
                     resource.getName());
             panel.setCombosEnabled(!(targetFolder!=null));
@@ -166,7 +166,7 @@ public class CopyClassRefactoringUI implements RefactoringUI, RefactoringUIBypas
                 try {
                     //Transferable t = paste.paste();
                     FileObject source = refactoring.getRefactoringSource().lookup(FileObject.class);
-                    FileObject target = RetoucheUtils.getOrCreateFolder(refactoring.getTarget().lookup(URL.class));
+                    FileObject target = RefactoringUtils.getOrCreateFolder(refactoring.getTarget().lookup(URL.class));
                     if (source != null) {
                         DataObject sourceDo = DataObject.find(source);
                         DataFolder targetFolder = DataFolder.findFolder(target);

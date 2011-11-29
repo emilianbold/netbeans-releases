@@ -61,7 +61,7 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.java.RefactoringModule;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.netbeans.spi.gototest.TestLocator;
 import org.netbeans.spi.gototest.TestLocator.LocationResult;
@@ -115,8 +115,8 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
             return;
         }
 
-        if (handle!=null && (RetoucheUtils.getElementKind(handle) == ElementKind.FIELD
-                || RetoucheUtils.getElementKind(handle) == ElementKind.CLASS)) {
+        if (handle!=null && (RefactoringUtils.getElementKind(handle) == ElementKind.FIELD
+                || RefactoringUtils.getElementKind(handle) == ElementKind.CLASS)) {
             JavaSource source = JavaSource.forFileObject(handle.getFileObject());
             CancellableTask<CompilationController> task = new CancellableTask<CompilationController>() {
 
@@ -125,12 +125,12 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
                 }
 
                 public void run(CompilationController info) throws Exception {
-                    if(RetoucheUtils.getElementKind(handle) == ElementKind.FIELD) {
+                    if(RefactoringUtils.getElementKind(handle) == ElementKind.FIELD) {
                         VariableElement element = (VariableElement) handle.resolveElement(info);
                         TypeElement parent = (TypeElement) element.getEnclosingElement();
                     boolean hasGetters = false;
                         for (ExecutableElement method : ElementFilter.methodsIn(parent.getEnclosedElements())) {
-                            if (RetoucheUtils.isGetter(method, element) || RetoucheUtils.isSetter(method, element)) {
+                            if (RefactoringUtils.isGetter(method, element) || RefactoringUtils.isSetter(method, element)) {
                                 hasGetters = true;
                                 break;
                             }
@@ -146,7 +146,7 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
                         }
                     }
                     
-                    if(RetoucheUtils.getElementKind(handle) == ElementKind.CLASS) {
+                    if(RefactoringUtils.getElementKind(handle) == ElementKind.CLASS) {
                         final FileObject fileObject = handle.getFileObject();
                         Collection<? extends TestLocator> testLocators = Lookup.getDefault().lookupAll(TestLocator.class);
                         for (final TestLocator testLocator : testLocators) {

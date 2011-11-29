@@ -50,7 +50,7 @@ import javax.lang.model.element.*;
 import org.netbeans.api.java.source.*;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.ProgressEvent;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.InnerToOuterRefactoring;
 import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
@@ -115,7 +115,7 @@ public class InnerToOuterRefactoringPlugin extends JavaRefactoringPlugin {
         //                return new Problem(true, NbBundle.getMessage(InnerToOuterRefactoringPlugin.class, "ERR_ElementNotAvailable")); // NOI18N
         //            }
         
-        refactoring.setClassName(RetoucheUtils.getSimpleName(sourceType));
+        refactoring.setClassName(RefactoringUtils.getSimpleName(sourceType));
         
         // increase progress (step 1)
         fireProgressListenerStep();
@@ -201,7 +201,7 @@ public class InnerToOuterRefactoringPlugin extends JavaRefactoringPlugin {
         ClasspathInfo cpInfo = getClasspathInfo(refactoring);
         HashSet<FileObject> set = new HashSet<FileObject>();
         ClassIndex idx = cpInfo.getClassIndex();
-        set.addAll(idx.getResources(RetoucheUtils.getElementHandle(refactoring.getSourceType()), EnumSet.of(ClassIndex.SearchKind.TYPE_REFERENCES, ClassIndex.SearchKind.IMPLEMENTORS),EnumSet.of(ClassIndex.SearchScope.SOURCE)));
+        set.addAll(idx.getResources(RefactoringUtils.getElementHandle(refactoring.getSourceType()), EnumSet.of(ClassIndex.SearchKind.TYPE_REFERENCES, ClassIndex.SearchKind.IMPLEMENTORS),EnumSet.of(ClassIndex.SearchScope.SOURCE)));
         return set;
     }
     

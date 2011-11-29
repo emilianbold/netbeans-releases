@@ -79,7 +79,7 @@ public class PackageRenameHandlerImpl implements PackageRenameHandler {
         if (node.isLeaf()) {
             //rename empty package and don't try to do any refactoring
             try {
-                if (!RetoucheUtils.isValidPackageName(newName)) {
+                if (!RefactoringUtils.isValidPackageName(newName)) {
                     String msg = new MessageFormat(NbBundle.getMessage(RenameRefactoringPlugin.class,"ERR_InvalidPackage")).format(
                             new Object[] {newName}
                     );

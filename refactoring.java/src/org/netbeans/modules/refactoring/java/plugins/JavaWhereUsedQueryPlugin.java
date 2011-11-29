@@ -61,7 +61,7 @@ import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.ProgressEvent;
 import org.netbeans.modules.refactoring.api.Scope;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.SourceUtilsEx;
 import org.netbeans.modules.refactoring.java.WhereUsedElement;
 import org.netbeans.modules.refactoring.java.api.WhereUsedQueryConstants;
@@ -103,7 +103,7 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
     public Problem preCheck() {
         cancelRequest = false;
         TreePathHandle handle = refactoring.getRefactoringSource().lookup(TreePathHandle.class);
-        if (!handle.getFileObject().isValid() || RetoucheUtils.getElementKind(handle) == null) {
+        if (!handle.getFileObject().isValid() || RefactoringUtils.getElementKind(handle) == null) {
             return new Problem(true, NbBundle.getMessage(FindVisitor.class, "DSC_ElNotAvail")); // NOI18N
         }
         if (handle.getKind() == Tree.Kind.ARRAY_TYPE) {
@@ -133,7 +133,7 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
                         }
                         ElementKind kind = element.getKind();
                         if (kind == ElementKind.METHOD && isSearchFromBaseClass()) {
-                            Collection<ExecutableElement> overridens = RetoucheUtils.getOverridenMethods((ExecutableElement)element, info);
+                            Collection<ExecutableElement> overridens = RefactoringUtils.getOverridenMethods((ExecutableElement)element, info);
                             if(!overridens.isEmpty()) {
                                 ExecutableElement el = (ExecutableElement) overridens.iterator().next();
                                 assert el!=null;
@@ -141,9 +141,9 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
                                 refactoring.setRefactoringSource(Lookups.fixed(basem)); // TODO: This is wrong! Should not change instance from a plugin
                             }
                             if ((fromLibrary = basem != null && (basem.getFileObject() == null || basem.getFileObject().getNameExt().endsWith("class")))) { //NOI18N
-                                cp = RetoucheUtils.getClasspathInfoFor(tph, basem);
+                                cp = RefactoringUtils.getClasspathInfoFor(tph, basem);
                             } else {
-                                cp = RetoucheUtils.getClasspathInfoFor(basem!=null?basem:tph);
+                                cp = RefactoringUtils.getClasspathInfoFor(basem!=null?basem:tph);
                             }
                         }
                     }
@@ -160,7 +160,7 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
             fileSet.addAll(customScope.getFiles());
             FileObject fo = null;
             if(fromLibrary) {
-                fo = RetoucheUtils.getFileObject(basem);
+                fo = RefactoringUtils.getFileObject(basem);
                 if (fo == null) {
                     fo = basem.getFileObject();
                 }
@@ -169,9 +169,9 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
                 if(isSearchFromBaseClass() && fo != null) {
                     HashSet<FileObject> fileobjects = new HashSet(customScope.getSourceRoots());
                     fileobjects.add(fo);
-                    cpath = RetoucheUtils.getClasspathInfoFor(false, fileobjects.toArray(new FileObject[0]));
+                    cpath = RefactoringUtils.getClasspathInfoFor(false, fileobjects.toArray(new FileObject[0]));
                 } else {
-                    cpath = RetoucheUtils.getClasspathInfoFor(false, customScope.getSourceRoots().toArray(new FileObject[0]));
+                    cpath = RefactoringUtils.getClasspathInfoFor(false, customScope.getSourceRoots().toArray(new FileObject[0]));
                 }
                 fileSet.addAll(getRelevantFiles(basem!=null?basem:tph,
                         cpath,
@@ -199,9 +199,9 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
                 Set<NonRecursiveFolder> packages = folders.get(sourceRoot);
                 if (packages != null && !packages.isEmpty()) {
                     if(isSearchFromBaseClass() && fo != null) {
-                        cpath = RetoucheUtils.getClasspathInfoFor(false, sourceRoot, fo);
+                        cpath = RefactoringUtils.getClasspathInfoFor(false, sourceRoot, fo);
                     } else {
-                        cpath = RetoucheUtils.getClasspathInfoFor(false, sourceRoot);
+                        cpath = RefactoringUtils.getClasspathInfoFor(false, sourceRoot);
                     }
                     fileSet.addAll(getRelevantFiles(basem!=null?basem:tph,
                             cpath,
@@ -293,7 +293,7 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
                 } 
                 if (el.getKind() == ElementKind.METHOD && isFindUsages) {
                     //get method references for method and for all it's overriders
-                    Set<ElementHandle<TypeElement>> s = RetoucheUtils.getImplementorsAsHandles(idx, cpInfo, (TypeElement)el.getEnclosingElement());
+                    Set<ElementHandle<TypeElement>> s = RefactoringUtils.getImplementorsAsHandles(idx, cpInfo, (TypeElement)el.getEnclosingElement());
                     for (ElementHandle<TypeElement> eh:s) {
                         TypeElement te = eh.resolve(info);
                         if (te==null) {
@@ -323,7 +323,7 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
     }
     
     private static Collection<FileObject> getImplementorsRecursive(ClassIndex idx, ClasspathInfo cpInfo, TypeElement el) {
-        Set<?> implementorsAsHandles = RetoucheUtils.getImplementorsAsHandles(idx, cpInfo, el);
+        Set<?> implementorsAsHandles = RefactoringUtils.getImplementorsAsHandles(idx, cpInfo, el);
 
         @SuppressWarnings("unchecked")
         Collection<FileObject> set = SourceUtilsEx.getFiles((Collection<ElementHandle<? extends Element>>) implementorsAsHandles, cpInfo);

@@ -53,7 +53,7 @@ import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.ProgressEvent;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
 import org.netbeans.modules.refactoring.java.ui.JavaRenameProperties;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
@@ -122,14 +122,14 @@ public class RenamePropertyRefactoringPlugin extends JavaRefactoringPlugin {
 
         Problem p = null;
         if (getterDelegate != null) {
-            getterDelegate.setNewName(RetoucheUtils.getGetterName(refactoring.getNewName()));
+            getterDelegate.setNewName(RefactoringUtils.getGetterName(refactoring.getNewName()));
             p = JavaPluginUtils.chainProblems(p, getterDelegate.fastCheckParameters());
             if (p != null && p.isFatal()) {
                 return p;
             }
         }
         if (setterDelegate != null) {
-            setterDelegate.setNewName(RetoucheUtils.getSetterName(refactoring.getNewName()));
+            setterDelegate.setNewName(RefactoringUtils.getSetterName(refactoring.getNewName()));
             p = JavaPluginUtils.chainProblems(p, setterDelegate.fastCheckParameters());
             if (p != null && p.isFatal()) {
                 return p;
@@ -230,12 +230,12 @@ public class RenamePropertyRefactoringPlugin extends JavaRefactoringPlugin {
                     p.toPhase(JavaSource.Phase.RESOLVED);
                     Element propertyElement = property.resolveElement(p);
                     for (ExecutableElement el : ElementFilter.methodsIn(propertyElement.getEnclosingElement().getEnclosedElements())) {
-                        if (RetoucheUtils.isGetter(el, propertyElement)) {
+                        if (RefactoringUtils.isGetter(el, propertyElement)) {
                             getterDelegate = new RenameRefactoring(Lookups.singleton(TreePathHandle.create(el, p)));
-                            getterDelegate.setNewName(RetoucheUtils.getGetterName(refactoring.getNewName()));
-                        } else if (RetoucheUtils.isSetter(el, propertyElement)) {
+                            getterDelegate.setNewName(RefactoringUtils.getGetterName(refactoring.getNewName()));
+                        } else if (RefactoringUtils.isSetter(el, propertyElement)) {
                             setterDelegate = new RenameRefactoring(Lookups.singleton(TreePathHandle.create(el, p)));
-                            setterDelegate.setNewName(RetoucheUtils.getSetterName(refactoring.getNewName()));
+                            setterDelegate.setNewName(RefactoringUtils.getSetterName(refactoring.getNewName()));
                             VariableElement par = el.getParameters().iterator().next();
                             if (par.getSimpleName().contentEquals(propertyElement.getSimpleName())) {
                                 parameterDelegate = new RenameRefactoring(Lookups.singleton(TreePathHandle.create(p.getTrees().getPath(par), p)));

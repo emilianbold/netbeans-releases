@@ -60,7 +60,7 @@ import org.netbeans.junit.NbPerformanceTest;
 import org.netbeans.modules.refactoring.api.MoveRefactoring;
 import org.netbeans.modules.refactoring.api.RefactoringElement;
 import org.netbeans.modules.refactoring.api.RefactoringSession;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.lookup.Lookups;
@@ -101,7 +101,7 @@ public class MoveClassPerfTest extends RefPerfTestCase {
                 controller.toPhase(JavaSource.Phase.RESOLVED);
                 TypeElement klass = controller.getElements().getTypeElement(REFACTORED_OBJ);
                 moveRef[0] = new MoveRefactoring(Lookups.singleton(testFile));
-                ClasspathInfo cpi = RetoucheUtils.getClasspathInfoFor(TreePathHandle.create(klass, controller));
+                ClasspathInfo cpi = RefactoringUtils.getClasspathInfoFor(TreePathHandle.create(klass, controller));
                 moveRef[0].getContext().add(cpi);
             }
         }, false).get();

@@ -70,7 +70,7 @@ import org.netbeans.api.java.source.*;
 import org.netbeans.api.java.source.ui.TypeElementFinder;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.refactoring.java.RefactoringModule;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.ChangeParametersRefactoring.ParameterInfo;
 import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.java.plugins.LocalVarScanner;
@@ -750,8 +750,8 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
         List<? extends VariableElement> pars = method.getParameters();
 
         Collection<ExecutableElement> allMethods = new ArrayList();
-        allMethods.addAll(RetoucheUtils.getOverridenMethods(method, info));
-        allMethods.addAll(RetoucheUtils.getOverridingMethods(method, info));
+        allMethods.addAll(RefactoringUtils.getOverridenMethods(method, info));
+        allMethods.addAll(RefactoringUtils.getOverridingMethods(method, info));
         allMethods.add(method);
         
         for (ExecutableElement currentMethod: allMethods) {
@@ -882,7 +882,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
         
         // generate the return type for the method and name
         // for the both - method and constructor
-        if (RetoucheUtils.getElementKind(refactoredObj) == ElementKind.METHOD) {
+        if (RefactoringUtils.getElementKind(refactoredObj) == ElementKind.METHOD) {
             buf.append(((JEditorPane)singleLineEditor[1]).getText());
             buf.append(' '); //NOI18N
         }
@@ -981,7 +981,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            FileObject file = RetoucheUtils.getFileObject(refactoredObj);
+            FileObject file = RefactoringUtils.getFileObject(refactoredObj);
             ElementHandle<TypeElement> type = TypeElementFinder.find(ClasspathInfo.create(file), ((JEditorPane)singleLineEditor[1]).getText(), null);
             if (type != null) {
                 String fqn = type.getQualifiedName().toString();
@@ -1010,7 +1010,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            FileObject file = RetoucheUtils.getFileObject(refactoredObj);
+            FileObject file = RefactoringUtils.getFileObject(refactoredObj);
             ElementHandle<TypeElement> type = TypeElementFinder.find(ClasspathInfo.create(file), table.getValueAt(row, col).toString(), null);
             if (type != null) {
                 String fqn = type.getQualifiedName().toString();

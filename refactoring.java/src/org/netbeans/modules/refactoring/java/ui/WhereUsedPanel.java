@@ -71,7 +71,7 @@ import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.openide.awt.Mnemonics;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -131,7 +131,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
     }
     
     public Scope getCustomScope() {
-        FileObject file = RetoucheUtils.getFileObject(element);
+        FileObject file = RefactoringUtils.getFileObject(element);
         Scope value = null;
         
         if(!enableScope) {
@@ -171,7 +171,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
     }
     
     private Collection getOverriddenMethods(ExecutableElement m, CompilationInfo info) {
-        return RetoucheUtils.getOverridenMethods(m, info);
+        return RefactoringUtils.getOverridenMethods(m, info);
     }
     
     public void initialize() {
@@ -466,7 +466,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         if (result.length() > MAX_NAME) {
             result = result.substring(0,MAX_NAME-1) + "..."; // NOI18N
         }
-        return RetoucheUtils.htmlize(result);
+        return UIUtilities.htmlize(result);
     }
     
     public TreePathHandle getBaseMethod() {

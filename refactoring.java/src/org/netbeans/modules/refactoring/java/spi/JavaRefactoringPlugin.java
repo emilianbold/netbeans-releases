@@ -68,7 +68,7 @@ import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.plugins.FindVisitor;
 import org.netbeans.modules.refactoring.java.plugins.RetoucheCommit;
 import org.netbeans.modules.refactoring.spi.ProgressProviderAdapter;
@@ -158,7 +158,7 @@ public abstract class JavaRefactoringPlugin extends ProgressProviderAdapter impl
         if (currentTask!=null) {
             currentTask.cancel();
         }
-        RetoucheUtils.cancel = true;
+        RefactoringUtils.cancel = true;
     }
 
     protected ClasspathInfo getClasspathInfo(AbstractRefactoring refactoring) {
@@ -166,9 +166,9 @@ public abstract class JavaRefactoringPlugin extends ProgressProviderAdapter impl
         if (cpInfo==null) {
             Collection<? extends TreePathHandle> handles = refactoring.getRefactoringSource().lookupAll(TreePathHandle.class);
             if (!handles.isEmpty()) {
-                cpInfo = RetoucheUtils.getClasspathInfoFor(handles.toArray(new TreePathHandle[handles.size()]));
+                cpInfo = RefactoringUtils.getClasspathInfoFor(handles.toArray(new TreePathHandle[handles.size()]));
             } else {
-                cpInfo = RetoucheUtils.getClasspathInfoFor((FileObject)null);
+                cpInfo = RefactoringUtils.getClasspathInfoFor((FileObject)null);
             }
             refactoring.getContext().add(cpInfo);
         }
