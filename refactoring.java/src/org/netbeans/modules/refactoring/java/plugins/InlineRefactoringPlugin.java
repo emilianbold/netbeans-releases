@@ -83,7 +83,7 @@ import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.support.CancellableTreeScanner;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.ProgressEvent;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.InlineRefactoring;
 import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
 import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
@@ -189,13 +189,13 @@ public class InlineRefactoringPlugin extends JavaRefactoringPlugin {
                             //add all references of overriding methods
                             allMethods = new HashSet<ElementHandle<ExecutableElement>>();
                             allMethods.add(ElementHandle.create((ExecutableElement) el));
-                            for (ExecutableElement e : RetoucheUtils.getOverridingMethods((ExecutableElement) el, info)) {
+                            for (ExecutableElement e : RefactoringUtils.getOverridingMethods((ExecutableElement) el, info)) {
                                 addMethods(e, set, info, idx);
                             }
                             //add all references of overriden methods
-                            for (ExecutableElement ov : RetoucheUtils.getOverridenMethods((ExecutableElement) el, info)) {
+                            for (ExecutableElement ov : RefactoringUtils.getOverridenMethods((ExecutableElement) el, info)) {
                                 addMethods(ov, set, info, idx);
-                                for (ExecutableElement e : RetoucheUtils.getOverridingMethods(ov, info)) {
+                                for (ExecutableElement e : RefactoringUtils.getOverridingMethods(ov, info)) {
                                     addMethods(e, set, info, idx);
                                 }
                             }
@@ -298,8 +298,8 @@ public class InlineRefactoringPlugin extends JavaRefactoringPlugin {
                 break;
             case METHOD:
                 // Method can not be polymorphic
-                Collection<ExecutableElement> overridenMethods = RetoucheUtils.getOverridenMethods((ExecutableElement) element, javac);
-                Collection<ExecutableElement> overridingMethods = RetoucheUtils.getOverridingMethods((ExecutableElement) element, javac);
+                Collection<ExecutableElement> overridenMethods = RefactoringUtils.getOverridenMethods((ExecutableElement) element, javac);
+                Collection<ExecutableElement> overridingMethods = RefactoringUtils.getOverridingMethods((ExecutableElement) element, javac);
                 if (overridenMethods.size() > 0 || overridingMethods.size() > 0) {
                     preCheckProblem = createProblem(preCheckProblem, true, NbBundle.getMessage(InlineRefactoringPlugin.class, "ERR_InlineMethodPolymorphic")); //NOI18N
                     return preCheckProblem;

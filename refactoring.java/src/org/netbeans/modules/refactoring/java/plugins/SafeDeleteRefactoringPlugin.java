@@ -61,7 +61,7 @@ import javax.swing.Action;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.source.*;
 import org.netbeans.modules.refactoring.api.*;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.spi.ui.UI;
 import org.netbeans.modules.refactoring.java.api.WhereUsedQueryConstants;
 import org.netbeans.modules.refactoring.spi.*;
@@ -256,11 +256,13 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
             this.rs = rs;
         }
         
+        @Override
         public void showDetails(Action callback, Cancellable parent) {
             parent.cancel();
             UI.openRefactoringUI(ui, rs, callback);
         }
         
+        @Override
         public String getDetailsHint() {
             return getString("LBL_ShowUsages");
         }
@@ -320,9 +322,11 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
             }
             try {
                 source.runUserActionTask(new CancellableTask<CompilationController>() {
+                    @Override
                     public void cancel() {
                         
                     }
+                    @Override
                     public void run(CompilationController co) throws Exception {
                         co.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                         CompilationUnitTree cut = co.getCompilationUnit();
@@ -399,7 +403,7 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
             for (FileObject fileObject : lkp.lookupAll(FileObject.class)) {
                 if (fileObject.isFolder()) {
                     javaFileObjects.addAll(getJavaFileObjects(fileObject, true));
-                }else if (RetoucheUtils.isRefactorable(fileObject)) {
+                }else if (RefactoringUtils.isRefactorable(fileObject)) {
                     javaFileObjects.add(fileObject);
                 }
             }
@@ -437,10 +441,12 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
         try {
             javaSrc.runUserActionTask(new CancellableTask<CompilationController>(){
 
+                @Override
                 public void cancel() {
                     //No op
                 }
 
+                @Override
                 public void run(CompilationController compilationController) throws Exception {
                     ExecutableElement execElem = (ExecutableElement) methodHandle.resolveElement(compilationController);
                     TypeElement type = (TypeElement) execElem.getEnclosingElement();

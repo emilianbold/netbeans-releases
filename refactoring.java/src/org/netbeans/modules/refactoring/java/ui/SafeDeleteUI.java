@@ -55,7 +55,7 @@ import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.SafeDeleteRefactoring;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUIBypass;
@@ -94,7 +94,7 @@ public class SafeDeleteUI implements RefactoringUI, RefactoringUIBypass{
     public SafeDeleteUI(FileObject[] selectedElements, Collection<TreePathHandle> handles, boolean regulardelete) {
         this.elementsToDelete = selectedElements;
         refactoring = new SafeDeleteRefactoring(new ProxyLookup(Lookups.fixed(elementsToDelete), Lookups.fixed(handles.toArray(new Object[handles.size()]))));
-        refactoring.getContext().add(RetoucheUtils.getClasspathInfoFor(selectedElements));
+        refactoring.getContext().add(RefactoringUtils.getClasspathInfoFor(selectedElements));
         this.regulardelete = regulardelete;
     }
 
@@ -106,12 +106,12 @@ public class SafeDeleteUI implements RefactoringUI, RefactoringUIBypass{
     public SafeDeleteUI(TreePathHandle[] selectedElements) {
         this.elementsToDelete = selectedElements;
         refactoring = new SafeDeleteRefactoring(Lookups.fixed(elementsToDelete));
-        refactoring.getContext().add(RetoucheUtils.getClasspathInfoFor(selectedElements[0]));
+        refactoring.getContext().add(RefactoringUtils.getClasspathInfoFor(selectedElements[0]));
     }
 
     public SafeDeleteUI(NonRecursiveFolder nonRecursiveFolder, boolean regulardelete) {
         refactoring = new SafeDeleteRefactoring(Lookups.fixed(nonRecursiveFolder));
-        refactoring.getContext().add(RetoucheUtils.getClasspathInfoFor(nonRecursiveFolder.getFolder()));
+        refactoring.getContext().add(RefactoringUtils.getClasspathInfoFor(nonRecursiveFolder.getFolder()));
         this.regulardelete = regulardelete;
     }
     
@@ -121,11 +121,13 @@ public class SafeDeleteUI implements RefactoringUI, RefactoringUIBypass{
      * @return Returns the result of fastCheckParameters of the
      * underlying refactoring
      */
+    @Override
     public org.netbeans.modules.refactoring.api.Problem checkParameters() {
         refactoring.setCheckInComments(panel.isSearchInComments());
         return refactoring.fastCheckParameters();
     }
     
+    @Override
     public String getDescription() {
         //TODO: Check bounds here. Might throw an OutofBoundsException otherwise.
 //        if (elementsToDelete[0] instanceof JavaClass) {
@@ -151,16 +153,19 @@ public class SafeDeleteUI implements RefactoringUI, RefactoringUIBypass{
         return NbBundle.getMessage(SafeDeleteUI.class, "DSC_SafeDel", elementsToDelete); // NOI18N
     }
     
+    @Override
     public org.openide.util.HelpCtx getHelpCtx() {
         
         return new HelpCtx(SafeDeleteUI.class.getName());
     }
     
+    @Override
     public String getName() {
         
         return NbBundle.getMessage(SafeDeleteUI.class, "LBL_SafeDel"); // NOI18N
     }
     
+    @Override
     public CustomRefactoringPanel getPanel(ChangeListener parent) {
         //TODO:Do you want to just use Arrays.asList?
         if(panel == null)
@@ -168,11 +173,13 @@ public class SafeDeleteUI implements RefactoringUI, RefactoringUIBypass{
         return panel;
     }
     
+    @Override
     public AbstractRefactoring getRefactoring() {
         
         return refactoring;
     }
     
+    @Override
     public boolean hasParameters() {
         
         return true;
@@ -181,10 +188,12 @@ public class SafeDeleteUI implements RefactoringUI, RefactoringUIBypass{
      * Returns false, since this refactoring is not a query.
      * @return false
      */
+    @Override
     public boolean isQuery() {
         return false;
     }
     
+    @Override
     public Problem setParameters() {
         refactoring.setCheckInComments(panel.isSearchInComments());
         return refactoring.checkParameters();
@@ -192,10 +201,12 @@ public class SafeDeleteUI implements RefactoringUI, RefactoringUIBypass{
     
     //Helper methods------------------
     
+    @Override
     public boolean isRefactoringBypassRequired() {
         return panel.isRegularDelete();
     }
 
+    @Override
     public void doRefactoringBypass() throws IOException {
         RequestProcessor.getDefault().post(new Runnable() {
 

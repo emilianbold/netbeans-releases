@@ -57,7 +57,7 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.ChangeParametersRefactoring;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
@@ -99,11 +99,12 @@ public class ChangeParametersUI implements RefactoringUI {
                 : null;
     }
     
+    @Override
     public String getDescription() {
         String msg = NbBundle.getMessage(ChangeParametersUI.class, 
                                         "DSC_ChangeParsRootNode"); // NOI18N
-        String name = RetoucheUtils.getSimpleName(refactoredObj);
-        boolean isMethod = RetoucheUtils.getElementKind(refactoredObj).equals(ElementKind.METHOD);
+        String name = RefactoringUtils.getSimpleName(refactoredObj);
+        boolean isMethod = RefactoringUtils.getElementKind(refactoredObj).equals(ElementKind.METHOD);
         return new MessageFormat(msg).format(new Object[] { 
             name,
             NbBundle.getMessage(ChangeParametersUI.class, "DSC_ChangeParsRootNode" + (isMethod ? "Method" : "Constr")),
@@ -111,6 +112,7 @@ public class ChangeParametersUI implements RefactoringUI {
        });
     }
     
+    @Override
     public CustomRefactoringPanel getPanel(ChangeListener parent) {
         if (panel == null) {
             //TODO:
@@ -120,10 +122,12 @@ public class ChangeParametersUI implements RefactoringUI {
         return panel;
     }
     
+    @Override
     public AbstractRefactoring getRefactoring() {
         return refactoring;
     }
 
+    @Override
     public boolean isQuery() {
         return false;
     }
@@ -156,22 +160,27 @@ public class ChangeParametersUI implements RefactoringUI {
         return problem;
     }
     
+    @Override
     public String getName() {
         return NbBundle.getMessage(ChangeParametersUI.class, "LBL_ChangeMethodSignature");
     }
     
+    @Override
     public Problem checkParameters() {
         return setParameters(true);
     }
 
+    @Override
     public Problem setParameters() {
         return setParameters(false);
     }
     
+    @Override
     public boolean hasParameters() {
         return true;
     }
     
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(ChangeParametersUI.class);
     }

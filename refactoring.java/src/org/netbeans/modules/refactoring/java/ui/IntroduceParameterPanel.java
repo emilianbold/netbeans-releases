@@ -102,6 +102,7 @@ public class IntroduceParameterPanel extends JPanel implements CustomRefactoring
     private final DocumentListener nameChangedListener;
     private int startOffset;
     
+    @Override
     public Component getComponent() {
         return this;
     }
@@ -134,6 +135,7 @@ public class IntroduceParameterPanel extends JPanel implements CustomRefactoring
     }
     
     private boolean initialized = false;
+    @Override
     public void initialize() {
         try {
             if (initialized) {
@@ -142,6 +144,7 @@ public class IntroduceParameterPanel extends JPanel implements CustomRefactoring
             JavaSource source = JavaSource.forFileObject(refactoredObj.getFileObject());
             source.runUserActionTask(new CancellableTask<CompilationController>() {
                 
+                @Override
                 public void run(org.netbeans.api.java.source.CompilationController info) {
                     try {
                         info.toPhase(org.netbeans.api.java.source.JavaSource.Phase.RESOLVED);
@@ -213,6 +216,7 @@ public class IntroduceParameterPanel extends JPanel implements CustomRefactoring
                     }
                 }
 
+                @Override
                 public void cancel() {
                 }
             }, true);
@@ -561,6 +565,7 @@ public class IntroduceParameterPanel extends JPanel implements CustomRefactoring
         
         private static final Set<ElementKind> ACCEPTABLE_KINDS = EnumSet.of(ElementKind.ENUM_CONSTANT, ElementKind.EXCEPTION_PARAMETER, ElementKind.FIELD, ElementKind.LOCAL_VARIABLE, ElementKind.PARAMETER);
         
+        @Override
         public boolean accept(Element e, TypeMirror type) {
             return ACCEPTABLE_KINDS.contains(e.getKind());
         }

@@ -61,7 +61,7 @@ import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
 import org.netbeans.modules.refactoring.java.spi.ToPhaseException;
 import org.openide.util.Exceptions;
@@ -198,7 +198,7 @@ class VarUsageVisitor extends RefactoringVisitor {
         for (VariableTree variableTree : parameters) {
             Element var = workingCopy.getTrees().getElement(new TreePath(getCurrentPath(), variableTree));
             if(p.equals(var)) {
-                TypeElement classElement = (TypeElement) workingCopy.getTrees().getElement(RetoucheUtils.findEnclosingClass(workingCopy, getCurrentPath(), true, true, true, true, false));
+                TypeElement classElement = (TypeElement) workingCopy.getTrees().getElement(RefactoringUtils.findEnclosingClass(workingCopy, getCurrentPath(), true, true, true, true, false));
                 List<ExecutableElement> methods = ElementFilter.methodsIn(workingCopy.getElements().getAllMembers(classElement));
                 String methodName = node.getName().toString();
                 for (ExecutableElement method : methods) {

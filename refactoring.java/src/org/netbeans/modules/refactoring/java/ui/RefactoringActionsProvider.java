@@ -82,7 +82,7 @@ import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.refactoring.api.ui.ExplorerContext;
 import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.spi.ui.UI;
 import org.netbeans.modules.refactoring.spi.ui.ActionsImplementationProvider;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
@@ -222,7 +222,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                 }
             };
         }
-        RetoucheUtils.invokeAfterScanFinished(task, getActionName(RefactoringActionsFactory.renameAction()));
+        RefactoringUtils.invokeAfterScanFinished(task, getActionName(RefactoringActionsFactory.renameAction()));
     }
     
     static String getActionName(Action action) {
@@ -244,20 +244,20 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
         Node n = nodes.iterator().next();
         TreePathHandle tph = n.getLookup().lookup(TreePathHandle.class);
         if (tph != null) {
-            return RetoucheUtils.isRefactorable(tph.getFileObject());
+            return RefactoringUtils.isRefactorable(tph.getFileObject());
         }
         DataObject dob = n.getCookie(DataObject.class);
         if (dob==null) {
             return false;
         }
         FileObject fo = dob.getPrimaryFile();
-        if (RetoucheUtils.isRefactorable(fo)) { //NOI18N
+        if (RefactoringUtils.isRefactorable(fo)) { //NOI18N
             return true;
         }
         if ((dob instanceof DataFolder) && 
-                RetoucheUtils.isFileInOpenProject(fo) && 
-                RetoucheUtils.isOnSourceClasspath(fo) &&
-                !RetoucheUtils.isClasspathRoot(fo))
+                RefactoringUtils.isFileInOpenProject(fo) && 
+                RefactoringUtils.isOnSourceClasspath(fo) &&
+                !RefactoringUtils.isClasspathRoot(fo))
             return true;
         return false;
     }
@@ -287,7 +287,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                 }
             };
 //        }
-        RetoucheUtils.invokeAfterScanFinished(task, getActionName(RefactoringActionsFactory.copyAction()));
+        RefactoringUtils.invokeAfterScanFinished(task, getActionName(RefactoringActionsFactory.copyAction()));
     }
 
     /**
@@ -312,16 +312,16 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
             return false;
         }
         if (fob != null) {
-            if (!fob.isFolder() || !RetoucheUtils.isOnSourceClasspath(fob))
+            if (!fob.isFolder() || !RefactoringUtils.isOnSourceClasspath(fob))
                 return false;
             FileObject fo = dob.getPrimaryFile();
-            if (RetoucheUtils.isRefactorable(fo)) { //NOI18N
+            if (RefactoringUtils.isRefactorable(fo)) { //NOI18N
                 return true;
             }
 
         } else {
             FileObject fo = dob.getPrimaryFile();
-            if (RetoucheUtils.isRefactorable(fo)) { //NOI18N
+            if (RefactoringUtils.isRefactorable(fo)) { //NOI18N
                 return true;
             }
         }
@@ -340,7 +340,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
             return true;
         }
         DataObject dob = n.getCookie(DataObject.class);
-        if ((dob!=null) && RetoucheUtils.isJavaFile(dob.getPrimaryFile()) && !"package-info".equals(dob.getName())) { //NOI18N
+        if ((dob!=null) && RefactoringUtils.isJavaFile(dob.getPrimaryFile()) && !"package-info".equals(dob.getName())) { //NOI18N
             return true;
         }
         return false;
@@ -383,7 +383,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                 }
             };
         }
-        RetoucheUtils.invokeAfterScanFinished(task, getActionName(RefactoringActionsFactory.whereUsedAction()));
+        RefactoringUtils.invokeAfterScanFinished(task, getActionName(RefactoringActionsFactory.whereUsedAction()));
     }
 
     /**
@@ -405,7 +405,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
         for (Node n:nodes) {
             TreePathHandle tph = n.getLookup().lookup(TreePathHandle.class);
             if (tph != null) {
-                return RetoucheUtils.isRefactorable(tph.getFileObject());
+                return RefactoringUtils.isRefactorable(tph.getFileObject());
             }
             DataObject dataObject = n.getCookie(DataObject.class);
             if (dataObject == null){
@@ -415,7 +415,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
             if (isRefactorableFolder(dataObject)){
                 return true;
             }
-            if (!RetoucheUtils.isRefactorable(fileObject)) {
+            if (!RefactoringUtils.isRefactorable(fileObject)) {
                 return false;
             }
         }
@@ -479,7 +479,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
 
             };
         }
-        RetoucheUtils.invokeAfterScanFinished(task, getActionName(RefactoringActionsFactory.safeDeleteAction()));
+        RefactoringUtils.invokeAfterScanFinished(task, getActionName(RefactoringActionsFactory.safeDeleteAction()));
     }
     
     private FileObject getTarget(Lookup look) {
@@ -531,7 +531,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
         if (fo != null) {
             if (!fo.isFolder())
                 return false;
-            if (!RetoucheUtils.isOnSourceClasspath(fo)) 
+            if (!RefactoringUtils.isOnSourceClasspath(fo)) 
                 return false;
             
             //it is drag and drop
@@ -542,14 +542,14 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                 if (dob==null) {
                     return false;
                 }
-                if (!RetoucheUtils.isOnSourceClasspath(dob.getPrimaryFile())) {
+                if (!RefactoringUtils.isOnSourceClasspath(dob.getPrimaryFile())) {
                     return false;
                 }
                 if (dob instanceof DataFolder) {
                     if (FileUtil.getRelativePath(dob.getPrimaryFile(), fo)!=null)
                         return false;
                     folders.add((DataFolder)dob);
-                } else if (RetoucheUtils.isJavaFile(dob.getPrimaryFile())) {
+                } else if (RefactoringUtils.isJavaFile(dob.getPrimaryFile())) {
                     jdoFound = true;
                 }
             }
@@ -557,7 +557,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                 return true;
             for (DataFolder fold:folders) {
                 for (Enumeration<DataObject> e = (fold).children(true); e.hasMoreElements();) {
-                    if (RetoucheUtils.isJavaFile(e.nextElement().getPrimaryFile())) {
+                    if (RefactoringUtils.isJavaFile(e.nextElement().getPrimaryFile())) {
                         return true;
                     }
                 }
@@ -577,7 +577,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                         return false;
                     } else {
                         //Ctrl-X
-                        if (!RetoucheUtils.isOnSourceClasspath(dob.getPrimaryFile()) || RetoucheUtils.isClasspathRoot(dob.getPrimaryFile())) {
+                        if (!RefactoringUtils.isOnSourceClasspath(dob.getPrimaryFile()) || RefactoringUtils.isClasspathRoot(dob.getPrimaryFile())) {
                             return false;
                         } else {
                             LinkedList<DataFolder> folders = new LinkedList<DataFolder>();
@@ -585,7 +585,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                             while (!folders.isEmpty()) {
                                 DataFolder fold = folders.remove();
                                 for (Enumeration<DataObject> e = fold.children(true); e.hasMoreElements();) {
-                                    if (RetoucheUtils.isJavaFile(e.nextElement().getPrimaryFile())) {
+                                    if (RefactoringUtils.isJavaFile(e.nextElement().getPrimaryFile())) {
                                         result = true;
                                         continue nodesloop;
                                     } else if (e instanceof DataFolder) {
@@ -596,10 +596,10 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                         }
                     }
                 }
-                if (!RetoucheUtils.isOnSourceClasspath(dob.getPrimaryFile())) {
+                if (!RefactoringUtils.isOnSourceClasspath(dob.getPrimaryFile())) {
                     return false;
                 }
-                if (RetoucheUtils.isJavaFile(dob.getPrimaryFile())) {
+                if (RefactoringUtils.isJavaFile(dob.getPrimaryFile())) {
                     result = true;
                 }
             }
@@ -676,7 +676,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                 
             };
         }
-        RetoucheUtils.invokeAfterScanFinished(task, getActionName(RefactoringActionsFactory.renameAction()));
+        RefactoringUtils.invokeAfterScanFinished(task, getActionName(RefactoringActionsFactory.renameAction()));
     }
 
     protected RefactoringUI wrap(RefactoringUI orig) {
@@ -966,7 +966,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                 DataObject dob = node.getCookie(DataObject.class);
                 if (dob!=null) {
                     fobs[i] = dob.getPrimaryFile();
-                    if (RetoucheUtils.isJavaFile(fobs[i])) {
+                    if (RefactoringUtils.isJavaFile(fobs[i])) {
                         JavaSource source = JavaSource.forFileObject(fobs[i]);
                         assert source != null;
                         try {
@@ -1057,9 +1057,9 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
         }
         
         return (dataObject instanceof DataFolder) && 
-                RetoucheUtils.isFileInOpenProject(fileObject) && 
-                RetoucheUtils.isOnSourceClasspath(fileObject) && 
-                !RetoucheUtils.isClasspathRoot(fileObject);
+                RefactoringUtils.isFileInOpenProject(fileObject) && 
+                RefactoringUtils.isOnSourceClasspath(fileObject) && 
+                !RefactoringUtils.isClasspathRoot(fileObject);
     }
 
     private static Logger logger() {
