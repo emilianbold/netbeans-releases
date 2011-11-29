@@ -105,7 +105,7 @@ public class EjbModuleProviderImpl extends BaseEEModuleProvider implements EjbJa
         ProjectSourcesClassPathProvider cppImpl = project.getLookup().lookup(ProjectSourcesClassPathProvider.class);
         ClassPath cp = cppImpl.getProjectSourcesClassPath(ClassPath.SOURCE);
         List<URL> resUris = new ArrayList<URL>();
-        for (URI uri : mavenProject.getResources(false)) {
+        for (URI uri : project.getLookup().lookup(NbMavenProject.class).getResources(false)) {
             try {
                 resUris.add(uri.toURL());
             } catch (MalformedURLException ex) {

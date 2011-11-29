@@ -66,7 +66,6 @@ import org.openide.util.Exceptions;
  */
 @ProjectServiceProvider(service=AccessibilityQueryImplementation.class, projectType="org-netbeans-modules-maven/" + NbMavenProject.TYPE_NBM)
 public class AccessQueryImpl implements AccessibilityQueryImplementation {
-    private NbMavenProject mavenProject;
     private Project project;
     private WeakReference<List<Pattern>> ref;
     
@@ -75,8 +74,6 @@ public class AccessQueryImpl implements AccessibilityQueryImplementation {
     
     public AccessQueryImpl(Project prj) {
         project = prj;
-        mavenProject = prj.getLookup().lookup(NbMavenProject.class);
-        
     }
     
     /**
@@ -86,7 +83,7 @@ public class AccessQueryImpl implements AccessibilityQueryImplementation {
      */
     @SuppressWarnings("NP_BOOLEAN_RETURN_NULL")
     @Override public Boolean isPubliclyAccessible(FileObject pkg) {
-        FileObject srcdir = org.netbeans.modules.maven.api.FileUtilities.convertStringToFileObject(mavenProject.getMavenProject().getBuild().getSourceDirectory());
+        FileObject srcdir = org.netbeans.modules.maven.api.FileUtilities.convertStringToFileObject(project.getLookup().lookup(NbMavenProject.class).getMavenProject().getBuild().getSourceDirectory());
         if (srcdir != null) {
             String path = FileUtil.getRelativePath(srcdir, pkg);
             if (path != null) {

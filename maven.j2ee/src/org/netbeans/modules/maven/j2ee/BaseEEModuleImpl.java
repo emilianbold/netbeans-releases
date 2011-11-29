@@ -77,7 +77,6 @@ import org.openide.filesystems.URLMapper;
 public abstract class BaseEEModuleImpl implements J2eeModuleImplementation2, ModuleChangeReporter {
 
     protected final Project project;
-    protected final NbMavenProject mavenproject;
     protected final BaseEEModuleProvider provider;
     protected final String ddName;
     protected final String ddPath;
@@ -88,9 +87,11 @@ public abstract class BaseEEModuleImpl implements J2eeModuleImplementation2, Mod
         this.provider = provider;
         this.ddName = ddName;
         this.ddPath = ddPath;
-        this.mavenproject = project.getLookup().lookup(NbMavenProject.class);
     }
-    
+
+    protected final NbMavenProject mavenproject() {
+        return project.getLookup().lookup(NbMavenProject.class);
+    }
     
     public FileObject getDeploymentDescriptor() {
         FileObject metaInf = getMetaInf();
@@ -118,7 +119,7 @@ public abstract class BaseEEModuleImpl implements J2eeModuleImplementation2, Mod
 
     @Override
     public String getUrl() {
-        return "/" + mavenproject.getMavenProject().getBuild().getFinalName(); //NOI18N
+        return "/" + mavenproject().getMavenProject().getBuild().getFinalName(); //NOI18N
     }
     
     public FileObject[] getJavaSources() {
@@ -140,7 +141,7 @@ public abstract class BaseEEModuleImpl implements J2eeModuleImplementation2, Mod
      * @returns archive file or null
      */
     protected final FileObject getArchive(String groupID, String artifactID, String goal, String archiveType) throws IOException {
-        MavenProject projectModel = mavenproject.getMavenProject();
+        MavenProject projectModel = mavenproject().getMavenProject();
         
         String archiveName = PluginPropertyUtils.getPluginProperty(project, groupID, artifactID, archiveType + "Name", goal); //NOI18N
         if (archiveName == null) {
@@ -171,7 +172,7 @@ public abstract class BaseEEModuleImpl implements J2eeModuleImplementation2, Mod
             try {
                 FileObject content = getContentDirectory();
                 if (content == null) {
-                    URI[] uris = mavenproject.getResources(false);
+                    URI[] uris = mavenproject().getResources(false);
                     if (uris.length > 0) {
                         content = URLMapper.findFileObject(uris[0].toURL());
                     }
@@ -216,7 +217,7 @@ public abstract class BaseEEModuleImpl implements J2eeModuleImplementation2, Mod
      */
     @Override
     public FileObject getContentDirectory() throws IOException {
-        File file = mavenproject.getOutputDirectory(false);
+        File file = mavenproject().getOutputDirectory(false);
         FileObject fo = FileUtil.toFileObject(file.getParentFile());
         if (fo != null) {
             fo.refresh();
@@ -258,7 +259,7 @@ public abstract class BaseEEModuleImpl implements J2eeModuleImplementation2, Mod
     }
     
     public File getDDFile(String path) {
-        URI[] dir = mavenproject.getResources(false);
+        URI[] dir = mavenproject().getResources(false);
         File fil = new File(new File(dir[0]), path);
         fil = FileUtil.normalizeFile(fil);
         

@@ -214,7 +214,7 @@ public class WebModuleImpl extends BaseEEModuleImpl implements WebModuleImplemen
 
     @Override
     public File getDDFile(final String path) {
-        URI webappDir = mavenproject.getWebAppDirectory();
+        URI webappDir = mavenproject().getWebAppDirectory();
         File file = new File(new File(webappDir), path);
         
         return FileUtil.normalizeFile(file);
@@ -245,7 +245,7 @@ public class WebModuleImpl extends BaseEEModuleImpl implements WebModuleImplemen
                 // TODO #95280: inform the user that the context root cannot be retrieved
             }        
         }
-        return "/" + mavenproject.getMavenProject().getArtifactId(); //NOI18N;
+        return "/" + mavenproject().getMavenProject().getArtifactId(); //NOI18N;
     }
     
     public void setContextPath(String newPath) {
@@ -295,7 +295,7 @@ public class WebModuleImpl extends BaseEEModuleImpl implements WebModuleImplemen
         if (inplace) {
             fo = getDocumentBase();
         } else {
-            MavenProject proj = mavenproject.getMavenProject();
+            MavenProject proj = mavenproject().getMavenProject();
             String loc = PluginPropertyUtils.getPluginProperty(project,
                 Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_WAR, //NOI18N
                 "webappDirectory", "war"); //NOI18N        

@@ -47,7 +47,6 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleChangeReporter;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleFactory;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleImplementation2;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.j2ee.customizer.CustomizerRunWeb;
 import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
@@ -61,14 +60,12 @@ public abstract class BaseEEModuleProvider extends J2eeModuleProvider {
     protected Project project;
     protected String serverInstanceID;
     protected J2eeModule j2eemodule;
-    protected NbMavenProject mavenProject;
     protected CopyOnSave copyOnSave;
     protected ModuleChangeReporter changeReporter;
     
     
     public BaseEEModuleProvider(Project project) {
         this.project = project;
-        this.mavenProject = project.getLookup().lookup(NbMavenProject.class);
         this.changeReporter = new ModuleChangeReporterImpl();
     }
     
