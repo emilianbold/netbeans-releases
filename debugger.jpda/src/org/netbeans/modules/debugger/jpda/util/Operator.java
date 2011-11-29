@@ -201,6 +201,14 @@ public class Operator {
                         synchronized (Operator.this) {
                             canInterrupt = false;
                         }
+                     } else {
+                        if (logger.isLoggable(Level.FINE)) {
+                            try {
+                                logger.fine("HAVE PARALLEL EVENT(s) in the Queue: "+eventSet);
+                            } catch (ObjectCollectedException ocex) {
+                                logger.log(Level.FINE, "HAVE PARALLEL EVENT(s) in the Queue with something collected:", ocex);
+                            }
+                        }
                      }
                      boolean silent = eventSet.size() > 0;
                      for (Event e: eventSet) {
@@ -357,6 +365,7 @@ public class Operator {
                                  }
                              }
                          }
+                         logger.fine("Resuming the event set = "+resume);
                          if (resume) {
                              try {
                                 EventSetWrapper.resume(eventSet);
@@ -510,6 +519,13 @@ public class Operator {
                          }
                      }
                      if (!startEventOnly) {
+                         if (logger.isLoggable(Level.FINE)) {
+                            try {
+                                logger.fine("Resuming the event set "+eventSet+" = "+resume);
+                            } catch (ObjectCollectedException ocex) {
+                                logger.log(Level.FINE, "Resuming the event set that with something collected = "+resume);
+                            }
+                         }
                          if (resume) {
                              //resumeLock.writeLock().lock();
                              try {
@@ -679,17 +695,38 @@ public class Operator {
                 } catch (VMDisconnectedExceptionWrapper ex) {
                     return ;
                 }
+                if (Thread.interrupted()) {
+                    return ;
+                }
                 for (;;) {
                     EventSet eventSet;
                     try {
                         eventSet = EventQueueWrapper.remove(eventQueue);
                         
+                        if (logger.isLoggable(Level.FINE)) {
+                            try {
+                                logger.fine("HAVE EVENT(s) in the Queue for "+tr+" : "+eventSet);
+                            } catch (ObjectCollectedException ocex) {
+                                logger.log(Level.FINE, "HAVE EVENT(s) in the Queue for a thread with something collected:", ocex);
+                            }
+                        }
+                        
                         Set<ThreadReference> ignoredThreads = new HashSet<ThreadReference>();
                         if (testIgnoreEvent(eventSet, ignoredThreads)) {
                             eventSet.resume();
+                            if (logger.isLoggable(Level.FINE)) {
+                                logger.fine("  the event(s) in the Queue for "+tr+" are ignored and event set is resumed.");
+                            }
                         } else {
                             synchronized (parallelEvents) {
                                 parallelEvents.add(eventSet);
+                                if (logger.isLoggable(Level.FINE)) {
+                                    try {
+                                        logger.fine("  the event(s) in the Queue for "+tr+" are stored as parallelEvents = "+parallelEvents);
+                                    } catch (ObjectCollectedException ocex) {
+                                        logger.log(Level.FINE, "  the event(s) in the Queue for "+tr+" are stored as parallelEvents with something collected:", ocex);
+                                    }
+                                }
                             }
                         }
 
@@ -714,6 +751,9 @@ public class Operator {
     }
 
     public void notifyMethodInvoking(ThreadReference tr) {
+        if (logger.isLoggable(Level.FINE)) {
+            logger.fine("  notifyMethodInvoking("+tr+")");
+        }
         if (Thread.currentThread() == thread) {
             // start another event handler thread...
             startEventHandlerThreadFor(tr);
@@ -724,6 +764,9 @@ public class Operator {
     }
 
     public void notifyMethodInvokeDone(ThreadReference tr) {
+        if (logger.isLoggable(Level.FINE)) {
+            logger.fine("  notifyMethodInvokeDone("+tr+")");
+        }
         if (Thread.currentThread() == thread) {
             HandlerTask task = eventHandlers.remove(tr);
             if (task != null) {
@@ -812,7 +855,7 @@ public class Operator {
     private static final class HandlerTask {
 
         private RequestProcessor.Task task;
-        private Thread[] threadPtr;
+        private final Thread[] threadPtr;
 
         HandlerTask(RequestProcessor.Task task, Thread[] threadPtr) {
             this.task = task;
@@ -832,10 +875,16 @@ public class Operator {
                 Thread t = threadPtr[0];
                 if (t != null) {
                     t.interrupt();
-                    task.waitFinished();
+                    try {
+                        while (!task.waitFinished(250)) {
+                            t.interrupt();
+                        }
+                    } catch (InterruptedException ex) {
+                        task.waitFinished();
+                    }
                 }
             }
         }
     }
-
+    
 }
