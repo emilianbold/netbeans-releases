@@ -336,6 +336,7 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                      if(product.getStatus() == Status.TO_BE_INSTALLED &&
                         ExecutionMode.getCurrentExecutionMode() == ExecutionMode.NORMAL &&
                         bundledProductAlreadyInstalled(product)) { // check if javafxsdk is already installed (i.e from another installer)
+                            LogManager.log("... Changing javafxsdk status to NOT_INSTALLED");
                             product.setStatus(Status.NOT_INSTALLED);
                             product.setVisible(false);
                     }
@@ -373,8 +374,7 @@ public class NbWelcomePanel extends ErrorMessagePanel {
             
         final List <Product> toInstall = defaultRegistry.getProductsToInstall();
 
-        if(bundledProductToInstall != null) { // bundled product will be installed
-            LogManager.log("... bundledProductToInstall != null: " + bundledProductToInstall.getUid());
+        if(bundledProductToInstall != null) { // bundled product will be installed            
             boolean nbToInstall = false;
             for(Product productToInstall : toInstall) {
                 if(productToInstall.getUid().equals("nb-base")) {
@@ -620,7 +620,7 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                     detailsText.append(StringUtils.format(DEFAULT_ADDITIONAL_PRODUCT_TO_BE_INSTALLED_TEXT_PROPERTY,
                             javafxsdk.getDisplayName()));
                 } else { //install jdk but do not install javafxsdk
-                    LogManager.log("... JavaFX SDK is already installed");
+                    LogManager.log("... JavaFX SDK is already installed; status is " + javafxsdk.getStatus());
                     detailsText.append(StringUtils.format(DEFAULT_ADDITIONAL_PRODUCT_ALREADY_INSTALLED_TEXT_PROPERTY,
                             javafxsdk.getDisplayName()));
                 }
@@ -1173,8 +1173,12 @@ public class NbWelcomePanel extends ErrorMessagePanel {
 
     private Product getJavaFXSDKProduct() {
         List<Product> products = bundledRegistry.getProducts("javafxsdk");
-        LogManager.log("... no JavaFX SDK is found in bundled registry: " + products.isEmpty());
-        return (products.isEmpty())? null : products.get(0);
+        final Product javafxsdk = (products.isEmpty())? null : products.get(0);
+        if(javafxsdk != null) {
+            LogManager.log("... found javafxsdk product: " + javafxsdk.getDisplayName() +
+                    "  with the status: " + javafxsdk.getStatus());
+        }
+        return javafxsdk;
     }
 
 
