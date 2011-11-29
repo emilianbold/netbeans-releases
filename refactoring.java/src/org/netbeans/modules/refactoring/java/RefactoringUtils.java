@@ -44,15 +44,8 @@
 
 package org.netbeans.modules.refactoring.java;
 
-import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.ImportTree;
-import com.sun.source.tree.ModifiersTree;
-import com.sun.source.tree.Scope;
-import com.sun.source.tree.Tree;
+import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
-import java.awt.Color;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -61,61 +54,24 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
-import java.util.StringTokenizer;
+import java.util.*;
 import java.util.logging.Logger;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Modifier;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
-import javax.lang.model.type.TypeVariable;
-import javax.lang.model.type.WildcardType;
+import javax.lang.model.element.*;
+import javax.lang.model.type.*;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Types;
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
-import javax.swing.text.AttributeSet;
-import javax.swing.text.StyleConstants;
 import org.netbeans.api.annotations.common.NullUnknown;
-import org.netbeans.api.editor.mimelookup.MimeLookup;
-import org.netbeans.api.editor.mimelookup.MimePath;
-import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.ClassPath.Entry;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
-import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.java.queries.SourceForBinaryQuery.Result;
-import org.netbeans.api.java.source.CancellableTask;
-import org.netbeans.api.java.source.ClassIndex;
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.api.java.source.Comment;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.SourceUtils;
-import org.netbeans.api.java.source.TreeMaker;
-import org.netbeans.api.java.source.TreePathHandle;
-import org.netbeans.api.java.source.TreeUtilities;
-import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.api.lexer.Token;
-import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.java.source.*;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -126,10 +82,9 @@ import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -138,18 +93,12 @@ import org.openide.util.Utilities;
  *
  * @author Jan Becicka
  */
-public class RetoucheUtils {
+public class RefactoringUtils {
     
     private static final String JAVA_MIME_TYPE = "text/x-java"; // NOI18N
     public static volatile boolean cancel = false;
-    private static final Logger LOG = Logger.getLogger(RetoucheUtils.class.getName());
-    private static final RequestProcessor RP = new RequestProcessor(RetoucheUtils.class.getName(), 1, false, false);
-    
-    public static String htmlize(String input) {
-        String temp = input.replace("<", "&lt;"); // NOI18N
-        temp = temp.replace(">", "&gt;"); // NOI18N
-        return temp;
-    }
+    private static final Logger LOG = Logger.getLogger(RefactoringUtils.class.getName());
+    private static final RequestProcessor RP = new RequestProcessor(RefactoringUtils.class.getName(), 1, false, false);
     
     public static Collection<ExecutableElement> getOverridenMethods(ExecutableElement e, CompilationInfo info) {
         return getOverridenMethods(e, info.getElementUtilities().enclosingTypeElement(e), info);
@@ -242,59 +191,6 @@ public class RetoucheUtils {
 
     public static boolean isJavaFile(FileObject f) {
         return JAVA_MIME_TYPE.equals(FileUtil.getMIMEType(f, JAVA_MIME_TYPE));
-    }
-    
-    public static String getHtml(String text) {
-        StringBuffer buf = new StringBuffer();
-        TokenHierarchy tokenH = TokenHierarchy.create(text, JavaTokenId.language());
-        Lookup lookup = MimeLookup.getLookup(MimePath.get(JAVA_MIME_TYPE));
-        FontColorSettings settings = lookup.lookup(FontColorSettings.class);
-        TokenSequence tok = tokenH.tokenSequence();
-        while (tok.moveNext()) {
-            Token<JavaTokenId> token = (Token) tok.token();
-            String category = token.id().primaryCategory();
-            if (category == null) {
-                category = "whitespace"; //NOI18N
-            }
-            AttributeSet set = settings.getTokenFontColors(category);
-            buf.append(color(htmlize(token.text().toString()), set));
-        }
-        return buf.toString();
-    }
-
-    private static String color(String string, AttributeSet set) {
-        if (set==null)
-            return string;
-        if (string.trim().length() == 0) {
-            return string.replace(" ", "&nbsp;").replace("\n", "<br>"); //NOI18N
-        } 
-        StringBuffer buf = new StringBuffer(string);
-        if (StyleConstants.isBold(set)) {
-            buf.insert(0,"<b>"); //NOI18N
-            buf.append("</b>"); //NOI18N
-        }
-        if (StyleConstants.isItalic(set)) {
-            buf.insert(0,"<i>"); //NOI18N
-            buf.append("</i>"); //NOI18N
-        }
-        if (StyleConstants.isStrikeThrough(set)) {
-            buf.insert(0,"<s>"); // NOI18N
-            buf.append("</s>"); // NOI18N
-        }
-        buf.insert(0,"<font color=" + getHTMLColor(StyleConstants.getForeground(set)) + ">"); //NOI18N
-        buf.append("</font>"); //NOI18N
-        return buf.toString();
-    }
-    
-    private static String getHTMLColor(Color c) {
-        String colorR = "0" + Integer.toHexString(c.getRed()); //NOI18N
-        colorR = colorR.substring(colorR.length() - 2); 
-        String colorG = "0" + Integer.toHexString(c.getGreen()); //NOI18N
-        colorG = colorG.substring(colorG.length() - 2);
-        String colorB = "0" + Integer.toHexString(c.getBlue()); //NOI18N
-        colorB = colorB.substring(colorB.length() - 2);
-        String html_color = "#" + colorR + colorG + colorB; //NOI18N
-        return html_color;
     }
 
     public static boolean isElementInOpenProject(FileObject f) {
@@ -528,6 +424,13 @@ public class RetoucheUtils {
         return false;
     }
     
+    /**
+     * TODO: Remove
+     * @param tph
+     * @return
+     * @deprecated
+     */
+    @Deprecated
     public static ElementHandle getElementHandle(TreePathHandle tph) {
         try {
             CompilerTask ff;
@@ -540,6 +443,13 @@ public class RetoucheUtils {
         }    
     }
     
+    /**
+     * TODO: Remove
+     * @param tph
+     * @return
+     * @deprecated
+     */
+    @Deprecated
     public static ElementKind getElementKind(TreePathHandle tph) {
         try {
             CompilerTask ff;
@@ -553,6 +463,13 @@ public class RetoucheUtils {
     }
     
     
+    /**
+     * TODO: Remove
+     * @param tph
+     * @return
+     * @deprecated
+     */
+    @Deprecated
     public static String getSimpleName(TreePathHandle tph) {
         try {
             CompilerTask ff;
@@ -566,6 +483,13 @@ public class RetoucheUtils {
     }
     
     
+    /**
+     * TODO: Remove
+     * @param tph
+     * @return
+     * @deprecated
+     */
+    @Deprecated
     public static FileObject getFileObject(final TreePathHandle handle) {
         try {
             CompilerTask ff;
@@ -578,6 +502,13 @@ public class RetoucheUtils {
         }
     }
     
+    /**
+     * TODO: Remove
+     * @param tph
+     * @return
+     * @deprecated
+     */
+    @Deprecated
     public static String getQualifiedName(TreePathHandle tph) {
         try {
             CompilerTask ff;
@@ -590,6 +521,13 @@ public class RetoucheUtils {
         }    
     }
     
+    /**
+     * TODO: Remove
+     * @param tph
+     * @return
+     * @deprecated
+     */
+    @Deprecated
     public static boolean typeExist(TreePathHandle tph, String fqn) {
         try {
             CompilerTask ff;
@@ -602,14 +540,33 @@ public class RetoucheUtils {
         }    
     }
     
+    /**
+     * create ClasspathInfo for specified files includes dependencies
+     * @param files
+     * @return
+     */
     public static ClasspathInfo getClasspathInfoFor(FileObject ... files) {
         return getClasspathInfoFor(true, files);
     }
     
+    
+    /**
+     * create ClasspathInfo for specified files
+     * @param dependencies
+     * @param files
+     * @return
+     */
     public static ClasspathInfo getClasspathInfoFor(boolean dependencies, FileObject ... files) {
         return getClasspathInfoFor(dependencies, false, files);
     }
     
+    /**
+     * create ClasspathInfo for specified files
+     * @param dependencies include dependencies
+     * @param backSource libraries replaces by sources using SourceForBinaryQuery
+     * @param files
+     * @return 
+     */
     public static ClasspathInfo getClasspathInfoFor(boolean dependencies, boolean backSource, FileObject ... files ) {
         assert files.length >0;
         Set<URL> dependentRoots = new HashSet();
@@ -676,6 +633,11 @@ public class RetoucheUtils {
         return cpInfo;
     }
     
+    /**
+     * create ClasspathInfo for specified handles
+     * @param handles
+     * @return
+     */
     public static ClasspathInfo getClasspathInfoFor(TreePathHandle ... handles) {
         FileObject[] result = new FileObject[handles.length];
         int i=0;
@@ -859,10 +821,12 @@ public class RetoucheUtils {
             typeToCheck = fqn;
         }
         
+        @Override
         public void cancel() {
             
         }
         
+        @Override
         public void run(CompilationController cc) {
             try {
                 cc.toPhase(JavaSource.Phase.RESOLVED);
@@ -926,10 +890,12 @@ public class RetoucheUtils {
             this.handle = handle;
         }
         
+        @Override
         public void cancel() {
             
         }
         
+        @Override
         public void run(CompilationController cc) {
             try {
                 cc.toPhase(JavaSource.Phase.RESOLVED);
@@ -966,6 +932,7 @@ public class RetoucheUtils {
         if (SourceUtils.isScanInProgress()) {
             final ActionPerformer ap = new ActionPerformer(runnable);
             ActionListener listener = new ActionListener() {
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     ap.cancel();
                     waitTask.cancel();
@@ -992,7 +959,7 @@ public class RetoucheUtils {
     private static RequestProcessor.Task waitTask = null;
     
     private static String getString(String key) {
-        return NbBundle.getMessage(RetoucheUtils.class, key);
+        return NbBundle.getMessage(RefactoringUtils.class, key);
     }
 
     private static String getString(String key, Object values) {
@@ -1013,6 +980,7 @@ public class RetoucheUtils {
             return cancel;
         }
         
+        @Override
         public void run() {
             try {
                 SourceUtils.waitScanFinished();
@@ -1020,6 +988,7 @@ public class RetoucheUtils {
                 Exceptions.printStackTrace(ie);
             }
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     if (!cancel) {
                         if (waitDialog != null) {

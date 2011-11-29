@@ -72,7 +72,7 @@ public class PropertyModel {
         return properties.iterator().next();
     }
         
-    public synchronized GroupGrammarElement values() {
+    public synchronized GroupGrammarElement getGrammarElement() {
         if(values == null) {
             values = GrammarParser.parse(getGrammar(), propertyName);
         } 

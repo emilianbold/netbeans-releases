@@ -110,6 +110,23 @@ is the proper place.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+  <change id="ConstrainedBinaryIndexer-namePattern">
+      <api name="ParsingAPI"/>
+      <summary>Added <code>ConstrainedBinaryIndexer.Registration.namePattern</code> to allow indexers to use name pattern rather than expensive
+      mime type.</summary>
+      <version major="1" minor="50"/>
+      <date day="29" month="11" year="2011"/>
+      <author login="tzezula"/>
+      <compatibility source="compatible" binary="compatible" semantic="compatible" deletion="no" addition="yes" modification="no"/>
+      <description>
+          <p>
+              Added <code>ConstrainedBinaryIndexer.Registration.namePattern</code> to allow indexers to use name pattern rather than expensive
+             mime type for those indexers which do not have required resource and use mime type which require reading of content.
+          </p>
+      </description>
+      <class package="org.netbeans.modules.parsing.spi.indexing" name="ConstrainedBinaryIndexer"/>
+      <issue number="205574"/>
+  </change>
   <change id="ConstrainedBinaryIndexer">
       <api name="ParsingAPI"/>
       <summary>Added <code>ConstrainedBinaryIndexer</code> to prevent indexer creation when constrained are not fulfilled.</summary>

@@ -146,6 +146,7 @@ public class RefPerfTestCase extends NbTestCase implements NbPerformanceTest {
         return true;
     }
     
+    @Override
     public PerformanceData[] getPerformanceData() {
         return data.toArray(new PerformanceData[0]);
     }

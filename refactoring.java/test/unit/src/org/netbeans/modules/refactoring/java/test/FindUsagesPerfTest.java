@@ -93,6 +93,7 @@ public class FindUsagesPerfTest extends RefPerfTestCase {
 
         src.runWhenScanFinished(new Task<CompilationController>() {
 
+            @Override
             public void run(CompilationController controller) throws Exception {
                 controller.toPhase(JavaSource.Phase.RESOLVED);
                 PackageElement pckg = controller.getElements().getPackageElement("org.gjt.sp.jedit");
@@ -107,6 +108,7 @@ public class FindUsagesPerfTest extends RefPerfTestCase {
 
             src.runWhenScanFinished(new Task<CompilationController>() {
 
+                @Override
                 public void run(CompilationController controller) throws Exception {
                     controller.toPhase(JavaSource.Phase.RESOLVED);
 

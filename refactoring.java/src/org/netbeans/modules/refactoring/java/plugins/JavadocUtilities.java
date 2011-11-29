@@ -576,6 +576,7 @@ public class JavadocUtilities {
 
     public static void open(final FileObject fo, final int offset) {
         EventQueue.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 doOpenImpl(fo, offset);
             }

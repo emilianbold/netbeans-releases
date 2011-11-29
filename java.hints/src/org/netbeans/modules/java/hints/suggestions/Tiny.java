@@ -42,18 +42,24 @@
 
 package org.netbeans.modules.java.hints.suggestions;
 
+import com.sun.source.tree.BlockTree;
+import com.sun.source.tree.CaseTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.SourceVersion;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.java.source.support.CaretAwareJavaSourceTaskFactory;
 import org.netbeans.modules.java.hints.jackpot.code.spi.Constraint;
@@ -215,4 +221,64 @@ public class Tiny {
         }
         
     }
+
+    @Hint(category="suggestions", hintKind=Kind.SUGGESTION, severity=HintSeverity.CURRENT_LINE_WARNING)
+    @TriggerPattern(value="$mods$ $type $name = $init;")
+    public static ErrorDescription splitDeclaration(HintContext ctx) {
+        Tree.Kind parentKind = ctx.getPath().getParentPath().getLeaf().getKind();
+
+        if (parentKind != Tree.Kind.BLOCK && parentKind != Tree.Kind.CASE) return null;
+
+        String displayName = NbBundle.getMessage(Tiny.class, "ERR_splitDeclaration");
+        Fix fix = JavaFix.toEditorFix(new FixImpl(ctx.getInfo(), ctx.getPath()));
+
+        return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), displayName, fix);
+    }
+
+    private static final class FixImpl extends JavaFix {
+
+        public FixImpl(CompilationInfo info, TreePath tp) {
+            super(info, tp);
+        }
+
+        @Override
+        protected String getText() {
+            return NbBundle.getMessage(Tiny.class, "FIX_splitDeclaration");
+        }
+
+        @Override
+        protected void performRewrite(WorkingCopy wc, TreePath tp, boolean canShowUI) {
+            Tree parent = tp.getParentPath().getLeaf();
+            List<? extends StatementTree> statements;
+
+            switch (parent.getKind()) {
+                case BLOCK: statements = ((BlockTree) parent).getStatements(); break;
+                case CASE: statements = ((CaseTree) parent).getStatements(); break;
+                default: throw new IllegalStateException(parent.getKind().name());
+            }
+
+            VariableTree var = (VariableTree) tp.getLeaf();
+            int current = statements.indexOf(tp.getLeaf());
+            TreeMaker make = wc.getTreeMaker();
+            List<StatementTree> newStatements = new ArrayList<StatementTree>();
+
+            newStatements.addAll(statements.subList(0, current));
+            newStatements.add(make.Variable(var.getModifiers(), var.getName(), var.getType(), null));
+            newStatements.add(make.ExpressionStatement(make.Assignment(make.Identifier(var.getName()), var.getInitializer())));
+            newStatements.addAll(statements.subList(current + 1, statements.size()));
+
+            Tree target;
+
+            switch (parent.getKind()) {
+                case BLOCK: target = make.Block(newStatements, ((BlockTree) parent).isStatic()); break;
+                case CASE: target = make.Case(((CaseTree) parent).getExpression(), newStatements); break;
+                default: throw new IllegalStateException(parent.getKind().name());
+            }
+
+            wc.rewrite(parent, target);
+        }
+
+    }
+
+
 }

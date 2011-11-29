@@ -91,6 +91,7 @@ final class CopyHandler implements OperationListener {
 
         Task<WorkingCopy> task = new Task<WorkingCopy>() {
             
+            @Override
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
                 TreeMaker make = workingCopy.getTreeMaker();
@@ -125,6 +126,7 @@ final class CopyHandler implements OperationListener {
     private CopyHandler() {
     }
 
+    @Override
     public void operationCopy(Copy ev) {
         FileObject copyFO = ev.getObject().getPrimaryFile();
         FileObject origFO = ev.getOriginalDataObject().getPrimaryFile();
@@ -156,26 +158,32 @@ final class CopyHandler implements OperationListener {
         }
     }
 
+    @Override
     public void operationPostCreate(OperationEvent ev) {
         // ignore
     }
 
+    @Override
     public void operationMove(Move ev) {
         // ignore
     }
 
+    @Override
     public void operationDelete(OperationEvent ev) {
         // ignore
     }
 
+    @Override
     public void operationRename(Rename ev) {
         // ignore
     }
 
+    @Override
     public void operationCreateShadow(Copy ev) {
         // ignore
     }
 
+    @Override
     public void operationCreateFromTemplate(Copy ev) {
         // ignore
     }

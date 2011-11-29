@@ -72,18 +72,22 @@ public class ProjectTreeElement implements TreeElement {
         prjDir = prj.getProjectDirectory();
     }
 
+    @Override
     public TreeElement getParent(boolean isLogical) {
         return null;
     }
 
+    @Override
     public Icon getIcon() {
         return icon;
     }
 
+    @Override
     public String getText(boolean isLogical) {
         return name;
     }
 
+    @Override
     public Object getUserObject() {
         Project p = prj.get();
         if (p==null) {

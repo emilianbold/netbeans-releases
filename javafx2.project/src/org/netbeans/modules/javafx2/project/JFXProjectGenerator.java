@@ -380,7 +380,8 @@ public class JFXProjectGenerator {
         
         ep.setProperty(ProjectProperties.COMPILE_ON_SAVE, "true"); // NOI18N
         ep.setProperty(ProjectProperties.COMPILE_ON_SAVE_UNSUPPORTED_PREFIX + ".javafx", "true"); // NOI18N
-        ep.setProperty(JFXProjectProperties.JAVAFX_BINARY_ENCODE_CSS, "true"); // NOI18N
+        // JAVAFX_BINARY_ENCODE_CSS should remain "false" until JavaFX issue http://javafx-jira.kenai.com/browse/RT-18126 is resolved
+        ep.setProperty(JFXProjectProperties.JAVAFX_BINARY_ENCODE_CSS, "false"); // NOI18N
         ep.setProperty(JFXProjectProperties.JAVAFX_DEPLOY_INCLUDEDT, "true"); // NOI18N
         ep.setProperty(JFXProjectProperties.JAVAFX_DEPLOY_EMBEDJNLP, "true"); // NOI18N
         

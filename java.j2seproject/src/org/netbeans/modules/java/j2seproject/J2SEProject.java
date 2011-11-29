@@ -757,8 +757,7 @@ public final class J2SEProject implements Project {
             // "web-types",         // NOI18N
             "junit",                // NOI18N
             // "MIDP",              // NOI18N
-            "simple-files",         // NOI18N
-            "javafx"                // NOI18N
+            "simple-files"          // NOI18N
         };
 
         private static final String[] LIBRARY_TYPES = new String[] {
@@ -780,8 +779,7 @@ public final class J2SEProject implements Project {
             // "web-types",         // NOI18N
             "junit",                // NOI18N
             // "MIDP",              // NOI18N
-            "simple-files",         // NOI18N
-            "javafx"                // NOI18N
+            "simple-files"         // NOI18N
         };
 
         private static final String[] PRIVILEGED_NAMES = new String[] {

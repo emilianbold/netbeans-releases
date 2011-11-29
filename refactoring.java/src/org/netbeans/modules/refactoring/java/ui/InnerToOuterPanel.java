@@ -78,15 +78,18 @@ public class InnerToOuterPanel extends JPanel implements CustomRefactoringPanel 
         this.disableDeclareFields = disableDeclareFields;
     }
     
+    @Override
     public Component getComponent() {
         return this;
     }
 
     /** Initialization of the panel (called by the parent window).
      */
+    @Override
     public void initialize() {
         if (initialized) return;
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 classNameField.setText(refactoring.getClassName());
                 if (disableDeclareFields) {
@@ -96,12 +99,15 @@ public class InnerToOuterPanel extends JPanel implements CustomRefactoringPanel 
                     fieldCheckBox.setSelected(true);
                 }
                 DocumentListener dl = new DocumentListener() {
+                    @Override
                     public void changedUpdate(DocumentEvent event) {
                         parent.stateChanged(null);
                     }
+                    @Override
                     public void insertUpdate(DocumentEvent event) {
                         parent.stateChanged(null);
                     }
+                    @Override
                     public void removeUpdate(DocumentEvent event) {
                         parent.stateChanged(null);
                     }
@@ -133,6 +139,7 @@ public class InnerToOuterPanel extends JPanel implements CustomRefactoringPanel 
         }
     }
 
+    @Override
     public void requestFocus() {
         super.requestFocus();
         classNameField.requestFocus();

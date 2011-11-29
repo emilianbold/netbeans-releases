@@ -41,13 +41,7 @@
  */
 package org.netbeans.modules.css.editor.module.main;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -66,11 +60,7 @@ import org.netbeans.modules.css.editor.api.CssCslParserResult;
 import org.netbeans.modules.css.editor.csl.CssLanguage;
 import org.netbeans.modules.css.editor.module.CssModuleSupport;
 import org.netbeans.modules.css.editor.module.spi.CssEditorModule;
-import org.netbeans.modules.css.editor.properties.parser.GrammarParser;
-import org.netbeans.modules.css.editor.properties.parser.GroupGrammarElement;
-import org.netbeans.modules.css.editor.properties.parser.PropertyModel;
-import org.netbeans.modules.css.editor.properties.parser.PropertyValue;
-import org.netbeans.modules.css.editor.properties.parser.ValueGrammarElement;
+import org.netbeans.modules.css.editor.properties.parser.*;
 import org.netbeans.modules.css.lib.api.NodeUtil;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -105,12 +95,21 @@ public class CssModuleTestBase extends CslTestBase {
             System.out.println("Grammar:");
             System.out.println(tree.toString2(0));
         }
-        
+
+        assertResolve(tree, inputText, expectedSuccess);
+    }
+    
+    protected void assertResolve(GroupGrammarElement tree, String inputText) {        
+        assertResolve(tree, inputText, true);        
+    }
+    
+    protected void assertResolve(GroupGrammarElement tree, String inputText, boolean expectedSuccess) {        
+        long a = System.currentTimeMillis();
         PropertyValue pv = new PropertyValue(tree, inputText);
         long c = System.currentTimeMillis();
         
         if(PRINT_GRAMMAR_RESOLVE_TIMES) {
-            System.out.println(String.format("Grammar '%s' parsed in %sms and input '%s' resolved in %s ms.", grammar, b - a, inputText, c - b));
+            System.out.println(String.format("Input '%s' resolved in %s ms.", inputText, c - a));
         }
         if (pv.isResolved() != expectedSuccess) {
             assertTrue("Unexpected parsing result", false);
