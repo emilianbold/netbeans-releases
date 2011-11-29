@@ -41,26 +41,15 @@
  */
 package org.netbeans.modules.css.editor.properties.parser;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Stack;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.css.editor.properties.Acceptors;
 import org.netbeans.modules.css.editor.properties.CssPropertyValueAcceptor;
 import org.netbeans.modules.css.editor.properties.KeywordUtil;
-import org.netbeans.modules.web.common.api.Pair;
 import static org.netbeans.modules.css.editor.properties.parser.GrammarResolver.Log.*;
+import org.netbeans.modules.web.common.api.Pair;
 
 /**
  *
@@ -85,11 +74,22 @@ public class GrammarResolver {
 
     public static void setLogging(Log log, boolean enable) {
         LOGGERS.get(log).set(enable);
+        
+        //set general LOG flag
+        LOG = false;
+        for(Log l : Log.values()) {
+            if(isLoggingEnabled(l)) {
+                LOG = true;
+            }
+        }
     }
 
     private static boolean isLoggingEnabled(Log log) {
         return LOGGERS.get(log).get();
     }
+    
+    private static boolean LOG = false;
+    
     private static final Logger LOGGER = Logger.getLogger(GrammarResolver.class.getName());
 
     public static GrammarResolver resolve(GroupGrammarElement grammar, String input) {
@@ -144,16 +144,16 @@ public class GrammarResolver {
 
     private void resolvingFinished() {
         if (isLoggingEnabled(DEFAULT)) {
-            log("\nResolved tokens:");
+            if (LOG) log("\nResolved tokens:");
             for (ResolvedToken rt : resolvedTokens) {
-                log(rt.toString());
+                if (LOG) log(rt.toString());
             }
         }
 
         if (isLoggingEnabled(ALTERNATIVES)) {
-            log(ALTERNATIVES, "\nAlternatives:");
+            if (LOG) log(ALTERNATIVES, "\nAlternatives:");
             for (ValueGrammarElement e : getAlternatives()) {
-                log(ALTERNATIVES, e.path());
+                if (LOG) log(ALTERNATIVES, e.path());
             }
         }
     }
@@ -175,11 +175,11 @@ public class GrammarResolver {
         tokensLeft = (Stack<String>) state.input.clone();
         resolvedTokens = new ArrayList<ResolvedToken>(state.consumed);
 
-        log(String.format("  state backup to: %s", state));
+        if (LOG) log(String.format("  state backup to: %s", state));
     }
 
     private boolean resolve(GrammarElement e) {
-        log(String.format("+ entering %s, %s", e.path(), createInputState()));
+        if (LOG) log(String.format("+ entering %s, %s", e.path(), createInputState()));
         boolean resolves;
         switch (e.getKind()) {
             case GROUP:
@@ -191,7 +191,7 @@ public class GrammarResolver {
             default:
                 throw new IllegalStateException();
         }
-        log(String.format("- leaving %s, resolved: %s, %s", e.path(), resolves, createInputState()));
+        if (LOG) log(String.format("- leaving %s, resolved: %s, %s", e.path(), resolves, createInputState()));
         return resolves;
 
     }
@@ -210,7 +210,7 @@ public class GrammarResolver {
             return;
         }
 
-        log(ALTERNATIVES, String.format("value not accepted %s, %s", valueGrammarElement.path(), createInputState()));
+        if (LOG) log(ALTERNATIVES, String.format("value not accepted %s, %s", valueGrammarElement.path(), createInputState()));
 
         Pair<InputState, Collection<ValueGrammarElement>> pair = resolvedSomething.get(lastResolved);
         pair.getB().add(valueGrammarElement);
@@ -222,7 +222,7 @@ public class GrammarResolver {
             return;
         }
 
-        log(ALTERNATIVES, String.format("input matched %s, %s", member.path(), state));
+        if (LOG) log(ALTERNATIVES, String.format("input matched %s, %s", member.path(), state));
         resolvedSomething.put(group, new Pair<InputState, Collection<ValueGrammarElement>>(state, new LinkedList<ValueGrammarElement>()));
         lastResolved = group;
     }
@@ -271,7 +271,7 @@ public class GrammarResolver {
                         //member resolved some input
                         switch (group.getType()) {
                             case SET:
-                                log(String.format("  added SET branch result: %s, %s", member.path(), state));
+                                if (LOG) log(String.format("  added SET branch result: %s, %s", member.path(), state));
                                 branchesResults.put(member, state);
                                 successState = state;
 
@@ -296,11 +296,11 @@ public class GrammarResolver {
                         //the member hasn't resolved any input but it is optional
                         InputState state = createInputState();
 
-                        log(String.format("  arbitrary member %s skipped", member.path()));
+                        if (LOG) log(String.format("  arbitrary member %s skipped", member.path()));
 
                         switch (group.getType()) {
                             case SET:
-                                log(String.format(" added SET branch result: %s, %s", member, state));
+                                if (LOG) log(String.format(" added SET branch result: %s, %s", member, state));
                                 branchesResults.put(member, state);
                                 successState = state;
                                 backupInputState(enteringGroupState);
@@ -384,7 +384,7 @@ public class GrammarResolver {
                         successState = branchesResults.get(bestMatchElement);
                         //put the state of the best match back
                         backupInputState(successState);
-                        log(String.format("Decided to use best match %s, %s", bestMatchElement, successState));
+                        if (LOG) log(String.format("Decided to use best match %s, %s", bestMatchElement, successState));
                     }
                     break;
             }
@@ -434,7 +434,7 @@ public class GrammarResolver {
                 if (acceptor.accepts(token)) {
                     //consumed
                     consumeValueGrammarElement(token, ve);
-                    log(VALUES, String.format("eaten unit %s", token));
+                    if (LOG) log(VALUES, String.format("eaten unit %s", token));
                     return true;
                 }
 
@@ -445,7 +445,7 @@ public class GrammarResolver {
         } else if (token.equalsIgnoreCase(ve.value())) {
             //consumed
             consumeValueGrammarElement(token, ve);
-            log(VALUES, String.format("eaten value %s", token));
+            if (LOG) log(VALUES, String.format("eaten value %s", token));
             return true;
         }
 

@@ -65,7 +65,7 @@ public class PropertyModelTest extends CssModuleTestBase {
         assertSame(p1, pm.getProperty());
         assertNotNull(pm.getProperties());
         assertEquals(2, pm.getProperties().size());
-        assertNotNull(pm.values());
+        assertNotNull(pm.getGrammarElement());
         
         //merged grammar
         assertEquals(" [ a | b ]  |  [ c | d ] ", pm.getGrammar());
