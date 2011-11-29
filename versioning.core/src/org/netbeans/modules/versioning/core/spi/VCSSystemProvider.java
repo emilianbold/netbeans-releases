@@ -52,14 +52,19 @@ import org.openide.util.LookupListener;
 
 /**
  *
- * @author tomas
+ * @author Tomas Stupka
  */
-public abstract class VCSSystemProvider<S> {
+public abstract class VCSSystemProvider {
 
     public abstract void addLookupListener(LookupListener l);
     
-    public abstract Collection<S> getVersioningSystems();
+    public abstract Collection<VersioningSystem> getVersioningSystems();
     
+    /**
+     * Wraps either {@link org.netbeans.modules.versioning.fileproxy.spi.VersioningSystem}
+     * or {@link org.netbeans.modules.versioning.spi.VersioningSystem}
+     * @param <S> 
+     */
     public interface VersioningSystem<S> {
         
         S getDelegate();

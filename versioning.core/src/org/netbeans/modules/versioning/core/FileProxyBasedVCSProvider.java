@@ -62,7 +62,7 @@ public class FileProxyBasedVCSProvider extends VCSSystemProvider {
     /**
      * Holds all registered versioning systems.
      */
-    private final Collection<org.netbeans.modules.versioning.fileproxy.spi.VersioningSystem> versioningSystems = new ArrayList<org.netbeans.modules.versioning.fileproxy.spi.VersioningSystem>(5);
+    private final Collection<VersioningSystem> versioningSystems = new ArrayList<VersioningSystem>(5);
 
     public FileProxyBasedVCSProvider() {
         systemsLookupResult = Lookup.getDefault().lookup(new Lookup.Template<org.netbeans.modules.versioning.fileproxy.spi.VersioningSystem>(org.netbeans.modules.versioning.fileproxy.spi.VersioningSystem.class));
@@ -70,7 +70,7 @@ public class FileProxyBasedVCSProvider extends VCSSystemProvider {
     
     private int refreshSerial;
     @Override
-    public Collection<? extends org.netbeans.modules.versioning.fileproxy.spi.VersioningSystem> getVersioningSystems() {
+    public Collection<VersioningSystem> getVersioningSystems() {
         int rs = ++refreshSerial;
         if (rs != refreshSerial) {
             // TODO: Workaround for Lookup bug #132145, we have to abort here to keep the freshest list of versioning systems
@@ -81,9 +81,7 @@ public class FileProxyBasedVCSProvider extends VCSSystemProvider {
             versioningSystems.clear();
             for (org.netbeans.modules.versioning.fileproxy.spi.VersioningSystem vs : systems) {
                 if(vs instanceof DelegatingVCS) {
-                    versioningSystems.add(vs);
-                } else {
-                    versioningSystems.add(new DelegatingVCS(vs));
+                    versioningSystems.add((DelegatingVCS) vs);
                 }
             }
             return versioningSystems;

@@ -276,7 +276,7 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
             }
             versioningSystems.clear();
             for (VCSSystemProvider p : providers) {
-                Collection<? extends VCSSystemProvider.VersioningSystem> systems = p.getVersioningSystems();
+                Collection<VCSSystemProvider.VersioningSystem> systems = p.getVersioningSystems();
                 localHistory = null;
                 // inline unloadVersioningSystems();
 
