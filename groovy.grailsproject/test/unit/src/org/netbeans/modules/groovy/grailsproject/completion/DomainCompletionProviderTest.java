@@ -44,12 +44,10 @@ package org.netbeans.modules.groovy.grailsproject.completion;
 
 import java.util.Map;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.lib.lexer.test.TestLanguageProvider;
+import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
 import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
-import org.netbeans.modules.groovy.grailsproject.GrailsProject;
-import org.netbeans.modules.project.uiapi.ProjectOpenedTrampoline;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-import org.netbeans.spi.project.ProjectState;
-import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -66,6 +64,11 @@ public class DomainCompletionProviderTest extends GroovyTestBase {
         super(name);
     }
 
+    @Override
+    protected void setUp() throws Exception {
+        TestLanguageProvider.register(GroovyTokenId.language());
+    }
+    
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
         Map<String, ClassPath> map = super.createClassPathsForTest();

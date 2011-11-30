@@ -70,6 +70,15 @@ public class PomBuilder {
         return this;
     }
     
+    public PomBuilder appendPomContent(String packaging) {
+        projectValues = "<modelVersion>4.0.0</modelVersion>" +
+                        "<groupId>testGroupId</groupId>" +
+                        "<artifactId>testArtifactId</artifactId>" +
+                        "<packaging>" + packaging + "</packaging>" +
+                        "<version>1.0</version>";
+        return this;
+    }
+    
     public PomBuilder appendPomContent(String modelVersion, String groupID, String artifactID, String packaging, String version) {
         projectValues = "<modelVersion>" + modelVersion + "</modelVersion>" +
                         "<groupId>" + groupID + "</groupId>" +

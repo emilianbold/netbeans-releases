@@ -75,7 +75,7 @@ public final class CoherenceInstance implements ServerInstanceImplementation {
      * @return unique identifier of Coherence instance
      */
     public int getId() {
-        int id = instanceProperties.getInt(CoherenceProperties.PROP_COHERENCE_ID, 0);
+        int id = instanceProperties.getInt(CoherenceProperties.PROP_ID, 0);
         assert id != 0;
         return id;
     }
@@ -172,7 +172,7 @@ public final class CoherenceInstance implements ServerInstanceImplementation {
             uniqueId++;
         }
 
-        properties.putInt(CoherenceProperties.PROP_COHERENCE_ID, uniqueId);
+        properties.putInt(CoherenceProperties.PROP_ID, uniqueId);
     }
 
     /**

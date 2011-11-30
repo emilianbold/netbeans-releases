@@ -49,6 +49,7 @@ import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarProvider;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarsInProject;
 import org.netbeans.modules.j2ee.spi.ejbjar.support.EjbJarSupport;
 import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileObject;
 
@@ -56,7 +57,10 @@ import org.openide.filesystems.FileObject;
  *
  * @author Martin Janicek
  */
-@ProjectServiceProvider(service = {EjbJarProvider.class, EjbJarsInProject.class}, projectType = {"org-netbeans-modules-maven/" + NbMavenProject.TYPE_WAR})
+@ProjectServiceProvider(service = {EjbJarProvider.class, EjbJarsInProject.class}, projectType = {
+    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_WAR,
+    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_OSGI
+})
 public class AdditionalWebProvider implements EjbJarProvider, EjbJarsInProject {
 
     private final Project project;
@@ -67,8 +71,13 @@ public class AdditionalWebProvider implements EjbJarProvider, EjbJarsInProject {
     
     private EjbJar apiEjbJar() {
         WebModuleProviderImpl moduleProvider = project.getLookup().lookup(WebModuleProviderImpl.class);
+        String packaging = project.getLookup().lookup(NbMavenProject.class).getPackagingType();
         Profile profile = moduleProvider.getModuleImpl().getJ2eeProfile();
-        if (Profile.JAVA_EE_6_WEB.equals(profile) || Profile.JAVA_EE_6_FULL.equals(profile)) {
+        
+        boolean javaEE6profile = (Profile.JAVA_EE_6_WEB.equals(profile) || Profile.JAVA_EE_6_FULL.equals(profile));
+        boolean webSupported = MavenProjectSupport.isWebSupported(project, packaging);
+        
+        if (javaEE6profile && webSupported) {
             WebEjbJarImpl webEjbJarImpl = new WebEjbJarImpl(moduleProvider.getModuleImpl(), project);
             return EjbJarFactory.createEjbJar(webEjbJarImpl);
         } else {
