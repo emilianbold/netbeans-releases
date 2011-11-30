@@ -28,8 +28,9 @@
  *
  * Portions Copyrighted 2007-2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.java.hints.introduce;
+package org.netbeans.modules.java.hints.jackpot.impl.tm;
 
+import org.netbeans.modules.java.hints.jackpot.impl.tm.Pattern;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
@@ -40,6 +41,8 @@ import com.sun.source.util.TreePathScanner;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -62,12 +65,13 @@ import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.modules.java.hints.introduce.CopyFinder.MethodDuplicateDescription;
-import org.netbeans.modules.java.hints.introduce.CopyFinder.Options;
-import org.netbeans.modules.java.hints.introduce.CopyFinder.VariableAssignments;
+import org.netbeans.modules.java.hints.introduce.IntroduceHint;
+import org.netbeans.modules.java.hints.jackpot.impl.tm.CopyFinder.MethodDuplicateDescription;
+import org.netbeans.modules.java.hints.jackpot.impl.tm.CopyFinder.Options;
+import org.netbeans.modules.java.hints.jackpot.impl.tm.CopyFinder.VariableAssignments;
 import org.netbeans.modules.java.hints.jackpot.impl.pm.BulkSearch;
 import org.netbeans.modules.java.hints.jackpot.impl.pm.BulkSearch.BulkPattern;
-import org.netbeans.modules.java.hints.jackpot.impl.pm.Pattern;
+import org.netbeans.modules.java.hints.jackpot.impl.pm.PatternCompiler;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -1152,18 +1156,21 @@ public class CopyFinderTest extends NbTestCase {
     protected void performVariablesTest(String code, String pattern, Pair<String, int[]>[] duplicatesPos, Pair<String, int[]>[] multiStatementPos, Pair<String, String>[] duplicatesNames, boolean noOccurrences, boolean useBulkSearch) throws Exception {
         prepareTest(code, -1);
 
-        Pattern patternObj = Pattern.compile(info, pattern);
-        TreePath patternPath = new TreePath(new TreePath(info.getCompilationUnit()), patternObj.getPattern());
+        Map<String, TypeMirror> constraints = new HashMap<String, TypeMirror>();
+        String patternCode = PatternCompilerUtilities.parseOutTypesFromPattern(info, pattern, constraints);
+
+        Pattern patternObj = PatternCompiler.compile(info, patternCode, constraints, Collections.<String>emptyList());
+        TreePath patternPath = patternObj.pattern.iterator().next();
         Map<TreePath, VariableAssignments> result;
 
         if (useBulkSearch) {
             result = new HashMap<TreePath, VariableAssignments>();
 
-            BulkPattern bulkPattern = BulkSearch.getDefault().create(info, patternObj.getPatternCode());
+            BulkPattern bulkPattern = BulkSearch.getDefault().create(info, patternCode);
 
             for (Entry<String, Collection<TreePath>> e : BulkSearch.getDefault().match(info, new TreePath(info.getCompilationUnit()), bulkPattern).entrySet()) {
                 for (TreePath tp : e.getValue()) {
-                    VariableAssignments vars = computeVariables(info, patternPath, tp, new AtomicBoolean(), patternObj.getConstraints());
+                    VariableAssignments vars = computeVariables(info, patternPath, tp, new AtomicBoolean(), patternObj.variable2Type);
 
                     if (vars != null) {
                         result.put(tp, vars);
@@ -1171,7 +1178,7 @@ public class CopyFinderTest extends NbTestCase {
                 }
             }
         } else {
-            result = computeDuplicates(info, patternPath, new TreePath( info.getCompilationUnit()), new AtomicBoolean(), patternObj.getConstraints());
+            result = computeDuplicates(info, patternPath, new TreePath( info.getCompilationUnit()), new AtomicBoolean(), patternObj.variable2Type);
         }
 
         if (noOccurrences) {
@@ -1234,11 +1241,17 @@ public class CopyFinderTest extends NbTestCase {
     }
 
     protected VariableAssignments computeVariables(CompilationInfo info, TreePath searchingFor, TreePath scope, AtomicBoolean cancel, Map<String, TypeMirror> designedTypeHack) {
-        return CopyFinder.computeVariables(info, searchingFor, scope, cancel, designedTypeHack);
+        Collection<VariableAssignments> values = CopyFinder.internalComputeDuplicates(info, Collections.singletonList(searchingFor), scope, null, null, cancel, designedTypeHack, Options.ALLOW_VARIABLES_IN_PATTERN).values();
+
+        if (values.iterator().hasNext()) {
+            return values.iterator().next();
+        } else {
+            return null;
+        }
     }
 
     protected Map<TreePath, VariableAssignments> computeDuplicates(CompilationInfo info, TreePath searchingFor, TreePath scope, AtomicBoolean cancel, Map<String, TypeMirror> designedTypeHack) {
-        return CopyFinder.computeDuplicates(info, searchingFor, scope, true, cancel, designedTypeHack, Options.ALLOW_VARIABLES_IN_PATTERN);
+        return CopyFinder.internalComputeDuplicates(info, Collections.singletonList(searchingFor), scope, null, null, cancel, designedTypeHack, Options.ALLOW_VARIABLES_IN_PATTERN, Options.ALLOW_GO_DEEPER);
     }
 
     private void performRemappingTest(String code, String remappableVariables, Options... options) throws Exception {
@@ -1282,13 +1295,18 @@ public class CopyFinderTest extends NbTestCase {
             }.scan(info.getCompilationUnit(), null);
         }
 
-        Collection<? extends MethodDuplicateDescription> result = CopyFinder.computeDuplicatesAndRemap(info, searchFor, new TreePath(info.getCompilationUnit()), vars, new AtomicBoolean(), options);
+        Set<Options> opts = EnumSet.of(Options.ALLOW_GO_DEEPER);
+
+        opts.addAll(Arrays.asList(options));
+
+        Map<TreePath, VariableAssignments> result = CopyFinder.internalComputeDuplicates(info, searchFor, new TreePath(info.getCompilationUnit()), null, vars, new AtomicBoolean(), Collections.<String, TypeMirror>emptyMap(), opts.toArray(new Options[0]));
         Set<List<Integer>> realSpans = new HashSet<List<Integer>>();
 
-        for (MethodDuplicateDescription mdd : result) {
-            List<? extends StatementTree> parentStatements = CopyFinder.getStatements(mdd.firstLeaf);
-            int startPos = (int) info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), parentStatements.get(mdd.dupeStart));
-            int endPos = (int) info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), parentStatements.get(mdd.dupeEnd));
+        for (Entry<TreePath, VariableAssignments> e : result.entrySet()) {
+            List<? extends StatementTree> parentStatements = CopyFinder.getStatements(e.getKey());
+            int dupeStart = parentStatements.indexOf(e.getKey().getLeaf());
+            int startPos = (int) info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), parentStatements.get(dupeStart));
+            int endPos = (int) info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), parentStatements.get(dupeStart + searchFor.size() - 1));
 
             realSpans.add(Arrays.asList(startPos, endPos));
         }
@@ -1319,7 +1337,7 @@ public class CopyFinderTest extends NbTestCase {
     }
 
     protected Collection<TreePath> computeDuplicates(TreePath path) {
-        return CopyFinder.computeDuplicates(info, path, new TreePath(info.getCompilationUnit()), new AtomicBoolean(), null).keySet();
+        return CopyFinder.internalComputeDuplicates(info, Collections.singletonList(path), new TreePath(info.getCompilationUnit()), null, null, new AtomicBoolean(), null, Options.ALLOW_GO_DEEPER).keySet();
     }
 
     public static final class Pair<A, B> {

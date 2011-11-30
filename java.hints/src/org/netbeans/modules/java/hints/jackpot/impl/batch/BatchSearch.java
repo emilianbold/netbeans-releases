@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.java.hints.jackpot.impl.batch;
 
-import org.netbeans.modules.java.hints.introduce.CopyFinder;
 import org.netbeans.modules.java.hints.jackpot.impl.MessageImpl;
 import org.netbeans.modules.java.hints.jackpot.impl.Utilities;
 import org.netbeans.modules.java.hints.jackpot.impl.hints.HintsInvoker;
@@ -87,6 +86,8 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.queries.FileEncodingQuery;
+import org.netbeans.modules.java.hints.jackpot.impl.tm.Matcher;
+import org.netbeans.modules.java.hints.jackpot.impl.tm.Pattern;
 import org.netbeans.modules.java.hints.jackpot.spi.HintDescription.AdditionalQueryConstraints;
 import org.netbeans.modules.java.hints.jackpot.spi.Trigger.PatternDescription;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
@@ -501,7 +502,7 @@ public class BatchSearch {
                 for (TreePath tp : e.getValue()) {
                     //XXX: this pass will not be performed on the web!!!
                     if (   BulkSearch.getDefault().requiresLightweightVerification()
-                        && !CopyFinder.isDuplicate(ci, new TreePath(new TreePath(ci.getCompilationUnit()), treePattern), tp, false, new AtomicBoolean())) {
+                        && !Matcher.create(ci, new AtomicBoolean()).setSearchRoot(tp).setTreeTopSearch().setUntypedMatching().match(Pattern.createSimplePattern(new TreePath(new TreePath(ci.getCompilationUnit()), treePattern))).iterator().hasNext()) {
                         continue;
                     }
                     int[] span = new int[] {

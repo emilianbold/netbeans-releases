@@ -108,7 +108,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.hints.jackpot.impl.JavaFixImpl;
 import org.netbeans.modules.java.hints.jackpot.impl.Utilities;
-import org.netbeans.modules.java.hints.jackpot.impl.pm.Pattern;
+import org.netbeans.modules.java.hints.jackpot.impl.pm.PatternCompiler;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
@@ -433,8 +433,12 @@ public abstract class JavaFix {
             for (Entry<String, TypeMirrorHandle<?>> c : constraintsHandles.entrySet()) {
                 constraints.put(c.getKey(), c.getValue().resolve(wc));
             }
+            
+            Scope scope = Utilities.constructScope(wc, constraints, imports);
 
-            Tree parsed = Pattern.parseAndAttribute(wc, to, constraints, new Scope[1], imports);
+            assert scope != null;
+
+            Tree parsed = Utilities.parseAndAttribute(wc, to, scope);
 
             if (Utilities.isFakeBlock(parsed)) {
                 TreePath parent = tp.getParentPath();
