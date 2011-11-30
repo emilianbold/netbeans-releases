@@ -218,4 +218,10 @@ public class CssCompletionTest extends CssModuleTestBase {
 
 
     }
+    
+    public void testPropertyValueWithPrefix() throws ParseException {
+        checkCC("div { font: italic la| }", arr("large"), Match.CONTAINS);        
+        checkCC("div { font: italic la|rge }", arr("large"), Match.CONTAINS);
+    }
+    
 }

@@ -43,8 +43,13 @@
  */
 package org.netbeans.modules.xml.schema.completion;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import junit.framework.*;
+import org.hamcrest.Description;
+import org.hamcrest.Matcher;
+import org.junit.internal.matchers.TypeSafeMatcher;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.xml.lexer.XMLTokenId;
 import org.netbeans.editor.BaseDocument;
@@ -75,14 +80,30 @@ public abstract class AbstractTestCase extends TestCase {
     protected void tearDown() throws Exception {
     }
     
-    protected void setupCompletion(String path, StringBuffer buffer) throws Exception {
+    /**
+     * Set up the test for a particular XML document
+     * @param path the XML document
+     * @see #setupCompletion(java.lang.String, java.lang.StringBuffer) 
+     */
+    protected void setupCompletion(String path) throws Exception {
+        setupCompletion(path, null);
+    }
+    
+    
+    /**
+     * Set up the test for a particular XML document
+     * @param path the XML document
+     * @param content the content to insert into the document
+     * @see #setupCompletion(java.lang.String)
+     */
+    protected void setupCompletion(String path, StringBuffer content) throws Exception {
         this.instanceResourcePath = path;
         this.instanceFileObject = Util.getResourceAsFileObject(path);
         this.instanceDocument = Util.getResourceAsDocument(path);
         this.support = ((XMLSyntaxSupport)instanceDocument.getSyntaxSupport());
-        if(buffer != null) {
+        if(content != null) {
             instanceDocument.remove(0, instanceDocument.getLength());
-            instanceDocument.insertString(0, buffer.toString(), null);
+            instanceDocument.insertString(0, content.toString(), null);
         }
         instanceDocument.putProperty(Language.class, XMLTokenId.language());        
     }
@@ -90,15 +111,17 @@ public abstract class AbstractTestCase extends TestCase {
     /**
      * Queries and returns a list of completion items.
      * Each unit test is supposed to evaluate this result.
+     * @param caretOffset the caret offset at which code completion is invoked
+     * @return the code completion results 
      */
-    protected List<CompletionResultItem> query(int caretOffset) throws Exception {
+    protected List<CompletionResultItem> query(int caretOffset) {
         assert(instanceFileObject  != null && instanceDocument != null);
         CompletionQuery instance = new CompletionQuery(instanceFileObject);
         return instance.getCompletionItems(instanceDocument, caretOffset);
     }
     
     protected void assertResult(List<CompletionResultItem> result,
-            String[] expectedResult) {
+            String... expectedResult) {
         if(result == null && expectedResult == null) {
             assert(true);
             return;
@@ -136,6 +159,14 @@ public abstract class AbstractTestCase extends TestCase {
         }
     }
     
+    protected Matcher<List<CompletionResultItem>> containsSuggestions(String... suggestions) {
+        return new SuggestionsContaining(false, suggestions);
+    }
+    
+    protected Matcher<List<CompletionResultItem>> containsOnlySuggestions(String... suggestions) {
+        return new SuggestionsContaining(true, suggestions);
+    }
+    
     BaseDocument getDocument() {
         return instanceDocument;
     }
@@ -152,5 +183,41 @@ public abstract class AbstractTestCase extends TestCase {
         CompletionContextImpl context = new CompletionContextImpl(instanceFileObject, support, offset);
         context.initContext();
         return context;
+    }
+
+    private class SuggestionsContaining extends TypeSafeMatcher<List<CompletionResultItem>> {
+
+        private final List<String> expectedSuggestionStrings;
+        private final boolean expectingExactMatch;
+        public SuggestionsContaining(boolean expectingExactMatch, String... suggestions) {
+            this.expectedSuggestionStrings = Arrays.asList(suggestions);
+            this.expectingExactMatch = expectingExactMatch;
+        }
+
+        @Override
+        public boolean matchesSafely(List<CompletionResultItem> actual) {
+            if(actual == null) {
+                return false;
+            }
+            if(expectingExactMatch && actual.size() != expectedSuggestionStrings.size()) {
+                return false;
+            }
+            List<String> actualSuggestionStrings = new ArrayList<String>(actual.size());
+            for (CompletionResultItem result : actual) {
+                actualSuggestionStrings.add(result.getItemText());
+            }
+            return actualSuggestionStrings.containsAll(expectedSuggestionStrings);
+        }
+
+        @Override
+        public void describeTo(Description d) {
+            d.appendText("completion results ");
+            if(expectingExactMatch) {
+                d.appendText("exactly matching ");
+            } else {
+                d.appendText("containing ");
+            }
+            d.appendValue(expectedSuggestionStrings);
+        }
     }
 }

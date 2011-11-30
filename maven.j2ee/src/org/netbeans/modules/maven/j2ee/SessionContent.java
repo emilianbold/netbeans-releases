@@ -42,15 +42,18 @@
 
 package org.netbeans.modules.maven.j2ee;
 
-/**
- *
- * @author mkleint
- */
+import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.spi.project.ProjectServiceProvider;
+
+@ProjectServiceProvider(service = SessionContent.class, projectType = {
+    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_WAR,
+    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_EJB,
+    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_EAR,
+    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_APPCLIENT
+})
 public class SessionContent {
     private String serverInstanceID;
 
-    SessionContent() {
-    }
 
     public String getServerInstanceId() {
         return serverInstanceID;

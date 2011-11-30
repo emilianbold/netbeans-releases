@@ -44,8 +44,8 @@
 package org.netbeans.modules.javacard.spi;
 
 import java.awt.Component;
-import org.netbeans.validation.api.ui.ValidationGroup;
 import org.netbeans.validation.api.ui.ValidationGroupProvider;
+import org.netbeans.validation.api.ui.swing.SwingValidationGroup;
 
 /**
  *
@@ -53,7 +53,7 @@ import org.netbeans.validation.api.ui.ValidationGroupProvider;
  */
 public interface CardCustomizer extends ValidationGroupProvider {
     public void save();
-    public ValidationGroup getValidationGroup();
+    @Override SwingValidationGroup getValidationGroup();
     public boolean isContentValid();
     public Component getComponent();
 }

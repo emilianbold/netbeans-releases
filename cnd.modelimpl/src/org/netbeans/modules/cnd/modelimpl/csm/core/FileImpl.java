@@ -1698,7 +1698,11 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
                                         CsmDeclaration.Kind kind = cls.getKind();
                                         CsmVisibility visibility = CsmVisibility.PRIVATE;
                                         if(kind == CsmDeclaration.Kind.CLASS) {
-                                            visibility = CsmVisibility.PRIVATE;
+                                            // FIXUP: it's better to have extra items in completion list
+                                            // for crazy classes, than fail on resolving included
+                                            // public methods
+                                            // IZ#204951 - The c++ parser does not follow/parse #includes which are textually nested within a class definition
+                                            visibility = CsmVisibility.PUBLIC;
                                         } else if( kind == CsmDeclaration.Kind.STRUCT ||
                                                 kind == CsmDeclaration.Kind.UNION) {
                                             visibility = CsmVisibility.PUBLIC;

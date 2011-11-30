@@ -168,6 +168,9 @@ public final class ImplementAllAbstractMethods implements ErrorRule<Void> {
             }
             
             performer.fixAllAbstractMethods(path, leaf);
+            
+            if (e.getKind() == ElementKind.CLASS)
+                performer.makeClassAbstract(leaf, e.getSimpleName().toString());
         } else {
             if (leaf.getKind() == Kind.NEW_CLASS) {
                 //if the parent of path.getLeaf is an error, the situation probably is like:
@@ -220,6 +223,7 @@ public final class ImplementAllAbstractMethods implements ErrorRule<Void> {
                         copy.toPhase(Phase.RESOLVED);
                         analyze(offset, copy, new Performer() {
                             public void fixAllAbstractMethods(TreePath pathToModify, Tree toModify) {
+                                if (makeClassAbstractName != null) return;
                                 if (toModify.getKind() == Kind.NEW_CLASS) {
                                     int insertOffset = (int) copy.getTrees().getSourcePositions().getEndPosition(copy.getCompilationUnit(), toModify);
                                     if (insertOffset != (-1)) {
@@ -245,6 +249,7 @@ public final class ImplementAllAbstractMethods implements ErrorRule<Void> {
                                 }
                             }
                             public void makeClassAbstract(Tree toModify, String className) {
+                                if (makeClassAbstractName == null) return;
                                 //the toModify has to be a class tree:
                                 if (TreeUtilities.CLASS_TREE_KINDS.contains(toModify.getKind())) {
                                     ClassTree clazz = (ClassTree) toModify;

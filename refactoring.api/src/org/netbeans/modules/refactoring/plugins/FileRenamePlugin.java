@@ -69,23 +69,28 @@ public class FileRenamePlugin implements RefactoringPlugin {
         this.refactoring = refactoring;
     }
     
+    @Override
     public Problem preCheck() {
         return null;
     }
     
+    @Override
     public Problem prepare(RefactoringElementsBag elements) {
         elements.addFileChange(refactoring, new RenameFile(refactoring.getRefactoringSource().lookup(FileObject.class), elements));
         return null;
     }
     
+    @Override
     public Problem fastCheckParameters() {
         return null;
     }
         
+    @Override
     public Problem checkParameters() {
         return null;
     }
 
+    @Override
     public void cancelRequest() {
     }
     
@@ -95,16 +100,19 @@ public class FileRenamePlugin implements RefactoringPlugin {
         public RenameFile(FileObject fo, RefactoringElementsBag bag) {
             this.fo = fo;
         }
+        @Override
         public String getText() {
             return NbBundle.getMessage(FileRenamePlugin.class, "TXT_RenameFile", fo.getNameExt());
         }
 
+        @Override
         public String getDisplayText() {
             return getText();
         }
 
         private String oldName;
         
+        @Override
         public void performChange() {
             try {
                 oldName = fo.getName();
@@ -116,6 +124,7 @@ public class FileRenamePlugin implements RefactoringPlugin {
             }
         }
         
+        @Override
         public void undoChange(){
             try {
                 DataObject.find(fo).rename(oldName);
@@ -126,14 +135,17 @@ public class FileRenamePlugin implements RefactoringPlugin {
             }
         }
 
+        @Override
         public Lookup getLookup() {
             return Lookup.EMPTY;
         }
 
+        @Override
         public FileObject getParentFile() {
             return fo;
         }
 
+        @Override
         public PositionBounds getPosition() {
             return null;
         }

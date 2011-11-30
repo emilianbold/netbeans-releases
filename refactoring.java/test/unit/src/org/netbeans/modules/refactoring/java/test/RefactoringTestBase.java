@@ -184,6 +184,7 @@ public class RefactoringTestBase extends NbTestCase {
             "org/netbeans/libs/freemarker/layer.xml",
             "org/netbeans/modules/refactoring/java/test/resources/layer.xml", "META-INF/generated-layer.xml"}, new Object[] {
             new ClassPathProvider() {
+            @Override
                 public ClassPath findClassPath(FileObject file, String type) {
                     if ((src != null && (file == src || FileUtil.isParentOf(src, file)))
                             || (test != null && (file == test || FileUtil.isParentOf(test, file)))){
@@ -202,15 +203,19 @@ public class RefactoringTestBase extends NbTestCase {
                 }
             },
             new ProjectFactory() {
+            @Override
             public boolean isProject(FileObject projectDirectory) {
                 return src != null && src.getParent() == projectDirectory;
             }
+            @Override
             public Project loadProject(final FileObject projectDirectory, ProjectState state) throws IOException {
                 if (!isProject(projectDirectory)) return null;
                 return new Project() {
+                    @Override
                     public FileObject getProjectDirectory() {
                         return projectDirectory;
                     }
+                    @Override
                     public Lookup getLookup() {
                         final Project p = this;
                         return Lookups.singleton(new Sources() {
@@ -232,6 +237,7 @@ public class RefactoringTestBase extends NbTestCase {
                     }
                 };
             }
+            @Override
             public void saveProject(Project project) throws IOException, ClassCastException {}
             },
             new TestLocator() {
@@ -326,6 +332,7 @@ public class RefactoringTestBase extends NbTestCase {
 
         private static final Lookup L = Lookups.singleton(new JavaCustomIndexer.Factory());
 
+        @Override
         public Lookup getLookup(MimePath mimePath) {
             if ("text/x-java".equals(mimePath.getPath())) {
                 return L;

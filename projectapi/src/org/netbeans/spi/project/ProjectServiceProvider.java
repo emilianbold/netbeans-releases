@@ -47,6 +47,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.spi.project.LookupProvider.Registration.ProjectType;
 import org.netbeans.spi.project.support.LookupProviderSupport;
 import org.openide.util.Lookup;
@@ -91,6 +92,17 @@ public final class TestAction implements ActionListener {
     }
 }
  * </pre>
+ * <p>
+ * To avoid deadlocks, stack overflows, and the like, an implementation
+ * accepting a {@link Project} in its constructor (or factory method) may not
+ * examine that project's lookup inside the constructor. It is fine to use the
+ * project lookup from other service methods called later, typically to find
+ * "sister" services (such as {@link ProjectInformation} in the example above).
+ * It is also safe to accept a {@link Lookup} in the constructor
+ * and examine its contents, since this is the "base lookup" supplied to
+ * {@link LookupProviderSupport#createCompositeLookup}, which will not have
+ * other declaratively registered services anyway.
+ * </p>
  * @since org.netbeans.modules.projectapi/1 1.23
  * @see LookupProviderSupport#createCompositeLookup
  */

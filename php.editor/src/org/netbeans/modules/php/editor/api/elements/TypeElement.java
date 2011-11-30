@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.php.editor.api.elements;
 
+import java.util.Collection;
 import java.util.Set;
 import org.netbeans.modules.php.editor.api.QualifiedName;
 
@@ -61,6 +62,7 @@ public interface TypeElement extends FullyQualifiedElement {
      * @return all implemented ifaces
      */
     Set<QualifiedName> getSuperInterfaces();
+    Collection<QualifiedName> getFQSuperInterfaceNames();
     boolean isClass();
     boolean isInterface();
 }

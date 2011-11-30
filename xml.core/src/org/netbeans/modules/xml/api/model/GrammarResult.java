@@ -46,6 +46,7 @@ package org.netbeans.modules.xml.api.model;
 
 import org.w3c.dom.Node;
 import javax.swing.Icon;
+import org.netbeans.api.annotations.common.CheckForNull;
 
 /**
  * It represents additonal properties of a result option.
@@ -77,9 +78,28 @@ public interface GrammarResult extends Node {
     String getDisplayName();
 
     /**
+     * Returns contents of a description, text suitable for displaying as a tooltip
+     * that simplifies decision. {@code null} may be returned if no description is available.
+     * The decription is interpreted as HTML markup. If the markup contains relative
+     * links or special URIs, implement also {@link DescriptionSource} to resolve 
+     * those links.
+     * <p/>
+     * If {@link DescriptionSource} is implemented on the same object, this method
+     * may return null to indicate the content should be <b>loaded by the infrastructure</b>
+     * from the URL returned by {@link DescriptionSource#getContentURL()}. If both
+     * {@code getDescription()} and {@code DescriptionSource.getContentURL()} return
+     * null, no description is displayed in the tooltip.
+     * <p/>
+     * Implementors may prefer implementing the {@code DescriptionSource} and
+     * loading from the {@link DescriptionSource#getContentURL()} if the
+     * description resides in a separate file included in the JAR or in the XML layer.
+     * 
      * @return provide additional information simplifing decision
-     * (suitable for tooltip) or <code>null</code>
+     * (suitable for tooltip) or {@code null}.
+     * 
+     * @since 1.28 - DescriptionSource extension
      */
+    @CheckForNull
     String getDescription();
 
     /**

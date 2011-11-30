@@ -58,27 +58,19 @@ import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.*;
-import java.util.Set;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.*;
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.table.*;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
-import javax.swing.text.JTextComponent;
-import javax.swing.text.Position;
+import javax.swing.text.*;
 import org.netbeans.api.editor.DialogBinding;
-import org.netbeans.api.java.source.CancellableTask;
-import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.java.source.ElementUtilities;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.java.source.*;
 import org.netbeans.api.java.source.ui.TypeElementFinder;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.refactoring.java.RefactoringModule;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.ChangeParametersRefactoring.ParameterInfo;
 import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.java.plugins.LocalVarScanner;
@@ -129,6 +121,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
     private boolean isConstructor;
     
     
+    @Override
     public Component getComponent() {
         return this;
     }
@@ -178,6 +171,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
         methodNameText.getDocument().addDocumentListener(methodNameDocListener);
     }
     private boolean initialized = false;
+    @Override
     public void initialize() {
         try {
             if (initialized) {
@@ -185,6 +179,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
             }
             JavaSource source = JavaSource.forFileObject(refactoredObj.getFileObject());
             source.runUserActionTask(new CancellableTask<CompilationController>() {
+                @Override
                 public void run(org.netbeans.api.java.source.CompilationController info) {
                     try {
                         info.toPhase(org.netbeans.api.java.source.JavaSource.Phase.RESOLVED);
@@ -255,6 +250,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
                     }
                 }
 
+                @Override
                 public void cancel() {
                 }
             }, true);
@@ -681,6 +677,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
     
     private ListSelectionListener getListener1() {
         return new ListSelectionListener() {
+            @Override
             public void valueChanged(ListSelectionEvent e) {
                 if (e.getValueIsAdjusting())
                     return;
@@ -712,6 +709,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
     
     private TableModelListener getListener2() {
         return new TableModelListener() {
+            @Override
             public void tableChanged(TableModelEvent e) {
                 // update buttons availability
                 int[] selectedRows = paramTable.getSelectedRows();
@@ -758,8 +756,8 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
         List<? extends VariableElement> pars = method.getParameters();
 
         Collection<ExecutableElement> allMethods = new ArrayList();
-        allMethods.addAll(RetoucheUtils.getOverridenMethods(method, info));
-        allMethods.addAll(RetoucheUtils.getOverridingMethods(method, info));
+        allMethods.addAll(RefactoringUtils.getOverridenMethods(method, info));
+        allMethods.addAll(RefactoringUtils.getOverridingMethods(method, info));
         allMethods.add(method);
         
         for (ExecutableElement currentMethod: allMethods) {
@@ -890,7 +888,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
         
         // generate the return type for the method and name
         // for the both - method and constructor
-        if (RetoucheUtils.getElementKind(refactoredObj) == ElementKind.METHOD) {
+        if (RefactoringUtils.getElementKind(refactoredObj) == ElementKind.METHOD) {
             buf.append(((JEditorPane)singleLineEditor[1]).getText());
             buf.append(' '); //NOI18N
         }
@@ -953,6 +951,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
             super(data, rowCount);
         }
 
+        @Override
         public boolean isCellEditable(int row, int column) {
             if (column > 2) {
                 // check box indicating usage of parameter is not editable
@@ -971,12 +970,14 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
             return true;//((Boolean) ((Vector) getDataVector().get(row)).get(4)).booleanValue();
         }
         
+        @Override
         public Class getColumnClass(int c) {
             return getValueAt(0, c).getClass();
         }
     } // end ParamTableModel
 
     private static class EditAction extends AbstractAction {
+        @Override
         public void actionPerformed(ActionEvent ae) {
             autoEdit((JTable) ae.getSource());
         }
@@ -989,7 +990,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            FileObject file = RetoucheUtils.getFileObject(refactoredObj);
+            FileObject file = RefactoringUtils.getFileObject(refactoredObj);
             ElementHandle<TypeElement> type = TypeElementFinder.find(ClasspathInfo.create(file), ((JEditorPane)singleLineEditor[1]).getText(), null);
             if (type != null) {
                 String fqn = type.getQualifiedName().toString();
@@ -1018,7 +1019,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            FileObject file = RetoucheUtils.getFileObject(refactoredObj);
+            FileObject file = RefactoringUtils.getFileObject(refactoredObj);
             ElementHandle<TypeElement> type = TypeElementFinder.find(ClasspathInfo.create(file), table.getValueAt(row, col).toString(), null);
             if (type != null) {
                 String fqn = type.getQualifiedName().toString();
@@ -1035,6 +1036,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
             this.originalTabAction = originalTabAction;
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             boolean acceptEditedValue = acceptEditedValue();
             originalTabAction.actionPerformed(e);
@@ -1057,6 +1059,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
             this.original = original;
         }
 
+        @Override
         public Component getTableCellRendererComponent(JTable table, Object value,
                                                        boolean isSelected, boolean hasFocus,
                                                        int row, int column)
@@ -1081,8 +1084,9 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
 
     class ParamEditor implements TableCellEditor {
 
+        private static final String NO_ACTION = "no-action"; //NOI18N
         private final TableCellEditor original;
-        private JTextComponent editorPane;
+        private JEditorPane editorPane;
         private int startOffset;
 
         public ParamEditor(TableCellEditor original) {
@@ -1092,6 +1096,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
         }
 
         // This method is called when a cell value is edited by the user.
+        @Override
         public Component getTableCellEditorComponent(JTable table, Object value,
                 boolean isSelected, int row, int col) {
             JTextComponent tableCellEditorComponent = (JTextComponent) original.getTableCellEditorComponent(table, value, isSelected, row, col);
@@ -1129,6 +1134,19 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
                             }
                         }
                     };
+                    EditorKit kit = MimeLookup.getLookup(MIME_JAVA).lookup(EditorKit.class);
+                    if (kit == null) {
+                        throw new IllegalStateException("No EditorKit for '" + MIME_JAVA + "' mimetype."); //NOI18N
+                    }
+                    editorPane.setEditorKit(kit);
+                    
+                    KeyStroke enterKs = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0);
+                    KeyStroke escKs = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
+                    KeyStroke tabKs = KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0);
+                    InputMap im = editorPane.getInputMap();
+                    im.put(enterKs, NO_ACTION);
+                    im.put(escKs, NO_ACTION);
+                    im.put(tabKs, NO_ACTION);
                     
                     FileObject fileObject = refactoredObj.getFileObject();
                     DataObject dob = DataObject.find(fileObject);
@@ -1172,6 +1190,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
             return returnValue;
         }
 
+        @Override
         public Object getCellEditorValue() {
             if(editorPane != null) {
                 return editorPane.getText().substring(startOffset).replace(System.getProperty("line.separator"), "").trim(); //NOI18N
@@ -1179,26 +1198,32 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
             return original.getCellEditorValue();
         }
 
+        @Override
         public boolean isCellEditable(EventObject anEvent) {
             return original.isCellEditable(anEvent);
         }
 
+        @Override
         public boolean stopCellEditing() {
             return original.stopCellEditing();
         }
 
+        @Override
         public boolean shouldSelectCell(EventObject anEvent) {
             return original.shouldSelectCell(anEvent);
         }
 
+        @Override
         public void removeCellEditorListener(CellEditorListener l) {
             original.removeCellEditorListener(l);
         }
 
+        @Override
         public void cancelCellEditing() {
             original.cancelCellEditing();
         }
 
+        @Override
         public void addCellEditorListener(CellEditorListener l) {
             original.addCellEditorListener(l);
         }

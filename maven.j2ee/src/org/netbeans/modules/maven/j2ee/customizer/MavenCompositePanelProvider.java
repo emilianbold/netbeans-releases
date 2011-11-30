@@ -61,8 +61,8 @@ public class MavenCompositePanelProvider implements ProjectCustomizer.CompositeC
     private static final String FRAMEWORKS = "Frameworks"; // NOI18N
     private static final String RUN = "Run"; // NOI18N
     
-    private AbstractCustomizer frameworkCustomizer;
-    private AbstractCustomizer runCustomizer;
+    private CustomizerFrameworks frameworkCustomizer;
+    private BaseRunCustomizer runCustomizer;
     
 
     private String type;
@@ -107,31 +107,30 @@ public class MavenCompositePanelProvider implements ProjectCustomizer.CompositeC
         String name = category.getName();
         ModelHandle handle = context.lookup(ModelHandle.class);
         Project project = context.lookup(Project.class);
+
+        category.setOkButtonListener(listenerAWT);
+        category.setStoreListener(listenerNonAWT);
         
-        AbstractCustomizer customizer = null;
         if (FRAMEWORKS.equals(name)) {
-            customizer = new CustomizerFrameworks(category, handle, project);
-            frameworkCustomizer = customizer;
+            frameworkCustomizer = new CustomizerFrameworks(category, project);
+            return frameworkCustomizer;
         }
         if (RUN.equals(name)) {
             String projectType = project.getLookup().lookup(NbMavenProject.class).getPackagingType();
             
             if (NbMavenProject.TYPE_WAR.equalsIgnoreCase(projectType)) {
-                customizer = new CustomizerRunWeb(handle, project);
+                runCustomizer = new CustomizerRunWeb(handle, project);
             }
             if (NbMavenProject.TYPE_EJB.equalsIgnoreCase(projectType)) {
-                customizer = new CustomizerRunEjb(handle, project);
+                runCustomizer = new CustomizerRunEjb(handle, project);
             }
             if (NbMavenProject.TYPE_EAR.equalsIgnoreCase(projectType)) {
-                customizer = new CustomizerRunEar(handle, project);
+                runCustomizer = new CustomizerRunEar(handle, project);
             }
-            runCustomizer = customizer;
+            return runCustomizer;
         }
 
-        category.setOkButtonListener(listenerAWT);
-        category.setStoreListener(listenerNonAWT);
-        
-        return customizer;
+        return null;
     }
     
     private ActionListener listenerAWT = new ActionListener() {

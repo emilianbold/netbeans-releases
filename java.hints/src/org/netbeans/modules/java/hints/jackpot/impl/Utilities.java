@@ -919,9 +919,12 @@ public class Utilities {
         public ClasspathInfo createUniversalCPInfo() {
             JavaPlatform select = JavaPlatform.getDefault();
 
-            for (JavaPlatform p : JavaPlatformManager.getDefault().getInstalledPlatforms()) {
-                if (p.getSpecification().getVersion().compareTo(select.getSpecification().getVersion()) > 0) {
-                    select = p;
+            if (select.getSpecification().getVersion() != null) {
+                for (JavaPlatform p : JavaPlatformManager.getDefault().getInstalledPlatforms()) {
+                    if (!"j2se".equals(p.getSpecification().getName()) || p.getSpecification().getVersion() == null) continue;
+                    if (p.getSpecification().getVersion().compareTo(select.getSpecification().getVersion()) > 0) {
+                        select = p;
+                    }
                 }
             }
 

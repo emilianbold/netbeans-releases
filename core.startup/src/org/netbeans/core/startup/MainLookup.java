@@ -115,7 +115,7 @@ public final class MainLookup extends ProxyLookup {
             // Replace classloader.
             newDelegates[0] = Lookups.metaInfServices(classLoader);
             newDelegates[1] = Lookups.singleton(classLoader);
-            l.setLookups(newDelegates);
+            l.changeLookups(newDelegates);
         } else {
             moduleClassLoadersUp();
         }
@@ -129,7 +129,7 @@ public final class MainLookup extends ProxyLookup {
         Lookup[] delegates = l.getLookups();
         newDelegates = delegates.clone();
         newDelegates[0] = Lookups.metaInfServices(classLoader);
-        l.setLookups(newDelegates);
+        l.changeLookups(newDelegates);
     }
 
     /** Called when Lookup<ModuleInfo> is ready from the ModuleManager.
@@ -140,7 +140,7 @@ public final class MainLookup extends ProxyLookup {
             MainLookup l = (MainLookup)Lookup.getDefault();
             Lookup[] newDelegates = l.getLookups().clone();
             newDelegates[2] = moduleLookup;
-            l.setLookups(newDelegates);
+            l.changeLookups(newDelegates);
         }
     }
 
@@ -205,13 +205,27 @@ public final class MainLookup extends ProxyLookup {
         };
         StartLog.logProgress ("prepared other Lookups"); // NOI18N
 
-        setLookups (arr);
+        changeLookups (arr);
         StartLog.logProgress ("Lookups set"); // NOI18N
     //StartLog.logEnd ("MainLookup: initialization of FolderLookup"); // NOI18N
+    }
+    
+    private final ThreadLocal<Boolean> changing = new ThreadLocal<Boolean>();
+    final void changeLookups(Lookup[] arr) {
+        Boolean prev = changing.get(); 
+        try {
+            changing.set(true);
+            setLookups(arr);
+        } finally {
+            changing.set(prev);
+        }
     }
 
     @Override
     protected void beforeLookup(Lookup.Template templ) {
+        if (Boolean.TRUE.equals(changing.get())) {
+            return;
+        }
         Class type = templ.getType();
 
         // Force module system to be initialize by looking up ModuleInfo or Modules.
@@ -219,8 +233,6 @@ public final class MainLookup extends ProxyLookup {
         if (!started && (type == ModuleInfo.class || type == Module.class || type == Modules.class)) {
             Main.getModuleSystem ();
         }
-
-        super.beforeLookup(templ);
     }
 }
     

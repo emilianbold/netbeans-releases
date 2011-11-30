@@ -48,7 +48,6 @@ import org.netbeans.modules.refactoring.api.Problem;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
-import javax.swing.text.Position.Bias;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.services.CsmVirtualInfoQuery;
@@ -56,6 +55,7 @@ import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.*;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.refactoring.spi.CsmRenameExtraObjectsProvider;
 import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
 import org.netbeans.modules.cnd.refactoring.support.ModificationResult;
 import org.netbeans.modules.cnd.refactoring.support.ModificationResult.Difference;
@@ -65,8 +65,8 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 
 import org.openide.text.CloneableEditorSupport;
-import org.openide.text.PositionRef;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
@@ -139,7 +139,7 @@ public class CsmRenameRefactoringPlugin extends CsmModificationRefactoringPlugin
         }
         CsmObject directReferencedObject = CsmRefactoringUtils.getReferencedElement(getStartReferenceObject());
         // check read-only elements
-        preCheckProblem = checkIfModificationPossible(preCheckProblem, directReferencedObject, getString("ERR_Overrides_Fatal"), getString("ERR_OverridesOrOverriden"));
+        preCheckProblem = checkIfModificationPossible(preCheckProblem, directReferencedObject);
         fireProgressListenerStop();
         return preCheckProblem;
     }
@@ -149,41 +149,48 @@ public class CsmRenameRefactoringPlugin extends CsmModificationRefactoringPlugin
     }
 
     private void initReferencedObjects() {
-        CsmObject referencedObject = CsmRefactoringUtils.getReferencedElement(getStartReferenceObject());
-        if (referencedObject != null) {
+        CsmObject primaryObject = CsmRefactoringUtils.getReferencedElement(getStartReferenceObject());
+        if (primaryObject != null) {
+            Collection<CsmObject> allObjects = new HashSet<CsmObject>();
+            allObjects.add(primaryObject);
+            for (CsmRenameExtraObjectsProvider provider : Lookup.getDefault().lookupAll(CsmRenameExtraObjectsProvider.class)) {
+                allObjects.addAll(provider.getExtraObjects(primaryObject));
+            }
             this.referencedObjects = new LinkedHashSet<CsmObject>();
-            if (CsmKindUtilities.isClass(referencedObject)) {
-                // for class we need to add all needed elements
-                this.referencedObjects.addAll(getRenamingClassObjects((CsmClass)referencedObject));
-            } else if (CsmKindUtilities.isConstructor(referencedObject) || CsmKindUtilities.isDestructor(referencedObject)) {
-                // for constructor/destructor we need to add all needed elements
-                CsmFunction fun = (CsmFunction)referencedObject;
-                CsmClass cls = CsmBaseUtilities.getFunctionClass(fun);
-                if (cls != null) {
-                    this.referencedObjects.addAll(getRenamingClassObjects(cls));
-                }
-            } else if (CsmKindUtilities.isMethod(referencedObject)) {
-                CsmMethod method = (CsmMethod) CsmBaseUtilities.getFunctionDeclaration((CsmFunction) referencedObject);
-                this.referencedObjects.add(method);
-                if (CsmVirtualInfoQuery.getDefault().isVirtual(method)) {
-                    this.referencedObjects.addAll(CsmVirtualInfoQuery.getDefault().getOverriddenMethods(method, true));
-                    assert !this.referencedObjects.isEmpty() : "must be at least start object " + method;
-                }
-            } else if (CsmKindUtilities.isFile(referencedObject)) {
-                // use all csm files associated with file object
-                CsmFile file = (CsmFile) referencedObject;
-                FileObject fileObject = file.getFileObject();
-                try {
-                    DataObject dob = DataObject.find(fileObject);
-                    if (dob != null) {
-                        CsmFile[] csmFiles = CsmUtilities.getCsmFiles(dob, true, false);
-                        this.referencedObjects.addAll(Arrays.asList(csmFiles));
+            for (CsmObject referencedObject : allObjects) {
+                if (CsmKindUtilities.isClass(referencedObject)) {
+                    // for class we need to add all needed elements
+                    this.referencedObjects.addAll(getRenamingClassObjects((CsmClass)referencedObject));
+                } else if (CsmKindUtilities.isConstructor(referencedObject) || CsmKindUtilities.isDestructor(referencedObject)) {
+                    // for constructor/destructor we need to add all needed elements
+                    CsmFunction fun = (CsmFunction)referencedObject;
+                    CsmClass cls = CsmBaseUtilities.getFunctionClass(fun);
+                    if (cls != null) {
+                        this.referencedObjects.addAll(getRenamingClassObjects(cls));
                     }
-                } catch (DataObjectNotFoundException ex) {
-                    Exceptions.printStackTrace(ex);
+                } else if (CsmKindUtilities.isMethod(referencedObject)) {
+                    CsmMethod method = (CsmMethod) CsmBaseUtilities.getFunctionDeclaration((CsmFunction) referencedObject);
+                    this.referencedObjects.add(method);
+                    if (CsmVirtualInfoQuery.getDefault().isVirtual(method)) {
+                        this.referencedObjects.addAll(CsmVirtualInfoQuery.getDefault().getOverriddenMethods(method, true));
+                        assert !this.referencedObjects.isEmpty() : "must be at least start object " + method;
+                    }
+                } else if (CsmKindUtilities.isFile(referencedObject)) {
+                    // use all csm files associated with file object
+                    CsmFile file = (CsmFile) referencedObject;
+                    FileObject fileObject = file.getFileObject();
+                    try {
+                        DataObject dob = DataObject.find(fileObject);
+                        if (dob != null) {
+                            CsmFile[] csmFiles = CsmUtilities.getCsmFiles(dob, true, false);
+                            this.referencedObjects.addAll(Arrays.asList(csmFiles));
+                        }
+                    } catch (DataObjectNotFoundException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                } else {
+                    this.referencedObjects.add(referencedObject);
                 }
-            } else {
-                this.referencedObjects.add(referencedObject);
             }
         }
     }
@@ -256,7 +263,9 @@ public class CsmRenameRefactoringPlugin extends CsmModificationRefactoringPlugin
                 refs.addAll(curRefs);
             }
         }
-        if (refs.size() > 0) {
+        Collection<CsmReference> extraRefs = getExtraRenameModificationsInFile(refObjects, csmFile, CsmReferenceKind.ALL);
+        refs.addAll(extraRefs); 
+        if (!refs.isEmpty()) {
             List<CsmReference> sortedRefs = new ArrayList<CsmReference>(refs);
             Collections.sort(sortedRefs, new Comparator<CsmReference>() {
                 @Override
@@ -273,52 +282,21 @@ public class CsmRenameRefactoringPlugin extends CsmModificationRefactoringPlugin
         String newName = refactoring.getNewName();
         for (CsmReference ref : sortedRefs) {
             String oldText = ref.getText().toString();
-            final CsmObject referencedObject = ref.getReferencedObject();
-            if (CsmKindUtilities.isFile(referencedObject)) {
-                final CsmObject owner = ref.getOwner();
-                assert CsmKindUtilities.isInclude(owner) : "include directive is expected " + owner;
-                FileObject file = CsmUtilities.getFileObject((CsmFile)referencedObject);
-                if (file != null) {
-                    // check if include directive really contains file name and not macro expression
-                    String fileNameExt = file.getNameExt();
-                    final int lastIndexOf = oldText.lastIndexOf(fileNameExt);
-                    if (lastIndexOf > 0) {
-                        String fileName = file.getName();
-                        String descr = NbBundle.getMessage(CsmRenameRefactoringPlugin.class, "UpdateInclude", oldText);
-                        String inclString = oldText.substring(0, lastIndexOf) + newName + oldText.substring(lastIndexOf + fileName.length());
-                        Difference diff = rename(ref, ces, oldText, inclString, descr);
-                        assert diff != null;
-                        mr.addDifference(fo, diff);                    
-                    }
-                }
-            } else {
-                String descr = getDescription(ref, oldText);
-                Difference diff = rename(ref, ces, oldText, newName, descr);
+            String newText = CsmRefactoringUtils.getReplaceText(ref, newName, refactoring);
+            if (newText != null) {
+                String descr = CsmRefactoringUtils.getReplaceDescription(ref, refactoring);
+                Difference diff = CsmRefactoringUtils.rename(ref.getStartOffset(), ref.getEndOffset(), ces, oldText, newText, descr);
                 assert diff != null;
                 mr.addDifference(fo, diff);
             }
         }
     }
 
-    private String getDescription(CsmReference ref, String targetName) {
-        boolean decl = CsmReferenceResolver.getDefault().isKindOf(ref, EnumSet.of(CsmReferenceKind.DECLARATION, CsmReferenceKind.DEFINITION));
-        String out = NbBundle.getMessage(CsmRenameRefactoringPlugin.class, decl ? "UpdateDeclRef" : "UpdateRef", targetName);
+    private Collection<CsmReference> getExtraRenameModificationsInFile(Collection<? extends CsmObject> objs, CsmFile csmFile, Set<CsmReferenceKind> kinds) {
+        Collection<CsmReference> out = new HashSet<CsmReference>();
+        for (CsmRenameExtraObjectsProvider prov : Lookup.getDefault().lookupAll(CsmRenameExtraObjectsProvider.class)) {
+            out.addAll(prov.getExtraFileReferences(objs, csmFile, kinds));
+        }
         return out;
-    }
-
-    private Difference rename(CsmReference ref, CloneableEditorSupport ces,
-            String oldName, String newName, String descr) {
-        if (oldName == null) {
-            oldName = ref.getText().toString();
-        }
-        if (newName == null) {
-            newName = refactoring.getNewName();
-        }
-        assert oldName != null;
-        assert newName != null;
-        PositionRef startPos = ces.createPositionRef(ref.getStartOffset(), Bias.Forward);
-        PositionRef endPos = ces.createPositionRef(ref.getEndOffset(), Bias.Backward);
-        Difference diff = new Difference(Difference.Kind.CHANGE, startPos, endPos, oldName, newName, descr);
-        return diff;
     }
 }

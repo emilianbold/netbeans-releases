@@ -53,6 +53,7 @@ import org.netbeans.modules.profiler.api.icons.Icons;
 import org.netbeans.modules.profiler.api.icons.LanguageIcons;
 import org.netbeans.modules.profiler.api.java.SourceClassInfo;
 import org.netbeans.modules.profiler.api.java.SourcePackageInfo;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -129,10 +130,14 @@ public class PackageNode extends ContainerNode {
 
     /** Creates a new instance of PackageNode */
     public PackageNode(SourcePackageInfo pkg, ContainerNode parent) {
-        super(pkg.getSimpleName(), stripName(defaultizeName(pkg.getBinaryName())), Icons.getIcon(LanguageIcons.PACKAGE), parent);
-        this.pkg = pkg;
+        super(pkg != null ? pkg.getSimpleName() : NbBundle.getMessage(PackageNode.class, "LBL_Unknown"), 
+              stripName(defaultizeName(pkg != null ? pkg.getBinaryName() : NbBundle.getMessage(PackageNode.class, "LBL_Unknown"))), 
+              Icons.getIcon(LanguageIcons.PACKAGE), parent);
         
-        this.signature = new SourceCodeSelection(pkg.getBinaryName() + ".**", null, null); // NOI18N
+        this.pkg = pkg;
+        if (pkg != null) {
+            this.signature = new SourceCodeSelection(pkg.getBinaryName() + ".**", null, null); // NOI18N
+        }
     }
 
     @Override
@@ -148,6 +153,8 @@ public class PackageNode extends ContainerNode {
     private List<ClassNode> getContainedClasses() {
         final List<ClassNode> nodes = new ArrayList<ClassNode>();
         
+        if (pkg == null)  return nodes;
+        
         for(SourceClassInfo clz : pkg.getClasses()) {
             nodes.add(new ClassNode(clz, this));
         }
@@ -156,6 +163,10 @@ public class PackageNode extends ContainerNode {
 
     private List<PackageNode> getContainedPackages() {
         final List<PackageNode> nodes = new ArrayList<PackageNode>();
+        
+        if (pkg == null) {
+            return nodes;
+        }
         
         for(SourcePackageInfo p : pkg.getSubpackages()) {
             nodes.add(new PackageNode(p, this));

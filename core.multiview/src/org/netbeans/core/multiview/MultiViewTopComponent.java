@@ -105,6 +105,11 @@ public final class MultiViewTopComponent
     }
     
     
+    @Override
+    public Lookup getLookup() {
+        peer.assignLookup((MultiViewTopComponentLookup)super.getLookup());
+        return super.getLookup();
+    }
     
     @Override
     protected void componentClosed() {

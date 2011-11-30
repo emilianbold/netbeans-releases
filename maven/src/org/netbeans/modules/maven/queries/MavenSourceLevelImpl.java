@@ -48,11 +48,13 @@ import java.io.File;
 import java.net.URI;
 import javax.swing.event.ChangeListener;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.spi.java.queries.SourceLevelQueryImplementation2;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
@@ -63,11 +65,12 @@ import org.openide.util.WeakListeners;
  * checks a property of maven-compiler-plugin
  * @author Milos Kleint
  */
+@ProjectServiceProvider(service=SourceLevelQueryImplementation2.class, projectType="org-netbeans-modules-maven")
 public class MavenSourceLevelImpl implements SourceLevelQueryImplementation2 {
 
-    private final NbMavenProjectImpl project;
+    private final Project project;
 
-    public MavenSourceLevelImpl(NbMavenProjectImpl proj) {
+    public MavenSourceLevelImpl(Project proj) {
         project = proj;
     }
     
@@ -80,12 +83,12 @@ public class MavenSourceLevelImpl implements SourceLevelQueryImplementation2 {
         URI uri = file.toURI();
         assert "file".equals(uri.getScheme());
         String goal = "compile"; //NOI18N
-        for (URI testuri : project.getSourceRoots(true)) {
+        for (URI testuri : project.getLookup().lookup(NbMavenProjectImpl.class).getSourceRoots(true)) {
             if (uri.getPath().startsWith(testuri.getPath())) {
                 goal = "testCompile"; //NOI18N
             }
         }
-        for (URI testuri : project.getGeneratedSourceRoots(true)) {
+        for (URI testuri : project.getLookup().lookup(NbMavenProjectImpl.class).getGeneratedSourceRoots(true)) {
             if (uri.getPath().startsWith(testuri.getPath())) {
                 goal = "testCompile"; //NOI18N
             }
@@ -115,11 +118,11 @@ public class MavenSourceLevelImpl implements SourceLevelQueryImplementation2 {
         
         private final FileObject javaFile;
         private final ChangeSupport cs = new ChangeSupport(this);
-        private final PropertyChangeListener pcl = WeakListeners.propertyChange(this, project.getProjectWatcher());
+        private final PropertyChangeListener pcl = WeakListeners.propertyChange(this, project.getLookup().lookup(NbMavenProject.class));
         
         ResultImpl(FileObject javaFile) {
             this.javaFile = javaFile;
-            project.getProjectWatcher().addPropertyChangeListener(pcl);
+            project.getLookup().lookup(NbMavenProject.class).addPropertyChangeListener(pcl);
         }
 
         @Override public String getSourceLevel() {

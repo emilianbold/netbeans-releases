@@ -207,6 +207,8 @@ public final class ResultModel {
             treeModel.objectFound(mo, matchingObjects.indexOf(mo));
             resultView.objectFound(mo, totalDetailsCount);
             return !checkLimits();
+        } else {
+            mo.cleanup();
         }
         return false; // MatchingObject already exists
     }

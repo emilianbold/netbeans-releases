@@ -141,7 +141,7 @@ public class ClipboardHandler {
                         if (handled == null) {
                             String fqn = simple2ImportFQN.get(currentSimpleName);
 
-                            if (copy.getElements().getTypeElement(fqn) == null) continue;
+                            if (fqn == null || copy.getElements().getTypeElement(fqn) == null) continue;
 
                             imported.put(currentSimpleName, handled = SourceUtils.resolveImport(copy, context, fqn));
                         }
@@ -366,7 +366,7 @@ public class ClipboardHandler {
                 final Map<String, String> simple2ImportFQN = new HashMap<String, String>();
                 final List<int[]> spans = new ArrayList<int[]>();
 
-                boolean finished = runQuickly(js, new Task<CompilationController>() {
+                Task<CompilationController> w = new Task<CompilationController>() {
                     @Override public void run(final CompilationController parameter) throws Exception {
                         parameter.toPhase(JavaSource.Phase.RESOLVED);
 
@@ -399,7 +399,21 @@ public class ClipboardHandler {
                             }
                         }.scan(parameter.getCompilationUnit(), null);
                     }
-                });
+                };
+
+                boolean finished = false;
+
+                if (comp.getClientProperty(RUN_SYNCHRONOUSLY) != null) {
+                    try {
+                        js.runUserActionTask(w, true);
+                        finished = true;
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                } else {
+                    finished = runQuickly(js, w);
+                }
+
 
                 if (finished) {
                     delegate.exportToClipboard(comp, clip, action);
@@ -483,6 +497,7 @@ public class ClipboardHandler {
     }
 
     private static final Object NO_IMPORTS = new Object();
+    private static final Object RUN_SYNCHRONOUSLY = new Object();
     private static final DataFlavor IMPORT_FLAVOR = new DataFlavor(ImportsWrapper.class, NbBundle.getMessage(ClipboardHandler.class, "MSG_ClipboardImportFlavor"));
 
     private static final class WrappedTransferable implements Transferable {
@@ -541,31 +556,27 @@ public class ClipboardHandler {
             final AtomicBoolean cancel = new AtomicBoolean();
             final AtomicBoolean alreadyRunning = new AtomicBoolean();
 
-            try {
-                if (js != null) {
-                    Future<Void> fut = js.runWhenScanFinished(new Task<CompilationController>() {
-                        @Override public void run(CompilationController parameter) throws Exception {
-                            synchronized (lock) {
-                                if (cancel.get()) return;
-                                alreadyRunning.set(true);
-                            }
-                            JavaCutAction.super.actionPerformed(evt, target);
+            if (js != null) {
+                boolean finished = runQuickly(js, new Task<CompilationController>() {
+                    @Override public void run(CompilationController parameter) throws Exception {
+                        synchronized (lock) {
+                            if (cancel.get()) return;
+                            alreadyRunning.set(true);
                         }
-                    }, true);
 
-                    fut.get(100, TimeUnit.MILLISECONDS);
+                        try {
+                            target.putClientProperty(RUN_SYNCHRONOUSLY, true);
 
+                            System.err.println("running cut action");
+                            JavaCutAction.super.actionPerformed(evt, target);
+                        } finally {
+                            target.putClientProperty(RUN_SYNCHRONOUSLY, null);
+                        }
+                    }
+                });
+
+                if (finished)
                     return;
-                }
-            } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (ExecutionException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (TimeoutException ex) {
-                //ok.
-                LOG.log(Level.FINE, null, ex);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
             }
 
             synchronized (lock) {

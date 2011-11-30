@@ -50,7 +50,7 @@ import com.sun.source.util.TreePath;
 import java.util.logging.Logger;
 import javax.lang.model.element.*;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.spi.ToPhaseException;
 import org.openide.util.Exceptions;
 
@@ -73,7 +73,7 @@ public class CopyTransformer extends RefactoringVisitor {
             this.insertImport = insertImport;
             this.oldPackage = oldPackage;
             this.oldName = oldName;
-            this.newPackage = RetoucheUtils.getPackageName(workingCopy.getFileObject().getParent());
+            this.newPackage = RefactoringUtils.getPackageName(workingCopy.getFileObject().getParent());
         } catch (ToPhaseException ex) {
             Exceptions.printStackTrace(ex);
         }

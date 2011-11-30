@@ -164,8 +164,10 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         if(file.isFile()) {
             if(handleAsync) {
                 storeChangedAsync(file, ts);
+                // fireChanged(file) handled in scope of async copy 
             } else {                
                 storeChangedSync(file, ts);
+                fireChanged(file);
             }
         } else {
             try {
@@ -173,8 +175,8 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
             } catch (IOException ioe) {
                 LocalHistory.LOG.log(Level.WARNING, null, ioe);
             }
+            fireChanged(file);
         }
-        fireChanged(file);
     }
 
     private void storeChangedSync(File file, long ts) {
@@ -206,7 +208,9 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
                     File storeFile = getStoreFile(file, Long.toString(ts), true);
                     try {
                         LocalHistory.LOG.log(Level.FINE, "starting copy file {0} into storage file {1}", new Object[]{backup, storeFile}); // NOI18N
-                        FileUtils.copy(backup, StoreEntry.createStoreFileOutputStream(storeFile));
+                        OutputStream os = StoreEntry.createStoreFileOutputStream(storeFile);
+                        LocalHistory.LOG.log(Level.FINER, "created storage file {0}", new Object[]{storeFile}); // NOI18N
+                        FileUtils.copy(backup, os);
                         LocalHistory.LOG.log(Level.FINE, "copied file {0} into storage file {1}", new Object[]{backup, storeFile}); // NOI18N
 
                         LocalHistory.logChange(file, storeFile, ts);
@@ -219,6 +223,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
                         // release
                         lockedFolders.remove(storeFile.getParentFile());
                         backup.delete();
+                        fireChanged(file);
                         LocalHistory.LOG.log(Level.FINE, "finnished copy file {0} into storage file {1}", new Object[]{backup, storeFile}); // NOI18N
                     }
                 }
@@ -227,6 +232,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         } else {
             // something went wrong - lets copy the file synchronously
             storeChangedSync(file, ts);
+            fireChanged(file);
         }
     }
     

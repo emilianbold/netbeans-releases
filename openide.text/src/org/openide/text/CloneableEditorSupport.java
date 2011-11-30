@@ -87,17 +87,10 @@ import java.util.concurrent.Callable;
 import javax.swing.JButton;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.event.UndoableEditEvent;
 import javax.swing.text.*;
-import javax.swing.undo.AbstractUndoableEdit;
-import javax.swing.undo.CannotRedoException;
-import javax.swing.undo.CannotUndoException;
-import javax.swing.undo.CompoundEdit;
-import javax.swing.undo.UndoManager;
 import javax.swing.undo.UndoableEdit;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
@@ -148,17 +141,17 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
      * a commit-group.
      * @since 6.34
      */
-    public static final UndoableEdit BEGIN_COMMIT_GROUP = UndoGroupManager.BEGIN_COMMIT_GROUP;
+    public static final UndoableEdit BEGIN_COMMIT_GROUP = UndoRedoManager.BEGIN_COMMIT_GROUP;
     /** End a group of edits. 
      * @since 6.34
      */
-    public static final UndoableEdit END_COMMIT_GROUP = UndoGroupManager.END_COMMIT_GROUP;
+    public static final UndoableEdit END_COMMIT_GROUP = UndoRedoManager.END_COMMIT_GROUP;
     /**
      * Any coalesced edits become a commit-group and a new commit-group
      * is started.
      * @since 6.40
      */
-    public static final UndoableEdit MARK_COMMIT_GROUP = UndoGroupManager.MARK_COMMIT_GROUP;
+    public static final UndoableEdit MARK_COMMIT_GROUP = UndoRedoManager.MARK_COMMIT_GROUP;
     private static final String PROP_PANE = "CloneableEditorSupport.Pane"; //NOI18N
     private static final int DOCUMENT_NO = 0;
     private static final int DOCUMENT_LOADING = 1;
@@ -261,8 +254,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
      * <br>
      * Also set when document is being reloaded.
      */
-    private boolean revertingUndoOrReloading;
-    private boolean justRevertedToNotModified;
+    private boolean documentReloading;
     private volatile int documentStatus = DOCUMENT_NO;
     private Throwable prepareDocumentRuntimeException;
 
@@ -271,10 +263,12 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
      */
     private Map<Line,Reference<Line>> lineSetWHM;
     private boolean annotationsLoaded;
+    
+    private DocFilter docFilter;
 
     /** Classes that have been warned about overriding asynchronousOpen() */
     private static final Set<Class> warnedClasses = new WeakSet<Class>();
-
+    
     /** Creates new CloneableEditorSupport attached to given environment.
     *
     * @param env environment that is source of all actions around the
@@ -385,7 +379,14 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         }
         
         if (undoRedo == null) {
-            undoRedo = createUndoRedoManager();
+            UndoRedo.Manager mgr = createUndoRedoManager();
+//            if (!(mgr instanceof UndoRedoManager)) {
+//                ERR.info("createUndoRedoManager(): ignoring created instance of class " + // NOI18N
+//                        mgr.getClass() + " since CloneableEditorSupport requires instance of " + // NOI18N"
+//                        UndoRedoManager.class.getName() + "\n"); // NOI18N
+//                mgr = new UndoRedoManager(this);
+//            }
+            undoRedo = mgr;
         }
 
         return undoRedo;
@@ -728,7 +729,11 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                                                                // atomic action has finished
                                                                // definitively sooner than leaving lock section
                                                                // and notifying al waiters, see #47022
-                                                               getDoc().addUndoableEditListener(getUndoRedo());
+                                                               UndoRedo.Manager urm = getUndoRedo();
+                                                               if (urm instanceof UndoRedoManager) {
+                                                                   ((UndoRedoManager)urm).markSavepoint();
+                                                               }
+                                                               getDoc().addUndoableEditListener(urm);
                                                                d = getDoc();
                                                            } catch (DelegateIOExc t) {
                                                                prepareDocumentRuntimeException = t;
@@ -782,12 +787,33 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             } else {
                 d.putProperty("modificationListener", null); // NOI18N
             }
-        } else {
-            if (add) {
-                d.addDocumentListener(getListener());
-            } else {
-                d.removeDocumentListener(getListener());
+        }
+
+        if (add) {
+            if (d instanceof AbstractDocument) {
+                AbstractDocument aDoc = (AbstractDocument) d;
+                DocumentFilter origFilter = aDoc.getDocumentFilter();
+                docFilter = new DocFilter(origFilter);
+                aDoc.setDocumentFilter(docFilter);
+            } else { // Put property for non-AD
+                DocumentFilter origFilter = (DocumentFilter) d.getProperty(DocumentFilter.class);
+                docFilter = new DocFilter(origFilter);
+                d.putProperty(DocumentFilter.class, docFilter);
             }
+            d.addDocumentListener(getListener());
+
+
+        } else { // remove filter
+            if (docFilter != null) {
+                if (d instanceof AbstractDocument) {
+                    AbstractDocument aDoc = (AbstractDocument) d;
+                    aDoc.setDocumentFilter(docFilter.origFilter);
+                } else { // Put property for non-AD
+                    d.putProperty(DocumentFilter.class, docFilter.origFilter);
+                }
+                docFilter = null;
+            }
+            d.removeDocumentListener(getListener());
         }
     }
 
@@ -1076,8 +1102,10 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                         }
                     }
 
-                    // Insert before-save undo event to enable unmodifying undo
-                    getUndoRedo().undoableEditHappened(new UndoableEditEvent(this, new BeforeSaveEdit(lastSaveTime)));
+                    UndoRedo.Manager urm = getUndoRedo();
+                    if (urm instanceof UndoRedoManager) {
+                        ((UndoRedoManager)urm).markSavepoint();
+                    }
 
                     // update cached info about lines
                     updateLineSet(true);
@@ -1101,8 +1129,19 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         // Run before-save actions
         Runnable beforeSaveRunnable = (Runnable) myDoc.getProperty("beforeSaveRunnable");
         if (beforeSaveRunnable != null) {
-            beforeSaveRunnable.run();
+            UndoRedo.Manager urm = getUndoRedo();
+            if (urm instanceof UndoRedoManager) {
+                ((UndoRedoManager)undoRedo).setPerformingSaveActions(true);
+            }
+            try {
+                beforeSaveRunnable.run();
+            } finally {
+                if (urm instanceof UndoRedoManager) {
+                    ((UndoRedoManager)undoRedo).setPerformingSaveActions(false);
+                }
+            }
         }
+        // undoRedo.markSavepoint() will be done in SaveAsReader runnable
 
         SaveAsReader saveAsReader = new SaveAsReader();
         myDoc.render(saveAsReader);
@@ -1505,14 +1544,14 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     /** Test whether the document is ready.
     * @return <code>true</code> if document is ready
     */
-    private boolean isDocumentReady() {
+    boolean isDocumentReady() {
         CloneableEditorSupport redirect = CloneableEditorSupportRedirector.findRedirect(this);
         if (redirect != null) {
             return redirect.isDocumentReady();
         }
         return documentStatus == DOCUMENT_READY;
     }
-
+    
     /**
     * Set the MIME type for the document.
     * @param s the new MIME type
@@ -1600,7 +1639,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     * @return the undo/redo manager
     */
     protected UndoRedo.Manager createUndoRedoManager() {
-        return new CESUndoRedoManager(this);
+        return new UndoRedoManager(this);
     }
 
     /** Returns an InputStream which reads the current data from this editor, taking into
@@ -1807,7 +1846,11 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                                                  }
                                                  // XXX do this from AWT???
                                                  ERR.fine("task-discardAllEdits");
-                                                 getUndoRedo().discardAllEdits();
+                                                 UndoRedo.Manager urm = getUndoRedo();
+                                                 urm.discardAllEdits();
+                                                 if (urm instanceof UndoRedoManager) {
+                                                     ((UndoRedoManager)urm).markSavepoint();
+                                                 }
                                                  ERR.fine("task-check already modified");
                                                  // #57104 - if modified previously now it should become unmodified
                                                  if (isAlreadyModified()) {
@@ -1925,30 +1968,11 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
      * @return true if the modification was allowed, false if it should be prohibited
      */
     final boolean callNotifyModified() {
-        // #57104 - when reverting undo the revertingUndoOrReloading flag is set
-        // to prevent infinite undoing which could happen now due to fix #56963
-        // (undoable edit being undone in the document notifies
-        // document's modification listener to mark the file as modified).
-        // Maybe clearing alreadyModified flag
-        // AFTER revertPreviousOrUpcomingUndo() could suffice as well
-        // instead of the revertingUndoOrReloading flag.
-        // Also notifyModified() is not called during reloadDocument()
-        // to prevent situation when output stream is taken from the file
-        // (for which CloneableEditorSupport exists) under file's lock
-        // and once closed (still under file's lock) the CES is trying to reload
-        // the file calling notifyModified() that tries to grab the lock
-        // and fails leading to undoing of the file's content to the one
-        // before the reload.
-        if (!isAlreadyModified() && !revertingUndoOrReloading) {
+        if (!isAlreadyModified() && !documentReloading) {
             setAlreadyModified(true);
             
             if (!notifyModified()) {
-                ERR.log(Level.INFO,"callNotifyModified notifyModified returns false this:" + getClass().getName());
                 setAlreadyModified(false);
-                revertingUndoOrReloading = true;
-                revertPreviousOrUpcomingUndo();
-                revertingUndoOrReloading = false;
-
                 return false;
             }
         }
@@ -2003,10 +2027,10 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             }
             
             locked = false;
-            ERR.log(Level.INFO, "Could not lock document", ex);
+            ERR.log(Level.FINE, "Could not lock document", ex);
         } catch (IOException e) { // locking failed
             //#169695: Added exception log to investigate
-            ERR.log(Level.INFO, "Could not lock document", e);
+            ERR.log(Level.FINE, "Could not lock document", e);
             //#169695: END
             String message = null;
 
@@ -2025,7 +2049,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
 
         if (!locked) {
             Toolkit.getDefaultToolkit().beep();
-            ERR.log(Level.INFO, "notifyModified returns false");
+            ERR.log(Level.FINE, "notifyModified returns false");
             return false;
         }
 
@@ -2034,81 +2058,6 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         updateTitles();
 
         return true;
-    }
-
-    /** Resets listening on <code>UndoRedo</code>,
-     * and in case next undo edit comes, schedules processesing of it.
-     * Used to revert modification e.g. of document of [read-only] env. */
-    private void revertPreviousOrUpcomingUndo() {
-        UndoRedo.Manager ur = getUndoRedo();
-        Listener l = getListener();
-
-        if (Boolean.TRUE.equals(getDocument().getProperty("supportsModificationListener"))) { // NOI18N
-
-            // revert undos now
-            SearchBeforeModificationEdit edit = new SearchBeforeModificationEdit();
-
-            try {
-                for (;;) {
-                    edit.delegate = null;
-                    ur.undoableEditHappened(new UndoableEditEvent(getDocument(), edit));
-
-                    if (edit.delegate == null) break; // no previous edit
-                    
-                    if (edit.delegate instanceof BeforeModificationEdit) {
-                        if (edit.delegate != null) {
-                            // undo anyway
-                            ur.undo();
-                        }
-
-                        // and exit
-                        break;
-                    }
-
-                    if (edit.delegate instanceof BeforeSaveEdit) {
-                        break;
-                    }
-
-                    // otherwise remove the edit 
-                    ur.undo();
-                }
-            } catch (CannotUndoException ex) {
-                // ok, cannot undo, just ignore this
-            }
-        } else {
-            // revert upcomming undo
-            l.setUndoTask(new Runnable() {
-                    public void run() {
-                        undoAll();
-                    }
-                }
-            );
-            ur.addChangeListener(l);
-        }
-    }
-
-    /** Creates <code>Runnable</code> which tries to make one undo. Helper method.
-     * @see #revertUpcomingUndo */
-    final void undoAll() {
-        StyledDocument sd = getDoc();
-
-        if (sd == null) {
-            // #20883, doc can be null(!), doCloseDocument was faster.
-            return;
-        }
-
-        UndoRedo ur = getUndoRedo();
-        addRemoveDocListener(sd, false);
-
-        try {
-            if (ur.canUndo()) {
-                ur.undo();
-            }
-        } catch (CannotUndoException cne) {
-            ERR.log(Level.INFO, null, cne);
-        } finally {
-            addRemoveDocListener(sd, true);
-        }
     }
 
     /** Method that is called when all components of the support are
@@ -2844,17 +2793,14 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     /** The listener that this support uses to communicate with
      * document, environment and also temporarilly on undoredo.
      */
-    private final class Listener extends Object implements ChangeListener, DocumentListener, PropertyChangeListener,
+    private final class Listener extends Object implements PropertyChangeListener, DocumentListener,
         Runnable, java.beans.VetoableChangeListener {
-        /** revert modification if asked */
-        private boolean revertModifiedFlag;
 
         /** Stores exception from loadDocument, can be set in run method */
         private IOException loadExc;
 
-        /** Stores temporarilly undo task for reverting prohibited changes.
-         * @see CloneableEditorSupport#createUndoTask */
-        private Runnable undoTask;
+        /** revert modification if asked */
+        private boolean revertModifiedFlag;
 
         Listener() {
         }
@@ -2868,28 +2814,18 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             //            loadExc = null;
             return ret;
         }
-
-        /** Sets undo task used to revert prohibited change. */
-        public void setUndoTask(Runnable undoTask) {
-            this.undoTask = undoTask;
+        
+        public void insertUpdate(DocumentEvent evt) {
+            callNotifyModified();
+            revertModifiedFlag = false;
         }
 
-        /** Schedules reverting(undoing) of prohibited change.
-         * Implements <code>ChangeListener</code>.
-         * @see #revertUpcomingUndo */
-        public void stateChanged(ChangeEvent evt) {
-            getUndoRedo().removeChangeListener(this);
-            undoTask.run();
-
-            //SwingUtilities.invokeLater(undoTask);
-            undoTask = null;
+        public void removeUpdate(DocumentEvent evt) {
+            callNotifyModified();
+            revertModifiedFlag = false;
         }
-
-        /** Gives notification that an attribute or set of attributes changed.
-        * @param ev event describing the action
-        */
-        public void changedUpdate(DocumentEvent ev) {
-            //modified(); (bugfix #1492)
+        
+        public void changedUpdate(DocumentEvent evt) {
         }
 
         public void vetoableChange(PropertyChangeEvent evt)
@@ -2910,22 +2846,6 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                     }
                 }
             }
-        }
-
-        /** Gives notification that there was an insert into the document.
-        * @param ev event describing the action
-        */
-        public void insertUpdate(DocumentEvent ev) {
-            callNotifyModified();
-            revertModifiedFlag = false;
-        }
-
-        /** Gives notification that a portion of the document has been removed.
-        * @param ev event describing the action
-        */
-        public void removeUpdate(DocumentEvent ev) {
-            callNotifyModified();
-            revertModifiedFlag = false;
         }
 
         /** Listener to changes in the Env.
@@ -2963,9 +2883,9 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                                     }
 
                                     // #57104 - avoid notifyModified() which takes file lock
-                                    revertingUndoOrReloading = true;
+                                    documentReloading = true;
                                     NbDocument.runAtomic(sd, this);
-                                    revertingUndoOrReloading = false; // #57104
+                                    documentReloading = false; // #57104
 
                                     return;
                                 }
@@ -3022,764 +2942,11 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
 
             setLastSaveTime(cesEnv().getTime().getTime());
 
-            // Insert before-save undo event to enable unmodifying undo
-            getUndoRedo().undoableEditHappened(new UndoableEditEvent(this, new BeforeSaveEdit(lastSaveTime)));
-
             // Start listening on changes in document
             addRemoveDocListener(getDoc(), true);
         }
 
         //        }
-    }
-
-    /** Generic undoable edit that delegates to the given undoable edit. */
-    private class FilterUndoableEdit
-            implements UndoableEdit, UndoGroupManager.SeparateEdit
-    {
-        protected UndoableEdit delegate;
-
-        FilterUndoableEdit() {
-        }
-
-        public void undo() throws CannotUndoException {
-            if (delegate != null) {
-                delegate.undo();
-            }
-        }
-
-        public boolean canUndo() {
-            if (delegate != null) {
-                return delegate.canUndo();
-            } else {
-                return false;
-            }
-        }
-
-        public void redo() throws CannotRedoException {
-            if (delegate != null) {
-                delegate.redo();
-            }
-        }
-
-        public boolean canRedo() {
-            if (delegate != null) {
-                return delegate.canRedo();
-            } else {
-                return false;
-            }
-        }
-
-        public void die() {
-            if (delegate != null) {
-                delegate.die();
-            }
-        }
-
-        public boolean addEdit(UndoableEdit anEdit) {
-            if (delegate != null) {
-                return delegate.addEdit(anEdit);
-            } else {
-                return false;
-            }
-        }
-
-        public boolean replaceEdit(UndoableEdit anEdit) {
-            if (delegate != null) {
-                return delegate.replaceEdit(anEdit);
-            } else {
-                return false;
-            }
-        }
-
-        public boolean isSignificant() {
-            if (delegate != null) {
-                return delegate.isSignificant();
-            } else {
-                return true;
-            }
-        }
-
-        public String getPresentationName() {
-            if (delegate != null) {
-                return delegate.getPresentationName();
-            } else {
-                return ""; // NOI18N
-            }
-        }
-
-        public String getUndoPresentationName() {
-            if (delegate != null) {
-                return delegate.getUndoPresentationName();
-            } else {
-                return ""; // NOI18N
-            }
-        }
-
-        public String getRedoPresentationName() {
-            if (delegate != null) {
-                return delegate.getRedoPresentationName();
-            } else {
-                return ""; // NOI18N
-            }
-        }
-    }
-
-    /** Undoable edit that is put before the savepoint. Its replaceEdit()
-     * method will consume and wrap the edit that precedes the save.
-     * If the edit is added to the begining of the queue then
-     * the isSignificant() implementation guarantees that the edit
-     * will not be removed from the queue.
-     * When redone it marks the document as not modified.
-     */
-    private class BeforeSaveEdit extends FilterUndoableEdit {
-        private long saveTime;
-
-        BeforeSaveEdit(long saveTime) {
-            this.saveTime = saveTime;
-        }
-
-        @Override
-        public boolean replaceEdit(UndoableEdit anEdit) {
-            if (delegate == null) {
-                delegate = anEdit;
-
-                return true; // signal consumed
-            }
-
-            return false;
-        }
-
-        @Override
-        public boolean addEdit(UndoableEdit anEdit) {
-            if (!(anEdit instanceof BeforeModificationEdit) && !(anEdit instanceof SearchBeforeModificationEdit)) {
-                /* UndoRedo.addEdit() must not be done lazily
-                 * because the edit must be "inserted" before the current one.
-                 */
-                getUndoRedo().addEdit(new BeforeModificationEdit(saveTime, anEdit));
-
-                return true;
-            }
-
-            return false;
-        }
-
-        @Override
-        public void redo() {
-            super.redo();
-
-            if (saveTime == lastSaveTime) {
-                justRevertedToNotModified = true;
-            }
-        }
-
-        @Override
-        public boolean isSignificant() {
-            return (delegate != null);
-        }
-    }
-
-    /** Edit that is created by wrapping the given edit.
-     * When undone it marks the document as not modified.
-     */
-    private class BeforeModificationEdit extends FilterUndoableEdit {
-        private long saveTime;
-
-        BeforeModificationEdit(long saveTime, UndoableEdit delegate) {
-            this.saveTime = saveTime;
-            this.delegate = delegate;
-            ERR.log(Level.FINEST, null, new Exception("new BeforeModificationEdit(" + saveTime +")")); // NOI18N
-        }
-
-        @Override
-        public boolean addEdit(UndoableEdit anEdit) {
-            if ((delegate == null) && !(anEdit instanceof SearchBeforeModificationEdit)) {
-                delegate = anEdit;
-
-                return true;
-            }
-
-            return delegate.addEdit(anEdit);
-        }
-
-        @Override
-        public void undo() {
-            super.undo();
-
-            boolean res = saveTime == lastSaveTime;
-            ERR.fine("Comparing saveTime and lastSaveTime: " + saveTime + "==" + lastSaveTime + " is " + res); // NOI18N
-            if (res) {
-                justRevertedToNotModified = true;
-            }
-        }
-    }
-
-    /** This edit is used to search for BeforeModificationEdit in UndoRedo
-     * manager. This is not much nice solution, but well, there is not
-     * much other chances to get inside UndoRedo.
-     */
-    private class SearchBeforeModificationEdit extends FilterUndoableEdit {
-        SearchBeforeModificationEdit() {
-        }
-
-        @Override
-        public boolean replaceEdit(UndoableEdit anEdit) {
-            if (delegate == null) {
-                delegate = anEdit;
-
-                return true; // signal consumed
-            }
-
-            return false;
-        }
-    }
-
-    /** An improved version of UndoRedo manager that locks document before
-     * doing any other operations.
-     */
-    private final static class CESUndoRedoManager extends UndoGroupManager {
-        private CloneableEditorSupport support;
-
-        public CESUndoRedoManager(CloneableEditorSupport c) {
-            this.support = c;
-            super.setLimit(1000);
-        }
-
-        @Override
-        public void redo() throws javax.swing.undo.CannotRedoException {
-            final StyledDocument myDoc = support.getDocument();
-
-            if (myDoc == null) {
-                throw new javax.swing.undo.CannotRedoException(); // NOI18N
-            }
-            
-            support.justRevertedToNotModified = false;
-            new RenderUndo(0, myDoc);
-
-            if (support.justRevertedToNotModified && support.isAlreadyModified()) {
-                support.callNotifyUnmodified();
-            }
-        }
-
-        @Override
-        public void undo() throws javax.swing.undo.CannotUndoException {
-            final StyledDocument myDoc = support.getDocument();
-
-            if (myDoc == null) {
-                throw new javax.swing.undo.CannotUndoException(); // NOI18N
-            }
-
-            support.justRevertedToNotModified = false;
-            new RenderUndo(1, myDoc);
-
-            if (support.justRevertedToNotModified && support.isAlreadyModified()) {
-                support.callNotifyUnmodified();
-            }
-        }
-
-        @Override
-        public boolean canRedo() {
-            final StyledDocument myDoc = support.getDocument();
-
-            return new RenderUndo(2, myDoc, 0, true).booleanResult;
-        }
-
-        @Override
-        public boolean canUndo() {
-            final StyledDocument myDoc = support.getDocument();
-
-            return new RenderUndo(3, myDoc, 0, true).booleanResult;
-        }
-
-        @Override
-        public int getLimit() {
-            final StyledDocument myDoc = support.getDocument();
-
-            return new RenderUndo(4, myDoc).intResult;
-        }
-
-        @Override
-        public void discardAllEdits() {
-            final StyledDocument myDoc = support.getDocument();
-            new RenderUndo(5, myDoc);
-            // Insert before-save undo event to enable unmodifying undo
-            undoableEditHappened(new UndoableEditEvent(support, support.new BeforeSaveEdit(support.lastSaveTime)));
-        }
-
-        @Override
-        public void setLimit(int l) {
-            final StyledDocument myDoc = support.getDocument();
-            new RenderUndo(6, myDoc, l);
-        }
-
-        @Override
-        public boolean canUndoOrRedo() {
-            final StyledDocument myDoc = support.getDocument();
-
-            return new RenderUndo(7, myDoc, 0, true).booleanResult;
-        }
-
-        @Override
-        public java.lang.String getUndoOrRedoPresentationName() {
-            if (support.isDocumentReady()) {
-                final StyledDocument myDoc = support.getDocument();
-                return new RenderUndo(8, myDoc, 0, true).stringResult;
-            } else {
-                return "";
-            }
-        }
-
-        @Override
-        public java.lang.String getRedoPresentationName() {
-            if (support.isDocumentReady()) {
-                final StyledDocument myDoc = support.getDocument();
-                return new RenderUndo(9, myDoc, 0, true).stringResult;
-            } else {
-                return "";
-            }
-        }
-
-        @Override
-        public java.lang.String getUndoPresentationName() {
-            if (support.isDocumentReady()) {
-                final StyledDocument myDoc = support.getDocument();
-                return new RenderUndo(10, myDoc, 0, true).stringResult;
-            } else {
-                return "";
-            }
-        }
-
-        @Override
-        public void undoOrRedo() throws javax.swing.undo.CannotUndoException, javax.swing.undo.CannotRedoException {
-            final StyledDocument myDoc = support.getDocument();
-
-            if (myDoc == null) {
-                throw new javax.swing.undo.CannotUndoException(); // NOI18N
-            }
-
-            support.justRevertedToNotModified = false;
-            new RenderUndo(11, myDoc);
-
-            if (support.justRevertedToNotModified && support.isAlreadyModified()) {
-                support.callNotifyUnmodified();
-            }
-        }
-
-        private final class RenderUndo implements Runnable {
-            private final int type;
-            public boolean booleanResult;
-            public int intResult;
-            public String stringResult;
-            private final boolean readonly;
-
-            public RenderUndo(int type, StyledDocument doc) {
-                this(type, doc, 0);
-            }
-
-            public RenderUndo(int type, StyledDocument doc, int intValue) {
-                this(type, doc, intValue, false);
-            }
-
-            public RenderUndo(int type, StyledDocument doc, int intValue, boolean readonly) {
-                this.type = type;
-                this.intResult = intValue;
-                this.readonly = readonly;
-
-                if (!readonly && (doc instanceof NbDocument.WriteLockable)) {
-                    ((NbDocument.WriteLockable) doc).runAtomic(this);
-                } else {
-                    if (readonly && doc != null) {
-                        doc.render(this);
-                    } else {
-                        // if the document is not one of "NetBeans ready"
-                        // that supports locking we do not have many
-                        // chances to do something. Maybe check for AbstractDocument
-                        // and call writeLock using reflection, but better than
-                        // that, let's leave this simple for now and wait for
-                        // bug reports (if any appear)
-                        run();
-                    }
-                }
-            }
-
-            public void run() {
-                switch (type) {
-                case 0:
-                    CESUndoRedoManager.super.redo();
-
-                    break;
-
-                case 1:
-                    CESUndoRedoManager.super.undo();
-
-                    break;
-
-                case 2:
-                    booleanResult = CESUndoRedoManager.super.canRedo();
-
-                    break;
-
-                case 3:
-                    booleanResult = CESUndoRedoManager.super.canUndo();
-
-                    break;
-
-                case 4:
-                    intResult = CESUndoRedoManager.super.getLimit();
-
-                    break;
-
-                case 5:
-                    CESUndoRedoManager.super.discardAllEdits();
-
-                    break;
-
-                case 6:
-                    CESUndoRedoManager.super.setLimit(intResult);
-
-                    break;
-
-                case 7:
-                    CESUndoRedoManager.super.canUndoOrRedo();
-
-                    break;
-
-                case 8:
-                    stringResult = CESUndoRedoManager.super.getUndoOrRedoPresentationName();
-
-                    break;
-
-                case 9:
-                    stringResult = CESUndoRedoManager.super.getRedoPresentationName();
-
-                    break;
-
-                case 10:
-                    stringResult = CESUndoRedoManager.super.getUndoPresentationName();
-
-                    break;
-
-                case 11:
-                    CESUndoRedoManager.super.undoOrRedo();
-
-                    break;
-
-                default:
-                    throw new IllegalArgumentException("Unknown type: " + type);
-                }
-            }
-        }
-    }
-
-    /**
-     * <tt>UndoGroupManager</tt> extends {@link UndoManager}
-     * and allows explicit control of what
-     * <tt>UndoableEdit</tt>s are coalesced into compound edits,
-     * rather than using the rules defined by the edits themselves.
-     * Groups are defined using BEGIN_COMMIT_GROUP and END_COMMIT_GROUP.
-     * Send these to UndoableEditListener. These must always be paired.
-     * <p>
-     * These use cases are supported.
-     * </p>
-     * <ol>
-     * <li> Default behavior is defined by {@link UndoManager}.</li>
-     * <li> <tt>UnddoableEdit</tt>s issued between {@link #BEGIN_COMMIT_GROUP}
-     * and {@link #END_COMMIT_GROUP} are placed into a single
-     * {@link CompoundEdit}.
-     * Thus <tt>undo()</tt> and <tt>redo()</tt> treat them 
-     * as a single undo/redo.</li>
-     * <li>BEGIN/END nest.</li>
-     * <li> Issue MARK_COMMIT_GROUP to commit accumulated
-     * <tt>UndoableEdit</tt>s into a single <tt>CompoundEdit</tt>
-     * and to continue accumulating;
-     * an application could do this at strategic points, such as EndOfLine
-     * input or cursor movement.</li>
-     * </ol>
-     * @see UndoManager
-     */
-    private static class UndoGroupManager extends UndoRedo.Manager {
-        /** signals that edits are being accumulated */
-        private int buildUndoGroup;
-        /** accumulate edits here in undoGroup */
-        private CompoundEdit undoGroup;
-        /**
-         * Signal that nested group started and that current undo group
-         * must be committed if edit is added. Then can avoid doing the commit
-         * if the nested group turns out to be empty.
-         */
-        private int needsNestingCommit;
-
-        /**
-         * Start a group of edits which will be committed as a single edit
-         * for purpose of undo/redo.
-         * Nesting semantics are that any BEGIN_COMMIT_GROUP and
-         * END_COMMIT_GROUP delimits a commit-group, unless the group is
-         * empty in which case the begin/end is ignored.
-         * While coalescing edits, any undo/redo/save implicitly delimits
-         * a commit-group.
-         */
-        static final UndoableEdit BEGIN_COMMIT_GROUP = new CommitGroupEdit();
-        /** End a group of edits. */
-        static final UndoableEdit END_COMMIT_GROUP = new CommitGroupEdit();
-        /**
-         * Any coalesced edits become a commit-group and a new commit-group
-         * is started.
-         */
-        static final UndoableEdit MARK_COMMIT_GROUP = new CommitGroupEdit();
-
-        /** SeparateEdit tags an UndoableEdit so the
-         * UndoGroupManager does not coalesce it.
-         */
-        interface SeparateEdit {
-        }
-
-        private static class CommitGroupEdit extends AbstractUndoableEdit {
-            @Override
-            public boolean isSignificant() {
-                return false;
-            }
-
-            @Override
-            public boolean canRedo()
-            {
-                return true;
-            }
-
-            @Override
-            public boolean canUndo()
-            {
-                return true;
-            }
-        }
-
-        @Override
-        public void undoableEditHappened(UndoableEditEvent ue)
-        {
-            if(ue.getEdit() == BEGIN_COMMIT_GROUP) {
-                beginUndoGroup();
-            } else if(ue.getEdit() == END_COMMIT_GROUP) {
-                endUndoGroup();
-            } else if(ue.getEdit() == MARK_COMMIT_GROUP) {
-                commitUndoGroup();
-            } else {
-                super.undoableEditHappened(ue);
-            }
-        }
-
-        /**
-         * Direct this <tt>UndoGroupManager</tt> to begin coalescing any
-         * <tt>UndoableEdit</tt>s that are added into a <tt>CompoundEdit</tt>.
-         * <p>If edits are already being coalesced and some have been 
-         * accumulated, they are flagged for commitment as an atomic group and
-         * a new group will be started.
-         * @see #addEdit
-         * @see #endUndoGroup
-         */
-        private synchronized void beginUndoGroup() {
-            if(undoGroup != null)
-                needsNestingCommit++;
-            ERR.log(Level.FINE, "beginUndoGroup: nesting {0}", buildUndoGroup);
-            buildUndoGroup++;
-        }
-
-        /**
-         * Direct this <tt>UndoGroupManager</tt> to stop coalescing edits.
-         * Until <tt>beginUndoGroupManager</tt> is invoked,
-         * any received <tt>UndoableEdit</tt>s are added singly.
-         * <p>
-         * This has no effect if edits are not being coalesced, for example
-         * if <tt>beginUndoGroup</tt> has not been called.
-         */
-        private synchronized void endUndoGroup() {
-            buildUndoGroup--;
-            ERR.log(Level.FINE, "endUndoGroup: nesting {0}", buildUndoGroup);
-            if(buildUndoGroup < 0) {
-                ERR.log(Level.INFO, null, new Exception("endUndoGroup without beginUndoGroup"));
-                // slam buildUndoGroup to 0 to disable nesting
-                buildUndoGroup = 0;
-            }
-            if(needsNestingCommit <= 0)
-                commitUndoGroup();
-            if(--needsNestingCommit < 0)
-                needsNestingCommit = 0;
-        }
-
-        /**
-         * Commit any accumulated <tt>UndoableEdit</tt>s as an atomic
-         * <tt>undo</tt>/<tt>redo</tt> group. {@link CompoundEdit#end}
-         * is invoked on the <tt>CompoundEdit</tt> and it is added as a single
-         * <tt>UndoableEdit</tt> to this <tt>UndoManager</tt>.
-         * <p>
-         * If edits are currently being coalesced, a new undo group is started.
-         * This has no effect if edits are not being coalesced, for example
-         * <tt>beginUndoGroup</tt> has not been called.
-         */
-        private synchronized void commitUndoGroup() {
-            if(undoGroup == null) {
-                return;
-            }
-
-            // undoGroup is being set to null,
-            // needsNestingCommit has no meaning now
-            needsNestingCommit = 0;
-
-            // super.addEdit may end up in this.addEdit,
-            // so buildUndoGroup must be false
-            int saveBuildUndoGroup = buildUndoGroup;
-            buildUndoGroup = 0;
-
-            undoGroup.end();
-            super.addEdit(undoGroup);
-            undoGroup = null;
-
-            buildUndoGroup = saveBuildUndoGroup;
-        }
-
-        /** Add this edit separately, not part of a group.
-         * @return super.addEdit
-         */
-        private boolean commitAddEdit(UndoableEdit anEdit) {
-            commitUndoGroup();
-
-            int saveBuildUndoGroup = buildUndoGroup;
-            buildUndoGroup = 0;
-            boolean f = super.addEdit(anEdit);
-            //boolean f = addEdit(undoGroup);
-            buildUndoGroup = saveBuildUndoGroup;
-            return f;
-        }
-
-        /**
-         * If there's a pending undo group that needs to be committed
-         * then commit it.
-         * If this <tt>UndoManager</tt> is coalescing edits then add
-         * <tt>anEdit</tt> to the accumulating <tt>CompoundEdit</tt>.
-         * Otherwise, add it to this UndoManager. In either case the
-         * edit is saved for later <tt>undo</tt> or <tt>redo</tt>.
-         * @return {@inheritDoc}
-         * @see #beginUndoGroup
-         * @see #endUndoGroup
-         */
-        @Override
-        public synchronized boolean addEdit(UndoableEdit anEdit) {
-            if(!isInProgress())
-                return false;
-
-            if(needsNestingCommit > 0) {
-                commitUndoGroup();
-            }
-
-            if(buildUndoGroup > 0) {
-                if(anEdit instanceof SeparateEdit)
-                    return commitAddEdit(anEdit);
-                if(undoGroup == null)
-                    undoGroup = new CompoundEdit();
-                return undoGroup.addEdit(anEdit);
-            } else {
-                return super.addEdit(anEdit);
-            }
-        }
-
-        @Override
-        public synchronized void discardAllEdits() {
-            commitUndoGroup();
-            super.discardAllEdits();
-        }
-
-        //
-        // TODO: limits
-        //
-
-        @Override
-        public synchronized void undoOrRedo() {
-            commitUndoGroup();
-            super.undoOrRedo();
-        }
-
-        @Override
-        public synchronized boolean canUndoOrRedo() {
-            if(undoGroup != null)
-                return true;
-            return super.canUndoOrRedo();
-        }
-
-        @Override
-        public synchronized void undo() {
-            commitUndoGroup();
-            super.undo();
-        }
-
-        @Override
-        public synchronized boolean canUndo() {
-            if(undoGroup != null)
-                return true;
-            return super.canUndo();
-        }
-
-        @Override
-        public synchronized void redo() {
-            if(undoGroup != null)
-                throw new CannotRedoException();
-            super.redo();
-        }
-
-        @Override
-        public synchronized boolean canRedo() {
-            if(undoGroup != null)
-                return false;
-            return super.canRedo();
-        }
-
-        @Override
-        public synchronized void end() {
-            commitUndoGroup();
-            super.end();
-        }
-
-        @Override
-        public synchronized String getUndoOrRedoPresentationName() {
-            if(undoGroup != null)
-                return undoGroup.getUndoPresentationName();
-            return super.getUndoOrRedoPresentationName();
-        }
-
-        @Override
-        public synchronized String getUndoPresentationName() {
-            if(undoGroup != null)
-                return undoGroup.getUndoPresentationName();
-            return super.getUndoPresentationName();
-        }
-
-        @Override
-        public synchronized String getRedoPresentationName() {
-            if(undoGroup != null)
-                return undoGroup.getRedoPresentationName();
-            return super.getRedoPresentationName();
-        }
-
-        @Override
-        public boolean isSignificant() {
-            if(undoGroup != null && undoGroup.isSignificant()) {
-                return true;
-            }
-            return super.isSignificant();
-        }
-
-        @Override
-        public synchronized void die() {
-            commitUndoGroup();
-            super.die();
-        }
-
-        @Override
-        public String getPresentationName() {
-            if(undoGroup != null)
-                return undoGroup.getPresentationName();
-            return super.getPresentationName();
-        }
-
-        // The protected methods are only accessed from
-        // synchronized methods that do commitUndoGroup
-        // so they do not need to be overridden in this class
     }
 
     /** Special runtime exception that holds the original I/O failure.
@@ -3789,6 +2956,84 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             super(ex.getMessage());
             initCause(ex);
         }
+    }
+
+    private final class DocFilter extends DocumentFilter {
+        
+        final DocumentFilter origFilter;
+        
+        DocFilter(DocumentFilter origFilter) {
+            this.origFilter = origFilter;
+        }
+
+        @Override
+        public void insertString(FilterBypass fb, int offset, String string, AttributeSet attr) throws BadLocationException {
+            boolean origModified = checkModificationAllowed(offset);
+            boolean success = false;
+            try {
+                if (origFilter != null) {
+                    origFilter.insertString(fb, offset, string, attr);
+                } else {
+                    super.insertString(fb, offset, string, attr);
+                }
+                success = true;
+            } finally {
+                if (!success) {
+                    if (!origModified) {
+                        callNotifyUnmodified();
+                    }
+                }
+            }
+        }
+
+        @Override
+        public void remove(FilterBypass fb, int offset, int length) throws BadLocationException {
+            boolean origModified = checkModificationAllowed(offset);
+            boolean success = false;
+            try {
+                if (origFilter != null) {
+                    origFilter.remove(fb, offset, length);
+                } else {
+                    super.remove(fb, offset, length);
+                }
+                success = true;
+            } finally {
+                if (!success) {
+                    if (!origModified) {
+                        callNotifyUnmodified();
+                    }
+                }
+            }
+        }
+
+        @Override
+        public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs) throws BadLocationException {
+            boolean origModified = checkModificationAllowed(offset);
+            boolean success = false;
+            try {
+                if (origFilter != null) {
+                    origFilter.replace(fb, offset, length, text, attrs);
+                } else {
+                    super.replace(fb, offset, length, text, attrs);
+                }
+                success = true;
+            } finally {
+                if (!success) {
+                    if (!origModified) {
+                        callNotifyUnmodified();
+                    }
+                }
+            }
+        }
+        
+        private boolean checkModificationAllowed(int offset) throws BadLocationException {
+            boolean alreadyModified = isAlreadyModified();
+            if (!callNotifyModified()) {
+                throw new BadLocationException("Modification not allowed", offset); // NOI18N
+            }
+            return alreadyModified;
+        }
+
     }
 
 }

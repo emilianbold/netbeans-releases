@@ -67,7 +67,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 
 public class JspUtils {
-
+    
     public static final String TAG_MIME_TYPE = "text/x-tag"; // NOI18N
 
     //XXX probably already done somewhere...
@@ -113,37 +113,6 @@ public class JspUtils {
                 inputAttributes);
 
         return th;
-    }
-
-    /** Returns the MIME type of the content language for this page set in this file's attributes. 
-     * If nothing is set, defaults to 'text/html'.
-     */
-    public static String getContentLanguage() {
-        /*try {
-
-        String contentLanguage = (String)getPrimaryFile ().getAttribute (EA_CONTENT_LANGUAGE);
-        if (contentLanguage != null) {
-        return contentLanguage;
-        }
-        } catch (Exception ex) {
-        // null pointer or IOException
-        }*/
-        return "text/html"; // NOI18N
-    }
-
-    /** Returns the MIME type of the scripting language for this page set in this file's attributes. 
-     * If nothing is set, defaults to 'text/x-java'.
-     */
-    public static String getScriptingLanguage() {
-        /*try {
-        String scriptingLanguage = (String)getPrimaryFile ().getAttribute (EA_SCRIPTING_LANGUAGE);
-        if (scriptingLanguage != null) {
-        return scriptingLanguage;
-        }
-        } catch (Exception ex) {
-        // null pointer or IOException
-        }*/
-        return "text/x-java"; // NOI18N
     }
 
     /**

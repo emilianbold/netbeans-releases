@@ -58,6 +58,21 @@ made subject to such option by the copyright holder.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
 <changes>
+    <change id="NbModuleSuite.Configuration.hideExtraModules">
+        <api name="nbjunit"/>
+        <summary>NbModuleSuite.Configuration.hideExtraModules()</summary>
+        <version major="1" minor="72"/>
+        <date day="11" month="11" year="2011"/>
+        <author login="jtulach"/>
+        <compatibility addition="yes"/>
+        <description>
+            <p>
+                Now there is a way to disable not explicitly enabled modules.
+            </p>
+        </description>
+        <class package="org.netbeans.junit" name="NbModuleSuite"/>
+        <issue number="185291"/>
+    </change>
     <change id="NbModuleSuite.Configuration.suite">
         <api name="nbjunit"/>
         <summary>NbModuleSuite.Configuration.suite()</summary>

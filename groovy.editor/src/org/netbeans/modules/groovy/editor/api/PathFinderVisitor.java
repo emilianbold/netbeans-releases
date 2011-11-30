@@ -47,6 +47,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.codehaus.groovy.ast.ASTNode;
+import org.codehaus.groovy.ast.AnnotatedNode;
 import org.codehaus.groovy.ast.ClassCodeVisitorSupport;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.ConstructorNode;
@@ -81,7 +82,6 @@ import org.codehaus.groovy.ast.expr.PostfixExpression;
 import org.codehaus.groovy.ast.expr.PrefixExpression;
 import org.codehaus.groovy.ast.expr.PropertyExpression;
 import org.codehaus.groovy.ast.expr.RangeExpression;
-import org.codehaus.groovy.ast.expr.RegexExpression;
 import org.codehaus.groovy.ast.expr.SpreadExpression;
 import org.codehaus.groovy.ast.expr.SpreadMapExpression;
 import org.codehaus.groovy.ast.expr.StaticMethodCallExpression;
@@ -476,13 +476,6 @@ public class PathFinderVisitor extends ClassCodeVisitorSupport {
     }
 
     @Override
-    public void visitRegexExpression(RegexExpression node) {
-        if (isInside(node, line, column)) {
-            super.visitRegexExpression(node);
-        }
-    }
-
-    @Override
     public void visitGStringExpression(GStringExpression node) {
         if (isInside(node, line, column)) {
             super.visitGStringExpression(node);
@@ -607,7 +600,7 @@ public class PathFinderVisitor extends ClassCodeVisitorSupport {
         }
 
         fixNode(node);
-        
+
         int beginLine = node.getLineNumber();
         int beginColumn = node.getColumnNumber();
         int endLine = node.getLastLineNumber();
@@ -705,6 +698,12 @@ public class PathFinderVisitor extends ClassCodeVisitorSupport {
     }
 
     private boolean isInSource(ASTNode node) {
+        if (node instanceof AnnotatedNode) {
+            if (((AnnotatedNode) node).hasNoRealSourcePosition()) {
+                return false;
+            }
+        }
+
         // FIXME probably http://jira.codehaus.org/browse/GROOVY-3263
         if (node instanceof StaticMethodCallExpression && node.getLineNumber() == -1
                 && node.getLastLineNumber() == -1 && node.getColumnNumber() == -1

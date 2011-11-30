@@ -441,7 +441,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
             if (from.getRevisionNumber().equals(to.getRevisionNumber())) {
                 fromHgRevision = from.getAncestor(file);
             }
-            Setup setup = new Setup(file, fromHgRevision, to.getHgRevision(), false);
+            Setup setup = new Setup(file, fromHgRevision, to.getHgRevision(), null, false);
             setups.add(setup);
         }
         return setups;

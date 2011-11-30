@@ -62,7 +62,7 @@ public final class TplUtils {
         if (fo != null) {
             PhpModule phpModule = PhpModule.forFileObject(fo);
 
-            // file outside of any project
+            // file outside of any PHP project
             if (phpModule != null) {
                 if (!SmartyPhpModuleCustomizerExtender.getCustomOpenDelimiter(phpModule).equals("")) {
                     oDelim = SmartyPhpModuleCustomizerExtender.getCustomOpenDelimiter(phpModule);

@@ -52,6 +52,7 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.JButton;
+import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.Timer;
 import org.netbeans.modules.versioning.util.Utils;
@@ -77,7 +78,11 @@ public abstract class ShelveChangesSupport {
     protected abstract boolean isCanceled ();
     
     public final boolean prepare () {
-        return openDialog() && patchName != null;
+        return prepare(null);
+    }
+
+    public final boolean prepare (final JPanel additionalOptions) {
+        return openDialog(additionalOptions) && patchName != null;
     }
     
     public final void shelveChanges (File[] roots) {
@@ -119,8 +124,8 @@ public abstract class ShelveChangesSupport {
         return root;
     }
 
-    private boolean openDialog () {
-        ShelveChangesPanel panel = new ShelveChangesPanel();
+    private boolean openDialog (JPanel additionalOptions) {
+        ShelveChangesPanel panel = new ShelveChangesPanel(additionalOptions);
         initializePatchName(panel.txtPatchName);
         panel.lblError.setVisible(false);
         JButton okButton = new JButton();

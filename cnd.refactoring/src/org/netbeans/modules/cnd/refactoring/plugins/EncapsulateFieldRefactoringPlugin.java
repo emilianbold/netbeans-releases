@@ -139,7 +139,7 @@ public final class EncapsulateFieldRefactoringPlugin extends CsmModificationRefa
         fireProgressListenerStart(AbstractRefactoring.PRE_CHECK, 2);
         try {
             CsmField field = refactoring.getSourceField();
-            Problem result = checkIfModificationPossible(null, field, "", ""); // NOI18N
+            Problem result = checkIfModificationPossible(null, field);
             if (result != null) {
                 return result;
             }

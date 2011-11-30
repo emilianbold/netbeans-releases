@@ -222,6 +222,23 @@ public final class MultiViewPeer implements PropertyChangeListener {
         
         peer.putClientProperty("MultiViewBorderHack.topOffset", new Integer(tabs.getPreferredSize().height - 1));
     }
+
+    private void assignLookup(MultiViewElement el, MultiViewTopComponentLookup lkp) {
+        lkp.setElementLookup(el.getLookup());
+    }
+    private void assignLookup(MultiViewElement el) {
+        assignLookup(el, (MultiViewTopComponentLookup)peer.getLookup());
+    }
+    
+    final void assignLookup(MultiViewTopComponentLookup lkp) {
+        if (lkp.isInitialized()) {
+            return;
+        }
+        final MultiViewElement el = getModel().getActiveElement();
+        if (el != null) {
+            assignLookup(el, lkp);
+        }
+    }
     
   // It is necessary so the old actions (clone and close from org.openide.actions package) remain working.
     // cannot use the
@@ -259,7 +276,7 @@ public final class MultiViewPeer implements PropertyChangeListener {
         MultiViewElement el = model.getActiveElement();
         el.componentShowing();
         delegatingMap.setDelegateMap(el.getVisualRepresentation().getActionMap());
-        ((MultiViewTopComponentLookup)peer.getLookup()).setElementLookup(el.getLookup());
+        assignLookup(el);
         JComponent jc = el.getToolbarRepresentation();
         assert jc != null : "MultiViewElement " + el.getClass() + " returns null as toolbar component."; //NOI18N
         jc.setOpaque(false);
@@ -366,7 +383,7 @@ public final class MultiViewPeer implements PropertyChangeListener {
             // if we don't call it here for opened but not showing component, then the map, lookup and nodes will not be initialized properly.
             // is it a problem?
             delegatingMap.setDelegateMap(el.getVisualRepresentation().getActionMap());
-            ((MultiViewTopComponentLookup)peer.getLookup()).setElementLookup(el.getLookup());
+            assignLookup(el);
             
             if (peer.isVisible()) {
                 tabs.setInnerToolBar(el.getToolbarRepresentation());

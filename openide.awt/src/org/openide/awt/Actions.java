@@ -676,15 +676,16 @@ public class Actions {
         map.put("displayName", displayName); // NOI18N
         map.put("iconBase", iconBase); // NOI18N
         map.put("noIconInMenu", noIconInMenu); // NOI18N
-        return context(map);
+        return GeneralAction.context(map);
     }
-    static ContextAwareAction context(Map fo) {
-        ContextAwareAction caa = GeneralAction.context(fo);
+    static Action context(Map fo) {
         Object context = fo.get("context");
         if (context instanceof Lookup) {
-            return (ContextAwareAction)caa.createContextAwareInstance((Lookup)context);
+            Lookup lkp = (Lookup)context;
+            return GeneralAction.bindContext(fo, lkp);
+        } else {
+            return GeneralAction.context(fo);
         }
-        return caa;
     }
     static ContextAction.Performer<?> inject(final Map fo) {
         Object t = fo.get("selectionType"); // NOI18N

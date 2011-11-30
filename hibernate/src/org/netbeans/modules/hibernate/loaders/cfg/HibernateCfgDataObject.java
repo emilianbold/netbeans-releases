@@ -47,7 +47,10 @@ import java.awt.Image;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
+import javax.swing.text.BadLocationException;
 import org.netbeans.api.xml.cookies.CheckXMLCookie;
 import org.netbeans.api.xml.cookies.ValidateXMLCookie;
 import org.netbeans.core.spi.multiview.MultiViewElement;
@@ -92,6 +95,7 @@ public class HibernateCfgDataObject extends XmlMultiViewDataObject {
     private HibernateConfiguration configuration;
     private ModelSynchronizer modelSynchronizer;
     public static final String ICON = "org/netbeans/modules/hibernate/resources/hibernate-configuration.png"; //NOI18N
+    private static final Logger LOG = Logger.getLogger(HibernateCfgDataObject.class.getName());
     /**
      * The property name for the event fired when a security tag is added or removed
      */
@@ -128,7 +132,7 @@ public class HibernateCfgDataObject extends XmlMultiViewDataObject {
             } catch (RuntimeException ex) { // must catch RTE (thrown by schema2beans when document is not valid)
                 //ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
                 return false;
-            }
+            } 
         } else {
             try {
                 java.io.InputStream is = getEditorSupport().getInputStream();
@@ -149,6 +153,10 @@ public class HibernateCfgDataObject extends XmlMultiViewDataObject {
                 }
             } catch (IOException e) {
                 ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, e);
+                return false;
+            } catch (IllegalStateException e) {
+                //issue 198676, sometimes faled to parser document if it's changed during update, just skip, should be parsed with next event
+                LOG.log(Level.INFO, null, e);
                 return false;
             }
         }

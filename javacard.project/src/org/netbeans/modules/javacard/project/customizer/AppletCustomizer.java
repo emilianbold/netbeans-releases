@@ -81,8 +81,9 @@ import org.netbeans.api.validation.adapters.DialogBuilder;
 import org.netbeans.modules.javacard.project.ui.CheckboxListView;
 import org.netbeans.modules.javacard.project.ui.FileModelFactory;
 import org.netbeans.modules.javacard.project.ui.NodeCheckObserver;
-import org.netbeans.validation.api.ui.ValidationGroup;
 import org.netbeans.validation.api.ui.ValidationListener;
+import org.netbeans.validation.api.ui.ValidationUI;
+import org.netbeans.validation.api.ui.swing.SwingValidationGroup;
 import org.openide.util.HelpCtx;
 
 /**
@@ -418,20 +419,22 @@ public class AppletCustomizer extends AllClassesOfTypeExplorerPanel implements N
 
         String name = n.getDisplayName();
 
-        class L extends ValidationListener implements ChangeListener {
+        final SwingValidationGroup gp = SwingValidationGroup.create();
+        class L extends ValidationListener<Void> implements ChangeListener {
 
-            @Override
-            protected boolean validate(Problems prblms) {
+            L() {
+                super(Void.class, ValidationUI.NO_OP, null);
+            }
+
+            @Override protected void performValidation(Problems prblms) {
                 String problem = panel.getProblem();
-                boolean result = problem == null;
                 if (problem != null) {
                     prblms.add(problem);
                 }
-                return result;
             }
 
             public void stateChanged(ChangeEvent e) {
-                validate();
+                gp.performValidation();
             }
         }
         L validator = new L();
@@ -446,12 +449,11 @@ public class AppletCustomizer extends AllClassesOfTypeExplorerPanel implements N
         };
         panel.addChangeListener(cl);
         panel.addChangeListener(validator);
-        ValidationGroup gp = ValidationGroup.create();
         DialogBuilder db = new DialogBuilder(AppletCustomizer.class).setModal(true).setTitle(
                 NbBundle.getMessage(CustomizeDeploymentPanel.class,
                 "TITLE_CUSTOMIZE_DEPLOYMENT", name)).
                 setContent(panel).setValidationGroup(gp);
-        gp.add(validator);
+        gp.addItem(validator, true);
 
         if (db.showDialog(DialogDescriptor.OK_OPTION)) {
             //XXX probably same exception w/ using ValidationPanel

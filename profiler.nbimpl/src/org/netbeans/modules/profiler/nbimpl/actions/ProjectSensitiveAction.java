@@ -48,7 +48,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.profiler.ui.NBSwingWorker;
 import org.netbeans.modules.profiler.ui.ProgressDisplayer;
-import org.netbeans.modules.profiler.utils.OutputParameter;
+import org.netbeans.modules.profiler.utilities.OutputParameter;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;

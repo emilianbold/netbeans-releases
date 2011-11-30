@@ -182,6 +182,7 @@ public class ProblemComponent extends javax.swing.JPanel {
          }
          final ParametersPanel parametersPanel = (ParametersPanel) c;
          Cancellable doCloseParent = new Cancellable() {
+            @Override
              public boolean cancel() {
                  parametersPanel.cancel.doClick();
                  return true;
@@ -208,6 +209,7 @@ public class ProblemComponent extends javax.swing.JPanel {
             this.ui = ui;
         }
         
+        @Override
         public void actionPerformed(ActionEvent event) {
             new RefactoringPanel(ui).setVisible(true);
         }

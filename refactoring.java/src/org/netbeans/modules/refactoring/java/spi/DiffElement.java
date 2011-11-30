@@ -52,7 +52,7 @@ import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementati
 import org.netbeans.modules.refactoring.java.ui.tree.ElementGripFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.text.PositionBounds;
-import static org.netbeans.modules.refactoring.java.RetoucheUtils.*;
+import static org.netbeans.modules.refactoring.java.RefactoringUtils.*;
 import org.openide.text.PositionRef;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -80,10 +80,12 @@ import org.openide.util.lookup.Lookups;
         this.modification = modification;
     }
 
+    @Override
     public String getDisplayText() {
         return displayText;
     }
 
+    @Override
     public Lookup getLookup() {
         Object composite = null;
         if (bounds!=null) {
@@ -101,17 +103,21 @@ import org.openide.util.lookup.Lookups;
         super.setEnabled(enabled);
     }
 
+    @Override
     public PositionBounds getPosition() {
         return bounds;
     }
 
+    @Override
     public String getText() {
         return displayText;
     }
 
+    @Override
     public void performChange() {
     }
 
+    @Override
     public FileObject getParentFile() {
         if (diff.getKind() == Difference.Kind.CREATE) {
             return parentFile.getParent();

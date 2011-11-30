@@ -51,6 +51,7 @@ import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.util.CancelAbort;
 import com.sun.tools.javac.util.CancelService;
 import com.sun.tools.javac.util.CouplingAbort;
+import com.sun.tools.javac.util.FatalError;
 import com.sun.tools.javac.util.Log;
 import com.sun.tools.javac.util.MissingPlatformError;
 import java.io.File;
@@ -284,17 +285,20 @@ final class SuperOnePassCompileWorker extends CompileWorker {
         } catch (Throwable t) {
             if (t instanceof ThreadDeath) {
                 throw (ThreadDeath) t;
-            } else if (JavaIndex.LOG.isLoggable(Level.WARNING)) {
-                final ClassPath bootPath   = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.BOOT);
-                final ClassPath classPath  = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.COMPILE);
-                final ClassPath sourcePath = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE);
-                final String message = String.format("SuperOnePassCompileWorker caused an exception\nRoot: %s\nBootpath: %s\nClasspath: %s\nSourcepath: %s", //NOI18N
-                            FileUtil.getFileDisplayName(context.getRoot()),
-                            bootPath == null   ? null : bootPath.toString(),
-                            classPath == null  ? null : classPath.toString(),
-                            sourcePath == null ? null : sourcePath.toString()
-                            );
-                JavaIndex.LOG.log(Level.WARNING, message, t);  //NOI18N
+            } else {
+                Level level = t instanceof FatalError ? Level.FINEST : Level.WARNING;
+                if (JavaIndex.LOG.isLoggable(level)) {
+                    final ClassPath bootPath   = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.BOOT);
+                    final ClassPath classPath  = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.COMPILE);
+                    final ClassPath sourcePath = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE);
+                    final String message = String.format("SuperOnePassCompileWorker caused an exception\nRoot: %s\nBootpath: %s\nClasspath: %s\nSourcepath: %s", //NOI18N
+                                FileUtil.getFileDisplayName(context.getRoot()),
+                                bootPath == null   ? null : bootPath.toString(),
+                                classPath == null  ? null : classPath.toString(),
+                                sourcePath == null ? null : sourcePath.toString()
+                                );
+                    JavaIndex.LOG.log(level, message, t);  //NOI18N
+                }
             }
         }
         return new ParsingOutput(false, file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);

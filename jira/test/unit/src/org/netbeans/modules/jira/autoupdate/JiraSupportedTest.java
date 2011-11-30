@@ -44,7 +44,6 @@ package org.netbeans.modules.jira.autoupdate;
 
 import junit.framework.Test;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.modules.jira.JiraIssueTest;
 import org.netbeans.modules.jira.JiraTestUtil;
 
 /**
@@ -64,6 +63,7 @@ public class JiraSupportedTest extends JiraPluginUCTestCase {
     @Override
     protected void setUp() throws Exception {
         System.setProperty("netbeans.t9y.jira.supported.version", "9999.9999.9999"); // should be enough
+        JiraTestUtil.initClient(getWorkDir());
         super.setUp();
     }
 
