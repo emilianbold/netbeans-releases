@@ -68,8 +68,9 @@ import org.openide.util.RequestProcessor;
 @ProjectServiceProvider(service = Sources.class, projectType={
     "org-netbeans-modules-maven/" + NbMavenProject.TYPE_WAR,
     "org-netbeans-modules-maven/" + NbMavenProject.TYPE_EJB,
+    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_EAR,
     "org-netbeans-modules-maven/" + NbMavenProject.TYPE_APPCLIENT,
-    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_EAR
+    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_OSGI
 })
 public class J2eeMavenSourcesImpl implements Sources {
     

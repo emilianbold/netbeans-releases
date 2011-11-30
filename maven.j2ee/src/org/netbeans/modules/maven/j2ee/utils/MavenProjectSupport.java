@@ -200,18 +200,24 @@ public class MavenProjectSupport {
     }
     
     public static boolean isWebSupported(Project project, String packaging) {
-        if ("war".equals(packaging)) { // NOI18N
+        if ("war".equals(packaging) || isBundlePackaging(project, packaging)) { // NOI18N
             return true;
         }
-        // #179584
-        // if it is bundle packaging type but a valid "src/main/webapp" exists
-        // then provide lookup content as for web application so that code
-        // completion etc. works
-        if ("bundle".equals(packaging)) { // NOI18N
-            NbMavenProject proj = project.getLookup().lookup(NbMavenProject.class);
-            if (new File(proj.getWebAppDirectory()).exists()) {
-                return true;
-            }
+        return false;
+    }
+    
+    // #179584
+    // if it is bundle packaging type but a valid "src/main/webapp" exists
+    // then provide lookup content as for web application so that code
+    // completion etc. works
+    public static boolean isBundlePackaging(Project project, String packaging) {
+        NbMavenProject proj = project.getLookup().lookup(NbMavenProject.class);
+        
+        boolean isBundlePackaging = "bundle".equals(packaging); // NOI18N
+        boolean webAppDirExists = new File(proj.getWebAppDirectory()).exists();
+        
+        if (isBundlePackaging && webAppDirExists) {
+            return true;
         }
         return false;
     }

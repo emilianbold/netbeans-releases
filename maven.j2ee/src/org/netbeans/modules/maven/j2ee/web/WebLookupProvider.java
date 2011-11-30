@@ -40,27 +40,56 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.maven.j2ee;
+package org.netbeans.modules.maven.j2ee.web;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import org.netbeans.modules.maven.api.NbMavenProject;
-import org.netbeans.spi.project.ProjectServiceProvider;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
+import org.netbeans.modules.web.jsfapi.spi.JsfSupportHandle;
+import org.netbeans.spi.project.LookupProvider;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 
-@ProjectServiceProvider(service = SessionContent.class, projectType = {
-    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_WAR,
-    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_EJB,
-    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_EAR,
-    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_APPCLIENT,
-    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_OSGI
-})
-public class SessionContent {
-    private String serverInstanceID;
+/**
+ * This class should be removed when JsfSupportHandle class will be changed. After that there should be a subclass
+ * annotated with @ProjectServiceProvider(projectType = "../WAR") instead of directly adding instance to project lookup.
+ * 
+ * @author  Milos Kleint
+ */
+@LookupProvider.Registration(projectType = {"org-netbeans-modules-maven/" + NbMavenProject.TYPE_WAR})
+public class WebLookupProvider implements LookupProvider, PropertyChangeListener {
 
-
-    public String getServerInstanceId() {
-        return serverInstanceID;
+    private Project project;
+    private InstanceContent ic;
+    
+    
+    @Override
+    public Lookup createAdditionalLookup(Lookup baseLookup) {
+        project = baseLookup.lookup(Project.class);
+        ic = new InstanceContent();
+        changeAdditionalLookups();
+        
+        NbMavenProject.addPropertyChangeListener(project, this);
+        
+        return new AbstractLookup(ic);
     }
-
-    public void setServerInstanceId(String id) {
-        serverInstanceID = id;
+    
+    @Override
+    public void propertyChange(PropertyChangeEvent propertyChangeEvent) {
+        if (NbMavenProject.PROP_PROJECT.equals(propertyChangeEvent.getPropertyName())) {
+            changeAdditionalLookups();
+        }
+    }
+    
+    private void changeAdditionalLookups() {
+        String packaging = project.getLookup().lookup(NbMavenProject.class).getPackagingType();
+        
+        ic = new InstanceContent();
+        if (MavenProjectSupport.isWebSupported(project, packaging)) {
+            ic.add(new JsfSupportHandle());
+        }
     }
 }

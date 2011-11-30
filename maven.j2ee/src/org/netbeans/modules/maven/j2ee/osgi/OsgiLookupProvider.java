@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,31 +37,35 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.maven.j2ee;
+package org.netbeans.modules.maven.j2ee.osgi;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.modules.maven.j2ee.CopyOnSave;
+import org.netbeans.modules.maven.j2ee.EMGSResolverImpl;
+import org.netbeans.modules.maven.j2ee.JPAStuffImpl;
+import org.netbeans.modules.maven.j2ee.MavenPersistenceProviderSupplier;
 import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
-import org.netbeans.modules.web.jsfapi.spi.JsfSupportHandle;
+import org.netbeans.modules.maven.j2ee.web.EntRefContainerImpl;
+import org.netbeans.modules.maven.j2ee.web.MavenWebProjectWebRootProvider;
+import org.netbeans.modules.maven.j2ee.web.WebModuleProviderImpl;
+import org.netbeans.modules.maven.j2ee.web.WebReplaceTokenProvider;
 import org.netbeans.spi.project.LookupProvider;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 
 /**
- * extending the default maven project lookup.
- * @author  Milos Kleint
+ * Provide additional lookup objects for bundle (OSGI) type (see #179584 for more detail)
+ * @author Martin Janicek
  */
-@LookupProvider.Registration(projectType={
-    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_WAR,
-    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_OSGI
-})
-public class J2eeLookupProvider implements LookupProvider, PropertyChangeListener {
+@LookupProvider.Registration(projectType = {"org-netbeans-modules-maven/" + NbMavenProject.TYPE_OSGI})
+public class OsgiLookupProvider implements LookupProvider, PropertyChangeListener {
 
     private Project project;
     private InstanceContent ic;
@@ -77,7 +81,7 @@ public class J2eeLookupProvider implements LookupProvider, PropertyChangeListene
         
         return new AbstractLookup(ic);
     }
-    
+
     @Override
     public void propertyChange(PropertyChangeEvent propertyChangeEvent) {
         if (NbMavenProject.PROP_PROJECT.equals(propertyChangeEvent.getPropertyName())) {
@@ -86,12 +90,28 @@ public class J2eeLookupProvider implements LookupProvider, PropertyChangeListene
     }
     
     private void changeAdditionalLookups() {
-        NbMavenProject watcher = project.getLookup().lookup(NbMavenProject.class);
-        String packaging = watcher.getPackagingType();
+        String packaging = project.getLookup().lookup(NbMavenProject.class).getPackagingType();
         
-        ic = new InstanceContent();
-        if (MavenProjectSupport.isWebSupported(project, packaging)) {
-            ic.add(new JsfSupportHandle());
+        ic = new InstanceContent(); // Clear old content
+        if (MavenProjectSupport.isBundlePackaging(project, packaging)) {
+            WebModuleProviderImpl provider = new WebModuleProviderImpl(project);
+            CopyOnSave copyOnSave = provider.getCopyOnSaveSupport();
+            try {
+                if (copyOnSave != null) {
+                    copyOnSave.initialize();
+                    ic.add(copyOnSave);
+                }
+            } catch (FileStateInvalidException ex) {
+                ex.printStackTrace();
+            }
+            
+            ic.add(provider);
+            ic.add(new WebReplaceTokenProvider(project));
+            ic.add(new EntRefContainerImpl(project));
+            ic.add(new JPAStuffImpl(project));
+            ic.add(new EMGSResolverImpl());
+            ic.add(new MavenPersistenceProviderSupplier(project));
+            ic.add(new MavenWebProjectWebRootProvider(project));
         }
     }
 }
