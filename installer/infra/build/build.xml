@@ -2349,7 +2349,7 @@ jarsigner.storepass=${jarsigner.storepass}
     </target>
 
     <target name="generate-weblogic-bundle-single">
-	<!--set property="bundle.dmg.name"    value="NetBeans and WebLogic Bundle"/-->
+	<set property="bundle.dmg.name"    value="NetBeans and WebLogic Bundle"/>
 	<antcall target="generate-weblogic-bundle">
 		<param name="bundle.platform"  value="windows"/>
 		<param name="bundle.extension" value="exe"/>
@@ -2366,10 +2366,10 @@ jarsigner.storepass=${jarsigner.storepass}
 	    <param name="bundle.platform"  value="solaris-sparc"/>
 	    <param name="bundle.extension" value="sh"/>
         </antcall>
-	<!--antcall target="generate-weblogic-bundle">
+	<antcall target="generate-weblogic-bundle">
                <param name="bundle.platform"  value="macosx-x86"/>
                <param name="bundle.extension" value="zip"/>
-        </antcall-->
+        </antcall>
     </target>
 
     <target name="generate-weblogic-bundle">
