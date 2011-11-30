@@ -41,9 +41,6 @@
  */
 package org.netbeans.modules.versioning.core;
 
-import com.sun.tools.javac.comp.Annotate.Annotator;
-import java.awt.Image;
-import java.awt.PopupMenu;
 import org.netbeans.modules.versioning.core.util.VCSSystemProvider;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -56,14 +53,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import javax.swing.Action;
-import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.versioning.core.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.core.spi.VCSContext;
 import org.netbeans.modules.versioning.core.spi.VCSInterceptor;
 import org.netbeans.modules.versioning.core.spi.VCSVisibilityQuery;
 import org.netbeans.modules.versioning.core.spi.VersioningSystem;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
-import org.netbeans.modules.versioning.core.spi.VCSAnnotator.ActionDestination;
 import org.netbeans.modules.versioning.core.spi.VersioningSupport;
 import org.netbeans.spi.queries.CollocationQueryImplementation;
 import org.openide.util.ContextAwareAction;
@@ -89,9 +84,7 @@ public class DelegatingVCS extends VersioningSystem implements VCSSystemProvider
     public static DelegatingVCS create(Map<?, ?> map) {
         return new DelegatingVCS(map);
     }
-    private Annotator annotator;
-    private VisibilityQuery visibilityQuery;
-    
+
     private DelegatingVCS(Map<?, ?> map) {
         this.map = map;
         this.displayName = (String) map.get("displayName");

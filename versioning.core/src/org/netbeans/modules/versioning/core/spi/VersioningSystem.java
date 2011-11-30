@@ -66,11 +66,7 @@ import org.openide.awt.ActionRegistration;
  * - file system handler
  * - diff provider
  * 
- * Versioning system registration can be done in one of the following ways:
- * <ul>
- *  <li>via {@link org.openide.util.lookup.ServiceProvider}.</li>  
- *  <li>via {@link org.netbeans.modules.versioning.spi.VersioningSystem#Registration}. (recommended) </li> 
- * </ul>
+ * Versioning system registration can be done via {@link VersioningSystem#Registration}. 
  *
  * @author Maros Sandor
  * @author Tomas Stupka

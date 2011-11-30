@@ -192,65 +192,19 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
     private Map<String, Set<String>> interceptedMethods = new HashMap<String, Set<String>>();
 
     private final VersioningSystem NULL_OWNER = new VersioningSystem() {
-
-        @Override
-        public boolean isLocalHistory() {
-            return false;
-        }
-
-        @Override
-        public VCSFileProxy getTopmostManagedAncestor(VCSFileProxy file) {
-            return null;
-        }
-
-        @Override
-        public VCSInterceptor getInterceptor() {
-            return null;
-        }
-
-        @Override
-        public void getOriginalFile(VCSFileProxy workingCopy, VCSFileProxy originalFile) { }
-
-        @Override
-        public CollocationQueryImplementation getCollocationQueryImplementation() {
-            return null;
-        }
-
-        @Override
-        public void addPropertyCL(PropertyChangeListener listener) { }
-
-        @Override
-        public void removePropertyCL(PropertyChangeListener listener) { }
-
-        @Override
-        public boolean isExcluded(VCSFileProxy file) {
-            return false;
-        }
-
-        @Override
-        public VCSAnnotator getAnnotator() {
-            return null;
-        }
-
-        @Override
-        public VCSVisibilityQuery getVisibility() {
-            return null;
-        }
-
-        @Override
-        public Object getDelegate() {
-            return null;
-        }
-
-        @Override
-        public String getDisplayName() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public String getMenuLabel() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
+        @Override public boolean isLocalHistory() {  throw new IllegalStateException(); }
+        @Override public VCSFileProxy getTopmostManagedAncestor(VCSFileProxy file) { throw new IllegalStateException(); }
+        @Override public VCSInterceptor getInterceptor() { throw new IllegalStateException(); }
+        @Override public void getOriginalFile(VCSFileProxy workingCopy, VCSFileProxy originalFile) { throw new IllegalStateException(); }
+        @Override public CollocationQueryImplementation getCollocationQueryImplementation() { throw new IllegalStateException(); }
+        @Override public void addPropertyCL(PropertyChangeListener listener) { throw new IllegalStateException(); }
+        @Override public void removePropertyCL(PropertyChangeListener listener) { throw new IllegalStateException(); }
+        @Override public boolean isExcluded(VCSFileProxy file) { throw new IllegalStateException(); }
+        @Override public VCSAnnotator getAnnotator() { throw new IllegalStateException(); }
+        @Override public VCSVisibilityQuery getVisibility() { throw new IllegalStateException(); }
+        @Override public Object getDelegate() { throw new IllegalStateException(); }
+        @Override public String getDisplayName() { throw new IllegalStateException(); }
+        @Override public String getMenuLabel() { throw new IllegalStateException(); }
     };
     
     private VersioningManager() {
