@@ -144,7 +144,7 @@ public class JavaFXSDKPanel extends DestinationPanel {
                     final String javafxrtInstallPath =
                             SystemUtils.resolveString(product.getProperty(JAVAFX_RUNTIME_INSTALLATION_LOCATION_PROPERTY));
                     statusLabel.setContentType("text/html");
-                    statusLabel.setText(StringUtils.format(component.getProperty(DEFAULT_JAVAFX_RUNTIME_INSTALL_TEXT_PROPERTY),
+                    statusLabel.setText(StringUtils.format(DEFAULT_JAVAFX_RUNTIME_INSTALL_TEXT_PROPERTY,
                             javafxrtInstallPath));
                 }
                 super.initialize();
