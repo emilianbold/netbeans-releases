@@ -53,6 +53,8 @@ import java.util.logging.Logger;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.coherence.server.CoherenceProperties;
 import org.netbeans.modules.coherence.server.util.Version;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
 /**
@@ -62,7 +64,6 @@ import org.openide.util.NbBundle;
 public class LibraryUtils {
 
     private static final Logger LOGGER = Logger.getLogger(LibraryUtils.class.getName());
-
     public static final String LIBRARY_BASE_NAME = "Coherence"; //NOI18N
 
     /**
@@ -88,7 +89,7 @@ public class LibraryUtils {
      * @param serverRoot directory root of Coherence server
      * @return {@code true} if new library was created in the IDE, {@code false} otherwise
      */
-    public static boolean registerCoherenceLibrary(String libraryDisplayName, File serverRoot) {
+    protected static boolean registerCoherenceLibrary(String libraryDisplayName, File serverRoot) {
         String libraryName = parseLibraryName(libraryDisplayName);
         if (LibraryManager.getDefault().getLibrary(libraryName) != null) {
             return false;
@@ -111,6 +112,29 @@ public class LibraryUtils {
             return false;
         }
         return true;
+    }
+
+    /**
+     * Creates Coherence library with JAR from given server root.
+     * Also informs about creation result users.
+     *
+     * @param serverRoot Coherence server root
+     */
+    public static void createCoherenceLibrary(File serverRoot) {
+        // create coherence library if not exists in this version yet
+        Version coherenceVersion = CoherenceProperties.getServerVersion(serverRoot);
+        String libraryName = LibraryUtils.getCoherenceLibraryDisplayName(coherenceVersion);
+        String message = null;
+        if (LibraryUtils.registerCoherenceLibrary(libraryName, serverRoot)) {
+            message = NbBundle.getMessage(LibraryUtils.class, "MSG_CoherenceLibraryCreated", libraryName); //NOI18N
+        } else {
+            message = NbBundle.getMessage(LibraryUtils.class, "MSG_CoherenceLibraryExists", libraryName); //NOI18N
+        }
+
+        NotifyDescriptor descriptor = new NotifyDescriptor.Message(
+                message,
+                NotifyDescriptor.Message.INFORMATION_MESSAGE);
+        DialogDisplayer.getDefault().notify(descriptor);
     }
 
     /**

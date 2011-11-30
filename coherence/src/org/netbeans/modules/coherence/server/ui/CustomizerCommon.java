@@ -59,7 +59,10 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.api.server.properties.InstanceProperties;
+import org.netbeans.modules.coherence.library.LibraryUtils;
 import org.netbeans.modules.coherence.server.CoherenceProperties;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 
@@ -248,6 +251,7 @@ public class CustomizerCommon extends javax.swing.JPanel implements ChangeListen
         customPropertiesTextField = new javax.swing.JTextField();
         coherenceLocationTextField = new javax.swing.JTextField();
         coherenceLocationLabel = new javax.swing.JLabel();
+        createLibraryButton = new javax.swing.JButton();
 
         setName(org.openide.util.NbBundle.getMessage(CustomizerCommon.class, "TITLE_Common")); // NOI18N
 
@@ -290,6 +294,13 @@ public class CustomizerCommon extends javax.swing.JPanel implements ChangeListen
 
         coherenceLocationLabel.setText(org.openide.util.NbBundle.getMessage(CustomizerCommon.class, "CustomizerCommon.coherenceLocationLabel.text")); // NOI18N
 
+        createLibraryButton.setText(org.openide.util.NbBundle.getMessage(CustomizerCommon.class, "CustomizerCommon.createLibraryButton.text")); // NOI18N
+        createLibraryButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                createLibraryButtonActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -303,20 +314,20 @@ public class CustomizerCommon extends javax.swing.JPanel implements ChangeListen
                             .addComponent(customPropertiesLabel))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(javaFlagsTextField)
-                            .addComponent(customPropertiesTextField)))
+                            .addComponent(javaFlagsTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 193, Short.MAX_VALUE)
+                            .addComponent(customPropertiesTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 193, Short.MAX_VALUE)))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(coherenceLocationLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(coherenceLocationTextField))
+                        .addComponent(coherenceLocationTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 184, Short.MAX_VALUE))
                     .addComponent(classpathLabel)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jScrollPane1)
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 247, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(addClasspathButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(removeClasspathButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                            .addComponent(removeClasspathButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                    .addComponent(createLibraryButton))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -343,7 +354,8 @@ public class CustomizerCommon extends javax.swing.JPanel implements ChangeListen
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(customPropertiesLabel)
                     .addComponent(customPropertiesTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(createLibraryButton))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -367,12 +379,26 @@ private void classpathListValueChanged(javax.swing.event.ListSelectionEvent evt)
     setEnabledRemoveButton(!((String)classpathList.getSelectedValue()).endsWith(CoherenceProperties.COHERENCE_JAR_NAME));
 }//GEN-LAST:event_classpathListValueChanged
 
+    private void createLibraryButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createLibraryButtonActionPerformed
+        NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(
+                NbBundle.getMessage(CustomizerCommon.class, "MSG_ConfirmationForLibraryCreation", //NOI18N
+                        instanceProperties.getString(CoherenceProperties.PROP_DISPLAY_NAME, "")), //NOI18N
+                NbBundle.getMessage(CustomizerCommon.class, "TIT_LibraryCreationDialog"), //NOI18N
+                NotifyDescriptor.YES_NO_OPTION,
+                NotifyDescriptor.QUESTION_MESSAGE);
+        if (DialogDisplayer.getDefault().notify(descriptor) == NotifyDescriptor.YES_OPTION) {
+            File location = new File(instanceProperties.getString(CoherenceProperties.PROP_COHERENCE_LOCATION, ""));
+            LibraryUtils.createCoherenceLibrary(location);
+        }
+    }//GEN-LAST:event_createLibraryButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addClasspathButton;
     private javax.swing.JLabel classpathLabel;
     private javax.swing.JList classpathList;
     private javax.swing.JLabel coherenceLocationLabel;
     private javax.swing.JTextField coherenceLocationTextField;
+    private javax.swing.JButton createLibraryButton;
     private javax.swing.JLabel customPropertiesLabel;
     private javax.swing.JTextField customPropertiesTextField;
     private javax.swing.JScrollPane jScrollPane1;
