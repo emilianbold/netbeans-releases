@@ -40,25 +40,29 @@
  * Portions Copyrighted 2008-2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.java.hints.jackpot.impl.pm;
+package org.netbeans.modules.java.hints.jackpot.impl.tm;
 
 import com.sun.source.tree.Tree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.modules.java.hints.jackpot.impl.TestBase;
 import org.netbeans.modules.java.hints.infrastructure.Pair;
+import org.netbeans.modules.java.hints.jackpot.impl.tm.Matcher;
+import org.netbeans.modules.java.hints.jackpot.impl.tm.Matcher.OccurrenceDescription;
 
 /**
  *
  * @author Jan Lahoda
  */
-public class PatternTest extends TestBase {
+public class PatternCompilerTest extends TestBase {
 
-    public PatternTest(String name) {
+    public PatternCompilerTest(String name) {
         super(name);
     }
 
@@ -163,18 +167,19 @@ public class PatternTest extends TestBase {
         assertNotNull(tp);
 
         //XXX:
-        Map<String, TreePath> vars = Pattern.compile(info, pattern).match(tp);
+        Iterator<? extends OccurrenceDescription> vars = Matcher.create(info, new AtomicBoolean()).setSearchRoot(tp).setTreeTopSearch().match(PatternCompilerUtilities.compile(info, pattern)).iterator();
 
         if (duplicates == null) {
-            assertNull(String.valueOf(vars), vars);
+            assertFalse(vars.hasNext());
             return ;
         }
 
         assertNotNull(vars);
-        
+        assertTrue(vars.hasNext());
+
         Map<String, String> actual = new HashMap<String, String>();
         
-        for (Entry<String, TreePath> e : vars.entrySet()) {
+        for (Entry<String, TreePath> e : vars.next().getVariables().entrySet()) {
             int[] span = new int[] {
                 (int) info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), e.getValue().getLeaf()),
                 (int) info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), e.getValue().getLeaf())
@@ -183,6 +188,8 @@ public class PatternTest extends TestBase {
             actual.put(e.getKey(), info.getText().substring(span[0], span[1]));
         }
 
+        assertFalse(vars.hasNext());
+        
         for (Pair<String, String> dup : duplicates) {
             String span = actual.remove(dup.getA());
 

@@ -64,7 +64,9 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.java.hints.introduce.CopyFinder;
+import org.netbeans.modules.java.hints.jackpot.impl.tm.Matcher;
+import org.netbeans.modules.java.hints.jackpot.impl.tm.Matcher.OccurrenceDescription;
+import org.netbeans.modules.java.hints.jackpot.impl.tm.Pattern;
 import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPattern;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPatterns;
@@ -118,7 +120,10 @@ public class JoinCatches {
             duplicates.put(mainVarType, i);
 
             for (int j = i + 1; j < catches.size(); j++) {
-                if (CopyFinder.isDuplicate(ctx.getInfo(), new TreePath(toTestPath, toTest.getBlock()), new TreePath(new TreePath(ctx.getPath(), catches.get(j)), ((CatchTree)catches.get(j)).getBlock()), true, ctx.getVariables(), ctx.getMultiVariables(), ctx.getVariableNames(), false, Collections.singleton(excVar), new AtomicBoolean())) {
+                Pattern pattern = Pattern.createPatternWithRemappableVariables(new TreePath(toTestPath, toTest.getBlock()), Collections.singleton(excVar), false);
+                Iterable<? extends OccurrenceDescription> found = Matcher.create(ctx.getInfo(), new AtomicBoolean()).setPresetVariable(ctx.getVariables(), ctx.getMultiVariables(), ctx.getVariableNames()).setSearchRoot(new TreePath(new TreePath(ctx.getPath(), catches.get(j)), ((CatchTree)catches.get(j)).getBlock())).setTreeTopSearch().match(pattern);
+
+                if (found.iterator().hasNext()) {
                     TreePath catchPath = new TreePath(ctx.getPath(), catches.get(j));
                     TreePath var = new TreePath(catchPath, ((CatchTree)catches.get(j)).getParameter());
                     Collection<TreePath> statements = new ArrayList<TreePath>();

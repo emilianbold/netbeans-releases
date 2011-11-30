@@ -55,8 +55,9 @@ import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.java.hints.introduce.CopyFinder;
-import org.netbeans.modules.java.hints.introduce.CopyFinder.Options;
+import org.netbeans.modules.java.hints.jackpot.impl.tm.Matcher;
+import org.netbeans.modules.java.hints.jackpot.impl.tm.Matcher.OccurrenceDescription;
+import org.netbeans.modules.java.hints.jackpot.impl.tm.Pattern;
 import org.netbeans.modules.java.hints.jackpot.spi.HintDescription.AdditionalQueryConstraints;
 import org.openide.util.Parameters;
 
@@ -77,15 +78,14 @@ public class CopyFinderBasedBulkSearch extends BulkSearch {
         TreePath topLevel = new TreePath(info.getCompilationUnit());
         
         for (Entry<Tree, String> e : ((BulkPatternImpl) pattern).pattern2Code.entrySet()) {
-            
-            for (TreePath r : CopyFinder.computeDuplicates(info, new TreePath(topLevel, e.getKey()), toSearch, false, new AtomicBoolean(), Collections.<String, TypeMirror>emptyMap(), Options.ALLOW_VARIABLES_IN_PATTERN).keySet()) {
+            for (OccurrenceDescription od : Matcher.create(info, new AtomicBoolean()).setUntypedMatching().match(Pattern.createPatternWithFreeVariables(new TreePath(topLevel, e.getKey()), Collections.<String, TypeMirror>emptyMap()))) {
                 Collection<TreePath> c = result.get(e.getValue());
 
                 if (c == null) {
                     result.put(e.getValue(), c = new LinkedList<TreePath>());
                 }
 
-                c.add(r);
+                c.add(od.getOccurrenceRoot());
             }
         }
 

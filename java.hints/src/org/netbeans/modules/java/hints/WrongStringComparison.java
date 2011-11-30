@@ -51,7 +51,8 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.java.hints.introduce.CopyFinder;
+import org.netbeans.modules.java.hints.jackpot.impl.tm.Matcher;
+import org.netbeans.modules.java.hints.jackpot.impl.tm.Pattern;
 import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
 import org.netbeans.modules.java.hints.spi.AbstractHint;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -185,7 +186,7 @@ public class WrongStringComparison extends AbstractHint {
 
         TreePath originalPath = new TreePath(sourcePathParent.getParentPath(), original);
 
-        return CopyFinder.isDuplicate(info, originalPath, correctPath, cancel);
+        return Matcher.create(info, cancel).setSearchRoot(originalPath).setTreeTopSearch().match(Pattern.createSimplePattern(correctPath)).iterator().hasNext();
     }
 
     boolean getTernaryNullCheck() {
