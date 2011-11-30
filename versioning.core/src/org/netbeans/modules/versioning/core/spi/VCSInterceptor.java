@@ -51,6 +51,7 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
  * Versioning systems that need to intercept or listen to file system operations implement this class.  
  * 
  * @author Maros Sandor
+ * @author Tomas Stupka
  */
 public abstract class VCSInterceptor {
 
@@ -72,20 +73,18 @@ public abstract class VCSInterceptor {
      * 
      * @param file a file to query
      * @return true if the file is mutable (writable, deletable and movable), false otherwise
-     * @since 1.7
      */
     public boolean isMutable(VCSFileProxy file) {
         return file.canWrite();
     }
 
     /**
-     * Queries the versioning system for a files VCS specific attribute. At the momement the
+     * Queries the versioning system for a files VCS specific attribute. At the moment the
      * only supported attribute name is <code>ProvidedExtensions.RemoteLocation</code>
      * 
      * @param file a file to get the attribute for
-     * @param attrName te attributes name
+     * @param attrName the attributes name
      * @return the attributes value or null if not available
-     * @since 1.10
      */
     public Object getAttribute(VCSFileProxy file, String attrName) {
         return null;
@@ -172,7 +171,6 @@ public abstract class VCSInterceptor {
      * @param from the file or folder to be copied
      * @param to destination of the file being copied
      * @return true if this interceptor wants to handle this operation (doCopy will be called), false otherwise
-     * @since 1.18
      */
     public boolean beforeCopy(VCSFileProxy from, VCSFileProxy to) {
         return false;
@@ -184,7 +182,6 @@ public abstract class VCSInterceptor {
      * @param from the file or folder to be copied
      * @param to destination of the file being copied
      * @throws IOException if the copy operation failed
-     * @since 1.18
      */
     public void doCopy(VCSFileProxy from, VCSFileProxy to) throws IOException {
     }
@@ -195,7 +192,6 @@ public abstract class VCSInterceptor {
      *
      * @param from original location of the file
      * @param to current location of the file
-     * @since 1.18
      */
     public void afterCopy(VCSFileProxy from, VCSFileProxy to) {
     }
@@ -285,9 +281,8 @@ public abstract class VCSInterceptor {
      *   one will be kept and next time passed as lastTimeStamp. Return
      *   0 if the directory does not have any special timestamp. Return
      *   -1 if you are not providing any special implementation
-     * @since 1.17
      */
-    public long refreshRecursively(VCSFileProxy dir, long lastTimeStamp, List<? super VCSFileProxy> children) {
+    public long refreshRecursively(VCSFileProxy dir, long lastTimeStamp, List<VCSFileProxy> children) {
         return -1;
     }
 }

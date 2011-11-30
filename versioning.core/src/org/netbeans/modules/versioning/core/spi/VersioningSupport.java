@@ -57,6 +57,7 @@ import org.netbeans.modules.versioning.core.util.VCSSystemProvider;
  * Collection of utility methods for Versioning systems implementors. 
  * 
  * @author Maros Sandor
+ * @author Tomas Stupka
  */
 public final class VersioningSupport {
     
@@ -105,7 +106,6 @@ public final class VersioningSupport {
     /**
      * Helper method to signal that a versioning system started to manage some previously unversioned files 
      * (those files were imported into repository).
-     * see
      */
     public static void versionedRootsChanged() {
         VersioningManager.getInstance().versionedRootsChanged();
@@ -123,7 +123,6 @@ public final class VersioningSupport {
      * @param folder a folder to query
      * @link http://www.netbeans.org/bugzilla/show_bug.cgi?id=105161
      * @link http://www.netbeans.org/bugzilla/show_bug.cgi?id=195284
-     * @since 1.25
      * @return true if the given folder is excluded from version control, false otherwise
      */
     public static boolean isExcluded (VCSFileProxy folder) {

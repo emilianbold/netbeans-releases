@@ -86,6 +86,13 @@ public class VcsVisibilityQueryImplementation implements VisibilityQueryImplemen
         return instance;
     }
 
+    public static void visibilityChanged() {
+        if(instance != null) {
+            // was touched from outside - lets fire the change
+            instance.fireVisibilityChanged();
+        }
+    }
+
     @Override
     public boolean isVisible(File file) {
         return isVisible(VCSFileProxy.createFileProxy(file));

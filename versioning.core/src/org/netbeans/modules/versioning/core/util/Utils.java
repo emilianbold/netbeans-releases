@@ -61,11 +61,7 @@ public final class Utils {
     }
     
     public static void fireVisibilityChanged() {
-        VcsVisibilityQueryImplementation vq = VcsVisibilityQueryImplementation.getInstance();
-        if(vq != null) {
-            // was touched from outside - lets fire the change
-            vq.fireVisibilityChanged();
-        }        
+        VcsVisibilityQueryImplementation.visibilityChanged();
     }
     
     public static void versionedRootsChanged() {

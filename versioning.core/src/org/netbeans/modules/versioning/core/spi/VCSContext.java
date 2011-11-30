@@ -137,7 +137,7 @@ public final class VCSContext {
      * @param nodes array of Nodes
      * @return VCSContext containing nodes and corresponding files they represent
      */
-    // XXX replace with lookup
+    // XXX any chance to replace with lookup? 
     public synchronized static VCSContext forNodes(Node[] nodes) {
         if (Arrays.equals(contextNodesCached.get(), nodes)) {
             VCSContext ctx = contextCached.get();
@@ -236,9 +236,8 @@ public final class VCSContext {
      * returns both of them and getRootFiles returns only the folder /var. 
      * This method is suitable for versioning systems that DO manage folders, such as Clearcase. 
      * 
-     * @return Set<FileProxy> set of Files this context represents
+     * @return Set<VCSFileProxy> set of Files this context represents
      * @see #getRootFiles() 
-     * @since 1.6
      */ 
     public Set<VCSFileProxy> getFiles() {
         return unfilteredRootFiles;
@@ -251,7 +250,7 @@ public final class VCSContext {
      * returns both of them and getRootFiles returns only the folder /var. 
      * This method is suitable for versioning systems that do not manage folders, such as CVS. 
      * 
-     * @return Set<FileProxy> set of Files this context represents
+     * @return Set<VCSFileProxy> set of Files this context represents
      * @see #getFiles() 
      */ 
     public Set<VCSFileProxy> getRootFiles() {
@@ -264,18 +263,18 @@ public final class VCSContext {
      * run on a project that contains a subproject should not touch any files in the subproject. Therefore the VCSContext for
      * the action would contain one root file (the project's root) and one exclusion (subproject root).
      * 
-     * @return Set<FileProxy> set of files and folders that are not part of (are excluded from) this context. 
-     * All their descendands are excluded too.
+     * @return Set<VCSFileProxy> set of files and folders that are not part of (are excluded from) this context. 
+     * All their descendants are excluded too.
      */ 
     public Set<VCSFileProxy> getExclusions() {
         return exclusions;
     }
 
     /**
-     * Determines whether the supplied File is contained in this context. In other words, the file must be either a root file/folder
+     * Determines whether the supplied VCSFileProxy is contained in this context. In other words, the file must be either a root file/folder
      * or be a descendant of a root folder and also must NOT be an excluded file/folder or be a descendant of an excluded folder. 
      * 
-     * @param file a File to test
+     * @param file a VCSFileProxy to test
      * @return true if this context contains the supplied file, false otherwise 
      */ 
     public boolean contains(VCSFileProxy file) {

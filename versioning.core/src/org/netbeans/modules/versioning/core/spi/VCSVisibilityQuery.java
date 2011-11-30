@@ -67,10 +67,6 @@ public abstract class VCSVisibilityQuery {
      * Notify a visibility change
      */
     protected final void fireVisibilityChanged() {
-        VcsVisibilityQueryImplementation vq = VcsVisibilityQueryImplementation.getInstance();
-        if(vq != null) {
-            // was touched from outside - lets fire the change
-            vq.fireVisibilityChanged();
-        }
+        VcsVisibilityQueryImplementation.visibilityChanged();
     }
 }

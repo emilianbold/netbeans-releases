@@ -476,7 +476,7 @@ public class FSInterceptorTest extends NbTestCase {
         }
 
         @Override
-        public long refreshRecursively(VCSFileProxy dir, long lastTimeStamp, List<? super VCSFileProxy> children) {
+        public long refreshRecursively(VCSFileProxy dir, long lastTimeStamp, List<VCSFileProxy> children) {
             storeMethodName();
             return super.refreshRecursively(dir, lastTimeStamp, children);
         }

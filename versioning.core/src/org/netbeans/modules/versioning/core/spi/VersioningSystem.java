@@ -188,7 +188,6 @@ public abstract class VersioningSystem {
      * Retrieves a CollocationQueryImplementation if this versioning system provides one.
      * 
      * @return CollocationQueryImplementation a CollocationQueryImplementation instance or null if the system does not provide the service
-     * @since 1.8
      */
     public CollocationQueryImplementation getCollocationQueryImplementation() {
         return null;
@@ -198,7 +197,6 @@ public abstract class VersioningSystem {
      * Retrieves a VCSVisibilityQuery implementation if this versioning system provides one.
      *
      * @return VCSVisibilityQuery a VCSVisibilityQuery instance or null if the system does not provide the service
-     * @since 1.10
      */
     public VCSVisibilityQuery getVisibilityQuery() {
         return null;
@@ -292,7 +290,6 @@ public abstract class VersioningSystem {
      * See also {@link org.netbeans.modules.versioning.spi.VersioningSystem}.
      * 
      * @author Tomas Stupka
-     * @since 1.24
      * @see org.netbeans.modules.versioning.spi.VersioningSystem
      * @see org.openide.util.lookup.ServiceProvider
      */

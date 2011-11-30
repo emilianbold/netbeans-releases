@@ -520,7 +520,7 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
         public void beforeEdit(VCSFileProxy file) {}
 
         @Override
-        public long refreshRecursively(VCSFileProxy dir, long lastTimeStamp, List<? super VCSFileProxy> children) {
+        public long refreshRecursively(VCSFileProxy dir, long lastTimeStamp, List<VCSFileProxy> children) {
             return -1;
         }
     };
