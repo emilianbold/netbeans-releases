@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.coherence.server.wizard;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Set;
@@ -48,9 +49,13 @@ import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.server.properties.InstanceProperties;
 import org.netbeans.api.server.properties.InstancePropertiesManager;
+import org.netbeans.modules.coherence.library.LibraryUtils;
 import org.netbeans.modules.coherence.server.CoherenceInstance;
 import org.netbeans.modules.coherence.server.CoherenceInstanceProvider;
 import org.netbeans.modules.coherence.server.CoherenceProperties;
+import org.netbeans.modules.coherence.server.util.Version;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
 import org.openide.util.NbBundle;
@@ -108,6 +113,16 @@ public class CoherenceWizardIterator implements WizardDescriptor.InstantiatingIt
 
         // create new persistent server instance
         CoherenceInstance instance = CoherenceInstance.createPersistent(instanceProperties);
+
+        // create coherence library if not exists in this version yet
+        Version coherenceVersion = CoherenceProperties.getServerVersion(new File(getCoherenceLocation()));
+        String libraryName = LibraryUtils.getCoherenceLibraryDisplayName(coherenceVersion);
+        if (LibraryUtils.registerCoherenceLibrary(libraryName, new File(getCoherenceLocation()))) {
+            NotifyDescriptor descriptor = new NotifyDescriptor.Message(
+                    NbBundle.getMessage(CoherenceWizardIterator.class, "MSG_CoherenceLibraryCreated", libraryName), //NOI18N
+                    NotifyDescriptor.Message.INFORMATION_MESSAGE);
+            DialogDisplayer.getDefault().notify(descriptor);
+        }
 
         return Collections.singleton(instance.getServerInstance());
     }

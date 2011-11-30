@@ -41,9 +41,23 @@
  */
 package org.netbeans.modules.coherence.server;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.jar.JarInputStream;
+import java.util.jar.Manifest;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 import org.netbeans.api.server.properties.InstanceProperties;
+import org.netbeans.modules.coherence.server.util.Version;
+import org.openide.filesystems.FileUtil;
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * Holds basic Coherence and Coherence plugin properties.
@@ -103,6 +117,8 @@ public class CoherenceProperties {
      */
     public static final List<CoherenceServerProperty> SERVER_PROPERTIES = new ArrayList<CoherenceServerProperty>();
 
+    private static final Logger LOGGER = Logger.getLogger(CoherenceProperties.class.getName());
+
     static {
         SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.coherence.cacheconfig", "Cache configuration descriptor filename", String.class));
         SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.coherence.cluster", "Cluster name", String.class));
@@ -146,6 +162,99 @@ public class CoherenceProperties {
         SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.coherence.wka.port", "Well known IP port", Long.class));
         SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.pof.enabled", "Enable POF Serialization", Boolean.class, "false"));
         SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.pof.config", "Configuration file containing POF Serialization class information", String.class));
+    }
+
+    /**
+     * Gets version of Coherence server for given server root directory.
+     *
+     * @param serverRoot root folder of the Coherence server
+     * @return {@link Version} of the Coherence server if found, {@code null} otherwise
+     */
+    public static Version getServerVersion(File serverRoot) {
+        String version = null;
+        File productXml = new File(serverRoot, "product.xml"); //NOI18N
+        if (productXml.exists()) {
+            // parse the version number from product.xml file
+            version = obtainVersionFromProductFile(productXml);
+            LOGGER.log(Level.FINE, "Coherence version={0} obtained from product.xml file", version);
+        }
+
+        if (version == null) {
+            // get Coherence version from its jar
+            version = obtainVersionFromCoherenceJar(serverRoot);
+            LOGGER.log(Level.FINE, "Coherence version={0} obtained from coherence.jar file", version);
+        }
+
+        if (version != null) {
+            return Version.fromDottedNotationWithFallback(version);
+        }
+        return null;
+    }
+
+    /**
+     * Gets coherence.jar file inside given dir root.
+     *
+     * @param serverRoot root directory of Coherence server
+     * @return coherence.jar file
+     */
+    public static File getCoherenceJar(File serverRoot) {
+        return new File(serverRoot.getAbsolutePath() + File.separator
+                + CoherenceServer.PLATFORM_LIB_DIR + File.separator + COHERENCE_JAR_NAME);
+    }
+
+    private static String obtainVersionFromProductFile(File productFile) {
+        try {
+            SAXParserFactory factory = SAXParserFactory.newInstance();
+            SAXParser saxParser = factory.newSAXParser();
+            VersionHandler handler = new VersionHandler();
+            saxParser.parse(productFile, handler);
+            return handler.getVersion();
+        } catch (IOException ex) {
+            LOGGER.log(Level.WARNING, null, ex);
+        } catch (ParserConfigurationException ex) {
+            LOGGER.log(Level.WARNING, null, ex);
+        } catch (SAXException ex) {
+            LOGGER.log(Level.WARNING, null, ex);
+        }
+        LOGGER.log(Level.FINE, "No version tag found in product.xml file.");
+        return null;
+    }
+
+    private static String obtainVersionFromCoherenceJar(File serverRoot) {
+        JarInputStream jis = null;
+        try {
+            jis = new JarInputStream(FileUtil.toFileObject(getCoherenceJar(serverRoot)).getInputStream());
+            Manifest manifest = jis.getManifest();
+            if (manifest != null) {
+                return manifest.getMainAttributes().getValue("Implementation-Version"); //NOI18N
+            }
+        } catch (IOException ex) {
+            LOGGER.log(Level.WARNING, null, ex);
+        } finally {
+            try {
+                jis.close();
+            } catch (IOException ex) {
+                LOGGER.log(Level.WARNING, null, ex);
+            }
+        }
+        return null;
+    }
+
+    private static final class VersionHandler extends DefaultHandler {
+
+        private String version;
+
+        public String getVersion() {
+            return version;
+        }
+
+        @Override
+        public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+            if (qName.equals("version")) { //NOI18N
+                version = attributes.getValue("value"); //NOI18N
+            }
+        }
+
     }
 
 }
