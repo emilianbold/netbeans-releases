@@ -103,7 +103,10 @@ public class LazyLookupProviders {
                                 if (serviceNames == null) {
                                     return;
                                 }
-                                setLookups(Lookups.singleton(instance));
+                            }
+                            // #205533: unsolvable (?) race condition - another thread could store an alternate instance of same service
+                            setLookups(Lookups.singleton(instance));
+                            synchronized (this) {
                                 serviceNames = null;
                             }
                         } catch (Exception x) {
