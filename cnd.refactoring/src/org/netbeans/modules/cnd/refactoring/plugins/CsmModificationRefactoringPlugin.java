@@ -72,7 +72,7 @@ public abstract class CsmModificationRefactoringPlugin extends CsmRefactoringPlu
         this.startReferenceObject = refactoring.getRefactoringSource().lookup(CsmObject.class);
         this.editorContext = refactoring.getRefactoringSource().lookup(CsmContext.class);
         assert startReferenceObject != null || editorContext != null: "no start reference or editor context";
-        modificationHooks = new ArrayList<CheckModificationHook>(refactoring.getRefactoringSource().lookupAll(CheckModificationHook.class));
+        modificationHooks = new ArrayList<CheckModificationHook>(refactoring.getContext().lookupAll(CheckModificationHook.class));
         if (modificationHooks.isEmpty()) {
             modificationHooks.add(new DefaultHookImpl());
         }

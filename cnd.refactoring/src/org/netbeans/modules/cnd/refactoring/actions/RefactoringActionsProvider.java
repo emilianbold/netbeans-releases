@@ -56,6 +56,7 @@ import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmIncludeHierarchyResolver;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.refactoring.spi.CheckModificationHook;
 import org.netbeans.modules.cnd.refactoring.spi.CsmRenameExtraObjectsProvider;
 import org.netbeans.modules.cnd.refactoring.support.CsmContext;
 import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
@@ -237,6 +238,10 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
                 return;
             }
             ui = createRefactoringUI(ctx);
+            Collection<? extends CheckModificationHook> hooks = context.lookupAll(CheckModificationHook.class);
+            for (CheckModificationHook hook : hooks) {
+                ui.getRefactoring().getContext().add(hook);
+            }
             TopComponent activetc = TopComponent.getRegistry().getActivated();
 
             if (ui != null) {
