@@ -39,47 +39,44 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.maven.j2ee;
+package org.netbeans.modules.maven.j2ee.utils;
 
-import java.util.logging.Level;
-import org.netbeans.api.project.Project;
-import org.netbeans.junit.NbTestCase;
+import java.io.IOException;
+import org.netbeans.modules.maven.j2ee.JavaEEMavenTestBase;
 
 /**
- * Base class for Java EE maven tests. Encapsulate basic stuff needed in every test case such as creating new project
- * in a proper folder, setting logger and so on.
  * 
  * @author Martin Janicek
  */
-public class JavaEEMavenBaseTest extends NbTestCase {
+public class IsWebSupportedTest extends JavaEEMavenTestBase {
     
-    protected Project project;
-    
-    
-    public JavaEEMavenBaseTest(String name) {
+    public IsWebSupportedTest(String name) {
         super(name);
     }
     
-    @Override
-    protected Level logLevel() {
-        return Level.FINE;
+    public void testIsWebSupported_packagingWar() {
+        assertEquals(true, MavenProjectSupport.isWebSupported(project, "war")); //NOI18N
     }
     
-    @Override
-    protected String logRoot() {
-        return "org.netbeans.modules.maven.j2ee"; //NOI18N
+    public void testIsWebSupported_packagingBundle_existingWebAppDir() {
+        assertEquals(true, MavenProjectSupport.isWebSupported(project, "bundle")); //NOI18N
     }
     
-    @Override
-    protected void setUp() throws Exception {
-        clearWorkDir();
-        
-        project = JavaEEMavenTestSupport.createMavenWebProject(getWorkDir());
+    public void testIsWebSupported_packagingBundle_notExistingWebAppDir() throws IOException {
+        project.getProjectDirectory().getFileObject("src/main/webapp").delete(); //NOI18N
+            
+        assertEquals(false, MavenProjectSupport.isWebSupported(project, "bundle")); //NOI18N
     }
     
-    public void testBaseClassFakeTest() {
-        // This test is here just because there has to be at least one test in NbTestCase subclass (to be honest I
-        // don't have a clue why it's implemented like that). But for possibility to have an abstract base class for 
-        // a set of different test classes this need to be here. Weeeird!
+    public void testIsWebSupported_packagingAppClient() {
+        assertEquals(false, MavenProjectSupport.isWebSupported(project, "app-client")); //NOI18N
+    }
+    
+    public void testIsWebSupported_packagingEjb() {
+        assertEquals(false, MavenProjectSupport.isWebSupported(project, "ejb")); //NOI18N
+    }
+    
+    public void testIsWebSupported_packagingEar() {
+        assertEquals(false, MavenProjectSupport.isWebSupported(project, "ear")); //NOI18N
     }
 }

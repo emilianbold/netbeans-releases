@@ -41,14 +41,14 @@
  */
 package org.netbeans.modules.maven.j2ee.utils;
 
-import org.netbeans.modules.maven.j2ee.JavaEEMavenBaseTest;
+import org.netbeans.modules.maven.j2ee.JavaEEMavenTestBase;
 import org.netbeans.modules.maven.j2ee.SessionContent;
 
 /**
  *
  * @author Martin Janicek
  */
-public class ServerSettingTest extends JavaEEMavenBaseTest {
+public class ServerSettingTest extends JavaEEMavenTestBase {
     
     public ServerSettingTest(String name) {
         super(name);

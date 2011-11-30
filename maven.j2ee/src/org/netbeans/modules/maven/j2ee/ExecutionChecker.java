@@ -89,7 +89,8 @@ import org.openide.windows.OutputWriter;
     "org-netbeans-modules-maven/" + NbMavenProject.TYPE_WAR,
     "org-netbeans-modules-maven/" + NbMavenProject.TYPE_EJB,
     "org-netbeans-modules-maven/" + NbMavenProject.TYPE_APPCLIENT,
-    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_EAR
+    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_EAR,
+    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_OSGI
 })
 public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesChecker {
 

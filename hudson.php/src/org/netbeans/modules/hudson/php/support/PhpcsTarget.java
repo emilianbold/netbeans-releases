@@ -39,28 +39,37 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.maven.j2ee.appclient;
+package org.netbeans.modules.hudson.php.support;
 
-import org.netbeans.modules.maven.api.NbMavenProject;
-import org.netbeans.spi.project.ProjectServiceProvider;
-import org.netbeans.spi.project.ui.PrivilegedTemplates;
-import org.netbeans.spi.project.ui.RecommendedTemplates;
+import java.util.Arrays;
+import java.util.List;
+import org.openide.util.NbBundle;
+import org.w3c.dom.Document;
 
 /**
- * Application client Recommended and Privileged templates implementation
- * 
- * @author Martin Janicek
+ * Ant target for <tt>phpcs</tt>.
  */
-@ProjectServiceProvider(service={RecommendedTemplates.class, PrivilegedTemplates.class}, projectType={"org-netbeans-modules-maven/" + NbMavenProject.TYPE_APPCLIENT})
-public class AppClientRecoPrivTemplates implements RecommendedTemplates, PrivilegedTemplates {
-    
+class PhpcsTarget extends Target {
+
     @Override
-    public String[] getRecommendedTypes() {
-        return new String[0];
+    public String getName() {
+        return "phpcs"; // NOI18N
     }
-    
+
+    @NbBundle.Messages("Target.Phpcs.title=&Violations of Coding Standards")
     @Override
-    public String[] getPrivilegedTemplates() {
-        return new String[0];
+    public String getTitleWithMnemonic() {
+        return Bundle.Target_Phpcs_title();
     }
+
+    @Override
+    public List<String> getOptions() {
+        return Arrays.asList("PEAR", "Zend", "PHPCS", "Squiz", "MySource"); // NOI18N
+    }
+
+    @Override
+    public void apply(Document document) {
+        // XXX
+    }
+
 }

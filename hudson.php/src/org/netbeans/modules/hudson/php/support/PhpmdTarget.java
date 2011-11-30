@@ -39,19 +39,30 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.maven.j2ee;
+package org.netbeans.modules.hudson.php.support;
+
+import org.openide.util.NbBundle;
+import org.w3c.dom.Document;
 
 /**
- * Constants used in various Maven project tests
- * @author Martin Janicek
+ * Ant target for <tt>phpmd</tt>.
  */
-public class JavaEEMavenTestConstants {
-    
-    public static final String WEB_INF = "WEB-INF"; //NOI18N
-    public static final String WEB_XML = "web.xml"; //NOI18N
-    
-    public static final String WEBLOGIC = "WebLogic"; //NOI18N
-    public static final String GLASSFISH = "gfv3ee6"; //NOI18N
-    public static final String TOMCAT = "Tomcat"; //NOI18N
-    public static final String JBOSS = "JBoss"; //NOI18N
+class PhpmdTarget extends Target {
+
+    @Override
+    public String getName() {
+        return "phpmd"; // NOI18N
+    }
+
+    @NbBundle.Messages("Target.Phpmd.title=&Static Code Analysis")
+    @Override
+    public String getTitleWithMnemonic() {
+        return Bundle.Target_Phpmd_title();
+    }
+
+    @Override
+    public void apply(Document document) {
+        // XXX
+    }
+
 }
