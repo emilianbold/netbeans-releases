@@ -77,7 +77,6 @@ public class ValidationTransactionTest extends TestBase {
     protected void setUp() throws Exception {
         super.setUp();
         MockLookup.setInstances(
-                new OpenProject(),
                 new TestProjectFactory(),
                 new SimpleFileOwnerQueryImplementation());
 
