@@ -171,7 +171,8 @@ public class HudsonJobCreator extends JPanel implements ProjectHudsonJobCreator,
     @Override
     public Document configure() throws IOException {
         setupProject();
-        return createJobXml();
+        throw new RuntimeException("Not implemented yet");
+        //return createJobXml();
     }
 
     @NbBundle.Messages("LBL_HudsonOptions=&Hudson Options...")
@@ -193,7 +194,7 @@ public class HudsonJobCreator extends JPanel implements ProjectHudsonJobCreator,
                 // XXX process generated build.xml and phpunit.xml.dist according to checkboxes
             }
         } catch (InvalidPhpProgramException ex) {
-            // cannot happen here since we just validate it
+            // cannot happen here since we just validated it
             LOGGER.log(Level.SEVERE, ex.getLocalizedMessage(), ex);
         }
     }
