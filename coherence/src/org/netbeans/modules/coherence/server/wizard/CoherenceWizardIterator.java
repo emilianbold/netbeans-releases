@@ -78,6 +78,7 @@ public class CoherenceWizardIterator implements WizardDescriptor.InstantiatingIt
     private ServerLocationPanel basePropertiesPanel;
     private String coherenceClasspath;
     private String coherenceLocation;
+    private boolean createCoherenceLibrary;
 
     /**
      * Initialize panels representing individual wizard's steps and sets
@@ -114,12 +115,19 @@ public class CoherenceWizardIterator implements WizardDescriptor.InstantiatingIt
         // create new persistent server instance
         CoherenceInstance instance = CoherenceInstance.createPersistent(instanceProperties);
 
-        // create coherence library if not exists in this version yet
-        Version coherenceVersion = CoherenceProperties.getServerVersion(new File(getCoherenceLocation()));
-        String libraryName = LibraryUtils.getCoherenceLibraryDisplayName(coherenceVersion);
-        if (LibraryUtils.registerCoherenceLibrary(libraryName, new File(getCoherenceLocation()))) {
+        if (getCreateCoherenceLibrary()) {
+            // create coherence library if not exists in this version yet
+            Version coherenceVersion = CoherenceProperties.getServerVersion(new File(getCoherenceLocation()));
+            String libraryName = LibraryUtils.getCoherenceLibraryDisplayName(coherenceVersion);
+            String message = null;
+            if (LibraryUtils.registerCoherenceLibrary(libraryName, new File(getCoherenceLocation()))) {
+                message = NbBundle.getMessage(CoherenceWizardIterator.class, "MSG_CoherenceLibraryCreated", libraryName); //NOI18N
+            } else {
+                message = NbBundle.getMessage(CoherenceWizardIterator.class, "MSG_CoherenceLibraryExists", libraryName); //NOI18N
+            }
+
             NotifyDescriptor descriptor = new NotifyDescriptor.Message(
-                    NbBundle.getMessage(CoherenceWizardIterator.class, "MSG_CoherenceLibraryCreated", libraryName), //NOI18N
+                    message,
                     NotifyDescriptor.Message.INFORMATION_MESSAGE);
             DialogDisplayer.getDefault().notify(descriptor);
         }
@@ -166,6 +174,14 @@ public class CoherenceWizardIterator implements WizardDescriptor.InstantiatingIt
 
     public void setCoherenceLocation(String coherenceLocation) {
         this.coherenceLocation = coherenceLocation;
+    }
+
+    public boolean getCreateCoherenceLibrary() {
+        return createCoherenceLibrary;
+    }
+
+    public void setCreateCoherenceLibrary(boolean createCoherenceLibrary) {
+        this.createCoherenceLibrary = createCoherenceLibrary;
     }
 
     @Override

@@ -77,6 +77,14 @@ public class ServerLocationVisual extends javax.swing.JPanel {
     private static JFileChooser fileChooser;
     private ChangeSupport changeSupport = new ChangeSupport(this);
 
+    /**
+     * Creates new form ServerLocationVisual
+     */
+    public ServerLocationVisual() {
+        initComponents();
+        initListeners();
+    }
+
     public String getServerName() {
         return serverLocationTextField.getText();
     }
@@ -134,14 +142,6 @@ public class ServerLocationVisual extends javax.swing.JPanel {
         return true;
     }
 
-    /**
-     * Creates new form ServerLocationVisual
-     */
-    public ServerLocationVisual() {
-        initComponents();
-        initListeners();
-    }
-
     private void initListeners() {
         // document listener for serverLocationTextField
         serverLocationTextField.getDocument().addDocumentListener(new DocumentListener() {
@@ -168,6 +168,7 @@ public class ServerLocationVisual extends javax.swing.JPanel {
         transactionJarCheckBox.addActionListener(new CheckBoxActionListener());
         txJarCheckBox.addActionListener(new CheckBoxActionListener());
         loadbalancerJarCheckBox.addActionListener(new CheckBoxActionListener());
+        createLibraryCheckBox.addActionListener(new CheckBoxActionListener());
     }
 
     private class CheckBoxActionListener implements ActionListener {
@@ -250,6 +251,10 @@ public class ServerLocationVisual extends javax.swing.JPanel {
         return serverLocationTextField.getText();
     }
 
+    public boolean getCreateCoherenceLibrary() {
+        return createLibraryCheckBox.isSelected();
+    }
+
     public void fillInCoherenceClasspath(boolean isCoherenceValid) {
         if (isCoherenceValid) {
             String location = serverLocationTextField.getText();
@@ -305,6 +310,7 @@ public class ServerLocationVisual extends javax.swing.JPanel {
         transactionJarCheckBox = new javax.swing.JCheckBox();
         txJarCheckBox = new javax.swing.JCheckBox();
         browseButton = new javax.swing.JButton();
+        createLibraryCheckBox = new javax.swing.JCheckBox();
 
         serverLocationLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/coherence/server/wizard/Bundle").getString("ServerLocationVisual.serverLocationLabel.mnemonics").charAt(0));
         serverLocationLabel.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
@@ -346,7 +352,7 @@ public class ServerLocationVisual extends javax.swing.JPanel {
                     .addComponent(loadbalancerJarCheckBox)
                     .addComponent(transactionJarCheckBox)
                     .addComponent(txJarCheckBox))
-                .addContainerGap(226, Short.MAX_VALUE))
+                .addContainerGap(258, Short.MAX_VALUE))
         );
         additionalClasspathPanelLayout.setVerticalGroup(
             additionalClasspathPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -370,6 +376,9 @@ public class ServerLocationVisual extends javax.swing.JPanel {
             }
         });
 
+        createLibraryCheckBox.setSelected(true);
+        createLibraryCheckBox.setText(org.openide.util.NbBundle.getMessage(ServerLocationVisual.class, "ServerLocationVisual.createLibraryCheckBox.text")); // NOI18N
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -383,8 +392,9 @@ public class ServerLocationVisual extends javax.swing.JPanel {
                         .addComponent(serverLocationTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 253, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(browseButton))
-                    .addComponent(serverPropertiesNoticeLabel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(additionalClasspathPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(serverPropertiesNoticeLabel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 489, Short.MAX_VALUE)
+                    .addComponent(additionalClasspathPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(createLibraryCheckBox))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -399,6 +409,8 @@ public class ServerLocationVisual extends javax.swing.JPanel {
                 .addComponent(additionalClasspathPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(serverPropertiesNoticeLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 15, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(createLibraryCheckBox)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -411,6 +423,7 @@ public class ServerLocationVisual extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel additionalClasspathPanel;
     private javax.swing.JButton browseButton;
+    private javax.swing.JCheckBox createLibraryCheckBox;
     private javax.swing.JCheckBox hibernateJarCheckBox;
     private javax.swing.JCheckBox jpaJarCheckBox;
     private javax.swing.JCheckBox loadbalancerJarCheckBox;
