@@ -41,8 +41,8 @@
  */
 package org.netbeans.modules.coherence.server.wizard;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.io.File;
 import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
@@ -163,18 +163,18 @@ public class ServerLocationVisual extends javax.swing.JPanel {
         });
 
         // action listeners for checkboxes
-        hibernateJarCheckBox.addActionListener(new CheckBoxActionListener());
-        jpaJarCheckBox.addActionListener(new CheckBoxActionListener());
-        transactionJarCheckBox.addActionListener(new CheckBoxActionListener());
-        txJarCheckBox.addActionListener(new CheckBoxActionListener());
-        loadbalancerJarCheckBox.addActionListener(new CheckBoxActionListener());
-        createLibraryCheckBox.addActionListener(new CheckBoxActionListener());
+        hibernateJarCheckBox.addItemListener(new CheckBoxItemListener());
+        jpaJarCheckBox.addItemListener(new CheckBoxItemListener());
+        transactionJarCheckBox.addItemListener(new CheckBoxItemListener());
+        txJarCheckBox.addItemListener(new CheckBoxItemListener());
+        loadbalancerJarCheckBox.addItemListener(new CheckBoxItemListener());
+        createLibraryCheckBox.addItemListener(new CheckBoxItemListener());
     }
 
-    private class CheckBoxActionListener implements ActionListener {
+    private class CheckBoxItemListener implements ItemListener {
 
         @Override
-        public void actionPerformed(ActionEvent e) {
+        public void itemStateChanged(ItemEvent e) {
             fireChangeEvent();
         }
     }
