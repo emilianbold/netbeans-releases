@@ -95,12 +95,12 @@ public class CustomizerCommon extends javax.swing.JPanel implements ChangeListen
      * Initialization of the panel values.
      */
     private void init(){
-        coherenceLocationTextField.setText(instanceProperties.getString(CoherenceProperties.PROP_COHERENCE_LOCATION, ""));
+        coherenceLocationTextField.setText(instanceProperties.getString(CoherenceProperties.PROP_LOCATION, ""));
         javaFlagsTextField.setText(instanceProperties.getString(CoherenceProperties.PROP_JAVA_FLAGS, ""));
         customPropertiesTextField.setText(instanceProperties.getString(CoherenceProperties.PROP_CUSTOM_PROPERTIES, ""));
 
         listModel = new DefaultListModel();
-        for (String cp : classpathFromStringToArray(instanceProperties.getString(CoherenceProperties.PROP_COHERENCE_CLASSPATH, ""))) {
+        for (String cp : classpathFromStringToArray(instanceProperties.getString(CoherenceProperties.PROP_CLASSPATH, ""))) {
             listModel.addElement(cp);
         }
         classpathList.setModel(listModel);
@@ -150,7 +150,7 @@ public class CustomizerCommon extends javax.swing.JPanel implements ChangeListen
             cpEntries.add((String)classpathList.getModel().getElementAt(i));
         }
 
-        instanceProperties.putString(CoherenceProperties.PROP_COHERENCE_CLASSPATH, classpathFromListToString(cpEntries));
+        instanceProperties.putString(CoherenceProperties.PROP_CLASSPATH, classpathFromListToString(cpEntries));
     }
 
     /**
@@ -387,7 +387,7 @@ private void classpathListValueChanged(javax.swing.event.ListSelectionEvent evt)
                 NotifyDescriptor.YES_NO_OPTION,
                 NotifyDescriptor.QUESTION_MESSAGE);
         if (DialogDisplayer.getDefault().notify(descriptor) == NotifyDescriptor.YES_OPTION) {
-            File location = new File(instanceProperties.getString(CoherenceProperties.PROP_COHERENCE_LOCATION, ""));
+            File location = new File(instanceProperties.getString(CoherenceProperties.PROP_LOCATION, ""));
             LibraryUtils.createCoherenceLibrary(location);
         }
     }//GEN-LAST:event_createLibraryButtonActionPerformed

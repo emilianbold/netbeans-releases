@@ -69,12 +69,12 @@ public class CoherenceProperties {
     /**
      * Key for Coherence instance ID in {@link InstanceProperties}.
      */
-    public static final String PROP_COHERENCE_ID = "base.coherence.id"; //NOI18N
+    public static final String PROP_ID = "base.coherence.id"; //NOI18N
 
     /**
      * Key for Coherence location path in {@link InstanceProperties}.
      */
-    public static final String PROP_COHERENCE_LOCATION = "base.coherence.location"; //NOI18N
+    public static final String PROP_LOCATION = "base.coherence.location"; //NOI18N
 
     /**
      * Key for Coherence instance display name in {@link InstanceProperties}.
@@ -85,7 +85,7 @@ public class CoherenceProperties {
      * Key for Coherence instance classpath in {@link InstanceProperties}. It includes
      * Coherence base JAR as well as additional Coherence or another JARs.
      */
-    public static final String PROP_COHERENCE_CLASSPATH = "base.coherence.classpath"; //NOI18N
+    public static final String PROP_CLASSPATH = "base.coherence.classpath"; //NOI18N
 
     /**
      * Key for Coherence instance java flags in {@link InstanceProperties}.

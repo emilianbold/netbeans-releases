@@ -106,8 +106,8 @@ public class CoherenceWizardIterator implements WizardDescriptor.InstantiatingIt
         InstanceProperties instanceProperties = InstancePropertiesManager.getInstance().
                 createProperties(CoherenceInstanceProvider.COHERENCE_INSTANCES_NS);
         instanceProperties.putString(CoherenceProperties.PROP_DISPLAY_NAME, displayName);
-        instanceProperties.putString(CoherenceProperties.PROP_COHERENCE_LOCATION, getCoherenceLocation());
-        instanceProperties.putString(CoherenceProperties.PROP_COHERENCE_CLASSPATH, getCoherenceClasspath());
+        instanceProperties.putString(CoherenceProperties.PROP_LOCATION, getCoherenceLocation());
+        instanceProperties.putString(CoherenceProperties.PROP_CLASSPATH, getCoherenceClasspath());
 
         // create new persistent server instance
         CoherenceInstance instance = CoherenceInstance.createPersistent(instanceProperties);
