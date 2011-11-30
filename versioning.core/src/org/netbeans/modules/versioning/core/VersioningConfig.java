@@ -56,7 +56,7 @@ import org.openide.util.NbPreferences;
 
 import java.util.prefs.Preferences;
 import org.netbeans.modules.versioning.core.util.VCSSystemProvider.VersioningSystem;
-import org.netbeans.modules.versioning.fileproxy.api.VCSFileProxy;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
  * Stores Versioning manager configuration.

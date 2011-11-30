@@ -49,7 +49,7 @@ import org.openide.util.Lookup;
 import java.io.File;
 import java.io.FileFilter;
 import java.util.*;
-import org.netbeans.modules.versioning.fileproxy.api.VCSFileProxy;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
  * This encapsulates a context, typically set of selected files or nodes. Context is passed to VCSAnnotators when
@@ -59,12 +59,12 @@ import org.netbeans.modules.versioning.fileproxy.api.VCSFileProxy;
  */
 public final class VCSContext {
     
-    private org.netbeans.modules.versioning.fileproxy.spi.VCSContext delegate;
+    private org.netbeans.modules.versioning.core.spi.VCSContext delegate;
     
     /**
      * VCSContext that contains no files.
      */
-    public static final VCSContext EMPTY = new VCSContext(org.netbeans.modules.versioning.fileproxy.spi.VCSContext.EMPTY);
+    public static final VCSContext EMPTY = new VCSContext(org.netbeans.modules.versioning.core.spi.VCSContext.EMPTY);
     
     private Set<File> unfilteredRootFiles;
     private Set<File> exclusions;
@@ -76,7 +76,7 @@ public final class VCSContext {
         org.netbeans.modules.versioning.Accessor.IMPL = new AccessorImpl();
     }
         
-    VCSContext(org.netbeans.modules.versioning.fileproxy.spi.VCSContext delegate) {
+    VCSContext(org.netbeans.modules.versioning.core.spi.VCSContext delegate) {
         this.delegate = delegate;
     }
     
@@ -97,7 +97,7 @@ public final class VCSContext {
      * @return VCSContext containing nodes and corresponding files they represent
      */
     public synchronized static VCSContext forNodes(Node[] nodes) {
-        return new VCSContext(org.netbeans.modules.versioning.fileproxy.spi.VCSContext.forNodes(nodes));
+        return new VCSContext(org.netbeans.modules.versioning.core.spi.VCSContext.forNodes(nodes));
     }
         
     /**
@@ -202,7 +202,7 @@ public final class VCSContext {
         return s;
     }    
 
-    private class ProxyFileFilter implements org.netbeans.modules.versioning.fileproxy.spi.VCSContext.FileFilter {
+    private class ProxyFileFilter implements org.netbeans.modules.versioning.core.spi.VCSContext.FileFilter {
         private final FileFilter filter;
 
         public ProxyFileFilter(FileFilter filter) {

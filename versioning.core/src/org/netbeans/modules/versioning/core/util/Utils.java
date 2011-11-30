@@ -45,7 +45,7 @@ import java.io.File;
 import org.netbeans.modules.versioning.core.FlatFolder;
 import org.netbeans.modules.versioning.core.VcsVisibilityQueryImplementation;
 import org.netbeans.modules.versioning.core.VersioningManager;
-import org.netbeans.modules.versioning.fileproxy.api.VCSFileProxy;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
  *

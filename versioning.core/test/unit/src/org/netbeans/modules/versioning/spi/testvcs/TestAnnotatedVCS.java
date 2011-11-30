@@ -46,11 +46,11 @@ package org.netbeans.modules.versioning.spi.testvcs;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-import org.netbeans.modules.versioning.fileproxy.api.VCSFileProxy;
-import org.netbeans.modules.versioning.fileproxy.spi.VCSAnnotator;
-import org.netbeans.modules.versioning.fileproxy.spi.VCSInterceptor;
-import org.netbeans.modules.versioning.fileproxy.spi.VCSVisibilityQuery;
-import org.netbeans.modules.versioning.fileproxy.spi.VersioningSystem;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.netbeans.modules.versioning.core.spi.VCSAnnotator;
+import org.netbeans.modules.versioning.core.spi.VCSInterceptor;
+import org.netbeans.modules.versioning.core.spi.VCSVisibilityQuery;
+import org.netbeans.modules.versioning.core.spi.VersioningSystem;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;

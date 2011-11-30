@@ -63,7 +63,7 @@ public class FileBasedVCSProvider extends VCSSystemProvider {
     /**
      * applies to all registrations via {@link org.netbeans.modules.versioning.spi.VersioningSystem.Registration}
      */
-    private final Lookup.Result<org.netbeans.modules.versioning.fileproxy.spi.VersioningSystem> delegatesLookupResult;
+    private final Lookup.Result<org.netbeans.modules.versioning.core.spi.VersioningSystem> delegatesLookupResult;
     
     /**
      * Holds all registered versioning systems.
@@ -72,7 +72,7 @@ public class FileBasedVCSProvider extends VCSSystemProvider {
 
     public FileBasedVCSProvider() {
         systemsLookupResult = Lookup.getDefault().lookup(new Lookup.Template<org.netbeans.modules.versioning.spi.VersioningSystem>(org.netbeans.modules.versioning.spi.VersioningSystem.class));
-        delegatesLookupResult = Lookup.getDefault().lookup(new Lookup.Template<org.netbeans.modules.versioning.fileproxy.spi.VersioningSystem>(org.netbeans.modules.versioning.fileproxy.spi.VersioningSystem.class));
+        delegatesLookupResult = Lookup.getDefault().lookup(new Lookup.Template<org.netbeans.modules.versioning.core.spi.VersioningSystem>(org.netbeans.modules.versioning.core.spi.VersioningSystem.class));
     }
     
     private int refreshSerial;
@@ -84,11 +84,11 @@ public class FileBasedVCSProvider extends VCSSystemProvider {
             return versioningSystems;
         }
         Collection<? extends org.netbeans.modules.versioning.spi.VersioningSystem> systems = systemsLookupResult.allInstances();
-        Collection<? extends org.netbeans.modules.versioning.fileproxy.spi.VersioningSystem> delegates = delegatesLookupResult.allInstances();
+        Collection<? extends org.netbeans.modules.versioning.core.spi.VersioningSystem> delegates = delegatesLookupResult.allInstances();
         synchronized(versioningSystems) {
             versioningSystems.clear();
             
-            for (org.netbeans.modules.versioning.fileproxy.spi.VersioningSystem vs : delegates) {
+            for (org.netbeans.modules.versioning.core.spi.VersioningSystem vs : delegates) {
                 if(vs instanceof DelegatingVCS) {
                     versioningSystems.add((DelegatingVCS) vs); 
                 }

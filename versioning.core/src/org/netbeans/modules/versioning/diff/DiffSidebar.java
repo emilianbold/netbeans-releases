@@ -102,7 +102,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
 import org.netbeans.api.queries.FileEncodingQuery;
-import org.netbeans.modules.versioning.fileproxy.api.VCSFileProxy;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.util.Mutex;
 import org.openide.util.UserQuestionException;
 

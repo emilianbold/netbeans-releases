@@ -41,7 +41,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.versioning.fileproxy.spi;
+package org.netbeans.modules.versioning.core.spi;
 
 import org.netbeans.modules.versioning.core.VersioningManager;
 import org.netbeans.spi.queries.CollocationQueryImplementation;
@@ -53,7 +53,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.util.*;
-import org.netbeans.modules.versioning.fileproxy.api.VCSFileProxy;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;

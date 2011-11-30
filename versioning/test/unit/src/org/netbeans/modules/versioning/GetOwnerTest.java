@@ -51,7 +51,7 @@ import java.security.Permission;
 import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.versioning.fileproxy.api.VCSFileProxy;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.VersioningManager;
 import org.netbeans.modules.versioning.core.util.VCSSystemProvider;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
@@ -195,7 +195,7 @@ public class GetOwnerTest extends NbTestCase {
         File b = new File(getWorkDir(), "b");
         System.setProperty("versioning.unversionedFolders", a.getAbsolutePath() + ";" + b.getAbsolutePath() + ";");
         File c = new File(getWorkDir(), "c");
-        org.netbeans.modules.versioning.fileproxy.spi.VersioningSupport.getPreferences().put("unversionedFolders", c.getAbsolutePath()); //NOI18N
+        org.netbeans.modules.versioning.core.spi.VersioningSupport.getPreferences().put("unversionedFolders", c.getAbsolutePath()); //NOI18N
         File userdir = new File(getWorkDir(), "userdir");
         System.setProperty("netbeans.user", userdir.getAbsolutePath());
         assertTrue(VersioningSupport.isExcluded(a));

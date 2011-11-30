@@ -43,10 +43,10 @@ package org.netbeans.modules.versioning.core.util;
 
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
-import org.netbeans.modules.versioning.fileproxy.api.VCSFileProxy;
-import org.netbeans.modules.versioning.fileproxy.spi.VCSAnnotator;
-import org.netbeans.modules.versioning.fileproxy.spi.VCSInterceptor;
-import org.netbeans.modules.versioning.fileproxy.spi.VCSVisibilityQuery;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.netbeans.modules.versioning.core.spi.VCSAnnotator;
+import org.netbeans.modules.versioning.core.spi.VCSInterceptor;
+import org.netbeans.modules.versioning.core.spi.VCSVisibilityQuery;
 import org.netbeans.spi.queries.CollocationQueryImplementation;
 import org.openide.util.LookupListener;
 

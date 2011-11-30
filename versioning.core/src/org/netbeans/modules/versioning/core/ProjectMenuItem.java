@@ -51,7 +51,7 @@ import org.openide.nodes.Node;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.windows.TopComponent;
 import org.netbeans.modules.versioning.core.util.VCSSystemProvider.VersioningSystem;
-import org.netbeans.modules.versioning.fileproxy.spi.VCSContext;
+import org.netbeans.modules.versioning.core.spi.VCSContext;
 import org.netbeans.modules.diff.PatchAction;
 
 import javax.swing.*;
@@ -61,8 +61,8 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.modules.versioning.fileproxy.api.VCSFileProxy;
-import org.netbeans.modules.versioning.fileproxy.spi.VCSAnnotator;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.netbeans.modules.versioning.core.spi.VCSAnnotator;
 import org.openide.awt.Actions;
 import org.openide.filesystems.FileObject;
 

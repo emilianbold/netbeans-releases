@@ -43,9 +43,12 @@
  */
 package org.netbeans.modules.versioning.core;
 
+import org.netbeans.modules.versioning.core.spi.VCSInterceptor;
+import org.netbeans.modules.versioning.core.spi.VCSVisibilityQuery;
+import org.netbeans.modules.versioning.core.spi.VCSAnnotator;
 import java.lang.reflect.Method;
 import java.util.Map.Entry;
-import org.netbeans.modules.versioning.fileproxy.spi.VersioningSupport;
+import org.netbeans.modules.versioning.core.spi.VersioningSupport;
 import org.netbeans.modules.versioning.diff.DiffSidebarManager;
 import org.netbeans.modules.masterfs.providers.InterceptionListener;
 import org.openide.util.Lookup;
@@ -62,10 +65,9 @@ import java.lang.reflect.Modifier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.modules.versioning.fileproxy.spi.VCSContext;
-import org.netbeans.modules.versioning.fileproxy.api.VCSFileProxy;
+import org.netbeans.modules.versioning.core.spi.VCSContext;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.util.VCSSystemProvider;
-import org.netbeans.modules.versioning.fileproxy.spi.*;
 import org.netbeans.spi.queries.CollocationQueryImplementation;
 import org.openide.util.*;
 

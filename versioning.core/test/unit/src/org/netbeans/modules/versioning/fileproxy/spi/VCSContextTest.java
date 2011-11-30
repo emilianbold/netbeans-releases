@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.versioning.fileproxy.spi;
 
+import org.netbeans.modules.versioning.core.spi.VCSContext;
 import java.io.IOException;
 import org.openide.nodes.Node;
 import org.openide.nodes.AbstractNode;
@@ -59,7 +60,7 @@ import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.junit.MockServices;
 import org.netbeans.spi.queries.SharabilityQueryImplementation;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.versioning.fileproxy.api.VCSFileProxy;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
  * Versioning SPI unit tests of VCSContext.

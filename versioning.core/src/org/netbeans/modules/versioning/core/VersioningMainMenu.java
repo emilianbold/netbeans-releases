@@ -48,15 +48,15 @@ import org.openide.awt.DynamicMenuContent;
 import org.openide.awt.Mnemonics;
 import org.openide.windows.TopComponent;
 import org.netbeans.modules.versioning.core.util.VCSSystemProvider.VersioningSystem;
-import org.netbeans.modules.versioning.fileproxy.spi.VCSContext;
+import org.netbeans.modules.versioning.core.spi.VCSContext;
 
 import javax.swing.*;
 import javax.swing.event.MenuListener;
 import javax.swing.event.MenuEvent;
 import java.awt.event.ActionEvent;
 import java.util.*;
-import org.netbeans.modules.versioning.fileproxy.api.VCSFileProxy;
-import org.netbeans.modules.versioning.fileproxy.spi.VCSAnnotator;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.netbeans.modules.versioning.core.spi.VCSAnnotator;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;

@@ -51,8 +51,8 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.versioning.core.util.VCSSystemProvider.VersioningSystem;
-import org.netbeans.modules.versioning.fileproxy.api.VCSFileProxy;
-import org.netbeans.modules.versioning.fileproxy.spi.VCSInterceptor;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.netbeans.modules.versioning.core.spi.VCSInterceptor;
 
 /**
  * Plugs into IDE filesystem and delegates file operations to registered versioning systems.

@@ -46,13 +46,13 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.ArrayList;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.versioning.fileproxy.api.VCSFileProxy;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.util.VCSSystemProvider;
 import org.netbeans.modules.versioning.core.util.VCSSystemProvider.VersioningSystem;
-import org.netbeans.modules.versioning.fileproxy.spi.VCSAnnotator;
-import org.netbeans.modules.versioning.fileproxy.spi.VCSInterceptor;
-import org.netbeans.modules.versioning.fileproxy.spi.VCSVisibilityQuery;
-import org.netbeans.modules.versioning.fileproxy.spi.VersioningSupport;
+import org.netbeans.modules.versioning.core.spi.VCSAnnotator;
+import org.netbeans.modules.versioning.core.spi.VCSInterceptor;
+import org.netbeans.modules.versioning.core.spi.VCSVisibilityQuery;
+import org.netbeans.modules.versioning.core.spi.VersioningSupport;
 import org.netbeans.spi.queries.CollocationQueryImplementation;
 import org.openide.util.NbPreferences;
 
@@ -115,7 +115,7 @@ public class ConnectDisconnectTest extends NbTestCase {
         VCSFileProxy rootProxy = VCSFileProxy.createFileProxy(root);
         awakeDelegates();
         
-        org.netbeans.modules.versioning.fileproxy.spi.VersioningSystem owner = VersioningSupport.getOwner(fileProxy);
+        org.netbeans.modules.versioning.core.spi.VersioningSystem owner = VersioningSupport.getOwner(fileProxy);
         assertTrue(owner.toString(), owner == DisconnectableVCS1.proxyVS.getDelegate() || owner == DisconnectableVCS2.proxyVS.getDelegate());
         assertEquals(rootProxy, DisconnectableVCS1.proxyVS.getTopmostManagedAncestor(fileProxy));
         assertEquals(rootProxy, DisconnectableVCS2.proxyVS.getTopmostManagedAncestor(fileProxy));
@@ -184,10 +184,10 @@ public class ConnectDisconnectTest extends NbTestCase {
         assertEquals(folderProxy, DisconnectableVCS2.proxyVS.getTopmostManagedAncestor(folderProxy));
     }
 
-    @org.netbeans.modules.versioning.fileproxy.spi.VersioningSystem.Registration(actionsCategory="test", displayName="DisconnectableVCS1", menuLabel="DisconnectableVCS1menu", metadataFolderNames=".test")
-    public static class DisconnectableVCS1 extends org.netbeans.modules.versioning.fileproxy.spi.VersioningSystem {
+    @   org.netbeans.modules.versioning.core.spi.VersioningSystem.Registration(actionsCategory="test", displayName="DisconnectableVCS1", menuLabel="DisconnectableVCS1menu", metadataFolderNames=".test")
+    public static class DisconnectableVCS1 extends org.netbeans.modules.versioning.core.spi.VersioningSystem {
         private static DisconnectableVCS1 instance;
-        private static VCSSystemProvider.VersioningSystem<org.netbeans.modules.versioning.fileproxy.spi.VersioningSystem> proxyVS;
+        private static VCSSystemProvider.VersioningSystem<org.netbeans.modules.versioning.core.spi.VersioningSystem> proxyVS;
         public static final String VERSIONED_FOLDER_SUFFIX = "-connectdisconnect-versioned1";
 
         public DisconnectableVCS1 () {
@@ -207,10 +207,10 @@ public class ConnectDisconnectTest extends NbTestCase {
         }
     }
 
-    @org.netbeans.modules.versioning.fileproxy.spi.VersioningSystem.Registration(actionsCategory="test", displayName="DisconnectableVCS2", menuLabel="DisconnectableVCS2menu", metadataFolderNames=".test")
-    public static class DisconnectableVCS2 extends org.netbeans.modules.versioning.fileproxy.spi.VersioningSystem {
+    @   org.netbeans.modules.versioning.core.spi.VersioningSystem.Registration(actionsCategory="test", displayName="DisconnectableVCS2", menuLabel="DisconnectableVCS2menu", metadataFolderNames=".test")
+    public static class DisconnectableVCS2 extends org.netbeans.modules.versioning.core.spi.VersioningSystem {
         private static DisconnectableVCS2 instance;
-        private static VCSSystemProvider.VersioningSystem<org.netbeans.modules.versioning.fileproxy.spi.VersioningSystem> proxyVS;
+        private static VCSSystemProvider.VersioningSystem<org.netbeans.modules.versioning.core.spi.VersioningSystem> proxyVS;
         public static final String VERSIONED_FOLDER_SUFFIX = "-connectdisconnect-versioned2";
 
         public DisconnectableVCS2 () {
@@ -230,15 +230,15 @@ public class ConnectDisconnectTest extends NbTestCase {
         }
     }
     
-    private static class TestVCSProxy implements VCSSystemProvider.VersioningSystem<org.netbeans.modules.versioning.fileproxy.spi.VersioningSystem> {
-        private final org.netbeans.modules.versioning.fileproxy.spi.VersioningSystem versioningSystem;
+    private static class TestVCSProxy implements VCSSystemProvider.VersioningSystem<org.netbeans.modules.versioning.core.spi.VersioningSystem> {
+        private final org.netbeans.modules.versioning.core.spi.VersioningSystem versioningSystem;
 
-        public TestVCSProxy(org.netbeans.modules.versioning.fileproxy.spi.VersioningSystem versioningSystem) {
+        public TestVCSProxy(org.netbeans.modules.versioning.core.spi.VersioningSystem versioningSystem) {
             this.versioningSystem = versioningSystem;
         }
         
         @Override
-        public org.netbeans.modules.versioning.fileproxy.spi.VersioningSystem getDelegate() {
+        public org.netbeans.modules.versioning.core.spi.VersioningSystem getDelegate() {
             return versioningSystem;
         }
 
@@ -298,7 +298,7 @@ public class ConnectDisconnectTest extends NbTestCase {
     private static void awakeDelegates() {
         for(VersioningSystem s : VersioningManager.getInstance().getVersioningSystems()) {
             Object vs = s.getDelegate();
-            if(vs instanceof DelegatingVCS && ((String)((DelegatingVCS) vs).getProp(org.netbeans.modules.versioning.fileproxy.spi.VersioningSystem.PROP_DISPLAY_NAME)).startsWith("DisconnectableVCS")) {
+            if(vs instanceof DelegatingVCS && ((String)((DelegatingVCS) vs).getProp(org.netbeans.modules.versioning.core.spi.VersioningSystem.PROP_DISPLAY_NAME)).startsWith("DisconnectableVCS")) {
                 ((DelegatingVCS) vs).getDelegate();
             }
         }

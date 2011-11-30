@@ -43,10 +43,11 @@
  */
 package org.netbeans.modules.versioning.fileproxy.spi;
 
+import org.netbeans.modules.versioning.core.spi.VersioningSupport;
 import java.io.File;
 import java.util.prefs.Preferences;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.versioning.fileproxy.api.VCSFileProxy;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.Utils;
 import org.netbeans.modules.versioning.spi.testvcs.TestVCS;
 import org.openide.filesystems.FileUtil;

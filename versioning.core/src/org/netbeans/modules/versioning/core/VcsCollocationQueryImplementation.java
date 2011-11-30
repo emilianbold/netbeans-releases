@@ -47,7 +47,7 @@ import org.netbeans.spi.queries.CollocationQueryImplementation;
 import org.netbeans.modules.versioning.core.util.VCSSystemProvider.VersioningSystem;
 
 import java.io.File;
-import org.netbeans.modules.versioning.fileproxy.api.VCSFileProxy;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
  * Delegates the work to the owner of files in query.

@@ -58,7 +58,7 @@ import org.netbeans.modules.versioning.core.Utils;
 import org.netbeans.modules.versioning.core.VersioningConfig;
 import org.netbeans.modules.versioning.core.VersioningManager;
 import org.netbeans.modules.versioning.core.util.VCSSystemProvider.VersioningSystem;
-import org.netbeans.modules.versioning.fileproxy.api.VCSFileProxy;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;

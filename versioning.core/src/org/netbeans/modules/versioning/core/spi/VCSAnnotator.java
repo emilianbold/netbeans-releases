@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -41,36 +41,65 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.versioning.fileproxy.spi;
+package org.netbeans.modules.versioning.core.spi;
 
-
-import org.netbeans.modules.versioning.fileproxy.api.VCSFileProxy;
-import org.netbeans.modules.versioning.core.VcsVisibilityQueryImplementation;
-import org.netbeans.spi.queries.VisibilityQueryImplementation2;
+import javax.swing.*;
+import java.awt.Image;
 
 /**
- * Provides the visibility service according to {@link VisibilityQueryImplementation2}
- * for a particular VersioningSystem
+ * Anntoator provides these services based on files' versioning status:
+ * - coloring for labels (file and folder names, editor tabs, etc.)
+ * - badging (modification of node icons)
+ * - provides set of Actions
  * 
- * @author Tomas Stupka
+ * @author Maros Sandor
  */
-public abstract class VCSVisibilityQuery {
+public abstract class VCSAnnotator {
 
     /**
-     * Check whether a file is recommended to be visible.
-     * @param file a file to considered
-     * @return true if it is recommended to display this file
+     * Protected constructor, does nothing.   
      */
-    public abstract boolean isVisible(VCSFileProxy file);
+    protected VCSAnnotator() {
+    }
+    
+    /**
+     * Specifies destination of returned actions. Destination MainMenu means actions will be user to construct main
+     * application menu, PopupMenu means actions will be used to construct popup menus on projects, files and folders.
+     * 
+     * @see #getActions
+     */
+    public enum ActionDestination { MainMenu, PopupMenu }; 
 
     /**
-     * Notify a visibility change
+     * Allows a versioning system to decorate given name with HTML markup. This can be used to highlight file status. 
+     * 
+     * @param name text to decorate
+     * @param context a context this name represents
+     * @return decorated name or the same name left undecorated
      */
-    protected final void fireVisibilityChanged() {
-        VcsVisibilityQueryImplementation vq = VcsVisibilityQueryImplementation.getInstance();
-        if(vq != null) {
-            // was touched from outside - lets fire the change
-            vq.fireVisibilityChanged();
-        }
+    public String annotateName(String name, VCSContext context) {
+        return name;
+    }
+
+    /**
+     * Allows a versioning system to decorate given icon (badging). This can be used to highlight file status. 
+     * 
+     * @param icon an icon to decorate
+     * @param context a context this icon represents
+     * @return decorated icon or the same icon left undecorated
+     */
+    public Image annotateIcon(Image icon, VCSContext context) {
+        return icon;
+    }
+
+    /**
+     * Returns set of actions to offer to the user use on a given context.
+     * 
+     * @param context context on which returned actions should operate
+     * @param destination where this actions will be used
+     * @return Action[] array of actions to display for the given context, use null for separators
+     */
+    public Action[] getActions(VCSContext context, ActionDestination destination) {
+        return new Action[0];
     }
 }

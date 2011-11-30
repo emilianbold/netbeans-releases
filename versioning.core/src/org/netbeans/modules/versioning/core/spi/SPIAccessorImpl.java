@@ -41,65 +41,22 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.versioning.fileproxy.spi;
+package org.netbeans.modules.versioning.core.spi;
 
-import javax.swing.*;
-import java.awt.Image;
+import java.util.*;
+import org.netbeans.modules.versioning.core.SPIAccessor;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.openide.filesystems.FileObject;
 
 /**
- * Anntoator provides these services based on files' versioning status:
- * - coloring for labels (file and folder names, editor tabs, etc.)
- * - badging (modification of node icons)
- * - provides set of Actions
+ * Make it possible to hide contructors and factory methods in VCSContext.
  * 
  * @author Maros Sandor
  */
-public abstract class VCSAnnotator {
+final class SPIAccessorImpl extends SPIAccessor {
 
-    /**
-     * Protected constructor, does nothing.   
-     */
-    protected VCSAnnotator() {
-    }
-    
-    /**
-     * Specifies destination of returned actions. Destination MainMenu means actions will be user to construct main
-     * application menu, PopupMenu means actions will be used to construct popup menus on projects, files and folders.
-     * 
-     * @see #getActions
-     */
-    public enum ActionDestination { MainMenu, PopupMenu }; 
-
-    /**
-     * Allows a versioning system to decorate given name with HTML markup. This can be used to highlight file status. 
-     * 
-     * @param name text to decorate
-     * @param context a context this name represents
-     * @return decorated name or the same name left undecorated
-     */
-    public String annotateName(String name, VCSContext context) {
-        return name;
-    }
-
-    /**
-     * Allows a versioning system to decorate given icon (badging). This can be used to highlight file status. 
-     * 
-     * @param icon an icon to decorate
-     * @param context a context this icon represents
-     * @return decorated icon or the same icon left undecorated
-     */
-    public Image annotateIcon(Image icon, VCSContext context) {
-        return icon;
-    }
-
-    /**
-     * Returns set of actions to offer to the user use on a given context.
-     * 
-     * @param context context on which returned actions should operate
-     * @param destination where this actions will be used
-     * @return Action[] array of actions to display for the given context, use null for separators
-     */
-    public Action[] getActions(VCSContext context, ActionDestination destination) {
-        return new Action[0];
+    @Override
+    public VCSContext createContextForFiles(Set<VCSFileProxy> files, Set<? extends FileObject> originalFiles) {
+        return VCSContext.forFiles(files, originalFiles);
     }
 }

@@ -57,7 +57,7 @@ public class FileProxyBasedVCSProvider extends VCSSystemProvider {
     /**
      * Result of Lookup.getDefault().lookup(new Lookup.Template<VersioningSystem>(VersioningSystem.class));
      */
-    private final Lookup.Result<org.netbeans.modules.versioning.fileproxy.spi.VersioningSystem> systemsLookupResult;
+    private final Lookup.Result<org.netbeans.modules.versioning.core.spi.VersioningSystem> systemsLookupResult;
     
     /**
      * Holds all registered versioning systems.
@@ -65,7 +65,7 @@ public class FileProxyBasedVCSProvider extends VCSSystemProvider {
     private final Collection<VersioningSystem> versioningSystems = new ArrayList<VersioningSystem>(5);
 
     public FileProxyBasedVCSProvider() {
-        systemsLookupResult = Lookup.getDefault().lookup(new Lookup.Template<org.netbeans.modules.versioning.fileproxy.spi.VersioningSystem>(org.netbeans.modules.versioning.fileproxy.spi.VersioningSystem.class));
+        systemsLookupResult = Lookup.getDefault().lookup(new Lookup.Template<org.netbeans.modules.versioning.core.spi.VersioningSystem>(org.netbeans.modules.versioning.core.spi.VersioningSystem.class));
     }
     
     private int refreshSerial;
@@ -76,10 +76,10 @@ public class FileProxyBasedVCSProvider extends VCSSystemProvider {
             // TODO: Workaround for Lookup bug #132145, we have to abort here to keep the freshest list of versioning systems
             return versioningSystems;
         }
-        Collection<? extends org.netbeans.modules.versioning.fileproxy.spi.VersioningSystem> systems = systemsLookupResult.allInstances();
+        Collection<? extends org.netbeans.modules.versioning.core.spi.VersioningSystem> systems = systemsLookupResult.allInstances();
         synchronized(versioningSystems) {
             versioningSystems.clear();
-            for (org.netbeans.modules.versioning.fileproxy.spi.VersioningSystem vs : systems) {
+            for (org.netbeans.modules.versioning.core.spi.VersioningSystem vs : systems) {
                 if(vs instanceof DelegatingVCS) {
                     versioningSystems.add((DelegatingVCS) vs);
                 }

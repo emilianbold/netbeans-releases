@@ -42,7 +42,7 @@
 package org.netbeans.modules.versioning.core;
 
 import java.io.File;
-import org.netbeans.modules.versioning.fileproxy.api.VCSFileProxy;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.filesystems.FileObject;
 
 /**

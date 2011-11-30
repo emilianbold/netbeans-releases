@@ -43,7 +43,7 @@ package org.netbeans.modules.versioning.core.fs.api;
 
 import java.io.IOException;
 import java.util.*;
-import org.netbeans.modules.versioning.fileproxy.api.VCSFileProxy;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
  *

@@ -83,7 +83,7 @@ public abstract class VersioningSystem {
      * @see #getProperty(String) 
      * @see #putProperty(String, Object)  
      */
-    public static final String PROP_DISPLAY_NAME = org.netbeans.modules.versioning.fileproxy.spi.VersioningSystem.PROP_DISPLAY_NAME;
+    public static final String PROP_DISPLAY_NAME = org.netbeans.modules.versioning.core.spi.VersioningSystem.PROP_DISPLAY_NAME;
 
     /**
      * Short name of the versioning system, it will be used as menu label and it should define a mnemonic key.
@@ -91,7 +91,7 @@ public abstract class VersioningSystem {
      * @see #getProperty(String) 
      * @see #putProperty(String, Object)  
      */
-    public static final String PROP_MENU_LABEL = org.netbeans.modules.versioning.fileproxy.spi.VersioningSystem.PROP_MENU_LABEL;
+    public static final String PROP_MENU_LABEL = org.netbeans.modules.versioning.core.spi.VersioningSystem.PROP_MENU_LABEL;
     
     /**
      * Marker property for a Versioning system that operates in Local History mode. Local History is a special versioning
@@ -103,7 +103,7 @@ public abstract class VersioningSystem {
      * 
      * NOTE: Local History is implemented by default, use this only if you are writing a replacement module 
      */
-    public static final String PROP_LOCALHISTORY_VCS = org.netbeans.modules.versioning.fileproxy.spi.VersioningSystem.PROP_LOCALHISTORY_VCS;
+    public static final String PROP_LOCALHISTORY_VCS = org.netbeans.modules.versioning.core.spi.VersioningSystem.PROP_LOCALHISTORY_VCS;
         
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
 

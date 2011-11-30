@@ -54,7 +54,7 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.Action;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.versioning.fileproxy.api.VCSFileProxy;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.spi.VersioningSystem;
 import org.netbeans.modules.versioning.spi.testvcs.TestAnnotatedVCS;
 import org.openide.nodes.Node;
@@ -105,7 +105,7 @@ public class DelegatingVCSTest extends NbTestCase {
      
     public void testDelegatingVCS() {
         DelegatingVCS delegate = getDelegatingVCS();
-        final org.netbeans.modules.versioning.fileproxy.spi.VCSContext ctx = org.netbeans.modules.versioning.fileproxy.spi.VCSContext.forNodes(new Node[0]);
+        final org.netbeans.modules.versioning.core.spi.VCSContext ctx = org.netbeans.modules.versioning.core.spi.VCSContext.forNodes(new Node[0]);
         
         assertNull(TestAnnotatedVCS.INSTANCE);
         
@@ -208,8 +208,8 @@ public class DelegatingVCSTest extends NbTestCase {
     }
     
     private DelegatingVCS getDelegatingVCS() {
-        Collection<? extends org.netbeans.modules.versioning.fileproxy.spi.VersioningSystem> systems = Lookup.getDefault().lookup(new Lookup.Template<org.netbeans.modules.versioning.fileproxy.spi.VersioningSystem>(org.netbeans.modules.versioning.fileproxy.spi.VersioningSystem.class)).allInstances();
-        for(org.netbeans.modules.versioning.fileproxy.spi.VersioningSystem s : systems) {
+        Collection<? extends org.netbeans.modules.versioning.core.spi.VersioningSystem> systems = Lookup.getDefault().lookup(new Lookup.Template<org.netbeans.modules.versioning.core.spi.VersioningSystem>(org.netbeans.modules.versioning.core.spi.VersioningSystem.class)).allInstances();
+        for(org.netbeans.modules.versioning.core.spi.VersioningSystem s : systems) {
             if(s instanceof DelegatingVCS && "TestVCSDisplay".equals((String)((DelegatingVCS) s).getProp(VersioningSystem.PROP_DISPLAY_NAME))) {
                 return (DelegatingVCS) s;
             }

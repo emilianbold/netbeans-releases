@@ -67,6 +67,6 @@ public abstract class Accessor {
         }
     }
     
-    public abstract VCSContext createVCSContext(org.netbeans.modules.versioning.fileproxy.spi.VCSContext delegate);
+    public abstract VCSContext createVCSContext(org.netbeans.modules.versioning.core.spi.VCSContext delegate);
     
 }

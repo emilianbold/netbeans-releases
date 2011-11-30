@@ -42,8 +42,8 @@
 
 package org.netbeans.modules.versioning.spi.testvcs;
 
-import org.netbeans.modules.versioning.fileproxy.api.VCSFileProxy;
-import org.netbeans.modules.versioning.fileproxy.spi.VCSVisibilityQuery;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.netbeans.modules.versioning.core.spi.VCSVisibilityQuery;
 
 /**
  *

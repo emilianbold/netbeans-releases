@@ -54,10 +54,10 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.Action;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.versioning.fileproxy.api.VCSFileProxy;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.spi.testvcs.TestAnnotatedVCS;
-import org.netbeans.modules.versioning.fileproxy.spi.VCSContext;
-import org.netbeans.modules.versioning.fileproxy.spi.VersioningSystem;
+import org.netbeans.modules.versioning.core.spi.VCSContext;
+import org.netbeans.modules.versioning.core.spi.VersioningSystem;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.test.MockLookup;
@@ -209,7 +209,7 @@ public class DelegatingVCSTest extends NbTestCase {
     }
     
     private DelegatingVCS getDelegatingVCS() {
-        Collection<? extends VersioningSystem> systems = Lookup.getDefault().lookup(new Lookup.Template<VersioningSystem>(org.netbeans.modules.versioning.fileproxy.spi.VersioningSystem.class)).allInstances();
+        Collection<? extends VersioningSystem> systems = Lookup.getDefault().lookup(new Lookup.Template<VersioningSystem>(org.netbeans.modules.versioning.core.spi.VersioningSystem.class)).allInstances();
         for(VersioningSystem s : systems) {
             if(s instanceof DelegatingVCS && "TestVCSDisplay".equals((String)((DelegatingVCS) s).getProp(VersioningSystem.PROP_DISPLAY_NAME))) {
                 return (DelegatingVCS) s;

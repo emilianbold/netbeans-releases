@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.versioning.fileproxy.api;
+package org.netbeans.modules.versioning.core.api;
 
 import org.openide.filesystems.FileObject;
 

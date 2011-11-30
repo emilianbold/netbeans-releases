@@ -43,10 +43,10 @@
  */
 package org.netbeans.modules.versioning.core;
 
-import org.netbeans.modules.versioning.fileproxy.spi.VCSContext;
+import org.netbeans.modules.versioning.core.spi.VCSContext;
 
 import java.util.*;
-import org.netbeans.modules.versioning.fileproxy.api.VCSFileProxy;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.filesystems.FileObject;
 
 /**

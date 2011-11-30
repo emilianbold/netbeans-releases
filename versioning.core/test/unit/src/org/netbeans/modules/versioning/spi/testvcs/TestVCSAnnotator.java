@@ -47,9 +47,9 @@ package org.netbeans.modules.versioning.spi.testvcs;
 import javax.swing.*;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
-import org.netbeans.modules.versioning.fileproxy.spi.VCSAnnotator;
-import org.netbeans.modules.versioning.fileproxy.spi.VCSAnnotator.ActionDestination;
-import org.netbeans.modules.versioning.fileproxy.spi.VCSContext;
+import org.netbeans.modules.versioning.core.spi.VCSAnnotator;
+import org.netbeans.modules.versioning.core.spi.VCSAnnotator.ActionDestination;
+import org.netbeans.modules.versioning.core.spi.VCSContext;
 
 /**
  * Annotator for TestVCS.

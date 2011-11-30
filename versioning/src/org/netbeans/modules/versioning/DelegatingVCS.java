@@ -52,11 +52,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
 import org.netbeans.modules.versioning.core.util.Utils;
-import org.netbeans.modules.versioning.fileproxy.spi.VCSAnnotator;
-import org.netbeans.modules.versioning.fileproxy.spi.VersioningSystem;
-import org.netbeans.modules.versioning.fileproxy.spi.VCSInterceptor;
-import org.netbeans.modules.versioning.fileproxy.api.VCSFileProxy;
-import org.netbeans.modules.versioning.fileproxy.spi.VCSVisibilityQuery;
+import org.netbeans.modules.versioning.core.spi.VCSAnnotator;
+import org.netbeans.modules.versioning.core.spi.VersioningSystem;
+import org.netbeans.modules.versioning.core.spi.VCSInterceptor;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.netbeans.modules.versioning.core.spi.VCSVisibilityQuery;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.netbeans.spi.queries.CollocationQueryImplementation;
 import org.openide.util.ContextAwareAction;
@@ -67,7 +67,7 @@ import org.openide.util.lookup.Lookups;
  *
  * @author Tomas Stupka
  */
-public class DelegatingVCS extends org.netbeans.modules.versioning.fileproxy.spi.VersioningSystem implements VCSSystemProvider.VersioningSystem<org.netbeans.modules.versioning.spi.VersioningSystem> {
+public class DelegatingVCS extends org.netbeans.modules.versioning.core.spi.VersioningSystem implements VCSSystemProvider.VersioningSystem<org.netbeans.modules.versioning.spi.VersioningSystem> {
 
     private final Map<?, ?> map;
     private org.netbeans.modules.versioning.spi.VersioningSystem delegate;
@@ -127,17 +127,17 @@ public class DelegatingVCS extends org.netbeans.modules.versioning.fileproxy.spi
     }
     
     @Override
-    public org.netbeans.modules.versioning.fileproxy.spi.VCSVisibilityQuery getVisibilityQuery() {
+    public org.netbeans.modules.versioning.core.spi.VCSVisibilityQuery getVisibilityQuery() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public org.netbeans.modules.versioning.fileproxy.spi.VCSInterceptor getVCSInterceptor() {
+    public org.netbeans.modules.versioning.core.spi.VCSInterceptor getVCSInterceptor() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public org.netbeans.modules.versioning.fileproxy.spi.VCSAnnotator getVCSAnnotator() {
+    public org.netbeans.modules.versioning.core.spi.VCSAnnotator getVCSAnnotator() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -228,15 +228,15 @@ public class DelegatingVCS extends org.netbeans.modules.versioning.fileproxy.spi
         if(annotator == null && getDelegate().getVCSAnnotator() != null) {
             annotator = new VCSAnnotator() {
                 @Override
-                public String annotateName(String name, org.netbeans.modules.versioning.fileproxy.spi.VCSContext context) {
+                public String annotateName(String name, org.netbeans.modules.versioning.core.spi.VCSContext context) {
                     return getDelegate().getVCSAnnotator().annotateName(name, Accessor.IMPL.createVCSContext(context));
                 }
                 @Override
-                public Image annotateIcon(Image icon, org.netbeans.modules.versioning.fileproxy.spi.VCSContext context) {
+                public Image annotateIcon(Image icon, org.netbeans.modules.versioning.core.spi.VCSContext context) {
                     return getDelegate().getVCSAnnotator().annotateIcon(icon, Accessor.IMPL.createVCSContext(context));
                 }
                 @Override
-                public Action[] getActions(org.netbeans.modules.versioning.fileproxy.spi.VCSContext context, ActionDestination destination) {
+                public Action[] getActions(org.netbeans.modules.versioning.core.spi.VCSContext context, ActionDestination destination) {
                     org.netbeans.modules.versioning.spi.VCSAnnotator.ActionDestination ad;
                     switch(destination) {
                         case MainMenu:
@@ -396,7 +396,7 @@ public class DelegatingVCS extends org.netbeans.modules.versioning.fileproxy.spi
         return metadataFolderNames;
     }
     
-    Action[] getActions(org.netbeans.modules.versioning.fileproxy.spi.VCSContext ctx, VCSAnnotator.ActionDestination actionDestination) {
+    Action[] getActions(org.netbeans.modules.versioning.core.spi.VCSContext ctx, VCSAnnotator.ActionDestination actionDestination) {
         if(map == null || isAlive()) {
             VCSAnnotator annotator = getAnnotator();
             return annotator != null ? annotator.getActions(ctx, actionDestination) : new Action[0];
@@ -419,7 +419,7 @@ public class DelegatingVCS extends org.netbeans.modules.versioning.fileproxy.spi
         }        
     }
     
-    Action[] getGlobalActions(org.netbeans.modules.versioning.fileproxy.spi.VCSContext ctx) {
+    Action[] getGlobalActions(org.netbeans.modules.versioning.core.spi.VCSContext ctx) {
         assert !isAlive();
         String category = (String) map.get("actionsCategory");              // NOI18N
         List<? extends Action> l = Utilities.actionsForPath("Versioning/" + category + "/Actions/Global"); // NOI18N
@@ -434,7 +434,7 @@ public class DelegatingVCS extends org.netbeans.modules.versioning.fileproxy.spi
         return ret != null ? ret.toArray(new Action[ret.size()]) : new Action[0];
     }
     
-    Action[] getInitActions(org.netbeans.modules.versioning.fileproxy.spi.VCSContext ctx) {
+    Action[] getInitActions(org.netbeans.modules.versioning.core.spi.VCSContext ctx) {
         String category = (String) map.get("actionsCategory");              // NOI18N
         List<? extends Action> l = Utilities.actionsForPath("Versioning/" + category + "/Actions/Unversioned"); // NOI18N
         List<Action> ret = new ArrayList<Action>(l.size());

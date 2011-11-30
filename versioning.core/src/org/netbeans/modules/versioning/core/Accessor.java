@@ -45,7 +45,7 @@ package org.netbeans.modules.versioning.core;
 
 import java.io.File;
 import java.util.*;
-import org.netbeans.modules.versioning.fileproxy.spi.VCSContext;
+import org.netbeans.modules.versioning.core.spi.VCSContext;
 import org.openide.filesystems.FileObject;
 
 /**

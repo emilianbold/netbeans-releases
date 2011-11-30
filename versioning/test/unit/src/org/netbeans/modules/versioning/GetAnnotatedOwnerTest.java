@@ -47,7 +47,7 @@ import org.netbeans.modules.versioning.core.VersioningManager;
 import java.io.File;
 import java.io.IOException;
 import org.netbeans.modules.versioning.core.util.VCSSystemProvider;
-import org.netbeans.modules.versioning.fileproxy.api.VCSFileProxy;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.spi.testvcs.TestAnnotatedVCS;
 import org.openide.util.test.MockLookup;
 

@@ -43,11 +43,11 @@
  */
 package org.netbeans.modules.versioning.spi.testvcs;
 
-import org.netbeans.modules.versioning.fileproxy.spi.VCSInterceptor;
+import org.netbeans.modules.versioning.core.spi.VCSInterceptor;
 
 import java.io.IOException;
 import java.util.*;
-import org.netbeans.modules.versioning.fileproxy.api.VCSFileProxy;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.util.FileUtils;
 
 /**

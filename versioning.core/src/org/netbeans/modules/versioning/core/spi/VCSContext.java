@@ -41,7 +41,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.versioning.fileproxy.spi;
+package org.netbeans.modules.versioning.core.spi;
 
 import org.netbeans.modules.versioning.core.SPIAccessor;
 import java.io.File;
@@ -68,7 +68,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.versioning.core.util.VCSSystemProvider;
 import org.netbeans.modules.versioning.core.util.VCSSystemProvider.VersioningSystem;
-import org.netbeans.modules.versioning.fileproxy.api.VCSFileProxy;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
  * This encapsulates a context, typically set of selected files or nodes. Context is passed to VCSAnnotators when

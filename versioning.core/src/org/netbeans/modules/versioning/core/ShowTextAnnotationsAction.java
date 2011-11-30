@@ -54,7 +54,7 @@ import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import org.netbeans.modules.versioning.fileproxy.spi.VersioningSupport;
+import org.netbeans.modules.versioning.core.spi.VersioningSupport;
 
 /**
  * View menu action that shows/hides textual Versioning annotations.

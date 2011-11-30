@@ -52,7 +52,7 @@ import org.openide.awt.Actions;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
-import org.netbeans.modules.versioning.fileproxy.spi.VCSContext;
+import org.netbeans.modules.versioning.core.spi.VCSContext;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 
 import javax.swing.*;
@@ -66,9 +66,9 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
-import org.netbeans.modules.versioning.fileproxy.api.VCSFileProxy;
-import org.netbeans.modules.versioning.fileproxy.spi.VersioningSupport;
-import org.netbeans.modules.versioning.fileproxy.spi.VersioningSystem;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.netbeans.modules.versioning.core.spi.VersioningSupport;
+import org.netbeans.modules.versioning.core.spi.VersioningSystem;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.Utilities;
 

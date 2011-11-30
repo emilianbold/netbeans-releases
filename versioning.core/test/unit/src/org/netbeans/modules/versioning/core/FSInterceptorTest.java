@@ -53,8 +53,8 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.versioning.fileproxy.api.VCSFileProxy;
-import org.netbeans.modules.versioning.fileproxy.spi.VCSInterceptor;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.netbeans.modules.versioning.core.spi.VCSInterceptor;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
@@ -494,8 +494,8 @@ public class FSInterceptorTest extends NbTestCase {
 
     }
 
-    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.versioning.fileproxy.spi.VersioningSystem.class)
-    public static class TestVCS extends org.netbeans.modules.versioning.fileproxy.spi.VersioningSystem {
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.versioning.core.spi.VersioningSystem.class)
+    public static class TestVCS extends org.netbeans.modules.versioning.core.spi.VersioningSystem {
 
         private VCSInterceptor interceptor;
         private static TestVCS instance;

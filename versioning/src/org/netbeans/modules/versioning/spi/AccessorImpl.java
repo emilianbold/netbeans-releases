@@ -53,7 +53,7 @@ import org.netbeans.modules.versioning.Accessor;
 final class AccessorImpl extends Accessor {
 
     @Override
-    public VCSContext createVCSContext(org.netbeans.modules.versioning.fileproxy.spi.VCSContext delegate) {
+    public VCSContext createVCSContext(org.netbeans.modules.versioning.core.spi.VCSContext delegate) {
         return new VCSContext(delegate);
     }
 

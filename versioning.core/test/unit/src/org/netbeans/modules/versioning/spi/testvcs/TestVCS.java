@@ -44,18 +44,18 @@
 package org.netbeans.modules.versioning.spi.testvcs;
 
 
-import org.netbeans.modules.versioning.fileproxy.api.VCSFileProxy;
-import org.netbeans.modules.versioning.fileproxy.spi.VCSAnnotator;
-import org.netbeans.modules.versioning.fileproxy.spi.VCSInterceptor;
-import org.netbeans.modules.versioning.fileproxy.spi.VCSVisibilityQuery;
-import org.netbeans.modules.versioning.fileproxy.spi.VersioningSystem;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.netbeans.modules.versioning.core.spi.VCSAnnotator;
+import org.netbeans.modules.versioning.core.spi.VCSInterceptor;
+import org.netbeans.modules.versioning.core.spi.VCSVisibilityQuery;
+import org.netbeans.modules.versioning.core.spi.VersioningSystem;
 
 /**
  * Test versioning system.
  * 
  * @author Maros Sandor
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.versioning.fileproxy.spi.VersioningSystem.class)
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.versioning.core.spi.VersioningSystem.class)
 public class TestVCS extends VersioningSystem {
 
     private static TestVCS instance;
