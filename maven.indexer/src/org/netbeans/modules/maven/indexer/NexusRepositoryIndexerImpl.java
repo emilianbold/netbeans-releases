@@ -606,6 +606,8 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
             });
         } catch (MutexException ex) {
             Exceptions.printStackTrace(ex);
+        } catch (NullPointerException x) {
+            LOGGER.log(Level.INFO, "#201057", x);
         }
         fireChangeIndex(repo);
     }
