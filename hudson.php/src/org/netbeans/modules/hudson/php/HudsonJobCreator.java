@@ -200,7 +200,7 @@ public class HudsonJobCreator extends JPanel implements ProjectHudsonJobCreator,
 
     private Document createJobXml() {
         Document doc = XMLUtil.createDocument("project", null, null, null); // NOI18N
-        // XXX copy & process jenkins-php template (<description> - url)
+        // XXX copy jenkins-php template
         scm.configure(doc);
         Helper.addLogRotator(doc);
         return doc;
