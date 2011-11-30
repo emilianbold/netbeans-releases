@@ -85,7 +85,12 @@ class TaskListModel extends AbstractTableModel implements TaskList.Listener {
     public int getRowCount() {
         synchronized (lock) {
             final List<? extends Task> list = getListOfTasks();
-            return null == list ? 0 : list.size();
+            if(list.isEmpty()){
+                synchronized (lock) {
+                    listOfTasks = null;
+                }
+            }
+            return list.size();
         }
     }
     
@@ -197,6 +202,9 @@ class TaskListModel extends AbstractTableModel implements TaskList.Listener {
 
     @Override
     public void cleared() {
+        synchronized (lock) {
+            listOfTasks = null;
+        }
         fireTableDataChanged();
     }
     
