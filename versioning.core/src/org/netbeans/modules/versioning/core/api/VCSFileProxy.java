@@ -44,6 +44,7 @@ package org.netbeans.modules.versioning.core.api;
 import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.versioning.core.APIAccessor;
 import org.netbeans.modules.versioning.core.FlatFolder;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -61,6 +62,10 @@ public final class VCSFileProxy {
     private final String path;
     final VCSFileProxyOperations proxy;
     boolean isFlat = false;
+    
+    static {
+        APIAccessor.IMPL = new APIAccessorImpl();
+    }
     
     private VCSFileProxy(String path, VCSFileProxyOperations proxy) {
         this.path = path;
