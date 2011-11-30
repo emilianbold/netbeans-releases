@@ -49,15 +49,23 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.j2ee.common.dd.DDHelper;
+import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.test.TestFileUtils;
 
 /**
+ * <p>
  * Base class for Java EE maven tests. Encapsulate basic stuff needed in every test case such as creating new project
  * in a proper folder, setting logger and so on. Allows to easily create projects of different types (Ejb, War, EA, 
- * Package). Offers various methods for creating/updating pom.xml, nb-configuration.xml etc.
+ * Package) and offers various methods for creating/updating pom.xml, nb-configuration.xml etc.
+ * </p>
+ * 
+ * <p>
+ * By default Web project is created for each subclass test. For creating different projects just use for example
+ * <code>project = createMavenEjbProject(getWorkDir());</code> and so
+ * </p>
  * 
  * @author Martin Janicek
  */
@@ -93,7 +101,7 @@ public abstract class JavaEEMavenTestBase extends NbTestCase {
     protected void setUp() throws Exception {
         clearWorkDir();
         
-        project = createMavenWebProject(getWorkDir());
+        project = createMavenWebProject();
     }
     
     /**
@@ -117,12 +125,20 @@ public abstract class JavaEEMavenTestBase extends NbTestCase {
      * @param projectDir root directory of the project
      * @return created project with structure described above
      */
-    protected Project createMavenWebProject(File projectDir) {
-        return createMavenWebProject(FileUtil.toFileObject(projectDir));
+    protected Project createMavenWebProject() {
+        try {
+            return createMavenWebProject(FileUtil.toFileObject(getWorkDir()));
+        } catch (IOException ex) {
+            return null;
+        }
     }
     
-    protected Project createMavenWebProject(File projectDir, String pom) {
-        return createMavenWebProject(FileUtil.toFileObject(projectDir), pom);
+    protected Project createMavenWebProject(String pom) {
+        try {
+            return createMavenWebProject(FileUtil.toFileObject(getWorkDir()), pom);
+        } catch (IOException ex) {
+            return null;
+        }
     }
     
     protected Project createMavenWebProject(FileObject projectDir) {
@@ -163,8 +179,12 @@ public abstract class JavaEEMavenTestBase extends NbTestCase {
      * @param projectDir root directory of the project
      * @return created project with structure described above
      */
-    protected Project createMavenEjbProject(File projectDir) {
-        return createMavenEjbProject(FileUtil.toFileObject(projectDir));
+    protected Project createMavenEjbProject() {
+        try {
+            return createMavenEjbProject(FileUtil.toFileObject(getWorkDir()));
+        } catch (IOException ex) {
+            return null;
+        }
     }
     
     protected Project createMavenEjbProject(FileObject projectDir) {
@@ -174,7 +194,10 @@ public abstract class JavaEEMavenTestBase extends NbTestCase {
             FileObject java = FileUtil.createFolder(main, "java"); //NOI18N
             FileObject resources = FileUtil.createFolder(main, "resources"); //NOI18N
 
-            return createProject(projectDir);
+            PomBuilder pomBuilder = new PomBuilder();
+            pomBuilder.appendPomContent(NbMavenProject.TYPE_EJB);
+            
+            return createProject(projectDir, pomBuilder.buildPom());
         } catch (IOException ex) {
             return null;
         }
@@ -199,8 +222,12 @@ public abstract class JavaEEMavenTestBase extends NbTestCase {
      * @param projectDir root directory of the project
      * @return created project with structure described above
      */
-    protected Project createMavenEarProject(File projectDir) {
-        return createMavenEarProject(FileUtil.toFileObject(projectDir));
+    protected Project createMavenEarProject() {
+        try {
+            return createMavenEarProject(FileUtil.toFileObject(getWorkDir()));
+        } catch (IOException ex) {
+            return null;
+        }
     }
     
     protected Project createMavenEarProject(FileObject projectDir) {
@@ -208,8 +235,11 @@ public abstract class JavaEEMavenTestBase extends NbTestCase {
             FileObject src = FileUtil.createFolder(projectDir, "src"); //NOI18N
             FileObject main = FileUtil.createFolder(src, "main"); //NOI18N
             FileObject application = FileUtil.createFolder(main, "application"); //NOI18N
+            
+            PomBuilder pomBuilder = new PomBuilder();
+            pomBuilder.appendPomContent(NbMavenProject.TYPE_EAR);
 
-            return createProject(projectDir);
+            return createProject(projectDir, pomBuilder.buildPom());
         } catch (IOException ex) {
             return null;
         }
@@ -250,6 +280,52 @@ public abstract class JavaEEMavenTestBase extends NbTestCase {
             createMavenWebProject(web);
 
             return createProject(projectDir);
+        } catch (IOException ex) {
+            return null;
+        }
+    }
+    
+    /**
+     * <p>Creates default Maven OSGI project structure which could be used for tests
+     * In file system it seems like this:</p>
+     * 
+     * <pre>
+     * |-- pom.xml
+     * |
+     * `-- src
+     *     `-- main
+     *         |-- assembly
+     *         |-- java
+     *         `-- resources
+     * </pre>
+     * 
+     * For creation of additional files like nb-configuration.xml see MavenTestSupport methods.
+     * Project has set Java EE 6 as a default platform version. For setting up different version use 
+     * {@link MavenProjectSupport#setJ2eeVersion(org.netbeans.api.project.Project, java.lang.String)}
+     * 
+     * @param projectDir root directory of the project
+     * @return created project with structure described above
+     */
+    protected Project createMavenOSGIProject() {
+        try {
+            return createMavenOSGIProject(FileUtil.toFileObject(getWorkDir()));
+        } catch (IOException ex) {
+            return null;
+        }
+    }
+    
+    protected Project createMavenOSGIProject(FileObject projectDir) {
+        try {
+            FileObject src = FileUtil.createFolder(projectDir, "src"); //NOI18N
+            FileObject main = FileUtil.createFolder(src, "main"); //NOI18N
+            FileObject java = FileUtil.createFolder(main, "java"); //NOI18N
+            FileObject resources = FileUtil.createFolder(main, "resources"); //NOI18N
+            FileObject webapp = FileUtil.createFolder(main, "webapp"); //NOI18N
+
+            PomBuilder pomBuilder = new PomBuilder();
+            pomBuilder.appendPomContent(NbMavenProject.TYPE_OSGI);
+            
+            return createProject(projectDir, pomBuilder.buildPom());
         } catch (IOException ex) {
             return null;
         }

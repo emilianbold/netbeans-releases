@@ -132,7 +132,7 @@ public class WebModuleImplTest extends JavaEEMavenTestBase {
     }
     
     private void createProject(PomBuilder builder) throws IOException {
-        project = createMavenWebProject(getWorkDir(), builder.buildPom());
+        project = createMavenWebProject(builder.buildPom());
         assertNotNull(project);
         provider = project.getLookup().lookup(WebModuleProviderImpl.class);
         assertNotNull(provider);
