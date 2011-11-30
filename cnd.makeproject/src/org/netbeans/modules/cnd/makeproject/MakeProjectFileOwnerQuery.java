@@ -53,6 +53,7 @@ import org.netbeans.modules.cnd.api.project.NativeProjectRegistry;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.spi.project.FileOwnerQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -113,15 +114,16 @@ public class MakeProjectFileOwnerQuery implements FileOwnerQueryImplementation {
                             mine = descriptor.findProjectItemByPath(path) != null || descriptor.findExternalItemByPath(path) != null;
                         } else if (fo.isFolder()) {
                             mine = descriptor.findFolderByPath(path) != null;
-                            if (!mine) {
-                                List<String> absRoots = new ArrayList<String>();
-                                absRoots.addAll(descriptor.getAbsoluteSourceRoots());
-                                absRoots.addAll(descriptor.getAbsoluteTestRoots());
-                                for (String srcPath : absRoots) {
-                                    if (path.startsWith(srcPath)) {
-                                        mine = true;
-                                        break;
-                                    }
+                        }
+                        if (!mine) {
+                            List<String> absRoots = new ArrayList<String>();
+                            absRoots.addAll(descriptor.getAbsoluteSourceRoots());
+                            absRoots.addAll(descriptor.getAbsoluteTestRoots());
+                            for (String srcPath : absRoots) {
+                                srcPath = CndPathUtilitities.normalizeSlashes(srcPath);
+                                if (path.startsWith(srcPath)) {
+                                    mine = true;
+                                    break;
                                 }
                             }
                         }
