@@ -2132,10 +2132,6 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         } catch (UserQuestionException ex) {
             throw ex;
         } catch (IOException ex) {
-            Exceptions.attachLocalizedMessage(ex,
-            NbBundle.getMessage(CloneableEditorSupport.class,
-            "EXC_LoadDocument",
-            messageName()));
             throw ex;
         } catch (Exception e) { // incl. BadLocationException
             aProblem = e;
