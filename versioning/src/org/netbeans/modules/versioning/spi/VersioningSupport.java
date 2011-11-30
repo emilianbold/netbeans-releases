@@ -122,7 +122,8 @@ public final class VersioningSupport {
     /**
      * Helper method to signal that a versioning system started to manage some previously unversioned files 
      * (those files were imported into repository).
-     * see
+     * 
+     * @see VersioningSystem#fireVersionedFilesChanged() 
      */
     public static void versionedRootsChanged() {
         Utils.versionedRootsChanged();
