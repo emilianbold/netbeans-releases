@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.versioning;
 
+import org.netbeans.modules.versioning.core.VersioningAnnotationProvider;
 import java.awt.EventQueue;
 import java.awt.Image;
 import java.awt.image.BufferedImage;

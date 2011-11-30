@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.versioning.spi;
 
-import org.netbeans.modules.versioning.VersioningManager;
 import org.netbeans.spi.queries.CollocationQueryImplementation;
 
 import java.io.File;
@@ -55,6 +54,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.util.*;
 import org.netbeans.modules.versioning.Accessor;
+import org.netbeans.modules.versioning.core.util.Utils;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
@@ -83,7 +83,7 @@ public abstract class VersioningSystem {
      * @see #getProperty(String) 
      * @see #putProperty(String, Object)  
      */
-    public static final String PROP_DISPLAY_NAME = "String VCS.DisplayName";
+    public static final String PROP_DISPLAY_NAME = org.netbeans.modules.versioning.fileproxy.spi.VersioningSystem.PROP_DISPLAY_NAME;
 
     /**
      * Short name of the versioning system, it will be used as menu label and it should define a mnemonic key.
@@ -91,7 +91,7 @@ public abstract class VersioningSystem {
      * @see #getProperty(String) 
      * @see #putProperty(String, Object)  
      */
-    public static final String PROP_MENU_LABEL = "String VCS.MenuLabel";
+    public static final String PROP_MENU_LABEL = org.netbeans.modules.versioning.fileproxy.spi.VersioningSystem.PROP_MENU_LABEL;
     
     /**
      * Marker property for a Versioning system that operates in Local History mode. Local History is a special versioning
@@ -103,7 +103,7 @@ public abstract class VersioningSystem {
      * 
      * NOTE: Local History is implemented by default, use this only if you are writing a replacement module 
      */
-    public static final String PROP_LOCALHISTORY_VCS = "Boolean VCS.LocalHistory";
+    public static final String PROP_LOCALHISTORY_VCS = org.netbeans.modules.versioning.fileproxy.spi.VersioningSystem.PROP_LOCALHISTORY_VCS;
         
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
 
@@ -237,7 +237,7 @@ public abstract class VersioningSystem {
      * @param files set of files whose annotations changed or null if the change affects all files 
      */ 
     protected final void fireAnnotationsChanged(Set<File> files) {
-        support.firePropertyChange(VersioningManager.EVENT_ANNOTATIONS_CHANGED, null, files);
+        support.firePropertyChange(Utils.EVENT_ANNOTATIONS_CHANGED, null, files);
     }
     
     /**
@@ -246,7 +246,7 @@ public abstract class VersioningSystem {
      * @param files set of files whose status changed or null if all files changed status 
      */ 
     protected final void fireStatusChanged(Set<File> files) {
-        support.firePropertyChange(VersioningManager.EVENT_STATUS_CHANGED, null, files);
+        support.firePropertyChange(Utils.EVENT_STATUS_CHANGED, null, files);
     }
 
     /**
@@ -254,7 +254,7 @@ public abstract class VersioningSystem {
      * (those files were imported into repository).
      */ 
     protected final void fireVersionedFilesChanged() {
-        support.firePropertyChange(VersioningManager.EVENT_VERSIONED_ROOTS, null, null);
+        support.firePropertyChange(Utils.EVENT_VERSIONED_ROOTS, null, null);
     }
     
     /**
