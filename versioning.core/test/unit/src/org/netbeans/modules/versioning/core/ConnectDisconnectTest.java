@@ -248,11 +248,6 @@ public class ConnectDisconnectTest extends NbTestCase {
         }
 
         @Override
-        public Object getProp(String key) {
-            return versioningSystem.getProperty(key);
-        }
-
-        @Override
         public VCSFileProxy getTopmostManagedAncestor(VCSFileProxy file) {
             return versioningSystem.getTopmostManagedAncestor(file);
         }
@@ -294,11 +289,21 @@ public class ConnectDisconnectTest extends NbTestCase {
         public boolean isExcluded(VCSFileProxy file) {
             return VersioningSupport.isExcluded(file);
         }
+
+        @Override
+        public String getDisplayName() {
+            return "TestVCSProxy";
+        }
+
+        @Override
+        public String getMenuLabel() {
+            return "TestVCSProxy";
+        }
     }
     private static void awakeDelegates() {
         for(VersioningSystem s : VersioningManager.getInstance().getVersioningSystems()) {
             Object vs = s.getDelegate();
-            if(vs instanceof DelegatingVCS && ((String)((DelegatingVCS) vs).getProp(org.netbeans.modules.versioning.core.spi.VersioningSystem.PROP_DISPLAY_NAME)).startsWith("DisconnectableVCS")) {
+            if(vs instanceof DelegatingVCS && ((String)((DelegatingVCS) vs).getDisplayName()).startsWith("DisconnectableVCS")) {
                 ((DelegatingVCS) vs).getDelegate();
             }
         }

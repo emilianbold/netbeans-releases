@@ -109,10 +109,10 @@ public class DelegatingVCSTest extends NbTestCase {
         
         assertNull(TestAnnotatedVCS.INSTANCE);
         
-        assertEquals("TestVCSDisplay", delegate.getProp(VersioningSystem.PROP_DISPLAY_NAME));
+        assertEquals("TestVCSDisplay", delegate.getDisplayName());
         assertNull(TestAnnotatedVCS.INSTANCE);
         
-        assertEquals("TestVCSMenu", delegate.getProp(VersioningSystem.PROP_MENU_LABEL));
+        assertEquals("TestVCSMenu", delegate.getMenuLabel());
         assertNull(TestAnnotatedVCS.INSTANCE);
         
         Action[] actions = delegate.getGlobalActions(ctx);
@@ -210,7 +210,7 @@ public class DelegatingVCSTest extends NbTestCase {
     private DelegatingVCS getDelegatingVCS() {
         Collection<? extends org.netbeans.modules.versioning.core.spi.VersioningSystem> systems = Lookup.getDefault().lookup(new Lookup.Template<org.netbeans.modules.versioning.core.spi.VersioningSystem>(org.netbeans.modules.versioning.core.spi.VersioningSystem.class)).allInstances();
         for(org.netbeans.modules.versioning.core.spi.VersioningSystem s : systems) {
-            if(s instanceof DelegatingVCS && "TestVCSDisplay".equals((String)((DelegatingVCS) s).getProp(VersioningSystem.PROP_DISPLAY_NAME))) {
+            if(s instanceof DelegatingVCS && "TestVCSDisplay".equals((String)((DelegatingVCS) s).getDisplayName())) {
                 return (DelegatingVCS) s;
             }
         }

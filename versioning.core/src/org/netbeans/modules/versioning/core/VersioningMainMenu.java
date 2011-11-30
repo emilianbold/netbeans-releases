@@ -116,7 +116,7 @@ public class VersioningMainMenu extends AbstractAction implements DynamicMenuCon
             for (final VersioningSystem system : systems) {
                 if (system.isLocalHistory()) {
                     localHistory = system;
-                } else if (!"".equals(Utils.getMenuLabel(system))) { //NOI18N
+                } else if (!"".equals(system.getMenuLabel())) { //NOI18N
                     JMenu menu = createVersioningSystemMenu(system, true);
                     items.add(menu);
                 }
@@ -132,7 +132,7 @@ public class VersioningMainMenu extends AbstractAction implements DynamicMenuCon
 
     private JMenu createVersioningSystemMenu(final VersioningSystem system, final boolean isRegularVCS) {
         final JMenu menu = new JMenu();
-        Mnemonics.setLocalizedText(menu, Utils.getMenuLabel(system));
+        Mnemonics.setLocalizedText(menu, system.getMenuLabel());
         menu.addMenuListener(new MenuListener() {
             @Override
             public void menuSelected(MenuEvent e) {
@@ -191,7 +191,7 @@ public class VersioningMainMenu extends AbstractAction implements DynamicMenuCon
     static final class ByDisplayNameComparator implements Comparator<VersioningSystem> {
         @Override
         public int compare(VersioningSystem a, VersioningSystem b) {
-            return Utils.getDisplayName(a).compareTo(Utils.getDisplayName(b));
+            return a.getDisplayName().compareTo(b.getDisplayName());
         }
     }
     
@@ -226,7 +226,7 @@ public class VersioningMainMenu extends AbstractAction implements DynamicMenuCon
         @Override
         public void actionPerformed (ActionEvent e) {
             NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
-                    NbBundle.getMessage(VersioningMainMenu.class, "MSG_ConnectAction.confirmation.text", new Object[] { root.getName(), Utils.getDisplayName(vs) }), //NOI18N
+                    NbBundle.getMessage(VersioningMainMenu.class, "MSG_ConnectAction.confirmation.text", new Object[] { root.getName(), vs.getDisplayName() }), //NOI18N
                     NbBundle.getMessage(VersioningMainMenu.class, "LBL_ConnectAction.confirmation.title"), //NOI18N
                     NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.QUESTION_MESSAGE);
             if (DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.OK_OPTION) {

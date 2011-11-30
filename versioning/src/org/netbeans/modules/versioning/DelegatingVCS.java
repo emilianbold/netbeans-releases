@@ -98,8 +98,8 @@ public class DelegatingVCS extends org.netbeans.modules.versioning.core.spi.Vers
 
     public DelegatingVCS(org.netbeans.modules.versioning.spi.VersioningSystem vs) {
         this.map = null;
-        this.displayName = (String) vs.getProperty(VersioningSystem.PROP_DISPLAY_NAME);
-        this.menuLabel = (String) vs.getProperty(VersioningSystem.PROP_MENU_LABEL);
+        this.displayName = (String) vs.getProperty(org.netbeans.modules.versioning.spi.VersioningSystem.PROP_DISPLAY_NAME);
+        this.menuLabel = (String) vs.getProperty(org.netbeans.modules.versioning.spi.VersioningSystem.PROP_MENU_LABEL);
         this.delegate = vs;
         
         LOG.log(Level.FINE, "Created DelegatingVCS for : {0}", displayName); // NOI18N
@@ -191,19 +191,17 @@ public class DelegatingVCS extends org.netbeans.modules.versioning.core.spi.Vers
         if(!isAlive()) {
             return false;
         }
-        return getDelegate().getProperty(VersioningSystem.PROP_LOCALHISTORY_VCS) != null;
+        return getDelegate().getProperty(org.netbeans.modules.versioning.spi.VersioningSystem.PROP_LOCALHISTORY_VCS) != null;
     }
 
-    public Object getProp(String key) {
-        if(isAlive()) {
-            return getDelegate().getProperty(key);
-        }
-        if(VersioningSystem.PROP_DISPLAY_NAME.equals(key)) {
-            return displayName;
-        } else if(VersioningSystem.PROP_MENU_LABEL.equals(key)) {
-            return menuLabel;
-        } 
-        return getDelegate().getProperty(key);
+    @Override
+    public String getDisplayName() {
+        return displayName;
+    }
+    
+    @Override
+    public String getMenuLabel() {
+        return menuLabel;
     }
 
     public final void addPropertyCL(PropertyChangeListener listener) {
@@ -358,9 +356,8 @@ public class DelegatingVCS extends org.netbeans.modules.versioning.core.spi.Vers
                     getDelegate().getVCSInterceptor().beforeEdit(file.toFile());
                 }
 
-                
                 @Override
-                public long refreshRecursively(VCSFileProxy dir, long lastTimeStamp, List<? super VCSFileProxy> children) {
+                public long refreshRecursively(VCSFileProxy dir, long lastTimeStamp, List<VCSFileProxy> children) {
                     List<? super File> files = new ArrayList<File>(children.size());
                     for (Iterator<? super VCSFileProxy> it = children.iterator(); it.hasNext();) {
                         VCSFileProxy fileProxy = (VCSFileProxy) it.next();

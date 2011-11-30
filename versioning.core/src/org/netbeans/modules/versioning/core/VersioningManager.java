@@ -199,11 +199,6 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
         }
 
         @Override
-        public Object getProp(String key) {
-            return null;
-        }
-
-        @Override
         public VCSFileProxy getTopmostManagedAncestor(VCSFileProxy file) {
             return null;
         }
@@ -245,6 +240,16 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
         @Override
         public Object getDelegate() {
             return null;
+        }
+
+        @Override
+        public String getDisplayName() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public String getMenuLabel() {
+            throw new UnsupportedOperationException("Not supported yet.");
         }
     };
     

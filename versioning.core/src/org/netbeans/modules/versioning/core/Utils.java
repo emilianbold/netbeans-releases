@@ -256,14 +256,6 @@ public class Utils {
     public static RequestProcessor.Task createTask(Runnable runnable) {
         return vcsBlockingRequestProcessor.create(runnable);
     }
-
-    public static String getDisplayName(VCSSystemProvider.VersioningSystem system) {
-        return (String) system.getProp(VersioningSystem.PROP_DISPLAY_NAME); // 
-    }
-
-    public static String getMenuLabel(VCSSystemProvider.VersioningSystem system) {
-        return (String) system.getProp(VersioningSystem.PROP_MENU_LABEL);
-    }
     
     public static JSeparator createJSeparator() {
         JMenu menu = new JMenu();

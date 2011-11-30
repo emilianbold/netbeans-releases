@@ -156,7 +156,7 @@ public class ProjectMenuItem extends AbstractAction implements Presenter.Popup {
             if (root != null) {
                 if (VersioningConfig.getDefault().isDisconnected(owner, root)) {
                     // repository is indeed disconnected, display only Connect action
-                    String displayName = Utils.getMenuLabel(owner);
+                    String displayName = owner.getMenuLabel();
                     actions = new Action[] { new VersioningMainMenu.ConnectAction(owner, root, NbBundle.getMessage(ProjectMenuItem.class, "CTL_ConnectAction.name.vcs", displayName)) }; //NOI18N
                 }
             }
@@ -244,7 +244,7 @@ public class ProjectMenuItem extends AbstractAction implements Presenter.Popup {
 
         private LazyMenu(Node[] nodes, VersioningSystem owner) {
             // owner == null ? 'default versioning menu' : 'specific menu of a versioning system'
-            super(owner == null ? NbBundle.getMessage(ProjectMenuItem.class, "CTL_MenuItem_VersioningMenu") : Utils.getDisplayName(owner));
+            super(owner == null ? NbBundle.getMessage(ProjectMenuItem.class, "CTL_MenuItem_VersioningMenu") : owner.getMenuLabel());
             this.nodes = nodes;
             this.owner = owner;
         }

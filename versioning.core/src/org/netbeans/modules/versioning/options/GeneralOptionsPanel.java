@@ -259,7 +259,7 @@ final class GeneralOptionsPanel extends javax.swing.JPanel implements ActionList
         @Override
         public Component getListCellRendererComponent (JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             if (value instanceof VersioningSystem) {
-                value = Utils.getDisplayName((VersioningSystem) value);
+                value = ((VersioningSystem) value).getDisplayName();
             }
             return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
         }

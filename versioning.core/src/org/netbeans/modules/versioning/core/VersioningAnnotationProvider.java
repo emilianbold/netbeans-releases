@@ -217,7 +217,7 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
 
         @Override
         public String getName() {
-            return Utils.getDisplayName(system);
+            return system.getDisplayName();
         }
 
         @Override
@@ -246,7 +246,7 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
         private final VCSContext context;
 
         public RealVersioningSystemActions(VersioningSystem system, VCSContext context) {
-            super(Utils.getDisplayName(system));
+            super(system.getDisplayName());
             this.system = system;
             this.context = context;
         }
@@ -266,7 +266,7 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
             private boolean popupContructed;
 
             public VersioningSystemMenuItem() {
-                Mnemonics.setLocalizedText(this, Utils.getDisplayName(system));
+                Mnemonics.setLocalizedText(this, system.getDisplayName());
             }
 
             @Override

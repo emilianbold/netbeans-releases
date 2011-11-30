@@ -72,10 +72,12 @@ public abstract class VCSSystemProvider {
         
         S getDelegate();
         
+        public String getDisplayName();
+        
+        public String getMenuLabel();
+        
         public boolean isLocalHistory();
         
-        public Object getProp(String key);
-
         public VCSFileProxy getTopmostManagedAncestor(VCSFileProxy file);
 
         public VCSAnnotator getAnnotator();

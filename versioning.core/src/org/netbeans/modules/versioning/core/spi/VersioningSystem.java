@@ -77,69 +77,14 @@ import org.openide.awt.ActionRegistration;
  */
 public abstract class VersioningSystem {
 
-    /**
-     * Short name of the versioning system, it will be used as popup menu label, label in tooltips, etc.
-     * Examples: CVS, Subversion, Mercurial, Teamware, SourceSafe, VSS, Clearcase, Local History.
-     * @see #getProperty(String) 
-     * @see #putProperty(String, Object)  
-     */
-    public static final String PROP_DISPLAY_NAME = "String VCS.DisplayName";
-
-    /**
-     * Short name of the versioning system, it will be used as menu label and it should define a mnemonic key.
-     * Examples: &CVS, &Subversion, &Mercurial, &Teamware, &SourceSafe, &VSS, &Clearcase, Local &History.
-     * @see #getProperty(String) 
-     * @see #putProperty(String, Object)  
-     */
-    public static final String PROP_MENU_LABEL = "String VCS.MenuLabel";
-    
-    /**
-     * Marker property for a Versioning system that operates in Local History mode. Local History is a special versioning
-     * system with these properties:
-     * 
-     * - there is only one local history module active at any one time, the first encoutered module wins
-     * - local history module is not exclusive with other registered 'normal' versioning systems. This means that 
-     *   filesystems events may be processed both by Local history module and by some other versioning system module
-     * 
-     * NOTE: Local History is implemented by default, use this only if you are writing a replacement module 
-     */
-    public static final String PROP_LOCALHISTORY_VCS = "Boolean VCS.LocalHistory";
-        
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
 
-    private final Map<String, Object> properties = Collections.synchronizedMap(new HashMap<String, Object>());
-    
     /**
      * Protected constructor, does nothing.   
      */
     protected VersioningSystem() {
     }
 
-    /**
-     * Gets a general property of a Versioning system.
-     * 
-     * @param key property key
-     * @return Object property value, may be null
-     * @see #PROP_DISPLAY_NAME  
-     * @see #PROP_MENU_LABEL  
-     */
-    public final Object getProperty(String key) {
-        return properties.get(key);
-    }
-
-    /**
-     * Sets a general property of a Versioning system.
-     * 
-     * @param key property key, must NOT be null
-     * @param value property value, may be null
-     * @see #PROP_DISPLAY_NAME  
-     * @see #PROP_MENU_LABEL  
-     */
-    protected final void putProperty(String key, Object value) {
-        if (key == null) throw new IllegalArgumentException("Property name is null");
-        properties.put(key, value);
-    }
-    
     /**
      * Tests whether the file is managed by this versioning system. If it is, the method should return the topmost 
      * ancestor of the file that is still versioned.

@@ -100,15 +100,7 @@ public class DelegatingVCS extends VersioningSystem implements VCSSystemProvider
         VersioningManager.LOG.log(Level.FINE, "Created DelegatingVCS for : {0}", map.get("displayName")); // NOI18N
     }
 
-    public DelegatingVCS(VersioningSystem vs) {
-        this.map = null;
-        this.displayName = (String) vs.getProperty(VersioningSystem.PROP_DISPLAY_NAME);
-        this.menuLabel = (String) vs.getProperty(VersioningSystem.PROP_MENU_LABEL);
-        this.delegate = vs;
-        
-        VersioningManager.LOG.log(Level.FINE, "Created DelegatingVCS for : {0}", displayName); // NOI18N
-    }
-
+    @Override
     public VersioningSystem getDelegate() {
         VersioningManager manager = VersioningManager.getInstance();
         synchronized(DELEGATE_LOCK) {
@@ -184,19 +176,17 @@ public class DelegatingVCS extends VersioningSystem implements VCSSystemProvider
 
     @Override
     public boolean isLocalHistory() {
-        if(!isAlive()) {
-            return false;
-        }
-        return getDelegate().getProperty(VersioningSystem.PROP_LOCALHISTORY_VCS) != null;
+        return false; // harcoding the fact that LocalHistory is registered via versioning.spi
     }
 
-    public Object getProp(String key) {
-        if(VersioningSystem.PROP_DISPLAY_NAME.equals(key)) {
-            return displayName;
-        } else if(VersioningSystem.PROP_MENU_LABEL.equals(key)) {
-            return menuLabel;
-        } 
-        return getDelegate().getProperty(key);
+    @Override
+    public String getDisplayName() {
+        return displayName;
+    }
+    
+    @Override
+    public String getMenuLabel() {
+        return menuLabel;
     }
 
     @Override
