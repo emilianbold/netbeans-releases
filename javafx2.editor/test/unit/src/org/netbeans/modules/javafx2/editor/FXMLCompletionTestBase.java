@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.javafx2.editor;
 
-import java.beans.PropertyChangeListener;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -52,10 +51,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 import javax.swing.JEditorPane;
@@ -69,7 +64,6 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.gen.WhitespaceIgnoringDiff;
 import org.netbeans.api.lexer.Language;
-import org.netbeans.api.project.Project;
 import org.netbeans.api.xml.lexer.XMLTokenId;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.editor.completion.CompletionItemComparator;
@@ -83,7 +77,6 @@ import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.IndexUtil;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.lucene.support.IndexManager.Action;
-import org.netbeans.modules.project.uiapi.OpenProjectsTrampoline;
 import org.netbeans.modules.xml.text.structure.XMLDocumentModelProvider;
 import org.netbeans.modules.xml.text.syntax.XMLKit;
 import org.netbeans.spi.editor.completion.CompletionItem;
@@ -174,7 +167,7 @@ public class FXMLCompletionTestBase extends NbTestCase {
                 return Lookups.fixed(new XMLKit(), new JavacParserFactory(), new XMLDocumentModelProvider());
             }
         };
-        Lkp.initLookups(new Object[] {repository, loader, cpp, mdp, new OpenProject()});
+        Lkp.initLookups(new Object[] {repository, loader, cpp, mdp});
         File cacheFolder = new File(getWorkDir(), "var/cache/index");
         cacheFolder.mkdirs();
         IndexUtil.setCacheFolder(cacheFolder);
@@ -367,70 +360,6 @@ public class FXMLCompletionTestBase extends NbTestCase {
         FXMLCompletion.Query query = new FXMLCompletion.Query();
         query.query(null, doc, offset);
         return query.results;
-    }
-    public static class OpenProject implements  OpenProjectsTrampoline {
-
-        public @Override Project[] getOpenProjectsAPI() {
-            return new Project[0];
-        }
-
-        public @Override void openAPI(Project[] projects, boolean openRequiredProjects, boolean showProgress) {
-
-        }
-
-        public @Override void closeAPI(Project[] projects) {
-
-        }
-
-        @Override
-        public void addPropertyChangeListenerAPI(PropertyChangeListener listener, Object source) {
-            
-        }
-
-        @Override
-        public Future<Project[]> openProjectsAPI() {
-            return new Future<Project[]>() {
-
-                @Override
-                public boolean cancel(boolean mayInterruptIfRunning) {
-                    return true;
-                }
-
-                @Override
-                public boolean isCancelled() {
-                    return false;
-                }
-
-                @Override
-                public boolean isDone() {
-                    return true;
-                }
-
-                @Override
-                public Project[] get() throws InterruptedException, ExecutionException {
-                    return new Project[0];
-                }
-
-                @Override
-                public Project[] get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-                    return new Project[0];
-                }
-            };
-        }
-
-        @Override
-        public void removePropertyChangeListenerAPI(PropertyChangeListener listener) {
-            
-        }
-
-        public @Override Project getMainProject() {
-            return null;
-        }
-
-        public @Override void setMainProject(Project project) {
-            
-        }
-
     }
 
 }
