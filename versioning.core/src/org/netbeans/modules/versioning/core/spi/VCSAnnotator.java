@@ -53,6 +53,7 @@ import java.awt.Image;
  * - provides set of Actions
  * 
  * @author Maros Sandor
+ * @author Tomas Stupka
  */
 public abstract class VCSAnnotator {
 

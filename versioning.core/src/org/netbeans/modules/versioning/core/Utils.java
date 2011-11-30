@@ -144,7 +144,7 @@ public class Utils {
      * @return true if ancestor is an ancestor folder of file OR both parameters are equal, false otherwise
      */
     public static boolean isAncestorOrEqual(VCSFileProxy ancestor, VCSFileProxy file) {
-        if (ancestor.isFlat()) {
+        if (APIAccessor.IMPL.isFlat(ancestor)) {
             return ancestor.equals(file) || ancestor.equals(file.getParentFile()) && !file.isDirectory();
         }
         

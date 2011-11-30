@@ -66,6 +66,7 @@ import java.lang.ref.WeakReference;
 import java.lang.ref.Reference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.versioning.core.APIAccessor;
 import org.netbeans.modules.versioning.core.util.VCSSystemProvider;
 import org.netbeans.modules.versioning.core.util.VCSSystemProvider.VersioningSystem;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
@@ -75,6 +76,7 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
  * asked for actions available on a given context or to annotate a name (label) representing a context.
  * 
  * @author Maros Sandor
+ * @author Tomas Stupka
  */
 public final class VCSContext {
     
@@ -82,6 +84,7 @@ public final class VCSContext {
      * VCSContext that contains no files.
      */
     public static final VCSContext EMPTY = new VCSContext((Node[]) null, emptySet(), emptySet() );
+    
     private static final Logger LOG = Logger.getLogger(VCSContext.class.getName());
 
     /**
@@ -469,8 +472,8 @@ public final class VCSContext {
             VCSFileProxy file = i.next();
             for (Iterator<VCSFileProxy> j = newFiles.iterator(); j.hasNext();) {
                 VCSFileProxy includedFile = j.next();
-                if (Utils.isAncestorOrEqual(includedFile, file) && (file.isFile() || !includedFile.isFlat())) continue outter;
-                if (Utils.isAncestorOrEqual(file, includedFile) && (includedFile.isFile() || !file.isFlat())) {
+                if (Utils.isAncestorOrEqual(includedFile, file) && (file.isFile() || !APIAccessor.IMPL.isFlat(includedFile))) continue outter;
+                if (Utils.isAncestorOrEqual(file, includedFile) && (includedFile.isFile() || !APIAccessor.IMPL.isFlat(file))) {
                     j.remove();
                 }
             }

@@ -47,6 +47,7 @@ import org.netbeans.modules.versioning.core.spi.VersioningSupport;
 import java.io.File;
 import java.util.prefs.Preferences;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.versioning.core.APIAccessor;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.Utils;
 import org.netbeans.modules.versioning.spi.testvcs.TestVCS;
@@ -102,8 +103,8 @@ public class VersioningSupportTest extends NbTestCase {
     public void testFlat() {
         File f = File.listRoots()[0];
         VCSFileProxy proxy = VCSFileProxy.createFileProxy(f);
-        assertFalse(proxy.isFlat());
+        assertFalse(APIAccessor.IMPL.isFlat(proxy));
         Utils.createFlatFileProxy(FileUtil.toFileObject(f));
-        assertTrue(proxy.isFlat());
+        assertTrue(APIAccessor.IMPL.isFlat(proxy));
     }
 }

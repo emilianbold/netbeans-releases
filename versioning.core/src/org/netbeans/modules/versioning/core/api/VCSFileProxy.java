@@ -320,7 +320,7 @@ public final class VCSFileProxy {
         this.isFlat = flat;
     }
     
-    public boolean isFlat() {
+    boolean isFlat() {
         if (proxy == null) {
             return isFlat;
         } else {

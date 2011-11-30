@@ -57,4 +57,9 @@ class APIAccessorImpl extends APIAccessor {
         proxy.setFlat(true);
         return proxy;
     }
+
+    @Override
+    public boolean isFlat(VCSFileProxy file) {
+        return file.isFlat();
+    }
 }

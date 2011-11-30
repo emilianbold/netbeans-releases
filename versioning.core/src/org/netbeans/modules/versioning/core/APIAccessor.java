@@ -53,4 +53,5 @@ public abstract class APIAccessor {
     public static APIAccessor IMPL;
     
     public abstract VCSFileProxy createFlatFileProxy(FileObject fo);
+    public abstract boolean isFlat(VCSFileProxy file);
 }

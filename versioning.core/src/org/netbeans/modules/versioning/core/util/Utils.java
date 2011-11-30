@@ -77,7 +77,7 @@ public final class Utils {
     }
  
     public static boolean isFlat(File file) {
-        return file instanceof FlatFolder; // XXX delegate to fileproxy
+        return file instanceof FlatFolder; 
     }
 
     public static File getFlat(String path) {

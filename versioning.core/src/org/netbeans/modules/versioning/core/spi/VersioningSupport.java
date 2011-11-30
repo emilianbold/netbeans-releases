@@ -48,6 +48,7 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.util.NbPreferences;
 
 import java.util.prefs.Preferences;
+import org.netbeans.modules.versioning.core.APIAccessor;
 import org.netbeans.modules.versioning.core.DelegatingVCS;
 import org.netbeans.modules.versioning.core.Utils;
 import org.netbeans.modules.versioning.core.util.VCSSystemProvider;
@@ -98,7 +99,7 @@ public final class VersioningSupport {
      * @return true if the File represents a flat folder (eg a java package), false otherwise
      */
     public static boolean isFlat(VCSFileProxy file) {
-        return file.isFlat();
+        return APIAccessor.IMPL.isFlat(file);
     }
     
     /**
