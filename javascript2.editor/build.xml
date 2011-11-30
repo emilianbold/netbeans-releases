@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir="." default="netbeans" name="javascript2.editor">
+    <description>Builds, tests, and runs the project org.netbeans.modules.javascript2.editor</description>
+    <import file="../nbbuild/templates/projectized.xml"/>
+    
+    <!-- for generationg lexer and parser, uncomment the tasks and set up the right classpath -->
+    <!-- JFlex 1.4.3 -->
+
+    <!-- <taskdef name="jflex"
+        classname="JFlex.anttask.JFlexTask"
+        classpath="/home/sickboy/software/jflex/lib/JFlex.jar" />
+
+    <target name="gen-lexer" >
+        <jflex file="tools/JavaScriptColoringScanner.flex"
+        destdir="src"/>
+    </target> -->
+    
+</project>
+
