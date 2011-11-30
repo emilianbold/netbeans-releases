@@ -233,7 +233,7 @@ public class TestVCSInterceptor extends VCSInterceptor {
     }
 
     @Override
-    public long refreshRecursively(VCSFileProxy dir, long lastTimeStamp, List<? super VCSFileProxy> children) {
+    public long refreshRecursively(VCSFileProxy dir, long lastTimeStamp, List<VCSFileProxy> children) {
         refreshRecursivelyFiles.add(dir);
         if(dir.getName().equals("administrative")) {
             return 0;
