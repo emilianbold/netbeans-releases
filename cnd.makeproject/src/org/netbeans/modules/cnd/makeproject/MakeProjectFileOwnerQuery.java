@@ -113,15 +113,15 @@ public class MakeProjectFileOwnerQuery implements FileOwnerQueryImplementation {
                             mine = descriptor.findProjectItemByPath(path) != null || descriptor.findExternalItemByPath(path) != null;
                         } else if (fo.isFolder()) {
                             mine = descriptor.findFolderByPath(path) != null;
-                            if (!mine) {
-                                List<String> absRoots = new ArrayList<String>();
-                                absRoots.addAll(descriptor.getAbsoluteSourceRoots());
-                                absRoots.addAll(descriptor.getAbsoluteTestRoots());
-                                for (String srcPath : absRoots) {
-                                    if (path.startsWith(srcPath)) {
-                                        mine = true;
-                                        break;
-                                    }
+                        }
+                        if (!mine) {
+                            List<String> absRoots = new ArrayList<String>();
+                            absRoots.addAll(descriptor.getAbsoluteSourceRoots());
+                            absRoots.addAll(descriptor.getAbsoluteTestRoots());
+                            for (String srcPath : absRoots) {
+                                if (path.startsWith(srcPath)) {
+                                    mine = true;
+                                    break;
                                 }
                             }
                         }
