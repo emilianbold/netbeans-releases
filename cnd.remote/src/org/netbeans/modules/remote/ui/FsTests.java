@@ -98,7 +98,7 @@ public class FsTests {
                 }            
             } finally {
                 time = System.currentTimeMillis() - time;
-                out.printf("Processing %d files in %d directories took %d seconds\n", counter.getFiles(), counter.getDirectories(), time/1000);
+                out.printf("Processing %d files in %d directories took %d seconds\n", counter.getFiles(), counter.getDirectories(), time/1000); // NOI18N
             }            
         }
         
@@ -212,7 +212,7 @@ public class FsTests {
         
         private void progress() {
             if ((directories + files) % divider == 0) {
-                writer.printf("%d files in %d directories so far...\n", files, directories);
+                writer.printf("%d files in %d directories so far...\n", files, directories); // NOI18N
             }
         }
     }

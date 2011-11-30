@@ -131,7 +131,7 @@ public class FsTestActions {
                 StringBuilder title = new StringBuilder("PERFTEST "); //NOI18N
                 title.append(fileObjects.get(0).getPath());
                 if (fileObjects.size() > 1) {
-                    title.append("...");
+                    title.append("..."); // NOI18N
                 }
                 InputOutput io = IOProvider.getDefault().getIO(title.toString(), true);
                 FsTests.testLs(fileObjects, io.getOut(), io.getOut());
