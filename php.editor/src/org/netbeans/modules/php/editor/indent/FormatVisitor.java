@@ -1156,6 +1156,12 @@ public class FormatVisitor extends DefaultVisitor {
     }
 
     @Override
+    public void visit(UseTraitsStatement node) {
+        //TODO: maybe it could be formated separately
+        this.visit((UseStatement) node);
+    }
+
+    @Override
     public void visit(UseStatementPart statementPart) {
         FormatToken lastFormatToken = formatTokens.get(formatTokens.size() - 1);
         boolean lastRemoved = false;
