@@ -41,15 +41,13 @@
  */
 package org.netbeans.modules.maven.j2ee.utils;
 
-import org.netbeans.modules.maven.j2ee.JavaEEMavenBaseTest;
-import org.netbeans.modules.maven.j2ee.JavaEEMavenTestSupport;
-import org.netbeans.modules.maven.j2ee.JavaEEMavenTestConstants;
+import org.netbeans.modules.maven.j2ee.JavaEEMavenTestBase;
 
 /**
  * Tests related to creating deployment descriptor using MavenProjectSupport class
  * @author Martin Janicek
  */
-public class CreateDDTest extends JavaEEMavenBaseTest {
+public class CreateDDTest extends JavaEEMavenTestBase {
 
     public CreateDDTest(String name) {
         super(name);
@@ -60,31 +58,31 @@ public class CreateDDTest extends JavaEEMavenBaseTest {
      * Calling createDDIfRequired with server set in auxiliary properties but without passing him as a parameter
      ***********************************************************************************************************/
     public void testCreateDDIfRequired_nullServerPassed_webLogic() {
-        MavenProjectSupport.setServerID(project, JavaEEMavenTestConstants.WEBLOGIC);
+        MavenProjectSupport.setServerID(project, WEBLOGIC);
         MavenProjectSupport.createDDIfRequired(project, null);
         
-        assertEquals(true, JavaEEMavenTestSupport.isWebDDpresent(project));
+        assertEquals(true, isWebDDpresent(project));
     }
     
     public void testCreateDDIfRequired_nullServerPassed_glassfish() {
-        MavenProjectSupport.setServerID(project, JavaEEMavenTestConstants.GLASSFISH);
+        MavenProjectSupport.setServerID(project, GLASSFISH);
         MavenProjectSupport.createDDIfRequired(project, null);
         
-        assertEquals(false, JavaEEMavenTestSupport.isWebDDpresent(project));
+        assertEquals(false, isWebDDpresent(project));
     }
     
     public void testCreateDDIfRequired_nullServerPassed_tomcat() {
-        MavenProjectSupport.setServerID(project, JavaEEMavenTestConstants.TOMCAT);
+        MavenProjectSupport.setServerID(project, TOMCAT);
         MavenProjectSupport.createDDIfRequired(project, null);
         
-        assertEquals(false, JavaEEMavenTestSupport.isWebDDpresent(project));
+        assertEquals(false, isWebDDpresent(project));
     }
     
     public void testCreateDDIfRequired_nullServerPassed_jboss() {
-        MavenProjectSupport.setServerID(project, JavaEEMavenTestConstants.JBOSS);
+        MavenProjectSupport.setServerID(project, JBOSS);
         MavenProjectSupport.createDDIfRequired(project, null);
         
-        assertEquals(false, JavaEEMavenTestSupport.isWebDDpresent(project));
+        assertEquals(false, isWebDDpresent(project));
     }
     
     
@@ -93,22 +91,22 @@ public class CreateDDTest extends JavaEEMavenBaseTest {
      * Calling createDDIfRequired with server passed to the method as a parameter
      ****************************************************************************/
     public void testCreateDDIfRequired_weblogicPassed() {
-        MavenProjectSupport.createDDIfRequired(project, JavaEEMavenTestConstants.WEBLOGIC);
-        assertEquals(true, JavaEEMavenTestSupport.isWebDDpresent(project));
+        MavenProjectSupport.createDDIfRequired(project, WEBLOGIC);
+        assertEquals(true, isWebDDpresent(project));
     }
     
     public void testCreateDDIfRequired_glassfishPassed() {
-        MavenProjectSupport.createDDIfRequired(project, JavaEEMavenTestConstants.GLASSFISH);
-        assertEquals(false, JavaEEMavenTestSupport.isWebDDpresent(project));
+        MavenProjectSupport.createDDIfRequired(project, GLASSFISH);
+        assertEquals(false, isWebDDpresent(project));
     }
     
     public void testCreateDDIfRequired_tomcatPassed() {
-        MavenProjectSupport.createDDIfRequired(project, JavaEEMavenTestConstants.TOMCAT);
-        assertEquals(false, JavaEEMavenTestSupport.isWebDDpresent(project));
+        MavenProjectSupport.createDDIfRequired(project, TOMCAT);
+        assertEquals(false, isWebDDpresent(project));
     }
     
     public void testCreateDDIfRequired_jbossPassed() {
-        MavenProjectSupport.createDDIfRequired(project, JavaEEMavenTestConstants.JBOSS);
-        assertEquals(false, JavaEEMavenTestSupport.isWebDDpresent(project));
+        MavenProjectSupport.createDDIfRequired(project, JBOSS);
+        assertEquals(false, isWebDDpresent(project));
     }
 }

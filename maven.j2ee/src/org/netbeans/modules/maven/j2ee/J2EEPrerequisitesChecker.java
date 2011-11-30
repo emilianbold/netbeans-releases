@@ -62,8 +62,9 @@ import org.openide.util.Exceptions;
 @ProjectServiceProvider(service = {PrerequisitesChecker.class, LateBoundPrerequisitesChecker.class}, projectType={
     "org-netbeans-modules-maven/" + NbMavenProject.TYPE_WAR,
     "org-netbeans-modules-maven/" + NbMavenProject.TYPE_EJB,
+    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_EAR,
     "org-netbeans-modules-maven/" + NbMavenProject.TYPE_APPCLIENT,
-    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_EAR
+    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_OSGI
 })
 public class J2EEPrerequisitesChecker implements PrerequisitesChecker, LateBoundPrerequisitesChecker {
 

@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.coherence.server.wizard;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Set;
@@ -48,6 +49,7 @@ import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.server.properties.InstanceProperties;
 import org.netbeans.api.server.properties.InstancePropertiesManager;
+import org.netbeans.modules.coherence.library.LibraryUtils;
 import org.netbeans.modules.coherence.server.CoherenceInstance;
 import org.netbeans.modules.coherence.server.CoherenceInstanceProvider;
 import org.netbeans.modules.coherence.server.CoherenceProperties;
@@ -73,6 +75,7 @@ public class CoherenceWizardIterator implements WizardDescriptor.InstantiatingIt
     private ServerLocationPanel basePropertiesPanel;
     private String coherenceClasspath;
     private String coherenceLocation;
+    private boolean createCoherenceLibrary;
 
     /**
      * Initialize panels representing individual wizard's steps and sets
@@ -103,11 +106,15 @@ public class CoherenceWizardIterator implements WizardDescriptor.InstantiatingIt
         InstanceProperties instanceProperties = InstancePropertiesManager.getInstance().
                 createProperties(CoherenceInstanceProvider.COHERENCE_INSTANCES_NS);
         instanceProperties.putString(CoherenceProperties.PROP_DISPLAY_NAME, displayName);
-        instanceProperties.putString(CoherenceProperties.PROP_COHERENCE_LOCATION, getCoherenceLocation());
-        instanceProperties.putString(CoherenceProperties.PROP_COHERENCE_CLASSPATH, getCoherenceClasspath());
+        instanceProperties.putString(CoherenceProperties.PROP_LOCATION, getCoherenceLocation());
+        instanceProperties.putString(CoherenceProperties.PROP_CLASSPATH, getCoherenceClasspath());
 
         // create new persistent server instance
         CoherenceInstance instance = CoherenceInstance.createPersistent(instanceProperties);
+
+        if (getCreateCoherenceLibrary()) {
+            LibraryUtils.createCoherenceLibrary(new File(getCoherenceLocation()));
+        }
 
         return Collections.singleton(instance.getServerInstance());
     }
@@ -151,6 +158,14 @@ public class CoherenceWizardIterator implements WizardDescriptor.InstantiatingIt
 
     public void setCoherenceLocation(String coherenceLocation) {
         this.coherenceLocation = coherenceLocation;
+    }
+
+    public boolean getCreateCoherenceLibrary() {
+        return createCoherenceLibrary;
+    }
+
+    public void setCreateCoherenceLibrary(boolean createCoherenceLibrary) {
+        this.createCoherenceLibrary = createCoherenceLibrary;
     }
 
     @Override
