@@ -43,14 +43,7 @@
  */
 package org.netbeans.test.cnd;
 
-import org.netbeans.jellytools.Bundle;
-import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.jellytools.MainWindowOperator;
-import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.NewCNDProjectNameLocationStepOperator;
-import org.netbeans.jellytools.NewProjectWizardOperator;
-import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.TopComponentOperator;
+import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.nodes.Node;
@@ -59,62 +52,57 @@ import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.junit.NbModuleSuite;
 
-/** CND commit validation suite.
+/**
+ * CND commit validation suite.
  *
  * @author ap153252
  */
 public class CNDValidation extends JellyTestCase {
 
-    static final String [] tests = {
-                "testCreateSampleProject",
-                "testClassView",
-                "testBuildProject"
+    static final String[] tests = {
+        "testCreateSampleProject",
+        "testClassView",
+        "testBuildProject"
     };
 
-    /** Creates a new instance of CNDValidation */
+    /**
+     * Creates a new instance of CNDValidation
+     */
     public CNDValidation(String name) {
         super(name);
     }
 
-    /** Defines order of test cases.
-     * @return NbTestSuite instance
-     */
-//    public static NbTestSuite suite() {
-//        NbTestSuite suite = new NbTestSuite();
-//        suite.addTest(new CNDValidation("testCreateSampleProject"));
-//        suite.addTest(new CNDValidation("testClassView"));
-//        suite.addTest(new CNDValidation("testBuildProject"));
-//        return suite;
-//    }
-
     public static junit.framework.Test suite() {
         return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(CNDValidation.class)
-                .addTest(tests)
-                .clusters(".*")
-                .enableModules(".*")
-                .gui(true)
-                );
+                NbModuleSuite.createConfiguration(CNDValidation.class).addTest(tests).clusters(".*").enableModules(".*").gui(true));
     }
 
-    /** Setup before every test case. */
+    /**
+     * Setup before every test case.
+     */
+    @Override
     public void setUp() {
         System.out.println("########  " + getName() + "  #######");
     }
 
-    /** Clean up after every test case. */
+    /**
+     * Clean up after every test case.
+     */
+    @Override
     public void tearDown() {
     }
-
     private static final String SAMPLE_PROJECT_NAME = "Welcome";
 
-    /** Test new project
+    /**
+     * Test new project
+     * <pre>
      * - open new project wizard
      * - select Samples|C/C++ Development|C/C++ category
      * - select Welcome project
-     * - wait until wizard and Opening projects dialogs are closed
+     * - wait until wizard is closed
      * - close possible error dialogs when compiler is not found
      * - check project node appears in project view
+     * </pre> 
      */
     public void testCreateSampleProject() {
         NewProjectWizardOperator.invoke().cancel(); //MacOS issue workaround
@@ -143,36 +131,32 @@ public class CNDValidation extends JellyTestCase {
             }
         } while (true);
         npnlso.waitClosed();
-        // Opening Projects
-        String openingProjectsTitle = Bundle.getString("org.netbeans.modules.project.ui.Bundle", "LBL_Opening_Projects_Progress");
-        try {
-            // wait at most 120 second until progress dialog dismiss
-            NbDialogOperator openingOper = new NbDialogOperator(openingProjectsTitle);
-            openingOper.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 120000);
-            openingOper.waitClosed();
-        } catch (TimeoutExpiredException e) {
-            // ignore when progress dialog was closed before we started to wait for it
-        }
         // wait project appear in projects view
         new ProjectsTabOperator().getProjectRootNode(SAMPLE_PROJECT_NAME);
     }
 
-    /** Test Class View
-     * - open Window|Class View
+    /**
+     * Test Class View
+     * <pre>
+     * - open Window|Classes View
      * - check Welcome|main node is available
+     * </pre>
      */
     public void testClassView() {
 //        TopComponentOperator projectView = new TopComponentOperator("Projects");
 //        new Node(new JTreeOperator(projectView), SAMPLE_PROJECT_NAME+"|Header Files|welcome.h").performPopupActionNoBlock("Open");
         new Action("Window|Classes", null).perform(); // NOI18N
         TopComponentOperator classView = new TopComponentOperator("Classes"); // NOI18N
-        new Node(new JTreeOperator(classView), SAMPLE_PROJECT_NAME+"|main");
+        Node node = new Node(new JTreeOperator(classView), SAMPLE_PROJECT_NAME + "|main");
     }
 
-    /** Test build project
+    /**
+     * Test build project
+     * <pre>
      * - call Clean and Build on project node
      * - if compiler is not set, close 'Resolve Missing...' dialog
      * - otherwise wait for clean and build finished
+     * </pre>
      */
     public void testBuildProject() {
         Node projectNode = new ProjectsTabOperator().getProjectRootNode(SAMPLE_PROJECT_NAME);
@@ -198,7 +182,7 @@ public class CNDValidation extends JellyTestCase {
 
             NbDialogOperator resolveOper = new NbDialogOperator(Bundle.getString("org.netbeans.modules.cnd.api.toolchain.ui.Bundle", "LBL_ResolveMissingTools_Title"));
             // select GNU collection
-            
+
             JButtonOperator removeButton = new JButtonOperator(resolveOper, "Remove");
             removeButton.press();
             removeButton.release();
