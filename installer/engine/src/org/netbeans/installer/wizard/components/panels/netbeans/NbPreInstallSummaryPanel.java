@@ -111,8 +111,6 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
         
         setProperty(INSTALLATION_FOLDER_PROPERTY,
                 DEFAULT_INSTALLATION_FOLDER);
-        setProperty(INSTALLATION_FOLDERS_PROPERTY,
-                DEFAULT_INSTALLATION_FOLDERS);
         setProperty(INSTALLATION_FOLDER_NETBEANS_PROPERTY,
                 DEFAULT_INSTALLATION_FOLDER_NETBEANS);
         setProperty(UNINSTALL_LIST_LABEL_TEXT_PROPERTY,
