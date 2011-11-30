@@ -94,7 +94,7 @@ public final class VCSFileProxy {
      * @return a VCSFileProxy representing the a file given by the parent and child values
      */
     public static VCSFileProxy createFileProxy(VCSFileProxy parent, String child) {
-        return new VCSFileProxy(parent.getAbsolutePath() + "/" + child, parent.proxy);   // NOI18N
+        return new VCSFileProxy(parent.getPath() + "/" + child, parent.proxy);   // NOI18N
     }
     
     /**
@@ -129,10 +129,10 @@ public final class VCSFileProxy {
      * {@link FileObject#getPath()} or {@link File#getAbsoluteFile()}.
      * 
      * @return this files path
-     * @see File#getAbsolutePath() 
+     * @see File#getPath() 
      * @see FileObject#getPath() 
      */
-    public String getAbsolutePath() {
+    public String getPath() {
         return path;
     }
     

@@ -168,9 +168,9 @@ public class VcsVisibilityQueryImplementation implements VisibilityQueryImplemen
     // temporary hack to fix issue #195985
     // should be replaced by a change in VCSVisibilityQuery
     private boolean isHiddenMetadata(VCSFileProxy file) {
-        return hgmetadataPattern.matcher(file.getAbsolutePath()).matches()  ||
-               cvsmetadataPattern.matcher(file.getAbsolutePath()).matches() ||
-               gitmetadatapattern.matcher(file.getAbsolutePath()).matches();
+        return hgmetadataPattern.matcher(file.getPath()).matches()  ||
+               cvsmetadataPattern.matcher(file.getPath()).matches() ||
+               gitmetadatapattern.matcher(file.getPath()).matches();
     }
 
     private class VisibilityChangedTask implements Runnable {

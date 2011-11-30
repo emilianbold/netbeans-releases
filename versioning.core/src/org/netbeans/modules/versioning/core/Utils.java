@@ -148,8 +148,8 @@ public class Utils {
             return ancestor.equals(file) || ancestor.equals(file.getParentFile()) && !file.isDirectory();
         }
         
-        String filePath = file.getAbsolutePath();
-        String ancestorPath = ancestor.getAbsolutePath();
+        String filePath = file.getPath();
+        String ancestorPath = ancestor.getPath();
         if(Utilities.isWindows()) {
             if(filePath.indexOf("~") < 0 && ancestorPath.indexOf("~") < 0) {
                 if(filePath.length() < ancestorPath.length()) {
@@ -456,7 +456,7 @@ public class Utils {
                     }
                 }
             }
-            Logger.getLogger(Utils.class.getName()).log(Level.INFO, message, new String[]{Long.toString(last), file.getAbsolutePath()});
+            Logger.getLogger(Utils.class.getName()).log(Level.INFO, message, new String[]{Long.toString(last), file.getPath()});
             Logger.getLogger(Utils.class.getName()).log(Level.INFO, sb.toString());
         }
     }

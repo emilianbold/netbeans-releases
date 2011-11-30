@@ -96,7 +96,7 @@ public class VersioningConfig {
             Set<String> disconnectedRepositories = allDisconnectedRepositories.get(className);
             if (disconnectedRepositories != null) {
                 for (String disconnectedRepository : disconnectedRepositories) {
-                    if (disconnectedRepository.equals(repository.getAbsolutePath())) {
+                    if (disconnectedRepository.equals(repository.getPath())) {
                         disconnected = true;
                         LOG.log(Level.FINE, "isDisconnected: Folder is disconnected from {0}: {1}, disconnected root: {2}", new Object[] { className, repository, disconnectedRepository }); //NOI18N
                         break;
@@ -113,7 +113,7 @@ public class VersioningConfig {
      * @param repository 
      */
     public void connectRepository (VersioningSystem vs, VCSFileProxy repository) {
-        connectRepository(vs, repository.getAbsolutePath());
+        connectRepository(vs, repository.getPath());
     }
     
     public void connectRepository (VersioningSystem vs, String path) {
@@ -144,7 +144,7 @@ public class VersioningConfig {
      * @param repository 
      */
     public void disconnectRepository (VersioningSystem vs, VCSFileProxy repository) {
-        disconnectRepository(vs, repository.getAbsolutePath());
+        disconnectRepository(vs, repository.getPath());
     }
     
     public void disconnectRepository (VersioningSystem vs, String path) {
