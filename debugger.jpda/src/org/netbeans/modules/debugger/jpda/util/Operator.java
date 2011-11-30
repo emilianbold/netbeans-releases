@@ -58,6 +58,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.logging.Level;
@@ -167,6 +168,7 @@ public class Operator {
             params [1] = null;
             params [2] = null;
             AWTGrabHandler awtGrabHandler = new AWTGrabHandler(debugger);
+            SuspendCount suspendCount = new SuspendCount();
 
        loop: for (;;) {
                  try {
@@ -200,6 +202,14 @@ public class Operator {
                         }
                         synchronized (Operator.this) {
                             canInterrupt = false;
+                        }
+                     } else {
+                        if (logger.isLoggable(Level.FINE)) {
+                            try {
+                                logger.fine("HAVE PARALLEL EVENT(s) in the Queue: "+eventSet);
+                            } catch (ObjectCollectedException ocex) {
+                                logger.log(Level.FINE, "HAVE PARALLEL EVENT(s) in the Queue with something collected:", ocex);
+                            }
                         }
                      }
                      boolean silent = eventSet.size() > 0;
@@ -280,6 +290,7 @@ public class Operator {
                                     logger.finer("Suspend count of "+thref+" is "+sc+"."+((sc > 1) ? "Reducing to one." : ""));
                                 }
                                 while (sc-- > 1) {
+                                    suspendCount.add(thref);
                                     ThreadReferenceWrapper.resume(thref);
                                 }
                             } catch (ObjectCollectedExceptionWrapper e) {
@@ -357,7 +368,12 @@ public class Operator {
                                  }
                              }
                          }
+                         logger.fine("Resuming the event set = "+resume);
                          if (resume) {
+                             int sc = suspendCount.removeSuspendCountFor(thref);
+                             while (sc-- > 1) {
+                                 ThreadReferenceWrapper.suspend(thref);
+                             }
                              try {
                                 EventSetWrapper.resume(eventSet);
                              } catch (IllegalThreadStateExceptionWrapper itex) {
@@ -462,6 +478,10 @@ public class Operator {
                          logger.fine("  resume = "+resume+", startEventOnly = "+startEventOnly);
                      }
 
+                     int sc = suspendCount.removeSuspendCountFor(thref);
+                     while (sc-- > 1) {
+                         ThreadReferenceWrapper.suspend(thref);
+                     }
                      // Notify the resume under eventAccessLock so that nobody can get in between,
                      // which would result in resuming the thread twice.
                      if (!resume) { // notify about the suspend if not resumed.
@@ -510,6 +530,13 @@ public class Operator {
                          }
                      }
                      if (!startEventOnly) {
+                         if (logger.isLoggable(Level.FINE)) {
+                            try {
+                                logger.fine("Resuming the event set "+eventSet+" = "+resume);
+                            } catch (ObjectCollectedException ocex) {
+                                logger.log(Level.FINE, "Resuming the event set that with something collected = "+resume);
+                            }
+                         }
                          if (resume) {
                              //resumeLock.writeLock().lock();
                              try {
@@ -679,17 +706,38 @@ public class Operator {
                 } catch (VMDisconnectedExceptionWrapper ex) {
                     return ;
                 }
+                if (Thread.interrupted()) {
+                    return ;
+                }
                 for (;;) {
                     EventSet eventSet;
                     try {
                         eventSet = EventQueueWrapper.remove(eventQueue);
                         
+                        if (logger.isLoggable(Level.FINE)) {
+                            try {
+                                logger.fine("HAVE EVENT(s) in the Queue for "+tr+" : "+eventSet);
+                            } catch (ObjectCollectedException ocex) {
+                                logger.log(Level.FINE, "HAVE EVENT(s) in the Queue for a thread with something collected:", ocex);
+                            }
+                        }
+                        
                         Set<ThreadReference> ignoredThreads = new HashSet<ThreadReference>();
                         if (testIgnoreEvent(eventSet, ignoredThreads)) {
                             eventSet.resume();
+                            if (logger.isLoggable(Level.FINE)) {
+                                logger.fine("  the event(s) in the Queue for "+tr+" are ignored and event set is resumed.");
+                            }
                         } else {
                             synchronized (parallelEvents) {
                                 parallelEvents.add(eventSet);
+                                if (logger.isLoggable(Level.FINE)) {
+                                    try {
+                                        logger.fine("  the event(s) in the Queue for "+tr+" are stored as parallelEvents = "+parallelEvents);
+                                    } catch (ObjectCollectedException ocex) {
+                                        logger.log(Level.FINE, "  the event(s) in the Queue for "+tr+" are stored as parallelEvents with something collected:", ocex);
+                                    }
+                                }
                             }
                         }
 
@@ -714,6 +762,9 @@ public class Operator {
     }
 
     public void notifyMethodInvoking(ThreadReference tr) {
+        if (logger.isLoggable(Level.FINE)) {
+            logger.fine("  notifyMethodInvoking("+tr+")");
+        }
         if (Thread.currentThread() == thread) {
             // start another event handler thread...
             startEventHandlerThreadFor(tr);
@@ -724,6 +775,9 @@ public class Operator {
     }
 
     public void notifyMethodInvokeDone(ThreadReference tr) {
+        if (logger.isLoggable(Level.FINE)) {
+            logger.fine("  notifyMethodInvokeDone("+tr+")");
+        }
         if (Thread.currentThread() == thread) {
             HandlerTask task = eventHandlers.remove(tr);
             if (task != null) {
@@ -812,7 +866,7 @@ public class Operator {
     private static final class HandlerTask {
 
         private RequestProcessor.Task task;
-        private Thread[] threadPtr;
+        private final Thread[] threadPtr;
 
         HandlerTask(RequestProcessor.Task task, Thread[] threadPtr) {
             this.task = task;
@@ -832,9 +886,57 @@ public class Operator {
                 Thread t = threadPtr[0];
                 if (t != null) {
                     t.interrupt();
-                    task.waitFinished();
+                    try {
+                        while (!task.waitFinished(250)) {
+                            t.interrupt();
+                        }
+                    } catch (InterruptedException ex) {
+                        task.waitFinished();
+                    }
                 }
             }
+        }
+    }
+    
+    private static final class SuspendCount {
+        
+        private final Map<ThreadReference, MutableInteger> threads = new WeakHashMap<ThreadReference, MutableInteger>();
+        
+        public synchronized void add(ThreadReference t) {
+            MutableInteger i = threads.get(t);
+            if (i == null) {
+                i = new MutableInteger(1);
+                threads.put(t, i);
+            }
+            i.i++;
+        }
+        
+        public synchronized int getSuspendCountFor(ThreadReference t) {
+            MutableInteger i = threads.get(t);
+            if (i == null) {
+                return 0;
+            } else {
+                return i.i;
+            }
+        }
+        
+        public synchronized int removeSuspendCountFor(ThreadReference t) {
+            MutableInteger i = threads.remove(t);
+            if (i == null) {
+                return 0;
+            } else {
+                return i.i;
+            }
+        }
+        
+        private static final class MutableInteger {
+            
+            public int i;
+            
+            public MutableInteger(int i) {
+                this.i = i;
+            }
+            
         }
     }
 

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2008-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,33 +37,36 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008-2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.java.hints.introduce;
 
+package org.netbeans.modules.java.hints.jackpot.impl.pm;
+
+import com.sun.source.tree.Scope;
+import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.Map;
+import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.java.hints.jackpot.impl.tm.Matcher;
-import org.netbeans.modules.java.hints.jackpot.impl.tm.Matcher.OccurrenceDescription;
 import org.netbeans.modules.java.hints.jackpot.impl.tm.Pattern;
-import org.openide.util.lookup.ServiceProvider;
+import org.netbeans.modules.java.hints.jackpot.impl.Utilities;
 
-/**
- * Used exclusively by SourceUtils
- * @author Jan Becicka
+/**XXX: cancelability!
+ *
+ * @author Jan Lahoda
  */
-@ServiceProvider(service=CopyFinderService.class)
-public class CopyFinderService {
-    public static Set<TreePath> computeDuplicates(CompilationInfo info, TreePath searchingFor, TreePath scope, AtomicBoolean cancel) {
-        Set<TreePath> result = new HashSet<TreePath>();
-        
-        for (OccurrenceDescription od : Matcher.create(info, cancel).setSearchRoot(scope).match(Pattern.createSimplePattern(searchingFor))) {
-            result.add(od.getOccurrenceRoot());
+public class PatternCompiler {
+
+    public static Pattern compile(CompilationInfo info, String pattern, Map<String, TypeMirror> constraints, Iterable<? extends String> imports) {
+        Scope scope = Utilities.constructScope(info, constraints, imports);
+
+        if (scope == null) {
+            return null; //TODO: can happen?
         }
 
-        return result;
+        Tree patternTree = Utilities.parseAndAttribute(info, pattern, scope);
+
+        return Pattern.createPatternWithFreeVariables(new TreePath(new TreePath(info.getCompilationUnit()), patternTree), constraints);
     }
+
 }

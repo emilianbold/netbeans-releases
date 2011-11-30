@@ -39,31 +39,50 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.java.hints.introduce;
+package org.netbeans.modules.java.hints.jackpot.impl.tm;
 
-import com.sun.source.util.TreePath;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.regex.Matcher;
+import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.java.hints.jackpot.impl.tm.Matcher;
-import org.netbeans.modules.java.hints.jackpot.impl.tm.Matcher.OccurrenceDescription;
+import org.netbeans.modules.java.hints.jackpot.impl.pm.PatternCompiler;
 import org.netbeans.modules.java.hints.jackpot.impl.tm.Pattern;
-import org.openide.util.lookup.ServiceProvider;
+import org.netbeans.modules.java.hints.jackpot.spi.Hacks;
 
 /**
- * Used exclusively by SourceUtils
- * @author Jan Becicka
+ *
+ * @author lahvac
  */
-@ServiceProvider(service=CopyFinderService.class)
-public class CopyFinderService {
-    public static Set<TreePath> computeDuplicates(CompilationInfo info, TreePath searchingFor, TreePath scope, AtomicBoolean cancel) {
-        Set<TreePath> result = new HashSet<TreePath>();
-        
-        for (OccurrenceDescription od : Matcher.create(info, cancel).setSearchRoot(scope).match(Pattern.createSimplePattern(searchingFor))) {
-            result.add(od.getOccurrenceRoot());
+public class PatternCompilerUtilities {
+
+    public static Pattern compile(CompilationInfo info, String pattern) {
+        Map<String, TypeMirror> constraints = new HashMap<String, TypeMirror>();
+        pattern = parseOutTypesFromPattern(info, pattern, constraints);
+
+        return PatternCompiler.compile(info, pattern, constraints, Collections.<String>emptyList());
+    }
+
+    public static String parseOutTypesFromPattern(CompilationInfo info, String pattern, Map<String, TypeMirror> variablesToTypes) {
+        java.util.regex.Pattern p = java.util.regex.Pattern.compile("(\\$.)(\\{([^}]*)\\})?");
+        StringBuilder filtered = new StringBuilder();
+        Matcher m = p.matcher(pattern);
+        int i = 0;
+
+        while (m.find()) {
+            filtered.append(pattern.substring(i, m.start()));
+            i = m.end();
+
+            String var  = m.group(1);
+            String type = m.group(3);
+
+            filtered.append(var);
+            variablesToTypes.put(var, type != null ? Hacks.parseFQNType(info, type) : null);
         }
 
-        return result;
+        filtered.append(pattern.substring(i));
+
+        return filtered.toString();
     }
 }

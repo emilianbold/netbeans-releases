@@ -162,7 +162,7 @@ import org.openide.windows.InputOutput;
 @JPDADebugger.Registration(path="netbeans-JPDASession")
 public class JPDADebuggerImpl extends JPDADebugger {
 
-    private static final Logger logger = Logger.getLogger("org.netbeans.modules.debugger.jpda");
+    private static final Logger logger = Logger.getLogger(JPDADebuggerImpl.class.getName());
 
     private static final boolean SINGLE_THREAD_STEPPING = !Boolean.getBoolean("netbeans.debugger.multiThreadStepping");
 
