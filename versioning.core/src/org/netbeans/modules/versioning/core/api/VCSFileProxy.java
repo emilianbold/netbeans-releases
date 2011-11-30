@@ -54,6 +54,7 @@ import org.openide.filesystems.FileUtil;
  * Represents file on remote or local file system.
  *
  * @author Alexander Simon
+ * @author Tomas Stupka
  */
 public final class VCSFileProxy {
 
@@ -66,7 +67,13 @@ public final class VCSFileProxy {
         this.proxy = proxy;
     }
     
-    public static VCSFileProxy createFileProxy(final File file) {
+    /**
+     * Creates a VCSFileProxy based on io.File.
+     * 
+     * @param file the file to be represented by VCSFileProxy
+     * @return a VCSFileProxy representing the given file
+     */
+    public static VCSFileProxy createFileProxy(File file) {
         VCSFileProxy p = new VCSFileProxy(file.getAbsolutePath(), null);
         if(file instanceof FlatFolder) {
             p.setFlat(true);
@@ -74,42 +81,62 @@ public final class VCSFileProxy {
         return p;
     }
 
-    public static VCSFileProxy createFileProxy(final VCSFileProxy file, String name) {
-        return new VCSFileProxy(file.getAbsolutePath() + "/" + name, file.proxy);   // NOI18N
+    /**
+     * Creates a new VCSFileProxy from the given parent and child name
+     * 
+     * @param parent the parent file
+     * @param child the child name
+     * @return a VCSFileProxy representing the a file given by the parent and child values
+     */
+    public static VCSFileProxy createFileProxy(VCSFileProxy parent, String child) {
+        return new VCSFileProxy(parent.getAbsolutePath() + "/" + child, parent.proxy);   // NOI18N
     }
     
-    public static VCSFileProxy createFileProxy(final FileObject fo) {
+    /**
+     * Creates a VCSFileProxy based on the given {@link FileObject}. In case there is a 
+     * corresponding java.io.File to the FileObject the the io.File will be used as in 
+     * {@link #createFileProxy(java.io.File)}.
+     * 
+     * @param fileObject the file to be represented by VCSFileProxy
+     * @return a VCSFileProxy representing the given file
+     */
+    public static VCSFileProxy createFileProxy(FileObject fileObject) {
         try {
-            VCSFileProxyOperations fileProxyOperations = getFileProxyOperations(fo.getFileSystem());
+            VCSFileProxyOperations fileProxyOperations = getFileProxyOperations(fileObject.getFileSystem());
             if (fileProxyOperations == null) {
-                File file = FileUtil.toFile(fo);
+                File file = FileUtil.toFile(fileObject);
                 if(file != null) {
-                    return new VCSFileProxy(file.getAbsolutePath(), null);
+                    return createFileProxy(file);
                 } else {
                     return null; // e.g. FileObject from a jar filesystem
                 }
             } else {
-                return new VCSFileProxy(fo.getPath(), fileProxyOperations);
+                return new VCSFileProxy(fileObject.getPath(), fileProxyOperations);
             }
         } catch (FileStateInvalidException ex) {
             Logger.getLogger(VCSFileProxy.class.getName()).log(Level.SEVERE, null, ex);
         }
-        return new VCSFileProxy(fo.getPath(), null);
+        return new VCSFileProxy(fileObject.getPath(), null);
     }
 
-    public static VCSFileProxy createFileProxy(FileSystem fs, String path) {
-        VCSFileProxyOperations fileProxyOperations = getFileProxyOperations(fs);
-        if (fileProxyOperations == null) {
-            return new VCSFileProxy(path, null);
-        } else {
-            return new VCSFileProxy(path, fileProxyOperations);
-        }
-    }
-    
+    /**
+     * Determines this files path. Depending on its origin it will be either 
+     * {@link FileObject#getPath()} or {@link File#getAbsoluteFile()}.
+     * 
+     * @return this files path
+     * @see File#getAbsolutePath() 
+     * @see FileObject#getPath() 
+     */
     public String getAbsolutePath() {
         return path;
     }
     
+    /**
+     * Returns the name of this file.
+     * 
+     * @return this files name
+     * @see File#getName() () 
+     */
     public String getName() {
         if (proxy == null) {
             return new File(path).getName();
@@ -118,6 +145,12 @@ public final class VCSFileProxy {
         }
     }
     
+    /**
+     * Determines whether this file is a directory or not
+     * 
+     * @return <code>true</code> if this file exists and is a directory, otherwise <code>false</code>
+     * @see File#isDirectory() 
+     */
     public boolean isDirectory() {
         if (proxy == null) {
             return new File(path).isDirectory();
@@ -126,6 +159,12 @@ public final class VCSFileProxy {
         }
     }
     
+    /**
+     * Determines whether this file is a normal file or not.
+     * 
+     * @return <code>true</code> if this file is a normal file, otherwise <code>false</code>
+     * @see File#isFile() 
+     */
     public boolean isFile() {
         if (proxy == null) {
             return new File(path).isFile();
@@ -134,6 +173,12 @@ public final class VCSFileProxy {
         }
     }
     
+    /**
+     * Determines whether this file is writable or not.
+     * 
+     * @return <code>true</code> if this file is writable, otherwise <code>false</code>
+     * @see File#canWrite() 
+     */
     public boolean canWrite() {
         if (proxy == null) {
             return new File(path).canWrite();
@@ -142,6 +187,12 @@ public final class VCSFileProxy {
         }
     }
     
+    /**
+     * Returns this files parent or <code>null</code> if this file doesn't have a parent.
+     * 
+     * @return this files parent 
+     * @see File#getParentFile() 
+     */
     public VCSFileProxy getParentFile() {
         if (proxy == null) {
             File parent = new File(path).getParentFile();
@@ -153,6 +204,13 @@ public final class VCSFileProxy {
             return proxy.getParentFile(this);
         }
     }
+    
+    /**
+     * Determines whether this file exists or not.
+     * 
+     * @return <code>true</code> if this files exists, otherwise <code>false</code>
+     * @see File#exists() 
+     */
     public boolean exists() {
         if (proxy == null) {
             return new File(path).exists();
@@ -161,6 +219,13 @@ public final class VCSFileProxy {
         }
     }
     
+    /**
+     * Returns an array of files located in a directory given by this file.
+     * 
+     * @return an array of files located in a directory given by this file or 
+     * <code>null</code> if this file isn't a directory or an error occurs.
+     * @see File#listFiles() 
+     */
     public VCSFileProxy[] listFiles() {
         if (proxy == null) {
             File[] files = new File(path).listFiles();
@@ -177,18 +242,48 @@ public final class VCSFileProxy {
         }
         
     }
+        
+    /**
+     * Returns the corresponding java.io.File in case this instance was created 
+     * based either on java.io.File or a {@link FileObject} based on java.io.File.
+     * 
+     * @return the corresponding java.io.File instance or <Code>null</code> if none
+     * is available.
+     * @see #createFileProxy(java.io.File) 
+     * @see #createFileProxy(org.openide.filesystems.FileObject) 
+     */
+    public File toFile() {
+        if(proxy == null) {
+            return isFlat ? new FlatFolder(path) : new File(path);
+        }
+        return null;
+    }
     
-    public boolean isFlat() {
+    /**
+     * Returns the corresponding FileObject
+     * @return the corresponding FileObject or <code>null</code> if none available
+     */
+    public FileObject toFileObject() {
         if (proxy == null) {
-            return isFlat;
+            return FileUtil.toFileObject(new File(FileUtil.normalizePath(path)));
         } else {
-            return proxy.isFlat();
+            return proxy.toFileObject(this);
         }
     }
-    
-    void setFlat(boolean flat) {
-        this.isFlat = flat;
-    }
+
+    /**
+     * Normalize a file path to a clean form.
+     * 
+     * @return a VCSFileProxy with a normalized file path
+     * @see FileUtil#normalizePath(java.lang.String) 
+     */
+    public VCSFileProxy normalizeFile() {
+        if (proxy == null) {
+            return new VCSFileProxy(FileUtil.normalizePath(path), null);
+        } else {
+            return proxy.normalize(this);
+        }
+    }    
     
     @Override
     public String toString() {
@@ -221,26 +316,15 @@ public final class VCSFileProxy {
         return true;
     }
 
-    public File toFile() {
-        if(proxy == null) {
-            return isFlat ? new FlatFolder(path) : new File(path);
-        }
-        return null;
+    void setFlat(boolean flat) {
+        this.isFlat = flat;
     }
     
-    public FileObject toFileObject() {
+    public boolean isFlat() {
         if (proxy == null) {
-            return FileUtil.toFileObject(new File(FileUtil.normalizePath(path)));
+            return isFlat;
         } else {
-            return proxy.toFileObject(this);
-        }
-    }
-
-    public VCSFileProxy normalizeFile() {
-        if (proxy == null) {
-            return new VCSFileProxy(FileUtil.normalizePath(path), null);
-        } else {
-            return proxy.normalize(this);
+            return proxy.isFlat();
         }
     }
     
