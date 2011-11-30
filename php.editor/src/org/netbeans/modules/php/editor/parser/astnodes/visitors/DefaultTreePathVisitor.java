@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,9 +34,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
@@ -112,10 +112,14 @@ import org.netbeans.modules.php.editor.parser.astnodes.StaticStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.SwitchCase;
 import org.netbeans.modules.php.editor.parser.astnodes.SwitchStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.ThrowStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.TraitDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.TraitMethodAliasDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.TraitConflictResolutionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.TryStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.UnaryOperation;
 import org.netbeans.modules.php.editor.parser.astnodes.UseStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.UseStatementPart;
+import org.netbeans.modules.php.editor.parser.astnodes.UseTraitsStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.WhileStatement;
 
@@ -133,8 +137,8 @@ public class DefaultTreePathVisitor extends DefaultVisitor{
 
     /**
      * ... reversed order ....
-     * 
-     * 
+     *
+     *
      * @return
      */
     public List<ASTNode> getPath() {
@@ -155,7 +159,7 @@ public class DefaultTreePathVisitor extends DefaultVisitor{
     public void visit(UseStatementPart statementPart) {
         path.addFirst(statementPart);super.visit(statementPart);path.removeFirst();
     }
- 
+
 
     @Override
     public void visit(ArrayAccess node) {
@@ -511,6 +515,26 @@ public class DefaultTreePathVisitor extends DefaultVisitor{
 
     @Override
     public void visit(PHPDocNode node) {
+        path.addFirst(node);super.visit(node);path.removeFirst();
+    }
+
+    @Override
+    public void visit(TraitDeclaration node) {
+        path.addFirst(node);super.visit(node);path.removeFirst();
+    }
+
+    @Override
+    public void visit(TraitMethodAliasDeclaration node) {
+        path.addFirst(node);super.visit(node);path.removeFirst();
+    }
+
+    @Override
+    public void visit(TraitConflictResolutionDeclaration node) {
+        path.addFirst(node);super.visit(node);path.removeFirst();
+    }
+
+    @Override
+    public void visit(UseTraitsStatement node) {
         path.addFirst(node);super.visit(node);path.removeFirst();
     }
 

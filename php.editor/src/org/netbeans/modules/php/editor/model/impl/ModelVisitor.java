@@ -125,8 +125,12 @@ import org.netbeans.modules.php.editor.parser.astnodes.StaticConstantAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticFieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticMethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.SwitchStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.TraitDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.TraitMethodAliasDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.TraitConflictResolutionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.TryStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.UseStatementPart;
+import org.netbeans.modules.php.editor.parser.astnodes.UseTraitsStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.VariableBase;
 import org.netbeans.modules.php.editor.parser.astnodes.WhileStatement;
@@ -415,12 +419,41 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
     @Override
     public void visit(UseStatementPart statementPart) {
         ASTNodeInfo<UseStatementPart> astNodeInfo = ASTNodeInfo.create(statementPart);
-        modelBuilder.getCurrentNameSpace().createUseStatementPart(astNodeInfo);
+        if (!(modelBuilder.getCurrentScope() instanceof ClassScope)) { // use namespace
+            modelBuilder.getCurrentNameSpace().createUseStatementPart(astNodeInfo);
+        } else { // use trait
+            //modelBuilder.build(, occurencesBuilder);
+            ClassScope classScope = (ClassScope) modelBuilder.getCurrentScope();
+            classScope.createUseTraitStatementPart(astNodeInfo);
+        }
         super.visit(statementPart);
     }
 
     @Override
+    public void visit(TraitMethodAliasDeclaration node) {
+        //modelBuilder.build(node, occurencesBuilder);
+        super.visit(node);
+    }
+
+    @Override
+    public void visit(TraitConflictResolutionDeclaration node) {
+        modelBuilder.build(node, occurencesBuilder);
+        super.visit(node);
+    }
+
+    @Override
     public void visit(ClassDeclaration node) {
+        modelBuilder.build(node, occurencesBuilder);
+        checkComments(node);
+        try {
+            super.visit(node);
+        } finally {
+            modelBuilder.reset();
+        }
+    }
+
+    @Override
+    public void visit(TraitDeclaration node) {
         modelBuilder.build(node, occurencesBuilder);
         checkComments(node);
         try {

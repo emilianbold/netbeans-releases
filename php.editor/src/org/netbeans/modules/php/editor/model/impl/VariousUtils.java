@@ -73,6 +73,7 @@ import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.QualifiedNameKind;
 import org.netbeans.modules.php.editor.model.IndexScope;
 import org.netbeans.modules.php.editor.model.Scope;
+import org.netbeans.modules.php.editor.model.TraitScope;
 import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.model.UseElement;
 import org.netbeans.modules.php.editor.model.VariableName;
@@ -1012,7 +1013,10 @@ public class VariousUtils {
             classScope = (ClassScope)scp;
         } else if (scp instanceof MethodScope) {
             MethodScope msi = (MethodScope) scp;
-            classScope = (ClassScope) msi.getInScope();
+            Scope inScope = msi.getInScope();
+            if (inScope instanceof ClassScope) {
+                classScope = (ClassScope) inScope;
+            }
         }
         if (classScope != null) {
             if ("self".equals(clsName) || "this".equals(clsName) || "static".equals(clsName)) {//NOI18N
@@ -1090,7 +1094,12 @@ public class VariousUtils {
         TypeScope csi = null;
         if (inScope instanceof MethodScope) {
             MethodScope msi = (MethodScope) inScope;
-            csi = (ClassScope) msi.getInScope();
+            Scope methodInScope = msi.getInScope();
+            if (methodInScope instanceof ClassScope) {
+                csi = (ClassScope) methodInScope;
+            } else if (methodInScope instanceof TraitScope) {
+                csi = (TraitScope) methodInScope;
+            }
         }
         if (inScope instanceof ClassScope || inScope instanceof InterfaceScope) {
             csi = (TypeScope)inScope;
