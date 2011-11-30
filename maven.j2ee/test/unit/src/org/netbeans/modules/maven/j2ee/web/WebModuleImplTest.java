@@ -42,13 +42,9 @@
 package org.netbeans.modules.maven.j2ee.web;
 
 import java.io.IOException;
-import java.util.logging.Level;
-import org.netbeans.api.project.Project;
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.maven.j2ee.JavaEEMavenTestSupport;
+import org.netbeans.modules.maven.j2ee.JavaEEMavenTestBase;
 import org.netbeans.modules.maven.j2ee.PomBuilder;
 import org.netbeans.modules.maven.j2ee.PomBuilder.PomPlugin;
-import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -56,11 +52,10 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Martin Janicek
  */
-public class WebModuleImplTest extends NbTestCase {
+public class WebModuleImplTest extends JavaEEMavenTestBase {
     
     private PomBuilder builder;
     
-    private Project project;
     private WebModuleProviderImpl provider;
     private WebModuleImpl webModule;
     
@@ -68,16 +63,6 @@ public class WebModuleImplTest extends NbTestCase {
     public WebModuleImplTest(String name) {
         super(name);
         builder = new PomBuilder();
-    }
-    
-    @Override
-    protected Level logLevel() {
-        return Level.FINE;
-    }
-    
-    @Override
-    protected String logRoot() {
-        return "org.netbeans.modules.maven.j2ee.web"; //NOI18N
     }
 
     @Override
@@ -147,7 +132,7 @@ public class WebModuleImplTest extends NbTestCase {
     }
     
     private void createProject(PomBuilder builder) throws IOException {
-        project = JavaEEMavenTestSupport.createMavenWebProject(getWorkDir(), builder.buildPom());
+        project = createMavenWebProject(builder.buildPom());
         assertNotNull(project);
         provider = project.getLookup().lookup(WebModuleProviderImpl.class);
         assertNotNull(provider);
