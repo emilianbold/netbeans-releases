@@ -127,7 +127,7 @@ public class CoherenceServer {
                     cmd.add("-server");
                     cmd.add("-showversion");
                     // Get ClassPath Elements
-                    String coherenceCP = instanceProperties.getString(CoherenceProperties.PROP_COHERENCE_CLASSPATH, "");
+                    String coherenceCP = instanceProperties.getString(CoherenceProperties.PROP_CLASSPATH, "");
                     StringBuilder sbClasspath = new StringBuilder();
                     if (coherenceCP != null) {
                         for (String cp : coherenceCP.split(CoherenceProperties.CLASSPATH_SEPARATOR)) {
