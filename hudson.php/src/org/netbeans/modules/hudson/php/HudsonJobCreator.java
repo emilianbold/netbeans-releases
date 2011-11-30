@@ -51,41 +51,59 @@ import java.awt.event.ItemListener;
 import java.io.IOException;
 import java.util.List;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.hudson.php.commands.PpwScript;
+import org.netbeans.modules.hudson.php.options.HudsonOptions;
 import org.netbeans.modules.hudson.php.support.Target;
+import org.netbeans.modules.hudson.php.ui.options.HudsonOptionsPanelController;
 import org.netbeans.modules.hudson.spi.HudsonSCM;
 import org.netbeans.modules.hudson.spi.ProjectHudsonJobCreatorFactory;
 import org.netbeans.modules.hudson.spi.ProjectHudsonJobCreatorFactory.ConfigurationStatus;
 import org.netbeans.modules.hudson.spi.ProjectHudsonJobCreatorFactory.Helper;
 import org.netbeans.modules.hudson.spi.ProjectHudsonJobCreatorFactory.ProjectHudsonJobCreator;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
+import org.netbeans.modules.php.api.phpmodule.PhpProgram.InvalidPhpProgramException;
+import org.netbeans.modules.php.api.util.UiUtils;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 
-public class HudsonJobCreator extends JPanel implements ProjectHudsonJobCreator {
+public class HudsonJobCreator extends JPanel implements ProjectHudsonJobCreator, ChangeListener {
 
     private static final long serialVersionUID = -668435132135465L;
 
     private final PhpModule phpModule;
     private final HudsonSCM.Configuration scm;
     private final List<Target> targets;
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
 
 
-    public HudsonJobCreator(PhpModule phpModule) {
+    private HudsonJobCreator(PhpModule phpModule) {
         this.phpModule = phpModule;
         scm = Helper.prepareSCM(FileUtil.toFile(phpModule.getProjectDirectory()));
         targets = initComponents();
+    }
+
+    private static HudsonJobCreator forPhpModule(PhpModule phpModule) {
+        HudsonJobCreator hudsonJobCreator = new HudsonJobCreator(phpModule);
+        // listeners
+        HudsonOptions options = HudsonOptions.getInstance();
+        options.addChangeListener(WeakListeners.change(hudsonJobCreator, options));
+        return hudsonJobCreator;
     }
 
     @Override
@@ -100,6 +118,7 @@ public class HudsonJobCreator extends JPanel implements ProjectHudsonJobCreator 
 
     @NbBundle.Messages({
         "MsgNoTests=The project does not have any tests.",
+        "MsgInvalidHudsonOptions=PHP Hudson options are invalid.",
         "MsgBuildXmlExists=The project already has build.xml file.",
         "MsgPhpUnitConfigExists=The project already has phpunit.xml.dist file."
     })
@@ -111,15 +130,23 @@ public class HudsonJobCreator extends JPanel implements ProjectHudsonJobCreator 
         if (scm == null) {
             return Helper.noSCMError();
         }
-        // XXX check ppw setup and if error - add extra button to open IDE options
+        // ppw script
+        try {
+            PpwScript.getDefault();
+        } catch (InvalidPhpProgramException ex) {
+            return ConfigurationStatus.withError(Bundle.MsgInvalidHudsonOptions()).withExtraButton(getOpenHudsonOptionsButton());
+        }
+        // build.xml
         FileObject buildXml = phpModule.getProjectDirectory().getFileObject("build.xml"); // NOI18N
         if (buildXml != null && buildXml.isData()) {
             return ConfigurationStatus.withError(Bundle.MsgBuildXmlExists());
         }
+        // phpunit.xml
         FileObject phpUnitConfig = phpModule.getProjectDirectory().getFileObject("phpunit.xml.dist"); // NOI18N
         if (phpUnitConfig != null && phpUnitConfig.isData()) {
             return ConfigurationStatus.withError(Bundle.MsgPhpUnitConfigExists());
         }
+        // scm
         ConfigurationStatus scmStatus = scm.problems();
         if (scmStatus != null) {
             return scmStatus;
@@ -129,16 +156,31 @@ public class HudsonJobCreator extends JPanel implements ProjectHudsonJobCreator 
 
     @Override
     public void addChangeListener(ChangeListener listener) {
+        changeSupport.addChangeListener(listener);
     }
 
     @Override
     public void removeChangeListener(ChangeListener listener) {
+        changeSupport.removeChangeListener(listener);
     }
 
     @Override
     public Document configure() throws IOException {
         setupProject();
         return createJobXml();
+    }
+
+    @NbBundle.Messages("LBL_HudsonOptions=&Hudson Options...")
+    private JButton getOpenHudsonOptionsButton() {
+        JButton button = new JButton();
+        Mnemonics.setLocalizedText(button, Bundle.LBL_HudsonOptions());
+        button.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                UiUtils.showOptions(HudsonOptionsPanelController.OPTIONS_SUBPATH);
+            }
+        });
+        return button;
     }
 
     private void setupProject() {
@@ -225,6 +267,12 @@ public class HudsonJobCreator extends JPanel implements ProjectHudsonJobCreator 
         add(spaceHolder, gridBagConstraints);
     }
 
+    @Override
+    public void stateChanged(ChangeEvent e) {
+        // change in PHP Hudson Options
+        changeSupport.fireChange();
+    }
+
     //~ Inner classes
 
     @ServiceProvider(service=ProjectHudsonJobCreatorFactory.class, position=300)
@@ -237,7 +285,7 @@ public class HudsonJobCreator extends JPanel implements ProjectHudsonJobCreator 
                 // not a php project
                 return null;
             }
-            return new HudsonJobCreator(phpModule);
+            return HudsonJobCreator.forPhpModule(phpModule);
         }
 
     }
