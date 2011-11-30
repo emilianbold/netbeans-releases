@@ -424,7 +424,6 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         } else { // use trait
             //modelBuilder.build(, occurencesBuilder);
             ClassScope classScope = (ClassScope) modelBuilder.getCurrentScope();
-            classScope.createUseTraitStatementPart(astNodeInfo);
         }
         super.visit(statementPart);
     }
