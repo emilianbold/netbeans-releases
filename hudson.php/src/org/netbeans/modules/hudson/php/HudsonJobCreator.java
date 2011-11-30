@@ -50,6 +50,8 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.IOException;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -85,6 +87,8 @@ import org.w3c.dom.Document;
 public class HudsonJobCreator extends JPanel implements ProjectHudsonJobCreator, ChangeListener {
 
     private static final long serialVersionUID = -668435132135465L;
+
+    private static final Logger LOGGER = Logger.getLogger(HudsonJobCreator.class.getName());
 
     private final PhpModule phpModule;
     private final HudsonSCM.Configuration scm;
@@ -184,7 +188,14 @@ public class HudsonJobCreator extends JPanel implements ProjectHudsonJobCreator,
     }
 
     private void setupProject() {
-        // XXX call ppw and process generated build.xml and phpunit.xml.dist according to checkboxes
+        try {
+            if (PpwScript.getDefault().createProjectFiles(phpModule)) {
+                // XXX process generated build.xml and phpunit.xml.dist according to checkboxes
+            }
+        } catch (InvalidPhpProgramException ex) {
+            // cannot happen here since we just validate it
+            LOGGER.log(Level.SEVERE, ex.getLocalizedMessage(), ex);
+        }
     }
 
     private Document createJobXml() {

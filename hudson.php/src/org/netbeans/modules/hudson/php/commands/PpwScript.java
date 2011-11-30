@@ -41,9 +41,15 @@
  */
 package org.netbeans.modules.hudson.php.commands;
 
+import org.netbeans.api.extexecution.ExecutionDescriptor;
+import org.netbeans.api.extexecution.ExternalProcessBuilder;
 import org.netbeans.modules.hudson.php.options.HudsonOptions;
+import org.netbeans.modules.hudson.php.ui.options.HudsonOptionsPanelController;
+import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpProgram;
 import org.netbeans.modules.php.api.util.FileUtils;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 /**
@@ -85,6 +91,39 @@ public class PpwScript extends PhpProgram {
             return null;
         }
         return Bundle.LBL_PpwScriptPrefix(error);
+    }
+
+    @NbBundle.Messages({
+        "PpwScript.create.title=Hudson job files for {0}",
+        "PpwScript.create.progress=Creating Hudson job files for {0}..."
+    })
+    public boolean createProjectFiles(PhpModule phpModule) {
+        String name = phpModule.getDisplayName();
+        FileObject projectDirectory = phpModule.getProjectDirectory();
+        ExternalProcessBuilder processBuilder = getProcessBuilder()
+                .addArgument("--name") // NOI18N
+                .addArgument(name)
+                .addArgument("--source") // NOI18N
+                .addArgument(relativizePath(projectDirectory, phpModule.getSourceDirectory()))
+                .addArgument("--tests") // NOI18N
+                .addArgument(relativizePath(projectDirectory, phpModule.getTestDirectory()))
+                .addArgument(FileUtil.toFile(projectDirectory).getAbsolutePath());
+        ExecutionDescriptor executionDescriptor = new ExecutionDescriptor()
+                .optionsPath(HudsonOptionsPanelController.getOptionsPath());
+        Integer status = execute(processBuilder, executionDescriptor,
+                Bundle.PpwScript_create_title(name), Bundle.PpwScript_create_progress(name));
+        return status != null && status == 0;
+    }
+
+    private String relativizePath(FileObject parent, FileObject child) {
+        if (parent.equals(child)) {
+            return "."; // NOI18N
+        }
+        String relativePath = FileUtil.getRelativePath(parent, child);
+        if (relativePath != null) {
+            return relativePath;
+        }
+        return FileUtil.toFile(child).getAbsolutePath();
     }
 
 }
