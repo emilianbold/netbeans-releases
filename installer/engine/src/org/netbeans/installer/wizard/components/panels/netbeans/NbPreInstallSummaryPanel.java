@@ -386,20 +386,11 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
             
             // add top-level components like nb-base, glassfish, tomcat, jdk
             for (Product product: registry.getProductsToInstall()) {
-                try {
-                    if (product.getUid().equals("javafxsdk")) {
-                        String property = panel.getProperty(                               
-                                    INSTALLATION_FOLDERS_PROPERTY);
-                        text.append(StringUtils.LF);
-                        text.append(StringUtils.format(property,
-                                product.getDisplayName()));
-                        text.append(StringUtils.LF);
-                        text.append("    " + product.getInstallationLocation());
-                        text.append(StringUtils.LF);                         
-                        text.append("    " + product.getProperty(JAVAFX_RUNTIME_INSTALLATION_LOCATION_PROPERTY));
-                        text.append(StringUtils.LF);
-                    } else if (product.getLogic().registerInSystem() ||
-                            product.getUid().equals("jdk") || product.getUid().equals("mysql")) {
+                try {                                       
+                    if (product.getLogic().registerInSystem() ||
+                            product.getUid().equals("jdk") || 
+                            product.getUid().equals("mysql") ||
+                            product.getUid().equals("javafxsdk")) {
                         String property = panel.getProperty(
                                 product.getUid().equals(NB_BASE_UID) ?
                                     INSTALLATION_FOLDER_NETBEANS_PROPERTY :
@@ -1045,13 +1036,8 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
 /////////////////////////////////////////////////////////////////////////////////
 // Constants
 
-    public static final String JAVAFX_RUNTIME_INSTALLATION_LOCATION_PROPERTY =
-            "javafx.runtime.installation.location"; // NOI18N
-
     public static final String INSTALLATION_FOLDER_PROPERTY =
             "installation.folder"; // NOI18N
-    public static final String INSTALLATION_FOLDERS_PROPERTY =
-            "installation.folders"; // NOI18N
     public static final String INSTALLATION_FOLDER_NETBEANS_PROPERTY =
             "installation.folder.netbeans"; // NOI18N
     public static final String UNINSTALL_LIST_LABEL_TEXT_PROPERTY =

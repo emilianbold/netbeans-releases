@@ -273,7 +273,11 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             }
             LogManager.log("... checking if javafxsdk is bundled");
             final List<Product> fxsdkProducts = bundledRegistry.getProducts("javafxsdk");
-            return (fxsdkProducts.isEmpty())? null : fxsdkProducts.get(0);
+            final Product javafxsdk = (fxsdkProducts.isEmpty())? null : fxsdkProducts.get(0);
+            if(javafxsdk != null) {
+                LogManager.log("javafxsdk status: " + javafxsdk.getStatus() + "; install location: " + javafxsdk.getInstallationLocation());
+            }
+            return javafxsdk;
     }
 
     private ExecutionResults runJDKInstallerWindows(File location,

@@ -49,8 +49,10 @@ import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
+import org.netbeans.installer.utils.applications.JavaFXUtils;
 import org.netbeans.installer.utils.applications.JavaUtils;
 import org.netbeans.installer.utils.applications.JavaUtils.JavaInfo;
+import org.netbeans.installer.utils.helper.Platform;
 import org.netbeans.installer.utils.helper.Status;
 import org.netbeans.installer.utils.helper.Version;
 import org.netbeans.installer.utils.helper.swing.NbiTextPane;
@@ -126,13 +128,24 @@ public class JavaFXSDKPanel extends DestinationPanel {
             
             @Override
             protected void initialize() {
-                if (!isSuitableJDKInstalled()) {
+                /*if (!isSuitableJDKInstalled()) {
                     statusLabel.setContentType("text/html");
                     statusLabel.setText(StringUtils.format(component.getProperty(ERROR_JDK_NOT_FOUND_PROPERTY)));
                     statusLabel.addHyperlinkListener(BrowserUtils.createHyperlinkListener());
                 } else {
                     statusLabel.clearText();
                     statusLabel.setVisible(false);
+                }*/
+                final Product product = (Product) component.
+                    getWizard().
+                    getContext().
+                    get(Product.class);
+                if(!JavaFXUtils.isJavaFXRuntimeInstalled(product.getPlatforms().get(0), product.getVersion())) {
+                    final String javafxrtInstallPath =
+                            SystemUtils.resolveString(product.getProperty(JAVAFX_RUNTIME_INSTALLATION_LOCATION_PROPERTY));
+                    statusLabel.setContentType("text/html");
+                    statusLabel.setText(StringUtils.format(component.getProperty(DEFAULT_JAVAFX_RUNTIME_INSTALL_TEXT_PROPERTY),
+                            javafxrtInstallPath));
                 }
                 super.initialize();
             }
@@ -210,6 +223,8 @@ public class JavaFXSDKPanel extends DestinationPanel {
             "warning.sdk.cannot.be.installed"; // NOI18N
     public static final String ERROR_JDK_NOT_FOUND_PROPERTY =
             "error.jdk.not.found"; // NOI18N
+    public static final String JAVAFX_RUNTIME_INSTALLATION_LOCATION_PROPERTY =
+            "javafx.runtime.installation.location"; // NOI18N
 
     public static final String DEFAULT_TITLE =
             ResourceUtils.getString(JavaFXSDKPanel.class,
@@ -226,7 +241,10 @@ public class JavaFXSDKPanel extends DestinationPanel {
     public static final String DEFAULT_WARNING_SDK_CANNOT_BE_INSTALLED =
             ResourceUtils.getString(JavaFXSDKPanel.class,
             "JFXP.warning.sdk.cannot.be.installed"); // NOI18N
-        public static final String DEFAULT_ERROR_JDK_NOT_FOUND_PROPERTY =
+    public static final String DEFAULT_ERROR_JDK_NOT_FOUND_PROPERTY =
             ResourceUtils.getString(JavaFXSDKPanel.class,
             "JFXP.error.jdk.not.found"); // NOI18N
+    public static final String DEFAULT_JAVAFX_RUNTIME_INSTALL_TEXT_PROPERTY =
+            ResourceUtils.getString(JavaFXSDKPanel.class,
+            "JFXP.runtime.install.text"); // NOI18N
 }
