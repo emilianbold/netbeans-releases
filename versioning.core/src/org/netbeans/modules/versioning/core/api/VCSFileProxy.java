@@ -61,7 +61,8 @@ public final class VCSFileProxy {
 
     private final String path;
     final VCSFileProxyOperations proxy;
-    boolean isFlat = false;
+    private boolean isFlat = false;
+    private Boolean isDirectory = null;
     
     static {
         APIAccessor.IMPL = new APIAccessorImpl();
@@ -83,6 +84,12 @@ public final class VCSFileProxy {
         if(file instanceof FlatFolder) {
             p.setFlat(true);
         }
+        return p;
+    }
+    
+    public static VCSFileProxy createFileProxy(File file, boolean isDirectory) {
+        VCSFileProxy p = createFileProxy(file);
+        p.isDirectory = isDirectory;
         return p;
     }
 
@@ -111,7 +118,7 @@ public final class VCSFileProxy {
             if (fileProxyOperations == null) {
                 File file = FileUtil.toFile(fileObject);
                 if(file != null) {
-                    return createFileProxy(file);
+                    return createFileProxy(file, fileObject.isFolder());
                 } else {
                     return null; // e.g. FileObject from a jar filesystem
                 }
@@ -158,7 +165,11 @@ public final class VCSFileProxy {
      */
     public boolean isDirectory() {
         if (proxy == null) {
-            return new File(path).isDirectory();
+            if(isDirectory != null) {
+                return isDirectory;
+            } else {
+                return new File(path).isDirectory();
+            }
         } else {
             return proxy.isDirectory(this);
         }
