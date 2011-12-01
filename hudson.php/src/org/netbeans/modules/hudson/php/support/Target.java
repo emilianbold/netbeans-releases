@@ -43,6 +43,7 @@ package org.netbeans.modules.hudson.php.support;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.hudson.php.xml.XmlUtils;
@@ -103,9 +104,13 @@ public abstract class Target {
         this.selectedOption = selectedOption;
     }
 
+    public void apply(Map<String, String> commandParams) {
+        // noop
+    }
+
     public boolean apply(Document document) {
         if (isSelected()) {
-            // nothing to do
+            // noop
             return true;
         }
         return commentNode(document, "//antcall[@target='" + getName() + "']"); // NOI18N

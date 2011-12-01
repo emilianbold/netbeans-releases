@@ -41,6 +41,10 @@
  */
 package org.netbeans.modules.hudson.php.commands;
 
+import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
 import org.netbeans.modules.hudson.php.options.HudsonOptions;
@@ -62,6 +66,9 @@ public class PpwScript extends PhpProgram {
     // generated files
     public static final String BUILD_XML = "build.xml";  // NOI18N
     public static final String PHPUNIT_XML = "phpunit.xml.dist";  // NOI18N
+    // command params
+    public static final String PHPCS_RULESET_PARAM = "--phpcs";  // NOI18N
+    public static final List<String> PHPCS_RULESET_OPTIONS = Arrays.asList("PEAR", "Zend", "PHPCS", "Squiz", "MySource"); // NOI18N
 
 
     public PpwScript(String command) {
@@ -100,16 +107,23 @@ public class PpwScript extends PhpProgram {
         "PpwScript.create.title=Hudson job files for {0}",
         "PpwScript.create.progress=Creating Hudson job files for project {0}..."
     })
-    public boolean createProjectFiles(PhpModule phpModule) {
+    public boolean createProjectFiles(PhpModule phpModule, Map<String, String> optionalParams) {
         String name = phpModule.getDisplayName();
         FileObject projectDirectory = phpModule.getProjectDirectory();
-        ExternalProcessBuilder processBuilder = getProcessBuilder()
-                .addArgument("--name") // NOI18N
-                .addArgument(name)
-                .addArgument("--source") // NOI18N
-                .addArgument(relativizePath(projectDirectory, phpModule.getSourceDirectory()))
-                .addArgument("--tests") // NOI18N
-                .addArgument(relativizePath(projectDirectory, phpModule.getTestDirectory()))
+        Map<String, String> params = new LinkedHashMap<String, String>();
+        if (optionalParams != null) {
+            params.putAll(optionalParams);
+        }
+        params.put("--name", name); // NOI18N
+        params.put("--source", relativizePath(projectDirectory, phpModule.getSourceDirectory())); // NOI18N
+        params.put("--tests", relativizePath(projectDirectory, phpModule.getTestDirectory())); // NOI18N
+        ExternalProcessBuilder processBuilder = getProcessBuilder();
+        for (Map.Entry<String, String> entry : params.entrySet()) {
+            processBuilder = processBuilder
+                    .addArgument(entry.getKey())
+                    .addArgument(entry.getValue());
+        }
+        processBuilder = processBuilder
                 .addArgument(FileUtil.toFile(projectDirectory).getAbsolutePath());
         ExecutionDescriptor executionDescriptor = new ExecutionDescriptor()
                 .optionsPath(HudsonOptionsPanelController.getOptionsPath());
