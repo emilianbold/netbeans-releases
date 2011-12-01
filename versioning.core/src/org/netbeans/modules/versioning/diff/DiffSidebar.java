@@ -985,7 +985,7 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
         Collection<File> originalFiles = new ArrayList<File>(filesToCheckout.size());
 
         for (FileObject fo : filesToCheckout) {
-            File originalFile = new File(targetTempFolder, fo.getName());
+            File originalFile = new File(targetTempFolder, fo.getNameExt());
             vs.getOriginalFile(VCSFileProxy.createFileProxy(fo), VCSFileProxy.createFileProxy(originalFile)); // XXX refactor the whole diff
             originalFiles.add(originalFile);
         }
