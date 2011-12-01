@@ -105,7 +105,7 @@ final class UndoRedoManager extends UndoRedo.Manager {
      * <br/>
      * Next performed edit will set afterSaveEdit field.
      */
-    static final UndoableEdit SAVEPOINT = new CompoundEdit();
+    static final UndoableEdit SAVEPOINT = new SpecialEdit();
 
     /**
      * Start a group of edits which will be committed as a single edit
@@ -116,26 +116,16 @@ final class UndoRedoManager extends UndoRedo.Manager {
      * While coalescing edits, any undo/redo/save implicitly delimits
      * a commit-group.
      */
-    static final UndoableEdit BEGIN_COMMIT_GROUP = new CompoundEdit();
+    static final UndoableEdit BEGIN_COMMIT_GROUP = new SpecialEdit();
 
     /** End a group of edits. */
-    static final UndoableEdit END_COMMIT_GROUP = new CompoundEdit();
+    static final UndoableEdit END_COMMIT_GROUP = new SpecialEdit();
     
     /**
      * Any coalesced edits become a commit-group and a new commit-group
      * is started.
      */
-    static final UndoableEdit MARK_COMMIT_GROUP = new CompoundEdit();
-    
-    static {
-        // Prevent the special edits to merge with any other edits.
-        // This might happen in an errorneous situation when e.g. two undo managers
-        // are attached to the same document at once.
-        ((CompoundEdit)SAVEPOINT).end();
-        ((CompoundEdit)BEGIN_COMMIT_GROUP).end();
-        ((CompoundEdit)END_COMMIT_GROUP).end();
-        ((CompoundEdit)MARK_COMMIT_GROUP).end();
-    }
+    static final UndoableEdit MARK_COMMIT_GROUP = new SpecialEdit();
 
 
     CloneableEditorSupport support;
@@ -684,6 +674,30 @@ final class UndoRedoManager extends UndoRedo.Manager {
             default:
                 throw new IllegalArgumentException("Unknown type: " + type);
             }
+        }
+    }
+
+    private static class SpecialEdit extends CompoundEdit {
+
+        public SpecialEdit()
+        {
+            super();
+            // Prevent the special edits to merge with any other edits.
+            // This might happen in an errorneous situation when
+            // e.g. two undo managers are attached to the same document at once.
+            end();
+        }
+
+        @Override
+        public boolean canRedo()
+        {
+            return true;
+        }
+
+        @Override
+        public boolean canUndo()
+        {
+            return true;
         }
     }
 
