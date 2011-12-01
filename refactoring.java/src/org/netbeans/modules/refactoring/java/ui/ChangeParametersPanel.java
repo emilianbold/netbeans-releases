@@ -888,7 +888,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
         
         // generate the return type for the method and name
         // for the both - method and constructor
-        if (RefactoringUtils.getElementKind(refactoredObj) == ElementKind.METHOD) {
+        if (refactoredObj.getElementHandle().getKind() == ElementKind.METHOD) {
             buf.append(((JEditorPane)singleLineEditor[1]).getText());
             buf.append(' '); //NOI18N
         }

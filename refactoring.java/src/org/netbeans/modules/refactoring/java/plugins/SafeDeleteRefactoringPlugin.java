@@ -288,7 +288,7 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
 //                return new Problem(true,errMsg);
 //            }
 //            
-//            if (!CheckUtils.isElementInOpenProject(refactoredObject)) {
+//            if (!CheckUtils.isInOpenProject(refactoredObject)) {
 //                return new Problem(true, NbBundle.getMessage(SafeDeleteRefactoringPlugin.class, "ERR_ProjectNotOpened"));
 //            }
 //        }

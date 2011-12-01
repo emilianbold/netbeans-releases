@@ -51,17 +51,14 @@ import java.util.HashSet;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
 import javax.swing.JOptionPane;
-import org.netbeans.api.java.source.CancellableTask;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.api.java.source.*;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.netbeans.modules.refactoring.spi.ui.UI;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 
@@ -119,9 +116,9 @@ abstract class PackagetoTreePathHandleTask implements Runnable, CancellableTask<
             try {
                 source.runUserActionTask(this, false);
             } catch (IllegalArgumentException ex) {
-                ex.printStackTrace();
+                Exceptions.printStackTrace(ex);
             } catch (IOException ex) {
-                ex.printStackTrace();
+                Exceptions.printStackTrace(ex);
             }
         }
 
