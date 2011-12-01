@@ -143,9 +143,11 @@ public class JavaFXSDKPanel extends DestinationPanel {
                 if(!JavaFXUtils.isJavaFXRuntimeInstalled(product.getPlatforms().get(0), product.getVersion())) {
                     final String javafxrtInstallPath =
                             SystemUtils.resolveString(product.getProperty(JAVAFX_RUNTIME_INSTALLATION_LOCATION_PROPERTY));
-                    statusLabel.setContentType("text/html");
-                    statusLabel.setText(StringUtils.format(DEFAULT_JAVAFX_RUNTIME_INSTALL_TEXT_PROPERTY,
-                            javafxrtInstallPath));
+                    if(javafxrtInstallPath != null) {
+                        statusLabel.setContentType("text/html");
+                        statusLabel.setText(StringUtils.format(DEFAULT_JAVAFX_RUNTIME_INSTALL_TEXT_PROPERTY,
+                                new File(javafxrtInstallPath).getAbsolutePath()));
+                    }
                 }
                 super.initialize();
             }

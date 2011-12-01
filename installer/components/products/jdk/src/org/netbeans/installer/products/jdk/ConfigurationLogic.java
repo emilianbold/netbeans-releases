@@ -286,6 +286,45 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             final boolean jreAlreadyInstalled,
             final boolean javadbBundled) throws InstallationException {
         progress.setDetail(PROGRESS_DETAIL_RUNNING_JDK_INSTALLER);
+        final File logFile = getLog("jdk_install");
+        LogManager.log("... JDK installation log file : " + logFile);
+        String [] commands;
+	LogManager.log("... JDK installer file : " + install.getAbsolutePath());
+        if(installer.getAbsolutePath().endsWith(".exe")) {
+            /////////////////////////for exe////////////////////////////
+            LogManager.log("Installing JDK with exe installer");
+            final String loggingOption = (logFile!=null) ?
+                "/log " + BACK_SLASH + QUOTE  + logFile.getAbsolutePath()  + BACK_SLASH + QUOTE +" ":
+                EMPTY_STRING;
+            String installLocationOption = "/qn /norestart INSTALLDIR=" +
+                    BACK_SLASH + QUOTE + location.getAbsolutePath() + BACK_SLASH + QUOTE;
+            final Product javafxsdk=getJavaFXSDKProduct();
+            if( javafxsdk != null) {
+                LogManager.log("... javafxsdk is found");
+                installLocationOption += " INSTALLDIRFXSDK=" +
+                        BACK_SLASH + QUOTE + javafxsdk.getInstallationLocation().getAbsolutePath() + BACK_SLASH + QUOTE;
+                                        // " INSTALLDIRFXRT=" + BACK_SLASH + QUOTE + javafxsdk.getProperty("javafx.runtime.installation.location") + BACK_SLASH + QUOTE;
+            }
+            commands = new String [] {
+                installer.getAbsolutePath(),
+                "/s",
+                "/v" + loggingOption + installLocationOption};
+
+        } else if(installer.getAbsolutePath().endsWith(".msi")) {
+             ////////////////////////////for msi////////////////////////////
+            LogManager.log("Installing JDK with MSI installer");
+            final String packageOption = "/i \"" + installer.getAbsolutePath() +"\" ";
+            final String loggingOption = (logFile!=null) ?
+                "/log \"" + logFile.getAbsolutePath()  +"\" ":
+                EMPTY_STRING;
+            final String installLocationOption = "/qn INSTALLDIR=\"" +  location.getAbsolutePath() + "\"";
+            commands = new String [] {
+                "CMD",
+                "/C",
+                "msiexec.exe " + packageOption + loggingOption + installLocationOption
+            };
+
+        }
         final File tempDir;
         try {
             tempDir = FileUtils.createTempFile(
@@ -308,26 +347,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                     ResourceUtils.getString(ConfigurationLogic.class,
                     ERROR_INSTALL_JDK_ERROR_KEY),e);
         }
-        final File logFile = getLog("jdk_install");
-        LogManager.log("... JDK installation log file : " + logFile);
-        final String loggingOption = (logFile!=null) ?
-            "/log " + BACK_SLASH + QUOTE  + logFile.getAbsolutePath()  + BACK_SLASH + QUOTE +" ":
-            EMPTY_STRING;
-        String installLocationOption = "/qn /norestart INSTALLDIR=" + 
-                BACK_SLASH + QUOTE + convertPathNamesToShort(location.getAbsolutePath()) + BACK_SLASH + QUOTE;
-        final Product javafxsdk=getJavaFXSDKProduct();
-        if( javafxsdk != null) {
-            LogManager.log("... javafxsdk is found");
-            installLocationOption += " INSTALLDIRFXSDK=" + 
-                    BACK_SLASH + QUOTE + convertPathNamesToShort(javafxsdk.getInstallationLocation().getAbsolutePath()) + BACK_SLASH + QUOTE;
-                                    // " INSTALLDIRFXRT=" + BACK_SLASH + QUOTE + javafxsdk.getProperty("javafx.runtime.installation.location") + BACK_SLASH + QUOTE;
-        }
-        
-        String [] commands = new String [] {
-            installer.getAbsolutePath(),
-            "/s",
-            "/v" + loggingOption + installLocationOption};
-        
+
              List<File> directories = new ArrayList<File>();
         directories.add(location);
         directories.add(tempDir);

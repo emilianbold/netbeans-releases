@@ -94,8 +94,8 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         if(SystemUtils.isWindows()) {
             try {                
                 ExecutionResults results = null;
-                boolean runtimeInstallation = false;
-                /*final CompositeProgress overallProgress = new CompositeProgress();
+                
+                final CompositeProgress overallProgress = new CompositeProgress();
                 overallProgress.synchronizeTo(progress);
                 overallProgress.synchronizeDetails(true);
 
@@ -104,136 +104,111 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                     LogManager.log("... JavaFX SDK " + getProduct().getVersion() +
                             " is already installed, skipping SDK and Runtime configuration");
                 } else {
-                    final Progress sdkProgress = new Progress();
-                    final Progress runtimeProgress = new Progress();
-                    boolean runtimeToBeInstalled = true;
+                    final Progress sdkProgress = new Progress();                                    
+                    //so, don't instal runtime manually
                     if(isJavaFXRuntimeInstalled(product, runtimeLocation)) {
-                         LogManager.log("... JavaFX Runtime is already installed, skipping its configuration");
-                         runtimeToBeInstalled = false;
-                    }                    
-                    if(runtimeToBeInstalled) {
-                        overallProgress.addChild(sdkProgress, progress.COMPLETE * 15 / 20 );
-                        overallProgress.addChild(runtimeProgress, progress.COMPLETE * 5 / 20);
-                    } else {
-                        overallProgress.addChild(sdkProgress, progress.COMPLETE);
-                    }
+                         LogManager.log("... JavaFX Runtime is already installed, skipping its configuration");                         
+                    }                                       
+                    overallProgress.addChild(sdkProgress, progress.COMPLETE);                    
                     final File sdkInstaller = getSDKWindowsInstaller();
-                    results = runSDKInstallerWindows(sdkLocation, sdkInstaller, sdkProgress);                    
-                    //if(results.getErrorCode()==0) {
-                       // getProduct().setProperty(SDK_INSTALLED_WINDOWS_PROPERTY,
-                       //         "" + true);
-                    //}
-                    //addUninsallationJVM(results, sdkLocation);         
-                    if(!progress.isCanceled() && results.getErrorCode() == 0) {
-                        if(runtimeToBeInstalled) {
-                            runtimeInstallation = true;
-                            final File runtimeInstaller = getRuntimeWindowsInstaller();
-                            if(runtimeInstaller!=null) {
-                                results = runRuntimeInstallerWindows(runtimeLocation, runtimeInstaller, runtimeProgress);
-                                //configureJREProductWindows(results);
-                            }
-                        }
-                    }
-                } */
+                    results = runSDKInstallerWindows(sdkLocation, runtimeLocation, sdkInstaller, sdkProgress);
+                } 
 
                 if(results != null && results.getErrorCode()!=0) {
                     throw new InstallationException(
-                            ResourceUtils.getString(ConfigurationLogic.class,
-                            ((runtimeInstallation) ? ERROR_RUNTIME_INSTALL_SCRIPT_RETURN_NONZERO_KEY
-                            : ERROR_SDK_INSTALL_SCRIPT_RETURN_NONZERO_KEY),
+                            ResourceUtils.getString(ConfigurationLogic.class,                         
+                            ERROR_SDK_INSTALL_SCRIPT_RETURN_NONZERO_KEY,
                             StringUtils.EMPTY_STRING + results.getErrorCode()));
                 }
                 if(!isJavaFXRuntimeInstalled(product, runtimeLocation)) {
-                    throw new InstallationException(ERROR_RUNTIME_NOT_INSTALLED);
+                    throw new InstallationException(DEFAULT_ERROR_RUNTIME_NOT_INSTALLED);
                 }
                 if(!isJavaFXSDKInstalled(product, sdkLocation)) {
-                    throw new InstallationException(ERROR_SDK_NOT_INSTALLED);
+                    throw new InstallationException(DEFAULT_ERROR_SDK_NOT_INSTALLED);
                 }
-            } finally {
-                /*try {
-                    FileUtils.deleteFile(new File(sdkLocation, JAVAFX_SDK_MSI_FILE_NAME));
-                    FileUtils.deleteFile(new File(sdkLocation, JAVAFX_SDK_DATA_FILE_NAME));
-                    FileUtils.deleteFile(new File(sdkLocation, JAVAFX_RUNTIME_INSTALLER_DIR), true);
-                } catch (IOException e) {
-                    LogManager.log("Cannot delete JavaFX installer files ", e);
-                }*/
-            }
-      
-            //get bundled registry to perform further runtime integration
-            //http://wiki.netbeans.org/NetBeansInstallerIDEAndRuntimesIntegration
-            Registry bundledRegistry = new Registry();
-            try {
-                final String bundledRegistryUri = System.getProperty(
-                        Registry.BUNDLED_PRODUCT_REGISTRY_URI_PROPERTY);
+                } finally {
+                    try {                       
+                        FileUtils.deleteFile(new File(sdkLocation, JAVAFX_SDK_EXE_FILE_NAME));                        
+                    } catch (IOException e) {
+                        LogManager.log("Cannot delete JavaFX installer files ", e);
+                    }
+                }
 
-                bundledRegistry.loadProductRegistry(
-                        (bundledRegistryUri != null) ? bundledRegistryUri : Registry.DEFAULT_BUNDLED_PRODUCT_REGISTRY_URI);
-            } catch (InitializationException e) {
-                LogManager.log("Cannot load bundled registry", e);
-            }
-
-            /////////////////////////////////////////////////////////////////////////////
-            if(runtimeLocation == null || FileUtils.isEmpty(runtimeLocation) || FileUtils.isEmpty(sdkLocation)) {
-                    LogManager.log(ErrorLevel.ERROR, getString("CL.install.error.ide.integration.no.javafx.found"));
-            } else {
+                //get bundled registry to perform further runtime integration
+                //http://wiki.netbeans.org/NetBeansInstallerIDEAndRuntimesIntegration
+                Registry bundledRegistry = new Registry();
                 try {
-                    progress.setDetail(getString("CL.install.ide.integration")); // NOI18N
+                    final String bundledRegistryUri = System.getProperty(
+                            Registry.BUNDLED_PRODUCT_REGISTRY_URI_PROPERTY);
 
-                    final List<Product> ides =
-                            Registry.getInstance().getProducts("nb-base");
-                    List<Product> productsToIntegrate = new ArrayList<Product>();
-                    for (Product ide : ides) {
-                        if (ide.getStatus() == Status.INSTALLED) {
-                            LogManager.log("... checking if " + getProduct().getDisplayName() + " can be integrated with " + ide.getDisplayName() + " at " + ide.getInstallationLocation());
-                            final File location = ide.getInstallationLocation();
-                            if (location != null && FileUtils.exists(location) && !FileUtils.isEmpty(location)) {
-                                final Product bundledProduct = bundledRegistry.getProduct(ide.getUid(), ide.getVersion());
-                                if (bundledProduct != null) {
-                                    //one of already installed IDEs is in the bundled registry as well - we need to integrate with it
-                                    productsToIntegrate.add(ide);
-                                    LogManager.log("... will be integrated since this produce is also bundled");
-                                } else {
-                                    //check if this IDE is not integrated with any other WL instance - we need integrate with such IDE instance
-                                    try {
-                                        if(!isJavaFXRegistred(location)) {
-                                            LogManager.log("... will be integrated since there it is not yet integrated with any instance or such an instance does not exist");
-                                            productsToIntegrate.add(ide);
-                                        } else {
-                                            LogManager.log("... will not be integrated since it is already integrated with another instance");
+                    bundledRegistry.loadProductRegistry(
+                            (bundledRegistryUri != null) ? bundledRegistryUri : Registry.DEFAULT_BUNDLED_PRODUCT_REGISTRY_URI);
+                } catch (InitializationException e) {
+                    LogManager.log("Cannot load bundled registry", e);
+                }
+
+                /////////////////////////////////////////////////////////////////////////////
+                if(runtimeLocation == null || FileUtils.isEmpty(runtimeLocation) || FileUtils.isEmpty(sdkLocation)) {
+                        LogManager.log(ErrorLevel.ERROR, getString("CL.install.error.ide.integration.no.javafx.found"));
+                } else {
+                    try {
+                        progress.setDetail(getString("CL.install.ide.integration")); // NOI18N
+
+                        final List<Product> ides =
+                                Registry.getInstance().getProducts("nb-base");
+                        List<Product> productsToIntegrate = new ArrayList<Product>();
+                        for (Product ide : ides) {
+                            if (ide.getStatus() == Status.INSTALLED) {
+                                LogManager.log("... checking if " + getProduct().getDisplayName() + " can be integrated with " + ide.getDisplayName() + " at " + ide.getInstallationLocation());
+                                final File location = ide.getInstallationLocation();
+                                if (location != null && FileUtils.exists(location) && !FileUtils.isEmpty(location)) {
+                                    final Product bundledProduct = bundledRegistry.getProduct(ide.getUid(), ide.getVersion());
+                                    if (bundledProduct != null) {
+                                        //one of already installed IDEs is in the bundled registry as well - we need to integrate with it
+                                        productsToIntegrate.add(ide);
+                                        LogManager.log("... will be integrated since this produce is also bundled");
+                                    } else {
+                                        //check if this IDE is not integrated with any other WL instance - we need integrate with such IDE instance
+                                        try {
+                                            if(!isJavaFXRegistred(location)) {
+                                                LogManager.log("... will be integrated since there it is not yet integrated with any instance or such an instance does not exist");
+                                                productsToIntegrate.add(ide);
+                                            } else {
+                                                LogManager.log("... will not be integrated since it is already integrated with another instance");
+                                            }
+                                        } catch (IOException e)  {
+                                            LogManager.log(e);
                                         }
-                                    } catch (IOException e)  {
-                                        LogManager.log(e);
                                     }
                                 }
                             }
                         }
-                    }
 
-                    for (Product productToIntegrate : productsToIntegrate) {
-                        final File location = productToIntegrate.getInstallationLocation();
-                        LogManager.log("... integrate " + getProduct().getDisplayName() + " with " + productToIntegrate.getDisplayName() + " installed at " + location);
+                        for (Product productToIntegrate : productsToIntegrate) {
+                            final File location = productToIntegrate.getInstallationLocation();
+                            LogManager.log("... integrate " + getProduct().getDisplayName() + " with " + productToIntegrate.getDisplayName() + " installed at " + location);
 
-                        if(!registerJavaFX(location, sdkLocation, runtimeLocation)) {
-                                continue;
+                            if(!registerJavaFX(location, sdkLocation, runtimeLocation)) {
+                                    continue;
+                            }
+
+                            // if the IDE was installed in the same session as the
+                            // javafx sdk, we should add its "product id" to the IDE
+                            if (productToIntegrate.hasStatusChanged()) {
+                                NetBeansUtils.addPackId(
+                                        location,
+                                        PRODUCT_ID);
+                                //TODO!!!, maybe move to registerJavaFX and do for every productToIntegrate
+                                //addFiles(productToIntegrate.getInstalledFiles(),new File (location, "nb/config/JavaFX/Instances/javafx_sdk_autoregistered_instance"));
+                                //addFiles(productToIntegrate.getInstalledFiles(),new File (location, "nb/config/JavaFX/Instances/.nbattrs"));
+                            }
                         }
-
-                        // if the IDE was installed in the same session as the
-                        // javafx sdk, we should add its "product id" to the IDE
-                        if (productToIntegrate.hasStatusChanged()) {
-                            NetBeansUtils.addPackId(
-                                    location,
-                                    PRODUCT_ID);
-                            //TODO!!!, maybe move to registerJavaFX and do for every productToIntegrate
-                            //addFiles(productToIntegrate.getInstalledFiles(),new File (location, "nb/config/JavaFX/Instances/javafx_sdk_autoregistered_instance"));
-                            //addFiles(productToIntegrate.getInstalledFiles(),new File (location, "nb/config/JavaFX/Instances/.nbattrs"));
-                        }
+                    } catch  (IOException e) {
+                        throw new InstallationException(
+                                getString("CL.install.error.ide.integration"), // NOI18N
+                                e);
                     }
-                } catch  (IOException e) {
-                    throw new InstallationException(
-                            getString("CL.install.error.ide.integration"), // NOI18N
-                            e);
                 }
-            }
         }
         /////////////////////////////////////////////////////////////////////////////
         progress.setPercentage(Progress.COMPLETE);
@@ -275,13 +250,12 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         
         return SystemUtils.executeCommand(nbLocation, commands.toArray(new String[]{})).getErrorCode() == 0;
     }
-    private  void removeJavaFXIntegration(File nbLocation,  File wlLocation, File domaindir) throws IOException {
+    private  void removeJavaFXIntegration(File nbLocation) throws IOException {
         LogManager.log("... ide location is " + nbLocation);
         FileUtils.deleteFile(new File (nbLocation, "nb/config/JavaFX/Instances/javafx_sdk_autoregistered_instance"));
         FileUtils.deleteFile(new File (nbLocation, "nb/config/JavaFX/Instances/.nbattrs"));
     }
-    
-    
+        
     /**      
      * @param product
      * @param installLocation
@@ -298,8 +272,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
      * @return true if windows registry contains info about Runtime AND installLocation is not empty
      */
     private boolean isJavaFXRuntimeInstalled(Product product, File installLocation) {
-        return JavaFXUtils.isJavaFXRuntimeInstalled(product.getPlatforms().get(0), product.getVersion()) &&
-               !FileUtils.isEmpty(installLocation);
+        return JavaFXUtils.isJavaFXRuntimeInstalled(product.getPlatforms().get(0), product.getVersion());
     }
 
     public void uninstall(final Progress progress)
@@ -320,12 +293,13 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
        return false;                                   
     }
 
-    private ExecutionResults runSDKInstallerWindows(File location, File sdkInstaller,
+    private ExecutionResults runSDKInstallerWindows(File location, File runtimeLocation, File sdkInstaller,
             Progress progress) throws InstallationException {
         progress.setDetail(PROGRESS_DETAIL_RUNNING_SDK_INSTALLER);
-        LogManager.log("... installing JavaFX SDK");
-        final File logFile = getLog("javafx_sdk_install");
-        final String packageOption = "/i \"" + sdkInstaller.getAbsolutePath() +"\" ";
+        LogManager.log("... installing JavaFX SDK and Runtime");
+        final File logFile = getLog("javafx_sdk_rt_install");
+        /*---------------------------IF MSI INSTALLER------------------------*/
+        /*final String packageOption = "/i \"" + sdkInstaller.getAbsolutePath() +"\" ";
         final String loggingOption = (logFile!=null) ?
             "/log \"" + logFile.getAbsolutePath()  +"\" ":
             EMPTY_STRING;
@@ -335,11 +309,21 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             "/C",
             "msiexec.exe " + packageOption + loggingOption + installLocationOption
             //"msiexec.exe /i D:\\NBI\\FXSDK_bundle\\test msi\\fx2.0.msi /log \"D:\\NBI\\FXSDK_bundle\\test space\\log.log1\" /qn"
-        };
+        };*/
+        /*-------------------------IF EXE INSTALLER---------------------------*/
+        final String loggingOption = (logFile!=null) ?
+            "/L " + BACK_SLASH + QUOTE  + logFile.getAbsolutePath()  + BACK_SLASH + QUOTE +" ":
+            EMPTY_STRING;
+        String installLocationOption = "/qn /norestart INSTALLDIRFXSDK=" + BACK_SLASH + QUOTE + location + BACK_SLASH + QUOTE;
+
+        String [] commands = new String [] {
+            sdkInstaller.getAbsolutePath(),
+            "/s",
+            "/v" + loggingOption + installLocationOption};
    
         ProgressThread progressThread = new ProgressThread(progress,
-                new File [] {location},
-                getSDKinstallationSize() + getProduct().getDownloadSize());
+                new File [] {location, runtimeLocation},
+                getSDKinstallationSize() + getRuntimeInstallationSize() + getProduct().getDownloadSize());
         try {            
             progressThread.start();
             return SystemUtils.executeCommand(commands);
@@ -353,61 +337,14 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             progress.setPercentage(progress.COMPLETE);
         }
     } 
-    
-    private ExecutionResults runRuntimeInstallerWindows(File location,
-            File runtimeInstaller, Progress progress) throws InstallationException {
-        progress.setDetail(PROGRESS_DETAIL_RUNNING_RE_INSTALLER);
-        LogManager.log("... installing JavaFX Runtime");
-        final File logFile = getLog("javafx_runtime_install");
-        final String packageOption = "/i \"" + runtimeInstaller.getAbsolutePath() +"\" /qn ";
-        final String loggingOption = (logFile!=null) ?
-            "/log \"" + logFile.getAbsolutePath()  +"\"":
-            EMPTY_STRING;
-        String [] commands = new String [] {
-            "CMD",
-            "/C",
-            "msiexec.exe " + packageOption + loggingOption
-            //"msiexec.exe /i D:\\NBI\\FXSDK_bundle\\test msi\\fx2.0.msi /log \"D:\\NBI\\FXSDK_bundle\\test space\\log.log1\" /qn"
-        };
-   
-        List<File> directories = new ArrayList<File>();
-        directories.add(location);
-        long maxDeltaSize = getRuntimeInstallationSize();
-
-        ProgressThread progressThread = new ProgressThread(progress,
-                directories.toArray(new File[directories.size()]),
-                maxDeltaSize);
-        try {
-            progressThread.start();
-            return SystemUtils.executeCommand(commands);
-        } catch (IOException e) {
-            throw new InstallationException(ERROR_INSTALL_RE_EXCEPTION,e);
-        } finally {
-            progressThread.finish();
-            LogManager.log("... installation of JavaFX Runtime completed");
-            progress.setPercentage(Progress.COMPLETE);
-        }
-    }
-
-    /** Find path to public Runtime installer ie. msi file
-     * @return null if msi file for given JRE version is not found
-     */
-    private File getRuntimeWindowsInstaller() {
-        File installerFile = new File(getProduct().getInstallationLocation(),
-                JAVAFX_RUNTIME_INSTALLER_DIR + File.separator + JAVAFX_RUNTIME_MSI_FILE_NAME );
-        if (!installerFile.exists()) {
-                LogManager.log("... JavaFX Runtime installer doesn`t exist : " + installerFile);
-                return null;
-        }
-        return installerFile;
-    }
+       
 
     /** Find path to public Runtime installer ie. msi file
      * @return null if msi file for given JRE version is not found
      */
     private File getSDKWindowsInstaller() {
         File installerFile = new File(getProduct().getInstallationLocation(),
-                JAVAFX_SDK_MSI_FILE_NAME);
+                JAVAFX_SDK_EXE_FILE_NAME);
         if (!installerFile.exists()) {
                 LogManager.log("... JavaFX SDK installer doesn`t exist : " + installerFile);
                 return null;
@@ -606,33 +543,21 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     public static final String WIZARD_COMPONENTS_URI =
             "resource:" + // NOI18N
             "org/netbeans/installer/products/javafxsdk/wizard.xml"; // NOI18N
-    public static final String JAVAFX_SDK_MSI_FILE_NAME =
-            "fx2.0.msi";   // NOI18N
-    public static final String JAVAFX_SDK_DATA_FILE_NAME =
-            "Data1.cab";   // NOI18N
-    public static final String JAVAFX_RUNTIME_MSI_FILE_NAME =
-            "fxruntime.msi";   // NOI18N
-    public static final String JAVAFX_RUNTIME_DATA_FILE_NAME =
-            "Data1.cab";   // NOI18N
-    public static final String JAVAFX_RUNTIME_INSTALLER_DIR =
-            "runtime";   // NOI18N
+    public static final String JAVAFX_SDK_EXE_FILE_NAME =
+            "{javafxsdk-installer-file}";   // NOI18N
 
     public static final String PRODUCT_ID =
             "JAVAFXSDK"; // NOI18N
 
     public static final String JAVAFX_RUNTIME_INSTALLATION_LOCATION_PROPERTY =
             "javafx.runtime.installation.location"; //NOI18N
-    public static final String JAVAFX_RUNTIME_INSTALLER_FILE_NAME_PROPERTY =
-            "javafx.runtime.installer.file.name"; //NOI18N
 
     public static final String ERROR_SDK_INSTALL_SCRIPT_RETURN_NONZERO_KEY =
             "CL.error.sdk.installation.return.nonzero";//NOI18
-    public static final String ERROR_RUNTIME_INSTALL_SCRIPT_RETURN_NONZERO_KEY =
-            "CL.error.runtime.installation.return.nonzero";//NOI18N
-    public static final String ERROR_RUNTIME_NOT_INSTALLED =
+    public static final String DEFAULT_ERROR_RUNTIME_NOT_INSTALLED =
             ResourceUtils.getString(ConfigurationLogic.class,
             "CL.error.runtime.not.installed");//NOI18N
-    public static final String ERROR_SDK_NOT_INSTALLED =                
+    public static final String DEFAULT_ERROR_SDK_NOT_INSTALLED =
             ResourceUtils.getString(ConfigurationLogic.class,
             "CL.error.sdk.not.installed");//NOI18N
 
@@ -640,12 +565,6 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     public static final String PROGRESS_DETAIL_RUNNING_SDK_INSTALLER =
             ResourceUtils.getString(ConfigurationLogic.class,
             "CL.progress.detail.install.sdk");
-    public static final String PROGRESS_DETAIL_RUNNING_RE_INSTALLER =
-            ResourceUtils.getString(ConfigurationLogic.class,
-            "CL.progress.detail.install.runtime");
-    public static final String ERROR_INSTALL_RE_EXCEPTION =
-            ResourceUtils.getString(ConfigurationLogic.class,
-            "CL.error.install.runtime.exception");
     public static final String ERROR_INSTALL_SDK_EXCEPTION =
             ResourceUtils.getString(ConfigurationLogic.class,
             "CL.error.install.sdk.exception");
