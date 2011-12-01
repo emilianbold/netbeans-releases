@@ -76,6 +76,8 @@ import org.netbeans.modules.hudson.spi.ProjectHudsonJobCreatorFactory.ProjectHud
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpProgram.InvalidPhpProgramException;
 import org.netbeans.modules.php.api.util.UiUtils;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -246,7 +248,8 @@ public final class HudsonJobCreator extends JPanel implements ProjectHudsonJobCr
     }
 
     private void informUser(String message, boolean error) {
-        // XXX show a dialog with message
+        DialogDisplayer.getDefault().notify(
+                new NotifyDescriptor.Message(message, error ? NotifyDescriptor.ERROR_MESSAGE : NotifyDescriptor.WARNING_MESSAGE));
     }
 
     private List<Target> initComponents() {
