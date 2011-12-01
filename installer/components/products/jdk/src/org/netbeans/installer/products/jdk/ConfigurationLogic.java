@@ -289,7 +289,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         final File logFile = getLog("jdk_install");
         LogManager.log("... JDK installation log file : " + logFile);
         String [] commands;
-	LogManager.log("... JDK installer file : " + install.getAbsolutePath());
+	LogManager.log("... JDK installer file : " + installer.getAbsolutePath());
         if(installer.getAbsolutePath().endsWith(".exe")) {
             /////////////////////////for exe////////////////////////////
             LogManager.log("Installing JDK with exe installer");
