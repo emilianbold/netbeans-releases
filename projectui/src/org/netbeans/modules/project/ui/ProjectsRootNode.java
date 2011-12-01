@@ -120,12 +120,13 @@ public class ProjectsRootNode extends AbstractNode {
         
     private static final @StaticResource String ICON_BASE = "org/netbeans/modules/project/ui/resources/projectsRootNode.gif"; //NOI18N
     public static final String ACTIONS_FOLDER = "ProjectsTabActions"; // NOI18N
+    public static final String ACTIONS_FOLDER_PHYSICAL = "FilesTabActions";
 
     private ResourceBundle bundle;
     private final int type;
     
     public ProjectsRootNode( int type ) {
-        super( new ProjectChildren( type ) ); 
+        super(new ProjectChildren(type), /* for CollapseAll */Lookups.singleton(type == LOGICAL_VIEW ? ProjectTab.ID_LOGICAL : ProjectTab.ID_PHYSICAL));
         setIconBaseWithExtension( ICON_BASE );
         this.type = type;
         synchronized(all){
@@ -158,10 +159,10 @@ public class ProjectsRootNode extends AbstractNode {
     
     @Override
     public Action[] getActions( boolean context ) {
-        if (context || type == PHYSICAL_VIEW) {
+        if (context) { // XXX why?
             return new Action[0];
         } else {
-            List<? extends Action> actions = Utilities.actionsForPath(ACTIONS_FOLDER);
+            List<? extends Action> actions = Utilities.actionsForPath(type == PHYSICAL_VIEW ? ACTIONS_FOLDER_PHYSICAL : ACTIONS_FOLDER);
             return actions.toArray(new Action[actions.size()]);
         }
     }
