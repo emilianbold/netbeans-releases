@@ -44,7 +44,6 @@ package org.netbeans.modules.hudson.php.support;
 import java.util.Arrays;
 import java.util.List;
 import org.openide.util.NbBundle;
-import org.w3c.dom.Document;
 
 /**
  * Ant target for <tt>phpcs</tt>.
@@ -65,11 +64,6 @@ class PhpcsTarget extends Target {
     @Override
     public List<String> getOptions() {
         return Arrays.asList("PEAR", "Zend", "PHPCS", "Squiz", "MySource"); // NOI18N
-    }
-
-    @Override
-    public void apply(Document document) {
-        // XXX
     }
 
 }

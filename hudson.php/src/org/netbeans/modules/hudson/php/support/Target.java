@@ -43,6 +43,9 @@ package org.netbeans.modules.hudson.php.support;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.modules.hudson.php.xml.XmlUtils;
 import org.w3c.dom.Document;
 
 /**
@@ -52,6 +55,8 @@ import org.w3c.dom.Document;
  * This class and all successors are thread-safe.
  */
 public abstract class Target {
+
+    protected final Logger logger = Logger.getLogger(getClass().getName());
 
     private volatile boolean selected = true;
     private volatile String selectedOption = null;
@@ -98,6 +103,20 @@ public abstract class Target {
         this.selectedOption = selectedOption;
     }
 
-    public abstract void apply(Document document);
+    public boolean apply(Document document) {
+        if (isSelected()) {
+            // nothing to do
+            return true;
+        }
+        return commentNode(document, "//antcall[@target='" + getName() + "']"); // NOI18N
+    }
+
+    protected boolean commentNode(Document document, String xpathExpression) {
+        if (!XmlUtils.commentNode(document, XmlUtils.xpath(document, xpathExpression))) {
+            logger.log(Level.WARNING, "Node not commented for {0}", xpathExpression);
+            return false;
+        }
+        return true;
+    }
 
 }
