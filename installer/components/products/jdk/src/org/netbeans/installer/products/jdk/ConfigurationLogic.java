@@ -310,7 +310,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                 "/s",
                 "/v" + loggingOption + installLocationOption};
 
-        } else if(installer.getAbsolutePath().endsWith(".msi")) {
+        } else {
              ////////////////////////////for msi////////////////////////////
             LogManager.log("Installing JDK with MSI installer");
             final String packageOption = "/i \"" + installer.getAbsolutePath() +"\" ";
