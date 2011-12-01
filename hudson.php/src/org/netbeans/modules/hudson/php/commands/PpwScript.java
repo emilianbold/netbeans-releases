@@ -115,6 +115,8 @@ public class PpwScript extends PhpProgram {
                 .optionsPath(HudsonOptionsPanelController.getOptionsPath());
         Integer status = execute(processBuilder, executionDescriptor,
                 Bundle.PpwScript_create_title(name), Bundle.PpwScript_create_progress(name));
+        // refresh fs
+        projectDirectory.refresh();
         return status != null && status == 0;
     }
 
