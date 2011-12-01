@@ -75,7 +75,7 @@ class TaskListModel extends AbstractTableModel implements TaskList.Listener {
     /** Creates a new instance of TaskListModel */
     public TaskListModel( TaskList taskList ) {
         this.taskList = taskList;
-        listOfTasks = getListOfTasks();
+        listOfTasks = taskList.getTasks();
         sortingCol = Settings.getDefault().getSortingColumn();
         ascending = Settings.getDefault().isAscendingSort();
         sortTaskList();
@@ -83,15 +83,8 @@ class TaskListModel extends AbstractTableModel implements TaskList.Listener {
     
     @Override
     public int getRowCount() {
-        synchronized (lock) {
-            final List<? extends Task> list = getListOfTasks();
-            if(list.isEmpty()){
-                synchronized (lock) {
-                    listOfTasks = null;
-                }
-            }
-            return list.size();
-        }
+        final List<? extends Task> list = taskList.getTasks();
+        return list.size();
     }
     
     @Override
@@ -148,7 +141,7 @@ class TaskListModel extends AbstractTableModel implements TaskList.Listener {
     
     protected Task getTaskAtRow( int row ) {
         synchronized (lock) {
-            final List<? extends Task> list = getListOfTasks();
+            final List<? extends Task> list = taskList.getTasks();
             if (list.size() > row) {
                 return list.get(row);
             } else {
@@ -164,9 +157,9 @@ class TaskListModel extends AbstractTableModel implements TaskList.Listener {
         final int startRow;
         final int endRow;
         synchronized (lock) {
-            startRow = getListOfTasks().indexOf(tasks.get(0));
-            endRow = getListOfTasks().indexOf(tasks.get(tasks.size() - 1));
-            listOfTasks = null;
+            startRow = taskList.getTasks().indexOf(tasks.get(0));
+            endRow = taskList.getTasks().indexOf(tasks.get(tasks.size() - 1));
+            listOfTasks = taskList.getTasks();
         }
         if( startRow > -1 && endRow > -1 ) {
             EventQueue.invokeLater(new Runnable() {
@@ -186,9 +179,9 @@ class TaskListModel extends AbstractTableModel implements TaskList.Listener {
         final int startRow;
         final int endRow;
         synchronized (lock) {
-            startRow = getListOfTasks().indexOf(tasks.get(0));
-            endRow = getListOfTasks().indexOf(tasks.get(tasks.size() - 1));
-            listOfTasks = null;
+            startRow = listOfTasks.indexOf(tasks.get(0));
+            endRow = listOfTasks.indexOf(tasks.get(tasks.size() - 1));
+            listOfTasks = taskList.getTasks();
         }
         if( startRow > -1 && endRow > -1 ) {
             EventQueue.invokeLater(new Runnable() {
@@ -203,7 +196,7 @@ class TaskListModel extends AbstractTableModel implements TaskList.Listener {
     @Override
     public void cleared() {
         synchronized (lock) {
-            listOfTasks = null;
+            listOfTasks = taskList.getTasks();
         }
         fireTableDataChanged();
     }
@@ -244,7 +237,7 @@ class TaskListModel extends AbstractTableModel implements TaskList.Listener {
         }
         taskList.setComparator( comparator );
         synchronized (lock) {
-            listOfTasks = null;
+            listOfTasks = taskList.getTasks();
         }
         Settings.getDefault().setSortingColumn( sortingCol );
         Settings.getDefault().setAscendingSort( ascending );
@@ -274,12 +267,5 @@ class TaskListModel extends AbstractTableModel implements TaskList.Listener {
     
     void detach() {
         taskList.removeListener( this );
-    }
-
-    private List<? extends Task> getListOfTasks() {
-        if(listOfTasks == null){
-            listOfTasks = taskList.getTasks();
-        }
-        return listOfTasks;
     }
 }
