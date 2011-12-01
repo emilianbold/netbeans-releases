@@ -55,6 +55,7 @@ import java.util.logging.LogRecord;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.spi.VCSInterceptor;
+import org.netbeans.modules.versioning.core.spi.VersioningSystem;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
@@ -111,202 +112,6 @@ public class FSInterceptorTest extends NbTestCase {
             }
         }
     }  
-
-    public void testCorrectNeedsLHMethodName() throws IOException {
-        Set<String> calledMethods = new HashSet<String>();
-
-        final File roFile = new File(getWorkDir(), "testFile") {
-            @Override
-            public boolean canWrite() {
-                return false;
-            }
-        };
-        roFile.createNewFile();
-        
-        final File wFile = new File(getWorkDir(), "testFile");
-        wFile.createNewFile();
-//        LogHandler lh = new LogHandler();
-//        VersioningManager.LOG.addHandler(lh);
-
-        // canWrite
-        W w = new W() {
-            @Override
-            void callInterceptorMethod(FilesystemInterceptor fi) {
-                fi.canWrite(roFile);
-            }
-        };
-        TestVCS.instance.file = VCSFileProxy.createFileProxy(roFile);
-        w.test();
-        
-        TestVCS.instance.file = VCSFileProxy.createFileProxy(wFile);
-
-        // beforeCreate
-        w = new W() {
-            void callInterceptorMethod(FilesystemInterceptor fi) {
-                fi.beforeCreate(FileUtil.toFileObject(wFile.getParentFile()), wFile.getName(), false);
-            }
-        };
-        w.test();
-
-        // doCreate
-        w = new W() {
-            void callInterceptorMethod(FilesystemInterceptor fi) {
-                fi.createSuccess(FileUtil.toFileObject(wFile));
-            }
-        };
-        w.test(new String[] {"afterCreate", "doCreate"}); // ignore both
-
-        // afterCreate
-        w = new W() {
-            void callInterceptorMethod(FilesystemInterceptor fi) {
-                fi.fileDataCreated(new FileEvent(FileUtil.toFileObject(wFile)));
-            }
-        };
-        w.test();
-
-        // beforeDelete
-        w = new W() {
-            void callInterceptorMethod(FilesystemInterceptor fi) {
-                fi.getDeleteHandler(wFile);
-            }
-        };
-        w.test();
-
-        // doDelete
-        w = new W() {
-            void callInterceptorMethod(FilesystemInterceptor fi) {
-                fi.getDeleteHandler(wFile).delete(wFile);
-            }
-        };
-        w.test(new String[] {"doDelete"});
-
-        // afterDelete
-        w = new W() {
-            void callInterceptorMethod(FilesystemInterceptor fi) {
-                fi.deleteSuccess(FileUtil.toFileObject(wFile));
-            }
-        };
-        w.test();
-
-        wFile.createNewFile();
-
-        // beforeChange
-        w = new W() {
-            void callInterceptorMethod(FilesystemInterceptor fi) {
-                fi.beforeChange(FileUtil.toFileObject(wFile));
-            }
-        };
-        w.test();
-
-        // afterChange
-        w = new W() {
-            void callInterceptorMethod(FilesystemInterceptor fi) {
-                fi.fileChanged(new FileEvent(FileUtil.toFileObject(wFile)));
-            }
-        };
-        w.test();
-
-        // beforeMove
-        w = new W() {
-            void callInterceptorMethod(FilesystemInterceptor fi) {
-                fi.getMoveHandler(wFile, wFile);
-            }
-        };
-        w.test();
-
-        // doMove
-        w = new W() {
-            void callInterceptorMethod(FilesystemInterceptor fi) {
-                try {
-                    fi.getMoveHandler(wFile, wFile).handle();
-                } catch (IOException ex) {
-                    throw new IllegalStateException(ex);
-                }
-            }
-        };
-        w.test(new String[] {"beforeMove", "doMove"});
-
-        // afterMove
-        w = new W() {
-            void callInterceptorMethod(FilesystemInterceptor fi) {
-                fi.fileRenamed(new FileRenameEvent(FileUtil.toFileObject(wFile), "wFile", null));
-            }
-        };
-        w.test(new String[] {"afterMove"});
-        w = new W() {
-            void callInterceptorMethod(FilesystemInterceptor fi) {
-                fi.moveSuccess(FileUtil.toFileObject(wFile), wFile);
-            }
-        };
-        w.test(new String[] {"afterMove"});
-
-        // beforeCopy
-        w = new W() {
-            void callInterceptorMethod(FilesystemInterceptor fi) {
-                try {
-                    fi.getCopyHandler(wFile, wFile).handle();
-                } catch (IOException ex) {
-                    throw new IllegalStateException(ex);
-                }
-            }
-        };
-        w.test();
-
-        // doCopy
-        w = new W() {
-            void callInterceptorMethod(FilesystemInterceptor fi) {
-                try {
-                    fi.getCopyHandler(wFile, wFile).handle();
-                } catch (IOException ex) {
-                    throw new IllegalStateException(ex);
-                }
-            }
-        };
-        w.test(new String[] {"doCopy", "beforeCopy"});
-
-        // afterCopy
-        w = new W() {
-            void callInterceptorMethod(FilesystemInterceptor fi) {
-                fi.copySuccess(FileUtil.toFileObject(wFile), wFile);
-            }
-        };
-        w.test(new String[] {"afterCopy"});
-
-        // fileLocked
-        w = new W() {
-            void callInterceptorMethod(FilesystemInterceptor fi) {
-                fi.fileLocked(FileUtil.toFileObject(wFile));
-            }
-        };
-        w.test();
-
-        // getAttribute
-        w = new W() {
-            void callInterceptorMethod(FilesystemInterceptor fi) {
-                fi.getAttribute(wFile, "ProvidedExtensions.RemoteLocation");
-            }
-        };
-        w.test();
-
-        // refreshRecursively
-        w = new W() {
-            void callInterceptorMethod(FilesystemInterceptor fi) {
-                fi.refreshRecursively(wFile, -1, null);
-            }
-        };
-        w.test();
-
-        Method[] methods = VCSInterceptor.class.getDeclaredMethods();
-        for (Method method : methods) {
-            if((method.getModifiers() & Modifier.PUBLIC) != 0) {
-                System.out.println(" vcsinterceptor method: " + method.getName());
-                if(!W.calledMethods.contains(method.getName())) {
-                    fail(" missing test for interceptor method: " + method.getName());
-                }
-            }
-        }
-
-    }
 
     private static abstract class W {
         private static LogHandler lh;
@@ -494,8 +299,8 @@ public class FSInterceptorTest extends NbTestCase {
 
     }
 
-    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.versioning.core.spi.VersioningSystem.class)
-    public static class TestVCS extends org.netbeans.modules.versioning.core.spi.VersioningSystem {
+    @VersioningSystem.Registration(actionsCategory="testvcs", displayName="FSInterceptorTest$TestVCS", menuLabel="FSInterceptorTest$TestVCS", metadataFolderNames="")
+    public static class TestVCS extends VersioningSystem {
 
         private VCSInterceptor interceptor;
         private static TestVCS instance;
