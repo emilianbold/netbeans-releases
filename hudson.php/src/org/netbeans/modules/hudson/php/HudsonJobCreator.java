@@ -129,15 +129,15 @@ public final class HudsonJobCreator extends JPanel implements ProjectHudsonJobCr
     }
 
     @NbBundle.Messages({
-        "MsgNoTests=The project does not have any tests.",
-        "MsgInvalidHudsonOptions=PHP Hudson options are invalid.",
-        "MsgBuildXmlExists=The project already has build.xml file.",
-        "MsgPhpUnitConfigExists=The project already has phpunit.xml.dist file."
+        "HudsonJobCreator.error.noTests=The project does not have any tests.",
+        "HudsonJobCreator.error.invalidHudsonOptions=PHP Hudson options are invalid.",
+        "HudsonJobCreator.error.buildXmlExists=The project already has build.xml file.",
+        "HudsonJobCreator.error.phpUnitConfigExists=The project already has phpunit.xml.dist file."
     })
     @Override
     public ConfigurationStatus status() {
         if (phpModule.getTestDirectory() == null) {
-            return ConfigurationStatus.withError(Bundle.MsgNoTests());
+            return ConfigurationStatus.withError(Bundle.HudsonJobCreator_error_noTests());
         }
         if (scm == null) {
             return Helper.noSCMError();
@@ -146,17 +146,17 @@ public final class HudsonJobCreator extends JPanel implements ProjectHudsonJobCr
         try {
             PpwScript.getDefault();
         } catch (InvalidPhpProgramException ex) {
-            return ConfigurationStatus.withError(Bundle.MsgInvalidHudsonOptions()).withExtraButton(getOpenHudsonOptionsButton());
+            return ConfigurationStatus.withError(Bundle.HudsonJobCreator_error_invalidHudsonOptions()).withExtraButton(getOpenHudsonOptionsButton());
         }
         // build.xml
         FileObject buildXml = phpModule.getProjectDirectory().getFileObject(PpwScript.BUILD_XML);
         if (buildXml != null && buildXml.isData()) {
-            return ConfigurationStatus.withError(Bundle.MsgBuildXmlExists());
+            return ConfigurationStatus.withError(Bundle.HudsonJobCreator_error_buildXmlExists());
         }
         // phpunit.xml
         FileObject phpUnitConfig = phpModule.getProjectDirectory().getFileObject(PpwScript.PHPUNIT_XML);
         if (phpUnitConfig != null && phpUnitConfig.isData()) {
-            return ConfigurationStatus.withError(Bundle.MsgPhpUnitConfigExists());
+            return ConfigurationStatus.withError(Bundle.HudsonJobCreator_error_phpUnitConfigExists());
         }
         // scm
         ConfigurationStatus scmStatus = scm.problems();
@@ -183,10 +183,14 @@ public final class HudsonJobCreator extends JPanel implements ProjectHudsonJobCr
         //return createJobXml();
     }
 
-    @NbBundle.Messages("LBL_HudsonOptions=&Hudson Options...")
+    @NbBundle.Messages({
+        "HudsonJobCreator.button.labelWithMnemonics=&Hudson Options...",
+        "HudsonJobCreator.button.a11y=Open Hudson PHP options."
+    })
     private JButton getOpenHudsonOptionsButton() {
         JButton button = new JButton();
-        Mnemonics.setLocalizedText(button, Bundle.LBL_HudsonOptions());
+        Mnemonics.setLocalizedText(button, Bundle.HudsonJobCreator_button_labelWithMnemonics());
+        button.getAccessibleContext().setAccessibleDescription(Bundle.HudsonJobCreator_button_a11y());
         button.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
