@@ -61,6 +61,7 @@ import org.netbeans.modules.project.ui.OpenProjectList;
 import org.netbeans.modules.project.ui.OpenProjectListSettings;
 import org.netbeans.modules.project.ui.ProjectTab;
 import org.netbeans.modules.project.ui.ProjectUtilities;
+import org.netbeans.modules.project.ui.ProjectsRootNode;
 import static org.netbeans.modules.project.ui.actions.Bundle.*;
 import org.netbeans.modules.project.ui.api.ProjectTemplates;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
@@ -82,7 +83,7 @@ import org.openide.util.RequestProcessor;
 @ActionRegistration(displayName = "#LBL_NewProjectAction_Name", iconBase = "org/netbeans/modules/project/ui/resources/newProject.png")
 @ActionReferences({
     @ActionReference(path = "Shortcuts", name = "DS-N"),
-    @ActionReference(path = "ProjectsTabActions", position = 100),
+    @ActionReference(path = ProjectsRootNode.ACTIONS_FOLDER, position = 100),
     @ActionReference(path = "Menu/File", position = 100),
     @ActionReference(path = "Toolbars/File", position = 200)
 })

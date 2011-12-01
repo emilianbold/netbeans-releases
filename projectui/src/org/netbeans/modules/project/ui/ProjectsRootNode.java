@@ -118,7 +118,7 @@ public class ProjectsRootNode extends AbstractNode {
     static final int LOGICAL_VIEW = 1;
         
     private static final String ICON_BASE = "org/netbeans/modules/project/ui/resources/projectsRootNode.gif"; //NOI18N
-    private static final String ACTIONS_FOLDER = "ProjectsTabActions"; // NOI18N
+    public static final String ACTIONS_FOLDER = "ProjectsTabActions"; // NOI18N
 
     private ResourceBundle bundle;
     private final int type;
