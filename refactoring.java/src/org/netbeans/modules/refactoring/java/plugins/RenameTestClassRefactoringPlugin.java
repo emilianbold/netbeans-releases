@@ -171,7 +171,7 @@ public class RenameTestClassRefactoringPlugin extends JavaRefactoringPlugin {
         
         final LinkedList<RenameRefactoring> renameRefactoringsList = new LinkedList<RenameRefactoring>();
 
-        if(RefactoringUtils.getElementKind(treePathHandle) == ElementKind.CLASS) {
+        if(treePathHandle.getElementHandle().getKind() == ElementKind.CLASS) {
             final FileObject fileObject = treePathHandle.getFileObject();
             Collection<? extends TestLocator> testLocators = Lookup.getDefault().lookupAll(TestLocator.class);
             for (final TestLocator testLocator : testLocators) {

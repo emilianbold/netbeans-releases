@@ -152,7 +152,7 @@ public final class PushDownRefactoringPlugin extends JavaRefactoringPlugin {
         ClassIndex idx = cpInfo.getClassIndex();
         Set<FileObject> set = new HashSet<FileObject>();
         set.add(RefactoringUtils.getFileObject(handle));
-        set.addAll(idx.getResources(RefactoringUtils.getElementHandle(handle), EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS),EnumSet.of(ClassIndex.SearchScope.SOURCE)));
+        set.addAll(idx.getResources(handle.getElementHandle(), EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS),EnumSet.of(ClassIndex.SearchScope.SOURCE)));
         return set;
     }    
     

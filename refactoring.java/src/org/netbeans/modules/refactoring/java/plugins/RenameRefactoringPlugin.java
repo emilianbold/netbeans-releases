@@ -279,7 +279,7 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
                 
 //                String fqn = "".equals(pkgname) ? newName : pkgname + '.' + newName;
 //                ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
-                if (RefactoringUtils.typeExist(treePathHandle, newFqn)) {
+                if (RefactoringUtils.typeExists(newFqn, info)) {
                     String msg = new MessageFormat(getString("ERR_ClassClash")).format(
                             new Object[] {newName, pkgname}
                     );
