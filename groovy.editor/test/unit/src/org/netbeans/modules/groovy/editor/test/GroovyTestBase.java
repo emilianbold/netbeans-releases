@@ -55,6 +55,7 @@ import java.util.StringTokenizer;
 import org.codehaus.groovy.ant.Groovyc;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.lib.lexer.test.TestLanguageProvider;
 import org.netbeans.modules.csl.api.test.CslTestBase;
 import org.netbeans.modules.csl.api.test.CslTestBase.IndentPrefs;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
@@ -85,9 +86,10 @@ public class GroovyTestBase extends CslTestBase {
     protected void setUp() throws Exception {
         // No translation; call before the classpath scanning starts
         GroovyIndex.setClusterUrl("file:/bogus");
-
+        
         super.setUp();
-
+        TestLanguageProvider.register(GroovyTokenId.language());
+        
         FileObject workDir = FileUtil.toFileObject(getWorkDir());
         testFO = workDir.createData("Test.groovy");
         //FileUtil.setMIMEType("groovy", GroovyTokenId.GROOVY_MIME_TYPE);
@@ -123,7 +125,7 @@ public class GroovyTestBase extends CslTestBase {
     protected FileObject getTestFileObject() {
         return testFO;
     }
-
+    
     // Called via reflection from GsfUtilities and AstUtilities. This is necessary because
     // during tests, going from a FileObject to a BaseDocument only works
     // if all the correct data loaders are installed and working - and that
