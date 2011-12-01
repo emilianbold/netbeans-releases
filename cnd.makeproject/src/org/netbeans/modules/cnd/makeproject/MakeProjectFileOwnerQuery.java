@@ -98,7 +98,7 @@ public class MakeProjectFileOwnerQuery implements FileOwnerQueryImplementation {
             Exceptions.printStackTrace(ex);
             return null;
         }        
-        String path = fo.getPath();
+        String path = CndPathUtilitities.normalizeSlashes(fo.getPath());
         for(NativeProject nativeProject : NativeProjectRegistry.getDefault().getOpenProjects()) {
             Provider project = nativeProject.getProject();
             if (project instanceof Project) {
