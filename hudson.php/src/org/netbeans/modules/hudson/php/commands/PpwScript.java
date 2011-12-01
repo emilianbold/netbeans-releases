@@ -59,6 +59,9 @@ public class PpwScript extends PhpProgram {
 
     public static final String SCRIPT_NAME = "ppw"; // NOI18N
     public static final String SCRIPT_NAME_LONG = SCRIPT_NAME + FileUtils.getScriptExtension(true);
+    // generated files
+    public static final String BUILD_XML = "build.xml";  // NOI18N
+    public static final String PHPUNIT_XML = "phpunit.xml.dist";  // NOI18N
 
 
     public PpwScript(String command) {
@@ -95,7 +98,7 @@ public class PpwScript extends PhpProgram {
 
     @NbBundle.Messages({
         "PpwScript.create.title=Hudson job files for {0}",
-        "PpwScript.create.progress=Creating Hudson job files for {0}..."
+        "PpwScript.create.progress=Creating Hudson job files for project {0}..."
     })
     public boolean createProjectFiles(PhpModule phpModule) {
         String name = phpModule.getDisplayName();
