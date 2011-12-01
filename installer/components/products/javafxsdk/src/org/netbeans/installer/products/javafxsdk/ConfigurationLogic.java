@@ -317,9 +317,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         String installLocationOption = "/qn /norestart INSTALLDIRFXSDK=\"" + location + "\"";
 
         String [] commands = new String [] {
-            "CMD",
-            "/C",
-            " \"" + sdkInstaller.getAbsolutePath() + "\" ",
+            sdkInstaller.getAbsolutePath(),
             "/s",
             " /v" + installLocationOption};
    
