@@ -234,6 +234,10 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         }  finally {
             try {
                 FileUtils.deleteFile(installer);
+                FileUtils.deleteFile(new File(location, CAB_INSTALLER_FILE_SJ));
+                FileUtils.deleteFile(new File(location, CAB_INSTALLER_FILE_SS));
+                FileUtils.deleteFile(new File(location, CAB_INSTALLER_FILE_ST));
+                FileUtils.deleteFile(new File(location, CAB_INSTALLER_FILE_SZ));
             } catch (IOException e) {
                 LogManager.log("Cannot delete installer file "+ installer, e);
                 
@@ -289,7 +293,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         final File logFile = getLog("jdk_install");
         LogManager.log("... JDK installation log file : " + logFile);
         String [] commands;
-	LogManager.log("... JDK installer file : " + installer.getAbsolutePath());
+
         if(installer.getAbsolutePath().endsWith(".exe")) {
             /////////////////////////for exe////////////////////////////
             LogManager.log("Installing JDK with exe installer");
@@ -310,7 +314,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                 "/s",
                 "/v" + loggingOption + installLocationOption};
 
-        } else {
+        } else  {
              ////////////////////////////for msi////////////////////////////
             LogManager.log("Installing JDK with MSI installer");
             final String packageOption = "/i \"" + installer.getAbsolutePath() +"\" ";
@@ -1311,6 +1315,14 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             "CL.jdk.installer.file");
     public static final String JRE_INSTALLER_FILE_NAME =
             "{jre-installer-file}";
+    public static final String CAB_INSTALLER_FILE_SJ =
+            "sj170020.cab";
+    public static final String CAB_INSTALLER_FILE_SS =
+            "ss170020.cab";
+    public static final String CAB_INSTALLER_FILE_ST =
+            "st170020.cab";
+    public static final String CAB_INSTALLER_FILE_SZ =
+            "sz170020.cab";
     public static final String ERROR_JDK_INSTALL_SCRIPT_RETURN_NONZERO_KEY =
             "CL.error.jdk.installation.return.nonzero";//NOI18N
     public static final String ERROR_JDK_UNINSTALL_SCRIPT_RETURN_NONZERO_KEY =
