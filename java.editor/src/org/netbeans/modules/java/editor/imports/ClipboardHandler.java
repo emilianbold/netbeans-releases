@@ -66,12 +66,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
@@ -86,13 +82,18 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
+import org.netbeans.api.editor.EditorActionRegistration;
+import org.netbeans.api.editor.EditorActionRegistrations;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.editor.ActionFactory.CutToLineBeginOrEndAction;
+import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.BaseKit.CutAction;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -551,32 +552,46 @@ public class ClipboardHandler {
 
     public static final class JavaCutAction extends CutAction {
         @Override public void actionPerformed(final ActionEvent evt, final JTextComponent target) {
-            JavaSource js = JavaSource.forDocument(target.getDocument());
+            Document doc = target.getDocument();
+            JavaSource js = JavaSource.forDocument(doc);
             final Object lock = new Object();
             final AtomicBoolean cancel = new AtomicBoolean();
             final AtomicBoolean alreadyRunning = new AtomicBoolean();
 
             if (js != null) {
-                boolean finished = runQuickly(js, new Task<CompilationController>() {
-                    @Override public void run(CompilationController parameter) throws Exception {
-                        synchronized (lock) {
-                            if (cancel.get()) return;
-                            alreadyRunning.set(true);
-                        }
+                Task<CompilationController> work = new Task<CompilationController>() {
+                     @Override public void run(CompilationController parameter) throws Exception {
+                         synchronized (lock) {
+                             if (cancel.get()) return;
+                             alreadyRunning.set(true);
+                         }
 
-                        try {
-                            target.putClientProperty(RUN_SYNCHRONOUSLY, true);
+                         try {
+                             target.putClientProperty(RUN_SYNCHRONOUSLY, true);
 
-                            System.err.println("running cut action");
-                            JavaCutAction.super.actionPerformed(evt, target);
-                        } finally {
-                            target.putClientProperty(RUN_SYNCHRONOUSLY, null);
-                        }
+                             JavaCutAction.super.actionPerformed(evt, target);
+                         } finally {
+                             target.putClientProperty(RUN_SYNCHRONOUSLY, null);
+                         }
+                     }
+                };
+
+                if (target.getClientProperty(RUN_SYNCHRONOUSLY) == null) {
+                    if (!DocumentUtilities.isWriteLocked(doc)) {
+                        boolean finished = runQuickly(js, work);
+
+                        if (finished)
+                            return;
                     }
-                });
+                } else {
+                    try {
+                        js.runUserActionTask(work, true);
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
 
-                if (finished)
                     return;
+                }
             }
 
             synchronized (lock) {
@@ -594,4 +609,60 @@ public class ClipboardHandler {
         }
     }
 
+    @EditorActionRegistrations({
+        @EditorActionRegistration(name = BaseKit.cutToLineBeginAction, mimeType="text/x-java"),
+        @EditorActionRegistration(name = BaseKit.cutToLineEndAction, mimeType="text/x-java")
+    })
+    public static class JavaCutToLineBeginOrEndAction extends CutToLineBeginOrEndAction {
+        @Override
+        public void actionPerformed(final ActionEvent evt, final JTextComponent target) {
+            Document doc = target.getDocument();
+            JavaSource js = JavaSource.forDocument(doc);
+            final Object lock = new Object();
+            final AtomicBoolean cancel = new AtomicBoolean();
+            final AtomicBoolean alreadyRunning = new AtomicBoolean();
+
+            if (js != null && !DocumentUtilities.isWriteLocked(doc)) {
+                boolean finished = runQuickly(js, new Task<CompilationController>() {
+
+                    @Override
+                    public void run(CompilationController parameter) throws Exception {
+                        synchronized (lock) {
+                            if (cancel.get()) {
+                                return;
+                            }
+                            alreadyRunning.set(true);
+                        }
+
+                        try {
+                            target.putClientProperty(RUN_SYNCHRONOUSLY, true);
+
+                            JavaCutToLineBeginOrEndAction.super.actionPerformed(evt, target);
+                        } finally {
+                            target.putClientProperty(RUN_SYNCHRONOUSLY, null);
+                        }
+                    }
+                });
+
+                if (finished) {
+                    return;
+                }
+            }
+
+            synchronized (lock) {
+                if (alreadyRunning.get()) {
+                    return;
+                }
+                cancel.set(true);
+            }
+
+            try {
+                target.putClientProperty(NO_IMPORTS, true);
+
+                super.actionPerformed(evt, target);
+            } finally {
+                target.putClientProperty(NO_IMPORTS, null);
+            }
+        }
+    }
 }
