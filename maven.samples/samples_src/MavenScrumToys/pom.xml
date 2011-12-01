@@ -58,13 +58,13 @@ Other names may be trademarks of their respective owners. The contents of
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-war-plugin</artifactId>
-                <version>2.1-beta-1</version>
+                <version>2.1.1</version>
                 <configuration>
                     <failOnMissingWebXml>false</failOnMissingWebXml>
                 </configuration>
             </plugin>
         </plugins>
-        <finalName>scrumtoys</finalName>
+        <finalName>MavenScrumToys</finalName>
     </build>
 
     <dependencies>
