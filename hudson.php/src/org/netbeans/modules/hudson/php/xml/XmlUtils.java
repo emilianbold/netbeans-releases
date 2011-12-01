@@ -42,6 +42,7 @@
 package org.netbeans.modules.hudson.php.xml;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -102,7 +103,12 @@ public final class XmlUtils {
     public static void save(Document document, File file) throws IOException {
         FileOutputStream fileOutputStream = new FileOutputStream(file);
         try {
-            fileOutputStream.write(asString(document, true).getBytes(document.getXmlEncoding()));
+            BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(fileOutputStream);
+            try {
+                XMLUtil.write(document, bufferedOutputStream, document.getXmlEncoding());
+            } finally {
+                bufferedOutputStream.close();
+            }
         } finally {
             fileOutputStream.close();
         }
