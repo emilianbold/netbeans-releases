@@ -2132,6 +2132,11 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         } catch (UserQuestionException ex) {
             throw ex;
         } catch (IOException ex) {
+            Object title = doc.getProperty(Document.TitleProperty);
+            Exceptions.attachLocalizedMessage(ex,
+            NbBundle.getMessage(CloneableEditorSupport.class,
+            "EXC_LoadDocument",
+            title instanceof String ? (String) title : "<unknown-file>"));
             throw ex;
         } catch (Exception e) { // incl. BadLocationException
             aProblem = e;
