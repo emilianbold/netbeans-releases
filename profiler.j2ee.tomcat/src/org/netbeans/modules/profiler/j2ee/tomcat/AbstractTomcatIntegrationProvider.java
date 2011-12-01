@@ -585,7 +585,7 @@ public abstract class AbstractTomcatIntegrationProvider extends AbstractScriptIn
             quotas = "\""; // NOI18N
         }
 
-        StringBuffer path = new StringBuffer();
+        StringBuilder path = new StringBuilder();
         path.append(this.getInstallationPath());
 
         if (!this.getInstallationPath().endsWith(separator)) {

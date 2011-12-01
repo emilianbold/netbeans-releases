@@ -207,8 +207,8 @@ public class Tomcat5IntegrationProvider extends AbstractTomcatIntegrationProvide
             catalinaBaseOption = ";-Dcatalina.base=" + IntegrationUtils.getEnvVariableReference("CATALINA_BASE", targetOS); // NOI18N
         }
 
-        catalinaScript.append(getQuotedPath(this.getInstallationPath() + separator + "bin" + separator + getTomcatExe()))
-                      .append(" //TS//" + getTomcatName()); // NOI18N
+        catalinaScript.append(getQuotedPath(this.getInstallationPath() + separator + "bin" + separator + getTomcatExe())).append(" //TS//")
+                      .append(getTomcatName()); // NOI18N
         catalinaScript.append(" ").append("--JavaHome=").append(getQuotedPath(getTargetJavaHome())).append(' '); // NOI18N
         catalinaScript.append("--JvmOptions %CATALINA_OPTS%").append(catalinaBaseOption); // NOI18N
 
