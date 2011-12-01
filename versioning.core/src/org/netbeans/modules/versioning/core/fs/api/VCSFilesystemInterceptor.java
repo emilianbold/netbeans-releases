@@ -44,13 +44,23 @@ package org.netbeans.modules.versioning.core.fs.api;
 import java.io.IOException;
 import java.util.*;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.openide.filesystems.FileStatusListener;
 
 /**
- *
+ * Work in progress - summarizes the current communication between VCS and masterfs 
+ * 
  * @author Tomas Stupka
  */
 public final class VCSFilesystemInterceptor {
 
+    public final void addFileStatusListener(FileStatusListener listener) {
+        
+    }
+    
+    public void removeFileStatusListener(FileStatusListener listener) {
+        
+    }
+    
     // ==================================================================================================
     // QUERIES
     // ==================================================================================================
