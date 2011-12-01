@@ -249,16 +249,12 @@ public final class HudsonJobCreator extends JPanel implements ProjectHudsonJobCr
     }
 
     private void warningOccured(String warning) {
-        warningOccured(warning, null);
-    }
-
-    private void warningOccured(String warning, JButton extraButton) {
-        informUser(warning, false, extraButton);
+        informUser(warning, false, null);
     }
 
     private void errorOccured(String error, String logMessage, JButton extraButton) throws IOException {
         informUser(error, true, extraButton);
-        throw new IOException(logMessage); // NOI18N
+        throw new IOException(logMessage);
     }
 
     private void informUser(String message, boolean error, JButton extraButton) {
