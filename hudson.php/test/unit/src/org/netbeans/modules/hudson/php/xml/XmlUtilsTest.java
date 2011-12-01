@@ -62,19 +62,19 @@ public class XmlUtilsTest extends NbTestCase {
         assertEquals("Persons should be found", 2, persons.getLength());
     }
 
-    public void testXpath() throws Exception {
+    public void testQuery() throws Exception {
         Document document = XmlUtils.parse(new File(getDataDir(), "persons.xml"));
-        assertNotNull(XmlUtils.xpath(document, "//person[@id='1']"));
-        assertNull(XmlUtils.xpath(document, "//person[@id='-1']"));
+        assertNotNull(XmlUtils.query(document, "//person[@id='1']"));
+        assertNull(XmlUtils.query(document, "//person[@id='-1']"));
     }
 
     public void testCommentNode() throws Exception {
         final String xpath = "//person[@id='1']";
         Document document = XmlUtils.parse(new File(getDataDir(), "persons.xml"));
-        Node node = XmlUtils.xpath(document, xpath);
+        Node node = XmlUtils.query(document, xpath);
         assertNotNull(node);
         XmlUtils.commentNode(document, node);
-        assertNull(XmlUtils.xpath(document, xpath));
+        assertNull(XmlUtils.query(document, xpath));
     }
 
 }

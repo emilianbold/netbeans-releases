@@ -48,6 +48,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.hudson.php.xml.XmlUtils;
 import org.w3c.dom.Document;
+import org.w3c.dom.Node;
 
 /**
  * Base class for Ant target customizations of <tt>build.xml</tt>
@@ -117,10 +118,12 @@ public abstract class Target {
     }
 
     protected boolean commentNode(Document document, String xpathExpression) {
-        if (!XmlUtils.commentNode(document, XmlUtils.xpath(document, xpathExpression))) {
-            logger.log(Level.WARNING, "Node not commented for {0}", xpathExpression);
+        Node node = XmlUtils.query(document, xpathExpression);
+        if (node == null) {
+            logger.log(Level.WARNING, "Node not found for {0}", xpathExpression);
             return false;
         }
+        XmlUtils.commentNode(document, node);
         return true;
     }
 

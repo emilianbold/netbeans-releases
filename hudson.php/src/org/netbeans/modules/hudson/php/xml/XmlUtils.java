@@ -114,7 +114,7 @@ public final class XmlUtils {
         }
     }
 
-    public static Node xpath(Document document, String xpathExpression) {
+    public static Node query(Document document, String xpathExpression) {
         try {
             XPath xPath = XPathFactory.newInstance().newXPath();
             XPathExpression xPathExpression = xPath.compile(xpathExpression);
@@ -130,10 +130,9 @@ public final class XmlUtils {
         return null;
     }
 
-    public static boolean commentNode(Document document, Node node) {
+    public static void commentNode(Document document, Node node) {
         Node parentNode = node.getParentNode();
         parentNode.replaceChild(document.createComment(XmlUtils.asString(node, false)), node);
-        return true;
     }
 
     public static String asString(Node node, boolean formatted) {
