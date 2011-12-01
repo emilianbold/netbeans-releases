@@ -312,11 +312,13 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         };*/
         /*-------------------------IF EXE INSTALLER---------------------------*/
         final String loggingOption = (logFile!=null) ?
-            "/L " + BACK_SLASH + QUOTE  + logFile.getAbsolutePath()  + BACK_SLASH + QUOTE +" ":
+            " /L \""  + logFile.getAbsolutePath()  + "\" ":
             EMPTY_STRING;
-        String installLocationOption = "/qn /norestart INSTALLDIRFXSDK=" + BACK_SLASH + QUOTE + location + BACK_SLASH + QUOTE;
+        String installLocationOption = "/qn /norestart INSTALLDIRFXSDK=\"" + location + "\"";
 
         String [] commands = new String [] {
+            "CMD",
+            "/C",
             sdkInstaller.getAbsolutePath(),
             "/s",
             "/v" + loggingOption + installLocationOption};
@@ -487,10 +489,10 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     private long getSDKinstallationSize() {
         final long size;
         if(SystemUtils.isWindows()) {
-            size = 68000000L ;
+            size = 80000000L ;
         } else {
             // who knows...
-            size = 68000000L;
+            size = 80000000L;
         }
         return size;
     }
