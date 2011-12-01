@@ -267,13 +267,19 @@ public class JiraTestUtil {
     }
 
     public static void initClient(File workDir) {
-        try {
-            client = JiraClientFactory.getDefault().getJiraClient(getTaskRepository());
-        } catch (IllegalStateException e) {
-            // lests asume it's not initialized yet
-            JiraCorePlugin.initialize(new File(workDir, "jiraservercache"));
-            client = JiraClientFactory.getDefault().getJiraClient(getTaskRepository());
-        }            
+        if(client == null) {
+            try {
+                client = JiraClientFactory.getDefault().getJiraClient(getTaskRepository());
+            } catch (Throwable t) {
+                try {
+                    // lests asume it's not initialized yet
+                    JiraCorePlugin.initialize(new File(workDir, "jiraservercache"));
+                } catch (Exception e) {
+                    System.out.println("");
+                }
+                client = JiraClientFactory.getDefault().getJiraClient(getTaskRepository());
+            }            
+        }
     }
     
     public static JiraClient getClient() {
