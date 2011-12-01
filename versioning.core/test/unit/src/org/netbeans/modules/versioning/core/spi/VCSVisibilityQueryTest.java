@@ -41,7 +41,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.versioning.fileproxy.spi;
+package org.netbeans.modules.versioning.core.spi;
 
 import java.io.IOException;
 import javax.swing.event.ChangeEvent;
@@ -55,6 +55,7 @@ import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.versioning.spi.testvcs.TestVCS;
 import org.netbeans.modules.versioning.spi.testvcs.TestVCSVisibilityQuery;
+import org.openide.util.test.MockLookup;
 
 /**
  * Versioning SPI unit tests of VCSVisibilityQuery.
@@ -69,6 +70,7 @@ public class VCSVisibilityQueryTest extends NbTestCase {
     }
 
     protected void setUp() throws Exception {
+        MockLookup.setLayersAndInstances();
         File userdir = new File(getWorkDir() + "userdir");
         userdir.mkdirs();
         System.setProperty("netbeans.user", userdir.getAbsolutePath());

@@ -55,6 +55,7 @@ import org.netbeans.modules.versioning.core.spi.VCSVisibilityQuery;
 import org.netbeans.modules.versioning.core.spi.VersioningSupport;
 import org.netbeans.spi.queries.CollocationQueryImplementation;
 import org.openide.util.NbPreferences;
+import org.openide.util.test.MockLookup;
 
 /**
  *
@@ -69,6 +70,7 @@ public class ConnectDisconnectTest extends NbTestCase {
     
     @Override
     protected void setUp() throws Exception {
+        MockLookup.setLayersAndInstances();
         File userdir = new File(getWorkDir(), "userdir");
         userdir.mkdirs();
         System.setProperty("netbeans.user", userdir.getAbsolutePath());

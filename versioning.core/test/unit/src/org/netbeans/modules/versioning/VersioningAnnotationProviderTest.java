@@ -69,6 +69,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
+import org.openide.util.test.MockLookup;
 
 /**
  *
@@ -87,6 +88,7 @@ public class VersioningAnnotationProviderTest extends NbTestCase {
     }
 
     protected void setUp () throws IOException {
+        MockLookup.setLayersAndInstances();
         File userdir = new File(getWorkDir() + "/userdir");
         userdir.mkdirs();
         System.setProperty("netbeans.user", userdir.getAbsolutePath());
@@ -107,7 +109,7 @@ public class VersioningAnnotationProviderTest extends NbTestCase {
     }
 
     public void testAnnotationChanged () throws Exception {
-        Lookup.getDefault().lookup(DummyVCS.class).topmostFile = VCSFileProxy.createFileProxy(FileUtil.toFile(workDir));
+        DummyVCS.topmostFile = VCSFileProxy.createFileProxy(FileUtil.toFile(workDir));
         HashMap<FileObject, String> expectedLabelAnnotations = new HashMap<FileObject, String>();
         HashMap<FileObject, String> expectedIconToolTips = new HashMap<FileObject, String>();
         expectedLabelAnnotations.put(workDir, workDir.getNameExt() + " - annotated");
@@ -246,10 +248,9 @@ public class VersioningAnnotationProviderTest extends NbTestCase {
 
     }
 
-    @org.openide.util.lookup.ServiceProviders ({ @ServiceProvider(service=VersioningSystem.class),
-        @ServiceProvider(service=DummyVCS.class)})
+    @VersioningSystem.Registration(actionsCategory="dummy", displayName="DummyVCS", menuLabel="DummyVCS", metadataFolderNames="")
     public static class DummyVCS extends VersioningSystem {
-        private VCSFileProxy topmostFile;
+        private static VCSFileProxy topmostFile;
         public DummyVCS () {
             
         }

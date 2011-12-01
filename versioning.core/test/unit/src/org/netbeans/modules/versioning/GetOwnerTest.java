@@ -56,6 +56,9 @@ import org.netbeans.modules.versioning.core.VersioningManager;
 import org.netbeans.modules.versioning.core.util.VCSSystemProvider.VersioningSystem;
 import org.netbeans.modules.versioning.spi.testvcs.TestVCS;
 import org.netbeans.modules.versioning.core.spi.VersioningSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.test.MockLookup;
 
 public class GetOwnerTest extends NbTestCase {
     
@@ -88,6 +91,7 @@ public class GetOwnerTest extends NbTestCase {
 
     protected void setUp() throws Exception {
         super.setUp();
+        MockLookup.setLayersAndInstances();
         dataRootDir = getWorkDir();
         File userdir = new File(getWorkDir(), "userdir");
         userdir.mkdirs();
@@ -124,16 +128,18 @@ public class GetOwnerTest extends NbTestCase {
         return TestVCS.class;
     }
     
-    private void testGetOwnerKnowFileType(File f, boolean isFile) throws IOException {                
+    private void testGetOwnerKnowFileType(File f, boolean isFile) throws IOException {    
+        FileObject fo = FileUtil.toFileObject(f);
+        VCSFileProxy proxy = VCSFileProxy.createFileProxy(fo);
         accessMonitor.files.clear();
-        VersioningSystem vs = VersioningManager.getInstance().getOwner(VCSFileProxy.createFileProxy(f), isFile); // true => its a file, no io.file.isFile() call needed
+        VersioningSystem vs = VersioningManager.getInstance().getOwner(proxy, isFile); // true => its a file, no io.file.isFile() call needed
         assertNotNull(vs);
         
         // file wasn't accessed even on first shot
         assertFalse(accessMonitor.files.contains(f.getAbsolutePath()));
         
         accessMonitor.files.clear();
-        vs = VersioningManager.getInstance().getOwner(VCSFileProxy.createFileProxy(f), isFile);
+        vs = VersioningManager.getInstance().getOwner(proxy, isFile);
         assertNotNull(vs);
         
         // file wasn't accessed

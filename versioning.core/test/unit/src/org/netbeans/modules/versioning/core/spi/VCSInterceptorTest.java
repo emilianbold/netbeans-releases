@@ -41,15 +41,18 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.versioning.fileproxy.spi;
+package org.netbeans.modules.versioning.core.spi;
 
 
 import org.netbeans.modules.versioning.core.spi.VersioningSystem;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Collection;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.versioning.core.DelegatingVCS;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.netbeans.modules.versioning.core.util.VCSSystemProvider;
 
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -58,6 +61,7 @@ import org.openide.util.Lookup;
 import org.netbeans.modules.versioning.spi.testvcs.TestVCS;
 import org.netbeans.modules.versioning.spi.testvcs.TestVCSInterceptor;
 import org.openide.filesystems.FileChangeAdapter;
+import org.openide.util.test.MockLookup;
 
 /**
  * Versioning SPI unit tests of VCSInterceptor.
@@ -75,12 +79,26 @@ public class VCSInterceptorTest extends NbTestCase {
 
     protected void setUp() throws Exception {
         super.setUp();
+        MockLookup.setLayersAndInstances();
         dataRootDir = getDataDir(); 
         File userdir = new File(dataRootDir + "userdir");
         userdir.mkdirs();
         System.setProperty("netbeans.user", userdir.getAbsolutePath());
         if(!dataRootDir.exists()) dataRootDir.mkdirs();
-        Lookup.getDefault().lookupAll(VersioningSystem.class);
+        
+        Collection<? extends VCSSystemProvider> providers = Lookup.getDefault().lookupAll(VCSSystemProvider.class);
+        for (VCSSystemProvider p : providers) {
+            Collection<VCSSystemProvider.VersioningSystem> systems = p.getVersioningSystems();
+            for (VCSSystemProvider.VersioningSystem vs : systems) {
+                if(vs instanceof DelegatingVCS) {
+                    DelegatingVCS dvcs = (DelegatingVCS)vs;
+                    if("TestVCS".equals(dvcs.getDisplayName())) {
+                        dvcs.getDelegate(); // awake the system
+                    }
+                }
+            }
+        }
+        
         inteceptor = (TestVCSInterceptor) TestVCS.getInstance().getVCSInterceptor();
         File f = new File(dataRootDir, "workdir");
         deleteRecursively(f);

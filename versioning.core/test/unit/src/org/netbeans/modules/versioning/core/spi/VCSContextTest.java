@@ -41,7 +41,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.versioning.fileproxy.spi;
+package org.netbeans.modules.versioning.core.spi;
 
 import org.netbeans.modules.versioning.core.spi.VCSContext;
 import java.io.IOException;

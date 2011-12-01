@@ -55,7 +55,7 @@ import org.netbeans.modules.versioning.core.spi.VersioningSystem;
  * 
  * @author Maros Sandor
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.versioning.core.spi.VersioningSystem.class)
+@VersioningSystem.Registration(actionsCategory="testvcs", displayName="TestVCS", menuLabel="TestVCS", metadataFolderNames="")
 public class TestVCS extends VersioningSystem {
 
     private static TestVCS instance;

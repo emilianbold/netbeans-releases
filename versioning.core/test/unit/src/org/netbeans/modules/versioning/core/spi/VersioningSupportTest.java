@@ -41,7 +41,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.versioning.fileproxy.spi;
+package org.netbeans.modules.versioning.core.spi;
 
 import org.netbeans.modules.versioning.core.spi.VersioningSupport;
 import java.io.File;
@@ -52,6 +52,7 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.Utils;
 import org.netbeans.modules.versioning.spi.testvcs.TestVCS;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.test.MockLookup;
 
 /**
  * Versioning SPI unit tests.
@@ -68,6 +69,7 @@ public class VersioningSupportTest extends NbTestCase {
 
     protected void setUp() throws Exception {
         super.setUp();
+        MockLookup.setLayersAndInstances();
         dataRootDir = getWorkDir();
         File userdir = new File(getWorkDir(), "userdir");
         userdir.mkdirs();
@@ -104,7 +106,7 @@ public class VersioningSupportTest extends NbTestCase {
         File f = File.listRoots()[0];
         VCSFileProxy proxy = VCSFileProxy.createFileProxy(f);
         assertFalse(APIAccessor.IMPL.isFlat(proxy));
-        Utils.createFlatFileProxy(FileUtil.toFileObject(f));
+        proxy = Utils.createFlatFileProxy(FileUtil.toFileObject(f));
         assertTrue(APIAccessor.IMPL.isFlat(proxy));
     }
 }
