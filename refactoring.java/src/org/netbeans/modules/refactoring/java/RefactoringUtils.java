@@ -628,8 +628,12 @@ public class RefactoringUtils {
      * @param handle
      */
     public static FileObject getFileObject(TreePathHandle handle) {
+        
        ClasspathInfo info = getClasspathInfoFor(false, handle.getFileObject()); 
-       return SourceUtils.getFile(handle.getElementHandle(), info);
+        ElementHandle elementHandle = handle.getElementHandle();
+        if (elementHandle == null )
+            return handle.getFileObject();
+       return SourceUtils.getFile(elementHandle, info);
     }    
     /**
      * create ClasspathInfo for specified handles
