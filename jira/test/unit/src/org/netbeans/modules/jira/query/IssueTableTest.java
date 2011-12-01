@@ -46,15 +46,12 @@ import com.atlassian.connector.eclipse.internal.jira.core.model.filter.ContentFi
 import com.atlassian.connector.eclipse.internal.jira.core.model.filter.FilterDefinition;
 import java.lang.reflect.Field;
 import junit.framework.Test;
-import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.jira.*;
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.issuetable.IssueTable;
 import org.netbeans.modules.bugtracking.issuetable.IssuetableTestFactory;
-import org.netbeans.modules.jira.issue.NbJiraIssueTest;
 import org.netbeans.modules.jira.repository.JiraRepository;
 
 /**
@@ -65,14 +62,6 @@ public class IssueTableTest extends IssuetableTestFactory {
 
     public IssueTableTest(Test test) {
         super(test);
-    }
-
-    public static void main(String args[]) {
-        junit.textui.TestRunner.run(suite());
-    }
-
-    public static Test suite() {
-        return NbModuleSuite.create(org.netbeans.modules.bugtracking.issuetable.IssueTableTestCase.class, null, null); 
     }
     
     @Override

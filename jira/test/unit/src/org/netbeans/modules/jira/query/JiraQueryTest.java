@@ -50,11 +50,8 @@ import com.atlassian.connector.eclipse.internal.jira.core.service.JiraException;
 import org.netbeans.modules.jira.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import junit.framework.Test;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mylyn.tasks.core.RepositoryResponse;
-import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.bugtracking.spi.Issue;
 
@@ -68,10 +65,6 @@ public class JiraQueryTest extends NbTestCase {
         super(arg0);
     }
 
-    public static Test suite() {
-        return NbModuleSuite.create(JiraQueryTest.class, null, null); 
-    }
-    
     @Override
     protected void setUp() throws Exception {    
         JiraTestUtil.initClient(getWorkDir());
