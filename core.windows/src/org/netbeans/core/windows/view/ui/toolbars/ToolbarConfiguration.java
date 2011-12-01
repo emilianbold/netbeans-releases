@@ -46,7 +46,6 @@ package org.netbeans.core.windows.view.ui.toolbars;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Frame;
 import java.awt.GridLayout;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -76,7 +75,6 @@ import org.netbeans.core.windows.view.ui.MainWindow;
 import org.netbeans.spi.settings.Saver;
 import org.openide.awt.Actions;
 import org.openide.awt.Mnemonics;
-import org.openide.windows.WindowManager;
 
 /** 
  * Toolbar configuration, it contains toolbar panel with a list of toolbar rows.
@@ -202,34 +200,37 @@ public final class ToolbarConfiguration implements ToolbarPool.Configuration {
 
         //Bigger toolbar icons
         boolean smallToolbarIcons = (getToolbarPool().getPreferredIconSize() == 16);
+        final String stiName = NbBundle.getMessage(ToolbarConfiguration.class, "CTL_SmallIcons");
 
-        JCheckBoxMenuItem cbmi = new JCheckBoxMenuItem( NbBundle.getMessage(ToolbarConfiguration.class, "PROP_smallToolbarIcons"), smallToolbarIcons );
+        if (!stiName.isEmpty()) {
+            JCheckBoxMenuItem cbmi = new JCheckBoxMenuItem( stiName, smallToolbarIcons );
+            cbmi.addActionListener (new ActionListener () {
+                @Override
+                public void actionPerformed (ActionEvent ev) {
+                    if (ev.getSource() instanceof JCheckBoxMenuItem) {
+                        JCheckBoxMenuItem cb = (JCheckBoxMenuItem) ev.getSource();
+                        // toggle big/small icons
+                        boolean state = cb.getState();
+                        if (state) {
+                            ToolbarPool.getDefault().setPreferredIconSize(16);
+                        } else {
+                            ToolbarPool.getDefault().setPreferredIconSize(24);
+                        }
+                        //Rebuild toolbar panel
+                        //#43652: Find current toolbar configuration
+                        String name = ToolbarPool.getDefault().getConfiguration();
+                        ToolbarConfiguration tbConf = findConfiguration(name);
+                        if (tbConf != null) {
+                            tbConf.refresh();
+                        }
+                    }
+                }
+            });
+            cbmi.setEnabled( !fullScreen );
+            menu.add (cbmi);
+            menu.add( new JPopupMenu.Separator() );
+        }
 
-        cbmi.addActionListener (new ActionListener () {
-              public void actionPerformed (ActionEvent ev) {
-                  if (ev.getSource() instanceof JCheckBoxMenuItem) {
-                      JCheckBoxMenuItem cb = (JCheckBoxMenuItem) ev.getSource();
-                      // toggle big/small icons
-                      boolean state = cb.getState();
-                      if (state) {
-                          ToolbarPool.getDefault().setPreferredIconSize(16);
-                      } else {
-                          ToolbarPool.getDefault().setPreferredIconSize(24);
-                      }
-                      //Rebuild toolbar panel
-                      //#43652: Find current toolbar configuration
-                      String name = ToolbarPool.getDefault().getConfiguration();
-                      ToolbarConfiguration tbConf = findConfiguration(name);
-                      if (tbConf != null) {
-                          tbConf.refresh();
-                      }
-                  }
-              }
-        });
-        cbmi.setEnabled( !fullScreen );
-        menu.add (cbmi);
-
-        menu.add( new JPopupMenu.Separator() );
 
         JMenuItem menuItem = new JMenuItem( new ResetToolbarsAction() );
         menuItem.setEnabled( !fullScreen );

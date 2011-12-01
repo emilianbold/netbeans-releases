@@ -255,6 +255,7 @@ If you are sure you want to build with JDK 7+ anyway, use: -Dpermit.jdk7.builds=
             <sequential>
                 <property name="test.@{test.type}.folder" location="${build.dir}/test/@{test.type}/dist"/>
                 <property name="test.@{test.type}.out.folder" location="${test.@{test.type}.folder}"/>
+                <property name="test-@{test.type}-sys-prop.branding.token" value="nb"/>
             </sequential>
         </macrodef>
         <test-init-nborg test.type="unit"/>
