@@ -317,11 +317,11 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         String installLocationOption = "/qn /norestart INSTALLDIRFXSDK=\"" + location + "\"";
 
         String [] commands = new String [] {
- //           "CMD",
- //           "/C",
-            sdkInstaller.getAbsolutePath(),
+            "CMD",
+            "/C",
+            " \"" + sdkInstaller.getAbsolutePath() + "\" ",
             "/s",
-            "/v" + loggingOption + installLocationOption};
+            " /v" + installLocationOption};
    
         ProgressThread progressThread = new ProgressThread(progress,
                 new File [] {location, runtimeLocation},
