@@ -63,7 +63,6 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import junit.framework.Test;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mylyn.internal.tasks.core.AbstractTask;
 import org.eclipse.mylyn.internal.tasks.core.data.FileTaskAttachmentSource;
@@ -72,7 +71,6 @@ import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskAttributeMapper;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.sync.ISynchronizationSession;
-import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 
@@ -86,10 +84,6 @@ public class JiraIssueTest extends NbTestCase {
         super(arg0);
     }
     
-    public static Test suite() {
-        return NbModuleSuite.create(JiraIssueTest.class, null, null);
-    }
-
     @Override
     protected void setUp() throws Exception { 
         JiraTestUtil.initClient(getWorkDir());

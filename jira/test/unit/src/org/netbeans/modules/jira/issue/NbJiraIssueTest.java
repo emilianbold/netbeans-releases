@@ -60,13 +60,11 @@ import java.util.LinkedList;
 import java.util.List;
 import org.eclipse.core.runtime.CoreException;
 import org.netbeans.modules.jira.*;
-import junit.framework.Test;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.commons.net.AuthenticationCredentials;
 import org.eclipse.mylyn.commons.net.AuthenticationType;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
-import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.jira.issue.NbJiraIssue.CustomField;
 import org.netbeans.modules.jira.issue.NbJiraIssue.WorkLog;
@@ -126,10 +124,6 @@ public class NbJiraIssueTest extends NbTestCase {
 
     public NbJiraIssueTest(String arg0) {
         super(arg0);
-    }
-
-    public static Test suite() {
-        return NbModuleSuite.create(NbJiraIssueTest.class, null, null);
     }
 
     @Override
