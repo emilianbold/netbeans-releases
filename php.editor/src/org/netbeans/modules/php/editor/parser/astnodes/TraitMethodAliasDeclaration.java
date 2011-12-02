@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,42 +37,54 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.editor.api;
+package org.netbeans.modules.php.editor.parser.astnodes;
 
-import org.netbeans.modules.csl.api.ElementKind;
 
-public enum PhpElementKind {
+/**
+ *
+ * @author Ondrej Brejla <obrejla@netbeans.org>
+ */
+public class TraitMethodAliasDeclaration extends Statement {
+    private final Identifier oldMethodName;
+    private final Identifier newMethodName;
+    private final Expression traitName;
+    private final Modifier modifier;
 
-    INDEX, PROGRAM, INCLUDE,
-    IFACE, CLASS,
-    METHOD, FIELD, TYPE_CONSTANT,
-    VARIABLE, CONSTANT, FUNCTION,
-    NAMESPACE_DECLARATION, USE_STATEMENT, CONSTRUCTOR,
-    TRAIT, TRAIT_CONFLICT_RESOLUTION, TRAIT_METHOD_ALIAS;
-
-    public final ElementKind getElementKind() {
-        switch (this) {
-            case CLASS:
-                return ElementKind.CLASS;
-            case TYPE_CONSTANT:
-                return ElementKind.CONSTANT;
-            case CONSTANT:
-                return ElementKind.CONSTANT;
-            case FIELD:
-                return ElementKind.FIELD;
-            case FUNCTION:
-                return ElementKind.METHOD;
-            case IFACE:
-                return ElementKind.INTERFACE;
-            case METHOD:
-                return ElementKind.METHOD;
-            case VARIABLE:
-                return ElementKind.VARIABLE;
-            case NAMESPACE_DECLARATION:
-                return ElementKind.PACKAGE;
-        }
-        return ElementKind.OTHER;
+    public enum Modifier {
+        PUBLIC,
+        PROTECTED,
+        PRIVATE
     }
+
+    public TraitMethodAliasDeclaration(final int start, final int end, final Identifier oldMethodName, final Identifier newMethodName, final Expression traitName, final Modifier modifier) {
+        super(start, end);
+        this.oldMethodName = oldMethodName;
+        this.newMethodName = newMethodName;
+        this.traitName = traitName;
+        this.modifier = modifier;
+    }
+
+    public Identifier getNewMethodName() {
+        return newMethodName;
+    }
+
+    public Modifier getModifier() {
+        return modifier;
+    }
+
+    public Expression getTraitName() {
+        return traitName;
+    }
+
+    public Identifier getOldMethodName() {
+        return oldMethodName;
+    }
+
+    @Override
+    public void accept(Visitor visitor) {
+        visitor.visit(this);
+    }
+
 }

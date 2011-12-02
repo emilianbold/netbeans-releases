@@ -4,13 +4,7 @@ import java.util.*;
 import org.netbeans.modules.php.editor.parser.astnodes.*;
 
 parser code {:
-        private static short[][] get_action_table() {
-            return unpackFromStrings(new String[]{
-                        new EncodedActionTableFirst().getTableData(),
-                        new EncodedActionTableNext().getTableData(),
-                        new EncodedActionTableLast().getTableData()
-                    });
-        }
+    private static short[][] getActionTable() {}
 
 	protected final static Integer PUBLIC = new Integer(BodyDeclaration.Modifier.PUBLIC);
 	protected final static Integer PRIVATE = new Integer(BodyDeclaration.Modifier.PRIVATE);
@@ -18,7 +12,7 @@ parser code {:
 	protected final static Integer ABSTRACT = new Integer(BodyDeclaration.Modifier.ABSTRACT);
 	protected final static Integer FINAL = new Integer(BodyDeclaration.Modifier.FINAL);
 	protected final static Integer STATIC = new Integer(BodyDeclaration.Modifier.STATIC);
-	
+
         private ErrorStrategy defaultStrategy = new DefaultErrorStrategy();;
         private ErrorStrategy errorStrategy = defaultStrategy;
 
@@ -33,10 +27,10 @@ parser code {:
         }
 
 	/*AST ast;
-  
+
 	public final void setAST (AST ast) {
 		this.ast = ast;
-	}*/	
+	}*/
 
 	public Dispatch createDispatch(VariableBase dispatcher, VariableBase property) {
 		Dispatch dispatch = null;
@@ -83,9 +77,9 @@ parser code {:
 			if (((Symbol)info).left != -1)
 				System.err.println(" at character " + ((Symbol)info).left + " of input");
 			else System.err.println("");
-	     else 
+	     else
 	   		System.err.println("");*/
-    }	
+    }
 
     /**
      * This method is called when a syntax error has been detected and recovery is about to be invoked.
@@ -232,6 +226,8 @@ terminal T_NEKUDOTAIM;
 terminal T_DOLLAR;
 terminal T_QUATE,T_BACKQUATE;
 terminal T_START_NOWDOC, T_END_NOWDOC;
+terminal T_TRAIT;
+terminal T_INSTEADOF;
 
 /* Non terminals */
 
@@ -308,6 +304,18 @@ non terminal Expression internal_functions_in_yacc;
 non terminal String string_st;
 non terminal Integer interface_entry;
 non terminal List interface_extends_list;
+non terminal List use_traits;
+non terminal Block use_traits_body;
+non terminal List use_traits_body_statement_list;
+non terminal Statement use_traits_body_statement;
+non terminal Statement trait_conflict_resolution_declaration;
+non terminal Statement trait_method_alias_declaration;
+non terminal TraitMethodAliasDeclaration.Modifier traits_alias_modifier;
+non terminal List trait_statement_list;
+non terminal Statement trait_statement;
+non terminal List interface_statement_list;
+non terminal Statement interface_statement;
+non terminal UseTraitStatementPart use_trait;
 
 non terminal VariableBase w_variable;
 non terminal Expression class_name;
@@ -930,12 +938,104 @@ T_CURLY_OPEN:blockStart class_statement_list:statementList T_CURLY_CLOSE:blockEn
 |
 interface_entry:start T_STRING:className
 interface_extends_list:interfaces
-T_CURLY_OPEN:blockStart class_statement_list:statementList T_CURLY_CLOSE:blockEnd
+T_CURLY_OPEN:blockStart interface_statement_list:statementList T_CURLY_CLOSE:blockEnd
 {:
 	Identifier classId = new Identifier(classNameleft, classNameright, /*parser.ast,*/ className);
 	Block block = new Block(blockStartleft, blockEndright, /*parser.ast,*/ statementList);
 	InterfaceDeclaration interfaceDeclaration = new InterfaceDeclaration(startleft ,blockEndright, /*parser.ast,*/ classId, interfaces, block);
 	RESULT = interfaceDeclaration;
+:}
+
+|
+T_TRAIT:start T_STRING:traitName
+T_CURLY_OPEN:blockStart trait_statement_list:statementList T_CURLY_CLOSE:blockEnd
+{:
+	Identifier traitId = new Identifier(traitNameleft, traitNameright, traitName);
+	Block block = new Block(blockStartleft, blockEndright, statementList);
+	TraitDeclaration traitDeclaration = new TraitDeclaration(startleft, blockEndright, traitId, block);
+	RESULT = traitDeclaration;
+:}
+;
+
+interface_statement_list ::=
+interface_statement_list:list interface_statement:interfaceStatement
+{:
+	list.add(interfaceStatement);
+	RESULT = list;
+:}
+
+| /* empty */
+{:
+	List list = new LinkedList();
+	RESULT = list;
+:}
+;
+
+interface_statement ::=
+constant_declaration:list T_SEMICOLON:end
+{:
+	ConstantDeclaration classConstantDeclaration = new ConstantDeclaration(listleft, endright, /*parser.ast,*/ list);
+	RESULT = classConstantDeclaration;
+:}
+
+| method_modifiers:modifier T_FUNCTION:start is_reference:isReference string_st:functionName
+T_OPEN_PARENTHESE parameter_list:paramList T_CLOSE_PARENTHESE T_SEMICOLON:end
+{:
+	int methodStart = modifier == null ? startleft : modifierleft;
+	modifier = modifier == null ? ASTPHP5Parser.PUBLIC : modifier;
+	Identifier functionId = new Identifier(functionNameleft, functionNameright, functionName);
+	FunctionDeclaration functionDeclaration = new FunctionDeclaration(startleft, endright, functionId, paramList, null, isReference.booleanValue());
+	MethodDeclaration methodDeclaration = new MethodDeclaration(methodStart, endright, modifier.intValue(), functionDeclaration, true);
+	RESULT = methodDeclaration;
+:}
+
+| T_VAR_COMMENT:varComment
+{:
+
+:}
+;
+
+trait_statement_list ::=
+trait_statement_list:list trait_statement:traitStatement
+{:
+	list.add(traitStatement);
+	RESULT = list;
+:}
+
+| /* empty */
+{:
+	List list = new LinkedList();
+	RESULT = list;
+:}
+;
+
+trait_statement ::=
+variable_modifiers:modifier class_variable_declaration:decList T_SEMICOLON:end
+{:
+	FieldsDeclaration fieldsDeclaration = new FieldsDeclaration(modifierleft, endright, /*parser.ast,*/ modifier.intValue(), decList);
+	RESULT = fieldsDeclaration;
+:}
+
+| method_modifiers:modifier T_FUNCTION:start string_st:functionName
+T_OPEN_PARENTHESE parameter_list:paramList T_CLOSE_PARENTHESE
+method_body:body
+{:
+	int methodStart = modifier == null ? startleft : modifierleft;
+	modifier = modifier == null ? ASTPHP5Parser.PUBLIC : modifier;
+	Identifier functionId = new Identifier(functionNameleft, functionNameright, functionName);
+	FunctionDeclaration functionDeclaration = new FunctionDeclaration(startleft, bodyright, functionId, paramList, body, false);
+	MethodDeclaration methodDeclaration = new MethodDeclaration(methodStart, bodyright, modifier.intValue(), functionDeclaration, true);
+	RESULT = methodDeclaration;
+:}
+
+| T_VAR_COMMENT:varComment
+{:
+
+:}
+
+| T_USE:s use_traits:list use_traits_body:body
+{:
+	RESULT = new UseTraitStatement(sleft, bodyright, list, body);
 :}
 ;
 
@@ -1494,6 +1594,134 @@ method_body:body
 {:
 
 :}
+
+| T_USE:s use_traits:list use_traits_body:body
+{:
+	RESULT = new UseTraitStatement(sleft, bodyright, list, body);
+:}
+;
+
+use_traits ::=
+use_traits:list T_COMMA use_trait:useDecl
+{:
+	list.add(useDecl);
+	RESULT = list;
+:}
+
+| use_trait:useDecl
+{:
+	List list = new LinkedList();
+	list.add(useDecl);
+	RESULT = list;
+:}
+;
+
+use_trait ::=
+namespace_name:list
+{:
+	RESULT = new UseTraitStatementPart(listleft, listright, new NamespaceName(listleft, listright, list, false, false));
+:}
+
+| T_NS_SEPARATOR namespace_name:list
+{:
+	RESULT = new UseTraitStatementPart(listleft, listright, new NamespaceName(listleft, listright, list, true, false));
+:}
+;
+
+use_traits_body ::=
+T_SEMICOLON:e
+{:
+    RESULT = null;
+:}
+
+| T_CURLY_OPEN:start use_traits_body_statement_list:statementList T_CURLY_CLOSE:end
+{:
+	Block block = new Block(startleft, endright, statementList);
+	RESULT = block;
+:}
+;
+
+use_traits_body_statement_list ::=
+use_traits_body_statement_list:statementList use_traits_body_statement:statement
+{:
+	// Ignore null statements
+	if(statement != null) {
+		statementList.add(statement);
+	}
+	RESULT = statementList;
+:}
+
+| /* empty */
+{:
+	RESULT = new LinkedList();
+:}
+;
+
+use_traits_body_statement ::=
+trait_conflict_resolution_declaration:statement
+{:
+    RESULT = statement;
+:}
+
+| trait_method_alias_declaration:statement
+{:
+    RESULT = statement;
+:}
+;
+
+trait_conflict_resolution_declaration ::=
+class_name:preferredTraitName T_PAAMAYIM_NEKUDOTAYIM T_STRING:methodName T_INSTEADOF class_name:suppressedTraitName T_SEMICOLON:end
+{:
+    Identifier methodId = new Identifier(methodNameleft, methodNameright, methodName);
+    RESULT = new TraitConflictResolutionDeclaration(preferredTraitNameleft, endright, preferredTraitName, methodId, suppressedTraitName);
+:}
+;
+
+trait_method_alias_declaration ::=
+class_name:traitName T_PAAMAYIM_NEKUDOTAYIM T_STRING:oldMethodName T_AS traits_alias_modifier:modifier T_STRING:newMethodName T_SEMICOLON:end
+{:
+    Identifier oldMethodId = new Identifier(oldMethodNameleft, oldMethodNameright, oldMethodName);
+    Identifier newMethodId = new Identifier(newMethodNameleft, newMethodNameright, newMethodName);
+    RESULT = new TraitMethodAliasDeclaration(traitNameleft, endright, oldMethodId, newMethodId, traitName, modifier);
+:}
+
+| class_name:traitName T_PAAMAYIM_NEKUDOTAYIM T_STRING:oldMethodName T_AS T_STRING:newMethodName T_SEMICOLON:end
+{:
+    Identifier oldMethodId = new Identifier(oldMethodNameleft, oldMethodNameright, oldMethodName);
+    Identifier newMethodId = new Identifier(newMethodNameleft, newMethodNameright, newMethodName);
+    RESULT = new TraitMethodAliasDeclaration(traitNameleft, endright, oldMethodId, newMethodId, traitName, null);
+:}
+
+| T_STRING:oldMethodName T_AS traits_alias_modifier:modifier T_STRING:newMethodName T_SEMICOLON:end
+{:
+    Identifier oldMethodId = new Identifier(oldMethodNameleft, oldMethodNameright, oldMethodName);
+    Identifier newMethodId = new Identifier(newMethodNameleft, newMethodNameright, newMethodName);
+    RESULT = new TraitMethodAliasDeclaration(oldMethodNameleft, endright, oldMethodId, newMethodId, null, modifier);
+:}
+
+| T_STRING:oldMethodName T_AS T_STRING:newMethodName T_SEMICOLON:end
+{:
+    Identifier oldMethodId = new Identifier(oldMethodNameleft, oldMethodNameright, oldMethodName);
+    Identifier newMethodId = new Identifier(newMethodNameleft, newMethodNameright, newMethodName);
+    RESULT = new TraitMethodAliasDeclaration(oldMethodNameleft, endright, oldMethodId, newMethodId, null, null);
+:}
+;
+
+traits_alias_modifier ::=
+T_PUBLIC
+{:
+	RESULT = TraitMethodAliasDeclaration.Modifier.PUBLIC;
+:}
+
+| T_PROTECTED
+{:
+	RESULT = TraitMethodAliasDeclaration.Modifier.PROTECTED;
+:}
+
+| T_PRIVATE
+{:
+	RESULT = TraitMethodAliasDeclaration.Modifier.PRIVATE;
+:}
 ;
 
 method_body ::=
@@ -1534,10 +1762,10 @@ method_modifiers ::=
 
 | non_empty_member_modifiers:list
 {:
-	int result = 0;
+    int result = 0;
 	for (Iterator it = list.iterator(); it.hasNext() ; ) {
 		Integer modifier = (Integer)it.next();
-		result |= modifier.intValue();
+        result |= modifier.intValue();
 	}
 	RESULT = new Integer(result);
 :}
@@ -1546,14 +1774,14 @@ method_modifiers ::=
 non_empty_member_modifiers ::=
 member_modifier:modifier
 {:
-	List list = new LinkedList();
+    List list = new LinkedList();
 	list.add(modifier);
 	RESULT = list;
 :}
 
 | non_empty_member_modifiers:list member_modifier:modifier
 {:
-	list.add(modifier);
+    list.add(modifier);
 	RESULT = list;
 :}
 ;

@@ -43,10 +43,6 @@ FIX:Remove modifier: protected
                           ----------------
 HINT:Interface method "ifaceFinalMethod" can not be declared final
 FIX:Remove modifier: final
-    public function ifaceWithBody() {
-                    -------------
-HINT:Interface method "ifaceWithBody" can not contain body
-FIX:Remove body of the method: ifaceWithBody
 class PossibleAbstract {
       ----------------
 HINT:Class "PossibleAbstract" contains abstract methods and must be declared abstract

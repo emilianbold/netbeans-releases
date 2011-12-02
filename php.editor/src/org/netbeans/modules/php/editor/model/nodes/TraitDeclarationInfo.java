@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,49 +37,44 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.php.editor.model.nodes;
 
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.api.QualifiedName;
-import org.netbeans.modules.php.editor.api.PhpModifiers;
-import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo.Kind;
-import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration.Modifier;
-import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
+import org.netbeans.modules.php.editor.parser.astnodes.TraitDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.UseTraitStatementPart;
 import org.netbeans.modules.php.editor.parser.astnodes.UseTraitStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 
 /**
- * @author Radek Matous
+ *
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class ClassDeclarationInfo extends ASTNodeInfo<ClassDeclaration> {
-    ClassDeclarationInfo(ClassDeclaration node) {
+public class TraitDeclarationInfo extends ASTNodeInfo<TraitDeclaration>  {
+    TraitDeclarationInfo(TraitDeclaration node) {
         super(node);
     }
 
-    public static ClassDeclarationInfo create(ClassDeclaration classDeclaration) {
-        return new ClassDeclarationInfo(classDeclaration);
+    public static TraitDeclarationInfo create(TraitDeclaration traitDeclaration) {
+        return new TraitDeclarationInfo(traitDeclaration);
     }
 
     @Override
     public Kind getKind() {
-        return Kind.CLASS;
+        return Kind.TRAIT;
     }
 
     @Override
     public String getName() {
-        ClassDeclaration classDeclaration = getOriginalNode();
-        return classDeclaration.getName().getName();
+        TraitDeclaration traitDeclaration = getOriginalNode();
+        return traitDeclaration.getName().getName();
     }
 
     @Override
@@ -87,50 +82,11 @@ public class ClassDeclarationInfo extends ASTNodeInfo<ClassDeclaration> {
         return QualifiedName.create(getOriginalNode().getName());
     }
 
-
     @Override
     public OffsetRange getRange() {
-        ClassDeclaration classDeclaration = getOriginalNode();
-        Identifier name = classDeclaration.getName();
+        TraitDeclaration traitDeclaration = getOriginalNode();
+        Identifier name = traitDeclaration.getName();
         return new OffsetRange(name.getStartOffset(), name.getEndOffset());
-    }
-
-    public Expression getSuperClass() {
-        return (getOriginalNode().getSuperClass() != null) ?
-            getOriginalNode().getSuperClass() : null;
-    }
-
-    public QualifiedName getSuperClassName() {
-        final Expression superClass = getSuperClass();
-        return (superClass != null) ?
-            QualifiedName.create(superClass) : null;
-    }
-
-    public List<? extends Expression> getInterfaces() {
-        return getOriginalNode().getInterfaes();
-    }
-
-    public Set<QualifiedName> getInterfaceNames() {
-        final Set<QualifiedName> retval = new HashSet<QualifiedName>();
-        final List<Expression> interfaes = getOriginalNode().getInterfaes();
-        for (Expression iface : interfaes) {
-            QualifiedName ifaceName = QualifiedName.create(iface);
-            if (ifaceName != null) {
-                retval.add(ifaceName);
-            }
-        }
-        return retval;
-    }
-
-    public PhpModifiers getAccessModifiers() {
-        Modifier modifier = getOriginalNode().getModifier();
-
-        if (modifier.equals(Modifier.ABSTRACT)) {
-            return PhpModifiers.fromBitMask(PhpModifiers.PUBLIC, PhpModifiers.ABSTRACT);
-        } else if (modifier.equals(Modifier.FINAL)) {
-            return PhpModifiers.fromBitMask(PhpModifiers.PUBLIC, PhpModifiers.FINAL);
-        }
-        return PhpModifiers.fromBitMask(PhpModifiers.PUBLIC);
     }
 
     public Collection<QualifiedName> getUsedTraits() {
@@ -156,5 +112,4 @@ public class ClassDeclarationInfo extends ASTNodeInfo<ClassDeclaration> {
         }
 
     }
-
 }
