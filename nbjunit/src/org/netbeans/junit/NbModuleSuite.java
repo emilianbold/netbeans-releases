@@ -43,6 +43,7 @@
 package org.netbeans.junit;
 
 import java.io.*;
+import java.lang.reflect.InvocationTargetException;
 import org.netbeans.junit.internal.NbModuleLogHandler;
 import java.lang.reflect.Method;
 import java.net.URI;
@@ -815,6 +816,19 @@ public class NbModuleSuite {
             System.setProperty("netbeans.home", platform.getPath());
             System.setProperty("netbeans.full.hack", "true");
 
+            String branding = System.getProperty("branding.token"); // NOI18N
+            if (branding != null) {
+                try {
+                    Method setBranding = loader.loadClass("org.openide.util.NbBundle").getMethod("setBranding", String.class); // NOI18N
+                    setBranding.invoke(null, branding);
+                } catch (Throwable ex) {
+                    if (ex instanceof InvocationTargetException) {
+                        ex = ((InvocationTargetException)ex).getTargetException();
+                    }
+                    LOG.log(Level.WARNING, "Cannot set branding to " + branding, ex); // NOI18N
+                }
+            }
+            
             File ud = new File(new File(Manager.getWorkDirPath()), "userdir" + invocations++);
             if (config.reuseUserDir) {
                 ud = lastUserDir != null ? lastUserDir : ud;
