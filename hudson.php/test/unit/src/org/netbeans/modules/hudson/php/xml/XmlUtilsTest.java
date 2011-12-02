@@ -39,24 +39,42 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.hudson.php.support;
+package org.netbeans.modules.hudson.php.xml;
 
-import org.openide.util.NbBundle;
+import java.io.File;
+import org.netbeans.junit.NbTestCase;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
-/**
- * Ant target for <tt>phploc</tt>.
- */
-class PhplocTarget extends Target {
+public class XmlUtilsTest extends NbTestCase {
 
-    @Override
-    public String getName() {
-        return "phploc"; // NOI18N
+    public XmlUtilsTest(String name) {
+        super(name);
     }
 
-    @NbBundle.Messages("Target.Phploc.title=So&urce Code Statistics")
-    @Override
-    public String getTitleWithMnemonic() {
-        return Bundle.Target_Phploc_title();
+    public void testParse() throws Exception {
+        Document document = XmlUtils.parse(new File(getDataDir(), "persons.xml"));
+        Element documentElement = document.getDocumentElement();
+        assertEquals("Document element should be found", "persons", documentElement.getNodeName());
+        NodeList persons = documentElement.getElementsByTagName("person");
+        assertEquals("Persons should be found", 2, persons.getLength());
+    }
+
+    public void testQuery() throws Exception {
+        Document document = XmlUtils.parse(new File(getDataDir(), "persons.xml"));
+        assertNotNull(XmlUtils.query(document, "//person[@id='1']"));
+        assertNull(XmlUtils.query(document, "//person[@id='-1']"));
+    }
+
+    public void testCommentNode() throws Exception {
+        final String xpath = "//person[@id='1']";
+        Document document = XmlUtils.parse(new File(getDataDir(), "persons.xml"));
+        Node node = XmlUtils.query(document, xpath);
+        assertNotNull(node);
+        XmlUtils.commentNode(document, node);
+        assertNull(XmlUtils.query(document, xpath));
     }
 
 }

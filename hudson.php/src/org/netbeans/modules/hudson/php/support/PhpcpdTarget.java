@@ -42,7 +42,6 @@
 package org.netbeans.modules.hudson.php.support;
 
 import org.openide.util.NbBundle;
-import org.w3c.dom.Document;
 
 /**
  * Ant target for <tt>phpcpd</tt>.
@@ -58,11 +57,6 @@ class PhpcpdTarget extends Target {
     @Override
     public String getTitleWithMnemonic() {
         return Bundle.Target_Phpcpd_title();
-    }
-
-    @Override
-    public void apply(Document document) {
-        // XXX
     }
 
 }
