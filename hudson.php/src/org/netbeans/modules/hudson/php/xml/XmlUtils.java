@@ -119,8 +119,11 @@ public final class XmlUtils {
             XPath xPath = XPathFactory.newInstance().newXPath();
             XPathExpression xPathExpression = xPath.compile(xpathExpression);
             Object result = xPathExpression.evaluate(document, XPathConstants.NODE);
-            if (result != null && !(result instanceof Node)) {
-                LOGGER.log(Level.FINE, "Node expected for xpath '{0}' but '{1}' returned", new Object[] {xpathExpression, result.getClass().getName()});
+            if (result == null) {
+                return null;
+            }
+            if (!(result instanceof Node)) {
+                LOGGER.log(Level.FINE, "Node expected for XPath '{0}' but '{1}' returned", new Object[] {xpathExpression, result.getClass().getName()});
                 return null;
             }
             return (Node) result;
