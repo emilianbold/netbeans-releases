@@ -118,44 +118,44 @@ public class CssAnalyser {
                         }
 
                         //check value
-                        if (valueNode != null && property != null) {
-                            String valueImage = valueNode.image().toString().trim();
-                            
-                            //do not check values which contains generated code
-                            //we are no able to identify the templating semantic
-                            if (!Css3Utils.containsGeneratedCode(valueImage)) {
-                                PropertyValue pv = new PropertyValue(property, valueImage);
-                                if (!pv.success()) {
-                                    String errorMsg = null;
-                                    if (pv instanceof CustomErrorMessageProvider) {
-                                        errorMsg = ((CustomErrorMessageProvider) pv).customErrorMessage();
-                                    }
-
-                                    //error in property 
-                                    String unexpectedToken = pv.left().get(pv.left().size() - 1);
-
-                                    if(isNonCss21CompatiblePropertyValue(unexpectedToken)) {
-                                        return false;
-                                    }
-
-                                    if (errorMsg == null) {
-                                        errorMsg = NbBundle.getMessage(CssAnalyser.class, INVALID_PROPERTY_VALUE, unexpectedToken);
-                                    }
-
-                                    Error error = makeError(valueNode.from(),
-                                            valueNode.to(),
-                                            snapshot,
-                                            INVALID_PROPERTY_VALUE,
-                                            errorMsg,
-                                            errorMsg,
-                                            false /* not line error */,
-                                            Severity.WARNING);
-                                    if(error != null) {
-                                        getResult().add(error);
-                                    }
-                                }
-                            }
-                        }
+//                        if (valueNode != null && property != null) {
+//                            String valueImage = valueNode.image().toString().trim();
+//                            
+//                            //do not check values which contains generated code
+//                            //we are no able to identify the templating semantic
+//                            if (!Css3Utils.containsGeneratedCode(valueImage)) {
+//                                PropertyValue pv = new PropertyValue(property, valueImage);
+//                                if (!pv.success()) {
+//                                    String errorMsg = null;
+//                                    if (pv instanceof CustomErrorMessageProvider) {
+//                                        errorMsg = ((CustomErrorMessageProvider) pv).customErrorMessage();
+//                                    }
+//
+//                                    //error in property 
+//                                    String unexpectedToken = pv.left().get(pv.left().size() - 1);
+//
+//                                    if(isNonCss21CompatiblePropertyValue(unexpectedToken)) {
+//                                        return false;
+//                                    }
+//
+//                                    if (errorMsg == null) {
+//                                        errorMsg = NbBundle.getMessage(CssAnalyser.class, INVALID_PROPERTY_VALUE, unexpectedToken);
+//                                    }
+//
+//                                    Error error = makeError(valueNode.from(),
+//                                            valueNode.to(),
+//                                            snapshot,
+//                                            INVALID_PROPERTY_VALUE,
+//                                            errorMsg,
+//                                            errorMsg,
+//                                            false /* not line error */,
+//                                            Severity.WARNING);
+//                                    if(error != null) {
+//                                        getResult().add(error);
+//                                    }
+//                                }
+//                            }
+//                        }
 
                     }
 
