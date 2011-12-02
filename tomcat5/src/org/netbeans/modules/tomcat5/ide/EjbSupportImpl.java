@@ -39,56 +39,26 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.hudson.php.xml;
+package org.netbeans.modules.tomcat5.ide;
 
 import java.io.File;
-import org.netbeans.junit.NbTestCase;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
+import org.netbeans.modules.javaee.specs.support.spi.EjbSupportImplementation;
 
-public class XmlUtilsTest extends NbTestCase {
+/**
+ *
+ * @author Martin Fousek <marfous@netbeans.org>
+ */
+public class EjbSupportImpl implements EjbSupportImplementation {
 
-    public XmlUtilsTest(String name) {
-        super(name);
-    }
-
-    public void testParse() throws Exception {
-        Document document = XmlUtils.parse(new File(getDataDir(), "persons.xml"));
-        Element documentElement = document.getDocumentElement();
-        assertEquals("Document element should be found", "persons", documentElement.getNodeName());
-        NodeList persons = documentElement.getElementsByTagName("person");
-        assertEquals("Persons should be found", 2, persons.getLength());
-    }
-
-    public void testQuery() throws Exception {
-        Document document = XmlUtils.parse(new File(getDataDir(), "persons.xml"));
-        assertNotNull(XmlUtils.query(document, "//person[@id='1']"));
-        assertNull(XmlUtils.query(document, "//person[@id='-1']"));
-        assertNull(XmlUtils.query(document, "count(//person)"));
-    }
-
-    public void testCommentNode() throws Exception {
-        final String xpath = "//person[@id='1']/name";
-        final String comment = "<!--<name>John Doe</name>-->";
-        Document document = XmlUtils.parse(new File(getDataDir(), "persons.xml"));
-        Node node = XmlUtils.query(document, xpath);
-        assertNotNull(node);
-        assertFalse(XmlUtils.asString(document, true).indexOf(comment) != -1);
-        XmlUtils.commentNode(document, node);
-        assertNull(XmlUtils.query(document, xpath));
-        assertTrue(XmlUtils.asString(document, true).indexOf(comment) != -1);
-    }
-
-    public void testAsString() throws Exception {
-        final String header = "<?xml";
-        Document document = XmlUtils.parse(new File(getDataDir(), "persons.xml"));
-        String content = XmlUtils.asString(document, true);
-        assertTrue(content.startsWith(header));
-        Node node = XmlUtils.query(document, "//person[@id='1']");
-        content = XmlUtils.asString(node, true);
-        assertFalse(content.startsWith(header));
+    @Override
+    public boolean isEjb31LiteSupported(J2eePlatform j2eePlatform) {
+        for (File cpEntry : j2eePlatform.getClasspathEntries()) {
+            if (cpEntry.getName().startsWith("openejb-tomcat")) { //NOI18N
+                return true;
+            }
+        }
+        return false;
     }
 
 }

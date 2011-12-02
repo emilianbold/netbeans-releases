@@ -39,56 +39,47 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.j2ee.ejbcore.ejb.wizard.jpa.dao;
+package org.netbeans.modules.javaee.specs.support.api;
 
-import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.modules.javaee.specs.support.DefaultEjbSupportImpl;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.common.J2eeProjectCapabilities;
-import org.netbeans.modules.j2ee.core.api.support.wizard.DelegatingWizardDescriptorPanel;
-import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.openide.WizardDescriptor;
-import org.openide.util.NbBundle;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
+import org.netbeans.modules.javaee.specs.support.spi.EjbSupportImplementation;
+import org.openide.util.Parameters;
 
 /**
- * A validation panel which checks that the target project has a valid server set
- * otherwise it delegates to the real panel.
  *
  * @author Martin Fousek <marfous@netbeans.org>
+ * @since 1.4
  */
-public final class EjbLiteServerValidationPanel extends DelegatingWizardDescriptorPanel {
+public final class EjbSupport {
 
-    public EjbLiteServerValidationPanel(WizardDescriptor.Panel delegate) {
-        super(delegate);
+    private final EjbSupportImplementation impl;
+
+    private EjbSupport(EjbSupportImplementation impl) {
+        this.impl = impl;
     }
 
-    @Override
-    public boolean isValid() {
-        Project project = getProject();
-        WizardDescriptor wizardDescriptor = getWizardDescriptor();
-
-        // check that this project has a valid target server
-        if (!org.netbeans.modules.j2ee.common.Util.isValidServerInstance(project)) {
-            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
-                    NbBundle.getMessage(EjbLiteServerValidationPanel.class, "ERR_MissingServer")); // NOI18N
-            return false;
+    @NonNull
+    public static EjbSupport getInstance(@NonNull J2eePlatform j2eePlatform) {
+        Parameters.notNull("j2eePlatform", j2eePlatform);
+        EjbSupportImplementation supportImpl = j2eePlatform.getLookup().lookup(EjbSupportImplementation.class);
+        if (supportImpl != null) {
+            return new EjbSupport(supportImpl);
         }
-
-        // check that target server supports full JEE6 platform if Java EE 6 sources
-        WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
-
-        // webModule is null in cases of EJB application (Session beans from Entity classes)
-        // where should be proper server set (issue #202050)
-        if (wm != null
-                && (wm.getJ2eeProfile() == Profile.JAVA_EE_6_FULL || wm.getJ2eeProfile() == Profile.JAVA_EE_6_WEB)) {
-            J2eeProjectCapabilities cap = J2eeProjectCapabilities.forProject(project);
-            if (cap == null || !cap.isEjbLiteIncluded()) {
-                wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
-                        NbBundle.getMessage(EjbLiteServerValidationPanel.class,
-                        "ERR_J2ee6AndNotSufficientJ2eeServer")); // NOI18N
-                return false;
-            }
-        }
-
-        return super.isValid();
+        return new EjbSupport(new DefaultEjbSupportImpl());
     }
+
+    /**
+     * Says if the EJB 3.1 Lite is supported by {@link J2eePlatform}.
+     *
+     * @param j2eePlatform j2eePlatform
+     * @return {@code true} if the server supports EJB Lite, {@code false} otherwise
+     */
+    public boolean isEjb31LiteSupported(@NonNull J2eePlatform j2eePlatform) {
+        return impl.isEjb31LiteSupported(j2eePlatform);
+    }
+
 }
