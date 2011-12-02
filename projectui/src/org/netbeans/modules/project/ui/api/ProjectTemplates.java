@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,27 +37,29 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.welcome.ui;
+package org.netbeans.modules.project.ui.api;
 
-import java.awt.event.ActionEvent;
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import org.netbeans.modules.project.ui.api.ProjectTemplates;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 
 /**
- *
- * @author S. Aubrecht
+ * Constants not currently documented in {@link CommonProjectActions#newProjectAction}.
+ * @since 1.32
  */
-public class SampleProjectAction extends AbstractAction {
+public class ProjectTemplates {
 
-    @Override public void actionPerformed(ActionEvent e) {
-        Action sampleProject = CommonProjectActions.newProjectAction();
-        sampleProject.putValue(ProjectTemplates.PRESELECT_CATEGORY, "Samples" ); // NOI18N
-        sampleProject.actionPerformed( e );
-    }
+    /**
+     * {@link String}-valued action property for a project category (subfolder code name) to select.
+     */
+    public static final String PRESELECT_CATEGORY = "PRESELECT_CATEGORY";
+
+    /**
+     * {@link String}-valued action property for a project template (code name within a category) to select.
+     */
+    public static final String PRESELECT_TEMPLATE = "PRESELECT_TEMPLATE";
+
+    private ProjectTemplates() {}
 
 }
