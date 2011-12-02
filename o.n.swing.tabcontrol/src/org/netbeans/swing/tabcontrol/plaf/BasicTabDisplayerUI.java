@@ -611,7 +611,7 @@ public abstract class BasicTabDisplayerUI extends AbstractTabDisplayerUI {
         }
 
         @Override
-        public boolean isDisplayable() {
+        boolean isDisplayable() {
             return displayer.isDisplayable();
         }
     }
