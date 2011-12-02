@@ -110,7 +110,6 @@ public class SafeDeleteUI<T> implements RefactoringUI{
     
     @Override
     public CustomRefactoringPanel getPanel(ChangeListener parent) {
-        //TODO:Do you want to just use Arrays.asList?
         if(panel == null)
             panel = new SafeDeletePanel();
         return panel;

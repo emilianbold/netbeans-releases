@@ -176,7 +176,7 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass, 
             String name = oldName;
             String suffix = "";
             if (handle != null) {
-                ElementKind kind = RefactoringUtils.getElementKind(handle);
+                ElementKind kind = handle.getElementHandle().getKind();
                 if (kind!=null && (kind.isClass() || kind.isInterface())) {
                     suffix  = kind.isInterface() ? getString("LBL_Interface") : getString("LBL_Class");
                 } else if (kind == ElementKind.METHOD) {
@@ -269,7 +269,7 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass, 
         if (handle==null) {
             postfix = ".JavaPackage";//NOI18N
         } else {
-            ElementKind k = RefactoringUtils.getElementKind(handle);
+            ElementKind k = handle.getElementHandle().getKind();
             
             if (k==null) {
                 postfix = "";

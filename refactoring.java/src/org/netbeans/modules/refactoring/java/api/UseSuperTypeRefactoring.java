@@ -148,21 +148,6 @@ public final class UseSuperTypeRefactoring extends AbstractRefactoring{
     
     //    --private helper methods follow--
     
-    /* Checks each Object in the collection that's
-     * passed as the second parameter, converts it to a raw type from
-     * a ParameterizedType, if necessary, and adds it to the candidateSuperTypesList
-     */
-    //TODO: Rewrite this for retouche
-    private void reduceParamTypes(Collection candidateSuperTypeList, Collection javaClassList) {
-        //        Iterator interfacesIterator = javaClassList.iterator();
-        //        while(interfacesIterator.hasNext()){
-        //            Object superClass = (Object) interfacesIterator.next();
-        //            if(superClass instanceof ParameterizedType)
-        //                superClass = ((ParameterizedType)superClass).getDefinition();
-        //            candidateSuperTypeList.add(superClass);
-        //        }
-    }
-    
     private ElementHandle[] deduceSuperTypes(TypeElement subTypeElement, 
             CompilationController compCtlr){
 

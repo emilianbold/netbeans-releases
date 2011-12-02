@@ -73,6 +73,7 @@ import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.*;
 import org.openide.loaders.DataObject;
 import org.openide.util.*;
+import org.openide.windows.TopComponent;
 
 /** The MainWindow of IDE. Holds toolbars, main menu and also entire desktop
  * if in MDI user interface. Singleton.
@@ -658,6 +659,8 @@ public final class MainWindow {
            isUndecorated = frame.isUndecorated();
            windowDecorationStyle = frame.getRootPane().getWindowDecorationStyle();
        }
+       
+       final TopComponent activeTc = TopComponent.getRegistry().getActivated();
 
        GraphicsDevice device = null;
        GraphicsConfiguration conf = frame.getGraphicsConfiguration();
@@ -723,6 +726,8 @@ public final class MainWindow {
                    }
                    ToolbarPool.getDefault().setConfiguration( toolbarConfigName );
                    isSwitchingFullScreenMode = false;
+                   if( null != activeTc )
+                       activeTc.requestFocusInWindow();
                }
            });
        } else {
@@ -735,6 +740,8 @@ public final class MainWindow {
                    frame.repaint();
                    ToolbarPool.getDefault().setConfiguration( toolbarConfigName );
                    isSwitchingFullScreenMode = false;
+                   if( null != activeTc )
+                       activeTc.requestFocusInWindow();
                }
            });
        }

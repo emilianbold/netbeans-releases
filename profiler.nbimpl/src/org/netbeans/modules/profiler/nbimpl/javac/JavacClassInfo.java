@@ -325,7 +325,7 @@ public class JavacClassInfo extends SourceClassInfo {
     
     private static String getSimpleName(String qualName) {
         String name = qualName;
-        int lastDot = name.lastIndexOf(".");
+        int lastDot = name.lastIndexOf('.');
         if (lastDot > -1) {
             name = name.substring(lastDot + 1);
         }

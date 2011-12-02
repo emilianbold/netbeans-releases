@@ -85,6 +85,7 @@ import org.netbeans.spi.project.ProjectServiceProvider;
     @ProjectType(id="org-netbeans-modules-java-j2seproject"),
     @ProjectType(id="org-netbeans-modules-ant-freeform", position=1202),
     @ProjectType(id="org-netbeans-modules-apisupport-project"),
+    @ProjectType(id="org-netbeans-modules-apisupport-project-suite"),
     @ProjectType(id="org-netbeans-modules-j2ee-ejbjarproject"),
     @ProjectType(id="org-netbeans-modules-web-project"),
     @ProjectType(id="org-netbeans-modules-maven")

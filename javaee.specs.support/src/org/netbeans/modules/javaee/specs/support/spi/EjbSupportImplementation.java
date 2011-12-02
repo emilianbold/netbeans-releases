@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,64 +34,28 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.javaee.specs.support.spi;
 
-package org.netbeans.modules.search;
-
-import javax.swing.JRadioButton;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 
 /**
- * A radio-button with an extra information displayed by the main text.
  *
- * @author  Marian Petras
+ * @author Martin Fousek <marfous@netbeans.org>
+ * @since 1.4
  */
-class ButtonWithExtraInfo extends JRadioButton {
+public interface EjbSupportImplementation {
 
-    private static final String START = "("; // NOI18N
-    private static final String END = ")"; // NOI18N
-    private static final String SP = " "; // NOI18N
-    private static final String ELLIPSIS = "..."; // NOI18N
-
-    private static final int MAX_EXTRA_INFO_LEN = 10;
-
-    private String extraInfo;
-
-    public ButtonWithExtraInfo(String extraInfo) {
-        this.extraInfo = extraInfo;
-    }
-
-    @Override
-    public void setText(String text) {
-        if(isExtraInfoExists()) {
-            setToolTipText(getFullText(text, extraInfo));
-            super.setText(getTextForLabel(text));
-        }
-        else {
-            super.setText(text);
-        }
-    }
-
-    private boolean isExtraInfoExists() {
-        return extraInfo != null && extraInfo.length() > 0;
-    }
-
-    private String getTextForLabel(String text) {
-        String extraText = extraInfo;
-        if(extraInfo.length() > MAX_EXTRA_INFO_LEN) {
-            extraText = extraInfo.substring(0, MAX_EXTRA_INFO_LEN) + ELLIPSIS;
-            if(extraText.length() >= extraInfo.length()) {
-                extraText = extraInfo;
-            }
-        }
-        return getFullText(text, extraText);
-    }
-
-    private String getFullText(String text, String extraText) {
-        return text + SP + START + SP + extraText + SP + END;
-    }
+    /**
+     * Says whether the EJB 3.1 Lite is supported by {@link J2eePlatform}.
+     *
+     * @param j2eePlatform j2eePlatform
+     * @return {@code true} if the server supports EJB Lite, {@code false} otherwise
+     */
+    boolean isEjb31LiteSupported(J2eePlatform j2eePlatform);
 
 }

@@ -1389,6 +1389,21 @@ itor tabs #66700).
     }
 
     /**
+     * Returns set of opened files belonging to a given repository
+     * @param repository 
+     */
+    public static Set<File> getOpenedFiles (File repository) {
+        Set<File> openFiles = Utils.getOpenFiles();
+        for (Iterator<File> it = openFiles.iterator(); it.hasNext(); ) {
+            File file = it.next();
+            if (!repository.equals(Mercurial.getInstance().getRepositoryRoot(file))) {
+                it.remove();
+            }
+        }
+        return openFiles;
+    }
+
+    /**
      * Compares two {@link FileInformation} objects by importance of statuses they represent.
      */
     public static class ByImportanceComparator<T> implements Comparator<FileInformation> {

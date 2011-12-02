@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.css.editor.properties.parser;
 
+import java.util.Map.Entry;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
@@ -359,33 +360,69 @@ public class GrammarResolver {
             switch (group.getType()) {
                 case SET:
                     //process branches results - find longest match
-                    //take first alternative if equals
-                    GrammarElement bestMatchElement = null;
-                    int bestMatchConsumed = 0;
+                    
+                    //find best match length first
+                    int inputLenBeforeEnteringGroupElement = enteringGroupState.consumed.size();
+                    int bestMatchConsumed = inputLenBeforeEnteringGroupElement;
+                    for(InputState state : branchesResults.values()) {
+                        if (bestMatchConsumed < state.consumed.size()) {
+                                bestMatchConsumed = state.consumed.size();
+                        }
+                    }
+                    
+                    if(bestMatchConsumed == inputLenBeforeEnteringGroupElement) {
+                        //nothing resolved
+                        break;
+                    }
+                    
+                    //collect all branches which matched the bestMatchConsumed and compare the
+                    //resolved tokens. If in one step one branch consumed keyword (static element name)
+                    //and the other resolved a property acceptor then the keyword one has a precendence.
+                    Map<GrammarElement, InputState> bestBranches = new LinkedHashMap<GrammarElement, InputState>();
                     for (GrammarElement member : group.elements()) {
                         InputState state = branchesResults.get(member);
-                        if (state == null) {
-                            //this branch matched nothing
+                        if(state == null) {
+                            //matched nothing
                             continue;
                         }
-
-                        if (bestMatchElement == null) {
-                            bestMatchElement = member;
-                            bestMatchConsumed = state.consumed.size();
-                        } else {
-                            if (bestMatchConsumed < state.consumed.size()) {
-                                bestMatchElement = member;
-                                bestMatchConsumed = state.consumed.size();
-                            }
+                        if(state.consumed.size() == bestMatchConsumed) {
+                            bestBranches.put(member, state);
                         }
                     }
-                    //set the success state to the best branch (consumed most input)
-                    if (bestMatchElement != null) {
-                        successState = branchesResults.get(bestMatchElement);
-                        //put the state of the best match back
-                        backupInputState(successState);
-                        if (LOG) log(String.format("Decided to use best match %s, %s", bestMatchElement, successState));
+
+                    //now compare the branches
+                    //compare just the parts consumed during this group element resolving
+                    for(int j = inputLenBeforeEnteringGroupElement; j < bestMatchConsumed; j++) {
+                        Collection<GrammarElement> consumedUnit = new LinkedList<GrammarElement>();
+                        for(Entry<GrammarElement, InputState> entry : bestBranches.entrySet()) {
+                            ResolvedToken token = entry.getValue().consumed.get(j);
+                            if(token.getGrammarElement().isUnit()) {
+                                //unit value
+                                consumedUnit.add(entry.getKey());
+                            }
+                        }
+                        if(consumedUnit.size() == bestBranches.size()) {
+                            //all branches consumed units, go on with all of them
+                        } else {
+                            //some branch/es consumed keyword while other/s units,
+                            //remove the unit ones from the bestBranches list
+                            for(GrammarElement ge : consumedUnit) {
+                                bestBranches.remove(ge);
+                            }
+                        }
+                        
                     }
+                    
+                    assert !bestBranches.isEmpty();
+                    
+                    //set the success state to the best branch (consumed most input)
+                    //if there are more equivalent then use the first one
+                    GrammarElement bestMatchElement = bestBranches.keySet().iterator().next();                    
+                    successState = branchesResults.get(bestMatchElement);
+                    //put the state of the best match back
+                    backupInputState(successState);
+                    if (LOG) log(String.format("Decided to use best match %s, %s", bestMatchElement, successState));
+
                     break;
             }
 

@@ -192,7 +192,7 @@ public final class QuickFilterPanel extends JPanel implements HelpCtx.Provider {
 
             Collections.sort(filterPartsList);
 
-            StringBuffer val = new StringBuffer(filterParts.length);
+            StringBuilder val = new StringBuilder(filterParts.length);
             Iterator<String> it = filterPartsList.iterator();
 
             while (it.hasNext()) {
@@ -225,7 +225,7 @@ public final class QuickFilterPanel extends JPanel implements HelpCtx.Provider {
 
     // Converts JTextArea text delimited by \n to FilterUtils text delimited by ,
     private String getFilterValueInternal() {
-        StringBuffer convertedValue = new StringBuffer();
+        StringBuilder convertedValue = new StringBuilder();
 
         String[] filterValues = getFilterValues();
 

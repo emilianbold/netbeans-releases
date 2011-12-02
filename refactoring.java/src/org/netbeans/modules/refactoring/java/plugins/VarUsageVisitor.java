@@ -246,7 +246,7 @@ class VarUsageVisitor extends RefactoringVisitor {
         List<? extends Element> memberElements = elements.getAllMembers(superTypeElement);
         for (Element elem : memberElements) {
             if(ElementKind.METHOD.equals(elem.getKind())){
-                if(isStatic(execElem) && elements.hides(execElem, elem)){
+                if(execElem.getModifiers().contains(Modifier.STATIC) && elements.hides(execElem, elem)){
                     return true;
                 }else{
                     if(execElem.equals(elem) || elements.overrides(execElem, (ExecutableElement)elem, 
@@ -302,11 +302,6 @@ class VarUsageVisitor extends RefactoringVisitor {
 
     private boolean isDeclaredType(TypeMirror type) {
         return TypeKind.DECLARED.equals(type.getKind());
-    }
-    //TODO: This method can be shared. Copied from UseSuperTypeRefactoringPlugin.
-    private boolean isStatic(Element element) {
-        Set<Modifier> modifiers = element.getModifiers();
-        return modifiers.contains(Modifier.STATIC);
     }
 
 }

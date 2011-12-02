@@ -79,6 +79,7 @@ public class CoherenceServerBaseNode extends AbstractNode implements ChangeListe
         this.coherenceInstance = coherenceInstance;
         this.coherenceServer = new CoherenceServer(coherenceInstance.getProperties());
         instanceContent.add(coherenceServer);
+        instanceContent.add(coherenceInstance);
 
         coherenceServer.addChangeListener(WeakListeners.change(this, coherenceServer));
 

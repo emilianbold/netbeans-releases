@@ -500,7 +500,7 @@ public abstract class TabState {
      * still in component hierarchy, false otherwise.
      * @since 1.31
      */
-    protected boolean isDisplayable() {
+    boolean isDisplayable() {
         return true;
     }
 

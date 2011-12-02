@@ -126,6 +126,7 @@ public class Operator {
     private RequestProcessor  eventHandler;
     private Map<ThreadReference, HandlerTask> eventHandlers = new HashMap<ThreadReference, HandlerTask>();
     private final List<EventSet> parallelEvents = new LinkedList<EventSet>();
+    private final LoopControl loopControl;
 
     /**
      * Creates an operator for a given virtual machine. The operator will listen
@@ -158,6 +159,8 @@ public class Operator {
         if (eventQueue == null)
             throw new NullPointerException ();
         this.debugger = debugger;
+        final AWTGrabHandler awtGrabHandler = new AWTGrabHandler(debugger);
+        final SuspendCount suspendCount = new SuspendCount();
         final Object[] params = new Object[] {eventQueue, starter, finalizer};
         thread = new Thread (new Runnable () {
         public void run () {
@@ -167,15 +170,21 @@ public class Operator {
             params [0] = null;
             params [1] = null;
             params [2] = null;
-            AWTGrabHandler awtGrabHandler = new AWTGrabHandler(debugger);
-            SuspendCount suspendCount = new SuspendCount();
 
        loop: for (;;) {
                  try {
                      EventSet eventSet = null;
-                     synchronized (parallelEvents) {
-                         if (!parallelEvents.isEmpty()) {
-                             eventSet = parallelEvents.remove(0);
+                     if (!loopControl.isInMethodInvoke()) { // Do not process the parallel events while a method is being invoked.
+                         boolean haveParallelEvents = false;
+                         synchronized (parallelEvents) {
+                             if (!parallelEvents.isEmpty()) {
+                                 eventSet = parallelEvents.remove(0);
+                                 haveParallelEvents = parallelEvents.isEmpty();
+                             }
+                         }
+                         if (!haveParallelEvents) {
+                             // No more parallel events
+                             loopControl.setHaveParallelEventsInLoopThread(false);
                          }
                      }
                      if (eventSet == null) {
@@ -193,6 +202,9 @@ public class Operator {
                                 }
                             }
                         } catch (InterruptedException iexc) {
+                            if (loopControl.isInterrupedToProcessParallelEvents()) {
+                                continue;
+                            }
                             synchronized (Operator.this) {
                                 if (stop) {
                                     break;
@@ -212,389 +224,10 @@ public class Operator {
                             }
                         }
                      }
-                     boolean silent = eventSet.size() > 0;
-                     for (Event e: eventSet) {
-                         EventRequest r = EventWrapper.request(e);
-                         if (r == null || !Boolean.TRUE.equals(EventRequestWrapper.getProperty (r, SILENT_EVENT_PROPERTY))) {
-                             silent = false;
-                             break;
-                         }
+                     boolean doContinue = processEvents(eventSet, starter, awtGrabHandler, suspendCount);
+                     if (!doContinue) {
+                         break;
                      }
-
-                     // Notify threads about suspend state, but do not fire any events yet.
-                     boolean resume = true, startEventOnly = true;
-                     int suspendPolicy = EventSetWrapper.suspendPolicy(eventSet);
-                     boolean suspendedAll = suspendPolicy == EventRequest.SUSPEND_ALL;
-                     JPDAThreadImpl suspendedThread = null;
-                     boolean threadWasInitiallySuspended = false;
-                     Lock eventAccessLock = null;
-                     try {
-                     ThreadReference thref = null;
-                     boolean isThreadEvent = false;
-                     for (Event e: eventSet) {
-                         if (e instanceof ThreadStartEvent || e instanceof ThreadDeathEvent) {
-                             isThreadEvent = true;
-                         }
-                         thref = getEventThread(e);
-                         if (thref != null) {
-                             break;
-                         }
-                     }
-                     Set<ThreadReference> ignoredThreads = new HashSet<ThreadReference>();
-                     if (testIgnoreEvent(eventSet, ignoredThreads)) {
-                         eventSet.resume();
-                         continue;
-                     }
-                     if (thref != null && !isThreadEvent) {
-                         debugger.getThreadsCache().assureThreadIsCached(thref);
-                     }
-                     if (!silent && suspendedAll) {
-                         eventAccessLock = debugger.accessLock.writeLock();
-                         eventAccessLock.lock();
-                         logger.finer("Write access lock TAKEN "+eventAccessLock+" on whole debugger.");
-                         debugger.notifySuspendAllNoFire();
-                     }
-                     if (suspendPolicy == EventRequest.SUSPEND_EVENT_THREAD) {
-                         if (thref != null && !silent) {
-                            suspendedThread = debugger.getThread(thref);
-                            eventAccessLock = suspendedThread.accessLock.writeLock();
-                            eventAccessLock.lock();
-                            try {
-                                if (!ThreadReferenceWrapper.isSuspended(thref)) {
-                                    // Can not do anything, someone already resumed the thread in the mean time.
-                                    // The event is missed. We will therefore ignore it.
-                                    try {
-                                        logger.warning("!!\nMissed event "+eventSet+" thread "+thref+" is not suspended!\n");
-                                    } catch (ObjectCollectedException ocex) {
-                                        try {
-                                            logger.warning("!!\nMissed event "+eventSet+" due to collected thread");
-                                        } catch (ObjectCollectedException ocex2) {
-                                            logger.warning("!!\nMissed some event due to collected thread!");
-                                        }
-                                    }
-                                    continue;
-                                }
-                            } catch (ObjectCollectedExceptionWrapper e) {
-                                // O.K. the thread is gone...
-                                continue;
-                            } catch (IllegalThreadStateExceptionWrapper e) {
-                                // O.K. the thread is gone...
-                                continue;
-                            } catch (InternalExceptionWrapper e) {
-                                // ignore VM defects
-                            }
-                            // We check for multiple-suspension when event is received
-                            try {
-                                int sc = ThreadReferenceWrapper.suspendCount(thref);
-                                if (logger.isLoggable(Level.FINER)) {
-                                    logger.finer("Suspend count of "+thref+" is "+sc+"."+((sc > 1) ? "Reducing to one." : ""));
-                                }
-                                while (sc-- > 1) {
-                                    suspendCount.add(thref);
-                                    ThreadReferenceWrapper.resume(thref);
-                                }
-                            } catch (ObjectCollectedExceptionWrapper e) {
-                            } catch (IllegalThreadStateExceptionWrapper e) {
-                                // ignore mobility VM defects
-                            } catch (InternalExceptionWrapper e) {
-                                // ignore mobility VM defects
-                            }
-                            if (logger.isLoggable(Level.FINE)) {
-                                try {
-                                    logger.finer("Write access lock TAKEN "+eventAccessLock+" on thread "+thref);
-                                    logger.fine(" event thread "+thref.name()+" is suspended = "+thref.isSuspended());
-                                } catch (Exception ex) {}
-                            }
-                            threadWasInitiallySuspended = suspendedThread.isSuspended();
-                            suspendedThread.notifySuspendedNoFire();
-                         }
-                     }
-
-                     Map<Event, Executor> eventsToProcess = new HashMap<Event, Executor>();
-                     for (Event e: eventSet) {
-                         EventRequest r = EventWrapper.request(e);
-                         Executor exec = (r != null) ? (Executor) EventRequestWrapper.getProperty (r, "executor") : null;
-                         if (exec instanceof ConditionedExecutor) {
-                             boolean success = ((ConditionedExecutor) exec).processCondition(e);
-                             if (success) {
-                                eventsToProcess.put(e, exec);
-                             }
-                         } else {
-                             eventsToProcess.put(e, exec);
-                         }
-                     }
-                     if (eventsToProcess.size() == 0) {
-                         // Notify Resumed No Fire
-                         if (!silent && suspendedAll) {
-                             //TODO: Not really all might be suspended!
-                             debugger.notifyToBeResumedAllNoFire();
-                         }
-                         if (!silent && suspendedThread != null) {
-                             resume = resume && suspendedThread.notifyToBeResumedNoFire();
-                         }
-                         if (!resume) {
-                             if (!silent && suspendedAll) {
-                                 //TODO: Not really all might be suspended!
-                                 boolean grabSolved = awtGrabHandler.solveGrabbing(debugger.getVirtualMachine()); // TODO: check AWT thread!
-                                 if (!grabSolved) {
-                                    resume = true; // We must not stop here, nobody will ever be able to resume
-                                 } else {
-                                     List<PropertyChangeEvent> events = debugger.notifySuspendAll(false, false,
-                                                                                                  ignoredThreads.isEmpty() ? null : ignoredThreads);
-                                     if (eventAccessLock != null) {
-                                        logger.finer("Write access lock RELEASED:"+eventAccessLock);
-                                        eventAccessLock.unlock();
-                                        eventAccessLock = null;
-                                     }
-                                     for (PropertyChangeEvent event : events) {
-                                         ((JPDAThreadImpl) event.getSource()).fireEvent(event);
-                                     }
-                                 }
-                             }
-                             if (!silent && suspendedThread != null) {
-                                 boolean grabSolved = awtGrabHandler.solveGrabbing(thref);
-                                 if (!grabSolved) {
-                                    resume = true; // We must not stop here, nobody will ever be able to resume
-                                 } else {
-                                     PropertyChangeEvent event = suspendedThread.notifySuspended(false, false);
-                                     if (eventAccessLock != null) {
-                                        logger.finer("Write access lock RELEASED:"+eventAccessLock);
-                                        eventAccessLock.unlock();
-                                        eventAccessLock = null;
-                                     }
-                                     if (event != null) {
-                                        suspendedThread.fireEvent(event);
-                                     }
-                                 }
-                             }
-                         }
-                         logger.fine("Resuming the event set = "+resume);
-                         if (resume) {
-                             int sc = suspendCount.removeSuspendCountFor(thref);
-                             while (sc-- > 1) {
-                                 ThreadReferenceWrapper.suspend(thref);
-                             }
-                             try {
-                                EventSetWrapper.resume(eventSet);
-                             } catch (IllegalThreadStateExceptionWrapper itex) {
-                                 logger.throwing(Operator.class.getName(), "loop", itex);
-                             } catch (ObjectCollectedExceptionWrapper ocex) {
-                                 logger.throwing(Operator.class.getName(), "loop", ocex);
-                             }
-                             if (eventAccessLock != null) {
-                                logger.finer("Write access lock RELEASED:"+eventAccessLock);
-                                eventAccessLock.unlock();
-                                eventAccessLock = null;
-                             }
-                         }
-                         continue;
-                     }
-                     if (logger.isLoggable(Level.FINE)) {
-                         switch (suspendPolicy) {
-                             case EventRequest.SUSPEND_ALL:
-                                 logger.fine("JDI new events (suspend all)=============================================");
-                                 break;
-                             case EventRequest.SUSPEND_EVENT_THREAD:
-                                 logger.fine("JDI new events (suspend one)=============================================");
-                                 break;
-                             case EventRequest.SUSPEND_NONE:
-                                 logger.fine("JDI new events (suspend none)=============================================");
-                                 break;
-                             default:
-                                 logger.fine("JDI new events (?????)=============================================");
-                                 break;
-                         }
-                         logger.fine("  event is silent = "+silent);
-                     }
-                     for (Event e: eventSet) {
-                         if (!eventsToProcess.containsKey(e)) {
-                             // Ignore events whose executor conditions did not evaluate successfully.
-                             continue;
-                         }
-                         if ((e instanceof VMDeathEvent) ||
-                                 (e instanceof VMDisconnectEvent)
-                            ) {
-
-                             if (logger.isLoggable(Level.FINE)) {
-                                 printEvent (e, null);
-                             }
-                             synchronized (Operator.this) {
-                                 stop = true;
-                             }
-                             break loop;
-                         }
-
-                         if ((e instanceof VMStartEvent) && (starter != null)) {
-                             resume = resume & starter.exec (e);
-                             //S ystem.out.println ("Operator.start VM"); // NOI18N
-                             if (logger.isLoggable(Level.FINE)) {
-                                 printEvent (e, null);
-                             }
-                             continue;
-                         }
-                         Executor exec = null;
-                         if (EventWrapper.request(e) == null) {
-                             if (logger.isLoggable(Level.FINE)) {
-                                 logger.fine("EVENT: " + e + " REQUEST: null"); // NOI18N
-                             }
-                         } else
-                             exec = eventsToProcess.get(e);
-
-                         if (logger.isLoggable(Level.FINE)) {
-                             printEvent (e, exec);
-                         }
-
-                         // safe invocation of user action
-                         if (exec != null) {
-                             try {
-                                 startEventOnly = false;
-                                 if (logger.isLoggable(Level.FINE)) {
-                                     ThreadReference tref = getEventThread(e);
-                                     if (tref != null) {
-                                         try {
-                                            logger.fine(" event thread "+tref.name()+" suspend before exec = "+tref.isSuspended());
-                                         } catch (Exception ex) {}
-                                         //System.err.println("\nOperator: event thread "+tref.name()+" suspend before exec = "+tref.isSuspended()+"\n");
-                                     }
-                                 }
-                                 resume = resume & exec.exec (e);
-                             } catch (VMDisconnectedException exc) {
-//                                 disconnected = true;
-                                 synchronized (Operator.this) {
-                                     stop = true;
-                                 }
-                                 //S ystem.out.println ("EVENT: " + e); // NOI18N
-                                 //S ystem.out.println ("Operator end"); // NOI18N
-                                 break loop;
-                             } catch (Exception ex) {
-                                 ErrorManager.getDefault().notify(ex);
-                             }
-                         }
-                     } // for
-
-                     //            S ystem.out.println ("END (" + set.suspendPolicy () + ") ==========================================================================="); // NOI18N
-                     if (logger.isLoggable(Level.FINE)) {
-                         logger.fine("JDI events dispatched (resume " + (resume && (!startEventOnly)) + ")");
-                         logger.fine("  resume = "+resume+", startEventOnly = "+startEventOnly);
-                     }
-
-                     int sc = suspendCount.removeSuspendCountFor(thref);
-                     while (sc-- > 1) {
-                         ThreadReferenceWrapper.suspend(thref);
-                     }
-                     // Notify the resume under eventAccessLock so that nobody can get in between,
-                     // which would result in resuming the thread twice.
-                     if (!resume) { // notify about the suspend if not resumed.
-                         if (!silent && suspendedAll) {
-                             //TODO: Not really all might be suspended!
-                             boolean grabSolved = awtGrabHandler.solveGrabbing(debugger.getVirtualMachine()); // TODO: check AWT thread!
-                             if (!grabSolved) {
-                                resume = true; // We must not stop here, nobody will ever be able to resume
-                             } else {
-                                 List<PropertyChangeEvent> events = debugger.notifySuspendAll(false, false,
-                                                                                              ignoredThreads.isEmpty() ? null : ignoredThreads);
-                                 if (eventAccessLock != null) {
-                                    logger.finer("Write access lock RELEASED:"+eventAccessLock);
-                                    eventAccessLock.unlock();
-                                    eventAccessLock = null;
-                                 }
-                                 for (PropertyChangeEvent event : events) {
-                                     ((JPDAThreadImpl) event.getSource()).fireEvent(event);
-                                 }
-                             }
-                         }
-                         if (!silent && suspendedThread != null) {
-                             boolean grabSolved = awtGrabHandler.solveGrabbing(thref);
-                             if (!grabSolved) {
-                                 resume = true; // We must not stop here, nobody will ever be able to resume
-                             } else {
-                                 PropertyChangeEvent event = suspendedThread.notifySuspended(false, false);
-                                 if (eventAccessLock != null) {
-                                    logger.finer("Write access lock RELEASED:"+eventAccessLock);
-                                    eventAccessLock.unlock();
-                                    eventAccessLock = null;
-                                 }
-                                 if (event != null) {
-                                    suspendedThread.fireEvent(event);
-                                 }
-                             }
-                         }
-                     }
-                     if (resume) {
-                         if (!silent && suspendedAll) {
-                             //TODO: Not really all might be suspended!
-                             debugger.notifyToBeResumedAllNoFire();
-                         }
-                         if (!silent && suspendedThread != null) {
-                             resume = resume && suspendedThread.notifyToBeResumedNoFire();
-                         }
-                     }
-                     if (!startEventOnly) {
-                         if (logger.isLoggable(Level.FINE)) {
-                            try {
-                                logger.fine("Resuming the event set "+eventSet+" = "+resume);
-                            } catch (ObjectCollectedException ocex) {
-                                logger.log(Level.FINE, "Resuming the event set that with something collected = "+resume);
-                            }
-                         }
-                         if (resume) {
-                             //resumeLock.writeLock().lock();
-                             try {
-                                 EventSetWrapper.resume(eventSet);
-                             } catch (IllegalThreadStateExceptionWrapper itex) {
-                                 logger.throwing(Operator.class.getName(), "loop", itex);
-                             } catch (ObjectCollectedExceptionWrapper ocex) {
-                                 logger.throwing(Operator.class.getName(), "loop", ocex);
-                             }
-                             //} finally {
-                             //    resumeLock.writeLock().unlock();
-                             //}
-                         } else if (!silent && (suspendedAll || suspendedThread != null)) {
-                            Session session = debugger.getSession();
-                            if (session != null) {
-                                DebuggerManager.getDebuggerManager().setCurrentSession(session);
-                            }
-                            if (thref != null) debugger.setStoppedState (thref, suspendedAll);
-                         }
-                     }
-
-
-                     } finally {
-                         if (eventAccessLock != null) {
-                             logger.finer("Write access lock RELEASED:"+eventAccessLock);
-                             eventAccessLock.unlock();
-                         }
-                         if (resume && threadWasInitiallySuspended) {
-                             suspendedThread.fireAfterNotifyToBeResumedNoFire();
-                         }
-                     }
-                     /* We check for multiple-suspension when event is received
-                      * This check is already performed above
-                     if (!silent && !resume) { // Check for multiply-suspended threads
-                         resumeLock.writeLock().lock();
-                         try {
-                             List<ThreadReference> threads = VirtualMachineWrapper.allThreads(MirrorWrapper.virtualMachine(eventSet));
-                             for (ThreadReference t : threads) {
-                                 try {
-                                     JPDAThreadImpl jt = debugger.getExistingThread(t);
-                                     while (ThreadReferenceWrapper.suspendCount(t) > 1) {
-                                         if (jt != null) {
-                                             jt.notifyToBeResumed();
-                                             jt = null;
-                                         }
-                                         ThreadReferenceWrapper.resume(t);
-                                     } // while
-                                 } catch (ObjectCollectedExceptionWrapper e) {
-                                 } catch (IllegalThreadStateExceptionWrapper e) {
-                                     // ignore mobility VM defects
-                                 } catch (InternalExceptionWrapper e) {
-                                     // ignore mobility VM defects
-                                 }
-                             } // for
-                         } finally {
-                             resumeLock.writeLock().unlock();
-                         }
-                     }*/
                  } catch (VMDisconnectedException e) {
                      break;
                  } catch (VMDisconnectedExceptionWrapper e) {
@@ -611,8 +244,436 @@ public class Operator {
              starter = null;
          }
      }, "Debugger operator thread"); // NOI18N
+        loopControl = new LoopControl(thread, starter, awtGrabHandler, suspendCount);
     }
 
+    private boolean processEvents(EventSet eventSet, Executor starter,
+                                  AWTGrabHandler awtGrabHandler, SuspendCount suspendCount) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper, ObjectCollectedExceptionWrapper, IllegalThreadStateExceptionWrapper {                 
+        boolean silent = eventSet.size() > 0;
+        for (Event e: eventSet) {
+            EventRequest r = EventWrapper.request(e);
+            if (r == null || !Boolean.TRUE.equals(EventRequestWrapper.getProperty (r, SILENT_EVENT_PROPERTY))) {
+                silent = false;
+                break;
+            }
+        }
+
+        // Notify threads about suspend state, but do not fire any events yet.
+        boolean resume = true, startEventOnly = true;
+        int suspendPolicy = EventSetWrapper.suspendPolicy(eventSet);
+        boolean suspendedAll = suspendPolicy == EventRequest.SUSPEND_ALL;
+        JPDAThreadImpl suspendedThread = null;
+        boolean threadWasInitiallySuspended = false;
+        Lock eventAccessLock = null;
+        try {
+        ThreadReference thref = null;
+        boolean isThreadEvent = false;
+        for (Event e: eventSet) {
+            if (e instanceof ThreadStartEvent || e instanceof ThreadDeathEvent) {
+                isThreadEvent = true;
+            }
+            thref = getEventThread(e);
+            if (thref != null) {
+                break;
+            }
+        }
+        Set<ThreadReference> ignoredThreads = new HashSet<ThreadReference>();
+        if (testIgnoreEvent(eventSet, ignoredThreads)) {
+            // Only if it's a breakpoint event, resume and forget.
+            eventSet.resume();
+            return true;
+        } else {
+            // If not, add into parallel events, but assure that we'd
+            // wait for more events comming from the EventQueue and
+            // *after* method invocation is complete, process these
+            // events before further reading from the EventQueue.
+            if (thref != null) {
+                boolean isInMethodInvokeThread;
+                synchronized (methodInvokingThreads) {
+                    isInMethodInvokeThread = methodInvokingThreads.contains(thref);
+                }
+                if (isInMethodInvokeThread) {
+                    // The event comes while we're invoking a method.
+                    // Remember it for a further processing
+                    synchronized (parallelEvents) {
+                        parallelEvents.add(eventSet);
+                        if (logger.isLoggable(Level.FINE)) {
+                            try {
+                                logger.fine("  the event(s) in the Queue are stored as parallelEvents = "+parallelEvents);
+                            } catch (ObjectCollectedException ocex) {
+                                logger.log(Level.FINE, "  the event(s) in the Queue are stored as parallelEvents with something collected:", ocex);
+                            }
+                        }
+                    }
+                    loopControl.setHaveParallelEventsInLoopThread(true);
+                    if (EventSetWrapper.suspendPolicy(eventSet) != EventRequest.SUSPEND_NONE) {
+                        // Resume the thread suspended by the event so that the method invocation can be finished.
+                        if (logger.isLoggable(Level.FINE)) {
+                            try {
+                                logger.fine("  resuming the method invocation thread so that it can complete: "+thref);
+                            } catch (ObjectCollectedException ocex) {
+                                logger.log(Level.FINE, "  resuming the method invocation thread so that it can complete.");
+                            }
+                        }
+                        ThreadReferenceWrapper.resume(thref);
+                    }
+                    return true;
+                }
+            }
+        }
+        if (thref != null && !isThreadEvent) {
+            debugger.getThreadsCache().assureThreadIsCached(thref);
+        }
+        if (!silent && suspendedAll) {
+            eventAccessLock = debugger.accessLock.writeLock();
+            eventAccessLock.lock();
+            logger.finer("Write access lock TAKEN "+eventAccessLock+" on whole debugger.");
+            debugger.notifySuspendAllNoFire();
+        }
+        if (suspendPolicy == EventRequest.SUSPEND_EVENT_THREAD) {
+            if (thref != null && !silent) {
+               suspendedThread = debugger.getThread(thref);
+               eventAccessLock = suspendedThread.accessLock.writeLock();
+               eventAccessLock.lock();
+               try {
+                   if (!ThreadReferenceWrapper.isSuspended(thref)) {
+                       // Can not do anything, someone already resumed the thread in the mean time.
+                       // The event is missed. We will therefore ignore it.
+                       try {
+                           logger.warning("!!\nMissed event "+eventSet+" thread "+thref+" is not suspended!\n");
+                       } catch (ObjectCollectedException ocex) {
+                           try {
+                               logger.warning("!!\nMissed event "+eventSet+" due to collected thread");
+                           } catch (ObjectCollectedException ocex2) {
+                               logger.warning("!!\nMissed some event due to collected thread!");
+                           }
+                       }
+                       return true;
+                   }
+               } catch (ObjectCollectedExceptionWrapper e) {
+                   // O.K. the thread is gone...
+                   return true;
+               } catch (IllegalThreadStateExceptionWrapper e) {
+                   // O.K. the thread is gone...
+                   return true;
+               } catch (InternalExceptionWrapper e) {
+                   // ignore VM defects
+               }
+               // We check for multiple-suspension when event is received
+               try {
+                   int sc = ThreadReferenceWrapper.suspendCount(thref);
+                   if (logger.isLoggable(Level.FINER)) {
+                       logger.finer("Suspend count of "+thref+" is "+sc+"."+((sc > 1) ? "Reducing to one." : ""));
+                   }
+                   while (sc-- > 1) {
+                       suspendCount.add(thref);
+                       ThreadReferenceWrapper.resume(thref);
+                   }
+               } catch (ObjectCollectedExceptionWrapper e) {
+               } catch (IllegalThreadStateExceptionWrapper e) {
+                   // ignore mobility VM defects
+               } catch (InternalExceptionWrapper e) {
+                   // ignore mobility VM defects
+               }
+               if (logger.isLoggable(Level.FINE)) {
+                   try {
+                       logger.finer("Write access lock TAKEN "+eventAccessLock+" on thread "+thref);
+                       logger.fine(" event thread "+thref.name()+" is suspended = "+thref.isSuspended());
+                   } catch (Exception ex) {}
+               }
+               threadWasInitiallySuspended = suspendedThread.isSuspended();
+               suspendedThread.notifySuspendedNoFire();
+            }
+        }
+
+        Map<Event, Executor> eventsToProcess = new HashMap<Event, Executor>();
+        for (Event e: eventSet) {
+            EventRequest r = EventWrapper.request(e);
+            Executor exec = (r != null) ? (Executor) EventRequestWrapper.getProperty (r, "executor") : null;
+            if (exec instanceof ConditionedExecutor) {
+                boolean success = ((ConditionedExecutor) exec).processCondition(e);
+                if (success) {
+                   eventsToProcess.put(e, exec);
+                }
+            } else {
+                eventsToProcess.put(e, exec);
+            }
+        }
+        if (eventsToProcess.size() == 0) {
+            // Notify Resumed No Fire
+            if (!silent && suspendedAll) {
+                //TODO: Not really all might be suspended!
+                debugger.notifyToBeResumedAllNoFire();
+            }
+            if (!silent && suspendedThread != null) {
+                resume = resume && suspendedThread.notifyToBeResumedNoFire();
+            }
+            if (!resume) {
+                if (!silent && suspendedAll) {
+                    //TODO: Not really all might be suspended!
+                    boolean grabSolved = awtGrabHandler.solveGrabbing(debugger.getVirtualMachine()); // TODO: check AWT thread!
+                    if (!grabSolved) {
+                       resume = true; // We must not stop here, nobody will ever be able to resume
+                    } else {
+                        List<PropertyChangeEvent> events = debugger.notifySuspendAll(false, false,
+                                                                                     ignoredThreads.isEmpty() ? null : ignoredThreads);
+                        if (eventAccessLock != null) {
+                            logger.finer("Write access lock RELEASED:"+eventAccessLock);
+                            eventAccessLock.unlock();
+                            eventAccessLock = null;
+                        }
+                        for (PropertyChangeEvent event : events) {
+                            ((JPDAThreadImpl) event.getSource()).fireEvent(event);
+                        }
+                    }
+                }
+                if (!silent && suspendedThread != null) {
+                    boolean grabSolved = awtGrabHandler.solveGrabbing(thref);
+                    if (!grabSolved) {
+                       resume = true; // We must not stop here, nobody will ever be able to resume
+                    } else {
+                        PropertyChangeEvent event = suspendedThread.notifySuspended(false, false);
+                        if (eventAccessLock != null) {
+                            logger.finer("Write access lock RELEASED:"+eventAccessLock);
+                            eventAccessLock.unlock();
+                            eventAccessLock = null;
+                        }
+                        if (event != null) {
+                            suspendedThread.fireEvent(event);
+                        }
+                    }
+                }
+            }
+            logger.fine("Resuming the event set = "+resume);
+            if (resume) {
+                int sc = suspendCount.removeSuspendCountFor(thref);
+                while (sc-- > 1) {
+                    ThreadReferenceWrapper.suspend(thref);
+                }
+                try {
+                   EventSetWrapper.resume(eventSet);
+                } catch (IllegalThreadStateExceptionWrapper itex) {
+                    logger.throwing(Operator.class.getName(), "loop", itex);
+                } catch (ObjectCollectedExceptionWrapper ocex) {
+                    logger.throwing(Operator.class.getName(), "loop", ocex);
+                }
+                if (eventAccessLock != null) {
+                    logger.finer("Write access lock RELEASED:"+eventAccessLock);
+                    eventAccessLock.unlock();
+                    eventAccessLock = null;
+                }
+            }
+            return true;
+        }
+        if (logger.isLoggable(Level.FINE)) {
+            switch (suspendPolicy) {
+                case EventRequest.SUSPEND_ALL:
+                    logger.fine("JDI new events (suspend all)=============================================");
+                    break;
+                case EventRequest.SUSPEND_EVENT_THREAD:
+                    logger.fine("JDI new events (suspend one)=============================================");
+                    break;
+                case EventRequest.SUSPEND_NONE:
+                    logger.fine("JDI new events (suspend none)=============================================");
+                    break;
+                default:
+                    logger.fine("JDI new events (?????)=============================================");
+                    break;
+            }
+            logger.fine("  event is silent = "+silent);
+        }
+        for (Event e: eventSet) {
+            if (!eventsToProcess.containsKey(e)) {
+                // Ignore events whose executor conditions did not evaluate successfully.
+                continue;
+            }
+            if ((e instanceof VMDeathEvent) ||
+                (e instanceof VMDisconnectEvent)
+               ) {
+                
+                if (logger.isLoggable(Level.FINE)) {
+                    printEvent (e, null);
+                }
+                synchronized (Operator.this) {
+                    stop = true;
+                }
+                return false;
+            }
+
+            if ((e instanceof VMStartEvent) && (starter != null)) {
+                resume = resume & starter.exec (e);
+                //S ystem.out.println ("Operator.start VM"); // NOI18N
+                if (logger.isLoggable(Level.FINE)) {
+                    printEvent (e, null);
+                }
+                continue;
+            }
+            Executor exec = null;
+            if (EventWrapper.request(e) == null) {
+                if (logger.isLoggable(Level.FINE)) {
+                    logger.fine("EVENT: " + e + " REQUEST: null"); // NOI18N
+                }
+            } else
+                exec = eventsToProcess.get(e);
+
+            if (logger.isLoggable(Level.FINE)) {
+                printEvent (e, exec);
+            }
+
+            // safe invocation of user action
+            if (exec != null) {
+                try {
+                    startEventOnly = false;
+                    if (logger.isLoggable(Level.FINE)) {
+                        ThreadReference tref = getEventThread(e);
+                        if (tref != null) {
+                            try {
+                                logger.fine(" event thread "+tref.name()+" suspend before exec = "+tref.isSuspended());
+                            } catch (Exception ex) {}
+                            //System.err.println("\nOperator: event thread "+tref.name()+" suspend before exec = "+tref.isSuspended()+"\n");
+                        }
+                    }
+                    resume = resume & exec.exec (e);
+                } catch (VMDisconnectedException exc) {
+//                                 disconnected = true;
+                    synchronized (Operator.this) {
+                        stop = true;
+                    }
+                    //S ystem.out.println ("EVENT: " + e); // NOI18N
+                    //S ystem.out.println ("Operator end"); // NOI18N
+                    return false;
+                } catch (Exception ex) {
+                    ErrorManager.getDefault().notify(ex);
+                }
+            }
+        } // for
+
+        //            S ystem.out.println ("END (" + set.suspendPolicy () + ") ==========================================================================="); // NOI18N
+        if (logger.isLoggable(Level.FINE)) {
+            logger.fine("JDI events dispatched (resume " + (resume && (!startEventOnly)) + ")");
+            logger.fine("  resume = "+resume+", startEventOnly = "+startEventOnly);
+        }
+
+        int sc = suspendCount.removeSuspendCountFor(thref);
+        while (sc-- > 1) {
+            ThreadReferenceWrapper.suspend(thref);
+        }
+        // Notify the resume under eventAccessLock so that nobody can get in between,
+        // which would result in resuming the thread twice.
+        if (!resume) { // notify about the suspend if not resumed.
+            if (!silent && suspendedAll) {
+                //TODO: Not really all might be suspended!
+                boolean grabSolved = awtGrabHandler.solveGrabbing(debugger.getVirtualMachine()); // TODO: check AWT thread!
+                if (!grabSolved) {
+                    resume = true; // We must not stop here, nobody will ever be able to resume
+                } else {
+                    List<PropertyChangeEvent> events = debugger.notifySuspendAll(false, false,
+                                                                                 ignoredThreads.isEmpty() ? null : ignoredThreads);
+                    if (eventAccessLock != null) {
+                        logger.finer("Write access lock RELEASED:"+eventAccessLock);
+                        eventAccessLock.unlock();
+                        eventAccessLock = null;
+                    }
+                    for (PropertyChangeEvent event : events) {
+                        ((JPDAThreadImpl) event.getSource()).fireEvent(event);
+                    }
+                }
+            }
+            if (!silent && suspendedThread != null) {
+                boolean grabSolved = awtGrabHandler.solveGrabbing(thref);
+                if (!grabSolved) {
+                    resume = true; // We must not stop here, nobody will ever be able to resume
+                } else {
+                    PropertyChangeEvent event = suspendedThread.notifySuspended(false, false);
+                    if (eventAccessLock != null) {
+                        logger.finer("Write access lock RELEASED:"+eventAccessLock);
+                        eventAccessLock.unlock();
+                        eventAccessLock = null;
+                    }
+                    if (event != null) {
+                        suspendedThread.fireEvent(event);
+                    }
+                }
+            }
+        }
+        if (resume) {
+            if (!silent && suspendedAll) {
+                //TODO: Not really all might be suspended!
+                debugger.notifyToBeResumedAllNoFire();
+            }
+            if (!silent && suspendedThread != null) {
+                resume = resume && suspendedThread.notifyToBeResumedNoFire();
+            }
+        }
+        if (!startEventOnly) {
+            if (logger.isLoggable(Level.FINE)) {
+               try {
+                   logger.fine("Resuming the event set "+eventSet+" = "+resume);
+               } catch (ObjectCollectedException ocex) {
+                   logger.log(Level.FINE, "Resuming the event set that with something collected = "+resume);
+               }
+            }
+            if (resume) {
+                //resumeLock.writeLock().lock();
+                try {
+                    EventSetWrapper.resume(eventSet);
+                } catch (IllegalThreadStateExceptionWrapper itex) {
+                    logger.throwing(Operator.class.getName(), "loop", itex);
+                } catch (ObjectCollectedExceptionWrapper ocex) {
+                    logger.throwing(Operator.class.getName(), "loop", ocex);
+                }
+                //} finally {
+                //    resumeLock.writeLock().unlock();
+                //}
+            } else if (!silent && (suspendedAll || suspendedThread != null)) {
+               Session session = debugger.getSession();
+               if (session != null) {
+                   DebuggerManager.getDebuggerManager().setCurrentSession(session);
+               }
+               if (thref != null) debugger.setStoppedState (thref, suspendedAll);
+            }
+        }
+
+
+        } finally {
+            if (eventAccessLock != null) {
+                logger.finer("Write access lock RELEASED:"+eventAccessLock);
+                eventAccessLock.unlock();
+            }
+            if (resume && threadWasInitiallySuspended) {
+                suspendedThread.fireAfterNotifyToBeResumedNoFire();
+            }
+        }
+        /* We check for multiple-suspension when event is received
+         * This check is already performed above
+        if (!silent && !resume) { // Check for multiply-suspended threads
+            resumeLock.writeLock().lock();
+            try {
+                List<ThreadReference> threads = VirtualMachineWrapper.allThreads(MirrorWrapper.virtualMachine(eventSet));
+                for (ThreadReference t : threads) {
+                    try {
+                        JPDAThreadImpl jt = debugger.getExistingThread(t);
+                        while (ThreadReferenceWrapper.suspendCount(t) > 1) {
+                            if (jt != null) {
+                                jt.notifyToBeResumed();
+                                jt = null;
+                            }
+                            ThreadReferenceWrapper.resume(t);
+                        } // while
+                    } catch (ObjectCollectedExceptionWrapper e) {
+                    } catch (IllegalThreadStateExceptionWrapper e) {
+                        // ignore mobility VM defects
+                    } catch (InternalExceptionWrapper e) {
+                        // ignore mobility VM defects
+                    }
+                } // for
+            } finally {
+                resumeLock.writeLock().unlock();
+            }
+        }*/
+        return true;
+    }
+    
     private static final ThreadReference getEventThread(Event e) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper {
         ThreadReference tref = null;
         if (e instanceof LocatableEvent) {
@@ -772,6 +833,7 @@ public class Operator {
         synchronized (methodInvokingThreads) {
             methodInvokingThreads.add(tr);
         }
+        loopControl.setInMethodInvoke(true);
     }
 
     public void notifyMethodInvokeDone(ThreadReference tr) {
@@ -784,8 +846,13 @@ public class Operator {
                 task.cancel();
             }
         }
+        boolean done;
         synchronized (methodInvokingThreads) {
             methodInvokingThreads.remove(tr);
+            done = methodInvokingThreads.isEmpty();
+        }
+        if (done) {
+            loopControl.setInMethodInvoke(false);
         }
     }
 
@@ -938,6 +1005,52 @@ public class Operator {
             }
             
         }
+    }
+    
+    private final class LoopControl {
+        
+        private Thread t;
+        private boolean isMethodInvoke;
+        private boolean haveParallelEventsInLoopThread;
+        private boolean interrupedToProcessParalelEvents;
+        
+        public LoopControl(Thread t, Executor starter,
+                           AWTGrabHandler awtGrabHandler, SuspendCount suspendCount) {
+            this.t = t;
+        }
+        
+        public void setInMethodInvoke(boolean isMethodInvoke) {
+            if (!isMethodInvoke) {
+                synchronized (this) {
+                    if (haveParallelEventsInLoopThread) {
+                        interrupedToProcessParalelEvents = true;
+                        t.interrupt();
+                    }
+                }
+            }
+            synchronized (this) {
+                this.isMethodInvoke = isMethodInvoke;
+            }
+        }
+        
+        public boolean isInterrupedToProcessParallelEvents() {
+            boolean is = this.interrupedToProcessParalelEvents;
+            this.interrupedToProcessParalelEvents = false;
+            return is;
+        }
+        
+        public synchronized void setHaveParallelEventsInLoopThread(boolean haveParallelEventsInLoopThread) {
+            this.haveParallelEventsInLoopThread = haveParallelEventsInLoopThread;
+        }
+        
+        public synchronized boolean haveParallelEventsInLoopThread() {
+            return haveParallelEventsInLoopThread;
+        }
+        
+        public synchronized boolean isInMethodInvoke() {
+            return isMethodInvoke;
+        }
+        
     }
 
 }

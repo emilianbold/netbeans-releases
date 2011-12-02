@@ -571,7 +571,7 @@ public abstract class AbstractJBossIntegrationProvider extends AbstractScriptInt
             quotas = "\""; // NOI18N
         }
 
-        StringBuffer path = new StringBuffer();
+        StringBuilder path = new StringBuilder();
         path.append(dirPath);
 
         if (!dirPath.endsWith(separator)) {

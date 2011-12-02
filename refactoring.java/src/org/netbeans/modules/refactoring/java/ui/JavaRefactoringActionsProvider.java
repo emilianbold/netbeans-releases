@@ -411,7 +411,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
                         }
                         s = TreePathHandle.create(classTreePath, info);
                     }
-                    return wrap(new UseSuperTypeRefactoringUI(s));
+                    return wrap(new UseSuperTypeRefactoringUI(s, info));
                 }
             };
         } else if (RefactoringActionsProvider.nodeHandle(lookup)) {
@@ -421,7 +421,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
 
                 @Override
                 protected void treePathHandleResolved(TreePathHandle handle, CompilationInfo javac) {
-                    ui = new UseSuperTypeRefactoringUI(handle);
+                    ui = new UseSuperTypeRefactoringUI(handle, javac);
                 }
 
                 @Override
@@ -437,7 +437,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
                 @Override
                 protected void nodeTranslated(Node node, Collection<TreePathHandle> handles, CompilationInfo javac) {
                     TreePathHandle tph = handles.iterator().next();
-                    ui = new UseSuperTypeRefactoringUI(tph);
+                    ui = new UseSuperTypeRefactoringUI(tph, javac);
                 }
 
                 @Override
