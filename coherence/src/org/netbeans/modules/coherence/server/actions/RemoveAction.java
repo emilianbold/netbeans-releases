@@ -39,60 +39,59 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.coherence.server;
+package org.netbeans.modules.coherence.server.actions;
 
-import java.io.IOException;
-import javax.swing.Action;
-import javax.swing.event.ChangeListener;
-import org.netbeans.modules.coherence.server.actions.CloneAction;
-import org.netbeans.modules.coherence.server.actions.PropertiesAction;
-import org.netbeans.modules.coherence.server.actions.RemoveAction;
-import org.netbeans.modules.coherence.server.actions.StartServerAction;
-import org.netbeans.modules.coherence.server.actions.StopServerAction;
-import org.openide.actions.DeleteAction;
-import org.openide.util.actions.SystemAction;
+import org.netbeans.modules.coherence.server.CoherenceInstance;
+import org.netbeans.modules.coherence.server.CoherenceServer;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
+import org.openide.util.actions.NodeAction;
 
 /**
- * This class extends (@link CoherenceServerBaseNode} and complete primarily node actions.
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public class CoherenceServerFullNode extends CoherenceServerBaseNode implements ChangeListener {
-
-    public CoherenceServerFullNode(CoherenceInstance coherenceInstance) {
-        super(coherenceInstance);
-    }
+public class RemoveAction extends NodeAction {
 
     @Override
-    public Action[] getActions(boolean context) {
-        return new Action[]{
-                    SystemAction.get(StartServerAction.class),
-                    SystemAction.get(StopServerAction.class),
-                    null,
-                    SystemAction.get(CloneAction.class),
-                    SystemAction.get(RemoveAction.class),
-                    null,
-                    SystemAction.get(PropertiesAction.class)
-                };
-    }
-
-    @Override
-    public boolean canDestroy() {
-        return true;
-    }
-
-    @Override
-    public Action getPreferredAction() {
-        if (coherenceServer.isRunning()) {
-            return SystemAction.get(StopServerAction.class);
-        } else {
-            return SystemAction.get(StartServerAction.class);
+    protected void performAction(Node[] activatedNodes) {
+        for (Node node : activatedNodes) {
+            CoherenceInstance instance = node.getLookup().lookup(CoherenceInstance.class);
+            String title = NbBundle.getMessage(RemoveAction.class, "MSG_RemoveInstanceTitle", instance.getDisplayName()); //NOI18N
+            String msg = NbBundle.getMessage(RemoveAction.class, "MSG_ReallyRemoveInstance", instance.getDisplayName()); //NOI18N
+            NotifyDescriptor d = new NotifyDescriptor.Confirmation(msg, title, NotifyDescriptor.YES_NO_OPTION);
+            if (DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.YES_OPTION) {
+                CoherenceServer server = node.getLookup().lookup(CoherenceServer.class);
+                if (server != null && server.isRunning()) {
+                    server.stop();
+                }
+                instance.remove();
+            }
         }
     }
 
     @Override
-    public void destroy() throws IOException {
-        coherenceInstance.remove();
-        super.destroy();
+    protected boolean enable(Node[] activatedNodes) {
+        for (Node node : activatedNodes) {
+            CoherenceInstance instance = node.getLookup().lookup(CoherenceInstance.class);
+            if (instance == null) {
+                return false;
+            }
+        }
+        return true;
     }
+
+    @Override
+    public String getName() {
+        return NbBundle.getMessage(RemoveAction.class, "LBL_RemoveAction"); //NOI18N
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return HelpCtx.DEFAULT_HELP;
+    }
+
 }
