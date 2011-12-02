@@ -35,10 +35,6 @@ interface IfaceMethods {
 
     public final function ifaceFinalMethod();
 
-    public function ifaceWithBody() {
-
-    }
-
 }
 
 class PossibleAbstract {

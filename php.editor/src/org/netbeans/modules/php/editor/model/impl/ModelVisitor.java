@@ -130,7 +130,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.TraitMethodAliasDeclarati
 import org.netbeans.modules.php.editor.parser.astnodes.TraitConflictResolutionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.TryStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.UseStatementPart;
-import org.netbeans.modules.php.editor.parser.astnodes.UseTraitsStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.UseTraitStatementPart;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.VariableBase;
 import org.netbeans.modules.php.editor.parser.astnodes.WhileStatement;
@@ -419,24 +419,22 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
     @Override
     public void visit(UseStatementPart statementPart) {
         ASTNodeInfo<UseStatementPart> astNodeInfo = ASTNodeInfo.create(statementPart);
-        if (!(modelBuilder.getCurrentScope() instanceof ClassScope)) { // use namespace
-            modelBuilder.getCurrentNameSpace().createUseStatementPart(astNodeInfo);
-        } else { // use trait
-            //modelBuilder.build(, occurencesBuilder);
-            ClassScope classScope = (ClassScope) modelBuilder.getCurrentScope();
-        }
+        modelBuilder.getCurrentNameSpace().createUseStatementPart(astNodeInfo);
         super.visit(statementPart);
     }
 
     @Override
+    public void visit(UseTraitStatementPart node) {
+        super.addToPath(node);
+    }
+
+    @Override
     public void visit(TraitMethodAliasDeclaration node) {
-        //modelBuilder.build(node, occurencesBuilder);
         super.visit(node);
     }
 
     @Override
     public void visit(TraitConflictResolutionDeclaration node) {
-        modelBuilder.build(node, occurencesBuilder);
         super.visit(node);
     }
 

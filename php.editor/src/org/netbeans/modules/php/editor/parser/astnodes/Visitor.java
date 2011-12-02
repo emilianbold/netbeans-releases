@@ -270,7 +270,9 @@ public interface Visitor {
     //public void endVisit(TryStatement tryStatement);
     public void visit(UnaryOperation unaryOperation);
 
-    public void visit(UseTraitsStatement useTraitsStatement);
+    public void visit(UseTraitStatement useTraitStatement);
+
+    public void visit(UseTraitStatementPart useTraitStatementPart);
 
     //public void endVisit(UnaryOperation unaryOperation);
     public void visit(Variable variable);

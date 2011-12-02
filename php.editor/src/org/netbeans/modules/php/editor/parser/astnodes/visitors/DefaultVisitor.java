@@ -528,8 +528,13 @@ public class DefaultVisitor implements Visitor {
     }
 
     @Override
-    public void visit(UseTraitsStatement useTraitsStatement) {
+    public void visit(UseTraitStatement useTraitsStatement) {
         scan(useTraitsStatement.getParts());
         scan(useTraitsStatement.getBody());
+    }
+
+    @Override
+    public void visit(UseTraitStatementPart useTraitStatementPart) {
+        scan(useTraitStatementPart.getName());
     }
 }

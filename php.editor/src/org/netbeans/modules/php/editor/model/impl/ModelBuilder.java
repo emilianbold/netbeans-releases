@@ -118,10 +118,6 @@ class ModelBuilder {
         return traitScope;
     }
 
-    void build(TraitConflictResolutionDeclaration node, OccurenceBuilder occurencesBuilder) {
-        //TraitConflictResolutionElementImpl element = ModelElementFactory.create(TraitConflictResolutionDeclarationInfo.create(node));
-    }
-
     void build(FieldsDeclaration node, OccurenceBuilder occurencesBuilder) {
         List<? extends SingleFieldDeclarationInfo> infos = SingleFieldDeclarationInfo.create(node);
         for (SingleFieldDeclarationInfo sfdi : infos) {

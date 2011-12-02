@@ -49,8 +49,8 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.TraitDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.UseStatementPart;
-import org.netbeans.modules.php.editor.parser.astnodes.UseTraitsStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.UseTraitStatementPart;
+import org.netbeans.modules.php.editor.parser.astnodes.UseTraitStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 
 /**
@@ -96,17 +96,17 @@ public class TraitDeclarationInfo extends ASTNodeInfo<TraitDeclaration>  {
     }
 
     private class UsedTraitsVisitor extends DefaultVisitor {
-        private List<UseStatementPart> useParts = new LinkedList<UseStatementPart>();
+        private List<UseTraitStatementPart> useParts = new LinkedList<UseTraitStatementPart>();
 
         @Override
-        public void visit(UseTraitsStatement node) {
+        public void visit(UseTraitStatement node) {
             useParts = node.getParts();
         }
 
         public Collection<QualifiedName> getUsedTraits() {
             Collection<QualifiedName> retval = new HashSet<QualifiedName>();
-            for (UseStatementPart useStatementPart : useParts) {
-                retval.add(QualifiedName.create(useStatementPart.getName()));
+            for (UseTraitStatementPart useTraitStatementPart : useParts) {
+                retval.add(QualifiedName.create(useTraitStatementPart.getName()));
             }
             return retval;
         }

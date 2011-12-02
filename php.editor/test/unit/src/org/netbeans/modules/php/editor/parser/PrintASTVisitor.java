@@ -844,7 +844,10 @@ public class PrintASTVisitor implements Visitor {
 
     @Override
     public void visit(TraitDeclaration traitDeclaration) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        XMLPrintNode printNode = new XMLPrintNode(traitDeclaration, "TraitDeclaration");
+        printNode.addChildrenGroup("TraitName", new ASTNode[]{traitDeclaration.getName()});
+        printNode.addChild(traitDeclaration.getBody());
+        printNode.print(this);
     }
 
     @Override
@@ -858,7 +861,16 @@ public class PrintASTVisitor implements Visitor {
     }
 
     @Override
-    public void visit(UseTraitsStatement useTraitsStatement) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public void visit(UseTraitStatement useTraitsStatement) {
+        XMLPrintNode printNode = new XMLPrintNode(useTraitsStatement, "UseTraitStatement");
+        printNode.addChildren(useTraitsStatement.getParts());
+        printNode.print(this);
+    }
+
+    @Override
+    public void visit(UseTraitStatementPart useTraitStatementPart) {
+        XMLPrintNode printNode = new XMLPrintNode(useTraitStatementPart, "UseTraitStatementPart");
+        printNode.addChild("Name", useTraitStatementPart.getName());
+        printNode.print(this);
     }
 }

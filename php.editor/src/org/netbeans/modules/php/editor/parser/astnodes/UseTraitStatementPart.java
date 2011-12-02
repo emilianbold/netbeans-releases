@@ -41,26 +41,28 @@
  */
 package org.netbeans.modules.php.editor.parser.astnodes;
 
-import java.util.List;
-
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class UseTraitsStatement extends UseStatement {
-    private final Block body;
+public class UseTraitStatementPart extends ASTNode {
+    private final NamespaceName name;
 
-    public UseTraitsStatement(int start, int end, List parts, final Block body) {
-        super(start, end, parts);
-        this.body = body;
+    public UseTraitStatementPart(int start, int end, NamespaceName name) {
+        super(start, end);
+        if (name == null) {
+            throw new IllegalArgumentException();
+        }
+        this.name = name;
     }
 
-    public Block getBody() {
-        return body;
+    public NamespaceName getName() {
+        return name;
     }
 
     @Override
     public void accept(Visitor visitor) {
         visitor.visit(this);
     }
+
 }

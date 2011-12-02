@@ -1156,9 +1156,9 @@ public class FormatVisitor extends DefaultVisitor {
     }
 
     @Override
-    public void visit(UseTraitsStatement node) {
+    public void visit(UseTraitStatement node) {
         //TODO: maybe it could be formated separately
-        this.visit((UseStatement) node);
+        //this.visit((UseStatement) node);
     }
 
     @Override

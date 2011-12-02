@@ -119,7 +119,8 @@ import org.netbeans.modules.php.editor.parser.astnodes.TryStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.UnaryOperation;
 import org.netbeans.modules.php.editor.parser.astnodes.UseStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.UseStatementPart;
-import org.netbeans.modules.php.editor.parser.astnodes.UseTraitsStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.UseTraitStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.UseTraitStatementPart;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.WhileStatement;
 
@@ -534,7 +535,12 @@ public class DefaultTreePathVisitor extends DefaultVisitor{
     }
 
     @Override
-    public void visit(UseTraitsStatement node) {
+    public void visit(UseTraitStatement node) {
+        path.addFirst(node);super.visit(node);path.removeFirst();
+    }
+
+    @Override
+    public void visit(UseTraitStatementPart node) {
         path.addFirst(node);super.visit(node);path.removeFirst();
     }
 
