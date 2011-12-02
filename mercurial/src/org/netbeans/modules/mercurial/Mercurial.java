@@ -95,6 +95,7 @@ public class Mercurial {
     public static final String PROP_ANNOTATIONS_CHANGED = "annotationsChanged"; // NOI18N
     static final String PROP_VERSIONED_FILES_CHANGED = "versionedFilesChanged"; // NOI18N
     public static final String PROP_CHANGESET_CHANGED = "changesetChanged"; // NOI18N
+    static final String PROP_HEAD_CHANGED = "headChanged";
 
     public static final Logger LOG = Logger.getLogger("org.netbeans.modules.mercurial"); // NOI18N
     public static final Logger STATUS_LOG = Logger.getLogger("org.netbeans.modules.mercurial.status"); //NOI18N
@@ -392,6 +393,13 @@ public class Mercurial {
         support.firePropertyChange(PROP_ANNOTATIONS_CHANGED, null, files);
     }
 
+    public void refreshOpenedFiles (File repository) {
+        Set<File> openFiles = HgUtils.getOpenedFiles(repository);
+        if (!openFiles.isEmpty()) {
+            support.firePropertyChange(PROP_HEAD_CHANGED, null, openFiles);
+        }
+    }
+    
     public void changesetChanged(File repository) {
         support.firePropertyChange(PROP_CHANGESET_CHANGED, repository, null);
     }
