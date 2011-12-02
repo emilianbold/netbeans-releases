@@ -69,12 +69,25 @@ public class XmlUtilsTest extends NbTestCase {
     }
 
     public void testCommentNode() throws Exception {
-        final String xpath = "//person[@id='1']";
+        final String xpath = "//person[@id='1']/name";
+        final String comment = "<!--<name>John Doe</name>-->";
         Document document = XmlUtils.parse(new File(getDataDir(), "persons.xml"));
         Node node = XmlUtils.query(document, xpath);
         assertNotNull(node);
+        assertFalse(XmlUtils.asString(document, true).indexOf(comment) != -1);
         XmlUtils.commentNode(document, node);
         assertNull(XmlUtils.query(document, xpath));
+        assertTrue(XmlUtils.asString(document, true).indexOf(comment) != -1);
+    }
+
+    public void testAsString() throws Exception {
+        final String header = "<?xml";
+        Document document = XmlUtils.parse(new File(getDataDir(), "persons.xml"));
+        String content = XmlUtils.asString(document, true);
+        assertTrue(content.startsWith(header));
+        Node node = XmlUtils.query(document, "//person[@id='1']");
+        content = XmlUtils.asString(node, true);
+        assertFalse(content.startsWith(header));
     }
 
 }
