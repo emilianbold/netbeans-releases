@@ -178,7 +178,7 @@ public final class StopwatchProfilingPoint extends CodeProfilingPoint.Paired imp
 
             synchronized(resultsSync) {
                 if (results.size() == 0) {
-                    dataAreaTextBuilder.append("&nbsp;&nbsp;&lt;" + NO_HITS_STRING + "&gt;"); // NOI18N
+                    dataAreaTextBuilder.append("&nbsp;&nbsp;&lt;").append(NO_HITS_STRING).append("&gt;"); // NOI18N
                 } else {
                     for (int i = 0; i < results.size(); i++) {
                         dataAreaTextBuilder.append("&nbsp;&nbsp;");
