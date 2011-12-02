@@ -119,8 +119,8 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
             return;
         }
 
-        if (handle!=null && (RefactoringUtils.getElementKind(handle) == ElementKind.FIELD
-                || RefactoringUtils.getElementKind(handle) == ElementKind.CLASS)) {
+        if (handle!=null && (handle.getElementHandle().getKind() == ElementKind.FIELD
+                || handle.getElementHandle().getKind() == ElementKind.CLASS)) {
             JavaSource source = JavaSource.forFileObject(handle.getFileObject());
             CancellableTask<CompilationController> task = new CancellableTask<CompilationController>() {
 
@@ -131,7 +131,7 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
 
                 @Override
                 public void run(CompilationController info) throws Exception {
-                    if(RefactoringUtils.getElementKind(handle) == ElementKind.FIELD) {
+                    if(handle.getElementHandle().getKind() == ElementKind.FIELD) {
                         VariableElement element = (VariableElement) handle.resolveElement(info);
                         TypeElement parent = (TypeElement) element.getEnclosingElement();
                     boolean hasGetters = false;
@@ -153,7 +153,7 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
                         }
                     }
                     
-                    if(RefactoringUtils.getElementKind(handle) == ElementKind.CLASS) {
+                    if(handle.getElementHandle().getKind() == ElementKind.CLASS) {
                         final FileObject fileObject = handle.getFileObject();
                         Collection<? extends TestLocator> testLocators = Lookup.getDefault().lookupAll(TestLocator.class);
                         for (final TestLocator testLocator : testLocators) {

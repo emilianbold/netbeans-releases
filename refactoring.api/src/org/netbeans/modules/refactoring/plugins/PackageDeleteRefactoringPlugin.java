@@ -130,7 +130,7 @@ public class PackageDeleteRefactoringPlugin implements RefactoringPlugin{
         for( int i = 0; children != null && i < children.length; i++ ) {
             FileObject fileObject = children[i].getPrimaryFile();
             if ( !fileObject.isFolder() ) {
-                refactoringElements.addFileChange(refactoring, new FileDeletePlugin.DeleteFile(fileObject, refactoringElements));
+                refactoringElements.addFileChange(refactoring, new DeleteFile(fileObject, refactoringElements));
             }
             else {
                 empty = false;
@@ -148,7 +148,7 @@ public class PackageDeleteRefactoringPlugin implements RefactoringPlugin{
     private void addDataFilesInFolder(FileObject folderFileObject, RefactoringElementsBag refactoringElements) {
         for (FileObject childFileObject : folderFileObject.getChildren()) {
             if (!childFileObject.isFolder()) {
-                refactoringElements.addFileChange(refactoring, new FileDeletePlugin.DeleteFile(childFileObject, refactoringElements));
+                refactoringElements.addFileChange(refactoring, new DeleteFile(childFileObject, refactoringElements));
             }
             else if (childFileObject.isFolder()) {
                 addDataFilesInFolder(childFileObject, refactoringElements);

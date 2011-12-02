@@ -79,13 +79,13 @@ public class UseSuperTypePanel extends JPanel implements CustomRefactoringPanel 
      * Creates new form UseSuperTypePanel
      * @param refactoring The use super type refactoring that is
      * used by this panel
+     * @param className  
      */
-    public UseSuperTypePanel(UseSuperTypeRefactoring refactoring) {
+    public UseSuperTypePanel(UseSuperTypeRefactoring refactoring, String className) {
         this.refactoring = refactoring;
         initComponents();
         TreePathHandle subType = (TreePathHandle) refactoring.getTypeElement();
         String title = null;
-        String className = RefactoringUtils.getSimpleName(subType);
         title = NbBundle.getMessage(UseSuperTypePanel.class, "LBL_UseSyperTypeTitle", className);
         setName(title);
         superTypeList.setCellRenderer(new DefaultListCellRenderer() {

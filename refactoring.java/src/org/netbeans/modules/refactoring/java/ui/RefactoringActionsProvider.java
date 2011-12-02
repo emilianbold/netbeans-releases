@@ -95,6 +95,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 import org.openide.text.CloneableEditorSupport;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.datatransfer.PasteType;
@@ -974,9 +975,9 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                             // XXX this could be optimize by ClasspasthInfo in case of more than one file
                             source.runUserActionTask(this, true);
                         } catch (IllegalArgumentException ex) {
-                            ex.printStackTrace();
+                            Exceptions.printStackTrace(ex);
                         } catch (IOException ex) {
-                            ex.printStackTrace();
+                            Exceptions.printStackTrace(ex);
                         } finally {
                             currentNode = null;
                         }

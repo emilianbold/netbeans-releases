@@ -118,7 +118,7 @@ public class MoveRefactoringPlugin extends JavaRefactoringPlugin {
         cancelRequest =false;
         Problem preCheckProblem = null;
         for (FileObject file:filesToMove) {
-            if (!RefactoringUtils.isElementInOpenProject(file)) {
+            if (!RefactoringUtils.isFileInOpenProject(file)) {
                 preCheckProblem = createProblem(preCheckProblem, true, NbBundle.getMessage(
                         MoveRefactoringPlugin.class,
                         "ERR_ProjectNotOpened",

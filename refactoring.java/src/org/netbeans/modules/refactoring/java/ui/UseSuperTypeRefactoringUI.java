@@ -52,6 +52,7 @@
 package org.netbeans.modules.refactoring.java.ui;
 
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
@@ -76,14 +77,18 @@ public class UseSuperTypeRefactoringUI implements RefactoringUI{
     private final UseSuperTypeRefactoring refactoring;
     private UseSuperTypePanel panel;
     private ElementHandle superType;
+    private String className;
+
     /**
      * Creates a new instance of UseSuperTypeRefactoringUI
      * @param selectedElement The sub type being used
+     * @param info  
      */
-    public UseSuperTypeRefactoringUI(TreePathHandle selectedElement) {
+    public UseSuperTypeRefactoringUI(TreePathHandle selectedElement, CompilationInfo info) {
         this.subType = selectedElement;
         refactoring = new UseSuperTypeRefactoring(subType);
         refactoring.getContext().add(RefactoringUtils.getClasspathInfoFor(subType));
+        this.className = refactoring.getTypeElement().resolveElement(info).getSimpleName().toString();
     }
     
     /**
@@ -165,7 +170,7 @@ public class UseSuperTypeRefactoringUI implements RefactoringUI{
     @Override
     public CustomRefactoringPanel getPanel(ChangeListener parent) {
         if(panel == null)
-            panel = new UseSuperTypePanel(refactoring);
+            panel = new UseSuperTypePanel(refactoring, className);
         return panel;
     }
     
