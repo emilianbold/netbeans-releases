@@ -597,6 +597,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
 //                            System.out.println("ac pom=" + ac.getPom());
 //                            System.out.println("ac art=" + ac.getArtifact());
 //                            System.out.println("ac info=" + ac.getArtifactInfo());
+                            assert indexingContext.getIndexSearcher() != null;
                             indexer.addArtifactToIndex(ac, indexingContext);
                         }
 
