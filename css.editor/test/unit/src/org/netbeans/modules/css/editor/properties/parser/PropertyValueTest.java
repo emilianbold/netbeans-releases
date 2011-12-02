@@ -310,61 +310,80 @@ public class PropertyValueTest extends CssModuleTestBase {
         assertAlternatives(g, "c", "a");
     }
 
-//    public void testPerformance_Parse_Resolve() {
-//        PropertyModel p = CssModuleSupport.getPropertyModel("background");
-//
-//        //dry run
-//        assertResolve(p.getGrammar(), "aliceblue bottom / auto");
-//
-//        System.out.println("Testing parsing a grammar and resolving an input by the grammar...");
-//        
-//        int loops = 3;
-//        int iterations = 50;
-//        int sum = 0;
-//
-//        for (int l = 0; l < loops; l++) {
-//            long start = System.currentTimeMillis();
-//            for (int i = 0; i < iterations; i++) {
-//                assertResolve(p.getGrammar(), "aliceblue bottom / auto");
-//            }
-//            long stop = System.currentTimeMillis();
-//
-//            System.out.println(String.format("%s iterations took %s ms.", iterations, (stop - start)));
-//            
-//            sum += (stop-start);
-//        }
-//        
-//        System.out.println(String.format("Average time of %s iterations is %s", iterations, (sum/loops)));
-//        System.out.println(String.format("Average run of one resolve is %s ms", (sum/loops/iterations)));
-//    }
+    public void testPerformance_Parse_Resolve() {
+//        Last results from my MacBook Pro:
+//        -------------------------------------------
+//        Testing parsing a grammar and resolving an input by the grammar...
+//        50 iterations took 516 ms.
+//        50 iterations took 297 ms.
+//        50 iterations took 170 ms.
+//        Average time of 50 iterations is 327
+//        Average run of one resolve is 6 ms
+        
+        PropertyModel p = CssModuleSupport.getPropertyModel("background");
+
+        //dry run
+        assertResolve(p.getGrammar(), "aliceblue bottom / auto");
+
+        System.out.println("Testing parsing a grammar and resolving an input by the grammar...");
+        
+        int loops = 3;
+        int iterations = 50;
+        int sum = 0;
+
+        for (int l = 0; l < loops; l++) {
+            long start = System.currentTimeMillis();
+            for (int i = 0; i < iterations; i++) {
+                assertResolve(p.getGrammar(), "aliceblue bottom / auto");
+            }
+            long stop = System.currentTimeMillis();
+
+            System.out.println(String.format("%s iterations took %s ms.", iterations, (stop - start)));
+            
+            sum += (stop-start);
+        }
+        
+        System.out.println(String.format("Average time of %s iterations is %s", iterations, (sum/loops)));
+        System.out.println(String.format("Average run of one resolve is %s ms", (sum/loops/iterations)));
+    }
     
-//    public void testPerformance_Resolve() {
-//        PropertyModel p = CssModuleSupport.getPropertyModel("background");
-//
-//        //dry run
-//        assertResolve(p.getGrammarElement(), "aliceblue bottom / auto");
-//
-//        System.out.println("Testing parsing a grammar and resolving an input by the grammar...");
-//        
-//        int loops = 3;
-//        int iterations = 50;
-//        int sum = 0;
-//
-//        for (int l = 0; l < loops; l++) {
-//            long start = System.currentTimeMillis();
-//            for (int i = 0; i < iterations; i++) {
-//                assertResolve(p.getGrammarElement(), "aliceblue bottom / auto");
-//            }
-//            long stop = System.currentTimeMillis();
-//
-//            System.out.println(String.format("%s iterations took %s ms.", iterations, (stop - start)));
-//            
-//            sum += (stop-start);
-//        }
-//        
-//        System.out.println(String.format("Average time of %s iterations is %s", iterations, (sum/loops)));
-//        System.out.println(String.format("Average run of one resolve is %s ms", (sum/loops/iterations)));
-//    }
+    public void testPerformance_Resolve() {
+//        Last results from my MacBook Pro:
+//        -------------------------------------------
+//        Testing parsing a grammar and resolving an input by the grammar...
+//        50 iterations took 188 ms.
+//        50 iterations took 121 ms.
+//        50 iterations took 87 ms.
+//        Average time of 50 iterations is 132
+//        Average run of one resolve is 2 ms
+        
+        
+        PropertyModel p = CssModuleSupport.getPropertyModel("background");
+
+        //dry run
+        assertResolve(p.getGrammarElement(), "aliceblue bottom / auto");
+
+        System.out.println("Testing parsing a grammar and resolving an input by the grammar...");
+        
+        int loops = 3;
+        int iterations = 50;
+        int sum = 0;
+
+        for (int l = 0; l < loops; l++) {
+            long start = System.currentTimeMillis();
+            for (int i = 0; i < iterations; i++) {
+                assertResolve(p.getGrammarElement(), "aliceblue bottom / auto");
+            }
+            long stop = System.currentTimeMillis();
+
+            System.out.println(String.format("%s iterations took %s ms.", iterations, (stop - start)));
+            
+            sum += (stop-start);
+        }
+        
+        System.out.println(String.format("Average time of %s iterations is %s", iterations, (sum/loops)));
+        System.out.println(String.format("Average run of one resolve is %s ms", (sum/loops/iterations)));
+    }
     
     
 }
