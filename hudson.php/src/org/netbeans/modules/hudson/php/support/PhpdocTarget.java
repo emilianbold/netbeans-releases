@@ -42,7 +42,6 @@
 package org.netbeans.modules.hudson.php.support;
 
 import org.openide.util.NbBundle;
-import org.w3c.dom.Document;
 
 /**
  * Ant target for <tt>phpdoc</tt>.
@@ -64,11 +63,6 @@ class PhpdocTarget extends Target {
     public boolean isEnabled() {
         // XXX see https://github.com/sebastianbergmann/php-jenkins-template/issues/30
         return false;
-    }
-
-    @Override
-    public void apply(Document document) {
-        // XXX
     }
 
 }

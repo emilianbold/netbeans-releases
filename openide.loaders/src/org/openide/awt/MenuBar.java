@@ -520,6 +520,8 @@ public class MenuBar extends JMenuBar implements Externalizable {
             this.icon = icon;
             this.dynaModel = new DynaMenuModel();
             this.slave = new MenuFolder();
+            
+            setName(df.getName());
 
             // Listen for changes in Node's DisplayName/Icon
             Node n = master.getNodeDelegate ();

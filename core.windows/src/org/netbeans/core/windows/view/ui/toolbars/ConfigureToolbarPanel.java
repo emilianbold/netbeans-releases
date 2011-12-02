@@ -99,6 +99,10 @@ public class ConfigureToolbarPanel extends javax.swing.JPanel implements Runnabl
     private ConfigureToolbarPanel() {
         initComponents();
         
+        if (checkSmallIcons.getText().isEmpty()) {
+            checkSmallIcons.setVisible(false);
+        }
+        
         setCursor( Cursor.getPredefinedCursor( Cursor.WAIT_CURSOR ) );
         
         FileObject paletteFolder = FileUtil.getConfigFile( "Actions" ); // NOI18N
