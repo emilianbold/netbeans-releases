@@ -48,6 +48,7 @@ import org.netbeans.modules.spellchecker.api.Spellchecker;
 import org.netbeans.modules.versioning.util.StringSelector;
 import org.netbeans.modules.versioning.util.TemplateSelector;
 import org.netbeans.modules.versioning.util.UndoRedoSupport;
+import org.netbeans.modules.versioning.util.common.CommitMessageMouseAdapter;
 import org.openide.util.NbBundle;
 
 /**
@@ -77,6 +78,7 @@ public class CommitPanel extends javax.swing.JPanel {
         
         messageTextArea.getAccessibleContext().setAccessibleName(getMessage("ACSN_CommitForm_Message")); // NOI18N
         messageTextArea.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_CommitForm_Message")); // NOI18N
+        messageTextArea.addMouseListener(new CommitMessageMouseAdapter());
         
         Spellchecker.register (messageTextArea);  
         initCommitMessage(commitMessage);

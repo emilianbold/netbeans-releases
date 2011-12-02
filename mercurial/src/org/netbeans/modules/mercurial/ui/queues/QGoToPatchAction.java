@@ -107,6 +107,7 @@ public class QGoToPatchAction extends ContextAction {
                         logger.output(NbBundle.getMessage(QGoToPatchAction.class, "MSG_GOTO_INFO_SEP", patchName, root.getAbsolutePath())); //NOI18N
                         HgCommand.qGoToPatch(root, patchName, logger);
                     }
+                    Mercurial.getInstance().refreshOpenedFiles(root);
                     HgLogMessage parent = HgCommand.getParents(root, null, null).get(0);
                     logger.output(""); // NOI18N
                     HgUtils.logHgLog(parent, logger);
