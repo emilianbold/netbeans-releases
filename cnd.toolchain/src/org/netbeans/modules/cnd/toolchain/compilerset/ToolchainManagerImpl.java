@@ -1624,7 +1624,7 @@ public final class ToolchainManagerImpl {
                 if (c.predefinedMacros == null) {
                     c.predefinedMacros = new ArrayList<PredefinedMacro>();
                 }
-                PredefinedMacro m = new PredefinedMacroImpl(getValue(attributes, "stringvalue"),
+                PredefinedMacro m = new PredefinedMacroImpl(getValue(attributes, "stringvalue"), // NOI18N
                         getValue(attributes, "flags"), "true".equals(getValue(attributes, "hide"))); // NOI18N
                 c.predefinedMacros.add(m);
                 return;
