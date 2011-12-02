@@ -121,5 +121,6 @@ import org.openide.ErrorManager;
         } catch (IOException ioe) {
             ErrorManager.getDefault().notify(ErrorManager.WARNING, ioe); // FIXUP
         }
+        completePredefinedMacros(pair);
     }   
 }
