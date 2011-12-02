@@ -224,7 +224,7 @@ public abstract class BasicWizardIterator implements WizardDescriptor.Asynchrono
          * @return path of the icon relative to the project's source directory
          */
         public String addCreateIconOperation(CreatedModifiedFiles cmf, String origIconPath) {
-            FileObject origIconFO = FileUtil.toFileObject(new File(origIconPath));
+            FileObject origIconFO = FileUtil.toFileObject(FileUtil.normalizeFile(new File(origIconPath)));
             String relativeIconPath = null;
             if (!FileUtil.isParentOf(Util.getResourceDirectory(getProject()), origIconFO)) {
                 String iconPath = getDefaultPackagePath(origIconFO.getNameExt(), true);
