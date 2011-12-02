@@ -485,7 +485,14 @@ public class Util {
         return supportedProfiles;
     }
 
-    private static J2eePlatform getPlatform(Project project) {
+    /**
+     * Gets {@link J2eePlatform} for the given {@code Project}.
+     *
+     * @param project project
+     * @return {@code J2eePlatform} for given project if found, {@code null} otherwise
+     * @since 1.69
+     */
+    public static J2eePlatform getPlatform(Project project) {
         try {
             J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
             if (provider != null){

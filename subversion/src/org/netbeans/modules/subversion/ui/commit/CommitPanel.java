@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.subversion.ui.commit;
 
+import org.netbeans.modules.versioning.util.common.CommitMessageMouseAdapter;
 import javax.swing.LayoutStyle;
 import java.awt.event.ActionEvent;
 import org.netbeans.modules.versioning.util.common.SectionButton;

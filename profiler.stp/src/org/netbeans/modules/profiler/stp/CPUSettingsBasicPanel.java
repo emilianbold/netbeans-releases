@@ -797,10 +797,10 @@ public class CPUSettingsBasicPanel extends DefaultSettingsPanel implements Actio
 
         if (dd.getValue() == preferredInstrFilterPanel.OPEN_IN_QUICKFILTER_BUTTON) {
             String[] filterValues = filterComputer.getFilterValues();
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
 
             for (int i = 0; i < filterValues.length; i++) {
-                sb.append(filterValues[i] + ((i == (filterValues.length - 1)) ? "" : " ")); //NOI18N
+                sb.append(filterValues[i]).append((i == (filterValues.length - 1)) ? "" : " "); //NOI18N
             }
 
             quickFilter.setFilterType(SimpleFilter.SIMPLE_FILTER_INCLUSIVE);

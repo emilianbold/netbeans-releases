@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.subversion.ui.commit;
+package org.netbeans.modules.versioning.util.common;
 
 import java.awt.Toolkit;
 import java.awt.datatransfer.DataFlavor;

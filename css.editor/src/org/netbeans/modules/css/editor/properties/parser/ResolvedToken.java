@@ -48,9 +48,9 @@ package org.netbeans.modules.css.editor.properties.parser;
 public class ResolvedToken {
     
     private String token;
-    private GrammarElement grammarElement;
+    private ValueGrammarElement grammarElement;
 
-    public ResolvedToken(String token, GrammarElement GrammarElement) {
+    public ResolvedToken(String token, ValueGrammarElement GrammarElement) {
         this.token = token;
         this.grammarElement = GrammarElement;
     }
@@ -59,7 +59,7 @@ public class ResolvedToken {
         return token;
     }
 
-    public GrammarElement getGrammarElement() {
+    public ValueGrammarElement getGrammarElement() {
         return grammarElement;
     }
 
