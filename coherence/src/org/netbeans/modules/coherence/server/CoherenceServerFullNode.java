@@ -81,6 +81,15 @@ public class CoherenceServerFullNode extends CoherenceServerBaseNode implements 
     }
 
     @Override
+    public Action getPreferredAction() {
+        if (coherenceServer.isRunning()) {
+            return SystemAction.get(StopServerAction.class);
+        } else {
+            return SystemAction.get(StartServerAction.class);
+        }
+    }
+
+    @Override
     public void destroy() throws IOException {
         coherenceInstance.remove();
         super.destroy();
