@@ -58,7 +58,7 @@ import org.netbeans.api.java.source.*;
 import org.netbeans.api.java.source.ModificationResult.Difference;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.spi.DiffElement;
 import org.netbeans.modules.refactoring.java.api.UseSuperTypeRefactoring;
 import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
@@ -97,12 +97,14 @@ public class UseSuperTypeRefactoringPlugin extends JavaRefactoringPlugin {
      * Prepares the underlying where used query & checks
      * for the visibility of the target type.
      */
+    @Override
     public Problem prepare(RefactoringElementsBag refactoringElements) {
         TreePathHandle subClassHandle = refactoring.getTypeElement();
         replaceSubtypeUsages(subClassHandle, refactoringElements);
         return null;
     }
 
+    @Override
     protected JavaSource getJavaSource(Phase p) {
         switch (p) {
             default:
@@ -151,12 +153,14 @@ public class UseSuperTypeRefactoringPlugin extends JavaRefactoringPlugin {
         JavaSource javaSrc = JavaSource.forFileObject(subClassHandle.getFileObject());
         try {
             javaSrc.runUserActionTask(new CancellableTask<CompilationController>() {
+                @Override
                 public void cancel() { }
+                @Override
                 public void run(CompilationController complController) throws IOException {
                     complController.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
 
                     FileObject fo = subClassHandle.getFileObject();
-                    ClasspathInfo classpathInfo = RetoucheUtils.getClasspathInfoFor(true, true, fo) ;
+                    ClasspathInfo classpathInfo = RefactoringUtils.getClasspathInfoFor(true, true, fo) ;
                     
                     ClassIndex clsIndx = classpathInfo.getClassIndex();
                     TypeElement javaClassElement = (TypeElement) subClassHandle.
@@ -200,9 +204,11 @@ public class UseSuperTypeRefactoringPlugin extends JavaRefactoringPlugin {
             this.superClassHandle = superClassHandle;
         }
 
+        @Override
         public void cancel() {
         }
 
+        @Override
         public void run(WorkingCopy compiler) throws Exception {
             try {
                 if (compiler.toPhase(JavaSource.Phase.RESOLVED) != JavaSource.Phase.RESOLVED) {

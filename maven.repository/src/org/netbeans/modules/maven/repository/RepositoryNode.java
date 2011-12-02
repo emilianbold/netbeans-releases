@@ -50,7 +50,6 @@ import java.net.URISyntaxException;
 import java.util.Date;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.SwingUtilities;
 import org.netbeans.modules.maven.indexer.api.RepositoryIndexer;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
@@ -142,7 +141,8 @@ public class RepositoryNode extends AbstractNode {
     @Override
     public Action[] getActions(boolean arg0) {
         return new Action[]{
-            new RefreshIndexAction(),
+            // XXX Find
+            new RefreshIndexAction(), // XXX allow multiselections
             new EditAction(),
             DeleteAction.get(DeleteAction.class),
             null,
@@ -207,15 +207,10 @@ public class RepositoryNode extends AbstractNode {
         }
 
         public @Override void actionPerformed(ActionEvent e) {
-            setEnabled(false);
+            setEnabled(false); // XXX ineffective if in context menu
             RPrefreshindex.post(new Runnable() {
                 public @Override void run() {
                     RepositoryIndexer.indexRepo(info);
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public @Override void run() {
-                            RefreshIndexAction.this.setEnabled(true);
-                        }
-                    });
                 }
             });
         }

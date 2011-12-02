@@ -41,9 +41,11 @@ package org.netbeans.modules.java.hints.jackpot.impl.refactoring;
 
 import java.awt.Component;
 import java.util.Collections;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.modules.java.hints.jackpot.impl.refactoring.Utilities.ClassPathBasedHintWrapper;
 import org.netbeans.modules.java.hints.jackpot.spi.HintDescription;
 import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
@@ -99,15 +101,22 @@ public class InspectAndRefactorUI implements RefactoringUI {
 
     public CustomRefactoringPanel getPanel(final ChangeListener parent) {
         return new CustomRefactoringPanel() {
+            private final ClassPathBasedHintWrapper cpBased;
+            {
+                cpBased = new ClassPathBasedHintWrapper();
+            }
             public void initialize() {
-//                panel.fillInFromSettings();
-//                panel.setPattern(InspectAndRefactorUI.this.pattern);
-//                panel.setScope(scope);
-//                panel.setVerify(verify);
+                cpBased.compute();
+                //TODO: the ordering a bit dubious here:
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override public void run() {
+                        panel.initialize();
+                    }
+                });
             }
             public Component getComponent() {
                 if (panel == null) {
-                    panel = new InspectAndRefactorPanel(context, parent, query);
+                    panel = new InspectAndRefactorPanel(context, parent, query, cpBased);
                 }
 
                 return panel;

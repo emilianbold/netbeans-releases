@@ -52,7 +52,10 @@ import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.font.TextHitInfo;
 import java.awt.font.TextLayout;
+import java.awt.geom.Area;
 import java.awt.geom.Rectangle2D;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.AttributeSet;
@@ -182,10 +185,13 @@ public class HighlightsViewUtils {
                 if (offset == -1) { // Entering view from the left.
                     retOffset = viewStartOffset;
                 } else { // Regular offset
-                    currentHit = TextHitInfo.afterOffset(offset - viewStartOffset);
-                    nextHit = textLayout.getNextRightHit(currentHit);
-                    if (nextHit != null) {
-                        retOffset = viewStartOffset + nextHit.getInsertionIndex();
+                    int index = offset - viewStartOffset;
+                    if (index >= 0 && index <= viewLength) {
+                        currentHit = TextHitInfo.afterOffset(index);
+                        nextHit = textLayout.getNextRightHit(currentHit);
+                        if (nextHit != null) {
+                            retOffset = viewStartOffset + nextHit.getInsertionIndex();
+                        } // Leave retOffset == -1
                     } // Leave retOffset == -1
                 }
                 break;
@@ -194,10 +200,13 @@ public class HighlightsViewUtils {
                 if (offset == -1) { // Entering view from the right
                     retOffset = viewStartOffset + viewLength - 1;
                 } else { // Regular offset
-                    currentHit = TextHitInfo.afterOffset(offset - viewStartOffset);
-                    nextHit = textLayout.getNextLeftHit(currentHit);
-                    if (nextHit != null) {
-                        retOffset = viewStartOffset + nextHit.getInsertionIndex();
+                    int index = offset - viewStartOffset;
+                    if (index >= 0 && index <= viewLength) {
+                        currentHit = TextHitInfo.afterOffset(index);
+                        nextHit = textLayout.getNextLeftHit(currentHit);
+                        if (nextHit != null) {
+                            retOffset = viewStartOffset + nextHit.getInsertionIndex();
+                        } // Leave retOffset == -1
                     } // Leave retOffset == -1
                 }
                 break;
@@ -238,9 +247,9 @@ public class HighlightsViewUtils {
             //    in another color (for custom foreground) since it would look blurry.
             //
             // Therefore do the rendering in the following way:
-            // 1. Get bounds of each part.
-            // 2. Render background of part's bounds
-            // 3. Render part's text in custom color by clipping of rendering of whole TL.
+            // 1. Collect bounds of each part (use map to get less TL.draw() invocations).
+            // 2. Render background of part's bounds by clipping to collected shape.
+            // 3. Render part's text in custom color by clipping of rendering of whole TL to collected shape.
             //
             JTextComponent textComponent = docView.getTextComponent();
             HighlightsSequence highlights = docView.getPaintHighlights(view,
@@ -248,7 +257,13 @@ public class HighlightsViewUtils {
             TextLayout renderTextLayout = textLayout;
             Boolean showNonPrintingChars = null;
             boolean log = LOG.isLoggable(Level.FINEST);
-            while (highlights.moveNext()) {
+            // For regular textLayout do aggregation of rendered parts into compound area
+            // to decrease TL.draw() invocations
+            Map<Color,Area> foreColor2Area = (textLayout != null && !newline)
+                    ? new HashMap<Color,Area>()
+                    : null;
+            boolean done = false;
+            while (!done && highlights.moveNext()) {
                 int hiStartOffset = highlights.getStartOffset();
                 int hiEndOffset = Math.min(highlights.getEndOffset(), textLayoutOffset + endIndex);
                 if (hiEndOffset <= hiStartOffset) {
@@ -297,33 +312,89 @@ public class HighlightsViewUtils {
                             }
                         }
                     }
-                    // First render background and background related highlights
-                    // Do not g.clip() before background is filled since otherwise there would be
-                    // painting artifacts for italic fonts (one-pixel slanting lines) at certain positions.
-                    fillBackground(g, renderPartAlloc, attrs, textComponent);
-                    // Clip to part's alloc since textLayout.draw() renders fully the whole text layout
-                    g.clip(renderPartAlloc);
-                    paintBackgroundHighlights(g, renderPartAlloc, attrs, docView);
-                    // Render foreground with proper color
-                    g.setColor(HighlightsViewUtils.validForeColor(attrs, textComponent));
-                    if (renderTextLayout != null) {
-                        paintTextLayout(g, textLayoutRect, renderTextLayout, docView);
-                    }
-                    paintStrikeThrough(g, textLayoutRect, attrs, docView);
-                    g.setClip(origClip);
-                    if (log) {
-                        Document doc = docView.getDocument();
-                        CharSequence text = DocumentUtilities.getText(doc).subSequence(hiStartOffset, hiEndOffset);
-                        // Here it's assumed that 'text' var contains the same content as (possibly cached)
-                        // textLayout but if textLayout caching would be broken then they could differ.
-                        LOG.finest(view.getDumpId() + ":paint-txt: \"" + CharSequenceUtilities.debugText(text) + // NOI18N
-                                "\", XY[" + ViewUtils.toStringPrec1(textLayoutRect.getX()) + ";"
-                                + ViewUtils.toStringPrec1(textLayoutRect.getY()) + "(B" + // NOI18N
-                                ViewUtils.toStringPrec1(docView.op.getDefaultAscent()) + // NOI18N
-                                ")], color=" + ViewUtils.toString(g.getColor()) + '\n'); // NOI18N
+                    Rectangle2D renderPartBounds = renderPartAlloc.getBounds();
+                    boolean hitsClip = (clipBounds == null) || renderPartAlloc.intersects(clipBounds);
+                    if (hitsClip) {
+                        // First render background and background related highlights
+                        // Do not g.clip() before background is filled since otherwise there would be
+                        // painting artifacts for italic fonts (one-pixel slanting lines) at certain positions.
+                        fillBackground(g, renderPartAlloc, attrs, textComponent);
+                        // Clip to part's alloc since textLayout.draw() renders fully the whole text layout
+                        g.clip(renderPartAlloc);
+                        paintBackgroundHighlights(g, renderPartAlloc, attrs, docView);
+                        // Render foreground with proper color
+                        g.setColor(HighlightsViewUtils.validForeColor(attrs, textComponent));
+                        Object strikeThroughValue = (attrs != null)
+                                ? attrs.getAttribute(StyleConstants.StrikeThrough)
+                                : null;
+                        if (renderTextLayout != null) {
+                            // Strikethrough must be rendered over the text => do not aggregate in that case
+                            if (foreColor2Area != null && strikeThroughValue == null) { // Allow aggregation
+                                Area renderArea = new Area(renderPartAlloc);
+                                Area compoundArea = foreColor2Area.get(g.getColor());
+                                if (compoundArea == null) {
+                                    compoundArea = renderArea;
+                                    foreColor2Area.put(g.getColor(), compoundArea);
+                                } else {
+                                    compoundArea.add(renderArea);
+                                }
+    //                            // Check if the path is closed (Area closes unclosed paths automatically)
+    //                            if (renderPartAlloc instanceof java.awt.geom.Path2D) {
+    //                                java.awt.geom.Path2D path = (java.awt.geom.Path2D) renderPartAlloc;
+    //                                float[] coords = new float[6];
+    //                                boolean closedPath = true; // Empty path is closed
+    //                                for (java.awt.geom.PathIterator pathIt = path.getPathIterator(null);
+    //                                        !pathIt.isDone(); pathIt.next())
+    //                                {
+    //                                    int type = pathIt.currentSegment(coords);
+    //                                    closedPath = (type == java.awt.geom.PathIterator.SEG_CLOSE);
+    //                                }
+    //                                if (!closedPath) {
+    //                                    System.err.println("Unclosed PATH!! " + path);
+    //                                }
+    //                            }
+
+                            } else { // Aggregation not done => regular painting
+                                if (renderTextLayout != null) {
+                                    paintTextLayout(g, textLayoutRect, renderTextLayout, docView);
+                                }
+                            }
+                        }
+                        if (strikeThroughValue != null) {
+                            paintStrikeThrough(g, textLayoutRect, strikeThroughValue, attrs, docView);
+                        }
+                        g.setClip(origClip);
+                        if (log) {
+                            Document doc = docView.getDocument();
+                            CharSequence text = DocumentUtilities.getText(doc).subSequence(hiStartOffset, hiEndOffset);
+                            // Here it's assumed that 'text' var contains the same content as (possibly cached)
+                            // textLayout but if textLayout caching would be broken then they could differ.
+                            LOG.finest(view.getDumpId() + ":paint-txt: \"" + CharSequenceUtilities.debugText(text) + // NOI18N
+                                    "\", XY[" + ViewUtils.toStringPrec1(textLayoutRect.getX()) + ";"
+                                    + ViewUtils.toStringPrec1(textLayoutRect.getY()) + "(B" + // NOI18N
+                                    ViewUtils.toStringPrec1(docView.op.getDefaultAscent()) + // NOI18N
+                                    ")], color=" + ViewUtils.toString(g.getColor()) + '\n'); // NOI18N
+                        }
+
+                    } else { // Part does not hit clip
+                        if (clipBounds != null && (renderPartBounds.getX() > clipBounds.getMaxX())) {
+                            done = true;
+                            break;
+                        }
                     }
                     hiStartOffset = renderEndOffset;
-                } while (renderEndOffset < hiEndOffset);
+                } while (!done && renderEndOffset < hiEndOffset);
+            }
+
+            if (foreColor2Area != null) {
+                for (Map.Entry<Color, Area> entry : foreColor2Area.entrySet()) {
+                    Color foreColor = entry.getKey();
+                    g.setColor(foreColor);
+                    Area compoundArea = entry.getValue();
+                    g.clip(compoundArea);
+                    paintTextLayout(g, textLayoutRect, renderTextLayout, docView);
+                    g.setClip(origClip);
+                }
             }
 
         } finally {
@@ -449,36 +520,34 @@ public class HighlightsViewUtils {
      *
      * @param g
      * @param textLayoutBounds
-     * @param attrs
+     * @param strikeThroughValue non-null value for StyleConstants.StrikeThrough attribute in attrs
+     * @param attrs non-null attrs
      * @param docView
      */
-    static void paintStrikeThrough(Graphics2D g, Rectangle2D textLayoutBounds, AttributeSet attrs, DocumentView docView) {
-        if (attrs != null) {
-            Object strikeThroughValue = attrs.getAttribute(StyleConstants.StrikeThrough);
-            if (strikeThroughValue != null) {
-                Color strikeThroughColor;
-                if (strikeThroughValue instanceof Boolean) { // Correct swing-way
-                    JTextComponent c = docView.getTextComponent();
-                    strikeThroughColor = Boolean.TRUE.equals(strikeThroughValue) ? g.getColor() : null;
-                } else { // NB bug - it's Color instance
-                    strikeThroughColor = (Color) strikeThroughValue;
-                }
-                if (strikeThroughColor != null) {
-                    Color origColor = g.getColor();
-                    try {
-                        g.setColor(strikeThroughColor);
-                        Font font = ViewUtils.getFont(attrs, docView.getTextComponent().getFont());
-                        float[] underlineAndStrike = docView.op.getUnderlineAndStrike(font);
-                        g.fillRect(
-                                (int) textLayoutBounds.getX(),
-                                (int) (textLayoutBounds.getY() + docView.op.getDefaultAscent() + underlineAndStrike[2]), // strikethrough offset
-                                (int) textLayoutBounds.getWidth(),
-                                (int) Math.max(1, Math.round(underlineAndStrike[3])) // strikethrough thickness
-                        );
-                    } finally {
-                        g.setColor(origColor);
-                    }
-                }
+    static void paintStrikeThrough(Graphics2D g, Rectangle2D textLayoutBounds,
+            Object strikeThroughValue, AttributeSet attrs, DocumentView docView)
+    {
+        Color strikeThroughColor;
+        if (strikeThroughValue instanceof Boolean) { // Correct swing-way
+            JTextComponent c = docView.getTextComponent();
+            strikeThroughColor = Boolean.TRUE.equals(strikeThroughValue) ? g.getColor() : null;
+        } else { // NB bug - it's Color instance
+            strikeThroughColor = (Color) strikeThroughValue;
+        }
+        if (strikeThroughColor != null) {
+            Color origColor = g.getColor();
+            try {
+                g.setColor(strikeThroughColor);
+                Font font = ViewUtils.getFont(attrs, docView.getTextComponent().getFont());
+                float[] underlineAndStrike = docView.op.getUnderlineAndStrike(font);
+                g.fillRect(
+                        (int) textLayoutBounds.getX(),
+                        (int) (textLayoutBounds.getY() + docView.op.getDefaultAscent() + underlineAndStrike[2]), // strikethrough offset
+                        (int) textLayoutBounds.getWidth(),
+                        (int) Math.max(1, Math.round(underlineAndStrike[3])) // strikethrough thickness
+                );
+            } finally {
+                g.setColor(origColor);
             }
         }
     }

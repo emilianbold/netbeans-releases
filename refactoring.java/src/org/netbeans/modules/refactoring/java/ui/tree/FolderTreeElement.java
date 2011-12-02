@@ -72,6 +72,7 @@ public class FolderTreeElement implements TreeElement {
     }
         
     
+    @Override
     public TreeElement getParent(boolean isLogical) {
         if (isLogical) {
             SourceGroup sg = getSourceGroup(fo);
@@ -90,10 +91,12 @@ public class FolderTreeElement implements TreeElement {
         }
     }
 
+    @Override
     public Icon getIcon() {
         return ElementIcons.getElementIcon(ElementKind.PACKAGE, null);
     }
 
+    @Override
     public String getText(boolean isLogical) {
         ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
         if (cp==null) {
@@ -150,6 +153,7 @@ public class FolderTreeElement implements TreeElement {
     }
     
 
+    @Override
     public Object getUserObject() {
         return fo;
     }

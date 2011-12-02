@@ -77,6 +77,9 @@ import javax.swing.border.Border;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import javax.swing.plaf.UIResource;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.project.ui.OpenProjectList;
@@ -128,7 +131,7 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
 
     // all three guarded by this
     private Project currentProject;
-    private ProjectConfigurationProvider<?> pcp;
+    private @NullAllowed ProjectConfigurationProvider<?> pcp;
     @SuppressWarnings("rawtypes")
     private Lookup.Result<ProjectConfigurationProvider> currentResult;
 
@@ -201,9 +204,9 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
                     _pcp = pcp;
                 }
                 if (ProjectConfigurationProvider.PROP_CONFIGURATIONS.equals(evt.getPropertyName())) {
-                    configurationsListChanged(getConfigurations(_pcp));
+                    configurationsListChanged(_pcp != null ? getConfigurations(_pcp) : null);
                 } else if (ProjectConfigurationProvider.PROP_CONFIGURATION_ACTIVE.equals(evt.getPropertyName())) {
-                    activeConfigurationChanged(getActiveConfiguration(_pcp));
+                    activeConfigurationChanged(_pcp != null ? getActiveConfiguration(_pcp) : null);
                 }
             }
         };
@@ -223,7 +226,7 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
         refreshView(lookup);
     }
 
-    private void configurationsListChanged(Collection<? extends ProjectConfiguration> configs) {
+    private void configurationsListChanged(@NullAllowed Collection<? extends ProjectConfiguration> configs) {
         LOGGER.log(Level.FINER, "configurationsListChanged: {0}", configs);
         ProjectConfigurationProvider<?> _pcp;
         synchronized (this) {
@@ -253,7 +256,7 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
         }
     }
 
-    private void activeConfigurationChanged(final ProjectConfiguration config) {
+    private void activeConfigurationChanged(final @NullAllowed ProjectConfiguration config) {
         LOGGER.log(Level.FINER, "activeConfigurationChanged: {0}", config);
         EventQueue.invokeLater(new Runnable() {
             public @Override void run() {
@@ -276,7 +279,7 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
         });
     }
     
-    private synchronized void activeConfigurationSelected(final ProjectConfiguration cfg, final ProjectConfigurationProvider<?> ppcp) {
+    private synchronized void activeConfigurationSelected(final @NullAllowed ProjectConfiguration cfg, final @NullAllowed ProjectConfigurationProvider<?> ppcp) {
         final ProjectConfigurationProvider<?> lpcp = (ppcp != null) ? ppcp : pcp;
         RP.post(new Runnable() {
             @Override
@@ -526,7 +529,7 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
         return new A();
     }
 
-    private static Collection<? extends ProjectConfiguration> getConfigurations(final ProjectConfigurationProvider<?> pcp) {
+    private static Collection<? extends ProjectConfiguration> getConfigurations(final @NonNull ProjectConfigurationProvider<?> pcp) {
         return ProjectManager.mutex().readAccess(new Mutex.Action<Collection<? extends ProjectConfiguration>>() {
             public @Override Collection<? extends ProjectConfiguration> run() {
                 Collection<? extends ProjectConfiguration> configs = pcp.getConfigurations();
@@ -536,7 +539,7 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
         });
     }
 
-    private static ProjectConfiguration getActiveConfiguration(final ProjectConfigurationProvider<?> pcp) {
+    private static @CheckForNull ProjectConfiguration getActiveConfiguration(final @NonNull ProjectConfigurationProvider<?> pcp) {
         return ProjectManager.mutex().readAccess(new Mutex.Action<ProjectConfiguration>() {
             public @Override ProjectConfiguration run() {
                 return pcp.getActiveConfiguration();
@@ -545,7 +548,7 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"}) // XXX would not be necessary in case PCP had a method to get run-time type information: Class<C> configurationType();
-    private static void setActiveConfiguration(ProjectConfigurationProvider<?> pcp, final ProjectConfiguration pc) throws IOException {
+    private static void setActiveConfiguration(@NonNull ProjectConfigurationProvider<?> pcp, final @NonNull ProjectConfiguration pc) throws IOException {
         final ProjectConfigurationProvider _pcp = pcp;
         try {
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {

@@ -99,12 +99,19 @@ public class FilterDocument extends Object implements StyledDocument {
 
     /* Gets document property by key */
     public Object getProperty(Object key) {
+        if (key == DocumentFilter.class && original instanceof AbstractDocument) {
+            return ((AbstractDocument)original).getDocumentFilter();
+        }
         return original.getProperty(key);
     }
 
     /* Puts new property of document */
     public void putProperty(Object key, Object value) {
-        original.putProperty(key, value);
+        if (key == DocumentFilter.class && original instanceof AbstractDocument) {
+            ((AbstractDocument)original).setDocumentFilter((DocumentFilter)value);
+        } else {
+            original.putProperty(key, value);
+        }
     }
 
     /* Removes portion of a document */

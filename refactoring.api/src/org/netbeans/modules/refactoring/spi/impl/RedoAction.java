@@ -70,6 +70,7 @@ public class RedoAction extends CallableSystemAction implements PropertyChangeLi
         updateState();
     }
     
+    @Override
     public void propertyChange (PropertyChangeEvent event) {
         updateState();
     }
@@ -84,6 +85,7 @@ public class RedoAction extends CallableSystemAction implements PropertyChangeLi
         final String n = name;
         final boolean b = undoManager.isRedoAvailable();
         Runnable r = new Runnable() {
+            @Override
             public void run() {
                 setEnabled(b);
                 putValue(Action.NAME, n);
@@ -101,19 +103,23 @@ public class RedoAction extends CallableSystemAction implements PropertyChangeLi
         return NbBundle.getMessage(RedoAction.class, key);
     }
     
+    @Override
     public void performAction() {
         undoManager.redo();
         undoManager.saveAll();
     }
     
+    @Override
     public org.openide.util.HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
     
+    @Override
     public String getName() {
         return (String) getValue(Action.NAME);
     }
     
+    @Override
     protected boolean asynchronous() {
         return true;
     }

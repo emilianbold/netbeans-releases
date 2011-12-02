@@ -15,6 +15,7 @@ CLASS      AllTestSuite                               null
 CLASS      AntBuilder                                 null
 CLASS      Appendable                                 null
 CLASS      ArithmeticException                        null
+CLASS      ArrayDeque                                 null
 CLASS      ArrayIndexOutOfBoundsException             null
 CLASS      ArrayList                                  null
 CLASS      ArrayStoreException                        null
@@ -24,6 +25,7 @@ CLASS      Authenticator                              null
 METHOD     addShutdownHook(Closure)                   void
 METHOD     any()                                      boolean
 METHOD     any(Closure)                               boolean
+METHOD     asBoolean()                                boolean
 METHOD     asType(Class)                              Object
 VARIABLE   ab                                         String
 KEYWORD    assert                                     null

@@ -44,6 +44,7 @@ package org.netbeans.libs.git.jgit.commands;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.Arrays;
 import org.eclipse.jgit.dircache.DirCache;
 import org.eclipse.jgit.dircache.DirCacheBuildIterator;
@@ -58,7 +59,6 @@ import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.jgit.Utils;
 import org.netbeans.libs.git.progress.FileListener;
 import org.netbeans.libs.git.progress.ProgressMonitor;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -105,7 +105,7 @@ abstract class MoveTreeCommand extends GitCommand {
                     DirCacheEntry e = treeWalk.getTree(0, DirCacheBuildIterator.class).getDirCacheEntry();
                     if (e != null) {
                         if (targetFilter.include(treeWalk)) {
-                            monitor.notifyWarning(NbBundle.getMessage(MoveTreeCommand.class, "MSG_Warning_IndexEntryExists", path)); //NOI18N
+                            monitor.notifyWarning(MessageFormat.format(Utils.getBundle(MoveTreeCommand.class).getString("MSG_Warning_IndexEntryExists"), path)); //NOI18N
                             continue;
                         }
                         String newPath = getRelativePath(file, source, target);
@@ -140,11 +140,11 @@ abstract class MoveTreeCommand extends GitCommand {
             String relPathToSource = Utils.getRelativePath(workTree, source);
             String relPathToTarget = Utils.getRelativePath(workTree, target);
             if (relPathToSource.startsWith(relPathToTarget + "/")) { //NOI18N
-                monitor.preparationsFailed(NbBundle.getMessage(MoveTreeCommand.class, "MSG_Error_SourceFolderUnderTarget", new Object[] { relPathToSource, relPathToTarget } )); //NOI18N
-                throw new GitException(NbBundle.getMessage(MoveTreeCommand.class, "MSG_Error_SourceFolderUnderTarget", new Object[] { relPathToSource, relPathToTarget } )); //NOI18N
+                monitor.preparationsFailed(MessageFormat.format(Utils.getBundle(MoveTreeCommand.class).getString("MSG_Error_SourceFolderUnderTarget"), new Object[] { relPathToSource, relPathToTarget } )); //NOI18N
+                throw new GitException(MessageFormat.format(Utils.getBundle(MoveTreeCommand.class).getString("MSG_Error_SourceFolderUnderTarget"), new Object[] { relPathToSource, relPathToTarget } )); //NOI18N
             } else if (relPathToTarget.startsWith(relPathToSource + "/")) { //NOI18N
-                monitor.preparationsFailed(NbBundle.getMessage(MoveTreeCommand.class, "MSG_Error_TargetFolderUnderSource", new Object[] { relPathToTarget, relPathToSource } )); //NOI18N
-                throw new GitException(NbBundle.getMessage(MoveTreeCommand.class, "MSG_Error_TargetFolderUnderSource", new Object[] { relPathToTarget, relPathToSource } )); //NOI18N
+                monitor.preparationsFailed(MessageFormat.format(Utils.getBundle(MoveTreeCommand.class).getString("MSG_Error_TargetFolderUnderSource"), new Object[] { relPathToTarget, relPathToSource } )); //NOI18N
+                throw new GitException(MessageFormat.format(Utils.getBundle(MoveTreeCommand.class).getString("MSG_Error_TargetFolderUnderSource"), new Object[] { relPathToTarget, relPathToSource } )); //NOI18N
             }
         }
         return retval;
@@ -153,10 +153,10 @@ abstract class MoveTreeCommand extends GitCommand {
     private void rename () throws GitException {
         File parentFile = target.getParentFile();
         if (!parentFile.exists() && !parentFile.mkdirs()) {
-            throw new GitException(NbBundle.getMessage(MoveTreeCommand.class, "MSG_Exception_CannotCreateFolder", parentFile.getAbsolutePath())); //NOI18N
+            throw new GitException(MessageFormat.format(Utils.getBundle(MoveTreeCommand.class).getString("MSG_Exception_CannotCreateFolder"), parentFile.getAbsolutePath())); //NOI18N
         }
         if (!source.renameTo(target)) {
-            throw new GitException(NbBundle.getMessage(MoveTreeCommand.class, "MSG_Exception_CannotRenameTo", target.getAbsolutePath())); //NOI18N
+            throw new GitException(MessageFormat.format(Utils.getBundle(MoveTreeCommand.class).getString("MSG_Exception_CannotRenameTo"), target.getAbsolutePath())); //NOI18N
         }
     }
 

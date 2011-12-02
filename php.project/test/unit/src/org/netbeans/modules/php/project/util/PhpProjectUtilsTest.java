@@ -47,6 +47,7 @@ import java.util.List;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
+
 import static org.junit.Assert.*;
 
 public class PhpProjectUtilsTest extends NbTestCase {
@@ -62,12 +63,12 @@ public class PhpProjectUtilsTest extends NbTestCase {
 
     public void testExplode() {
         final String[] items = {"one", "two"};
-        String string = "one*two";
-        string = "one" + PhpProjectProperties.DEBUG_PATH_MAPPING_SEPARATOR + "two";
+        String string = "one" + PhpProjectProperties.DEBUG_PATH_MAPPING_SEPARATOR + "two";
         assertArrayEquals(items, StringUtils.explode(string, PhpProjectProperties.DEBUG_PATH_MAPPING_SEPARATOR).toArray(new String[0]));
 
         // test for empty string (relative path ".")
         string = "one" + PhpProjectProperties.DEBUG_PATH_MAPPING_SEPARATOR + "" + PhpProjectProperties.DEBUG_PATH_MAPPING_SEPARATOR + "two";
         assertArrayEquals(new String[] {"one", "", "two"}, StringUtils.explode(string, PhpProjectProperties.DEBUG_PATH_MAPPING_SEPARATOR).toArray(new String[0]));
     }
+
 }

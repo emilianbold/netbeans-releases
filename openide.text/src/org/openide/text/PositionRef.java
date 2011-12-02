@@ -146,8 +146,10 @@ public final class PositionRef extends Object implements Serializable {
     * @exception IOException when an exception occured during reading the file.
     */
     public Position getPosition() throws IOException {
-        if (manager.getCloneableEditorSupport().getDocument() == null) {
-            manager.getCloneableEditorSupport().openDocument();
+        // Hold the document reference to prevent document to be closed
+        StyledDocument doc = manager.getCloneableEditorSupport().getDocument();
+        if (doc == null) {
+            doc = manager.getCloneableEditorSupport().openDocument();
         }
 
         synchronized (manager.getLock()) {

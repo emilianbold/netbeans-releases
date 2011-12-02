@@ -31,25 +31,25 @@
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="javaFlagsTextField" alignment="0" max="32767" attributes="0"/>
-                          <Component id="customPropertiesTextField" alignment="0" max="32767" attributes="0"/>
+                          <Component id="javaFlagsTextField" alignment="0" pref="193" max="32767" attributes="0"/>
+                          <Component id="customPropertiesTextField" alignment="0" pref="193" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="coherenceLocationLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="coherenceLocationTextField" max="32767" attributes="0"/>
+                      <Component id="coherenceLocationTextField" pref="184" max="32767" attributes="0"/>
                   </Group>
                   <Component id="classpathLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Group type="102" attributes="0">
-                      <Component id="jScrollPane1" max="32767" attributes="0"/>
+                      <Component id="jScrollPane1" pref="247" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" max="-2" attributes="0">
                           <Component id="addClasspathButton" max="32767" attributes="1"/>
                           <Component id="removeClasspathButton" alignment="0" max="32767" attributes="1"/>
                       </Group>
-                      <EmptySpace max="32767" attributes="0"/>
                   </Group>
+                  <Component id="createLibraryButton" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -85,6 +85,7 @@
                   <Component id="customPropertiesTextField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="32767" attributes="0"/>
+              <Component id="createLibraryButton" min="-2" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -185,6 +186,16 @@
           <ResourceString bundle="org/netbeans/modules/coherence/server/ui/Bundle.properties" key="CustomizerCommon.coherenceLocationLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+    </Component>
+    <Component class="javax.swing.JButton" name="createLibraryButton">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/coherence/server/ui/Bundle.properties" key="CustomizerCommon.createLibraryButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="createLibraryButtonActionPerformed"/>
+      </Events>
     </Component>
   </SubComponents>
 </Form>

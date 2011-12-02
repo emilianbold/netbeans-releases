@@ -71,7 +71,6 @@ public class GlobalAbilitiesCacheTest extends NbTestCase {
         TestUtil.setLookup( new Object[] {
             TestUtil.testProjectFactory(),
             TestUtil.testFileLocator(),
-            TestUtil.testProjectChooserFactory(),
         }, GlobalAbilitiesCacheTest.class.getClassLoader());
     }
     

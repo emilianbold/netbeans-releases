@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.html.editor.hints;
 
+import org.netbeans.modules.html.editor.hints.css.HtmlCssHints;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -50,16 +51,10 @@ import java.util.Map;
 import java.util.Set;
 import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
-import javax.swing.text.JTextComponent;
-import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.editor.ext.html.parser.SyntaxTreeBuilder;
-import org.netbeans.editor.ext.html.parser.api.AstNode;
 import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
 import org.netbeans.editor.ext.html.parser.api.SyntaxAnalyzerResult;
-import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
-import org.netbeans.lib.editor.codetemplates.api.CodeTemplateManager;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintFix;
@@ -133,6 +128,9 @@ public class HtmlHintsProvider implements HintsProvider {
             }
         }
 
+        //add html-css related hints
+        HtmlCssHints.computeHints(manager, context, hints);
+        
     }
 
     private static List<HintFix> generateSetDefaultHtmlVersionHints(Project project, Document doc, boolean xhtml) {
@@ -206,24 +204,36 @@ public class HtmlHintsProvider implements HintsProvider {
                 fatalErrors.add(e);
             }
         }
-        for(Error e : fatalErrors) {
-            //remove the fatal error from the list of errors for further processing
-            htmlRuleContext.getLeftDiagnostics().remove(e);
-            
-            String message = new StringBuilder()
-                    .append(e.getDescription())
-                    .append('\n')
-                    .append(NbBundle.getMessage(HtmlValidatorRule.class, "MSG_FatalHtmlErrorAddendum"))
-                    .toString();
-            //add a special hint for the fatal error
-            Hint fatalErrorHint = new Hint(new FatalHtmlRule(),
-                    message,
-                    fo,
-                    EmbeddingUtil.getErrorOffsetRange(e, snapshot),
-                    Collections.<HintFix>emptyList(),
-                    5);//looks like lower number o the priority means higher priority
-            
-            hints.add(fatalErrorHint);
+        //To resolve following 
+        //Bug 200801 - Fatal error hint for mixed php/html code
+        //but keep the behavior described in 
+        //Bug 199104 - No error for unmatched <div> tag 
+        //I need to keep the fatal errors enabled only for something which is xml-like
+        //
+        //Really proper solution would be to introduce a facility which would filter
+        //out the error messages selectively and keep just those whose cannot be 
+        //false errors caused by a templating language. The tags pairing in facelets
+        //is nice example as described in the issue above.
+        if(isXmlBasedMimetype(saresult)) {
+            for(Error e : fatalErrors) {
+                //remove the fatal error from the list of errors for further processing
+                htmlRuleContext.getLeftDiagnostics().remove(e);
+
+                String message = new StringBuilder()
+                        .append(e.getDescription())
+                        .append('\n')
+                        .append(NbBundle.getMessage(HtmlValidatorRule.class, "MSG_FatalHtmlErrorAddendum"))
+                        .toString();
+                //add a special hint for the fatal error
+                Hint fatalErrorHint = new Hint(new FatalHtmlRule(),
+                        message,
+                        fo,
+                        EmbeddingUtil.getErrorOffsetRange(e, snapshot),
+                        Collections.<HintFix>emptyList(),
+                        5);//looks like lower number o the priority means higher priority
+
+                hints.add(fatalErrorHint);
+            }
         }
         
         //now process the non-fatal errors
@@ -394,6 +404,12 @@ public class HtmlHintsProvider implements HintsProvider {
             default:
                 throw new AssertionError("Unexpected severity level"); //NOI18N
         }
+    }
+
+    private boolean isXmlBasedMimetype(SyntaxAnalyzerResult saresult) {
+        String mimeType = HtmlErrorFilter.getWebPageMimeType(saresult);
+        //return true for something like text/xml, text/xhtml or text/facelets+xhtml
+        return mimeType.indexOf("xml") != -1 || mimeType.indexOf("xhtml") != -1;
     }
     
     private static final class HtmlRule implements ErrorRule {

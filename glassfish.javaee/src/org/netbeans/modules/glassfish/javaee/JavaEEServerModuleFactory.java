@@ -144,7 +144,6 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
                 public void run() {
                     ensureEclipseLinkSupport(glassfishRoot);
                     ensureCometSupport(glassfishRoot);
-                    ensureRestLibSupport(glassfishRoot);
                     ensureGlassFishApiSupport(glassfishRoot);
                     // lookup the javadb register service here and use it.
                     RegisteredDerbyServer db = Lookup.getDefault().lookup(RegisteredDerbyServer.class);
@@ -256,57 +255,6 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
 
     private static final String[] JAXRS_LIBRARIES_31 =
              {"jackson-core-asl", "jackson-jaxrs", "jackson-mapper-asl", "jersey-client", "jersey-core", JERSEY_GF_SERVER, "jersey-json", "jersey-multipart", "jettison", "mimepull"}; //NOI18N
-
-    private static final String PRELUDE_RESTLIB = "restlib_gfv3"; // NOI18N
-    private static final String V3_RESTLIB = "restlib_gfv3ee6"; // NOI18N
-
-    private static  boolean ensureRestLibSupport(String installRoot) {
-        List<URL> libraryList = new ArrayList<URL>();
-        String name = PRELUDE_RESTLIB;
-
-        File jerseyGFServer = ServerUtilities.getJarName(installRoot, JERSEY_GF_SERVER + ServerUtilities.GFV3_VERSION_MATCHER);
-        boolean isGFV31 =  jerseyGFServer != null;
-
-        String[] JERSEY_LIBS = (isGFV31 ? JAXRS_LIBRARIES_31 : JAXRS_LIBRARIES);
-        for (String entry : JERSEY_LIBS) {
-            File f = ServerUtilities.getJarName(installRoot, entry + ServerUtilities.GFV3_VERSION_MATCHER);
-            if ((f != null) && (f.exists())) {
-                try {
-                    libraryList.add(FileUtil.getArchiveRoot(f.toURI().toURL()));
-                } catch (MalformedURLException ex) {
-                }
-            }
-        }
-
-        File f = ServerUtilities.getJarName(installRoot, "gmbal" + ServerUtilities.GFV3_VERSION_MATCHER);
-        if (f != null && f.exists()) {
-            name = V3_RESTLIB;
-        }
-        // javadoc
-        List<URL> javadocList = new ArrayList<URL>();
-        try {
-            File javadocFile = InstalledFileLocator.getDefault().locate("docs/jsr311-api-1.1.1-javadoc.zip", "org.netbeans.modules.websvc.restlib", false); //NOI18N
-            if (javadocFile != null && javadocFile.exists()) {
-                    javadocList.add(FileUtil.getArchiveRoot(javadocFile.toURI().toURL()));
-            }
-            javadocFile = InstalledFileLocator.getDefault().locate("docs/jersey-client-1.3-javadoc.zip", "org.netbeans.modules.websvc.restlib", false); //NOI18N
-            if (javadocFile != null && javadocFile.exists()) {
-                    javadocList.add(FileUtil.getArchiveRoot(javadocFile.toURI().toURL()));
-            }
-            javadocFile = InstalledFileLocator.getDefault().locate("docs/jersey-json-1.3-javadoc.zip", "org.netbeans.modules.websvc.restlib", false); //NOI18N
-            if (javadocFile != null && javadocFile.exists()) {
-                    javadocList.add(FileUtil.getArchiveRoot(javadocFile.toURI().toURL()));
-            }
-            javadocFile = InstalledFileLocator.getDefault().locate("docs/jersey-multipart-1.3-javadoc.zip", "org.netbeans.modules.websvc.restlib", false); //NOI18N
-            if (javadocFile != null && javadocFile.exists()) {
-                    javadocList.add(FileUtil.getArchiveRoot(javadocFile.toURI().toURL()));
-            }
-
-        } catch (MalformedURLException ex) {
-        }
-        
-        return addLibrary(name, libraryList, javadocList);
-    }
 
     private static final String SERVER_LIBRARY_TYPE = "serverlibrary"; // NOI18N
     private static final String JAVA_EE_6_LIB = "Java-EE-GlassFish-v3"; // NOI18N

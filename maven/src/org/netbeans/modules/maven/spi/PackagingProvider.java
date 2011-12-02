@@ -55,6 +55,8 @@ public interface PackagingProvider {
 
     /**
      * Optionally supplies a packaging for a given project.
+     * Note that this is called early in project construction
+     * so only basic services may be available in project lookup.
      * @param project a Maven project
      * @return a packaging other than {@link MavenProject#getPackaging}, or null for no special behavior
      */

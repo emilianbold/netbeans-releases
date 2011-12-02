@@ -41,18 +41,17 @@
  */
 package org.netbeans.modules.web.jsf.editor.facelets;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 import org.netbeans.modules.web.jsfapi.api.Attribute;
-import org.netbeans.modules.web.jsfapi.api.Tag;
 
 /**
  *
- * @author marekfukala
+ * @author mfukala@netbeans.org
  */
-public final class TagImpl implements Tag {
+public final class TagImpl extends GenericTag {
 
-    private static final String ID_ATTR_NAME = "id"; //NOI18N
     private String name;
     private String description;
     private Map<String, Attribute> attrs;
@@ -61,10 +60,6 @@ public final class TagImpl implements Tag {
         this.name = name;
         this.description = description;
         this.attrs = attrs;
-        //add the default ID attribute
-        if (getAttribute(ID_ATTR_NAME) == null) {
-            attrs.put(ID_ATTR_NAME, new Attribute.DefaultAttribute(ID_ATTR_NAME, "", false));
-        }
     }
 
     @Override
@@ -79,17 +74,21 @@ public final class TagImpl implements Tag {
 
     @Override
     public boolean hasNonGenenericAttributes() {
-        return getAttributes().size() > 1; //the ID attribute is the default generic one
+        return !attrs.isEmpty();
     }
 
     @Override
     public Collection<Attribute> getAttributes() {
-        return attrs.values();
+        //merge with default attributes
+        Collection<Attribute> all = new ArrayList<Attribute>(super.getAttributes());
+        all.addAll(attrs.values());
+        return all;
     }
 
     @Override
     public Attribute getAttribute(String name) {
-        return attrs.get(name);
+        Attribute superA = super.getAttribute(name);
+        return superA != null ? superA : attrs.get(name);
     }
 
     @Override

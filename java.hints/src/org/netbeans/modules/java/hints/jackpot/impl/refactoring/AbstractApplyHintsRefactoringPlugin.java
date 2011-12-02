@@ -105,7 +105,7 @@ public abstract class AbstractApplyHintsRefactoringPlugin extends ProgressProvid
         ProgressHandleWrapper w = new ProgressHandleWrapper(this, 30, 70);
         BatchResult candidates = BatchSearch.findOccurrences(pattern, scope, w);
         Collection<MessageImpl> problems = new LinkedList<MessageImpl>(candidates.problems);
-        Collection<? extends ModificationResult> res = BatchUtilities.applyFixes(candidates, w, /*XXX*/new AtomicBoolean(), problems);
+        Collection<? extends ModificationResult> res = BatchUtilities.applyFixes(candidates, w, cancel, problems);
 
         refactoringElements.registerTransaction(JavaRefactoringPlugin.createTransaction(new LinkedList<ModificationResult>(res)));
 
@@ -134,14 +134,13 @@ public abstract class AbstractApplyHintsRefactoringPlugin extends ProgressProvid
                     }
 
                     refactoringElements.addAll(refactoring, Utilities.createRefactoringElementImplementation(r.getResolvedFile(), spans, verify));
-
                     return true;
                 }
                 public void groupFinished() {}
                 public void cannotVerifySpan(Resource r) {
                     refactoringElements.addAll(refactoring, Utilities.createRefactoringElementImplementation(r.getResolvedFile(), prepareSpansFor(r), verify));
                 }
-            }, problems);
+            }, problems, cancel);
         } else {
             int[] parts = new int[candidates.getResources().size()];
             int   index = 0;

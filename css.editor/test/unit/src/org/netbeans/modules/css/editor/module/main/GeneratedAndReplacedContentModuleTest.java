@@ -41,6 +41,9 @@
  */
 package org.netbeans.modules.css.editor.module.main;
 
+import org.netbeans.modules.css.editor.module.CssModuleSupport;
+import org.netbeans.modules.css.editor.properties.parser.PropertyModel;
+
 /**
  *
  * @author mfukala@netbeans.org
@@ -59,11 +62,15 @@ public class GeneratedAndReplacedContentModuleTest extends CssModuleTestBase {
         assertPropertyDeclaration("content: counter(item, decimal) '.';");
         
         assertPropertyDeclaration("content: url(\"link\")");
-        assertPropertyDeclaration("content: url(\"link\"), normal");
-        assertPropertyDeclaration("content: url(\"link\"), counter(anid, anotherid)");
-        
     }
-        
+    public void testContent2() {
+        PropertyModel model = CssModuleSupport.getPropertyModel("content");
+    
+//        assertAlternatives(model.getGrammar(), "url(\"link\"), ");
+        assertResolve(model.getGrammar(), "url(\"link\"), normal");
+        assertResolve(model.getGrammar(), "url(\"link\"), counter(anid, anotherid)");
+    }
+    
     public void testCounter() {
         assertPropertyDeclaration("counter-increment: chapter;");
         assertPropertyDeclaration("counter-increment: chapter 10;");

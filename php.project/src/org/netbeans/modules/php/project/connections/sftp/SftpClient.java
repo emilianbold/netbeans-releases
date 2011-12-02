@@ -533,6 +533,12 @@ public class SftpClient implements RemoteClient {
         public long getTimestamp() {
             return entry.getAttrs().getMTime();
         }
+
+        @Override
+        public String toString() {
+            return "SftpFile[name: " + getName() + ", parent directory: " + getParentDirectory() + "]";
+        }
+
     }
 
     private static class SftpLogger implements com.jcraft.jsch.Logger {

@@ -198,7 +198,7 @@ public class JavaHintsPositionRefresherTest extends NbTestCase {
     }
 
     public void testErrorHint0() throws Exception {
-        performTest("test/Test.java", "package test; public class Test {public void foo() {\n| new Foo();}}", new String[] {"1:5-1:8:error:cannot find symbol\n  symbol  : class Foo\n  location: class test.Test"});
+        performTest("test/Test.java", "package test; public class Test {public void foo() {\n| new Foo();}}", new String[] {"1:5-1:8:error:cannot find symbol\n  symbol  : class Foo\n  location: class Test"});
     }
 
     public void testWrongpackage() throws Exception {

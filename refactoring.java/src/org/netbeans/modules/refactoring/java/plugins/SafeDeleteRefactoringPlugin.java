@@ -61,7 +61,7 @@ import javax.swing.Action;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.source.*;
 import org.netbeans.modules.refactoring.api.*;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.spi.ui.UI;
 import org.netbeans.modules.refactoring.java.api.WhereUsedQueryConstants;
 import org.netbeans.modules.refactoring.spi.*;
@@ -143,38 +143,39 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
             if (files.contains(refacElem.getParentFile())) {
                 continue;
             }
-            
+
             if (!isPendingDelete(elem, refactoredObjects)) {
-                JavaSource src = JavaSource.forFileObject(elem.getFileObject());
                 final AtomicBoolean override = new AtomicBoolean(false);
-                try {
-                    src.runUserActionTask(new CancellableTask<CompilationController>() {
+                if (elem != null) {
+                    JavaSource src = JavaSource.forFileObject(elem.getFileObject());
+                    try {
+                        src.runUserActionTask(new CancellableTask<CompilationController>() {
 
-                        @Override
-                        public void cancel() {}
+                            @Override
+                            public void cancel() {}
 
-                        @Override
-                        public void run(CompilationController parameter) throws Exception {
-                            parameter.toPhase(JavaSource.Phase.PARSED);
-                            TreePath resolve = elem.getHandle().resolve(parameter);
-                            if(resolve.getLeaf().getKind() == Tree.Kind.METHOD) {
-                                MethodTree method = (MethodTree) resolve.getLeaf();
-                                List<? extends AnnotationTree> annotations = method.getModifiers().getAnnotations();
-                                boolean hasOverride = false;
-                                for (AnnotationTree annotationTree : annotations) {
-                                    if(annotationTree.toString().equals("@Override()")) { //NOI18N
-                                        hasOverride = true;
+                            @Override
+                            public void run(CompilationController parameter) throws Exception {
+                                parameter.toPhase(JavaSource.Phase.PARSED);
+                                TreePath resolve = elem.getHandle().resolve(parameter);
+                                if(resolve.getLeaf().getKind() == Tree.Kind.METHOD) {
+                                    MethodTree method = (MethodTree) resolve.getLeaf();
+                                    List<? extends AnnotationTree> annotations = method.getModifiers().getAnnotations();
+                                    boolean hasOverride = false;
+                                    for (AnnotationTree annotationTree : annotations) {
+                                        if(annotationTree.toString().equals("@Override()")) { //NOI18N
+                                            hasOverride = true;
+                                        }
+                                    }
+                                    if(!hasOverride) {
+                                        override.set(true);
                                     }
                                 }
-                                if(!hasOverride) {
-                                    override.set(true);
-                                }
                             }
-                        }
-                        
-                    }, true);
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
+                        }, true);
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
                 }
                 if(override.get()) {
                     problemImplemented = new Problem(false, getString("WRN_ImplementsFound"), ProblemDetailsFactory.createProblemDetails(new ProblemDetailsImplemen(new WhereUsedQueryUI(elem!=null?elem.getHandle():null, getWhereUsedItemNames(), refactoring), inner)));
@@ -255,11 +256,13 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
             this.rs = rs;
         }
         
+        @Override
         public void showDetails(Action callback, Cancellable parent) {
             parent.cancel();
             UI.openRefactoringUI(ui, rs, callback);
         }
         
+        @Override
         public String getDetailsHint() {
             return getString("LBL_ShowUsages");
         }
@@ -319,9 +322,11 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
             }
             try {
                 source.runUserActionTask(new CancellableTask<CompilationController>() {
+                    @Override
                     public void cancel() {
                         
                     }
+                    @Override
                     public void run(CompilationController co) throws Exception {
                         co.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                         CompilationUnitTree cut = co.getCompilationUnit();
@@ -398,7 +403,7 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
             for (FileObject fileObject : lkp.lookupAll(FileObject.class)) {
                 if (fileObject.isFolder()) {
                     javaFileObjects.addAll(getJavaFileObjects(fileObject, true));
-                }else if (RetoucheUtils.isRefactorable(fileObject)) {
+                }else if (RefactoringUtils.isRefactorable(fileObject)) {
                     javaFileObjects.add(fileObject);
                 }
             }
@@ -436,10 +441,12 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
         try {
             javaSrc.runUserActionTask(new CancellableTask<CompilationController>(){
 
+                @Override
                 public void cancel() {
                     //No op
                 }
 
+                @Override
                 public void run(CompilationController compilationController) throws Exception {
                     ExecutableElement execElem = (ExecutableElement) methodHandle.resolveElement(compilationController);
                     TypeElement type = (TypeElement) execElem.getEnclosingElement();

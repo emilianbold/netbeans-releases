@@ -48,6 +48,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.Writer;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -140,6 +142,19 @@ public class AnnotationProcessorTestUtils {
         } else if (f.getName().endsWith(".java") && (includes == null || Pattern.compile(includes).matcher(f.getName()).find())) {
             names.add(f.getAbsolutePath());
         }
+    }
+
+    /**
+     * Checks whether the version of javac in use suffers from #6929404.
+     * If so, calls to {@code LayerBuilder.validateResource(..., true)} will return normally
+     * even if the resource path does not exist, so tests must be more lenient.
+     */
+    public static boolean searchClasspathBroken() {
+        // Cannot just check for e.g. SourceVersion.RELEASE_7 because we might be running JDK 6 javac w/ JDK 7 boot CP, and that is in JRE.
+        // (Anyway libs.javacapi/external/javac-api-nb-7.0-b07.jar, in the test's normal boot CP, has this!)
+        // Filter.class added in 7ae4016c5938, not long after f3323b1c65ee which we rely on for this to work.
+        // Also cannot just check Class.forName(...) since tools.jar not in CP but ToolProvider loads it specially.
+        return new URLClassLoader(new URL[] {ToolProvider.getSystemJavaCompiler().getClass().getProtectionDomain().getCodeSource().getLocation()}).findResource("com/sun/tools/javac/util/Filter.class") == null;
     }
 
 }

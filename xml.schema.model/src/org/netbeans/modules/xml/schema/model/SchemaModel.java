@@ -110,7 +110,7 @@ public interface SchemaModel extends DocumentModel<SchemaComponent>, Referenceab
          * @param type type of the component.
          */
         <T extends NamedReferenceable> T resolve(String namespace, String localName, Class<T> type);
-
+        
         /**
          * Returns true for schemas that are embedded inside other artifacts such as WSDLs and BPELs.
          * False in all other cases.

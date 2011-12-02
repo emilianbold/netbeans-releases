@@ -133,11 +133,16 @@ public class MagicCache {
                             for(int i = 1; i< split.length; i++) {
                                 String s = split[i];
                                 try {
-                                    long L = Long.parseLong(s, 16);
-                                    res[pos++] = (byte) (L & 0xFF);
-                                    res[pos++] = (byte) (L>>8 & 0xFF);
-                                    res[pos++] = (byte) (L>>16 & 0xFF);
-                                    res[pos++] = (byte) (L>>24 & 0xFF);
+                                    if (s.length() == 2) {
+                                        int L = Integer.parseInt(s, 16);
+                                        res[pos++] = (byte) (L & 0xFF);
+                                    } else {
+                                        long L = Long.parseLong(s, 16);
+                                        res[pos++] = (byte) (L & 0xFF);
+                                        res[pos++] = (byte) (L>>8 & 0xFF);
+                                        res[pos++] = (byte) (L>>16 & 0xFF);
+                                        res[pos++] = (byte) (L>>24 & 0xFF);
+                                    }
                                 } catch (NumberFormatException ex) {
                                     break;
                                 }
@@ -175,7 +180,7 @@ public class MagicCache {
     
     private void updateCache() throws FileNotFoundException, UnsupportedEncodingException, IOException {
         // TODO check connection
-        String command = "/usr/bin/find . ! -name . -prune -type f -print -exec od -X -N "+BUF_LENGTH+" {} \\;"; // NOI18N
+        String command = "/usr/bin/find . ! -name . -prune -type f -print -exec od -t x1 -N "+BUF_LENGTH+" {} \\;"; // NOI18N
         String path = dir.getPath();
         if (path.isEmpty()) {
             path = "/"; // NOI18N

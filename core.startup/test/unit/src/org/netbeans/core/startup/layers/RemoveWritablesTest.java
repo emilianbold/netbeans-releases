@@ -50,7 +50,6 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.concurrent.Callable;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
@@ -114,13 +113,9 @@ public class RemoveWritablesTest extends NbTestCase {
         
         File writableFile = new File( new File( configDir, "foo"), "newFile.ext" );
         assertTrue( writableFile.exists() );
-        
-        Object writablesRemover = newFile.getAttribute( "removeWritables" );
-        
-        assertNotNull( writablesRemover );
-        assertTrue( writablesRemover instanceof Callable );
-        
-        ((Callable)writablesRemover).call();
+
+        assertTrue(newFile.canRevert());
+        newFile.revert();
         
         assertFalse( "local file removed", writableFile.exists() );
         assertNull( "FileObject does not exist", FileUtil.getConfigFile( "foo/newFile.ext" ) );
@@ -135,13 +130,10 @@ public class RemoveWritablesTest extends NbTestCase {
         
         File maskFile = new File( new File( configDir, "foo"), "test1_hidden" );
         assertTrue( maskFile.exists() );
-        
-        Object writablesRemover = FileUtil.getConfigFile( "foo" ).getAttribute( "removeWritables" );
-        
-        assertNotNull( writablesRemover );
-        assertTrue( writablesRemover instanceof Callable );
-        
-        ((Callable)writablesRemover).call();
+
+        FileObject newFile = FileUtil.getConfigFile("foo");
+        assertTrue(newFile.canRevert());
+        newFile.revert();
         
         assertFalse( "local file removed", maskFile.exists() );
         assertNotNull( "FileObject exists again", FileUtil.getConfigFile( "foo/test1" ) );
@@ -161,16 +153,27 @@ public class RemoveWritablesTest extends NbTestCase {
         File maskFile = new File( new File( configDir, "foo"), "test1_hidden" );
         assertTrue( maskFile.exists() );
         
-        Object writablesRemover = FileUtil.getConfigFile( "foo" ).getAttribute( "removeWritables" );
-        
-        assertNotNull( writablesRemover );
-        assertTrue( writablesRemover instanceof Callable );
-        
-        ((Callable)writablesRemover).call();
+        FileObject newFile = FileUtil.getConfigFile("foo");
+        assertTrue(newFile.canRevert());
+        newFile.revert();
         
         assertFalse( "local file removed", maskFile.exists() );
         assertNotNull( "FileObject exists again", FileUtil.getConfigFile( "foo/test1" ) );
         assertNull( "renamed file is gone", FileUtil.getConfigFile( "foo/newName.newExt" ) );
+    }
+
+    public void testFolder() throws Exception {
+        FileObject folder = FileUtil.getConfigFile("foo");
+        folder.createData("newFile", "ext");
+        File writableFolder = new File(configDir, "foo");
+        assertTrue(writableFolder.isDirectory());
+        assertTrue(folder.canRevert());
+        folder.revert();
+        assertFalse("local file removed", new File(writableFolder, "newFile.ext").exists());
+        assertNull("FileObject does not exist", FileUtil.getConfigFile("foo/newFile.ext"));
+        folder = FileUtil.getConfigFile("foo");
+        assertNotNull("folder still there in layer", folder);
+        assertFalse("no longer considered modified", folder.canRevert());
     }
 
     private File createModuleJar(String manifest) throws IOException {

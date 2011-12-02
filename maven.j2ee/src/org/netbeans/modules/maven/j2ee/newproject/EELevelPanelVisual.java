@@ -62,14 +62,14 @@ class EELevelPanelVisual extends JPanel {
     }
 
     void readSettings(WizardDescriptor d) {
-        Profile eeLevel = (Profile) d.getProperty(BasicEEWizardIterator.PROP_EE_LEVEL);
+        Profile eeLevel = (Profile) d.getProperty(EEWizardIterator.PROP_EE_LEVEL);
         if (eeLevel != null) {
             j2eeVersion.setSelectedItem(eeLevel);
         }
     }
 
     void storeSettings(WizardDescriptor d) {
-        d.putProperty(BasicEEWizardIterator.PROP_EE_LEVEL, j2eeVersion.getSelectedItem());
+        d.putProperty(EEWizardIterator.PROP_EE_LEVEL, j2eeVersion.getSelectedItem());
         helper.storeServerSettings(d);
     }
     

@@ -309,8 +309,15 @@ public abstract class Children extends Object {
      */ 
     public static <T> Children create (ChildFactory <T> factory, boolean asynchronous) {
         if (factory == null) throw new NullPointerException ("Null factory");
-        return asynchronous ? new AsynchChildren <T> (factory) : 
-            new SynchChildren <T> (factory);
+        if (asynchronous) {
+            AsynchChildren<T> ch = new AsynchChildren <T> (factory);
+            factory.setObserver(ch);
+            return ch;
+        } else {
+            SynchChildren<T> ch = new SynchChildren <T> (factory);
+            factory.setObserver(ch);
+            return ch;
+        }
     }
 
     /**
@@ -1898,7 +1905,7 @@ public abstract class Children extends Object {
     */
 
     private static final class ProjectManagerDeadlockDetector implements Executor {
-
+        private final Mutex FALLBACK = new Mutex();
         private final AtomicReference<WeakReference<Mutex>> pmMutexRef = new AtomicReference<WeakReference<Mutex>>();
 
         public void execute(Runnable command) {
@@ -1943,15 +1950,15 @@ public abstract class Children extends Object {
                 method = clazz.getMethod("mutex"); // NOI18N
                 return (Mutex) method.invoke(null);
             } catch (ClassNotFoundException e) {
-                return null;
+                return FALLBACK;
             } catch (IllegalAccessException e) {
-                return null;
+                return FALLBACK;
             } catch (IllegalArgumentException e) {
-                return null;
+                return FALLBACK;
             } catch (InvocationTargetException e) {
-                return null;
+                return FALLBACK;
             } catch (NoSuchMethodException e) {
-                return null;
+                return FALLBACK;
             } catch (ClassCastException e) { // observed to occur in MemoryValidationTest
                 Class<?> type = method.getReturnType();
                 LOG.log(Level.WARNING, "Reopen #175325 and save complete log: type=" + type.getName() + " type.cl=" + type.getClassLoader() +

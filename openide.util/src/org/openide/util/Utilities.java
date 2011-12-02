@@ -1653,6 +1653,11 @@ widthcheck:  {
             names.put("WINDOWS", 0x20D); // NOI18N
             values.put(0x20D, "WINDOWS"); // NOI18N
         }
+        
+        names.put("MOUSE_WHEEL_UP", 0x290);
+        names.put("MOUSE_WHEEL_DOWN", 0x291);
+        values.put(0x290,"MOUSE_WHEEL_UP");
+        values.put(0x291,"MOUSE_WHEEL_DOWN");
 
         NamesAndValues nav = new NamesAndValues(values, names);
         namesAndValues = new SoftReference<NamesAndValues>(nav);

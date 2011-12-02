@@ -97,6 +97,28 @@
         <p>Specify which elements should be aligned after a line break.</p>
         <ul>
             <li><b>New lines.</b> The IDE breaks lines before any elements you select here.</li>
+            <li><strong>Group Multiline Alignment.</strong> Aligns the selected character
+                horizontally across all 
+                lines in a group. A group is defined as a number of lines that 
+                contain the same type of assignments. The group can be terminated 
+                by an empty line, a line with only a comment, a different expression, 
+                or the end of a block. For more information, see the <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                    <param name="content" value="http://blogs.oracle.com/netbeansphp/entry/formatting_group_multiline_alignment_added">
+                    <param name="text" value="<html><u>NetBeans for PHP Blog</u>.</html>">
+                    <param name="textFontSize" value="medium">
+                    <param name="textColor" value="blue"></object>
+                <ul><li><strong>Assignment.</strong> Affects position of the equal sign 
+                        character <tt>=</tt> in a 
+                    group of lines with assignments. When you set this to 'on', 
+                    the assignment char '=' is aligned after the longest identifier in a group. 
+                     
+                    This formatting option works for variable assignments, 
+                    field initializations, and constants. <br>
+                    <img src="../images/group-alignment-assignment.png" alt="Assignment group alignment off and on" border="1">
+                    </li>
+                    <li><strong>Array Initializer.</strong> Affects position of the initializer characters <tt>=></tt> in a group of lines.<br>
+                        <img alt="Array initializer group alignment on and off" src="../images/group-alignment-array-initializers.png" border="1"></li>
+                </ul></li>
             <li><b>Multiline Alignment.</b> Use if you set lines to wrap automatically at an element and
                 you want that element to be aligned vertically. First turn <a href="#wrapping">wrapping</a> on           
                 for the element and then select the element in this dialog.

@@ -51,6 +51,11 @@ public class AnimationsModuleTest extends CssModuleTestBase {
         super(name);
     }
 
+    public void testAnimationName() {
+        assertPropertyValues("animation-name", "none", "myanim", "myanim1,myanim2");
+        assertPropertyValues("@animation-arg", "none", "myanim", "myanim1,myanim2");
+    }
+    
     public void testAnimation() {
         assertPropertyValues("animation", "none", "myanim", "myanim1,myanim2");
         assertPropertyValues("animation", "linear");

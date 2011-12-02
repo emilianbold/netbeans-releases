@@ -47,6 +47,7 @@ package org.netbeans.modules.form.project;
 import java.io.*;
 import java.net.*;
 import java.util.*;
+import java.util.logging.Level;
 
 import org.openide.ErrorManager;
 import org.openide.filesystems.*;
@@ -58,6 +59,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressRunnable;
 import org.netbeans.api.progress.ProgressUtils;
+import org.netbeans.modules.form.FormUtils;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 
 /**
@@ -204,10 +206,15 @@ public class ClassPathUtils {
      * @return null if operation was cancelled by user otherwise true or false
      *  if project classpath was changed or not
      */
+    public static Boolean updateProject(FileObject fileInProject, ClassSource classSource)
+            throws IOException {
+        return updateProject(fileInProject, classSource, false);
+    }
+
     public static Boolean updateProject(final FileObject fileInProject,
-                                        final ClassSource classSource)
-        throws IOException
-    {
+            final ClassSource classSource, boolean asynchronous)
+            throws IOException {
+
         if (!classSource.hasEntries())
             return Boolean.FALSE; // nothing to add to project
 
@@ -215,22 +222,35 @@ public class ClassPathUtils {
 	if(project==null)
 	    return Boolean.FALSE;
 
-        String msg = getBundleString("MSG_UpdatingClassPath"); // NOI18N
-        Object retVal = ProgressUtils.showProgressDialogAndRun(new ProgressRunnable<Object>() {
-            @Override
-            public Object run(ProgressHandle handle) {
-                try {
-                    return classSource.addToProjectClassPath(fileInProject, ClassPath.COMPILE);
-                } catch (IOException ioex) {
-                    return ioex;
+        Boolean updated = null;
+        if (asynchronous) {
+            FormUtils.getRequestProcessor().post(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        classSource.addToProjectClassPath(fileInProject, ClassPath.COMPILE);
+                    } catch (IOException ioex) {
+                        FormUtils.LOGGER.log(Level.INFO, null, ioex);
+                    }
                 }
-            }
-        }, msg, false);
-        Boolean updated;
-        if (retVal instanceof IOException) {
-            throw (IOException)retVal;
+            });
         } else {
-            updated = (Boolean)retVal;
+            String msg = getBundleString("MSG_UpdatingClassPath"); // NOI18N
+            Object retVal = ProgressUtils.showProgressDialogAndRun(new ProgressRunnable<Object>() {
+                @Override
+                public Object run(ProgressHandle handle) {
+                    try {
+                        return classSource.addToProjectClassPath(fileInProject, ClassPath.COMPILE);
+                    } catch (IOException ioex) {
+                        return ioex;
+                    }
+                }
+            }, msg, false);
+            if (retVal instanceof IOException) {
+                throw (IOException)retVal;
+            } else {
+                updated = (Boolean)retVal;
+            }
         }
         return updated;
     }

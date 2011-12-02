@@ -96,7 +96,6 @@ public class J2MEActionProviderTest extends NbTestCase {
     {
         TestUtil.setLookup( new Object[] {
             //TestUtil.testProjectFactory(),
-            TestUtil.testProjectChooserFactory(),
             TestUtil.testFileLocator(),
             TestUtil.testLogger(J2MEActionProvider.COMMAND_COMPILE_SINGLE)
         }, J2MEActionProvider.class.getClassLoader());

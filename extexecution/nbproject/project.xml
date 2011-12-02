@@ -130,6 +130,7 @@
                 <package>org.netbeans.api.extexecution</package>
                 <package>org.netbeans.api.extexecution.print</package>
                 <package>org.netbeans.api.extexecution.input</package>
+                <package>org.netbeans.spi.extexecution</package>
                 <package>org.netbeans.spi.extexecution.destroy</package>
             </public-packages>
         </data>

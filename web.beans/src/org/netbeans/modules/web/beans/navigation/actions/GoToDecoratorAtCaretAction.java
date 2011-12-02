@@ -71,7 +71,7 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.ui.ElementOpen;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
-import org.netbeans.modules.web.beans.UsageLogger;
+import org.netbeans.modules.web.beans.CdiUtil;
 import org.netbeans.modules.web.beans.api.model.BeansModel;
 import org.netbeans.modules.web.beans.api.model.DependencyInjectionResult;
 import org.netbeans.modules.web.beans.api.model.InjectionPointDefinitionError;
@@ -275,7 +275,7 @@ public class GoToDecoratorAtCaretAction extends AbstractCdiAction {
         else {
             msg = "USG_CDI_GO_TO_DECORATOR";            // NOI18N
         }
-        UsageLogger logger = project.getLookup().lookup(UsageLogger.class);
+        CdiUtil logger = project.getLookup().lookup(CdiUtil.class);
         if (logger != null) {
             logger.log(msg, 
                     GoToDecoratorAtCaretAction.class, new Object[] { project

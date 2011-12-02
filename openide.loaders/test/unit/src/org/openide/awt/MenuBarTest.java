@@ -121,6 +121,14 @@ public class MenuBarTest extends NbTestCase implements ContainerListener {
         };
         MenuBar.allInstances(ics, new ArrayList<Object>());
     }
+
+    private void generateTenActions() throws IOException {
+        FileObject fo = df.getPrimaryFile().createFolder("1Menu");
+        for (int i = 0; i < 10; i++) {
+            FileObject item = fo.createData("item-" + i + ".instance");
+            item.setAttribute("instanceCreate", new JMenuItem("" + i));
+        }
+    }
     
     private static class IC implements InstanceCookie {
         private boolean throwing;
@@ -161,6 +169,8 @@ public class MenuBarTest extends NbTestCase implements ContainerListener {
         mb.waitFinished();
         
         assertEquals("Two children there", 2, mb.getComponentCount());
+        assertEquals("Programatic names deduced from the folder", "m1", mb.getComponent(0).getName());
+        assertEquals("Programatic names deduced from the folder", "m2", mb.getComponent(1).getName());
         
         assertEquals("No removals", 0, remove);
         assertEquals("Two additions", 2, add);
@@ -282,6 +292,25 @@ public class MenuBarTest extends NbTestCase implements ContainerListener {
         if (log.length() > 0) {
             fail("No warnings please:\n" + log);
         }
+    }
+    
+    public void testItemCount() throws IOException {
+        generateTenActions();
+        assertEquals("One menu", 1, mb.getMenuCount());
+        JMenu menu = mb.getMenu(0);
+        assertEquals("Ten items", 10, menu.getItemCount());
+    }
+    public void testMenuComponentCount() throws IOException {
+        generateTenActions();
+        assertEquals("One menu", 1, mb.getMenuCount());
+        JMenu menu = mb.getMenu(0);
+        assertEquals("Ten items", 10, menu.getMenuComponentCount());
+    }
+    public void testMenuComponents() throws IOException {
+        generateTenActions();
+        assertEquals("One menu", 1, mb.getMenuCount());
+        JMenu menu = mb.getMenu(0);
+        assertEquals("Ten items", 10, menu.getMenuComponents().length);
     }
 
     private void doActionIsCreatedOnlyOnce_13195(String name) throws Exception {

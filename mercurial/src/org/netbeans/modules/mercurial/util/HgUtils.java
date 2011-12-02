@@ -107,6 +107,7 @@ import org.netbeans.modules.mercurial.ui.commit.CommitOptions;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage.HgRevision;
 import org.netbeans.modules.versioning.util.FileSelector;
+import org.openide.text.Line;
 import org.openide.util.HelpCtx;
 import org.openide.util.Utilities;
 
@@ -1276,7 +1277,7 @@ itor tabs #66700).
         return remotePath;
     }
 
-    public static void openInRevision (final File originalFile, final HgRevision revision, boolean showAnnotations) throws IOException {
+    public static void openInRevision (final File originalFile, final int lineNumber, final HgRevision revision, boolean showAnnotations) throws IOException {
         File file = org.netbeans.modules.mercurial.VersionsCache.getInstance().getFileRevision(originalFile, revision);
 
         if (file == null) { // can be null if the file does not exist or is empty in the given revision
@@ -1301,15 +1302,16 @@ itor tabs #66700).
             ces = org.netbeans.modules.versioning.util.Utils.openFile(fo, revision.getRevisionNumber());
         }
         if (showAnnotations) {
-            if (ces == null) {
-                return;
-            } else {
+            if (ces != null) {
                 final org.openide.text.CloneableEditorSupport support = ces;
                 EventQueue.invokeLater(new Runnable() {
                     @Override
                     public void run() {
                         javax.swing.JEditorPane[] panes = support.getOpenedPanes();
                         if (panes != null) {
+                            if (lineNumber >= 0 && lineNumber < support.getLineSet().getLines().size()) {
+                                support.getLineSet().getCurrent(lineNumber).show(Line.ShowOpenType.NONE, Line.ShowVisibilityType.FRONT);
+                            }
                             org.netbeans.modules.mercurial.ui.annotate.AnnotateAction.showAnnotations(panes[0], originalFile, revision.getRevisionNumber());
                         }
                     }
@@ -1346,6 +1348,44 @@ itor tabs #66700).
     public static boolean isRepositoryLocked (File repository) {
         String[] locks = getHgFolderForRoot(repository).list();
         return locks != null && Arrays.asList(locks).contains("wlock"); //NOI18N
+    }
+
+    public static boolean contains (File[] roots, File file) {
+        for (File root : roots) {
+            if (Utils.isAncestorOrEqual(root, file)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Flattens the given collection of files and removes those that do not respect the flat folder logic, i.e. those that lie deeper under a flat folder.
+     * @param roots selected files with flat folders
+     */
+    public static Set<File> flattenFiles (File[] roots, Collection<File> files) {
+        File[][] split = Utils.splitFlatOthers(roots);
+        Set<File> filteredFiles = new HashSet<File>(files);
+        if (split[0].length > 0) {
+            outer:
+            for (Iterator<File> it = filteredFiles.iterator(); it.hasNext(); ) {
+                File f = it.next();
+                // file is directly under a flat folder
+                for (File flat : split[0]) {
+                    if (f.getParentFile().equals(flat)) {
+                        continue outer;
+                    }
+                }
+                // file lies under a recursive folder
+                for (File folder : split[1]) {
+                    if (Utils.isAncestorOrEqual(folder, f)) {
+                        continue outer;
+                    }
+                }
+                it.remove();
+            }
+        }
+        return filteredFiles;
     }
 
     /**

@@ -379,7 +379,10 @@ public final class ColorModel {
             editorPane.addCaretListener (new CaretListener () {
                 @Override
                 public void caretUpdate (CaretEvent e) {
-                    if (!fireChanges) return;
+                    if (!fireChanges)  {
+                        fireChanges = true;
+                        return;
+                    }
                     int offset = e.getDot ();
                     String elementName = null;
                     
@@ -436,8 +439,7 @@ public final class ColorModel {
             
             editorPane.setEnabled(false);
             editorPane.setText(exampleText);
-            fireChanges = true;
-
+            
             // scroll the view, but leave the caret where it is, otherwise it will
             // change the selected category (#143058)
             SwingUtilities.invokeLater(new Runnable() {

@@ -80,6 +80,7 @@ public abstract class JavaRefactoringGlobalAction extends NodeAction {
         setIcon(icon);
     }
     
+    @Override
     public final String getName() {
         return (String) getValue(Action.NAME);
     }
@@ -97,6 +98,7 @@ public abstract class JavaRefactoringGlobalAction extends NodeAction {
         return arg.replace("...", ""); // NOI18N
     }
     
+    @Override
     public org.openide.util.HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
@@ -134,10 +136,12 @@ public abstract class JavaRefactoringGlobalAction extends NodeAction {
     
     protected abstract boolean enable(Lookup context);
     
+    @Override
     public final void performAction(final Node[] activatedNodes) {
         performAction(getLookup(activatedNodes));
     }
 
+    @Override
     protected boolean enable(Node[] activatedNodes) {
         return enable(getLookup(activatedNodes));
     }
@@ -156,33 +160,41 @@ public abstract class JavaRefactoringGlobalAction extends NodeAction {
             this.context=context;
         }
         
+        @Override
         public Object getValue(String arg0) {
             return JavaRefactoringGlobalAction.this.getValue(arg0);
         }
         
+        @Override
         public void putValue(String arg0, Object arg1) {
             JavaRefactoringGlobalAction.this.putValue(arg0, arg1);
         }
         
+        @Override
         public void setEnabled(boolean arg0) {
             JavaRefactoringGlobalAction.this.setEnabled(arg0);
         }
         
+        @Override
         public boolean isEnabled() {
             return enable(context);
         }
         
+        @Override
         public void addPropertyChangeListener(PropertyChangeListener arg0) {
             JavaRefactoringGlobalAction.this.addPropertyChangeListener(arg0);
         }
         
+        @Override
         public void removePropertyChangeListener(PropertyChangeListener arg0) {
             JavaRefactoringGlobalAction.this.removePropertyChangeListener(arg0);
         }
         
+        @Override
         public void actionPerformed(ActionEvent arg0) {
             JavaRefactoringGlobalAction.this.performAction(context);
         }
+        @Override
         public JMenuItem getMenuPresenter() {
             if (isMethodOverridden(JavaRefactoringGlobalAction.this, "getMenuPresenter")) { // NOI18N
 
@@ -192,6 +204,7 @@ public abstract class JavaRefactoringGlobalAction extends NodeAction {
             }
         }
 
+        @Override
         public JMenuItem getPopupPresenter() {
             if (isMethodOverridden(JavaRefactoringGlobalAction.this, "getPopupPresenter")) { // NOI18N
 
@@ -201,6 +214,7 @@ public abstract class JavaRefactoringGlobalAction extends NodeAction {
             }
         }
 
+        @Override
         public Component getToolbarPresenter() {
             if (isMethodOverridden(JavaRefactoringGlobalAction.this, "getToolbarPresenter")) { // NOI18N
 

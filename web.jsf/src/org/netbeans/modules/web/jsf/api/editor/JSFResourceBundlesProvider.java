@@ -79,9 +79,7 @@ public class JSFResourceBundlesProvider {
                     List<ResourceBundle> result = new ArrayList<ResourceBundle>();
                     for (Application application : applications) {
                         for (org.netbeans.modules.web.jsf.api.facesmodel.ResourceBundle bundle : application.getResourceBundles()) {
-                            String baseName = bundle.getBaseName() != null ? bundle.getBaseName().trim() : null;
-                            String var = bundle.getVar() != null ? bundle.getVar().trim() : null;
-                            result.add(new ResourceBundle(baseName, var));
+                            result.add(new ResourceBundle(bundle.getBaseName(), bundle.getVar()));
                         }
                     }
                     return result;

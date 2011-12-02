@@ -55,6 +55,7 @@ import javax.swing.SwingUtilities;
 import org.netbeans.core.WindowSystem;
 import org.netbeans.core.windows.ModeImpl;
 import org.netbeans.core.windows.PersistenceHandler;
+import org.netbeans.core.windows.RegistryImpl;
 import org.netbeans.core.windows.TopComponentGroupImpl;
 import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.core.windows.persistence.PersistenceManager;
@@ -157,6 +158,7 @@ public class ResetWindowsAction implements ActionListener {
                         tcGroup.open();
                 }
                 ModeImpl editorMode = (ModeImpl) wm.findMode("editor"); //NOI18N
+                RegistryImpl registry = ( RegistryImpl ) TopComponent.getRegistry();
                 //re-open editor windows that were opened before the reset
                 for( int i=0; i<editors.length && null != editorMode; i++ ) {
                     ModeImpl mode = ( ModeImpl ) wm.findMode( editors[i] );
@@ -164,6 +166,7 @@ public class ResetWindowsAction implements ActionListener {
                         mode = editorMode;
                     if( null != mode )
                         mode.addOpenedTopComponentNoNotify(editors[i]);
+                    registry.topComponentOpened( editors[i] );
                 }
                 SwingUtilities.invokeLater( new Runnable() {
                     @Override

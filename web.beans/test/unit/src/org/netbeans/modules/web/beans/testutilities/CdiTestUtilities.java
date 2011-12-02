@@ -44,7 +44,12 @@ package org.netbeans.modules.web.beans.testutilities;
 
 import java.io.IOException;
 
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.support.TestUtilities;
+import org.netbeans.modules.web.beans.api.model.ModelUnit;
+import org.netbeans.modules.web.beans.api.model.WebBeansModel;
+import org.netbeans.modules.web.beans.api.model.WebBeansModelFactory;
 import org.openide.filesystems.FileObject;
 
 
@@ -63,6 +68,14 @@ public class CdiTestUtilities {
         for (FileObject fileObject : children) {
             fileObject.delete();
         }
+    }
+    
+    public MetadataModel<WebBeansModel> createBeansModel() throws IOException, InterruptedException {
+        ModelUnit modelUnit = ModelUnit.create(
+                ClassPath.getClassPath(mySourceRoot, ClassPath.BOOT),
+                ClassPath.getClassPath(mySourceRoot, ClassPath.COMPILE),
+                ClassPath.getClassPath(mySourceRoot, ClassPath.SOURCE));
+        return WebBeansModelFactory.createMetaModel(modelUnit);
     }
     
     public void createQualifier(String name ) throws IOException{
@@ -96,6 +109,48 @@ public class CdiTestUtilities {
                 "@Retention(RUNTIME) "+
                 "@Target({METHOD, TYPE}) "+
                 "public @interface "+name+"  {} ");
+    }
+    
+    public void initEnterprise()  throws IOException{
+        TestUtilities.copyStringToFileObject(mySourceRoot, "javax/ejb/Singleton.java",
+                "package javax.ejb; " +
+                "import static java.lang.annotation.ElementType; "+
+                "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
+                "import java.lang.annotation.*; "+
+                "import java.lang.annotation.RetentionPolicy; "+
+                "@Retention(RUNTIME) "+
+                "@Target({ElementType.TYPE}) "+          
+                "public @interface Singleton  {}");
+        
+        TestUtilities.copyStringToFileObject(mySourceRoot, "javax/ejb/Stateless.java",
+                "package javax.ejb; " +
+                "import static java.lang.annotation.ElementType; "+
+                "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
+                "import java.lang.annotation.*; "+
+                "import java.lang.annotation.RetentionPolicy; "+
+                "@Retention(RUNTIME) "+
+                "@Target({ElementType.TYPE}) "+          
+                "public @interface Stateless  {}");
+        
+        TestUtilities.copyStringToFileObject(mySourceRoot, "javax/ejb/PostActivate.java",
+                "package javax.ejb; " +
+                "import static java.lang.annotation.ElementType; "+
+                "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
+                "import java.lang.annotation.*; "+
+                "import java.lang.annotation.RetentionPolicy; "+
+                "@Retention(RUNTIME) "+
+                "@Target({ElementType.METHOD}) "+          
+                "public @interface PostActivate  {}");
+        
+        TestUtilities.copyStringToFileObject(mySourceRoot, "javax/ejb/PrePassivate.java",
+                "package javax.ejb; " +
+                "import static java.lang.annotation.ElementType; "+
+                "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
+                "import java.lang.annotation.*; "+
+                "import java.lang.annotation.RetentionPolicy; "+
+                "@Retention(RUNTIME) "+
+                "@Target({ElementType.METHOD}) "+          
+                "public @interface PrePassivate  {}");
     }
     
     public  void initAnnotations() throws IOException{
@@ -467,6 +522,16 @@ public class CdiTestUtilities {
                 "@Retention(RUNTIME) "+
                 "@Target({METHOD}) "+      
                 "public @interface PostActivate  {" +
+                "}");
+        
+        TestUtilities.copyStringToFileObject(mySourceRoot, "javax/enterprise/inject/spi/InjectionPoint.java",
+                "package javax.enterprise.inject.spi; " +
+                "public interface InjectionPoint  {" +
+                "}");
+        
+        TestUtilities.copyStringToFileObject(mySourceRoot, "javax/enterprise/context/spi/Context.java",
+                "package javax.enterprise.context.spi; " +
+                "public interface Context  {" +
                 "}");
     }
     

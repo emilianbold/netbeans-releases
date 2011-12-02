@@ -166,6 +166,7 @@ public class FreemarkerFactory implements ScriptEngineFactory {
         e.add("fm");
         extensions = Collections.unmodifiableList(e);
         ArrayList<String> m = new ArrayList<String>(0);
+        m.add("text/x-freemarker");
         mimeTypes = Collections.unmodifiableList(m);
     }
 }

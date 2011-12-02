@@ -12,21 +12,9 @@ Includes:
 Macros:
     <no macros>
 NAMESPACE DEFINITOIN constants [1:7/6-4:10/144] SCOPE: bug182702.f
-FUNCTION DEFINITION fall  [6:7/169-15:10/293] ProgramImpl SCOPE: $Global$ 
-    SIGNATURE 
-    UNIQUE NAME f:fall
-    DECLARATION: fall  [6:7/169-15:10/293]
-    PARAMETERS:
-    RETURNS int TEXT=int  [1:1/0-1:1/0]
-    STATEMENT is null
+NAMESPACE DEFINITOIN fall [6:7/169-15:10/293] SCOPE: $Global$ 
 
 ========== Dumping model of PROJECT DummyProject
 NAMESPACE DEFINITOIN constants [1:7/6-4:10/144] SCOPE: bug182702.f
-FUNCTION DEFINITION fall  [6:7/169-15:10/293] ProgramImpl SCOPE: $Global$ 
-    SIGNATURE 
-    UNIQUE NAME f:fall
-    DECLARATION: fall  [6:7/169-15:10/293]
-    PARAMETERS:
-    RETURNS int TEXT=int  [1:1/0-1:1/0]
-    STATEMENT is null
+NAMESPACE DEFINITOIN fall [6:7/169-15:10/293] SCOPE: $Global$ 
 

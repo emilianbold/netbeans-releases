@@ -1070,7 +1070,7 @@ public final class ParseProjectXml extends Task {
             }
         }
         for (String nextModule : deps) {
-            log("  Added dep: " + nextModule, Project.MSG_DEBUG);
+            log("  Added dep " + nextModule + " due to " + cnb, Project.MSG_DEBUG);
             File depJar = computeClasspathModuleLocation(modules, nextModule, clusterPath, excludedModules, true);
             if (!additions.contains(depJar)) {
                 additions.add(depJar);
@@ -1350,6 +1350,7 @@ public final class ParseProjectXml extends Task {
                    // cnbs can be null
                    if (cnbs != null) {
                        for (String c : cnbs) {
+                           log("adding " + c + " due to " + cnb, Project.MSG_DEBUG);
                            addRecursiveModules(c, entriesMap);
                        }
                    }

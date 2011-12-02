@@ -209,7 +209,7 @@ public class TableGenerator implements CodeGenerator {
             List<? extends CodeGenerator> retval = Collections.emptyList();
             JTextComponent component = context.lookup(JTextComponent.class);
             InvocationContextResolver invocationContextResolver = InvocationContextResolver.create(component);
-            if (!invocationContextResolver.isExactlyIn(InvocationContext.CLASS)) {
+            if (!invocationContextResolver.isExactlyIn(InvocationContext.CLASS) && !invocationContextResolver.isExactlyIn(InvocationContext.EMPTY_STATEMENT)) {
                 retval = Collections.singletonList(new TableGenerator(component));
             }
             return retval;

@@ -80,6 +80,7 @@ public class CheckRenderer extends JPanel implements TreeCellRenderer {
     /** The component returned by HtmlRenderer.Renderer.getTreeCellRendererComponent() */
     private Component stringDisplayer = new JLabel(" "); //NOI18N
     
+    @Override
     public Component getTreeCellRendererComponent(JTree tree, Object value,
     boolean isSelected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
         CheckNode node = (CheckNode) value;

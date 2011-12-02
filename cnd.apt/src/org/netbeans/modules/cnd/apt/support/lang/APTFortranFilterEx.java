@@ -97,6 +97,13 @@ final class APTFortranFilterEx implements APTLanguageFilter {
                     return new FilterToken((APTToken)newToken, APTTokenTypes.T_REAL_CONSTANT);
                 }
             }
+            if (newToken.getType() == APTTokenTypes.T_END) {
+                nextToken = orig.nextToken();
+                if (nextToken.getType() == APTTokenTypes.T_IF) {
+                    nextToken = null;
+                    return new FilterToken((APTToken)newToken, APTTokenTypes.T_ENDIF);
+                }
+            }
             if (newToken.getType() == APTTokenTypes.NOT) {
                 nextToken = orig.nextToken();
                 while(nextToken != null 

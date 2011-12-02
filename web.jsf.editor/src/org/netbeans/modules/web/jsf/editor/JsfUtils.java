@@ -41,26 +41,37 @@
  */
 package org.netbeans.modules.web.jsf.editor;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 import javax.swing.text.BadLocationException;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.GsfUtilities;
-import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser.Result;
-import org.netbeans.modules.web.jsfapi.api.Library;
 
 /**
  *
- * @author marekfukala
+ * @author mfukala@netbeans.org
  */
 public class JsfUtils {
 
+    private JsfUtils() {
+    }
+
+    /**
+     * Mimetype of XHTML files - text/xhtml
+     */
+    public static final String XHTML_MIMETYPE = "text/xhtml"; //NOI18N
+    /**
+     * Mimetype of plain XML files - text/xml
+     */
+    public static final String XML_MIMETYPE = "text/xml"; //NOI18N
+    /**
+     * Mimetype of Tag Library Descriptor files - text/x-tld
+     */
+    public static final String TLD_MIMETYPE = "text/x-tld"; //NOI18N
+    
     /**
      * Creates an OffsetRange of source document offsets for given embedded offsets.
      */

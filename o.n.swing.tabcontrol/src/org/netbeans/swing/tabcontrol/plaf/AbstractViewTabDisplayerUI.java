@@ -158,6 +158,7 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
                     dataModel.removeChangeListener( this );
             }
         });
+        showHideControlButtons();
     }
     
     /**
@@ -649,6 +650,11 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
             }
             Rectangle r = getTabRect(tab, null);
             displayer.repaint(r);
+        }
+        
+        @Override
+        protected boolean isDisplayable() {
+            return displayer.isDisplayable();
         }
     }
     

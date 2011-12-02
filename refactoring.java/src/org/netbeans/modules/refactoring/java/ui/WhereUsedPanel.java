@@ -71,7 +71,7 @@ import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.openide.awt.Mnemonics;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -131,7 +131,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
     }
     
     public Scope getCustomScope() {
-        FileObject file = RetoucheUtils.getFileObject(element);
+        FileObject file = RefactoringUtils.getFileObject(element);
         Scope value = null;
         
         if(!enableScope) {
@@ -144,6 +144,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
                 break;
             case 2:
                 NonRecursiveFolder nonRecursiveFolder = new NonRecursiveFolder() {
+            @Override
                     public FileObject getFolder() {
                         return packageFolder;
                     }
@@ -171,18 +172,21 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
     }
     
     private Collection getOverriddenMethods(ExecutableElement m, CompilationInfo info) {
-        return RetoucheUtils.getOverridenMethods(m, info);
+        return RefactoringUtils.getOverridenMethods(m, info);
     }
     
+    @Override
     public void initialize() {
         if (initialized) return;
         JavaSource source = JavaSource.forFileObject(element.getFileObject());
         final Project p = FileOwnerQuery.getOwner(element.getFileObject());
         CancellableTask<CompilationController> task =new CancellableTask<CompilationController>() {
+            @Override
             public void cancel() {
                 throw new UnsupportedOperationException("Not supported yet."); // NOI18N
             }
             
+            @Override
             public void run(CompilationController info) throws Exception {
                 info.toPhase(Phase.RESOLVED);
                 String m_isBaseClassText = null;
@@ -266,6 +270,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
                 }
 
                 SwingUtilities.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         remove(classesPanel);
                         remove(methodsPanel);
@@ -303,7 +308,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
                             scope.setModel(new DefaultComboBoxModel(new Object[]{allProjects, currentProject, currentPackage, currentFile, customScope }));
                             int defaultItem = (Integer) RefactoringModule.getOption("whereUsed.scope", 0); // NOI18N
                             WhereUsedPanel.this.customScope = readScope();
-                            if(defaultItem == 4 &&
+                            if(defaultItem == 4 && WhereUsedPanel.this.customScope !=null &&
                                     WhereUsedPanel.this.customScope.getFiles().isEmpty() &&
                                     WhereUsedPanel.this.customScope.getFolders().isEmpty() &&
                                     WhereUsedPanel.this.customScope.getSourceRoots().isEmpty()) {
@@ -322,7 +327,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
             try {
                 source.runUserActionTask(task, true);
             } catch (IOException ioe) {
-                throw (RuntimeException) new RuntimeException().initCause(ioe);
+                throw new RuntimeException(ioe);
             }
             initialized = true;
     }
@@ -330,6 +335,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         public JLabelRenderer () {
             setOpaque(true);
         }
+        @Override
         public Component getListCellRendererComponent(
                 JList list,
                 Object value,
@@ -423,6 +429,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
                         } else {
                             toRet.add((T) new NonRecursiveFolder() {
 
+                                @Override
                                 public FileObject getFolder() {
                                     return f;
                                 }
@@ -466,13 +473,14 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         if (result.length() > MAX_NAME) {
             result = result.substring(0,MAX_NAME-1) + "..."; // NOI18N
         }
-        return RetoucheUtils.htmlize(result);
+        return UIUtilities.htmlize(result);
     }
     
     public TreePathHandle getBaseMethod() {
         return newElement;
     }
     
+    @Override
     public void requestFocus() {
         super.requestFocus();
     }
@@ -765,6 +773,7 @@ private void m_usagesStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRS
         return searchInComments.isSelected();
     }
 
+    @Override
     public Component getComponent() {
         return this;
     }
