@@ -176,9 +176,7 @@ public class GrammarParser {
                         }
                     }
 
-                    last = new ValueGrammarElement(parent);
-                    ((ValueGrammarElement) last).setValue(buf.toString());
-                    ((ValueGrammarElement) last).setIsUnit(true);
+                    last = new ValueGrammarElement(parent, buf.toString(), true);
                     parent.addElement(last);
                     break;
 
@@ -248,9 +246,7 @@ public class GrammarParser {
                     String image = buf.toString();
 
                     if (!(ignoreInherits && "inherit".equalsIgnoreCase(image))) { //NOI18N
-                        last = new ValueGrammarElement(parent);
-                        ((ValueGrammarElement) last).setValue(image);
-                        ((ValueGrammarElement) last).setIsUnit(false);
+                        last = new ValueGrammarElement(parent, image, false);
                         parent.addElement(last);
                     }
                     break;
