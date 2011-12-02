@@ -233,9 +233,10 @@ final class CallHierarchyTasks {
                 TreePathHandle sourceToQuery = elmDesc.getSourceToQuery();
                 
                 // validate source
-                if (RefactoringUtils.getElementHandle(sourceToQuery) == null) {
-                    elmDesc.setBroken();
-                } else {
+                // TODO: what is this?
+                //if (RefactoringUtils.getElementHandle(sourceToQuery) == null) {
+                //    elmDesc.setBroken();
+                //} else {
                     ClasspathInfo cpInfo;
                     if (searchAll) {
                         cpInfo = RefactoringUtils.getClasspathInfoFor(true, sourceToQuery.getFileObject());
@@ -256,7 +257,7 @@ final class CallHierarchyTasks {
                         Exceptions.printStackTrace(ex);
                     }
                     elmDesc.setCanceled(isCanceled());
-                }
+                //}
                 elmDesc.setReferences(result);
                 resultHandler.run();
             } finally {

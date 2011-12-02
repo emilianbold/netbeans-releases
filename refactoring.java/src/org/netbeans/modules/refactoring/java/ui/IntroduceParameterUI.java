@@ -81,8 +81,6 @@ public class IntroduceParameterUI implements RefactoringUI {
     @Override
     public CustomRefactoringPanel getPanel(ChangeListener parent) {
         if (panel == null) {
-            //TODO:
-            //parent.setPreviewEnabled(true);
             panel = new IntroduceParameterPanel(expression, parent);
         }
         return panel;
