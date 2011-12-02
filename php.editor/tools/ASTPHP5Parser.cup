@@ -324,8 +324,6 @@ non terminal List class_variable_declaration;
 non terminal List constant_declaration;
 non terminal Integer method_modifiers;
 non terminal Block method_body;
-non terminal List non_empty_member_modifiers;
-non terminal Integer member_modifier;
 non terminal List method_or_not;
 non terminal List variable_properties;
 non terminal FunctionDeclaration function_declaration_statement;
@@ -349,6 +347,9 @@ non terminal VariableBase variable_property;
 non terminal VariableBase static_member;
 non terminal List isset_variables;
 non terminal Variable tracked_variable;
+non terminal Integer static_modifier;
+non terminal Integer ppp_modifiers;
+non terminal Integer af_modifiers;
 
 non terminal ClassName class_name_reference;
 non terminal StaticConstantAccess class_constant;
@@ -1738,14 +1739,30 @@ T_SEMICOLON /* abstract method */
 ;
 
 variable_modifiers ::=
-non_empty_member_modifiers:list
+ppp_modifiers:modifier
 {:
-	int result = 0;
-	for (Iterator it = list.iterator(); it.hasNext() ; ) {
-		Integer modifier = (Integer)it.next();
-		result |= modifier.intValue();
-	}
-	RESULT = new Integer(result);
+    RESULT = new Integer(modifier.intValue());
+:}
+
+| static_modifier:modifier
+{:
+    RESULT = new Integer(modifier.intValue());
+:}
+
+| static_modifier:fModifier ppp_modifiers:sModifier
+{:
+    int result = 0;
+    result |= fModifier.intValue();
+    result |= sModifier.intValue();
+    RESULT = new Integer(result);
+:}
+
+| ppp_modifiers:fModifier static_modifier:sModifier
+{:
+    int result = 0;
+    result |= fModifier.intValue();
+    result |= sModifier.intValue();
+    RESULT = new Integer(result);
 :}
 
 | T_VAR
@@ -1760,33 +1777,132 @@ method_modifiers ::=
 	RESULT = null;
 :}
 
-| non_empty_member_modifiers:list
+| af_modifiers:modifier
+{:
+    RESULT = new Integer(modifier.intValue());
+:}
+
+| static_modifier:modifier
+{:
+    RESULT = new Integer(modifier.intValue());
+:}
+
+| ppp_modifiers:modifier
+{:
+    RESULT = new Integer(modifier.intValue());
+:}
+
+| static_modifier:fModifier ppp_modifiers:sModifier
 {:
     int result = 0;
-	for (Iterator it = list.iterator(); it.hasNext() ; ) {
-		Integer modifier = (Integer)it.next();
-        result |= modifier.intValue();
-	}
+    result |= fModifier.intValue();
+	result |= sModifier.intValue();
+	RESULT = new Integer(result);
+:}
+
+| static_modifier:fModifier af_modifiers:sModifier
+{:
+    int result = 0;
+    result |= fModifier.intValue();
+	result |= sModifier.intValue();
+	RESULT = new Integer(result);
+:}
+
+| ppp_modifiers:fModifier static_modifier:sModifier
+{:
+    int result = 0;
+    result |= fModifier.intValue();
+	result |= sModifier.intValue();
+	RESULT = new Integer(result);
+:}
+
+| ppp_modifiers:fModifier af_modifiers:sModifier
+{:
+    int result = 0;
+    result |= fModifier.intValue();
+	result |= sModifier.intValue();
+	RESULT = new Integer(result);
+:}
+
+| af_modifiers:fModifier static_modifier:sModifier
+{:
+    int result = 0;
+    result |= fModifier.intValue();
+	result |= sModifier.intValue();
+	RESULT = new Integer(result);
+:}
+
+| af_modifiers:fModifier ppp_modifiers:sModifier
+{:
+    int result = 0;
+    result |= fModifier.intValue();
+	result |= sModifier.intValue();
+	RESULT = new Integer(result);
+:}
+
+| static_modifier:fModifier ppp_modifiers:sModifier af_modifiers:tModifier
+{:
+    int result = 0;
+    result |= fModifier.intValue();
+	result |= sModifier.intValue();
+    result |= tModifier.intValue();
+	RESULT = new Integer(result);
+:}
+
+| static_modifier:fModifier af_modifiers:sModifier ppp_modifiers:tModifier
+{:
+    int result = 0;
+    result |= fModifier.intValue();
+	result |= sModifier.intValue();
+    result |= tModifier.intValue();
+	RESULT = new Integer(result);
+:}
+
+| ppp_modifiers:fModifier static_modifier:sModifier af_modifiers:tModifier
+{:
+    int result = 0;
+    result |= fModifier.intValue();
+	result |= sModifier.intValue();
+    result |= tModifier.intValue();
+	RESULT = new Integer(result);
+:}
+
+| ppp_modifiers:fModifier af_modifiers:sModifier static_modifier:tModifier
+{:
+    int result = 0;
+    result |= fModifier.intValue();
+	result |= sModifier.intValue();
+    result |= tModifier.intValue();
+	RESULT = new Integer(result);
+:}
+
+| af_modifiers:fModifier static_modifier:sModifier ppp_modifiers:tModifier
+{:
+    int result = 0;
+    result |= fModifier.intValue();
+	result |= sModifier.intValue();
+    result |= tModifier.intValue();
+	RESULT = new Integer(result);
+:}
+
+| af_modifiers:fModifier ppp_modifiers:sModifier static_modifier:tModifier
+{:
+    int result = 0;
+    result |= fModifier.intValue();
+	result |= sModifier.intValue();
+    result |= tModifier.intValue();
 	RESULT = new Integer(result);
 :}
 ;
 
-non_empty_member_modifiers ::=
-member_modifier:modifier
+static_modifier ::=
+T_STATIC
 {:
-    List list = new LinkedList();
-	list.add(modifier);
-	RESULT = list;
-:}
-
-| non_empty_member_modifiers:list member_modifier:modifier
-{:
-    list.add(modifier);
-	RESULT = list;
+    RESULT = ASTPHP5Parser.STATIC;
 :}
 ;
 
-member_modifier ::=
+ppp_modifiers ::=
 T_PUBLIC
 {:
 	RESULT = ASTPHP5Parser.PUBLIC;
@@ -1801,13 +1917,10 @@ T_PUBLIC
 {:
 	RESULT = ASTPHP5Parser.PRIVATE;
 :}
+;
 
-| T_STATIC
-{:
-	RESULT = ASTPHP5Parser.STATIC;
-:}
-
-| T_ABSTRACT
+af_modifiers ::=
+T_ABSTRACT
 {:
 	RESULT = ASTPHP5Parser.ABSTRACT;
 :}

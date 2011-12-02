@@ -1,29 +1,13 @@
 <?php
 //START
 
-class FinalAndAbstractFields {
-
-    private static final $finalStaticField;
-
-    private static abstract $abstractStaticField;
-
-    private final $finalField;
-
-    private abstract $abstractField;
-
-}
-
 class ClassMethods {
 
-    public abstract final function classAbstractAndFinal() {
-
-    }
+    abstract private function classAbstractPrivate();
 
     public abstract function classWithBody() {
 
     }
-
-    abstract private function classAbstractPrivate();
 
 }
 
