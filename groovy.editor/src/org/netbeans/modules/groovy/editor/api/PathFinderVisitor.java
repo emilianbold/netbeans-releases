@@ -595,7 +595,7 @@ public class PathFinderVisitor extends ClassCodeVisitorSupport {
     }
 
     private boolean isInside(ASTNode node, int line, int column, boolean addToPath) {
-        if (!isInSource(node)) {
+        if (node == null || !isInSource(node)) {
             return false;
         }
 
