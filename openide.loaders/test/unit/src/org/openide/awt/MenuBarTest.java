@@ -169,6 +169,8 @@ public class MenuBarTest extends NbTestCase implements ContainerListener {
         mb.waitFinished();
         
         assertEquals("Two children there", 2, mb.getComponentCount());
+        assertEquals("Programatic names deduced from the folder", "m1", mb.getComponent(0).getName());
+        assertEquals("Programatic names deduced from the folder", "m2", mb.getComponent(1).getName());
         
         assertEquals("No removals", 0, remove);
         assertEquals("Two additions", 2, add);
