@@ -438,25 +438,6 @@ public class RefactoringUtils {
     }
 
     /**
-     * TODO: should be removed
-     *
-     * @param handle
-     * @return
-     * @deprecated
-     */
-    @Deprecated
-    public static Collection<FileObject> getSuperTypesFiles(TreePathHandle handle) {
-        try {
-            SuperTypesTask ff;
-            JavaSource source = JavaSource.forFileObject(handle.getFileObject());
-            source.runUserActionTask(ff = new SuperTypesTask(handle), true);
-            return ff.getFileObjects();
-        } catch (IOException ex) {
-            throw new RuntimeException(ex);
-        }
-    }
-
-    /**
      * get supertypes of given types
      *
      * @param type
@@ -810,35 +791,6 @@ public class RefactoringUtils {
         String jdtxt = wc.getElements().getDocComment(elm);
         if (jdtxt != null) {
             make.addComment(tree, Comment.create(Comment.Style.JAVADOC, -1, -1, -1, jdtxt), true);
-        }
-    }
-
-    private static class SuperTypesTask implements CancellableTask<CompilationController> {
-
-        private Collection<FileObject> files;
-        TreePathHandle handle;
-
-        SuperTypesTask(TreePathHandle handle) {
-            this.handle = handle;
-        }
-
-        @Override
-        public void cancel() {
-        }
-
-        @Override
-        public void run(CompilationController cc) {
-            try {
-                cc.toPhase(JavaSource.Phase.RESOLVED);
-            } catch (IOException ex) {
-                throw new RuntimeException(ex);
-            }
-            Element el = handle.resolveElement(cc);
-            files = elementsToFile(getSuperTypes((TypeElement) el, cc, true), cc.getClasspathInfo());
-        }
-
-        public Collection<FileObject> getFileObjects() {
-            return files;
         }
     }
 
