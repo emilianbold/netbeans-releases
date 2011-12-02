@@ -51,6 +51,8 @@ import java.awt.Cursor;
 import java.awt.EventQueue;
 import java.awt.Image;
 import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
@@ -94,6 +96,10 @@ import org.netbeans.modules.project.ui.groups.Group;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
+import org.openide.awt.ActionRegistration;
 import org.openide.awt.StatusDisplayer;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
@@ -112,6 +118,7 @@ import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.NbCollections;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
@@ -798,6 +805,30 @@ public class ProjectTab extends TopComponent
         public void preferenceChange(PreferenceChangeEvent evt) {
             if (SyncEditorWithViewsAction.SYNC_ENABLED_PROP_NAME.equals(evt.getKey())) {
                 synchronizeViews = Boolean.parseBoolean(evt.getNewValue());
+            }
+        }
+
+    }
+
+    @ActionID(category="Project", id="org.netbeans.modules.project.ui.collapseAllNodes")
+    @ActionRegistration(displayName="#collapseAllNodes")
+    @ActionReferences({
+        @ActionReference(path=ProjectsRootNode.ACTIONS_FOLDER, position=1510),
+        @ActionReference(path=ProjectsRootNode.ACTIONS_FOLDER_PHYSICAL, position=1000)
+    })
+    @Messages("collapseAllNodes=Collapse All")
+    public static class CollapseAll implements ActionListener {
+
+        private final String type;
+
+        public CollapseAll(String type) {
+            this.type = type;
+        }
+
+        @Override public void actionPerformed(ActionEvent e) {
+            ProjectTab tab = findDefault(type);
+            for (Node root : tab.manager.getRootContext().getChildren().getNodes()) {
+                tab.btv.collapseNode(root);
             }
         }
 

@@ -362,26 +362,11 @@ public class OpenProjectListTest extends NbTestCase {
         
         assertNull("no main project set when main project is closed", OpenProjectList.getDefault().getMainProject());
         
-        boolean exceptionThrown = false;
-        
-        try {
-            OpenProjectList.getDefault().setMainProject(project3);
-        } catch (IllegalArgumentException e) {
-            exceptionThrown = true;
-        }
-        
-        assertTrue("IAE thrown when trying to set main project that is not opened", exceptionThrown);
+        OpenProjectList.getDefault().setMainProject(project3);
+        // do not want this to throw an error anymore
         
         //the same for a previously opened project:
-        exceptionThrown = false;
-        
-        try {
-            OpenProjectList.getDefault().setMainProject(prj1);
-        } catch (IllegalArgumentException e) {
-            exceptionThrown = true;
-        }
-        
-        assertTrue("IAE thrown when trying to set main project that is not opened", exceptionThrown);
+        OpenProjectList.getDefault().setMainProject(prj1);
     }
     // helper code
 
