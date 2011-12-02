@@ -41,10 +41,10 @@
  */
 package org.netbeans.modules.hudson.php.support;
 
-import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import org.netbeans.modules.hudson.php.commands.PpwScript;
 import org.openide.util.NbBundle;
-import org.w3c.dom.Document;
 
 /**
  * Ant target for <tt>phpcs</tt>.
@@ -64,12 +64,12 @@ class PhpcsTarget extends Target {
 
     @Override
     public List<String> getOptions() {
-        return Arrays.asList("PEAR", "Zend", "PHPCS", "Squiz", "MySource"); // NOI18N
+        return PpwScript.PHPCS_RULESET_OPTIONS;
     }
 
     @Override
-    public void apply(Document document) {
-        // XXX
+    public void apply(Map<String, String> commandParams) {
+        commandParams.put(PpwScript.PHPCS_RULESET_PARAM, getSelectedOption());
     }
 
 }
