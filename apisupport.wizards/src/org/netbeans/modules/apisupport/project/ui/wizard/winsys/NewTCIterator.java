@@ -314,6 +314,7 @@ public final class NewTCIterator extends BasicWizardIterator {
                     fil = null;
                 }
             }
+            // XXX this should be using addCreateIconOperation
             String relativeIconPath = null;
             if (fil != null) {
                 FileObject fo = FileUtil.toFileObject(fil);
