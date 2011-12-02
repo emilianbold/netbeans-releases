@@ -117,7 +117,7 @@ public class FindSubclassesTest extends RefPerfTestCase {
                 Element object = controller.getTypes().asElement(mirror);
                 symbolName[0] = object.getSimpleName();
                 wuq[0] = new WhereUsedQuery(Lookups.singleton(TreePathHandle.create(object, controller)));
-                ClasspathInfo cpi = RefactoringUtils.getClasspathInfoFor(TreePathHandle.create(object, controller));
+                ClasspathInfo cpi = JavaRefactoringUtils.getClasspathInfoFor(TreePathHandle.create(object, controller));
                 wuq[0].getContext().add(cpi);
             }
         }, false).get();

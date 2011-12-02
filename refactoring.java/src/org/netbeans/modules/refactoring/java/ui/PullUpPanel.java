@@ -78,6 +78,7 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.ui.ElementHeaders;
 import org.netbeans.modules.refactoring.java.RefactoringUtils;
+import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.MemberInfo;
 import org.netbeans.modules.refactoring.java.api.PullUpRefactoring;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
@@ -159,7 +160,7 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
                 public void run(CompilationController controller) throws Exception {
                     controller.toPhase(JavaSource.Phase.RESOLVED);
                     // retrieve supertypes (will be used in the combo)
-                    Collection<TypeElement> supertypes = RefactoringUtils.getSuperTypes((TypeElement)handle.resolveElement(controller), controller, true);
+                    Collection<TypeElement> supertypes = JavaRefactoringUtils.getSuperTypes((TypeElement)handle.resolveElement(controller), controller, true);
                     List<MemberInfo> minfo = new LinkedList<MemberInfo>();
                     for (Element e: supertypes) {
                         MemberInfo<ElementHandle<Element>> memberInfo = MemberInfo.create(e, controller);

@@ -756,8 +756,8 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
         List<? extends VariableElement> pars = method.getParameters();
 
         Collection<ExecutableElement> allMethods = new ArrayList();
-        allMethods.addAll(RefactoringUtils.getOverridenMethods(method, info));
-        allMethods.addAll(RefactoringUtils.getOverridingMethods(method, info));
+        allMethods.addAll(JavaRefactoringUtils.getOverriddenMethods(method, info));
+        allMethods.addAll(JavaRefactoringUtils.getOverridingMethods(method, info));
         allMethods.add(method);
         
         for (ExecutableElement currentMethod: allMethods) {

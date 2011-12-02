@@ -54,6 +54,7 @@ import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.ProgressEvent;
 import org.netbeans.modules.refactoring.java.RefactoringUtils;
+import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.MemberInfo;
 import org.netbeans.modules.refactoring.java.api.PullUpRefactoring;
 import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
@@ -111,7 +112,7 @@ public final class PullUpRefactoringPlugin extends JavaRefactoringPlugin {
                 return new Problem(true, NbBundle.getMessage(PushDownRefactoringPlugin.class, "ERR_PushDown_InvalidSource", treePathHandle, elm)); // NOI18N
             }
             TypeElement e  = (TypeElement) elm;
-            Collection<TypeElement> superTypes = RefactoringUtils.getSuperTypes(e, cc, true);
+            Collection<TypeElement> superTypes = JavaRefactoringUtils.getSuperTypes(e, cc, true);
             List<MemberInfo> minfo = new LinkedList<MemberInfo>();
             for (TypeElement el: superTypes) {
                 MemberInfo<ElementHandle<TypeElement>> memberInfo = MemberInfo.create(el, cc);
@@ -184,7 +185,7 @@ public final class PullUpRefactoringPlugin extends JavaRefactoringPlugin {
         try {
             cc.toPhase(JavaSource.Phase.RESOLVED);
             TypeElement sourceType = (TypeElement) refactoring.getSourceType().resolveElement(cc);
-            Collection<TypeElement> supers = RefactoringUtils.getSuperTypes(sourceType, cc);
+            Collection<TypeElement> supers = JavaRefactoringUtils.getSuperTypes(sourceType, cc, false);
             TypeElement targetType = refactoring.getTargetType().resolve(cc);
             MemberInfo<ElementHandle<? extends Element>>[] members = refactoring.getMembers();
 
@@ -317,7 +318,7 @@ public final class PullUpRefactoringPlugin extends JavaRefactoringPlugin {
                 throw new RuntimeException(ex);
             }
             Element el = handle.resolveElement(cc);
-            files = RefactoringUtils.elementsToFile(RefactoringUtils.getSuperTypes((TypeElement) el, cc, true), cc.getClasspathInfo());
+            files = RefactoringUtils.elementsToFile(JavaRefactoringUtils.getSuperTypes((TypeElement) el, cc, true), cc.getClasspathInfo());
         }
 
         public Collection<FileObject> getFileObjects() {

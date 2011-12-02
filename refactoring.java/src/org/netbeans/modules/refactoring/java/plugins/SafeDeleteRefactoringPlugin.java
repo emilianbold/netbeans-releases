@@ -62,6 +62,7 @@ import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.source.*;
 import org.netbeans.modules.refactoring.api.*;
 import org.netbeans.modules.refactoring.java.RefactoringUtils;
+import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.spi.ui.UI;
 import org.netbeans.modules.refactoring.java.api.WhereUsedQueryConstants;
 import org.netbeans.modules.refactoring.spi.*;
@@ -403,7 +404,7 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
             for (FileObject fileObject : lkp.lookupAll(FileObject.class)) {
                 if (fileObject.isFolder()) {
                     javaFileObjects.addAll(getJavaFileObjects(fileObject, true));
-                }else if (RefactoringUtils.isRefactorable(fileObject)) {
+                }else if (JavaRefactoringUtils.isRefactorable(fileObject)) {
                     javaFileObjects.add(fileObject);
                 }
             }
