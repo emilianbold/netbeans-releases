@@ -319,7 +319,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         String [] commands = new String [] {
             sdkInstaller.getAbsolutePath(),
             "/s",
-            " /v" + installLocationOption};
+            " /v"};
    
         ProgressThread progressThread = new ProgressThread(progress,
                 new File [] {location, runtimeLocation},
