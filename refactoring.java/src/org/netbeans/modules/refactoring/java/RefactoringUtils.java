@@ -387,7 +387,7 @@ public class RefactoringUtils {
             result = FileUtil.createFolder(f);
             return result;
         } catch (URISyntaxException ex) {
-            throw (IOException) new IOException().initCause(ex);
+            throw new IOException(ex);
         }
     }
 
