@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,16 +34,17 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.refactoring.plugins;
 
 import java.io.IOException;
 import java.net.URL;
-import org.netbeans.modules.refactoring.api.Problem;
-import org.netbeans.modules.refactoring.api.SafeDeleteRefactoring;
 import org.netbeans.modules.refactoring.spi.BackupFacility;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
-import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -61,44 +56,79 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
-
 /**
  *
- * @author  Jan Becicka
+ * @author Jan Becicka
  */
-public class FileDeletePlugin implements RefactoringPlugin {
-    private SafeDeleteRefactoring refactoring;
-    
-    /** Creates a new instance of WhereUsedQuery */
-    public FileDeletePlugin(SafeDeleteRefactoring refactoring) {
-        this.refactoring = refactoring;
+public class DeleteFile extends SimpleRefactoringElementImplementation {
+    private final URL res;
+    private String filename;
+    private RefactoringElementsBag session;
+
+    /**
+     * 
+     * @param fo
+     * @param session
+     */
+    public DeleteFile(FileObject fo, RefactoringElementsBag session) {
+        try {
+            this.res = fo.getURL();
+        } catch (FileStateInvalidException ex) {
+            throw new IllegalStateException(ex);
+        }
+        this.filename = fo.getNameExt();
+        this.session = session;
     }
-    
+
     @Override
-    public Problem preCheck() {
-        return null;
+    public String getText() {
+        return NbBundle.getMessage(FileDeletePlugin.class, "TXT_DeleteFile", filename);
     }
-    
+
     @Override
-    public Problem prepare(RefactoringElementsBag elements) {
-        for (FileObject fo: refactoring.getRefactoringSource().lookupAll(FileObject.class)) {
-                elements.addFileChange(refactoring, new DeleteFile(fo, elements));
+    public String getDisplayText() {
+        return getText();
+    }
+    BackupFacility.Handle id;
+
+    @Override
+    public void performChange() {
+        try {
+            FileObject fo = URLMapper.findFileObject(res);
+            if (fo == null) {
+                throw new IOException(res.toString());
             }
+            id = BackupFacility.getDefault().backup(fo);
+            DataObject.find(fo).delete();
+        } catch (DataObjectNotFoundException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
+    @Override
+    public void undoChange() {
+        try {
+            id.restore();
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
+    @Override
+    public Lookup getLookup() {
+        return Lookup.EMPTY;
+    }
+
+    @Override
+    public FileObject getParentFile() {
+        return URLMapper.findFileObject(res);
+    }
+
+    @Override
+    public PositionBounds getPosition() {
         return null;
     }
     
-    @Override
-    public Problem fastCheckParameters() {
-        return null;
-    }
-        
-    @Override
-    public Problem checkParameters() {
-        return null;
-    }
-
-    @Override
-    public void cancelRequest() {
-    }
-
 }

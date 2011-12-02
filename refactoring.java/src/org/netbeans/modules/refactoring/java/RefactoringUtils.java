@@ -41,7 +41,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.refactoring.java;
 
 import com.sun.source.tree.*;
@@ -94,48 +93,55 @@ import org.openide.util.Utilities;
  * @author Jan Becicka
  */
 public class RefactoringUtils {
-    
+
     private static final String JAVA_MIME_TYPE = "text/x-java"; // NOI18N
     public static volatile boolean cancel = false;
     private static final Logger LOG = Logger.getLogger(RefactoringUtils.class.getName());
     private static final RequestProcessor RP = new RequestProcessor(RefactoringUtils.class.getName(), 1, false, false);
-    
+
+    /**
+     * Get all overriding methods for given ExecutableElement
+     *
+     * @param e
+     * @param info
+     * @return
+     */
     public static Collection<ExecutableElement> getOverridenMethods(ExecutableElement e, CompilationInfo info) {
         return getOverridenMethods(e, info.getElementUtilities().enclosingTypeElement(e), info);
     }
 
     private static Collection<ExecutableElement> getOverridenMethods(ExecutableElement e, TypeElement parent, CompilationInfo info) {
         ArrayList<ExecutableElement> result = new ArrayList<ExecutableElement>();
-        
+
         TypeMirror sup = parent.getSuperclass();
         if (sup.getKind() == TypeKind.DECLARED) {
-            TypeElement next = (TypeElement) ((DeclaredType)sup).asElement();
+            TypeElement next = (TypeElement) ((DeclaredType) sup).asElement();
             ExecutableElement overriden = getMethod(e, next, info);
-                result.addAll(getOverridenMethods(e,next, info));
-            if (overriden!=null) {
+            result.addAll(getOverridenMethods(e, next, info));
+            if (overriden != null) {
                 result.add(overriden);
             }
         }
-        for (TypeMirror tm:parent.getInterfaces()) {
-            TypeElement next = (TypeElement) ((DeclaredType)tm).asElement();
+        for (TypeMirror tm : parent.getInterfaces()) {
+            TypeElement next = (TypeElement) ((DeclaredType) tm).asElement();
             ExecutableElement overriden2 = getMethod(e, next, info);
-            result.addAll(getOverridenMethods(e,next, info));
-            if (overriden2!=null) {
+            result.addAll(getOverridenMethods(e, next, info));
+            if (overriden2 != null) {
                 result.add(overriden2);
             }
         }
         return result;
-    }    
-    
+    }
+
     private static ExecutableElement getMethod(ExecutableElement method, TypeElement type, CompilationInfo info) {
-        for (ExecutableElement met: ElementFilter.methodsIn(type.getEnclosedElements())){
+        for (ExecutableElement met : ElementFilter.methodsIn(type.getEnclosedElements())) {
             if (info.getElements().overrides(method, met, type)) {
                 return met;
             }
         }
         return null;
     }
-    
+
     public static Set<ElementHandle<TypeElement>> getImplementorsAsHandles(ClassIndex idx, ClasspathInfo cpInfo, TypeElement el) {
         cancel = false;
         LinkedList<ElementHandle<TypeElement>> elements = new LinkedList<ElementHandle<TypeElement>>(
@@ -159,16 +165,15 @@ public class RefactoringUtils {
 
     private static Set<ElementHandle<TypeElement>> implementorsQuery(ClassIndex idx, ElementHandle<TypeElement> next) {
         return idx.getElements(next,
-                    EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS),
-                    EnumSet.of(ClassIndex.SearchScope.SOURCE, ClassIndex.SearchScope.DEPENDENCIES));
+                EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS),
+                EnumSet.of(ClassIndex.SearchScope.SOURCE, ClassIndex.SearchScope.DEPENDENCIES));
     }
 
     public static Collection<ExecutableElement> getOverridingMethods(ExecutableElement e, CompilationInfo info) {
         Collection<ExecutableElement> result = new ArrayList();
         TypeElement parentType = (TypeElement) e.getEnclosingElement();
-        //XXX: Fixme IMPLEMENTORS_RECURSIVE were removed
         Set<ElementHandle<TypeElement>> subTypes = getImplementorsAsHandles(info.getClasspathInfo().getClassIndex(), info.getClasspathInfo(), parentType);
-        for (ElementHandle<TypeElement> subTypeHandle: subTypes){
+        for (ElementHandle<TypeElement> subTypeHandle : subTypes) {
             TypeElement type = subTypeHandle.resolve(info);
             if (type == null) {
                 // #120577: log info to find out what is going wrong
@@ -180,7 +185,7 @@ public class RefactoringUtils {
                     throw new NullPointerException("#120577: Cannot resolve " + subTypeHandle + "; file: " + file);
                 }
             }
-            for (ExecutableElement method: ElementFilter.methodsIn(type.getEnclosedElements())) {
+            for (ExecutableElement method : ElementFilter.methodsIn(type.getEnclosedElements())) {
                 if (info.getElements().overrides(method, e, type)) {
                     result.add(method);
                 }
@@ -189,32 +194,48 @@ public class RefactoringUtils {
         return result;
     }
 
+    /**
+     *
+     * @param f
+     * @return true if f is java
+     */
     public static boolean isJavaFile(FileObject f) {
         return JAVA_MIME_TYPE.equals(FileUtil.getMIMEType(f, JAVA_MIME_TYPE));
     }
 
-    public static boolean isElementInOpenProject(FileObject f) {
-        if (f==null)
-            return false;
-        Project p = FileOwnerQuery.getOwner(f);
-        return isOpenProject(p);
-    }
+    /**
+     * @param element
+     * @param info
+     * @return true if given element comes from library
+     */
     public static boolean isFromLibrary(Element element, ClasspathInfo info) {
         FileObject file = SourceUtils.getFile(element, info);
-        if (file==null) {
+        if (file == null) {
             //no source for given element. Element is from library
             return true;
         }
-        return FileUtil.getArchiveFile(file)!=null;
+        return FileUtil.getArchiveFile(file) != null;
     }
 
+    /**
+     * is given name valid package name
+     *
+     * @param name
+     * @return
+     */
     public static boolean isValidPackageName(String name) {
         if (name.endsWith(".")) //NOI18N
+        {
             return false;
-        if (name.startsWith("."))  //NOI18N
-            return  false;
+        }
+        if (name.startsWith(".")) //NOI18N
+        {
+            return false;
+        }
         if (name.contains("..")) //NOI18N
+        {
             return false;
+        }
         StringTokenizer tokenizer = new StringTokenizer(name, "."); // NOI18N
         while (tokenizer.hasMoreTokens()) {
             if (!Utilities.isJavaIdentifier(tokenizer.nextToken())) {
@@ -223,7 +244,12 @@ public class RefactoringUtils {
         }
         return true;
     }
-    
+
+    /**
+     *
+     * @param f
+     * @return true if given file is in open project
+     */
     public static boolean isFileInOpenProject(FileObject file) {
         assert file != null;
         Project p = FileOwnerQuery.getOwner(file);
@@ -232,21 +258,24 @@ public class RefactoringUtils {
         }
         return isOpenProject(p);
     }
-    
+
+    /**
+     * Is given file on any source classpath?
+     *
+     * @param fo
+     * @return
+     */
     public static boolean isOnSourceClasspath(FileObject fo) {
-        Project p = FileOwnerQuery.getOwner(fo);
-        if (p==null) 
+        Project pr = FileOwnerQuery.getOwner(fo);
+        if (pr == null) {
             return false;
+        }
 
         //workaround for 143542
-        // XXX why is it checking open projects, rather than just p?
-        Project[] opened = OpenProjects.getDefault().getOpenProjects();
-        for (Project pr : opened) {
-            for (String type : new String[] {JavaProjectConstants.SOURCES_TYPE_JAVA, JavaProjectConstants.SOURCES_TYPE_RESOURCES}) {
-                for (SourceGroup sg : ProjectUtils.getSources(pr).getSourceGroups(type)) {
-                    if (fo==sg.getRootFolder() || (FileUtil.isParentOf(sg.getRootFolder(), fo) && sg.contains(fo))) {
-                        return ClassPath.getClassPath(fo, ClassPath.SOURCE) != null;
-                    }
+        for (String type : new String[]{JavaProjectConstants.SOURCES_TYPE_JAVA, JavaProjectConstants.SOURCES_TYPE_RESOURCES}) {
+            for (SourceGroup sg : ProjectUtils.getSources(pr).getSourceGroups(type)) {
+                if (fo == sg.getRootFolder() || (FileUtil.isParentOf(sg.getRootFolder(), fo) && sg.contains(fo))) {
+                    return ClassPath.getClassPath(fo, ClassPath.SOURCE) != null;
                 }
             }
         }
@@ -255,15 +284,33 @@ public class RefactoringUtils {
         //return ClassPath.getClassPath(fo, ClassPath.SOURCE)!=null;
     }
 
+    /**
+     * Is given file a root of source classpath?
+     *
+     * @param fo
+     * @return
+     */
     public static boolean isClasspathRoot(FileObject fo) {
         ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
         return cp != null ? fo.equals(cp.findOwnerRoot(fo)) : false;
     }
-    
+
+    /**
+     * Is the given file "java" && in open projects && on source classpath?
+     *
+     * @param file
+     * @return
+     */
     public static boolean isRefactorable(FileObject file) {
-        return file!=null && isJavaFile(file) && isFileInOpenProject(file) && isOnSourceClasspath(file);
+        return file != null && isJavaFile(file) && isFileInOpenProject(file) && isOnSourceClasspath(file);
     }
-    
+
+    /**
+     * returns package name for given folder. Folder must be on source classpath
+     *
+     * @param folder
+     * @return
+     */
     public static String getPackageName(FileObject folder) {
         assert folder.isFolder() : "argument must be folder";
         ClassPath cp = ClassPath.getClassPath(folder, ClassPath.SOURCE);
@@ -273,17 +320,29 @@ public class RefactoringUtils {
         }
         return cp.getResourceName(folder, '.', false);
     }
-    
+
+    /**
+     * get package name for given CompilationUnitTree
+     *
+     * @param unit
+     * @return
+     */
     public static String getPackageName(CompilationUnitTree unit) {
-        assert unit!=null;
+        assert unit != null;
         ExpressionTree name = unit.getPackageName();
-        if (name==null) {
+        if (name == null) {
             //default package
             return "";
         }
         return name.toString();
     }
-    
+
+    /**
+     * get package name for given url.
+     *
+     * @param url
+     * @return
+     */
     public static String getPackageName(URL url) {
         File f = null;
         try {
@@ -292,43 +351,52 @@ public class RefactoringUtils {
             throw new IllegalArgumentException(ex);
         }
         String suffix = "";
-        
+
         do {
             FileObject fo = FileUtil.toFileObject(f);
             if (fo != null) {
-                if ("".equals(suffix))
+                if ("".equals(suffix)) {
                     return getPackageName(fo);
+                }
                 String prefix = getPackageName(fo);
-                return prefix + ("".equals(prefix)?"":".") + suffix; // NOI18N
+                return prefix + ("".equals(prefix) ? "" : ".") + suffix; // NOI18N
             }
             if (!"".equals(suffix)) {
                 suffix = "." + suffix; // NOI18N
             }
             suffix = f.getPath().substring(f.getPath().lastIndexOf(File.separatorChar) + 1) + suffix; // NOI18N
             f = f.getParentFile();
-        } while (f!=null);
+        } while (f != null);
         throw new IllegalArgumentException("Cannot create package name for url " + url); // NOI18N
     }
 
     /**
-     * creates or finds FileObject according to 
+     * creates or finds FileObject according to
+     *
      * @param url
      * @return FileObject
      */
     public static FileObject getOrCreateFolder(URL url) throws IOException {
         try {
             FileObject result = URLMapper.findFileObject(url);
-            if (result != null)
+            if (result != null) {
                 return result;
+            }
             File f = new File(url.toURI());
-            
+
             result = FileUtil.createFolder(f);
             return result;
         } catch (URISyntaxException ex) {
             throw (IOException) new IOException().initCause(ex);
         }
     }
-    
+
+    /**
+     *
+     * @param url
+     * @return
+     * @throws IOException
+     */
     public static FileObject getClassPathRoot(URL url) throws IOException {
         FileObject result = URLMapper.findFileObject(url);
         File f;
@@ -337,13 +405,20 @@ public class RefactoringUtils {
         } catch (URISyntaxException ex) {
             throw new IOException(ex);
         }
-        while (result==null) {
+        while (result == null) {
             result = FileUtil.toFileObject(f);
             f = f.getParentFile();
         }
         return ClassPath.getClassPath(result, ClassPath.SOURCE).findOwnerRoot(result);
     }
-    
+
+    /**
+     * Get all supertypes for given type
+     *
+     * @param type
+     * @param info
+     * @return
+     */
     public static Collection<TypeElement> getSuperTypes(TypeElement type, CompilationInfo info) {
         Collection<TypeElement> result = new HashSet<TypeElement>();
         LinkedList<TypeElement> l = new LinkedList<TypeElement>();
@@ -351,9 +426,9 @@ public class RefactoringUtils {
         while (!l.isEmpty()) {
             TypeElement t = l.removeFirst();
             TypeElement superClass = typeToElement(t.getSuperclass(), info);
-            if (superClass!=null) {
+            if (superClass != null) {
                 result.add(superClass);
-                l.addLast((TypeElement)superClass);
+                l.addLast((TypeElement) superClass);
             }
             Collection<TypeElement> interfaces = typesToElements(t.getInterfaces(), info);
             result.addAll(interfaces);
@@ -361,31 +436,49 @@ public class RefactoringUtils {
         }
         return result;
     }
-    
+
+    /**
+     * TODO: should be removed
+     *
+     * @param handle
+     * @return
+     * @deprecated
+     */
+    @Deprecated
     public static Collection<FileObject> getSuperTypesFiles(TreePathHandle handle) {
         try {
             SuperTypesTask ff;
             JavaSource source = JavaSource.forFileObject(handle.getFileObject());
-            source.runUserActionTask(ff=new SuperTypesTask(handle), true);
+            source.runUserActionTask(ff = new SuperTypesTask(handle), true);
             return ff.getFileObjects();
         } catch (IOException ex) {
             throw new RuntimeException(ex);
-        }    
+        }
     }
-    
+
+    /**
+     * get supertypes of given types
+     *
+     * @param type
+     * @param info
+     * @param sourceOnly true if only types defined in open project should be
+     * searched
+     * @return
+     */
     public static Collection<TypeElement> getSuperTypes(TypeElement type, CompilationInfo info, boolean sourceOnly) {
-        if (!sourceOnly)
+        if (!sourceOnly) {
             return getSuperTypes(type, info);
+        }
         Collection<TypeElement> result = new HashSet<TypeElement>();
-        for (TypeElement el: getSuperTypes(type, info)) {
+        for (TypeElement el : getSuperTypes(type, info)) {
             FileObject file = SourceUtils.getFile(el, info.getClasspathInfo());
-            if (file!=null && isFileInOpenProject(file) && !isFromLibrary(el, info.getClasspathInfo())) {
+            if (file != null && isFileInOpenProject(file) && !isFromLibrary(el, info.getClasspathInfo())) {
                 result.add(el);
             }
         }
         return result;
     }
-    
+
     public static TypeElement typeToElement(TypeMirror type, CompilationInfo info) {
         return (TypeElement) info.getTypes().asElement(type);
     }
@@ -393,7 +486,7 @@ public class RefactoringUtils {
     private static boolean isOpenProject(Project p) {
         return OpenProjects.getDefault().isProjectOpen(p);
     }
-    
+
     private static Collection<TypeElement> typesToElements(Collection<? extends TypeMirror> types, CompilationInfo info) {
         Collection<TypeElement> result = new HashSet();
         for (TypeMirror tm : types) {
@@ -401,185 +494,82 @@ public class RefactoringUtils {
         }
         return result;
     }
-    
-    public static Collection<FileObject> elementsToFile(Collection<? extends Element> elements, ClasspathInfo cpInfo ) {
-        Collection <FileObject> result = new HashSet();
-        for (Element handle:elements) {
+
+    public static Collection<FileObject> elementsToFile(Collection<? extends Element> elements, ClasspathInfo cpInfo) {
+        Collection<FileObject> result = new HashSet();
+        for (Element handle : elements) {
             result.add(SourceUtils.getFile(handle, cpInfo));
         }
         return result;
     }
-    
+
     public static boolean elementExistsIn(TypeElement target, Element member, CompilationInfo info) {
-        for (Element currentMember: target.getEnclosedElements()) {
-            if (info.getElements().hides(member, currentMember) || info.getElements().hides(currentMember, member))
+        for (Element currentMember : target.getEnclosedElements()) {
+            if (info.getElements().hides(member, currentMember) || info.getElements().hides(currentMember, member)) {
                 return true;
-            if (member instanceof ExecutableElement 
-                    && currentMember instanceof ExecutableElement 
-                    && (info.getElements().overrides((ExecutableElement)member, (ExecutableElement)currentMember, target) ||
-                       (info.getElements().overrides((ExecutableElement)currentMember, (ExecutableElement)member, target)))) {
+            }
+            if (member instanceof ExecutableElement
+                    && currentMember instanceof ExecutableElement
+                    && (info.getElements().overrides((ExecutableElement) member, (ExecutableElement) currentMember, target)
+                    || (info.getElements().overrides((ExecutableElement) currentMember, (ExecutableElement) member, target)))) {
                 return true;
             }
         }
         return false;
     }
-    
+
     /**
-     * TODO: Remove
-     * @param tph
+     * @param fqn
+     * @param info
      * @return
-     * @deprecated
      */
-    @Deprecated
-    public static ElementHandle getElementHandle(TreePathHandle tph) {
-        try {
-            CompilerTask ff;
-            JavaSource source = JavaSource.forFileObject(tph.getFileObject());
-            assert source!=null:"JavaSource.forFileObject(" + tph.getFileObject().getPath() + ") \n returned null";
-            source.runUserActionTask(ff=new CompilerTask(tph), true);
-            return ff.getElementHandle();
-        } catch (IOException ex) {
-            throw new RuntimeException(ex);
-        }    
+    public static boolean typeExists(String fqn, CompilationInfo info) {
+        return info.getElements().getTypeElement(fqn) != null;
     }
-    
-    /**
-     * TODO: Remove
-     * @param tph
-     * @return
-     * @deprecated
-     */
-    @Deprecated
-    public static ElementKind getElementKind(TreePathHandle tph) {
-        try {
-            CompilerTask ff;
-            JavaSource source = JavaSource.forFileObject(tph.getFileObject());
-            assert source!=null:"JavaSource.forFileObject(" + tph.getFileObject().getPath() + ") \n returned null";
-            source.runUserActionTask(ff=new CompilerTask(tph), true);
-            return ff.getElementKind();
-        } catch (IOException ex) {
-            throw new RuntimeException(ex);
-        }    
-    }
-    
-    
-    /**
-     * TODO: Remove
-     * @param tph
-     * @return
-     * @deprecated
-     */
-    @Deprecated
-    public static String getSimpleName(TreePathHandle tph) {
-        try {
-            CompilerTask ff;
-            JavaSource source = JavaSource.forFileObject(tph.getFileObject());
-            assert source!=null:"JavaSource.forFileObject(" + tph.getFileObject().getPath() + ") \n returned null";
-            source.runUserActionTask(ff=new CompilerTask(tph), true);
-            return ff.getSimpleName();
-        } catch (IOException ex) {
-            throw new RuntimeException(ex);
-        }    
-    }
-    
-    
-    /**
-     * TODO: Remove
-     * @param tph
-     * @return
-     * @deprecated
-     */
-    @Deprecated
-    public static FileObject getFileObject(final TreePathHandle handle) {
-        try {
-            CompilerTask ff;
-            JavaSource source = JavaSource.forFileObject(handle.getFileObject());
-            assert source!=null:"JavaSource.forFileObject(" + handle.getFileObject().getPath() + ") \n returned null";
-            source.runUserActionTask(ff=new CompilerTask(handle), true);
-            return ff.getFileObject();
-        } catch (IOException ex) {
-            throw new RuntimeException(ex);
-        }
-    }
-    
-    /**
-     * TODO: Remove
-     * @param tph
-     * @return
-     * @deprecated
-     */
-    @Deprecated
-    public static String getQualifiedName(TreePathHandle tph) {
-        try {
-            CompilerTask ff;
-            JavaSource source = JavaSource.forFileObject(tph.getFileObject());
-            assert source!=null:"JavaSource.forFileObject(" + tph.getFileObject().getPath() + ") \n returned null";
-            source.runUserActionTask(ff=new CompilerTask(tph), true);
-            return ff.getQualifiedName();
-        } catch (IOException ex) {
-            throw new RuntimeException(ex);
-        }    
-    }
-    
-    /**
-     * TODO: Remove
-     * @param tph
-     * @return
-     * @deprecated
-     */
-    @Deprecated
-    public static boolean typeExist(TreePathHandle tph, String fqn) {
-        try {
-            CompilerTask ff;
-            JavaSource source = JavaSource.forFileObject(tph.getFileObject());
-            assert source!=null:"JavaSource.forFileObject(" + tph.getFileObject().getPath() + ") \n returned null";
-            source.runUserActionTask(ff=new CompilerTask(tph, fqn), true);
-            return ff.typeExist();
-        } catch (IOException ex) {
-            throw new RuntimeException(ex);
-        }    
-    }
-    
+
     /**
      * create ClasspathInfo for specified files includes dependencies
+     *
      * @param files
      * @return
      */
-    public static ClasspathInfo getClasspathInfoFor(FileObject ... files) {
+    public static ClasspathInfo getClasspathInfoFor(FileObject... files) {
         return getClasspathInfoFor(true, files);
     }
-    
-    
+
     /**
      * create ClasspathInfo for specified files
+     *
      * @param dependencies
      * @param files
      * @return
      */
-    public static ClasspathInfo getClasspathInfoFor(boolean dependencies, FileObject ... files) {
+    public static ClasspathInfo getClasspathInfoFor(boolean dependencies, FileObject... files) {
         return getClasspathInfoFor(dependencies, false, files);
     }
-    
+
     /**
      * create ClasspathInfo for specified files
+     *
      * @param dependencies include dependencies
-     * @param backSource libraries replaces by sources using SourceForBinaryQuery
+     * @param backSource libraries replaces by sources using
+     * SourceForBinaryQuery
      * @param files
-     * @return 
+     * @return
      */
-    public static ClasspathInfo getClasspathInfoFor(boolean dependencies, boolean backSource, FileObject ... files ) {
-        assert files.length >0;
+    public static ClasspathInfo getClasspathInfoFor(boolean dependencies, boolean backSource, FileObject... files) {
+        assert files.length > 0;
         Set<URL> dependentRoots = new HashSet();
-        for (FileObject fo: files) {
+        for (FileObject fo : files) {
             ClassPath cp = null;
             FileObject ownerRoot = null;
             if (fo != null) {
                 cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
-                if (cp!=null) {
+                if (cp != null) {
                     ownerRoot = cp.findOwnerRoot(fo);
                 }
             }
-            if (cp != null && ownerRoot != null && FileUtil.getArchiveFile(ownerRoot)==null ) {
+            if (cp != null && ownerRoot != null && FileUtil.getArchiveFile(ownerRoot) == null) {
                 URL sourceRoot = URLMapper.findURL(ownerRoot, URLMapper.INTERNAL);
                 if (dependencies) {
                     dependentRoots.addAll(SourceUtils.getDependentRoots(sourceRoot));
@@ -592,17 +582,17 @@ public class RefactoringUtils {
                     }
                 }
             } else {
-                for(ClassPath scp: GlobalPathRegistry.getDefault().getPaths(ClassPath.SOURCE)) {
-                    for (FileObject root:scp.getRoots()) {
+                for (ClassPath scp : GlobalPathRegistry.getDefault().getPaths(ClassPath.SOURCE)) {
+                    for (FileObject root : scp.getRoots()) {
                         dependentRoots.add(URLMapper.findURL(root, URLMapper.INTERNAL));
                     }
                 }
             }
         }
-        
+
         if (backSource) {
             for (FileObject file : files) {
-                if (file!=null) {
+                if (file != null) {
                     ClassPath source = ClassPath.getClassPath(file, ClassPath.COMPILE);
                     for (Entry root : source.entries()) {
                         Result r = SourceForBinaryQuery.findSourceRoots(root.getURL());
@@ -613,11 +603,11 @@ public class RefactoringUtils {
                 }
             }
         }
-        
+
         ClassPath rcp = ClassPathSupport.createClassPath(dependentRoots.toArray(new URL[dependentRoots.size()]));
         ClassPath nullPath = ClassPathSupport.createClassPath(new FileObject[0]);
-        ClassPath boot = files[0]!=null?ClassPath.getClassPath(files[0], ClassPath.BOOT):nullPath;
-        ClassPath compile = files[0]!=null?ClassPath.getClassPath(files[0], ClassPath.COMPILE):nullPath;
+        ClassPath boot = files[0] != null ? ClassPath.getClassPath(files[0], ClassPath.BOOT) : nullPath;
+        ClassPath compile = files[0] != null ? ClassPath.getClassPath(files[0], ClassPath.COMPILE) : nullPath;
         //When file[0] is a class file, there is no compile cp but execute cp
         //try to get it
         if (compile == null) {
@@ -626,38 +616,55 @@ public class RefactoringUtils {
         //If no cp found at all log the file and use nullPath since the ClasspathInfo.create
         //doesn't accept null compile or boot cp.
         if (compile == null) {
-            LOG.warning ("No classpath for: " + FileUtil.getFileDisplayName(files[0]) + " " + FileOwnerQuery.getOwner(files[0]));
+            LOG.warning("No classpath for: " + FileUtil.getFileDisplayName(files[0]) + " " + FileOwnerQuery.getOwner(files[0]));
             compile = nullPath;
         }
         ClasspathInfo cpInfo = ClasspathInfo.create(boot, compile, rcp);
         return cpInfo;
     }
-    
+
+
+    /**
+     * @param handle
+     */
+    public static FileObject getFileObject(TreePathHandle handle) {
+        
+       ClasspathInfo info = getClasspathInfoFor(false, handle.getFileObject()); 
+        ElementHandle elementHandle = handle.getElementHandle();
+        if (elementHandle == null )
+            return handle.getFileObject();
+       return SourceUtils.getFile(elementHandle, info);
+    }    
     /**
      * create ClasspathInfo for specified handles
+     *
      * @param handles
      * @return
      */
-    public static ClasspathInfo getClasspathInfoFor(TreePathHandle ... handles) {
+    public static ClasspathInfo getClasspathInfoFor(TreePathHandle... handles) {
         FileObject[] result = new FileObject[handles.length];
-        int i=0;
-        for (TreePathHandle handle:handles) {
+        int i = 0;
+        for (TreePathHandle handle : handles) {
             FileObject fo = getFileObject(handle);
-            if (i==0 && fo==null) {
-                result = new FileObject[handles.length+1];
+            if (i == 0 && fo == null) {
+                result = new FileObject[handles.length + 1];
                 result[i++] = handle.getFileObject();
             }
             result[i++] = fo;
         }
         return getClasspathInfoFor(result);
     }
-    
+
     /**
-     * Finds type parameters from <code>typeArgs</code> list that are referenced
-     * by <code>tm</code> type.
+     * Finds type parameters from
+     * <code>typeArgs</code> list that are referenced by
+     * <code>tm</code> type.
+     *
      * @param utils compilation type utils
-     * @param typeArgs modifiable list of type parameters to search; found types will be removed (performance reasons).
-     * @param result modifiable list that will contain referenced type parameters
+     * @param typeArgs modifiable list of type parameters to search; found types
+     * will be removed (performance reasons).
+     * @param result modifiable list that will contain referenced type
+     * parameters
      * @param tm parametrized type to analyze
      */
     public static void findUsedGenericTypes(Types utils, List<TypeMirror> typeArgs, Set<TypeMirror> result, TypeMirror tm) {
@@ -694,7 +701,7 @@ public class RefactoringUtils {
             }
         }
     }
-    
+
     private static int findTypeIndex(Types utils, List<TypeMirror> typeArgs, TypeMirror type) {
         int i = -1;
         for (TypeMirror typeArg : typeArgs) {
@@ -717,9 +724,10 @@ public class RefactoringUtils {
 
         return result;
     }
-    
+
     /**
      * translates list of elements to list of types
+     *
      * @param typeParams elements
      * @return types
      */
@@ -733,46 +741,49 @@ public class RefactoringUtils {
         }
         return typeArgs;
     }
-    
+
     /**
-     * finds the nearest enclosing ClassTree on <code>path</code> that
-     * is class or interface or enum or annotation type and is or is not annonymous.
-     * In case no ClassTree is found the first top level ClassTree is returned.
-     * 
+     * finds the nearest enclosing ClassTree on
+     * <code>path</code> that is class or interface or enum or annotation type
+     * and is or is not annonymous. In case no ClassTree is found the first top
+     * level ClassTree is returned.
+     *
      * Especially useful for selecting proper tree to refactor.
-     * 
+     *
      * @param javac javac
      * @param path path to search
      * @param isClass stop on class
-     * @param isInterface  stop on interface
+     * @param isInterface stop on interface
      * @param isEnum stop on enum
      * @param isAnnotation stop on annotation type
      * @param isAnonymous check if class or interface is annonymous
      * @return path to the enclosing ClassTree
      */
-    public static @NullUnknown TreePath findEnclosingClass(CompilationInfo javac, TreePath path, boolean isClass, boolean isInterface, boolean isEnum, boolean isAnnotation, boolean isAnonymous) {
+    public static @NullUnknown
+    TreePath findEnclosingClass(CompilationInfo javac, TreePath path, boolean isClass, boolean isInterface, boolean isEnum, boolean isAnnotation, boolean isAnonymous) {
         Tree selectedTree = path.getLeaf();
         TreeUtilities utils = javac.getTreeUtilities();
-        while(true) {
+        while (true) {
             if (TreeUtilities.CLASS_TREE_KINDS.contains(selectedTree.getKind())) {
                 ClassTree classTree = (ClassTree) selectedTree;
                 if (isEnum && utils.isEnum(classTree)
                         || isInterface && utils.isInterface(classTree)
                         || isAnnotation && utils.isAnnotation(classTree)
                         || isClass && !(utils.isInterface(classTree) || utils.isEnum(classTree) || utils.isAnnotation(classTree))) {
-                    
+
                     Tree.Kind parentKind = path.getParentPath().getLeaf().getKind();
                     if (isAnonymous || Tree.Kind.NEW_CLASS != parentKind) {
                         break;
                     }
                 }
             }
-            
+
             path = path.getParentPath();
             if (path == null) {
                 List<? extends Tree> typeDecls = javac.getCompilationUnit().getTypeDecls();
-                if (typeDecls.isEmpty())
+                if (typeDecls.isEmpty()) {
                     return null;
+                }
                 selectedTree = typeDecls.get(0);
                 if (selectedTree.getKind().asInterface() == ClassTree.class) {
                     return javac.getTrees().getPath(javac.getCompilationUnit(), selectedTree);
@@ -786,7 +797,10 @@ public class RefactoringUtils {
     }
 
     /**
-     * Copies javadoc from <code>elm</code> to newly created <code>tree</code>. 
+     * Copies javadoc from
+     * <code>elm</code> to newly created
+     * <code>tree</code>.
+     *
      * @param elm element containing some javadoc
      * @param tree newly created tree where the javadoc should be copied to
      * @param wc working copy where the tree belongs to
@@ -799,102 +813,19 @@ public class RefactoringUtils {
         }
     }
 
-    private static class CompilerTask implements CancellableTask<CompilationController> {
-        
-        private FileObject f;
-        private ElementHandle eh;
-        private String name;
-        private String fqn;
-        private String typeToCheck;
-        private boolean typeExist;
-        private ElementKind kind;
-        private IllegalArgumentException iae;
-        
-        TreePathHandle handle;
-        
-        CompilerTask(TreePathHandle handle) {
-            this.handle = handle;
-        }
-        
-        CompilerTask(TreePathHandle handle, String fqn) {
-            this(handle);
-            typeToCheck = fqn;
-        }
-        
-        @Override
-        public void cancel() {
-            
-        }
-        
-        @Override
-        public void run(CompilationController cc) {
-            try {
-                cc.toPhase(JavaSource.Phase.RESOLVED);
-            } catch (IOException ex) {
-                throw new RuntimeException(ex);
-            }
-            Element el = handle.resolveElement(cc);
-            if (el == null) {
-                return;
-            }
-            f = SourceUtils.getFile(el, cc.getClasspathInfo());
-            try {
-                eh=ElementHandle.create(el);
-            } catch (IllegalArgumentException iae)  {
-                this.iae = iae;
-            }
-            name = el.getSimpleName().toString();
-            kind = el.getKind();
-            if (kind.isClass() || kind.isInterface()) {
-                fqn = ((TypeElement) el).getQualifiedName().toString();
-            }
-
-            if (typeToCheck!=null) {
-                typeExist = cc.getElements().getTypeElement(typeToCheck)!=null;
-            }
-            
-        }
-        
-        public FileObject getFileObject() {
-            return f;
-        }
-        
-        public ElementHandle getElementHandle() {
-            return eh;
-        }
-        
-        public String getSimpleName() {
-            return name;
-        }
-        
-        public String getQualifiedName() {
-            return fqn;
-        }
-        
-        public boolean typeExist() {
-            return typeExist;
-        }
-        
-        public ElementKind getElementKind() {
-            return kind;
-        }
-    }
-    
     private static class SuperTypesTask implements CancellableTask<CompilationController> {
-        
+
         private Collection<FileObject> files;
-        
         TreePathHandle handle;
-        
+
         SuperTypesTask(TreePathHandle handle) {
             this.handle = handle;
         }
-        
+
         @Override
         public void cancel() {
-            
         }
-        
+
         @Override
         public void run(CompilationController cc) {
             try {
@@ -905,33 +836,34 @@ public class RefactoringUtils {
             Element el = handle.resolveElement(cc);
             files = elementsToFile(getSuperTypes((TypeElement) el, cc, true), cc.getClasspathInfo());
         }
-        
+
         public Collection<FileObject> getFileObjects() {
             return files;
         }
     }
-    
-/**
-     * This is a helper method to provide support for delaying invocations of actions
-     * depending on java model. See <a href="http://java.netbeans.org/ui/waitscanfinished.html">UI Specification</a>.
-     * <br>Behavior of this method is following:<br>
-     * If classpath scanning is not in progress, runnable's run() is called. <br>
-     * If classpath scanning is in progress, modal cancellable notification dialog with specified
-     * tile is opened.
-     * </ul>
-     * As soon as classpath scanning finishes, this dialog is closed and runnable's run() is called.
-     * This method must be called in AWT EventQueue. Runnable is performed in AWT thread.
-     * 
+
+    /**
+     * This is a helper method to provide support for delaying invocations of
+     * actions depending on java model. See <a
+     * href="http://java.netbeans.org/ui/waitscanfinished.html">UI
+     * Specification</a>. <br>Behavior of this method is following:<br> If
+     * classpath scanning is not in progress, runnable's run() is called. <br>
+     * If classpath scanning is in progress, modal cancellable notification
+     * dialog with specified tile is opened. </ul> As soon as classpath scanning
+     * finishes, this dialog is closed and runnable's run() is called. This
+     * method must be called in AWT EventQueue. Runnable is performed in AWT
+     * thread.
+     *
      * @param runnable Runnable instance which will be called.
      * @param actionName Title of wait dialog.
-     * @return true action was cancelled <br>
-     *         false action was performed
+     * @return true action was cancelled <br> false action was performed
      */
-    public static boolean invokeAfterScanFinished(final Runnable runnable , final String actionName) {
+    public static boolean invokeAfterScanFinished(final Runnable runnable, final String actionName) {
         assert SwingUtilities.isEventDispatchThread();
         if (SourceUtils.isScanInProgress()) {
             final ActionPerformer ap = new ActionPerformer(runnable);
             ActionListener listener = new ActionListener() {
+
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     ap.cancel();
@@ -939,7 +871,7 @@ public class RefactoringUtils {
                 }
             };
             JLabel label = new JLabel(getString("MSG_WaitScan"), javax.swing.UIManager.getIcon("OptionPane.informationIcon"), SwingConstants.LEFT);
-            label.setBorder(new EmptyBorder(12,12,11,11));
+            label.setBorder(new EmptyBorder(12, 12, 11, 11));
             DialogDescriptor dd = new DialogDescriptor(label, actionName, true, new Object[]{getString("LBL_CancelAction", new Object[]{actionName})}, null, 0, null, listener);
             waitDialog = DialogDisplayer.getDefault().createDialog(dd);
             waitDialog.pack();
@@ -954,10 +886,9 @@ public class RefactoringUtils {
             return false;
         }
     }
-    
     private static Dialog waitDialog = null;
     private static RequestProcessor.Task waitTask = null;
-    
+
     private static String getString(String key) {
         return NbBundle.getMessage(RefactoringUtils.class, key);
     }
@@ -966,20 +897,19 @@ public class RefactoringUtils {
         return new MessageFormat(getString(key)).format(values);
     }
 
-    
-
     private static class ActionPerformer implements Runnable {
+
         private Runnable action;
         private boolean cancel = false;
 
         ActionPerformer(Runnable a) {
             this.action = a;
         }
-        
+
         public boolean hasBeenCancelled() {
             return cancel;
         }
-        
+
         @Override
         public void run() {
             try {
@@ -988,6 +918,7 @@ public class RefactoringUtils {
                 Exceptions.printStackTrace(ie);
             }
             SwingUtilities.invokeLater(new Runnable() {
+
                 @Override
                 public void run() {
                     if (!cancel) {
@@ -1000,7 +931,7 @@ public class RefactoringUtils {
                 }
             });
         }
-        
+
         public void cancel() {
             assert SwingUtilities.isEventDispatchThread();
             // check if the scanning did not finish during cancel
@@ -1016,7 +947,7 @@ public class RefactoringUtils {
 
     //XXX: copied from SourceUtils.addImports. Ideally, should be on one place only:
     public static CompilationUnitTree addImports(CompilationUnitTree cut, List<String> toImport, TreeMaker make)
-        throws IOException {
+            throws IOException {
         // do not modify the list given by the caller (may be reused or immutable).
         toImport = new ArrayList<String>(toImport);
         Collections.sort(toImport);
@@ -1028,11 +959,12 @@ public class RefactoringUtils {
         while (currentToImport >= 0 && currentExisting >= 0) {
             String currentToImportText = toImport.get(currentToImport);
 
-            while (currentExisting >= 0 && (imports.get(currentExisting).isStatic() || imports.get(currentExisting).getQualifiedIdentifier().toString().compareTo(currentToImportText) > 0))
+            while (currentExisting >= 0 && (imports.get(currentExisting).isStatic() || imports.get(currentExisting).getQualifiedIdentifier().toString().compareTo(currentToImportText) > 0)) {
                 currentExisting--;
+            }
 
             if (currentExisting >= 0) {
-                imports.add(currentExisting+1, make.Import(make.Identifier(currentToImportText), false));
+                imports.add(currentExisting + 1, make.Import(make.Identifier(currentToImportText), false));
                 currentToImport--;
             }
         }
@@ -1049,6 +981,7 @@ public class RefactoringUtils {
 
     /**
      * transforms passed modifiers to abstract form
+     *
      * @param make a tree maker
      * @param oldMods modifiers of method or class
      * @return the abstract form of ModifiersTree
@@ -1062,7 +995,7 @@ public class RefactoringUtils {
         flags.remove(Modifier.FINAL);
         return make.Modifiers(flags, oldMods.getAnnotations());
     }
-    
+
     public static String variableClashes(String newName, TreePath tp, CompilationInfo info) {
         LocalVarScanner lookup = new LocalVarScanner(info, newName);
         TreePath scopeBlok = tp;
@@ -1073,40 +1006,39 @@ public class RefactoringUtils {
         Element var = info.getTrees().getElement(tp);
         lookup.scan(scopeBlok, var);
 
-        if (lookup.hasRefernces())
+        if (lookup.hasRefernces()) {
             return new MessageFormat(getString("MSG_LocVariableClash")).format(
-                new Object[] {newName}
-            );
-        
+                    new Object[]{newName});
+        }
+
         TreePath temp = tp;
         while (temp != null && temp.getLeaf().getKind() != Tree.Kind.METHOD) {
             Scope scope = info.getTrees().getScope(temp);
-            for (Element el:scope.getLocalElements()) {
+            for (Element el : scope.getLocalElements()) {
                 if (el.getSimpleName().toString().equals(newName)) {
                     return new MessageFormat(getString("MSG_LocVariableClash")).format(
-                            new Object[] {newName}
-                    );
+                            new Object[]{newName});
                 }
             }
             temp = temp.getParentPath();
         }
         return null;
     }
-    
+
     public static boolean isSetter(ExecutableElement el, Element propertyElement) {
         String setterName = getSetterName(propertyElement.getSimpleName().toString());
 
-        return el.getSimpleName().contentEquals(setterName) && 
-                el.getReturnType().getKind() == TypeKind.VOID && 
-                el.getParameters().size() == 1 && 
-                el.getParameters().iterator().next().asType().equals(propertyElement.asType());
+        return el.getSimpleName().contentEquals(setterName)
+                && el.getReturnType().getKind() == TypeKind.VOID
+                && el.getParameters().size() == 1
+                && el.getParameters().iterator().next().asType().equals(propertyElement.asType());
     }
 
     public static boolean isGetter(ExecutableElement el, Element propertyElement) {
         String getterName = getGetterName(propertyElement.getSimpleName().toString());
-        return el.getSimpleName().contentEquals(getterName) && 
-                el.getReturnType().equals(propertyElement.asType()) && 
-                el.getParameters().isEmpty();
+        return el.getSimpleName().contentEquals(getterName)
+                && el.getReturnType().equals(propertyElement.asType())
+                && el.getParameters().isEmpty();
     }
 
     public static String getGetterName(String propertyName) {
@@ -1116,25 +1048,28 @@ public class RefactoringUtils {
     public static String getSetterName(String propertyName) {
         return "set" + capitalizeFirstLetter(propertyName); //NOI18N
     }
-    
-    /** Utility method capitalizes the first letter of string, used to
-     * generate method names for patterns
+
+    /**
+     * Utility method capitalizes the first letter of string, used to generate
+     * method names for patterns
+     *
      * @param str The string for capitalization.
      * @return String with the first letter capitalized.
      */
-    private static String capitalizeFirstLetter( String str ) {
-        if ( str == null || str.length() <= 0 )
+    private static String capitalizeFirstLetter(String str) {
+        if (str == null || str.length() <= 0) {
             return str;
+        }
 
         char chars[] = str.toCharArray();
         chars[0] = Character.toUpperCase(chars[0]);
         return new String(chars);
     }
-    
+
     public static boolean isWeakerAccess(Set<Modifier> modifiers, Set<Modifier> modifiers0) {
         return accessLevel(modifiers) < accessLevel(modifiers0);
     }
-    
+
     private static int accessLevel(Set<Modifier> modifiers) {
         if (modifiers.contains(Modifier.PRIVATE)) {
             return 0;
@@ -1147,6 +1082,7 @@ public class RefactoringUtils {
         }
         return 1;
     }
+
     public static String getAccess(Set<Modifier> modifiers) {
         if (modifiers.contains(Modifier.PRIVATE)) {
             return "private"; //NOI18N
@@ -1159,6 +1095,4 @@ public class RefactoringUtils {
         }
         return "<default>"; //NOI18N
     }
-    
-
 }
