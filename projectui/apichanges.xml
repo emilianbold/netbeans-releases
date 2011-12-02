@@ -54,6 +54,25 @@ made subject to such option by the copyright holder.
     </apidefs>
 
     <changes>
+        <change id="ProjectTemplates">
+            <api name="recent"/>
+            <summary>Added <code>ProjectTemplates</code></summary>
+            <version major="1" minor="32"/>
+            <date year="2011" month="12" day="1"/>
+            <author login="jglick"/>
+            <compatibility addition="yes">
+                <p>
+                    Undocumented tricks like trying to call <code>NewProject.newSample</code>
+                    by reflection will no longer work.
+                </p>
+            </compatibility>
+            <description>
+                <p>
+                    Added a new class of constants to use with the New Project action.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.project.ui.api" name="ProjectTemplates"/>
+        </change>
         <change id="BuildActions">
             <api name="recent"/>
             <summary>Externalize Build related action registration.</summary>

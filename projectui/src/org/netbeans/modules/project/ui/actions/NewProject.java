@@ -52,6 +52,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.prefs.Preferences;
+import javax.swing.AbstractAction;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -60,42 +61,45 @@ import org.netbeans.modules.project.ui.OpenProjectList;
 import org.netbeans.modules.project.ui.OpenProjectListSettings;
 import org.netbeans.modules.project.ui.ProjectTab;
 import org.netbeans.modules.project.ui.ProjectUtilities;
-import org.netbeans.modules.project.ui.ProjectTemplatePanel;
+import org.netbeans.modules.project.ui.ProjectsRootNode;
+import static org.netbeans.modules.project.ui.actions.Bundle.*;
+import org.netbeans.modules.project.ui.api.ProjectTemplates;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.ErrorManager;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
+import org.openide.awt.ActionRegistration;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.util.ImageUtilities;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 
-public class NewProject extends BasicAction {
+@ActionID(id = "org.netbeans.modules.project.ui.NewProject", category = "Project")
+@ActionRegistration(displayName = "#LBL_NewProjectAction_Name", iconBase = "org/netbeans/modules/project/ui/resources/newProject.png")
+@ActionReferences({
+    @ActionReference(path = "Shortcuts", name = "DS-N"),
+    @ActionReference(path = ProjectsRootNode.ACTIONS_FOLDER, position = 100),
+    @ActionReference(path = "Menu/File", position = 100),
+    @ActionReference(path = "Toolbars/File", position = 200)
+})
+@Messages("LBL_NewProjectAction_Name=Ne&w Project...")
+public class NewProject extends AbstractAction {
         
-    private boolean isPreselect = false;
-    
     private RequestProcessor.Task bodyTask;
 
+    @Messages("LBL_NewProjectAction_Tooltip=New Project...")
     public NewProject() {
-        super(NbBundle.getMessage(NewProject.class, "LBL_NewProjectAction_Name"),
-                ImageUtilities.loadImageIcon("org/netbeans/modules/project/ui/resources/newProject.png", false));
-        putValue("iconBase","org/netbeans/modules/project/ui/resources/newProject.png"); //NOI18N
-        putValue(SHORT_DESCRIPTION, NbBundle.getMessage(NewProject.class, "LBL_NewProjectAction_Tooltip"));
+        putValue(SHORT_DESCRIPTION, LBL_NewProjectAction_Tooltip()); // is this actually useful?
         bodyTask = new RequestProcessor( "NewProjectBody" ).create( new Runnable () { // NOI18N
             public void run () {
                 doPerform ();
             }
         });
-    }
-    
-    public static NewProject newSample() {
-        NewProject np = new NewProject();
-        np.setDisplayName( "New Sample" ); 
-        np.isPreselect = true;
-        return np;
     }
 
     public void actionPerformed( ActionEvent evt ) {
@@ -109,15 +113,8 @@ public class NewProject extends BasicAction {
     /*T9Y*/ NewProjectWizard prepareWizardDescriptor(FileObject fo) {
         NewProjectWizard wizard = new NewProjectWizard(fo);
             
-        if ( isPreselect ) {
-            // XXX make the properties public ?
-            wizard.putProperty(ProjectTemplatePanel.PRESELECT_CATEGORY, getValue(ProjectTemplatePanel.PRESELECT_CATEGORY));
-            wizard.putProperty(ProjectTemplatePanel.PRESELECT_TEMPLATE, getValue(ProjectTemplatePanel.PRESELECT_TEMPLATE));
-        }
-        else {
-            wizard.putProperty(ProjectTemplatePanel.PRESELECT_CATEGORY, null);
-            wizard.putProperty(ProjectTemplatePanel.PRESELECT_TEMPLATE, null);
-        }
+        wizard.putProperty(ProjectTemplates.PRESELECT_CATEGORY, getValue(ProjectTemplates.PRESELECT_CATEGORY));
+        wizard.putProperty(ProjectTemplates.PRESELECT_TEMPLATE, getValue(ProjectTemplates.PRESELECT_TEMPLATE));
 
         FileObject folder = (FileObject) getValue(CommonProjectActions.EXISTING_SOURCES_FOLDER);
         if (folder != null) {

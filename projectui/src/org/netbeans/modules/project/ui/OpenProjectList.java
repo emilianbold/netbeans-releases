@@ -929,10 +929,9 @@ public final class OpenProjectList {
                             }
                         }
                         if (fail) {
+                            LOGGER.log(Level.WARNING, "Project {0} is not open and cannot be set as main.", ProjectUtils.getInformation(project).getDisplayName());
                             logProjects("setMainProject(): openProjects == ", openProjects.toArray(new Project[0])); // NOI18N
-                            IllegalArgumentException x = new IllegalArgumentException("Project " + ProjectUtils.getInformation(project).getDisplayName() + " is not open and cannot be set as main.");
-                            Exceptions.attachSeverity(x, Level.INFO);
-                            throw x;
+                            return null;
                         }
                     }
                 } catch (IOException ex) {
