@@ -42,6 +42,7 @@
 package org.netbeans.modules.css.editor.properties.parser;
 
 import java.util.Collections;
+import java.util.List;
 import org.netbeans.modules.css.editor.module.CssModuleSupport;
 import org.netbeans.modules.css.editor.module.main.CssModuleTestBase;
 import org.netbeans.modules.css.editor.module.spi.Property;
@@ -98,6 +99,115 @@ public class GrammarResolverTest extends CssModuleTestBase {
         assertResolve(g, "a");
         assertResolve(g, "a b");
     }
+    
+    public void testAmbiguousGrammarParsingPrecendence() {
+        String g = " [ !identifier b ] | [ keyword b ]";
+        
+//        PRINT_INFO_IN_ASSERT_RESOLVE = true;
+//        GrammarResolver.setLogging(GrammarResolver.Log.DEFAULT, true);
+        
+        GroupGrammarElement tree = GrammarParser.parse(g);
+        
+        PropertyValue v = new PropertyValue(tree, "keyword b");
+        
+        assertTrue(v.isResolved());
+        
+        List<ResolvedToken> resolved = v.getResolvedTokens();
+        
+        assertNotNull(resolved);
+        assertEquals(2, resolved.size());
+        
+        ResolvedToken first = resolved.get(0); 
+        
+        //now check the group, matching keywords should have a precedence before
+        //property acceptors
+        
+        GrammarElement ge1 = first.getGrammarElement();
+        assertNotNull(ge1);
+        
+        assertEquals("[S0]/[L2]/keyword", ge1.path());
+
+        ResolvedToken second = resolved.get(1); 
+        
+        GrammarElement ge2 = second.getGrammarElement();
+        assertNotNull(ge2);
+        
+        assertEquals("[S0]/[L2]/b", ge2.path());
+
+    }
+    
+    public void testAmbiguousGrammarParsingPrecendence2() {
+        //just test if we can handle such situation - two same paths
+        //in such case the first found path shoud be used
+        
+        String g = " [ !identifier b ] | [ !identifier b ]";
+        
+//        PRINT_INFO_IN_ASSERT_RESOLVE = true;
+//        GrammarResolver.setLogging(GrammarResolver.Log.DEFAULT, true);
+        
+        GroupGrammarElement tree = GrammarParser.parse(g);
+        
+        PropertyValue v = new PropertyValue(tree, "keyword b");
+        
+        assertTrue(v.isResolved());
+        
+        List<ResolvedToken> resolved = v.getResolvedTokens();
+        
+        assertNotNull(resolved);
+        assertEquals(2, resolved.size());
+        
+        ResolvedToken first = resolved.get(0); 
+        
+        GrammarElement ge1 = first.getGrammarElement();
+        assertNotNull(ge1);
+        
+        assertEquals("[S0]/[L1]/!identifier", ge1.path());
+
+        ResolvedToken second = resolved.get(1); 
+        
+        GrammarElement ge2 = second.getGrammarElement();
+        assertNotNull(ge2);
+        
+        assertEquals("[S0]/[L1]/b", ge2.path());
+
+    }
+    
+    public void testAmbiguousGrammarParsingPrecendence3() {
+        //just test if we can handle such situation - two same paths
+        //in such case the first found path shoud be used
+        
+        String g = " [ keyword b ] | [ keyword b ]";
+        
+//        PRINT_INFO_IN_ASSERT_RESOLVE = true;
+//        GrammarResolver.setLogging(GrammarResolver.Log.DEFAULT, true);
+        
+        GroupGrammarElement tree = GrammarParser.parse(g);
+        
+        PropertyValue v = new PropertyValue(tree, "keyword b");
+        
+        assertTrue(v.isResolved());
+        
+        List<ResolvedToken> resolved = v.getResolvedTokens();
+        
+        assertNotNull(resolved);
+        assertEquals(2, resolved.size());
+        
+        ResolvedToken first = resolved.get(0); 
+        
+        GrammarElement ge1 = first.getGrammarElement();
+        assertNotNull(ge1);
+        
+        assertEquals("[S0]/[L1]/keyword", ge1.path());
+
+        ResolvedToken second = resolved.get(1); 
+        
+        GrammarElement ge2 = second.getGrammarElement();
+        assertNotNull(ge2);
+        
+        assertEquals("[S0]/[L1]/b", ge2.path());
+
+    }
+    
     
     public void testParseMultiplicity() {
         String grammar = " [ x ]{1,2} ";

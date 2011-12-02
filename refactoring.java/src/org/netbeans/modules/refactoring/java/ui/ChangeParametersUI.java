@@ -49,6 +49,7 @@ import java.text.MessageFormat;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
@@ -70,16 +71,21 @@ import org.openide.util.NbBundle;
  */
 public class ChangeParametersUI implements RefactoringUI {
     
-    TreePathHandle refactoredObj;
-    ChangeParametersPanel panel;
-    ChangeParametersRefactoring refactoring;
+    private TreePathHandle method;
+    private ChangeParametersPanel panel;
+    private ChangeParametersRefactoring refactoring;
+    private String name;
+    private boolean isMethod;
     private final ChangeParametersRefactoring.ParameterInfo[] preConfiguration;
     
     /** Creates a new instance of ChangeMethodSignatureRefactoring */
     private ChangeParametersUI(TreePathHandle refactoredObj, CompilationInfo info, ChangeParametersRefactoring.ParameterInfo[] preConfiguration) {
         this.refactoring = new ChangeParametersRefactoring(refactoredObj);
-        this.refactoredObj = refactoredObj;
+        this.method = refactoredObj;
         this.preConfiguration = preConfiguration;
+        Element element = method.resolveElement(info);
+        this.name = element.getSimpleName().toString();
+        this.isMethod = element.getKind() == ElementKind.METHOD;
     }
     
     public static ChangeParametersUI create(TreePathHandle refactoredObj, CompilationInfo info, ChangeParametersRefactoring.ParameterInfo[] preConfiguration) {
@@ -103,8 +109,6 @@ public class ChangeParametersUI implements RefactoringUI {
     public String getDescription() {
         String msg = NbBundle.getMessage(ChangeParametersUI.class, 
                                         "DSC_ChangeParsRootNode"); // NOI18N
-        String name = RefactoringUtils.getSimpleName(refactoredObj);
-        boolean isMethod = RefactoringUtils.getElementKind(refactoredObj).equals(ElementKind.METHOD);
         return new MessageFormat(msg).format(new Object[] { 
             name,
             NbBundle.getMessage(ChangeParametersUI.class, "DSC_ChangeParsRootNode" + (isMethod ? "Method" : "Constr")),
@@ -115,9 +119,7 @@ public class ChangeParametersUI implements RefactoringUI {
     @Override
     public CustomRefactoringPanel getPanel(ChangeListener parent) {
         if (panel == null) {
-            //TODO:
-            //parent.setPreviewEnabled(true);
-            panel = new ChangeParametersPanel(refactoredObj, parent, preConfiguration);
+            panel = new ChangeParametersPanel(method, parent, preConfiguration);
         }
         return panel;
     }

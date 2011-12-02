@@ -66,6 +66,7 @@ public class XmlUtilsTest extends NbTestCase {
         Document document = XmlUtils.parse(new File(getDataDir(), "persons.xml"));
         assertNotNull(XmlUtils.query(document, "//person[@id='1']"));
         assertNull(XmlUtils.query(document, "//person[@id='-1']"));
+        assertNull(XmlUtils.query(document, "count(//person)"));
     }
 
     public void testCommentNode() throws Exception {

@@ -39,60 +39,28 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.coherence.server;
+package org.netbeans.modules.javaee.specs.support;
 
-import java.io.IOException;
-import javax.swing.Action;
-import javax.swing.event.ChangeListener;
-import org.netbeans.modules.coherence.server.actions.CloneAction;
-import org.netbeans.modules.coherence.server.actions.PropertiesAction;
-import org.netbeans.modules.coherence.server.actions.RemoveAction;
-import org.netbeans.modules.coherence.server.actions.StartServerAction;
-import org.netbeans.modules.coherence.server.actions.StopServerAction;
-import org.openide.actions.DeleteAction;
-import org.openide.util.actions.SystemAction;
+import java.util.Set;
+import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
+import org.netbeans.modules.javaee.specs.support.spi.EjbSupportImplementation;
 
 /**
- * This class extends (@link CoherenceServerBaseNode} and complete primarily node actions.
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public class CoherenceServerFullNode extends CoherenceServerBaseNode implements ChangeListener {
+public class DefaultEjbSupportImpl implements EjbSupportImplementation {
 
-    public CoherenceServerFullNode(CoherenceInstance coherenceInstance) {
-        super(coherenceInstance);
+    public DefaultEjbSupportImpl() {
     }
 
     @Override
-    public Action[] getActions(boolean context) {
-        return new Action[]{
-                    SystemAction.get(StartServerAction.class),
-                    SystemAction.get(StopServerAction.class),
-                    null,
-                    SystemAction.get(CloneAction.class),
-                    SystemAction.get(RemoveAction.class),
-                    null,
-                    SystemAction.get(PropertiesAction.class)
-                };
+    public boolean isEjb31LiteSupported(J2eePlatform j2eePlatform) {
+        Set<Profile> profiles = j2eePlatform.getSupportedProfiles();
+        return profiles.contains(Profile.JAVA_EE_6_FULL) || (profiles.contains(Profile.JAVA_EE_6_WEB));
     }
 
-    @Override
-    public boolean canDestroy() {
-        return true;
-    }
-
-    @Override
-    public Action getPreferredAction() {
-        if (coherenceServer.isRunning()) {
-            return SystemAction.get(StopServerAction.class);
-        } else {
-            return SystemAction.get(StartServerAction.class);
-        }
-    }
-
-    @Override
-    public void destroy() throws IOException {
-        coherenceInstance.remove();
-        super.destroy();
-    }
 }

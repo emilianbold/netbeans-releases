@@ -39,60 +39,26 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.coherence.server;
+package org.netbeans.modules.tomcat5.ide;
 
-import java.io.IOException;
-import javax.swing.Action;
-import javax.swing.event.ChangeListener;
-import org.netbeans.modules.coherence.server.actions.CloneAction;
-import org.netbeans.modules.coherence.server.actions.PropertiesAction;
-import org.netbeans.modules.coherence.server.actions.RemoveAction;
-import org.netbeans.modules.coherence.server.actions.StartServerAction;
-import org.netbeans.modules.coherence.server.actions.StopServerAction;
-import org.openide.actions.DeleteAction;
-import org.openide.util.actions.SystemAction;
+import java.io.File;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
+import org.netbeans.modules.javaee.specs.support.spi.EjbSupportImplementation;
 
 /**
- * This class extends (@link CoherenceServerBaseNode} and complete primarily node actions.
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public class CoherenceServerFullNode extends CoherenceServerBaseNode implements ChangeListener {
-
-    public CoherenceServerFullNode(CoherenceInstance coherenceInstance) {
-        super(coherenceInstance);
-    }
+public class EjbSupportImpl implements EjbSupportImplementation {
 
     @Override
-    public Action[] getActions(boolean context) {
-        return new Action[]{
-                    SystemAction.get(StartServerAction.class),
-                    SystemAction.get(StopServerAction.class),
-                    null,
-                    SystemAction.get(CloneAction.class),
-                    SystemAction.get(RemoveAction.class),
-                    null,
-                    SystemAction.get(PropertiesAction.class)
-                };
-    }
-
-    @Override
-    public boolean canDestroy() {
-        return true;
-    }
-
-    @Override
-    public Action getPreferredAction() {
-        if (coherenceServer.isRunning()) {
-            return SystemAction.get(StopServerAction.class);
-        } else {
-            return SystemAction.get(StartServerAction.class);
+    public boolean isEjb31LiteSupported(J2eePlatform j2eePlatform) {
+        for (File cpEntry : j2eePlatform.getClasspathEntries()) {
+            if (cpEntry.getName().startsWith("openejb-tomcat")) { //NOI18N
+                return true;
+            }
         }
+        return false;
     }
 
-    @Override
-    public void destroy() throws IOException {
-        coherenceInstance.remove();
-        super.destroy();
-    }
 }

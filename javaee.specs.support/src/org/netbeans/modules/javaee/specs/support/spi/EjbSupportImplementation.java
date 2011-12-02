@@ -39,60 +39,23 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.coherence.server;
+package org.netbeans.modules.javaee.specs.support.spi;
 
-import java.io.IOException;
-import javax.swing.Action;
-import javax.swing.event.ChangeListener;
-import org.netbeans.modules.coherence.server.actions.CloneAction;
-import org.netbeans.modules.coherence.server.actions.PropertiesAction;
-import org.netbeans.modules.coherence.server.actions.RemoveAction;
-import org.netbeans.modules.coherence.server.actions.StartServerAction;
-import org.netbeans.modules.coherence.server.actions.StopServerAction;
-import org.openide.actions.DeleteAction;
-import org.openide.util.actions.SystemAction;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 
 /**
- * This class extends (@link CoherenceServerBaseNode} and complete primarily node actions.
  *
  * @author Martin Fousek <marfous@netbeans.org>
+ * @since 1.4
  */
-public class CoherenceServerFullNode extends CoherenceServerBaseNode implements ChangeListener {
+public interface EjbSupportImplementation {
 
-    public CoherenceServerFullNode(CoherenceInstance coherenceInstance) {
-        super(coherenceInstance);
-    }
+    /**
+     * Says whether the EJB 3.1 Lite is supported by {@link J2eePlatform}.
+     *
+     * @param j2eePlatform j2eePlatform
+     * @return {@code true} if the server supports EJB Lite, {@code false} otherwise
+     */
+    boolean isEjb31LiteSupported(J2eePlatform j2eePlatform);
 
-    @Override
-    public Action[] getActions(boolean context) {
-        return new Action[]{
-                    SystemAction.get(StartServerAction.class),
-                    SystemAction.get(StopServerAction.class),
-                    null,
-                    SystemAction.get(CloneAction.class),
-                    SystemAction.get(RemoveAction.class),
-                    null,
-                    SystemAction.get(PropertiesAction.class)
-                };
-    }
-
-    @Override
-    public boolean canDestroy() {
-        return true;
-    }
-
-    @Override
-    public Action getPreferredAction() {
-        if (coherenceServer.isRunning()) {
-            return SystemAction.get(StopServerAction.class);
-        } else {
-            return SystemAction.get(StartServerAction.class);
-        }
-    }
-
-    @Override
-    public void destroy() throws IOException {
-        coherenceInstance.remove();
-        super.destroy();
-    }
 }

@@ -75,6 +75,7 @@ import org.openide.filesystems.FileObject;
     @ProjectType(id="org-netbeans-modules-j2ee-ejbjarproject"),  // NOI18N
     @ProjectType(id="org-netbeans-modules-j2ee-earproject"),  // NOI18N
     @ProjectType(id="org-netbeans-modules-apisupport-project"), // NOI18N
+    @ProjectType(id="org-netbeans-modules-apisupport-project-suite"), // NOI18N
     @ProjectType(id="org-netbeans-modules-web-project"), // NOI18N
     @ProjectType(id="org-netbeans-modules-ant-freeform", position=1230), // NOI18N, 
     @ProjectType(id="org-netbeans-modules-maven/jar"), // NOI18N
