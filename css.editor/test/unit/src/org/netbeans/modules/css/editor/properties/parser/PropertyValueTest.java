@@ -310,6 +310,27 @@ public class PropertyValueTest extends CssModuleTestBase {
         assertAlternatives(g, "c", "a");
     }
 
+     //Bug 205893 - font-family completion issue
+     public void testFontFamily() {
+//        GrammarResolver.setLogging(GrammarResolver.Log.DEFAULT, true);
+//        GrammarResolver.setLogging(GrammarResolver.Log.ALTERNATIVES, true);
+//        PRINT_INFO_IN_ASSERT_RESOLVE = true;
+        
+        PropertyModel p = CssModuleSupport.getPropertyModel("font-family");
+//        assertResolve(p.getGrammar(), "fantasy");
+        assertAlternatives(p.getGrammar(), "fantasy", ",");
+
+        assertAlternatives(p.getGrammar(), "fantasy, ", 
+                "fantasy","serif","sans-serif","monospace","!family-name","cursive");
+        
+        assertAlternatives(p.getGrammar(), "fantasy, monospace", 
+                ",");
+
+        assertAlternatives(p.getGrammar(), "fantasy, monospace, ", 
+                "fantasy","serif","sans-serif","monospace","!family-name","cursive");
+
+    }
+    
     public void testPerformance_Parse_Resolve() {
 //        Last results from my MacBook Pro:
 //        -------------------------------------------
