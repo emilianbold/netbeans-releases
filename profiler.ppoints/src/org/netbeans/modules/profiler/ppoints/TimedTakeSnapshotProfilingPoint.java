@@ -148,7 +148,7 @@ public final class TimedTakeSnapshotProfilingPoint extends TimedGlobalProfilingP
 
             synchronized(resultsSync) {
                 if (!hasResults()) {
-                    dataAreaTextBuilder.append("&nbsp;&nbsp;&lt;" + NO_HITS_STRING + "&gt;"); // NOI18N
+                    dataAreaTextBuilder.append("&nbsp;&nbsp;&lt;").append(NO_HITS_STRING).append("&gt;"); // NOI18N
                 } else {
                     for (int i = 0; i < results.size(); i++) {
                         dataAreaTextBuilder.append("&nbsp;&nbsp;");
