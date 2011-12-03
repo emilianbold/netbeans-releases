@@ -501,6 +501,7 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
                 if (e.getCause() instanceof ModelBuildingException) {
                     ModelBuildingException mbe = (ModelBuildingException) e.getCause();
                     for (ModelProblem mp : mbe.getProblems()) {
+                        LOG.log(Level.FINE, mp.toString(), mp.getException());
                         if (mp.getException() instanceof UnresolvableModelException) {
                             // Probably obsoleted by ProblemReporterImpl.checkParent, but just in case:
                             UnresolvableModelException ume = (UnresolvableModelException) mp.getException();

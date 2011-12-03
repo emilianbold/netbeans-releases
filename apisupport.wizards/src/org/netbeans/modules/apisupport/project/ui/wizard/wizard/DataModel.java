@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.apisupport.project.ui.wizard.wizard;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -59,6 +60,7 @@ import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.apisupport.project.ui.wizard.common.BasicWizardIterator;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.Exceptions;
 
@@ -78,7 +80,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
     private String prefix;
     private String displayName;
     private String category;
-    private String origIconPath;
+    private File origIconPath;
     
     DataModel(final WizardDescriptor wiz) {
         super(wiz);
@@ -179,8 +181,9 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
                 }
                 
                 // Copy wizard icon
-                if (origIconPath != null && origIconPath.length() > 0) {
-                    String relToSrcDir = addCreateIconOperation(cmf, origIconPath);
+                FileObject origIcon = origIconPath != null ? FileUtil.toFileObject(origIconPath) : null;
+                if (origIcon != null) {
+                    String relToSrcDir = addCreateIconOperation(cmf, origIcon);
                     if (useTR) {
                         replaceTokens.put("TR_iconBase", relToSrcDir);
                     } else {
@@ -235,7 +238,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         this.category = category;
     }
     
-    void setIcon(String origIconPath) {
+    void setIcon(File origIconPath) {
         reset();
         this.origIconPath = origIconPath;
     }

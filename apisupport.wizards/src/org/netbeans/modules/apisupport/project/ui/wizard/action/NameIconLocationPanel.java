@@ -60,6 +60,7 @@ import org.netbeans.modules.apisupport.project.ui.wizard.common.CreatedModifiedF
 import org.netbeans.modules.apisupport.project.ui.wizard.common.BasicWizardIterator;
 import org.netbeans.modules.apisupport.project.ui.wizard.common.WizardUtils;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -76,8 +77,8 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
     private final DataModel data;
     private final DocumentListener updateListener;
     
-    private String smallIconPath; 
-    private String largeIconPath; 
+    private File smallIconPath;
+    private File largeIconPath;
     
     /** Creates new NameIconLocationPanel */
     public NameIconLocationPanel(final WizardDescriptor setting, final DataModel data) {
@@ -179,20 +180,19 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
     private void checkIconValidity() {
         if (smallIconPath == null) {
             setWarning(WizardUtils.getNoIconSelectedWarning(16,16));
-        } else if (!WizardUtils.isValidIcon(new File(smallIconPath),16,16)) {
-            setWarning(WizardUtils.getIconDimensionWarning(new File(smallIconPath), 16, 16));
+        } else if (!WizardUtils.isValidIcon(smallIconPath, 16, 16)) {
+            setWarning(WizardUtils.getIconDimensionWarning(smallIconPath, 16, 16));
         } else if (data.isToolbarEnabled() && largeIconPath == null) {
-            File smallIconFile = new File(smallIconPath);
-            assert smallIconFile.getParentFile() != null;
-            String name = getName(smallIconFile);
-            String ext = getExt(smallIconFile);            
+            assert smallIconPath.getParentFile() != null;
+            String name = getName(smallIconPath);
+            String ext = getExt(smallIconPath);
             StringBuffer sb = new StringBuffer();
             sb.append(name).append("24"); // NOI18N
             if (ext != null) {
                 sb.append('.').append(ext);
             }
             setWarning(NbBundle.getMessage(NameIconLocationPanel.class,
-                    "MSG_NoLargeIconSelected", sb.toString(), smallIconFile.getParent())); // NOI18N
+                    "MSG_NoLargeIconSelected", sb.toString(), smallIconPath.getParent())); // NOI18N
         }
     }
 
@@ -226,7 +226,7 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
             }
             File f = new File(icon.getParentFile(),resultName);
             if (f.exists()) {
-                results.add(f);
+                results.add(FileUtil.normalizeFile(f));
             }
         }        
         return results;
@@ -440,7 +440,7 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
         JFileChooser chooser = WizardUtils.getIconFileChooser(icon.getText());
         int ret = chooser.showDialog(this, getMessage("LBL_Select"));
         if (ret == JFileChooser.APPROVE_OPTION) {
-            File iconFile =  chooser.getSelectedFile();
+            File iconFile =  FileUtil.normalizeFile(chooser.getSelectedFile());
                 icon.setText(iconFile.getAbsolutePath());
                 Set<File> allFiles = getPossibleIcons(getIconPath());
                 if (!allFiles.remove(iconFile)) {
@@ -461,10 +461,10 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
                 }
                 
                 if (secondIcon != null) {
-                    smallIconPath = (isIconSmall) ? iconFile.getAbsolutePath() : secondIcon.getAbsolutePath();
-                    largeIconPath = (isIconSmall) ? secondIcon.getAbsolutePath() : iconFile.getAbsolutePath();
+                    smallIconPath = (isIconSmall) ? iconFile : secondIcon;
+                    largeIconPath = (isIconSmall) ? secondIcon : iconFile;
                 } else {
-                    smallIconPath = iconFile.getAbsolutePath();
+                    smallIconPath = iconFile;
                     largeIconPath = null;
                 }
                 

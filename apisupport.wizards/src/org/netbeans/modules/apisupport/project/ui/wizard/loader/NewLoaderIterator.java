@@ -117,7 +117,7 @@ public final class NewLoaderIterator extends BasicWizardIterator {
     static final class DataModel extends BasicWizardIterator.BasicDataModel {
         
         private String prefix;
-        private String iconPath;
+        private File iconPath;
         private String mimeType;
         private boolean extensionBased = true;
         private String extension;
@@ -146,11 +146,11 @@ public final class NewLoaderIterator extends BasicWizardIterator {
             this.prefix = prefix;
         }
         
-        public String getIconPath() {
+        public File getIconPath() {
             return iconPath;
         }
         
-        public void setIconPath(String iconPath) {
+        public void setIconPath(File iconPath) {
             this.iconPath = iconPath;
         }
         
@@ -238,10 +238,11 @@ public final class NewLoaderIterator extends BasicWizardIterator {
         replaceTokens.put("NAMESPACES", formatNameSpace(model.isExtensionBased(), model.getNamespace(), mime));//NOI18N
         
         // Copy action icon
-        String origIconPath = model.getIconPath();
+        File origIconPath = model.getIconPath();
+        FileObject origIcon = origIconPath != null ? FileUtil.toFileObject(origIconPath) : null;
         String relativeIconPath;
-        if (origIconPath != null && new File(origIconPath).exists()) {
-            relativeIconPath = model.addCreateIconOperation(fileChanges, origIconPath);
+        if (origIcon != null) {
+            relativeIconPath = model.addCreateIconOperation(fileChanges, origIcon);
             replaceTokens.put("IMAGESNIPPET", formatImageSnippet(relativeIconPath));//NOI18N
             replaceTokens.put("ICONPATH", relativeIconPath);//NOI18N
             replaceTokens.put("COMMENTICON", "");//NOI18N

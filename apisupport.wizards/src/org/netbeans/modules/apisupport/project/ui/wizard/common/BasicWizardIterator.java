@@ -47,7 +47,6 @@ package org.netbeans.modules.apisupport.project.ui.wizard.common;
 import org.netbeans.modules.apisupport.project.api.BasicWizardPanel;
 import org.netbeans.modules.apisupport.project.api.BasicVisualPanel;
 import java.awt.Component;
-import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashSet;
@@ -55,6 +54,7 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.BadLocationException;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
@@ -223,15 +223,14 @@ public abstract class BasicWizardIterator implements WizardDescriptor.Asynchrono
          *
          * @return path of the icon relative to the project's source directory
          */
-        public String addCreateIconOperation(CreatedModifiedFiles cmf, String origIconPath) {
-            FileObject origIconFO = FileUtil.toFileObject(new File(origIconPath));
+        public String addCreateIconOperation(CreatedModifiedFiles cmf, @NonNull FileObject originalIcon) {
             String relativeIconPath = null;
-            if (!FileUtil.isParentOf(Util.getResourceDirectory(getProject()), origIconFO)) {
-                String iconPath = getDefaultPackagePath(origIconFO.getNameExt(), true);
-                cmf.add(cmf.createFile(iconPath, origIconFO));
-                relativeIconPath = getPackageName().replace('.', '/') + '/' + origIconFO.getNameExt();
+            if (!FileUtil.isParentOf(Util.getResourceDirectory(getProject()), originalIcon)) {
+                String iconPath = getDefaultPackagePath(originalIcon.getNameExt(), true);
+                cmf.add(cmf.createFile(iconPath, originalIcon));
+                relativeIconPath = getPackageName().replace('.', '/') + '/' + originalIcon.getNameExt();
             } else {
-                relativeIconPath = FileUtil.getRelativePath(Util.getResourceDirectory(getProject()), origIconFO);
+                relativeIconPath = FileUtil.getRelativePath(Util.getResourceDirectory(getProject()), originalIcon);
             }
             return relativeIconPath;
         }
