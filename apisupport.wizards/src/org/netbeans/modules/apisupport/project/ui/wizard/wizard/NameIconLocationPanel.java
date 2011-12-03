@@ -61,6 +61,7 @@ import org.netbeans.modules.apisupport.project.ui.wizard.common.CreatedModifiedF
 import org.netbeans.modules.apisupport.project.ui.wizard.common.BasicWizardIterator;
 import org.netbeans.modules.apisupport.project.ui.wizard.common.WizardUtils;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -131,7 +132,7 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
         if (data.isFileTemplateType()) {
             data.setDisplayName(displayName.getText());
             if (icon.getText().trim().length() > 0) {
-                data.setIcon(icon.getText().equals(NONE_LABEL) ? null : icon.getText());
+                data.setIcon(icon.getText().equals(NONE_LABEL) ? null : FileUtil.normalizeFile(new File(icon.getText())));
             }
             data.setCategory(getCategoryPath());
         }
