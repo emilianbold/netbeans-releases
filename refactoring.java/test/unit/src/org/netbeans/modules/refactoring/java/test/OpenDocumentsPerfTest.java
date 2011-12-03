@@ -103,7 +103,7 @@ public class OpenDocumentsPerfTest extends RefPerfTestCase {
                 TypeMirror mirror = klass.getInterfaces().get(1); // java.lang.Runnable
                 Element object = controller.getTypes().asElement(mirror);
                 wuq[0] = new WhereUsedQuery(Lookups.singleton(TreePathHandle.create(object, controller)));
-                ClasspathInfo cpi = RefactoringUtils.getClasspathInfoFor(TreePathHandle.create(klass, controller));
+                ClasspathInfo cpi = JavaRefactoringUtils.getClasspathInfoFor(TreePathHandle.create(klass, controller));
                 wuq[0].getContext().add(cpi);
             }
         }, false).get();

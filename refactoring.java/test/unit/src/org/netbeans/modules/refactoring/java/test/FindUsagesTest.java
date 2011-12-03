@@ -229,7 +229,7 @@ public class FindUsagesTest extends NbTestCase {
                 Element field = klass.getEnclosedElements().get(4);
                 TreePathHandle element = TreePathHandle.create(field, controller);
                 wuq[0] = new WhereUsedQuery(Lookups.singleton(element));
-                wuq[0].getContext().add(RefactoringUtils.getClasspathInfoFor(element));
+                wuq[0].getContext().add(JavaRefactoringUtils.getClasspathInfoFor(element));
             }
         }, false).get();
         setParameters(wuq, true, true, false, false, false, false);

@@ -102,7 +102,7 @@ public class MoveClassPerfTest extends RefPerfTestCase {
                 controller.toPhase(JavaSource.Phase.RESOLVED);
                 TypeElement klass = controller.getElements().getTypeElement(REFACTORED_OBJ);
                 moveRef[0] = new MoveRefactoring(Lookups.singleton(testFile));
-                ClasspathInfo cpi = RefactoringUtils.getClasspathInfoFor(TreePathHandle.create(klass, controller));
+                ClasspathInfo cpi = JavaRefactoringUtils.getClasspathInfoFor(TreePathHandle.create(klass, controller));
                 moveRef[0].getContext().add(cpi);
             }
         }, false).get();
