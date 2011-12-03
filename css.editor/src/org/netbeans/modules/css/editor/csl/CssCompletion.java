@@ -250,8 +250,10 @@ public class CssCompletion implements CodeCompletionHandler {
         boolean colorChooserAdded = false;
         for (GrammarElement e : props) {
             if (e instanceof ValueGrammarElement) {
-                if (((ValueGrammarElement) e).isUnit()) {
-                    continue; //skip units
+                ValueGrammarElement valueElement = (ValueGrammarElement)e;
+                if (valueElement.isUnit()) {
+                    proposals.add(CssCompletionItem.createUnitCompletionItem(valueElement));
+                    continue;
                 }
             }
             CssValueElement handle = new CssValueElement(propertyDescriptor, e);
