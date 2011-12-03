@@ -412,7 +412,10 @@ public final class NewOptionsIterator extends BasicWizardIterator {
                 generateLayerEntry();
             }
             if (!isAdvanced()) {
-                addCreateIconOperation(files, icon.getAbsolutePath());
+                FileObject iconFO = FileUtil.toFileObject(icon);
+                if (iconFO != null) {
+                    addCreateIconOperation(files, iconFO);
+                }
             }
             return files;
         }
@@ -558,7 +561,7 @@ public final class NewOptionsIterator extends BasicWizardIterator {
         
         private String getIconPath() {
             assert isAdvanced() || icon != null;
-            FileObject iconFO = FileUtil.toFileObject(FileUtil.normalizeFile(icon));
+            FileObject iconFO = FileUtil.toFileObject(icon);
             if (iconFO != null) {
                 // XXX would be cleaner to use ret value from BasicDataModel.addCreateIconOperation for this:
                 String iconRel = FileUtil.getRelativePath(Util.getResourceDirectory(getProject()), iconFO);

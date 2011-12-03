@@ -64,6 +64,7 @@ import org.netbeans.modules.apisupport.project.ui.wizard.options.NewOptionsItera
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.AsyncGUIJob;
 import org.openide.util.HelpCtx;
@@ -179,7 +180,7 @@ final class OptionsPanel0 extends BasicWizardIterator.Panel {
                     secondaryKwField.getText());
         } else {
             assert optionsCategoryButton.isSelected();
-            File icon = new File(iconField.getText());
+            File icon = FileUtil.normalizeFile(new File(iconField.getText()));
             retCode = data.setDataForPrimaryPanel(
                     categoryNameField.getText(),
                     icon,

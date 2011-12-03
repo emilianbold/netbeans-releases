@@ -151,8 +151,8 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
     // third panel data (Name, Icon, and Location)
     private String className;
     private String displayName;
-    private String origIconPath;
-    private String largeIconPath;
+    private File origIconPath;
+    private File largeIconPath;
 
     private FileSystem sfs;
     
@@ -266,8 +266,9 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         
         // Copy action icon
         String relativeIconPath = null;
-        if (origIconPath != null && FileUtil.toFileObject(new File(origIconPath)) != null) {
-            relativeIconPath = addCreateIconOperation(cmf, origIconPath);
+        FileObject origIcon = origIconPath != null ? FileUtil.toFileObject(origIconPath) : null;
+        if (origIcon != null) {
+            relativeIconPath = addCreateIconOperation(cmf, origIcon);
             replaceTokens.put("ICON_RESOURCE", relativeIconPath); // NOI18N
             replaceTokens.put("ICON_RESOURCE_METHOD", DataModel.generateIconResourceMethod(relativeIconPath)); // NOI18N
             replaceTokens.put("INITIALIZE_METHOD", ""); // NOI18N
@@ -348,8 +349,11 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         cmf.add(cmf.bundleKey(bundlePath, actionNameKey, displayName)); // NOI18N
         }
         
-        if (isToolbarEnabled() && largeIconPath != null) {
-            addCreateIconOperation(cmf, largeIconPath);
+        if (isToolbarEnabled()) {
+            FileObject largeIcon = largeIconPath != null ? FileUtil.toFileObject(largeIconPath) : null;
+            if (largeIcon != null) {
+                addCreateIconOperation(cmf, largeIcon);
+            }
         }
         
         // add layer entry about the action
@@ -544,12 +548,12 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         return displayName;
     }
     
-    void setIconPath(String origIconPath) {
+    void setIconPath(File origIconPath) {
         reset();
         this.origIconPath = origIconPath;
     }
     
-    public String getIconPath() {
+    public File getIconPath() {
         return origIconPath;
     }
     
@@ -833,7 +837,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
                 INDENT + "}" + NEW_LINE; // NOI18N
     }
 
-    public void setLargeIconPath(String largeIconPath) {
+    public void setLargeIconPath(File largeIconPath) {
         this.largeIconPath = largeIconPath;
     }
     

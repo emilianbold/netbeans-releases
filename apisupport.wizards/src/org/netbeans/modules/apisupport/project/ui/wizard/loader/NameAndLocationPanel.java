@@ -54,6 +54,7 @@ import org.netbeans.modules.apisupport.project.api.UIUtil;
 import org.netbeans.modules.apisupport.project.ui.wizard.common.BasicWizardIterator;
 import org.netbeans.modules.apisupport.project.ui.wizard.common.WizardUtils;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -106,7 +107,7 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
     private void updateData() {
         data.setPackageName(comPackageName.getEditor().getItem().toString());
         String icon = txtIcon.getText().trim();
-        data.setIconPath(icon.length() == 0 ? (String)null : icon);
+        data.setIconPath(icon.length() == 0 ? null : FileUtil.normalizeFile(new File(icon)));
         data.setPrefix(txtPrefix.getText().trim());
         data.setUseMultiview(useMultiView.isSelected());
         NewLoaderIterator.generateFileChanges(data);
@@ -126,7 +127,8 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
             comPackageName.setSelectedItem(data.getPackageName());
         }
         txtPrefix.setText(data.getPrefix());
-        txtIcon.setText(data.getIconPath());
+        File iconPath = data.getIconPath();
+        txtIcon.setText(iconPath != null ? iconPath.getAbsolutePath() : null);
         checkValidity();
     }
     
