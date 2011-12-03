@@ -54,6 +54,15 @@ public class PropertyValueTest extends CssModuleTestBase {
         super(name);
     }
 
+    @Override
+    protected void setUp() throws Exception {
+//        GrammarResolver.setLogging(GrammarResolver.Log.DEFAULT, true);
+//        GrammarResolver.setLogging(GrammarResolver.Log.ALTERNATIVES, true);
+//        PRINT_INFO_IN_ASSERT_RESOLVE = true;
+    }
+    
+    
+
     public void testAlternativesComplicated1() {
         String grammar1 = "[ marek  jitka  [ [ ovecka | bubu ]? nee ] ] | [ marek jitka [ tobik | bibik ] ] ";
         assertAlternatives(grammar1, "marek jitka", "ovecka", "bubu", "nee", "tobik", "bibik");
@@ -259,8 +268,6 @@ public class PropertyValueTest extends CssModuleTestBase {
     }
 
     public void testTheBackgroundCase() {
-//        GrammarResolver.setLogging(GrammarResolver.Log.ALTERNATIVES, true);
-//        PRINT_INFO_IN_ASSERT_RESOLVE = true;
         PropertyModel p = CssModuleSupport.getPropertyModel("background");
         assertResolve(p.getGrammar(), "aliceblue");
         assertAlternatives(p.getGrammar(), "aliceblue",
@@ -272,8 +279,6 @@ public class PropertyValueTest extends CssModuleTestBase {
     }
 
     public void testTheBackgroundCase2() {
-//        GrammarResolver.setLogging(GrammarResolver.Log.ALTERNATIVES, true);
-//        PRINT_INFO_IN_ASSERT_RESOLVE = true;
         PropertyModel p = CssModuleSupport.getPropertyModel("background");
         assertResolve(p.getGrammar(), "aliceblue bottom / auto");
         assertAlternatives(p.getGrammar(), "aliceblue bottom / auto",
@@ -312,10 +317,6 @@ public class PropertyValueTest extends CssModuleTestBase {
 
      //Bug 205893 - font-family completion issue
      public void testFontFamily() {
-//        GrammarResolver.setLogging(GrammarResolver.Log.DEFAULT, true);
-//        GrammarResolver.setLogging(GrammarResolver.Log.ALTERNATIVES, true);
-//        PRINT_INFO_IN_ASSERT_RESOLVE = true;
-        
         PropertyModel p = CssModuleSupport.getPropertyModel("font-family");
 //        assertResolve(p.getGrammar(), "fantasy");
         assertAlternatives(p.getGrammar(), "fantasy", ",");
@@ -329,6 +330,15 @@ public class PropertyValueTest extends CssModuleTestBase {
         assertAlternatives(p.getGrammar(), "fantasy, monospace, ", 
                 "fantasy","serif","sans-serif","monospace","!family-name","cursive");
 
+    }
+     
+     public void testAnimation() {
+        PropertyModel p = CssModuleSupport.getPropertyModel("animation");
+//        assertResolve(p.getGrammar(), "fantasy");
+        assertAlternatives(p.getGrammar(), "cubic-bezier",
+                "alternate","linear","cubic-bezier","normal","ease","(","!time","ease-in",",","ease-in-out","ease-out","infinite","!number");
+
+        
     }
     
     public void testPerformance_Parse_Resolve() {

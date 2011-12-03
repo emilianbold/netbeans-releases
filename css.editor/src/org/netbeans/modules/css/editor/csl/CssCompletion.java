@@ -41,60 +41,38 @@
  */
 package org.netbeans.modules.css.editor.csl;
 
-import org.netbeans.modules.csl.api.ElementKind;
-import org.netbeans.modules.css.editor.module.spi.CssCompletionItem;
-import org.netbeans.modules.css.editor.api.CssCslParserResult;
 import java.awt.Color;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import javax.swing.ImageIcon;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
-import org.netbeans.api.lexer.TokenId;
-import org.netbeans.modules.csl.api.CodeCompletionContext;
-import org.netbeans.modules.csl.api.CodeCompletionHandler;
-import org.netbeans.modules.csl.api.CodeCompletionResult;
-import org.netbeans.modules.csl.api.CompletionProposal;
-import org.netbeans.modules.csl.api.ElementHandle;
-import org.netbeans.modules.csl.api.ParameterInfo;
-import org.netbeans.modules.csl.api.ElementHandle.UrlHandle;
-import org.netbeans.modules.csl.spi.DefaultCompletionResult;
-import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.csl.api.ElementHandle.UrlHandle;
+import org.netbeans.modules.csl.api.*;
+import org.netbeans.modules.csl.spi.DefaultCompletionResult;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.css.editor.CssProjectSupport;
-import org.netbeans.modules.css.editor.module.spi.HelpResolver;
-import org.netbeans.modules.css.editor.properties.parser.GrammarElement;
-import org.netbeans.modules.css.editor.properties.parser.PropertyValue;
-import org.netbeans.modules.css.editor.properties.parser.PropertyModel;
 import org.netbeans.modules.css.editor.HtmlTags;
 import org.netbeans.modules.css.editor.URLRetriever;
+import org.netbeans.modules.css.editor.api.CssCslParserResult;
 import org.netbeans.modules.css.editor.module.CssModuleSupport;
-import org.netbeans.modules.css.editor.module.spi.CompletionContext;
-import org.netbeans.modules.css.editor.module.spi.Property;
-import org.netbeans.modules.css.editor.module.spi.Utilities;
+import org.netbeans.modules.css.editor.module.spi.*;
+import org.netbeans.modules.css.editor.properties.parser.GrammarElement;
+import org.netbeans.modules.css.editor.properties.parser.PropertyModel;
+import org.netbeans.modules.css.editor.properties.parser.PropertyValue;
 import org.netbeans.modules.css.editor.properties.parser.ValueGrammarElement;
 import org.netbeans.modules.css.indexing.api.CssIndex;
-import org.netbeans.modules.css.lib.api.CssTokenId;
-import org.netbeans.modules.css.lib.api.Node;
-import org.netbeans.modules.css.lib.api.NodeType;
-import org.netbeans.modules.css.lib.api.NodeUtil;
-import org.netbeans.modules.css.lib.api.NodeVisitor;
-import org.netbeans.modules.web.common.api.DependenciesGraph;
+import org.netbeans.modules.css.lib.api.*;
 import org.netbeans.modules.css.refactoring.api.RefactoringElementType;
 import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.web.common.api.DependenciesGraph;
 import org.netbeans.modules.web.common.api.FileReferenceCompletion;
 import org.netbeans.modules.web.common.api.LexerUtils;
 import org.openide.filesystems.FileObject;
@@ -1073,6 +1051,18 @@ public class CssCompletion implements CodeCompletionHandler {
 
                         propVal = new PropertyValue(propertyModel, expressionText);
                         alts = propVal.getAlternatives();
+//                        
+//                        //keep only those alternative which make sense when completed after a letter character
+//                        Collection<ValueGrammarElement> keep = new ArrayList<ValueGrammarElement>();
+//                        for(ValueGrammarElement alt : alts) {
+//                            if(!Character.isJavaIdentifierPart(alt.value().charAt(0))) {
+//                                //some symbol, keep it
+//                                keep.add(alt);
+//                            }
+//                        }
+//                        
+//                        
+//                        filteredByPrefix = keep; //no prefix
                         filteredByPrefix = alts; //no prefix
                         completionItemInsertPosition = context.getCaretOffset(); //no prefix
                         addSpaceBeforeItem = true;

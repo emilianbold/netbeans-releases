@@ -59,8 +59,8 @@ public class GrammarResolverTest extends CssModuleTestBase {
 
     @Override
     protected void setUp() throws Exception {
-        PRINT_GRAMMAR_RESOLVE_TIMES = false;
-        PRINT_GRAMMAR_RESOLVE_TIMES = false;
+//        PRINT_INFO_IN_ASSERT_RESOLVE = true;
+//        GrammarResolver.setLogging(GrammarResolver.Log.DEFAULT, true);
     }
     
     public void testParseSimpleGrammar() {
@@ -92,9 +92,6 @@ public class GrammarResolverTest extends CssModuleTestBase {
     public void testOptinalMemberInSet() {
         String g = " a? | [ a b ]";
         
-//        PRINT_INFO_IN_ASSERT_RESOLVE = true;
-//        GrammarResolver.setLogging(GrammarResolver.Log.DEFAULT, true);
-        
         assertResolve(g, "");
         assertResolve(g, "a");
         assertResolve(g, "a b");
@@ -103,8 +100,6 @@ public class GrammarResolverTest extends CssModuleTestBase {
     public void testAmbiguousGrammarParsingPrecendence() {
         String g = " [ !identifier b ] | [ keyword b ]";
         
-//        PRINT_INFO_IN_ASSERT_RESOLVE = true;
-//        GrammarResolver.setLogging(GrammarResolver.Log.DEFAULT, true);
         
         GroupGrammarElement tree = GrammarParser.parse(g);
         
@@ -141,10 +136,7 @@ public class GrammarResolverTest extends CssModuleTestBase {
         //in such case the first found path shoud be used
         
         String g = " [ !identifier b ] | [ !identifier b ]";
-        
-//        PRINT_INFO_IN_ASSERT_RESOLVE = true;
-//        GrammarResolver.setLogging(GrammarResolver.Log.DEFAULT, true);
-        
+                
         GroupGrammarElement tree = GrammarParser.parse(g);
         
         PropertyValue v = new PropertyValue(tree, "keyword b");
@@ -178,9 +170,6 @@ public class GrammarResolverTest extends CssModuleTestBase {
         
         String g = " [ keyword b ] | [ keyword b ]";
         
-//        PRINT_INFO_IN_ASSERT_RESOLVE = true;
-//        GrammarResolver.setLogging(GrammarResolver.Log.DEFAULT, true);
-        
         GroupGrammarElement tree = GrammarParser.parse(g);
         
         PropertyValue v = new PropertyValue(tree, "keyword b");
@@ -208,6 +197,115 @@ public class GrammarResolverTest extends CssModuleTestBase {
 
     }
     
+    public void testAmbiguousGrammarInList() {
+        String g = "[ a ] || [ a c ] || [ a d ]";
+        assertResolve(g, "a c");
+    }
+    
+     public void testAmbiguousGrammarListParsingPrecendence() {
+        String g = " [ !identifier b ] || [ keyword b ]";
+        
+        GroupGrammarElement tree = GrammarParser.parse(g);
+        
+        PropertyValue v = new PropertyValue(tree, "keyword b");
+        
+        assertTrue(v.isResolved());
+        
+        List<ResolvedToken> resolved = v.getResolvedTokens();
+        
+        assertNotNull(resolved);
+        assertEquals(2, resolved.size());
+        
+        ResolvedToken first = resolved.get(0); 
+        
+        //now check the group, matching keywords should have a precedence before
+        //property acceptors
+        
+        GrammarElement ge1 = first.getGrammarElement();
+        assertNotNull(ge1);
+        
+        assertEquals("[C0]/[L2]/keyword", ge1.path());
+
+        ResolvedToken second = resolved.get(1); 
+        
+        GrammarElement ge2 = second.getGrammarElement();
+        assertNotNull(ge2);
+        
+        assertEquals("[C0]/[L2]/b", ge2.path());
+
+    }
+    
+    public void testAmbiguousGrammarListParsingPrecendence2() {
+        //just test if we can handle such situation - two same paths
+        //in such case the first found path shoud be used
+        
+        String g = " [ !identifier b ] || [ !identifier b ]";
+        
+        GroupGrammarElement tree = GrammarParser.parse(g);
+        
+        PropertyValue v = new PropertyValue(tree, "keyword b");
+        
+        assertTrue(v.isResolved());
+        
+        List<ResolvedToken> resolved = v.getResolvedTokens();
+        
+        assertNotNull(resolved);
+        assertEquals(2, resolved.size());
+        
+        ResolvedToken first = resolved.get(0); 
+        
+        GrammarElement ge1 = first.getGrammarElement();
+        assertNotNull(ge1);
+        
+        assertEquals("[C0]/[L1]/!identifier", ge1.path());
+
+        ResolvedToken second = resolved.get(1); 
+        
+        GrammarElement ge2 = second.getGrammarElement();
+        assertNotNull(ge2);
+        
+        assertEquals("[C0]/[L1]/b", ge2.path());
+
+    }
+    
+    public void testAmbiguousGrammarListParsingPrecendence3() {
+        //just test if we can handle such situation - two same paths
+        //in such case the first found path shoud be used
+        
+        String g = " [ keyword b ] || [ keyword b ]";
+        
+        GroupGrammarElement tree = GrammarParser.parse(g);
+        
+        PropertyValue v = new PropertyValue(tree, "keyword b");
+        
+        assertTrue(v.isResolved());
+        
+        List<ResolvedToken> resolved = v.getResolvedTokens();
+        
+        assertNotNull(resolved);
+        assertEquals(2, resolved.size());
+        
+        ResolvedToken first = resolved.get(0); 
+        
+        GrammarElement ge1 = first.getGrammarElement();
+        assertNotNull(ge1);
+        
+        assertEquals("[C0]/[L1]/keyword", ge1.path());
+
+        ResolvedToken second = resolved.get(1); 
+        
+        GrammarElement ge2 = second.getGrammarElement();
+        assertNotNull(ge2);
+        
+        assertEquals("[C0]/[L1]/b", ge2.path());
+
+    }
+    
+    public void testAmbiguousGrammarAnimation() {
+        PropertyModel p = CssModuleSupport.getPropertyModel("@animation-arg");
+        assertResolve(p.getGrammar(), "cubic-bezier");
+        
+    }
     
     public void testParseMultiplicity() {
         String grammar = " [ x ]{1,2} ";
@@ -278,8 +376,6 @@ public class GrammarResolverTest extends CssModuleTestBase {
     public void testParseMultiplicity_error1() {
         //causing OOM - some infinite loop
         String grammar = "[ [ x ]* ]+";
-//        GroupGrammarElement tree = GrammarParser.parse(grammar);
-//        System.out.println(tree.toString2(0));
         assertResolve(grammar, "");
     }
 
@@ -310,7 +406,7 @@ public class GrammarResolverTest extends CssModuleTestBase {
 
     public void testCollectionWithArbitraryMembers() {
         String grammar = " [ a || b? || c ]";
-//        assertParse(grammar, "a b c");
+        assertResolve(grammar, "a b c");
         assertResolve(grammar, "c b a");
         assertResolve(grammar, "c a");
         assertResolve(grammar, "a");
@@ -346,7 +442,7 @@ public class GrammarResolverTest extends CssModuleTestBase {
     public void testCase3() {
         String g = "[ [ a | b ] ]{1,4}";
 
-//        assertResolve(g, "a");
+        assertResolve(g, "a");
         assertResolve(g, "a b");
         assertResolve(g, "a b a");
         assertResolve(g, "a b a a");
