@@ -86,11 +86,21 @@ public abstract class CssCompletionItem implements CompletionProposal {
 
     public static CssCompletionItem createValueCompletionItem(CssValueElement element,
             GrammarElement value,
+            String origin,
             int anchorOffset,
             boolean addSemicolon,
             boolean addSpaceBeforeItem) {
 
-        return new ValueCompletionItem(element, value.toString(), value.getResolvedOrigin(), anchorOffset, addSemicolon, addSpaceBeforeItem);
+        return new ValueCompletionItem(element, value.toString(), origin, anchorOffset, addSemicolon, addSpaceBeforeItem);
+    }
+    
+    public static CssCompletionItem createValueCompletionItem(CssValueElement element,
+            GrammarElement value,
+            int anchorOffset,
+            boolean addSemicolon,
+            boolean addSpaceBeforeItem) {
+
+        return new ValueCompletionItem(element, value.toString(), value.getVisibleOrigin(), anchorOffset, addSemicolon, addSpaceBeforeItem);
     }
 
     public static CssCompletionItem createColorValueCompletionItem(CssValueElement element,
@@ -99,7 +109,7 @@ public abstract class CssCompletionItem implements CompletionProposal {
             boolean addSemicolon,
             boolean addSpaceBeforeItem) {
 
-        return new ColorCompletionItem(element, value.toString(), value.getResolvedOrigin(), anchorOffset, addSemicolon, addSpaceBeforeItem);
+        return new ColorCompletionItem(element, value.toString(), value.getVisibleOrigin(), anchorOffset, addSemicolon, addSpaceBeforeItem);
 
     }
 

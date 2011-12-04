@@ -64,7 +64,6 @@ import org.netbeans.modules.css.editor.URLRetriever;
 import org.netbeans.modules.css.editor.api.CssCslParserResult;
 import org.netbeans.modules.css.editor.module.CssModuleSupport;
 import org.netbeans.modules.css.editor.module.spi.*;
-import org.netbeans.modules.css.editor.properties.parser.GrammarElement;
 import org.netbeans.modules.css.editor.properties.parser.PropertyModel;
 import org.netbeans.modules.css.editor.properties.parser.PropertyValue;
 import org.netbeans.modules.css.editor.properties.parser.ValueGrammarElement;
@@ -216,7 +215,7 @@ public class CssCompletion implements CodeCompletionHandler {
         return proposals;
     }
 
-    private List<CompletionProposal> wrapPropertyValues(CompletionContext context,
+    private Collection<CompletionProposal> wrapPropertyValues(CompletionContext context,
             String prefix,
             Property propertyDescriptor,
             Collection<ValueGrammarElement> props,
@@ -224,32 +223,78 @@ public class CssCompletion implements CodeCompletionHandler {
             boolean addSemicolon,
             boolean addSpaceBeforeItem,
             boolean extendedItemsOnly) {
+
+        //there might be more grammar elements from multiple branches with the same name
+        Map<String, Collection<ValueGrammarElement>> value2GrammarElement =
+                new HashMap<String, Collection<ValueGrammarElement>>();
+        for (ValueGrammarElement element : props) {
+            String elementValue = element.value();
+            Collection<ValueGrammarElement> col = value2GrammarElement.get(elementValue);
+            if(col == null) {
+                col = new LinkedList<ValueGrammarElement>();
+                value2GrammarElement.put(elementValue, col);
+            }
+            col.add(element);
+        }
+
+        
         List<CompletionProposal> proposals = new ArrayList<CompletionProposal>(props.size());
         boolean colorChooserAdded = false;
-        for (GrammarElement e : props) {
-            if (e instanceof ValueGrammarElement) {
-                ValueGrammarElement valueElement = (ValueGrammarElement)e;
-                if (valueElement.isUnit()) {
-                    proposals.add(CssCompletionItem.createUnitCompletionItem(valueElement));
-                    continue;
-                }
+        
+        for (Map.Entry<String, Collection<ValueGrammarElement>> entry : value2GrammarElement.entrySet()) {
+            
+            String elementValue = entry.getKey();
+            Collection<ValueGrammarElement> elements = entry.getValue();
+            ValueGrammarElement element = elements.iterator().next();
+            
+            if (element.isUnit()) {
+                proposals.add(CssCompletionItem.createUnitCompletionItem(element));
+                continue;
             }
-            CssValueElement handle = new CssValueElement(propertyDescriptor, e);
-            String origin = e.getResolvedOrigin();
-            if ("colors-list".equals(origin)) { //NOI18N
+            
+            CssValueElement handle = new CssValueElement(propertyDescriptor, element);
+            
+            String origin = element.origin();
+            String visibleOrigin = element.getVisibleOrigin();
+            if ("@colors-list".equals(origin)) { //NOI18N
                 if (!colorChooserAdded) {
                     //add color chooser item
-                    proposals.add(CssCompletionItem.createColorChooserCompletionItem(anchor, origin, addSemicolon));
+                    proposals.add(CssCompletionItem.createColorChooserCompletionItem(anchor, visibleOrigin, addSemicolon));
                     //add used colors items
-                    proposals.addAll(getUsedColorsItems(context, prefix, handle, origin, anchor, addSemicolon, addSpaceBeforeItem));
+                    proposals.addAll(getUsedColorsItems(context, prefix, handle, visibleOrigin, anchor, addSemicolon, addSpaceBeforeItem));
                     colorChooserAdded = true;
                 }
                 if (!extendedItemsOnly) {
-                    proposals.add(CssCompletionItem.createColorValueCompletionItem(handle, e, anchor, addSemicolon, addSpaceBeforeItem));
+                    proposals.add(CssCompletionItem.createColorValueCompletionItem(handle, element, anchor, addSemicolon, addSpaceBeforeItem));
                 }
             } else {
                 if (!extendedItemsOnly) {
-                    proposals.add(CssCompletionItem.createValueCompletionItem(handle, e, anchor, addSemicolon, addSpaceBeforeItem));
+                    //for elements which are alternatives from multiple grammar braches do not
+                    //show the origin
+                    
+                    //check if the visible origin off all the elements is the same, 
+                    //if so use it if not, do not show any origin
+                    String vo = null;
+                    boolean same = true;
+                    for(ValueGrammarElement e : elements) {
+                        if(vo == null) {
+                            vo = e.getVisibleOrigin();
+                        } else {
+                            if(!vo.equals(e.getVisibleOrigin())) {
+                                same = false;
+                                break;
+                            }
+                        }
+                    }
+                    
+                    proposals.add(
+                            CssCompletionItem.createValueCompletionItem(
+                            handle, 
+                            element, 
+                            same ? visibleOrigin : "...",
+                            anchor, 
+                            addSemicolon, 
+                            addSpaceBeforeItem));
                 }
             }
         }
@@ -1022,7 +1067,7 @@ public class CssCompletion implements CodeCompletionHandler {
 
                 int completionItemInsertPosition = context.getAnchorOffset();
                 boolean addSpaceBeforeItem = false;
-                
+
                 //test the situation when completion is invoked just after a valid token
                 //like color: rgb| or font-family: cursive|
                 if (Character.isWhitespace(charAfterCaret)) {

@@ -41,11 +41,10 @@
  */
 package org.netbeans.modules.css.editor.properties.parser;
 
-import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import org.netbeans.modules.css.editor.module.CssModuleSupport;
 import org.netbeans.modules.css.editor.module.main.CssModuleTestBase;
-import org.netbeans.modules.css.editor.module.spi.Property;
 
 /**
  *
@@ -523,6 +522,22 @@ public class GrammarResolverTest extends CssModuleTestBase {
         PropertyValue pv = new PropertyValue(p, "20% serif");
         assertTrue(pv.isResolved());
     }
+    
+    public void testFont2() {
+        PropertyModel p = CssModuleSupport.getPropertyModel("font");
+        PropertyValue pv = assertResolve(p.getGrammarElement(), "20px / 20px fantasy");
+        
+        List<ResolvedToken> resolved = pv.getResolvedTokens();
+        assertNotNull(resolved);
+        assertEquals(4, resolved.size());
+        
+        Iterator<ResolvedToken> itr = resolved.iterator();
+        assertEquals("[S0|font]/[S1]/[L2]/[S7|font-size]/!length (20px)", itr.next().toString());
+        assertEquals("[S0|font]/[S1]/[L2]/[L10]// (/)", itr.next().toString());
+        assertEquals("[S0|font]/[S1]/[L2]/[L10]/[S11|line-height]/!length (20px)", itr.next().toString());
+        assertEquals("[S0|font]/[S1]/[L2]/[S12|font-family]/[L13]/[S14]/[S18|@generic-family]/fantasy (fantasy)", itr.next().toString());
+        
+    }
 
     public void testZeroMultiplicity() {
         String rule = "[marek]?  [jitka]?  [ovecka]";
@@ -621,7 +636,7 @@ public class GrammarResolverTest extends CssModuleTestBase {
 
         text = "-beranek";
         csspv = new PropertyValue(p, text);
-        assertFalse(csspv.isResolved());
+        assertTrue(csspv.isResolved());
 
     }
 
