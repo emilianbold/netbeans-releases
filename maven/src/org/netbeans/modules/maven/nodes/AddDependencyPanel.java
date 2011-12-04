@@ -978,7 +978,6 @@ public class AddDependencyPanel extends javax.swing.JPanel {
             btv = new BeanTreeView();
             btv.setRootVisible(false);
             btv.setDefaultActionAllowed(true);
-            btv.setUseSubstringInQuickSearch(true);
             manager = new ExplorerManager();
             setLayout(new BorderLayout());
             add(btv, BorderLayout.CENTER);
@@ -1273,7 +1272,6 @@ public class AddDependencyPanel extends javax.swing.JPanel {
             btv = new BeanTreeView();
             btv.setRootVisible(false);
             btv.setDefaultActionAllowed(true);
-            btv.setUseSubstringInQuickSearch(true);
             //lv.setDefaultProcessor(this);
             manager = new ExplorerManager();
             manager.addPropertyChangeListener(this);
@@ -1378,7 +1376,6 @@ public class AddDependencyPanel extends javax.swing.JPanel {
             btv = new BeanTreeView();
             btv.setRootVisible(false);
             btv.setDefaultActionAllowed(true);
-            btv.setUseSubstringInQuickSearch(true);
             manager = new ExplorerManager();
             manager.addPropertyChangeListener(this);
             setLayout(new BorderLayout());

@@ -81,14 +81,11 @@ public class TreeViewQuickSearchTest extends NbTestCase {
         }
     }
     
-    public void testSubstringQuickSearch() throws Throwable {
-        doQuickSearchTest(true);
-    }
-    public void testPrefixQuickSearch() throws Throwable {
-        doQuickSearchTest(false);
+    public void testQuickSearch() throws Throwable {
+        doQuickSearchTest();
     }
     
-    private void doQuickSearchTest(final boolean substringSearch) throws Throwable {
+    private void doQuickSearchTest() throws Throwable {
         final AbstractNode root = new AbstractNode(new Children.Array());
         root.setName("test root");
         
@@ -107,7 +104,6 @@ public class TreeViewQuickSearchTest extends NbTestCase {
         
         final BeanTreeView btv = new BeanTreeView();
         p.add(BorderLayout.CENTER, btv);
-        btv.setUseSubstringInQuickSearch(substringSearch);
         
         f = new JFrame();
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -135,9 +131,8 @@ public class TreeViewQuickSearchTest extends NbTestCase {
                         KeyEvent ke = new KeyEvent(btv.tree, KeyEvent.KEY_TYPED, 0, 0, KeyEvent.VK_UNDEFINED, 'A');
                         btv.tree.dispatchEvent(ke);
                     }
-                    
                     if (phase[0] == 2) {
-                        Node operateOn = substringSearch ? children[2] : children[4];
+                        Node operateOn = children[4];
                         TreePath[] paths = tree.getSelectionPaths();
                         assertNotNull("One node should be selected, but there are none.", paths);
                         assertEquals("One node should be selected, but there are none.", 1, paths.length);

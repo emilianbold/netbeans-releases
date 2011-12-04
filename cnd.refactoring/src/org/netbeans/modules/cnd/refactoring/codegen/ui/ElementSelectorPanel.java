@@ -76,7 +76,6 @@ public class ElementSelectorPanel extends JPanel implements ExplorerManager.Prov
         setLayout(new BorderLayout());
         elementView = new CheckTreeView();
         elementView.setRootVisible(false);
-        elementView.setUseSubstringInQuickSearch(true);
         add(elementView, BorderLayout.CENTER);
         if (supportInline) {
             Mnemonics.setLocalizedText(inline, NbBundle.getMessage(ElementSelectorPanel.class, "LBL_inline_implementation")); // NOI18N

@@ -488,7 +488,11 @@ public abstract class TreeView extends JScrollPane {
      * matching for the typed characters. Defaults to prefix (false).
      * @since 6.11
      * @param useSubstring <code>true</code> if substring search is used in quick search
+     * @deprecated Deprecated as the quick search feature uses both substring and prefix
+     * matching. All prefix matches for the typed characters will appear before substring
+     * matches.
      */
+    @Deprecated
     public void setUseSubstringInQuickSearch(boolean useSubstring) {
         quickSearchUsingSubstring = useSubstring;
     }
@@ -2079,6 +2083,9 @@ public abstract class TreeView extends JScrollPane {
         private List<TreePath> doSearch(String prefix) {
             List<TreePath> results = new ArrayList<TreePath>();
             Set<TreePath> resSet = new HashSet<TreePath>();
+            
+            // starting index of substring matches within the results
+            int startOfSubstringMatches = 0;
 
             int startIndex = origSelectionPaths != null ? Math.max(0, getRowForPath(origSelectionPaths[0])) : 0;
             int size = getRowCount();
@@ -2091,19 +2098,24 @@ public abstract class TreeView extends JScrollPane {
             while (true) {
                 startIndex = startIndex % size;
 
-                TreePath path = null;
-                if (quickSearchUsingSubstring) {
-                    path = getNextSubstringMatch(prefix, startIndex, Position.Bias.Forward);
-                } else {
-                    path = getNextMatch(prefix, startIndex, Position.Bias.Forward);
-                }
+                SubstringSearchResult substringSearchResult = getNextSubstringMatch(prefix, startIndex, Position.Bias.Forward);
+                TreePath path = substringSearchResult != null? substringSearchResult.treePath: null;
 
                 if ((path != null) && !resSet.contains(path)) {
                     startIndex = tree.getRowForPath(path);
-                    results.add(path);
+                    boolean isPrefixMatch = true;
+                    // put all prefix matches to the top of the list while
+                    // substring matches remains in the end of the list
+                    if (substringSearchResult.index == 0) {
+                        results.add(startOfSubstringMatches++, path);
+                    } else {
+                        isPrefixMatch = false;
+                        results.add(path);
+                    }
                     resSet.add(path);
 
-                    if (!quickSearchUsingSubstring) {
+                    // calculate max prefix only with prefix matches
+                    if (isPrefixMatch) {
                         String elementName = ((VisualizerNode) path.getLastPathComponent()).getDisplayName();
 
                         // initialize prefix
@@ -2135,8 +2147,11 @@ public abstract class TreeView extends JScrollPane {
         
         /**
          * Copied and adapted from JTree.getNextMatch(...).
+         * 
+         * @return An instance of SubstringSearchResult containing the matching TreePath
+         *         and the index of the first occurrence of the substring in TreePath.
          */
-        private TreePath getNextSubstringMatch(
+        private SubstringSearchResult getNextSubstringMatch(
                 String substring, int startingRow, Position.Bias bias) {
 
             int max = getRowCount();
@@ -2157,9 +2172,10 @@ public abstract class TreeView extends JScrollPane {
                 String text = convertValueToText(
                     path.getLastPathComponent(), isRowSelected(row),
                     isExpanded(row), true, row, false);
-
-                if (text.toUpperCase().indexOf(substring) >= 0) {
-                    return path;
+                
+                int index = text.toUpperCase().indexOf(substring);
+                if (index >= 0) {
+                    return new SubstringSearchResult(path, index);
                 }
                 row = (row + increment + max) % max;
             } while (row != startingRow);
@@ -2455,6 +2471,18 @@ public abstract class TreeView extends JScrollPane {
                     }
                 }
             }
+        }
+        
+        private class SubstringSearchResult {
+            
+            TreePath treePath;  // holds the matching TreePath
+            int index;          // holds the index of the first occurrence of the substring in TreePath
+
+            public SubstringSearchResult(TreePath treePath, int index) {
+                this.treePath = treePath;
+                this.index = index;
+            }
+            
         }
     }
     
