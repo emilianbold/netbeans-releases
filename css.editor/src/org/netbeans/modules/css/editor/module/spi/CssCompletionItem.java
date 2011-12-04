@@ -545,6 +545,11 @@ public abstract class CssCompletionItem implements CompletionProposal {
             return "<font color=#aaaaaa>" + element.value() + "</font>"; //NOI18N
         }
 
+         @Override
+        public String getRhsHtml(HtmlFormatter formatter) {
+            return "<font color=999999>" + element.getVisibleOrigin() + "</font>"; //NOI18N
+        }
+        
         @Override
         public boolean isSmart() {
             return false;
