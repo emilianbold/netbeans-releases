@@ -98,6 +98,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
 
     private final NoContentPanel noContentComponent = new NoContentPanel();
     private final ModeKeeper modeKeeper;
+    private boolean remoteStatusCalled;
 
     /**
      * Creates a new Synchronize Panel managed by the given versioning system.
@@ -109,7 +110,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
         this.subversion = Subversion.getInstance();
         refreshViewTask = rp.create(new RefreshViewTask());
         explorerManager = new ExplorerManager ();
-        displayStatuses = FileInformation.STATUS_REMOTE_CHANGE | FileInformation.STATUS_LOCAL_CHANGE;
+        displayStatuses = getDefaultDisplayStatus();
         noContentComponent.setLabel(NbBundle.getMessage(VersioningPanel.class, "MSG_No_Changes_All")); // NOI18N
         modeKeeper = new ModeKeeper();
         syncTable = new SyncTable(modeKeeper);
@@ -431,11 +432,12 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
             }
         }
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repository);
+        final boolean contactServer = remoteStatusCalled = FileInformation.STATUS_LOCAL_CHANGE != displayStatuses;
         svnProgressSupport = new VersioningPanelProgressSupport() {
             @Override
             public void perform() {
                 try {
-                    StatusAction.executeStatus(context, this, true);
+                    StatusAction.executeStatus(context, this, contactServer);
                 } finally {
                     setFinished(true); // stops skipping versioning events
                 }
@@ -470,25 +472,29 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
     
     private void onDisplayedStatusChanged() {
         if (tgbLocal.isSelected()) {
-            setDisplayStatuses(FileInformation.STATUS_LOCAL_CHANGE);
             modeKeeper.setMode(Setup.DIFFTYPE_LOCAL);
             noContentComponent.setLabel(NbBundle.getMessage(VersioningPanel.class, "MSG_No_Changes_Local")); // NOI18N
+            setDisplayStatuses(FileInformation.STATUS_LOCAL_CHANGE);
         }
         else if (tgbRemote.isSelected()) {
-            setDisplayStatuses(FileInformation.STATUS_REMOTE_CHANGE);
             modeKeeper.setMode(Setup.DIFFTYPE_REMOTE);
             noContentComponent.setLabel(NbBundle.getMessage(VersioningPanel.class, "MSG_No_Changes_Remote")); // NOI18N
+            setDisplayStatuses(FileInformation.STATUS_REMOTE_CHANGE);
         }
         else if (tgbAll.isSelected()) {
-            setDisplayStatuses(FileInformation.STATUS_REMOTE_CHANGE | FileInformation.STATUS_LOCAL_CHANGE);
             modeKeeper.setMode(Setup.DIFFTYPE_ALL);
             noContentComponent.setLabel(NbBundle.getMessage(VersioningPanel.class, "MSG_No_Changes_All")); // NOI18N
+            setDisplayStatuses(FileInformation.STATUS_REMOTE_CHANGE | FileInformation.STATUS_LOCAL_CHANGE);
         }
     }
 
     private void setDisplayStatuses(int displayStatuses) {
         this.displayStatuses = displayStatuses;
-        reScheduleRefresh(0);
+        if (remoteStatusCalled || displayStatuses == FileInformation.STATUS_LOCAL_CHANGE) {
+            reScheduleRefresh(0);
+        } else {
+            refreshStatuses();
+        }
     }
 
     @Override
@@ -552,6 +558,19 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
      */
     public void cancelRefresh() {
         refreshViewTask.cancel();
+    }
+
+    private static int getDefaultDisplayStatus () {
+        int displayStatus;
+        int selectedMode = SvnModuleConfig.getDefault().getLastUsedModificationContext();
+        if (selectedMode == Setup.DIFFTYPE_ALL) {
+            displayStatus = FileInformation.STATUS_LOCAL_CHANGE | FileInformation.STATUS_REMOTE_CHANGE;
+        } else if (selectedMode == Setup.DIFFTYPE_REMOTE) {
+            displayStatus = FileInformation.STATUS_REMOTE_CHANGE;
+        } else {
+            displayStatus = FileInformation.STATUS_LOCAL_CHANGE;
+        }
+        return displayStatus;
     }
 
     private class RefreshViewTask implements Runnable {
