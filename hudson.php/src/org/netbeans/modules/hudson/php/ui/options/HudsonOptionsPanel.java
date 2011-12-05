@@ -63,7 +63,9 @@ import javax.swing.UIManager;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.filechooser.FileFilter;
 import org.netbeans.modules.hudson.php.commands.PpwScript;
+import org.netbeans.modules.hudson.php.options.HudsonOptionsValidator;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.openide.awt.HtmlBrowser;
@@ -82,6 +84,7 @@ public class HudsonOptionsPanel extends JPanel {
     private static final long serialVersionUID = -464132465732132L;
 
     private static final String PPW_LAST_FOLDER_SUFFIX = ".ppw";
+    private static final String JOB_CONFIG_LAST_FOLDER_SUFFIX = ".jobConfig";
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
@@ -93,31 +96,21 @@ public class HudsonOptionsPanel extends JPanel {
 
     @NbBundle.Messages({
         "LBL_PpwHint=Full path of PPW script (typically {0} or {1}).",
-        "TXT_PpwNote=<html>PHP Project Wizard (PPW) is used to generate the scripts and configuration files necessary for the build automation.</html>"
+        "TXT_PpwNote=<html>PHP Project Wizard (PPW) is used to generate the scripts and configuration files necessary for the build automation.</html>",
+        "LBL_JobConfigHint=Full path of job config (typically <some-directory>{0}php-template{0}config.xml).",
+        "TXT_JobConfigNote=<html>Template for Jenkins Jobs for PHP Projects is used for new job configurations.</html>"
     })
     private void init() {
         ppwHintLabel.setText(Bundle.LBL_PpwHint(PpwScript.SCRIPT_NAME, PpwScript.SCRIPT_NAME_LONG));
         ppwNoteLabel.setText(Bundle.TXT_PpwNote());
+        jobConfigHintLabel.setText(Bundle.LBL_JobConfigHint(File.separator));
+        jobConfigNoteLabel.setText(Bundle.TXT_JobConfigNote());
         errorLabel.setText(" "); // NOI18N
 
         // listeners
-        ppwTextField.getDocument().addDocumentListener(new DocumentListener() {
-            @Override
-            public void insertUpdate(DocumentEvent e) {
-                processUpdate();
-            }
-            @Override
-            public void removeUpdate(DocumentEvent e) {
-                processUpdate();
-            }
-            @Override
-            public void changedUpdate(DocumentEvent e) {
-                processUpdate();
-            }
-            private void processUpdate() {
-                fireChange();
-            }
-        });
+        DocumentListener documentListener = new DefaultDocumentListener();
+        ppwTextField.getDocument().addDocumentListener(documentListener);
+        jobConfigTextField.getDocument().addDocumentListener(documentListener);
     }
 
     public String getPpw() {
@@ -126,6 +119,14 @@ public class HudsonOptionsPanel extends JPanel {
 
     public void setPpw(String ppw) {
         ppwTextField.setText(ppw);
+    }
+
+    public String getJobConfig() {
+        return jobConfigTextField.getText();
+    }
+
+    public void setJobConfig(String jobConfig) {
+        jobConfigTextField.setText(jobConfig);
     }
 
     public void setError(String message) {
@@ -169,6 +170,15 @@ public class HudsonOptionsPanel extends JPanel {
         ppwNoteLabel = new JLabel();
         ppwInstallationInfoLabel = new JLabel();
         ppwLearnMoreLabel = new JLabel();
+        jobConfigLabel = new JLabel();
+        jobConfigTextField = new JTextField();
+        jobConfigBrowseButton = new JButton();
+        jobConfigHintLabel = new JLabel();
+        note2Label = new JLabel();
+        jobConfigNoteLabel = new JLabel();
+        jobConfigInstallationInfoLabel = new JLabel();
+        jobConfigLearnMoreLabel = new JLabel();
+        jobConfigDownloadLabel = new JLabel();
         errorLabel = new JLabel();
 
         ppwLabel.setLabelFor(ppwTextField);
@@ -199,17 +209,41 @@ public class HudsonOptionsPanel extends JPanel {
                 ppwLearnMoreLabelMousePressed(evt);
             }
         });
+        Mnemonics.setLocalizedText(jobConfigLabel, NbBundle.getMessage(HudsonOptionsPanel.class, "HudsonOptionsPanel.jobConfigLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(jobConfigBrowseButton, NbBundle.getMessage(HudsonOptionsPanel.class, "HudsonOptionsPanel.jobConfigBrowseButton.text")); // NOI18N
+        jobConfigBrowseButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                jobConfigBrowseButtonActionPerformed(evt);
+            }
+        });
+        Mnemonics.setLocalizedText(jobConfigHintLabel, "HINT"); // NOI18N
+        Mnemonics.setLocalizedText(note2Label, NbBundle.getMessage(HudsonOptionsPanel.class, "HudsonOptionsPanel.note2Label.text")); // NOI18N
+        Mnemonics.setLocalizedText(jobConfigNoteLabel, "CONFIG NOTE"); // NOI18N
+        Mnemonics.setLocalizedText(jobConfigInstallationInfoLabel, NbBundle.getMessage(HudsonOptionsPanel.class, "HudsonOptionsPanel.jobConfigInstallationInfoLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(jobConfigLearnMoreLabel, NbBundle.getMessage(HudsonOptionsPanel.class, "HudsonOptionsPanel.jobConfigLearnMoreLabel.text")); // NOI18N
+        jobConfigLearnMoreLabel.addMouseListener(new MouseAdapter() {
+            public void mouseEntered(MouseEvent evt) {
+                jobConfigLearnMoreLabelMouseEntered(evt);
+            }
+            public void mousePressed(MouseEvent evt) {
+                jobConfigLearnMoreLabelMousePressed(evt);
+            }
+        });
+        Mnemonics.setLocalizedText(jobConfigDownloadLabel, NbBundle.getMessage(HudsonOptionsPanel.class, "HudsonOptionsPanel.jobConfigDownloadLabel.text")); // NOI18N
+        jobConfigDownloadLabel.addMouseListener(new MouseAdapter() {
+            public void mouseEntered(MouseEvent evt) {
+                jobConfigDownloadLabelMouseEntered(evt);
+            }
+            public void mousePressed(MouseEvent evt) {
+                jobConfigDownloadLabelMousePressed(evt);
+            }
+        });
         Mnemonics.setLocalizedText(errorLabel, "ERROR"); // NOI18N
 
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(Alignment.LEADING)
-                    .addComponent(errorLabel)
-                    .addComponent(note1Label, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                .addGap(0, 0, Short.MAX_VALUE))
             .addGroup(layout.createSequentialGroup()
                 .addComponent(ppwLabel)
                 .addPreferredGap(ComponentPlacement.RELATED)
@@ -224,15 +258,37 @@ public class HudsonOptionsPanel extends JPanel {
                         .addPreferredGap(ComponentPlacement.RELATED)
                         .addComponent(ppwSearchButton))))
             .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                    .addComponent(errorLabel)
+                    .addComponent(note1Label, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                .addGap(0, 0, Short.MAX_VALUE))
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                    .addComponent(jobConfigLabel)
+                    .addComponent(note2Label, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jobConfigHintLabel)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jobConfigTextField)
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addComponent(jobConfigBrowseButton))))
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(Alignment.LEADING)
                     .addComponent(ppwInstallationInfoLabel)
                     .addComponent(ppwLearnMoreLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    .addComponent(ppwNoteLabel))
-                .addContainerGap(118, Short.MAX_VALUE))
+                    .addComponent(ppwNoteLabel)
+                    .addComponent(jobConfigNoteLabel)
+                    .addComponent(jobConfigInstallationInfoLabel)
+                    .addComponent(jobConfigLearnMoreLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jobConfigDownloadLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                .addContainerGap())
         );
 
-        layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {ppwBrowseButton, ppwSearchButton});
+        layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {jobConfigBrowseButton, ppwBrowseButton, ppwSearchButton});
 
         layout.setVerticalGroup(
             layout.createParallelGroup(Alignment.LEADING)
@@ -244,7 +300,7 @@ public class HudsonOptionsPanel extends JPanel {
                     .addComponent(ppwSearchButton))
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addComponent(ppwHintLabel)
-                .addGap(18, 18, 18)
+                .addPreferredGap(ComponentPlacement.RELATED)
                 .addComponent(note1Label, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addComponent(ppwNoteLabel)
@@ -252,7 +308,24 @@ public class HudsonOptionsPanel extends JPanel {
                 .addComponent(ppwInstallationInfoLabel)
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addComponent(ppwLearnMoreLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(ComponentPlacement.RELATED, 115, Short.MAX_VALUE)
+                .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
+                    .addComponent(jobConfigTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jobConfigLabel)
+                    .addComponent(jobConfigBrowseButton))
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(jobConfigHintLabel)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(note2Label, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(jobConfigNoteLabel)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(jobConfigInstallationInfoLabel)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(jobConfigLearnMoreLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(jobConfigDownloadLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(errorLabel))
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -315,9 +388,70 @@ public class HudsonOptionsPanel extends JPanel {
         }
     }//GEN-LAST:event_ppwSearchButtonActionPerformed
 
+    private void jobConfigLearnMoreLabelMouseEntered(MouseEvent evt) {//GEN-FIRST:event_jobConfigLearnMoreLabelMouseEntered
+        evt.getComponent().setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+    }//GEN-LAST:event_jobConfigLearnMoreLabelMouseEntered
+
+    private void jobConfigLearnMoreLabelMousePressed(MouseEvent evt) {//GEN-FIRST:event_jobConfigLearnMoreLabelMousePressed
+        try {
+            HtmlBrowser.URLDisplayer.getDefault().showURL(new URL("http://jenkins-php.org/")); // NOI18N
+        } catch (MalformedURLException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }//GEN-LAST:event_jobConfigLearnMoreLabelMousePressed
+
+    private void jobConfigDownloadLabelMouseEntered(MouseEvent evt) {//GEN-FIRST:event_jobConfigDownloadLabelMouseEntered
+        evt.getComponent().setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+    }//GEN-LAST:event_jobConfigDownloadLabelMouseEntered
+
+    private void jobConfigDownloadLabelMousePressed(MouseEvent evt) {//GEN-FIRST:event_jobConfigDownloadLabelMousePressed
+        try {
+            HtmlBrowser.URLDisplayer.getDefault().showURL(
+                    new URL("https://github.com/sebastianbergmann/php-jenkins-template/blob/master/config.xml")); // NOI18N
+        } catch (MalformedURLException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }//GEN-LAST:event_jobConfigDownloadLabelMousePressed
+
+    @NbBundle.Messages({
+        "LBL_SelectJobConfig=Select job config (config.xml)",
+        "TXT_JobConfigDesciption=Hudson job config file (config.xml)"
+    })
+    private void jobConfigBrowseButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_jobConfigBrowseButtonActionPerformed
+        File jobConfig = new FileChooserBuilder(HudsonOptionsPanel.class.getName() + JOB_CONFIG_LAST_FOLDER_SUFFIX)
+                .setTitle(Bundle.LBL_SelectJobConfig())
+                .setFilesOnly(true)
+                .setFileFilter(new FileFilter() {
+                    @Override
+                    public boolean accept(File f) {
+                        if (f.isDirectory()) {
+                            return true;
+                        }
+                        return HudsonOptionsValidator.JOB_CONFIG_NAME.equals(f.getName());
+                    }
+                    @Override
+                    public String getDescription() {
+                        return Bundle.TXT_JobConfigDesciption();
+                    }
+                }).showOpenDialog();
+        if (jobConfig != null) {
+            jobConfig = FileUtil.normalizeFile(jobConfig);
+            jobConfigTextField.setText(jobConfig.getAbsolutePath());
+        }
+    }//GEN-LAST:event_jobConfigBrowseButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JLabel errorLabel;
+    private JButton jobConfigBrowseButton;
+    private JLabel jobConfigDownloadLabel;
+    private JLabel jobConfigHintLabel;
+    private JLabel jobConfigInstallationInfoLabel;
+    private JLabel jobConfigLabel;
+    private JLabel jobConfigLearnMoreLabel;
+    private JLabel jobConfigNoteLabel;
+    private JTextField jobConfigTextField;
     private JLabel note1Label;
+    private JLabel note2Label;
     private JButton ppwBrowseButton;
     private JLabel ppwHintLabel;
     private JLabel ppwInstallationInfoLabel;
@@ -327,4 +461,30 @@ public class HudsonOptionsPanel extends JPanel {
     private JButton ppwSearchButton;
     private JTextField ppwTextField;
     // End of variables declaration//GEN-END:variables
+
+    //~ Inner classes
+
+    private final class DefaultDocumentListener implements DocumentListener {
+
+        @Override
+        public void insertUpdate(DocumentEvent e) {
+            processUpdate();
+        }
+
+        @Override
+        public void removeUpdate(DocumentEvent e) {
+            processUpdate();
+        }
+
+        @Override
+        public void changedUpdate(DocumentEvent e) {
+            processUpdate();
+        }
+
+        private void processUpdate() {
+            fireChange();
+        }
+
+    }
+
 }

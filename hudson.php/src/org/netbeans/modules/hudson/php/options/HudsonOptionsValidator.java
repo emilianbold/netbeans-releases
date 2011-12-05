@@ -50,7 +50,7 @@ import org.openide.util.NbBundle;
  */
 public final class HudsonOptionsValidator {
 
-    private static final String JOB_CONFIG_NAME = "config.xml"; // NOI18N
+    public static final String JOB_CONFIG_NAME = "config.xml"; // NOI18N
 
 
     private HudsonOptionsValidator() {
