@@ -1672,7 +1672,7 @@ trait_conflict_resolution_declaration:statement
 ;
 
 trait_conflict_resolution_declaration ::=
-class_name:preferredTraitName T_PAAMAYIM_NEKUDOTAYIM T_STRING:methodName T_INSTEADOF class_name:suppressedTraitName T_SEMICOLON:end
+class_name:preferredTraitName T_PAAMAYIM_NEKUDOTAYIM string_st:methodName T_INSTEADOF class_name:suppressedTraitName T_SEMICOLON:end
 {:
     Identifier methodId = new Identifier(methodNameleft, methodNameright, methodName);
     RESULT = new TraitConflictResolutionDeclaration(preferredTraitNameleft, endright, preferredTraitName, methodId, suppressedTraitName);
@@ -1680,28 +1680,28 @@ class_name:preferredTraitName T_PAAMAYIM_NEKUDOTAYIM T_STRING:methodName T_INSTE
 ;
 
 trait_method_alias_declaration ::=
-class_name:traitName T_PAAMAYIM_NEKUDOTAYIM T_STRING:oldMethodName T_AS traits_alias_modifier:modifier T_STRING:newMethodName T_SEMICOLON:end
+class_name:traitName T_PAAMAYIM_NEKUDOTAYIM string_st:oldMethodName T_AS traits_alias_modifier:modifier string_st:newMethodName T_SEMICOLON:end
 {:
     Identifier oldMethodId = new Identifier(oldMethodNameleft, oldMethodNameright, oldMethodName);
     Identifier newMethodId = new Identifier(newMethodNameleft, newMethodNameright, newMethodName);
     RESULT = new TraitMethodAliasDeclaration(traitNameleft, endright, oldMethodId, newMethodId, traitName, modifier);
 :}
 
-| class_name:traitName T_PAAMAYIM_NEKUDOTAYIM T_STRING:oldMethodName T_AS T_STRING:newMethodName T_SEMICOLON:end
+| class_name:traitName T_PAAMAYIM_NEKUDOTAYIM string_st:oldMethodName T_AS string_st:newMethodName T_SEMICOLON:end
 {:
     Identifier oldMethodId = new Identifier(oldMethodNameleft, oldMethodNameright, oldMethodName);
     Identifier newMethodId = new Identifier(newMethodNameleft, newMethodNameright, newMethodName);
     RESULT = new TraitMethodAliasDeclaration(traitNameleft, endright, oldMethodId, newMethodId, traitName, null);
 :}
 
-| T_STRING:oldMethodName T_AS traits_alias_modifier:modifier T_STRING:newMethodName T_SEMICOLON:end
+| string_st:oldMethodName T_AS traits_alias_modifier:modifier string_st:newMethodName T_SEMICOLON:end
 {:
     Identifier oldMethodId = new Identifier(oldMethodNameleft, oldMethodNameright, oldMethodName);
     Identifier newMethodId = new Identifier(newMethodNameleft, newMethodNameright, newMethodName);
     RESULT = new TraitMethodAliasDeclaration(oldMethodNameleft, endright, oldMethodId, newMethodId, null, modifier);
 :}
 
-| T_STRING:oldMethodName T_AS T_STRING:newMethodName T_SEMICOLON:end
+| string_st:oldMethodName T_AS string_st:newMethodName T_SEMICOLON:end
 {:
     Identifier oldMethodId = new Identifier(oldMethodNameleft, oldMethodNameright, oldMethodName);
     Identifier newMethodId = new Identifier(newMethodNameleft, newMethodNameright, newMethodName);
@@ -2455,7 +2455,7 @@ namespace_name:list T_OPEN_PARENTHESE function_call_parameter_list:parameters T_
 			new NamespaceName(sleft, listright, list, true, false)), parameters);
 :}
 
-| class_name:className T_PAAMAYIM_NEKUDOTAYIM T_STRING:fn T_OPEN_PARENTHESE function_call_parameter_list:parameters T_CLOSE_PARENTHESE:e
+| class_name:className T_PAAMAYIM_NEKUDOTAYIM string_st:fn T_OPEN_PARENTHESE function_call_parameter_list:parameters T_CLOSE_PARENTHESE:e
 {:
 	RESULT = new StaticMethodInvocation(classNameleft, eright, className,
 		new FunctionInvocation(fnleft, eright,
@@ -2470,7 +2470,7 @@ namespace_name:list T_OPEN_PARENTHESE function_call_parameter_list:parameters T_
 			new FunctionName(reflectionNameleft, reflectionNameright, reflectionName), parameters));
 :}
 
-| variable_class_name:className T_PAAMAYIM_NEKUDOTAYIM T_STRING:fn T_OPEN_PARENTHESE function_call_parameter_list:parameters T_CLOSE_PARENTHESE:e
+| variable_class_name:className T_PAAMAYIM_NEKUDOTAYIM string_st:fn T_OPEN_PARENTHESE function_call_parameter_list:parameters T_CLOSE_PARENTHESE:e
 {:
 	RESULT = new StaticMethodInvocation(classNameleft, eright, className,
 		new FunctionInvocation(fnleft, eright,
