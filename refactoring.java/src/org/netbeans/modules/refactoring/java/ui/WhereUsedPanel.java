@@ -96,6 +96,7 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.ui.ElementHeaders;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.openide.filesystems.*;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
@@ -172,7 +173,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
     }
     
     private Collection getOverriddenMethods(ExecutableElement m, CompilationInfo info) {
-        return RefactoringUtils.getOverridenMethods(m, info);
+        return JavaRefactoringUtils.getOverriddenMethods(m, info);
     }
     
     @Override

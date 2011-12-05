@@ -83,6 +83,7 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.refactoring.api.ui.ExplorerContext;
 import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
 import org.netbeans.modules.refactoring.java.RefactoringUtils;
+import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.spi.ui.UI;
 import org.netbeans.modules.refactoring.spi.ui.ActionsImplementationProvider;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
@@ -245,19 +246,19 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
         Node n = nodes.iterator().next();
         TreePathHandle tph = n.getLookup().lookup(TreePathHandle.class);
         if (tph != null) {
-            return RefactoringUtils.isRefactorable(tph.getFileObject());
+            return JavaRefactoringUtils.isRefactorable(tph.getFileObject());
         }
         DataObject dob = n.getCookie(DataObject.class);
         if (dob==null) {
             return false;
         }
         FileObject fo = dob.getPrimaryFile();
-        if (RefactoringUtils.isRefactorable(fo)) { //NOI18N
+        if (JavaRefactoringUtils.isRefactorable(fo)) { //NOI18N
             return true;
         }
         if ((dob instanceof DataFolder) && 
                 RefactoringUtils.isFileInOpenProject(fo) && 
-                RefactoringUtils.isOnSourceClasspath(fo) &&
+                JavaRefactoringUtils.isOnSourceClasspath(fo) &&
                 !RefactoringUtils.isClasspathRoot(fo))
             return true;
         return false;
@@ -313,16 +314,16 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
             return false;
         }
         if (fob != null) {
-            if (!fob.isFolder() || !RefactoringUtils.isOnSourceClasspath(fob))
+            if (!fob.isFolder() || !JavaRefactoringUtils.isOnSourceClasspath(fob))
                 return false;
             FileObject fo = dob.getPrimaryFile();
-            if (RefactoringUtils.isRefactorable(fo)) { //NOI18N
+            if (JavaRefactoringUtils.isRefactorable(fo)) { //NOI18N
                 return true;
             }
 
         } else {
             FileObject fo = dob.getPrimaryFile();
-            if (RefactoringUtils.isRefactorable(fo)) { //NOI18N
+            if (JavaRefactoringUtils.isRefactorable(fo)) { //NOI18N
                 return true;
             }
         }
@@ -406,7 +407,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
         for (Node n:nodes) {
             TreePathHandle tph = n.getLookup().lookup(TreePathHandle.class);
             if (tph != null) {
-                return RefactoringUtils.isRefactorable(tph.getFileObject());
+                return JavaRefactoringUtils.isRefactorable(tph.getFileObject());
             }
             DataObject dataObject = n.getCookie(DataObject.class);
             if (dataObject == null){
@@ -416,7 +417,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
             if (isRefactorableFolder(dataObject)){
                 return true;
             }
-            if (!RefactoringUtils.isRefactorable(fileObject)) {
+            if (!JavaRefactoringUtils.isRefactorable(fileObject)) {
                 return false;
             }
         }
@@ -532,7 +533,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
         if (fo != null) {
             if (!fo.isFolder())
                 return false;
-            if (!RefactoringUtils.isOnSourceClasspath(fo)) 
+            if (!JavaRefactoringUtils.isOnSourceClasspath(fo)) 
                 return false;
             
             //it is drag and drop
@@ -543,7 +544,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                 if (dob==null) {
                     return false;
                 }
-                if (!RefactoringUtils.isOnSourceClasspath(dob.getPrimaryFile())) {
+                if (!JavaRefactoringUtils.isOnSourceClasspath(dob.getPrimaryFile())) {
                     return false;
                 }
                 if (dob instanceof DataFolder) {
@@ -578,7 +579,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                         return false;
                     } else {
                         //Ctrl-X
-                        if (!RefactoringUtils.isOnSourceClasspath(dob.getPrimaryFile()) || RefactoringUtils.isClasspathRoot(dob.getPrimaryFile())) {
+                        if (!JavaRefactoringUtils.isOnSourceClasspath(dob.getPrimaryFile()) || RefactoringUtils.isClasspathRoot(dob.getPrimaryFile())) {
                             return false;
                         } else {
                             LinkedList<DataFolder> folders = new LinkedList<DataFolder>();
@@ -597,7 +598,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                         }
                     }
                 }
-                if (!RefactoringUtils.isOnSourceClasspath(dob.getPrimaryFile())) {
+                if (!JavaRefactoringUtils.isOnSourceClasspath(dob.getPrimaryFile())) {
                     return false;
                 }
                 if (RefactoringUtils.isJavaFile(dob.getPrimaryFile())) {
@@ -1059,7 +1060,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
         
         return (dataObject instanceof DataFolder) && 
                 RefactoringUtils.isFileInOpenProject(fileObject) && 
-                RefactoringUtils.isOnSourceClasspath(fileObject) && 
+                JavaRefactoringUtils.isOnSourceClasspath(fileObject) && 
                 !RefactoringUtils.isClasspathRoot(fileObject);
     }
 

@@ -824,7 +824,11 @@ public class Operator {
 
     public void notifyMethodInvoking(ThreadReference tr) {
         if (logger.isLoggable(Level.FINE)) {
-            logger.fine("  notifyMethodInvoking("+tr+")");
+            try {
+                logger.fine("  notifyMethodInvoking("+tr+") suspendCount = "+tr.suspendCount());
+            } catch (Exception ex) {
+                logger.fine("  notifyMethodInvoking("+tr+")");
+            }
         }
         if (Thread.currentThread() == thread) {
             // start another event handler thread...

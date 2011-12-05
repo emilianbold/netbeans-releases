@@ -45,6 +45,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.java.RefactoringUtils;
+import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.java.ui.JavaRefactoringGlobalAction;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
@@ -100,7 +101,7 @@ public final class CallHierarchyAction extends JavaRefactoringGlobalAction {
             return false;
         }
         FileObject fo = dob.getPrimaryFile();
-        if (RefactoringUtils.isRefactorable(fo)) {
+        if (JavaRefactoringUtils.isRefactorable(fo)) {
             return true;
         }
         return false;
