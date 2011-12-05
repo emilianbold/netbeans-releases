@@ -1,4 +1,4 @@
-class SafeNafigation1 {
+class MethodClosure2 {
 
     def case4() {
         "".&

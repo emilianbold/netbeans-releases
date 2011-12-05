@@ -50,6 +50,7 @@ import java.util.Map;
 import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.junit.Ignore;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.junit.RandomlyFails;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
@@ -148,13 +149,17 @@ public class MethodCompletionTest extends GroovyTestBase {
         checkCompletion(TEST_BASE + "" + "Methods9.groovy", "for(new Date().get^", false);
     }
 
+    /*
+    @Ignore
     public void testCompletionNoPrefixString1() throws Exception {
         checkCompletion(TEST_BASE + "" + "Methods10.groovy", "println \"Hello $name!\".^", false);
     }
 
+    @Ignore
     public void testCompletionNoPrefixString2() throws Exception {
         checkCompletion(TEST_BASE + "" + "Methods11.groovy", "def name='Petr'.^", false);
     }
+    */
 
     // FIXME randomly fails
 //    @RandomlyFails
