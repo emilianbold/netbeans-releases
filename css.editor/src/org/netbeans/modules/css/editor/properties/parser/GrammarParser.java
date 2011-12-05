@@ -92,16 +92,16 @@ public class GrammarParser {
                 case '\t':
                     //ws, ignore
                     break;
-//                case '&':
-//                    char next = input.read();
-//                    if (next == '&') {
-//                        //the group is a list
-//                        parent.setType(GroupGrammarElement.Type.ALL);
-//                    } else {
-//                        input.backup(1);
-//                    }
-//                    break;
-//                    
+                case '&':
+                    char next = input.read();
+                    if (next == '&') {
+                        //the group is a list
+                        parent.setType(GroupGrammarElement.Type.ALL);
+                    } else {
+                        input.backup(1);
+                    }
+                    break;
+                    
                 case '[':
                     openedParenthesis++;
                     //group start
@@ -111,7 +111,7 @@ public class GrammarParser {
                     break;
 
                 case '|':
-                    char next = input.read();
+                    next = input.read();
                     if (next == '|') {
                         //the group is a list
                         parent.setType(GroupGrammarElement.Type.COLLECTION);

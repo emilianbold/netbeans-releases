@@ -73,11 +73,6 @@ public class StandardPropertiesHelpResolverTest extends NbTestCase {
         assertPropertyHelp("animation");
     }
     
-    //Bug 202493 - java.io.FileNotFoundException: JAR entry www.w3.org/TR/css3-lists//index.html not found in /home/tester/netbeans-7.1beta/ide/docs/css3-spec.zip
-    public void testProperty_Fallback() {
-        assertPropertyHelp("fallback");
-    }
-    
     public void testProperty_direction() {
         //not whole page but just stripped part
         assertPropertyHelpSnipped("direction");
