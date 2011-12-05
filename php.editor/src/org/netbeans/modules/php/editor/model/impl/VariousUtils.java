@@ -1319,7 +1319,8 @@ public class VariousUtils {
                 || typeName.toLowerCase().equals("integer") || typeName.toLowerCase().equals("float") || typeName.toLowerCase().equals("real")
                 || typeName.toLowerCase().equals("array") || typeName.toLowerCase().equals("object") || typeName.toLowerCase().equals("mixed")
                 || typeName.toLowerCase().equals("number") || typeName.toLowerCase().equals("callback") || typeName.toLowerCase().equals("resource")
-                || typeName.toLowerCase().equals("double") || typeName.toLowerCase().equals("string") || typeName.toLowerCase().equals("null")) { //NOI18N
+                || typeName.toLowerCase().equals("double") || typeName.toLowerCase().equals("string") || typeName.toLowerCase().equals("null")
+                || typeName.toLowerCase().equals("void")) { //NOI18N
             retval = true;
         }
         return retval;

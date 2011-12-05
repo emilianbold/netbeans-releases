@@ -96,10 +96,10 @@ class FoldingTaskListModel extends TaskListModel {
     
     @Override
     protected Task getTaskAtRow( int row ) {
-        if( isGroupRow( row ) )
-            return null;
-        int groupRow = 0;
         synchronized( groups ) {
+            if( isGroupRow( row ) )
+                return null;
+            int groupRow = 0;
             for( FoldingGroup g : groups ) {
                 synchronized (g.TASK_LOCK) {
                     if( row < groupRow+g.getRowCount() ) {

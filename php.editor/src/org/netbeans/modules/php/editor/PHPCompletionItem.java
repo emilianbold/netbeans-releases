@@ -48,6 +48,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.WeakHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -127,6 +128,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
     private final ElementHandle element;
     protected QualifiedNameKind generateAs;
     private static ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
+    private static final Cache<FileObject, Properties> PROPERTIES_CACHE = new Cache<FileObject, Properties>(new WeakHashMap<FileObject, Properties>());
 
     PHPCompletionItem(ElementHandle element, CompletionRequest request, QualifiedNameKind generateAs) {
         this.request = request;
@@ -226,8 +228,12 @@ public abstract class PHPCompletionItem implements CompletionProposal {
             FullyQualifiedElement ifq = (FullyQualifiedElement) elem;
             final QualifiedName qn = QualifiedName.create(request.prefix);
             final FileObject fileObject = request.result.getSnapshot().getSource().getFileObject();
-            Properties props = fileObject != null ? PhpLanguageOptions.getDefault().getProperties(fileObject) : null;
-            if (props != null && props.getPhpVersion() == PhpLanguageOptions.PhpVersion.PHP_53) {
+            Properties props = PROPERTIES_CACHE.get(fileObject);
+            if (props == null) {
+                props = PhpLanguageOptions.getDefault().getProperties(fileObject);
+                PROPERTIES_CACHE.save(fileObject, props);
+            }
+            if (props.getPhpVersion() == PhpLanguageOptions.PhpVersion.PHP_53) {
                 if (generateAs == null) {
                     CodeCompletionType codeCompletionType = OptionsUtils.codeCompletionType();
                     switch (codeCompletionType) {

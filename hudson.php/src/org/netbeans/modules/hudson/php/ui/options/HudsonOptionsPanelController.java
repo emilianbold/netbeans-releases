@@ -48,6 +48,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.hudson.php.commands.PpwScript;
 import org.netbeans.modules.hudson.php.options.HudsonOptions;
+import org.netbeans.modules.hudson.php.options.HudsonOptionsValidator;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
@@ -81,6 +82,7 @@ public class HudsonOptionsPanelController extends OptionsPanelController impleme
     @Override
     public void update() {
         hudsonOptionsPanel.setPpw(getOptions().getPpw());
+        hudsonOptionsPanel.setJobConfig(getOptions().getJobConfig());
 
         changed = false;
     }
@@ -88,6 +90,7 @@ public class HudsonOptionsPanelController extends OptionsPanelController impleme
     @Override
     public void applyChanges() {
         getOptions().setPpw(hudsonOptionsPanel.getPpw());
+        getOptions().setJobConfig(hudsonOptionsPanel.getJobConfig());
 
         changed = false;
     }
@@ -101,6 +104,12 @@ public class HudsonOptionsPanelController extends OptionsPanelController impleme
     public boolean isValid() {
         // warnings
         String warning = PpwScript.validate(hudsonOptionsPanel.getPpw());
+        if (warning != null) {
+            hudsonOptionsPanel.setWarning(warning);
+            return true;
+        }
+
+        warning = HudsonOptionsValidator.validateJobConfig(hudsonOptionsPanel.getJobConfig());
         if (warning != null) {
             hudsonOptionsPanel.setWarning(warning);
             return true;
