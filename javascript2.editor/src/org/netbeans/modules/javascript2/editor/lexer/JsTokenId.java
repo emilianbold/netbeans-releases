@@ -64,9 +64,14 @@ public enum JsTokenId implements TokenId {
     NUMBER(null, "constant"), // NOI18N
     COMMENT(null, "comment"), // NOI18N
     IDENTIFIER(null, "identifier"), // NOI18N
+
     STRING_BEGIN(null, "string"), // NOI18N
     STRING(null, "string"), // NOI18N
     STRING_END(null, "string"), // NOI18N
+
+    REGEXP_BEGIN(null, "string"), // NOI18N
+    REGEXP(null, "string"), // NOI18N
+    REGEXP_END(null, "string"), // NOI18N
 
     OPERATOR_LEFT_PARAN("(", "operator"), // NOI18N
     OPERATOR_RIGHT_PARAN(")", "operator"), // NOI18N

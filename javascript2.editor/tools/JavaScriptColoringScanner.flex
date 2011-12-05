@@ -101,7 +101,8 @@ TraditionalComment = "/*" [^*] ~"*/" | "/*" "*"+ "/"
 EndOfLineComment = "//" {InputCharacter}* {LineTerminator}?
 
 /* identifiers */
-Identifier = [:jletter:][:jletterdigit:]*
+IdentifierPart = [:jletterdigit:]
+Identifier = [:jletter:]{IdentifierPart}*
 
 /* integer literals */
 DecIntegerLiteral = 0 | [1-9][0-9]*
@@ -127,8 +128,9 @@ Exponent = [eE] [+-]? [0-9]+
 /* string and character literals */
 StringCharacter  = [^\r\n\"\\]
 SStringCharacter = [^\r\n\'\\]
+RegexpCharacter  = [^\r\n/\\]
 
-%state STRING SSTRING STRINGEND SSTRINGEND
+%state STRING STRINGEND SSTRING SSTRINGEND REGEXP REGEXPEND SLASH
 
 %%
 
@@ -201,6 +203,12 @@ SStringCharacter = [^\r\n\'\\]
   /* null literal */
   "null"                         { return JsTokenId.KEYWORD_NULL; }
 
+  "/"{RegexpCharacter}+"/"{IdentifierPart}*
+                                 {
+                                     yypushback(tokenLength - 1);
+                                     yybegin(REGEXP);
+                                     return JsTokenId.REGEXP_BEGIN;
+                                 }
   /* operators */
 
   "("                            { return JsTokenId.OPERATOR_LEFT_PARAN; }
@@ -287,8 +295,7 @@ SStringCharacter = [^\r\n\'\\]
 }
 
 <STRING> {
-  \"                             {
-                                     
+  \"                             {  
                                      yypushback(1);
                                      yybegin(STRINGEND);
                                      if (tokenLength - 1 > 0) {
@@ -336,6 +343,25 @@ SStringCharacter = [^\r\n\'\\]
   \'                             {
                                      yybegin(YYINITIAL);
                                      return JsTokenId.STRING_END;
+                                 }
+}
+
+<REGEXP> {
+  "/"                            {
+                                     yypushback(1);
+                                     yybegin(REGEXPEND);
+                                     if (tokenLength - 1 > 0) {
+                                         return JsTokenId.REGEXP;
+                                     }
+                                 }
+
+  {RegexpCharacter}+             { }
+}
+
+<REGEXPEND> {
+  "/"{IdentifierPart}*           {
+                                     yybegin(YYINITIAL);
+                                     return JsTokenId.REGEXP_END;
                                  }
 }
 
