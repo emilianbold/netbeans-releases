@@ -593,7 +593,7 @@ pseudo
     : ( COLON | DCOLON )
             ( IDENT | GEN )
                 ( // Function
-                    WS* LPAREN WS* (( IDENT | GEN ) WS*)? RPAREN
+                    WS* LPAREN WS* ( expr )? RPAREN
                 )?
     ;
 
@@ -648,6 +648,7 @@ term
             | TIME
             | FREQ
             | RESOLUTION
+            | DIMENSION     //so we can match expression like a:nth-child(3n+1) -- the "3n" is lexed as dimension
         )
     | STRING
     | IDENT
