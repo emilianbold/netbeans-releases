@@ -68,7 +68,12 @@ public class GroupGrammarElement extends GrammarElement {
         /**
          * All of the group members needs to be resolved in the defined order.
          */
-        LIST;
+        LIST,
+        
+        /**
+         * All of the group members needs to be present in arbitrary order
+         */
+        ALL;
     }
 
     GroupGrammarElement(GroupGrammarElement parent, int index, String referenceName) {
