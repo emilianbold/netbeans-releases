@@ -48,7 +48,7 @@ made subject to such option by the copyright holder.
                                 "http://www.netbeans.org/dtds/EditorCodeTemplates-1_0.dtd">
 
 <codetemplates>
-    
+
     <!-- add alternative abbrev 'class' -->
     <codetemplate uuid="org.netbeans.modules.php.editor.codetemplate.cls" abbreviation="cls" contexts="php-code">
         <code>
@@ -66,7 +66,13 @@ made subject to such option by the copyright holder.
 }]]>
         </code>
     </codetemplate>
-
+    <codetemplate uuid="org.netbeans.modules.php.editor.codetemplate.trt" abbreviation="trt" contexts="php-code">
+        <code>
+<![CDATA[trait ${TraitName} {
+    ${cursor}
+}]]>
+        </code>
+    </codetemplate>
     <codetemplate uuid="org.netbeans.modules.php.editor.codetemplate.cln" abbreviation="cln" contexts="php-code">
         <code>
 <![CDATA[$$${NEW_VAR newVarName default="newObj"} = clone ${VARIABLE variableFromPreviousAssignment default="$variable"};
@@ -79,7 +85,7 @@ ${cursor}]]>
 <![CDATA[echo "${cursor}";]]>
         </code>
     </codetemplate>
-    
+
     <codetemplate uuid="org.netbeans.modules.php.editor.codetemplate.print" abbreviation="pr" contexts="php-code">
         <code>
 <![CDATA[print ${VARIABLE variableFromPreviousAssignment default="$variable"};
@@ -106,7 +112,7 @@ ${cursor}]]>
 ${cursor}]]>
         </code>
     </codetemplate>
-    
+
     <codetemplate uuid="org.netbeans.modules.php.editor.codetemplate.if" abbreviation="if"  contexts="php-code">
         <code>
 <![CDATA[if (${CONDITION variableFromPreviousAssignment instanceof="boolean" default="true"}) {
@@ -168,7 +174,7 @@ ${cursor}]]>
 }]]>
         </code>
     </codetemplate>
-    
+
     <codetemplate uuid="org.netbeans.modules.php.editor.codetemplate.foreachkey" abbreviation="forek" contexts="php-code">
         <code>
 <![CDATA[foreach (${ARRAY variableFromPreviousAssignment instanceof="array" default="$array"} as $$${key} => $$${value}) {
@@ -240,7 +246,7 @@ if ($$${DIRH editable=false}) {
     <codetemplate uuid="org.netbeans.modules.php.editor.codetemplate.my_gc" abbreviation="my_gc" contexts="php-code">
         <code>
 <![CDATA[ob_start();
-	
+
 ${selection}${cursor}
 
 $$${contents} = ob_get_contents();
