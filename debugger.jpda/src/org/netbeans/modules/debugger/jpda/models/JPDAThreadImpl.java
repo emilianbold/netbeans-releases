@@ -1077,14 +1077,28 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
         //notifySuspended(false);
         // Keep the thread look like running until we get a firing notification
         accessLock.writeLock().lock();
-        loggerS.fine("["+threadName+"]: "+"notifySuspendedNoFire() suspended = "+suspended+", suspendCount = "+suspendCount);
-        if (suspended && suspendCount > 0 && !initiallySuspended) {
-            loggerS.fine("["+threadName+"]: notifySuspendedNoFire(): SETTING suspendRequested = "+true);
-            suspendRequested = true; // The thread was just suspended, leave it suspended afterwards.
+        try {
+            loggerS.fine("["+threadName+"]: "+"notifySuspendedNoFire() suspended = "+suspended+", suspendCount = "+suspendCount);
+            if (suspended && suspendCount > 0 && !initiallySuspended) {
+                loggerS.fine("["+threadName+"]: notifySuspendedNoFire(): SETTING suspendRequested = "+true);
+                suspendRequested = true; // The thread was just suspended, leave it suspended afterwards.
+            }
+            try {
+                suspendCount = ThreadReferenceWrapper.suspendCount(threadReference);
+            } catch (IllegalThreadStateExceptionWrapper ex) {
+                // Thrown when thread has exited
+            } catch (ObjectCollectedExceptionWrapper ocex) {
+                // The thread is gone
+            } catch (VMDisconnectedExceptionWrapper ex) {
+                // The VM is gone
+            } catch (InternalExceptionWrapper ex) {
+                // Something is gone
+            }
+            suspendedNoFire = true;
+            loggerS.fine("["+threadName+"]: (notifySuspendedNoFire() END) suspended = "+suspended+", suspendedNoFire = "+suspendedNoFire+", suspendRequested = "+suspendRequested);
+        } finally {
+            accessLock.writeLock().unlock();
         }
-        suspendedNoFire = true;
-        loggerS.fine("["+threadName+"]: (notifySuspendedNoFire() END) suspended = "+suspended+", suspendedNoFire = "+suspendedNoFire+", suspendRequested = "+suspendRequested);
-        accessLock.writeLock().unlock();
     }
 
     public PropertyChangeEvent notifySuspended(boolean doFire, boolean explicitelyPaused) {
@@ -1178,6 +1192,23 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
                 throw new PropertyVetoException(
                         NbBundle.getMessage(JPDAThreadImpl.class, "MSG_NoCurrentContext"), null);
             }
+            loggerS.fine("Suspend count of "+this+" before notifyMethodInvoking() is: "+suspendCount);
+            try {
+                int tsc = ThreadReferenceWrapper.suspendCount(threadReference);
+                if (suspendCount != tsc) {
+                    // Should not occur
+                    Exceptions.printStackTrace(new IllegalStateException("Different suspend counts! JPDA Thread = "+suspendCount+", thread "+threadReference+" = "+tsc));
+                    suspendCount = tsc;
+                }
+                // The thread needs to be only single-suspended, otherwise it can not invoke methods.
+                for (int sc = 1; sc < suspendCount; sc++) {
+                    ThreadReferenceWrapper.resume(threadReference);
+                }
+            } catch (InternalExceptionWrapper iew) {
+            } catch (VMDisconnectedExceptionWrapper dew) {
+            } catch (ObjectCollectedExceptionWrapper oce) {
+            } catch (IllegalThreadStateExceptionWrapper itse) {
+            }
             debugger.getOperator().notifyMethodInvoking(threadReference);
             if (vm != null) {
                 // Check if there aren't any steps submitted, which would break method invocation:
@@ -1235,20 +1266,23 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
         boolean wasUnsuspendedStateWhenInvoking;
         accessLock.writeLock().lock();
         try {
-            // HACK becuase of JDI, we've resumed this thread so that method invocation can be finished.
-            // We need to suspend the thread immediately so that it does not continue after the invoke has finished.
             logger.fine("Method invoke done in thread "+threadName);
             loggerS.fine("["+threadName+"]: Method invoke done, suspended = "+suspended+", suspendedNoFire = "+suspendedNoFire+", suspendRequested = "+suspendRequested+", unsuspendedStateWhenInvoking = "+unsuspendedStateWhenInvoking);
-            if (resumedToFinishMethodInvocation) {
-                try {
+            try {
+                if (resumedToFinishMethodInvocation) {
+                    // HACK becuase of JDI, we've resumed this thread so that method invocation can be finished.
+                    // We need to suspend the thread immediately so that it does not continue after the invoke has finished.
                     ThreadReferenceWrapper.suspend(threadReference);
-                } catch (InternalExceptionWrapper ex) {
-                } catch (VMDisconnectedExceptionWrapper ex) {
-                } catch (ObjectCollectedExceptionWrapper ex) {
-                } catch (IllegalThreadStateExceptionWrapper ex) {
+                    //System.err.println("\""+getName()+"\""+":  Suspended after method invocation.");
+                    resumedToFinishMethodInvocation = false;
                 }
-                //System.err.println("\""+getName()+"\""+":  Suspended after method invocation.");
-                resumedToFinishMethodInvocation = false;
+                for (int sc = 1; sc < suspendCount; sc++) {
+                    ThreadReferenceWrapper.suspend(threadReference);
+                }
+            } catch (InternalExceptionWrapper ex) {
+            } catch (VMDisconnectedExceptionWrapper ex) {
+            } catch (ObjectCollectedExceptionWrapper ex) {
+            } catch (IllegalThreadStateExceptionWrapper ex) {
             }
             debugger.getOperator().notifyMethodInvokeDone(threadReference);
             if (stepsDeletedDuringMethodInvoke != null) {
