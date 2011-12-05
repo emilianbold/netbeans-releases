@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.versioning.core.api;
 
+import org.netbeans.modules.versioning.core.filesystems.VCSFileProxyOperations;
 import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;

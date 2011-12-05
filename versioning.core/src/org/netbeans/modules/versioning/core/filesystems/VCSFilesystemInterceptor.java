@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.versioning.core.fs.api;
+package org.netbeans.modules.versioning.core.filesystems;
 
 import java.io.IOException;
 import java.util.*;

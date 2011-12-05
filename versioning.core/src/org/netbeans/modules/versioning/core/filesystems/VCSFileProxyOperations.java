@@ -39,9 +39,10 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.versioning.core.api;
+package org.netbeans.modules.versioning.core.filesystems;
 
 import org.netbeans.api.extexecution.ProcessBuilder;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.filesystems.FileObject;
 
 /**
