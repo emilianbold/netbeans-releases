@@ -67,6 +67,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.hudson.php.commands.PpwScript;
 import org.netbeans.modules.hudson.php.options.HudsonOptions;
+import org.netbeans.modules.hudson.php.options.HudsonOptionsValidator;
 import org.netbeans.modules.hudson.php.support.Target;
 import org.netbeans.modules.hudson.php.ui.options.HudsonOptionsPanelController;
 import org.netbeans.modules.hudson.php.xml.XmlUtils;
@@ -87,7 +88,6 @@ import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 import org.openide.util.lookup.ServiceProvider;
-import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -148,6 +148,11 @@ public final class HudsonJobCreator extends JPanel implements ProjectHudsonJobCr
         } catch (InvalidPhpProgramException ex) {
             return ConfigurationStatus.withError(Bundle.HudsonJobCreator_error_invalidHudsonOptions()).withExtraButton(getOpenHudsonOptionsButton());
         }
+        // job config
+        String jobConfigError = HudsonOptionsValidator.validateJobConfig(getJobConfig());
+        if (jobConfigError != null) {
+            return ConfigurationStatus.withError(jobConfigError);
+        }
         // build.xml
         FileObject buildXml = phpModule.getProjectDirectory().getFileObject(PpwScript.BUILD_XML);
         if (buildXml != null && buildXml.isData()) {
@@ -179,8 +184,11 @@ public final class HudsonJobCreator extends JPanel implements ProjectHudsonJobCr
     @Override
     public Document configure() throws IOException {
         setupProject();
-        throw new RuntimeException("Not implemented yet");
-        //return createJobXml();
+        return createJobXml();
+    }
+
+    private String getJobConfig() {
+        return HudsonOptions.getInstance().getJobConfig();
     }
 
     @NbBundle.Messages({
@@ -218,12 +226,16 @@ public final class HudsonJobCreator extends JPanel implements ProjectHudsonJobCr
         }
     }
 
-    private Document createJobXml() {
-        Document doc = XMLUtil.createDocument("project", null, null, null); // NOI18N
-        // XXX copy jenkins-php template
-        scm.configure(doc);
-        Helper.addLogRotator(doc);
-        return doc;
+    private Document createJobXml() throws IOException {
+        Document document;
+        try {
+            document = XmlUtils.parse(new File(getJobConfig()));
+        } catch (SAXException ex) {
+            throw new IOException(ex);
+        }
+        scm.configure(document);
+        Helper.addLogRotator(document);
+        return document;
     }
 
     @NbBundle.Messages("HudsonJobCreator.error.config=Job configuration failed.")
