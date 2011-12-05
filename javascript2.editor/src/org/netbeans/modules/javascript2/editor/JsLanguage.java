@@ -66,7 +66,7 @@ public class JsLanguage extends DefaultLanguageConfig {
     }
     
     public JsLanguage() {
-
+        super();
     }
 
     @Override

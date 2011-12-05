@@ -128,7 +128,7 @@ Exponent = [eE] [+-]? [0-9]+
 StringCharacter  = [^\r\n\"\\]
 SStringCharacter = [^\r\n\'\\]
 
-%state STRING SSTRING
+%state STRING SSTRING STRINGEND SSTRINGEND
 
 %%
 
@@ -253,10 +253,12 @@ SStringCharacter = [^\r\n\'\\]
   /* string literal */
   \"                             {
                                     yybegin(STRING);
+                                    return JsTokenId.STRING_BEGIN;
                                  }
 
   \'                             {
                                     yybegin(SSTRING);
+                                    return JsTokenId.STRING_BEGIN;
                                  }
 
   /* numeric literals */
@@ -286,7 +288,9 @@ SStringCharacter = [^\r\n\'\\]
 
 <STRING> {
   \"                             {
-                                     yybegin(YYINITIAL);
+                                     
+                                     yypushback(1);
+                                     yybegin(STRINGEND);
                                      return JsTokenId.STRING;
                                  }
 
@@ -300,9 +304,17 @@ SStringCharacter = [^\r\n\'\\]
   {LineTerminator}               { yybegin(YYINITIAL);  }
 }
 
+<STRINGEND> {
+  \"                             {
+                                     yybegin(YYINITIAL);
+                                     return JsTokenId.STRING_END;
+                                 }
+}
+
 <SSTRING> {
   \'                             {
-                                     yybegin(YYINITIAL);
+                                     yypushback(1);
+                                     yybegin(SSTRINGEND);
                                      return JsTokenId.STRING;
                                  }
 
@@ -314,6 +326,13 @@ SStringCharacter = [^\r\n\'\\]
 
   \\.                            { }
   {LineTerminator}               { yybegin(YYINITIAL);  }
+}
+
+<SSTRINGEND> {
+  \'                             {
+                                     yybegin(YYINITIAL);
+                                     return JsTokenId.STRING_END;
+                                 }
 }
 
 /* error fallback */

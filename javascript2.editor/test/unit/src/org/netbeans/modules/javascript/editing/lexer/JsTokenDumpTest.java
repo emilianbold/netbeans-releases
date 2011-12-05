@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,6 +24,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,69 +40,31 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.javascript2.editor.lexer;
+package org.netbeans.modules.javascript.editing.lexer;
 
-import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.netbeans.api.lexer.Token;
-import org.netbeans.spi.lexer.Lexer;
-import org.netbeans.spi.lexer.LexerRestartInfo;
-import org.netbeans.spi.lexer.TokenFactory;
-
-
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.lib.lexer.test.LexerTestUtilities;
+import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 
 /**
- *
- * @author Petr Hejl
+ * Test tokens dump of JavaScript code input. Based on the Ruby one.
  */
-public class JsLexer implements Lexer<JsTokenId> {
-
-    private static final Logger LOGGER = Logger.getLogger(JsLexer.class.getName());
-
-    private final JavaScriptColoringLexer scanner;
-
-    private TokenFactory<JsTokenId> tokenFactory;
-
-    private JsLexer(LexerRestartInfo<JsTokenId> info) {
-        scanner = new JavaScriptColoringLexer(info);
-        tokenFactory = info.tokenFactory();
+public class JsTokenDumpTest extends NbTestCase {
+    
+    public JsTokenDumpTest(String testName) {
+        super(testName);
     }
-
-    public static JsLexer create(LexerRestartInfo<JsTokenId> info, boolean inPHP) {
-        synchronized(JsLexer.class) {
-            return new JsLexer(info);
-        }
-    }
-
+    
     @Override
-    public Token<JsTokenId> nextToken() {
-        try {
-            JsTokenId tokenId = scanner.nextToken();
-            LOGGER.log(Level.FINEST, "Lexed token is {0}", tokenId);
-            Token<JsTokenId> token = null;
-            if (tokenId != null) {
-                token = tokenFactory.createToken(tokenId);
-            }
-            return token;
-        } catch (IOException ex) {
-            Logger.getLogger(JsLexer.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return null;
+    protected void setUp() throws java.lang.Exception {
+        // Set-up testing environment
+        LexerTestUtilities.setTesting(true);
     }
 
-    @Override
-    public Object state() {
-        return scanner.getState();
-    }
-
-    @Override
-    public void release() {
+    public void testInput() throws Exception {
+        LexerTestUtilities.checkTokenDump(this, "testfiles/testInput.js.txt",
+                JsTokenId.language());
     }
 }
