@@ -3337,7 +3337,7 @@ public class Reformatter implements ReformatTask {
                                     || JDOC_CODE_TAG.equalsIgnoreCase(tokenText)
                                     || JDOC_LITERAL_TAG.equalsIgnoreCase(tokenText)) {
                                 insideTag = true;
-                                marks.add(Pair.of(lastWSOffset >= 0 ? lastWSOffset : javadocTokens.offset() - offset, 5));
+                                marks.add(Pair.of(currWSOffset >= 0 ? currWSOffset : javadocTokens.offset() - offset, 5));
                                 lastWSOffset = currWSOffset = -1;
                                 break;
                             } else {
@@ -3403,19 +3403,25 @@ public class Reformatter implements ReformatTask {
                                     }
                                 }
                             }
-                            if (currWSOffset >= 0 && identStart >= 0) {
-                                int len = currWSOffset - identStart;
+                            if (identStart >= 0) {
+                                int len = javadocTokens.offset() - offset - identStart;
+                                for (int i = 0; i <= cseq.length(); i++) {
+                                    if (i == cseq.length() || Character.isWhitespace(cseq.charAt(i))) {
+                                        len += i;
+                                        break;
+                                    }
+                                }
                                 if (state == 1) {
                                     if (len > maxParamNameLength)
                                         maxParamNameLength = len;
                                     if (cs.alignJavadocParameterDescriptions())
-                                        toAdd = Pair.of(currWSOffset, 2);
+                                        toAdd = Pair.of(identStart + len, 2);
                                     state = 2;
                                 } else if (state == 4) {
                                     if (len > maxExcNameLength)
                                         maxExcNameLength = len;
                                     if (cs.alignJavadocExceptionDescriptions())
-                                        toAdd = Pair.of(currWSOffset, 4);
+                                        toAdd = Pair.of(identStart + len, 4);
                                     state = 5;
                                 }
                                 if (addNow && toAdd != null) {

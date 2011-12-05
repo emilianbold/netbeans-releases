@@ -44,8 +44,6 @@
 
 package org.netbeans.modules.java.builder;
 
-import static org.netbeans.api.java.source.Comment.Style.*;
-import static com.sun.tools.javac.parser.Token.*;
 import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;

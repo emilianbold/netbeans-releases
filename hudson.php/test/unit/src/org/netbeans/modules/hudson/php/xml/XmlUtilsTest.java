@@ -91,4 +91,13 @@ public class XmlUtilsTest extends NbTestCase {
         assertFalse(content.startsWith(header));
     }
 
+    public void testNodeValues() throws Exception {
+        Document document = XmlUtils.parse(new File(getDataDir(), "persons.xml"));
+        Node disabled = XmlUtils.query(document, "/persons/disabled");
+        assertNotNull(disabled);
+        assertEquals("true", XmlUtils.getNodeValue(document, disabled));
+        XmlUtils.setNodeValue(document, disabled, "false");
+        assertEquals("false", XmlUtils.getNodeValue(document, disabled));
+    }
+
 }

@@ -48,4 +48,5 @@ Portions Copyrighted 2011 Sun Microsystems, Inc.
     <person id="2">
         <name>Mary Queen</name>
     </person>
+    <disabled>true</disabled>
 </persons>
