@@ -71,7 +71,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import junit.framework.Test;
 import org.bar.Comparator2;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
@@ -535,6 +534,31 @@ public class MetaInfServicesLookupTest extends NbTestCase {
                 }
             }
         }).lookup(Object.class));
+    }
+    
+    public static final class Err extends Object {
+        public Err() {
+            throw new UnsatisfiedLinkError();
+        }
+    }
+    
+    public void testHashCodeIsStable() {
+        AbstractLookup.Pair p1 = MetaInfServicesLookup.createPair(Err.class);
+        AbstractLookup.Pair p2 = MetaInfServicesLookup.createPair(Err.class);
+        
+        long hash = p1.hashCode();
+        assertEquals("Both hash codes are the same", hash, p2.hashCode());
+        assertNull("No instance created", p2.getInstance());
+        assertEquals("Both hash codes remain the same", hash, p2.hashCode());
+    }
+
+    public void testEqualsIsStable() {
+        AbstractLookup.Pair p1 = MetaInfServicesLookup.createPair(Err.class);
+        AbstractLookup.Pair p2 = MetaInfServicesLookup.createPair(Err.class);
+        
+        assertTrue("Same class items are equal", p1.equals(p2));
+        assertNull("No instance created", p2.getInstance());
+        assertTrue("Same class items are still equal", p1.equals(p2));
     }
 
     public void testInitializerRobustness() throws Exception { // #174055
