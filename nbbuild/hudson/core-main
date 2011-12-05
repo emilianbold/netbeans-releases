@@ -31,8 +31,6 @@ core.output2,\
 core.startup,\
 core.ui,\
 core.windows,\
-db,\
-db.core,\
 editor.mimelookup,\
 editor.mimelookup.impl,\
 extexecution,\
