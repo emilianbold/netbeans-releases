@@ -64,6 +64,7 @@ public class GrammarResolver {
         DEFAULT,
         VALUES,
         ALTERNATIVES
+        
     }
     static final Map<Log, AtomicBoolean> LOGGERS = new EnumMap<Log, AtomicBoolean>(Log.class);
 
@@ -263,6 +264,12 @@ public class GrammarResolver {
         for (int i = 0; i < group.getMaximumOccurances(); i++) {
             InputState atMultiplicityLoopStartState = createInputState();
             
+            if (LOG) {
+                if(i > 0) {
+                    log(String.format("  multiplicity loop %s, %s", i, atMultiplicityLoopStartState));
+                }
+            }
+            
             Collection<GrammarElement> grammarElementsToProcess = new ArrayList<GrammarElement>(group.elements());
 
             Map<GrammarElement, InputState> branchesResults =
@@ -295,6 +302,7 @@ public class GrammarResolver {
                         switch (group.getType()) {
                             case SET:
                             case COLLECTION:
+                            case ALL:
                                 if (LOG) {
                                     log(String.format("  added %s branch result: %s, %s", group.getType().name(), member.path(), state));
                                 }
@@ -321,6 +329,7 @@ public class GrammarResolver {
                         switch (group.getType()) {
                             case SET:
                             case COLLECTION:
+                            case ALL:
                                 if (LOG) {
                                     log(String.format(" added %s branch result: %s, %s", group.getType().name(), member, state));
                                 }
@@ -344,6 +353,7 @@ public class GrammarResolver {
                                 //so we are sure the group cannot be resolved
                                 break multiplicity;
 
+                            case ALL:
                             case COLLECTION:
 //                                grammarElementsToProcess.remove(member);
                             case SET:
@@ -357,6 +367,7 @@ public class GrammarResolver {
                 switch (group.getType()) {
                     case SET:
                     case COLLECTION:
+                    case ALL:
                         //process branches results - find longest match
                         if(branchesResults.isEmpty()) {
                             //no success branch result
@@ -439,13 +450,13 @@ public class GrammarResolver {
                             log(String.format("  decided to use best match %s, %s", bestMatchElement.path(), successState));
                         }
 
-                        //if we are in a COLLECTION, we need to remove 
+                        //if we are in a COLLECTION or ALL, we need to remove 
                         //the choosen member from the further collection processing
                         switch (group.getType()) {
                             case COLLECTION:
+                            case ALL:
                                 grammarElementsToProcess.remove(bestMatchElement);
                         }
-
 
                         break;
                 }
@@ -456,20 +467,44 @@ public class GrammarResolver {
                 
                 if(successState.equals(atCollectionLoopStartState)) {
                     //nothing resolved in the loop
-                    break multiplicity;
+                    break collection_loop;
                 }
 
-                //loop if the grammar element is a collection otherwise leave
+                //loop if the grammar element is a collection or all otherwise leave
                 switch (group.getType()) {
                     case SET:
                     case LIST:
                         break collection_loop;
                     case COLLECTION:
-                    //continue
+                    case ALL:
+                        //continue
                 }
 
             } //:collection_loop
 
+            switch(group.getType()) {
+                case ALL:
+                    //all members of the group must be resolved or optional                    
+                    for(GrammarElement e : grammarElementsToProcess) {
+                        if(!e.isOptional()) {
+                            if(LOG) {
+                                StringBuilder sb = new StringBuilder();
+                                for(Iterator<GrammarElement> itr = grammarElementsToProcess.iterator(); itr.hasNext(); ) {
+                                    sb.append(itr.next().path());
+                                    if(itr.hasNext()) {
+                                        sb.append(", ");
+                                    }
+                                }
+                                log(String.format("  all group: exited collection_loop but there are some grammar element to process left: %s", sb.toString()));
+                            }
+                            backupInputState(atMultiplicityLoopStartState);
+                            return false;
+                        }
+                    }
+                    
+                    break;
+            }
+            
             //we went through the first iteration of members (multiplicity 0 and more)
             //but nothing resolved so making another multiplicity loop makes no sense
             if (successState == null) {
