@@ -68,9 +68,11 @@ public interface VCSFileProxyOperations {
 
     VCSFileProxy normalize(VCSFileProxy file);
 
-    FileObject toFileObject(VCSFileProxy path);
-    VCSFileProxy[] list();
-    boolean isFlat();
+    FileObject toFileObject(VCSFileProxy file);
+    
+    VCSFileProxy[] list(VCSFileProxy file);
+    
+    boolean isFlat(VCSFileProxy file);
 
     ProcessBuilder createProcessBuilder(VCSFileProxy file);
 }
