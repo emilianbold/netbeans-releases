@@ -291,7 +291,9 @@ SStringCharacter = [^\r\n\'\\]
                                      
                                      yypushback(1);
                                      yybegin(STRINGEND);
-                                     return JsTokenId.STRING;
+                                     if (tokenLength - 1 > 0) {
+                                         return JsTokenId.STRING;
+                                     }
                                  }
 
   {StringCharacter}+             { }
@@ -315,7 +317,9 @@ SStringCharacter = [^\r\n\'\\]
   \'                             {
                                      yypushback(1);
                                      yybegin(SSTRINGEND);
-                                     return JsTokenId.STRING;
+                                     if (tokenLength - 1 > 0) {
+                                         return JsTokenId.STRING;
+                                     }
                                  }
 
   {SStringCharacter}+            { }

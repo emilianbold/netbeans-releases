@@ -99,241 +99,241 @@ public class JsLexerTest extends TestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.STRING_END, "'");
     }
     
-    @SuppressWarnings("unchecked")
-    public void testRegexp1() {
-        String text = "f(/regexp/)";
-        TokenHierarchy hi = TokenHierarchy.create(text, JsTokenId.language());
-        TokenSequence<?extends JsTokenId> ts = hi.tokenSequence();
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.IDENTIFIER, "f");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.OPERATOR_LEFT_PARAN, "(");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.REGEXP_BEGIN, "/");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.REGEXP_LITERAL, "regexp");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.REGEXP_END, "/");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.OPERATOR_RIGHT_PARAN, ")");
-    }
-
-    @SuppressWarnings("unchecked")
-    public void testRegexp2() {
-        String text = "x=/regexp/)";
-        TokenHierarchy hi = TokenHierarchy.create(text, JsTokenId.language());
-        TokenSequence<?extends JsTokenId> ts = hi.tokenSequence();
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.IDENTIFIER, "x");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.OPERATOR_ASSIGNMENT, "=");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.REGEXP_BEGIN, "/");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.REGEXP_LITERAL, "regexp");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.REGEXP_END, "/");
-    }
-
-    @SuppressWarnings("unchecked")
-    public void testRegexp3() {
-        String text = "x = /regexp/)";
-        TokenHierarchy hi = TokenHierarchy.create(text, JsTokenId.language());
-        TokenSequence<?extends JsTokenId> ts = hi.tokenSequence();
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.IDENTIFIER, "x");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.OPERATOR_ASSIGNMENT, "=");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.REGEXP_BEGIN, "/");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.REGEXP_LITERAL, "regexp");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.REGEXP_END, "/");
-    }
-
-    @SuppressWarnings("unchecked")
-    public void testRegexp4() {
-        String text = ";/regexp/";
-        TokenHierarchy hi = TokenHierarchy.create(text, JsTokenId.language());
-        TokenSequence<?extends JsTokenId> ts = hi.tokenSequence();
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.OPERATOR_SEMICOLON, ";");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.REGEXP_BEGIN, "/");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.REGEXP_LITERAL, "regexp");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.REGEXP_END, "/");
-    }
-    
-    @SuppressWarnings("unchecked")
-    public void testRegexp5() {
-        String text = "f(x,/regexp/)";
-        TokenHierarchy hi = TokenHierarchy.create(text, JsTokenId.language());
-        TokenSequence<?extends JsTokenId> ts = hi.tokenSequence();
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.IDENTIFIER, "f");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.OPERATOR_LEFT_PARAN, "(");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.IDENTIFIER, "x");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.OPERATOR_COMMA, ",");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.REGEXP_BEGIN, "/");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.REGEXP_LITERAL, "regexp");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.REGEXP_END, "/");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.OPERATOR_LEFT_PARAN, ")");
-    }
-
-    @SuppressWarnings("unchecked")
-    public void testRegexp6() {
-        String text = "f(x,/regexp/i)";
-        TokenHierarchy hi = TokenHierarchy.create(text, JsTokenId.language());
-        TokenSequence<?extends JsTokenId> ts = hi.tokenSequence();
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.IDENTIFIER, "f");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.OPERATOR_LEFT_PARAN, "(");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.IDENTIFIER, "x");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.OPERATOR_COMMA, ",");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.REGEXP_BEGIN, "/");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.REGEXP_LITERAL, "regexp");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.REGEXP_END, "/i");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.OPERATOR_RIGHT_PARAN, ")");
-    }
-
-    @SuppressWarnings("unchecked")
-    public void testPartialRegexp() {
-        String text = "x=/";
-        TokenHierarchy hi = TokenHierarchy.create(text, JsTokenId.language());
-        TokenSequence<?extends JsTokenId> ts = hi.tokenSequence();
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.IDENTIFIER, "x");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.OPERATOR_ASSIGNMENT, "=");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.REGEXP_BEGIN, "/");
-    }
-
-    @SuppressWarnings("unchecked")
-    public void testPartialRegexp2() {
-        String text = "x=/\n";
-        TokenHierarchy hi = TokenHierarchy.create(text, JsTokenId.language());
-        TokenSequence<?extends JsTokenId> ts = hi.tokenSequence();
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.IDENTIFIER, "x");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.OPERATOR_ASSIGNMENT, "=");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.REGEXP_BEGIN, "/");
-    }
-
-    @SuppressWarnings("unchecked")
-    public void testPartialRegexp3() {
-        String text = "x=/foo\nx";
-        TokenHierarchy hi = TokenHierarchy.create(text, JsTokenId.language());
-        TokenSequence<?extends JsTokenId> ts = hi.tokenSequence();
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.IDENTIFIER, "x");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.NONUNARY_OP, "=");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.REGEXP_BEGIN, "/");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.ERROR, "foo");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.EOL, "\n");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.IDENTIFIER, "x");
-    }
-
-    @SuppressWarnings("unchecked")
-    public void testNotRegexp() {
-        String text = "//foo";
-        TokenHierarchy hi = TokenHierarchy.create(text, JsTokenId.language());
-        TokenSequence<?extends JsTokenId> ts = hi.tokenSequence();
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.LINE_COMMENT, "//foo");
-    }
-
-    @SuppressWarnings("unchecked")
-    public void testNotRegexp2() {
-        String text = "x/y";
-        TokenHierarchy hi = TokenHierarchy.create(text, JsTokenId.language());
-        TokenSequence<?extends JsTokenId> ts = hi.tokenSequence();
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.IDENTIFIER, "x");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.NONUNARY_OP, "/");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.IDENTIFIER, "y");
-    }
-    
-    @SuppressWarnings("unchecked")
-    public void testNotRegexp3() {
-        String text = "10 / y";
-        TokenHierarchy hi = TokenHierarchy.create(text, JsTokenId.language());
-        TokenSequence<?extends JsTokenId> ts = hi.tokenSequence();
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.FLOAT_LITERAL, "10");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.NONUNARY_OP, "/");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.IDENTIFIER, "y");
-    }
-    
-    @SuppressWarnings("unchecked")
-    public void testComments() {
-        String text = "// This is my comment";
-        TokenHierarchy hi = TokenHierarchy.create(text, JsTokenId.language());
-        TokenSequence ts = hi.tokenSequence();
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.LINE_COMMENT, text);
-    }
-
-    @SuppressWarnings("unchecked")
-    public void testComments2() {
-        String text = "/* This is my comment */";
-        TokenHierarchy hi = TokenHierarchy.create(text, JsTokenId.language());
-        TokenSequence ts = hi.tokenSequence();
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.BLOCK_COMMENT, text);
-    }
-
-    public void testStrings() {
-        String[] strings =
-            new String[] { 
-            "\"Hello\"",
-            "'Hello'"};
-        for (int i = 0; i < strings.length; i++) {
-            TokenHierarchy hi = TokenHierarchy.create(strings[i], JsTokenId.language());
-            TokenSequence ts = hi.tokenSequence();
-            assertTrue(ts.moveNext());
-            assertEquals(JsTokenId.STRING_BEGIN, ts.token().id());
-            assertTrue(ts.moveNext());
-            assertEquals(JsTokenId.STRING, ts.token().id());
-            assertTrue(ts.moveNext());
-            assertEquals(JsTokenId.STRING_END, ts.token().id());
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    public void testUnterminatedString() {
-        String text = "\"Line1\nLine2\nLine3";
-        TokenHierarchy hi = TokenHierarchy.create(text, JsTokenId.language());
-        TokenSequence<?extends JsTokenId> ts = hi.tokenSequence();
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.STRING_BEGIN, "\"");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.ERROR, "Line1");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.EOL, "\n");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.IDENTIFIER, "Line2");
-    }
-
-    @SuppressWarnings("unchecked")
-    public void testUnterminatedString2() {
-        String text = "puts \"\n\n\n";
-        TokenHierarchy hi = TokenHierarchy.create(text, JsTokenId.language());
-        TokenSequence<?extends JsTokenId> ts = hi.tokenSequence();
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.IDENTIFIER, "puts");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.WHITESPACE, " ");
-        //LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.ERROR, "\"");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.STRING_BEGIN, "\"");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.EOL, "\n");
-        
-    }    
-
-    @SuppressWarnings("unchecked")
-    public void testUnterminatedString2b() {
-        String text = "puts(\"\n\n\n";
-        TokenHierarchy hi = TokenHierarchy.create(text, JsTokenId.language());
-        TokenSequence<?extends JsTokenId> ts = hi.tokenSequence();
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.IDENTIFIER, "puts");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.LPAREN, "(");
-        //LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.ERROR, "\"");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.STRING_BEGIN, "\"");
-    }    
-
-    @SuppressWarnings("unchecked")
-    public void testUnterminatedString3() {
-        String text = "x = \"";
-        TokenHierarchy hi = TokenHierarchy.create(text, JsTokenId.language());
-        TokenSequence<?extends JsTokenId> ts = hi.tokenSequence();
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.IDENTIFIER, "x");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.NONUNARY_OP, "=");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.WHITESPACE, " ");
-        //LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.ERROR, "\"");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.STRING_BEGIN, "\"");
-        assertFalse(ts.moveNext());
-    }
-    
-
-    @SuppressWarnings("unchecked")
-    public void testErrorString1() {
-        String text = "print(\"pavel)";
-        TokenHierarchy hi = TokenHierarchy.create(text, JsTokenId.language());
-        TokenSequence<?extends JsTokenId> ts = hi.tokenSequence();
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.IDENTIFIER, "print");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.LPAREN, "(");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.STRING_BEGIN, "\"");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.ERROR, "pavel)");
-        assertFalse(ts.moveNext());
-    }
+//    @SuppressWarnings("unchecked")
+//    public void testRegexp1() {
+//        String text = "f(/regexp/)";
+//        TokenHierarchy hi = TokenHierarchy.create(text, JsTokenId.language());
+//        TokenSequence<?extends JsTokenId> ts = hi.tokenSequence();
+//        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.IDENTIFIER, "f");
+//        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.OPERATOR_LEFT_PARAN, "(");
+//        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.REGEXP_BEGIN, "/");
+//        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.REGEXP_LITERAL, "regexp");
+//        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.REGEXP_END, "/");
+//        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.OPERATOR_RIGHT_PARAN, ")");
+//    }
+//
+//    @SuppressWarnings("unchecked")
+//    public void testRegexp2() {
+//        String text = "x=/regexp/)";
+//        TokenHierarchy hi = TokenHierarchy.create(text, JsTokenId.language());
+//        TokenSequence<?extends JsTokenId> ts = hi.tokenSequence();
+//        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.IDENTIFIER, "x");
+//        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.OPERATOR_ASSIGNMENT, "=");
+//        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.REGEXP_BEGIN, "/");
+//        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.REGEXP_LITERAL, "regexp");
+//        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.REGEXP_END, "/");
+//    }
+//
+//    @SuppressWarnings("unchecked")
+//    public void testRegexp3() {
+//        String text = "x = /regexp/)";
+//        TokenHierarchy hi = TokenHierarchy.create(text, JsTokenId.language());
+//        TokenSequence<?extends JsTokenId> ts = hi.tokenSequence();
+//        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.IDENTIFIER, "x");
+//        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.WHITESPACE, " ");
+//        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.OPERATOR_ASSIGNMENT, "=");
+//        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.WHITESPACE, " ");
+//        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.REGEXP_BEGIN, "/");
+//        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.REGEXP_LITERAL, "regexp");
+//        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.REGEXP_END, "/");
+//    }
+//
+//    @SuppressWarnings("unchecked")
+//    public void testRegexp4() {
+//        String text = ";/regexp/";
+//        TokenHierarchy hi = TokenHierarchy.create(text, JsTokenId.language());
+//        TokenSequence<?extends JsTokenId> ts = hi.tokenSequence();
+//        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.OPERATOR_SEMICOLON, ";");
+//        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.REGEXP_BEGIN, "/");
+//        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.REGEXP_LITERAL, "regexp");
+//        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.REGEXP_END, "/");
+//    }
+//
+//    @SuppressWarnings("unchecked")
+//    public void testRegexp5() {
+//        String text = "f(x,/regexp/)";
+//        TokenHierarchy hi = TokenHierarchy.create(text, JsTokenId.language());
+//        TokenSequence<?extends JsTokenId> ts = hi.tokenSequence();
+//        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.IDENTIFIER, "f");
+//        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.OPERATOR_LEFT_PARAN, "(");
+//        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.IDENTIFIER, "x");
+//        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.OPERATOR_COMMA, ",");
+//        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.REGEXP_BEGIN, "/");
+//        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.REGEXP_LITERAL, "regexp");
+//        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.REGEXP_END, "/");
+//        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.OPERATOR_LEFT_PARAN, ")");
+//    }
+//
+//    @SuppressWarnings("unchecked")
+//    public void testRegexp6() {
+//        String text = "f(x,/regexp/i)";
+//        TokenHierarchy hi = TokenHierarchy.create(text, JsTokenId.language());
+//        TokenSequence<?extends JsTokenId> ts = hi.tokenSequence();
+//        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.IDENTIFIER, "f");
+//        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.OPERATOR_LEFT_PARAN, "(");
+//        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.IDENTIFIER, "x");
+//        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.OPERATOR_COMMA, ",");
+//        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.REGEXP_BEGIN, "/");
+//        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.REGEXP_LITERAL, "regexp");
+//        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.REGEXP_END, "/i");
+//        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.OPERATOR_RIGHT_PARAN, ")");
+//    }
+//
+//    @SuppressWarnings("unchecked")
+//    public void testPartialRegexp() {
+//        String text = "x=/";
+//        TokenHierarchy hi = TokenHierarchy.create(text, JsTokenId.language());
+//        TokenSequence<?extends JsTokenId> ts = hi.tokenSequence();
+//        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.IDENTIFIER, "x");
+//        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.OPERATOR_ASSIGNMENT, "=");
+//        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.REGEXP_BEGIN, "/");
+//    }
+//
+//    @SuppressWarnings("unchecked")
+//    public void testPartialRegexp2() {
+//        String text = "x=/\n";
+//        TokenHierarchy hi = TokenHierarchy.create(text, JsTokenId.language());
+//        TokenSequence<?extends JsTokenId> ts = hi.tokenSequence();
+//        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.IDENTIFIER, "x");
+//        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.OPERATOR_ASSIGNMENT, "=");
+//        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.REGEXP_BEGIN, "/");
+//    }
+//
+//    @SuppressWarnings("unchecked")
+//    public void testPartialRegexp3() {
+//        String text = "x=/foo\nx";
+//        TokenHierarchy hi = TokenHierarchy.create(text, JsTokenId.language());
+//        TokenSequence<?extends JsTokenId> ts = hi.tokenSequence();
+//        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.IDENTIFIER, "x");
+//        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.NONUNARY_OP, "=");
+//        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.REGEXP_BEGIN, "/");
+//        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.ERROR, "foo");
+//        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.EOL, "\n");
+//        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.IDENTIFIER, "x");
+//    }
+//
+//    @SuppressWarnings("unchecked")
+//    public void testNotRegexp() {
+//        String text = "//foo";
+//        TokenHierarchy hi = TokenHierarchy.create(text, JsTokenId.language());
+//        TokenSequence<?extends JsTokenId> ts = hi.tokenSequence();
+//        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.LINE_COMMENT, "//foo");
+//    }
+//
+//    @SuppressWarnings("unchecked")
+//    public void testNotRegexp2() {
+//        String text = "x/y";
+//        TokenHierarchy hi = TokenHierarchy.create(text, JsTokenId.language());
+//        TokenSequence<?extends JsTokenId> ts = hi.tokenSequence();
+//        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.IDENTIFIER, "x");
+//        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.NONUNARY_OP, "/");
+//        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.IDENTIFIER, "y");
+//    }
+//
+//    @SuppressWarnings("unchecked")
+//    public void testNotRegexp3() {
+//        String text = "10 / y";
+//        TokenHierarchy hi = TokenHierarchy.create(text, JsTokenId.language());
+//        TokenSequence<?extends JsTokenId> ts = hi.tokenSequence();
+//        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.FLOAT_LITERAL, "10");
+//        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.WHITESPACE, " ");
+//        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.NONUNARY_OP, "/");
+//        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.WHITESPACE, " ");
+//        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.IDENTIFIER, "y");
+//    }
+//
+//    @SuppressWarnings("unchecked")
+//    public void testComments() {
+//        String text = "// This is my comment";
+//        TokenHierarchy hi = TokenHierarchy.create(text, JsTokenId.language());
+//        TokenSequence ts = hi.tokenSequence();
+//        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.LINE_COMMENT, text);
+//    }
+//
+//    @SuppressWarnings("unchecked")
+//    public void testComments2() {
+//        String text = "/* This is my comment */";
+//        TokenHierarchy hi = TokenHierarchy.create(text, JsTokenId.language());
+//        TokenSequence ts = hi.tokenSequence();
+//        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.BLOCK_COMMENT, text);
+//    }
+//
+//    public void testStrings() {
+//        String[] strings =
+//            new String[] {
+//            "\"Hello\"",
+//            "'Hello'"};
+//        for (int i = 0; i < strings.length; i++) {
+//            TokenHierarchy hi = TokenHierarchy.create(strings[i], JsTokenId.language());
+//            TokenSequence ts = hi.tokenSequence();
+//            assertTrue(ts.moveNext());
+//            assertEquals(JsTokenId.STRING_BEGIN, ts.token().id());
+//            assertTrue(ts.moveNext());
+//            assertEquals(JsTokenId.STRING, ts.token().id());
+//            assertTrue(ts.moveNext());
+//            assertEquals(JsTokenId.STRING_END, ts.token().id());
+//        }
+//    }
+//
+//    @SuppressWarnings("unchecked")
+//    public void testUnterminatedString() {
+//        String text = "\"Line1\nLine2\nLine3";
+//        TokenHierarchy hi = TokenHierarchy.create(text, JsTokenId.language());
+//        TokenSequence<?extends JsTokenId> ts = hi.tokenSequence();
+//        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.STRING_BEGIN, "\"");
+//        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.ERROR, "Line1");
+//        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.EOL, "\n");
+//        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.IDENTIFIER, "Line2");
+//    }
+//
+//    @SuppressWarnings("unchecked")
+//    public void testUnterminatedString2() {
+//        String text = "puts \"\n\n\n";
+//        TokenHierarchy hi = TokenHierarchy.create(text, JsTokenId.language());
+//        TokenSequence<?extends JsTokenId> ts = hi.tokenSequence();
+//        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.IDENTIFIER, "puts");
+//        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.WHITESPACE, " ");
+//        //LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.ERROR, "\"");
+//        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.STRING_BEGIN, "\"");
+//        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.EOL, "\n");
+//
+//    }
+//
+//    @SuppressWarnings("unchecked")
+//    public void testUnterminatedString2b() {
+//        String text = "puts(\"\n\n\n";
+//        TokenHierarchy hi = TokenHierarchy.create(text, JsTokenId.language());
+//        TokenSequence<?extends JsTokenId> ts = hi.tokenSequence();
+//        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.IDENTIFIER, "puts");
+//        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.LPAREN, "(");
+//        //LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.ERROR, "\"");
+//        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.STRING_BEGIN, "\"");
+//    }
+//
+//    @SuppressWarnings("unchecked")
+//    public void testUnterminatedString3() {
+//        String text = "x = \"";
+//        TokenHierarchy hi = TokenHierarchy.create(text, JsTokenId.language());
+//        TokenSequence<?extends JsTokenId> ts = hi.tokenSequence();
+//        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.IDENTIFIER, "x");
+//        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.WHITESPACE, " ");
+//        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.NONUNARY_OP, "=");
+//        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.WHITESPACE, " ");
+//        //LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.ERROR, "\"");
+//        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.STRING_BEGIN, "\"");
+//        assertFalse(ts.moveNext());
+//    }
+//
+//
+//    @SuppressWarnings("unchecked")
+//    public void testErrorString1() {
+//        String text = "print(\"pavel)";
+//        TokenHierarchy hi = TokenHierarchy.create(text, JsTokenId.language());
+//        TokenSequence<?extends JsTokenId> ts = hi.tokenSequence();
+//        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.IDENTIFIER, "print");
+//        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.LPAREN, "(");
+//        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.STRING_BEGIN, "\"");
+//        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.ERROR, "pavel)");
+//        assertFalse(ts.moveNext());
+//    }
 }
