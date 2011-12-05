@@ -947,6 +947,15 @@ public class Css3ParserTest extends CslTestBase {
         
     }
     
+    public void testParseWSAfterImportantSym() throws BadLocationException, ParseException {
+        CssParserResult result = TestUtil.parse(".green { "
+                + "    background-color : lime ! important "
+                + "}");
+        assertResultOK(result);
+    }
+    
+    //------------------------------------------------------------------------------
+    
     private CssParserResult assertResultOK(CssParserResult result) {
         return assertResult(result, 0);
     }

@@ -628,7 +628,7 @@ syncToFollow
     
     
 prio
-    : IMPORTANT_SYM
+    : IMPORTANT_SYM WS*
     ;
     
 expr
