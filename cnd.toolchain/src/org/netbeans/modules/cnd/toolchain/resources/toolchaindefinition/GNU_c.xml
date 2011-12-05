@@ -49,7 +49,9 @@ made subject to such option by the copyright holder.
         <compiler name="gcc"/>
         <version flags="--version"/>
         <system_include_paths flags="-x c -E -v" parser="GNU"/>
-        <system_macros flags="-x c -E -dM" parser="GNU"/>
+        <system_macros flags="-x c -E -dM" parser="GNU">
+            <macro stringvalue="__STDC__=1"/>
+        </system_macros>
         <user_include flags="-I"/>
         <user_macro flags="-D"/>
         <development_mode>

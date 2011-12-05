@@ -48,7 +48,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
@@ -66,6 +65,7 @@ public abstract class CndPanel implements WizardDescriptor.Panel<WizardDescripto
     
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     protected CndPanelGUI gui;
+    protected final Object guiLock = new Object();
 
     protected final Project project;
     protected final SourceGroup[] folders;
@@ -133,8 +133,8 @@ public abstract class CndPanel implements WizardDescriptor.Panel<WizardDescripto
         }
         
         wizard.putProperty (WizardDescriptor.PROP_CONTENT_DATA, new String[] { // NOI18N
-            NbBundle.getBundle (NewCndFileChooserPanel.class).getString ("LBL_TemplatesPanel_Name"), // NOI18N
-            NbBundle.getBundle (NewCndFileChooserPanel.class).getString ("LBL_SimpleTargetChooserPanel_Name")}); // NOI18N
+            NbBundle.getMessage (NewCndFileChooserPanel.class, "LBL_TemplatesPanel_Name"), // NOI18N
+            NbBundle.getMessage (NewCndFileChooserPanel.class, "LBL_SimpleTargetChooserPanel_Name")}); // NOI18N
             
         if ( bottomPanel != null ) {
             bottomPanel.readSettings( settings );
