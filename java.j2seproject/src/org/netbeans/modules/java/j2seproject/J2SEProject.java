@@ -569,8 +569,13 @@ public final class J2SEProject implements Project {
 
             //register updater of main.class
             //the updater is active only on the opened projects
-	    mainClassUpdater = new MainClassUpdater (J2SEProject.this, evaluator(), updateHelper,
-                    cpProvider.getProjectClassPaths(ClassPath.SOURCE)[0], ProjectProperties.MAIN_CLASS);
+	    mainClassUpdater = new MainClassUpdater (
+                    J2SEProject.this,
+                    evaluator(),
+                    updateHelper,
+                    cpProvider.getProjectClassPaths(ClassPath.SOURCE)[0],
+                    ProjectProperties.MAIN_CLASS);
+            mainClassUpdater.start();
 
             // Make it easier to run headless builds on the same machine at least.
             try {
@@ -708,7 +713,7 @@ public final class J2SEProject implements Project {
             GlobalPathRegistry.getDefault().unregister(ClassPath.SOURCE, cpProvider.getProjectClassPaths(ClassPath.SOURCE));
             GlobalPathRegistry.getDefault().unregister(ClassPath.COMPILE, cpProvider.getProjectClassPaths(ClassPath.COMPILE));
             if (mainClassUpdater != null) {
-                mainClassUpdater.unregister ();
+                mainClassUpdater.stop();
                 mainClassUpdater = null;
             }
         }
