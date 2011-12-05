@@ -89,6 +89,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 import org.openide.util.lookup.ServiceProvider;
 import org.w3c.dom.Document;
+import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
 public final class HudsonJobCreator extends JPanel implements ProjectHudsonJobCreator, ChangeListener {
@@ -233,9 +234,26 @@ public final class HudsonJobCreator extends JPanel implements ProjectHudsonJobCr
         } catch (SAXException ex) {
             throw new IOException(ex);
         }
+        // remove scm, triggers & logRotator if present
+        removeNodes(document, "/project/scm", "/project/triggers", "/project/logRotator"); // NOI18N
+        // configure
         scm.configure(document);
         Helper.addLogRotator(document);
+        // enable
+        Node disabled = XmlUtils.query(document, "/project/disabled"); // NOI18N
+        if (disabled != null) {
+            XmlUtils.setNodeValue(document, disabled, "false"); // NOI18N
+        }
         return document;
+    }
+
+    private void removeNodes(Document document, String... xpathExpressions) {
+        for (String xpathExpression : xpathExpressions) {
+            Node node = XmlUtils.query(document, xpathExpression);
+            if (node != null) {
+                node.getParentNode().removeChild(node);
+            }
+        }
     }
 
     @NbBundle.Messages("HudsonJobCreator.error.config=Job configuration failed.")
