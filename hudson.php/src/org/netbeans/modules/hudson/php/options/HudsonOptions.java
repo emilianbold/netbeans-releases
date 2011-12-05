@@ -63,7 +63,7 @@ public final class HudsonOptions {
     private static final HudsonOptions INSTANCE = new HudsonOptions();
 
     // properties
-    private static final String PPW = "ppw"; // NOI18N
+    private static final String PPW = "ppw.path"; // NOI18N
 
     final ChangeSupport changeSupport = new ChangeSupport(this);
 
