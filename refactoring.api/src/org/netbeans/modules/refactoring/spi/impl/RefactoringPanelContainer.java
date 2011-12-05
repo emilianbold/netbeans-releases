@@ -289,6 +289,7 @@ public class RefactoringPanelContainer extends TopComponent {
             this.prev = prev;
         }
 
+        @Override
         public void actionPerformed (java.awt.event.ActionEvent actionEvent) {
             RefactoringPanel panel = getCurrentPanel();
             if (panel != null) {
@@ -304,6 +305,7 @@ public class RefactoringPanelContainer extends TopComponent {
     
     private class CloseListener implements PropertyChangeListener {
         
+        @Override
         public void propertyChange(java.beans.PropertyChangeEvent evt) {
             if (TabbedPaneFactory.PROP_CLOSE.equals(evt.getPropertyName())) {
                 removePanel((JPanel) evt.getNewValue());
@@ -319,6 +321,7 @@ public class RefactoringPanelContainer extends TopComponent {
         /**
          * Called when the sequence of mouse events should lead to actual showing popup menu
          */
+        @Override
         protected void showPopup (MouseEvent e) {
             pop.show(RefactoringPanelContainer.this, e.getX(), e.getY());
         }
@@ -330,6 +333,7 @@ public class RefactoringPanelContainer extends TopComponent {
             super(NbBundle.getMessage(RefactoringPanelContainer.class, "LBL_CloseWindow"));
         }
         
+        @Override
         public void actionPerformed(ActionEvent e) {
             removePanel(null);
         }
@@ -341,6 +345,7 @@ public class RefactoringPanelContainer extends TopComponent {
             super(NbBundle.getMessage(RefactoringPanelContainer.class, "LBL_CloseAll"));
         }
         
+        @Override
         public void actionPerformed(ActionEvent e) {
             close();
         }
@@ -352,6 +357,7 @@ public class RefactoringPanelContainer extends TopComponent {
             super(NbBundle.getMessage(RefactoringPanelContainer.class, "LBL_CloseAllButCurrent"));
         }
         
+        @Override
         public void actionPerformed(ActionEvent e) {
             closeAllButCurrent();
         }

@@ -62,11 +62,7 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.TooManyListenersException;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.DropMode;
@@ -105,6 +101,7 @@ public class PluginManagerUI extends javax.swing.JPanel  {
     private Object helpInstance = null;
     
     private static RequestProcessor.Task runningTask;
+    private static Collection<Runnable> runOnCancel = null;
     private boolean wasSettings = false;
     public static final int INDEX_OF_UPDATES_TAB = 0;
     public static final int INDEX_OF_AVAILABLE_TAB = 1;
@@ -654,10 +651,33 @@ private void bHelpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:e
     
     public static void unregisterRunningTask () {
         runningTask = null;
+        runOnCancel = null;
+    }
+    
+    public static RequestProcessor.Task getRunningTask (Runnable onCancel) {
+        if (runningTask != null) {
+            if (runOnCancel == null) {
+                runOnCancel = new HashSet<Runnable>();
+            }
+            runOnCancel.add(onCancel);
+        }
+        return runningTask;
     }
     
     public static RequestProcessor.Task getRunningTask () {
         return runningTask;
+    }
+    
+    public static void cancelRunningTask() {
+        if (runningTask != null) {
+            runningTask = null;
+            for (Runnable run : runOnCancel) {
+                run.run();
+            }
+            runOnCancel = null;
+        } else {
+            runningTask = null;
+        }
     }
     
     //TODO: all the request for refresh should be cancelled if there is already one such running refresh task

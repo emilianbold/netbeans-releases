@@ -96,7 +96,7 @@ public class PropertiesAction extends NodeAction {
         ServerInstance serverInstance = null;
         CoherenceServer coherenceServer = node.getLookup().lookup(CoherenceServer.class);
         if (coherenceServer != null) {
-            int serverId = coherenceServer.getInstanceProperties().getInt(CoherenceProperties.PROP_COHERENCE_ID, 0);
+            int serverId = coherenceServer.getInstanceProperties().getInt(CoherenceProperties.PROP_ID, 0);
             assert serverId != 0;
             CoherenceInstanceProvider cip = CoherenceInstanceProvider.getCoherenceProvider();
             serverInstance = cip.getInstance(serverId);

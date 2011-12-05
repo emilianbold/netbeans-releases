@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='ISO-8859-1'  ?>
 
 <!--
-*     Copyright � 2010 Oracle and/or its affiliates. All rights reserved.
+*     Copyright (c) 2010, 2011, Oracle and/or its affiliates. All rights reserved.
 
 Oracle and Java are registered trademarks of Oracle and/or its affiliates.
 Other names may be trademarks of their respective owners.
@@ -88,10 +88,7 @@ Other names may be trademarks of their respective owners.
             <tocitem text="Building an Enterprise Application" target="ent_app_build" />
             <tocitem text="Verifying an Enterprise Application" target="ent_app_verify" />
             <tocitem text="Deploying an Enterprise Application" target="ent_app_deploy" /> 
-            <tocitem text="Repackaging an Archive for a Different Server">
-                <tocitem text="About Packaged Archive Projects" target="archiveproject_about" />
-                <tocitem text="Redeploying an Application to a Different Server" target="archiveproject-deploying" />
-            </tocitem>
+            
         </tocitem>
         <tocitem text="Developing Enterprise Beans" >
             <tocitem text="About Enterprise Beans" >

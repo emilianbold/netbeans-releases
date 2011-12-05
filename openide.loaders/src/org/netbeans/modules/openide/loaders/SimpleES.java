@@ -46,6 +46,8 @@ package org.netbeans.modules.openide.loaders;
 
 import java.io.IOException;
 import java.util.concurrent.Callable;
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
 import org.openide.cookies.CloseCookie;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.EditorCookie;
@@ -194,6 +196,24 @@ PrintCookie, CloseCookie, SaveAsCapable, LineCookie {
         public CloneableOpenSupport findCloneableOpenSupport() {
             return getDataObject().getCookie(SimpleES.class);
         }
+
+        @Override
+        public String getMimeType() {
+            Object n = entry.getFile().getAttribute("javax.script.ScriptEngine");
+            if (n instanceof String) {
+                String name = (String) n;
+                ScriptEngineManager m = new ScriptEngineManager();
+                ScriptEngine eng = m.getEngineByName(name);
+                if (eng != null) {
+                    for (String mime : eng.getFactory().getMimeTypes()) {
+                        return mime;
+                    }
+                }
+            }
+            return super.getMimeType();
+        }
+        
+        
     } // End of nested Environment class.
 
     private class SaveCookieImpl implements SaveCookie, Unmodify {

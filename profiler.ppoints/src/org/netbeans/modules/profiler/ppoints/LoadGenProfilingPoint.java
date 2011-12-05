@@ -228,7 +228,7 @@ public class LoadGenProfilingPoint extends CodeProfilingPoint.Paired implements 
 
             synchronized(resultsSync) {
                 if (results.size() == 0) {
-                    dataAreaTextBuilder.append("&nbsp;&nbsp;&lt;" + NO_HITS_STRING + "&gt;"); // NOI18N
+                    dataAreaTextBuilder.append("&nbsp;&nbsp;&lt;").append(NO_HITS_STRING).append("&gt;"); // NOI18N
                 } else {
                     if (results.size() > 1) {
                         Collections.sort(results,

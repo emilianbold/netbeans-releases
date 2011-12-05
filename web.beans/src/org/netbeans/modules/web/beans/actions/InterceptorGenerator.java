@@ -67,7 +67,7 @@ import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.web.beans.UsageLogger;
+import org.netbeans.modules.web.beans.CdiUtil;
 import org.netbeans.spi.editor.codegen.CodeGenerator;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -159,7 +159,7 @@ class InterceptorGenerator implements CodeGenerator {
             
             Project project = FileOwnerQuery.getOwner(myBindingFileObject);
             if ( project != null ){
-                UsageLogger logger = project.getLookup().lookup(UsageLogger.class);
+                CdiUtil logger = project.getLookup().lookup(CdiUtil.class);
                 if ( logger != null ){
                     logger.log("USG_CDI_GENERATE_INTERCEPTOR",      // NOI18N
                             InterceptorGenerator.class, 

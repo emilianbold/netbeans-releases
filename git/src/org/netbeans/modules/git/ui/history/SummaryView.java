@@ -325,7 +325,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                                 try {
                                     File originalFile = evt.getFile();
                                     String revision = evt.getLogInfoHeader().getLog().getRevision();
-                                    GitUtils.openInRevision(originalFile, revision, false, this);
+                                    GitUtils.openInRevision(originalFile, -1, revision, false, this);
                                 } catch (IOException ex) {
                                     LOG.log(Level.FINE, null, ex);
                                 }
@@ -347,7 +347,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                                 try {
                                     File originalFile = evt.getFile();
                                     String revision = evt.getLogInfoHeader().getLog().getRevision();
-                                    GitUtils.openInRevision(originalFile, revision, true, this);
+                                    GitUtils.openInRevision(originalFile, -1, revision, true, this);
                                 } catch (IOException ex) {
                                     LOG.log(Level.FINE, null, ex);
                                 }

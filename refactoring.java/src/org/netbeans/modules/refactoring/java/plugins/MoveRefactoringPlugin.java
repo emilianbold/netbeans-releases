@@ -118,7 +118,7 @@ public class MoveRefactoringPlugin extends JavaRefactoringPlugin {
         cancelRequest =false;
         Problem preCheckProblem = null;
         for (FileObject file:filesToMove) {
-            if (!RetoucheUtils.isElementInOpenProject(file)) {
+            if (!RefactoringUtils.isFileInOpenProject(file)) {
                 preCheckProblem = createProblem(preCheckProblem, true, NbBundle.getMessage(
                         MoveRefactoringPlugin.class,
                         "ERR_ProjectNotOpened",
@@ -140,7 +140,7 @@ public class MoveRefactoringPlugin extends JavaRefactoringPlugin {
             FileObject f = refactoring.getRefactoringSource().lookup(FileObject.class);
             if (f!=null) {
                 String newName = ((RenameRefactoring) refactoring).getNewName();
-                if (!RetoucheUtils.isValidPackageName(newName)) {
+                if (!RefactoringUtils.isValidPackageName(newName)) {
                     String msg = new MessageFormat(NbBundle.getMessage(RenameRefactoringPlugin.class, "ERR_InvalidPackage")).format(
                             new Object[] {newName}
                     );
@@ -159,17 +159,17 @@ public class MoveRefactoringPlugin extends JavaRefactoringPlugin {
         if (!isRenameRefactoring) {
             try {
                 for (FileObject f: filesToMove) {
-                    if (!RetoucheUtils.isJavaFile(f))
+                    if (!RefactoringUtils.isJavaFile(f))
                         continue;
                     String targetPackageName = this.getTargetPackageName(f);
-                    if (!RetoucheUtils.isValidPackageName(targetPackageName)) {
+                    if (!RefactoringUtils.isValidPackageName(targetPackageName)) {
                         String s = NbBundle.getMessage(RenameRefactoringPlugin.class, "ERR_InvalidPackage"); //NOI18N
                         String msg = new MessageFormat(s).format(
                                 new Object[] {targetPackageName}
                         );
                         return new Problem(true, msg);
                     }
-                    FileObject targetRoot = RetoucheUtils.getClassPathRoot(((MoveRefactoring)refactoring).getTarget().lookup(URL.class));
+                    FileObject targetRoot = RefactoringUtils.getClassPathRoot(((MoveRefactoring)refactoring).getTarget().lookup(URL.class));
                     FileObject targetF = targetRoot.getFileObject(targetPackageName.replace('.', '/'));
                     
                     String pkgName = null;
@@ -240,7 +240,7 @@ public class MoveRefactoringPlugin extends JavaRefactoringPlugin {
                 return null;
             }
             try {
-                FileObject r = RetoucheUtils.getClassPathRoot(target);
+                FileObject r = RefactoringUtils.getClassPathRoot(target);
                 URL targetUrl = URLMapper.findURL(r, URLMapper.EXTERNAL);
                 Project targetProject = FileOwnerQuery.getOwner(r);
                 Set<URL> deps = SourceUtils.getDependentRoots(targetUrl);
@@ -367,7 +367,7 @@ public class MoveRefactoringPlugin extends JavaRefactoringPlugin {
             return ((RenameRefactoring) refactoring).getNewName();
         } else {
             // XXX cache it !!!
-            return RetoucheUtils.getPackageName(((MoveRefactoring) refactoring).getTarget().lookup(URL.class));
+            return RefactoringUtils.getPackageName(((MoveRefactoring) refactoring).getTarget().lookup(URL.class));
         }
     }
     
@@ -404,7 +404,7 @@ public class MoveRefactoringPlugin extends JavaRefactoringPlugin {
     private void setup(Collection fileObjects, String postfix, boolean recursively, List<FileObject> sameRootList) {
         for (Iterator i = fileObjects.iterator(); i.hasNext(); ) {
             FileObject fo = (FileObject) i.next();
-            if (RetoucheUtils.isJavaFile(fo)) {
+            if (RefactoringUtils.isJavaFile(fo)) {
                 packagePostfix.put(fo, postfix.replace('/', '.'));
                 filesToMove.add(fo);
             } else if (!(fo.isFolder())) {

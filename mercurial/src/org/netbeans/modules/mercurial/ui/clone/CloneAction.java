@@ -230,6 +230,7 @@ public class CloneAction extends ContextAction {
                     }
                     HgConfigFiles hgConfigFiles = new HgConfigFiles(target);
                     if (hgConfigFiles.getException() == null) {
+                        Utils.logVCSExternalRepository("HG", source.toHgCommandUrlStringWithoutUserInfo()); //NOI18N
                         if (source.isKenaiURL()) {
                             initializeDefaultPullPushUrlForKenai(hgConfigFiles);
                             String kenaiUserName = getKenaiUserName();

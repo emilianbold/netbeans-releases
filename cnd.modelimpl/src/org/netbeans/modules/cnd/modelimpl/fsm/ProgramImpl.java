@@ -55,10 +55,12 @@ import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.IOException;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
+import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.openide.util.Exceptions;
@@ -69,11 +71,12 @@ import org.openide.util.Exceptions;
  * @author Dmitriy Ivanov, Vladimir Kvashin
  */
 public final class ProgramImpl<T> extends OffsetableDeclarationBase<T>
-        implements CsmProgram, CsmFunctionDefinition, Disposable, RawNamable {
+        implements CsmProgram, CsmFunctionDefinition, CsmNamespaceDefinition, MutableDeclarationsContainer, Disposable, RawNamable {
 
     private final CharSequence name;
     private final CharSequence rawName;
     private CsmUID<CsmScope> scopeUID;
+    private final List<CsmUID<CsmOffsetableDeclaration>> declarations;    
 
     private ProgramImpl(String name, CsmFile file, int startOffset, int endOffset, CsmType type, CsmScope scope) {
         super(file, startOffset, endOffset);
@@ -85,6 +88,7 @@ public final class ProgramImpl<T> extends OffsetableDeclarationBase<T>
         } catch (AstRendererException ex) {
             Exceptions.printStackTrace(ex);
         }
+        declarations = new ArrayList<CsmUID<CsmOffsetableDeclaration>>();
     }
 
     public static<T> ProgramImpl<T> create(String name, CsmFile file, int startOffset, int endOffset, CsmType type, CsmScope scope) {
@@ -95,7 +99,7 @@ public final class ProgramImpl<T> extends OffsetableDeclarationBase<T>
 
     @Override
     public Kind getKind() {
-        return CsmDeclaration.Kind.FUNCTION_DEFINITION;
+        return CsmDeclaration.Kind.NAMESPACE_DEFINITION;
     }
 
     @Override
@@ -196,7 +200,73 @@ public final class ProgramImpl<T> extends OffsetableDeclarationBase<T>
         return null;
     }
 
+    @Override
+    public Collection<CsmOffsetableDeclaration> getDeclarations() {
+        Collection<CsmOffsetableDeclaration> decls;
+        synchronized (declarations) {
+            decls = UIDCsmConverter.UIDsToDeclarations(declarations);
+        }
+        return decls;
+    }
 
+    @Override
+    public CsmNamespace getNamespace() {
+        return null;
+    }
+
+    @Override
+    public void addDeclaration(CsmOffsetableDeclaration decl) {
+        CsmUID<CsmOffsetableDeclaration> uid = RepositoryUtils.put(decl);
+        assert uid != null;
+        synchronized (declarations) {
+            UIDUtilities.insertIntoSortedUIDList(uid, declarations);
+        }
+        if (decl instanceof FunctionImpl<?>) {
+            FunctionImpl<?> f = (FunctionImpl<?>) decl;
+            if (!NamespaceImpl.isNamespaceScope(f)) {
+                f.setScope(this);
+            }
+        }
+        // update repository
+        RepositoryUtils.put(this);
+    }
+
+    @Override
+    public void removeDeclaration(CsmOffsetableDeclaration declaration) {
+        CsmUID<CsmOffsetableDeclaration> uid = UIDCsmConverter.declarationToUID(declaration);
+        assert uid != null;
+        synchronized (declarations) {
+            declarations.remove(uid);
+        }
+        RepositoryUtils.remove(uid, declaration);
+        // update repository
+        RepositoryUtils.put(this);
+    }
+
+    @Override
+    public CsmOffsetableDeclaration findExistingDeclaration(int start, int end, CharSequence name) {
+        CsmUID<CsmOffsetableDeclaration> out = null;
+        synchronized (declarations) {
+            out = UIDUtilities.findExistingUIDInList(declarations, start, end, name);
+        }
+        return UIDCsmConverter.UIDtoDeclaration(out);
+    }
+
+    @Override
+    public void dispose() {
+        super.dispose();
+        //NB: we're copying declarations, because dispose can invoke this.removeDeclaration
+        Collection<CsmOffsetableDeclaration> decls;
+        List<CsmUID<CsmOffsetableDeclaration>> uids;
+        synchronized (declarations) {
+            decls = getDeclarations();
+            uids = new ArrayList<CsmUID<CsmOffsetableDeclaration>>(declarations);
+            declarations.clear();
+        }
+        Utils.disposeAll(decls);
+        RepositoryUtils.remove(uids);
+    }
+    
 //
 //    private final CharSequence name;
 //    private final CsmType returnType;
@@ -860,6 +930,8 @@ public final class ProgramImpl<T> extends OffsetableDeclarationBase<T>
 //        assert !CHECK_SCOPE || this.scopeUID != null;
         factory.writeUID(this.scopeUID, output);
 
+        factory.writeUIDCollection(this.declarations, output, true);
+        
 //        PersistentUtils.writeUTF(this.signature, output);
 //        output.writeByte(flags);
     }
@@ -874,6 +946,15 @@ public final class ProgramImpl<T> extends OffsetableDeclarationBase<T>
         this.rawName = PersistentUtils.readUTF(input, NameCache.getManager());
 
         this.scopeUID = factory.readUID(input);
+        
+        int collSize = input.readInt();
+        if (collSize < 0) {
+            declarations = new ArrayList<CsmUID<CsmOffsetableDeclaration>>();
+        } else {
+            declarations = new ArrayList<CsmUID<CsmOffsetableDeclaration>>(collSize);
+        }
+        factory.readUIDCollection(declarations, input, collSize);
+        
 //        // not null UID
 //        assert !CHECK_SCOPE || this.scopeUID != null;
 //        this.scopeRef = null;

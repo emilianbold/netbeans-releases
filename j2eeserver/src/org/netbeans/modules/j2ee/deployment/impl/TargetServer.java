@@ -264,8 +264,13 @@ public class TargetServer {
             File ret = sfd.distribute();
 
             if (sfd.getDeploymentStatus().isFailed()) {
-                String msg = NbBundle.getMessage(TargetServer.class, "MSG_DeployFailed",
-                        sfd.getDeploymentStatus().getMessage());
+                String statusMessage = sfd.getDeploymentStatus().getMessage();
+                String msg = null;
+                if (statusMessage != null) {
+                    msg = NbBundle.getMessage(TargetServer.class, "MSG_DeployFailed", statusMessage);
+                } else {
+                    msg = NbBundle.getMessage(TargetServer.class, "MSG_DeployFailedNoMessage");
+                }
                 throw new ServerException(msg);
             }
 

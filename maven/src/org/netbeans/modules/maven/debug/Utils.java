@@ -108,7 +108,7 @@ public class Utils {
         return fos;
     }
     
-    static Set<String> collectClasspaths(Project prj) throws DependencyResolutionRequiredException {
+    private static Set<String> collectClasspaths(Project prj) throws DependencyResolutionRequiredException {
         Set<String> toRet = new HashSet<String>();
         NbMavenProject watcher = prj.getLookup().lookup(NbMavenProject.class);
         MavenProject mproject = watcher.getMavenProject();
@@ -154,6 +154,7 @@ public class Utils {
                     col.addAll(collectClasspaths(prj));
                 }
             }
+            col.remove(null); // MNG-5209
             roots = convertStringsToNormalizedFiles(col);
             cp = convertToSourcePath(roots);
         } catch (DependencyResolutionRequiredException ex) {

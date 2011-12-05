@@ -65,6 +65,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import javax.lang.model.element.TypeElement;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -220,7 +221,7 @@ public class CustomScopePanel extends javax.swing.JPanel implements ExplorerMana
 
         public SourceData(String name, Data parent, FileObject sourceRoot, Set<FileObject> sourceRoots) {
             super(name, parent);
-            packages = new HashMap<String, PackageData>();
+            packages = new TreeMap<String, PackageData>();
             this.sourceRoot = sourceRoot;
             this.sourceRoots = sourceRoots;
         }
@@ -418,6 +419,7 @@ public class CustomScopePanel extends javax.swing.JPanel implements ExplorerMana
                  *
                  * @return <code>true</code> if the check-box should be displayed, <code>false</code> otherwise.
                  */
+                @Override
                 public boolean isCheckable() {
                     return true;
                 }
@@ -427,6 +429,7 @@ public class CustomScopePanel extends javax.swing.JPanel implements ExplorerMana
                  *
                  * @return <code>true</code> if the check-box should be enabled, <code>false</code> otherwise.
                  */
+                @Override
                 public boolean isCheckEnabled() {
                     return true;
                 }
@@ -438,6 +441,7 @@ public class CustomScopePanel extends javax.swing.JPanel implements ExplorerMana
                  *         <code>false</code> if it should be unselected and
                  *         <code>null</code> if the state is unknown.
                  */
+                @Override
                 public Boolean isSelected() {
                     return data.isSelected();
                 }
@@ -448,6 +452,7 @@ public class CustomScopePanel extends javax.swing.JPanel implements ExplorerMana
                  * @param selected <code>true</code> if the check-box was selected,
                  *                 <code>false</code> if the check-box was unselected.
                  */
+                @Override
                 public void setSelected(Boolean selected) {
                     data.setSelected(selected);
                 }

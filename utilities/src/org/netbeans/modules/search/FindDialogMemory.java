@@ -48,6 +48,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.prefs.Preferences;
+import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openidex.search.SearchType;
 
@@ -114,6 +115,41 @@ public final class FindDialogMemory {
      */
     private boolean fileNamePatternSpecified;
 
+    /**
+     * Storage of last used Search in Archives option.
+     */
+    private boolean searchInArchives;
+
+    /**
+     * Storage of last used Search in Generated sources option.
+     */
+    private boolean searchInGenerated;
+
+    /**
+     * Storage of last used Path Regular Expression option.
+     */
+    private boolean filePathRegex;
+
+    /**
+     * Storage for last used Use Ignore List option.
+     */
+    private boolean useIgnoreList;
+
+    /**
+     * Storage for Ignore List.
+     */
+    private List<String> ignoreList;
+
+    /**
+     * Storage for Text pattern sandbox content.
+     */
+    private String textSandboxContent;
+
+    /**
+     * Storage for Path pattern sandbox content.
+     */
+    private String pathSandboxContent;
+
     /** Preferences node for storing history info */
     private static Preferences prefs;
     /** Name of preferences node where we persist history */
@@ -125,6 +161,13 @@ public final class FindDialogMemory {
     private static final String PROP_FILENAME_PATTERN_SPECIFIED = "filename_specified";  //NOI18N
     private static final String PROP_FILENAME_PATTERN_PREFIX = "filename_pattern_";  //NOI18N
     private static final String PROP_REPLACE_PATTERN_PREFIX = "replace_pattern_";  //NOI18N
+    private static final String PROP_SEARCH_IN_ARCHIVES = "search_in_archives"; //NOI18N
+    private static final String PROP_SEARCH_IN_GENERATED = "search_in_generated"; //NOI18N
+    private static final String PROP_FILE_PATH_REGEX = "file_path_regex"; //NOI18N
+    private static final String PROP_USE_IGNORE_LIST = "use_ignore_list"; //NOI18N
+    private static final String PROP_IGNORE_LIST_PREFIX = "ignore_list_"; //NOI18N
+    private static final String PROP_TEXT_SANDBOX_CONTENT = "text_sandbox_content"; //NOI18N
+    private static final String PROP_PATH_SANDBOX_CONTENT = "path_sandbox_content"; //NOI18N
     /** Creates a new instance of FindDialogMemory */
     private FindDialogMemory() {
         prefs = NbPreferences.forModule(FindDialogMemory.class).node(PREFS_NODE);
@@ -149,9 +192,18 @@ public final class FindDialogMemory {
         regularExpression = prefs.getBoolean(PROP_REGULAR_EXPRESSION, false);
         preserveCase = prefs.getBoolean(PROP_PRESERVE_CASE, false);
         fileNamePatternSpecified = prefs.getBoolean(PROP_FILENAME_PATTERN_SPECIFIED, false);
+        searchInArchives = prefs.getBoolean(PROP_SEARCH_IN_ARCHIVES, false);
+        searchInGenerated = prefs.getBoolean(PROP_SEARCH_IN_GENERATED, false);
+        filePathRegex = prefs.getBoolean(PROP_FILE_PATH_REGEX, false);
+        useIgnoreList = prefs.getBoolean(PROP_USE_IGNORE_LIST, false);
+        textSandboxContent = prefs.get(PROP_TEXT_SANDBOX_CONTENT,
+                getText("TextPatternSandbox.textPane.text.default"));   //NOI18N
+        pathSandboxContent = prefs.get(PROP_PATH_SANDBOX_CONTENT,
+                getText("PathPatternSandbox.textPane.text.default"));   //NOI18N
 
         fileNamePatterns = new ArrayList<String>(maxFileNamePatternCount);
         replExpressions = new ArrayList<String>(maxReplExprCount);
+        ignoreList = new ArrayList();
         for(int i=0; i < maxFileNamePatternCount; i++){
             String fileNamePattern = prefs.get(PROP_FILENAME_PATTERN_PREFIX + i, null);
             if (fileNamePattern != null)
@@ -159,6 +211,16 @@ public final class FindDialogMemory {
             String replacePattern = prefs.get(PROP_REPLACE_PATTERN_PREFIX + i, null);
             if (replacePattern != null)
                 replExpressions.add(replacePattern);
+        }
+        int i = 0;
+        while (true) {
+            String item = prefs.get(PROP_IGNORE_LIST_PREFIX + i, null);
+            if (item == null) {
+                break;
+            } else {
+                ignoreList.add(item);
+            }
+            i++;
         }
     }
 
@@ -303,4 +365,81 @@ public final class FindDialogMemory {
         prefs.putBoolean(PROP_FILENAME_PATTERN_SPECIFIED, specified);
     }
 
+    boolean isSearchInArchives() {
+        return searchInArchives;
+    }
+
+    void setSearchInArchives(boolean searchInArchives) {
+        this.searchInArchives = searchInArchives;
+        prefs.putBoolean(PROP_SEARCH_IN_GENERATED, searchInArchives);
+    }
+
+    boolean isSearchInGenerated() {
+        return searchInGenerated;
+    }
+
+    void setSearchInGenerated(boolean searchInGenerated) {
+        this.searchInGenerated = searchInGenerated;
+        prefs.putBoolean(PROP_SEARCH_IN_GENERATED, searchInGenerated);
+    }
+
+    boolean isFilePathRegex() {
+        return filePathRegex;
+    }
+
+    void setFilePathRegex(boolean filePathRegex) {
+        this.filePathRegex = filePathRegex;
+        prefs.putBoolean(PROP_FILE_PATH_REGEX, filePathRegex);
+    }
+
+    boolean IsUseIgnoreList() {
+        return useIgnoreList;
+    }
+
+    void setUseIgnoreList(boolean useIgnoreList) {
+        this.useIgnoreList = useIgnoreList;
+        prefs.putBoolean(PROP_USE_IGNORE_LIST, useIgnoreList);
+    }
+
+    String getTextSandboxContent() {
+        return textSandboxContent;
+    }
+
+    void setTextSandboxContent(String textSandboxContent) {
+        this.textSandboxContent = textSandboxContent;
+        prefs.put(PROP_TEXT_SANDBOX_CONTENT, textSandboxContent);
+    }
+
+    String getPathSandboxContent() {
+        return pathSandboxContent;
+    }
+
+    void setPathSandboxContent(String pathSandboxContent) {
+        this.pathSandboxContent = pathSandboxContent;
+        prefs.put(PROP_PATH_SANDBOX_CONTENT, pathSandboxContent);
+    }
+
+    List<String> getIgnoreList() {
+        if (ignoreList == null) {
+            return Collections.emptyList();
+        } else {
+            return ignoreList;
+        }
+    }
+
+    void setIgnoreList(List<String> ignoreList) {
+        this.ignoreList = ignoreList;
+        int i = 0;
+        while (prefs.get(PROP_IGNORE_LIST_PREFIX + i, null) != null) {
+            prefs.remove(PROP_IGNORE_LIST_PREFIX + i);
+            i++;
+        }
+        for (int j = 0; j < ignoreList.size(); j++) {
+            prefs.put(PROP_IGNORE_LIST_PREFIX + j, ignoreList.get(j));
+        }
+    }
+
+    private String getText(String key) {
+        return NbBundle.getMessage(FindDialogMemory.class, key);
+    }
 }

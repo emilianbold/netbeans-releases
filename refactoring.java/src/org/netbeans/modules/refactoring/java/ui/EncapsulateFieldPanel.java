@@ -179,11 +179,13 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
         initEnumCombo(jComboJavadoc, Javadoc.values()[RefactoringModule.getOption(ENCAPSULATE_FIELDS_JAVADOC_PREF, Javadoc.DEFAULT.ordinal())]);
     }
 
+    @Override
     public Component getComponent() {
         return this;
     }
     
     private boolean initialized = false;
+    @Override
     public void initialize() {
         if (initialized)
             return ;
@@ -192,6 +194,7 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
         try {
             js.runUserActionTask(new Task<CompilationController>() {
 
+                @Override
                 public void run(CompilationController javac) throws Exception {
                     javac.toPhase(JavaSource.Phase.RESOLVED);
                     initialize(javac);
@@ -236,6 +239,7 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
         jTableFields.repaint();
         model.addTableModelListener(new TableModelListener() {
             boolean isUpdating = false;
+            @Override
             public void tableChanged(TableModelEvent e) {
                 if (isUpdating) {
                     return;
@@ -826,6 +830,7 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
             return displayName;
         }
 
+        @Override
         public int compare(SortBy o1, SortBy o2) {
             if (o1 == o2) {
                 return 0;
@@ -858,6 +863,7 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
             return displayName;
         }
 
+        @Override
         public int compare(Javadoc o1, Javadoc o2) {
             if (o1 == o2) {
                 return 0;
@@ -984,6 +990,7 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
             }
         }
 
+        @Override
         public void run(CompilationController javac) throws Exception {
             AccessorInfo desc = ai;
             if (desc == null) {

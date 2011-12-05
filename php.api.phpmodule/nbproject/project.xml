@@ -149,6 +149,7 @@
                 <friend>com.ext4yii.editor</friend>
                 <friend>cz.swiz.netbeans</friend>
                 <friend>org.cakephp.netbeans</friend>
+                <friend>org.netbeans.modules.hudson.php</friend>
                 <friend>org.netbeans.modules.php.apigen</friend>
                 <friend>org.netbeans.modules.php.dbgp</friend>
                 <friend>org.netbeans.modules.php.editor</friend>

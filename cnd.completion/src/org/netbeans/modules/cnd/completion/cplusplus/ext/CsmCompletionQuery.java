@@ -1423,7 +1423,6 @@ abstract public class CsmCompletionQuery {
                             int varPos = item.getTokenOffset(0) + item.getTokenLength(0);
                             if (first) { // try to find variable for the first item
                                 if (last && !findType) { // both first and last item
-                                    CompletionResolver.Result res = null;
                                     if (isConstructor) {
                                         compResolver.setResolveTypes(CompletionResolver.RESOLVE_CLASSES |
                                                 CompletionResolver.RESOLVE_TEMPLATE_PARAMETERS |
@@ -1436,9 +1435,23 @@ abstract public class CsmCompletionQuery {
                                         compResolver.setResolveTypes(CompletionResolver.RESOLVE_CONTEXT);
                                     }
                                     if (resolve(varPos, var, openingSource)) {
-                                        res = compResolver.getResult();
+                                        if (isConstructor && !var.isEmpty() && !openingSource) {
+                                            // completion after new should propose constructors as well to see signatures
+                                            // #204910 - Auto complete misses c++ constructors
+                                            Collection<? extends CsmObject> candidates = compResolver.getResult().addResulItemsToCol(new ArrayList<CsmObject>());
+                                            Collection<CsmObject> res = new ArrayList<CsmObject>(candidates);
+                                            for (CsmObject object : candidates) {
+                                                if (CsmKindUtilities.isClass(object)) {
+                                                    res.addAll(getConstructors((CsmClass) object));
+                                                }
+                                            }                                  
+                                            result = new CsmCompletionResult(component, getBaseDocument(), res, var + '*', item, item.getTokenOffset(0), item.getTokenLength(0), 0, isProjectBeeingParsed(), contextElement, instantiateTypes);  //NOI18N
+                                        } else {
+                                            result = new CsmCompletionResult(component, getBaseDocument(), compResolver.getResult(), var + '*', item, item.getTokenOffset(0), item.getTokenLength(0), 0, isProjectBeeingParsed(), contextElement, instantiateTypes);  //NOI18N
+                                        }
+                                    } else {
+                                        result = new CsmCompletionResult(component, getBaseDocument(), (CompletionResolver.Result)null, var + '*', item, item.getTokenOffset(0), item.getTokenLength(0), 0, isProjectBeeingParsed(), contextElement, instantiateTypes);  //NOI18N
                                     }
-                                    result = new CsmCompletionResult(component, getBaseDocument(), res, var + '*', item, item.getTokenOffset(0), item.getTokenLength(0), 0, isProjectBeeingParsed(), contextElement, instantiateTypes);  //NOI18N
                                 } else { // not last item or finding type
                                     // find type of variable
                                     if (nextKind != ExprKind.SCOPE) {

@@ -436,7 +436,7 @@ public class TemplateWizard extends WizardDescriptor {
                 lastComp.removePropertyChangeListener(propL());
                 lastComp = null;
             }
-            
+        newObjects.clear();
         newObjects.add(val);
         if (val.hasFirst()) {
             return val.first();

@@ -45,7 +45,8 @@
 package org.netbeans.modules.refactoring.java.ui.tree;
 
 import javax.swing.Icon;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.java.RefactoringUtils;
+import org.netbeans.modules.refactoring.java.ui.UIUtilities;
 import org.netbeans.modules.refactoring.spi.ui.TreeElement;
 import org.netbeans.modules.refactoring.spi.ui.TreeElementFactory;
 
@@ -61,6 +62,7 @@ public class ElementGripTreeElement implements TreeElement {
         this.element = element;
     }
 
+    @Override
     public TreeElement getParent(boolean isLogical) {
         ElementGrip enclosing = element.getParent();
         if (isLogical) {
@@ -73,14 +75,17 @@ public class ElementGripTreeElement implements TreeElement {
         }
     }
 
+    @Override
     public Icon getIcon() {
         return element.getIcon();
     }
 
+    @Override
     public String getText(boolean isLogical) {
-        return RetoucheUtils.htmlize(element.toString());
+        return UIUtilities.htmlize(element.toString());
     }
 
+    @Override
     public Object getUserObject() {
         return element;
     }

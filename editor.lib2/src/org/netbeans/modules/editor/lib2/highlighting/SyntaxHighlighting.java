@@ -611,7 +611,7 @@ implements TokenHierarchyListener, ChangeListener {
 
     private static final class FCSInfo<T extends TokenId> implements LookupListener {
         
-        static final ChangeEvent staticChangeEvent = new ChangeEvent(FCSInfo.class);
+        private volatile ChangeEvent changeEvent;
         
         private final Language<T> innerLanguage;
         
@@ -700,12 +700,20 @@ implements TokenHierarchyListener, ChangeListener {
                 }
             }
         }
+        
+        private ChangeEvent createChangeEvent() {
+            if (changeEvent == null) {
+                changeEvent = new ChangeEvent(this);
+            }
+            return changeEvent;
+        }
 
         @Override
         public void resultChanged(LookupEvent ev) {
             updateFCS();
+            ChangeEvent e = createChangeEvent();
             for (ChangeListener l : listeners.getListeners()) {
-                l.stateChanged(staticChangeEvent);
+                l.stateChanged(e);
             }
         }
    

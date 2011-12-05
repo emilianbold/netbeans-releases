@@ -126,6 +126,7 @@ public class TypeFactory {
                     case CPPTokenTypes.STAR:
                         pointerDepth++;
                         break;
+                    case CPPTokenTypes.AND: // r-value reference
                     case CPPTokenTypes.AMPERSAND:
                         refence = true;
                         break;
@@ -167,6 +168,7 @@ public class TypeFactory {
                         case CPPTokenTypes.STAR:
                             ++pointerDepth;
                             break;
+                        case CPPTokenTypes.AND: // r-value reference
                         case CPPTokenTypes.AMPERSAND:
                             refence = true;
                             break;

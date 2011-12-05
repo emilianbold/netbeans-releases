@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.parsing.impl.indexing;
 
-import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
@@ -56,10 +55,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -68,7 +64,6 @@ import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
-import org.netbeans.api.project.Project;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.parsing.spi.indexing.Context;
@@ -76,7 +71,6 @@ import org.netbeans.modules.parsing.spi.indexing.CustomIndexer;
 import org.netbeans.modules.parsing.spi.indexing.CustomIndexerFactory;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.netbeans.modules.parsing.spi.indexing.PathRecognizer;
-import org.netbeans.modules.project.uiapi.OpenProjectsTrampoline;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -113,7 +107,7 @@ public class IndexerVersionsTest extends NbTestCase {
         final FileObject cache = wd.createFolder("cache");
         CacheFolder.setCacheFolder(cache);
 
-        MockServices.setServices(MockPathRecognizer.class, MockOpenProject.class);
+        MockServices.setServices(MockPathRecognizer.class);
         indexerFactory = new MockIndexerFactory(1);
         MockMimeLookup.setInstances(MimePath.get(MIME), indexerFactory);
         Set<String> mt = new HashSet<String>();
@@ -250,71 +244,6 @@ public class IndexerVersionsTest extends NbTestCase {
         return latch.await(timeout, TimeUnit.MILLISECONDS);
     }
     // </editor-fold>
-
-    // <editor-fold defaultstate="collapsed" desc="Mock Services">
-    public static class MockOpenProject implements  OpenProjectsTrampoline {
-
-        public @Override Project[] getOpenProjectsAPI() {
-            return new Project[0];
-        }
-
-        public @Override void openAPI(Project[] projects, boolean openRequiredProjects, boolean showProgress) {
-
-        }
-
-        public @Override void closeAPI(Project[] projects) {
-
-        }
-
-        @Override
-        public void addPropertyChangeListenerAPI(PropertyChangeListener listener, Object source) {
-
-        }
-
-        @Override
-        public Future<Project[]> openProjectsAPI() {
-            return new Future<Project[]>() {
-
-                @Override
-                public boolean cancel(boolean mayInterruptIfRunning) {
-                    return true;
-                }
-
-                @Override
-                public boolean isCancelled() {
-                    return false;
-                }
-
-                @Override
-                public boolean isDone() {
-                    return true;
-                }
-
-                @Override
-                public Project[] get() throws InterruptedException, ExecutionException {
-                    return new Project[0];
-                }
-
-                @Override
-                public Project[] get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-                    return new Project[0];
-                }
-            };
-        }
-
-        @Override
-        public void removePropertyChangeListenerAPI(PropertyChangeListener listener) {
-
-        }
-
-        public @Override Project getMainProject() {
-            return null;
-        }
-
-        public @Override void setMainProject(Project project) {
-
-        }
-    }
 
     public static class MockPathRecognizer extends PathRecognizer {
 

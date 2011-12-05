@@ -103,16 +103,18 @@ public class SmartyFramework extends PhpProgram {
     }
 
     public static String getCloseDelimiter(FileObject fileObject) {
-        if (!SmartyPhpModuleCustomizerExtender.getCustomCloseDelimiter(PhpModule.forFileObject(fileObject)).isEmpty()) {
-            return SmartyPhpModuleCustomizerExtender.getCustomCloseDelimiter(PhpModule.forFileObject(fileObject));
+        PhpModule phpModule = PhpModule.forFileObject(fileObject);
+        if (phpModule != null && !SmartyPhpModuleCustomizerExtender.getCustomCloseDelimiter(phpModule).isEmpty()) {
+            return SmartyPhpModuleCustomizerExtender.getCustomCloseDelimiter(phpModule);
         } else {
             return delimiterDefaultClose;
         }
     }
 
     public static String getOpenDelimiter(FileObject fileObject) {
-        if (!SmartyPhpModuleCustomizerExtender.getCustomOpenDelimiter(PhpModule.forFileObject(fileObject)).isEmpty()) {
-            return SmartyPhpModuleCustomizerExtender.getCustomOpenDelimiter(PhpModule.forFileObject(fileObject));
+        PhpModule phpModule = PhpModule.forFileObject(fileObject);
+        if (phpModule != null && !SmartyPhpModuleCustomizerExtender.getCustomOpenDelimiter(phpModule).isEmpty()) {
+            return SmartyPhpModuleCustomizerExtender.getCustomOpenDelimiter(phpModule);
         } else {
             return delimiterDefaultOpen;
         }

@@ -45,6 +45,9 @@
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
 import javax.swing.JComponent;
+import javax.swing.JPanel;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -69,7 +72,11 @@ public class CustomizerLibrariesFactory implements ProjectCustomizer.CompositeCa
     public JComponent createComponent(ProjectCustomizer.Category category, Lookup context) {
         SingleModuleProperties props = context.lookup(SingleModuleProperties.class);
         assert props != null;
-        return new CustomizerLibraries(props, category);
+        Project p = props.getProject();
+        if (!(p instanceof NbModuleProject)) {
+            return new JPanel(); // broken project?
+        }
+        return new CustomizerLibraries(props, category, (NbModuleProject) p);
     }
 
 

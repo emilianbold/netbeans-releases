@@ -45,6 +45,7 @@ package org.netbeans.modules.refactoring.java.ui;
 
 import java.io.IOException;
 import java.text.MessageFormat;
+import java.util.EnumSet;
 import java.util.StringTokenizer;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -60,7 +61,7 @@ import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.ui.ElementOpen;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUIBypass;
@@ -98,13 +99,14 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass, 
         this.handle = handle;
         this.refactoring = new RenameRefactoring(Lookups.singleton(handle));
         Element element = handle.resolveElement(info);
-        if (!(element.getKind() == ElementKind.LOCAL_VARIABLE || element.getKind() == ElementKind.PARAMETER))
+        if (UIUtilities.allowedElementKinds.contains(element.getKind())) {
             elementHandle = ElementHandle.create(element);
+        }
         oldName = element.getSimpleName().toString();
         if (element.getModifiers().contains(Modifier.PRIVATE)) {
-            refactoring.getContext().add(RetoucheUtils.getClasspathInfoFor(false, handle.getFileObject()));
+            refactoring.getContext().add(RefactoringUtils.getClasspathInfoFor(false, handle.getFileObject()));
         } else {
-            refactoring.getContext().add(RetoucheUtils.getClasspathInfoFor(true, true, RetoucheUtils.getFileObject(handle)));
+            refactoring.getContext().add(RefactoringUtils.getClasspathInfoFor(true, true, RefactoringUtils.getFileObject(handle)));
         }
         dispOldName = oldName;
 
@@ -115,22 +117,23 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass, 
             this.handle = handle;
             this.refactoring = new RenameRefactoring(Lookups.fixed(file, handle));
             Element element = handle.resolveElement(info);
-            if (!(element.getKind() == ElementKind.LOCAL_VARIABLE || element.getKind() == ElementKind.PARAMETER))
+            if (UIUtilities.allowedElementKinds.contains(element.getKind())) {
                 elementHandle = ElementHandle.create(element);
+            }
             oldName = element.getSimpleName().toString();
         } else {
             this.refactoring = new RenameRefactoring(Lookups.fixed(file));
             oldName = file.getName();
         }
         dispOldName = oldName;
-        ClasspathInfo cpInfo = handle==null?RetoucheUtils.getClasspathInfoFor(file):RetoucheUtils.getClasspathInfoFor(handle);
+        ClasspathInfo cpInfo = handle==null?RefactoringUtils.getClasspathInfoFor(file):RefactoringUtils.getClasspathInfoFor(handle);
         refactoring.getContext().add(cpInfo);
     }
 
     public RenameRefactoringUI(NonRecursiveFolder file) {
         this.refactoring = new RenameRefactoring(Lookups.singleton(file));
-        oldName = RetoucheUtils.getPackageName(file.getFolder());
-        refactoring.getContext().add(RetoucheUtils.getClasspathInfoFor(file.getFolder()));
+        oldName = RefactoringUtils.getPackageName(file.getFolder());
+        refactoring.getContext().add(RefactoringUtils.getClasspathInfoFor(file.getFolder()));
         dispOldName = oldName;
         pkgRename = true;
     }
@@ -140,37 +143,40 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass, 
         if (handle!=null) {
             this.refactoring = new RenameRefactoring(Lookups.fixed(jmiObject, handle));
             Element element = handle.resolveElement(info);
-            if (!(element.getKind() == ElementKind.LOCAL_VARIABLE || element.getKind() == ElementKind.PARAMETER))
+            if (UIUtilities.allowedElementKinds.contains(element.getKind())) {
                 elementHandle = ElementHandle.create(element);
+            }
         } else {
             this.refactoring = new RenameRefactoring(Lookups.fixed(jmiObject));
         }
         oldName = newName;
         this.dispOldName = jmiObject.getName();
-        ClasspathInfo cpInfo = handle==null?RetoucheUtils.getClasspathInfoFor(jmiObject):RetoucheUtils.getClasspathInfoFor(handle);
+        ClasspathInfo cpInfo = handle==null?RefactoringUtils.getClasspathInfoFor(jmiObject):RefactoringUtils.getClasspathInfoFor(handle);
         refactoring.getContext().add(cpInfo);
         fromListener = true;
     }
     
     RenameRefactoringUI(NonRecursiveFolder jmiObject, String newName) {
         this.refactoring = new RenameRefactoring(Lookups.singleton(jmiObject));
-        refactoring.getContext().add(RetoucheUtils.getClasspathInfoFor(jmiObject.getFolder()));
+        refactoring.getContext().add(RefactoringUtils.getClasspathInfoFor(jmiObject.getFolder()));
         oldName = newName;
-        this.dispOldName = RetoucheUtils.getPackageName(jmiObject.getFolder());
+        this.dispOldName = RefactoringUtils.getPackageName(jmiObject.getFolder());
         fromListener = true;
         pkgRename = true;
     }
     
+    @Override
     public boolean isQuery() {
         return false;
     }
 
+    @Override
     public CustomRefactoringPanel getPanel(ChangeListener parent) {
         if (panel == null) {
             String name = oldName;
             String suffix = "";
             if (handle != null) {
-                ElementKind kind = RetoucheUtils.getElementKind(handle);
+                ElementKind kind = handle.getElementHandle().getKind();
                 if (kind!=null && (kind.isClass() || kind.isInterface())) {
                     suffix  = kind.isInterface() ? getString("LBL_Interface") : getString("LBL_Class");
                 } else if (kind == ElementKind.METHOD) {
@@ -195,6 +201,7 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass, 
         return NbBundle.getMessage(RenameRefactoringUI.class, key);
     }
 
+    @Override
     public org.netbeans.modules.refactoring.api.Problem setParameters() {
         newName = panel.getNameValue();
         if (refactoring instanceof RenameRefactoring) {
@@ -214,6 +221,7 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass, 
         return refactoring.checkParameters();
     }
     
+    @Override
     public org.netbeans.modules.refactoring.api.Problem checkParameters() {
         if (!panel.isUpdateReferences()) 
             return null;
@@ -233,30 +241,35 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass, 
         return refactoring.fastCheckParameters();
     }
 
+    @Override
     public org.netbeans.modules.refactoring.api.AbstractRefactoring getRefactoring() {
         return refactoring;
     }
 
+    @Override
     public String getDescription() {
         return new MessageFormat(NbBundle.getMessage(RenamePanel.class, "DSC_Rename")).format (
                     new Object[] {dispOldName, newName}
                 );
     }
 
+    @Override
     public String getName() {
         return NbBundle.getMessage(RenamePanel.class, "LBL_Rename");
     }
 
+    @Override
     public boolean hasParameters() {
         return true;
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         String postfix;
         if (handle==null) {
             postfix = ".JavaPackage";//NOI18N
         } else {
-            ElementKind k = RetoucheUtils.getElementKind(handle);
+            ElementKind k = handle.getElementHandle().getKind();
             
             if (k==null) {
                 postfix = "";
@@ -273,9 +286,11 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass, 
         return new HelpCtx(RenameRefactoringUI.class.getName() + postfix);
     }
     
+    @Override
     public boolean isRefactoringBypassRequired() {
         return !panel.isUpdateReferences();
     }
+    @Override
     public void doRefactoringBypass() throws IOException {
         RequestProcessor.getDefault().post(new Runnable() {
             @Override

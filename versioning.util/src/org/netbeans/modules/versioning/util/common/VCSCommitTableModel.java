@@ -71,15 +71,7 @@ public class VCSCommitTableModel<F extends VCSFileNode> extends AbstractTableMod
                                             VCSCommitTableModel.COLUMN_NAME_ACTION,
                                             VCSCommitTableModel.COLUMN_NAME_PATH
                                         };
-
-    private VCSCommitOptions[] createDefaultCommitOptions() {
-        VCSCommitOptions[] co = new VCSCommitOptions[getNodes().length];
-        for (int i = 0; i < getNodes().length; i++) {
-            co[i] = VCSCommitOptions.COMMIT;
-            co[i] = getNode(i).getDefaultCommitOption(true);
-        }
-        return co;
-    }
+    private final VCSCommitPanelModifier modifier;
 
     private class RootFile {
         String repositoryPath;
@@ -90,26 +82,7 @@ public class VCSCommitTableModel<F extends VCSFileNode> extends AbstractTableMod
     /**
      * Defines labels for Versioning view table columns.
      */ 
-    private static final Map<String, String[]> columnLabels = new HashMap<String, String[]>(4);   
-
-    {
-        ResourceBundle loc = NbBundle.getBundle(VCSCommitTableModel.class);
-        columnLabels.put(COLUMN_NAME_COMMIT, new String [] {
-                                          loc.getString("CTL_CommitTable_Column_Commit"),  // NOI18N
-                                          loc.getString("CTL_CommitTable_Column_Description")}); // NOI18N
-        columnLabels.put(COLUMN_NAME_NAME, new String [] {
-                                          loc.getString("CTL_CommitTable_Column_File"),  // NOI18N
-                                          loc.getString("CTL_CommitTable_Column_File")}); // NOI18N        
-        columnLabels.put(COLUMN_NAME_STATUS, new String [] {
-                                          loc.getString("CTL_CommitTable_Column_Status"),  // NOI18N
-                                          loc.getString("CTL_CommitTable_Column_Status")}); // NOI18N
-        columnLabels.put(COLUMN_NAME_ACTION, new String [] {
-                                          loc.getString("CTL_CommitTable_Column_Action"),  // NOI18N
-                                          loc.getString("CTL_CommitTable_Column_Action")}); // NOI18N
-        columnLabels.put(COLUMN_NAME_PATH, new String [] {
-                                          loc.getString("CTL_CommitTable_Column_Folder"),  // NOI18N
-                                          loc.getString("CTL_CommitTable_Column_Folder")}); // NOI18N
-    }
+    private final Map<String, String[]> columnLabels;
     
     private F []      nodes;
     
@@ -120,16 +93,41 @@ public class VCSCommitTableModel<F extends VCSFileNode> extends AbstractTableMod
      * and empty nodes {@link #setNodes model}.
      */
     public VCSCommitTableModel() {
-        setColumns(COMMIT_COLUMNS);
-        List<F> l = Collections.emptyList();
+        this(new VCSCommitPanelModifier());
     }
-
+    
+    public VCSCommitTableModel(VCSCommitPanelModifier modifier) {
+        columnLabels = new HashMap<String, String[]>(4);
+        this.modifier = modifier;
+        initColumnLabels();
+        setColumns(COMMIT_COLUMNS);
+    }
+    
     protected void setNodes(F[] nodes) {
         this.nodes = nodes;
         fireTableDataChanged();
     }
     
-    protected void setColumns(String [] cols) {
+    private void initColumnLabels () {
+        ResourceBundle loc = NbBundle.getBundle(VCSCommitTableModel.class);
+        columnLabels.put(COLUMN_NAME_COMMIT, new String [] {
+                                          modifier.getMessage(VCSCommitPanelModifier.BundleMessage.FILE_TABLE_HEADER_COMMIT),
+                                          modifier.getMessage(VCSCommitPanelModifier.BundleMessage.FILE_TABLE_HEADER_COMMIT_DESC)});
+        columnLabels.put(COLUMN_NAME_NAME, new String [] {
+                                          loc.getString("CTL_CommitTable_Column_File"),  // NOI18N
+                                          loc.getString("CTL_CommitTable_Column_File")}); // NOI18N        
+        columnLabels.put(COLUMN_NAME_STATUS, new String [] {
+                                          loc.getString("CTL_CommitTable_Column_Status"),  // NOI18N
+                                          loc.getString("CTL_CommitTable_Column_Status")}); // NOI18N
+        columnLabels.put(COLUMN_NAME_ACTION, new String [] {
+                                          modifier.getMessage(VCSCommitPanelModifier.BundleMessage.FILE_TABLE_HEADER_ACTION),
+                                          modifier.getMessage(VCSCommitPanelModifier.BundleMessage.FILE_TABLE_HEADER_ACTION_DESC)});
+        columnLabels.put(COLUMN_NAME_PATH, new String [] {
+                                          loc.getString("CTL_CommitTable_Column_Folder"),  // NOI18N
+                                          loc.getString("CTL_CommitTable_Column_Folder")}); // NOI18N
+    }
+
+    protected final void setColumns(String [] cols) {
         if (Arrays.equals(cols, columns)) return;
         columns = cols;
         fireTableStructureChanged();
@@ -144,9 +142,7 @@ public class VCSCommitTableModel<F extends VCSFileNode> extends AbstractTableMod
             ret = Collections.emptyList();
             return Collections.unmodifiableList(ret);
         }
-        for (int i = 0; i < nodes.length; i++) {
-            ret.add(nodes[i]);
-        }
+        ret.addAll(Arrays.asList(nodes));
         return Collections.unmodifiableList(ret);
     }
     
@@ -188,7 +184,7 @@ public class VCSCommitTableModel<F extends VCSFileNode> extends AbstractTableMod
         F node;
         String col = columns[columnIndex];
         if (col.equals(COLUMN_NAME_COMMIT)) {
-            return nodes[rowIndex].getCommitOptions() != VCSCommitOptions.EXCLUDE;
+            return nodes[rowIndex].getCommitOptions() != modifier.getExcludedOption();
         } else if (col.equals(COLUMN_NAME_NAME)) {
             return nodes[rowIndex].getName();
         // TODO deal with branch?
@@ -226,7 +222,7 @@ public class VCSCommitTableModel<F extends VCSFileNode> extends AbstractTableMod
             nodes[rowIndex].setCommitOptions((VCSCommitOptions) aValue);
         } else if (col.equals(COLUMN_NAME_COMMIT)) {
             VCSFileNode node = nodes[rowIndex];
-            nodes[rowIndex].setCommitOptions(((Boolean) aValue) ? node.getDefaultCommitOption(false) : VCSCommitOptions.EXCLUDE);
+            nodes[rowIndex].setCommitOptions(((Boolean) aValue) ? node.getDefaultCommitOption(false) : modifier.getExcludedOption());
         } else {
             throw new IllegalArgumentException("Column index out of range: " + columnIndex); // NOI18N
         }
@@ -255,9 +251,12 @@ public class VCSCommitTableModel<F extends VCSFileNode> extends AbstractTableMod
         for (int rowIndex : rows) {
             VCSFileNode node = nodes[rowIndex];
             VCSCommitOptions options = node.getDefaultCommitOption(false);
-            nodes[rowIndex].setCommitOptions(include ? options : VCSCommitOptions.EXCLUDE);
+            nodes[rowIndex].setCommitOptions(include ? options : modifier.getExcludedOption());
         }
         fireTableRowsUpdated(0, getRowCount() - 1);
     }
 
+    VCSCommitPanelModifier getCommitModifier () {
+        return modifier;
+    }
 }

@@ -42,13 +42,8 @@
 package org.netbeans.modules.php.project.connections.transfer;
 
 import java.io.File;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.php.project.connections.RemoteClientImplementation;
-import org.netbeans.modules.php.project.connections.RemoteException;
-import org.netbeans.modules.php.project.connections.spi.RemoteFile;
 
 /**
  * @author Tomas Mysik
@@ -136,78 +131,6 @@ public class TransferFileTest extends NbTestCase {
 
         assertEquals(childWithParent.getRemotePath(), grandchildWithParent.getParentRemotePath());
         assertEquals(childWithParent.getRemotePath(), grandchildWithoutParent.getParentRemotePath());
-    }
-
-
-    private final class RemoteFileImpl implements RemoteFile {
-
-        private final String name;
-        private final String parentDirectory;
-        private final boolean file;
-
-
-        public RemoteFileImpl(String name, String parentDirectory, boolean file) {
-            this.name = name;
-            this.parentDirectory = parentDirectory;
-            this.file = file;
-        }
-
-        @Override
-        public String getName() {
-            return name;
-        }
-
-        @Override
-        public String getParentDirectory() {
-            return parentDirectory;
-        }
-
-        @Override
-        public boolean isDirectory() {
-            return !file;
-        }
-
-        @Override
-        public boolean isFile() {
-            return file;
-        }
-
-        @Override
-        public boolean isLink() {
-            return false;
-        }
-
-        @Override
-        public long getSize() {
-            return 999;
-        }
-
-        @Override
-        public long getTimestamp() {
-            return new Date().getTime();
-        }
-
-    }
-
-    private static final class RemoteClient implements RemoteClientImplementation {
-
-        private final String baseRemoteDirectory;
-
-
-        public RemoteClient(String baseRemoteDirectory) {
-            this.baseRemoteDirectory = baseRemoteDirectory;
-        }
-
-        @Override
-        public String getBaseRemoteDirectory() {
-            return baseRemoteDirectory;
-        }
-
-        @Override
-        public List<TransferFile> listFiles(TransferFile file) throws RemoteException {
-            return Collections.emptyList();
-        }
-
     }
 
 }

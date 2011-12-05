@@ -187,16 +187,19 @@ public class CodeUtils {
 
     public static String extractQualifiedName(NamespaceName namespaceName) {
         Parameters.notNull("namespaceName", namespaceName);
+        String retval = ""; //NOI18N
         StringBuilder sb = new StringBuilder();
         final List<Identifier> segments = namespaceName.getSegments();
+        if (namespaceName.isGlobal()) {
+            sb.append(NamespaceDeclarationInfo.NAMESPACE_SEPARATOR);
+        }
         for (Iterator<Identifier> it = segments.iterator(); it.hasNext();) {
             Identifier identifier = it.next();
-            if (sb.length() > 0) {
-                sb.append(NamespaceDeclarationInfo.NAMESPACE_SEPARATOR);
-            }
             sb.append(identifier.getName());
+            sb.append(NamespaceDeclarationInfo.NAMESPACE_SEPARATOR);
         }
-        return sb.toString();
+        retval = sb.toString();
+        return retval.substring(0, retval.length() - NamespaceDeclarationInfo.NAMESPACE_SEPARATOR.length());
     }
 
     public static Identifier extractUnqualifiedIdentifier(NamespaceName name) {

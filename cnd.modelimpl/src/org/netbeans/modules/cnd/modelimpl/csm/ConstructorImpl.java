@@ -67,9 +67,8 @@ public final class ConstructorImpl extends MethodImpl<CsmConstructor> implements
         super(name, rawName, cls, visibility, _virtual, _explicit, _static, _const, file, startOffset, endOffset, global);
     }
 
-    public static ConstructorImpl createConstructor(AST ast, ClassImpl cls, CsmVisibility visibility, boolean global) throws AstRendererException {
+    public static ConstructorImpl createConstructor(AST ast, final CsmFile file, ClassImpl cls, CsmVisibility visibility, boolean global) throws AstRendererException {
         CsmScope scope = cls;
-        CsmFile file = cls.getContainingFile();
         
         int startOffset = getStartOffset(ast);
         int endOffset = getEndOffset(ast);
@@ -114,7 +113,7 @@ public final class ConstructorImpl extends MethodImpl<CsmConstructor> implements
         constructorImpl.setParameters(AstRenderer.FunctionRenderer.createParameters(ast, constructorImpl, file, global), 
                 AstRenderer.FunctionRenderer.isVoidParameter(ast));
         postObjectCreateRegistration(global, constructorImpl);
-        nameHolder.addReference(cls.getContainingFile(), constructorImpl);
+        nameHolder.addReference(file, constructorImpl);
         return constructorImpl;
     }
 

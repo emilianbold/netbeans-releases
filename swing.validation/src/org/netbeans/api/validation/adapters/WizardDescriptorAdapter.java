@@ -65,7 +65,7 @@ public class WizardDescriptorAdapter implements ValidationUI {
     }
 
     @Override
-    public void setProblem(Problem p) {
+    public void showProblem(Problem p) {
         switch (p.severity()) {
             case INFO :
                 wiz.putProperty(WizardDescriptor.PROP_INFO_MESSAGE, p.getMessage());

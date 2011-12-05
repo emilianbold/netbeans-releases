@@ -106,6 +106,7 @@ public class ServerLocationPanel implements WizardDescriptor.Panel, ChangeListen
         // if the properties are valid, store them
         instantiatingIterator.setCoherenceLocation(component.getServerLocation());
         instantiatingIterator.setCoherenceClasspath(component.getClasspath());
+        instantiatingIterator.setCreateCoherenceLibrary(component.getCreateCoherenceLibrary());
         return true;
     }
 

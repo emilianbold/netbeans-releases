@@ -41,10 +41,9 @@
  */
 package org.netbeans.modules.css.editor.module.main;
 
-import org.netbeans.modules.csl.api.test.CslTestBase;
 import org.netbeans.modules.css.editor.module.CssModuleSupport;
+import org.netbeans.modules.css.editor.properties.parser.GrammarResolver;
 import org.netbeans.modules.css.editor.properties.parser.PropertyModel;
-import org.netbeans.modules.css.editor.properties.parser.PropertyModelTest;
 import org.netbeans.modules.css.editor.properties.parser.PropertyValue;
 import org.netbeans.modules.parsing.spi.ParseException;
 
@@ -52,7 +51,7 @@ import org.netbeans.modules.parsing.spi.ParseException;
  *
  * @author mfukala@netbeans.org
  */
-public class BackgroundsAndBordersModuleTest extends CslTestBase {
+public class BackgroundsAndBordersModuleTest extends CssModuleTestBase {
 
     public BackgroundsAndBordersModuleTest(String name) {
         super(name);
@@ -62,23 +61,23 @@ public class BackgroundsAndBordersModuleTest extends CslTestBase {
         PropertyModel prop = CssModuleSupport.getPropertyModel("background-attachment");
         assertNotNull(prop);
 
-        assertTrue(new PropertyValue(prop, "scroll").success());
-        assertTrue(new PropertyValue(prop, "fixed").success());
-        assertTrue(new PropertyValue(prop, "local").success());
+        assertTrue(new PropertyValue(prop, "scroll").isResolved());
+        assertTrue(new PropertyValue(prop, "fixed").isResolved());
+        assertTrue(new PropertyValue(prop, "local").isResolved());
 
-        assertTrue(new PropertyValue(prop, "local, local, scroll").success());
-        assertTrue(new PropertyValue(prop, "fixed,scroll").success());
+        assertTrue(new PropertyValue(prop, "local, local, scroll").isResolved());
+        assertTrue(new PropertyValue(prop, "fixed,scroll").isResolved());
     }
     
     public void testBackground_Image() throws ParseException {
         PropertyModel prop = CssModuleSupport.getPropertyModel("background-image");
         assertNotNull(prop);
 
-        assertTrue(new PropertyValue(prop, "none").success());
-        assertTrue(new PropertyValue(prop, "url(http://site.org/img.png)").success());
-        assertTrue(new PropertyValue(prop, "url(picture.jpg)").success());
+        assertTrue(new PropertyValue(prop, "none").isResolved());
+        assertTrue(new PropertyValue(prop, "url(http://site.org/img.png)").isResolved());
+        assertTrue(new PropertyValue(prop, "url(picture.jpg)").isResolved());
         
-        assertTrue(new PropertyValue(prop, "url(picture.jpg), none, url(x.jpg)").success());
+        assertTrue(new PropertyValue(prop, "url(picture.jpg), none, url(x.jpg)").isResolved());
    
          //[ top | bottom ]|[[ <percentage> | <length> | left | center | right ][ <percentage> | <length> | top | center | bottom ]?]|[[ center | [ left | right ] [ <percentage> | <length> ]? ][ center | [ top | bottom ] [ <percentage> | <length> ]? ]]
     }
@@ -86,10 +85,9 @@ public class BackgroundsAndBordersModuleTest extends CslTestBase {
     public void testBackground_Position() throws ParseException {
         PropertyModel prop = CssModuleSupport.getPropertyModel("background-position");
         assertNotNull(prop);
-
-        assertTrue(new PropertyValue(prop, "left 10px top 15px").success());
-        assertTrue(new PropertyValue(prop, " left      top     ").success());
-//        assertTrue(new PropertyValue(prop, "left      top 15px").success());
+        
+        assertResolve(prop.getGrammar(), "left      top");
+        assertResolve(prop.getGrammar(), "left 10px top 15px");
         
     }
     
@@ -97,7 +95,21 @@ public class BackgroundsAndBordersModuleTest extends CslTestBase {
         PropertyModel prop = CssModuleSupport.getPropertyModel("background-position");
         PropertyValue pv = new PropertyValue(prop, "center top");
 //        PropertyModelTest.dumpResult(pv);
-        assertTrue(pv.success());
+        assertTrue(pv.isResolved());
+    }
+    
+    public void testBackground() {
+        PropertyModel prop = CssModuleSupport.getPropertyModel("background");
+//        PRINT_INFO_IN_ASSERT_RESOLVE = true;
+//        GrammarResolver.setLogging(GrammarResolver.Log.DEFAULT, true);
+        assertResolve(prop.getGrammar(), "url(image.png) , url(image2.png)");
+
+    }
+    
+    public void testVariousProperties() {
+        assertPropertyDeclaration("background-image: url(flower.png), url(ball.png), url(grass.png);");
+        assertPropertyDeclaration("background-origin: border-box, content-box;");
+        assertPropertyDeclaration("background-repeat: no-repeat;");
     }
     
     

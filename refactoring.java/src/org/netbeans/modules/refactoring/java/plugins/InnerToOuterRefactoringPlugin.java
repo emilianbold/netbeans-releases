@@ -44,13 +44,16 @@
 package org.netbeans.modules.refactoring.java.plugins;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.Set;
-import javax.lang.model.element.*;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.NestingKind;
+import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.*;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.ProgressEvent;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.InnerToOuterRefactoring;
 import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
@@ -78,6 +81,7 @@ public class InnerToOuterRefactoringPlugin extends JavaRefactoringPlugin {
         this.treePathHandle = refactoring.getRefactoringSource().lookup(TreePathHandle.class);
     }
 
+    @Override
     protected JavaSource getJavaSource(Phase p) {
         switch (p) {
         case PRECHECK:
@@ -109,13 +113,7 @@ public class InnerToOuterRefactoringPlugin extends JavaRefactoringPlugin {
         }
         
         
-        //            // check whether the element is an unresolved class
-        //            if (sourceType instanceof UnresolvedClass) {
-        //                // fatal error -> return
-        //                return new Problem(true, NbBundle.getMessage(InnerToOuterRefactoringPlugin.class, "ERR_ElementNotAvailable")); // NOI18N
-        //            }
-        
-        refactoring.setClassName(RetoucheUtils.getSimpleName(sourceType));
+        refactoring.setClassName(sourceType.resolveElement(info).getSimpleName().toString());
         
         // increase progress (step 1)
         fireProgressListenerStep();
@@ -141,27 +139,7 @@ public class InnerToOuterRefactoringPlugin extends JavaRefactoringPlugin {
         // increase progress (step 2)
         fireProgressListenerStep();
         
-        //            if (Modifier.isStatic(sourceType.getModifiers())) {
-        //                fireProgressListenerStep();
-        //            } else {
-        //                // collect all features of the outer class
-        //                Set featureSet = new HashSet(), innerFeatures = new HashSet();
-        //                getFeatureSet((JavaClass) declCls, featureSet, new HashSet());
-        //                getFeatureSet(sourceType, innerFeatures, new HashSet());
-        //                featureSet.remove(sourceType);
-        //
-        //                // increase progress (step 3)
-        //                fireProgressListenerStep();
-        //
-        //                // check if any features of the outer class are referenced
-        //                // if so, create refactoring elements for them
-        //                multipartIds = new ArrayList();
-        //                Collection outerReferences = traverseForOuterReferences(sourceType, new ArrayList(), multipartIds, featureSet, innerFeatures, (JavaClass) declCls);
-        //                if (!outerReferences.isEmpty()) {
-        //                    this.outerReferences = outerReferences;
         refactoring.setReferenceName("outer"); // NOI18N
-        //                }
-        //            }
         
         fireProgressListenerStop();
         return preCheckProblem;
@@ -169,7 +147,6 @@ public class InnerToOuterRefactoringPlugin extends JavaRefactoringPlugin {
 
     @Override
     public Problem checkParameters() {
-        //TODO:
         return null;
     }
 
@@ -201,10 +178,11 @@ public class InnerToOuterRefactoringPlugin extends JavaRefactoringPlugin {
         ClasspathInfo cpInfo = getClasspathInfo(refactoring);
         HashSet<FileObject> set = new HashSet<FileObject>();
         ClassIndex idx = cpInfo.getClassIndex();
-        set.addAll(idx.getResources(RetoucheUtils.getElementHandle(refactoring.getSourceType()), EnumSet.of(ClassIndex.SearchKind.TYPE_REFERENCES, ClassIndex.SearchKind.IMPLEMENTORS),EnumSet.of(ClassIndex.SearchScope.SOURCE)));
+        set.addAll(idx.getResources(refactoring.getSourceType().getElementHandle(), EnumSet.of(ClassIndex.SearchKind.TYPE_REFERENCES, ClassIndex.SearchKind.IMPLEMENTORS),EnumSet.of(ClassIndex.SearchScope.SOURCE)));
         return set;
     }
     
+    @Override
     public Problem prepare(RefactoringElementsBag refactoringElements) {
         Set<FileObject> a = getRelevantFiles();
         fireProgressListenerStart(ProgressEvent.START, a.size());

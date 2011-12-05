@@ -50,10 +50,13 @@ import java.nio.charset.UnsupportedCharsetException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.maven.project.MavenProject;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.Constants;
+import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -64,18 +67,19 @@ import org.openide.util.Exceptions;
  *
  * @author mkleint
  */
+@ProjectServiceProvider(service=FileEncodingQueryImplementation.class, projectType="org-netbeans-modules-maven")
 public class MavenFileEncodingQueryImpl extends  FileEncodingQueryImplementation {
 
-    private final NbMavenProjectImpl project;
+    private final Project project;
     private static final String ENCODING_PARAM = "encoding"; //NOI18N
     
-    public MavenFileEncodingQueryImpl(NbMavenProjectImpl proj) {
+    public MavenFileEncodingQueryImpl(Project proj) {
         project = proj;
     }
 
     @Override
     public Charset getEncoding(FileObject file) {
-        MavenProject mp = project.getOriginalMavenProject();
+        MavenProject mp = project.getLookup().lookup(NbMavenProject.class).getMavenProject();
         if (mp == null) {
             return Charset.defaultCharset();
         }
@@ -104,11 +108,11 @@ public class MavenFileEncodingQueryImpl extends  FileEncodingQueryImplementation
                     return Charset.forName(defEnc);
                 }
             }
-
             //possibly more complicated with resources, one can have explicit declarations in the
             // pom plugin configuration.
+            NbMavenProjectImpl impl = project.getLookup().lookup(NbMavenProjectImpl.class);
             try {
-                if (isWithin(project.getResources(false), file)) {
+                if (isWithin(impl.getResources(false), file)) {
                     String resourceEnc = PluginPropertyUtils.getPluginProperty(project,
                             Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_RESOURCES, ENCODING_PARAM, "resources"); //NOI18N
                     if (resourceEnc != null && resourceEnc.indexOf("${") == -1) {//NOI18N - guard against unresolved values.
@@ -124,7 +128,7 @@ public class MavenFileEncodingQueryImpl extends  FileEncodingQueryImplementation
             }
 
             try {
-                if (isWithin(project.getResources(true), file)) {
+                if (isWithin(impl.getResources(true), file)) {
                     String testresourceEnc = PluginPropertyUtils.getPluginProperty(project,
                             Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_RESOURCES, ENCODING_PARAM, "testResources"); //NOI18N
                     if (testresourceEnc != null && testresourceEnc.indexOf("${") == -1) {//NOI18N - guard against unresolved values.
@@ -139,7 +143,7 @@ public class MavenFileEncodingQueryImpl extends  FileEncodingQueryImplementation
             }
 
             try {
-                if (isWithin(new URI[]{project.getSiteDirectory()}, file)) {
+                if (isWithin(new URI[]{impl.getSiteDirectory()}, file)) {
                     String siteEnc = PluginPropertyUtils.getPluginProperty(project,
                             Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_SITE, "inputEncoding", "site"); //NOI18N
                     if (siteEnc != null && siteEnc.indexOf("${") == -1) {//NOI18N - guard against unresolved values.

@@ -74,10 +74,12 @@ public class FileDeletePlugin implements RefactoringPlugin {
         this.refactoring = refactoring;
     }
     
+    @Override
     public Problem preCheck() {
         return null;
     }
     
+    @Override
     public Problem prepare(RefactoringElementsBag elements) {
         for (FileObject fo: refactoring.getRefactoringSource().lookupAll(FileObject.class)) {
                 elements.addFileChange(refactoring, new DeleteFile(fo, elements));
@@ -85,79 +87,18 @@ public class FileDeletePlugin implements RefactoringPlugin {
         return null;
     }
     
+    @Override
     public Problem fastCheckParameters() {
         return null;
     }
         
+    @Override
     public Problem checkParameters() {
         return null;
     }
 
+    @Override
     public void cancelRequest() {
-    }
-    //TODO: Move out this inner class
-    static class DeleteFile extends SimpleRefactoringElementImplementation {
-        
-        private final URL res;
-        private String filename;
-        private RefactoringElementsBag session;
-        public DeleteFile(FileObject fo, RefactoringElementsBag session) {
-            try {
-                this.res = fo.getURL();
-            } catch (FileStateInvalidException ex) {
-                throw new IllegalStateException(ex);
-            }
-            this.filename = fo.getNameExt();
-            this.session = session;
-        }
-        public String getText() {
-            return NbBundle.getMessage(FileDeletePlugin.class, "TXT_DeleteFile", filename);
-        }
-
-        public String getDisplayText() {
-            return getText();
-        }
-
-        BackupFacility.Handle id;
-        public void performChange() {
-            try {
-                FileObject fo = URLMapper.findFileObject(res);
-                if (fo == null) {
-                    throw new IOException(res.toString());
-                }
-                id = BackupFacility.getDefault().backup(fo);
-                DataObject.find(fo).delete();
-            } catch (DataObjectNotFoundException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-        
-        public void undoChange() {
-            try {
-                id.restore();
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
-        }
-
-        public Lookup getLookup() {
-            return Lookup.EMPTY;
-        }
-
-        public FileObject getParentFile() {
-            return URLMapper.findFileObject(res);
-        }
-
-        public PositionBounds getPosition() {
-            return null;
-        }
     }
 
 }
-
-//                if (fo.isFolder()) {
-//                    //TODO:Move deletion of packages to a separate plugin constructed by RefactoringPluginFactory
-//                    dataObject.getNodeDelegate().destroy();
-//                }else{

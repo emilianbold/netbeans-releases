@@ -56,23 +56,28 @@ import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
  * @author Martin Matula, Jan Becicka
  */
 final class AccessorImpl extends SPIAccessor {
+    @Override
     public RefactoringElementsBag createBag(RefactoringSession session, List delegate) {
         assert session != null && delegate != null;
         return new RefactoringElementsBag(session, delegate);
     }
     
+    @Override
     public Collection getReadOnlyFiles(RefactoringElementsBag bag) {
         return bag.getReadOnlyFiles();
     }
     
+    @Override
     public ArrayList<Transaction> getCommits(RefactoringElementsBag bag) {
         return bag.commits;
     }
 
+    @Override
     public ArrayList<RefactoringElementImplementation> getFileChanges(RefactoringElementsBag bag) {
         return bag.fileChanges;
     }
     
+    @Override
     public String getNewFileContent(SimpleRefactoringElementImplementation impl) {
         return impl.getNewFileContent();
     }

@@ -41,16 +41,11 @@
  */
 package org.netbeans.modules.web.jsf.editor;
 
-import java.io.File;
 import java.io.IOException;
-import java.net.URL;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.prefs.Preferences;
-import java.util.prefs.PreferencesFactory;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.Sources;
@@ -134,7 +129,6 @@ public class TestBaseForTestProject extends TestBase {
         ClassPathProvider mergedClassPathProvider = new MergedClassPathProvider(projects);
 
         MockLookup.setInstances(
-                new OpenProject(),
                 new TestUserCatalog(),
                 new TestMultiProjectFactory(projects),
                 new SimpleFileOwnerQueryImplementation(),

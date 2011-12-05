@@ -41,9 +41,23 @@
  */
 package org.netbeans.modules.coherence.server;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.jar.JarInputStream;
+import java.util.jar.Manifest;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 import org.netbeans.api.server.properties.InstanceProperties;
+import org.netbeans.modules.coherence.server.util.Version;
+import org.openide.filesystems.FileUtil;
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * Holds basic Coherence and Coherence plugin properties.
@@ -55,12 +69,12 @@ public class CoherenceProperties {
     /**
      * Key for Coherence instance ID in {@link InstanceProperties}.
      */
-    public static final String PROP_COHERENCE_ID = "base.coherence.id"; //NOI18N
+    public static final String PROP_ID = "base.coherence.id"; //NOI18N
 
     /**
      * Key for Coherence location path in {@link InstanceProperties}.
      */
-    public static final String PROP_COHERENCE_LOCATION = "base.coherence.location"; //NOI18N
+    public static final String PROP_LOCATION = "base.coherence.location"; //NOI18N
 
     /**
      * Key for Coherence instance display name in {@link InstanceProperties}.
@@ -71,7 +85,7 @@ public class CoherenceProperties {
      * Key for Coherence instance classpath in {@link InstanceProperties}. It includes
      * Coherence base JAR as well as additional Coherence or another JARs.
      */
-    public static final String PROP_COHERENCE_CLASSPATH = "base.coherence.classpath"; //NOI18N
+    public static final String PROP_CLASSPATH = "base.coherence.classpath"; //NOI18N
 
     /**
      * Key for Coherence instance java flags in {@link InstanceProperties}.
@@ -103,49 +117,144 @@ public class CoherenceProperties {
      */
     public static final List<CoherenceServerProperty> SERVER_PROPERTIES = new ArrayList<CoherenceServerProperty>();
 
+    private static final Logger LOGGER = Logger.getLogger(CoherenceProperties.class.getName());
+
     static {
-        SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.coherence.cacheconfig", "Cache configuration descriptor filename", String.class));
-        SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.coherence.cluster", "Cluster name", String.class));
-        SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.coherence.clusteraddress", "Cluster (multicast) IP address", String.class));
-        SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.coherence.clusterport", "Cluster (multicast) IP port", Long.class));
-        SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.coherence.distributed.backup", "Data backup storage location", String.class));
-        SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.coherence.distributed.backupcount", "Number of data backups", Integer.class));
-        SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.coherence.distributed.localstorage", "Local partition management enabled", Boolean.class));
-        SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.coherence.distributed.threads", "Thread pool size", Integer.class));
-        SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.coherence.distributed.transfer", "Partition transfer threshold", Long.class));
-        SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.coherence.edition", "Product edition", String.class));
-        SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.coherence.invocation.threads", "Invocation service thread pool size", Integer.class));
-        SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.coherence.localhost", "Unicast IP address", String.class));
-        SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.coherence.localport", "Unicast IP port", Long.class));
-        SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.coherence.localport.adjust", "Unicast IP port auto assignment", Boolean.class, "true"));
-        SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.coherence.log", "Logging destination", String.class));
-        SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.coherence.log.level", "Logging level", String.class));
-        SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.coherence.log.limit", "Log output character limit", Long.class));
-        SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.coherence.machine", "Machine name", String.class));
-        SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.coherence.management", "JMX management mode", String.class));
-        SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.coherence.management.readonly", "JMX management read-only flag", Boolean.class, "false"));
-        SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.coherence.management.remote", "Remote JMX management enabled flag", Boolean.class, "false"));
-        SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.coherence.member", "Member name", String.class));
-        SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.coherence.mode", "Operational mode", String.class));
-        SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.coherence.override", "Deployment configuration override filename", String.class));
-        SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.coherence.priority", "Priority", Integer.class));
-        SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.coherence.process", "Process name", String.class));
-        SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.coherence.proxy.threads", "Coherence*Extend service thread pool size", Integer.class));
-        SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.coherence.rack", "Rack name", String.class));
-        SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.coherence.role", "Role name", String.class));
-        SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.coherence.security", "Cache access security enabled flag", Boolean.class, "false"));
-        SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.coherence.security.keystore", "Security access controller keystore file name", String.class));
-        SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.coherence.security.password", "Keystore or cluster encryption password", String.class));
-        SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.coherence.security.permissions", "Security access controller permissions file name", String.class));
-        SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.coherence.shutdownhook", "Shutdown listener action", String.class));
-        SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.coherence.site", "Site name", String.class));
-        SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.coherence.tcmp.enabled", "TCMP enabled flag", Boolean.class, "true"));
-        SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.coherence.tcpring", "TCP Ring enabled flag", Boolean.class, "false"));
-        SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.coherence.ttl", "Multicast packet time to live (TTL)", Long.class));
-        SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.coherence.wka", "Well known IP address", String.class));
-        SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.coherence.wka.port", "Well known IP port", Long.class));
-        SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.pof.enabled", "Enable POF Serialization", Boolean.class, "false"));
-        SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.pof.config", "Configuration file containing POF Serialization class information", String.class));
+        SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.coherence.cacheconfig", "Cache configuration descriptor filename", String.class)); //NOI18N
+        SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.coherence.cluster", "Cluster name", String.class)); //NOI18N
+        SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.coherence.clusteraddress", "Cluster (multicast) IP address", String.class)); //NOI18N
+        SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.coherence.clusterport", "Cluster (multicast) IP port", Long.class)); //NOI18N
+        SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.coherence.distributed.backup", "Data backup storage location", String.class)); //NOI18N
+        SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.coherence.distributed.backupcount", "Number of data backups", Integer.class)); //NOI18N
+        SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.coherence.distributed.localstorage", "Local partition management enabled", Boolean.class)); //NOI18N
+        SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.coherence.distributed.threads", "Thread pool size", Integer.class)); //NOI18N
+        SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.coherence.distributed.transfer", "Partition transfer threshold", Long.class)); //NOI18N
+        SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.coherence.edition", "Product edition", String.class)); //NOI18N
+        SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.coherence.invocation.threads", "Invocation service thread pool size", Integer.class)); //NOI18N
+        SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.coherence.localhost", "Unicast IP address", String.class)); //NOI18N
+        SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.coherence.localport", "Unicast IP port", Long.class)); //NOI18N
+        SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.coherence.localport.adjust", "Unicast IP port auto assignment", Boolean.class, "true")); //NOI18N
+        SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.coherence.log", "Logging destination", String.class)); //NOI18N
+        SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.coherence.log.level", "Logging level", String.class)); //NOI18N
+        SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.coherence.log.limit", "Log output character limit", Long.class)); //NOI18N
+        SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.coherence.machine", "Machine name", String.class)); //NOI18N
+        SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.coherence.management", "JMX management mode", String.class)); //NOI18N
+        SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.coherence.management.readonly", "JMX management read-only flag", Boolean.class, "false")); //NOI18N
+        SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.coherence.management.remote", "Remote JMX management enabled flag", Boolean.class, "false")); //NOI18N
+        SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.coherence.member", "Member name", String.class)); //NOI18N
+        SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.coherence.mode", "Operational mode", String.class)); //NOI18N
+        SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.coherence.override", "Deployment configuration override filename", String.class)); //NOI18N
+        SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.coherence.priority", "Priority", Integer.class)); //NOI18N
+        SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.coherence.process", "Process name", String.class)); //NOI18N
+        SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.coherence.proxy.threads", "Coherence*Extend service thread pool size", Integer.class)); //NOI18N
+        SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.coherence.rack", "Rack name", String.class)); //NOI18N
+        SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.coherence.role", "Role name", String.class)); //NOI18N
+        SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.coherence.security", "Cache access security enabled flag", Boolean.class, "false")); //NOI18N
+        SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.coherence.security.keystore", "Security access controller keystore file name", String.class)); //NOI18N
+        SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.coherence.security.password", "Keystore or cluster encryption password", String.class)); //NOI18N
+        SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.coherence.security.permissions", "Security access controller permissions file name", String.class)); //NOI18N
+        SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.coherence.shutdownhook", "Shutdown listener action", String.class)); //NOI18N
+        SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.coherence.site", "Site name", String.class)); //NOI18N
+        SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.coherence.tcmp.enabled", "TCMP enabled flag", Boolean.class, "true")); //NOI18N
+        SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.coherence.tcpring", "TCP Ring enabled flag", Boolean.class, "false")); //NOI18N
+        SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.coherence.ttl", "Multicast packet time to live (TTL)", Long.class)); //NOI18N
+        SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.coherence.wka", "Well known IP address", String.class)); //NOI18N
+        SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.coherence.wka.port", "Well known IP port", Long.class)); //NOI18N
+        SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.pof.enabled", "Enable POF Serialization", Boolean.class, "false")); //NOI18N
+        SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.pof.config", "Configuration file containing POF Serialization class information", String.class)); //NOI18N
+    }
+
+    /**
+     * Gets version of Coherence server for given server root directory.
+     *
+     * @param serverRoot root folder of the Coherence server
+     * @return {@link Version} of the Coherence server if found, {@code null} otherwise
+     */
+    public static Version getServerVersion(File serverRoot) {
+        String version = null;
+        File productXml = new File(serverRoot, "product.xml"); //NOI18N
+        if (productXml.exists()) {
+            // parse the version number from product.xml file
+            version = obtainVersionFromProductFile(productXml);
+            LOGGER.log(Level.FINE, "Coherence version={0} obtained from product.xml file", version);
+        }
+
+        if (version == null) {
+            // get Coherence version from its jar
+            version = obtainVersionFromCoherenceJar(serverRoot);
+            LOGGER.log(Level.FINE, "Coherence version={0} obtained from coherence.jar file", version);
+        }
+
+        if (version != null) {
+            return Version.fromDottedNotationWithFallback(version);
+        }
+        return null;
+    }
+
+    /**
+     * Gets coherence.jar file inside given dir root.
+     *
+     * @param serverRoot root directory of Coherence server
+     * @return coherence.jar file
+     */
+    public static File getCoherenceJar(File serverRoot) {
+        return new File(serverRoot.getAbsolutePath() + File.separator
+                + CoherenceServer.PLATFORM_LIB_DIR + File.separator + COHERENCE_JAR_NAME);
+    }
+
+    private static String obtainVersionFromProductFile(File productFile) {
+        try {
+            SAXParserFactory factory = SAXParserFactory.newInstance();
+            SAXParser saxParser = factory.newSAXParser();
+            VersionHandler handler = new VersionHandler();
+            saxParser.parse(productFile, handler);
+            return handler.getVersion();
+        } catch (IOException ex) {
+            LOGGER.log(Level.WARNING, null, ex);
+        } catch (ParserConfigurationException ex) {
+            LOGGER.log(Level.WARNING, null, ex);
+        } catch (SAXException ex) {
+            LOGGER.log(Level.WARNING, null, ex);
+        }
+        LOGGER.log(Level.FINE, "No version tag found in product.xml file.");
+        return null;
+    }
+
+    private static String obtainVersionFromCoherenceJar(File serverRoot) {
+        JarInputStream jis = null;
+        try {
+            jis = new JarInputStream(FileUtil.toFileObject(getCoherenceJar(serverRoot)).getInputStream());
+            Manifest manifest = jis.getManifest();
+            if (manifest != null) {
+                return manifest.getMainAttributes().getValue("Implementation-Version"); //NOI18N
+            }
+        } catch (IOException ex) {
+            LOGGER.log(Level.WARNING, null, ex);
+        } finally {
+            try {
+                jis.close();
+            } catch (IOException ex) {
+                LOGGER.log(Level.WARNING, null, ex);
+            }
+        }
+        return null;
+    }
+
+    private static final class VersionHandler extends DefaultHandler {
+
+        private String version;
+
+        public String getVersion() {
+            return version;
+        }
+
+        @Override
+        public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+            if (qName.equals("version")) { //NOI18N
+                version = attributes.getValue("value"); //NOI18N
+            }
+        }
+
     }
 
 }

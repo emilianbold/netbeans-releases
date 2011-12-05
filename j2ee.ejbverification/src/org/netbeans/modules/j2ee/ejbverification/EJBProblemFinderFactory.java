@@ -57,8 +57,7 @@ import org.openide.filesystems.FileObject;
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.api.java.source.JavaSourceTaskFactory.class)
 public class EJBProblemFinderFactory extends EditorAwareJavaSourceTaskFactory {
-    private FileObject file = null;
-    
+
     public EJBProblemFinderFactory(){
         super(Phase.RESOLVED, Priority.BELOW_NORMAL);
     }

@@ -66,7 +66,7 @@ import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.refactoring.api.Problem;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -78,7 +78,7 @@ public final class JavaPluginUtils {
 
     public static final Problem isSourceElement(Element el, CompilationInfo info) {
         Problem preCheckProblem = null;
-        if (RetoucheUtils.isFromLibrary(el, info.getClasspathInfo())) { //NOI18N
+        if (RefactoringUtils.isFromLibrary(el, info.getClasspathInfo())) { //NOI18N
             preCheckProblem = new Problem(true, NbBundle.getMessage(
                     JavaPluginUtils.class, "ERR_CannotRefactorLibraryClass",
                     el.getKind()==ElementKind.PACKAGE?el:el.getEnclosingElement()
@@ -86,8 +86,8 @@ public final class JavaPluginUtils {
             return preCheckProblem;
         }
         FileObject file = SourceUtils.getFile(el,info.getClasspathInfo());
-        // RetoucheUtils.isFromLibrary already checked file for null
-        if (!RetoucheUtils.isElementInOpenProject(file)) {
+        // RefactoringUtils.isFromLibrary already checked file for null
+        if (!RefactoringUtils.isFileInOpenProject(file)) {
             preCheckProblem =new Problem(true, NbBundle.getMessage(
                     JavaPluginUtils.class,
                     "ERR_ProjectNotOpened",

@@ -51,7 +51,7 @@ import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.ProgressEvent;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
 import org.netbeans.modules.refactoring.java.ui.JavaRenameProperties;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
@@ -171,7 +171,7 @@ public class RenameTestClassRefactoringPlugin extends JavaRefactoringPlugin {
         
         final LinkedList<RenameRefactoring> renameRefactoringsList = new LinkedList<RenameRefactoring>();
 
-        if(RetoucheUtils.getElementKind(treePathHandle) == ElementKind.CLASS) {
+        if(treePathHandle.getElementHandle().getKind() == ElementKind.CLASS) {
             final FileObject fileObject = treePathHandle.getFileObject();
             Collection<? extends TestLocator> testLocators = Lookup.getDefault().lookupAll(TestLocator.class);
             for (final TestLocator testLocator : testLocators) {

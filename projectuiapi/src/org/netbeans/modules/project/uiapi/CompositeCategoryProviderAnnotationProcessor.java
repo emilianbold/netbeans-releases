@@ -76,10 +76,18 @@ public class CompositeCategoryProviderAnnotationProcessor extends LayerGeneratin
             return false;
         }
         for (Element e : roundEnv.getElementsAnnotatedWith(Registration.class)) {
-            handle(e, e.getAnnotation(Registration.class));
+            Registration r = e.getAnnotation(Registration.class);
+            if (r == null) {
+                continue;
+            }
+            handle(e, r);
         }
         for (Element e : roundEnv.getElementsAnnotatedWith(Registrations.class)) {
-            for (Registration r : e.getAnnotation(Registrations.class).value()) {
+            Registrations rr = e.getAnnotation(Registrations.class);
+            if (rr == null) {
+                continue;
+            }
+            for (Registration r : rr.value()) {
                 handle(e, r);
             }
         }

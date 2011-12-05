@@ -362,6 +362,7 @@ public class TreePathHandleTest extends NbTestCase {
         assertNotNull(resolved);
 
         assertTrue(tp.getLeaf() == resolved.getLeaf());
+        assertTrue(handle.getElementHandle().equals(elHandle));
     }
 
     private static final class SecMan extends SecurityManager {

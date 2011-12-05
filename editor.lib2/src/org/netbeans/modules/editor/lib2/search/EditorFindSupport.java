@@ -263,7 +263,7 @@ public final class EditorFindSupport {
             getFindProperties().putAll(propsToAdd);
         }
         //highlight will not be updated on empty properties
-        if (propsToAdd.get(FIND_BLOCK_SEARCH_END) != null) {
+        if (propsToAdd.get(FIND_WHAT) != null) {
             firePropertyChange(null, null, null);
         }
     }
@@ -490,7 +490,7 @@ public final class EditorFindSupport {
             PlainDocument plainDocument = new PlainDocument();
             plainDocument.insertString(0, text, null);
             int[] find = DocumentFinder.find(plainDocument, 0, text.length(), props , false);
-            return find[0] != -1;
+            return find != null && find[0] != -1;
         } catch (BadLocationException ex) {
             return false;
         }

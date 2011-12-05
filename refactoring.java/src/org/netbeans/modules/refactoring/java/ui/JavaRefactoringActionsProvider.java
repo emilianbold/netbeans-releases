@@ -68,7 +68,7 @@ import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.TreeUtilities;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.ChangeParametersRefactoring.ParameterInfo;
 import org.netbeans.modules.refactoring.java.api.ui.JavaRefactoringActionsFactory;
 import org.netbeans.modules.refactoring.java.spi.ui.JavaActionsImplementationProvider;
@@ -134,7 +134,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
                 }
             };
         }
-        RetoucheUtils.invokeAfterScanFinished(task, RefactoringActionsProvider.getActionName(JavaRefactoringActionsFactory.extractInterfaceAction()));
+        RefactoringUtils.invokeAfterScanFinished(task, RefactoringActionsProvider.getActionName(JavaRefactoringActionsFactory.extractInterfaceAction()));
     }
 
     @Override
@@ -146,14 +146,14 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
         Node n = nodes.iterator().next();
         TreePathHandle tph = n.getLookup().lookup(TreePathHandle.class);
         if (tph != null) {
-            return RetoucheUtils.isRefactorable(tph.getFileObject());
+            return RefactoringUtils.isRefactorable(tph.getFileObject());
         }
         DataObject dob = n.getCookie(DataObject.class);
         if (dob==null) {
             return false;
         }
         FileObject fo = dob.getPrimaryFile();
-        if (RetoucheUtils.isRefactorable(fo)) { //NOI18N
+        if (RefactoringUtils.isRefactorable(fo)) { //NOI18N
             return true;
         }
         return false;
@@ -202,7 +202,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
                 }
             };
         }
-        RetoucheUtils.invokeAfterScanFinished(task, RefactoringActionsProvider.getActionName(JavaRefactoringActionsFactory.extractSuperclassAction()));
+        RefactoringUtils.invokeAfterScanFinished(task, RefactoringActionsProvider.getActionName(JavaRefactoringActionsFactory.extractSuperclassAction()));
     }
 
     @Override
@@ -214,14 +214,14 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
         Node n = nodes.iterator().next();
         TreePathHandle tph = n.getLookup().lookup(TreePathHandle.class);
         if (tph != null) {
-            return RetoucheUtils.isRefactorable(tph.getFileObject());
+            return RefactoringUtils.isRefactorable(tph.getFileObject());
         }
         DataObject dob = n.getCookie(DataObject.class);
         if (dob==null) {
             return false;
         }
         FileObject fo = dob.getPrimaryFile();
-        if (RetoucheUtils.isRefactorable(fo)) { //NOI18N
+        if (RefactoringUtils.isRefactorable(fo)) { //NOI18N
             return true;
         }
         return false;
@@ -274,7 +274,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
                 }
             };
         }
-        RetoucheUtils.invokeAfterScanFinished(task, RefactoringActionsProvider.getActionName(JavaRefactoringActionsFactory.pushDownAction()));
+        RefactoringUtils.invokeAfterScanFinished(task, RefactoringActionsProvider.getActionName(JavaRefactoringActionsFactory.pushDownAction()));
     }
 
     @Override
@@ -286,14 +286,14 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
         Node n = nodes.iterator().next();
         TreePathHandle tph = n.getLookup().lookup(TreePathHandle.class);
         if (tph != null) {
-            return RetoucheUtils.isRefactorable(tph.getFileObject());
+            return RefactoringUtils.isRefactorable(tph.getFileObject());
         }
         DataObject dob = n.getCookie(DataObject.class);
         if (dob==null) {
             return false;
         }
         FileObject fo = dob.getPrimaryFile();
-        if (RetoucheUtils.isRefactorable(fo)) { //NOI18N
+        if (RefactoringUtils.isRefactorable(fo)) { //NOI18N
             return true;
         }
         return false;
@@ -345,7 +345,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
                 }
             };
         }
-        RetoucheUtils.invokeAfterScanFinished(task, RefactoringActionsProvider.getActionName(JavaRefactoringActionsFactory.pullUpAction()));
+        RefactoringUtils.invokeAfterScanFinished(task, RefactoringActionsProvider.getActionName(JavaRefactoringActionsFactory.pullUpAction()));
     }
 
     @Override
@@ -357,14 +357,14 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
         Node n = nodes.iterator().next();
         TreePathHandle tph = n.getLookup().lookup(TreePathHandle.class);
         if (tph != null) {
-            return RetoucheUtils.isRefactorable(tph.getFileObject());
+            return RefactoringUtils.isRefactorable(tph.getFileObject());
         }
         DataObject dob = n.getCookie(DataObject.class);
         if (dob==null) {
             return false;
         }
         FileObject fo = dob.getPrimaryFile();
-        if (RetoucheUtils.isRefactorable(fo)) { //NOI18N
+        if (RefactoringUtils.isRefactorable(fo)) { //NOI18N
             return true;
         }
         return false;
@@ -378,13 +378,13 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
         Node node = nodes.iterator().next();
         TreePathHandle tph = node.getLookup().lookup(TreePathHandle.class);
         if (tph != null) {
-            return RetoucheUtils.isRefactorable(tph.getFileObject());
+            return RefactoringUtils.isRefactorable(tph.getFileObject());
         }
         DataObject dObj = node.getCookie(DataObject.class);
         if(null == dObj)
             return false;
         FileObject fileObj = dObj.getPrimaryFile();
-        if(null == fileObj || !RetoucheUtils.isRefactorable(fileObj))
+        if(null == fileObj || !RefactoringUtils.isRefactorable(fileObj))
             return false;
         
         return true;
@@ -396,6 +396,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
         EditorCookie ec = lookup.lookup(EditorCookie.class);
         if (RefactoringActionsProvider.isFromEditor(ec)) {
             task = new RefactoringActionsProvider.TextComponentTask(ec){
+                @Override
                 protected RefactoringUI createRefactoringUI(TreePathHandle selectedElement,
                                                             int startOffset,
                                                             int endOffset,
@@ -403,14 +404,14 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
                     Element selected = selectedElement.resolveElement(info);
                     TreePathHandle s = selectedElement;
                     if (selected == null || !(selected.getKind().isClass() || selected.getKind().isInterface())) {
-                        TreePath classTreePath = RetoucheUtils.findEnclosingClass(info, selectedElement.resolve(info), true, true, true, true, true);
+                        TreePath classTreePath = RefactoringUtils.findEnclosingClass(info, selectedElement.resolve(info), true, true, true, true, true);
 
                         if (classTreePath == null) {
                             return null;
                         }
                         s = TreePathHandle.create(classTreePath, info);
                     }
-                    return wrap(new UseSuperTypeRefactoringUI(s));
+                    return wrap(new UseSuperTypeRefactoringUI(s, info));
                 }
             };
         } else if (RefactoringActionsProvider.nodeHandle(lookup)) {
@@ -420,7 +421,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
 
                 @Override
                 protected void treePathHandleResolved(TreePathHandle handle, CompilationInfo javac) {
-                    ui = new UseSuperTypeRefactoringUI(handle);
+                    ui = new UseSuperTypeRefactoringUI(handle, javac);
                 }
 
                 @Override
@@ -436,7 +437,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
                 @Override
                 protected void nodeTranslated(Node node, Collection<TreePathHandle> handles, CompilationInfo javac) {
                     TreePathHandle tph = handles.iterator().next();
-                    ui = new UseSuperTypeRefactoringUI(tph);
+                    ui = new UseSuperTypeRefactoringUI(tph, javac);
                 }
 
                 @Override
@@ -445,14 +446,14 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
                 }
             };
         }
-        RetoucheUtils.invokeAfterScanFinished(task, RefactoringActionsProvider.getActionName(JavaRefactoringActionsFactory.useSuperTypeAction()));
+        RefactoringUtils.invokeAfterScanFinished(task, RefactoringActionsProvider.getActionName(JavaRefactoringActionsFactory.useSuperTypeAction()));
     }
     
     @Override
     public boolean canChangeParameters(Lookup lookup) {
         TreePathHandle tph = lookup.lookup(TreePathHandle.class);
         if (tph != null) {
-            return RetoucheUtils.isRefactorable(tph.getFileObject());
+            return RefactoringUtils.isRefactorable(tph.getFileObject());
         }
         Collection<? extends Node> nodes = new HashSet<Node>(lookup.lookupAll(Node.class));
         if(nodes.size() != 1)
@@ -460,13 +461,13 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
         Node node = nodes.iterator().next();
         tph = node.getLookup().lookup(TreePathHandle.class);
         if (tph != null) {
-            return RetoucheUtils.isRefactorable(tph.getFileObject());
+            return RefactoringUtils.isRefactorable(tph.getFileObject());
         }
         DataObject dObj = node.getCookie(DataObject.class);
         if(null == dObj)
             return false;
         FileObject fileObj = dObj.getPrimaryFile();
-        if(null == fileObj || !RetoucheUtils.isRefactorable(fileObj))
+        if(null == fileObj || !RefactoringUtils.isRefactorable(fileObj))
             return false;
         
         EditorCookie ec = lookup.lookup(EditorCookie.class);
@@ -489,6 +490,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
         }
         if (ec != null) {
             task = new RefactoringActionsProvider.TextComponentTask(ec) {
+                @Override
                 protected RefactoringUI createRefactoringUI(TreePathHandle selectedElement,
                         int startOffset,
                         int endOffset,
@@ -536,7 +538,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
                 };
             }
         }
-        RetoucheUtils.invokeAfterScanFinished(task, RefactoringActionsProvider.getActionName(JavaRefactoringActionsFactory.changeParametersAction()));
+        RefactoringUtils.invokeAfterScanFinished(task, RefactoringActionsProvider.getActionName(JavaRefactoringActionsFactory.changeParametersAction()));
     }
     
     @Override
@@ -547,13 +549,13 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
         Node node = nodes.iterator().next();
         TreePathHandle tph = node.getLookup().lookup(TreePathHandle.class);
         if (tph != null) {
-            return RetoucheUtils.isRefactorable(tph.getFileObject());
+            return RefactoringUtils.isRefactorable(tph.getFileObject());
         }
         DataObject dObj = node.getCookie(DataObject.class);
         if(null == dObj)
             return false;
         FileObject fileObj = dObj.getPrimaryFile();
-        if(null == fileObj || !RetoucheUtils.isRefactorable(fileObj))
+        if(null == fileObj || !RefactoringUtils.isRefactorable(fileObj))
             return false;
         
         EditorCookie ec = lookup.lookup(EditorCookie.class);
@@ -569,6 +571,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
         EditorCookie ec = lookup.lookup(EditorCookie.class);
         if (ec != null) {
             task = new RefactoringActionsProvider.TextComponentTask(ec) {
+                @Override
                 protected RefactoringUI createRefactoringUI(TreePathHandle selectedElement,
                         int startOffset,
                         int endOffset,
@@ -596,7 +599,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
                 }
             };
         }
-        RetoucheUtils.invokeAfterScanFinished(task, RefactoringActionsProvider.getActionName(JavaRefactoringActionsFactory.changeParametersAction()));
+        RefactoringUtils.invokeAfterScanFinished(task, RefactoringActionsProvider.getActionName(JavaRefactoringActionsFactory.changeParametersAction()));
     }    
     
     private static final Set<TypeKind> NOT_ACCEPTED_TYPES = EnumSet.of(TypeKind.ERROR, TypeKind.NONE, TypeKind.OTHER, TypeKind.VOID, TypeKind.EXECUTABLE);
@@ -694,13 +697,13 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
         Node node = nodes.iterator().next();
         TreePathHandle tph = node.getLookup().lookup(TreePathHandle.class);
         if (tph != null) {
-            return RetoucheUtils.isRefactorable(tph.getFileObject());
+            return RefactoringUtils.isRefactorable(tph.getFileObject());
         }
         DataObject dObj = node.getCookie(DataObject.class);
         if(null == dObj)
             return false;
         FileObject fileObj = dObj.getPrimaryFile();
-        if(null == fileObj || !RetoucheUtils.isRefactorable(fileObj))
+        if(null == fileObj || !RefactoringUtils.isRefactorable(fileObj))
             return false;
         
         EditorCookie ec = lookup.lookup(EditorCookie.class);
@@ -716,6 +719,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
         if (ec!=null) {
             task = new RefactoringActionsProvider.TextComponentTask(ec) {
 
+                @Override
                 protected RefactoringUI createRefactoringUI(TreePathHandle selectedElement,
                         int startOffset,
                         int endOffset,
@@ -724,7 +728,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
                     TreePath resolved = selectedElement.resolve(info);
                     TreePath enclosing = resolved == null
                             ? null
-                            : RetoucheUtils.findEnclosingClass(info, resolved, true, true, true, true, false);
+                            : RefactoringUtils.findEnclosingClass(info, resolved, true, true, true, true, false);
                     if (enclosing != null && enclosing != resolved) {
                         selectedElement = TreePathHandle.create(enclosing, info);
                     }
@@ -750,7 +754,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
                 
             };
         }
-        RetoucheUtils.invokeAfterScanFinished(task, RefactoringActionsProvider.getActionName(JavaRefactoringActionsFactory.innerToOuterAction()));
+        RefactoringUtils.invokeAfterScanFinished(task, RefactoringActionsProvider.getActionName(JavaRefactoringActionsFactory.innerToOuterAction()));
     }
 
     @Override
@@ -762,14 +766,14 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
         Node n = nodes.iterator().next();
         TreePathHandle tph = n.getLookup().lookup(TreePathHandle.class);
         if (tph != null) {
-            return RetoucheUtils.isRefactorable(tph.getFileObject());
+            return RefactoringUtils.isRefactorable(tph.getFileObject());
         }
         DataObject dob = n.getCookie(DataObject.class);
         if (dob==null) {
             return false;
         }
         FileObject fo = dob.getPrimaryFile();
-        if (RetoucheUtils.isRefactorable(fo)) { //NOI18N
+        if (RefactoringUtils.isRefactorable(fo)) { //NOI18N
             return true;
         }
         return false;
@@ -847,7 +851,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
                 }
             };
         }
-        RetoucheUtils.invokeAfterScanFinished(task, RefactoringActionsProvider.getActionName(JavaRefactoringActionsFactory.encapsulateFieldsAction()));
+        RefactoringUtils.invokeAfterScanFinished(task, RefactoringActionsProvider.getActionName(JavaRefactoringActionsFactory.encapsulateFieldsAction()));
     }
     
     @Override
@@ -859,14 +863,14 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
         Node node = nodes.iterator().next();
         TreePathHandle tph = node.getLookup().lookup(TreePathHandle.class);
         if (tph != null) {
-            return RetoucheUtils.isRefactorable(tph.getFileObject());
+            return RefactoringUtils.isRefactorable(tph.getFileObject());
         }
         DataObject dObj = node.getCookie(DataObject.class);
         if (null == dObj) {
             return false;
         }
         FileObject fileObj = dObj.getPrimaryFile();
-        if (null == fileObj || !RetoucheUtils.isRefactorable(fileObj)) {
+        if (null == fileObj || !RefactoringUtils.isRefactorable(fileObj)) {
             return false;
         }
 
@@ -921,7 +925,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
                 }
             };
         }
-        RetoucheUtils.invokeAfterScanFinished(task, RefactoringActionsProvider.getActionName(JavaRefactoringActionsFactory.inlineAction()));
+        RefactoringUtils.invokeAfterScanFinished(task, RefactoringActionsProvider.getActionName(JavaRefactoringActionsFactory.inlineAction()));
     }
     
     protected RefactoringUI wrap(RefactoringUI orig) {

@@ -108,18 +108,22 @@ public class ExtractSuperclassPanel extends JPanel implements CustomRefactoringP
         nameText.setSelectionEnd(defaultName.length());
         
         nameText.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
             public void changedUpdate(DocumentEvent event) {
                 parent.stateChanged(null);
             }
+            @Override
             public void insertUpdate(DocumentEvent event) {
                 parent.stateChanged(null);
             }
+            @Override
             public void removeUpdate(DocumentEvent event) {
                 parent.stateChanged(null);
             }
         });
     }
 
+    @Override
     public void requestFocus() {
         super.requestFocus();
         nameText.requestFocus();
@@ -127,10 +131,12 @@ public class ExtractSuperclassPanel extends JPanel implements CustomRefactoringP
 
     /** Initialization of the panel (called by the parent window).
      */
+    @Override
     public void initialize() {
         // *** initialize table
         // set renderer for the second column ("Member") do display name of the feature
         membersTable.setDefaultRenderer(COLUMN_CLASSES[1], new DefaultTableCellRenderer() {
+            @Override
             public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
                 super.getTableCellRendererComponent(table, extractText(value), isSelected, hasFocus, row, column);
                 if (value instanceof MemberInfo) {
@@ -260,30 +266,37 @@ public class ExtractSuperclassPanel extends JPanel implements CustomRefactoringP
             initialize();
         }
         
+        @Override
         public int getColumnCount() {
             return COLUMN_NAMES.length;
         }
 
+        @Override
         public String getColumnName(int column) {
             return UIUtilities.getColumnName(NbBundle.getMessage(ExtractSuperclassPanel.class, COLUMN_NAMES[column]));
         }
 
+        @Override
         public Class getColumnClass(int columnIndex) {
             return COLUMN_CLASSES[columnIndex];
         }
 
+        @Override
         public int getRowCount() {
             return members.length;
         }
 
+        @Override
         public Object getValueAt(int rowIndex, int columnIndex) {
             return members[rowIndex][columnIndex];
         }
 
+        @Override
         public void setValueAt(Object value, int rowIndex, int columnIndex) {
             members[rowIndex][columnIndex] = value;
         }
 
+        @Override
         public boolean isCellEditable(int rowIndex, int columnIndex) {
             if (columnIndex == 2) {
                 // column 2 is editable only in case of non-static methods
@@ -307,9 +320,11 @@ public class ExtractSuperclassPanel extends JPanel implements CustomRefactoringP
             JavaSource js = JavaSource.forFileObject(fo);
             try {
                 js.runUserActionTask(new CancellableTask<CompilationController>() {
+                    @Override
                         public void cancel() {
                         }
 
+                    @Override
                         public void run(CompilationController javac) throws Exception {
                             javac.toPhase(JavaSource.Phase.RESOLVED);
                             initializeInTransaction(javac, sourceType);
@@ -355,6 +370,7 @@ public class ExtractSuperclassPanel extends JPanel implements CustomRefactoringP
             // the members are collected
             // now, create a tree map (to sort them) and create the table data
             Collections.sort(result, new Comparator<MemberInfo<?>>() {
+                @Override
                 public int compare(MemberInfo<?> mi1, MemberInfo<?> mi2) {
                     int result = mi1.getGroup().compareTo(mi2.getGroup());
                     
@@ -381,6 +397,7 @@ public class ExtractSuperclassPanel extends JPanel implements CustomRefactoringP
         }
     }
 
+    @Override
     public Component getComponent() {
         return this;
     }

@@ -38,9 +38,12 @@
 
 package org.netbeans.modules.maven.osgi;
 
+import java.util.Arrays;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.test.TestFileUtils;
@@ -65,7 +68,9 @@ public class SupportedProjectTypesTest extends NbTestCase {
                 + "<configuration><supportedProjectTypes><supportedProjectType>war</supportedProjectType></supportedProjectTypes></configuration>"
                 + "</plugin></plugins></build>"
                 + "</project>");
-        assertEquals("bundle", ProjectManager.getDefault().findProject(d).getLookup().lookup(NbMavenProject.class).getPackagingType());
+        Project p = ProjectManager.getDefault().findProject(d);
+        assertEquals("bundle", p.getLookup().lookup(NbMavenProject.class).getPackagingType());
+        assertTrue(Arrays.asList(p.getLookup().lookup(RecommendedTemplates.class).getRecommendedTypes()).contains("osgi"));
     }
 
 }

@@ -107,6 +107,21 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="EditorActionRegistration-weight">
+            <summary>Add "weight" attribute to EditorActionRegistration.</summary>
+            <version major="1" minor="53"/>
+            <date day="14" month="11" year="2011"/>
+            <author login="mmetelka"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes"/>
+            <description>
+                <p>
+                    Add "weight" attribute to EditorActionRegistration annotation
+                    to allow for a clean actions overriding.
+                </p>
+            </description>
+            <issue number="199823"/>
+        </change>
+
         <change id="zoom-text-action-names-added">
             <summary>Zoom text actions added</summary>
             <version major="1" minor="45"/>

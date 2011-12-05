@@ -82,7 +82,7 @@ public class ResetAction extends SingleRepositoryAction {
                 protected void perform () {
                     final Collection<File> notifiedFiles = new HashSet<File>();
                     try {
-                        GitClient client = getClient();
+                        org.netbeans.modules.git.client.GitClient client = getClient();
                         if (reset.getType() == GitClient.ResetType.HARD) {
                             client.addNotificationListener(new FileListener() {
                                 @Override

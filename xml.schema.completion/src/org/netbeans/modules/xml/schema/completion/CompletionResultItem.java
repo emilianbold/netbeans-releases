@@ -57,6 +57,7 @@ import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.xml.lexer.XMLTokenId;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.modules.xml.axi.AXIComponent;
@@ -165,6 +166,19 @@ public abstract class CompletionResultItem implements CompletionItem {
     public void setTokenSequence(TokenSequence tokenSequence) {
         this.tokenSequence = tokenSequence;
     }
+    
+    protected int removeTextLength(JTextComponent component, int offset, int removeLength) {
+        TokenSequence s = createTokenSequence(component);
+        s.move(offset);
+        s.moveNext();
+        if (s.token().id() == XMLTokenId.TAG) {
+            // replace entire tag, minus starting >
+            if (s.token().text().toString().startsWith(CompletionUtil.TAG_FIRST_CHAR)) {
+                return s.token().length() - (offset - s.offset());
+            }
+        }
+        return removeLength;
+    }
 
     /**
      * Actually replaces a piece of document by passes text.
@@ -182,9 +196,9 @@ public abstract class CompletionResultItem implements CompletionItem {
                 try {
                     int caretPos = component.getCaretPosition();
                     if ((context != null) && (context.canReplace(text))) {
-                        if (len > 0) doc.remove(offset, len);
-
-                        String insertingText = getInsertingText(component, text);
+                        int l2 = removeTextLength(component, offset, len);
+                        String insertingText = getInsertingText(component, text, l2);
+                        if (l2 > 0) doc.remove(offset, l2);
                         doc.insertString(offset, insertingText, null);
                         // fix for issue #186007
                         caretPos = component.getCaretPosition(); // get the caret position
@@ -218,25 +232,41 @@ public abstract class CompletionResultItem implements CompletionItem {
             }
         });
     }
-
-    protected String getInsertingText(JTextComponent component, String primaryText) {
-        if ((primaryText == null) || (primaryText.length() < 1)) {
-            return primaryText;
-        }
-        int textPos = component.getCaret().getDot();
-
+    
+    private TokenSequence createTokenSequence(JTextComponent component) {
         if (tokenSequence == null) {
             TokenHierarchy tokenHierarchy = TokenHierarchy.get(component.getDocument());
             this.tokenSequence = tokenHierarchy.tokenSequence();
         }
-
-        tokenSequence.move(textPos);
-        tokenSequence.moveNext();
+        return tokenSequence;
+    }
+    
+    private String stripCommonPrefix(String prefix, String replacement, String original) {
+        if (replacement.startsWith(prefix) && original.startsWith(prefix)) {
+            return replacement.substring(prefix.length());
+        } else {
+            return replacement;
+        }
+    }
+    
+    private void resetTokenSequence() {
+        tokenSequence = null;
+    }
+    
+    protected String getInsertingText(JTextComponent component, String primaryText, int removeLen) {
+        if ((primaryText == null) || (primaryText.length() < 1)) {
+            return primaryText;
+        }
+        int textPos = component.getCaret().getDot();
+        createTokenSequence(component);
+        if (tokenSequence.move(textPos) == 0) {
+            tokenSequence.movePrevious();
+        } else {
+            tokenSequence.moveNext();
+        }
         Token token = tokenSequence.token();
         boolean isTextTag = CompletionUtil.isTextTag(token);
-        if ((! isTextTag) && tokenSequence.movePrevious()) {
-            token = tokenSequence.token();
-        }
+
         if (! (isTextTag || CompletionUtil.isEndTagPrefix(token) ||
             CompletionUtil.isTagFirstChar(token))) {
             return primaryText;
@@ -253,6 +283,38 @@ public abstract class CompletionResultItem implements CompletionItem {
                 (textPos == tokenOffset + CompletionUtil.TAG_FIRST_CHAR.length()));
             if (! isCaretAfterTag) {
                 return primaryText;
+            }
+        }
+        
+        String tokenText = token.text().toString();
+        if (removeLen > 0) {
+            // in the middle of the tag; must return text without starting / end tag
+            primaryText = stripCommonPrefix(CompletionUtil.END_TAG_PREFIX, primaryText, tokenText);
+            primaryText = stripCommonPrefix(CompletionUtil.TAG_FIRST_CHAR, primaryText, tokenText);
+        }        
+        if (primaryText.endsWith(CompletionUtil.TAG_LAST_CHAR)) {
+            boolean endPresent = false;
+            STOP: while (!endPresent && tokenSequence.moveNext()) {
+                Token t = tokenSequence.token();
+                switch ((XMLTokenId)t.id()) {
+                    case WS:
+                    case ARGUMENT:
+                    case VALUE:
+                    case OPERATOR:
+                        break;
+                    case TAG: {
+                        String tt = t.text().toString();
+                        if (tt.equals(CompletionUtil.TAG_LAST_CHAR) || tt.equals("/>")) {
+                            endPresent = true;
+                            break;
+                        }
+                    }
+                    default:
+                        break STOP;
+                }
+            }
+            if (endPresent) {
+                primaryText = primaryText.substring(0, primaryText.length() -1);
             }
         }
 
@@ -274,7 +336,7 @@ public abstract class CompletionResultItem implements CompletionItem {
                 isDifferentTextFound = true;
             }
         }
-        String text = isDifferentTextFound ? primaryText.substring(i) : "";
+        String text = isDifferentTextFound ? primaryText.substring(Math.max(0, i - removeLen)) : "";
         return text;
     }
 

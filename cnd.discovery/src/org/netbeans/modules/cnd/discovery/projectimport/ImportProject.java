@@ -616,12 +616,12 @@ public class ImportProject implements PropertyChangeListener {
                 switchModel(true);
                 postModelDiscovery(true);
             }
-        } catch (DataObjectNotFoundException e) {
-            logger.log(Level.INFO, "Cannot configure project", e); // NOI18N
-            isFinished = true;
         } catch (Throwable e) {
             logger.log(Level.INFO, "Cannot configure project", e); // NOI18N
-            isFinished = true;
+            importResult.put(Step.Configure, State.Fail);
+            importResult.put(Step.MakeClean, State.Skiped);
+            switchModel(true);
+            postModelDiscovery(true);
         }
     }
 

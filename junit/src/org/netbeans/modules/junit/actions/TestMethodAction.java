@@ -40,6 +40,7 @@
 package org.netbeans.modules.junit.actions;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
@@ -101,7 +102,9 @@ public abstract class TestMethodAction extends NodeAction {
                 if (sm != null) {
                     ActionProvider ap = OutputUtils.getActionProvider(sm.getFile());
                     if (ap != null) {
-                        ap.invokeAction(command, Lookups.singleton(sm));
+                        if(Arrays.asList(ap.getSupportedActions()).contains(command) && ap.isActionEnabled(command, Lookups.singleton(sm))) {
+                            ap.invokeAction(command, Lookups.singleton(sm));
+                        }
                     }
                 }
             }

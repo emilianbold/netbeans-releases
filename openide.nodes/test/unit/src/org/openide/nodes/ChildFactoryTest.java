@@ -70,10 +70,12 @@ public class ChildFactoryTest extends TestCase {
     protected @Override void setUp() throws Exception {
         factory = new ProviderImpl();
         kids = new AsynchChildren<String>(factory);
+        factory.setObserver(kids);
         node = new AbstractNode(kids);
         
         factory2 = new BatchProviderImpl();
         kids2 = new AsynchChildren<String>(factory2);
+        factory2.setObserver(kids2);
         node2 = new AbstractNode(kids2);
     }
     

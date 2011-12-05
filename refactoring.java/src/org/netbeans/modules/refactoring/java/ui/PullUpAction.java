@@ -68,18 +68,22 @@ public class PullUpAction extends JavaRefactoringGlobalAction {
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }
     
+    @Override
     public final void performAction(Lookup context) {
         JavaActionsImplementationFactory.doPullUp(context);
     }
     
+    @Override
     public org.openide.util.HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
 
+    @Override
     protected boolean asynchronous() {
         return false;
     }
 
+    @Override
     protected boolean enable(Lookup context) {
         return JavaActionsImplementationFactory.canPullUp(context);
     }

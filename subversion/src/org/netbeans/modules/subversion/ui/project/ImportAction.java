@@ -54,6 +54,7 @@ import org.netbeans.api.project.*;
 import java.io.*;
 import java.util.*;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.subversion.FileInformation;
 import org.netbeans.modules.subversion.FileStatusCache;
 import org.netbeans.modules.subversion.ui.wizards.ImportWizard;
@@ -84,6 +85,7 @@ import org.openide.util.RequestProcessor;
 public final class ImportAction implements ActionListener, HelpCtx.Provider {
     
     private VCSContext ctx;
+    private static final Logger LOG = Logger.getLogger(ImportAction.class.getName());
 
     public ImportAction(VCSContext ctx) {
         this.ctx = ctx;
@@ -99,6 +101,7 @@ public final class ImportAction implements ActionListener, HelpCtx.Provider {
         Set<File> roots = ctx.getRootFiles();
         if (roots.size() == 1) {
             if(!isCacheReady()) {
+                LOG.log(Level.FINE, "Cache not ready yet"); //NOI18N
                 return false;
             }
             FileStatusCache cache = Subversion.getInstance().getStatusCache();
@@ -119,7 +122,11 @@ public final class ImportAction implements ActionListener, HelpCtx.Provider {
                         notifyImportImpossible(NbBundle.getMessage(ImportAction.class, "MSG_NoSubproject"));            
                     } 
                     return b;
+                } else {
+                    LOG.log(Level.FINE, "Already versioned: {0} - {1}", new Object[] { dir, status }); //NOI18N
                 }
+            } else {
+                LOG.log(Level.FINE, "Root not folder: {0}", dir); //NOI18N
             }
         } else if (roots.isEmpty()) {
             notifyImportImpossible(NbBundle.getMessage(ImportAction.class, "MSG_EmptySelection")); //NOI18N
@@ -151,8 +158,10 @@ public final class ImportAction implements ActionListener, HelpCtx.Provider {
         
         if (roots.size() == 1) {
             final File importDirectory = lookupImportDirectory(roots.iterator().next());
-            if (importDirectory != null) {
-
+            if (importDirectory == null) {
+                LOG.log(Level.FINE, "null dir to import: {0}", roots.iterator().next()); //NOI18N
+            } else {
+                LOG.log(Level.FINE, "Starting wizard: {0}", roots.iterator().next()); //NOI18N
                 List<File> list = new ArrayList<File>(1);
                 list.add(importDirectory);
                 Context context = new Context(Context.getEmptyList(), list, Context.getEmptyList());
@@ -160,7 +169,7 @@ public final class ImportAction implements ActionListener, HelpCtx.Provider {
                 wizard.show(); // wizard starts all neccessary task (import, commit)
             }
         } else {
-            Subversion.LOG.warning("too many roots in selection.");             // NOI18N
+            LOG.warning("too many roots in selection.");             // NOI18N
         }
     }
 
@@ -171,9 +180,9 @@ public final class ImportAction implements ActionListener, HelpCtx.Provider {
             try {
                 project = ProjectManager.getDefault().findProject(fo);
             } catch (IOException ex) {
-                Subversion.LOG.log(Level.WARNING, null, ex);
+                LOG.log(Level.WARNING, null, ex);
             } catch (IllegalArgumentException ex) {
-                Subversion.LOG.log(Level.WARNING, null, ex);
+                LOG.log(Level.WARNING, null, ex);
             }
         }
     
@@ -194,6 +203,7 @@ public final class ImportAction implements ActionListener, HelpCtx.Provider {
     }
     
     private void notifyImportImpossible(String msg) {
+        LOG.log(Level.FINE, "Import impossible: {0}", msg);
         NotifyDescriptor nd =
             new NotifyDescriptor(
                 msg,

@@ -44,14 +44,38 @@
 
 package org.netbeans.modules.project.uiapi;
 
+import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.Icon;
+import javax.swing.JFileChooser;
+import javax.swing.JPanel;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.spi.project.ui.support.BuildExecutionSupport.Item;
+import org.netbeans.spi.project.ui.support.ProjectActionPerformer;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
+import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.ContextAwareAction;
+import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
 
 /**
  * Way of getting implementations of UI components defined in projects/projectui.
@@ -67,8 +91,72 @@ public class Utilities {
      */
     public static ActionsFactory getActionsFactory() {
         ActionsFactory instance = Lookup.getDefault().lookup(ActionsFactory.class);
-        assert instance != null : "Need to have " + ActionsFactory.class.getName() + " instance in the default lookup";
-        return instance;
+        return instance != null ? instance : new ActionsFactory() {
+            class Dummy extends AbstractAction implements ContextAwareAction {
+                Dummy(String label) {
+                    super(label);
+                }
+                @Override public boolean isEnabled() {
+                    return false;
+                }
+                @Override public void actionPerformed(ActionEvent e) {
+                    assert false : getValue(NAME) + " is just a placeholder";
+                }
+                @Override public Action createContextAwareInstance(Lookup actionContext) {
+                    return this;
+                }
+            }
+            @Override public Action setAsMainProjectAction() {
+                return new Dummy("setAsMainProject");
+            }
+            @Override public Action customizeProjectAction() {
+                return new Dummy("customizeProject");
+            }
+            @Override public Action openSubprojectsAction() {
+                return new Dummy("openSubprojects");
+            }
+            @Override public Action closeProjectAction() {
+                return new Dummy("closeProject");
+            }
+            @Override public Action newFileAction() {
+                return new Dummy("newFile");
+            }
+            @Override public Action deleteProjectAction() {
+                return new Dummy("deleteProject");
+            }
+            @Override public Action copyProjectAction() {
+                return new Dummy("copyProject");
+            }
+            @Override public Action moveProjectAction() {
+                return new Dummy("moveProject");
+            }
+            @Override public Action newProjectAction() {
+                return new Dummy("newProject");
+            }
+            @Override public Action renameProjectAction() {
+                return new Dummy("renameProject");
+            }
+            @Override public Action setProjectConfigurationAction() {
+                return new Dummy("setProjectConfiguration");
+            }
+            // XXX may perhaps be useful to provide basic impls of the following, so that e.g.
+            // o.n.m.ant.freeform.ActionsTest.testLogicalViewActions can pass w/o test dep on projectui
+            @Override public ContextAwareAction projectCommandAction(String command, String namePattern, Icon icon) {
+                return new Dummy("projectCommand:" + command);
+            }
+            @Override public Action projectSensitiveAction(ProjectActionPerformer performer, String name, Icon icon) {
+                return new Dummy("projectSensitive");
+            }
+            @Override public Action mainProjectCommandAction(String command, String name, Icon icon) {
+                return new Dummy("mainProjectCommand:" + command);
+            }
+            @Override public Action mainProjectSensitiveAction(ProjectActionPerformer performer, String name, Icon icon) {
+                return new Dummy("mainProjectSensitive");
+            }
+            @Override public Action fileCommandAction(String command, String name, Icon icon) {
+                return new Dummy("fileCommand:" + command);
+            }
+        };
     }
 
     /** Gets BuildSupportImpl from the global Lookup.
@@ -89,16 +177,79 @@ public class Utilities {
      */
     public static ProjectChooserFactory getProjectChooserFactory() {
         ProjectChooserFactory instance = Lookup.getDefault().lookup(ProjectChooserFactory.class);
-        assert instance != null : "Need to have " + ProjectChooserFactory.class.getName() + " instance in the default lookup";
-        return instance;
+        return instance != null ? instance : new ProjectChooserFactory() {
+            File projectsFolder;
+            @Override public File getProjectsFolder() {
+                return projectsFolder != null ? projectsFolder : FileUtil.normalizeFile(new File(System.getProperty("java.io.tmpdir", "")));
+            }
+            @Override public void setProjectsFolder(File file) {
+                projectsFolder = file;
+            }
+            @Override public JFileChooser createProjectChooser() {
+                JFileChooser jfc = new JFileChooser();
+                jfc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+                return jfc;
+            }
+            @Override public WizardDescriptor.Panel<WizardDescriptor> createSimpleTargetChooser(Project project, SourceGroup[] folders, WizardDescriptor.Panel<WizardDescriptor> bottomPanel, boolean freeFileExtension) {
+                return new WizardDescriptor.Panel<WizardDescriptor>() {
+                    @Override public Component getComponent() {
+                        return new JPanel();
+                    }
+                    @Override public HelpCtx getHelp() {
+                        return null;
+                    }
+                    @Override public void readSettings(WizardDescriptor settings) {}
+                    @Override public void storeSettings(WizardDescriptor settings) {}
+                    @Override public boolean isValid() {
+                        return false;
+                    }
+                    @Override public void addChangeListener(ChangeListener l) {}
+                    @Override public void removeChangeListener(ChangeListener l) {}
+                };
+            }
+        };
     }
     
     /** Gets an object the OpenProjects can delegate to
      */
     public static OpenProjectsTrampoline getOpenProjectsTrampoline() {
         OpenProjectsTrampoline instance = Lookup.getDefault().lookup(OpenProjectsTrampoline.class);
-        assert instance != null : "Need to have " + OpenProjectsTrampoline.class.getName() + " instance in the default lookup";
-        return instance;
+        return instance != null ? instance : new OpenProjectsTrampoline() {
+            final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+            final Collection<Project> open = new ArrayList<Project>();
+            Project main;
+            @Override public Project[] getOpenProjectsAPI() {
+                return open.toArray(new Project[open.size()]);
+            }
+            @Override public void openAPI(Project[] projects, boolean openRequiredProjects, boolean showProgress) {
+                open.addAll(Arrays.asList(projects));
+                pcs.firePropertyChange(OpenProjects.PROPERTY_OPEN_PROJECTS, null, null);
+            }
+            @Override public void closeAPI(Project[] projects) {
+                open.removeAll(Arrays.asList(projects));
+                pcs.firePropertyChange(OpenProjects.PROPERTY_OPEN_PROJECTS, null, null);
+            }
+            @Override public Future<Project[]> openProjectsAPI() {
+                return RequestProcessor.getDefault().submit(new Callable<Project[]>() {
+                    @Override public Project[] call() {
+                        return getOpenProjectsAPI();
+                    }
+                });
+            }
+            @Override public Project getMainProject() {
+                return main;
+            }
+            @Override public void setMainProject(Project project) {
+                main = project;
+                pcs.firePropertyChange(OpenProjects.PROPERTY_MAIN_PROJECT, null, null);
+            }
+            @Override public void addPropertyChangeListenerAPI(PropertyChangeListener listener, Object source) {
+                pcs.addPropertyChangeListener(listener);
+            }
+            @Override public void removePropertyChangeListenerAPI(PropertyChangeListener listener) {
+                pcs.removePropertyChangeListener(listener);
+            }
+        };
     }
     
     public static CategoryChangeSupport getCategoryChangeSupport(ProjectCustomizer.Category category) {

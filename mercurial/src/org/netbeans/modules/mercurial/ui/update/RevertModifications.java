@@ -137,4 +137,9 @@ public class RevertModifications implements PropertyChangeListener {
         return panel.isBackupRequested();
     }
 
+    boolean isRemoveNewFilesRequested () {
+        if (panel == null) return false;
+        return panel.isPurgeRequested();
+    }
+
 }

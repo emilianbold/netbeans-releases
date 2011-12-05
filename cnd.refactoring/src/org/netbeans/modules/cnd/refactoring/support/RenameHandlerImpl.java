@@ -71,8 +71,6 @@ public class RenameHandlerImpl implements RenameHandler {
         CsmFile[] csmFiles = CsmUtilities.getCsmFiles(dob, false, false);
         if (csmFiles != null && csmFiles.length > 0) {
             InstanceContent ic = new InstanceContent();
-            // node is needed, because isApplicable depends on one node instance in lookup
-            ic.add(node);
             // pass new name (without extension as needed by dob.rename)
             ExplorerContext explorerContext = new ExplorerContext();
             explorerContext.setNewName(newName);

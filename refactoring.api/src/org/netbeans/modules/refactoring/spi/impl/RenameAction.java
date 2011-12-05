@@ -72,18 +72,22 @@ public class RenameAction extends RefactoringGlobalAction {
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }
     
+    @Override
     public final void performAction(Lookup context) {
         ActionsImplementationFactory.doRename(context);
     }
     
+    @Override
     public org.openide.util.HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
 
+    @Override
     protected boolean asynchronous() {
         return false;
     }
 
+    @Override
     protected boolean enable(Lookup context) {
         return true;
     }

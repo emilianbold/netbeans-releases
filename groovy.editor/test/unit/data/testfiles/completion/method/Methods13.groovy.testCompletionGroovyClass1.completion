@@ -5,6 +5,7 @@ new Test1().|
 METHOD     addShutdownHook(Closure)                   void
 METHOD     any()                                      boolean
 METHOD     any(Closure)                               boolean
+METHOD     asBoolean()                                boolean
 METHOD     asType(Class)                              Object
 METHOD     collect(Closure)                           List
 METHOD     collect(Collection, Closure)               Collection
@@ -14,7 +15,9 @@ METHOD     eachWithIndex(Closure)                     Object
 METHOD     equals(Object)                  [PUBLIC]   boolean
 METHOD     every()                                    boolean
 METHOD     every(Closure)                             boolean
+METHOD     find()                                     Object
 METHOD     find(Closure)                              Object
+METHOD     findAll()                                  Collection
 METHOD     findAll(Closure)                           Collection
 METHOD     findIndexOf(Closure)                       int
 METHOD     findIndexOf(int, Closure)                  int
@@ -22,13 +25,16 @@ METHOD     findIndexValues(Closure)                   List
 METHOD     findIndexValues(Number, Closur             List
 METHOD     findLastIndexOf(Closure)                   int
 METHOD     findLastIndexOf(int, Closure)              int
+METHOD     findResult(Closure)                        Object
+METHOD     findResult(Object, Closure)                Object
 METHOD     getAt(String)                              Object
-METHOD     getClass()                      [PUBLIC]   Class<? extends Object>
+METHOD     getClass()                      [PUBLIC]   Class<?>
 METHOD     getMetaClass()                             MetaClass
 METHOD     getMetaPropertyValues()                    List
 METHOD     getProperties()                            Map
 METHOD     getProperty(String)             [PUBLIC]   Object
 METHOD     getX()                          [PUBLIC]   String
+METHOD     grep()                                     Collection
 METHOD     grep(Object)                               Collection
 METHOD     hasProperty(String)                        MetaProperty
 METHOD     hashCode()                      [PUBLIC]   int

@@ -42,21 +42,14 @@
 
 package org.netbeans.modules.mercurial;
 
-import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.mercurial.util.HgCommand;
-import org.netbeans.modules.project.uiapi.OpenProjectsTrampoline;
 import org.netbeans.modules.versioning.VersioningManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -287,66 +280,6 @@ public class ExternalChangesTest extends AbstractHgTestCase {
 
         @Override
         public void close() throws SecurityException {
-        }
-
-    }
-
-    @org.openide.util.lookup.ServiceProvider(service=OpenProjectsTrampoline.class)
-    public static class OpenProjectsTrampolineImpl implements OpenProjectsTrampoline {
-        public OpenProjectsTrampolineImpl() {
-        }
-
-        public Project[] getOpenProjectsAPI() {
-            return new Project[0];
-        }
-
-        public void openAPI(Project[] projects, boolean openRequiredProjects, boolean showProgress) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        public void closeAPI(Project[] projects) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        public void addPropertyChangeListenerAPI(PropertyChangeListener listener, Object source) {
-
-        }
-
-        public Future<Project[]> openProjectsAPI() {
-            return new Future<Project[]>() {
-
-                public boolean cancel(boolean mayInterruptIfRunning) {
-                    throw new UnsupportedOperationException("Not supported yet.");
-                }
-
-                public boolean isCancelled() {
-                    return false;
-                }
-
-                public boolean isDone() {
-                    return true;
-                }
-
-                public Project[] get() throws InterruptedException, ExecutionException {
-                    throw new UnsupportedOperationException("Not supported yet.");
-                }
-
-                public Project[] get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-                    throw new UnsupportedOperationException("Not supported yet.");
-                }
-            };
-        }
-
-        public void removePropertyChangeListenerAPI(PropertyChangeListener listener) {
-
-        }
-
-        public Project getMainProject() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        public void setMainProject(Project project) {
-            throw new UnsupportedOperationException("Not supported yet.");
         }
 
     }

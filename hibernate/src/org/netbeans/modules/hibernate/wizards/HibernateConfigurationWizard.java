@@ -217,6 +217,7 @@ public class HibernateConfigurationWizard implements WizardDescriptor.Instantiat
         return res;
     }
 
+    @Override
     public void initialize(WizardDescriptor wizard) {
         this.wizard = wizard;
         project =
@@ -224,7 +225,7 @@ public class HibernateConfigurationWizard implements WizardDescriptor.Instantiat
         String wizardTitle = NbBundle.getMessage(HibernateConfigurationWizard.class, "LBL_ConfWizardTitle"); // NOI18N   
         descriptor =
                 new HibernateConfigurationWizardDescriptor(project, wizardTitle);
-
+        getPanels();
         // #164631 - the 1st java source folder is the default
         List<SourceGroup> javaSourceGroups = HibernateUtil.getJavaSourceGroups(project);
         assert javaSourceGroups.size() > 0 : "No Java Sources found for project " + project.getProjectDirectory();

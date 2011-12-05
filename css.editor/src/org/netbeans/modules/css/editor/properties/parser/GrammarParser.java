@@ -41,7 +41,9 @@
  */
 package org.netbeans.modules.css.editor.properties.parser;
 
+import java.util.Collection;
 import java.util.StringTokenizer;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.netbeans.modules.css.editor.module.CssModuleSupport;
 import org.netbeans.modules.css.editor.module.spi.Property;
 
@@ -66,9 +68,9 @@ public class GrammarParser {
     }
 
     public static GroupGrammarElement parse(String expression, String propertyName) {
-        int group_index = 0;
+        AtomicInteger group_index = new AtomicInteger(0);
         int openedParenthesis = 0;
-        GroupGrammarElement root = new GroupGrammarElement(null, group_index, propertyName);
+        GroupGrammarElement root = new GroupGrammarElement(null, group_index.getAndIncrement(), propertyName);
         ParserInput input = new ParserInput(expression);
 
         parseElements(input, root, false, group_index, openedParenthesis);
@@ -80,7 +82,7 @@ public class GrammarParser {
     }
 
     private static void parseElements(ParserInput input, GroupGrammarElement parent, boolean ignoreInherits,
-            int group_index, int openedParenthesis) {
+            AtomicInteger group_index, int openedParenthesis) {
         GrammarElement last = null;
         for (;;) {
             char c = input.read();
@@ -105,7 +107,7 @@ public class GrammarParser {
                 case '[':
                     openedParenthesis++;
                     //group start
-                    last = new GroupGrammarElement(parent, ++group_index);
+                    last = new GroupGrammarElement(parent, group_index.getAndIncrement());
                     parseElements(input, (GroupGrammarElement) last, false, group_index, openedParenthesis);
                     parent.addElement(last);
                     break;
@@ -114,7 +116,7 @@ public class GrammarParser {
                     char next = input.read();
                     if (next == '|') {
                         //the group is a list
-                        parent.setType(GroupGrammarElement.Type.LIST);
+                        parent.setType(GroupGrammarElement.Type.COLLECTION);
                     } else {
                         input.backup(1);
                         parent.setType(GroupGrammarElement.Type.SET);
@@ -141,16 +143,16 @@ public class GrammarParser {
 
                     //resolve reference
                     String referredElementName = buf.toString();
-                    Property p = CssModuleSupport.getProperty(referredElementName, true);
-                    if (p == null) {
+                    Collection<Property> properties = CssModuleSupport.getProperties(referredElementName, true);
+                    if (properties == null) {
                         throw new IllegalStateException("parsing error - no referred element '" + referredElementName + "' found!"
                                 + " Read input: " + input.readText()); //NOI18N
                     }
 
-                    last = new GroupGrammarElement(parent, ++group_index, referredElementName);
+                    last = new GroupGrammarElement(parent, group_index.getAndIncrement(), referredElementName);
 
 //                    System.out.println("resolving element " + referredElementName + " (" + p.valuesText() + ") into group " + last.toString()); //NOI18N
-                    ParserInput pinput = new ParserInput(p.getValueGrammar());
+                    ParserInput pinput = new ParserInput(new PropertyModel(referredElementName, properties).getGrammar());
 
                     //ignore inherit tokens in the subtree
                     parseElements(pinput, (GroupGrammarElement) last, true, group_index, openedParenthesis);
@@ -174,9 +176,7 @@ public class GrammarParser {
                         }
                     }
 
-                    last = new ValueGrammarElement(parent);
-                    ((ValueGrammarElement) last).setValue(buf.toString());
-                    ((ValueGrammarElement) last).setIsUnit(true);
+                    last = new ValueGrammarElement(parent, buf.toString(), true);
                     parent.addElement(last);
                     break;
 
@@ -221,6 +221,11 @@ public class GrammarParser {
                 default:
                     //values
                     buf = new StringBuilder();
+                    boolean quotes = isQuoteChar(c);
+                    if(quotes) {
+                        c = input.read();
+                    }
+                    
                     for (;;) {
                         if (c == Character.MAX_VALUE) {
                             break;
@@ -228,6 +233,9 @@ public class GrammarParser {
                         if (isEndOfValueChar(c)) {
                             input.backup(1);
                             break;
+                        } else if(quotes && isQuoteChar(c)) {
+                            //closing quote, do not backup
+                            break; 
                         } else {
                             buf.append(c);
                         }
@@ -238,9 +246,7 @@ public class GrammarParser {
                     String image = buf.toString();
 
                     if (!(ignoreInherits && "inherit".equalsIgnoreCase(image))) { //NOI18N
-                        last = new ValueGrammarElement(parent);
-                        ((ValueGrammarElement) last).setValue(image);
-                        ((ValueGrammarElement) last).setIsUnit(false);
+                        last = new ValueGrammarElement(parent, image, false);
                         parent.addElement(last);
                     }
                     break;
@@ -252,6 +258,10 @@ public class GrammarParser {
 
     private static boolean isEndOfValueChar(char c) {
         return c == ' ' || c == '+' || c == '?' || c == '{' || c == '[' || c == ']' || c == '|';
+    }
+
+    private static boolean isQuoteChar(char c) {
+        return c == '\'' || c == '"';
     }
 
     private static class ParserInput {
