@@ -95,6 +95,7 @@ import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.java.spi.DiffElement;
 import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.ExtractSuperclassRefactoring;
+import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.MemberInfo;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
@@ -315,7 +316,7 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
     }
     
     private static List<TypeMirror> findUsedGenericTypes(CompilationInfo javac, TypeElement javaClass,ExtractSuperclassRefactoring refactoring) {
-        List<TypeMirror> typeArgs = RefactoringUtils.resolveTypeParamsAsTypes(javaClass.getTypeParameters());
+        List<TypeMirror> typeArgs = JavaRefactoringUtils.elementsToTypes(javaClass.getTypeParameters());
         if (typeArgs.isEmpty())
             return typeArgs;
         

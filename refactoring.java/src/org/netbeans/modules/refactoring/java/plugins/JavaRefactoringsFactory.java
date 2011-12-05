@@ -48,16 +48,7 @@ import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.api.*;
-import org.netbeans.modules.refactoring.java.api.ChangeParametersRefactoring;
-import org.netbeans.modules.refactoring.java.api.EncapsulateFieldRefactoring;
-import org.netbeans.modules.refactoring.java.api.ExtractInterfaceRefactoring;
-import org.netbeans.modules.refactoring.java.api.ExtractSuperclassRefactoring;
-import org.netbeans.modules.refactoring.java.api.InlineRefactoring;
-import org.netbeans.modules.refactoring.java.api.InnerToOuterRefactoring;
-import org.netbeans.modules.refactoring.java.api.IntroduceParameterRefactoring;
-import org.netbeans.modules.refactoring.java.api.PullUpRefactoring;
-import org.netbeans.modules.refactoring.java.api.PushDownRefactoring;
-import org.netbeans.modules.refactoring.java.api.UseSuperTypeRefactoring;
+import org.netbeans.modules.refactoring.java.api.*;
 import org.netbeans.modules.refactoring.java.ui.EncapsulateFieldsRefactoring;
 import org.netbeans.modules.refactoring.spi.*;
 import org.openide.ErrorManager;
@@ -88,10 +79,10 @@ public class JavaRefactoringsFactory implements RefactoringPluginFactory {
             if (handle!=null || ((file!=null) && RefactoringUtils.isJavaFile(file))) {
                 //rename java file, class, method etc..
                 return new RenameRefactoringPlugin((RenameRefactoring)refactoring);
-            } else if (file!=null && RefactoringUtils.isOnSourceClasspath(file) && file.isFolder()) {
+            } else if (file!=null && JavaRefactoringUtils.isOnSourceClasspath(file) && file.isFolder()) {
                 //rename folder
                 return new MoveRefactoringPlugin((RenameRefactoring)refactoring);
-            } else if (folder!=null && RefactoringUtils.isOnSourceClasspath(folder.getFolder())) {
+            } else if (folder!=null && JavaRefactoringUtils.isOnSourceClasspath(folder.getFolder())) {
                 //rename package
                 return new MoveRefactoringPlugin((RenameRefactoring)refactoring);
             }
@@ -188,7 +179,7 @@ public class JavaRefactoringsFactory implements RefactoringPluginFactory {
         }
         if ((dataObject instanceof DataFolder) && 
                 RefactoringUtils.isFileInOpenProject(fileObject) && 
-                RefactoringUtils.isOnSourceClasspath(fileObject) &&
+                JavaRefactoringUtils.isOnSourceClasspath(fileObject) &&
                 !RefactoringUtils.isClasspathRoot(fileObject)){
             return true;
         }

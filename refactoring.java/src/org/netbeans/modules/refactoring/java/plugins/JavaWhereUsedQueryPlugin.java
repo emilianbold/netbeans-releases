@@ -64,6 +64,7 @@ import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.SourceUtilsEx;
 import org.netbeans.modules.refactoring.java.WhereUsedElement;
+import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.WhereUsedQueryConstants;
 import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
@@ -134,7 +135,7 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
                         }
                         ElementKind kind = element.getKind();
                         if (kind == ElementKind.METHOD && isSearchFromBaseClass()) {
-                            Collection<ExecutableElement> overridens = RefactoringUtils.getOverridenMethods((ExecutableElement)element, info);
+                            Collection<ExecutableElement> overridens = JavaRefactoringUtils.getOverriddenMethods((ExecutableElement)element, info);
                             if(!overridens.isEmpty()) {
                                 ExecutableElement el = (ExecutableElement) overridens.iterator().next();
                                 assert el!=null;
