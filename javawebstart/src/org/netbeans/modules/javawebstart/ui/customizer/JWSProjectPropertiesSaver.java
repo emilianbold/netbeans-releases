@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,36 +34,38 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.javawebstart.ui.customizer;
 
-package org.netbeans.modules.css.editor.properties;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.java.j2seproject.api.J2SECustomPropertySaver;
+import org.netbeans.spi.project.ProjectServiceProvider;
 
 /**
+ * Provides saver service for WebStart specific project properties
+ * for use in standard J2SE Project Properties dialog so that all properties
+ * can be properly saved in project.properties and private.properties when
+ * OK button is pressed. Note that this enables reaction to change of Java Platform.
  *
- * @author mfukala@netbeans.org
+ * @author Petr Somol
  */
-public class FontFamilyName implements CssPropertyValueAcceptor {
+@ProjectServiceProvider(service=J2SECustomPropertySaver.class, projectType="org-netbeans-modules-java-j2seproject")
+public class JWSProjectPropertiesSaver implements J2SECustomPropertySaver {
 
-    public String id() {
-        return "font-family"; //NOI18N
-    }
+    public JWSProjectPropertiesSaver() {}
 
-    public boolean accepts(String token) {
-        //TODO make me really work
-        if(token.contains(" ")) { //NOI18N
-            //SHOULD be quoted
-            char f = token.charAt(0);
-            char l = token.charAt(token.length() - 1);
-            
-            return (f == '\'' && l == '\'') || (f == '"' && l == '\"');
-        } else {
-            return true;
+    @Override
+    public void save(Project project) {
+        JWSProjectProperties prop = JWSProjectProperties.getInstance(project.getLookup());
+        if(prop != null) {
+            JWSProjectPropertiesUtils.updateMasterFiles(prop, project);
+            JWSProjectPropertiesUtils.savePropsAndUpdateMetaFiles(prop, project);
+            JWSProjectProperties.cleanup(project.getLookup());
         }
-        
     }
-    
+
 }

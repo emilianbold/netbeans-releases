@@ -151,6 +151,14 @@ public class GroupGrammarElement extends GrammarElement {
 
     @Override
     public String toString() {
-        return new StringBuilder().append('[').append(getType().name().charAt(0)).append(index).append(']').toString(); //NOI18N
+        StringBuilder sb = new StringBuilder();
+        sb.append('[');
+        sb.append(getType().name().charAt(0));
+        sb.append(index);
+        if (referenceName != null) {
+            sb.append("|").append(referenceName); //NOI18N
+        }
+        sb.append(']');
+        return sb.toString(); //NOI18N
     }
 }

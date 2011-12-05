@@ -190,7 +190,7 @@ public class MenuBar extends JMenuBar implements Externalizable {
 
     @Override
     public int getMenuCount() {
-        if (menuBarFolder != null) {
+        if (menuBarFolder != null && !Thread.holdsLock(getTreeLock())) {
             menuBarFolder.waitFinished();
         }
         return super.getMenuCount();
@@ -540,20 +540,27 @@ public class MenuBar extends JMenuBar implements Externalizable {
         }
         @Override
         public int getItemCount() {
-            doInitialize();
+            conditionalInitialize();
             return super.getItemCount();
         }
 
         @Override
         public int getMenuComponentCount() {
-            doInitialize();
+            conditionalInitialize();
             return super.getMenuComponentCount();
         }
 
         @Override
         public Component[] getMenuComponents() {
-            doInitialize();
+            conditionalInitialize();
             return super.getMenuComponents();
+        }
+        
+        private void conditionalInitialize() {
+            if (Thread.holdsLock(getTreeLock())) {
+                return;
+            }
+            doInitialize();
         }
         
         protected @Override boolean processKeyBinding(KeyStroke ks,
