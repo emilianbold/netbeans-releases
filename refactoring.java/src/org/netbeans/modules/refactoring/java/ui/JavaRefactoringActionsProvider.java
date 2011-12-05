@@ -70,6 +70,7 @@ import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.ChangeParametersRefactoring.ParameterInfo;
+import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.ui.JavaRefactoringActionsFactory;
 import org.netbeans.modules.refactoring.java.spi.ui.JavaActionsImplementationProvider;
 import org.netbeans.modules.refactoring.java.ui.RefactoringActionsProvider.NodeToFileObjectTask;
@@ -146,14 +147,14 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
         Node n = nodes.iterator().next();
         TreePathHandle tph = n.getLookup().lookup(TreePathHandle.class);
         if (tph != null) {
-            return RefactoringUtils.isRefactorable(tph.getFileObject());
+            return JavaRefactoringUtils.isRefactorable(tph.getFileObject());
         }
         DataObject dob = n.getCookie(DataObject.class);
         if (dob==null) {
             return false;
         }
         FileObject fo = dob.getPrimaryFile();
-        if (RefactoringUtils.isRefactorable(fo)) { //NOI18N
+        if (JavaRefactoringUtils.isRefactorable(fo)) { //NOI18N
             return true;
         }
         return false;
@@ -214,14 +215,14 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
         Node n = nodes.iterator().next();
         TreePathHandle tph = n.getLookup().lookup(TreePathHandle.class);
         if (tph != null) {
-            return RefactoringUtils.isRefactorable(tph.getFileObject());
+            return JavaRefactoringUtils.isRefactorable(tph.getFileObject());
         }
         DataObject dob = n.getCookie(DataObject.class);
         if (dob==null) {
             return false;
         }
         FileObject fo = dob.getPrimaryFile();
-        if (RefactoringUtils.isRefactorable(fo)) { //NOI18N
+        if (JavaRefactoringUtils.isRefactorable(fo)) { //NOI18N
             return true;
         }
         return false;
@@ -286,14 +287,14 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
         Node n = nodes.iterator().next();
         TreePathHandle tph = n.getLookup().lookup(TreePathHandle.class);
         if (tph != null) {
-            return RefactoringUtils.isRefactorable(tph.getFileObject());
+            return JavaRefactoringUtils.isRefactorable(tph.getFileObject());
         }
         DataObject dob = n.getCookie(DataObject.class);
         if (dob==null) {
             return false;
         }
         FileObject fo = dob.getPrimaryFile();
-        if (RefactoringUtils.isRefactorable(fo)) { //NOI18N
+        if (JavaRefactoringUtils.isRefactorable(fo)) { //NOI18N
             return true;
         }
         return false;
@@ -357,14 +358,14 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
         Node n = nodes.iterator().next();
         TreePathHandle tph = n.getLookup().lookup(TreePathHandle.class);
         if (tph != null) {
-            return RefactoringUtils.isRefactorable(tph.getFileObject());
+            return JavaRefactoringUtils.isRefactorable(tph.getFileObject());
         }
         DataObject dob = n.getCookie(DataObject.class);
         if (dob==null) {
             return false;
         }
         FileObject fo = dob.getPrimaryFile();
-        if (RefactoringUtils.isRefactorable(fo)) { //NOI18N
+        if (JavaRefactoringUtils.isRefactorable(fo)) { //NOI18N
             return true;
         }
         return false;
@@ -378,13 +379,13 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
         Node node = nodes.iterator().next();
         TreePathHandle tph = node.getLookup().lookup(TreePathHandle.class);
         if (tph != null) {
-            return RefactoringUtils.isRefactorable(tph.getFileObject());
+            return JavaRefactoringUtils.isRefactorable(tph.getFileObject());
         }
         DataObject dObj = node.getCookie(DataObject.class);
         if(null == dObj)
             return false;
         FileObject fileObj = dObj.getPrimaryFile();
-        if(null == fileObj || !RefactoringUtils.isRefactorable(fileObj))
+        if(null == fileObj || !JavaRefactoringUtils.isRefactorable(fileObj))
             return false;
         
         return true;
@@ -453,7 +454,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
     public boolean canChangeParameters(Lookup lookup) {
         TreePathHandle tph = lookup.lookup(TreePathHandle.class);
         if (tph != null) {
-            return RefactoringUtils.isRefactorable(tph.getFileObject());
+            return JavaRefactoringUtils.isRefactorable(tph.getFileObject());
         }
         Collection<? extends Node> nodes = new HashSet<Node>(lookup.lookupAll(Node.class));
         if(nodes.size() != 1)
@@ -461,13 +462,13 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
         Node node = nodes.iterator().next();
         tph = node.getLookup().lookup(TreePathHandle.class);
         if (tph != null) {
-            return RefactoringUtils.isRefactorable(tph.getFileObject());
+            return JavaRefactoringUtils.isRefactorable(tph.getFileObject());
         }
         DataObject dObj = node.getCookie(DataObject.class);
         if(null == dObj)
             return false;
         FileObject fileObj = dObj.getPrimaryFile();
-        if(null == fileObj || !RefactoringUtils.isRefactorable(fileObj))
+        if(null == fileObj || !JavaRefactoringUtils.isRefactorable(fileObj))
             return false;
         
         EditorCookie ec = lookup.lookup(EditorCookie.class);
@@ -549,13 +550,13 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
         Node node = nodes.iterator().next();
         TreePathHandle tph = node.getLookup().lookup(TreePathHandle.class);
         if (tph != null) {
-            return RefactoringUtils.isRefactorable(tph.getFileObject());
+            return JavaRefactoringUtils.isRefactorable(tph.getFileObject());
         }
         DataObject dObj = node.getCookie(DataObject.class);
         if(null == dObj)
             return false;
         FileObject fileObj = dObj.getPrimaryFile();
-        if(null == fileObj || !RefactoringUtils.isRefactorable(fileObj))
+        if(null == fileObj || !JavaRefactoringUtils.isRefactorable(fileObj))
             return false;
         
         EditorCookie ec = lookup.lookup(EditorCookie.class);
@@ -697,13 +698,13 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
         Node node = nodes.iterator().next();
         TreePathHandle tph = node.getLookup().lookup(TreePathHandle.class);
         if (tph != null) {
-            return RefactoringUtils.isRefactorable(tph.getFileObject());
+            return JavaRefactoringUtils.isRefactorable(tph.getFileObject());
         }
         DataObject dObj = node.getCookie(DataObject.class);
         if(null == dObj)
             return false;
         FileObject fileObj = dObj.getPrimaryFile();
-        if(null == fileObj || !RefactoringUtils.isRefactorable(fileObj))
+        if(null == fileObj || !JavaRefactoringUtils.isRefactorable(fileObj))
             return false;
         
         EditorCookie ec = lookup.lookup(EditorCookie.class);
@@ -766,14 +767,14 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
         Node n = nodes.iterator().next();
         TreePathHandle tph = n.getLookup().lookup(TreePathHandle.class);
         if (tph != null) {
-            return RefactoringUtils.isRefactorable(tph.getFileObject());
+            return JavaRefactoringUtils.isRefactorable(tph.getFileObject());
         }
         DataObject dob = n.getCookie(DataObject.class);
         if (dob==null) {
             return false;
         }
         FileObject fo = dob.getPrimaryFile();
-        if (RefactoringUtils.isRefactorable(fo)) { //NOI18N
+        if (JavaRefactoringUtils.isRefactorable(fo)) { //NOI18N
             return true;
         }
         return false;
@@ -863,14 +864,14 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
         Node node = nodes.iterator().next();
         TreePathHandle tph = node.getLookup().lookup(TreePathHandle.class);
         if (tph != null) {
-            return RefactoringUtils.isRefactorable(tph.getFileObject());
+            return JavaRefactoringUtils.isRefactorable(tph.getFileObject());
         }
         DataObject dObj = node.getCookie(DataObject.class);
         if (null == dObj) {
             return false;
         }
         FileObject fileObj = dObj.getPrimaryFile();
-        if (null == fileObj || !RefactoringUtils.isRefactorable(fileObj)) {
+        if (null == fileObj || !JavaRefactoringUtils.isRefactorable(fileObj)) {
             return false;
         }
 

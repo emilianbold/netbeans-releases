@@ -69,6 +69,7 @@ import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.java.RefactoringUtils;
+import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.java.plugins.FindVisitor;
 import org.netbeans.modules.refactoring.java.plugins.RetoucheCommit;
 import org.netbeans.modules.refactoring.spi.ProgressProviderAdapter;
@@ -172,7 +173,7 @@ public abstract class JavaRefactoringPlugin extends ProgressProviderAdapter impl
             if (!handles.isEmpty()) {
                 cpInfo = RefactoringUtils.getClasspathInfoFor(handles.toArray(new TreePathHandle[handles.size()]));
             } else {
-                cpInfo = RefactoringUtils.getClasspathInfoFor((FileObject)null);
+                cpInfo = JavaRefactoringUtils.getClasspathInfoFor((FileObject)null);
             }
             refactoring.getContext().add(cpInfo);
         }

@@ -69,7 +69,7 @@ import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.ui.ElementHeaders;
 import org.netbeans.api.java.source.ui.ElementIcons;
-import org.netbeans.modules.refactoring.java.RefactoringUtils;
+import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
@@ -220,7 +220,7 @@ final class Call implements CallDescriptor {
         Element wanted = javac.getTrees().getElement(selection);
 
         if (isCallerGraph && wanted != null && wanted.getKind() == ElementKind.METHOD) {
-            Collection<ExecutableElement> overridenMethods = RefactoringUtils.getOverridenMethods((ExecutableElement) wanted, javac);
+            Collection<ExecutableElement> overridenMethods = JavaRefactoringUtils.getOverriddenMethods((ExecutableElement) wanted, javac);
             if (!overridenMethods.isEmpty()) {
                 ExecutableElement next = overridenMethods.iterator().next();
                 c.overridden = TreePathHandle.create(next, javac);

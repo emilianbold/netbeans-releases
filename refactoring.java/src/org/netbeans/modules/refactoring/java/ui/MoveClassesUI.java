@@ -64,6 +64,7 @@ import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.MoveRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.java.RefactoringUtils;
+import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUIBypass;
@@ -196,10 +197,10 @@ public class MoveClassesUI implements RefactoringUI, RefactoringUIBypass {
         if (refactoring == null) {
             if (disable) {
                 refactoring = new MoveRefactoring(Lookups.fixed(javaObjects.toArray()));
-                refactoring.getContext().add(RefactoringUtils.getClasspathInfoFor(javaObjects.toArray(new FileObject[javaObjects.size()])));
+                refactoring.getContext().add(JavaRefactoringUtils.getClasspathInfoFor(javaObjects.toArray(new FileObject[javaObjects.size()])));
             } else {
                 refactoring = new MoveRefactoring (Lookups.fixed(resources.toArray()));
-                refactoring.getContext().add(RefactoringUtils.getClasspathInfoFor(resources.toArray(new FileObject[resources.size()])));
+                refactoring.getContext().add(JavaRefactoringUtils.getClasspathInfoFor(resources.toArray(new FileObject[resources.size()])));
             }
         }
         return refactoring;
