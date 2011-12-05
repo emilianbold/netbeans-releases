@@ -750,4 +750,68 @@ public class GrammarResolverTest extends CssModuleTestBase {
          String grammar2 = "[ a b ] | [ a c ]";
          assertNotResolve(grammar2, "a");
     }
+    
+    public void testMultiplicityOfList() {
+        String g = " [ a || b ]*";
+        
+        assertResolve(g, "a");
+        assertResolve(g, "a b");
+        assertResolve(g, "a b a");
+    }
+    
+    public void testAllGroup() {
+        String g = "a && b";
+        
+        assertResolve(g, "a b");
+        assertResolve(g, "b a");
+        
+        assertNotResolve(g, "");
+        assertNotResolve(g, "a");
+        assertNotResolve(g, "b");
+        assertNotResolve(g, "b b");
+        assertNotResolve(g, "a a");
+        assertNotResolve(g, "x");
+        assertNotResolve(g, "a x");
+        assertNotResolve(g, "x x b");
+    }
+    
+    public void testAllGroupComplex() {
+        String g = "a [ a && b ] b";        
+        assertResolve(g, "a a b b");
+        assertResolve(g, "a b a b");        
+    }
+
+    public void testAllGroupComplex2() {
+        String g = "a [ a && b ]? b";        
+        assertResolve(g, "a a b b");
+        assertResolve(g, "a b a b");        
+        assertResolve(g, "a b");        
+        
+        assertNotResolve(g, "a a b");        
+        assertNotResolve(g, "a b b");        
+    }
+    
+    public void testAllGroupComplex3() {
+        String g = "[ a && b ]*";
+        assertResolve(g, "");
+        assertResolve(g, "a b a b a b");
+        assertResolve(g, "b a a b");        
+        assertResolve(g, "b a");        
+        
+        assertNotResolve(g, "a b b");        
+        assertNotResolve(g, "b a a b a");        
+    }
+ 
+    public void testAllGroupComplex4() {
+        String g = "a && c?";
+        assertResolve(g, "a");
+        assertResolve(g, "a c");
+        assertResolve(g, "c a");
+    }
+    
+    public void testBackground() {
+        PropertyModel pm = CssModuleSupport.getPropertyModel("background");
+        assertResolve(pm.getGrammarElement(), "url(images/shadow.gif) no-repeat bottom right");
+    }
+    
 }

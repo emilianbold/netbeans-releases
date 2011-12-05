@@ -65,5 +65,11 @@ public class GrammarParserTest extends CssModuleTestBase {
         }
     }
     
+    public void testParseAllGroup() {
+        String grammar = " a && b";
+        
+        GroupGrammarElement e = GrammarParser.parse(grammar);
+        assertEquals(GroupGrammarElement.Type.ALL, e.getType());
+    }
     
 }

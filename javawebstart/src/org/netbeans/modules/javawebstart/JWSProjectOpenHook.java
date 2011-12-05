@@ -54,6 +54,7 @@ import org.openide.util.Parameters;
 /**
  *
  * @author Tomas Zezula
+ * @author Petr Somol
  */
 @ProjectServiceProvider(service=ProjectOpenedHook.class, projectType="org-netbeans-modules-java-j2seproject")
 public class JWSProjectOpenHook extends ProjectOpenedHook {
@@ -73,7 +74,7 @@ public class JWSProjectOpenHook extends ProjectOpenedHook {
     protected void projectOpened() {
         try {
             if (isTrue(eval.evaluator().getProperty(JWSProjectProperties.JNLP_ENABLED))) {  //JNLP_ENABLED - inlined by compiler
-                JWSProjectProperties.updateWebStartJars(prj, eval.evaluator());
+                JWSProjectProperties.updateOnOpen(prj, eval.evaluator());
             }
         } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);

@@ -149,7 +149,7 @@ public class JavaFXProjectWizardIterator implements WizardDescriptor.ProgressIns
 
     @Override
     public Set<FileObject> instantiate(ProgressHandle handle) throws IOException {
-        handle.start(4);
+        handle.start(5);
         //handle.progress (NbBundle.getMessage (NewJ2SEProjectWizardIterator.class, "LBL_NewJ2SEProjectWizardIterator_WizardProgress_ReadingProperties"));
         Set<FileObject> resultSet = new LinkedHashSet<FileObject>();
         FileObject mainClassFo = null;
@@ -173,7 +173,8 @@ public class JavaFXProjectWizardIterator implements WizardDescriptor.ProgressIns
         String platformName = (String) wiz.getProperty(JavaFXProjectUtils.PROP_JAVA_PLATFORM_NAME);
         String preloader = (String) wiz.getProperty(JavaFXProjectWizardIterator.PROP_PRELOADER_NAME);
         
-        handle.progress(NbBundle.getMessage(JavaFXProjectWizardIterator.class, "LBL_NewJ2SEProjectWizardIterator_WizardProgress_CreatingProject"), 1); // NOI18N
+        handle.progress(NbBundle.getMessage(JavaFXProjectWizardIterator.class,
+                "LBL_NewJ2SEProjectWizardIterator_WizardProgress_CreatingProject"), 1); // NOI18N
         AntProjectHelper projectHelper;
         switch (type) {
             case EXTISTING:
@@ -268,7 +269,8 @@ public class JavaFXProjectWizardIterator implements WizardDescriptor.ProgressIns
         resultSet.add(dir);
         
         // create preloader project
-        handle.progress(NbBundle.getMessage(JavaFXProjectWizardIterator.class, "LBL_NewJ2SEProjectWizardIterator_WizardProgress_Preloader"), 4); // NOI18N
+        handle.progress(NbBundle.getMessage(JavaFXProjectWizardIterator.class,
+                "LBL_NewJ2SEProjectWizardIterator_WizardProgress_Preloader"), 4); // NOI18N
         if (preloader != null && preloader.length() > 0) {
             preloader = preloader.trim();
             File preloaderDir = new File(dirF.getParentFile().getAbsolutePath() + File.separatorChar + preloader);
@@ -309,7 +311,8 @@ public class JavaFXProjectWizardIterator implements WizardDescriptor.ProgressIns
 //        Project project = ProjectManager.getDefault().findProject(dir);
 //        OpenProjects.getDefault().setMainProject(project);
         
-        handle.progress(NbBundle.getMessage(JavaFXProjectWizardIterator.class, "LBL_NewJ2SEProjectWizardIterator_WizardProgress_PreparingToOpen"), 5); // NOI18N
+        handle.progress(NbBundle.getMessage(JavaFXProjectWizardIterator.class,
+                "LBL_NewJ2SEProjectWizardIterator_WizardProgress_PreparingToOpen"), 5); // NOI18N
         dirF = (dirF != null) ? dirF.getParentFile() : null;
         if (dirF != null && dirF.exists()) {
             ProjectChooser.setProjectsFolder(dirF);

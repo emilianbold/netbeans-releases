@@ -150,9 +150,8 @@ public final class HudsonJobCreator extends JPanel implements ProjectHudsonJobCr
             return ConfigurationStatus.withError(Bundle.HudsonJobCreator_error_invalidHudsonOptions()).withExtraButton(getOpenHudsonOptionsButton());
         }
         // job config
-        String jobConfigError = HudsonOptionsValidator.validateJobConfig(getJobConfig());
-        if (jobConfigError != null) {
-            return ConfigurationStatus.withError(jobConfigError).withExtraButton(getOpenHudsonOptionsButton());
+        if (HudsonOptionsValidator.validateJobConfig(getJobConfig()) != null) {
+            return ConfigurationStatus.withError(Bundle.HudsonJobCreator_error_invalidHudsonOptions()).withExtraButton(getOpenHudsonOptionsButton());
         }
         // build.xml
         FileObject buildXml = phpModule.getProjectDirectory().getFileObject(PpwScript.BUILD_XML);
