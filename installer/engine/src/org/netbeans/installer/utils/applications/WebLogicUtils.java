@@ -70,9 +70,17 @@ public class WebLogicUtils {
         // does nothing
     }
     
-     public static String configureEnvironment(File wlLocation, File jdkLocation) throws IOException {
-        SystemUtils.getEnvironment().put(MW_HOME, wlLocation.getAbsolutePath());
-        SystemUtils.getEnvironment().put(JAVA_HOME, jdkLocation.getAbsolutePath());
+    public static String configureEnvironment(File wlLocation, File jdkLocation) throws IOException {
+        String jdkPath = jdkLocation.getAbsolutePath();
+        String wlPath = wlLocation.getAbsolutePath();
+        if (SystemUtils.isWindows()) {
+            // must convert to short paths, the result is elimination of all spaces in path (wl installer cannot handle them)
+            jdkPath = convertPathNamesToShort(jdkPath);
+            wlPath = convertPathNamesToShort(wlPath);
+            wlLocation = new File(wlPath);
+        }
+        SystemUtils.getEnvironment().put(MW_HOME, wlPath);
+        SystemUtils.getEnvironment().put(JAVA_HOME, jdkPath);
         //Setting an environment for WebLogic domain creation
         final ExecutionResults configureResults = SystemUtils.executeCommand(wlLocation, getConfigureCommand(wlLocation));       
         if(configureResults.getErrorCode() > 0) {
