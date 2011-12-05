@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,35 +34,39 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.css.editor.properties;
+
+import org.netbeans.junit.NbTestCase;
 
 /**
  *
- * @author mfukala@netbeans.org
+ * @author marekfukala
  */
-public class FontFamilyName implements CssPropertyValueAcceptor {
-
-    public String id() {
-        return "font-family"; //NOI18N
+public class IdentifierTest extends NbTestCase {
+    
+    public IdentifierTest(String name) {
+        super(name);
     }
 
-    public boolean accepts(String token) {
-        //TODO make me really work
-        if(token.contains(" ")) { //NOI18N
-            //SHOULD be quoted
-            char f = token.charAt(0);
-            char l = token.charAt(token.length() - 1);
-            
-            return (f == '\'' && l == '\'') || (f == '"' && l == '\"');
-        } else {
-            return true;
-        }
+    public void testAccepts() {
+        Identifier i = new Identifier();
+        assertTrue(i.accepts("hello"));
+        assertTrue(i.accepts("_hello"));
+        assertTrue(i.accepts("hel_lo"));
+        assertTrue(i.accepts("-hello"));
+        assertTrue(i.accepts("hel-lo"));
+        assertTrue(i.accepts("hello23"));
+        assertTrue(i.accepts("\u0080hello"));
+        assertTrue(i.accepts("hel\u0090o"));
+        assertTrue(i.accepts("hel\\uffbbo"));
+        assertTrue(i.accepts("hel\\no"));
+        
+        assertFalse(i.accepts("0hello"));
         
     }
     

@@ -58,6 +58,7 @@ import java.util.logging.Level;
 import javax.swing.AbstractAction;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.JPanel;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
 import org.openide.actions.OpenAction;
@@ -292,6 +293,24 @@ public class MenuBarTest extends NbTestCase implements ContainerListener {
         if (log.length() > 0) {
             fail("No warnings please:\n" + log);
         }
+    }
+    
+    public void testDontWaitWhenHoldingATreeLock() throws Exception {
+        class P extends JPanel {
+            public void run() throws Exception {
+                synchronized (getTreeLock()) {
+                    generateTenActions();
+                    assertEquals("Cannot answer one menu due to the lock", 0, mb.getMenuCount());
+                }
+                assertEquals("Now it is OK", 1, mb.getMenuCount());
+                JMenu menu = mb.getMenu(0);
+                synchronized (getTreeLock()) {
+                    assertEquals("Cannot answer properly 10", 0, menu.getItemCount());
+                }
+                assertEquals("Now it is 10", 10, menu.getItemCount());
+            }
+        }
+        new P().run();
     }
     
     public void testItemCount() throws IOException {

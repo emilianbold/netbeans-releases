@@ -260,10 +260,12 @@ public abstract class BaseEEModuleImpl implements J2eeModuleImplementation2, Mod
     
     public File getDDFile(String path) {
         URI[] dir = mavenproject().getResources(false);
-        File fil = new File(new File(dir[0]), path);
-        fil = FileUtil.normalizeFile(fil);
+        if (dir.length == 0) {
+            return null;
+        }
         
-        return fil;
+        File file = new File(new File(dir[0]), path);
+        return FileUtil.normalizeFile(file);
     }
     
     public boolean isValid() {
