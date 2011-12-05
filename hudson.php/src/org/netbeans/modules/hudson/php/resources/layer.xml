@@ -48,7 +48,7 @@ made subject to such option by the copyright holder.
     <folder name="OptionsExport">
         <folder name="PHP">
             <file name="Hudson">
-                <attr name="include" stringvalue="config/Preferences/org/netbeans/modules/php/hudson/hudson.properties"/>
+                <attr name="include" stringvalue="config/Preferences/org/netbeans/modules/hudson/php/hudson.properties"/>
                 <attr name="displayName" bundlevalue="org.netbeans.modules.hudson.php.resources.Bundle#LBL_HudsonExportName"/>
                 <attr name="position" intvalue="240"/>
             </file>
