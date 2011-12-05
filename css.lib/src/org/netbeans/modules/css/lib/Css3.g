@@ -487,7 +487,7 @@ typeSelector
  	 	 
  nsPred
  	:	
- 	(IDENT | STAR) PIPE
+ 	(IDENT | STAR)? PIPE
  	;
     
  /*
@@ -591,10 +591,16 @@ attrib_value
 
 pseudo
     : ( COLON | DCOLON )
-            ( IDENT | GEN )
-                ( // Function
-                    WS* LPAREN WS* ( expr )? RPAREN
-                )?
+             (
+                ( 
+                    ( IDENT | GEN )
+                    ( // Function
+                        WS* LPAREN WS* ( expr | '*' )? RPAREN
+                    )?
+                )
+                |
+                ( NOT WS* LPAREN WS* simpleSelectorSequence? RPAREN )
+             )
     ;
 
 declaration
