@@ -48,7 +48,7 @@ import org.netbeans.modules.versioning.core.spi.VCSVisibilityQuery;
 import org.netbeans.modules.versioning.core.spi.VCSAnnotator;
 import java.lang.reflect.Method;
 import java.util.Map.Entry;
-import org.netbeans.modules.versioning.core.spi.VersioningSupport;
+import org.netbeans.modules.versioning.core.api.VersioningSupport;
 import org.netbeans.modules.versioning.diff.DiffSidebarManager;
 import org.netbeans.modules.masterfs.providers.InterceptionListener;
 import org.openide.util.Lookup;

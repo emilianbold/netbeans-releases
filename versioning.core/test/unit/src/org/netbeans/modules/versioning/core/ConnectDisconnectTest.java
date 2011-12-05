@@ -52,7 +52,7 @@ import org.netbeans.modules.versioning.core.util.VCSSystemProvider.VersioningSys
 import org.netbeans.modules.versioning.core.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.core.spi.VCSInterceptor;
 import org.netbeans.modules.versioning.core.spi.VCSVisibilityQuery;
-import org.netbeans.modules.versioning.core.spi.VersioningSupport;
+import org.netbeans.modules.versioning.core.api.VersioningSupport;
 import org.netbeans.spi.queries.CollocationQueryImplementation;
 import org.openide.util.NbPreferences;
 import org.openide.util.test.MockLookup;

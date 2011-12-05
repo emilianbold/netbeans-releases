@@ -43,7 +43,7 @@
  */
 package org.netbeans.modules.versioning.core.spi;
 
-import org.netbeans.modules.versioning.core.spi.VersioningSupport;
+import org.netbeans.modules.versioning.core.api.VersioningSupport;
 import java.io.File;
 import java.util.prefs.Preferences;
 import org.netbeans.junit.NbTestCase;

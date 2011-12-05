@@ -44,6 +44,7 @@ package org.netbeans.modules.versioning.core.api;
 import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.extexecution.ProcessBuilder;
 import org.netbeans.modules.versioning.core.APIAccessor;
 import org.netbeans.modules.versioning.core.FlatFolder;
 import org.openide.filesystems.FileObject;
@@ -351,4 +352,12 @@ public final class VCSFileProxy {
     private static Object getAttribute(FileSystem fileSystem, String attrName) {
         return fileSystem.getRoot().getAttribute(attrName);
     }        
+    
+    ProcessBuilder createProcessBuilder() {
+        if (proxy == null) {
+            return ProcessBuilder.getLocal();
+        } else {
+            return proxy.createProcessBuilder(this);
+        }
+    }
 }

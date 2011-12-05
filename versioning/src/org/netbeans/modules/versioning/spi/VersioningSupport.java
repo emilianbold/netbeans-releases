@@ -146,6 +146,6 @@ public final class VersioningSupport {
      */
     public static boolean isExcluded (File folder) {
         VCSFileProxy proxy = VCSFileProxy.createFileProxy(folder);
-        return proxy != null ? org.netbeans.modules.versioning.core.spi.VersioningSupport.isExcluded(proxy) : null;
+        return proxy != null ? org.netbeans.modules.versioning.core.api.VersioningSupport.isExcluded(proxy) : null;
     }
 }

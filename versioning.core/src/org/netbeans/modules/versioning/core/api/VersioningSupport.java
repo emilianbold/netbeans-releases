@@ -41,16 +41,16 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.versioning.core.spi;
+package org.netbeans.modules.versioning.core.api;
 
 import org.netbeans.modules.versioning.core.VersioningManager;
-import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.util.NbPreferences;
 
 import java.util.prefs.Preferences;
 import org.netbeans.modules.versioning.core.APIAccessor;
 import org.netbeans.modules.versioning.core.DelegatingVCS;
 import org.netbeans.modules.versioning.core.Utils;
+import org.netbeans.modules.versioning.core.spi.VersioningSystem;
 import org.netbeans.modules.versioning.core.util.VCSSystemProvider;
 
 /**
@@ -137,4 +137,16 @@ public final class VersioningSupport {
         }
         return false;
     }
+    
+    /**
+     * Creates Process builder.
+     * All VCS clients should use this process builder instead of java.lang.ProcessBuilder
+     * 
+     * @param file
+     * @return process builder for local or remote environment 
+     */
+    public static org.netbeans.api.extexecution.ProcessBuilder createProcessBuilder(VCSFileProxy file) {
+        return file.createProcessBuilder();
+    }
+    
 }

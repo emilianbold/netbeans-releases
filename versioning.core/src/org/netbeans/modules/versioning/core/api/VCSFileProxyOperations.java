@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.versioning.core.api;
 
+import org.netbeans.api.extexecution.ProcessBuilder;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -69,4 +70,6 @@ public interface VCSFileProxyOperations {
     FileObject toFileObject(VCSFileProxy path);
     VCSFileProxy[] list();
     boolean isFlat();
+
+    ProcessBuilder createProcessBuilder(VCSFileProxy file);
 }

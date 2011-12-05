@@ -195,7 +195,7 @@ public class GetOwnerTest extends NbTestCase {
         File b = new File(getWorkDir(), "b");
         System.setProperty("versioning.unversionedFolders", a.getAbsolutePath() + ";" + b.getAbsolutePath() + ";");
         File c = new File(getWorkDir(), "c");
-        org.netbeans.modules.versioning.core.spi.VersioningSupport.getPreferences().put("unversionedFolders", c.getAbsolutePath()); //NOI18N
+        org.netbeans.modules.versioning.core.api.VersioningSupport.getPreferences().put("unversionedFolders", c.getAbsolutePath()); //NOI18N
         File userdir = new File(getWorkDir(), "userdir");
         System.setProperty("netbeans.user", userdir.getAbsolutePath());
         assertTrue(VersioningSupport.isExcluded(a));
