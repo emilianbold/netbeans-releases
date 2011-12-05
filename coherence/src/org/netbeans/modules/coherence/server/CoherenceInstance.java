@@ -168,7 +168,7 @@ public final class CoherenceInstance implements ServerInstanceImplementation {
      */
     private static void appendCoherenceID(InstanceProperties properties) {
         int uniqueId = properties.hashCode();
-        while (!CoherenceInstanceProvider.isUniqueAcrossInstances(uniqueId)) {
+        while (!CoherenceInstanceProvider.isUniqueIdAcrossInstances(uniqueId)) {
             uniqueId++;
         }
 
