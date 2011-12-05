@@ -184,7 +184,7 @@ made subject to such option by the copyright holder.
   </target>
 
   <!-- build NBMs for selected modules -->
-  <target name="build-nbms" depends="init" description="Build all NBMs, all modules have to be built before proceed">
+  <target name="build-nbms" depends="init,download-selected-extbins" description="Build all NBMs, all modules have to be built before proceed">
       <mkdir dir="nbms" />
       <property name="base.nbm.target.dir" location="nbms" />
       <property name="nbms.fail.on.error" value="true"/>

@@ -126,7 +126,8 @@ public final class CheckModuleConfigs extends Task {
             }
             allClusters.put(m.group(1), splitToList(clusterDef.getValue(), clusterDef.getKey()));
         }
-        allClusters.get("experimental").removeAll(allClusters.get("stableuc")); // intentionally a superset
+        allClusters.get("experimental").removeAll(allClusters.get("betauc")); // intentionally a superset
+        allClusters.get("betauc").removeAll(allClusters.get("stableuc")); // ditto
         for (Map.Entry<String,List<String>> entry : allClusters.entrySet()) {
             String name = entry.getKey();
             List<String> modules = entry.getValue();
