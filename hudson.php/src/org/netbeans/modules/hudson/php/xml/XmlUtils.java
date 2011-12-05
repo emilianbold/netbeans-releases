@@ -138,6 +138,14 @@ public final class XmlUtils {
         parentNode.replaceChild(document.createComment(XmlUtils.asString(node, false)), node);
     }
 
+    public static String getNodeValue(Document document, Node node) {
+        return node.getFirstChild().getNodeValue();
+    }
+
+    public static void setNodeValue(Document document, Node node, String newValue) {
+        node.getFirstChild().setNodeValue(newValue);
+    }
+
     public static String asString(Node node, boolean formatted) {
         try {
             Transformer transformer = TransformerFactory.newInstance().newTransformer();
