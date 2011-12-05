@@ -64,6 +64,7 @@ public final class HudsonOptions {
 
     // properties
     private static final String PPW = "ppw.path"; // NOI18N
+    private static final String JOB_CONFIG = "job.config.path"; // NOI18N
 
     final ChangeSupport changeSupport = new ChangeSupport(this);
 
@@ -104,8 +105,16 @@ public final class HudsonOptions {
         return ppw;
     }
 
-    public void setPpw(String sandbox) {
-        getPreferences().put(PPW, sandbox);
+    public void setPpw(String ppw) {
+        getPreferences().put(PPW, ppw);
+    }
+
+    public String getJobConfig() {
+        return getPreferences().get(JOB_CONFIG, null);
+    }
+
+    public void setJobConfig(String jobConfig) {
+        getPreferences().put(PPW, jobConfig);
     }
 
     private Preferences getPreferences() {
