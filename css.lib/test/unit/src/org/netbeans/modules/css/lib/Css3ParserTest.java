@@ -947,6 +947,20 @@ public class Css3ParserTest extends CslTestBase {
         
     }
     
+    public void testParseWSAfterImportantSym() throws BadLocationException, ParseException {
+        CssParserResult result = TestUtil.parse(".green { "
+                + "    background-color : lime ! important "
+                + "}");
+        assertResultOK(result);
+    }
+    
+    public void testParse_nth_child() throws BadLocationException, ParseException {
+        assertResultOK(TestUtil.parse("table.t1 tr:nth-child(-n+4) { background-color : red }"));
+        assertResultOK(TestUtil.parse("table.t2 td:nth-child(3n+1) { background-color : red }"));
+    }
+    
+    //------------------------------------------------------------------------------
+    
     private CssParserResult assertResultOK(CssParserResult result) {
         return assertResult(result, 0);
     }

@@ -224,4 +224,28 @@ public class CssCompletionTest extends CssModuleTestBase {
         checkCC("div { font: italic la|rge }", arr("large"), Match.CONTAINS);
     }
     
+    //Bug 205893 - font-family completion issue
+    public void testPropertyValueFontFamily() throws ParseException {
+        checkCC("div { font-family: fa| }", arr("fantasy"), Match.EXACT);        
+        checkCC("div { font-family: fantasy,|}", arr("monospace"), Match.CONTAINS);
+        checkCC("div { font-family: fantasy, |}", arr("monospace"), Match.CONTAINS);
+        checkCC("div { font-family: fantasy, mo|}", arr("monospace"), Match.EXACT);
+        
+        checkCC("div { font-family: fa| \n}", arr("fantasy"), Match.EXACT);        
+        checkCC("div { font-family: fantasy,| \n}", arr("monospace"), Match.CONTAINS);
+        checkCC("div { font-family: fantasy, | \n}", arr("monospace"), Match.CONTAINS);
+        checkCC("div { font-family: fantasy, mo| \n}", arr("monospace"), Match.EXACT);
+    }
+    
+    public void testPropertyValueFontFamilyProblem2() throws ParseException {
+        //completion doesn't offer items that can immediatelly follow
+        //a valid token
+        checkCC("div { font-family: fantasy |}", arr(","), Match.EXACT);
+        checkCC("div { font-family: fantasy|}", arr(","), Match.EXACT);
+    }
+    
+    public void testPropertyValueJustAfterRGB() throws ParseException {
+        checkCC("div { color: rgb|}", arr("("), Match.EXACT);
+    }
+    
 }

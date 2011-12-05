@@ -65,7 +65,7 @@ public class ResolvedToken {
 
     @Override
     public String toString() {
-        return grammarElement.path();
+        return new StringBuilder().append(grammarElement.path()).append(" (").append(token()).append(")").toString();
     }
 
     @Override

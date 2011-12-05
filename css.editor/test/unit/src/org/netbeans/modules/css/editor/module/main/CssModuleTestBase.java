@@ -78,32 +78,31 @@ public class CssModuleTestBase extends CslTestBase {
     protected static boolean PRINT_GRAMMAR_RESOLVE_TIMES = false;
     protected static boolean PRINT_INFO_IN_ASSERT_RESOLVE = false;
     
-    protected void assertResolve(String grammar, String inputText) {
-        assertResolve(grammar, inputText, true);
+    protected PropertyValue assertResolve(String grammar, String inputText) {
+        return assertResolve(grammar, inputText, true);
     }
     
-    protected void assertNotResolve(String grammar, String inputText) {
-        assertResolve(grammar, inputText, false);
+    protected PropertyValue assertNotResolve(String grammar, String inputText) {
+        return assertResolve(grammar, inputText, false);
     }
 
-    protected void assertResolve(String grammar, String inputText, boolean expectedSuccess) {
+    protected PropertyValue assertResolve(String grammar, String inputText, boolean expectedSuccess) {
         long a = System.currentTimeMillis();
         GroupGrammarElement tree = GrammarParser.parse(grammar);
         long b = System.currentTimeMillis();
-        
-        if(PRINT_INFO_IN_ASSERT_RESOLVE) {
+        return assertResolve(tree, inputText, expectedSuccess);
+    }
+    
+    protected PropertyValue assertResolve(GroupGrammarElement tree, String inputText) {        
+        return assertResolve(tree, inputText, true);        
+    }
+    
+    protected PropertyValue assertResolve(GroupGrammarElement tree, String inputText, boolean expectedSuccess) {        
+        if (PRINT_INFO_IN_ASSERT_RESOLVE) {
             System.out.println("Grammar:");
             System.out.println(tree.toString2(0));
         }
-
-        assertResolve(tree, inputText, expectedSuccess);
-    }
-    
-    protected void assertResolve(GroupGrammarElement tree, String inputText) {        
-        assertResolve(tree, inputText, true);        
-    }
-    
-    protected void assertResolve(GroupGrammarElement tree, String inputText, boolean expectedSuccess) {        
+        
         long a = System.currentTimeMillis();
         PropertyValue pv = new PropertyValue(tree, inputText);
         long c = System.currentTimeMillis();
@@ -114,6 +113,8 @@ public class CssModuleTestBase extends CslTestBase {
         if (pv.isResolved() != expectedSuccess) {
             assertTrue("Unexpected parsing result", false);
         }
+        
+        return pv;
     }
 
     protected void assertParseFails(String grammar, String inputText) {
