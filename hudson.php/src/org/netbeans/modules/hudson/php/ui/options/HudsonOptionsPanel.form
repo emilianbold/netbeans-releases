@@ -19,7 +19,7 @@
           <Group type="102" attributes="0">
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="errorLabel" min="-2" max="-2" attributes="0"/>
-                  <Component id="noteLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="note1Label" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
           </Group>
@@ -28,26 +28,26 @@
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" attributes="0">
-                      <Component id="hintLabel" min="-2" max="-2" attributes="0"/>
+                      <Component id="ppwHintLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                   </Group>
                   <Group type="102" attributes="0">
                       <Component id="ppwTextField" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="browseButton" linkSize="1" min="-2" max="-2" attributes="0"/>
+                      <Component id="ppwBrowseButton" linkSize="1" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="searchButton" linkSize="1" min="-2" max="-2" attributes="0"/>
+                      <Component id="ppwSearchButton" linkSize="1" min="-2" max="-2" attributes="0"/>
                   </Group>
               </Group>
           </Group>
           <Group type="102" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="installationInfoLabel" min="-2" max="-2" attributes="0"/>
-                  <Component id="learnMoreLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="ppwInstallationInfoLabel" min="-2" max="-2" attributes="0"/>
+                  <Component id="ppwLearnMoreLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="ppwNoteLabel" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="32767" attributes="0"/>
+              <EmptySpace pref="118" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -57,20 +57,20 @@
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="ppwTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="ppwLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="browseButton" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="searchButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="ppwBrowseButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="ppwSearchButton" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="hintLabel" min="-2" max="-2" attributes="0"/>
+              <Component id="ppwHintLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace type="separate" min="-2" max="-2" attributes="0"/>
-              <Component id="noteLabel" min="-2" max="-2" attributes="0"/>
+              <Component id="note1Label" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="ppwNoteLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Component id="installationInfoLabel" min="-2" max="-2" attributes="0"/>
+              <Component id="ppwInstallationInfoLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="learnMoreLabel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="32767" attributes="0"/>
+              <Component id="ppwLearnMoreLabel" min="-2" max="-2" attributes="0"/>
+              <EmptySpace pref="115" max="32767" attributes="0"/>
               <Component id="errorLabel" min="-2" max="-2" attributes="0"/>
           </Group>
       </Group>
@@ -94,35 +94,35 @@
         </Property>
       </Properties>
     </Component>
-    <Component class="javax.swing.JButton" name="browseButton">
+    <Component class="javax.swing.JButton" name="ppwBrowseButton">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/hudson/php/ui/options/Bundle.properties" key="HudsonOptionsPanel.browseButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/hudson/php/ui/options/Bundle.properties" key="HudsonOptionsPanel.ppwBrowseButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="browseButtonActionPerformed"/>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="ppwBrowseButtonActionPerformed"/>
       </Events>
     </Component>
-    <Component class="javax.swing.JButton" name="searchButton">
+    <Component class="javax.swing.JButton" name="ppwSearchButton">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/hudson/php/ui/options/Bundle.properties" key="HudsonOptionsPanel.searchButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/hudson/php/ui/options/Bundle.properties" key="HudsonOptionsPanel.ppwSearchButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="searchButtonActionPerformed"/>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="ppwSearchButtonActionPerformed"/>
       </Events>
     </Component>
-    <Component class="javax.swing.JLabel" name="hintLabel">
+    <Component class="javax.swing.JLabel" name="ppwHintLabel">
       <Properties>
         <Property name="text" type="java.lang.String" value="HINT" noResource="true"/>
       </Properties>
     </Component>
-    <Component class="javax.swing.JLabel" name="noteLabel">
+    <Component class="javax.swing.JLabel" name="note1Label">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/hudson/php/ui/options/Bundle.properties" key="HudsonOptionsPanel.noteLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/hudson/php/ui/options/Bundle.properties" key="HudsonOptionsPanel.note1Label.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
@@ -131,22 +131,22 @@
         <Property name="text" type="java.lang.String" value="PPW NOTE" noResource="true"/>
       </Properties>
     </Component>
-    <Component class="javax.swing.JLabel" name="installationInfoLabel">
+    <Component class="javax.swing.JLabel" name="ppwInstallationInfoLabel">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/hudson/php/ui/options/Bundle.properties" key="HudsonOptionsPanel.installationInfoLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/hudson/php/ui/options/Bundle.properties" key="HudsonOptionsPanel.ppwInstallationInfoLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
-    <Component class="javax.swing.JLabel" name="learnMoreLabel">
+    <Component class="javax.swing.JLabel" name="ppwLearnMoreLabel">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/hudson/php/ui/options/Bundle.properties" key="HudsonOptionsPanel.learnMoreLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/hudson/php/ui/options/Bundle.properties" key="HudsonOptionsPanel.ppwLearnMoreLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <Events>
-        <EventHandler event="mouseEntered" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="learnMoreLabelMouseEntered"/>
-        <EventHandler event="mousePressed" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="learnMoreLabelMousePressed"/>
+        <EventHandler event="mouseEntered" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="ppwLearnMoreLabelMouseEntered"/>
+        <EventHandler event="mousePressed" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="ppwLearnMoreLabelMousePressed"/>
       </Events>
     </Component>
     <Component class="javax.swing.JLabel" name="errorLabel">

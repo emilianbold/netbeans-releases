@@ -96,7 +96,7 @@ public class HudsonOptionsPanel extends JPanel {
         "TXT_PpwNote=<html>PHP Project Wizard (PPW) is used to generate the scripts and configuration files necessary for the build automation.</html>"
     })
     private void init() {
-        hintLabel.setText(Bundle.LBL_PpwHint(PpwScript.SCRIPT_NAME, PpwScript.SCRIPT_NAME_LONG));
+        ppwHintLabel.setText(Bundle.LBL_PpwHint(PpwScript.SCRIPT_NAME, PpwScript.SCRIPT_NAME_LONG));
         ppwNoteLabel.setText(Bundle.TXT_PpwNote());
         errorLabel.setText(" "); // NOI18N
 
@@ -162,41 +162,41 @@ public class HudsonOptionsPanel extends JPanel {
 
         ppwLabel = new JLabel();
         ppwTextField = new JTextField();
-        browseButton = new JButton();
-        searchButton = new JButton();
-        hintLabel = new JLabel();
-        noteLabel = new JLabel();
+        ppwBrowseButton = new JButton();
+        ppwSearchButton = new JButton();
+        ppwHintLabel = new JLabel();
+        note1Label = new JLabel();
         ppwNoteLabel = new JLabel();
-        installationInfoLabel = new JLabel();
-        learnMoreLabel = new JLabel();
+        ppwInstallationInfoLabel = new JLabel();
+        ppwLearnMoreLabel = new JLabel();
         errorLabel = new JLabel();
 
         ppwLabel.setLabelFor(ppwTextField);
         Mnemonics.setLocalizedText(ppwLabel, NbBundle.getMessage(HudsonOptionsPanel.class, "HudsonOptionsPanel.ppwLabel.text")); // NOI18N
 
-        ppwTextField.setText(NbBundle.getMessage(HudsonOptionsPanel.class, "HudsonOptionsPanel.ppwTextField.text")); Mnemonics.setLocalizedText(browseButton, NbBundle.getMessage(HudsonOptionsPanel.class, "HudsonOptionsPanel.browseButton.text")); // NOI18N
-        browseButton.addActionListener(new ActionListener() {
+        ppwTextField.setText(NbBundle.getMessage(HudsonOptionsPanel.class, "HudsonOptionsPanel.ppwTextField.text")); Mnemonics.setLocalizedText(ppwBrowseButton, NbBundle.getMessage(HudsonOptionsPanel.class, "HudsonOptionsPanel.ppwBrowseButton.text")); // NOI18N
+        ppwBrowseButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
-                browseButtonActionPerformed(evt);
+                ppwBrowseButtonActionPerformed(evt);
             }
         });
-        Mnemonics.setLocalizedText(searchButton, NbBundle.getMessage(HudsonOptionsPanel.class, "HudsonOptionsPanel.searchButton.text")); // NOI18N
-        searchButton.addActionListener(new ActionListener() {
+        Mnemonics.setLocalizedText(ppwSearchButton, NbBundle.getMessage(HudsonOptionsPanel.class, "HudsonOptionsPanel.ppwSearchButton.text")); // NOI18N
+        ppwSearchButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
-                searchButtonActionPerformed(evt);
+                ppwSearchButtonActionPerformed(evt);
             }
         });
-        Mnemonics.setLocalizedText(hintLabel, "HINT"); // NOI18N
-        Mnemonics.setLocalizedText(noteLabel, NbBundle.getMessage(HudsonOptionsPanel.class, "HudsonOptionsPanel.noteLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(ppwHintLabel, "HINT"); // NOI18N
+        Mnemonics.setLocalizedText(note1Label, NbBundle.getMessage(HudsonOptionsPanel.class, "HudsonOptionsPanel.note1Label.text")); // NOI18N
         Mnemonics.setLocalizedText(ppwNoteLabel, "PPW NOTE"); // NOI18N
-        Mnemonics.setLocalizedText(installationInfoLabel, NbBundle.getMessage(HudsonOptionsPanel.class, "HudsonOptionsPanel.installationInfoLabel.text")); // NOI18N
-        Mnemonics.setLocalizedText(learnMoreLabel, NbBundle.getMessage(HudsonOptionsPanel.class, "HudsonOptionsPanel.learnMoreLabel.text")); // NOI18N
-        learnMoreLabel.addMouseListener(new MouseAdapter() {
+        Mnemonics.setLocalizedText(ppwInstallationInfoLabel, NbBundle.getMessage(HudsonOptionsPanel.class, "HudsonOptionsPanel.ppwInstallationInfoLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(ppwLearnMoreLabel, NbBundle.getMessage(HudsonOptionsPanel.class, "HudsonOptionsPanel.ppwLearnMoreLabel.text")); // NOI18N
+        ppwLearnMoreLabel.addMouseListener(new MouseAdapter() {
             public void mouseEntered(MouseEvent evt) {
-                learnMoreLabelMouseEntered(evt);
+                ppwLearnMoreLabelMouseEntered(evt);
             }
             public void mousePressed(MouseEvent evt) {
-                learnMoreLabelMousePressed(evt);
+                ppwLearnMoreLabelMousePressed(evt);
             }
         });
         Mnemonics.setLocalizedText(errorLabel, "ERROR"); // NOI18N
@@ -208,31 +208,31 @@ public class HudsonOptionsPanel extends JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(Alignment.LEADING)
                     .addComponent(errorLabel)
-                    .addComponent(noteLabel))
+                    .addComponent(note1Label, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                 .addGap(0, 0, Short.MAX_VALUE))
             .addGroup(layout.createSequentialGroup()
                 .addComponent(ppwLabel)
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(hintLabel)
+                        .addComponent(ppwHintLabel)
                         .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(ppwTextField)
                         .addPreferredGap(ComponentPlacement.RELATED)
-                        .addComponent(browseButton)
+                        .addComponent(ppwBrowseButton)
                         .addPreferredGap(ComponentPlacement.RELATED)
-                        .addComponent(searchButton))))
+                        .addComponent(ppwSearchButton))))
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(Alignment.LEADING)
-                    .addComponent(installationInfoLabel)
-                    .addComponent(learnMoreLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .addComponent(ppwInstallationInfoLabel)
+                    .addComponent(ppwLearnMoreLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .addComponent(ppwNoteLabel))
-                .addContainerGap())
+                .addContainerGap(118, Short.MAX_VALUE))
         );
 
-        layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {browseButton, searchButton});
+        layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {ppwBrowseButton, ppwSearchButton});
 
         layout.setVerticalGroup(
             layout.createParallelGroup(Alignment.LEADING)
@@ -240,37 +240,37 @@ public class HudsonOptionsPanel extends JPanel {
                 .addGroup(layout.createParallelGroup(Alignment.BASELINE)
                     .addComponent(ppwTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .addComponent(ppwLabel)
-                    .addComponent(browseButton)
-                    .addComponent(searchButton))
+                    .addComponent(ppwBrowseButton)
+                    .addComponent(ppwSearchButton))
                 .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(hintLabel)
+                .addComponent(ppwHintLabel)
                 .addGap(18, 18, 18)
-                .addComponent(noteLabel)
+                .addComponent(note1Label, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addComponent(ppwNoteLabel)
                 .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(installationInfoLabel)
+                .addComponent(ppwInstallationInfoLabel)
                 .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(learnMoreLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(ppwLearnMoreLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(ComponentPlacement.RELATED, 115, Short.MAX_VALUE)
                 .addComponent(errorLabel))
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void learnMoreLabelMouseEntered(MouseEvent evt) {//GEN-FIRST:event_learnMoreLabelMouseEntered
+    private void ppwLearnMoreLabelMouseEntered(MouseEvent evt) {//GEN-FIRST:event_ppwLearnMoreLabelMouseEntered
         evt.getComponent().setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-    }//GEN-LAST:event_learnMoreLabelMouseEntered
+    }//GEN-LAST:event_ppwLearnMoreLabelMouseEntered
 
-    private void learnMoreLabelMousePressed(MouseEvent evt) {//GEN-FIRST:event_learnMoreLabelMousePressed
+    private void ppwLearnMoreLabelMousePressed(MouseEvent evt) {//GEN-FIRST:event_ppwLearnMoreLabelMousePressed
         try {
             HtmlBrowser.URLDisplayer.getDefault().showURL(new URL("https://github.com/sebastianbergmann/php-project-wizard")); // NOI18N
         } catch (MalformedURLException ex) {
             Exceptions.printStackTrace(ex);
         }
-    }//GEN-LAST:event_learnMoreLabelMousePressed
+    }//GEN-LAST:event_ppwLearnMoreLabelMousePressed
 
     @NbBundle.Messages("LBL_SelectPpw=Select PPW script")
-    private void browseButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
+    private void ppwBrowseButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_ppwBrowseButtonActionPerformed
         File ppwScript = new FileChooserBuilder(HudsonOptionsPanel.class.getName() + PPW_LAST_FOLDER_SUFFIX)
                 .setTitle(Bundle.LBL_SelectPpw())
                 .setFilesOnly(true)
@@ -279,7 +279,7 @@ public class HudsonOptionsPanel extends JPanel {
             ppwScript = FileUtil.normalizeFile(ppwScript);
             ppwTextField.setText(ppwScript.getAbsolutePath());
         }
-    }//GEN-LAST:event_browseButtonActionPerformed
+    }//GEN-LAST:event_ppwBrowseButtonActionPerformed
 
     @NbBundle.Messages({
         "LBL_PpwScriptsTitle=PPW scripts",
@@ -287,7 +287,7 @@ public class HudsonOptionsPanel extends JPanel {
         "LBL_PpwScriptsPleaseWaitPart=PPW scripts",
         "LBL_NoPpwScriptsFound=No PPW scripts found."
     })
-    private void searchButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_searchButtonActionPerformed
+    private void ppwSearchButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_ppwSearchButtonActionPerformed
         String ppwScript = UiUtils.SearchWindow.search(new UiUtils.SearchWindow.SearchWindowSupport() {
             @Override
             public List<String> detect() {
@@ -313,18 +313,18 @@ public class HudsonOptionsPanel extends JPanel {
         if (ppwScript != null) {
             ppwTextField.setText(ppwScript);
         }
-    }//GEN-LAST:event_searchButtonActionPerformed
+    }//GEN-LAST:event_ppwSearchButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private JButton browseButton;
     private JLabel errorLabel;
-    private JLabel hintLabel;
-    private JLabel installationInfoLabel;
-    private JLabel learnMoreLabel;
-    private JLabel noteLabel;
+    private JLabel note1Label;
+    private JButton ppwBrowseButton;
+    private JLabel ppwHintLabel;
+    private JLabel ppwInstallationInfoLabel;
     private JLabel ppwLabel;
+    private JLabel ppwLearnMoreLabel;
     private JLabel ppwNoteLabel;
+    private JButton ppwSearchButton;
     private JTextField ppwTextField;
-    private JButton searchButton;
     // End of variables declaration//GEN-END:variables
 }
