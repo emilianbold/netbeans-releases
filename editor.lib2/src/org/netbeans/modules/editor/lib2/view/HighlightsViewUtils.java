@@ -258,8 +258,11 @@ public class HighlightsViewUtils {
             Boolean showNonPrintingChars = null;
             boolean log = LOG.isLoggable(Level.FINEST);
             // For regular textLayout do aggregation of rendered parts into compound area
-            // to decrease TL.draw() invocations
-            Map<Color,Area> foreColor2Area = (textLayout != null && !newline)
+            // to decrease TL.draw() invocations.
+            // Unfortunately using java.awt.geom.Area on Mac OSX results in white horizontal lines
+            // throughout the rendered text (when dragging vertical scrollbar slowly).
+            // Therefore the aggregation optimization is currently disabled.
+            Map<Color,Area> foreColor2Area = (false && textLayout != null && !newline)
                     ? new HashMap<Color,Area>()
                     : null;
             boolean done = false;

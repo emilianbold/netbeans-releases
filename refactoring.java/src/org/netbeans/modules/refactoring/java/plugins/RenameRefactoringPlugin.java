@@ -57,6 +57,7 @@ import javax.lang.model.util.Elements;
 import org.netbeans.api.java.source.*;
 import org.netbeans.modules.refactoring.api.*;
 import org.netbeans.modules.refactoring.java.RefactoringUtils;
+import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
 import org.openide.filesystems.FileObject;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
@@ -155,7 +156,7 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
         case METHOD:
             fireProgressListenerStep();
             fireProgressListenerStep();
-            overriddenByMethods = RefactoringUtils.getOverridingMethods((ExecutableElement)el, info);
+            overriddenByMethods = JavaRefactoringUtils.getOverridingMethods((ExecutableElement)el, info);
             fireProgressListenerStep();
             if (el.getModifiers().contains(Modifier.NATIVE)) {
                 preCheckProblem = createProblem(preCheckProblem, false, NbBundle.getMessage(RenameRefactoringPlugin.class, "ERR_RenameNative", el));
@@ -165,7 +166,7 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
                         new Object[] {info.getElementUtilities().enclosingTypeElement(el).getSimpleName().toString()});
                 preCheckProblem = createProblem(preCheckProblem, false, msg);
                 for (ExecutableElement method : overriddenByMethods) {
-                    if(RefactoringUtils.getOverridenMethods(method, info).size() > 1) {
+                    if(JavaRefactoringUtils.getOverriddenMethods(method, info).size() > 1) {
                         preCheckProblem = createProblem(preCheckProblem, false, NbBundle.getMessage(RenameRefactoringPlugin.class, "ERR_IsOverriddenOverrides", method));
                         break;
                     }
@@ -176,7 +177,7 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
                     preCheckProblem = createProblem(preCheckProblem, false, NbBundle.getMessage(RenameRefactoringPlugin.class, "ERR_RenameNative", e));
                 }
             }
-            overridesMethods = RefactoringUtils.getOverridenMethods((ExecutableElement)el, info);
+            overridesMethods = JavaRefactoringUtils.getOverriddenMethods((ExecutableElement)el, info);
             fireProgressListenerStep();
             if (!overridesMethods.isEmpty()) {
                 boolean fatal = false;
@@ -424,13 +425,13 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
                         } else if (kind == ElementKind.METHOD) {
                             //add all references of overriding methods
                             allMethods.add(ElementHandle.create((ExecutableElement)el));
-                            for (ExecutableElement e:RefactoringUtils.getOverridingMethods((ExecutableElement)el, info)) {
+                            for (ExecutableElement e:JavaRefactoringUtils.getOverridingMethods((ExecutableElement)el, info)) {
                                 addMethods(e, set, info, idx);
                             }
                             //add all references of overriden methods
-                            for (ExecutableElement ov: RefactoringUtils.getOverridenMethods((ExecutableElement)el, info)) {
+                            for (ExecutableElement ov: JavaRefactoringUtils.getOverriddenMethods((ExecutableElement)el, info)) {
                                 addMethods(ov, set, info, idx);
-                                for (ExecutableElement e:RefactoringUtils.getOverridingMethods( ov,info)) {
+                                for (ExecutableElement e:JavaRefactoringUtils.getOverridingMethods( ov,info)) {
                                     addMethods(e, set, info, idx);
                                 }
                             }

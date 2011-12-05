@@ -157,7 +157,6 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
     private JComponent              diffView;
     private DiffFileTable           fileTable;
     private boolean                 dividerSet;
-    private boolean                 remoteStatusCalled;
     private boolean                 initialRefreshDisabled;
 
     /**
@@ -636,12 +635,11 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         
         LifecycleManager.getDefault().saveAll();
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor();
+        final boolean contactServer = currentType != Setup.DIFFTYPE_LOCAL;
         SvnProgressSupport supp = new SvnProgressSupport() {
             @Override
             public void perform() {                                         
-                // remote status is called when we're either in a remote mode or the refresh is manually started (refresh button)
-                remoteStatusCalled |= currentType != Setup.DIFFTYPE_LOCAL;
-                StatusAction.executeStatus(context, this, remoteStatusCalled);
+                StatusAction.executeStatus(context, this, contactServer);
                 if (!isCanceled()) {
                     refreshTask.schedule(50);
                 }
@@ -929,7 +927,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
             currentType = Setup.DIFFTYPE_ALL;
         }
         SvnModuleConfig.getDefault().setLastUsedModificationContext(currentType);
-        if (!initialRefreshDisabled && !remoteStatusCalled && currentType != Setup.DIFFTYPE_LOCAL) {
+        if (!initialRefreshDisabled && currentType != Setup.DIFFTYPE_LOCAL) {
             // current mode is not local and remote status has not yet been called, so remote statuses need to be refreshed
             onRefreshButton();
         } else {
@@ -1259,7 +1257,6 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
     }//GEN-LAST:event_updateButtonActionPerformed
 
     private void refreshButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refreshButtonActionPerformed
-        remoteStatusCalled = true; // manual click always triggers also remote status refresh
         onRefreshButton();
     }//GEN-LAST:event_refreshButtonActionPerformed
     

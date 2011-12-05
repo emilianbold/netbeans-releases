@@ -629,8 +629,69 @@ public abstract class CslTestBase extends NbTestCase {
             }
         }
 
-        assertEquals("content does not match between '" + relFilePath + "' and '" + relFilePath + ext + "'",
-                expected.trim(), description.trim());
+        String expectedTrimmed = expected.trim();
+        String actualTrimmed = description.trim();
+        
+        if (expectedTrimmed.equals(actualTrimmed)) {
+            return; // Actual and expected content are equals --> Test passed
+        } else {
+            // We want to ignore different line separators (like \r\n against \n) because they 
+            // might be causing failing tests on a different operation systems like Windows :]
+            String expectedUnified = expectedTrimmed.replaceAll("\r", "");
+            String actualUnified = actualTrimmed.replaceAll("\r", "");
+            
+            if (expectedUnified.equals(actualUnified)) {
+                return; // Only difference is in line separation --> Test passed
+            }
+            
+            // There are some diffrerences between expected and actual content --> Test failed
+            fail(getContentDifferences(relFilePath, ext, includeTestName, expectedUnified, actualUnified));
+        }
+    }
+    
+    private String getContentDifferences(String relFilePath, String ext, boolean includeTestName, String expected, String actual) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Content does not match between '").append(relFilePath).append("' and '").append(relFilePath);
+        if (includeTestName) {
+            sb.append(getName());
+        }
+        sb.append(ext).append("'\n");
+        sb.append("Expected content is: \n\n").append(expected).append("\n\nbut actual is: \n\n").append(actual).append("\n\n");
+        sb.append("It differs in the following things: \n\n");
+
+        List<String> expectedLines = Arrays.asList(expected.split("\n"));
+        List<String> actualLines = Arrays.asList(actual.split("\n"));
+
+        if (expectedLines.size() != actualLines.size()) {
+            sb.append("Number of lines: \n\tExpected: ").append(expectedLines.size()).append("\n\tActual: ").append(actualLines.size()).append("\n\n");
+        }
+
+        // Appending lines which are missing in expected content and are present in actual content
+        boolean firstOccurence = true;
+        for (String actualLine : actualLines) {
+            if (expectedLines.contains(actualLine) == false) {
+                if (firstOccurence) {
+                    sb.append("Actual content contains following lines which are missing in expected content: \n");
+                    firstOccurence = false;
+                }
+                sb.append("\t").append(actualLine).append("\n");
+            }
+        }
+
+        // Appending lines which are missing in actual content and are present in expected content
+        firstOccurence = true;
+        for (String expectedLine : expectedLines) {
+            if (actualLines.contains(expectedLine) == false) {
+                // If at least one line missing in actual content we want to append header line
+                if (firstOccurence) {
+                    sb.append("Expected content contains following lines which are missing in actual content: \n");
+                    firstOccurence = false;
+                }
+                sb.append("\t").append(expectedLine).append("\n");
+            }
+        }
+        
+        return sb.toString();
     }
 
     protected void assertDescriptionMatches(FileObject fileObject,

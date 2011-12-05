@@ -105,7 +105,9 @@ public class RefactoringUtils {
      * @param e
      * @param info
      * @return
+     * @deprecated 
      */
+    @Deprecated
     public static Collection<ExecutableElement> getOverridenMethods(ExecutableElement e, CompilationInfo info) {
         return getOverridenMethods(e, info.getElementUtilities().enclosingTypeElement(e), info);
     }
@@ -169,6 +171,14 @@ public class RefactoringUtils {
                 EnumSet.of(ClassIndex.SearchScope.SOURCE, ClassIndex.SearchScope.DEPENDENCIES));
     }
 
+    /**
+     * 
+     * @param e
+     * @param info
+     * @return
+     * @deprecated
+     */
+    @Deprecated
     public static Collection<ExecutableElement> getOverridingMethods(ExecutableElement e, CompilationInfo info) {
         Collection<ExecutableElement> result = new ArrayList();
         TypeElement parentType = (TypeElement) e.getEnclosingElement();
@@ -264,7 +274,9 @@ public class RefactoringUtils {
      *
      * @param fo
      * @return
+     * @deprecated 
      */
+    @Deprecated
     public static boolean isOnSourceClasspath(FileObject fo) {
         Project pr = FileOwnerQuery.getOwner(fo);
         if (pr == null) {
@@ -300,7 +312,9 @@ public class RefactoringUtils {
      *
      * @param file
      * @return
+     * @deprecated 
      */
+    @Deprecated
     public static boolean isRefactorable(FileObject file) {
         return file != null && isJavaFile(file) && isFileInOpenProject(file) && isOnSourceClasspath(file);
     }
@@ -418,7 +432,9 @@ public class RefactoringUtils {
      * @param type
      * @param info
      * @return
+     * @deprecated 
      */
+    @Deprecated
     public static Collection<TypeElement> getSuperTypes(TypeElement type, CompilationInfo info) {
         Collection<TypeElement> result = new HashSet<TypeElement>();
         LinkedList<TypeElement> l = new LinkedList<TypeElement>();
@@ -445,7 +461,9 @@ public class RefactoringUtils {
      * @param sourceOnly true if only types defined in open project should be
      * searched
      * @return
+     * @deprecated 
      */
+    @Deprecated
     public static Collection<TypeElement> getSuperTypes(TypeElement type, CompilationInfo info, boolean sourceOnly) {
         if (!sourceOnly) {
             return getSuperTypes(type, info);
@@ -513,7 +531,9 @@ public class RefactoringUtils {
      *
      * @param files
      * @return
+     * @deprecated 
      */
+    @Deprecated
     public static ClasspathInfo getClasspathInfoFor(FileObject... files) {
         return getClasspathInfoFor(true, files);
     }
@@ -711,7 +731,9 @@ public class RefactoringUtils {
      *
      * @param typeParams elements
      * @return types
+     * @deprecated 
      */
+    @Deprecated
     public static List<TypeMirror> resolveTypeParamsAsTypes(List<? extends Element> typeParams) {
         if (typeParams.isEmpty()) {
             return Collections.<TypeMirror>emptyList();
@@ -739,7 +761,9 @@ public class RefactoringUtils {
      * @param isAnnotation stop on annotation type
      * @param isAnonymous check if class or interface is annonymous
      * @return path to the enclosing ClassTree
+     * @deprecated 
      */
+    @Deprecated
     public static @NullUnknown
     TreePath findEnclosingClass(CompilationInfo javac, TreePath path, boolean isClass, boolean isInterface, boolean isEnum, boolean isAnnotation, boolean isAnonymous) {
         Tree selectedTree = path.getLeaf();

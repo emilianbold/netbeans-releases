@@ -59,6 +59,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.SingleCopyRefactoring;
 import org.netbeans.modules.refactoring.java.RefactoringUtils;
+import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
@@ -113,7 +114,7 @@ public class CopyClassRefactoringPlugin extends JavaRefactoringPlugin {
         if (fo == null) {
             return createProblem(null, true, NbBundle.getMessage(CopyClassRefactoringPlugin.class, "ERR_TargetFolderNotSet"));
         }
-        if (!RefactoringUtils.isOnSourceClasspath(fo)) {
+        if (!JavaRefactoringUtils.isOnSourceClasspath(fo)) {
             return createProblem(null, true, NbBundle.getMessage(CopyClassRefactoringPlugin.class, "ERR_TargetFolderNotJavaPackage"));
         }
         String targetPackageName = RefactoringUtils.getPackageName(target);

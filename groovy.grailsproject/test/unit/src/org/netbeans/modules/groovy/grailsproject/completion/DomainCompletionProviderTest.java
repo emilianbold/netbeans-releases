@@ -102,6 +102,10 @@ public class DomainCompletionProviderTest extends GroovyTestBase {
     }
 
     public void testDomainMethods7() throws Exception {
+        checkCompletion(TEST_BASE + "TestDomain.groovy", "        TestDomain.findR^", false);
+    }
+
+    public void testDomainMethods8() throws Exception {
         checkCompletion(TEST_BASE + "TestDomain.groovy", "        TestDomain.find^", true);
     }
 }

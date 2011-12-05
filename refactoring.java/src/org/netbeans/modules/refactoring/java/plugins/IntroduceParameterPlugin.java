@@ -60,6 +60,7 @@ import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.ChangeParametersRefactoring;
 import org.netbeans.modules.refactoring.java.api.ChangeParametersRefactoring.ParameterInfo;
 import org.netbeans.modules.refactoring.java.api.IntroduceParameterRefactoring;
+import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
 import org.netbeans.modules.refactoring.java.spi.ToPhaseException;
 import org.netbeans.modules.refactoring.java.ui.ChangeParametersPanel.Javadoc;
@@ -191,14 +192,14 @@ public class IntroduceParameterPlugin extends JavaRefactoringPlugin {
                     ElementHandle<TypeElement> enclosingType = ElementHandle.create(elmUtils.enclosingTypeElement(el));
                     allMethods = new HashSet<ElementHandle<ExecutableElement>>();
                     allMethods.add(ElementHandle.create((ExecutableElement) el));
-                    for (ExecutableElement e : RefactoringUtils.getOverridingMethods((ExecutableElement) el, info)) {
+                    for (ExecutableElement e : JavaRefactoringUtils.getOverridingMethods((ExecutableElement) el, info)) {
                         set.add(SourceUtils.getFile(e, info.getClasspathInfo()));
                         ElementHandle<TypeElement> encl = ElementHandle.create(elmUtils.enclosingTypeElement(e));
                         set.addAll(idx.getResources(encl, EnumSet.of(ClassIndex.SearchKind.METHOD_REFERENCES), EnumSet.of(ClassIndex.SearchScope.SOURCE)));
                         allMethods.add(ElementHandle.create(e));
                     }
                     //add all references of overriden methods
-                    for (ExecutableElement e : RefactoringUtils.getOverridenMethods((ExecutableElement) el, info)) {
+                    for (ExecutableElement e : JavaRefactoringUtils.getOverriddenMethods((ExecutableElement) el, info)) {
                         set.add(SourceUtils.getFile(e, info.getClasspathInfo()));
                         ElementHandle<TypeElement> encl = ElementHandle.create(elmUtils.enclosingTypeElement(e));
                         set.addAll(idx.getResources(encl, EnumSet.of(ClassIndex.SearchKind.METHOD_REFERENCES), EnumSet.of(ClassIndex.SearchScope.SOURCE)));
@@ -382,7 +383,7 @@ public class IntroduceParameterPlugin extends JavaRefactoringPlugin {
             return preCheckProblem;
         }
 
-        for (ExecutableElement e : RefactoringUtils.getOverridenMethods((ExecutableElement) el, info)) {
+        for (ExecutableElement e : JavaRefactoringUtils.getOverriddenMethods((ExecutableElement) el, info)) {
             if (RefactoringUtils.isFromLibrary(e, info.getClasspathInfo())) {
                 preCheckProblem = createProblem(preCheckProblem, true, NbBundle.getMessage(IntroduceParameterPlugin.class, "ERR_CannnotRefactorLibrary", el)); //NOI18N
             }

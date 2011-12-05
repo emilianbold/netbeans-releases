@@ -76,6 +76,7 @@ public final class JavaRefactoringUtils {
      * @param info 
      * @return collection of ExecutableElements which are overidden by 'method'
      */
+    @SuppressWarnings("deprecation")
     public static Collection<ExecutableElement> getOverriddenMethods(ExecutableElement method, CompilationInfo info) {
         return RefactoringUtils.getOverridenMethods (method, info);
     }
@@ -85,6 +86,7 @@ public final class JavaRefactoringUtils {
      * @param info 
      * @return collection of ExecutableElements which overrides 'method'
      */
+    @SuppressWarnings("deprecation")
     public static Collection<ExecutableElement> getOverridingMethods(ExecutableElement method, CompilationInfo info) {
         return RefactoringUtils.getOverridingMethods(method, info);
     }
@@ -95,6 +97,7 @@ public final class JavaRefactoringUtils {
      * @param fo 
      * @return 
      */
+    @SuppressWarnings("deprecation")
     public static boolean isOnSourceClasspath(FileObject fo) {
         return RefactoringUtils.isOnSourceClasspath(fo);
     }
@@ -104,6 +107,7 @@ public final class JavaRefactoringUtils {
      * @param file 
      * @return 
      */
+    @SuppressWarnings("deprecation")
     public static boolean isRefactorable(FileObject file) {
         return RefactoringUtils.isRefactorable(file) && file.canWrite() && file.canRead();
     }
@@ -115,8 +119,9 @@ public final class JavaRefactoringUtils {
      * @param sourceOnly library classes ignored if true
      * @return 
      */
+    @SuppressWarnings("deprecation")
     public static Collection<TypeElement> getSuperTypes(TypeElement type, CompilationInfo info, boolean sourceOnly) {
-        return RefactoringUtils.getSuperTypes(type, info);
+        return RefactoringUtils.getSuperTypes(type, info, sourceOnly);
     }
 
     /**
@@ -135,10 +140,12 @@ public final class JavaRefactoringUtils {
      * @param isAnonymous check if class or interface is annonymous
      * @return path to the enclosing ClassTree
      */
+    @SuppressWarnings("deprecation")
     public static TreePath findEnclosingClass(CompilationInfo javac, TreePath path, boolean isClass, boolean isInterface, boolean isEnum, boolean isAnnotation, boolean isAnonymous) {
         return RefactoringUtils.findEnclosingClass(javac, path, isClass, isInterface, isEnum, isAnnotation, isAnonymous);
     }
 
+    @SuppressWarnings("deprecation")
     public static List<TypeMirror> elementsToTypes(List<? extends Element> typeParams) {
         return RefactoringUtils.resolveTypeParamsAsTypes(typeParams);
     }
@@ -155,6 +162,7 @@ public final class JavaRefactoringUtils {
 //        RefactoringUtils.findUsedGenericTypes(utils, typeArgs, result, tm);
 //    }
 
+    @SuppressWarnings("deprecation")
     public static ClasspathInfo getClasspathInfoFor(FileObject ... files) {
         return RefactoringUtils.getClasspathInfoFor(files);
     }
