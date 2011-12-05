@@ -54,6 +54,15 @@ public class PropertyValueTest extends CssModuleTestBase {
         super(name);
     }
 
+    @Override
+    protected void setUp() throws Exception {
+//        GrammarResolver.setLogging(GrammarResolver.Log.DEFAULT, true);
+//        GrammarResolver.setLogging(GrammarResolver.Log.ALTERNATIVES, true);
+//        PRINT_INFO_IN_ASSERT_RESOLVE = true;
+    }
+    
+    
+
     public void testAlternativesComplicated1() {
         String grammar1 = "[ marek  jitka  [ [ ovecka | bubu ]? nee ] ] | [ marek jitka [ tobik | bibik ] ] ";
         assertAlternatives(grammar1, "marek jitka", "ovecka", "bubu", "nee", "tobik", "bibik");
@@ -130,7 +139,8 @@ public class PropertyValueTest extends CssModuleTestBase {
         PropertyModel p = CssModuleSupport.getPropertyModel("font");
         String text = "italic small-caps 30px";
 
-        assertAlternatives(p.getGrammar(), text, "fantasy", "serif", "!family-name", "sans-serif", "monospace", "/", "cursive");
+        assertAlternatives(p.getGrammar(), text,
+                "fantasy","serif","!string","sans-serif","monospace","/","!identifier","cursive");
 
     }
 
@@ -164,10 +174,14 @@ public class PropertyValueTest extends CssModuleTestBase {
 
     public void testFontThoroughly() {
         PropertyModel p = CssModuleSupport.getPropertyModel("font");
-        assertAlternatives(p.getGrammar(), "20px", "fantasy", "serif", "!family-name", "sans-serif", "monospace", "/", "cursive");
-        assertAlternatives(p.getGrammar(), "20px / ", "!percentage", "initial", "normal", "!length", "none", "!number", ",");
-        assertAlternatives(p.getGrammar(), "20px / 5pt", "fantasy", "serif", "!family-name", "sans-serif", "monospace", "cursive");
-        assertAlternatives(p.getGrammar(), "20px / 5pt cursive", ",");
+        assertAlternatives(p.getGrammar(), "20px", 
+                "fantasy","serif","!string","sans-serif","monospace","/","!identifier","cursive");
+        assertAlternatives(p.getGrammar(), "20px /",
+                "initial","normal","none","!number","!length","!percentage");
+        assertAlternatives(p.getGrammar(), "20px / 5pt",
+                "fantasy","serif","!string","sans-serif","monospace","!identifier","cursive");
+        assertAlternatives(p.getGrammar(), "20px / 5pt cursive", 
+                ",");
     }
 
     public void testFontThoroughly2() {
@@ -179,13 +193,13 @@ public class PropertyValueTest extends CssModuleTestBase {
                 "xx-large", "900", "small", "large");
 
         assertAlternatives(p.getGrammar(), "italic large",
-                "fantasy", "serif", "!family-name", "sans-serif", "monospace", "/", "cursive");
+                "fantasy", "serif", "sans-serif", "monospace", "/", "cursive", "!string","!identifier");
 
         assertAlternatives(p.getGrammar(), "italic large / ",
-                "!percentage", "initial", "normal", "!length", "none", "!number", ",");
+                "!percentage", "initial", "normal", "!length", "none", "!number");
 
         assertAlternatives(p.getGrammar(), "italic large / normal",
-                "fantasy", "serif", "!family-name", "sans-serif", "monospace", "cursive");
+                "fantasy", "serif", "sans-serif", "monospace", "cursive", "!string","!identifier");
     }
 
     public void testBackgroundRGBAlternatives() {
@@ -210,7 +224,7 @@ public class PropertyValueTest extends CssModuleTestBase {
     }
 
     public void testJindrasCase() {
-        // TODO: fix #142254 and enable this test again
+        //#142254
         String g = "[ [ x || y ] || b";
         assertAlternatives(g, "x b"); //no alternatives
     }
@@ -219,7 +233,7 @@ public class PropertyValueTest extends CssModuleTestBase {
         PropertyModel p = CssModuleSupport.getPropertyModel("font-family");
 
         assertAlternatives(p.getGrammar(), "",
-                "fantasy", "serif", "!family-name", "sans-serif", "inherit", "monospace", "cursive");
+                "fantasy", "serif", "sans-serif", "inherit", "monospace", "cursive", "!string","!identifier");
 
     }
 
@@ -259,8 +273,6 @@ public class PropertyValueTest extends CssModuleTestBase {
     }
 
     public void testTheBackgroundCase() {
-//        GrammarResolver.setLogging(GrammarResolver.Log.ALTERNATIVES, true);
-//        PRINT_INFO_IN_ASSERT_RESOLVE = true;
         PropertyModel p = CssModuleSupport.getPropertyModel("background");
         assertResolve(p.getGrammar(), "aliceblue");
         assertAlternatives(p.getGrammar(), "aliceblue",
@@ -272,8 +284,6 @@ public class PropertyValueTest extends CssModuleTestBase {
     }
 
     public void testTheBackgroundCase2() {
-//        GrammarResolver.setLogging(GrammarResolver.Log.ALTERNATIVES, true);
-//        PRINT_INFO_IN_ASSERT_RESOLVE = true;
         PropertyModel p = CssModuleSupport.getPropertyModel("background");
         assertResolve(p.getGrammar(), "aliceblue bottom / auto");
         assertAlternatives(p.getGrammar(), "aliceblue bottom / auto",
@@ -310,6 +320,32 @@ public class PropertyValueTest extends CssModuleTestBase {
         assertAlternatives(g, "c", "a");
     }
 
+     //Bug 205893 - font-family completion issue
+     public void testFontFamily() {
+        PropertyModel p = CssModuleSupport.getPropertyModel("font-family");
+//        assertResolve(p.getGrammar(), "fantasy");
+        assertAlternatives(p.getGrammar(), "fantasy", ",");
+
+        assertAlternatives(p.getGrammar(), "fantasy, ", 
+                "fantasy","serif","sans-serif","monospace","cursive", "!string","!identifier");
+        
+        assertAlternatives(p.getGrammar(), "fantasy, monospace", 
+                ",");
+
+        assertAlternatives(p.getGrammar(), "fantasy, monospace, ", 
+                "fantasy","serif","sans-serif","monospace","cursive", "!string","!identifier");
+
+    }
+     
+     public void testAnimation() {
+        PropertyModel p = CssModuleSupport.getPropertyModel("animation");
+//        assertResolve(p.getGrammar(), "fantasy");
+        assertAlternatives(p.getGrammar(), "cubic-bezier",
+                "alternate","linear","cubic-bezier","normal","ease","(","!time","ease-in",",","ease-in-out","ease-out","infinite","!number");
+
+        
+    }
+    
     public void testPerformance_Parse_Resolve() {
 //        Last results from my MacBook Pro:
 //        -------------------------------------------
