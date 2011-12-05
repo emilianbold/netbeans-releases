@@ -152,7 +152,7 @@ public final class HudsonJobCreator extends JPanel implements ProjectHudsonJobCr
         // job config
         String jobConfigError = HudsonOptionsValidator.validateJobConfig(getJobConfig());
         if (jobConfigError != null) {
-            return ConfigurationStatus.withError(jobConfigError);
+            return ConfigurationStatus.withError(jobConfigError).withExtraButton(getOpenHudsonOptionsButton());
         }
         // build.xml
         FileObject buildXml = phpModule.getProjectDirectory().getFileObject(PpwScript.BUILD_XML);
