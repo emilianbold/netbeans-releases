@@ -934,7 +934,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                                     try {
                                         Position semiPosition = semiPos > -1 && !insideNew ? doc.createPosition(semiPos) : null;
                                         TreePath tp = controller.getTreeUtilities().pathFor(embeddedOffset);
-                                        CharSequence cs = enclName == null ? elem != null ? elem.getSimpleName() : simpleName : AutoImport.resolveImport(controller, tp, controller.getTypes().getDeclaredType(elem));
+                                        CharSequence cs = enclName == null || !autoImport ? elem != null ? elem.getSimpleName() : simpleName : AutoImport.resolveImport(controller, tp, controller.getTypes().getDeclaredType(elem));
                                         if (!insideNew)
                                             cs = text.insert(0, cs);
                                         String textToReplace = doc.getText(offset, finalLen);

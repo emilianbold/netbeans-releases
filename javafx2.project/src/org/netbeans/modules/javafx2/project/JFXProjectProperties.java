@@ -49,18 +49,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
+import java.util.*;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JToggleButton;
 import javax.swing.event.ChangeEvent;
@@ -74,11 +63,7 @@ import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.*;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ant.AntArtifactQuery;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
@@ -93,14 +78,7 @@ import org.netbeans.spi.project.support.ant.ui.StoreGroup;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.URLMapper;
-import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
-import org.openide.util.Mutex;
-import org.openide.util.MutexException;
-import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
+import org.openide.util.*;
 
 public final class JFXProjectProperties {
 
@@ -275,7 +253,7 @@ public final class JFXProjectProperties {
         }
     }
     public RunAsType getActiveRunAs() {
-        String runAs = RUN_CONFIGS.get(activeConfig).get(RUN_AS);
+        String runAs = configsGet(activeConfig).get(RUN_AS);
         if(isEqualIgnoreCase(runAs, RunAsType.ASWEBSTART.getString())) {
             return RunAsType.ASWEBSTART;
         }
@@ -591,6 +569,17 @@ public final class JFXProjectProperties {
 
     }
     
+    /**
+     * Always returns non-null. If RUN_CONFIGS.get(config)==null, returns standalone new Map
+     */
+    public Map<String,String> configsGet(String config) {
+        Map<String,String> res = RUN_CONFIGS.get(config);
+        if(res==null) {
+            return new HashMap<String,String>();
+        }
+        return res;
+    }
+
     /**
      * A mess. (modified from J2SEProjectProperties)
      */
@@ -986,7 +975,7 @@ public final class JFXProjectProperties {
         for(Map.Entry<String,Map<String,String>> config : configsCopy.entrySet()) {
             
             PreloaderArtifact preloader = null;
-            Map<String,String> configCopy = Collections.unmodifiableMap(config.getValue());
+            Map<String,String> configCopy = config.getValue() != null ? Collections.unmodifiableMap(config.getValue()) : new TreeMap<String, String>();
             if(!isTrue( configCopy.get(PRELOADER_ENABLED))) {
                 continue;
             }
@@ -1444,7 +1433,7 @@ public final class JFXProjectProperties {
         if (browserPaths == null) {
             return null;
         }
-        String selectedName = RUN_CONFIGS.get(activeConfig).get(RUN_IN_BROWSER);
+        String selectedName = configsGet(activeConfig).get(RUN_IN_BROWSER);
         return browserPaths.get(selectedName);
     }
     
