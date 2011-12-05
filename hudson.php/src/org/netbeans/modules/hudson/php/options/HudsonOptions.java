@@ -114,7 +114,7 @@ public final class HudsonOptions {
     }
 
     public void setJobConfig(String jobConfig) {
-        getPreferences().put(PPW, jobConfig);
+        getPreferences().put(JOB_CONFIG, jobConfig);
     }
 
     private Preferences getPreferences() {
