@@ -320,6 +320,8 @@ public final class HudsonJobCreator extends JPanel implements ProjectHudsonJobCr
                     target.setSelectedOption((String) combo.getSelectedItem());
                 }
             });
+            // preselect the 1st option
+            combo.setSelectedIndex(0);
         }
         // placement
         GridBagConstraints gridBagConstraints = new GridBagConstraints();
