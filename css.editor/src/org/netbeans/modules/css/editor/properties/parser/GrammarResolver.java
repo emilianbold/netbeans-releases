@@ -75,11 +75,11 @@ public class GrammarResolver {
 
     public static void setLogging(Log log, boolean enable) {
         LOGGERS.get(log).set(enable);
-        
+
         //set general LOG flag
         LOG = false;
-        for(Log l : Log.values()) {
-            if(isLoggingEnabled(l)) {
+        for (Log l : Log.values()) {
+            if (isLoggingEnabled(l)) {
                 LOG = true;
             }
         }
@@ -88,9 +88,7 @@ public class GrammarResolver {
     private static boolean isLoggingEnabled(Log log) {
         return LOGGERS.get(log).get();
     }
-    
     private static boolean LOG = false;
-    
     private static final Logger LOGGER = Logger.getLogger(GrammarResolver.class.getName());
 
     public static GrammarResolver resolve(GroupGrammarElement grammar, String input) {
@@ -112,7 +110,9 @@ public class GrammarResolver {
         return tokens;
     }
 
-    /** returns a list of value items not parsed */
+    /**
+     * returns a list of value items not parsed
+     */
     public List<String> left() {
         return tokensLeft;
     }
@@ -145,16 +145,24 @@ public class GrammarResolver {
 
     private void resolvingFinished() {
         if (isLoggingEnabled(DEFAULT)) {
-            if (LOG) log("\nResolved tokens:");
+            if (LOG) {
+                log("\nResolved tokens:");
+            }
             for (ResolvedToken rt : resolvedTokens) {
-                if (LOG) log(rt.toString());
+                if (LOG) {
+                    log(rt.toString());
+                }
             }
         }
 
         if (isLoggingEnabled(ALTERNATIVES)) {
-            if (LOG) log(ALTERNATIVES, "\nAlternatives:");
+            if (LOG) {
+                log(ALTERNATIVES, "\nAlternatives:");
+            }
             for (ValueGrammarElement e : getAlternatives()) {
-                if (LOG) log(ALTERNATIVES, e.path());
+                if (LOG) {
+                    log(ALTERNATIVES, e.path());
+                }
             }
         }
     }
@@ -176,11 +184,15 @@ public class GrammarResolver {
         tokensLeft = (Stack<String>) state.input.clone();
         resolvedTokens = new ArrayList<ResolvedToken>(state.consumed);
 
-        if (LOG) log(String.format("  state backup to: %s", state));
+        if (LOG) {
+            log(String.format("  state backup to: %s", state));
+        }
     }
 
     private boolean resolve(GrammarElement e) {
-        if (LOG) log(String.format("+ entering %s, %s", e.path(), createInputState()));
+        if (LOG) {
+            log(String.format("+ entering %s, %s", e.path(), createInputState()));
+        }
         boolean resolves;
         switch (e.getKind()) {
             case GROUP:
@@ -192,11 +204,12 @@ public class GrammarResolver {
             default:
                 throw new IllegalStateException();
         }
-        if (LOG) log(String.format("- leaving %s, resolved: %s, %s", e.path(), resolves, createInputState()));
+        if (LOG) {
+            log(String.format("- leaving %s, resolved: %s, %s", e.path(), resolves, createInputState()));
+        }
         return resolves;
 
     }
-    
     //alternatives computation >>>
     //
     //keys are elements which matched the input, values are pairs of InputState 
@@ -211,7 +224,9 @@ public class GrammarResolver {
             return;
         }
 
-        if (LOG) log(ALTERNATIVES, String.format("value not accepted %s, %s", valueGrammarElement.path(), createInputState()));
+        if (LOG) {
+            log(ALTERNATIVES, String.format("value not accepted %s, %s", valueGrammarElement.path(), createInputState()));
+        }
 
         Pair<InputState, Collection<ValueGrammarElement>> pair = resolvedSomething.get(lastResolved);
         pair.getB().add(valueGrammarElement);
@@ -223,7 +238,9 @@ public class GrammarResolver {
             return;
         }
 
-        if (LOG) log(ALTERNATIVES, String.format("input matched %s, %s", member.path(), state));
+        if (LOG) {
+            log(ALTERNATIVES, String.format("input matched %s, %s", member.path(), state));
+        }
         resolvedSomething.put(group, new Pair<InputState, Collection<ValueGrammarElement>>(state, new LinkedList<ValueGrammarElement>()));
         lastResolved = group;
     }
@@ -242,9 +259,10 @@ public class GrammarResolver {
         //resolve all group members
         InputState successState = null;
         InputState enteringGroupState = createInputState();
-        int inputCount = tokensLeft.size();
         multiplicity:
         for (int i = 0; i < group.getMaximumOccurances(); i++) {
+            InputState atMultiplicityLoopStartState = createInputState();
+            
             Collection<GrammarElement> grammarElementsToProcess = new ArrayList<GrammarElement>(group.elements());
 
             Map<GrammarElement, InputState> branchesResults =
@@ -252,11 +270,15 @@ public class GrammarResolver {
 
             collection_loop:
             for (;;) { //try to loop until the LIST group is resolved fully (or not at all)
-                Collection<GrammarElement> failedListMembers = new HashSet<GrammarElement>();
+                InputState atCollectionLoopStartState = createInputState();
                 members:
                 for (Iterator<GrammarElement> membersIterator = grammarElementsToProcess.iterator(); membersIterator.hasNext();) {
                     GrammarElement member = membersIterator.next();
                     boolean resolved = resolve(member);
+
+                    if (LOG) {
+                        log(String.format("  back in %s", group.path()));
+                    }
 
                     if (!resolved) {
                         if (member instanceof ValueGrammarElement) {
@@ -272,18 +294,13 @@ public class GrammarResolver {
                         //member resolved some input
                         switch (group.getType()) {
                             case SET:
-                                if (LOG) log(String.format("  added SET branch result: %s, %s", member.path(), state));
+                            case COLLECTION:
+                                if (LOG) {
+                                    log(String.format("  added %s branch result: %s, %s", group.getType().name(), member.path(), state));
+                                }
                                 branchesResults.put(member, state);
-                                successState = state;
-
                                 backupInputState(enteringGroupState);
                                 break;
-                            case COLLECTION: //any of the member in any order
-                                successState = state;
-                                //remember we resolved something under this GrammarElement so we do not enter it again
-                                grammarElementsToProcess.remove(member);
-                                //start resolving the group from the beginning
-                                continue collection_loop;
                             case LIST:
                                 if (!membersIterator.hasNext()) {
                                     //the resolved element was the last one from the LIST so the group si resolved
@@ -297,13 +314,17 @@ public class GrammarResolver {
                         //the member hasn't resolved any input but it is optional
                         InputState state = createInputState();
 
-                        if (LOG) log(String.format("  arbitrary member %s skipped", member.path()));
+                        if (LOG) {
+                            log(String.format("  arbitrary member %s skipped", member.path()));
+                        }
 
                         switch (group.getType()) {
                             case SET:
-                                if (LOG) log(String.format(" added SET branch result: %s, %s", member, state));
+                            case COLLECTION:
+                                if (LOG) {
+                                    log(String.format(" added %s branch result: %s, %s", group.getType().name(), member, state));
+                                }
                                 branchesResults.put(member, state);
-                                successState = state;
                                 backupInputState(enteringGroupState);
                                 break;
                             case LIST:
@@ -323,121 +344,141 @@ public class GrammarResolver {
                                 //so we are sure the group cannot be resolved
                                 break multiplicity;
 
-                            case SET:
                             case COLLECTION:
+//                                grammarElementsToProcess.remove(member);
+                            case SET:
                                 //the failure of resolving this member doesn't
                                 //necessarily mean the group element cannot be resolved ... continue resolving
-                                failedListMembers.add(member);
                                 break;
                         }
                     }
                 } //members
 
-                if (tokensLeft.size() == inputCount) {
-                    //nothing from the input was resolved, stop resolving
-                    break;
-                } else {
-                    inputCount = tokensLeft.size();
+                switch (group.getType()) {
+                    case SET:
+                    case COLLECTION:
+                        //process branches results - find longest match
+                        if(branchesResults.isEmpty()) {
+                            //no success branch result
+                            break;
+                        }
+                        
+                        //find best match length first
+                        int inputLenBeforeEnteringGroupElement = enteringGroupState.consumed.size();
+                        int bestMatchConsumed = inputLenBeforeEnteringGroupElement;
+                        for (InputState state : branchesResults.values()) {
+                            if (bestMatchConsumed < state.consumed.size()) {
+                                bestMatchConsumed = state.consumed.size();
+                            }
+                        }
+                        if (LOG) {
+                            log(String.format("  resolving best branch (consumed %s tokens)", bestMatchConsumed - inputLenBeforeEnteringGroupElement));
+                        }
+                        if (bestMatchConsumed == inputLenBeforeEnteringGroupElement) {
+                            //nothing resolved, but this still may mean that some of the branches
+                            //matched since they are arbitrary. In such case we cannot resolve 
+                            //which branch is the best so just take the first one
+                            Entry<GrammarElement, InputState> entry = branchesResults.entrySet().iterator().next();
+                            successState = entry.getValue();
+                            //put the state of the best match back
+                            backupInputState(successState);
+                            if (LOG) {
+                                log(String.format("  zero tokens consumed, but decided to use arbitraty branch %s, %s", entry.getKey().path(), successState));
+                            }
+                            
+                            break;
+                        }
+
+                        //collect all branches which matched the bestMatchConsumed and compare the
+                        //resolved tokens. If in one step one branch consumed keyword (static element name)
+                        //and the other resolved a property acceptor then the keyword one has a precendence.
+                        Map<GrammarElement, InputState> bestBranches = new LinkedHashMap<GrammarElement, InputState>();
+                        for (GrammarElement member : group.elements()) {
+                            InputState state = branchesResults.get(member);
+                            if (state == null) {
+                                //matched nothing
+                                continue;
+                            }
+                            if (state.consumed.size() == bestMatchConsumed) {
+                                bestBranches.put(member, state);
+                            }
+                        }
+
+                        //now compare the branches
+                        //compare just the parts consumed during this group element resolving
+                        for (int j = inputLenBeforeEnteringGroupElement; j < bestMatchConsumed; j++) {
+                            Collection<GrammarElement> consumedUnit = new LinkedList<GrammarElement>();
+                            for (Entry<GrammarElement, InputState> entry : bestBranches.entrySet()) {
+                                ResolvedToken token = entry.getValue().consumed.get(j);
+                                if (token.getGrammarElement().isUnit()) {
+                                    //unit value
+                                    consumedUnit.add(entry.getKey());
+                                }
+                            }
+                            if (consumedUnit.size() == bestBranches.size()) {
+                                //all branches consumed units, go on with all of them
+                            } else {
+                                //some branch/es consumed keyword while other/s units,
+                                //remove the unit ones from the bestBranches list
+                                for (GrammarElement ge : consumedUnit) {
+                                    bestBranches.remove(ge);
+                                }
+                            }
+
+                        }
+
+                        assert !bestBranches.isEmpty();
+
+                        //set the success state to the best branch (consumed most input)
+                        //if there are more equivalent then use the first one
+                        GrammarElement bestMatchElement = bestBranches.keySet().iterator().next();
+                        successState = branchesResults.get(bestMatchElement);
+                        //put the state of the best match back
+                        backupInputState(successState);
+                        if (LOG) {
+                            log(String.format("  decided to use best match %s, %s", bestMatchElement.path(), successState));
+                        }
+
+                        //if we are in a COLLECTION, we need to remove 
+                        //the choosen member from the further collection processing
+                        switch (group.getType()) {
+                            case COLLECTION:
+                                grammarElementsToProcess.remove(bestMatchElement);
+                        }
+
+
+                        break;
+                }
+
+                if(successState == null) {
+                    break collection_loop;
+                }
+                
+                if(successState.equals(atCollectionLoopStartState)) {
+                    //nothing resolved in the loop
+                    break multiplicity;
                 }
 
                 //loop if the grammar element is a collection otherwise leave
                 switch (group.getType()) {
-                    case COLLECTION:
-                        if (grammarElementsToProcess.isEmpty()) {
-                            break collection_loop;
-                        }
-                        if (failedListMembers.size() == grammarElementsToProcess.size()) {
-                            break collection_loop;
-                        }
-                        break;
                     case SET:
                     case LIST:
                         break collection_loop;
+                    case COLLECTION:
+                    //continue
                 }
 
             } //:collection_loop
-
-            switch (group.getType()) {
-                case SET:
-                    //process branches results - find longest match
-                    
-                    //find best match length first
-                    int inputLenBeforeEnteringGroupElement = enteringGroupState.consumed.size();
-                    int bestMatchConsumed = inputLenBeforeEnteringGroupElement;
-                    for(InputState state : branchesResults.values()) {
-                        if (bestMatchConsumed < state.consumed.size()) {
-                                bestMatchConsumed = state.consumed.size();
-                        }
-                    }
-                    
-                    if(bestMatchConsumed == inputLenBeforeEnteringGroupElement) {
-                        //nothing resolved
-                        break;
-                    }
-                    
-                    //collect all branches which matched the bestMatchConsumed and compare the
-                    //resolved tokens. If in one step one branch consumed keyword (static element name)
-                    //and the other resolved a property acceptor then the keyword one has a precendence.
-                    Map<GrammarElement, InputState> bestBranches = new LinkedHashMap<GrammarElement, InputState>();
-                    for (GrammarElement member : group.elements()) {
-                        InputState state = branchesResults.get(member);
-                        if(state == null) {
-                            //matched nothing
-                            continue;
-                        }
-                        if(state.consumed.size() == bestMatchConsumed) {
-                            bestBranches.put(member, state);
-                        }
-                    }
-
-                    //now compare the branches
-                    //compare just the parts consumed during this group element resolving
-                    for(int j = inputLenBeforeEnteringGroupElement; j < bestMatchConsumed; j++) {
-                        Collection<GrammarElement> consumedUnit = new LinkedList<GrammarElement>();
-                        for(Entry<GrammarElement, InputState> entry : bestBranches.entrySet()) {
-                            ResolvedToken token = entry.getValue().consumed.get(j);
-                            if(token.getGrammarElement().isUnit()) {
-                                //unit value
-                                consumedUnit.add(entry.getKey());
-                            }
-                        }
-                        if(consumedUnit.size() == bestBranches.size()) {
-                            //all branches consumed units, go on with all of them
-                        } else {
-                            //some branch/es consumed keyword while other/s units,
-                            //remove the unit ones from the bestBranches list
-                            for(GrammarElement ge : consumedUnit) {
-                                bestBranches.remove(ge);
-                            }
-                        }
-                        
-                    }
-                    
-                    assert !bestBranches.isEmpty();
-                    
-                    //set the success state to the best branch (consumed most input)
-                    //if there are more equivalent then use the first one
-                    GrammarElement bestMatchElement = bestBranches.keySet().iterator().next();                    
-                    successState = branchesResults.get(bestMatchElement);
-                    //put the state of the best match back
-                    backupInputState(successState);
-                    if (LOG) log(String.format("Decided to use best match %s, %s", bestMatchElement, successState));
-
-                    break;
-            }
 
             //we went through the first iteration of members (multiplicity 0 and more)
             //but nothing resolved so making another multiplicity loop makes no sense
             if (successState == null) {
                 break multiplicity;
             }
-
-            //nothing from the input was resolved during the multiplicity loop,
-            //so stop resolving
-            if (tokensLeft.size() == inputCount) {
-                break;
-            } else {
-                inputCount = tokensLeft.size();
+            
+            if(successState.equals(atMultiplicityLoopStartState)) {
+                //nothing resolved in the loop
+                break multiplicity;
             }
 
         } //multiplicity loop
@@ -471,7 +512,9 @@ public class GrammarResolver {
                 if (acceptor.accepts(token)) {
                     //consumed
                     consumeValueGrammarElement(token, ve);
-                    if (LOG) log(VALUES, String.format("eaten unit %s", token));
+                    if (LOG) {
+                        log(VALUES, String.format("eaten unit %s", token));
+                    }
                     return true;
                 }
 
@@ -482,7 +525,9 @@ public class GrammarResolver {
         } else if (token.equalsIgnoreCase(ve.value())) {
             //consumed
             consumeValueGrammarElement(token, ve);
-            if (LOG) log(VALUES, String.format("eaten value %s", token));
+            if (LOG) {
+                log(VALUES, String.format("eaten value %s", token));
+            }
             return true;
         }
 
@@ -540,5 +585,33 @@ public class GrammarResolver {
             }
             return sb.toString();
         }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final InputState other = (InputState) obj;
+            if (this.input != other.input && (this.input == null || !this.input.equals(other.input))) {
+                return false;
+            }
+            if (this.consumed != other.consumed && (this.consumed == null || !this.consumed.equals(other.consumed))) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 79 * hash + (this.input != null ? this.input.hashCode() : 0);
+            hash = 79 * hash + (this.consumed != null ? this.consumed.hashCode() : 0);
+            return hash;
+        }
+        
+        
     }
 }

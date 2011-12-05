@@ -59,11 +59,11 @@ public class PropertyValue {
     private static final Pattern FILTER_COMMENTS_PATTERN = Pattern.compile("/\\*.*?\\*/");//NOI18N
 
     public PropertyValue(PropertyModel property, String value) {
-        this(property.getGrammar(), filterComments(value));
+        this(property.getGrammar(), property.getPropertyName(), filterComments(value));
     }
-
-    public PropertyValue(String grammar, String value) {
-        this(GrammarParser.parse(grammar), value);
+   
+    public PropertyValue(String grammar, String propertyName, String value) {
+        this(GrammarParser.parse(grammar, propertyName), value);
     }
 
     public PropertyValue(GroupGrammarElement groupGrammarElement, String value) {
@@ -71,6 +71,11 @@ public class PropertyValue {
         this.value = value;
         this.grammarResolver = GrammarResolver.resolve(groupGrammarElement, value);
     }
+    
+     //tests only>>>
+    public PropertyValue(String grammar, String value) {
+        this(GrammarParser.parse(grammar), value);
+    }//<<<
 
     public GroupGrammarElement getGroupGrammarElement() {
         return groupGrammarElement;

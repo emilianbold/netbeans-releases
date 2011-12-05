@@ -1,8 +1,7 @@
-
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -35,38 +34,43 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans;
 
-package org.netbeans.modules.css.editor.properties;
-
-import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.css.lib.api.CssTokenId;
+import java.security.Permission;
+import org.netbeans.junit.NbTestCase;
 
 /**
  *
- * @author mfukala@netbeans.org
+ * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public class Identifier implements CssPropertyValueAcceptor {
+public class TopSecurityManagerReplaceTest extends NbTestCase {
+
+    public TopSecurityManagerReplaceTest(String name) {
+        super(name);
+    }
 
     @Override
-    public String id() {
-        return "identifier"; //NOI18N
+    protected void setUp() throws Exception {
+        System.setProperty("netbeans.security.nocheck", "true");
+        assertNull("No manager yet", System.getSecurityManager());
+        TopSecurityManager.install();
+        assertTrue("Installed OK", System.getSecurityManager() instanceof TopSecurityManager);
     }
     
-    @Override
-    public boolean accepts(String token) {
-        TokenHierarchy<String> th = TokenHierarchy.create(token, CssTokenId.language());
-        TokenSequence<CssTokenId> ts = th.tokenSequence(CssTokenId.language());
-        ts.moveStart();
-        if(ts.moveNext()) {
-            return ts.token().id() == CssTokenId.IDENT;
+    public void testReplaceSecurityManager() {
+        MySM sm = new MySM();
+        System.setSecurityManager(sm);
+        assertEquals("Replaced OK", sm, System.getSecurityManager());
+    }
+    
+    private static final class MySM extends SecurityManager {
+        @Override
+        public void checkPermission(Permission perm) {
         }
-        return false;
     }
-    
 }

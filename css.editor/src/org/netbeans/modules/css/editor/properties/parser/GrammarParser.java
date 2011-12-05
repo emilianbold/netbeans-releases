@@ -48,8 +48,6 @@ import org.netbeans.modules.css.editor.module.CssModuleSupport;
 import org.netbeans.modules.css.editor.module.spi.Property;
 
 /**
- * Not threadsafe
- *
  * @author mfukala@netbeans.org
  */
 public class GrammarParser {
@@ -149,10 +147,11 @@ public class GrammarParser {
                                 + " Read input: " + input.readText()); //NOI18N
                     }
 
-                    last = new GroupGrammarElement(parent, group_index.getAndIncrement(), referredElementName);
+                    PropertyModel model = new PropertyModel(referredElementName, properties);
+                    ParserInput pinput = new ParserInput(model.getGrammar());
+                    String propertyName = model.getProperty().getName();
+                    last = new GroupGrammarElement(parent, group_index.getAndIncrement(), propertyName);
 
-//                    System.out.println("resolving element " + referredElementName + " (" + p.valuesText() + ") into group " + last.toString()); //NOI18N
-                    ParserInput pinput = new ParserInput(new PropertyModel(referredElementName, properties).getGrammar());
 
                     //ignore inherit tokens in the subtree
                     parseElements(pinput, (GroupGrammarElement) last, true, group_index, openedParenthesis);
