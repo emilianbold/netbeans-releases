@@ -316,6 +316,7 @@ non terminal Statement trait_statement;
 non terminal List interface_statement_list;
 non terminal Statement interface_statement;
 non terminal UseTraitStatementPart use_trait;
+non terminal Quote heredoc;
 
 non terminal VariableBase w_variable;
 non terminal Expression class_name;
@@ -2734,6 +2735,11 @@ common_scalar:scalar
 {:
 	RESULT = classConstant;
 :}
+
+| heredoc:doc
+{:
+	RESULT = doc;
+:}
 ;
 
 static_class_constant ::=
@@ -2785,10 +2791,17 @@ T_STRING_VARNAME:scalar
 	RESULT = quote;
 :}
 
-| T_START_HEREDOC:start encaps_list:list T_END_HEREDOC:end
+| heredoc:doc
 {:
-	Quote hereDoc = new Quote(startleft, endright, /*parser.ast,*/ list, Quote.Type.HEREDOC);
-	RESULT = hereDoc;
+	RESULT = doc;
+:}
+;
+
+heredoc ::=
+T_START_HEREDOC:start encaps_list:list T_END_HEREDOC:end
+{:
+    Quote hereDoc = new Quote(startleft, endright, list, Quote.Type.HEREDOC);
+    RESULT = hereDoc;
 :}
 ;
 

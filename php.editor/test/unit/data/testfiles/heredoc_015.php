@@ -1,19 +1,17 @@
 --TEST--
-Heredocs can be used as static scalars.
+Heredocs can be used as default property value.
 --FILE--
 <?php
 
-require_once 'nowdoc.inc';
-
 class e {
 
-    const E = <<<THISMUSTNOTERROR
+    public $e = <<<THISMUSTNOTERROR
 If you see this, everything is ok.
 THISMUSTNOTERROR;
 
 };
-
-print e::E . "\n";
+$e = new e();
+print $e->e . "\n";
 
 ?>
 --EXPECT--
