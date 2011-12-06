@@ -193,7 +193,10 @@ public final class FolderObj extends BaseFileObj {
                     if (!fo.isValid()) {
                         final Level level = counter < 10 ? Level.FINE : Level.WARNING;
                         LOG.log(level, "Invalid fileObject {0}, trying again for {1}", new Object[] { fo, counter }); // NOI18N
-                        continue LOOP;
+                        assert counter < 100;
+                        if (counter < 100) {
+                            continue LOOP;
+                        }
                     }
                     if (fileName != foFileName && counter < 10) {
                         continue LOOP;
