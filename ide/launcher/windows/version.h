@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,17 +37,16 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-#include <winuser.h>
-
-#include "version.rc"
-
-// Icon with lowest ID value placed first to ensure application icon
-// remains consistent on all systems.
-
-100 ICON DISCARDABLE "netbeans.ico"
-
-CREATEPROCESS_MANIFEST_RESOURCE_ID RT_MANIFEST "netbeans.exe.manifest"
+#define COMPANY "Oracle Corporation"
+#define COMPONENT "NetBeans IDE"
+#define VER "7.2.0.0"
+#define FVER 7,2,0,0
+#define BUILD_ID "02122011"
+#define INTERNAL_NAME "netbeans"
+#define COPYRIGHT "\xA9 2007, 2011 Oracle and/or its affiliates. All rights reserved."
+#define FNAME "netbeans.exe"
+#define NAME "NetBeans IDE 7.2"
 

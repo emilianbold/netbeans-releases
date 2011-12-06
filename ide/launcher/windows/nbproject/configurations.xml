@@ -7,10 +7,14 @@
       <itemPath>cmdargs.h</itemPath>
       <itemPath>nblauncher.h</itemPath>
       <itemPath>../../../o.n.bootstrap/launcher/windows/utilsfuncs.h</itemPath>
+      <itemPath>version.h</itemPath>
     </logicalFolder>
     <logicalFolder name="ResourceFiles"
                    displayName="Resource Files"
                    projectFiles="true">
+      <itemPath>netbeans.exe.manifest</itemPath>
+      <itemPath>netbeans.rc</itemPath>
+      <itemPath>version.rc</itemPath>
     </logicalFolder>
     <logicalFolder name="SourceFiles"
                    displayName="Source Files"
