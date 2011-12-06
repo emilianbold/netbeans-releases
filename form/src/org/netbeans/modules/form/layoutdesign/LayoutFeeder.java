@@ -4550,6 +4550,8 @@ class LayoutFeeder implements LayoutConstants {
                 } else if (iDesc.parent == best.parent && iDesc.neighbor == best.neighbor
                            && (iDesc.neighbor != null || iDesc.index == iDesc.index)) {
                     it.remove(); // same inclusion twice (detect for better robustness)
+                } else if (iDesc.newSubGroup && LayoutUtils.contentOverlap(iDesc.parent, best.parent, dimension^1)) {
+                    it.remove(); // don't try to solve what is already overlapping
                 } else {
                     LayoutInterval group = iDesc.parent.isSequential() ?
                                            iDesc.parent.getParent() : iDesc.parent;
@@ -4606,7 +4608,7 @@ class LayoutFeeder implements LayoutConstants {
         if (inclusions.size() == 1)
             return;
 
-        // 3rd analyse inclusions requiring a subgroup (parallel with part of sequence)
+        // 3rd analyze inclusions requiring a subgroup (parallel with part of sequence)
         LayoutInterval subGroup = null;
         int subEffAlign = -1;
         LayoutInterval nextTo = null;
