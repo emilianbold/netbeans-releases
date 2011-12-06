@@ -94,7 +94,7 @@ import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCModifiers;
 import com.sun.tools.javac.tree.JCTree.JCStatement;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
-import com.sun.tools.javac.util.CancelService;
+import org.netbeans.modules.java.source.javac.CancelService;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.ListBuffer;
 import com.sun.tools.javac.util.Log;
@@ -158,6 +158,7 @@ import org.netbeans.modules.java.hints.jackpot.spi.HintDescription;
 import org.netbeans.modules.java.hints.jackpot.spi.Trigger.PatternDescription;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.builder.TreeFactory;
+import org.netbeans.modules.java.source.javac.NBParserFactory.NBEndPosParser;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.pretty.ImportAnalysis2;
 import org.netbeans.modules.java.source.transform.ImmutableTreeTranslator;
@@ -1117,7 +1118,7 @@ public class Utilities {
         }
     }
 
-    private static class JackpotJavacParser extends EndPosParser {
+    private static class JackpotJavacParser extends NBEndPosParser {
 
         private final Context ctx;
         public JackpotJavacParser(Context ctx, ParserFactory fac,
