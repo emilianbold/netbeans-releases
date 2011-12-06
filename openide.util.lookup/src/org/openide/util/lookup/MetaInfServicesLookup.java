@@ -51,7 +51,6 @@ import java.io.InputStreamReader;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.net.URL;
-import java.net.UnknownServiceException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
@@ -420,6 +419,10 @@ final class MetaInfServicesLookup extends AbstractLookup {
             return "MetaInfServicesLookup.Item[" + clazz.getName() + "]"; // NOI18N
         }
     }
+    
+    static P createPair(Class<?> clazz) {
+        return new P(clazz);
+    }
 
     /** Pair that holds name of a class and maybe the instance.
      */
@@ -439,7 +442,9 @@ final class MetaInfServicesLookup extends AbstractLookup {
          */
         private Class<? extends Object> clazz() {
             Object o = object;
-
+            if (o instanceof CantInstantiate) {
+                return ((CantInstantiate)o).clazz;
+            }
             if (o instanceof Class<?>) {
                 return (Class<? extends Object>) o;
             } else if (o != null) {
@@ -474,14 +479,16 @@ final class MetaInfServicesLookup extends AbstractLookup {
 
         public @Override Object getInstance() {
             Object o = object; // keeping local copy to avoid another
+            if (o instanceof CantInstantiate) {
+                return null;
+            }
 
             // thread to modify it under my hands
             if (o instanceof Class<?>) {
                 synchronized (o) { // o is Class and we will not create 
                                    // 2 instances of the same class
-
+                    Class<?> c = ((Class<?>) o);
                     try {
-                        Class<?> c = ((Class<?>) o);
                         o = null;
 
                         synchronized (knownInstances) { // guards only the static cache
@@ -543,10 +550,12 @@ final class MetaInfServicesLookup extends AbstractLookup {
                         object = o;
                     } catch (Exception ex) {
                         LOGGER.log(Level.WARNING, "Cannot create " + object, ex);
-                        object = null;
+                        object = new CantInstantiate(c);
+                        return null;
                     } catch (LinkageError x) { // #174055 + NoClassDefFoundError
                         LOGGER.log(Level.WARNING, "Cannot create " + object, x);
-                        object = null;
+                        object = new CantInstantiate(c);
+                        return null;
                     }
                 }
             }
@@ -587,5 +596,13 @@ final class MetaInfServicesLookup extends AbstractLookup {
             }
         }
 
+    }
+    private static final class CantInstantiate {
+        final Class<?> clazz;
+
+        public CantInstantiate(Class<?> clazz) {
+            assert clazz != null;
+            this.clazz = clazz;
+        }
     }
 }
