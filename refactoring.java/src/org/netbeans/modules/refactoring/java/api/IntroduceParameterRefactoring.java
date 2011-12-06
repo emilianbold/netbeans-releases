@@ -197,7 +197,7 @@ public final class IntroduceParameterRefactoring extends AbstractRefactoring {
      * }
      * </pre>
      * 
-     * @param true if all occurrences should be changed
+     * @param isReplaceAll true if all occurrences should be changed
      */
     public void setReplaceAll(boolean isReplaceAll) {
         this.isReplaceAll = isReplaceAll;
