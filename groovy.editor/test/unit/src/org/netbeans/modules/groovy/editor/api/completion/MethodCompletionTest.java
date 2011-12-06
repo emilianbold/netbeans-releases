@@ -149,6 +149,8 @@ public class MethodCompletionTest extends GroovyTestBase {
         checkCompletion(TEST_BASE + "" + "Methods9.groovy", "for(new Date().get^", false);
     }
 
+    // For some reason there is a StringBuilder as a return type for leftShift method
+    // This should be fixed, but it's not a top priority - see issue #205951
     /*
     @Ignore
     public void testCompletionNoPrefixString1() throws Exception {
