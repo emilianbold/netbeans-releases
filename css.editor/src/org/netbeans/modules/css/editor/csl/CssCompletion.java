@@ -230,30 +230,30 @@ public class CssCompletion implements CodeCompletionHandler {
         for (ValueGrammarElement element : props) {
             String elementValue = element.value();
             Collection<ValueGrammarElement> col = value2GrammarElement.get(elementValue);
-            if(col == null) {
+            if (col == null) {
                 col = new LinkedList<ValueGrammarElement>();
                 value2GrammarElement.put(elementValue, col);
             }
             col.add(element);
         }
 
-        
+
         List<CompletionProposal> proposals = new ArrayList<CompletionProposal>(props.size());
         boolean colorChooserAdded = false;
-        
+
         for (Map.Entry<String, Collection<ValueGrammarElement>> entry : value2GrammarElement.entrySet()) {
-            
+
             String elementValue = entry.getKey();
             Collection<ValueGrammarElement> elements = entry.getValue();
             ValueGrammarElement element = elements.iterator().next();
-            
+
             if (element.isUnit()) {
                 proposals.add(CssCompletionItem.createUnitCompletionItem(element));
                 continue;
             }
-            
+
             CssValueElement handle = new CssValueElement(propertyDescriptor, element);
-            
+
             String origin = element.origin();
             String visibleOrigin = element.getVisibleOrigin();
             if ("@colors-list".equals(origin)) { //NOI18N
@@ -271,29 +271,29 @@ public class CssCompletion implements CodeCompletionHandler {
                 if (!extendedItemsOnly) {
                     //for elements which are alternatives from multiple grammar braches do not
                     //show the origin
-                    
+
                     //check if the visible origin off all the elements is the same, 
                     //if so use it if not, do not show any origin
                     String vo = null;
                     boolean same = true;
-                    for(ValueGrammarElement e : elements) {
-                        if(vo == null) {
+                    for (ValueGrammarElement e : elements) {
+                        if (vo == null) {
                             vo = e.getVisibleOrigin();
                         } else {
-                            if(!vo.equals(e.getVisibleOrigin())) {
+                            if (!vo.equals(e.getVisibleOrigin())) {
                                 same = false;
                                 break;
                             }
                         }
                     }
-                    
+
                     proposals.add(
                             CssCompletionItem.createValueCompletionItem(
-                            handle, 
-                            element, 
+                            handle,
+                            element,
                             same ? visibleOrigin : "...",
-                            anchor, 
-                            addSemicolon, 
+                            anchor,
+                            addSemicolon,
                             addSpaceBeforeItem));
                 }
             }
@@ -1060,69 +1060,77 @@ public class CssCompletion implements CodeCompletionHandler {
                 }
 
                 PropertyValue propVal = new PropertyValue(propertyModel, expressionText);
-
                 Collection<ValueGrammarElement> alts = propVal.getAlternatives();
-
                 Collection<ValueGrammarElement> filteredByPrefix = filterElements(alts, prefix);
 
                 int completionItemInsertPosition = context.getAnchorOffset();
                 boolean addSpaceBeforeItem = false;
 
-                //test the situation when completion is invoked just after a valid token
-                //like color: rgb| or font-family: cursive|
-                if (Character.isWhitespace(charAfterCaret)) {
-                    //do that only if the completion is invoked after, not inside a token
-                    ValueGrammarElement fullyMatchedToken = null;
+                boolean includePrefixInTheExpression = false;
+                boolean extendedItemsOnly = false;
+
+                
+                block: if (Character.isWhitespace(charAfterCaret)) {
+                    //do the following heuristics only if the completion is invoked after, not inside a token
+
+                    //case #1
+                    //========
+                    //color: #| completion
+                    if (prefix.equals("#")) {
+                        completionItemInsertPosition = context.getCaretOffset() - 1;
+                        filteredByPrefix = alts; //prefix is empty, do not filter at all
+                        extendedItemsOnly = true; //do not add any default alternatives items
+                        break block;
+                    }
+
+                    //case #2
+                    //========
+                    //in the situation that there's a prefix, but no alternatives matches
+                    //we may also try alternatives after the prefix (at the end of the expression)
+                    //
+                    //animation: cubic-bezier(20|  => evaluated expression is "cubic-bezier("
+                    //                                so !number is the alternative, but filtered out since
+                    //                                the completion prefix is "20"
+                    //
+                    //so lets use "cubic-bezier(20" as the expression and empty prefix
+                    //this usually happens for unit acceptors (they typically do not put all possible
+                    //values to the completion list so the filtering fails).
+                    if (!prefix.isEmpty() && filteredByPrefix.isEmpty()) {
+                        includePrefixInTheExpression = true;
+                        break block;
+                    }
+
+                    //case #3
+                    //=======
+                    //test the situation when completion is invoked just after a valid token
+                    //like color: rgb| or font-family: cursive|
                     for (ValueGrammarElement vge : filteredByPrefix) {
                         if (vge.value().equals(prefix)) {
-                            fullyMatchedToken = vge;
+                            includePrefixInTheExpression = true;
                             break;
                         }
                     }
+                }
 
-                    if (fullyMatchedToken != null) {
-                        //just after a valid token
-                        //re-run the property value evaluation with expression including the prefix token
-                        expressionText = context.getSnapshot().getText().subSequence(
-                                expressionNode.from(),
-                                context.getEmbeddedCaretOffset()).toString();
+                if (includePrefixInTheExpression) {
+                    //re-run the property value evaluation with expression including the prefix token
+                    expressionText = context.getSnapshot().getText().subSequence(
+                            expressionNode.from(),
+                            context.getEmbeddedCaretOffset()).toString();
 
-                        //use just the current line, if the expression spans to multiple
-                        //lines it is likely because of parsing error
-                        eolIndex = expressionText.indexOf('\n');
-                        if (eolIndex > 0) {
-                            expressionText = expressionText.substring(0, eolIndex);
-                        }
-
-                        propVal = new PropertyValue(propertyModel, expressionText);
-                        alts = propVal.getAlternatives();
-//                        
-//                        //keep only those alternative which make sense when completed after a letter character
-//                        Collection<ValueGrammarElement> keep = new ArrayList<ValueGrammarElement>();
-//                        for(ValueGrammarElement alt : alts) {
-//                            if(!Character.isJavaIdentifierPart(alt.value().charAt(0))) {
-//                                //some symbol, keep it
-//                                keep.add(alt);
-//                            }
-//                        }
-//                        
-//                        
-//                        filteredByPrefix = keep; //no prefix
-                        filteredByPrefix = alts; //no prefix
-                        completionItemInsertPosition = context.getCaretOffset(); //no prefix
-                        addSpaceBeforeItem = true;
+                    //use just the current line, if the expression spans to multiple
+                    //lines it is likely because of parsing error
+                    eolIndex = expressionText.indexOf('\n');
+                    if (eolIndex > 0) {
+                        expressionText = expressionText.substring(0, eolIndex);
                     }
-                }
 
-
-                //hack for color: #| completion >>>
-                boolean extendedItemsOnly = false;
-                if (prefix.equals("#")) {
-                    completionItemInsertPosition = context.getCaretOffset() - 1;
-                    filteredByPrefix = alts; //prefix is empty, do not filter at all
-                    extendedItemsOnly = true; //do not add any default alternatives items
+                    propVal = new PropertyValue(propertyModel, expressionText);
+                    alts = propVal.getAlternatives();
+                    filteredByPrefix = alts; //no prefix
+                    completionItemInsertPosition = context.getCaretOffset(); //no prefix
+                    addSpaceBeforeItem = true;
                 }
-                //<<<
 
                 completionProposals.addAll(wrapPropertyValues(context,
                         prefix,
