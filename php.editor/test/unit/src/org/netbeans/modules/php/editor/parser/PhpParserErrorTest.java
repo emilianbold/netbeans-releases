@@ -68,5 +68,44 @@ public class PhpParserErrorTest extends CslTestBase {
         checkErrors("testfiles/parser/issue189630.php");
     }
 
+    public void testFieldModificators_01() throws Exception {
+        checkErrors("testfiles/parser/fieldModificators_01.php");
+    }
+
+    public void testFieldModificators_02() throws Exception {
+        checkErrors("testfiles/parser/fieldModificators_02.php");
+    }
+
+    public void testFieldModificators_03() throws Exception {
+        checkErrors("testfiles/parser/fieldModificators_03.php");
+    }
+
+    public void testFieldModificators_04() throws Exception {
+        checkErrors("testfiles/parser/fieldModificators_04.php");
+    }
+
+    public void testFieldModificators_05() throws Exception {
+        checkErrors("testfiles/parser/fieldModificators_05.php");
+    }
+
+    public void testMethodModificators_01() throws Exception {
+        checkErrors("testfiles/parser/methodModificators_01.php");
+    }
+
+    public void testMethodModificators_02() throws Exception {
+        checkErrors("testfiles/parser/methodModificators_02.php");
+    }
+
+    public void testMethodModificators_03() throws Exception {
+        checkErrors("testfiles/parser/methodModificators_03.php");
+    }
+
+    public void testMethodModificators_04() throws Exception {
+        checkErrors("testfiles/parser/methodModificators_04.php");
+    }
+
+    public void testMethodModificators_05() throws Exception {
+        checkErrors("testfiles/parser/methodModificators_05.php");
+    }
 
 }
