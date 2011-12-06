@@ -46,6 +46,8 @@ import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.netbeans.modules.css.editor.module.CssModuleSupport;
 import org.netbeans.modules.css.editor.module.spi.Property;
+import org.netbeans.modules.css.editor.properties.Acceptors;
+import org.netbeans.modules.css.editor.properties.CssPropertyValueAcceptor;
 
 /**
  * @author mfukala@netbeans.org
@@ -66,6 +68,18 @@ public class GrammarParser {
     }
 
     public static GroupGrammarElement parse(String expression, String propertyName) {
+        return new GrammarParser(expression, propertyName).parse();
+    }
+    
+    private String propertyName;
+    private String expression;
+
+    public GrammarParser(String expression, String propertyName) {
+        this.expression = expression;
+        this.propertyName = propertyName;
+    }
+    
+    private GroupGrammarElement parse() {
         AtomicInteger group_index = new AtomicInteger(0);
         int openedParenthesis = 0;
         GroupGrammarElement root = new GroupGrammarElement(null, group_index.getAndIncrement(), propertyName);
@@ -74,12 +88,12 @@ public class GrammarParser {
         parseElements(input, root, false, group_index, openedParenthesis);
 
         if (openedParenthesis != 0) {
-            throw new IllegalStateException("Bracket pairing doesn't match: " + openedParenthesis);
+            throw new IllegalStateException(String.format("Property '%s' parsing error - bracket pairs doesn't match: ", propertyName, openedParenthesis));
         }
         return root;
     }
-
-    private static void parseElements(ParserInput input, GroupGrammarElement parent, boolean ignoreInherits,
+    
+    private void parseElements(ParserInput input, GroupGrammarElement parent, boolean ignoreInherits,
             AtomicInteger group_index, int openedParenthesis) {
         GrammarElement last = null;
         for (;;) {
@@ -143,14 +157,15 @@ public class GrammarParser {
                     String referredElementName = buf.toString();
                     Collection<Property> properties = CssModuleSupport.getProperties(referredElementName, true);
                     if (properties == null) {
-                        throw new IllegalStateException("parsing error - no referred element '" + referredElementName + "' found!"
-                                + " Read input: " + input.readText()); //NOI18N
+                        throw new IllegalStateException(
+                                String.format("Property '%s' parsing error: No referred element '%s' found. "
+                                + "Read input: %s", propertyName, referredElementName, input.readText())); //NOI18N
                     }
 
                     PropertyModel model = new PropertyModel(referredElementName, properties);
                     ParserInput pinput = new ParserInput(model.getGrammar());
-                    String propertyName = model.getProperty().getName();
-                    last = new GroupGrammarElement(parent, group_index.getAndIncrement(), propertyName);
+                    String propName = model.getProperty().getName();
+                    last = new GroupGrammarElement(parent, group_index.getAndIncrement(), propName);
 
 
                     //ignore inherit tokens in the subtree
@@ -174,8 +189,16 @@ public class GrammarParser {
                             buf.append(c);
                         }
                     }
-
-                    last = new ValueGrammarElement(parent, buf.toString(), true);
+                    String unitName = buf.toString();
+                    CssPropertyValueAcceptor acceptor = Acceptors.instance().getAcceptor(unitName);
+                    if(acceptor == null) {
+                        throw new IllegalStateException(
+                                String.format("Property '%s' parsing error - No unit property value acceptor for '%s'. "
+                                + "Read input: '%s'",
+                                propertyName, unitName, input.readText())); //NOI18N
+                    }
+                    
+                    last = new ValueGrammarElement(parent, unitName, true);
                     parent.addElement(last);
                     break;
 
