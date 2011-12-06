@@ -94,7 +94,6 @@ public class DebugUtils {
     }
 
     public static String getJspName(String url) {
-
         FileObject fo = getFileObjectFromUrl(url);
         if (fo != null) {
             return fo.getNameExt();
@@ -103,11 +102,19 @@ public class DebugUtils {
     }
     
     public static String getJspPath(String url) {
-       
         FileObject fo = getFileObjectFromUrl(url);
         String relativePath = url;
+        
         if (fo != null) {
-            FileObject root = ClassPath.getClassPath(fo, ClassPath.SOURCE).findOwnerRoot(fo);
+            ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
+            if (cp == null) {
+                LOGGER.log(Level.FINE, "No classpath for {0}", url);
+                return null;
+            }
+            FileObject root = cp.findOwnerRoot(fo);
+            if (root == null) {
+                return null;
+            }
             relativePath = FileUtil.getRelativePath(root, fo);
         }
         
