@@ -93,7 +93,7 @@ import org.openide.util.Lookup;
  * @see RefactoringElementImplementation#performChange
  * @see RefactoringElementImplementation#undoChange
  * @see RefactoringElementsBag#registerTransaction
- * @see RefactoringElementsBag#registerFileChange
+ * @see RefactoringElementsBag#addFileChange
  * @see BackupFacility.Handle
  * @author Jan Becicka
  */
@@ -149,13 +149,13 @@ public abstract class BackupFacility {
     }
     
     /**
-     * Handle class representing handle to file{s), which were backuped
+     * Handle class representing handle to file(s), which were backuped
      * by
-     * {@link  org.netbeans.modules.refactoring.spi.BackupFacility.backup()}
+     * {@link  org.netbeans.modules.refactoring.spi.BackupFacility#backup()}
      */
     public interface Handle {
         /**
-         * restore file(s), which was stored by  {@link  org.netbeans.modules.refactoring.spi.BackupFacility.backup()}
+         * restore file(s), which was stored by  {@link  org.netbeans.modules.refactoring.spi.BackupFacility#backup()}
          * @throws java.io.IOException if restore failed.
          */
         void restore() throws IOException;

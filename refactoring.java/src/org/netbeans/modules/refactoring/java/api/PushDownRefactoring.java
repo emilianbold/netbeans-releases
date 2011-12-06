@@ -77,8 +77,7 @@ public class PushDownRefactoring extends AbstractRefactoring {
     }
 
     /** Sets members (using their descriptors) to pull up.
-     * @param members 
-     * @members Descriptors of members to be pulled up.
+     * @param members Descriptors of members to be pulled up.
      */
     public void setMembers(MemberInfo<ElementHandle<? extends Element>>[] members) {
         this.members = members;
