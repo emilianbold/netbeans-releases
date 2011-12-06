@@ -130,7 +130,6 @@ public class ViewModelListener extends DebuggerManagerAdapter {
     private List models = new ArrayList(11);
     private List hyperModels;
 
-    private List<? extends SessionProvider> sessionProviders;
     private Session currentSession;
     private List[] treeModels = new List[TREE_MODELS.length];
     private List[] treeModelFilters = new List[TREE_MODEL_FILTERS.length];
@@ -264,7 +263,6 @@ public class ViewModelListener extends DebuggerManagerAdapter {
                 mm = null;
                 asynchModelFilters = null;
                 //rp = null;
-                sessionProviders = null;
                 currentSession = null;
                 providerToDisplay = null;
                 buttons = null;
@@ -320,17 +318,6 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         if (!isUp) return ;    // Destroyed in between
         DebuggerManager dm = DebuggerManager.getDebuggerManager ();
         DebuggerEngine e = dm.getCurrentEngine ();
-        if (e == null) {
-            sessionProviders = dm.lookup (viewType, SessionProvider.class);
-        } else {
-            sessionProviders = DebuggerManager.join(e, dm).lookup (viewType, SessionProvider.class);
-        }
-        if (!sessionProviders.contains(providerToDisplay)) {
-            providerToDisplay = null;
-        }
-        if (e == null && providerToDisplay == null && sessionProviders.size() > 0) {
-            providerToDisplay = sessionProviders.get(0);
-        }
         ContextProvider cp;
         String viewPath;
         if (providerToDisplay != null) {
@@ -536,21 +523,11 @@ public class ViewModelListener extends DebuggerManagerAdapter {
                     List<AbstractButton> theButtons = buttons;
                     if (theButtons == null) return ; // Destroyed in between
                     buttonsPane.removeAll();
-                    if (theButtons.size() == 0 && sessionProviders.size() == 0) {
+                    if (theButtons.size() == 0) {
                         buttonsPane.setVisible(false);
                         buttonsSubPane = null;
                     } else {
                         int i = 0;
-                        if (sessionProviders.size() > 0) {
-                            javax.swing.AbstractButton b = createSessionsSwitchButton();
-                            GridBagConstraints c = new GridBagConstraints(0, i, 1, 1, 0.0, 0.0, GridBagConstraints.NORTH, 0, new Insets(3, 3, 0, 3), 0, 0);
-                            buttonsPane.add(b, c);
-                            i++;
-                            javax.swing.JSeparator s = new javax.swing.JSeparator(SwingConstants.HORIZONTAL);
-                            c = new GridBagConstraints(0, i, 1, 1, 0.0, 0.0, GridBagConstraints.NORTH, 0, new Insets(3, 0, 3, 0), 0, 0);
-                            buttonsPane.add(s, c);
-                            i++;
-                        }
                         if (tabbedPane != null) {
                             buttonsSubPane = new javax.swing.JPanel();
                             buttonsSubPane.setLayout(new java.awt.GridBagLayout());
@@ -639,48 +616,6 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         // </RAVE>
     }
 
-    private javax.swing.JButton createSessionsSwitchButton() {
-        final javax.swing.JButton b = VariablesViewButtons.createButton(
-                new ImageIcon(viewIcon),
-                NbBundle.getMessage(ViewModelListener.class, "Tooltip_SelectSrc"));
-        b.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                if (e.getSource() == b) {
-                    javax.swing.JPopupMenu m = new javax.swing.JPopupMenu();
-                    if (currentSession != null) {
-                        JMenuItem mi = new JMenuItem(currentSession.getName());
-                        mi.putClientProperty("SESSION", currentSession);
-                        mi.addActionListener(this);
-                        m.add(mi);
-                    }
-                    for (SessionProvider sp : sessionProviders) {
-                        JMenuItem mi = new JMenuItem(sp.getSessionName());
-                        mi.putClientProperty("SESSION", sp);
-                        mi.addActionListener(this);
-                        m.add(mi);
-                    }
-                    java.awt.Point pos = b.getMousePosition();
-                    if (pos == null) {
-                        pos = new java.awt.Point(b.getWidth(), b.getHeight());
-                    }
-                    m.show(b, pos.x, pos.y);
-                } else {
-                    JMenuItem mi = (JMenuItem) e.getSource();
-                    Object s = mi.getClientProperty("SESSION");
-                    synchronized (ViewModelListener.this) {
-                        if (s instanceof Session) {
-                            providerToDisplay = null;
-                        } else {
-                            providerToDisplay = (SessionProvider) s;
-                        }
-                    }
-                    updateModel();
-                }
-            }
-        });
-        return b;
-    }
-    
     private CompoundModel createCompound(String viewName) {
         DebuggerManager dm = DebuggerManager.getDebuggerManager ();
         DebuggerEngine e = dm.getCurrentEngine ();
