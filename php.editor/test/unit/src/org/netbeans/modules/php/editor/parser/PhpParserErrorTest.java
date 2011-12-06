@@ -108,4 +108,28 @@ public class PhpParserErrorTest extends CslTestBase {
         checkErrors("testfiles/parser/methodModificators_05.php");
     }
 
+    public void testTraits_01() throws Exception {
+        checkErrors("testfiles/traits_01.php");
+    }
+
+    public void testTraits_02() throws Exception {
+        checkErrors("testfiles/traits_02.php");
+    }
+
+    public void testTraits_03() throws Exception {
+        checkErrors("testfiles/traits_03.php");
+    }
+
+    public void testTraits_04() throws Exception {
+        checkErrors("testfiles/traits_04.php");
+    }
+
+    public void testTraits_05() throws Exception {
+        checkErrors("testfiles/traits_05.php");
+    }
+
+    public void testTraits_06() throws Exception {
+        checkErrors("testfiles/traits_06.php");
+    }
+
 }

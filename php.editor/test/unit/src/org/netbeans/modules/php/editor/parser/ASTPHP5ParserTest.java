@@ -222,6 +222,30 @@ public class ASTPHP5ParserTest extends ParserTestBase {
         performTest("phpdoc/magicMethod07");
     }
 
+    public void testTraits_01() throws Exception {
+        performTest("traits_01");
+    }
+
+    public void testTraits_02() throws Exception {
+        performTest("traits_02");
+    }
+
+    public void testTraits_03() throws Exception {
+        performTest("traits_03");
+    }
+
+    public void testTraits_04() throws Exception {
+        performTest("traits_04");
+    }
+
+    public void testTraits_05() throws Exception {
+        performTest("traits_05");
+    }
+
+    public void testTraits_06() throws Exception {
+        performTest("traits_06");
+    }
+
     @Override
     protected String getTestResult(String filename) throws Exception {
         File testFile = new File(getDataDir(), "testfiles/" + filename + ".php");
