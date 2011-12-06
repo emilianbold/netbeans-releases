@@ -51,6 +51,8 @@ import java.awt.event.KeyEvent;
 import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -128,7 +130,7 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
     
     private BeanTreeView treeView;
     private DataObject current;
-    private JTextComponent currentComponent;
+    private Reference<JTextComponent> currentComponent;
     private int currentDot = -1;
     private RequestProcessor.Task caretTask = RequestProcessor.getDefault().create(new Runnable() {
         public void run() {
@@ -137,13 +139,14 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
             }
         }
     });
+    private final RequestProcessor.Task showTask = RequestProcessor.getDefault().create(this);
 
 
     private FileChangeAdapter adapter = new FileChangeAdapter(){
             @Override
             public void fileChanged(FileEvent fe) {
                 showWaitNode();
-                RequestProcessor.getDefault().post(POMModelPanel.this);
+                showTask.schedule(0);
             }
         };
     private TapPanel filtersPanel;
@@ -281,15 +284,16 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
         current = d;
         current.getPrimaryFile().addFileChangeListener(adapter);
         showWaitNode();
-        RequestProcessor.getDefault().post(this);
+        showTask.schedule(0);
     }
 
     void cleanup() {
         if (current != null) {
             current.getPrimaryFile().removeFileChangeListener(adapter);
         }
-        if (currentComponent != null) {
-            currentComponent.removeCaretListener(this);
+        JTextComponent cc = currentComponent != null ? currentComponent.get() : null;
+        if (cc != null) {
+            cc.removeCaretListener(this);
         }
     }
     
@@ -402,7 +406,7 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
                         JTextComponent component = panes[0];
                         component.removeCaretListener(POMModelPanel.this);
                         component.addCaretListener(POMModelPanel.this);
-                        currentComponent = component;
+                        currentComponent = new WeakReference<JTextComponent>(component);
                     }
                 }
             } );
@@ -600,7 +604,8 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
     }
 
     public void caretUpdate(CaretEvent e) {
-        if (e.getSource() != currentComponent) {
+        JTextComponent cc = currentComponent != null ? currentComponent.get() : null;
+        if (e.getSource() != cc) {
             ((JTextComponent)e.getSource()).removeCaretListener(this);
             //just a double check we do't get a persistent leak here..
             return;

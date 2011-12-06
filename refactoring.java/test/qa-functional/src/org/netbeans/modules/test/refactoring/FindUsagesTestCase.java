@@ -85,6 +85,7 @@ public class FindUsagesTestCase extends RefactoringTestCase {
         super(name);
     }
 
+    @Override
     public String getProjectName() {
         return projectName;
     }

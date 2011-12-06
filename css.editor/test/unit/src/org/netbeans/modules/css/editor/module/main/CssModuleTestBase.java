@@ -41,10 +41,7 @@
  */
 package org.netbeans.modules.css.editor.module.main;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -63,9 +60,7 @@ import org.netbeans.modules.css.editor.api.CssCslParserResult;
 import org.netbeans.modules.css.editor.csl.CssLanguage;
 import org.netbeans.modules.css.editor.module.CssModuleSupport;
 import org.netbeans.modules.css.editor.module.spi.CssEditorModule;
-import org.netbeans.modules.css.editor.properties.parser.PropertyModel;
-import org.netbeans.modules.css.editor.properties.parser.PropertyModelTest;
-import org.netbeans.modules.css.editor.properties.parser.PropertyValue;
+import org.netbeans.modules.css.editor.properties.parser.*;
 import org.netbeans.modules.css.lib.api.NodeUtil;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -79,6 +74,101 @@ import org.netbeans.modules.parsing.spi.Parser.Result;
  * @author mfukala@netbeans.org
  */
 public class CssModuleTestBase extends CslTestBase {
+
+    protected static boolean PRINT_GRAMMAR_RESOLVE_TIMES = false;
+    protected static boolean PRINT_INFO_IN_ASSERT_RESOLVE = false;
+    
+    protected PropertyValue assertResolve(String grammar, String inputText) {
+        return assertResolve(grammar, inputText, true);
+    }
+    
+    protected PropertyValue assertNotResolve(String grammar, String inputText) {
+        return assertResolve(grammar, inputText, false);
+    }
+
+    protected PropertyValue assertResolve(String grammar, String inputText, boolean expectedSuccess) {
+        long a = System.currentTimeMillis();
+        GroupGrammarElement tree = GrammarParser.parse(grammar);
+        long b = System.currentTimeMillis();
+        return assertResolve(tree, inputText, expectedSuccess);
+    }
+    
+    protected PropertyValue assertResolve(GroupGrammarElement tree, String inputText) {        
+        return assertResolve(tree, inputText, true);        
+    }
+    
+    protected PropertyValue assertResolve(GroupGrammarElement tree, String inputText, boolean expectedSuccess) {        
+        if (PRINT_INFO_IN_ASSERT_RESOLVE) {
+            System.out.println("Grammar:");
+            System.out.println(tree.toString2(0));
+        }
+        
+        long a = System.currentTimeMillis();
+        PropertyValue pv = new PropertyValue(tree, inputText);
+        long c = System.currentTimeMillis();
+        
+        if(PRINT_GRAMMAR_RESOLVE_TIMES) {
+            System.out.println(String.format("Input '%s' resolved in %s ms.", inputText, c - a));
+        }
+        if (pv.isResolved() != expectedSuccess) {
+            assertTrue("Unexpected parsing result", false);
+        }
+        
+        return pv;
+    }
+
+    protected void assertParseFails(String grammar, String inputText) {
+        assertResolve(grammar, inputText, false);
+    }
+
+    
+    protected void assertAlternatives(PropertyValue propertyValue, String... expected) {
+        Set<ValueGrammarElement> alternatives = propertyValue.getAlternatives();
+        Collection<String> alts = convert(alternatives);
+        Collection<String> expc = new ArrayList<String>(Arrays.asList(expected));
+        if (alts.size() > expc.size()) {
+            alts.removeAll(expc);
+            throw new AssertionFailedError(String.format("Found %s unexpected alternative(s): %s", alts.size(), toString(alts)));
+        } else if (alts.size() < expc.size()) {
+            expc.removeAll(alts);
+            throw new AssertionFailedError(String.format("There're %s expected alternative(s) missing : %s", expc.size(), toString(expc)));
+        } else {
+            Collection<String> alts2 = new ArrayList<String>(alts);
+            Collection<String> expc2 = new ArrayList<String>(expc);
+            
+            alts2.removeAll(expc);
+            expc2.removeAll(alts);
+            
+            assertTrue(String.format("Missing expected: %s; Unexpected: %s", toString(expc2), toString(alts2)), alts2.isEmpty() && expc2.isEmpty());
+            
+        }
+    }
+
+    protected void assertAlternatives(String grammar, String input, String... expected) {
+        PropertyValue pv = new PropertyValue(grammar, input);
+        assertAlternatives(pv, expected);
+    }
+
+    private Collection<String> convert(Set<ValueGrammarElement> toto) {
+        Collection<String> x = new HashSet<String>();
+        for (ValueGrammarElement e : toto) {
+            x.add(e.toString());
+        }
+        return x;
+    }
+
+    private String toString(Collection<String> c) {
+        StringBuilder sb = new StringBuilder();
+        for (Iterator<String> i = c.iterator(); i.hasNext();) {
+            sb.append('"');
+            sb.append(i.next());
+            sb.append('"');
+            if (i.hasNext()) {
+                sb.append(',');
+            }
+        }
+        return sb.toString();
+    }
 
     public static enum Match {
 
@@ -135,8 +225,7 @@ public class CssModuleTestBase extends CslTestBase {
 
         for (String val : values) {
             PropertyValue value = new PropertyValue(model, val);
-            if (!value.success()) {
-                PropertyModelTest.dumpResult(value);
+            if (!value.isResolved()) {
                 throw new AssertionFailedError(String.format("Error parsing property value '%s' of the property '%s'", val, propertyName));
             }
 
@@ -260,7 +349,9 @@ public class CssModuleTestBase extends CslTestBase {
                         return;
                     }
                     int common = 0;
-                    while (text.regionMatches(0, textToReplace, 0, ++common));
+                    while (text.regionMatches(0, textToReplace, 0, ++common)) {
+                        //no-op
+                    }
                     common--;
                     Position position = doc.createPosition(offset + common);
                     Position semiPosition = semiPos > -1 ? doc.createPosition(semiPos) : null;

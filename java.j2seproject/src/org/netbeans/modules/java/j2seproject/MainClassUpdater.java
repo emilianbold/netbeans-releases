@@ -49,6 +49,7 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Collection;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.TypeElement;
@@ -84,23 +85,31 @@ import org.openide.util.WeakListeners;
  *
  * @author Tomas Zezula
  */
-public class MainClassUpdater extends FileChangeAdapter implements PropertyChangeListener {
-    
-    private static final RequestProcessor RP = new RequestProcessor ("main-class-updater",1);       //NOI18N
+public final class MainClassUpdater extends FileChangeAdapter implements PropertyChangeListener {
 
+    private static final RequestProcessor RP = new RequestProcessor ("main-class-updater",1);       //NOI18N
     private static final Logger LOG = Logger.getLogger(MainClassUpdater.class.getName());
-    
+    private static final int NEW      = 0;
+    private static final int STARTED  = 1;
+    private static final int FINISHED = 2;
+
     private final Project project;
     private final PropertyEvaluator eval;
     private final UpdateHelper helper;
     private final ClassPath sourcePath;
     private final String mainClassPropName;
+    private final AtomicInteger state;
+    //@GuardedBy("this")
     private FileObject currentFo;
+    //@GuardedBy("this")
     private DataObject currentDo;
+    //@GuardedBy("this")
     private FileChangeListener foListener;
+    //@GuardedBy("this")
     private PropertyChangeListener doListener;
+    //@GuardedBy("this")
     private long lc = 0;
-    
+
     /** Creates a new instance of MainClassUpdater */
     public MainClassUpdater(final Project project, final PropertyEvaluator eval,
         final UpdateHelper helper, final ClassPath sourcePath, final String mainClassPropName) {
@@ -113,20 +122,44 @@ public class MainClassUpdater extends FileChangeAdapter implements PropertyChang
         this.eval = eval;
         this.helper = helper;
         this.sourcePath = sourcePath;
-        this.mainClassPropName = mainClassPropName;        
-        this.eval.addPropertyChangeListener(this);
-        this.addFileChangeListener ();
+        this.mainClassPropName = mainClassPropName;
+        this.state = new AtomicInteger(NEW);
     }
-    
-    public synchronized void unregister () {
-        if (currentFo != null && foListener != null) {            
-            currentFo.removeFileChangeListener(foListener);
-        }            
-        if (currentDo != null && doListener != null) {
-            currentDo.removePropertyChangeListener(doListener);
-        }                            
+
+    public void start () {
+        RP.submit(new Runnable () {
+            @Override
+            public void run() {
+                if (state.compareAndSet(NEW, STARTED)) {
+                    eval.addPropertyChangeListener(MainClassUpdater.this);
+                    addFileChangeListener ();
+                } else {
+                    throw new IllegalStateException("Current State: " + state.get());   //NOI18N
+                }
+            }
+        });
     }
-    
+
+    public void stop() {
+        RP.submit(new Runnable() {
+            @Override
+            public void run() {
+                if (state.compareAndSet(STARTED, FINISHED)) {
+                    synchronized (MainClassUpdater.this) {
+                        if (currentFo != null && foListener != null) {
+                            currentFo.removeFileChangeListener(foListener);
+                        }
+                        if (currentDo != null && doListener != null) {
+                            currentDo.removePropertyChangeListener(doListener);
+                        }
+                    }
+                } else {
+                    throw new IllegalStateException("Current State: " + state.get());   //NOI18N
+                }
+            }
+        });
+    }
+
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (DataObject.PROP_PRIMARY_FILE.equals(evt.getPropertyName())) {
@@ -141,7 +174,7 @@ public class MainClassUpdater extends FileChangeAdapter implements PropertyChang
                 public void run() {
                     MainClassUpdater.this.addFileChangeListener ();
                 }
-            });            
+            });
         }
     }
     

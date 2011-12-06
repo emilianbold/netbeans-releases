@@ -49,6 +49,7 @@ import java.text.MessageFormat;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
@@ -57,7 +58,7 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.ChangeParametersRefactoring;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
@@ -70,16 +71,21 @@ import org.openide.util.NbBundle;
  */
 public class ChangeParametersUI implements RefactoringUI {
     
-    TreePathHandle refactoredObj;
-    ChangeParametersPanel panel;
-    ChangeParametersRefactoring refactoring;
+    private TreePathHandle method;
+    private ChangeParametersPanel panel;
+    private ChangeParametersRefactoring refactoring;
+    private String name;
+    private boolean isMethod;
     private final ChangeParametersRefactoring.ParameterInfo[] preConfiguration;
     
     /** Creates a new instance of ChangeMethodSignatureRefactoring */
     private ChangeParametersUI(TreePathHandle refactoredObj, CompilationInfo info, ChangeParametersRefactoring.ParameterInfo[] preConfiguration) {
         this.refactoring = new ChangeParametersRefactoring(refactoredObj);
-        this.refactoredObj = refactoredObj;
+        this.method = refactoredObj;
         this.preConfiguration = preConfiguration;
+        Element element = method.resolveElement(info);
+        this.name = element.getSimpleName().toString();
+        this.isMethod = element.getKind() == ElementKind.METHOD;
     }
     
     public static ChangeParametersUI create(TreePathHandle refactoredObj, CompilationInfo info, ChangeParametersRefactoring.ParameterInfo[] preConfiguration) {
@@ -99,11 +105,10 @@ public class ChangeParametersUI implements RefactoringUI {
                 : null;
     }
     
+    @Override
     public String getDescription() {
         String msg = NbBundle.getMessage(ChangeParametersUI.class, 
                                         "DSC_ChangeParsRootNode"); // NOI18N
-        String name = RetoucheUtils.getSimpleName(refactoredObj);
-        boolean isMethod = RetoucheUtils.getElementKind(refactoredObj).equals(ElementKind.METHOD);
         return new MessageFormat(msg).format(new Object[] { 
             name,
             NbBundle.getMessage(ChangeParametersUI.class, "DSC_ChangeParsRootNode" + (isMethod ? "Method" : "Constr")),
@@ -111,19 +116,20 @@ public class ChangeParametersUI implements RefactoringUI {
        });
     }
     
+    @Override
     public CustomRefactoringPanel getPanel(ChangeListener parent) {
         if (panel == null) {
-            //TODO:
-            //parent.setPreviewEnabled(true);
-            panel = new ChangeParametersPanel(refactoredObj, parent, preConfiguration);
+            panel = new ChangeParametersPanel(method, parent, preConfiguration);
         }
         return panel;
     }
     
+    @Override
     public AbstractRefactoring getRefactoring() {
         return refactoring;
     }
 
+    @Override
     public boolean isQuery() {
         return false;
     }
@@ -156,22 +162,27 @@ public class ChangeParametersUI implements RefactoringUI {
         return problem;
     }
     
+    @Override
     public String getName() {
         return NbBundle.getMessage(ChangeParametersUI.class, "LBL_ChangeMethodSignature");
     }
     
+    @Override
     public Problem checkParameters() {
         return setParameters(true);
     }
 
+    @Override
     public Problem setParameters() {
         return setParameters(false);
     }
     
+    @Override
     public boolean hasParameters() {
         return true;
     }
     
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(ChangeParametersUI.class);
     }

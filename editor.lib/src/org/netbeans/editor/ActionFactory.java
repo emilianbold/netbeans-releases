@@ -56,6 +56,7 @@ import java.beans.PropertyChangeListener;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Map;
 import java.util.HashMap;
@@ -167,16 +168,38 @@ public class ActionFactory {
                                 }
                             } else { // no selected text
                                 try {
-                                    int startOffset = Utilities.getRowStart(doc, caret.getDot());
-                                    int firstNW = Utilities.getRowFirstNonWhite(doc, caret.getDot());
-                                    int endOffset = Utilities.getRowEnd(doc, caret.getDot());
-                                    if (firstNW == -1 || (firstNW >= caret.getDot()))
-                                        BaseKit.changeBlockIndent(doc, startOffset, endOffset, -1);
-                                    else {
-                                        // TODO:
-                                        // after we will have action which will do opposite to "tab" action
-                                        // means it check whether before the caret is whole tab which can
-                                        // be removed, this action will be called here
+                                    int dot = caret.getDot();
+                                    int lineStartOffset = Utilities.getRowStart(doc, dot);
+                                    int firstNW = Utilities.getRowFirstNonWhite(doc, dot);
+                                    if (firstNW != -1 && dot <= firstNW) {
+                                        // Non-white row and caret inside initial whitespace => decrease text indent
+                                        int lineEndOffset = Utilities.getRowEnd(doc, dot);
+                                        BaseKit.changeBlockIndent(doc, lineStartOffset, lineEndOffset, -1);
+                                    } else {
+                                        int endNW = (firstNW == -1)
+                                                ? lineStartOffset
+                                                : (Utilities.getRowLastNonWhite(doc, dot) + 1);
+                                        if (dot > endNW) {
+                                            int shiftWidth = doc.getShiftWidth();
+                                            if (shiftWidth > 0) {
+                                                int dotColumn = Utilities.getVisualColumn(doc, dot);
+                                                int targetColumn = Math.max(0,
+                                                        (dotColumn - 1) / shiftWidth * shiftWidth);
+                                                // There may be '\t' chars so remove char-by-char
+                                                // and possibly fill-in spaces to get to targetColumn
+                                                while (dotColumn > targetColumn && --dot >= endNW) {
+                                                    doc.remove(dot, 1);
+                                                    dotColumn = Utilities.getVisualColumn(doc, dot);
+                                                }
+                                                int insertLen;
+                                                if (dot >= endNW && (insertLen = targetColumn - dotColumn) > 0) {
+                                                    char[] spaceChars = new char[insertLen];
+                                                    Arrays.fill(spaceChars, ' ');
+                                                    String spaces = new String(spaceChars);
+                                                    doc.insertString(dot, spaces, null);
+                                                }
+                                            }
+                                        }
                                     }
                                 } catch (GuardedException e) {
                                     target.getToolkit().beep();

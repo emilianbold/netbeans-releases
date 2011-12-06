@@ -561,7 +561,7 @@ Please note, SimpleDiff is rather trivial implementation of diff command, so it 
   <ul>
 
       <li>
-        <api name="nbjunit.diff.impl.CmdLine" group="property" type="export" category="devel">
+        <api name="nbjunit.diff.impl.CmdLine" group="systemproperty" type="export" category="devel">
             used only when nbjunit.diff.impl is set
             to org.netbeans.junit.diff.NativeDiff class. This property
             contain command line, which is called from NativeDiff class
@@ -573,14 +573,14 @@ Please note, SimpleDiff is rather trivial implementation of diff command, so it 
       </li>
 
       <li>
-          <api name="nbjunit.workdir" group="property" type="export" category="devel">
+          <api name="nbjunit.workdir" group="systemproperty" type="export" category="devel">
             path to a directory, which is used as a root for tests' working
             directories (for details see JavaDoc for NbTestCase.getWorkDir()).
           </api>
       </li>
       
       <li>
-          <api name="NbTestCase.order" group="property" type="export" category="friend">
+          <api name="NbTestCase.order" group="systemproperty" type="export" category="friend">
             This property tries to influence the order of <code>NbTestCase</code>
             methods so it is more predicatable (see <a href="http://wiki.apidesign.org/wiki/OrderOfElements">
             Order of elements</a> for description of the problem). The acceptable
@@ -601,6 +601,15 @@ Please note, SimpleDiff is rather trivial implementation of diff command, so it 
             The default order is <b>natural</b> right now, but this may
             change in future to mitigate the <a href="http://wiki.apidesign.org/wiki/OrderOfElements">
             randomness caused by JDK7</a>.
+          </api>
+      </li>
+      <li>
+          <api name="branding.token" group="systemproperty" type="export" category="devel">
+              <a href="@TOP@/org/netbeans/junit/NbModuleSuite.html">NbModuleSuite</a>
+              can now be influenced by system property <code>branding.token</code>.
+              If it is provided (by Ant harness for example), it is used
+              to call <a href="@org-openide-util@/org/openide/util/NbBundle.html#setBranding(java.lang.String)">
+              NbBundle.setBranding</a>.
           </api>
       </li>
   </ul>

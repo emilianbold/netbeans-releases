@@ -119,8 +119,6 @@ public class WLDeploymentManager implements DeploymentManager2 {
 
     private static final RequestProcessor OBJECT_POLL_RP = new RequestProcessor("ProgressObject Poll", 1);
 
-    private static final Target DWP_TARGET = new WLTarget("myserver"); // NOI18N
-
     static {
         if (DEBUG_JSR88) {
             System.setProperty("weblogic.deployer.debug", "all"); // NOI18N
@@ -145,6 +143,9 @@ public class WLDeploymentManager implements DeploymentManager2 {
 
     /* GuardedBy("this") */
     private WLJ2eePlatformFactory.J2eePlatformImplImpl j2eePlatformImpl;
+
+    /* GuardedBy("this") */
+    private WLConnectionSupport connectionSupport;
 
     /* GuardedBy("this") */
     private Version serverVersion;
@@ -211,13 +212,21 @@ public class WLDeploymentManager implements DeploymentManager2 {
         }
         return instanceProperties;
     }
-    
+
     @NonNull
     public synchronized WLJ2eePlatformFactory.J2eePlatformImplImpl getJ2eePlatformImpl() {
         if (j2eePlatformImpl == null) {
             j2eePlatformImpl = new WLJ2eePlatformFactory.J2eePlatformImplImpl(this);
         }
         return j2eePlatformImpl;
+    }
+
+    @NonNull
+    public synchronized WLConnectionSupport getConnectionSupport() {
+        if (connectionSupport == null) {
+            connectionSupport = new WLConnectionSupport(this);
+        }
+        return connectionSupport;
     }
 
     public void addDomainChangeListener(ChangeListener listener) {
@@ -257,11 +266,11 @@ public class WLDeploymentManager implements DeploymentManager2 {
     }
 
     private <T> T executeAction(final Action<T> action) throws Exception {
-        WLConnectionSupport support = new WLConnectionSupport(this);
+        WLConnectionSupport support = getConnectionSupport();
         return support.executeAction(new Callable<T>() {
 
             // so far this is synchronized on WLConnectionSupport level
-            // perhaps we will make it weaker in future sycnhroniing just
+            // perhaps we will make it weaker in future sycnhronizing just
             // this block
             @Override
             public T call() throws Exception {
@@ -511,7 +520,7 @@ public class WLDeploymentManager implements DeploymentManager2 {
             // we do this magic because default JSR-88 returns all targets
             // including for example JMSServer which is not very good for
             // our purposes
-            WLConnectionSupport support = new WLConnectionSupport(this);
+            WLConnectionSupport support = getConnectionSupport();
             return support.executeAction(new WLConnectionSupport.JMXRuntimeAction<Target[]>() {
 
                 @Override

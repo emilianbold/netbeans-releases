@@ -240,10 +240,13 @@ public abstract class RemoteConfiguration {
      * @return value of the given key as a number or defaultValue if any error occurs
      */
     protected int readNumber(String key, int defaultValue) {
-        try {
-            return Integer.parseInt(cfg.getValue(key));
-        } catch (NumberFormatException nfe) {
-            LOGGER.log(Level.FINE, "Exception while parsing number of '" + key + "'", nfe);
+        String currentValue = cfg.getValue(key);
+        if (StringUtils.hasText(currentValue)) {
+            try {
+                return Integer.parseInt(currentValue);
+            } catch (NumberFormatException nfe) {
+                LOGGER.log(Level.FINE, "Exception while parsing number of '" + key + "'", nfe);
+            }
         }
         cfg.putValue(key, String.valueOf(defaultValue));
         return defaultValue;

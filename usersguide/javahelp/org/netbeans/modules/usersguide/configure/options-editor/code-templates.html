@@ -14,35 +14,38 @@
     <body>
         <p> <small><a href="#seealso">See Also</a>&nbsp; </small> 
         <h2>Editor Options: Code Templates</h2>
-<h3>Code Templates tab</h3>
-        <p>Use this tab to modify the abbreviations for terms that you want the editor to expand automatically.
-            Select a language from the drop-down list to see the abbreviations available.
-            For each language you can do the following:
+        <p>Use this tab to add, delete, or modify code templates. Code Templates are abbreviations that you type into the code and that the editor expands into code blocks. The templates include placeholder values. After you expand a code template, you go through the expanded block and replace the placeholder values.</p>
+        <p>Select a language from the drop-down list to see the code templates available for that language. For each language you can do the following:</p>
         <ul>
-            <li>Select an abbreviation from the list and type in the Abbreviation or Expanded Text field to modify the abbreviation.</li>
-            <li>Select an abbreviation from the list and click Remove to remove the abbreviation.</li>
-            <li>Click New and type the abbreviation and description in the respective fields.</li>
+            <li><strong>Modify a code template. </strong>Select a code template from the list. Type in the Expanded Text tab to modify the expanded code that the template produces. Type in the Description tab to modify the description of the code template.</li>
+            <li><strong>Remove a code template. </strong>Select a code template from the list and click Remove to remove the code template.</li>
+            <li><strong>Add a code template. </strong>Click New and type the abbreviation, expanded text, and description in the respective fields.</li>
         </ul>
-        <p>You can use the Expand Template On drop-down list to change the
-            key or key combination that is used to expand the abbreviations.
-            By default, abbreviations are expanded when you press Tab.
-            The Expand Template On drop-down list also contains the options of Space, Shift-Space, and Enter.</p>
-        <p>Using <a href="editor_template_syntax.html">code template syntax</a>,
-            you can add further functionality to templates or create new templates.</p>
-        <p>For lists of default code template abbreviations included in the IDE, see <a href="../shortcuts/abbreviations-list.html">Code Template Abbreviations: Quick Reference</a></p>
-        <p>The web tutorial <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+        <ul class="note">
+            <li>If you are writing a new code template or modifying an existing code template, see <a href="../editor_template_syntax.html">Code Template Syntax</a>.</li>
+        </ul>
+        <p>This tab also includes the following elements:</p>
+        <ul>
+            <li><strong>Expand Template On.</strong> Select the key or key combination that is used to expand code template abbreviations. By default, press Tab to expand an abbreviation. You can change this to Shift, Shift-Space, or Enter.</li>
+            <li><strong>On Template Expansion.</strong> Select the formatting task that the IDE performs when you expand a code template abbreviation. By default, the IDE reformats the code. The IDE instead can only reindent the code or do no formatting.</li>
+            <li><strong>Export/Import.</strong> Export code templates as a .zip archive, or import code templates from a .zip archive.</li>
+        </ul>
+        
+        <dl> 
+            <dt><a name="seealso">See Also</a></dt>
+            <dd>
+                <a href="../configure_options.html">Using the Options Window</a>
+            </dd>
+            <dd><a href="../../shortcuts/abbreviations-list.html">Code Template Abbreviations: Quick Reference</a></dd>
+            <dd><a href="../editor_template_syntax.html">Code Template Syntax</a></dd>
+            <dd><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
                 <!-- Enter the URL below -->
                 <param name="content" value="http://netbeans.org/kb/docs/php/code-templates.html">
                 <!-- Enter the display text below. The <html> and <u> make the text look like a link. -->
                 <param name="text" value="<html><u>Code Templates in NetBeans IDE for PHP</u></html>">
                 <param name="textFontSize" value="medium">
                 <param name="textColor" value="blue">
-            </object> also describes the code template syntax and includes use cases. It is useful not only for PHP developers!</p>
-        <dl> 
-            <dt><a name="seealso">See Also</a></dt>
-            <dd>
-                <a href="../configure_options.html">Using the Options Window</a>
-            </dd>
+            </object></dd>
         </dl>
 
         <hr><small><a href="../../credits.html">Legal Notices</a></small>

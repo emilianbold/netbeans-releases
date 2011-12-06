@@ -45,11 +45,7 @@ package org.netbeans.modules.groovy.grailsproject.completion;
 import java.util.Map;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
-import org.netbeans.modules.groovy.grailsproject.GrailsProject;
-import org.netbeans.modules.project.uiapi.ProjectOpenedTrampoline;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-import org.netbeans.spi.project.ProjectState;
-import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -66,6 +62,12 @@ public class DomainCompletionProviderTest extends GroovyTestBase {
         super(name);
     }
 
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        indexFile("projects/completion/grails-app/domain/TestDomain.groovy");
+    }
+    
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
         Map<String, ClassPath> map = super.createClassPathsForTest();
@@ -100,6 +102,10 @@ public class DomainCompletionProviderTest extends GroovyTestBase {
     }
 
     public void testDomainMethods7() throws Exception {
+        checkCompletion(TEST_BASE + "TestDomain.groovy", "        TestDomain.findR^", false);
+    }
+
+    public void testDomainMethods8() throws Exception {
         checkCompletion(TEST_BASE + "TestDomain.groovy", "        TestDomain.find^", true);
     }
 }

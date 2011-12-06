@@ -103,8 +103,6 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.Node.Property;
 import org.openide.nodes.NodeOp;
-import org.openide.util.ContextAwareAction;
-import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -708,9 +706,7 @@ public class ListView extends JScrollPane implements Externalizable {
         Action a = node.getPreferredAction();
 
         if ((a != null) && ((modifiers & InputEvent.CTRL_MASK) == 0)) {
-            if (a instanceof ContextAwareAction) {
-                a = ((ContextAwareAction) a).createContextAwareInstance(node.getLookup());
-            }
+            a = TreeView.takeAction(a, node);
 
             if (a.isEnabled()) {
                 a.actionPerformed(new ActionEvent(node, ActionEvent.ACTION_PERFORMED, "")); // NOI18N

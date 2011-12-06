@@ -44,13 +44,11 @@ package org.netbeans.modules.parsing.impl.indexing;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.Map;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.parsing.spi.Parser;
-import org.netbeans.modules.parsing.spi.indexing.BinaryIndexer;
-import org.netbeans.modules.parsing.spi.indexing.Context;
-import org.netbeans.modules.parsing.spi.indexing.CustomIndexer;
-import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexer;
-import org.netbeans.modules.parsing.spi.indexing.Indexable;
+import org.netbeans.modules.parsing.spi.indexing.*;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -128,10 +126,22 @@ public abstract class SPIAccessor {
 
     public abstract void index (BinaryIndexer indexer, Context context);
 
+    public abstract void index (@NonNull ConstrainedBinaryIndexer indexer, @NonNull Map<String,? extends Iterable<? extends FileObject>> files, @NonNull Context context);
+
     public abstract void index (CustomIndexer indexer, Iterable<? extends Indexable> files, Context context);
 
     public abstract void index (EmbeddingIndexer indexer, Indexable indexable, Parser.Result parserResult, Context ctx);
 
     public abstract void setAllFilesJob (Context context, boolean allFilesJob);
+
+    public abstract boolean scanStarted(@NonNull ConstrainedBinaryIndexer indexer, @NonNull Context context);
+
+    public abstract void scanFinished(@NonNull ConstrainedBinaryIndexer indexer, @NonNull Context context);
+
+    public abstract void rootsRemoved(@NonNull ConstrainedBinaryIndexer indexer, @NonNull Iterable<? extends URL> removed);
+
+    public abstract void putProperty(@NonNull Context context, @NonNull String propName, @NullAllowed Object value);
+
+    public abstract Object getProperty(@NonNull Context context, @NonNull String propName);
 
 }

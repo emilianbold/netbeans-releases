@@ -48,8 +48,11 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.ResourceBundle;
 import java.util.logging.LogManager;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.SourceGroupModifier;
 import org.netbeans.junit.MemoryFilter;
 import org.netbeans.modules.apisupport.project.api.Util;
 import org.netbeans.modules.apisupport.project.suite.SuiteProjectGenerator;
@@ -230,6 +233,14 @@ public class NbModuleProjectTest extends TestBase {
         assertEquals(plafdir, plaf.getDestDir());
         assertEquals(harnessdir, plaf.getHarnessLocation());
         assertEquals(HarnessVersion.V70, plaf.getHarnessVersion());
+    }
+
+    public void testGetTestSourceDirectory() throws Exception { // #204773
+        NbModuleProjectGenerator.createStandAloneModule(getWorkDir(), "x", "x", "x/Bundle.properties", null, NbPlatform.PLATFORM_ID_DEFAULT, false, false);
+        NbModuleProject p = (NbModuleProject) ProjectManager.getDefault().findProject(FileUtil.toFileObject(getWorkDir()));
+        assertNull(p.getTestSourceDirectory("unit"));
+        assertNotNull(SourceGroupModifier.createSourceGroup(p, JavaProjectConstants.SOURCES_TYPE_JAVA, JavaProjectConstants.SOURCES_HINT_TEST));
+        assertNotNull(p.getTestSourceDirectory("unit"));
     }
 
 }

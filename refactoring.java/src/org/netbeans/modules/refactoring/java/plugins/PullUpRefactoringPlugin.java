@@ -44,24 +44,17 @@
 package org.netbeans.modules.refactoring.java.plugins;
 
 import java.io.IOException;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
-import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.api.java.source.*;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.ProgressEvent;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.java.RefactoringUtils;
+import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.MemberInfo;
 import org.netbeans.modules.refactoring.java.api.PullUpRefactoring;
 import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
@@ -79,7 +72,7 @@ public final class PullUpRefactoringPlugin extends JavaRefactoringPlugin {
     /** Reference to the parent refactoring instance */
     private final PullUpRefactoring refactoring;
     private TreePathHandle treePathHandle;
-    
+
     
     /** Creates a new instance of PullUpRefactoringPlugin
      * @param refactoring Parent refactoring instance.
@@ -89,13 +82,14 @@ public final class PullUpRefactoringPlugin extends JavaRefactoringPlugin {
         this.treePathHandle = refactoring.getSourceType();
     }
 
+    @Override
     protected JavaSource getJavaSource(Phase p) {
         switch (p) {
-        default: 
-            return JavaSource.forFileObject(treePathHandle.getFileObject());
+            default:
+                return JavaSource.forFileObject(treePathHandle.getFileObject());
         }
     }
-    
+
     @Override
     protected Problem preCheck(CompilationController cc) throws IOException {
         fireProgressListenerStart(AbstractRefactoring.PRE_CHECK, 4);
@@ -118,7 +112,7 @@ public final class PullUpRefactoringPlugin extends JavaRefactoringPlugin {
                 return new Problem(true, NbBundle.getMessage(PushDownRefactoringPlugin.class, "ERR_PushDown_InvalidSource", treePathHandle, elm)); // NOI18N
             }
             TypeElement e  = (TypeElement) elm;
-            Collection<TypeElement> superTypes = RetoucheUtils.getSuperTypes(e, cc, true);
+            Collection<TypeElement> superTypes = JavaRefactoringUtils.getSuperTypes(e, cc, true);
             List<MemberInfo> minfo = new LinkedList<MemberInfo>();
             for (TypeElement el: superTypes) {
                 MemberInfo<ElementHandle<TypeElement>> memberInfo = MemberInfo.create(el, cc);
@@ -148,7 +142,7 @@ public final class PullUpRefactoringPlugin extends JavaRefactoringPlugin {
             fireProgressListenerStop();
         }
     }
-    
+
     
     @Override
     public Problem fastCheckParameters() {
@@ -157,7 +151,7 @@ public final class PullUpRefactoringPlugin extends JavaRefactoringPlugin {
         if (info.length == 0) {
             return new Problem(true, NbBundle.getMessage(PullUpRefactoringPlugin.class, "ERR_PullUp_NoMembersSelected")); // NOI18N
         }
-        
+
         if (info.length > 1) {
             for (int i=0; i<info.length - 1; i++) {
                 for (int j = i + 1; j < info.length; j++) {
@@ -167,12 +161,12 @@ public final class PullUpRefactoringPlugin extends JavaRefactoringPlugin {
                 }
             }
         }
-        
+
         // #2 - check if the targed type is not null
         if (refactoring.getTargetType() == null) {
             return new Problem(true, NbBundle.getMessage(PullUpRefactoringPlugin.class, "ERR_PullUp_NoTargetType")); // NOI18N
         }
-        
+
         Problem p=null;
         if (refactoring.getTargetType().getKind().isInterface()) {
             for (MemberInfo i:info) {
@@ -181,7 +175,7 @@ public final class PullUpRefactoringPlugin extends JavaRefactoringPlugin {
                 }
             }
         }
-        
+
         return p;
     }
 
@@ -191,7 +185,7 @@ public final class PullUpRefactoringPlugin extends JavaRefactoringPlugin {
         try {
             cc.toPhase(JavaSource.Phase.RESOLVED);
             TypeElement sourceType = (TypeElement) refactoring.getSourceType().resolveElement(cc);
-            Collection<TypeElement> supers = RetoucheUtils.getSuperTypes(sourceType, cc);
+            Collection<TypeElement> supers = JavaRefactoringUtils.getSuperTypes(sourceType, cc, false);
             TypeElement targetType = refactoring.getTargetType().resolve(cc);
             MemberInfo<ElementHandle<? extends Element>>[] members = refactoring.getMembers();
 
@@ -246,7 +240,7 @@ public final class PullUpRefactoringPlugin extends JavaRefactoringPlugin {
                     //                        }
                     // #3 - check if the member already exists in the target class
 
-                    if (RetoucheUtils.elementExistsIn(targetType, member, cc)) {
+                    if (RefactoringUtils.elementExistsIn(targetType, member, cc)) {
                         return createProblem(problems, true, NbBundle.getMessage(PullUpRefactoringPlugin.class, "ERR_PullUp_MemberAlreadyExists", member.getSimpleName())); // NOI18N
                     }
 
@@ -269,13 +263,14 @@ public final class PullUpRefactoringPlugin extends JavaRefactoringPlugin {
         }
         return null;
     }
-    
+
+    @Override
     public Problem prepare(RefactoringElementsBag refactoringElements) {
         ClasspathInfo cpInfo = getClasspathInfo(refactoring);
-        
+
         Set<FileObject> a = new HashSet<FileObject>();
-        a.addAll(RetoucheUtils.getSuperTypesFiles(refactoring.getSourceType()));
-        a.add(RetoucheUtils.getFileObject(treePathHandle));
+        a.addAll(getSuperTypesFiles(refactoring.getSourceType()));
+        a.add(RefactoringUtils.getFileObject(treePathHandle));
         fireProgressListenerStart(ProgressEvent.START, a.size());
         TransformTask task = new TransformTask(new PullUpTransformer(refactoring), treePathHandle);
         Problem problem = createAndAddElements(a, task, refactoringElements, refactoring, cpInfo);
@@ -285,5 +280,49 @@ public final class PullUpRefactoringPlugin extends JavaRefactoringPlugin {
 
     protected FileObject getFileObject() {
         return treePathHandle.getFileObject();
+    }
+
+    /**
+     * @param handle
+     * @return
+     */
+    private static Collection<FileObject> getSuperTypesFiles(TreePathHandle handle) {
+        try {
+            SuperTypesTask ff;
+            JavaSource source = JavaSource.forFileObject(handle.getFileObject());
+            source.runUserActionTask(ff = new SuperTypesTask(handle), true);
+            return ff.getFileObjects();
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
+    private static class SuperTypesTask implements CancellableTask<CompilationController> {
+
+        private Collection<FileObject> files;
+        TreePathHandle handle;
+
+        SuperTypesTask(TreePathHandle handle) {
+            this.handle = handle;
+        }
+
+        @Override
+        public void cancel() {
+        }
+
+        @Override
+        public void run(CompilationController cc) {
+            try {
+                cc.toPhase(JavaSource.Phase.RESOLVED);
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
+            Element el = handle.resolveElement(cc);
+            files = RefactoringUtils.elementsToFile(JavaRefactoringUtils.getSuperTypes((TypeElement) el, cc, true), cc.getClasspathInfo());
+        }
+
+        public Collection<FileObject> getFileObjects() {
+            return files;
+        }
     }
 }

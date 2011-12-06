@@ -353,6 +353,13 @@ public class ApisupportAntUtils {
         // firstly check if the dependency is already not there
         for (ModuleDependency md : pxm.getDirectDependencies()) {
             if (codeNameBase.equals(md.getModuleEntry().getCodeNameBase())) {
+                if (version != null && !md.hasImplementationDependency()) {
+                    String old = md.getSpecificationVersion();
+                    if (old == null || version.compareTo(new SpecificationVersion(old)) > 0) {
+                        pxm.removeDependency(codeNameBase);
+                        break;
+                    }
+                }
                 Util.err.log(ErrorManager.INFORMATIONAL, codeNameBase + " already added"); // NOI18N
                 return false;
             }

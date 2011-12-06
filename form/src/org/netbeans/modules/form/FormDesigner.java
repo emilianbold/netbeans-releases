@@ -1140,7 +1140,7 @@ public class FormDesigner {
                 syncComponentsFromNodes();
                 Node[] selectedNodes = getSelectedNodes();
                 // if no form node, select data node (of FormDataObject) in lookup
-                switchNodeInLookup(selectedNodes.length == 0);
+                switchNodeInLookup(selectedNodes.length == 0 && formEditor.getFormDataObject().isValid());
                 firePropertyChange(ExplorerManager.PROP_SELECTED_NODES, evt.getOldValue(), evt.getNewValue());
                 // specially handle node selection in connection mode
                 if (getDesignerMode() == MODE_CONNECT && selectedNodes.length > 0) {

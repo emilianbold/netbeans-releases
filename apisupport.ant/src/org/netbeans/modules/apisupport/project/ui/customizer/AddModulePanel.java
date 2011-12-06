@@ -321,10 +321,11 @@ public final class AddModulePanel extends JPanel {
         } else {
             final Runnable compute = new Runnable() {
                 public @Override void run() {
-                    if (filterer == null) {
+                    AddModuleFilter _filterer = filterer;
+                    if (_filterer == null) {
                         return;
                     }
-                    final Set<ModuleDependency> matches = filterer.getMatches(text);
+                    final Set<ModuleDependency> matches = _filterer.getMatches(text);
                     synchronized (AddModulePanel.this) {
                         filterTask = null;
                     }

@@ -1189,7 +1189,7 @@ public class FormEditor {
             try {
                 ClassSource cs = new ClassSource("", // class name is not needed // NOI18N
                         ClassSource.unpickle("library", "swing-layout")); // NOI18N // Hack
-                return Boolean.TRUE == ClassPathUtils.updateProject(formEditor.getFormDataObject().getFormFile(), cs);
+                return Boolean.TRUE == ClassPathUtils.updateProject(formEditor.getFormDataObject().getFormFile(), cs, true);
             }
             catch (IOException ex) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);

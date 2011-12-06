@@ -785,9 +785,13 @@ public class GroovyVirtualSourceProvider implements VirtualSourceProvider {
             //
             imports.addAll(Arrays.asList(ResolveVisitor.DEFAULT_IMPORTS));
 
+            // FIXME by using star imports in generated class
+            // we could cause namespace collision
             ModuleNode moduleNode = classNode.getModule();
-            for (Iterator it = moduleNode.getImportPackages().iterator(); it.hasNext();) {
-                imports.add(it.next());
+            for (ImportNode importNode : moduleNode.getImports()) {
+                if (importNode.isStar()) {
+                    imports.add(importNode.getPackageName() + ".");
+                }
             }
 
             for (Iterator it = moduleNode.getImports().iterator(); it.hasNext();) {

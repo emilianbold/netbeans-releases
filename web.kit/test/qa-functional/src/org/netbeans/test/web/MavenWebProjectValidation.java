@@ -45,6 +45,7 @@ import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.JLabelOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.junit.NbModuleSuite;
@@ -104,7 +105,14 @@ public class MavenWebProjectValidation extends WebProjectValidation {
             serverStep.cboJavaEEVersion().selectItem("1.5");
         }
         serverStep.finish();
-        verifyWebPagesNode("index.jsp");
+        // need to increase time to wait for project node
+        long oldTimeout = JemmyProperties.getCurrentTimeout("ComponentOperator.WaitComponentTimeout");
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 120000);
+        try {
+            verifyWebPagesNode("index.jsp");
+        } finally {
+            JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", oldTimeout);
+        }
         waitScanFinished();
     }
 

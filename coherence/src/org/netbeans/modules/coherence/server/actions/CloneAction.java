@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.coherence.server.actions;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.server.properties.InstanceProperties;
@@ -50,6 +52,11 @@ import org.netbeans.modules.coherence.server.CoherenceInstanceProvider;
 import org.netbeans.modules.coherence.server.CoherenceProperties;
 import org.netbeans.modules.coherence.server.CoherenceServer;
 import org.netbeans.modules.coherence.server.CoherenceServerProperty;
+import org.netbeans.modules.coherence.server.actions.ui.CloneServerPanel;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotificationLineSupport;
+import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -69,30 +76,52 @@ public class CloneAction extends NodeAction {
         assert activatedNodes.length == 1;
         Node node = activatedNodes[0];
         CoherenceServer coherenceServer = node.getLookup().lookup(CoherenceServer.class);
+        CoherenceInstance coherenceInstance = node.getLookup().lookup(CoherenceInstance.class);
         if (coherenceServer == null) {
             LOGGER.log(Level.INFO, "CoherenceServer for node {0} wasn''t found.", node);
             return;
         }
 
-        InstanceProperties oldProperties = coherenceServer.getInstanceProperties();
-        InstanceProperties newProperties = InstancePropertiesManager.getInstance().
-                createProperties(CoherenceInstanceProvider.COHERENCE_INSTANCES_NS);
+        CloneServerPanel panel = new CloneServerPanel(coherenceInstance.getDisplayName());
+        final DialogDescriptor descriptor = new DialogDescriptor(
+                panel,
+                NbBundle.getMessage(CloneAction.class, "TIT_ClonedCoherenceServerName"), //NOI18N
+                true,
+                DialogDescriptor.OK_CANCEL_OPTION,
+                DialogDescriptor.OK_OPTION,
+                null);
+        NotificationLineSupport statusLine = descriptor.createNotificationLineSupport();
+        panel.setNotificationLine(statusLine);
+        panel.addPropertyChangeListener(new PropertyChangeListener() {
 
-        // clone display name with the suffix '- Copy'
-        if (!"".equals(oldProperties.getString(CoherenceProperties.PROP_DISPLAY_NAME, ""))) {
-            newProperties.putString(CoherenceProperties.PROP_DISPLAY_NAME,
-                    oldProperties.getString(CoherenceProperties.PROP_DISPLAY_NAME, "") + " - Copy"); //NOI18N
-        }
-        // clone all base properties except instance ID
-        copyStringProperty(newProperties, oldProperties, CoherenceProperties.PROP_COHERENCE_CLASSPATH); //NOI18N
-        copyStringProperty(newProperties, oldProperties, CoherenceProperties.PROP_JAVA_FLAGS); //NOI18N
-        copyStringProperty(newProperties, oldProperties, CoherenceProperties.PROP_CUSTOM_PROPERTIES); //NOI18N
-        // clone all Coherence server properties
-        for (CoherenceServerProperty property : CoherenceProperties.SERVER_PROPERTIES) {
-            copyProperty(newProperties, oldProperties, property);
-        }
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (evt.getPropertyName().equals(CloneServerPanel.IS_VALID)) {
+                    Object newvalue = evt.getNewValue();
+                    if ((newvalue != null) && (newvalue instanceof Boolean)) {
+                        descriptor.setValid(((Boolean) newvalue).booleanValue());
+                    }
+                }
+            }
+        });
+        if (DialogDisplayer.getDefault().notify(descriptor) == NotifyDescriptor.OK_OPTION) {
+            InstanceProperties oldProperties = coherenceServer.getInstanceProperties();
+            InstanceProperties newProperties = InstancePropertiesManager.getInstance().
+                    createProperties(CoherenceInstanceProvider.COHERENCE_INSTANCES_NS);
 
-        CoherenceInstance.createPersistent(newProperties);
+            newProperties.putString(CoherenceProperties.PROP_DISPLAY_NAME, panel.getNewServerName()); //NOI18N
+
+            // clone all base properties except instance ID
+            copyStringProperty(newProperties, oldProperties, CoherenceProperties.PROP_CLASSPATH);
+            copyStringProperty(newProperties, oldProperties, CoherenceProperties.PROP_JAVA_FLAGS);
+            copyStringProperty(newProperties, oldProperties, CoherenceProperties.PROP_CUSTOM_PROPERTIES);
+            // clone all Coherence server properties
+            for (CoherenceServerProperty property : CoherenceProperties.SERVER_PROPERTIES) {
+                copyProperty(newProperties, oldProperties, property);
+            }
+
+            CoherenceInstance.createPersistent(newProperties);
+        }
     }
 
     @Override
@@ -127,9 +156,9 @@ public class CloneAction extends NodeAction {
      * @param key {@code String} key of the property
      */
     private static void copyStringProperty(InstanceProperties newProperties, InstanceProperties oldProperties, String key) {
-        if (!"".equals(oldProperties.getString(key, ""))) {
-            LOGGER.log(Level.FINE, "Copying String property for key {0}.", key); //NOI18N
-            newProperties.putString(key, oldProperties.getString(key, ""));
+        if (!"".equals(oldProperties.getString(key, ""))) { //NOI18N
+            LOGGER.log(Level.FINE, "Copying String property for key {0}.", key);
+            newProperties.putString(key, oldProperties.getString(key, "")); //NOI18N
         }
     }
 
@@ -145,24 +174,24 @@ public class CloneAction extends NodeAction {
         String key = property.getPropertyName();
 
         if (type == String.class) {
-            if (!"".equals(oldProperties.getString(key, ""))) {
-                LOGGER.log(Level.FINE, "Copying server property (String) for key {0}.", key); //NOI18N
+            if (!"".equals(oldProperties.getString(key, ""))) { //NOI18N
+                LOGGER.log(Level.FINE, "Copying server property (String) for key {0}.", key);
                 newProperties.putString(key, oldProperties.getString(key, ""));
             }
         } else if (type == Integer.class) {
             if (oldProperties.getInt(key, 0) != 0) {
-                LOGGER.log(Level.FINE, "Copying server property (Integer) for key {0}.", key); //NOI18N
+                LOGGER.log(Level.FINE, "Copying server property (Integer) for key {0}.", key);
                 newProperties.putInt(key, oldProperties.getInt(key, 0));
             }
         } else if (type == Long.class) {
             if (oldProperties.getLong(key, 0) != 0) {
-                LOGGER.log(Level.FINE, "Copying server property (Long) for key {0}.", key); //NOI18N
+                LOGGER.log(Level.FINE, "Copying server property (Long) for key {0}.", key);
                 newProperties.putLong(key, oldProperties.getLong(key, 0));
             }
         } else if (type == Boolean.class) {
             boolean defaultValue = Boolean.valueOf(property.getDefaultValue());
             if (oldProperties.getBoolean(key, defaultValue) != defaultValue) {
-                LOGGER.log(Level.FINE, "Copying server property (Boolean) for key {0}.", key); //NOI18N
+                LOGGER.log(Level.FINE, "Copying server property (Boolean) for key {0}.", key);
                 newProperties.putBoolean(key, oldProperties.getBoolean(key, defaultValue));
             }
         } else {

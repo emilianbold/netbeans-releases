@@ -562,7 +562,10 @@ public final class Preview extends Dialog implements Percent.Listener {
     }
 
     private double getAllWidthScale() {
-        if (myPapers.size() == 0) {
+        if (myPapers == null) {
+            createPapers();
+        }
+        if (myPapers.isEmpty()) {
             return 1.0;
         }
         int w = myPapers.get(0).getPaperWidth() + GAP_SIZE;

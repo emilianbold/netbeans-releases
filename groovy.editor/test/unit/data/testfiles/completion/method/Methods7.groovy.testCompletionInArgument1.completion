@@ -3,4 +3,6 @@ println new URL("http://google.com").getT|
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 METHOD     getText()                                  String
+METHOD     getText(Map)                               String
+METHOD     getText(Map, String)                       String
 METHOD     getText(String)                            String

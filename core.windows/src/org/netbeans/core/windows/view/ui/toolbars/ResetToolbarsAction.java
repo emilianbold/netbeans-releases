@@ -45,7 +45,7 @@
 package org.netbeans.core.windows.view.ui.toolbars;
 
 import java.awt.event.ActionEvent;
-import java.util.concurrent.Callable;
+import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
@@ -68,13 +68,10 @@ public class ResetToolbarsAction extends AbstractAction {
     public void actionPerformed(ActionEvent e) {
         String name = ToolbarPool.getDefault().getConfiguration();
         FileObject fo = FileUtil.getConfigFile( "Toolbars" ); //NOI18N
-        Object attr = fo.getAttribute( "removeWritables" ); //NOI18N
-        if( null != attr && attr instanceof Callable ) {
-            try {
-                ((Callable)attr).call();
-            } catch (Exception ex) {
-                Logger.getLogger(ResetToolbarsAction.class.getName()).log( Level.FINE, null, ex );
-            }
+        try {
+            fo.revert();
+        } catch (IOException ex) {
+            Logger.getLogger(ResetToolbarsAction.class.getName()).log( Level.FINE, null, ex );
         }
         ToolbarPool.getDefault().waitFinished();
         ToolbarPool.getDefault().setConfiguration(name);

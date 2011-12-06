@@ -187,8 +187,9 @@ implements ContextAwareAction, PropertyChangeListener, ChangeListener, LookupLis
         //#40823 related. AbstractUndoableEdit prepends "Undo/Redo" strings before the custom text,
         // resulting in repetitive text in UndoAction/RedoAction. attempt to remove the AbstractUndoableEdit text
         // keeping our text because it has mnemonics.
-        String undo = getUndoRedo().getUndoPresentationName();
-        LOG.log (Level.FINE, "getUndoRedo().getUndoPresentationName() returns {0}", undo);
+        String undo = doUndo ? getUndoRedo().getUndoPresentationName() : getUndoRedo().getRedoPresentationName();
+        LOG.log (Level.FINE, doUndo ? "getUndoRedo().getUndoPresentationName() returns {0}" : 
+                                      "getUndoRedo().getRedoPresentationName() returns {0}", undo);
 
         if ((undo != null) && (getDefaultSwingText() != null) && undo.startsWith(getDefaultSwingText())) {
             undo = undo.substring(getDefaultSwingText().length()).trim();
@@ -199,7 +200,7 @@ implements ContextAwareAction, PropertyChangeListener, ChangeListener, LookupLis
         if (undo == null || undo.trim ().length () == 0) {
             presentationName = NbBundle.getMessage(UndoRedoAction.class, doUndo ? "UndoSimple" : "RedoSimple");
         } else {
-            presentationName = NbBundle.getMessage(UndoRedoAction.class, doUndo ? "UndoWithParameter" : "UndoSimple", undo);
+            presentationName = NbBundle.getMessage(UndoRedoAction.class, doUndo ? "UndoWithParameter" : "RedoWithParameter", undo);
         }
         
         LOG.log (Level.FINE, "Result name is {0}", presentationName);

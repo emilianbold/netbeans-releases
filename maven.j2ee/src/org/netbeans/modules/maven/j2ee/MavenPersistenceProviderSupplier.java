@@ -57,6 +57,8 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.persistence.provider.Provider;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.netbeans.modules.j2ee.persistence.spi.provider.PersistenceProviderSupplier;
+import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.spi.project.ProjectServiceProvider;
 
 /**
  * An implementation of PersistenceProviderSupplier for web project.
@@ -65,15 +67,21 @@ import org.netbeans.modules.j2ee.persistence.spi.provider.PersistenceProviderSup
  * @author Erno Mononen
  * @author Milos Kleint
  */
+@ProjectServiceProvider(service = PersistenceProviderSupplier.class, projectType = {
+    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_WAR,
+    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_EJB,
+    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_APPCLIENT
+})
 public class MavenPersistenceProviderSupplier implements PersistenceProviderSupplier{
     
     private final Project project;
     
-    /** Creates a new instance of WebPersistenceProviderSupplier */
+
     public MavenPersistenceProviderSupplier(Project project) {
         this.project = project;
     }
     
+    @Override
     public List<Provider> getSupportedProviders() {
         J2eePlatform platform = null;
         try {
@@ -114,9 +122,8 @@ public class MavenPersistenceProviderSupplier implements PersistenceProviderSupp
         }
     }
     
+    @Override
     public boolean supportsDefaultProvider() {
         return J2eeProjectCapabilities.forProject(project).hasDefaultPersistenceProvider();
     }
-    
-
 }

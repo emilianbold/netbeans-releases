@@ -48,13 +48,15 @@ import org.openide.util.NbBundle;
 import java.io.Serializable;
 import java.io.File;
 import java.util.*;
+import org.netbeans.modules.mercurial.util.HgUtils;
+import org.netbeans.modules.versioning.util.common.VCSFileInformation;
 
 /**
  * Immutable class encapsulating status of a file.
  *
  * @author Maros Sandor
  */
-public class FileInformation implements Serializable {
+public class FileInformation extends VCSFileInformation implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -263,6 +265,7 @@ public class FileInformation implements Serializable {
      * @return status name, for multistatuses prefers local
      * status name.
      */ 
+    @Override
     public String getStatusText() {
         return getStatusText(~0);
     }    
@@ -345,6 +348,7 @@ public class FileInformation implements Serializable {
         return (status & mask) != 0;
     }
 
+    @Override
     public String toString() {
         return "Text: " + status + " " + getStatusText(status); // NOI18N
     }
@@ -404,5 +408,15 @@ public class FileInformation implements Serializable {
      */
     void setSeenInUI (boolean seenInUI) {
         this.seenInUI = seenInUI;
+    }
+
+    @Override
+    public int getComparableStatus () {
+        return HgUtils.getComparableStatus(status);
+    }
+
+    @Override
+    public String annotateNameHtml (String name) {
+        return Mercurial.getInstance().getMercurialAnnotator().annotateNameHtml(name, this, null);
     }
 }

@@ -55,15 +55,25 @@ public class GroupGrammarElement extends GrammarElement {
 
     public enum Type {
 
-//        /** All of the group members need to be present in arbitrary order */
-//        ALL,
-//        
+        /**
+         * One of the group members needs to be resolved.
+         */
         SET,
         
-        /** any of the elements can be present in the value otherwise just one of them */
+        /** 
+         * Any of the elements can be present in the value (at least one of them????).
+         */
+        COLLECTION,
+        
+        /**
+         * All of the group members needs to be resolved in the defined order.
+         */
         LIST,
         
-        SEQUENCE;
+        /**
+         * All of the group members needs to be present in arbitrary order
+         */
+        ALL;
     }
 
     GroupGrammarElement(GroupGrammarElement parent, int index, String referenceName) {
@@ -74,12 +84,16 @@ public class GroupGrammarElement extends GrammarElement {
     GroupGrammarElement(GroupGrammarElement parent, int index) {
         super(parent);
         this.index = index;
-        this.type = Type.SEQUENCE; //default type
+        this.type = Type.LIST; //default type
     }
     private List<GrammarElement> elements = new ArrayList<GrammarElement>(5);
     private Type type;
-    
 
+    @Override
+    public GrammarElementKind getKind() {
+        return GrammarElementKind.GROUP;
+    }
+    
     public Type getType() {
         return type;
     }
@@ -98,7 +112,7 @@ public class GroupGrammarElement extends GrammarElement {
 
     public List<GrammarElement> getAllPossibleValues() {
         List<GrammarElement> all = new ArrayList<GrammarElement>(10);
-        if (getType() == Type.SEQUENCE) {
+        if (getType() == Type.LIST) {
             //sequence
             GrammarElement e = elements.get(0); //first element
             if (e instanceof GroupGrammarElement) {
@@ -122,12 +136,12 @@ public class GroupGrammarElement extends GrammarElement {
     @Override
     public String toString2(int level) {
         StringBuilder sb = new StringBuilder();
-        sb.append(indentString(level)).append("[G").append(index).append(" "); //NOI18N
+        String heading = toString();
+        heading = heading.substring(0, heading.length() - 1);
+        sb.append(indentString(level)).append(heading); //NOI18N
         if (referenceName != null) {
             sb.append("(").append(referenceName).append(") "); //NOI18N
         }
-        
-        sb.append(getType());
         
         sb.append('\n');
         for (GrammarElement e : elements()) {
@@ -142,6 +156,14 @@ public class GroupGrammarElement extends GrammarElement {
 
     @Override
     public String toString() {
-        return "[G" + index + "]"; //NOI18N
+        StringBuilder sb = new StringBuilder();
+        sb.append('[');
+        sb.append(getType().name().charAt(0));
+        sb.append(index);
+        if (referenceName != null) {
+            sb.append("|").append(referenceName); //NOI18N
+        }
+        sb.append(']');
+        return sb.toString(); //NOI18N
     }
 }

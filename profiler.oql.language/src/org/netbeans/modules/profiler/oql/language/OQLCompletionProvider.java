@@ -206,7 +206,7 @@ public class OQLCompletionProvider implements CompletionProvider {
                                 String tt = t.nextToken();
                                 if ("FROM".startsWith(tt.trim().toUpperCase())) {
                                     int pos = tokentext.indexOf(tt);
-                                    int wsPos = tokentext.indexOf(" ", pos);
+                                    int wsPos = tokentext.indexOf(' ', pos);
                                     if (tt.trim().length() == 3) {
                                         pos++;
                                     }
@@ -284,7 +284,7 @@ public class OQLCompletionProvider implements CompletionProvider {
                                     pkgCompletions.add(sig[0].substring(0, pkgSepPos));
                                 }
                             }
-                            if (sig[0].indexOf(".", tokentext.trim().length() - 1) == -1) { // NOI18N
+                            if (sig[0].indexOf('.', tokentext.trim().length() - 1) == -1) { // NOI18N
                                 completions.add("01 " + className); // NOI18N
                             }
                         }

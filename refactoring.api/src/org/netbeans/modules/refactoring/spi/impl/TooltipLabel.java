@@ -58,6 +58,7 @@ public class TooltipLabel extends JLabel {
         setToolTipText(" "); //NOI18N
     }
     
+    @Override
     public String getToolTipText(MouseEvent e) {
         FontMetrics metrix = getFontMetrics(getFont());
         String text = getText();
@@ -65,10 +66,12 @@ public class TooltipLabel extends JLabel {
         return (textWidth > getParent().getSize().width ? text : null);
     }
 
+    @Override
     public Point getToolTipLocation(MouseEvent event) {
         return new Point(-3, 0);
     }
 
+    @Override
     public JToolTip createToolTip() {
         JToolTip tooltp = new JToolTip();
         tooltp.setBackground(SystemColor.control);

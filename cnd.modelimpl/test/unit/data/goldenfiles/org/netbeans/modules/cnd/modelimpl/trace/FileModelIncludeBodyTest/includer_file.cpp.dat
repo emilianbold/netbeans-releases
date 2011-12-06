@@ -30,13 +30,13 @@ NAMESPACE DEFINITOIN OuterNSIncluder [1:1/0-22:2/465] SCOPE: includer_file.cpp
                     BASE CLASSES:
                     MEMBERS:
                         FIELD PUBLIC fieldIncluder [4:1/44-4:19/62]  TYPE: int TEXT=int  [4:1/44-4:4/47]  INIT: null  SCOPE: InnerClassIncluder 
-                        FUNCTION DEFINITION foooIncluder  [3:4/64-4:26/111] MethodDDImpl SCOPE: InnerClassIncluder 
+                        FUNCTION DEFINITION foooIncluder  [6:1/64-8:2/111] MethodDDImpl SCOPE: InnerClassIncluder 
                             SIGNATURE foooIncluder()
                             UNIQUE NAME f:OuterNSIncluder::InnnerNSIncluder::OuterClassIncluder::InnerClassIncluder::foooIncluder()
-                            DECLARATION: foooIncluder  [3:4/64-4:26/111]
+                            DECLARATION: foooIncluder  [6:1/64-8:2/111]
                             PARAMETERS:
-                            RETURNS void TEXT=void  [3:4/64-3:8/68]
-                            STATEMENT COMPOUND  [3:24/84-4:26/111] SCOPE: foooIncluder 
+                            RETURNS void TEXT=void  [6:1/64-6:5/68]
+                            STATEMENT COMPOUND  [6:21/84-8:2/111] SCOPE: foooIncluder 
                         FUNCTION DEFINITION booIncluder  [11:17/252-14:18/356] MethodDDImpl SCOPE: InnerClassIncluder 
                             SIGNATURE booIncluder()
                             UNIQUE NAME f:OuterNSIncluder::InnnerNSIncluder::OuterClassIncluder::InnerClassIncluder::booIncluder()
@@ -77,13 +77,13 @@ NAMESPACE OuterNSIncluder (OuterNSIncluder)
                     BASE CLASSES:
                     MEMBERS:
                         FIELD PUBLIC fieldIncluder [4:1/44-4:19/62]  TYPE: int TEXT=int  [4:1/44-4:4/47]  INIT: null  SCOPE: InnerClassIncluder 
-                        FUNCTION DEFINITION foooIncluder  [3:4/64-4:26/111] MethodDDImpl SCOPE: InnerClassIncluder 
+                        FUNCTION DEFINITION foooIncluder  [6:1/64-8:2/111] MethodDDImpl SCOPE: InnerClassIncluder 
                             SIGNATURE foooIncluder()
                             UNIQUE NAME f:OuterNSIncluder::InnnerNSIncluder::OuterClassIncluder::InnerClassIncluder::foooIncluder()
-                            DECLARATION: foooIncluder  [3:4/64-4:26/111]
+                            DECLARATION: foooIncluder  [6:1/64-8:2/111]
                             PARAMETERS:
-                            RETURNS void TEXT=void  [3:4/64-3:8/68]
-                            STATEMENT COMPOUND  [3:24/84-4:26/111] SCOPE: foooIncluder 
+                            RETURNS void TEXT=void  [6:1/64-6:5/68]
+                            STATEMENT COMPOUND  [6:21/84-8:2/111] SCOPE: foooIncluder 
                         FUNCTION DEFINITION booIncluder  [11:17/252-14:18/356] MethodDDImpl SCOPE: InnerClassIncluder 
                             SIGNATURE booIncluder()
                             UNIQUE NAME f:OuterNSIncluder::InnnerNSIncluder::OuterClassIncluder::InnerClassIncluder::booIncluder()

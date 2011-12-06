@@ -221,4 +221,25 @@ public class LoggerStringConcatTest extends TestBase {
                         "    }\n" +
                         "}\n").replaceAll("[ \t\n]+", " "));
     }
+    public void test204634() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test;\n" +
+                       "import java.util.logging.Level;\n" +
+                       "import java.util.logging.Logger;\n" +
+                       "public class Test extends Logger {\n" +
+                       "    private void t(Logger l, int a, int b, int c) {\n" +
+                       "        severe(\"A=/\" + a + '/');\n" +
+                       "    }\n" +
+                       "}\n",
+                       "5:15-5:30:verifier:Inefficient use of string concatenation in logger",
+                       "FixImpl",
+                      ("package test;\n" +
+                        "import java.util.logging.Level;\n" +
+                        "import java.util.logging.Logger;\n" +
+                        "public class Test extends Logger {\n" +
+                        "    private void t(Logger l, int a, int b, int c) {\n" +
+                        "        log(Level.SEVERE, \"A=/{0}/\", a);\n" +
+                        "    }\n" +
+                        "}\n").replaceAll("[ \t\n]+", " "));
+    }
 }

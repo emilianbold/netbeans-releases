@@ -74,6 +74,9 @@ public class NodeFactoryAnnotationProcessor extends LayerGeneratingProcessor {
         }
         for (Element e : roundEnv.getElementsAnnotatedWith(NodeFactory.Registration.class)) {
             NodeFactory.Registration r = e.getAnnotation(NodeFactory.Registration.class);
+            if (r == null) {
+                continue;
+            }
             for (String type : r.projectType()) {
                 layer(e).instanceFile("Projects/" + type + "/Nodes", null, NodeFactory.class, r, null). //NOI18N
                         position(r.position()).write();

@@ -37,23 +37,37 @@
  */
 package org.netbeans.modules.javafx2.project;
 
+import java.awt.Cursor;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.modules.javafx2.platform.api.JavaFXPlatformUtils;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
+import org.openide.windows.WindowManager;
 
 /**
  *
  * @author Tomas Zezula
  */
-@ProjectServiceProvider(service=ProjectOpenedHook.class, projectType={"org-netbeans-modules-java-j2seproject"})
+@ProjectServiceProvider(service=ProjectOpenedHook.class, projectType={"org-netbeans-modules-java-j2seproject"}) // NOI18N
 public final class JFXProjectOpenedHook extends ProjectOpenedHook {
+//public final class JFXProjectOpenedHook extends ProjectOpenedHook implements TaskListener {
+
+    private static final Logger LOGGER = Logger.getLogger("javafx"); // NOI18N
+    
+//    private volatile RequestProcessor.Task task;
+//    private ProgressHandle progressHandle;
 
     @Override
-    protected void projectOpened() {
+    protected synchronized void projectOpened() {
         logUsage(JFXProjectGenerator.PROJECT_OPEN);
+        
+        // create Default JavaFX platform if necessary
+        // #205341
+        checkPlatforms();
     }
 
     @Override
@@ -62,11 +76,73 @@ public final class JFXProjectOpenedHook extends ProjectOpenedHook {
     }
 
     private static void logUsage(@NonNull final String msg) {
-        final LogRecord logRecord = new LogRecord(
-            Level.INFO,
-            msg);
+        final LogRecord logRecord = new LogRecord(Level.INFO, msg);
         logRecord.setLoggerName(JFXProjectGenerator.METRICS_LOGGER);
         Logger.getLogger(JFXProjectGenerator.METRICS_LOGGER).log(logRecord);
+    }
+
+//    @Override
+//    public synchronized void taskFinished(Task task) {
+//        task.removeTaskListener(this);
+//        this.task = null;
+//        
+//        progressHandle.finish();
+//        progressHandle = null;
+//    }
+
+    private void checkPlatforms() {
+        if (!JavaFXPlatformUtils.isThereAnyJavaFXPlatform()) {
+            
+            // I do it in the same thread because otherwise we have problem with "resolve reference" modal dialog.
+            // Creation of Deafult JavaFX platform must be finished before J2SEProject checks for broken links after opening.
+            switchBusy();
+            try {
+                JavaFXPlatformUtils.createDefaultJavaFXPlatform();
+            } catch (Exception ex) {
+                LOGGER.log(Level.WARNING, "Can't create Java Platform instance: {0}", ex); // NOI18N
+            } finally {
+                switchDefault();
+            }
+
+//            progressHandle = ProgressHandleFactory.createSystemHandle(
+//                    NbBundle.getMessage(PanelOptionsVisual.class, "MSG_Default_Platform_Creation")); // NOI18N
+//            progressHandle.start();
+            
+//            task = RequestProcessor.getDefault().create(new CreatePlatformTask());
+//            task.addTaskListener(this);
+//            task.schedule(0);
+        }
+    }
+
+//    private class CreatePlatformTask implements Runnable {
+//        @Override
+//        public void run() {
+//            try {
+//                JavaFXPlatformUtils.createDefaultJavaFXPlatform();
+//            } catch (Exception ex) {
+//                LOGGER.log(Level.WARNING, "Can't create Java Platform instance: {0}", ex); // NOI18N
+//            }
+//        }
+//    }
+
+    private void switchBusy() {
+        SwingUtilities.invokeLater(new Runnable() {
+
+            @Override
+            public void run() {
+                WindowManager.getDefault().getMainWindow().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+            }
+        });
+    }
+
+    private void switchDefault() {
+        SwingUtilities.invokeLater(new Runnable() {
+
+            @Override
+            public void run() {
+                WindowManager.getDefault().getMainWindow().setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+            }
+        });
     }
 
 }

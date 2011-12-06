@@ -88,6 +88,7 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.text.CloneableEditorSupport;
+import org.openide.text.Line;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
@@ -663,7 +664,7 @@ public final class GitUtils {
         return new File(getGitFolderForRoot(repository), "index.lock").exists(); //NOI18N
     }
 
-    public static void openInRevision (final File originalFile, final String revision, boolean showAnnotations, ProgressMonitor pm) throws IOException {
+    public static void openInRevision (final File originalFile, final int lineNumber, final String revision, boolean showAnnotations, ProgressMonitor pm) throws IOException {
         File file = VersionsCache.getInstance().getFileRevision(originalFile, revision, pm);
         if (pm.isCanceled()) {
             return;
@@ -694,12 +695,31 @@ public final class GitUtils {
                     public void run() {
                         javax.swing.JEditorPane[] panes = support.getOpenedPanes();
                         if (panes != null) {
+                            if (lineNumber >= 0 && lineNumber < support.getLineSet().getLines().size()) {
+                                support.getLineSet().getCurrent(lineNumber).show(Line.ShowOpenType.NONE, Line.ShowVisibilityType.FRONT);
+                            }
                             SystemAction.get(AnnotateAction.class).showAnnotations(panes[0], originalFile, revision);
                         }
                     }
                 });
             }
         }
+    }
+
+    public static Map<File, Set<File>> sortByRepository (Collection<File> files) {
+        Map<File, Set<File>> sorted = new HashMap<File, Set<File>>(5);
+        for (File f : files) {
+            File repository = Git.getInstance().getRepositoryRoot(f);
+            if (repository != null) {
+                Set<File> repoFiles = sorted.get(repository);
+                if (repoFiles == null) {
+                    repoFiles = new HashSet<File>();
+                    sorted.put(repository, repoFiles);
+                }
+                repoFiles.add(f);
+            }
+        }
+        return sorted;
     }
     
     private GitUtils() {

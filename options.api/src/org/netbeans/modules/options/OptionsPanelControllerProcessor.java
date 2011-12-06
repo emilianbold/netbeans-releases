@@ -82,6 +82,9 @@ public class OptionsPanelControllerProcessor extends LayerGeneratingProcessor {
         }
         for (Element e : roundEnv.getElementsAnnotatedWith(TopLevelRegistration.class)) {
             TopLevelRegistration r = e.getAnnotation(TopLevelRegistration.class);
+            if (r == null) {
+                continue;
+            }
             LayerBuilder builder = layer(e);
             File file = builder.instanceFile("OptionsDialog", r.id().length() > 0 ? r.id() : null, r, null).
                     methodvalue("instanceCreate", OptionsCategory.class.getName(), "createCategory").
@@ -122,7 +125,7 @@ public class OptionsPanelControllerProcessor extends LayerGeneratingProcessor {
     }
 
     private void iconBase(Element e, String iconBase, Annotation r, File file, LayerBuilder builder) throws LayerGenerationException {
-        builder.validateResource(iconBase, e, r, "iconBase", false);
+        builder.validateResource(iconBase, e, r, "iconBase", true);
         file.stringvalue("iconBase", iconBase);
     }
 

@@ -41,9 +41,12 @@
  */
 package org.netbeans.modules.php.editor.elements;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.StringTokenizer;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.PhpElementVisitor;
 import org.netbeans.modules.php.editor.api.NameKind;
@@ -70,9 +73,10 @@ public class InterfaceElementImpl extends TypeElementImpl implements InterfaceEl
             final QualifiedName qualifiedName,
             final int offset,
             final Set<QualifiedName> ifaceNames,
+            final Collection<QualifiedName> fqSuperInterfaces,
             final String fileUrl,
             final ElementQuery elementQuery) {
-        super(qualifiedName, offset, ifaceNames,
+        super(qualifiedName, offset, ifaceNames, fqSuperInterfaces,
                 PhpModifiers.noModifiers().toFlags(), fileUrl, elementQuery);
     }
 
@@ -102,7 +106,7 @@ public class InterfaceElementImpl extends TypeElementImpl implements InterfaceEl
         InterfaceElement retval = null;
         if (matchesQuery(query, signParser)) {
             retval = new InterfaceElementImpl(signParser.getQualifiedName(), signParser.getOffset(),
-                    signParser.getSuperInterfaces(),
+                    signParser.getSuperInterfaces(), signParser.getFQSuperInterfaces(),
                     indexResult.getUrl().toString(), indexScopeQuery);
         }
         return retval;
@@ -116,7 +120,7 @@ public class InterfaceElementImpl extends TypeElementImpl implements InterfaceEl
             namespace.getFullyQualifiedName() : QualifiedName.createForDefaultNamespaceName();
         return new InterfaceElementImpl(
                 fullyQualifiedName.append(info.getName()), info.getRange().getStart(),
-                info.getInterfaceNames(),
+                info.getInterfaceNames(), Collections.<QualifiedName>emptySet(),
                 fileQuery.getURL().toExternalForm(), fileQuery);
     }
 
@@ -204,14 +208,31 @@ public class InterfaceElementImpl extends TypeElementImpl implements InterfaceEl
         public Set<QualifiedName> getSuperInterfaces() {
             Set<QualifiedName> ifaces = Collections.emptySet();
             String separatedIfaces = signature.string(3);
-            if (separatedIfaces != null && separatedIfaces.length() > 0) {
+            int index = 0;
+            if (separatedIfaces != null && separatedIfaces.length() > 0 &&  (index = separatedIfaces.indexOf('|')) > 0) { //NOI18N
+                String field = separatedIfaces.substring(0, index);
                 ifaces = new HashSet<QualifiedName>(); //NOI18N
-                final String[] ifaceNames = separatedIfaces.split(SEPARATOR.COMMA.toString());
+                final String[] ifaceNames = field.split(SEPARATOR.COMMA.toString());
                 for (String ifName : ifaceNames) {
                     ifaces.add(QualifiedName.create(ifName));
                 }
             }
             return ifaces;
+        }
+
+        public Collection<QualifiedName> getFQSuperInterfaces() {
+            Collection<QualifiedName> retval = Collections.<QualifiedName>emptySet();
+            String separatedIfaces = signature.string(3);
+            int index = 0;
+            if (separatedIfaces != null && (index = separatedIfaces.indexOf('|')) > 0) { //NOI18N
+                String field = separatedIfaces.substring(index + 1);
+                retval = new ArrayList<QualifiedName>();
+                for (StringTokenizer st = new StringTokenizer(field, ","); st.hasMoreTokens();) { //NOI18N
+                    String token = st.nextToken();
+                    retval.add(QualifiedName.create(token));
+                }
+            }
+            return retval;
         }
 
         int getOffset() {

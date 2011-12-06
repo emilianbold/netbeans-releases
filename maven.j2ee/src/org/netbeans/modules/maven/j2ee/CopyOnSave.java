@@ -55,6 +55,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.maven.spi.cos.AdditionalDestination;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -65,19 +66,19 @@ import org.openide.util.Exceptions;
  * @author mkleint - copied and adjusted from netbeans.org web project until it gets rewritten there to
  *  be generic.
  */
+@ProjectServiceProvider(service = {CopyOnSave.class, AdditionalDestination.class, J2eeModuleProvider.DeployOnSaveSupport.class}, projectType={
+    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_EJB,
+    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_APPCLIENT
+})
 public class CopyOnSave implements AdditionalDestination, J2eeModuleProvider.DeployOnSaveSupport {
 
     private Project project;
-    private J2eeModuleProvider provider;
     boolean active = false;
-    private NbMavenProject mavenproject;
     private final List<ArtifactListener> listeners = new ArrayList<ArtifactListener>();
 
-    /** Creates a new instance of CopyOnSaveSupport */
-    public CopyOnSave(Project prj, J2eeModuleProvider prov) {
-        project = prj;
-        provider = prov;
-        mavenproject = project.getLookup().lookup(NbMavenProject.class);
+
+    public CopyOnSave(Project project) {
+        this.project = project;
     }
 
     public void initialize() throws FileStateInvalidException {
@@ -111,11 +112,11 @@ public class CopyOnSave implements AdditionalDestination, J2eeModuleProvider.Dep
     }
 
     protected J2eeModule getJ2eeModule() {
-        return provider.getJ2eeModule();
+        return project.getLookup().lookup(J2eeModuleProvider.class).getJ2eeModule();
     }
     
     protected J2eeModuleProvider getJ2eeModuleProvider() {
-        return provider;
+        return project.getLookup().lookup(J2eeModuleProvider.class);
     }
 
     protected Project getProject() {
@@ -227,6 +228,6 @@ public class CopyOnSave implements AdditionalDestination, J2eeModuleProvider.Dep
     private static final String NB_COS = ".netbeans_automatic_build"; //NOI18N
     @Override
     public boolean containsIdeArtifacts() {
-        return new File(mavenproject.getOutputDirectory(false), NB_COS).exists();
+        return new File(project.getLookup().lookup(NbMavenProject.class).getOutputDirectory(false), NB_COS).exists();
     }
 }

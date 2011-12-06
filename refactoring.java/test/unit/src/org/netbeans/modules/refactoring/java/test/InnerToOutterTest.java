@@ -418,6 +418,7 @@ public class InnerToOutterTest extends RefactoringTestBase {
 
         JavaSource.forFileObject(src.getFileObject("t/A.java")).runUserActionTask(new Task<CompilationController>() {
 
+            @Override
             public void run(CompilationController parameter) throws Exception {
                 parameter.toPhase(JavaSource.Phase.RESOLVED);
                 CompilationUnitTree cut = parameter.getCompilationUnit();

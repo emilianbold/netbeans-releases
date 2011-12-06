@@ -60,14 +60,14 @@ public class MarqueeModuleTest extends CslTestBase {
     
     public void testProperties() {
         PropertyModel p = CssModuleSupport.getPropertyModel("marquee-direction");
-        assertTrue(new PropertyValue(p, "reverse").success());
-        assertTrue(new PropertyValue(p, "forward").success());
+        assertTrue(new PropertyValue(p, "reverse").isResolved());
+        assertTrue(new PropertyValue(p, "forward").isResolved());
     }
     
     public void testMarqueePlayCount() {
         PropertyModel p = CssModuleSupport.getPropertyModel("marquee-play-count");
-        assertTrue(new PropertyValue(p, "1").success());
-        assertFalse(new PropertyValue(p, "-1").success()); //negative not allowed
+        assertTrue(new PropertyValue(p, "1").isResolved());
+        assertFalse(new PropertyValue(p, "-1").isResolved()); //negative not allowed
         
     }
     

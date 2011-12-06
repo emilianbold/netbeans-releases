@@ -344,6 +344,10 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
                     chNodes = Arrays.toString(ch.getNodes());
                 } catch (StackOverflowError e) {
                     t = e;
+                    StackTraceElement[] from = t.getStackTrace();
+                    StackTraceElement[] arr = new StackTraceElement[Math.min(50, from.length)];
+                    System.arraycopy(from, 0, arr, 0, arr.length);
+                    t.setStackTrace(arr);
                 } catch (RuntimeException e) {
                     t = e;
                 }

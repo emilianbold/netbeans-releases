@@ -528,6 +528,25 @@ public class JavaFixTest extends TestBase {
 		           "}\n");
     }
 
+    public void testSingle2MultipleStatements() throws Exception {
+        performRewriteTest("package test;\n" +
+                           "import java.io.InputStream;\n" +
+                           "public class Test {\n" +
+                           "    private void t() throws Exception {\n" +
+                           "        int i = 0;\n" +
+                           "    }\n" +
+                           "}\n",
+                           "$type $var = $init; => $type $var; $var = $init;",
+                           "package test;\n" +
+                           "import java.io.InputStream;\n" +
+                           "public class Test {\n" +
+                           "    private void t() throws Exception {\n" +
+                           "        int i;\n" +
+                           "        i = 0;\n" +
+                           "    }\n" +
+		           "}\n");
+    }
+
     public void performRewriteTest(String code, String rule, String golden) throws Exception {
 	prepareTest("test/Test.java", code);
 

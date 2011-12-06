@@ -86,18 +86,22 @@ public class SourceGroupTreeElement implements TreeElement {
         displayName = sg.getDisplayName();
     }
 
+    @Override
     public TreeElement getParent(boolean isLogical) {
         return TreeElementFactory.getTreeElement(FileOwnerQuery.getOwner(dir));
     }
 
+    @Override
     public Icon getIcon() {
         return icon;
     }
 
+    @Override
     public String getText(boolean isLogical) {
         return displayName;
     }
 
+    @Override
     public Object getUserObject() {
         SourceGroup s = sg.get();
         if (s==null) {

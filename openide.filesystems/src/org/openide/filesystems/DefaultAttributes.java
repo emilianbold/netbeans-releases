@@ -68,9 +68,9 @@ import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TreeSet;
+import java.util.logging.Level;
 import javax.xml.parsers.FactoryConfigurationError;
 import javax.xml.parsers.ParserConfigurationException;
-import org.openide.filesystems.AbstractFileSystem.Attr;
 import org.openide.util.Enumerations;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -608,15 +608,25 @@ public class DefaultAttributes extends Object implements AbstractFileSystem.Attr
                 }
                 throw ioexc;
             } else {
-                try {
-                    deleteFile(fullName);
-                } catch (IOException iex2) {
-                    /** if delete fails, then also rename fails and exception will
-                     * be fired
-                     */
+                for (int counter = 0; ;counter++) {
+                    try {
+                        deleteFile(fullName);
+                    } catch (IOException iex2) {
+                        /** if delete fails, then also rename fails and exception will
+                         * be fired
+                         */
+                        FileSystem.LOG.log(Level.INFO, "Cannot delete " + fullName, iex2); // NOI18N
+                    }
+                    try {
+                        this.change.rename(safeName, fullName);
+                        break;
+                    } catch (IOException ex) {
+                        FileSystem.LOG.log(Level.INFO, "Cannot rename " + fullName + " to " + safeName, ex); // NOI18N
+                        if (counter > 10) {
+                            throw ex;
+                        }
+                    }
                 }
-
-                this.change.rename(safeName, fullName);
             }
         }
     }

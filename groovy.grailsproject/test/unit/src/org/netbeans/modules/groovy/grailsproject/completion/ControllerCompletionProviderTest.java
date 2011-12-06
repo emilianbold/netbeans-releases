@@ -45,11 +45,7 @@ package org.netbeans.modules.groovy.grailsproject.completion;
 import java.util.Map;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
-import org.netbeans.modules.groovy.grailsproject.GrailsProject;
-import org.netbeans.modules.project.uiapi.ProjectOpenedTrampoline;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-import org.netbeans.spi.project.ProjectState;
-import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -77,6 +73,7 @@ public class ControllerCompletionProviderTest extends GroovyTestBase {
     }
 
     public void testControllerMethods1() throws Exception {
+        indexFile("projects/completion/grails-app/controllers/TestDomainController.groovy");
         checkCompletion(TEST_BASE + "TestDomainController.groovy", "        this.^", true);
     }
 }

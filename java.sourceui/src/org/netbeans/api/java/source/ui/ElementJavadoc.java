@@ -369,6 +369,12 @@ public class ElementJavadoc {
             this.content = prepareContent(content, doc,localized, page, cancel, true, context);
         } catch (RemoteJavadocException re) {
             final FileObject fo = compilationInfo.getFileObject();
+            if (JavaSource.forFileObject(fo) == null) {
+                final StringBuilder sb = new StringBuilder(content);
+                sb.append(noJavadocFound()); //NOI18N
+                this.content = new Now (sb.toString());
+                return;
+            }
             final StringBuilder contentFin = content;
             final boolean localizedFin = localized;
             this.content = new FutureTask<String>(new Callable<String>(){

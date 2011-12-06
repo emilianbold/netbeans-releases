@@ -287,7 +287,7 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
         return getID(taskData);
     }
 
-    String getKey() {
+    public String getKey() {
         return getID(taskData);
     }
 
@@ -300,7 +300,7 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
         return getFieldValue(taskData, IssueField.SUMMARY);
     }
     
-    String getDescription() {
+    public String getDescription() {
         return getFieldValue(IssueField.DESCRIPTION);
     }
 
@@ -314,12 +314,12 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
         return repository.getConfiguration().getPriorityById(id);
     }
 
-    JiraStatus getStatus() {
+    public JiraStatus getStatus() {
         String id = getFieldValue(IssueField.STATUS);
         return repository.getConfiguration().getStatusById(id);
     }
 
-    Resolution getResolution() {
+    public Resolution getResolution() {
         String id = getFieldValue(IssueField.RESOLUTION);
         return repository.getConfiguration().getResolutionById(id);
     }
@@ -391,7 +391,7 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
         return ""; // NOI18N
     }
 
-    Comment[] getComments() {
+    public Comment[] getComments() {
         List<TaskAttribute> attrs = taskData.getAttributeMapper().getAttributesByType(taskData, TaskAttribute.TYPE_COMMENT);
         if (attrs == null) {
             return new Comment[0];
@@ -403,7 +403,7 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
         return comments.toArray(new Comment[comments.size()]);
     }
 
-    Attachment[] getAttachments() {
+    public Attachment[] getAttachments() {
         List<TaskAttribute> attrs = taskData.getAttributeMapper().getAttributesByType(taskData, TaskAttribute.TYPE_ATTACHMENT);
         if (attrs == null) {
             return new Attachment[0];
@@ -415,7 +415,7 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
         return attachments.toArray(new Attachment[attachments.size()]);
     }
 
-    CustomField[] getCustomFields () {
+    public CustomField[] getCustomFields () {
         Map<String, TaskAttribute> attrs = taskData.getRoot().getAttributes();
         if (attrs == null) {
             return new CustomField[0];
@@ -464,7 +464,7 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
      * Returns an array of worklogs under the issue.
      * @return
      */
-    WorkLog[] getWorkLogs () {
+    public WorkLog[] getWorkLogs () {
         List<TaskAttribute> attrs = taskData.getAttributeMapper().getAttributesByType(taskData, WorkLogConverter.TYPE_WORKLOG);
         if (attrs == null) {
             return new WorkLog[0];
@@ -577,7 +577,7 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
      * @throws org.eclipse.mylyn.internal.jira.core.service.JiraException
      * @throws java.lang.IllegalStateException if resolve operation is not permitted for this issue
      */
-    void reopen(String comment) {
+    public void reopen(String comment) {
         if (Jira.LOG.isLoggable(Level.FINE)) {
             Jira.LOG.log(Level.FINE, "{0}: reopening issue{1}", new Object[]{getClass().getName(), getKey()}); //NOI18N
         }
@@ -826,7 +826,7 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
         }
     }
 
-    void addAttachment(File file, final String comment, String contentType) {
+    public void addAttachment(File file, final String comment, String contentType) {
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
         final FileTaskAttachmentSource attachmentSource = new FileTaskAttachmentSource(file);
         if (contentType == null) {
@@ -1252,7 +1252,7 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
         a.setValue(value);
     }
 
-    List<String> getFieldValues(IssueField f) {
+    public List<String> getFieldValues(IssueField f) {
         if(!f.isSingleAttribute()) {
             TaskAttribute a = taskData.getRoot().getMappedAttribute(f.key);
             if(a != null) {
@@ -1267,7 +1267,7 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
         }
     }
 
-    void setFieldValues(IssueField f, List<String> ccs) {
+    public void setFieldValues(IssueField f, List<String> ccs) {
         TaskAttribute a = taskData.getRoot().getMappedAttribute(f.key);
         if(a == null) {
             a = new TaskAttribute(taskData.getRoot(), f.key);
@@ -1275,7 +1275,7 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
         a.setValues(ccs);
     }
 
-    TaskData getTaskData() {
+    public TaskData getTaskData() {
         return taskData;
     }
 

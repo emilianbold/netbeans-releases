@@ -63,8 +63,8 @@ public class RubyModuleTest extends CslTestBase {
         
         assertNotNull(p);
         
-        assertTrue(new PropertyValue(p, "none").success());
-        assertTrue(new PropertyValue(p, "attr(rbspan)").success());
+        assertTrue(new PropertyValue(p, "none").isResolved());
+        assertTrue(new PropertyValue(p, "attr(rbspan)").isResolved());
     }
     
    

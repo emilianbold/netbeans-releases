@@ -512,6 +512,35 @@ public class RegexpUtilsTest extends TestCase {
     }
     
     
+
+    public void testComparisonRegex() throws Exception {
+        Pattern pattern = getPattern("COMPARISON_REGEX");
+        
+        final String[] matchingStrings = new String[] {
+            "expected:<Hello from hereThis is test[]> but was:<Hello from hereThis is test[2]>",
+            "expected:<Hello from here[ This is test]> but was:<Hello from here[This is test2]>",
+            "expected:<...om hereThis is test[]> but was:<...om hereThis is test[2]>",
+        };
+        final String[] nonMatchingStrings = new String[] {
+            "expected:<Hello from here\nThis is test[]> but was:<Hello from here\nThis is test[2]>",
+            "expected:<Hello from here[\nThis is test]> but was:<Hello from here[This is test2]>",
+            "expected:<...om here\nThis is test[]> but was:<...om here\nThis is test[2]>",
+        };
+
+        for (int i = 0; i < matchingStrings.length; i++) {
+            String string = matchingStrings[i];
+            assertTrue("should match: " + string,
+                       pattern.matcher(string).matches());
+        }
+        for (int i = 0; i < nonMatchingStrings.length; i++) {
+            String string = nonMatchingStrings[i];
+            assertFalse("should not match: " + string,
+                        pattern.matcher(string).matches());
+            assertTrue("should match: " + string,
+                        pattern.matcher(string.replaceAll("\n", "")).matches());
+        }
+    }
+    
     private Pattern getPattern(String fieldName) throws Exception {
         return Pattern.compile(getRegex(fieldName));
     }

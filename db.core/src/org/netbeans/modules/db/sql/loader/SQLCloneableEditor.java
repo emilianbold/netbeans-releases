@@ -57,17 +57,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.ActionMap;
-import javax.swing.JComponent;
-import javax.swing.JEditorPane;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JSplitPane;
-import javax.swing.JTabbedPane;
-import javax.swing.JToolBar;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.plaf.UIResource;
@@ -90,11 +80,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.text.CloneableEditor;
 import org.openide.text.NbDocument;
-import org.openide.util.Exceptions;
-import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
-import org.openide.util.Mutex;
-import org.openide.util.NbBundle;
+import org.openide.util.*;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -116,7 +102,7 @@ persistenceType = TopComponent.PERSISTENCE_ONLY_OPENED,
 mimeType = SQLDataLoader.SQL_MIME_TYPE,
 preferredID = "sql.source",
 position = 1)
-public class SQLCloneableEditor extends CloneableEditor implements MultiViewElement {
+public final class SQLCloneableEditor extends CloneableEditor implements MultiViewElement {
 
     private transient JSplitPane splitter;
     private transient JTabbedPane resultComponent;
@@ -210,8 +196,12 @@ public class SQLCloneableEditor extends CloneableEditor implements MultiViewElem
         splitter.setBorder(null);
 
         container.add(splitter);
-        splitter.setDividerLocation(250);
+        splitter.setDividerLocation(Math.min(container.getHeight() / 2, 250));
         splitter.setDividerSize(7);
+        
+        container.invalidate();
+        container.validate();
+        container.repaint();
 
         showResultComponent();
 
@@ -368,7 +358,7 @@ public class SQLCloneableEditor extends CloneableEditor implements MultiViewElem
 
         if (splitter.getBottomComponent() == null) {
             splitter.setBottomComponent(resultComponent);
-            splitter.setDividerLocation(250);
+            splitter.setDividerLocation(Math.min(container.getHeight() / 2, 250));
             splitter.setDividerSize(7);
 
             container.invalidate();
