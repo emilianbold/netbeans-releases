@@ -53,7 +53,6 @@ import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
 
 /**
  * IDE options controller for Hudson PHP.
@@ -99,7 +98,6 @@ public class HudsonOptionsPanelController extends OptionsPanelController impleme
     public void cancel() {
     }
 
-    @NbBundle.Messages("LBL_Symfony2Prefix=Symfony: {0}")
     @Override
     public boolean isValid() {
         // warnings
