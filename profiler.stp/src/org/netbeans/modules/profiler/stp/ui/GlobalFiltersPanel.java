@@ -203,7 +203,18 @@ public final class GlobalFiltersPanel extends JPanel implements HelpCtx.Provider
         //~ Methods --------------------------------------------------------------------------------------------------------------
 
         public void keyPressed(final KeyEvent e) {
-            switch (e.getKeyCode()) {
+            int keyCode = e.getKeyCode();
+            int keyModifiers = e.getModifiers();
+            
+            // Workaround for #116514, handle keyboard shortcut for Edit action
+            if (keyCode == editButton.getMnemonic() &&
+                    keyModifiers == InputEvent.ALT_MASK) {
+                e.consume();
+                editSelectedCell();
+                return;
+            }
+            
+            switch (keyCode) {
                 case KeyEvent.VK_DELETE:
                     e.consume();
                     deleteSelectedFilters();
@@ -211,7 +222,7 @@ public final class GlobalFiltersPanel extends JPanel implements HelpCtx.Provider
                     break;
                 case KeyEvent.VK_N:
 
-                    if (e.getModifiers() == InputEvent.CTRL_MASK) {
+                    if (keyModifiers == InputEvent.CTRL_MASK) {
                         e.consume();
                         addNewFilter();
 
@@ -219,7 +230,7 @@ public final class GlobalFiltersPanel extends JPanel implements HelpCtx.Provider
                     }
                 case KeyEvent.VK_UP:
 
-                    if (e.getModifiers() == InputEvent.CTRL_MASK) {
+                    if (keyModifiers == InputEvent.CTRL_MASK) {
                         e.consume();
 
                         if ((filterTable.getSelectedRowCount() == 1) && (filterTable.getSelectedRow() > 0)) {
@@ -230,7 +241,7 @@ public final class GlobalFiltersPanel extends JPanel implements HelpCtx.Provider
                     }
                 case KeyEvent.VK_DOWN:
 
-                    if (e.getModifiers() == InputEvent.CTRL_MASK) {
+                    if (keyModifiers == InputEvent.CTRL_MASK) {
                         e.consume();
 
                         if ((filterTable.getSelectedRowCount() == 1)
@@ -700,7 +711,7 @@ public final class GlobalFiltersPanel extends JPanel implements HelpCtx.Provider
         filterTable.editCellAt(filterTable.getSelectedRow(), filterTable.getSelectedColumn(),
                                new java.util.EventObject(filterTable));
     }
-
+        
     private void editSelectedRow(final int column) {
         filterTable.editCellAt(filterTable.getSelectedRow(), column, new java.util.EventObject(filterTable));
     }
@@ -826,7 +837,7 @@ public final class GlobalFiltersPanel extends JPanel implements HelpCtx.Provider
 
         // editButton
         editButton = new JButton();
-        org.openide.awt.Mnemonics.setLocalizedText(editButton, EDIT_BUTTON_TEXT); // Actually no mnemonics, see Issue 116514
+        org.openide.awt.Mnemonics.setLocalizedText(editButton, EDIT_BUTTON_TEXT);
         editButton.getAccessibleContext().setAccessibleDescription(EDIT_BUTTON_ACCESS_DESC);
         editButton.setEnabled(false);
         editButton.addActionListener(buttonsListener);
