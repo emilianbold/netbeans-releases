@@ -73,20 +73,7 @@ public class DebugUtils {
     }
 
     public static String getClassFilter(String url) {
-        FileObject fo = getFileObjectFromUrl(url);
-        String relativePath = url;
-        if (fo != null) {
-            ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
-            if (cp == null) {
-                LOGGER.log(Level.FINE, "No classpath for {0}", url);
-                return null;
-            }
-            FileObject root = cp.findOwnerRoot(fo);
-            if (root == null) {
-                return null;
-            }
-            relativePath = FileUtil.getRelativePath(root, fo);
-        }
+        String relativePath = getRelativePath(url);
         if (relativePath.endsWith(".groovy")) { // NOI18N
             relativePath = relativePath.substring(0, relativePath.length() - 7);
         }
@@ -102,6 +89,10 @@ public class DebugUtils {
     }
     
     public static String getJspPath(String url) {
+        return getRelativePath(url);
+    }
+
+    private static String getRelativePath(String url) {
         FileObject fo = getFileObjectFromUrl(url);
         String relativePath = url;
         
@@ -119,7 +110,5 @@ public class DebugUtils {
         }
         
         return relativePath;
-
     }
-    
 }
