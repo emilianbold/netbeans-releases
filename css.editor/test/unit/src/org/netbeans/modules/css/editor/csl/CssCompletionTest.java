@@ -248,4 +248,8 @@ public class CssCompletionTest extends CssModuleTestBase {
         checkCC("div { color: rgb|}", arr("("), Match.EXACT);
     }
     
+    public void testPropertyValueOfferItemsJustAfterUnit() throws ParseException {
+        checkCC("div { animation: cubic-bezier(20| }", arr(","), Match.EXACT);
+    }
+    
 }
