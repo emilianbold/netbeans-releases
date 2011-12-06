@@ -40,10 +40,11 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.java.source.parsing;
+package org.netbeans.modules.java.source.javac;
 
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.comp.Enter;
+import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.JCDiagnostic.DiagnosticPosition;
@@ -54,24 +55,26 @@ import com.sun.tools.javadoc.Messager;
  * JavadocEnter which doesn't ignore class duplicates unlike the base JavadocEnter
  * Enter - does't ignore duplicates
  * JavadocEnter - ignors duplicates
- * ErrorHandlingJavadocEnter - does't ignore duplicates
+ * NBJavadocEnter - does't ignore duplicates
  * @author Tomas Zezula
  */
-class ErrorHandlingJavadocEnter extends JavadocEnter {
+public class NBJavadocEnter extends JavadocEnter {
         
-    private Messager messager;
-
     public static void preRegister(final Context context) {
         context.put(enterKey, new Context.Factory<Enter>() {
             public Enter make(Context c) {
-                return new ErrorHandlingJavadocEnter(c);
+                return new NBJavadocEnter(c);
             }
         });
     }
 
-    protected ErrorHandlingJavadocEnter(Context context) {
+    private final Messager messager;
+    private final CancelService cancelService;
+
+    protected NBJavadocEnter(Context context) {
         super(context);
         messager = Messager.instance0(context);
+        cancelService = CancelService.instance(context);
     }
 
     public @Override void main(com.sun.tools.javac.util.List<JCCompilationUnit> trees) {
@@ -83,5 +86,11 @@ class ErrorHandlingJavadocEnter extends JavadocEnter {
     @Override
     protected void duplicateClass(DiagnosticPosition pos, ClassSymbol c) {
         messager.error(pos, "duplicate.class", c.fullname);
+    }
+    
+    @Override
+    public void visitClassDef(JCClassDecl tree) {
+        cancelService.abortIfCanceled();
+        super.visitClassDef(tree);
     }
 }
