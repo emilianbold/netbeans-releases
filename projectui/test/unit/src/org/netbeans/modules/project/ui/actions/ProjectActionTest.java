@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.project.ui.actions;
 
+import java.awt.EventQueue;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Action;
@@ -104,27 +105,27 @@ public class ProjectActionTest extends NbTestCase {
                
         project2 = (TestSupport.TestProject)ProjectManager.getDefault().findProject( p2 );                
     }
-    
-    @Override
-    public boolean runInEQ () {
-        return true;
+
+    static void assertEnablement(final Action action, final boolean enabled) throws Exception {
+        LookupSensitiveAction.RP.post(new Runnable() {public @Override void run() {}}).waitFinished();
+        EventQueue.invokeAndWait(new Runnable() {
+            public @Override void run() {
+                assertTrue(action.isEnabled() ^ !enabled);
+            }
+        });
     }
     
     public void testCommandEnablement() throws Exception {
         TestSupport.ChangeableLookup lookup = new TestSupport.ChangeableLookup();
-        ProjectAction action = new ProjectAction( "COMMAND", "TestProjectAction", null, lookup );
-        
-        assertFalse( "Action should NOT be enabled", action.isEnabled() );        
-        
+        Action action = new ProjectAction("COMMAND", "TestProjectAction", null, lookup);
+        action.isEnabled(); // priming check
+        assertEnablement(action, false);
         lookup.change(d1_1);
-        assertTrue( "Action should be enabled", action.isEnabled() );        
-        
+        assertEnablement(action, true);
         lookup.change(d1_1, d1_2);
-        assertFalse( "Action should NOT be enabled", action.isEnabled() );        
-        
+        assertEnablement(action, false);
         lookup.change(d1_1, d2_1);
-        assertFalse( "Action should NOT be enabled", action.isEnabled() );        
-        
+        assertEnablement(action, false);
     }
     
     public void testProviderEnablement() throws Exception {
