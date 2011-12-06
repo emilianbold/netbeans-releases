@@ -42,6 +42,10 @@
 package org.netbeans.modules.php.apigen;
 
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
+import org.netbeans.modules.php.api.phpmodule.PhpProgram;
+import org.netbeans.modules.php.api.util.UiUtils;
+import org.netbeans.modules.php.apigen.commands.ApiGenScript;
+import org.netbeans.modules.php.apigen.ui.options.ApiGenOptionsPanelController;
 import org.netbeans.modules.php.spi.doc.PhpDocProvider;
 import org.openide.util.NbBundle;
 
@@ -71,7 +75,11 @@ public final class ApiGenProvider extends PhpDocProvider {
 
     @Override
     public void generateDocumentation(PhpModule phpModule) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        try {
+            ApiGenScript.getDefault().generateDocumentation(phpModule);
+        } catch (PhpProgram.InvalidPhpProgramException ex) {
+            UiUtils.invalidScriptProvided(ex.getLocalizedMessage(), ApiGenOptionsPanelController.OPTIONS_SUBPATH);
+        }
     }
 
 }

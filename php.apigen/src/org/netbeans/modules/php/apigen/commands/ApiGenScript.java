@@ -41,9 +41,22 @@
  */
 package org.netbeans.modules.php.apigen.commands;
 
+import java.io.File;
+import java.net.MalformedURLException;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
+import org.netbeans.api.extexecution.ExecutionDescriptor;
+import org.netbeans.api.extexecution.ExternalProcessBuilder;
+import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpProgram;
 import org.netbeans.modules.php.api.util.FileUtils;
+import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.apigen.options.ApiGenOptions;
+import org.netbeans.modules.php.apigen.ui.ApiGenPreferences;
+import org.netbeans.modules.php.apigen.ui.options.ApiGenOptionsPanelController;
+import org.openide.awt.HtmlBrowser;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 /**
@@ -85,6 +98,51 @@ public final class ApiGenScript extends PhpProgram {
             return null;
         }
         return Bundle.ApiGenScript_prefix(error);
+    }
+
+    @NbBundle.Messages("ApiGenScript.api.generating=Generating API for {0}")
+    public void generateDocumentation(final PhpModule phpModule) {
+        String target = ApiGenPreferences.getTarget(phpModule, true);
+        if (target == null) {
+            // canceled
+            return;
+        }
+
+        ExternalProcessBuilder processBuilder = getProcessBuilder()
+                // from
+                .addArgument("-s") // NOI18N
+                .addArgument(FileUtil.toFile(phpModule.getSourceDirectory()).getAbsolutePath())
+                // to
+                .addArgument("-d") // NOI18N
+                .addArgument(target)
+                // title
+                .addArgument("-title") // NOI18N
+                .addArgument(ApiGenPreferences.getTitle(phpModule));
+        ExecutionDescriptor executionDescriptor = getExecutionDescriptor()
+                .frontWindow(false)
+                .optionsPath(ApiGenOptionsPanelController.getOptionsPath());
+
+        try {
+            int status = executeAndWait(
+                    processBuilder,
+                    executionDescriptor,
+                    Bundle.ApiGenScript_api_generating(phpModule.getDisplayName()));
+            if (status == 0) {
+                File index = new File(target, "index.html"); // NOI18N
+                if (index.isFile()) {
+                    // false for pdf e.g.
+                    HtmlBrowser.URLDisplayer.getDefault().showURL(index.toURI().toURL());
+                }
+            }
+        } catch (CancellationException ex) {
+            // canceled
+        } catch (ExecutionException ex) {
+            UiUtils.processExecutionException(ex, ApiGenOptionsPanelController.OPTIONS_SUBPATH);
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+        } catch (MalformedURLException ex) {
+            LOGGER.log(Level.WARNING, ex.getLocalizedMessage(), ex);
+        }
     }
 
 }
