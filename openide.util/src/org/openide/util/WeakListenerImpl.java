@@ -84,7 +84,7 @@ abstract class WeakListenerImpl implements java.util.EventListener {
     private ListenerReference ref;
 
     /** class of the listener */
-    Class listenerClass;
+    Class<?> listenerClass;
 
     /** weak reference to source */
     private Reference<Object> source;
@@ -94,7 +94,7 @@ abstract class WeakListenerImpl implements java.util.EventListener {
      * @param l listener to delegate to, <code>l</code> must be an instance of
      * listenerClass
      */
-    protected WeakListenerImpl(Class listenerClass, java.util.EventListener l) {
+    protected WeakListenerImpl(Class<?> listenerClass, java.util.EventListener l) {
         this.listenerClass = listenerClass;
         ref = new ListenerReference(l, this);
     }
@@ -173,7 +173,7 @@ abstract class WeakListenerImpl implements java.util.EventListener {
         /** Constructor.
         * @param l listener to delegate to
         */
-        public PropertyChange(PropertyChangeListener l) {
+        PropertyChange(PropertyChangeListener l) {
             super(PropertyChangeListener.class, l);
         }
 
@@ -181,7 +181,7 @@ abstract class WeakListenerImpl implements java.util.EventListener {
         * @param clazz required class
         * @param l listener to delegate to
         */
-        PropertyChange(Class clazz, PropertyChangeListener l) {
+        PropertyChange(Class<?> clazz, PropertyChangeListener l) {
             super(clazz, l);
         }
 
@@ -189,7 +189,7 @@ abstract class WeakListenerImpl implements java.util.EventListener {
         * if so, delegate to it. Otherwise remove from the source
         * if it has removePropertyChangeListener method.
         */
-        public void propertyChange(PropertyChangeEvent ev) {
+        @Override public void propertyChange(PropertyChangeEvent ev) {
             PropertyChangeListener l = (PropertyChangeListener) super.get(ev);
 
             if (l != null) {
@@ -201,7 +201,7 @@ abstract class WeakListenerImpl implements java.util.EventListener {
         * @return name of method of the source object that should be used
         *   to remove the listener from listening on source of events
         */
-        protected String removeMethodName() {
+        @Override protected String removeMethodName() {
             return "removePropertyChangeListener"; // NOI18N
         }
     }
@@ -212,7 +212,7 @@ abstract class WeakListenerImpl implements java.util.EventListener {
         /** Constructor.
         * @param l listener to delegate to
         */
-        public VetoableChange(VetoableChangeListener l) {
+        VetoableChange(VetoableChangeListener l) {
             super(VetoableChangeListener.class, l);
         }
 
@@ -220,7 +220,7 @@ abstract class WeakListenerImpl implements java.util.EventListener {
         * if so, delegate to it. Otherwise remove from the source
         * if it has removePropertyChangeListener method.
         */
-        public void vetoableChange(PropertyChangeEvent ev)
+        @Override public void vetoableChange(PropertyChangeEvent ev)
         throws PropertyVetoException {
             VetoableChangeListener l = (VetoableChangeListener) super.get(ev);
 
@@ -233,7 +233,7 @@ abstract class WeakListenerImpl implements java.util.EventListener {
         * @return name of method of the source object that should be used
         *   to remove the listener from listening on source of events
         */
-        protected String removeMethodName() {
+        @Override protected String removeMethodName() {
             return "removeVetoableChangeListener"; // NOI18N
         }
     }
@@ -246,14 +246,14 @@ abstract class WeakListenerImpl implements java.util.EventListener {
         /** Constructor.
         * @param l listener to delegate to
         */
-        public Document(final DocumentListener l) {
+        Document(final DocumentListener l) {
             super(DocumentListener.class, l);
         }
 
         /** Gives notification that an attribute or set of attributes changed.
         * @param ev event describing the action
         */
-        public void changedUpdate(DocumentEvent ev) {
+        @Override public void changedUpdate(DocumentEvent ev) {
             final DocumentListener l = docGet(ev);
 
             if (l != null) {
@@ -264,7 +264,7 @@ abstract class WeakListenerImpl implements java.util.EventListener {
         /** Gives notification that there was an insert into the document.
         * @param ev event describing the action
         */
-        public void insertUpdate(DocumentEvent ev) {
+        @Override public void insertUpdate(DocumentEvent ev) {
             final DocumentListener l = docGet(ev);
 
             if (l != null) {
@@ -275,7 +275,7 @@ abstract class WeakListenerImpl implements java.util.EventListener {
         /** Gives notification that a portion of the document has been removed.
         * @param ev event describing the action
         */
-        public void removeUpdate(DocumentEvent ev) {
+        @Override public void removeUpdate(DocumentEvent ev) {
             final DocumentListener l = docGet(ev);
 
             if (l != null) {
@@ -287,7 +287,7 @@ abstract class WeakListenerImpl implements java.util.EventListener {
         * @return name of method of the source object that should be used
         *   to remove the listener from listening on source of events
         */
-        protected String removeMethodName() {
+        @Override protected String removeMethodName() {
             return "removeDocumentListener"; // NOI18N
         }
 
@@ -315,14 +315,14 @@ abstract class WeakListenerImpl implements java.util.EventListener {
         /** Constructor.
         * @param l listener to delegate to
         */
-        public Change(ChangeListener l) {
+        Change(ChangeListener l) {
             super(ChangeListener.class, l);
         }
 
         /** Called when new file system is added to the pool.
         * @param ev event describing the action
         */
-        public void stateChanged(final ChangeEvent ev) {
+        @Override public void stateChanged(final ChangeEvent ev) {
             ChangeListener l = (ChangeListener) super.get(ev);
 
             if (l != null) {
@@ -334,7 +334,7 @@ abstract class WeakListenerImpl implements java.util.EventListener {
         * @return name of method of the source object that should be used
         *   to remove the listener from listening on source of events
         */
-        protected String removeMethodName() {
+        @Override protected String removeMethodName() {
             return "removeChangeListener"; // NOI18N
         }
     }
@@ -347,13 +347,13 @@ abstract class WeakListenerImpl implements java.util.EventListener {
         /** Constructor.
         * @param l listener to delegate to
         */
-        public Focus(FocusListener l) {
+        Focus(FocusListener l) {
             super(FocusListener.class, l);
         }
 
         /** Delegates to the original listener.
         */
-        public void focusGained(FocusEvent ev) {
+        @Override public void focusGained(FocusEvent ev) {
             FocusListener l = (FocusListener) super.get(ev);
 
             if (l != null) {
@@ -363,7 +363,7 @@ abstract class WeakListenerImpl implements java.util.EventListener {
 
         /** Delegates to the original listener.
         */
-        public void focusLost(FocusEvent ev) {
+        @Override public void focusLost(FocusEvent ev) {
             FocusListener l = (FocusListener) super.get(ev);
 
             if (l != null) {
@@ -375,7 +375,7 @@ abstract class WeakListenerImpl implements java.util.EventListener {
         * @return name of method of the source object that should be used
         *   to remove the listener from listening on source of events
         */
-        protected String removeMethodName() {
+        @Override protected String removeMethodName() {
             return "removeFocusListener"; // NOI18N
         }
     }
@@ -387,48 +387,47 @@ abstract class WeakListenerImpl implements java.util.EventListener {
         private static Method equalsMth;
 
         /** Class -> Reference(Constructor) */
-        private static final Map<Class, Reference<Constructor>> constructors = new WeakHashMap<Class, Reference<Constructor>>();
+        private static final Map<Class<?>,Reference<Constructor<?>>> constructors = new WeakHashMap<Class<?>,Reference<Constructor<?>>>();
 
         /** proxy generated for this listener */
         public final Object proxy;
 
         /** @param listener listener to delegate to
         */
-        public ProxyListener(Class c, Class api, java.util.EventListener listener) {
+        ProxyListener(Class<?> c, Class<?> api, EventListener listener) {
             super(api, listener);
 
             try {
-                Reference ref = (Reference) constructors.get(c);
-                Constructor proxyConstructor = (ref == null) ? null : (Constructor) ref.get();
+                Reference<Constructor<?>> ref = constructors.get(c);
+                Constructor<?> proxyConstructor = ref == null ? null : ref.get();
 
                 if (proxyConstructor == null) {
-                    Class<?> proxyClass = Proxy.getProxyClass(c.getClassLoader(), new Class[] { c });
-                    proxyConstructor = proxyClass.getConstructor(new Class[] { InvocationHandler.class });
-                    constructors.put(c, new SoftReference<Constructor>(proxyConstructor));
+                    Class<?> proxyClass = Proxy.getProxyClass(c.getClassLoader(), c);
+                    proxyConstructor = proxyClass.getConstructor(InvocationHandler.class);
+                    constructors.put(c, new SoftReference<Constructor<?>>(proxyConstructor));
                 }
 
                 Object p;
 
                 try {
-                    p = proxyConstructor.newInstance(new Object[] { this });
-                } catch (java.lang.NoClassDefFoundError err) {
+                    p = proxyConstructor.newInstance(this);
+                } catch (NoClassDefFoundError err) {
                     // if for some reason the actual creation of the instance
                     // from constructor fails, try it once more using regular
                     // method, see issue 30449
-                    p = Proxy.newProxyInstance(c.getClassLoader(), new Class[] { c }, this);
+                    p = Proxy.newProxyInstance(c.getClassLoader(), new Class<?>[] { c }, this);
                 }
 
                 proxy = p;
             } catch (Exception ex) {
-                throw (IllegalStateException) new IllegalStateException(ex.toString()).initCause(ex);
+                throw new IllegalStateException(ex);
             }
         }
 
-        /** */
         private static Method getEquals() {
             if (equalsMth == null) {
                 try {
-                    equalsMth = Object.class.getMethod("equals", new Class[] { Object.class }); // NOI18N
+                    equalsMth = Object.class.getMethod("equals", Object.class); // NOI18N
                 } catch (NoSuchMethodException e) {
                     e.printStackTrace();
                 }
@@ -437,15 +436,13 @@ abstract class WeakListenerImpl implements java.util.EventListener {
             return equalsMth;
         }
 
-        public java.lang.Object invoke(Object proxy, Method method, Object[] args)
+        @Override public Object invoke(Object proxy, Method method, Object[] args)
         throws Throwable {
             try {
             if (method.getDeclaringClass() == Object.class) {
                 // a method from object => call it on your self
                 if (method == getEquals()) {
-                    boolean ret = equals(args[0]);
-
-                    return (ret ? Boolean.TRUE : Boolean.FALSE);
+                    return equals(args[0]);
                 }
 
                 return method.invoke(this, args);
@@ -468,7 +465,7 @@ abstract class WeakListenerImpl implements java.util.EventListener {
 
         /** Remove method name is composed from the name of the listener.
         */
-        protected String removeMethodName() {
+        @Override protected String removeMethodName() {
             String name = listenerClass.getName();
 
             // strip package name
@@ -509,13 +506,13 @@ abstract class WeakListenerImpl implements java.util.EventListener {
     /** Reference that also holds ref to WeakListenerImpl.
     */
     private static final class ListenerReference extends WeakReference<Object> implements Runnable {
-        private static Class lastClass;
+        private static Class<?> lastClass;
         private static String lastMethodName;
         private static Method lastRemove;
-        private static Object LOCK = new Object();
+        private static final Object LOCK = new Object();
         WeakListenerImpl weakListener;
 
-        public ListenerReference(Object ref, WeakListenerImpl weakListener) {
+        ListenerReference(Object ref, WeakListenerImpl weakListener) {
             super(ref, Utilities.activeReferenceQueue());
             this.weakListener = weakListener;
         }
@@ -538,7 +535,7 @@ abstract class WeakListenerImpl implements java.util.EventListener {
             }
         }
 
-        public void run() {
+        @Override public void run() {
             Object src = null; // On whom we're listening
             Method remove = null;
 
@@ -555,7 +552,7 @@ abstract class WeakListenerImpl implements java.util.EventListener {
                 weakListener = null;
             }
 
-            Class methodClass;
+            Class<?> methodClass;
             if (src instanceof Class) {
                 // Handle static listener methods sanely.
                 methodClass = (Class) src;
@@ -565,25 +562,20 @@ abstract class WeakListenerImpl implements java.util.EventListener {
             String methodName = ref.removeMethodName();
 
             synchronized (LOCK) {
-                if ((lastClass == methodClass) && (lastMethodName == methodName) && (lastRemove != null)) {
+                if (lastClass == methodClass && lastRemove != null && methodName.equals(lastMethodName)) {
                     remove = lastRemove;
                 }
             }
 
             // get the remove method or use the last one
             if (remove == null) {
-                remove = getRemoveMethod(methodClass, methodName, new Class[]{ref.listenerClass});
+                remove = getRemoveMethod(methodClass, methodName, ref.listenerClass);
                 if (remove == null) {
-                    remove = getRemoveMethod(methodClass, methodName, new Class[]{String.class, ref.listenerClass});
+                    remove = getRemoveMethod(methodClass, methodName, String.class, ref.listenerClass);
                 }
 
                 if (remove == null) {
-                    LOG.warning(
-                        "Can't remove " + ref.listenerClass.getName() + //NOI18N
-                        " using method " + methodName + //NOI18N
-                        " from " + src
-                    ); //NOI18N
-
+                    LOG.log(Level.WARNING, "Can''t remove {0} using method {1} from {2}", new Object[] {ref.listenerClass.getName(), methodName, src});
                     return;
                 } else {
                     synchronized (LOCK) {
@@ -615,7 +607,7 @@ abstract class WeakListenerImpl implements java.util.EventListener {
         }
 
         /* can return null */
-        private Method getRemoveMethod(Class<?> methodClass, String methodName, Class<?>[] clarray) {
+        private Method getRemoveMethod(Class<?> methodClass, String methodName, Class<?>... clarray) {
             Method m = null;
 
             try {
