@@ -179,6 +179,13 @@ public class PhpStructureScanner implements StructureScanner {
                         children.add(new PHPFieldStructureItem(field));//NOI18N
                     }
                 }
+                if (type instanceof TraitScope) {
+                    TraitScope trait = (TraitScope) type;
+                    Collection<? extends FieldElement> declaredFields = trait.getDeclaredFields();
+                    for (FieldElement field : declaredFields) {
+                        children.add(new PHPFieldStructureItem(field));//NOI18N
+                    }
+                }
             }
         }
 
@@ -706,7 +713,7 @@ public class PhpStructureScanner implements StructureScanner {
             formatter.appendText(getElementHandle().getName());
             Collection<QualifiedName> usedTraits = getTraitScope().getUsedTraits();
             if (usedTraits != null && usedTraits.size() > 0) {
-                formatter.appendHtml(FONT_GRAY_COLOR + "::"); //NOI18N
+                formatter.appendHtml(FONT_GRAY_COLOR + "#"); //NOI18N
                 appendUsedTraits(usedTraits, formatter);
                 formatter.appendHtml(CLOSE_FONT);
             }
