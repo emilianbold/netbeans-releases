@@ -42,6 +42,7 @@
 package org.netbeans.modules.css.editor.properties.parser;
 
 import java.util.Collections;
+import junit.framework.TestSuite;
 import org.netbeans.modules.css.editor.module.CssModuleSupport;
 import org.netbeans.modules.css.editor.module.main.CssModuleTestBase;
 import org.netbeans.modules.css.editor.module.spi.Property;
@@ -61,7 +62,6 @@ public class GrammarParserTest extends CssModuleTestBase {
         for (Property property : CssModuleSupport.getProperties()) {
             PropertyModel model = new PropertyModel(property.getName(), Collections.singletonList(property));
             assertNotNull(GrammarParser.parse(model.getGrammar()));
-            
         }
     }
     
