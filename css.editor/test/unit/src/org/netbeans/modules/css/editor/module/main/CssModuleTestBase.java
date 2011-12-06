@@ -224,11 +224,7 @@ public class CssModuleTestBase extends CslTestBase {
         assertNotNull(String.format("Cannot find property %s", propertyName), model);
 
         for (String val : values) {
-            PropertyValue value = new PropertyValue(model, val);
-            if (!value.isResolved()) {
-                throw new AssertionFailedError(String.format("Error parsing property value '%s' of the property '%s'", val, propertyName));
-            }
-
+            assertNotNull(assertResolve(model.getGrammarElement(), val));
         }
 
     }

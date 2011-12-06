@@ -112,5 +112,11 @@ public class BackgroundsAndBordersModuleTest extends CssModuleTestBase {
         assertPropertyDeclaration("background-repeat: no-repeat;");
     }
     
+    public void testBoxShadow() {
+        assertPropertyDeclaration("box-shadow: inherit");
+        assertPropertyDeclaration("box-shadow: none");
+        assertPropertyDeclaration("box-shadow: inset rgba(255,255,255,0.3) 2px 2px,  rgba(0,0,0,0.05) 2px 2px;");
+        assertPropertyDeclaration("box-shadow: inset rgba(255,255,255,0.3) 0 2px 2px,  rgba(0,0,0,0.05) 0 2px 2px;");
+    }
     
 }
